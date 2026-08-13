@@ -23,6 +23,12 @@ python tests/e2e_transaction.py
 
 Frontend preview (the Supabase publishable key is intentionally public; service-role and database credentials must never be placed in frontend files):
 
+## Billing status
+
+DEFERRED — pending SSM/merchant verification and HitPay production onboarding.
+
+Production beta access is a beta/test entitlement only. It is not a paid subscription and does not create a payment, renewal, invoice, payment method, or billing date.
+
 ```powershell
 python -m http.server 4173
 ```
