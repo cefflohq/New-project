@@ -1,12 +1,13 @@
 (function () {
   const config = window.CEFFLO_CONFIG;
   if (!config) throw new Error('CEFFLO_CONFIG is required');
-  const sessionKey = 'cefflo.auth.session.v1';
+  const sessionKey = window.CEFFLO_SESSION_KEY || 'cefflo.auth.session.v1';
   let session = JSON.parse(localStorage.getItem(sessionKey) || 'null');
 
   async function request(path, { method = 'GET', body, token = session?.access_token } = {}) {
     const response = await fetch(`${config.supabaseUrl}${path}`, {
       method,
+      cache: 'no-store',
       headers: {
         apikey: config.supabaseAnonKey,
         Authorization: `Bearer ${token || config.supabaseAnonKey}`,
@@ -31,6 +32,12 @@
     session = null;
     localStorage.removeItem(sessionKey);
   }
+  function setSession(nextSession) {
+    session = nextSession || null;
+    if (session) localStorage.setItem(sessionKey, JSON.stringify(session));
+    else localStorage.removeItem(sessionKey);
+    return session;
+  }
   async function uploadPod(orderId, file) {
     const path = `orders/${orderId}/${crypto.randomUUID()}.${(file.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg')}`;
     const response = await fetch(`${config.supabaseUrl}/storage/v1/object/${config.storageBucket}/${path}`, {
@@ -41,5 +48,5 @@
     if (!response.ok) throw new Error(await response.text());
     return path;
   }
-  window.CEFFLO = Object.freeze({ config, request, rpc, login, logout, uploadPod, session: () => session });
+  window.CEFFLO = Object.freeze({ config, request, rpc, login, logout, setSession, uploadPod, session: () => session });
 })();

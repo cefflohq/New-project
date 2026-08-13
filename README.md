@@ -21,4 +21,12 @@ python tests/validate_backend.py
 python tests/e2e_transaction.py
 ```
 
+Frontend preview (the Supabase publishable key is intentionally public; service-role and database credentials must never be placed in frontend files):
+
+```powershell
+python -m http.server 4173
+```
+
+Then open `/vendor/`, `/rider/`, and `/customer/?token=<tracking-token>` from the same origin. Runtime configuration is shared by all three apps through `shared/config.js`.
+
 The retired project `hjrurccjfxtmyftibtgw` is historical evidence only and has no runtime role.

@@ -12,8 +12,16 @@
       riderName: snapshot.rider_name || 'Your rider',
       estimatedArrival: snapshot.eta ? new Date(snapshot.eta).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
       deliveredAt: snapshot.completed_at ? new Date(snapshot.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
-      podPhoto: null
+      podPhoto: snapshot.status === 'delivered' && snapshot.pod_path ? await podUrl().catch(() => null) : null
     });
+    if (snapshot.rating_submitted) {
+      const form = document.getElementById('ratingForm');
+      const thanks = document.getElementById('ratingThanks');
+      const copy = document.getElementById('ratingThanksCopy');
+      if (form) form.hidden = true;
+      if (thanks) thanks.classList.add('is-visible');
+      if (copy && !copy.textContent.trim()) copy.textContent = 'Your rating was submitted successfully.';
+    }
     return snapshot;
   }
   const submitRating = (rating, feedback) => api.rpc('submit_rating', { p_token: token, p_rating: rating, p_feedback: feedback }, { token: null });

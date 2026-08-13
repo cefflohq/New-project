@@ -482,7 +482,7 @@ button,input,textarea,select{font:inherit}button{border:0;background:none;color:
 <div class="auth-hero-copy"><h1>Welcome back.</h1><p>Access your approved rider account and continue your delivery session.</p></div>
 </div>
 <div class="auth-premium-board">
-<div class="field" id="f-li-phone"><label>Phone Number</label><div class="input-wrap"><span class="prefix">+60</span><input id="li-phone" placeholder="12 345 6789" type="tel"/></div><div class="err-msg">Phone number is required</div></div>
+<div class="field" id="f-li-phone"><label>Phone Number or Email</label><div class="input-wrap"><input id="li-phone" placeholder="Phone number or email" type="text"/></div><div class="err-msg">Phone number or email is required</div></div>
 <div class="field" id="f-li-pass"><label>Password</label><div class="input-wrap"><input id="li-pass" placeholder="Enter your password" type="password"/><button aria-label="Show password" class="password-toggle" id="password-toggle" onclick="togglePassword()" type="button"><svg id="eye-off-icon" viewbox="0 0 24 24"><path d="M3 3l18 18"></path><path d="M10.6 10.7a2 2 0 002.7 2.7"></path><path d="M9.9 4.3A10.9 10.9 0 0112 4c5.5 0 9 5 9 5a15 15 0 01-2.1 2.7M6.6 6.6C4.4 8 3 10 3 10s3.5 5 9 5a10.5 10.5 0 004.1-.8"></path></svg><svg id="eye-on-icon" style="display:none" viewbox="0 0 24 24"><path d="M3 12s3.5-5 9-5 9 5 9 5-3.5 5-9 5-9-5-9-5z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button></div><div class="err-msg">Password is required</div></div>
 <div class="auth-support-row"><span></span><a class="link-purple" onclick="showScreen('screen-resetpw');resetRecoveryFlow()">Forgot password?</a></div>
 <button class="btn btn-purple" onclick="doLogin()">Log In</button><div class="inline-feedback error" id="login-feedback" role="alert"></div>
@@ -1654,6 +1654,15 @@ function toggleInlineProfileEdit(){
 }
 /* ================= OFFLINE HANDLING ================= */
 const pendingActions = [];
+function readStoredRider(){try{return JSON.parse(localStorage.getItem('cefflo_rider_user')||'null')}catch{return null}}
+function updateLocationOptions(){}
+function updateAvailabilityUI(){
+  const online=localStorage.getItem('cefflo_rider_online')!=='0';
+  const button=document.getElementById('availability-toggle');
+  if(button)button.classList.toggle('offline',!online);
+  const label=document.getElementById('availability-label');
+  if(label)label.textContent=online?'Online':'Offline';
+}
 function updateOfflineBanner(){
   document.getElementById('offlineBanner').classList.toggle('show', !navigator.onLine);
 }
@@ -2912,8 +2921,9 @@ setTimeout(syncProfileLanguageTrigger,0);
 }
 </style>
 
-<script src="../shared/config.js"></script>
-<script src="../shared/client.js"></script>
-<script src="./backend.js"></script>
+<script>window.CEFFLO_SESSION_KEY='cefflo_rider_auth_session';</script>
+<script src="../shared/config.js?v=20260814m"></script>
+<script src="../shared/client.js?v=20260814m"></script>
+<script src="./backend.js?v=20260814m"></script>
 </body>
 </html>

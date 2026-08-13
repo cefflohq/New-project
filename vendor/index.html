@@ -4199,6 +4199,11 @@ function pageDashboard(){
 /* ===================== PAGE: ORDERS ===================== */
 const ordersUiState = { tab:'ongoing', search:'', searchOpen:false };
 function orderMatchesTab(o, tab){
+  const backendStatus=o.backendStatus||o.deliveryStatus||o.delivery_status;
+  if(backendStatus==='delivered'||o.completedAt||o.ratingSubmitted) o.status='completed';
+  else if(backendStatus==='out_for_delivery'||backendStatus==='arrived') o.status='delivering';
+  else if(backendStatus==='picked_up') o.status='pickedUp';
+  else if(['created','ready_for_pickup'].includes(backendStatus)) o.status='readyForPickup';
   if(tab==='ongoing') return ['readyForPickup','pickedUp','delivering'].includes(o.status);
   if(tab==='issue') return o.status==='issue';
   if(tab==='completed') return o.status==='completed';
@@ -4360,6 +4365,8 @@ function pageOrderDetail(params){
 
     <div class="section">
       <div class="section-title">${t('actions')}</div>
+      ${o.ratingSubmitted?`<div class="card bordered" style="margin-bottom:10px"><div class="stat-inline"><span class="label">Customer Rating</span><span class="val">Submitted</span></div></div>`:''}
+      ${o.trackingToken?`<button class="btn btn-secondary" style="margin-bottom:10px" data-action="openCustomerTracking" data-id="${o.id}">Customer Tracking</button>`:''}
       ${!o.riderId?`<button class="btn btn-primary" style="margin-bottom:10px" data-action="openAssignRiderForOrder" data-id="${o.id}">${t('assignRider')}</button>`:
       `<button class="btn btn-secondary" style="margin-bottom:10px" data-action="openAssignRiderForOrder" data-id="${o.id}">${t('changeRider')}</button>`}
       <button class="btn btn-secondary" style="margin-bottom:10px" data-action="openReportIssue" data-id="${o.id}">${t('reportIssue')}</button>
@@ -6532,6 +6539,8 @@ function getBusinessRecord(){
 
 async function hydrateOperationalStateFromBackend(){
   if(!backendConfigured()) return false;
+  if(typeof productionState!=='undefined'&&!productionState.authSession?.access_token) return false;
+  if(!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(state.businessId||'')) return false;
   backendState.status='connecting';
   backendState.lastError=null;
   try{
@@ -6539,13 +6548,13 @@ async function hydrateOperationalStateFromBackend(){
     const [businesses,sessions,zones,riders,assignments,orders,stops,issues,history]=await Promise.all([
       BackendRepository.select(TABLE_MAP.businesses,`id=eq.${businessId}&select=*`),
       BackendRepository.select(TABLE_MAP.deliverySessions,`business_id=eq.${businessId}&select=*`),
-      BackendRepository.select(TABLE_MAP.zones,`business_id=eq.${businessId}&select=*`),
+      Promise.resolve([]),
       BackendRepository.select(TABLE_MAP.riders,`business_id=eq.${businessId}&select=*`),
       BackendRepository.select(TABLE_MAP.riderAssignments,`business_id=eq.${businessId}&select=*`),
       BackendRepository.select(TABLE_MAP.orders,`business_id=eq.${businessId}&select=*`),
       BackendRepository.select(TABLE_MAP.deliveryStops,`business_id=eq.${businessId}&select=*`),
-      BackendRepository.select(TABLE_MAP.issues,`business_id=eq.${businessId}&select=*`),
-      BackendRepository.select(TABLE_MAP.orderStatusHistory,`business_id=eq.${businessId}&select=*`)
+      Promise.resolve([]),
+      Promise.resolve([])
     ]);
     const business=businesses[0];
     if(business){
@@ -6629,7 +6638,8 @@ async function initializeProductionRepository(){
     backendState.status='local-only';
     return;
   }
-  const hydrated=await hydrateOperationalStateFromBackend();
+  if(!window.CEFFLO_VENDOR?.hydrate) return;
+  const hydrated=await window.CEFFLO_VENDOR.hydrate();
   if(hydrated && document.getElementById('appDevice')?.style.display!=='none') render();
 }
 window.CEFFLO_BACKEND={
@@ -7253,7 +7263,7 @@ async function authRequest(path,payload){
   const response=await fetch(`${CEFFLO_RUNTIME_CONFIG.supabaseUrl}/auth/v1/${path}`,{method:'POST',headers:{apikey:CEFFLO_RUNTIME_CONFIG.supabaseAnonKey,'Content-Type':'application/json'},body:JSON.stringify(payload)});
   const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.msg||data.error_description||data.message||'Authentication failed.');return data;
 }
-function storeAuthSession(session){productionState.authSession=session||null;productionState.user=session?.user||null;if(session)localStorage.setItem('cefflo_auth_session',JSON.stringify(session));else localStorage.removeItem('cefflo_auth_session');}
+function storeAuthSession(session){productionState.authSession=session||null;productionState.user=session?.user||null;if(session)localStorage.setItem('cefflo_auth_session',JSON.stringify(session));else localStorage.removeItem('cefflo_auth_session');window.CEFFLO?.setSession?.(session||null);}
 function restoreAuthSession(){try{const session=JSON.parse(localStorage.getItem('cefflo_auth_session')||'null');if(session?.access_token)storeAuthSession(session);}catch{}return productionState.authSession;}
 async function signInWithPassword({email,password}){const session=await authRequest('token?grant_type=password',{email,password});storeAuthSession(session);await hydrateOperationalStateFromBackend();startRealtime();return session;}
 async function signUpWithPassword({email,password,metadata={}}){const result=await authRequest('signup',{email,password,data:metadata});if(result.access_token)storeAuthSession(result);return result;}
@@ -7399,7 +7409,9 @@ async function hydrateAuthenticatedWorkspace(){
   const remembered=localStorage.getItem('cefflo_active_business_id');
   const selected=businesses.find(item=>item.business_id===remembered)||businesses[0];
   applyBusinessIdentity(selected);
-  await hydrateOperationalStateFromBackend();
+  window.CEFFLO?.setSession?.(productionState.authSession);
+  if(window.CEFFLO_VENDOR?.hydrate) await window.CEFFLO_VENDOR.hydrate();
+  else await hydrateOperationalStateFromBackend();
   await startRealtime();
   return selected;
 }
@@ -7535,8 +7547,9 @@ async function initializeSprint13(){
 /* ===================== INIT ===================== */
 initializeSprint13().catch(error=>{console.error('CEFFLO Sprint 1.3 initialization failed:',error);showAuthWelcome();render();});
 </script>
-<script src="../shared/config.js"></script>
-<script src="../shared/client.js"></script>
-<script src="./backend.js"></script>
+<script>window.CEFFLO_SESSION_KEY='cefflo_auth_session';</script>
+<script src="../shared/config.js?v=20260814k"></script>
+<script src="../shared/client.js?v=20260814k"></script>
+<script src="./backend.js?v=20260814k"></script>
 </body>
 </html>
