@@ -107,7 +107,8 @@
   ACTIONS.openCustomerTracking = function (el) {
     const order = state.orders.find(item => item.id === el.dataset.id);
     if (!order?.trackingToken) return toast('Tracking link is unavailable for this browser session.', 'error');
-    window.open(`../customer/?token=${encodeURIComponent(order.trackingToken)}`, '_blank', 'noopener');
+    const trackingBase = location.hostname === 'vendor.cefflo.com' ? 'https://track.cefflo.com/' : '../customer/';
+    window.open(`${trackingBase}?token=${encodeURIComponent(order.trackingToken)}`, '_blank', 'noopener');
   };
   if (api.session()?.access_token) {
     const restore = () => hydrateCanonicalWorkspace().then(() => render()).catch(error => console.error('[CEFFLO vendor adapter]', error));

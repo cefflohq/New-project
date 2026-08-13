@@ -35,4 +35,12 @@ python -m http.server 4173
 
 Then open `/vendor/`, `/rider/`, and `/customer/?token=<tracking-token>` from the same origin. Runtime configuration is shared by all three apps through `shared/config.js`.
 
+Production custom-domain mapping uses one Vercel project and the hostname rewrites in `vercel.json`:
+
+- `vendor.cefflo.com` → Vendor
+- `rider.cefflo.com` → Rider
+- `track.cefflo.com/?token=<tracking-token>` → Customer Tracking
+
+Attach all three domains to the same Vercel project, then configure their DNS records exactly as Vercel reports. Vendor and Rider are installable PWAs. Their service workers cache only the static application shell; navigation is network-first and Supabase/API traffic is never cached.
+
 The retired project `hjrurccjfxtmyftibtgw` is historical evidence only and has no runtime role.

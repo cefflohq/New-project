@@ -6,7 +6,10 @@
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#867AE2" name="theme-color"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="default" name="apple-mobile-web-app-status-bar-style"/>
 <title>CEFFLO Rider — Production Auth Baseline</title>
+<link href="./manifest.webmanifest" rel="manifest"/>
+<link href="./icons/icon-192.png" rel="apple-touch-icon"/>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <link crossorigin="" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
@@ -2925,5 +2928,13 @@ setTimeout(syncProfileLanguageTrigger,0);
 <script src="../shared/config.js?v=20260814m"></script>
 <script src="../shared/client.js?v=20260814m"></script>
 <script src="./backend.js?v=20260814m"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  const customDomain = location.hostname === 'rider.cefflo.com';
+  const workerUrl = customDomain ? '/sw.js' : './sw.js';
+  const scope = customDomain ? '/' : './';
+  window.addEventListener('load', () => navigator.serviceWorker.register(workerUrl, {scope}).catch(error => console.warn('CEFFLO Rider service worker unavailable:', error)));
+}
+</script>
 </body>
 </html>

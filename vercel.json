@@ -1,0 +1,31 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/shared/:path*", "destination": "/shared/:path*" },
+    { "source": "/manifest.webmanifest", "has": [{ "type": "host", "value": "vendor.cefflo.com" }], "destination": "/vendor/manifest.webmanifest" },
+    { "source": "/sw.js", "has": [{ "type": "host", "value": "vendor.cefflo.com" }], "destination": "/vendor/sw.js" },
+    { "source": "/icons/:path*", "has": [{ "type": "host", "value": "vendor.cefflo.com" }], "destination": "/vendor/icons/:path*" },
+    { "source": "/:path*", "has": [{ "type": "host", "value": "vendor.cefflo.com" }], "destination": "/vendor/:path*" },
+    { "source": "/manifest.webmanifest", "has": [{ "type": "host", "value": "rider.cefflo.com" }], "destination": "/rider/manifest.webmanifest" },
+    { "source": "/sw.js", "has": [{ "type": "host", "value": "rider.cefflo.com" }], "destination": "/rider/sw.js" },
+    { "source": "/icons/:path*", "has": [{ "type": "host", "value": "rider.cefflo.com" }], "destination": "/rider/icons/:path*" },
+    { "source": "/:path*", "has": [{ "type": "host", "value": "rider.cefflo.com" }], "destination": "/rider/:path*" },
+    { "source": "/:path*", "has": [{ "type": "host", "value": "track.cefflo.com" }], "destination": "/customer/:path*" }
+  ],
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
+        { "key": "Service-Worker-Allowed", "value": "/" }
+      ]
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "headers": [{ "key": "Content-Type", "value": "application/manifest+json" }]
+    }
+  ]
+}

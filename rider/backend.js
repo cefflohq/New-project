@@ -18,6 +18,9 @@
   async function hydrateOrders() {
     const rows = await orders();
     appState.orders = rows.map(mapOrder);
+    const firstPending = appState.orders.findIndex(order => !order.delivered);
+    appState.currentStopIndex = firstPending === -1 ? Math.max(appState.orders.length - 1, 0) : firstPending;
+    appState.pickupIndex = firstPending === -1 ? 0 : firstPending;
     appState.activeAssignment = { ...(appState.activeAssignment || {}), zone: appState.orders.length ? 'Assigned route' : 'No active assignment' };
     localStorage.setItem('cefflo_rider_orders', JSON.stringify(rows));
     return appState.orders;
@@ -65,7 +68,8 @@
   };
   startDelivery = async function () {
     try { for (const order of appState.orders.filter(o => !o.delivered && o.backendStatus === 'picked_up')) { await transition(order.backendId, 'out_for_delivery'); order.backendStatus = 'out_for_delivery'; order.status = 'out_for_delivery'; }
-      appState.sessionStart = new Date(); appState.currentStopIndex = 0; renderRouteOverview(); showScreen('screen-route');
+      const firstPending = appState.orders.findIndex(order => !order.delivered);
+      appState.sessionStart = new Date(); appState.currentStopIndex = firstPending === -1 ? Math.max(appState.orders.length - 1, 0) : firstPending; selectedRouteStop = appState.currentStopIndex; renderRouteOverview(); showScreen('screen-route');
     } catch (error) { showToast(error.message, 'error'); }
   };
   arriveAtStop = async function () {
