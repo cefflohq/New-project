@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CEFFLO — Track Delivery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --page:#F6F7F9;
+    --card:#FFFFFF;
+    --border:#E9EBF1;
+    --ink:#1B1B26;
+    --muted:#8A8FA3;
+    --purple:#7861FF;
+    --purple-tint:#F0EDFF;
+    --green:#1EBE71;
+    --green-tint:#E7F9EF;
+    --radius-lg:16px;
+    --radius-md:12px;
+    --shadow:0 8px 22px rgba(28,31,44,.05), 0 2px 6px rgba(28,31,44,.03);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background:#EDEEF3;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .device{
+    width:100%;
+    max-width:430px;
+    min-height:100vh;
+    background:var(--page);
+    position:relative;
+    overflow-x:hidden;
+  }
+
+  /* ---------- iOS status bar ---------- */
+  .statusbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 24px 8px;
+    font-size:15px; font-weight:600; color:var(--ink);
+  }
+  .statusbar .sb-icons{display:flex; align-items:center; gap:6px;}
+  .statusbar svg{display:block;}
+
+  /* ---------- Top title ---------- */
+  .topbar{
+    text-align:center;
+    padding:6px 0 18px;
+    font-size:17px;
+    font-weight:700;
+    color:var(--ink);
+  }
+
+  .page{padding:calc(env(safe-area-inset-top, 0px) + 12px) 10px 28px;}
+
+  .card{
+    background:var(--card);
+    border:1px solid rgba(233,235,241,.72);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    margin-top:10px;
+    overflow:hidden;
+  }
+  .card-pad{padding:14px 18px;}
+
+  /* ---------- Store header ---------- */
+  .store-header{
+    display:flex; align-items:center; justify-content:center;
+    min-height:34px;
+    padding:2px 8px 8px;
+    text-align:center;
+  }
+  .store-name{
+    margin:0;
+    font-size:15px;
+    line-height:1.2;
+    font-weight:800;
+    letter-spacing:-.01em;
+    color:var(--ink);
+  }
+
+  /* ---------- Hero status card ---------- */
+  .hero-card{
+    padding:17px 20px 18px;
+    background:
+      radial-gradient(circle at 88% 10%, rgba(255,255,255,.16), transparent 38%),
+      linear-gradient(135deg,#8C7AFF 0%,#7861FF 52%,#6E56EE 100%);
+    border-color:transparent;
+    box-shadow:0 12px 28px rgba(120,97,255,.15), 0 3px 8px rgba(28,31,44,.04);
+  }
+  .live-badge{
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(255,255,255,.22);
+    color:#fff;
+    font-size:12px; font-weight:700;
+    padding:6px 12px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.18);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    letter-spacing:.2px;
+  }
+  .live-dot{width:7px; height:7px; border-radius:50%; background:#21C873; box-shadow:0 0 0 0 rgba(33,200,115,.55); animation:liveBlink 1.25s infinite;}
+  @keyframes liveBlink{0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(33,200,115,.52);} 50%{opacity:.7; box-shadow:0 0 0 6px rgba(33,200,115,0);}}
+
+  .hero-main{margin-top:12px;}
+  .hero-status-row{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+  }
+  .hero-status-copy{min-width:0;}
+  .scooter-track{
+    position:relative; flex:0 0 124px; height:38px; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .scooter-track::before{
+    content:""; position:absolute; left:0; right:0; top:22px;
+    border-top:2px dashed rgba(255,255,255,.34);
+  }
+  .scooter{
+    position:absolute; top:7px; left:2px; width:38px; height:27px;
+    color:#fff; filter:drop-shadow(0 3px 5px rgba(54,38,145,.22));
+    animation:scooterRide 8s cubic-bezier(.45,0,.55,1) infinite;
+  }
+  .scooter svg{display:block; width:100%; height:100%;}
+  @keyframes scooterRide{
+    0%{transform:translateX(0) translateY(0);}
+    45%{transform:translateX(82px) translateY(-1px);}
+    50%{transform:translateX(86px) translateY(0);}
+    95%{transform:translateX(4px) translateY(-1px);}
+    100%{transform:translateX(0) translateY(0);}
+  }
+  @media (prefers-reduced-motion:reduce){.scooter,.live-dot{animation:none;}}
+  .hero-metrics{
+    display:grid;
+    grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);
+    gap:16px;
+    align-items:end;
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px solid rgba(255,255,255,.20);
+  }
+  .hero-metric{min-width:0;}
+  .hero-metric + .hero-metric{
+    padding-left:16px;
+    border-left:1px solid rgba(255,255,255,.20);
+  }
+
+  .hero-kicker{
+    margin:0 0 2px;
+    font-size:14px;
+    font-weight:600;
+    color:rgba(255,255,255,.76);
+  }
+  .hero-status{
+    margin:0;
+    font-size:27px;
+    font-weight:800;
+    letter-spacing:-.02em;
+    color:#fff;
+  }
+  .hero-eta{
+    margin:0;
+    font-size:36px;
+    font-weight:800;
+    letter-spacing:-.025em;
+    color:#fff;
+  }
+  .hero-arrival-label{
+    margin:0 0 2px;
+    font-size:14px;
+    font-weight:600;
+    color:rgba(255,255,255,.76);
+  }
+  .hero-arrival-time{
+    margin:0;
+    font-size:20px;
+    font-weight:800;
+    color:#fff;
+  }
+
+  /* ---------- Map card ---------- */
+  .map-wrap{position:relative; height:220px;}
+  .map-canvas{
+    width:100%; height:100%;
+    background:
+      linear-gradient(0deg, rgba(0,0,0,.035) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, rgba(0,0,0,.035) 1px, transparent 1px) 0 0/34px 100%,
+      #EEF0F5;
+  }
+  .map-green{position:absolute; background:#DCEFDD; border-radius:6px;}
+  .map-labels{
+    position:absolute; font-size:11px; font-weight:500; color:#B7BCC9;
+    transform-origin:left top;
+  }
+  .map-route{position:absolute; inset:0;}
+  .nav-btn{
+    position:absolute; top:14px; right:14px;
+    width:34px; height:34px; border-radius:10px;
+    background:var(--card);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:var(--shadow);
+  }
+  .rider-marker{
+    position:absolute; width:52px; height:52px; border-radius:50%;
+    background:rgba(120,97,255,.16);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .rider-marker-core{
+    width:34px; height:34px; border-radius:50%;
+    background:var(--purple);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 12px rgba(120,97,255,.45);
+  }
+  .rider-marker-core svg{width:18px; height:18px;}
+  .dest-pin{position:absolute; width:24px; height:31px;}
+  .dest-label{
+    position:absolute;
+    font-size:12.5px; font-weight:600; color:var(--purple);
+    line-height:1.35;
+  }
+  .dest-label b{display:block; color:var(--ink); font-weight:700;}
+
+  /* ---------- Delivery progress ---------- */
+  .section-label{font-size:15px; font-weight:800; color:var(--ink); margin:0 0 10px;}
+  .progress-row{display:flex; align-items:flex-start;}
+  .progress-step{flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; position:relative;}
+  .progress-node{
+    width:32px; height:32px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--border); color:var(--muted);
+    z-index:2; position:relative;
+  }
+  .progress-node svg{width:16px; height:16px;}
+  .progress-step.done .progress-node{background:#22C55E; color:#fff;}
+  .progress-step.active .progress-node{background:var(--green); color:#fff;}
+  .progress-line{
+    position:absolute; top:16px; left:calc(-50% + 16px); width:calc(100% - 32px);
+    height:2px; background:var(--border); z-index:1;
+  }
+  .progress-step:first-child .progress-line{display:none;}
+  .progress-step.done .progress-line{background:#22C55E;}
+  .progress-step.active .progress-line{background:var(--green);}
+  .progress-label{font-size:12.5px; font-weight:600; color:var(--ink); margin-top:8px;}
+  .progress-step:not(.done):not(.active) .progress-label{color:var(--muted); font-weight:500;}
+  .progress-step.active .progress-label{color:var(--green);}
+  .progress-time{font-size:11px; color:var(--muted); margin-top:2px;}
+  .progress-step.active .progress-time{color:var(--green);}
+
+  /* ---------- Order summary ---------- */
+  .summary-title{font-size:15px; font-weight:700; margin:0 0 14px;}
+  .summary-row{display:flex; align-items:flex-start; gap:12px; padding:6px 0;}
+  .summary-icon{
+    width:26px; height:38px;
+    border-radius:0;
+    background:transparent;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .summary-icon svg{width:20px; height:20px; stroke:#7469C8; stroke-width:1.8;}
+  .summary-copy{min-width:0;}
+  .summary-label{font-size:12px; font-weight:500; color:var(--muted); margin:0 0 3px;}
+  .summary-value{font-size:15px; font-weight:700; color:var(--ink); margin:0; line-height:1.4;}
+  .summary-divider{height:1px; background:var(--border); margin:14px 0;}
+
+
+  /* ---------- Tracking state + POD ---------- */
+  [hidden]{display:none !important;}
+  .hero-delivered-copy{
+    display:none;
+    margin-top:12px;
+  }
+  .hero-delivered-copy .delivered-title{
+    margin:0;
+    font-size:28px;
+    font-weight:800;
+    letter-spacing:-.02em;
+    color:#fff;
+  }
+  .hero-delivered-copy .delivered-success{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    margin:7px 0 0;
+    font-size:14px;
+    font-weight:700;
+    color:rgba(255,255,255,.92);
+  }
+  .hero-delivered-copy .delivered-success svg{
+    width:17px;
+    height:17px;
+    flex:0 0 auto;
+  }
+  .hero-delivered-meta{
+    display:none;
+    grid-template-columns:1fr;
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px solid rgba(255,255,255,.20);
+  }
+  .hero-delivered-label{
+    margin:0 0 2px;
+    font-size:14px;
+    font-weight:600;
+    color:rgba(255,255,255,.76);
+  }
+  .hero-delivered-time{
+    margin:0;
+    font-size:22px;
+    font-weight:800;
+    color:#fff;
+  }
+  .pod-card{padding:14px 18px 16px;}
+  .pod-title{font-size:15px; font-weight:800; margin:0 0 12px;}
+  .pod-photo-button{
+    display:block;
+    width:100%;
+    padding:0;
+    border:0;
+    border-radius:12px;
+    overflow:hidden;
+    background:#EDEFF3;
+    cursor:pointer;
+    position:relative;
+  }
+  .pod-photo-button img{
+    display:block;
+    width:100%;
+    aspect-ratio:16/10;
+    object-fit:cover;
+  }
+  .pod-photo-overlay{
+    position:absolute;
+    right:10px;
+    bottom:10px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:7px 10px;
+    border-radius:999px;
+    background:rgba(27,27,38,.72);
+    color:#fff;
+    font-size:11px;
+    font-weight:700;
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+  }
+  .pod-photo-overlay svg{width:13px; height:13px;}
+  .pod-meta{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-top:12px;
+  }
+  .pod-status{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    min-width:0;
+  }
+  .pod-status-icon{
+    width:25px;
+    height:25px;
+    border-radius:50%;
+    background:var(--green-tint);
+    color:#16A85D;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+  }
+  .pod-status-icon svg{width:14px; height:14px;}
+  .pod-status-copy strong{
+    display:block;
+    font-size:13px;
+    line-height:1.25;
+    color:var(--ink);
+  }
+  .pod-status-copy span{
+    display:block;
+    margin-top:2px;
+    font-size:11.5px;
+    color:var(--muted);
+  }
+  .pod-rider{
+    text-align:right;
+    flex:0 0 auto;
+  }
+  .pod-rider span{
+    display:block;
+    font-size:11px;
+    color:var(--muted);
+  }
+  .pod-rider strong{
+    display:block;
+    margin-top:2px;
+    font-size:12.5px;
+    color:var(--ink);
+  }
+
+  /* ---------- Rider rating: visible only after successful delivery ---------- */
+  .rating-card{padding:16px 18px 18px;}
+  .rating-title{margin:0;text-align:center;font-size:16px;font-weight:800;color:var(--ink);}
+  .rating-subtitle{margin:5px 0 14px;text-align:center;font-size:12.5px;font-weight:500;color:var(--muted);}
+  .rating-stars{display:flex;justify-content:center;gap:8px;margin:0 auto 14px;}
+  .rating-star{width:40px;height:40px;padding:0;border:0;background:transparent;color:#D7DAE2;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .16s ease,color .16s ease;}
+  .rating-star svg{width:30px;height:30px;fill:currentColor;stroke:currentColor;}
+  .rating-star:hover,.rating-star:focus-visible{transform:scale(1.06);outline:none;}
+  .rating-star.is-selected{color:#F5B942;}
+  .rating-tags{display:none;flex-wrap:wrap;justify-content:center;gap:8px;margin:0 0 14px;}
+  .rating-tags.is-visible{display:flex;}
+  .rating-tag{border:1px solid rgba(123,129,144,.18);background:#F7F8FA;color:#6F7482;border-radius:999px;padding:8px 11px;font:600 11.5px/1 'Inter',sans-serif;cursor:pointer;transition:.16s ease;}
+  .rating-tag.is-selected{border-color:rgba(120,97,255,.24);background:rgba(120,97,255,.09);color:#6853E8;}
+  .rating-submit{display:none;width:100%;border:0;border-radius:12px;background:#7861FF;color:#fff;padding:12px 16px;font:800 13px/1 'Inter',sans-serif;cursor:pointer;}
+  .rating-submit.is-visible{display:block;}
+  .rating-thanks{display:none;text-align:center;padding:4px 0 2px;}
+  .rating-thanks.is-visible{display:block;}
+  .rating-thanks-icon{width:38px;height:38px;margin:0 auto 9px;border-radius:50%;background:var(--green-tint);color:#16A85D;display:flex;align-items:center;justify-content:center;}
+  .rating-thanks-icon svg{width:20px;height:20px;}
+  .rating-thanks strong{display:block;font-size:14px;color:var(--ink);}
+  .rating-thanks span{display:block;margin-top:4px;font-size:12px;color:var(--muted);}
+
+  .pod-modal{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:rgba(14,14,20,.78);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+  }
+  .pod-modal.is-open{display:flex;}
+  .pod-modal-dialog{
+    width:min(100%,430px);
+    position:relative;
+  }
+  .pod-modal img{
+    display:block;
+    width:100%;
+    max-height:78vh;
+    object-fit:contain;
+    border-radius:16px;
+    background:#fff;
+  }
+  .pod-modal-close{
+    position:absolute;
+    top:10px;
+    right:10px;
+    width:38px;
+    height:38px;
+    border:0;
+    border-radius:50%;
+    background:rgba(27,27,38,.72);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+  }
+  .pod-modal-close svg{width:18px; height:18px;}
+  body.modal-open{overflow:hidden;}
+
+  .device[data-status="picked_up"] .live-badge,
+  .device[data-status="picked_up"] .scooter-track{display:none;}
+  .device[data-status="picked_up"] .hero-status-row{justify-content:flex-start;}
+  .device[data-status="picked_up"] .hero-metrics{display:none;}
+
+  .device[data-status="delivered"] .live-badge,
+  .device[data-status="delivered"] .hero-main,
+  .device[data-status="delivered"] .hero-metrics{display:none;}
+  .device[data-status="delivered"] .hero-delivered-copy{display:block;}
+  .device[data-status="delivered"] .hero-delivered-meta{display:grid;}
+  .device[data-status="delivered"] .scooter{animation:none;}
+
+  /* ---------- Need help ---------- */
+  .help-section{
+    margin:32px 0 28px;
+    text-align:center;
+  }
+  .help-label{
+    margin:0 0 20px;
+    font-size:17px;
+    font-weight:600;
+    color:var(--ink);
+    text-align:center;
+  }
+  .help-actions{
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    gap:58px;
+  }
+  .help-action{
+    width:72px;
+    min-height:72px;
+    padding:4px 0;
+    border:0;
+    background:transparent;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    gap:8px;
+    font:inherit;
+    cursor:pointer;
+    color:#7B8190;
+    transition:transform .18s ease, color .18s ease;
+  }
+  .help-action:active{transform:scale(1.02);}
+  .help-action:focus-visible{
+    outline:2px solid rgba(37,211,102,.35);
+    outline-offset:4px;
+    border-radius:10px;
+  }
+  .wa-outline{
+    width:28px;
+    height:28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#25D366;
+  }
+  .wa-outline svg{
+    width:28px;
+    height:28px;
+    display:block;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:1.8;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  .help-role{
+    font-size:15px;
+    font-weight:500;
+    line-height:1.2;
+    color:#7B8190;
+  }
+  .help-action:active .wa-outline svg{
+    fill:rgba(37,211,102,.12);
+  }
+
+  /* ---------- Footer ---------- */
+  footer.powered{
+    text-align:center; padding:26px 0 4px;
+  }
+  .track-url{
+    display:flex; align-items:center; justify-content:center; gap:5px;
+    font-size:12.5px; color:var(--muted); font-weight:500; margin-bottom:8px;
+  }
+  .powered-line{font-size:12.5px; color:var(--muted); font-weight:500;}
+  .powered-line b{color:var(--purple); font-weight:800; letter-spacing:.2px;}
+
+  /* Compact first-view composition */
+  .page > .card:first-child{margin-top:0;}
+  @media (max-height:760px){
+    .page{padding-top:calc(env(safe-area-inset-top, 0px) + 8px); padding-left:8px; padding-right:8px;}
+    .hero-card{padding:15px 18px 15px;}
+    .hero-status{font-size:24px;}
+    .scooter-track{flex-basis:104px;}
+    .hero-eta{font-size:32px;}
+    .map-wrap{height:196px;}
+    .card{margin-top:8px;}
+    .card-pad{padding:13px 16px;}
+    .section-label{margin-bottom:8px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="device" id="trackingApp" data-status="on_the_way">
+
+  <div class="page">
+
+    <!-- Store header -->
+    <header class="store-header" aria-label="Store name">
+      <p class="store-name" id="storeName">Dapur Kak Lina</p>
+    </header>
+
+    <!-- Hero status card -->
+    <section class="card hero-card">
+      <span class="live-badge" id="liveBadge"><span class="live-dot"></span>LIVE</span>
+      <div class="hero-main">
+        <div class="hero-status-row">
+          <div class="hero-status-copy">
+            <p class="hero-kicker">Your order is</p>
+            <h1 class="hero-status" id="heroStatus">On the way</h1>
+          </div>
+          <div class="scooter-track" aria-hidden="true">
+            <span class="scooter">
+              <svg viewBox="0 0 64 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="17" cy="31" r="6" fill="rgba(255,255,255,.22)"/>
+                <circle cx="17" cy="31" r="3.4" fill="currentColor"/>
+                <circle cx="49" cy="31" r="6" fill="rgba(255,255,255,.22)"/>
+                <circle cx="49" cy="31" r="3.4" fill="currentColor"/>
+                <path d="M20.5 30.5h17.2c5.6 0 9.8-3.4 11.1-8.5l1-4.1h5.1c1.2 0 2.1-1 2.1-2.1s-1-2.1-2.1-2.1h-7.8c-1.1 0-2 .7-2.3 1.8l-1.5 5.5H32.7l-4.4-9.4c-.4-.9-1.3-1.5-2.3-1.5h-8.7c-1.3 0-2.4 1.1-2.4 2.4s1.1 2.4 2.4 2.4h6.1l2.1 4.5h-5c-3.7 0-6.7 3-6.7 6.7v1.8c0 1.4 1.1 2.6 2.6 2.6h4.1z" fill="currentColor"/>
+                <path d="M34.2 10.4h8.1c1.4 0 2.6 1.2 2.6 2.6v3.1H31.6l.7-3.9c.2-1 1-1.8 1.9-1.8z" fill="rgba(255,255,255,.82)"/>
+                <path d="M48.5 10.4h5.4" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <path d="M23.9 9.2h5.8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="38.5" cy="6.5" r="4.4" fill="currentColor"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-metrics">
+        <div class="hero-metric">
+          <div class="hero-eta" id="heroEta">18 mins</div>
+        </div>
+        <div class="hero-metric">
+          <p class="hero-arrival-label">Estimated arrival</p>
+          <p class="hero-arrival-time" id="heroArrivalTime">10:20 AM</p>
+        </div>
+      </div>
+      <div class="hero-delivered-copy" id="heroDeliveredCopy" aria-live="polite">
+        <h1 class="delivered-title">Delivered</h1>
+        <p class="delivered-success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.6 2.6L16.5 9"/></svg>
+          Successfully Delivered
+        </p>
+      </div>
+      <div class="hero-delivered-meta" id="heroDeliveredMeta">
+        <div>
+          <p class="hero-delivered-label">Delivered at</p>
+          <p class="hero-delivered-time" id="heroDeliveredTime">10:26 AM</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Map card -->
+    <div class="card">
+      <div class="map-wrap">
+        <div class="map-canvas"></div>
+        <div class="map-green" style="left:8%; top:8%; width:34%; height:22%;"></div>
+        <span class="map-labels" style="left:10%; top:15%; transform:rotate(-18deg);">Taman Rimba</span>
+        <span class="map-labels" style="left:6%; top:42%; transform:rotate(-30deg);">Jalan Banggai</span>
+        <span class="map-labels" style="left:2%; top:30%; transform:rotate(-70deg);">Jalan Maarof</span>
+        <span class="map-labels" style="left:52%; top:63%; transform:rotate(-65deg);">Jalan Telawi</span>
+
+        <svg class="map-route" viewBox="0 0 400 300" fill="none" preserveAspectRatio="none">
+          <path d="M75 210 L75 165 L215 165 L215 118 L300 118 L300 65"
+                stroke="#7861FF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+
+        <div class="nav-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B1B26" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>
+        </div>
+
+        <div class="rider-marker" style="left:44px; top:178px; transform:translate(-50%,-50%);">
+          <div class="rider-marker-core">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 100 8 4 4 0 000-8z"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+          </div>
+        </div>
+
+        <svg class="dest-pin" style="left:288px; top:48px;" viewBox="0 0 24 30" fill="none">
+          <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 18 12 18s12-9 12-18c0-6.6-5.4-12-12-12z" fill="#7861FF"/>
+          <circle cx="12" cy="12" r="4.5" fill="#fff"/>
+        </svg>
+        <div class="dest-label" style="left:222px; top:78px;">Delivering to<b>Your Location</b></div>
+      </div>
+    </div>
+
+    <!-- Delivery progress -->
+    <div class="card card-pad">
+      <p class="section-label">Delivery Progress</p>
+      <div class="progress-row">
+        <div class="progress-step done" data-step="picked_up">
+          <div class="progress-line"></div>
+          <div class="progress-node"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+          <div class="progress-label">Picked Up</div>
+          <div class="progress-time">9:45 AM</div>
+        </div>
+        <div class="progress-step active" data-step="on_the_way">
+          <div class="progress-line"></div>
+          <div class="progress-node"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17h5l2-5h3l2 5"/><path d="M9 10h4l2 2"/><path d="M16 8h3"/></svg></div>
+          <div class="progress-label">On The Way</div>
+          <div class="progress-time">9:57 AM</div>
+        </div>
+        <div class="progress-step" data-step="delivered">
+          <div class="progress-line"></div>
+          <div class="progress-node" id="deliveredProgressNode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg></div>
+          <div class="progress-label">Delivered</div>
+          <div class="progress-time">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order summary -->
+    <div class="card card-pad">
+      <p class="summary-title">Order Summary</p>
+      <div class="summary-row">
+        <div class="summary-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12v16H6z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
+        </div>
+        <div class="summary-copy">
+          <p class="summary-label">Order ID</p>
+          <p class="summary-value" id="orderId">CF-0001</p>
+        </div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-row">
+        <div class="summary-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11z"/><circle cx="12" cy="10" r="2"/></svg>
+        </div>
+        <div class="summary-copy">
+          <p class="summary-label">Delivering To</p>
+          <p class="summary-value">123, Jalan Telawi 3, 59100<br>Kuala Lumpur</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Proof of Delivery: visible only after successful delivery -->
+    <section class="card pod-card" id="podSection" hidden aria-labelledby="pod-title">
+      <p class="pod-title" id="pod-title">Proof of Delivery</p>
+      <button class="pod-photo-button" id="podPreviewButton" type="button" aria-label="View proof of delivery photo">
+        <img id="podPhoto" alt="Proof of delivery photo showing the order safely placed at the customer location">
+        <span class="pod-photo-overlay">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="m21 3-7 7"/><path d="M9 21H3v-6"/><path d="m3 21 7-7"/></svg>
+          View Photo
+        </span>
+      </button>
+      <div class="pod-meta">
+        <div class="pod-status">
+          <span class="pod-status-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg>
+          </span>
+          <span class="pod-status-copy">
+            <strong>Delivered Successfully</strong>
+            <span id="podDeliveredTime">Today, 10:26 AM</span>
+          </span>
+        </div>
+        <div class="pod-rider">
+          <span>Delivered by</span>
+          <strong id="podRiderName">Hakim</strong>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- Rider rating: visible only after successful delivery -->
+    <section class="card rating-card" id="ratingSection" hidden aria-labelledby="rating-title">
+      <div id="ratingForm">
+        <p class="rating-title" id="rating-title">How was your delivery?</p>
+        <p class="rating-subtitle">Rate your experience with <span id="ratingRiderName">your rider</span></p>
+        <div class="rating-stars" id="ratingStars" role="radiogroup" aria-label="Rate this delivery from 1 to 5 stars">
+          <button class="rating-star" type="button" data-rating="1" role="radio" aria-checked="false" aria-label="1 star"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2-5.6-2.9L6.4 20l1.1-6.2-4.6-4.4 6.3-.9L12 2.8Z"/></svg></button>
+          <button class="rating-star" type="button" data-rating="2" role="radio" aria-checked="false" aria-label="2 stars"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2-5.6-2.9L6.4 20l1.1-6.2-4.6-4.4 6.3-.9L12 2.8Z"/></svg></button>
+          <button class="rating-star" type="button" data-rating="3" role="radio" aria-checked="false" aria-label="3 stars"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2-5.6-2.9L6.4 20l1.1-6.2-4.6-4.4 6.3-.9L12 2.8Z"/></svg></button>
+          <button class="rating-star" type="button" data-rating="4" role="radio" aria-checked="false" aria-label="4 stars"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2-5.6-2.9L6.4 20l1.1-6.2-4.6-4.4 6.3-.9L12 2.8Z"/></svg></button>
+          <button class="rating-star" type="button" data-rating="5" role="radio" aria-checked="false" aria-label="5 stars"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2-5.6-2.9L6.4 20l1.1-6.2-4.6-4.4 6.3-.9L12 2.8Z"/></svg></button>
+        </div>
+        <div class="rating-tags" id="ratingTags" aria-label="Optional delivery feedback"></div>
+        <button class="rating-submit" id="ratingSubmit" type="button">Submit Rating</button>
+      </div>
+      <div class="rating-thanks" id="ratingThanks" aria-live="polite">
+        <span class="rating-thanks-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
+        <strong>Thank you for your feedback</strong>
+        <span id="ratingThanksCopy">Your rating has been submitted.</span>
+      </div>
+    </section>
+
+    <!-- Need help -->
+    <section class="help-section" aria-labelledby="need-help-title">
+      <p class="help-label" id="need-help-title">Need Help?</p>
+      <div class="help-actions" aria-label="Quick WhatsApp contacts">
+        <button class="help-action" type="button" data-contact="vendor" aria-label="WhatsApp vendor">
+          <span class="wa-outline" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M20.5 11.8a8.5 8.5 0 0 1-12.6 7.5L3.5 20.5l1.2-4.2A8.5 8.5 0 1 1 20.5 11.8Z"/>
+              <path d="M8.2 8.1c.2-.4.4-.4.7-.4h.4c.2 0 .4.1.5.4l.8 1.9c.1.3.1.5-.1.7l-.6.8c-.2.2-.2.4 0 .7.8 1.4 1.9 2.4 3.3 3 .3.1.5.1.7-.1l.9-1.1c.2-.2.4-.3.7-.2l1.8.8c.3.1.5.3.5.6 0 .5-.2 1.6-1.1 2.1-.7.4-1.6.5-2.6.2-1.4-.4-3.2-1.3-4.8-2.8-1.4-1.3-2.4-2.9-2.8-4.2-.3-1-.2-1.8.2-2.4Z"/>
+            </svg>
+          </span>
+          <span class="help-role">Vendor</span>
+        </button>
+        <button class="help-action" type="button" data-contact="rider" aria-label="WhatsApp rider">
+          <span class="wa-outline" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M20.5 11.8a8.5 8.5 0 0 1-12.6 7.5L3.5 20.5l1.2-4.2A8.5 8.5 0 1 1 20.5 11.8Z"/>
+              <path d="M8.2 8.1c.2-.4.4-.4.7-.4h.4c.2 0 .4.1.5.4l.8 1.9c.1.3.1.5-.1.7l-.6.8c-.2.2-.2.4 0 .7.8 1.4 1.9 2.4 3.3 3 .3.1.5.1.7-.1l.9-1.1c.2-.2.4-.3.7-.2l1.8.8c.3.1.5.3.5.6 0 .5-.2 1.6-1.1 2.1-.7.4-1.6.5-2.6.2-1.4-.4-3.2-1.3-4.8-2.8-1.4-1.3-2.4-2.9-2.8-4.2-.3-1-.2-1.8.2-2.4Z"/>
+            </svg>
+          </span>
+          <span class="help-role">Rider</span>
+        </button>
+      </div>
+    </section>
+
+    <footer class="powered">
+      <div class="track-url">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+        track.cefflo.com
+      </div>
+      <div class="powered-line">Powered by <b>CEFFLO</b></div>
+    </footer>
+
+  </div>
+</div>
+
+<div class="pod-modal" id="podModal" role="dialog" aria-modal="true" aria-label="Proof of delivery photo preview" aria-hidden="true">
+  <div class="pod-modal-dialog">
+    <img id="podModalImage" alt="Expanded proof of delivery photo">
+    <button class="pod-modal-close" id="podModalClose" type="button" aria-label="Close photo preview">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  const SUPPORT = Object.freeze({
+    vendorWhatsapp: '60123456789',
+    riderWhatsapp: '60198765432'
+  });
+
+  const TRACKING_STATUS = Object.freeze({
+    PICKED_UP: 'picked_up',
+    ON_THE_WAY: 'on_the_way',
+    DELIVERED: 'delivered'
+  });
+
+  const TRACKING_DATA = {
+    orderId: 'CF-0001',
+    customerName: 'Aisyah',
+    storeName: 'Dapur Kak Lina',
+    etaMinutes: 18,
+    estimatedArrival: '10:20 AM',
+    pickedUpAt: '9:45 AM',
+    onTheWayAt: '9:57 AM',
+    deliveredAt: '10:26 AM',
+    deliveredDateLabel: 'Today',
+    riderName: 'Hakim',
+    status: TRACKING_STATUS.ON_THE_WAY,
+    podPhoto: null
+  };
+
+  const CONTACT_COPY = Object.freeze({
+    vendor: `Hi, I need help with order ${TRACKING_DATA.orderId}.`,
+    rider: `Hi, I need help with the delivery for order ${TRACKING_DATA.orderId}.`
+  });
+
+  // Embedded demo POD photo. Replace with the signed/live POD URL from the delivery payload.
+  const DEFAULT_POD_PHOTO = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750">
+      <defs>
+        <linearGradient id="wall" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e8e4df"/><stop offset="1" stop-color="#cfc9c1"/></linearGradient>
+        <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#b5aea4"/><stop offset="1" stop-color="#8e877e"/></linearGradient>
+        <linearGradient id="bag" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#e8e8eb"/></linearGradient>
+        <filter id="shadow"><feDropShadow dx="0" dy="16" stdDeviation="18" flood-opacity=".22"/></filter>
+      </defs>
+      <rect width="1200" height="750" fill="url(#wall)"/>
+      <rect y="520" width="1200" height="230" fill="url(#floor)"/>
+      <rect x="90" y="70" width="420" height="520" rx="8" fill="#6f6257"/>
+      <rect x="125" y="105" width="350" height="450" rx="4" fill="#8d7d6f"/>
+      <circle cx="430" cy="335" r="13" fill="#d9c69f"/>
+      <rect x="720" y="165" width="315" height="315" rx="20" fill="#d8d2cb"/>
+      <path d="M805 520h185l-24 124H829z" fill="#816c58" filter="url(#shadow)"/>
+      <path d="M790 365h225l-14 220H804z" fill="url(#bag)" stroke="#d4d4d8" stroke-width="5" filter="url(#shadow)"/>
+      <path d="M845 365c0-58 28-92 58-92s58 34 58 92" fill="none" stroke="#7861FF" stroke-width="14" stroke-linecap="round"/>
+      <rect x="838" y="430" width="130" height="72" rx="14" fill="#7861FF"/>
+      <text x="903" y="475" text-anchor="middle" font-family="Arial,sans-serif" font-size="32" font-weight="700" fill="white">CEFFLO</text>
+      <rect x="0" y="0" width="1200" height="750" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="18"/>
+    </svg>
+  `)}`;
+
+  const app = document.getElementById('trackingApp');
+  const storeName = document.getElementById('storeName');
+  const orderId = document.getElementById('orderId');
+  const deliveredProgressNode = document.getElementById('deliveredProgressNode');
+  const heroStatus = document.getElementById('heroStatus');
+  const heroEta = document.getElementById('heroEta');
+  const heroArrivalTime = document.getElementById('heroArrivalTime');
+  const heroDeliveredTime = document.getElementById('heroDeliveredTime');
+  const podSection = document.getElementById('podSection');
+  const podPhoto = document.getElementById('podPhoto');
+  const podDeliveredTime = document.getElementById('podDeliveredTime');
+  const podRiderName = document.getElementById('podRiderName');
+  const podPreviewButton = document.getElementById('podPreviewButton');
+  const podModal = document.getElementById('podModal');
+  const podModalImage = document.getElementById('podModalImage');
+  const podModalClose = document.getElementById('podModalClose');
+  const ratingSection = document.getElementById('ratingSection');
+  const ratingForm = document.getElementById('ratingForm');
+  const ratingStars = [...document.querySelectorAll('[data-rating]')];
+  const ratingTags = document.getElementById('ratingTags');
+  const ratingSubmit = document.getElementById('ratingSubmit');
+  const ratingThanks = document.getElementById('ratingThanks');
+  const ratingThanksCopy = document.getElementById('ratingThanksCopy');
+  const ratingRiderName = document.getElementById('ratingRiderName');
+  let selectedRating = 0;
+  let selectedFeedback = [];
+  const progressSteps = [...document.querySelectorAll('[data-step]')];
+
+  const DELIVERED_ICONS = Object.freeze({
+    pending: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg>',
+    complete: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>'
+  });
+
+  function syncDynamicOrderData() {
+    storeName.textContent = TRACKING_DATA.storeName;
+    orderId.textContent = TRACKING_DATA.orderId;
+  }
+
+  function setProgress(status) {
+    const sequence = [TRACKING_STATUS.PICKED_UP, TRACKING_STATUS.ON_THE_WAY, TRACKING_STATUS.DELIVERED];
+    const activeIndex = sequence.indexOf(status);
+
+    deliveredProgressNode.innerHTML = status === TRACKING_STATUS.DELIVERED
+      ? DELIVERED_ICONS.complete
+      : DELIVERED_ICONS.pending;
+
+    progressSteps.forEach((step, index) => {
+      step.classList.remove('done', 'active');
+      if (status === TRACKING_STATUS.DELIVERED || index < activeIndex) {
+        step.classList.add('done');
+      } else if (index === activeIndex) {
+        step.classList.add('active');
+      }
+
+      const time = step.querySelector('.progress-time');
+      if (step.dataset.step === TRACKING_STATUS.PICKED_UP) time.textContent = TRACKING_DATA.pickedUpAt;
+      if (step.dataset.step === TRACKING_STATUS.ON_THE_WAY) time.textContent = TRACKING_DATA.onTheWayAt;
+      if (step.dataset.step === TRACKING_STATUS.DELIVERED) time.textContent = status === TRACKING_STATUS.DELIVERED ? TRACKING_DATA.deliveredAt : '—';
+    });
+  }
+
+  function renderTracking(status) {
+    if (!Object.values(TRACKING_STATUS).includes(status)) status = TRACKING_STATUS.ON_THE_WAY;
+    TRACKING_DATA.status = status;
+    app.dataset.status = status;
+    syncDynamicOrderData();
+
+    heroEta.textContent = `${TRACKING_DATA.etaMinutes} mins`;
+    heroArrivalTime.textContent = TRACKING_DATA.estimatedArrival;
+    heroDeliveredTime.textContent = TRACKING_DATA.deliveredAt;
+
+    if (status === TRACKING_STATUS.PICKED_UP) {
+      heroStatus.textContent = 'Picked Up';
+    } else if (status === TRACKING_STATUS.ON_THE_WAY) {
+      heroStatus.textContent = 'On the way';
+    }
+
+    setProgress(status);
+
+    const isDelivered = status === TRACKING_STATUS.DELIVERED;
+    podSection.hidden = !isDelivered;
+    ratingSection.hidden = !isDelivered;
+    if (isDelivered) {
+      const photo = TRACKING_DATA.podPhoto || DEFAULT_POD_PHOTO;
+      podPhoto.src = photo;
+      podModalImage.src = photo;
+      podDeliveredTime.textContent = `${TRACKING_DATA.deliveredDateLabel}, ${TRACKING_DATA.deliveredAt}`;
+      podRiderName.textContent = TRACKING_DATA.riderName;
+      ratingRiderName.textContent = TRACKING_DATA.riderName;
+      restoreRating();
+    }
+  }
+
+  function openPodModal() {
+    podModal.classList.add('is-open');
+    podModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    podModalClose.focus();
+  }
+
+  function closePodModal() {
+    podModal.classList.remove('is-open');
+    podModal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    podPreviewButton.focus();
+  }
+
+  podPreviewButton.addEventListener('click', openPodModal);
+  podModalClose.addEventListener('click', closePodModal);
+  podModal.addEventListener('click', (event) => {
+    if (event.target === podModal) closePodModal();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && podModal.classList.contains('is-open')) closePodModal();
+  });
+
+  document.querySelectorAll('[data-contact]').forEach((action) => {
+    action.addEventListener('click', () => {
+      const role = action.dataset.contact;
+      const number = role === 'vendor' ? SUPPORT.vendorWhatsapp : SUPPORT.riderWhatsapp;
+      const message = CONTACT_COPY[role] || '';
+      window.open(`https://wa.me/${number}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+    });
+  });
+
+
+  const RATING_TAGS = Object.freeze({
+    positive: ['Fast delivery', 'Friendly rider', 'Food handled carefully', 'Easy handover'],
+    negative: ['Late delivery', 'Packaging issue', 'Rider communication', 'Wrong drop-off', 'Other']
+  });
+
+  function ratingStorageKey() { return `cefflo-rating-${TRACKING_DATA.orderId}`; }
+
+  function paintStars(value) {
+    ratingStars.forEach((star) => {
+      const active = Number(star.dataset.rating) <= value;
+      star.classList.toggle('is-selected', active);
+      star.setAttribute('aria-checked', Number(star.dataset.rating) === value ? 'true' : 'false');
+    });
+  }
+
+  function renderRatingTags(value) {
+    const tags = value >= 4 ? RATING_TAGS.positive : RATING_TAGS.negative;
+    selectedFeedback = [];
+    ratingTags.innerHTML = tags.map((tag) => `<button class="rating-tag" type="button" data-feedback="${tag}">${tag}</button>`).join('');
+    ratingTags.classList.add('is-visible');
+    ratingSubmit.classList.add('is-visible');
+  }
+
+  function restoreRating() {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(ratingStorageKey())); } catch (_) {}
+    if (!saved) {
+      ratingForm.hidden = false;
+      ratingThanks.classList.remove('is-visible');
+      return;
+    }
+    selectedRating = Number(saved.rating) || 0;
+    paintStars(selectedRating);
+    ratingForm.hidden = true;
+    ratingThanks.classList.add('is-visible');
+    ratingThanksCopy.textContent = `You rated this delivery ${selectedRating} out of 5.`;
+  }
+
+  ratingStars.forEach((star) => {
+    star.addEventListener('click', () => {
+      selectedRating = Number(star.dataset.rating);
+      paintStars(selectedRating);
+      renderRatingTags(selectedRating);
+    });
+  });
+
+  ratingTags.addEventListener('click', (event) => {
+    const tag = event.target.closest('[data-feedback]');
+    if (!tag) return;
+    tag.classList.toggle('is-selected');
+    const value = tag.dataset.feedback;
+    selectedFeedback = tag.classList.contains('is-selected')
+      ? [...selectedFeedback, value]
+      : selectedFeedback.filter((item) => item !== value);
+  });
+
+  ratingSubmit.addEventListener('click', () => {
+    if (!selectedRating) return;
+    const payload = {
+      orderId: TRACKING_DATA.orderId,
+      riderName: TRACKING_DATA.riderName,
+      rating: selectedRating,
+      feedback: selectedFeedback,
+      submittedAt: new Date().toISOString()
+    };
+    localStorage.setItem(ratingStorageKey(), JSON.stringify(payload));
+    ratingForm.hidden = true;
+    ratingThanks.classList.add('is-visible');
+    ratingThanksCopy.textContent = `You rated this delivery ${selectedRating} out of 5.`;
+    window.dispatchEvent(new CustomEvent('cefflo:delivery-rated', { detail: payload }));
+  });
+
+
+  // Integration API for Rider/Backend state updates.
+  window.CEFFLOTracking = Object.freeze({
+    STATUS: TRACKING_STATUS,
+    setStatus(status, payload = {}) {
+      Object.assign(TRACKING_DATA, payload);
+      renderTracking(status);
+    },
+    getSnapshot() {
+      return { ...TRACKING_DATA };
+    },
+    getWhatsAppNotification() {
+      return `Hi ${TRACKING_DATA.customerName}, your order is now on the way. Track your delivery: https://track.cefflo.com/${TRACKING_DATA.orderId}`;
+    }
+  });
+
+  // Demo/query support: ?status=picked_up | on_the_way | delivered
+  const requestedStatus = new URLSearchParams(window.location.search).get('status');
+  renderTracking(requestedStatus || TRACKING_DATA.status);
+</script>
+
+<script src="../shared/config.js"></script>
+<script src="../shared/client.js"></script>
+<script src="./backend.js"></script>
+</body>
+</html>
