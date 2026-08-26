@@ -15,6 +15,8 @@ remotely against canonical repo.
 
 ## Phase 1 --- Baseline & SOT Lock
 
+Status: complete at the P1.7 baseline lock.
+
 -   R1.1 Repository inventory
 -   R1.2 Active vs legacy/duplicate file classification
 -   R1.3 Current deployment/domain mapping
@@ -23,6 +25,12 @@ remotely against canonical repo.
 -   R1.6 Stage 4 gap report
 -   R1.7 Baseline lock + Current State update Gate: authoritative
     implementation for every surface is known; no ambiguity about SOT.
+
+Post-Phase-1 execution follows the approved dependency-aware 16-sprint
+sequence in `PHASE_1_STAGE4_GAP_REPORT.md`, beginning with S4-01. The
+Phase 2–7 sections below remain domain and release views; they must not
+override the approved sprint dependencies, security gates, test gates or
+protected-action approvals.
 
 ## Phase 2 --- Backend & Security Foundation
 
