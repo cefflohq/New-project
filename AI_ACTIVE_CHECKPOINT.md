@@ -1,11 +1,11 @@
 # CEFFLO — ACTIVE EXECUTION CHECKPOINT
 
-Updated: 2026-08-27 (Claude session, Founder architecture decision recorded, execution plan drafted — nothing executed)
+Updated: 2026-08-27 (Claude session, staging branch committed locally; push to origin BLOCKED on invalid GitHub credentials)
 Active agent: Claude
 Current Stage: Stage 4
 Current Sprint: S4-01 — isolated preview/staging/test configuration and disposable test target
-Current Sub-sprint / Work Package: S4-01E — Hosted Acceptance (E2E complete) → Vercel Preview/Staging: architecture APPROVED, execution plan drafted, NOT YET EXECUTED
-Status: S4-01E hosted transactional E2E PASS. Founder approved: dedicated `staging` branch, Vercel Preview deployments from it, reuse `cefflo-staging` (no new Vercel/Supabase project). `main` remains Production; a new HARD SAFETY RULE is now in force (Section 16). Execution plan for branch creation + Vercel config drafted this turn — no branch created, no commit, no push, no Vercel change made.
+Current Sub-sprint / Work Package: S4-01E — Hosted Acceptance (E2E complete) → staging branch created + committed locally → BLOCKED on git push authentication
+Status: BLOCKED. `staging` branch created from `main`'s HEAD, 20-file reconciled baseline committed (`47d126fce22511018b1318818103f49d5bf0d451`). `git push -u origin staging` failed: no valid GitHub credentials in this environment (`gh auth status` reports the stored token for `cefflohq` is invalid/expired). No workaround attempted (did not try the SSH key present at `~/.ssh/id_ed25519`, did not change remote transport, did not re-authenticate interactively). `main` remains byte-identical at `15a551bdb26b79536138f16bd1370e3dfb4c4a5a`, confirmed both locally and on the remote via `git ls-remote`. No Vercel action taken — nothing exists at origin for Vercel to build yet.
 
 ## 1. Current Objective
 Hosted transactional E2E against `cefflo-staging` is now PASS. Remaining objective: complete the Vercel Preview/Staging acceptance preflight (review/prepare requirements only — Vercel itself stays unconfigured until explicit authorization), then proceed to actual Vercel configuration under required authorization. This is the final gate of S4-01 before S4-02 may begin.
@@ -229,5 +229,16 @@ The publishable/anon key is not a secret by design (safe for frontend, protected
 7. Capture actual outbound network requests during a basic interaction on each surface; every backend request must target `tomvvmwktehexwhktenw.supabase.co` — zero requests to the Production ref or any Production-looking endpoint.
 8. Record PASS/FAIL per step above in this checkpoint, with the deployment ID/URL and commit SHA, before closing the Vercel Preview/Staging acceptance gate in Section 13.
 
-### 16.8 Not done this turn
-No branch created. No commit. No push. No Vercel environment variable set. No deployment triggered. No Production access or modification. S4-02 not started. `git diff --check` run and clean (see below).
+### 16.8 Execution outcome (this turn)
+**BEFORE COMMIT gates:** main HEAD recorded (`15a551bdb26b79536138f16bd1370e3dfb4c4a5a`); branch/status/diff verified; exact 20-file reconciliation against this checkpoint's Section 4 confirmed (9 modified + 11 untracked, including the 2 continuity files); staged explicitly by filename (no wildcards) — confirmed via `git diff --cached --name-status` (exactly 20 entries).
+- First `git diff --cached --check` run **FAILED** (exit 2): trailing-whitespace Markdown line-breaks in `AI_CONTINUITY_README.md` (lines 5, 182-185), preserved verbatim from the earlier "install exactly as provided" instruction. Stopped per "if any check fails, STOP without workaround"; surfaced the conflict to the Founder rather than resolving unilaterally.
+- Founder authorized stripping the trailing whitespace (whitespace-only; diff confirmed no wording/content change). Re-staged; `git diff --cached --check` then **PASSED** (exit 0).
+- Also spot-checked the staged diff for secret-shaped strings: all matches were `.env.example` placeholders or literal `secret`/fake-ref fixtures inside `tests/test_environment_guard.py`'s negative-test suite — no real credential present.
+
+**Committed** onto `staging` only: commit `47d126fce22511018b1318818103f49d5bf0d451`, 20 files, message "S4-01E: staging environment identity, disposable Supabase target, and continuity protocol". `main` confirmed unchanged immediately after (`15a551bdb26b79536138f16bd1370e3dfb4c4a5a`).
+
+**Push BLOCKED:** `git push -u origin staging` failed — `fatal: could not read Username for 'https://github.com': No such device or address`. Diagnosis (read-only): `gh auth status` shows the stored token for GitHub account `cefflohq` is invalid/expired; no `credential.helper` configured. An SSH key exists at `~/.ssh/id_ed25519` but was deliberately **not** used (unverified scope, would be an unauthorized workaround; also would require changing `origin`'s transport, not part of what was authorized). `git ls-remote origin main staging` confirms the remote has no `staging` ref yet and `main` remains `15a551bdb26b79536138f16bd1370e3dfb4c4a5a`.
+
+**Not attempted, sequenced behind the push:** Vercel Preview environment-variable configuration, triggering/observing a Preview deployment, the full deployment acceptance checklist (Section 16.7), retrieving the Supabase publishable key, marking S4-01 complete. None of these can proceed until `staging` exists at the remote.
+
+No branch deleted. No commit undone. No Production access or modification. S4-02 not started.
