@@ -5,3 +5,7 @@ dist/
 node_modules/
 coverage/
 *.log
+/supabase/.branches/
+/supabase/.temp/
+__pycache__/
+*.py[cod]

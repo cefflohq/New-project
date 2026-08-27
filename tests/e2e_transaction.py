@@ -1,8 +1,20 @@
-"""Run with DATABASE_URL against a disposable/staging project. All test data rolls back."""
-import os, uuid, psycopg
+"""Transactional E2E for explicit disposable local, staging, or test targets."""
+import uuid
+
+import psycopg
+
+from environment_guard import TargetRefused, validate_database_target
+
+try:
+    target = validate_database_target(
+        mutating=True,
+        allowed_environments=frozenset({'local', 'staging', 'test'}),
+    )
+except TargetRefused as error:
+    raise SystemExit(f'target_refused: {error}') from error
 
 owner, rider, outsider = [uuid.uuid4() for _ in range(3)]
-with psycopg.connect(os.environ['DATABASE_URL']) as conn:
+with psycopg.connect(target.database_url) as conn:
     with conn.cursor() as cur:
         for uid, email in [(owner,'owner@test.invalid'),(rider,'rider@test.invalid'),(outsider,'outsider@test.invalid')]:
             cur.execute("insert into auth.users(id,aud,role,email,created_at,updated_at) values(%s,'authenticated','authenticated',%s,now(),now())", (uid,email))

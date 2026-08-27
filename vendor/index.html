@@ -2971,16 +2971,7 @@ body{background:#E9E8EE!important;}
 <div class="toast-wrap" id="toastWrap"></div>
 <input class="cefflo-hidden-file" id="ceffloImportFile" type="file" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
 <input class="cefflo-hidden-file" id="ceffloLogoFile" type="file" accept="image/png,image/jpeg,image/webp">
-<script>
-window.CEFFLO_CONFIG = Object.freeze({
-  supabaseUrl: "https://lmaxtrubwdniovxyuqdy.supabase.co",
-  supabaseAnonKey: "sb_publishable_UE4IPNVFWYq0YhuuI_1cYQ_Qgo_27f4",
-  schema: "public",
-  authRequired: true,
-  realtimeEnabled: true,
-  storageBucket: "cefflo-assets"
-});
-</script>
+<script src="../shared/config.js?v=20260827a"></script>
 <script>
 function switchScreen(screenId){
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -7330,7 +7321,6 @@ async function initializeSprint13(){
 initializeSprint13().catch(error=>{console.error('CEFFLO Sprint 1.3 initialization failed:',error);showAuthWelcome();render();});
 </script>
 <script>window.CEFFLO_SESSION_KEY='cefflo_auth_session';</script>
-<script src="../shared/config.js?v=20260814k"></script>
 <script src="../shared/client.js?v=20260814k"></script>
 <script src="./backend.js?v=20260814k"></script>
 <script>
