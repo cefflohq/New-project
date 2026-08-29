@@ -901,6 +901,10 @@
 .radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;position:relative;}
 .radio.checked{border-color:var(--primary);}
 .radio.checked::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--primary);}
+.rb-checkbox{width:20px;height:20px;border-radius:5px;border:2px solid var(--border);flex-shrink:0;position:relative;}
+.rb-checkbox.checked{border-color:var(--primary);background:var(--primary);}
+.rb-checkbox.checked::after{content:"";position:absolute;inset:3px;border-radius:2px;background:#fff;}
+.opt-row.disabled{opacity:.5;cursor:default;}
 
 .toast-wrap{position:fixed;top:16px;left:0;right:0;max-width:430px;margin:0 auto;z-index:200;display:flex;flex-direction:column;gap:8px;padding:0 16px;pointer-events:none;}
 .toast{
@@ -3704,30 +3708,82 @@ function sessionOrders(session=activeDeliverySession()){
   if(!session) return state.orders.filter(o=>!o.deliverySessionId || o.deliveryDate===operationalDateKey());
   return state.orders.filter(o=>o.deliverySessionId===session.id);
 }
+// S4-06.7 (mandatory fix 4): activeDeliverySession()/sessionOrders() only
+// ever resolve ONE session (a single .find()), so any Vendor-facing
+// aggregate built on them silently saw only whichever one Wave was hit
+// first once a second same-day Wave (e.g. Lunch + Dinner) existed. This
+// considers every one of today's open Waves at once -- used anywhere the
+// dashboard needs to reflect the whole day, not one arbitrary Wave.
+function todaysOpenSessionIds(){
+  const today=operationalDateKey();
+  return new Set(state.deliverySessions.filter(s=>s.deliveryDate===today && ['planned','active'].includes(s.status)).map(s=>s.id));
+}
+function todaysRelevantOrders(){
+  const openIds=todaysOpenSessionIds();
+  if(!openIds.size) return state.orders.filter(o=>!o.deliverySessionId || o.deliveryDate===operationalDateKey());
+  return state.orders.filter(o=>o.deliverySessionId && openIds.has(o.deliverySessionId));
+}
 function orderHasOpenIssue(orderId){ return state.issues.some(i=>i.orderId===orderId && i.status!=='resolved'); }
 function getTodayDashboardMetrics(){
-  const orders=sessionOrders();
+  const orders=todaysRelevantOrders();
   const completed=orders.filter(o=>o.status==='completed').length;
   const riderIds=new Set(orders.filter(o=>['pickedUp','delivering'].includes(o.status) && o.riderId).map(o=>o.riderId));
   return {totalOrders:orders.length, activeRiders:riderIds.size, issues:orders.filter(o=>orderHasOpenIssue(o.id)||o.status==='issue').length, completedRate:orders.length?Math.round(completed/orders.length*100):0};
 }
 function getCurrentDeliveries(){
-  const orders=sessionOrders().filter(o=>['pickedUp','delivering'].includes(o.status) && o.riderId);
+  const orders=todaysRelevantOrders().filter(o=>['pickedUp','delivering'].includes(o.status) && o.riderId);
   const groups=new Map();
   orders.forEach(order=>{
-    const key=`${order.riderId}|${order.zoneId||order.zone||''}`;
-    if(!groups.has(key)) groups.set(key,{riderId:order.riderId,zoneId:order.zoneId||null,zoneName:order.zone||'',orders:[]});
+    // Wave included in the key: same Rider + same Zone in two different
+    // Waves (e.g. Lunch Wave/Ali and Dinner Wave/Ali) must never merge into
+    // one card merely because Rider/Zone match.
+    const key=`${order.deliverySessionId||''}|${order.riderId}|${order.zoneId||order.zone||''}`;
+    if(!groups.has(key)) groups.set(key,{sessionId:order.deliverySessionId||null,riderId:order.riderId,zoneId:order.zoneId||null,zoneName:order.zone||'',orders:[]});
     groups.get(key).orders.push(order);
   });
   return [...groups.values()].map(group=>{
     const rider=state.riders.find(r=>r.id===group.riderId);
+    const session=state.deliverySessions.find(s=>s.id===group.sessionId);
     const stops=state.deliveryStops.filter(stop=>group.orders.some(o=>o.id===stop.orderId)).sort((a,b)=>(a.sequence||0)-(b.sequence||0));
     const totalStops=stops.length || group.orders.length;
     const completedStops=stops.length ? stops.filter(s=>s.status==='completed').length : group.orders.filter(o=>o.status==='completed').length;
     const nextStop=stops.find(s=>s.status!=='completed');
     const etaMinutes=nextStop?.estimatedArrivalAt ? Math.max(0,Math.ceil((new Date(nextStop.estimatedArrivalAt)-Date.now())/60000)) : null;
-    return {...group,rider,totalStops,completedStops,etaMinutes};
+    return {...group,rider,waveName:session?session.name:null,totalStops,completedStops,etaMinutes};
   });
+}
+// S4-06.7 (P1): minimal factual Run progress -- Wave / Rider / assignment
+// state / pickup progress / delivery progress, sourced only from the real
+// rider_assignments now hydrated (state.riderAssignments). Grouped by
+// (session, rider) -- this project's own per-order assignment model means
+// several rider_assignments rows share one session+rider whenever a Run has
+// more than one stop; "relevant" excludes declined/cancelled rows, matching
+// the same eligibility convention used throughout the S4-06 backend. No
+// ETA, no route intelligence -- only counts derived from real statuses.
+function computeRunProgress(){
+  const groups=new Map();
+  state.riderAssignments.forEach(a=>{
+    if(!a.deliverySessionId) return; // standalone/legacy orders have no Wave to report progress for
+    const key=`${a.deliverySessionId}|${a.riderId}`;
+    if(!groups.has(key)) groups.set(key,{sessionId:a.deliverySessionId,riderId:a.riderId,assignments:[]});
+    groups.get(key).assignments.push(a);
+  });
+  return [...groups.values()].map(g=>{
+    const rider=state.riders.find(r=>r.id===g.riderId);
+    const session=state.deliverySessions.find(s=>s.id===g.sessionId);
+    const relevant=g.assignments.filter(a=>a.status!=='declined'&&a.status!=='cancelled');
+    const total=relevant.length;
+    const pickedUp=relevant.filter(a=>a.stopStatus&&a.stopStatus!=='readyForPickup').length;
+    const delivered=relevant.filter(a=>a.stopStatus==='completed').length;
+    let assignmentState;
+    if(total===0) assignmentState='Declined';
+    else if(relevant.some(a=>a.status==='assigned')) assignmentState='Pending';
+    else if(delivered===total) assignmentState='Delivered';
+    else if(pickedUp===total) assignmentState='Delivering';
+    else if(pickedUp>0) assignmentState='Picking Up';
+    else assignmentState='Accepted';
+    return {sessionId:g.sessionId,waveName:session?session.name:'Run',riderId:g.riderId,riderName:rider?rider.name:'—',assignmentState,total,pickedUp,delivered};
+  }).sort((a,b)=>a.waveName.localeCompare(b.waveName)||a.riderName.localeCompare(b.riderName));
 }
 function transitionOrderStatus(orderId,nextStatus,meta={}){
   const order=state.orders.find(o=>o.id===orderId); if(!order) throw new Error('Order not found');
@@ -4063,13 +4119,14 @@ function statusChip(status){
 /* ===================== PAGE: DASHBOARD ===================== */
 function pageDashboard(){
   const currentDeliveries = getCurrentDeliveries();
+  const runProgress = computeRunProgress();
   const actionItems = [];
   const onboarding = onboardingState();
   if(!onboarding.profileComplete){
     actionItems.push({txt:t('completeBusinessProfile'), level:'high', nav:{name:'businessProfile',params:{}}});
   }
   if(!onboarding.riderComplete){
-    actionItems.push({txt:t('addFirstRiderChecklist'), level:'high', action:'openInviteRider'});
+    actionItems.push({txt:t('addFirstRiderChecklist'), level:'high', action:'openInviteRiderReal'});
   }
   if(!onboarding.orderComplete){
     actionItems.push({txt:t('createFirstOrderChecklist'), level:'high', action:'openAddOrder'});
@@ -4124,13 +4181,27 @@ function pageDashboard(){
           const stopsTotal=delivery.totalStops;
           const stopsDone=delivery.completedStops;
           return `<div class="rider-card" data-nav="riderProfile" data-navparams='{"id":"${delivery.riderId}"}'>
-            <div class="rc-top"><div class="avatar">${riderName.split(' ').map(x=>x[0]).slice(0,2).join('')}</div><div class="rc-copy"><div class="rc-name">${riderName}</div><div class="rc-zone">${delivery.zoneName}</div></div></div>
+            <div class="rc-top"><div class="avatar">${riderName.split(' ').map(x=>x[0]).slice(0,2).join('')}</div><div class="rc-copy"><div class="rc-name">${riderName}</div><div class="rc-zone">${delivery.waveName?delivery.waveName+(delivery.zoneName?' · '+delivery.zoneName:''):delivery.zoneName}</div></div></div>
             <div class="dots" aria-label="${stopsDone} of ${stopsTotal} stops completed">${Array.from({length:stopsTotal}).map((_,i)=>`<span class="dot ${i<stopsDone?'filled':''}"></span>`).join('')}</div>
             <div class="rc-delivery-summary"><div class="rc-stops">${stopsDone}/${stopsTotal} stops</div><div class="rc-eta">${delivery.etaMinutes===null?t('eta')+' —':t('eta')+' '+delivery.etaMinutes+' min'}</div></div>
           </div>`;
         }).join('') || `<div class="t-caption" style="padding:20px 0">${t('noActiveDeliveries')}</div>`}
       </div>
     </div>
+
+    ${runProgress.length? `<div class="section">
+      <div class="section-title">Run Progress</div>
+      ${runProgress.map(g=>{
+        const chip={Pending:'chip-preparing',Accepted:'chip-active','Picking Up':'chip-pickedup',Delivering:'chip-delivering',Delivered:'chip-completed',Declined:'chip-issue'}[g.assignmentState]||'chip-active';
+        return `<div class="card bordered" style="margin-bottom:8px;padding:12px 14px;" data-nav="riderProfile" data-navparams='{"id":"${g.riderId}"}'>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <div class="t-body" style="font-weight:600;">${g.waveName} · ${g.riderName}</div>
+            <span class="status-chip ${chip}">${g.assignmentState}</span>
+          </div>
+          <div class="t-caption" style="margin-top:2px;">${g.total===0?'No active orders':g.delivered>0?`${g.delivered}/${g.total} delivered`:g.pickedUp>0?`Picked up ${g.pickedUp}/${g.total}`:`${g.total} order${g.total===1?'':'s'}`}</div>
+        </div>`;
+      }).join('')}
+    </div>` : ''}
 
     ${actionItems.length? `<div class="section">
       <div class="section-title">${t('actionRequired')}</div>
@@ -4144,7 +4215,7 @@ function pageDashboard(){
 }
 
 /* ===================== PAGE: ORDERS ===================== */
-const ordersUiState = { tab:'ongoing', search:'', searchOpen:false };
+const ordersUiState = { tab:'ongoing', search:'', searchOpen:false, selectMode:false, selectedIds:new Set() };
 function orderMatchesTab(o, tab){
   const backendStatus=o.backendStatus||o.deliveryStatus||o.delivery_status;
   if(backendStatus==='delivered'||o.completedAt||o.ratingSubmitted) o.status='completed';
@@ -4175,6 +4246,7 @@ function pageOrders(params){
         <button class="tab-btn ${tab==='completed'?'active':''}" data-action="setOrdersTab" data-tab="completed">${t('completed')}</button>
       </div>
       <div class="orders-actions">
+        ${tab==='ongoing' ? `<button class="tab-btn ${ordersUiState.selectMode?'active':''}" data-action="toggleOrdersSelectMode">${ordersUiState.selectMode?t('cancel'):'Select'}</button>` : ''}
         <button class="search-icon-only" data-action="toggleOrdersSearch" aria-label="${t('searchOrders')}">${ic('search')}</button>
       </div>
     </div>
@@ -4187,6 +4259,27 @@ function pageOrders(params){
   </div>`;
 }
 function renderOrdersList(list){
+  if(ordersUiState.selectMode){
+    const eligible = list.filter(isRunBuilderEligible);
+    if(eligible.length===0){
+      return `<div class="empty-state">
+        <div class="es-icon">${ic('emptybox')}</div>
+        <h3>No eligible orders</h3>
+        <p>Orders must be approved and unassigned to build a Run.</p>
+      </div>`;
+    }
+    return eligible.map(o=>`
+      <div class="opt-row" data-action="toggleOrdersSelection" data-id="${o.backendId}">
+        <div class="opt-left">
+          <div><div class="opt-title">${o.id}</div><div class="opt-sub">${o.customer} • ${state.zones.find(z=>z.id===o.zoneId)?.name || 'Unzoned'}</div></div>
+        </div>
+        <div class="rb-checkbox ${ordersUiState.selectedIds.has(o.backendId)?'checked':''}"></div>
+      </div>
+    `).join('') + `
+    <div class="card bordered" style="margin-top:12px">
+      <button class="btn btn-primary" ${ordersUiState.selectedIds.size?'':'disabled'} data-action="openRunBuilderFromOrdersSelection">${ordersUiState.selectedIds.size} selected — Assign to Rider</button>
+    </div>`;
+  }
   if(list.length===0){
     const pristine = state.orders.length===0;
     return `<div class="empty-state">
@@ -4217,6 +4310,24 @@ function rerenderOrdersList(){
   }
   const wrap = document.getElementById('ordersListWrap');
   if(wrap) wrap.innerHTML = renderOrdersList(list);
+}
+function toggleOrdersSelectMode(){
+  ordersUiState.selectMode = !ordersUiState.selectMode;
+  ordersUiState.selectedIds = new Set();
+  render();
+}
+function toggleOrdersSelection(el){
+  const id = el.dataset.id;
+  if(ordersUiState.selectedIds.has(id)) ordersUiState.selectedIds.delete(id);
+  else ordersUiState.selectedIds.add(id);
+  rerenderOrdersList();
+}
+function openRunBuilderFromOrdersSelection(){
+  if(!ordersUiState.selectedIds.size) return;
+  const orderIds = [...ordersUiState.selectedIds];
+  ordersUiState.selectMode = false;
+  ordersUiState.selectedIds = new Set();
+  openRunBuilder({ orderIds });
 }
 function setOrdersTab(el){
   const tab = typeof el==='string' ? el : el.dataset.tab;
@@ -4314,8 +4425,9 @@ function pageOrderDetail(params){
       <div class="section-title">${t('actions')}</div>
       ${o.ratingSubmitted?`<div class="card bordered" style="margin-bottom:10px"><div class="stat-inline"><span class="label">Customer Rating</span><span class="val">Submitted</span></div></div>`:''}
       ${o.trackingToken?`<button class="btn btn-secondary" style="margin-bottom:10px" data-action="openCustomerTracking" data-id="${o.id}">Customer Tracking</button>`:''}
-      ${!o.riderId?`<button class="btn btn-primary" style="margin-bottom:10px" data-action="openAssignRiderForOrder" data-id="${o.id}">${t('assignRider')}</button>`:
-      `<button class="btn btn-secondary" style="margin-bottom:10px" data-action="openAssignRiderForOrder" data-id="${o.id}">${t('changeRider')}</button>`}
+      ${!o.approvedAt?`<button class="btn btn-primary" style="margin-bottom:10px" data-action="approveOrderAction" data-id="${o.id}">Approve Order</button>`:
+      (!o.riderId?`<button class="btn btn-primary" style="margin-bottom:10px" data-action="openAssignRiderForOrder" data-id="${o.id}">${t('assignRider')}</button>`:
+      `<button class="btn btn-secondary" style="margin-bottom:10px" data-action="openAssignRiderForOrder" data-id="${o.id}">${t('changeRider')}</button>`)}
       <button class="btn btn-secondary" style="margin-bottom:10px" data-action="openReportIssue" data-id="${o.id}">${t('reportIssue')}</button>
       ${o.status==='issue'?`<button class="btn btn-secondary" data-action="openReschedule" data-id="${o.id}">${t('scheduleRedelivery')}</button>`:''}
     </div>
@@ -4895,7 +5007,7 @@ function renderRiderListOnly(){
       <div class="es-icon">${ic('riders')}</div>
       <h3>${state.riders.length===0?t('noRidersYet'):t('noRidersFound')}</h3>
       <p>${state.riders.length===0?t('addFirstRider'):t('tryDifferentRider')}</p>
-      ${state.riders.length===0?`<button class="btn btn-primary" style="margin-top:18px" data-action="openInviteRider">${t('inviteFirstRider')}</button>`:''}
+      ${state.riders.length===0?`<button class="btn btn-primary" style="margin-top:18px" data-action="openInviteRiderReal">${t('inviteFirstRider')}</button>`:''}
     </div>`;
 }
 function rerenderRiderList(){
@@ -4987,45 +5099,14 @@ function pageRiderProfile(params){
   </div>`;
 }
 function openAssignOrdersToRider(el){
+  // S4-06.5b: real Run Builder entry (Rider-first). The prior mock
+  // Select-Zone -> assign-whole-zone-to-one-Rider flow is replaced --
+  // that assignZoneToRiderFromProfile() logic is left in place but is no
+  // longer reachable from any live path.
   const rid = el.dataset.id;
   const rider = state.riders.find(r=>r.id===rid);
   if(!rider) return;
-
-  if(!state.orders.length){
-    openSheet(`
-      <div class="sheet-title">${t('noOrdersAvailable')}</div>
-      <div class="empty-state" style="padding:18px 0 8px">
-        <div class="es-icon">${ic('emptybox')}</div>
-        <p>${t('addOrdersBeforeAssign')}</p>
-        <button class="btn btn-primary" style="margin-top:18px" data-action="openAddOrder">${t('addFirstOrder')}</button>
-      </div>
-    `);
-    return;
-  }
-
-  syncZonesFromOrders();
-  const availableZones = state.zones.filter(zone=>zone.orderIds.length>0);
-
-  if(!availableZones.length){
-    openSheet(`
-      <div class="sheet-title">${t('noZonesYet')}</div>
-      <div class="empty-state" style="padding:18px 0 8px">
-        <div class="es-icon">${ic('map')}</div>
-        <p>${t('zonesGeneratedFromOrders')}</p>
-        <button class="btn btn-primary" style="margin-top:18px" data-action="openAddOrder">${t('addFirstOrder')}</button>
-      </div>
-    `);
-    return;
-  }
-
-  openSheet(`
-    <div class="sheet-title">${t('selectZone')}</div>
-    <p class="t-caption" style="margin:-4px 0 10px">${t('zonesGeneratedFromOrders')}</p>
-    ${availableZones.map(zone=>`<div class="opt-row" data-action="assignZoneToRiderFromProfile" data-zone="${zone.id}" data-rider="${rid}">
-      <div class="opt-title">${zone.name}</div>
-      <div class="opt-sub">${zone.orderIds.length} ${zone.orderIds.length===1?t('order'):t('orders')}</div>
-    </div>`).join('')}
-  `);
+  openRunBuilder({ riderId: rid });
 }
 function assignZoneToRiderFromProfile(el){
   syncZonesFromOrders();
@@ -5057,6 +5138,254 @@ function assignZoneToRiderFromProfile(el){
   toast(tf('zoneAssignedSuccess',{zone:zone.name,rider:rider.name}),'success');
   render();
 }
+
+/* ===================== RUN BUILDER (S4-06.5b) =====================
+   ONE shared Run Builder backs both entry points (Rider-first via
+   openAssignOrdersToRider above, Orders-first via
+   openRunBuilderFromOrdersSelection below) -- same state shape, same
+   render function, same confirm handler (confirmRunBuilder, defined in
+   backend.js since it is the one function that calls real RPCs). Zone is
+   a multi-toggle FILTER only; it never selects orders or binds a Rider.
+   No Zone Group/Cluster is ever persisted -- the Zone composition shown
+   at confirmation is display-only derived state. */
+const runBuilderState = {
+  open:false, entry:null, riderId:null,
+  zoneFilters:new Set(), selectedOrderIds:new Set(),
+  waveMode:'existing', waveId:null, newWaveName:'', resolvedNewSessionId:null,
+  pendingKey:null, pendingSignature:null,
+  submitting:false, lastError:null,
+};
+function isRunBuilderEligible(o){
+  return Boolean(o.approvedAt) && !o.riderId && o.backendStatus==='created';
+}
+function suggestedWaveName(){
+  const hour = new Date().getHours();
+  if(hour<11) return 'Morning Wave';
+  if(hour<15) return 'Lunch Wave';
+  if(hour<18) return 'Afternoon Wave';
+  return 'Dinner Wave';
+}
+function resetRunBuilderState(){
+  runBuilderState.open=false; runBuilderState.entry=null; runBuilderState.riderId=null;
+  runBuilderState.zoneFilters=new Set(); runBuilderState.selectedOrderIds=new Set();
+  runBuilderState.waveMode='existing'; runBuilderState.waveId=null;
+  runBuilderState.newWaveName=''; runBuilderState.resolvedNewSessionId=null;
+  runBuilderState.pendingKey=null; runBuilderState.pendingSignature=null;
+  runBuilderState.submitting=false; runBuilderState.lastError=null;
+}
+// S4-06.7 (P5): scoped to today's operational delivery_date so a stale
+// Wave from another day never lingers as a normal assignment target --
+// delivery_sessions.delivery_date is the operational-date source, matched
+// exactly (a Wave explicitly carrying another date stays a different
+// operational date; no clock/timezone inference beyond the existing
+// operationalDateKey() convention already used across this file).
+function runBuilderExistingWaves(){
+  const today=operationalDateKey();
+  return state.deliverySessions.filter(s=>['planned','active'].includes(s.status) && s.deliveryDate===today);
+}
+function openRunBuilder(opts){
+  resetRunBuilderState();
+  runBuilderState.open=true;
+  if(opts && opts.riderId){ runBuilderState.entry='rider-first'; runBuilderState.riderId=opts.riderId; }
+  if(opts && opts.orderIds && opts.orderIds.length){
+    runBuilderState.entry='orders-first';
+    opts.orderIds.forEach(id=>runBuilderState.selectedOrderIds.add(id));
+  }
+  runBuilderState.waveMode = runBuilderExistingWaves().length ? 'existing' : 'new';
+  runBuilderState.newWaveName = suggestedWaveName();
+  openSheet(renderRunBuilderBody());
+}
+function isRunBuilderSheetOpen(){
+  return runBuilderState.open && Boolean(document.querySelector('#activeSheet [data-sheet="runbuilder"]'));
+}
+function rerenderRunBuilderSheet(){
+  if(!isRunBuilderSheetOpen()) return;
+  refreshSheetBody(renderRunBuilderBody());
+}
+function runBuilderEligibleOrders(){ return state.orders.filter(isRunBuilderEligible); }
+function runBuilderZoneCounts(){
+  const counts = new Map();
+  runBuilderEligibleOrders().forEach(o=>{
+    const key = o.zoneId || '__unzoned__';
+    counts.set(key, (counts.get(key)||0)+1);
+  });
+  return counts;
+}
+function runBuilderFilteredOrders(){
+  const eligible = runBuilderEligibleOrders();
+  if(!runBuilderState.zoneFilters.size) return eligible;
+  return eligible.filter(o=>runBuilderState.zoneFilters.has(o.zoneId || '__unzoned__'));
+}
+function runBuilderWaveOrderCount(sessionId){ return state.orders.filter(o=>o.deliverySessionId===sessionId).length; }
+function runBuilderWaveRiderCount(sessionId){
+  return new Set(state.orders.filter(o=>o.deliverySessionId===sessionId && o.riderId).map(o=>o.riderId)).size;
+}
+function renderRunBuilderErrorBanner(){
+  const err = runBuilderState.lastError;
+  if(!err) return '';
+  const messages = {
+    eligibility_conflict: err.disappearedCount>0
+      ? `${err.disappearedCount} selected order(s) are no longer available and were removed from your selection. Please review and confirm again.`
+      : 'Your selection could not be confirmed as submitted. Please review and confirm again.',
+    idempotency_conflict: 'This action could not be confirmed as submitted. Please review your selection and try again.',
+    rider_unavailable: 'The selected Rider is no longer available. Please choose another Rider.',
+    wave_unavailable: 'The selected Wave is no longer open. Please choose or start another Wave.',
+    ambiguous: 'The request could not be confirmed. You can safely retry -- it will not be duplicated.',
+  };
+  return `<div class="card bordered" style="border-color:#e05252;margin-bottom:12px">
+    <p class="t-caption" style="color:#e05252">${messages[err.type] || 'Something went wrong. Please try again.'}</p>
+  </div>`;
+}
+function renderRunBuilderBody(){
+  const offline = typeof navigator!=='undefined' && navigator.onLine===false;
+  const eligible = runBuilderEligibleOrders();
+  const counts = runBuilderZoneCounts();
+  const filtered = runBuilderFilteredOrders();
+  const rider = state.riders.find(r=>r.id===runBuilderState.riderId);
+  const existingWaves = runBuilderExistingWaves();
+  const selectedOrders = state.orders.filter(o=>runBuilderState.selectedOrderIds.has(o.backendId));
+  const zoneComposition = new Map();
+  selectedOrders.forEach(o=>{
+    const label = state.zones.find(z=>z.id===o.zoneId)?.name || 'Unzoned';
+    zoneComposition.set(label, (zoneComposition.get(label)||0)+1);
+  });
+  const waveResolved = runBuilderState.waveMode==='existing' ? Boolean(runBuilderState.waveId) : Boolean(runBuilderState.newWaveName.trim());
+  const canConfirm = !offline && selectedOrders.length>0 && Boolean(runBuilderState.riderId) && waveResolved && !runBuilderState.submitting;
+
+  return `
+  <div data-sheet="runbuilder"></div>
+  <div class="sheet-title">Build Run</div>
+
+  ${offline ? `<div class="card bordered" style="border-color:#e05252;margin-bottom:12px"><p class="t-caption" style="color:#e05252">You are offline. Reconnect to assign this Run.</p></div>` : (runBuilderState.lastError ? renderRunBuilderErrorBanner() : '')}
+
+  <div class="section-title">Eligible Orders</div>
+  ${eligible.length===0 ? `
+    <div class="empty-state" style="padding:14px 0">
+      <p class="t-caption">No orders are ready to assign yet -- orders must be approved and unassigned.</p>
+    </div>
+  ` : `
+    <div class="orders-tabs" style="overflow-x:auto;flex-wrap:nowrap;margin-bottom:10px">
+      <button class="tab-btn ${runBuilderState.zoneFilters.size===0?'active':''}" data-action="runBuilderClearZoneFilters">All (${eligible.length})</button>
+      ${state.zones.filter(z=>z.status==='active').map(z=>`
+        <button class="tab-btn ${runBuilderState.zoneFilters.has(z.id)?'active':''}" data-action="runBuilderToggleZone" data-zone="${z.id}">${z.name} (${counts.get(z.id)||0})</button>
+      `).join('')}
+      ${counts.get('__unzoned__') ? `<button class="tab-btn ${runBuilderState.zoneFilters.has('__unzoned__')?'active':''}" data-action="runBuilderToggleZone" data-zone="__unzoned__">Unzoned (${counts.get('__unzoned__')})</button>` : ''}
+    </div>
+    ${filtered.length===0 ? `<p class="t-caption" style="padding:8px 0">No eligible orders in the selected zone(s).</p>` : filtered.map(o=>`
+      <div class="opt-row" data-action="runBuilderToggleOrder" data-orderid="${o.backendId}">
+        <div class="opt-left"><div><div class="opt-title">${o.id}</div><div class="opt-sub">${o.customer} • ${state.zones.find(z=>z.id===o.zoneId)?.name || 'Unzoned'}</div></div></div>
+        <div class="rb-checkbox ${runBuilderState.selectedOrderIds.has(o.backendId)?'checked':''}"></div>
+      </div>
+    `).join('')}
+  `}
+
+  <div class="section-title" style="margin-top:14px">${selectedOrders.length} selected</div>
+
+  ${runBuilderState.entry==='rider-first' && rider ? `
+    <div class="card bordered" style="margin-bottom:10px">
+      <div class="opt-title">${rider.name}</div>
+      <div class="opt-sub">Rider</div>
+    </div>
+  ` : `
+    <div class="section-title">Select Rider</div>
+    ${state.riders.length===0 ? `<p class="t-caption">No active Riders.</p>` : state.riders.map(r=>`
+      <div class="opt-row ${r.status!=='active'?'disabled':''}" ${r.status==='active'?`data-action="runBuilderSelectRider" data-riderid="${r.id}"`:''}>
+        <div class="opt-left">
+          <div class="avatar">${r.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</div>
+          <div><div class="opt-title">${r.name}</div><div class="opt-sub">${r.status==='active'?(r.availabilityStatus||''):'Unavailable'}</div></div>
+        </div>
+        <div class="radio ${runBuilderState.riderId===r.id?'checked':''}"></div>
+      </div>
+    `).join('')}
+  `}
+
+  <div class="section-title" style="margin-top:14px">Wave</div>
+  <div class="btn-row" style="margin-bottom:10px">
+    <button class="btn ${runBuilderState.waveMode==='existing'?'btn-primary':'btn-secondary'}" data-action="runBuilderSetWaveMode" data-mode="existing">Add to Existing Wave</button>
+    <button class="btn ${runBuilderState.waveMode==='new'?'btn-primary':'btn-secondary'}" data-action="runBuilderSetWaveMode" data-mode="new">Start New Wave</button>
+  </div>
+  ${runBuilderState.waveMode==='existing' ? (
+    existingWaves.length===0 ? `<p class="t-caption">No existing Waves -- start a new one.</p>` : existingWaves.map(w=>`
+      <div class="opt-row" data-action="runBuilderSelectWave" data-waveid="${w.id}">
+        <div class="opt-left"><div><div class="opt-title">${w.name}</div><div class="opt-sub">${runBuilderWaveOrderCount(w.id)} orders • ${runBuilderWaveRiderCount(w.id)} riders</div></div></div>
+        <div class="radio ${runBuilderState.waveId===w.id?'checked':''}"></div>
+      </div>
+    `).join('')
+  ) : `
+    <input type="text" value="${runBuilderState.newWaveName}" oninput="runBuilderState.newWaveName=this.value; runBuilderState.resolvedNewSessionId=null;" placeholder="Wave name" style="width:100%;margin-bottom:10px" />
+  `}
+
+  ${selectedOrders.length ? `
+    <div class="section-title" style="margin-top:14px">Zone Composition</div>
+    <p class="t-caption">${[...zoneComposition.entries()].map(([name,count])=>`${count} ${name}`).join(' + ')}</p>
+  ` : ''}
+
+  <button class="btn btn-primary" style="margin-top:16px" ${canConfirm?'':'disabled'} data-action="confirmRunBuilder">
+    ${runBuilderState.submitting ? 'Assigning…' : `Assign ${selectedOrders.length||''} Run`.trim()}
+  </button>
+  `;
+}
+function runBuilderToggleZone(el){
+  const zone = el.dataset.zone;
+  if(runBuilderState.zoneFilters.has(zone)) runBuilderState.zoneFilters.delete(zone);
+  else runBuilderState.zoneFilters.add(zone);
+  rerenderRunBuilderSheet();
+}
+function runBuilderClearZoneFilters(){ runBuilderState.zoneFilters=new Set(); rerenderRunBuilderSheet(); }
+function runBuilderToggleOrder(el){
+  const id = el.dataset.orderid;
+  if(runBuilderState.selectedOrderIds.has(id)) runBuilderState.selectedOrderIds.delete(id);
+  else runBuilderState.selectedOrderIds.add(id);
+  rerenderRunBuilderSheet();
+}
+function runBuilderSelectRider(el){ runBuilderState.riderId = el.dataset.riderid; rerenderRunBuilderSheet(); }
+function runBuilderSetWaveMode(el){
+  runBuilderState.waveMode = el.dataset.mode;
+  runBuilderState.waveId = null;
+  runBuilderState.resolvedNewSessionId = null;
+  rerenderRunBuilderSheet();
+}
+function runBuilderSelectWave(el){ runBuilderState.waveId = el.dataset.waveid; rerenderRunBuilderSheet(); }
+// Real orchestration (create_delivery_session + build_rider_run) lives in
+// backend.js, matching every other real action handler in this file --
+// this stub is only pre-declared so backend.js's reassignment follows the
+// same established override pattern as wizSubmit/approveOrderAction/etc.
+function confirmRunBuilder(){ toast('Backend not connected.', 'error'); }
+async function reconcileRunBuilderAfterHydrate(){
+  if(!isRunBuilderSheetOpen()) return;
+  const stillEligible = new Set(runBuilderEligibleOrders().map(o=>o.backendId));
+  const before = runBuilderState.selectedOrderIds.size;
+  runBuilderState.selectedOrderIds = new Set([...runBuilderState.selectedOrderIds].filter(id=>stillEligible.has(id)));
+  const removed = before - runBuilderState.selectedOrderIds.size;
+  if(removed>0){
+    runBuilderState.pendingKey=null; runBuilderState.pendingSignature=null;
+    runBuilderState.lastError = {type:'eligibility_conflict', disappearedCount:removed};
+  }
+  rerenderRunBuilderSheet();
+}
+async function handleRunBuilderError(error){
+  const msg = String((error && error.message) || '');
+  if(msg.includes('orders no longer eligible')){
+    const before = runBuilderState.selectedOrderIds.size;
+    if(typeof hydrateCanonicalWorkspace==='function') await hydrateCanonicalWorkspace();
+    if(runBuilderState.selectedOrderIds.size===before){
+      runBuilderState.lastError = {type:'eligibility_conflict', disappearedCount:0};
+      rerenderRunBuilderSheet();
+    }
+    return;
+  }
+  if(msg.includes('idempotency key conflict')) runBuilderState.lastError = {type:'idempotency_conflict'};
+  else if(msg.includes('invalid rider')) runBuilderState.lastError = {type:'rider_unavailable'};
+  else if(msg.includes('session not open')) runBuilderState.lastError = {type:'wave_unavailable'};
+  else runBuilderState.lastError = {type:'ambiguous', message:msg};
+  rerenderRunBuilderSheet();
+}
+if(typeof window!=='undefined'){
+  window.addEventListener('online', function(){
+    if(isRunBuilderSheetOpen() && typeof hydrateCanonicalWorkspace==='function') hydrateCanonicalWorkspace().catch(()=>{});
+  });
+}
+
 function openDeactivateRider(el){
   const rid = el.dataset.id;
   openSheet(`
@@ -5575,6 +5904,7 @@ function pageSettings(){
   const menu=[
     {icon:'card',label:t('subscription'),nav:'subscription'},
     {icon:'building',label:t('businessProfile'),nav:'businessProfile'},
+    {icon:'user',label:'Team',action:'openTeamScreen'},
     {icon:'globe',label:t('language'),nav:'language'},
     {icon:'bell',label:t('notificationSettings'),nav:'notificationSettingsPage'},
     {icon:'report',label:t('reports'),nav:'reports'},
@@ -5610,6 +5940,118 @@ function pageSettings(){
       </div>
     </div>
   </div>`;
+}
+// S4-07 (Section 13): the smallest Vendor Team UI -- roster, Owner-only
+// Invite Team Member, Rider invite (any member, matching the existing
+// "Rider create/onboard" authority), pending Rider approval (Owner-only).
+// No large HR/team-management module -- one screen, real data only.
+function pageTeam(){
+  const isOwner=state.currentMemberRole==='owner';
+  const members=state.teamMembers||[];
+  const teamInvites=(state.teamInvitations||[]).filter(i=>i.status==='pending');
+  const riderInvites=(state.riderInvitations||[]).filter(i=>i.status==='pending');
+  const pendingRiders=(state.riders||[]).filter(r=>r.status==='pending');
+  return `
+  <div class="module-page">
+    <div class="page-header"><span class="icon-btn" data-action="goBack">${ic('back')}</span><div class="page-title">Team</div><span style="width:34px"></span></div>
+    <div class="content">
+      <div class="section-title">Members</div>
+      ${members.map(m=>`
+        <div class="card bordered" style="margin-bottom:8px;padding:12px 14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="t-body" style="font-weight:600;">${m.userId.slice(0,8)}&hellip;</div>
+            <span class="status-chip ${m.role==='owner'?'chip-active':'chip-preparing'}">${m.role==='owner'?'Owner':'Operator / Staff'}</span>
+          </div>
+          <div class="t-caption" style="margin-top:2px;">${m.status==='active'?'Active':'Inactive'}</div>
+          ${isOwner?`<button class="btn btn-secondary" style="width:100%;margin-top:8px;" data-action="openManageTeamMember" data-userid="${m.userId}" data-role="${m.role}" data-status="${m.status}">Manage</button>`:''}
+        </div>`).join('') || `<p class="t-caption">No team members yet.</p>`}
+
+      ${isOwner?`<button class="btn btn-primary" style="width:100%;margin-top:4px;" data-action="openInviteTeamMember">+ Invite Team Member</button>`:''}
+
+      ${teamInvites.length?`
+      <div class="section-title" style="margin-top:20px;">Pending Team Invitations</div>
+      ${teamInvites.map(i=>`
+        <div class="card bordered" style="margin-bottom:8px;padding:12px 14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <div style="min-width:0;"><div class="t-body" style="font-weight:600;overflow:hidden;text-overflow:ellipsis;">${i.email}</div><div class="t-caption">${i.role==='owner'?'Owner':'Operator / Staff'} &middot; expires ${new Date(i.expiresAt).toLocaleDateString()}</div></div>
+            ${isOwner?`<button class="btn btn-secondary" style="flex:0 0 auto;" data-action="confirmRevokeTeamInvitation" data-id="${i.id}">Revoke</button>`:''}
+          </div>
+        </div>`).join('')}` : ''}
+
+      <div class="section-title" style="margin-top:20px;">Riders</div>
+      <button class="btn btn-primary" style="width:100%;" data-action="openInviteRiderReal">+ Invite Rider</button>
+
+      ${pendingRiders.length?`
+      <div class="section-title" style="margin-top:14px;">Pending Rider Approval</div>
+      ${pendingRiders.map(r=>`
+        <div class="card bordered" style="margin-bottom:8px;padding:12px 14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div><div class="t-body" style="font-weight:600;">${r.name}</div><div class="t-caption">${r.phone}</div></div>
+            <span class="status-chip chip-preparing">Pending</span>
+          </div>
+          ${isOwner?`<div class="btn-row" style="margin-top:8px;">
+            <button class="btn btn-secondary" style="flex:1;" data-action="confirmRejectPendingRider" data-id="${r.id}">Reject</button>
+            <button class="btn btn-primary" style="flex:1;" data-action="confirmApprovePendingRider" data-id="${r.id}">Approve</button>
+          </div>`:`<div class="t-caption" style="margin-top:6px;">Awaiting Owner approval</div>`}
+        </div>`).join('')}` : ''}
+
+      ${riderInvites.length?`
+      <div class="section-title" style="margin-top:14px;">Pending Rider Invitations</div>
+      ${riderInvites.map(i=>`
+        <div class="card bordered" style="margin-bottom:8px;padding:12px 14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <div style="min-width:0;"><div class="t-body" style="font-weight:600;">${i.name}</div><div class="t-caption" style="overflow:hidden;text-overflow:ellipsis;">${i.email} &middot; expires ${new Date(i.expiresAt).toLocaleDateString()}</div></div>
+            <button class="btn btn-secondary" style="flex:0 0 auto;" data-action="confirmRevokeRiderInvitation" data-id="${i.id}">Revoke</button>
+          </div>
+        </div>`).join('')}` : ''}
+    </div>
+  </div>`;
+}
+function inviteBaseUrl(){
+  return location.hostname==='vendor.cefflo.com' ? 'https://invite.cefflo.com/' : '../invite/';
+}
+function renderInviteLinkSheet(title,link){
+  return `
+  <div class="sheet-title">${title}</div>
+  <p class="t-caption" style="margin-bottom:10px;">Share this link with the person you invited. It is shown only once here -- copy it now.</p>
+  <div class="field"><input readonly value="${link}" onclick="this.select()" style="width:100%;font-size:12px;"></div>
+  <button class="btn btn-primary" style="width:100%;margin-top:10px;" data-action="closeSheet">Done</button>`;
+}
+function openInviteTeamMember(){
+  openSheet(`
+    <div class="sheet-title">Invite Team Member</div>
+    <div class="field"><label>Email</label><input id="tim_email" type="email" placeholder="name@example.com"></div>
+    <div class="field"><label>Role</label>
+      <select id="tim_role" onchange="document.getElementById('tim_owner_warning').classList.toggle('hidden', this.value!=='owner')">
+        <option value="operator">Operator / Staff</option>
+        <option value="owner">Owner</option>
+      </select>
+    </div>
+    <div id="tim_owner_warning" class="hidden" style="font-size:11.5px;background:#FFF6E5;color:#9A6700;border-radius:10px;padding:9px 11px;margin-bottom:10px;line-height:1.5;">Owner access is full business ownership -- billing, team management, and every operational capability.</div>
+    <button class="btn btn-primary" style="width:100%;" data-action="confirmInviteTeamMember">Generate Invite Link</button>
+  `);
+}
+function openInviteRiderReal(){
+  openSheet(`
+    <div class="sheet-title">Invite Rider</div>
+    <div class="field"><label>Rider Name</label><input id="rid_name" placeholder="e.g. Zahid Iskandar"></div>
+    <div class="field"><label>Phone Number</label><input id="rid_phone" placeholder="+60123456789"></div>
+    <div class="field"><label>Email</label><input id="rid_email" type="email" placeholder="name@example.com"></div>
+    <button class="btn btn-primary" style="width:100%;" data-action="confirmInviteRiderReal">Generate Invite Link</button>
+  `);
+}
+function openManageTeamMember(el){
+  const userId=el.dataset.userid, role=el.dataset.role, status=el.dataset.status;
+  openSheet(`
+    <div class="sheet-title">Manage Team Member</div>
+    <div class="field"><label>Role</label>
+      <select id="mtm_role"><option value="operator" ${role==='operator'?'selected':''}>Operator / Staff</option><option value="owner" ${role==='owner'?'selected':''}>Owner</option></select>
+    </div>
+    <div class="field"><label>Status</label>
+      <select id="mtm_status"><option value="active" ${status==='active'?'selected':''}>Active</option><option value="inactive" ${status==='inactive'?'selected':''}>Inactive</option></select>
+    </div>
+    <button class="btn btn-primary" style="width:100%;" data-action="confirmManageTeamMember" data-userid="${userId}">Save</button>
+  `);
 }
 function openSettingsExport(){
   openSheet(`
@@ -6038,6 +6480,7 @@ const PAGES = {
   reports: pageReports,
   notifications: pageNotifications,
   settings: pageSettings,
+  team: pageTeam,
   businessProfile: pageBusinessProfile,
   language: pageLanguage,
   notificationSettingsPage: pageNotificationSettingsPage,
@@ -6059,6 +6502,9 @@ const ACTIONS = {
   openSessionSelect, assignZoneRider,
   setRiderFilter, toggleRiderSearch, openInviteRider, confirmInviteRider,
   openAssignOrdersToRider, assignZoneToRiderFromProfile, openDeactivateRider, confirmDeactivateRider,
+  toggleOrdersSelectMode, toggleOrdersSelection, openRunBuilderFromOrdersSelection,
+  runBuilderToggleZone, runBuilderClearZoneFilters, runBuilderToggleOrder,
+  runBuilderSelectRider, runBuilderSetWaveMode, runBuilderSelectWave,
   openVerifySheet, verifyCurrentOrder,
   openNavigateSheet, chooseMapApp, openDeliveryIssueSheet, handleDeliveryIssue, finalizeUnreachable,
   openCompleteStopSheet, simulatePodPhoto, confirmMarkDelivered,
@@ -6071,6 +6517,7 @@ const ACTIONS = {
   setBilling, selectPlanOption, showBillingDeferred,
   toggleFaq,
   closeSheet,
+  openInviteTeamMember, openInviteRiderReal, openManageTeamMember,
 };
 
 function attachGlobalHandlers(){ /* delegation handles everything; nothing per-render needed */ }

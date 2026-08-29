@@ -113,6 +113,21 @@
   .live-dot{width:7px; height:7px; border-radius:50%; background:#21C873; box-shadow:0 0 0 0 rgba(33,200,115,.55); animation:liveBlink 1.25s infinite;}
   @keyframes liveBlink{0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(33,200,115,.52);} 50%{opacity:.7; box-shadow:0 0 0 6px rgba(33,200,115,0);}}
 
+  .hero-top-row{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .freshness-row{display:flex; align-items:center; gap:8px;}
+  .freshness-text{font-size:11.5px; font-weight:600; color:rgba(255,255,255,.7);}
+  .refresh-btn{
+    width:26px; height:26px; padding:0; border:0; border-radius:50%;
+    background:rgba(255,255,255,.18); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:transform .15s ease, background .15s ease;
+  }
+  .refresh-btn svg{width:14px; height:14px;}
+  .refresh-btn:active{transform:scale(.9); background:rgba(255,255,255,.3);}
+  .refresh-btn.is-spinning svg{animation:refreshSpin .6s linear;}
+  @keyframes refreshSpin{to{transform:rotate(360deg);}}
+  @media (prefers-reduced-motion:reduce){.refresh-btn.is-spinning svg{animation:none;}}
+
   .hero-main{margin-top:12px;}
   .hero-status-row{
     display:flex; align-items:center; justify-content:space-between; gap:14px;
@@ -473,9 +488,25 @@
   body.modal-open{overflow:hidden;}
 
   .device[data-status="picked_up"] .live-badge,
-  .device[data-status="picked_up"] .scooter-track{display:none;}
-  .device[data-status="picked_up"] .hero-status-row{justify-content:flex-start;}
-  .device[data-status="picked_up"] .hero-metrics{display:none;}
+  .device[data-status="picked_up"] .scooter-track,
+  .device[data-status="order_confirmed"] .live-badge,
+  .device[data-status="order_confirmed"] .scooter-track,
+  .device[data-status="preparing"] .live-badge,
+  .device[data-status="preparing"] .scooter-track,
+  .device[data-status="issue"] .live-badge,
+  .device[data-status="issue"] .scooter-track,
+  .device[data-status="cancelled"] .live-badge,
+  .device[data-status="cancelled"] .scooter-track{display:none;}
+  .device[data-status="picked_up"] .hero-status-row,
+  .device[data-status="order_confirmed"] .hero-status-row,
+  .device[data-status="preparing"] .hero-status-row,
+  .device[data-status="issue"] .hero-status-row,
+  .device[data-status="cancelled"] .hero-status-row{justify-content:flex-start;}
+  .device[data-status="picked_up"] .hero-metrics,
+  .device[data-status="order_confirmed"] .hero-metrics,
+  .device[data-status="preparing"] .hero-metrics,
+  .device[data-status="issue"] .hero-metrics,
+  .device[data-status="cancelled"] .hero-metrics{display:none;}
 
   .device[data-status="delivered"] .live-badge,
   .device[data-status="delivered"] .hero-main,
@@ -591,7 +622,15 @@
 
     <!-- Hero status card -->
     <section class="card hero-card">
-      <span class="live-badge" id="liveBadge"><span class="live-dot"></span>LIVE</span>
+      <div class="hero-top-row">
+        <span class="live-badge" id="liveBadge"><span class="live-dot"></span>LIVE</span>
+        <div class="freshness-row">
+          <span class="freshness-text" id="freshnessText">Updated just now</span>
+          <button class="refresh-btn" id="refreshButton" type="button" aria-label="Refresh tracking status">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 21v-5h5"/></svg>
+          </button>
+        </div>
+      </div>
       <div class="hero-main">
         <div class="hero-status-row">
           <div class="hero-status-copy">
@@ -616,9 +655,6 @@
         </div>
       </div>
       <div class="hero-metrics">
-        <div class="hero-metric">
-          <div class="hero-eta" id="heroEta">18 mins</div>
-        </div>
         <div class="hero-metric">
           <p class="hero-arrival-label">Estimated arrival</p>
           <p class="hero-arrival-time" id="heroArrivalTime">10:20 AM</p>
@@ -822,17 +858,36 @@
     riderWhatsapp: '60198765432'
   });
 
+  // S4-06.7 (P3): every real orders.delivery_status value gets its own
+  // honest, factual tracking state -- out_for_delivery and arrived
+  // deliberately still collapse into one ON_THE_WAY milestone (no new
+  // milestone is invented for "arrived," matching the existing 3-step
+  // happy-path stepper). ISSUE/CANCELLED are real, distinct states -- they
+  // must never be reachable via the unsupported-status fallback below, so
+  // they can never silently render as "Picked Up."
   const TRACKING_STATUS = Object.freeze({
+    ORDER_CONFIRMED: 'order_confirmed',
+    PREPARING: 'preparing',
     PICKED_UP: 'picked_up',
     ON_THE_WAY: 'on_the_way',
-    DELIVERED: 'delivered'
+    DELIVERED: 'delivered',
+    ISSUE: 'issue',
+    CANCELLED: 'cancelled'
+  });
+  const TRACKING_STATUS_LABEL = Object.freeze({
+    order_confirmed: 'Order Confirmed',
+    preparing: 'Preparing for Pickup',
+    picked_up: 'Picked Up',
+    on_the_way: 'On The Way',
+    delivered: 'Delivered',
+    issue: 'Delivery Issue',
+    cancelled: 'Cancelled'
   });
 
   const TRACKING_DATA = {
     orderId: 'CF-0001',
     customerName: 'Aisyah',
     storeName: 'Dapur Kak Lina',
-    etaMinutes: 18,
     estimatedArrival: '10:20 AM',
     pickedUpAt: '9:45 AM',
     onTheWayAt: '9:57 AM',
@@ -877,7 +932,6 @@
   const orderId = document.getElementById('orderId');
   const deliveredProgressNode = document.getElementById('deliveredProgressNode');
   const heroStatus = document.getElementById('heroStatus');
-  const heroEta = document.getElementById('heroEta');
   const heroArrivalTime = document.getElementById('heroArrivalTime');
   const heroDeliveredTime = document.getElementById('heroDeliveredTime');
   const podSection = document.getElementById('podSection');
@@ -939,15 +993,10 @@
     app.dataset.status = status;
     syncDynamicOrderData();
 
-    heroEta.textContent = `${TRACKING_DATA.etaMinutes} mins`;
     heroArrivalTime.textContent = TRACKING_DATA.estimatedArrival;
     heroDeliveredTime.textContent = TRACKING_DATA.deliveredAt;
 
-    if (status === TRACKING_STATUS.PICKED_UP) {
-      heroStatus.textContent = 'Picked Up';
-    } else if (status === TRACKING_STATUS.ON_THE_WAY) {
-      heroStatus.textContent = 'On the way';
-    }
+    heroStatus.textContent = TRACKING_STATUS_LABEL[status] || TRACKING_STATUS_LABEL[TRACKING_STATUS.ON_THE_WAY];
 
     setProgress(status);
 
@@ -1071,6 +1120,39 @@
   });
 
 
+  // Freshness indicator: reflects when the last real backend fetch
+  // completed. The ticking timer below only re-renders this text locally --
+  // it never triggers a network request (no continuous polling by design).
+  const freshnessText = document.getElementById('freshnessText');
+  const refreshButton = document.getElementById('refreshButton');
+  let lastUpdatedAt = null;
+
+  function formatFreshness(timestamp) {
+    if (!timestamp) return 'Updated just now';
+    const minutes = Math.floor((Date.now() - timestamp) / 60000);
+    if (minutes < 1) return 'Updated just now';
+    if (minutes === 1) return 'Updated 1 min ago';
+    if (minutes < 60) return `Updated ${minutes} min ago`;
+    const hours = Math.floor(minutes / 60);
+    return hours === 1 ? 'Updated 1 hour ago' : `Updated ${hours} hours ago`;
+  }
+
+  function renderFreshnessText() {
+    if (freshnessText) freshnessText.textContent = formatFreshness(lastUpdatedAt);
+  }
+
+  // UI-only re-render of the freshness label text; no backend request.
+  setInterval(renderFreshnessText, 20000);
+
+  if (refreshButton) {
+    refreshButton.addEventListener('click', () => {
+      refreshButton.classList.remove('is-spinning');
+      void refreshButton.offsetWidth; // restart the spin animation on repeat clicks
+      refreshButton.classList.add('is-spinning');
+      if (window.CEFFLO_CUSTOMER) window.CEFFLO_CUSTOMER.refresh();
+    });
+  }
+
   // Integration API for Rider/Backend state updates.
   window.CEFFLOTracking = Object.freeze({
     STATUS: TRACKING_STATUS,
@@ -1083,6 +1165,10 @@
     },
     getWhatsAppNotification() {
       return `Hi ${TRACKING_DATA.customerName}, your order is now on the way. Track your delivery: https://track.cefflo.com/${TRACKING_DATA.orderId}`;
+    },
+    setFreshness(timestamp) {
+      lastUpdatedAt = timestamp;
+      renderFreshnessText();
     }
   });
 

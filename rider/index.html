@@ -506,18 +506,15 @@ button,input,textarea,select{font:inherit}button{border:0;background:none;color:
 <div class="screen" id="screen-tutorial"><div class="tutorial-onboard"><div class="tutorial-top"><span class="brand-mini">CEFFLO RIDER</span><button class="tutorial-skip" onclick="finishOnboardingTutorial()">Skip</button></div><div class="tutorial-visual"><div class="tutorial-visual-card" id="tutorial-visual-card"></div></div><div class="tutorial-copy"><h2 id="tutorial-title">Your assignment, clearly organised.</h2><p id="tutorial-copy">See your zone, delivery progress and the next action from one focused dashboard.</p></div><div class="tutorial-dots" id="tutorial-onboard-dots"></div><div class="tutorial-nav"><button class="btn btn-outline" id="tutorial-back" onclick="prevTutorialSlide()">Back</button><button class="btn btn-purple" id="tutorial-next" onclick="nextTutorialSlide()">Next</button></div></div></div><div class="screen" id="screen-home">
 <div class="home-header"><div class="home-greeting-block"><div class="greeting-kicker" id="home-greeting-time">Good Morning</div><div class="greet-name" id="home-name">Hi, Amir 👋</div></div><button aria-label="Toggle rider availability" class="availability-toggle online" id="availability-toggle" onclick="toggleRiderAvailability()"><span class="availability-dot"></span><span id="availability-label">Online</span></button><button aria-label="Notifications" class="notif-btn" onclick="showToast('No new notifications.','success')"><svg fill="none" height="21" viewbox="0 0 24 24" width="21"><path d="M12 3a5 5 0 00-5 5v3.2c0 .6-.24 1.18-.66 1.6L5 14v1h14v-1l-1.34-1.2a2.3 2.3 0 01-.66-1.6V8a5 5 0 00-5-5z" stroke="currentColor" stroke-width="2"></path><path d="M10 18a2 2 0 004 0" stroke="currentColor" stroke-width="2"></path></svg><span class="red-dot"></span></button></div>
 <div class="home-dashboard-wrap"><div class="earnings-card" onclick="showScreen('screen-profile');renderProfilePage()"><div class="earnings-copy"><div class="earnings-label">Today's Earnings</div><div class="earnings-value" id="home-earnings-value">RM 0.00</div><div class="earnings-sub" id="home-earnings-sub">From 0 completed deliveries</div></div><div class="earnings-remaining" aria-label="Remaining orders"><strong id="home-remaining-count">0/12</strong><span>Remaining</span></div></div><div id="home-assignment-area"></div><div class="tutorial-card" id="tutorialCard" style="display:none"></div></div><div class="bottom-nav" id="nav-home"></div></div>
-<!-- ============ 6. PICKUP VERIFICATION ============ -->
+<!-- ============ 6. PICKUP CHECKLIST (S4-06.6) ============ -->
 <div class="screen pickup-premium" id="screen-pickup">
-<div class="premium-hero"><div class="top-header"><button class="icon-btn" onclick="showScreen('screen-home')"><svg class="ui-icon" viewbox="0 0 24 24"><path d="M15 18l-6-6 6-6"></path></svg></button><div class="title-group" style="text-align:center"><h1 style="font-size:18px">Pickup Verification</h1></div><span style="width:44px"></span></div></div>
+<div class="premium-hero"><div class="top-header"><button class="icon-btn" onclick="showScreen('screen-home')"><svg class="ui-icon" viewbox="0 0 24 24"><path d="M15 18l-6-6 6-6"></path></svg></button><div class="title-group" style="text-align:center"><h1 style="font-size:18px">Pickup Checklist</h1></div><span style="width:44px"></span></div></div>
 <div class="screen-body no-nav-pad" style="padding:0;overflow-y:auto;">
 <div class="floating-board pickup-board">
-<div class="pickup-progress"><div class="track"><div class="fill" id="pickup-progress-fill" style="width:8%"></div></div><span id="pickup-step-label">1 / 12</span></div>
-<div style="font-size:11px;color:var(--text-3);font-weight:800;text-transform:uppercase;letter-spacing:.08em">Order ID</div>
-<div class="order-id-big" id="pickup-order-id">CF-0001</div><div class="order-name-big" id="pickup-order-name">Aisyah Rahman</div>
-<div class="meta-chip-row"><span class="meta-chip" id="pickup-items-chip"></span><span class="meta-chip" id="pickup-note-chip"></span></div>
-<div class="pickup-loc-card"><div class="pickup-icon-box"><svg viewbox="0 0 24 24"><path d="M4 7.5L12 3l8 4.5v9L12 21l-8-4.5v-9z"></path><path d="M4 7.5l8 4.5 8-4.5M12 12v9"></path></svg></div><div><div class="l1">PICKUP FROM</div><div class="l2">Packing Table · Rider 3</div><div style="font-size:11px;color:var(--text-3);margin-top:3px">Match label and parcel condition</div></div></div>
-<div class="confirm-circle-wrap"><button class="confirm-circle" onclick="openModal('modal-confirmPickup')"><svg viewbox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.6"></path></svg></button><div class="confirm-circle-label">CONFIRM PICKUP</div></div>
-<div class="next-order-premium" id="pickup-next-preview"><div><div class="lbl">Next Order</div><div class="val">CF-0002 · Siti Zulaikha</div></div><svg class="ui-icon" style="color:var(--purple)" viewbox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg></div>
+<div class="pickup-progress"><div class="track"><div class="fill" id="pickup-progress-fill" style="width:8%"></div></div><span id="pickup-step-label">Picked up 0 / 12</span></div>
+<p class="t-caption" style="text-align:center;margin:4px 0 10px;color:var(--text-3);font-size:12px;">Tap each order once it is physically received. Any order may be confirmed in any order.</p>
+<div class="list-card" id="pickup-checklist-list"></div>
+<button class="btn btn-green" id="pickup-proceed-btn" style="margin-top:16px;" onclick="proceedToStartDelivery()" disabled>All Picked Up — Continue</button>
 </div>
 </div><div class="bottom-nav" id="nav-pickup"></div>
 </div>
@@ -535,21 +532,20 @@ button,input,textarea,select{font:inherit}button{border:0;background:none;color:
 <div id="allpicked-count" style="font-size:12px;color:var(--text-3);font-weight:700;padding:10px 4px 4px 4px;">Picked Up Orders (12)</div>
 <div id="allpicked-list"></div>
 </div>
-<button class="btn btn-green start-delivery-cta" id="startDeliveryButton" onclick="startDelivery()">Start Delivery</button>
-<div aria-hidden="true" class="slider-wrap production-hidden" id="startSlider"><div class="slider-track-label" id="sliderLabel">Start Delivery</div><div class="slider-thumb" id="sliderThumb"></div></div>
+<div aria-hidden="false" class="slider-wrap" id="startSlider"><div class="slider-track-label" id="sliderLabel">Slide to Start Delivery</div><div class="slider-thumb" id="sliderThumb"></div></div>
 </div>
 <div class="bottom-nav" id="nav-allpicked"></div>
 </div>
-<!-- ============ 8. ROUTE OVERVIEW ============ -->
+<!-- ============ 8. PLAN ROUTE / DELIVERY RUN (S4-06.6, mode-shared) ============ -->
 <div class="screen route-screen" id="screen-route">
 <header class="route-header">
-<button aria-label="Back" class="icon-btn" onclick="showScreen('screen-allpicked')"><svg class="ui-icon" viewbox="0 0 24 24"><path d="M15 18l-6-6 6-6"></path></svg></button>
-<div class="route-header__title"><h1>Route Overview</h1></div>
+<button aria-label="Back" class="icon-btn" id="route-back-btn" onclick="goBackFromRoute()"><svg class="ui-icon" viewbox="0 0 24 24"><path d="M15 18l-6-6 6-6"></path></svg></button>
+<div class="route-header__title"><h1 id="route-header-title">Route Overview</h1></div>
 <div class="route-header__actions"><span class="route-live"><i></i>LIVE</span><button aria-label="Recenter route" class="icon-btn" onclick="renderRouteOverview()"><svg class="ui-icon" viewbox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg></button></div>
 </header>
 <div class="route-workspace">
 <div class="route-map-stage"><div class="map-canvas" id="route-map"></div><div class="map-tool-stack"><button aria-label="Collapse details" class="map-tool" onclick="routeSheetSet('collapsed')"><svg viewbox="0 0 24 24"><path d="M7 10l5 5 5-5"></path></svg></button><button aria-label="Expand details" class="map-tool" onclick="routeSheetSet('full')"><svg viewbox="0 0 24 24"><path d="M7 14l5-5 5 5"></path></svg></button></div></div>
-<section class="route-sheet half" id="route-detail-sheet"><div class="map-sheet-handle" id="route-sheet-handle"></div><div id="route-stop-detail"></div><button class="btn btn-purple route-primary-cta" onclick="startSelectedRouteStop()">Start This Stop</button></section>
+<section class="route-sheet half" id="route-detail-sheet"><div class="map-sheet-handle" id="route-sheet-handle"></div><div id="route-stop-detail"></div></section>
 </div>
 <div class="bottom-nav" id="nav-route"></div>
 </div>
@@ -717,7 +713,7 @@ button,input,textarea,select{font:inherit}button{border:0;background:none;color:
 <div class="screen" id="screen-profile"><div class="compact-page-header profile-page-header"><h1>Profile</h1><button aria-label="Choose language" class="profile-language-trigger" id="profile-language-trigger" onclick="toggleProfileLanguageMenu()" type="button">EN</button><div class="profile-language-menu" hidden="" id="profile-language-menu"><button onclick="chooseProfileLanguage('en')" type="button">EN</button><button onclick="chooseProfileLanguage('ms')" type="button">BM</button><button onclick="chooseProfileLanguage('zh')" type="button">中文</button><button onclick="chooseProfileLanguage('ta')" type="button">தமிழ்</button></div></div><div class="screen-body profile-clean-body">
 <section class="profile-identity-board profile-merged-card"><label aria-label="Change profile photo" class="profile-avatar-editor"><div class="profile-avatar-lg" id="pf-avatar">A</div><span class="profile-camera-badge"><svg viewbox="0 0 24 24"><path d="M4 7h3l2-3h6l2 3h3v13H4V7z"></path><circle cx="12" cy="13" r="3.2"></circle></svg></span><input accept="image/*" capture="user" id="profile-photo-input" onchange="previewProfilePhoto(this)" type="file"/></label><div id="profile-view-state"><div class="profile-name" id="pf-name">Amir Hafiz</div><div class="profile-sub">Rider <span class="inline-status-dot"></span><span id="pf-status-text">Active</span></div><div class="profile-verification-line"><span>Licence Verified</span></div></div><div class="profile-contact-grid"><div><small>Phone Number</small><b id="pf-phone">+60 12-345 6789</b></div><div><small>Vehicle Plate</small><b id="pf-plate">BKA 4521</b></div></div><div class="profile-inline-form" hidden="" id="profile-inline-form"><label>Name<input id="inline-edit-name" type="text"/></label><label>Phone<input id="inline-edit-phone" type="tel"/></label><label>Plate Number<input id="inline-edit-plate" type="text"/></label></div><button aria-label="Edit phone number and vehicle plate" class="profile-edit-text" id="profile-edit-text" onclick="toggleInlineProfileEdit()" type="button"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 20h4l11-11-4-4L4 16v4z"></path><path d="M13.5 6.5l4 4"></path></svg><span>Edit</span></button></section>
 <section class="profile-compact-section"><h2>Preferences</h2><div class="profile-compact-pref"><span>Navigation</span><div class="profile-segment nav-segment"><button class="seg-btn active" id="nav-google" onclick="setNavApp('google')">Google</button><button class="seg-btn" id="nav-waze" onclick="setNavApp('waze')">Waze</button><button class="seg-btn" id="nav-apple" onclick="setNavApp('apple')">Apple</button></div></div></section>
-<section class="profile-menu-card"><button class="profile-flat-action" onclick="renderHelpCentre();showScreen('screen-help')"><span><b>Help Centre</b></span><svg class="profile-row-arrow" viewbox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg></button><button class="profile-flat-action" onclick="showScreen('screen-resetpw');resetRecoveryFlow()"><span><b>Change Password</b></span><svg class="profile-row-arrow" viewbox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg></button></section>
+<section class="profile-menu-card"><button class="profile-flat-action" id="pf-switch-team-row" style="display:none" onclick="openSwitchTeam()"><span><b>Switch Team</b><small id="pf-switch-team-sub"></small></span><svg class="profile-row-arrow" viewbox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg></button><button class="profile-flat-action" onclick="renderHelpCentre();showScreen('screen-help')"><span><b>Help Centre</b></span><svg class="profile-row-arrow" viewbox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg></button><button class="profile-flat-action" onclick="showScreen('screen-resetpw');resetRecoveryFlow()"><span><b>Change Password</b></span><svg class="profile-row-arrow" viewbox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg></button></section>
 <button class="profile-logout-text" onclick="openModal('modal-logoutConfirm')"><svg viewbox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3"></path><path d="M14 4h6v16h-6"></path></svg><span>Log Out</span></button><div class="profile-version"><span>App Version 1.7.3</span></div>
 </div><div class="bottom-nav" id="nav-profile"></div></div>
 <!-- ============ MODALS ============ -->
@@ -760,6 +756,8 @@ button,input,textarea,select{font:inherit}button{border:0;background:none;color:
 </div>
 <div class="modal-overlay" id="modal-logoutConfirm"><div class="modal-box"><div class="modal-title">Log Out?</div><p class="modal-sub">Are you sure you want to log out from CEFFLO Rider?</p><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-logoutConfirm')">No</button><button class="btn btn-red" onclick="closeModal('modal-logoutConfirm');doLogout()">Yes, Log Out</button></div></div></div>
 <div class="modal-overlay" id="modal-orderDetail"><div class="modal-box order-detail-modal"><div class="modal-title" id="od-id">#CF-0001</div><div class="modal-name" id="od-name">Customer</div><div class="order-detail-content" id="od-content"></div><button class="btn btn-outline" onclick="closeModal('modal-orderDetail')">Close</button></div></div>
+<div class="modal-overlay" id="modal-perOrderAcceptance"><div class="modal-box order-detail-modal"><div class="modal-title">Review Orders</div><div class="order-detail-content" id="poa-content"></div><button class="btn btn-outline" onclick="closeModal('modal-perOrderAcceptance')">Close</button></div></div>
+<div class="modal-overlay" id="modal-chooseTeam"><div class="modal-box order-detail-modal"><div class="modal-title">Choose Team</div><p class="modal-sub">Select which business you're working for right now.</p><div class="order-detail-content" id="choose-team-content"></div><button class="btn btn-outline" onclick="closeModal('modal-chooseTeam')">Close</button></div></div>
 <!-- ============ ISSUE BOTTOM SHEET ============ -->
 <div class="sheet-overlay" id="sheet-issue">
 <div class="sheet-box">
@@ -882,11 +880,23 @@ const mockOrders = [
 
 const appState = {
   currentUser:null,
-  activeAssignment:{name:'Lunch Delivery',zone:'Bangi',totalOrders:mockOrders.length,vendor:'Dapur Aisyah',pickupWindow:'11:30 AM – 12:00 PM',deliveryWindow:'12:00 PM – 2:30 PM',sessionId:'SES-BGI-240803-01',assignmentStatus:'Assigned',riderType:'Full-time'},
+  // S4-06.6: the real canonical hierarchy is Wave (delivery_session_id) ->
+  // this Rider's own assignments/stops -- no fabricated
+  // vendor/session/pickup-window/distance fields. activeRunSessionId is
+  // which Wave the Rider has drilled into from Home; activeRunOrders is
+  // that Wave's own stops only (never mixed with another Wave's), kept in
+  // sync via window.CEFFLO_RIDER_RUN.refreshActiveRunOrders(). planRouteOrder
+  // is LOCAL planning state only, never authoritative until
+  // save_run_sequence succeeds.
+  activeRunSessionId:null,
+  activeRunOrders:[],
+  planRouteOrder:[],
+  sessionNames:{},
+  routeMode:'delivery',
   pickupIndex:0,
   currentStopIndex:0,
   selectedNavigationApp: localStorage.getItem('cefflo_navapp') || "google",
-  orders: JSON.parse(JSON.stringify(mockOrders)),
+  orders: [],
   issues: [],
   podPhoto:null,
   tutorialCompleted: localStorage.getItem('cefflo_tutorial_done') === 'true',
@@ -1088,8 +1098,13 @@ function doResetPassword(){
   showToast('Kod set semula telah dihantar ke telefon anda.','success');
   setTimeout(()=>showScreen('screen-login'),650);
 }
-function doLogout(){
+async function doLogout(){
+  try { await window.CEFFLO.logout(); } catch (error) { console.error('[CEFFLO rider logout]', error); }
   localStorage.removeItem('cefflo_session');
+  // S4-07.3a: the selected Rider relationship is per-session UX state only
+  // (never authorization -- the backend independently re-validates every
+  // call regardless) but must not leak into the next login on this device.
+  if (typeof clearActiveRiderContext === 'function') clearActiveRiderContext();
   showScreen('screen-login');
 }
 
@@ -1105,23 +1120,51 @@ function renderHome(){
   if(homeNameEl) homeNameEl.textContent='Hi, '+firstName+' 👋';
   const homeAvatarEl=document.getElementById('home-avatar');
   if(homeAvatarEl) homeAvatarEl.textContent=firstName.charAt(0).toUpperCase();
-  const total=appState.orders.length;
-  const pickedUp=appState.orders.filter(o=>o.status!=='ready_for_pickup').length;
-  const delivered=appState.orders.filter(o=>o.delivered).length;
-  const remaining=total-delivered;
+  // Declined assignments are excluded from this rider's active workload --
+  // they must not be counted, shown as a next stop, or otherwise actionable
+  // (S4-05.4 does not auto-reassign; the Vendor must act separately).
+  const activeOrders=appState.orders.filter(o=>o.assignmentStatus!=='declined');
+  const total=activeOrders.length;
+  const delivered=activeOrders.filter(o=>o.delivered).length;
   const area=document.getElementById('home-assignment-area');
   if(!area) return;
-  if(appState.orders.every(o=>o.delivered)){
+  // Real canonical hierarchy only: one card per Wave (delivery_session_id)
+  // this Rider has assignments in -- never silently merged. Wave name is
+  // shown only if genuinely loaded (currently unavailable -- see the
+  // documented delivery_sessions RLS gap); a real order count is always
+  // shown regardless.
+  const runs=(window.CEFFLO_RIDER?window.CEFFLO_RIDER.riderRuns():[]).filter(run=>run.orders.some(o=>o.assignmentStatus!=='declined'));
+  if(total===0||runs.every(run=>run.orders.every(o=>o.delivered))){
     area.innerHTML=`<div class="empty-state"><div class="empty-title">No active assignment</div><div class="empty-sub">New assignments will appear here.</div></div>`;
-  }else{
-    area.innerHTML=`<div class="mission-card"><div class="mission-top"><div><div class="mission-eyebrow">CURRENT ASSIGNMENT</div><div class="mission-title">${appState.activeAssignment.zone}</div><div class="mission-zone">Dapur Aisyah · Session CF-S-0826</div></div><span class="mission-badge">ACTIVE</span></div><div class="mission-kpis"><div class="mission-kpi"><span>Pickup Window</span><b>11:30 AM</b></div><div class="mission-kpi"><span>Est. Finish</span><b>2:30 PM</b></div><div class="mission-kpi"><span>Total Stops</span><b>${total}</b></div><div class="mission-kpi"><span>Distance</span><b>28.4 km</b></div></div><button class="btn" onclick="viewAssignment()">${pickedUp>0?'Continue Assignment':'Start Pickup'}</button></div>`;
+    const remainingCount0=document.getElementById('home-remaining-count');if(remainingCount0)remainingCount0.textContent=`0/0`;
+    return;
   }
+  area.innerHTML=runs.map(run=>{
+    const runOrders=run.orders.filter(o=>o.assignmentStatus!=='declined');
+    const runTotal=runOrders.length;
+    const runDelivered=runOrders.filter(o=>o.delivered).length;
+    const pickedUp=runOrders.filter(o=>o.status!=='ready_for_pickup').length;
+    // Backend-authoritative gate: an order whose assignment is still
+    // pending (not yet accepted) exposes Accept/Decline -- never inferred
+    // locally, only read from assignmentStatus as hydrated from
+    // rider_assignments. Mixed states (some accepted, some still pending
+    // within one Wave) are shown honestly: Accept/Decline Run acts on
+    // whichever of this Rider's own assignments in this Wave remain
+    // pending, per the real accept_run/decline_run contract.
+    const hasPending=runOrders.some(o=>!o.delivered&&o.assignmentStatus==='assigned');
+    const label=run.waveName?run.waveName:`${runTotal} order${runTotal===1?'':'s'}`;
+    if(runOrders.every(o=>o.delivered)) return '';
+    if(hasPending){
+      return `<div class="mission-card"><div class="mission-top"><div><div class="mission-eyebrow">RUN</div><div class="mission-title">${label}</div><div class="mission-zone">${runTotal} order${runTotal===1?'':'s'}</div></div><span class="mission-badge">PENDING</span></div><div class="mission-action-row" style="display:flex;gap:10px;"><button class="btn" style="flex:1;background:#fff;color:#E5484D;border:1px solid rgba(0,0,0,.12);" onclick="declineRunAction('${run.sessionId}')">Decline Run</button><button class="btn" style="flex:1;" onclick="acceptRunAction('${run.sessionId}')">Accept Run</button></div><div style="margin-top:10px;text-align:center;"><button onclick="showPerOrderAcceptance('${run.sessionId}')" style="font-size:12px;color:var(--text-3);background:none;border:none;">Review individual orders instead</button></div></div>`;
+    }
+    return `<div class="mission-card"><div class="mission-top"><div><div class="mission-eyebrow">RUN</div><div class="mission-title">${label}</div><div class="mission-zone">${runTotal} order${runTotal===1?'':'s'} · ${runDelivered}/${runTotal} delivered</div></div><span class="mission-badge">ACTIVE</span></div><button class="btn" onclick="enterRun('${run.sessionId}')">${pickedUp>0?'Continue Run':'Plan Route'}</button></div>`;
+  }).join('')||`<div class="empty-state"><div class="empty-title">No active assignment</div><div class="empty-sub">New assignments will appear here.</div></div>`;
   const perDeliveryRate=6.5;
   const earnings=(delivered*perDeliveryRate).toFixed(2);
   const earningsVal=document.getElementById('home-earnings-value');if(earningsVal)earningsVal.textContent='RM '+earnings;
   const earningsSub=document.getElementById('home-earnings-sub');if(earningsSub)earningsSub.textContent=`From ${delivered} completed ${delivered===1?'delivery':'deliveries'}`;
   const remainingCount=document.getElementById('home-remaining-count');if(remainingCount)remainingCount.textContent=`${delivered}/${total}`;
-  const nextOrder=appState.orders.find(o=>!o.delivered)||appState.orders[0]; const hc=document.getElementById('home-next-customer'); if(hc&&nextOrder)hc.textContent=nextOrder.customer; const hs=document.getElementById('home-next-stop'); if(hs&&nextOrder)hs.textContent=`Stop ${nextOrder.sequence} of ${total}`;
+  const nextOrder=activeOrders.find(o=>!o.delivered)||activeOrders[0]; const hc=document.getElementById('home-next-customer'); if(hc&&nextOrder)hc.textContent=nextOrder.customer; const hs=document.getElementById('home-next-stop'); if(hs&&nextOrder)hs.textContent=`Stop ${nextOrder.sequence} of ${total}`;
   updateAvailabilityUI();
   const tCard=document.getElementById('tutorialCard');
   if(tCard) tCard.style.display=appState.tutorialCompleted?'none':'block';
@@ -1136,31 +1179,78 @@ function closeTutorial(){
   localStorage.setItem('cefflo_tutorial_done','true');
   document.getElementById('tutorialCard').style.display='none';
 }
-function viewAssignment(){
-  appState.pickupIndex = appState.orders.findIndex(o=>o.status==='ready_for_pickup');
-  if(appState.pickupIndex === -1){ showScreen('screen-allpicked'); renderAllPickedList(); return; }
-  renderPickupScreen();
-  showScreen('screen-pickup');
+// Entry point for a specific Wave/Run from Home. Resumes at the correct
+// real step from current backend state rather than always restarting at
+// Plan Route -- never mixes another Wave's stops into this Run.
+function enterRun(sessionId){
+  appState.activeRunSessionId = sessionId;
+  const stops = window.CEFFLO_RIDER_RUN.refreshActiveRunOrders();
+  if(!stops.length){ showScreen('screen-home'); return; }
+  const anyLocked = stops.some(o=>o.sequenceLocked);
+  if(anyLocked){
+    appState.routeMode='delivery';
+    const firstPending = stops.findIndex(o=>!o.delivered);
+    appState.currentStopIndex = firstPending===-1?Math.max(stops.length-1,0):firstPending;
+    selectedRouteStop = appState.currentStopIndex;
+    renderRouteOverview(); showScreen('screen-route');
+    return;
+  }
+  const anyPickedUpAtAll = stops.some(o=>o.backendStatus!=='created'&&o.backendStatus!=='ready_for_pickup');
+  if(anyPickedUpAtAll){
+    enterPickupChecklist();
+    return;
+  }
+  appState.planRouteOrder = stops;
+  appState.routeMode='plan';
+  renderRouteOverview(); showScreen('screen-route');
+}
+// Secondary/compatible fallback: per-order Accept/Decline for this Wave's
+// still-pending assignments, using the existing real S4-05.5 contract
+// unchanged.
+function showPerOrderAcceptance(sessionId){
+  const pending = appState.orders.filter(o=>o.deliverySessionId===sessionId && !o.delivered && o.assignmentStatus==='assigned');
+  const content = document.getElementById('poa-content');
+  content.innerHTML = pending.length ? pending.map(o=>`
+    <div class="order-detail-row" style="align-items:center;">
+      <span>${o.id} · ${o.customer}</span>
+      <span style="display:flex;gap:8px;">
+        <button class="btn btn-outline" style="padding:6px 12px;font-size:12px;" onclick="declineAssignmentAction('${o.backendId}');closeModal('modal-perOrderAcceptance')">Decline</button>
+        <button class="btn" style="padding:6px 12px;font-size:12px;background:var(--purple,#867AE2);color:#fff;" onclick="acceptAssignmentAction('${o.backendId}');closeModal('modal-perOrderAcceptance')">Accept</button>
+      </span>
+    </div>`).join('') : `<div class="empty-sub">No individually pending orders in this Run.</div>`;
+  openModal('modal-perOrderAcceptance');
 }
 
-/* ================= PICKUP FLOW ================= */
-function renderPickupScreen(){
-  const order = appState.orders[appState.pickupIndex];
-  document.getElementById('pickup-step-label').textContent = `${appState.pickupIndex+1} / ${appState.orders.length}`;
-  const pf=document.getElementById('pickup-progress-fill'); if(pf) pf.style.width=((appState.pickupIndex+1)/appState.orders.length*100)+'%';
-  document.getElementById('pickup-order-id').textContent = order.id;
-  document.getElementById('pickup-order-name').textContent = order.customer;
-  document.getElementById('pickup-items-chip').innerHTML = `${ICONS.package}<span>${order.items} items</span>`;
-  document.getElementById('pickup-note-chip').innerHTML = `${ICONS.note}<span>${order.note || 'No note'}</span>`;
-
-  const nextOrder = appState.orders[appState.pickupIndex+1];
-  const preview = document.getElementById('pickup-next-preview');
-  if(nextOrder){
-    preview.style.display='block';
-    preview.querySelector('.val').textContent = `${nextOrder.id} • ${nextOrder.customer}`;
-  } else {
-    preview.style.display='none';
+/* ================= PICKUP CHECKLIST (S4-06.6) =================
+   Unordered: each order in the active Run can be confirmed independently,
+   with a factual "Picked up X / N" progress count -- not the former
+   sequential wizard. Pickup order and delivery sequence are separate
+   concepts; this screen never reads delivery_stops.sequence. */
+function enterPickupChecklist(){
+  renderPickupChecklist();
+  showScreen('screen-pickup');
+}
+function renderPickupChecklist(){
+  const stops = window.CEFFLO_RIDER_RUN.refreshActiveRunOrders();
+  const pickedUp = stops.filter(o=>o.backendStatus!=='created'&&o.backendStatus!=='ready_for_pickup').length;
+  const label=document.getElementById('pickup-step-label'); if(label) label.textContent = `Picked up ${pickedUp} / ${stops.length}`;
+  const pf=document.getElementById('pickup-progress-fill'); if(pf) pf.style.width=(stops.length?(pickedUp/stops.length*100):0)+'%';
+  const list=document.getElementById('pickup-checklist-list');
+  if(list){
+    list.innerHTML = stops.map(o=>{
+      const done = o.backendStatus!=='created'&&o.backendStatus!=='ready_for_pickup';
+      return `<div class="pick-list-row" style="cursor:${done?'default':'pointer'}" ${done?'':`onclick="pickupOrderAction('${o.backendId}')"`}>
+        <span class="oid">${o.id}</span><span class="nm">${o.customer}</span>
+        <span class="ck" style="color:${done?'var(--success)':'#C6C9D2'}">&#10003;</span>
+      </div>`;
+    }).join('');
   }
+  const proceedBtn=document.getElementById('pickup-proceed-btn');
+  if(proceedBtn) proceedBtn.disabled = pickedUp<stops.length;
+}
+function proceedToStartDelivery(){
+  renderAllPickedList();
+  showScreen('screen-allpicked');
 }
 function openModal(id){
   if(id==='modal-confirmPickup'){
@@ -1184,8 +1274,9 @@ function confirmPickup(){
   }
 }
 function renderAllPickedList(){
-  document.getElementById('allpicked-count').textContent = `Picked Up Orders (${appState.orders.length})`;
-  document.getElementById('allpicked-list').innerHTML = appState.orders.map(o=>`
+  const stops = window.CEFFLO_RIDER_RUN.refreshActiveRunOrders();
+  document.getElementById('allpicked-count').textContent = `Picked Up Orders (${stops.length})`;
+  document.getElementById('allpicked-list').innerHTML = stops.map(o=>`
     <div class="pick-list-row"><span class="oid">${o.id}</span><span class="nm">${o.customer}</span><span class="ck">&#10003;</span></div>
   `).join('');
 }
@@ -1265,15 +1356,20 @@ function startStopFromRoute(){
 
 /* ================= ACTIVE DELIVERY ================= */
 function renderActiveDelivery(){
-  const o = appState.orders[appState.currentStopIndex];
-  document.getElementById('ad-stop-label').textContent = `Stop ${appState.currentStopIndex+1} of ${appState.orders.length}`;
+  const orders = window.CEFFLO_RIDER_RUN ? window.CEFFLO_RIDER_RUN.activeRunOrders() : appState.orders;
+  const o = orders[appState.currentStopIndex];
+  if(!o) return;
+  document.getElementById('ad-stop-label').textContent = `Stop ${appState.currentStopIndex+1} of ${orders.length}`;
   document.getElementById('ad-order-id').textContent = o.id;
   document.getElementById('ad-customer-name').textContent = o.customer;
   document.getElementById('ad-address').innerHTML = addressHTML(o.address);
   document.getElementById('ad-call').href = 'tel:'+o.phone;
   document.getElementById('ad-wa').href = 'https://wa.me/'+o.phone.replace('+','');
+  // No fabricated ETA/distance -- no routing data exists to compute either.
+  const etaRow=document.querySelector('#screen-activedelivery .eta-row');
+  if(etaRow) etaRow.style.display='none';
 
-  const next = appState.orders[appState.currentStopIndex+1];
+  const next = orders[appState.currentStopIndex+1];
   const preview = document.getElementById('ad-next-preview');
   if(next){
     preview.style.display='block';
@@ -1282,12 +1378,22 @@ function renderActiveDelivery(){
     preview.style.display='none';
   }
 }
-function navigateExternal(){
-  const o = appState.orders[appState.currentStopIndex];
-  const apps = {
+function navigateExternal(index){
+  const orders = window.CEFFLO_RIDER_RUN ? window.CEFFLO_RIDER_RUN.activeRunOrders() : appState.orders;
+  const o = orders[index!=null?index:appState.currentStopIndex];
+  if(!o) return;
+  // Genuine lat/lng when present; otherwise pass the real address string
+  // and let the external map app resolve it -- never a hardcoded
+  // coordinate fallback.
+  const hasCoords = typeof o.lat==='number' && typeof o.lng==='number';
+  const apps = hasCoords ? {
     google: `https://maps.google.com/?q=${o.lat},${o.lng}`,
     waze: `https://waze.com/ul?ll=${o.lat},${o.lng}&navigate=yes`,
     apple: `https://maps.apple.com/?q=${o.lat},${o.lng}`
+  } : {
+    google: `https://maps.google.com/?q=${encodeURIComponent(o.address)}`,
+    waze: `https://waze.com/ul?q=${encodeURIComponent(o.address)}&navigate=yes`,
+    apple: `https://maps.apple.com/?q=${encodeURIComponent(o.address)}`
   };
   window.open(apps[appState.selectedNavigationApp] || apps.google, '_blank');
 }
@@ -1300,8 +1406,10 @@ function arriveAtStop(){
 
 /* ================= ARRIVED & POD ================= */
 function renderArrivedPod(){
-  const o = appState.orders[appState.currentStopIndex];
-  document.getElementById('pod-stop-label').textContent = `Stop ${appState.currentStopIndex+1} of ${appState.orders.length}`;
+  const orders = window.CEFFLO_RIDER_RUN ? window.CEFFLO_RIDER_RUN.activeRunOrders() : appState.orders;
+  const o = orders[appState.currentStopIndex];
+  if(!o) return;
+  document.getElementById('pod-stop-label').textContent = `Stop ${appState.currentStopIndex+1} of ${orders.length}`;
   document.getElementById('pod-order-id').textContent = o.id;
   document.getElementById('pod-customer-name').textContent = o.customer;
   document.getElementById('pod-address').innerHTML = addressHTML(o.address);
@@ -1361,10 +1469,15 @@ function yesUsePhoto(){
 
 /* ================= NEXT STOP ================= */
 function renderNextStop(){
-  const o = appState.orders[appState.currentStopIndex];
+  const orders = window.CEFFLO_RIDER_RUN ? window.CEFFLO_RIDER_RUN.activeRunOrders() : appState.orders;
+  const o = orders[appState.currentStopIndex];
+  if(!o) return;
   document.getElementById('ns-order-id').textContent = o.id;
   document.getElementById('ns-customer').textContent = o.customer;
   document.getElementById('ns-address').innerHTML = addressHTML(o.address);
+  // No fabricated ETA/distance.
+  const etaRow=document.querySelector('#screen-nextstop .eta-row');
+  if(etaRow) etaRow.style.display='none';
 }
 function goNextStop(){
   renderActiveDelivery();
@@ -1373,7 +1486,9 @@ function goNextStop(){
 
 /* ================= ISSUE BOTTOM SHEET ================= */
 function openIssueSheet(){
-  appState.currentIssueOrder = appState.orders[appState.currentStopIndex];
+  const orders = window.CEFFLO_RIDER_RUN ? window.CEFFLO_RIDER_RUN.activeRunOrders() : appState.orders;
+  appState.currentIssueOrder = orders[appState.currentStopIndex];
+  if(!appState.currentIssueOrder) return;
   document.getElementById('issue-sheet-title').textContent = `Issue — ${appState.currentIssueOrder.id}`;
   document.getElementById('issue-options-list').style.display='block';
   document.getElementById('issue-detail-area').innerHTML='';
@@ -1424,9 +1539,10 @@ function submitIssue(reason){
 
 /* ================= COMPLETE SESSION / SUMMARY ================= */
 function renderSummary(){
-  const total = appState.orders.length;
-  const completed = appState.orders.filter(o=>o.delivered).length;
-  const issues = appState.orders.filter(o=>o.hasIssue).length;
+  const orders = window.CEFFLO_RIDER_RUN ? window.CEFFLO_RIDER_RUN.activeRunOrders() : appState.orders;
+  const total = orders.length;
+  const completed = orders.filter(o=>o.delivered).length;
+  const issues = orders.filter(o=>o.hasIssue).length;
   const start = appState.sessionStart || new Date();
   const end = new Date();
   const durationMin = Math.max(1, Math.round((end-start)/60000));
@@ -1437,7 +1553,6 @@ function renderSummary(){
     <div class="list-row"><span class="lk">Start Time</span><span class="lv">${start.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'})}</span></div>
     <div class="list-row"><span class="lk">End Time</span><span class="lv">${end.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'})}</span></div>
     <div class="list-row"><span class="lk">Total Duration</span><span class="lv">${durationMin} min</span></div>
-    <div class="list-row"><span class="lk">Distance Covered</span><span class="lv">28.4 km</span></div>
   `;
 }
 function yesCompleteSession(){
@@ -1601,6 +1716,19 @@ function renderProfilePage(){
   ['ms','en','zh','ta'].forEach(x=>document.getElementById('lang-'+x)?.classList.toggle('active',appState.language===x));
   ['google','waze','apple'].forEach(a=>document.getElementById('nav-'+a)?.classList.toggle('active',appState.selectedNavigationApp===a));
   if(typeof syncProfileLanguageTrigger==='function') syncProfileLanguageTrigger();
+
+  // S4-07.3a: Switch Team only ever offered when more than one ACTIVE
+  // relationship genuinely exists -- never shown for the common
+  // single-business case (zero UI friction, matching the locked design).
+  const switchRow=document.getElementById('pf-switch-team-row');
+  if(switchRow){
+    const activeCount=appState.riderRelationships?.active?.length||0;
+    switchRow.style.display=activeCount>1?'flex':'none';
+    const sub=document.getElementById('pf-switch-team-sub');
+    if(sub && appState.riderRelationships && appState.activeBusinessId){
+      sub.textContent=appState.riderRelationships.businessNameById?.[appState.activeBusinessId]||'';
+    }
+  }
 }
 function setLanguage(lang){appState.language=lang;localStorage.setItem('cefflo_lang',lang);applyLanguage();renderProfilePage();renderHome();renderOrdersPage();showToast(t('language_updated'),'success');}
 function setNavApp(app){
@@ -1721,13 +1849,31 @@ function verifyPhoneMock(){sendOtpMock()}
 
 let selectedRouteStop=0,routeDragStart=0;
 const ceffloLeafletMaps={};
+// The list a map render should use: Plan Route reflects the Rider's own
+// LOCAL (possibly unsaved) planning order so marker numbers react
+// immediately to a reorder; Delivery Run reflects the real, backend-
+// confirmed active-run order. Neither ever reads the flat, cross-Wave
+// appState.orders array directly.
+function currentRouteOrders(){
+  if(appState.routeMode==='plan') return appState.planRouteOrder;
+  return window.CEFFLO_RIDER_RUN ? window.CEFFLO_RIDER_RUN.activeRunOrders() : [];
+}
 function renderPremiumMap(containerId,detailId,prefix){
  const el=document.getElementById(containerId);if(!el)return;
- const orders=appState.orders,sel=prefix==='route'?selectedRouteStop:selectedMapStop;
- if(typeof L==='undefined'){renderPremiumMapFallback(el,orders,sel,prefix);return;}
+ const orders=prefix==='route'?currentRouteOrders():appState.orders,sel=prefix==='route'?selectedRouteStop:selectedMapStop;
+ // Honest Stage-4 capability: only orders with real, non-null coordinates
+ // can be plotted -- never a hardcoded fallback point. If none of this
+ // Run's orders have real coordinates, show a factual unavailable state
+ // instead of fabricating geography.
+ const geocoded=orders.map((o,i)=>({o,i})).filter(x=>typeof x.o.lat==='number'&&typeof x.o.lng==='number');
+ if(!geocoded.length){
+   el.innerHTML='<div class="map-offline-note">Map unavailable — no delivery coordinates are on file for this Run. Use the stop list and Navigate below.</div>';
+   return;
+ }
+ if(typeof L==='undefined'){renderPremiumMapFallback(el,orders,geocoded,sel,prefix);return;}
  if(ceffloLeafletMaps[containerId]){ceffloLeafletMaps[containerId].remove();delete ceffloLeafletMaps[containerId];}
  el.innerHTML='<div class="leaflet-map" id="'+containerId+'-leaflet"></div>';
- const map=L.map(containerId+'-leaflet',{zoomControl:true,attributionControl:true}).setView([2.9365,101.7685],14);
+ const map=L.map(containerId+'-leaflet',{zoomControl:true,attributionControl:true}).setView([geocoded[0].o.lat,geocoded[0].o.lng],14);
  const tileLayer=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'});
  let tileFailures=0,fallbackShown=false;
  tileLayer.on('tileerror',()=>{
@@ -1736,28 +1882,25 @@ function renderPremiumMap(containerId,detailId,prefix){
      fallbackShown=true;
      try{map.remove()}catch(e){}
      delete ceffloLeafletMaps[containerId];
-     renderPremiumMapFallback(el,orders,sel,prefix);
-     showToast('Map tiles unavailable. Offline route preview is displayed.','warning');
+     renderPremiumMapFallback(el,orders,geocoded,sel,prefix);
+     showToast('Map tiles unavailable. Showing the stop list only.','warning');
    }
  });
  tileLayer.addTo(map);
- const latlngs=orders.map(o=>[o.lat,o.lng]);
- L.polyline(latlngs,{color:'#FFFFFF',weight:9,opacity:.95,lineCap:'round',lineJoin:'round'}).addTo(map);
- L.polyline(latlngs,{color:'#867AE2',weight:5,opacity:.95,lineCap:'round',lineJoin:'round'}).addTo(map);
- orders.forEach((o,i)=>{
-   const isLocked=i!==appState.currentStopIndex && !o.delivered;
+ // No route polyline -- no routing/road-path data exists to draw one
+ // honestly. No Rider GPS marker -- no real device location is wired in
+ // this batch.
+ geocoded.forEach(({o,i})=>{
    const cls='cefflo-map-marker'+(i===sel?' selected':'')+(o.delivered?' done':'')+(o.hasIssue?' issue':'');
    const icon=L.divIcon({className:'',html:'<div class="'+cls+'">'+(o.delivered?'✓':i+1)+'</div>',iconSize:[30,30],iconAnchor:[15,15]});
-   L.marker([o.lat,o.lng],{icon}).addTo(map).on('click',()=>{if(prefix==='route'){if(i!==appState.currentStopIndex&&!o.delivered){showToast(t('complete_current'),'warning');return;}selectedRouteStop=i;renderRouteOverview()}else selectMapStop(i)});
+   L.marker([o.lat,o.lng],{icon}).addTo(map).on('click',()=>{if(prefix==='route'){if(appState.routeMode==='delivery'&&i!==appState.currentStopIndex&&!o.delivered){showToast(t('complete_current'),'warning');return;}selectedRouteStop=i;renderRouteOverview()}else selectMapStop(i)});
  });
- const riderIcon=L.divIcon({className:'',html:'<div class="cefflo-rider-marker"></div>',iconSize:[18,18],iconAnchor:[9,9]});
- L.marker([2.927,101.758],{icon:riderIcon,zIndexOffset:1000}).addTo(map);
- const bounds=L.latLngBounds(latlngs);map.fitBounds(bounds.pad(.15));ceffloLeafletMaps[containerId]=map;setTimeout(()=>map.invalidateSize(),80);
+ const bounds=L.latLngBounds(geocoded.map(x=>[x.o.lat,x.o.lng]));map.fitBounds(bounds.pad(.15));ceffloLeafletMaps[containerId]=map;setTimeout(()=>map.invalidateSize(),80);
 }
-function renderPremiumMapFallback(el,orders,sel,prefix){
- const points=[[12,78],[25,63],[40,72],[54,54],[70,64],[84,44],[68,28],[47,34],[29,43],[15,28],[48,17],[82,20]],path=points.map(p=>p.join(',')).join(' ');
- el.innerHTML='<div class="map-offline-note">Map tiles unavailable. Showing the offline route preview.</div><span class="map-label" style="left:7%;top:12%">BANGI</span><span class="map-label" style="left:72%;top:11%">KAJANG</span><svg class="map-route-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="'+path+'" fill="none" stroke="white" stroke-width="5"/><polyline points="'+path+'" fill="none" stroke="#867AE2" stroke-width="2.5"/></svg><span class="rider-marker" style="left:8%;top:87%"></span>';
- orders.forEach((o,i)=>{const p=points[i],b=document.createElement('button');b.className='map-stop'+(i===sel?' selected':'')+(o.delivered?' done':'')+(o.hasIssue?' issue':'');b.style.left=p[0]+'%';b.style.top=p[1]+'%';b.textContent=o.delivered?'✓':i+1;b.onclick=()=>{if(prefix==='route'){if(i!==appState.currentStopIndex&&!o.delivered){showToast(t('complete_current'),'warning');return;}selectedRouteStop=i;renderRouteOverview()}else selectMapStop(i)};el.appendChild(b)});
+function renderPremiumMapFallback(el,orders,geocoded,sel,prefix){
+ // Offline fallback: an honest stop list only -- no fabricated route
+ // shape/labels/rider position when the tile service is unavailable.
+ el.innerHTML='<div class="map-offline-note">Map tiles unavailable. Showing the stop list only.</div>';
 }
 function stopDetailHTML(o,i){
  const status=o.delivered?'Completed':o.hasIssue?'Issue':'Ongoing';
@@ -1973,9 +2116,72 @@ window.addEventListener('load',()=>{if(!localStorage.getItem('cefflo_lang')){app
 }
 </style>
 <script id="v421-runtime-corrective">
-/* Null-safe route render for cleaned DOM. */
+/* S4-06.6: screen-route now serves two Founder-locked moments from one
+   shared shell -- Plan Route (pre-lock, reorderable) and Delivery Run
+   (post-lock, current-stop-only) -- switched by appState.routeMode. Every
+   fabricated ETA/distance figure is removed; display position (array
+   index) is always used for on-screen stop numbers, never the raw,
+   possibly-gapped persisted delivery_stops.sequence. */
+function goBackFromRoute(){
+  showScreen(appState.routeMode==='plan' ? 'screen-home' : 'screen-allpicked');
+}
+function planRouteIsDirty(){
+  const saved=window.CEFFLO_RIDER_RUN?window.CEFFLO_RIDER_RUN.activeRunOrders():[];
+  if(saved.some(o=>o.sequence==null)) return true;
+  if(saved.length!==appState.planRouteOrder.length) return true;
+  return saved.map(o=>o.backendId).join(',')!==appState.planRouteOrder.map(o=>o.backendId).join(',');
+}
+function moveStop(index,dir){
+  const list=appState.planRouteOrder;
+  const target=index+dir;
+  if(target<0||target>=list.length) return;
+  [list[index],list[target]]=[list[target],list[index]];
+  renderRouteOverview();
+}
+// Minimal reusable slide-to-confirm gesture binder, for controls (like
+// Start Pickup) whose DOM is re-created on every render via innerHTML,
+// unlike the static Start Delivery slider bound once at load.
+function bindSlideToConfirm(wrapId,thumbId,onConfirm){
+  const wrap=document.getElementById(wrapId),thumb=document.getElementById(thumbId);
+  if(!wrap||!thumb) return;
+  let dragging=false,startX=0,thumbStartLeft=4;
+  const maxLeft=()=>wrap.clientWidth-thumb.clientWidth-8;
+  const setLeft=px=>{px=Math.max(4,Math.min(maxLeft(),px));thumb.style.left=px+'px';return px/maxLeft();};
+  const onDown=e=>{dragging=true;startX=(e.touches?e.touches[0].clientX:e.clientX);thumbStartLeft=parseFloat(thumb.style.left||4);};
+  const onMove=e=>{if(!dragging)return;const x=(e.touches?e.touches[0].clientX:e.clientX);setLeft(thumbStartLeft+(x-startX));};
+  const onUp=()=>{if(!dragging)return;dragging=false;const ratio=setLeft(parseFloat(thumb.style.left||4));if(ratio>0.82){setLeft(maxLeft());setTimeout(onConfirm,180);}else setLeft(4);};
+  thumb.addEventListener('mousedown',onDown);thumb.addEventListener('touchstart',onDown,{passive:true});
+  window.addEventListener('mousemove',onMove);window.addEventListener('touchmove',onMove,{passive:true});
+  window.addEventListener('mouseup',onUp);window.addEventListener('touchend',onUp);
+}
 renderRouteOverview=function(){
- const orders=appState.orders;
+ const titleEl=document.getElementById('route-header-title');
+ if(appState.routeMode==='plan'){
+   if(titleEl) titleEl.textContent='Plan Route';
+   const list=appState.planRouteOrder;
+   renderPremiumMap('route-map','route-stop-detail','route');
+   const detail=document.getElementById('route-stop-detail');
+   if(detail){
+     const dirty=planRouteIsDirty();
+     detail.innerHTML=`<div class="route-current-card">
+       <div class="stop-name" style="margin-bottom:8px;">Reorder using your local knowledge, then save.</div>
+       ${list.map((o,i)=>`<div class="pick-list-row" style="align-items:center;">
+         <span class="oid" style="width:26px;">${i+1}</span>
+         <span class="nm" style="flex:1;">${o.id} · ${o.customer}</span>
+         <button class="icon-btn" style="width:30px;height:30px;" ${i===0?'disabled':''} onclick="moveStop(${i},-1)">&#9650;</button>
+         <button class="icon-btn" style="width:30px;height:30px;" ${i===list.length-1?'disabled':''} onclick="moveStop(${i},1)">&#9660;</button>
+       </div>`).join('')}
+       <button class="btn btn-purple" style="margin-top:14px;" onclick="saveSequenceAction()">${dirty?'Save Sequence':'Sequence Saved'}</button>
+       ${!dirty?`<div aria-hidden="false" class="slider-wrap" id="startPickupSlider" style="margin-top:12px;"><div class="slider-track-label" id="startPickupSliderLabel">Slide to Start Pickup</div><div class="slider-thumb" id="startPickupSliderThumb"></div></div>`:''}
+     </div>`;
+     if(!dirty) bindSlideToConfirm('startPickupSlider','startPickupSliderThumb',()=>{const t=document.getElementById('startPickupSliderThumb');if(t)t.style.left='4px';startPickupRunAction();});
+   }
+   const sheet=document.getElementById('route-detail-sheet');
+   if(sheet){sheet.classList.remove('collapsed','half','full');sheet.classList.add('full');}
+   return;
+ }
+ titleEl && (titleEl.textContent='Delivery Run');
+ const orders=window.CEFFLO_RIDER_RUN?window.CEFFLO_RIDER_RUN.activeRunOrders():[];
  selectedRouteStop=Math.min(Math.max(selectedRouteStop,0),Math.max(orders.length-1,0));
  renderPremiumMap('route-map','route-stop-detail','route');
  const detail=document.getElementById('route-stop-detail');
@@ -1989,15 +2195,21 @@ renderMapStopDetail=function(){
  const detail=document.getElementById('map-stop-detail');
  if(detail&&o)detail.innerHTML=stopDetailHTML(o,selectedMapStop);
 };
+// Display position (i, the array index within the already backend-sequence-
+// sorted active-run list) is the on-screen stop number -- never the raw
+// persisted delivery_stops.sequence, which may legitimately contain gaps
+// after a pre-pickup reassignment (S4-06.4). No ETA, no distance -- no
+// data exists to compute either honestly.
 stopDetailHTML=function(o,i){
+ const orders=window.CEFFLO_RIDER_RUN?window.CEFFLO_RIDER_RUN.activeRunOrders():[];
  const status=o.delivered?'Completed':o.hasIssue?'Issue':'Active';
  const badge=o.delivered?'badge-green':o.hasIssue?'badge-orange':'badge-purple';
  return `<section class="route-current-card">
-   <div class="route-current-head"><div><div class="stop-order">#${o.id}</div><div class="stop-name">${o.customer}</div></div><span class="badge ${badge}">${status}</span></div>
-   <div class="route-metrics"><div><small>ETA</small><b>${5+i*2} min</b></div><div><small>Distance</small><b>${(1.4+i*.2).toFixed(1)} km</b></div></div>
+   <div class="route-current-head"><div><div class="stop-order">Stop ${i+1} of ${orders.length}</div><div class="stop-name">#${o.id} · ${o.customer}</div></div><span class="badge ${badge}">${status}</span></div>
    <div class="route-info-row">${ICONS.location}<span><small>Delivery Address</small><b>${o.address}</b></span></div>
    ${o.note?`<div class="route-note-box"><small>Delivery Note</small><b>${o.note}</b></div>`:''}
-   <div class="route-action-bar"><a class="route-icon-action call" aria-label="Call customer" href="tel:${o.phone}">${ICONS.call}</a><a class="route-icon-action wa" aria-label="WhatsApp customer" href="https://wa.me/${o.phone.replace('+','')}">${ICONS.whatsapp}</a><button class="route-navigate-action" onclick="appState.currentStopIndex=${i};navigateExternal()">${ICONS.location}<span>Navigate</span></button></div>
+   <div class="route-action-bar"><a class="route-icon-action call" aria-label="Call customer" href="tel:${o.phone}">${ICONS.call}</a><a class="route-icon-action wa" aria-label="WhatsApp customer" href="https://wa.me/${o.phone.replace('+','')}">${ICONS.whatsapp}</a><button class="route-navigate-action" onclick="navigateExternal(${i})">${ICONS.location}<span>Navigate</span></button></div>
+   ${i===appState.currentStopIndex&&!o.delivered?`<button class="btn btn-purple route-primary-cta" style="margin-top:12px;" onclick="startSelectedRouteStop()">Start This Stop</button>`:''}
  </section>`;
 };
 routeSheetSet=function(state){
