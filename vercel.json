@@ -5,6 +5,7 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/shared/:path*", "destination": "/shared/:path*" },
+    { "source": "/:path*", "has": [{ "type": "host", "value": "www.cefflo.com" }], "destination": "/marketing/:path*" },
     { "source": "/manifest.webmanifest", "has": [{ "type": "host", "value": "vendor.cefflo.com" }], "destination": "/vendor/manifest.webmanifest" },
     { "source": "/sw.js", "has": [{ "type": "host", "value": "vendor.cefflo.com" }], "destination": "/vendor/sw.js" },
     { "source": "/icons/:path*", "has": [{ "type": "host", "value": "vendor.cefflo.com" }], "destination": "/vendor/icons/:path*" },
