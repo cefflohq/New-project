@@ -4831,74 +4831,6 @@ function confirmCsvImport(){
   navigate('orders', {tab:'ongoing'}, false);
 }
 
-/* ===================== PAGE: DISPATCH PLANNER ===================== */
-function pageDispatchPlanner(){
-  return `
-  ${innerHeader(t('dispatchPlanner'))}
-  <div class="content">
-    <div class="card bordered row-between" style="margin-bottom:18px" data-action="openSessionSelect">
-      <span class="t-body" style="font-weight:600">${t('todayLunch')}</span>
-      <span class="chev">${ic('chev')}</span>
-    </div>
-    ${state.zones.map(z=>{
-      const rider = state.riders.find(r=>r.id===z.riderId);
-      const status = z.riderId ? 'Assigned' : (z.orderIds.length? 'Unassigned':'Ready');
-      const chipClass = z.riderId ? 'chip-completed' : (z.orderIds.length? 'chip-issue':'chip-preparing');
-      return `<div class="card bordered" data-nav="zoneDetail" data-navparams='{"id":"${z.id}"}'>
-        <div class="row-between">
-          <span class="t-body" style="font-weight:600">Zone ${z.id}</span>
-          <span class="status-chip ${chipClass}">${status}</span>
-        </div>
-        <div class="order-meta" style="margin-top:6px">${z.orderIds.length} ${t('ordersCount')} · 1 ${t('riderRequired')}</div>
-        <div class="order-meta">${t('assigned')}: ${rider?rider.name:'—'}</div>
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-function openSessionSelect(){
-  openSheet(`
-    <div class="sheet-title">${t('deliverySession')}</div>
-    ${['Morning Session','Lunch Session','Dinner Session'].map(s=>`
-      <div class="opt-row" data-action="closeSheet"><div class="opt-title">${s}</div><div class="radio ${s==='Lunch Session'?'checked':''}"></div></div>
-    `).join('')}
-  `);
-}
-function pageZoneDetail(params){
-  const z = state.zones.find(x=>x.id===params.id);
-  const rider = state.riders.find(r=>r.id===z.riderId);
-  const availableRiders = state.riders.filter(r=>r.status!=='offline' && !state.zones.some(zz=>zz.riderId===r.id && zz.id!==z.id));
-  return `
-  ${innerHeader('Zone '+z.id)}
-  <div class="content">
-    <div class="card bordered">
-      <div class="stat-inline"><span class="label">Orders</span><span class="val">${z.orderIds.length}</span></div>
-      <div class="stat-inline"><span class="label">${t('estimatedStops')}</span><span class="val">${z.orderIds.length}</span></div>
-      <div class="stat-inline"><span class="label">${t('suggestedCapacity')}</span><span class="val">${z.capacity} orders/rider</span></div>
-      <div class="stat-inline"><span class="label">${t('currentRider')}</span><span class="val">${rider?rider.name:t('unassigned')}</span></div>
-    </div>
-    <div class="section-title" style="margin-top:20px">${t('availableRiders')}</div>
-    ${availableRiders.map(r=>`
-      <div class="opt-row" data-action="assignZoneRider" data-zone="${z.id}" data-rider="${r.id}">
-        <div class="opt-left">
-          <div class="avatar">${r.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</div>
-          <div><div class="opt-title">${r.name}</div><div class="opt-sub">${r.employment==='Part-time'?'On-demand':'Full-time'} · ${t('zone')} exp: ${r.zoneExp}</div></div>
-        </div>
-        <div class="radio ${z.riderId===r.id?'checked':''}"></div>
-      </div>
-    `).join('') || `<div class="t-caption">${t('noAvailableRiders')}</div>`}
-  </div>`;
-}
-function assignZoneRider(el){
-  const z = state.zones.find(x=>x.id===el.dataset.zone);
-  const rider = state.riders.find(r=>r.id===el.dataset.rider);
-  if(z && rider){
-    z.riderId = rider.id;
-    rider.zone = 'Zone '+z.id;
-    z.orderIds.forEach(oid=>{ const o=state.orders.find(x=>x.id===oid); if(o){o.riderId=rider.id; o.riderName=rider.name; o.zone='Zone '+z.id;} });
-    toast('Zone A assigned to '+rider.name, 'success');
-    render();
-  }
-}
 
 /* ===================== PAGE: RIDER MANAGEMENT ===================== */
 const riderUiState = { search:'', searchOpen:false, filter:'all' };
@@ -5104,43 +5036,13 @@ function pageRiderProfile(params){
 }
 function openAssignOrdersToRider(el){
   // S4-06.5b: real Run Builder entry (Rider-first). The prior mock
-  // Select-Zone -> assign-whole-zone-to-one-Rider flow is replaced --
-  // that assignZoneToRiderFromProfile() logic is left in place but is no
-  // longer reachable from any live path.
+  // Select-Zone -> assign-whole-zone-to-one-Rider flow (and its
+  // assignZoneToRiderFromProfile handler) has been removed -- Run Builder
+  // is the sole, canonical entry point now.
   const rid = el.dataset.id;
   const rider = state.riders.find(r=>r.id===rid);
   if(!rider) return;
   openRunBuilder({ riderId: rid });
-}
-function assignZoneToRiderFromProfile(el){
-  syncZonesFromOrders();
-  const zone = state.zones.find(item=>item.id===el.dataset.zone);
-  const rider = state.riders.find(item=>item.id===el.dataset.rider);
-
-  if(!zone || !rider || !zone.orderIds.length){
-    closeSheet();
-    toast(t('noOrdersAvailable'),'error');
-    return;
-  }
-
-  state.zones.forEach(item=>{
-    if(item.riderId===rider.id) item.riderId=null;
-  });
-
-  zone.riderId = rider.id;
-  rider.zone = zone.name;
-
-  state.orders.forEach(order=>{
-    if(zone.orderIds.includes(order.id)){
-      order.riderId = rider.id;
-      order.riderName = rider.name;
-    }
-  });
-
-  persistOperationalStore();
-  closeSheet();
-  toast(tf('zoneAssignedSuccess',{zone:zone.name,rider:rider.name}),'success');
-  render();
 }
 
 /* ===================== RUN BUILDER (S4-06.5b) =====================
@@ -6404,7 +6306,7 @@ function showBillingDeferred(){
 
 /* ===================== HELP & SUPPORT ===================== */
 const helpFaqs = [
-  {q:'How do I assign a rider to a zone?', a:'Go to Dispatch Planner, tap a zone card, then select an available rider from the list.'},
+  {q:'How do I assign a rider to a zone?', a:'Open a Rider’s profile and tap Assign Orders, or select orders on the Orders page and tap Assign to Rider — either opens Run Builder, where you choose the Rider and Wave.'},
   {q:'What happens if a customer is unreachable?', a:'The app will simulate 3 call attempts and send a WhatsApp message before letting you mark the order as an issue.'},
   {q:'Can I change my subscription plan anytime?', a:'Yes, go to Settings → Subscription to upgrade, downgrade, or cancel your plan.'},
   {q:'How is delivery zone auto-assigned?', a:'When adding a new order, the app checks the address against your coverage area and suggests the matching zone.'},
@@ -6474,8 +6376,6 @@ const PAGES = {
   orderDetail: pageOrderDetail,
   orderIntakeWizard: pageOrderIntakeWizard,
   csvImport: pageCsvImport,
-  dispatchPlanner: pageDispatchPlanner,
-  zoneDetail: pageZoneDetail,
   riders: pageRiders,
   riderProfile: pageRiderProfile,
   pickupQueue: pagePickupQueue,
@@ -6709,9 +6609,8 @@ const ACTIONS = {
   openReportIssue, confirmReportIssue, openReschedule, confirmReschedule,
   startCsvImport, startManualKeyIn, wizAddItem, wizBack, wizNext, wizSubmit,
   openImportFilePicker, fixCsvRow, saveCsvRowFix, confirmCsvImport,
-  openSessionSelect, assignZoneRider,
   setRiderFilter, toggleRiderSearch, openInviteRider, confirmInviteRider,
-  openAssignOrdersToRider, assignZoneToRiderFromProfile, openDeactivateRider, confirmDeactivateRider,
+  openAssignOrdersToRider, openDeactivateRider, confirmDeactivateRider,
   toggleOrdersSelectMode, toggleOrdersSelection, openRunBuilderFromOrdersSelection,
   runBuilderToggleZone, runBuilderClearZoneFilters, runBuilderToggleOrder,
   runBuilderSelectRider, runBuilderSetWaveMode, runBuilderSelectWave,
