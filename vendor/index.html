@@ -7841,7 +7841,7 @@ async function authRequest(path,payload){
 function storeAuthSession(session){productionState.authSession=session||null;productionState.user=session?.user||null;if(session)localStorage.setItem('cefflo_auth_session',JSON.stringify(session));else localStorage.removeItem('cefflo_auth_session');window.CEFFLO?.setSession?.(session||null);}
 function restoreAuthSession(){try{const session=JSON.parse(localStorage.getItem('cefflo_auth_session')||'null');if(session?.access_token)storeAuthSession(session);}catch{}return productionState.authSession;}
 async function signInWithPassword({email,password}){const session=await authRequest('token?grant_type=password',{email,password});storeAuthSession(session);await hydrateOperationalStateFromBackend();startRealtime();return session;}
-async function signUpWithPassword({email,password,metadata={}}){const result=await authRequest('signup',{email,password,data:metadata});if(result.access_token)storeAuthSession(result);return result;}
+async function signUpWithPassword({email,password,metadata={}}){const result=await authRequest(`signup?redirect_to=${encodeURIComponent(authRedirectUrl())}`,{email,password,data:metadata});if(result.access_token)storeAuthSession(result);return result;}
 async function refreshAuthSession(){const token=productionState.authSession?.refresh_token;if(!token)return null;const session=await authRequest('token?grant_type=refresh_token',{refresh_token:token});storeAuthSession(session);return session;}
 async function productionSignOut(){try{if(productionState.authSession?.access_token)await fetch(`${CEFFLO_RUNTIME_CONFIG.supabaseUrl}/auth/v1/logout`,{method:'POST',headers:{apikey:CEFFLO_RUNTIME_CONFIG.supabaseAnonKey,Authorization:`Bearer ${productionState.authSession.access_token}`}});}finally{stopRealtime();stopRiderGps();storeAuthSession(null);}}
 
@@ -7939,6 +7939,12 @@ function authErrorMessage(error){
   return map[raw]||raw.replace(/^Backend \d+:\s*/,'');
 }
 function validEmail(value){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value||'').trim());}
+function authRedirectUrl(){
+  const currentIsPublic=location.protocol==='https:'&&!['localhost','127.0.0.1'].includes(location.hostname);
+  if(currentIsPublic)return `${location.origin}${location.pathname}`;
+  if(CEFFLO_RUNTIME_CONFIG.environment==='staging')return 'https://new-project-git-staging-cefflohq26-6353s-projects.vercel.app/vendor/';
+  return `${location.origin}${location.pathname}`;
+}
 function readPendingBusiness(){try{return JSON.parse(localStorage.getItem(AUTH_PENDING_BUSINESS_KEY)||'null');}catch{return null;}}
 function savePendingBusiness(data){localStorage.setItem(AUTH_PENDING_BUSINESS_KEY,JSON.stringify(data));}
 function clearPendingBusiness(){localStorage.removeItem(AUTH_PENDING_BUSINESS_KEY);}
@@ -8049,7 +8055,7 @@ async function submitPasswordReset(button){
   if(!validEmail(email))return setAuthStatus('forgotAuthStatus','Enter a valid email address.','error');
   setAuthBusy(button,true);setAuthStatus('forgotAuthStatus','Sending reset link…');
   try{
-    await authRequest('recover',{email,redirect_to:`${location.origin}${location.pathname}`});
+    await authRequest('recover',{email,redirect_to:authRedirectUrl()});
     setAuthStatus('forgotAuthStatus','Reset link sent. Check your email.','success');
   }catch(error){setAuthStatus('forgotAuthStatus',authErrorMessage(error),'error');}
   finally{setAuthBusy(button,false);}
