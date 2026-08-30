@@ -659,7 +659,7 @@ if('serviceWorker' in navigator){
 <!-- ============ PROFILE PAGE ============ -->
 <div class="screen" id="screen-profile"><div class="compact-page-header profile-page-header"><h1>Profile</h1><button aria-label="Choose language" class="profile-language-trigger" id="profile-language-trigger" onclick="toggleProfileLanguageMenu()" type="button">EN</button><div class="profile-language-menu" hidden="" id="profile-language-menu"><button onclick="chooseProfileLanguage('en')" type="button">EN</button><button onclick="chooseProfileLanguage('ms')" type="button">BM</button><button onclick="chooseProfileLanguage('zh')" type="button">中文</button><button onclick="chooseProfileLanguage('ta')" type="button">தமிழ்</button></div></div><div class="screen-body profile-clean-body">
 <section class="profile-identity-board profile-merged-card"><button aria-label="Edit phone number and vehicle plate" class="profile-edit-text" id="profile-edit-text" onclick="toggleInlineProfileEdit()" type="button"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 20h4l11-11-4-4L4 16v4z"></path><path d="M13.5 6.5l4 4"></path></svg></button><label aria-label="Change profile photo" class="profile-avatar-editor"><div class="profile-avatar-lg" id="pf-avatar">A</div><span class="profile-camera-badge"><svg viewbox="0 0 24 24"><path d="M4 7h3l2-3h6l2 3h3v13H4V7z"></path><circle cx="12" cy="13" r="3.2"></circle></svg></span><input accept="image/*" capture="user" id="profile-photo-input" onchange="previewProfilePhoto(this)" type="file"/></label><div id="profile-view-state"><div class="profile-name" id="pf-name">Amir Hafiz</div><div class="profile-sub">Rider <span class="inline-status-dot"></span><span id="pf-status-text">Active</span></div><div class="profile-verification-line"><span>Licence Verified</span></div></div><div class="profile-contact-grid"><div><small>Phone Number</small><b id="pf-phone">+60 12-345 6789</b></div><div><small>Vehicle Plate</small><b id="pf-plate">BKA 4521</b></div></div><div class="profile-inline-form" hidden="" id="profile-inline-form"><label>Name<input id="inline-edit-name" type="text"/></label><label>Phone<input id="inline-edit-phone" type="tel"/></label><label>Plate Number<input id="inline-edit-plate" type="text"/></label></div></section>
-<section class="profile-compact-section"><h2>Preferences</h2><div class="profile-pref-row"><span class="profile-pref-row-label" id="pref-label-language">Language</span><div class="profile-pref-control"><span class="profile-pref-icon"><svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"></circle><path d="M3.7 12h16.6M12 3.5c2.3 2.4 3.6 5.4 3.6 8.5s-1.3 6.1-3.6 8.5c-2.3-2.4-3.6-5.4-3.6-8.5s1.3-6.1 3.6-8.5z" stroke="currentColor" stroke-width="1.8"></path></svg></span><div class="profile-dropdown"><select aria-label="Choose language" id="lang-select" onchange="setLanguage(this.value)"><option value="en">EN</option><option value="ms">BM</option><option value="zh">中文</option><option value="ta">தமிழ்</option></select><svg aria-hidden="true" class="profile-dropdown-caret" fill="none" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div></div></div><div class="profile-pref-row"><span class="profile-pref-row-label" id="pref-label-navigation">Navigation App</span><div class="profile-pref-control"><span class="profile-pref-icon"><svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z" stroke="currentColor" stroke-width="1.8"></path><circle cx="12" cy="10" r="2.3" stroke="currentColor" stroke-width="1.8"></circle></svg></span><div class="profile-dropdown"><select aria-label="Choose navigation app" id="nav-select" onchange="setNavApp(this.value)"><option value="google">Google Maps</option><option value="waze">Waze</option><option value="apple">Apple Maps</option></select><svg aria-hidden="true" class="profile-dropdown-caret" fill="none" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div></div></div><div class="profile-pref-row"><span class="profile-pref-row-label" id="pref-label-theme">Light/Dark Theme</span><div class="profile-pref-control"><span class="profile-pref-icon"><svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"></circle><path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path></svg></span><label class="pref-toggle-switch"><input aria-label="Toggle dark mode" id="theme-toggle-input" onchange="setTheme(this.checked?'dark':'light')" type="checkbox"/><span class="pref-toggle-slider"><span class="pref-toggle-slider-text" id="theme-toggle-label">Light</span></span></label></div></div><button class="profile-flat-action" onclick="renderHelpCentre();showScreen('screen-help')"><span><b>Help Centre</b></span><svg class="profile-row-arrow" viewbox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg></button><button class="profile-flat-action" onclick="resetChangePasswordForm();showScreen('screen-changepw')"><span><b>Change Password</b></span><svg class="profile-row-arrow" viewbox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg></button></section>
+<section class="profile-compact-section"><h2>Preferences</h2><div class="profile-pref-row"><span class="profile-pref-row-label" id="pref-label-language">Language</span><div class="profile-pref-control"><span class="profile-pref-icon"><svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"></circle><path d="M3.7 12h16.6M12 3.5c2.3 2.4 3.6 5.4 3.6 8.5s-1.3 6.1-3.6 8.5c-2.3-2.4-3.6-5.4-3.6-8.5s1.3-6.1 3.6-8.5z" stroke="currentColor" stroke-width="1.8"></path></svg></span><div class="profile-dropdown"><select aria-label="Choose language" id="lang-select" onchange="setLanguage(this.value)"><option value="en">EN</option><option value="ms">BM</option><option value="zh">中文</option><option value="ta">தமிழ்</option></select><svg aria-hidden="true" class="profile-dropdown-caret" fill="none" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div></div></div><div class="profile-pref-row"><span class="profile-pref-row-label" id="pref-label-navigation">Navigation App</span><div class="profile-pref-control"><span class="profile-pref-icon"><svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z" stroke="currentColor" stroke-width="1.8"></path><circle cx="12" cy="10" r="2.3" stroke="currentColor" stroke-width="1.8"></circle></svg></span><div class="profile-dropdown"><select aria-label="Choose navigation app" id="nav-select" onchange="setNavApp(this.value)"><option value="google">Google Maps</option><option value="waze">Waze</option><option value="apple">Apple Maps</option></select><svg aria-hidden="true" class="profile-dropdown-caret" fill="none" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div></div></div><div class="profile-pref-row"><span class="profile-pref-row-label" id="pref-label-theme">Light/Dark Theme</span><div class="profile-pref-control"><span class="profile-pref-icon"><svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"></circle><path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path></svg></span><label class="pref-toggle-switch"><input aria-label="Toggle dark mode" id="theme-toggle-input" onchange="setTheme(this.checked?'dark':'light')" type="checkbox"/><span class="pref-toggle-slider"><span class="pref-toggle-slider-text" id="theme-toggle-label">Light</span></span></label></div></div><button class="profile-flat-action" onclick="renderHelpCentre();showScreen('screen-help')"><span><b>Help Centre</b></span><svg class="profile-row-arrow" viewbox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg></button><button class="profile-flat-action" onclick="resetChangePasswordForm();showScreen('screen-changepw')"><span><b>Change Password</b></span><svg class="profile-row-arrow" viewbox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg></button><button class="profile-flat-action" onclick="openSwitchTeam()"><span><b>Switch Team</b></span><svg class="profile-row-arrow" viewbox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg></button></section>
 <button class="profile-logout-text" onclick="openModal('modal-logoutConfirm')"><svg viewbox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3"></path><path d="M14 4h6v16h-6"></path></svg><span>Log Out</span></button><div class="profile-version"><span>App Version 1.7.3</span></div>
 </div><div class="bottom-nav" id="nav-profile"></div></div>
 <!-- ============ HELP CENTRE ============ -->
@@ -706,6 +706,10 @@ if('serviceWorker' in navigator){
 </div>
 </div>
 </div>
+<!-- GAP R2: backend.js's renderChooseTeamModal()/selectTeamAndContinue()/switchToRiderContext()
+     already populate #choose-team-content and call openModal('modal-chooseTeam') -- this
+     container was the only missing piece for the already-decided multi-business contract. -->
+<div class="modal-overlay" id="modal-chooseTeam"><div class="modal-box"><div class="modal-title">Choose Team</div><p class="modal-sub">You have more than one active Team. Pick one to continue.</p><div id="choose-team-content"></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-chooseTeam')">Cancel</button></div></div></div>
 <div class="modal-overlay" id="modal-logoutConfirm"><div class="modal-box"><div class="modal-title">Log Out?</div><p class="modal-sub">Are you sure you want to log out from CEFFLO Rider?</p><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-logoutConfirm')">No</button><button class="btn btn-red" onclick="closeModal('modal-logoutConfirm');doLogout()">Yes, Log Out</button></div></div></div>
 <div class="modal-overlay" id="modal-orderDetail"><div class="modal-box order-detail-modal"><div class="modal-title" id="od-id">#CF-0001</div><div class="modal-name" id="od-name">Customer</div><div class="order-detail-content" id="od-content"></div><button class="btn btn-outline" onclick="closeModal('modal-orderDetail')">Close</button></div></div>
 <div class="modal-overlay" id="modal-pinAction"><div class="modal-box"><div class="modal-title" id="pin-action-title">#CF-0001</div><p class="modal-sub" id="pin-action-sub">Address</p><div class="modal-actions"><button class="btn btn-purple" id="pin-action-next-btn" onclick="setPinAsNextStop()">Set as Next Stop</button><button class="btn btn-outline" onclick="closeModal('modal-pinAction')">Cancel</button></div></div></div>
@@ -1173,11 +1177,22 @@ function renderHome(){
   const delivered=appState.orders.filter(o=>o.delivered).length;
   const remaining=total-delivered;
   const area=document.getElementById('home-assignment-area');
-  if(!area) return;
-  if(appState.orders.every(o=>o.delivered)){
-    area.innerHTML=`<div class="empty-state"><div class="empty-title">No active assignment</div><div class="empty-sub">New assignments will appear here.</div></div>`;
-  }else{
-    area.innerHTML=`<div class="mission-card"><div class="mission-top"><div><div class="mission-eyebrow">Active Assignment</div><div class="mission-title">${appState.activeAssignment.zone}</div><div class="mission-zone">Dapur Aisyah · Session CF-S-0826</div></div><span class="mission-badge">ACTIVE</span></div><div class="mission-kpis"><div class="mission-kpi"><span>Pickup Window</span><b>11:30 AM</b></div><div class="mission-kpi"><span>Est. Finish</span><b>2:30 PM</b></div><div class="mission-kpi"><span>Total Stops</span><b>${total}</b></div><div class="mission-kpi"><span>Distance</span><b>28.4 km</b></div></div><button class="btn" id="home-start-pickup-btn" onclick="viewAssignment()">Start Pickup</button></div>`;
+  if(area){
+    // GAP R1 (Run-level Accept/Decline): a Run's rider_assignments.status
+    // starts 'assigned' and only becomes 'accepted' via acceptRunAction ->
+    // accept_run RPC. Show the Accept/Decline gate first; only an already-
+    // accepted, not-yet-delivered Run proceeds to the Start Pickup flow.
+    const runs=(window.CEFFLO_RIDER && window.CEFFLO_RIDER.riderRuns) ? window.CEFFLO_RIDER.riderRuns() : [];
+    const pendingRun=runs.find(r=>r.sessionId && r.orders.some(o=>o.assignmentStatus==='assigned'));
+    const acceptedRun=runs.find(r=>r.sessionId && r.orders.some(o=>o.assignmentStatus==='accepted') && !r.orders.every(o=>o.delivered));
+    if(pendingRun){
+      area.innerHTML=`<div class="mission-card"><div class="mission-top"><div><div class="mission-eyebrow">New Run Assigned</div><div class="mission-title">${pendingRun.waveName||'Run'}</div><div class="mission-zone">${pendingRun.orders.length} ${pendingRun.orders.length===1?'stop':'stops'} · awaiting your response</div></div><span class="mission-badge">ASSIGNED</span></div><div class="mission-kpis"><div class="mission-kpi"><span>Total Stops</span><b>${pendingRun.orders.length}</b></div></div><div style="display:flex;gap:10px;margin-top:12px;"><button class="btn" style="flex:1;background:#EEF0F3;color:#171923;" onclick="declineRunAction('${pendingRun.sessionId}')">Decline</button><button class="btn" style="flex:1;" onclick="acceptRunAction('${pendingRun.sessionId}')">Accept Run</button></div></div>`;
+    }else if(acceptedRun){
+      appState.activeRunSessionId=acceptedRun.sessionId;
+      area.innerHTML=`<div class="mission-card"><div class="mission-top"><div><div class="mission-eyebrow">Active Assignment</div><div class="mission-title">${acceptedRun.waveName||'Run'}</div><div class="mission-zone">${acceptedRun.orders.length} ${acceptedRun.orders.length===1?'stop':'stops'}</div></div><span class="mission-badge">ACTIVE</span></div><div class="mission-kpis"><div class="mission-kpi"><span>Total Stops</span><b>${acceptedRun.orders.length}</b></div></div><button class="btn" id="home-start-pickup-btn" onclick="viewAssignment()">Start Pickup</button></div>`;
+    }else{
+      area.innerHTML=`<div class="empty-state"><div class="empty-title">No active assignment</div><div class="empty-sub">New assignments will appear here.</div></div>`;
+    }
   }
   const perDeliveryRate=6.5;
   const earnings=(delivered*perDeliveryRate).toFixed(2);
@@ -1190,6 +1205,18 @@ function renderHome(){
 function viewAssignment(){
   const pending = appState.orders.some(o=>o.status==='ready_for_pickup');
   if(!pending){ showPickupCompleteState(); showScreen('screen-pickup'); return; }
+  renderRoutePlan();
+  showScreen('screen-routeplan');
+}
+// GAP R1: entry point acceptRunAction's success callback jumps to once
+// accept_run succeeds -- Assigned Run -> Accept Run -> Plan Route.
+function enterRun(sessionId){
+  appState.activeRunSessionId=sessionId;
+  // saveSequenceAction (backend.js) reads appState.planRouteOrder, not raw
+  // appState.orders -- seed it here from the same session-scoped source it
+  // saves back to, so the Plan Route list and the sequence actually saved
+  // agree on which orders belong to THIS Run.
+  appState.planRouteOrder=(window.CEFFLO_RIDER_RUN&&window.CEFFLO_RIDER_RUN.refreshActiveRunOrders)?window.CEFFLO_RIDER_RUN.refreshActiveRunOrders():appState.orders.filter(o=>o.deliverySessionId===sessionId);
   renderRoutePlan();
   showScreen('screen-routeplan');
 }
@@ -1396,7 +1423,7 @@ bindSlideAction('startDeliverySlider','startDeliverySliderThumb','startDeliveryS
 
 /* ================= PLAN ROUTE (PREVIEW + REORDER) ================= */
 function renderRoutePlan(){
-  const orders=appState.orders;
+  const orders=(appState.planRouteOrder&&appState.planRouteOrder.length)?appState.planRouteOrder:appState.orders;
   const zoneEl=document.getElementById('routeplan-zone-label');
   if(zoneEl)zoneEl.textContent=`Zone: ${(orders[0]&&orders[0].zone)||'—'} · ${orders.length} stops`;
   renderPremiumMap('routeplan-map',null,'plan');
@@ -1404,7 +1431,7 @@ function renderRoutePlan(){
   initRouteSheetGesture('routeplan-sheet-handle','routeplan-sheet');
 }
 function renderRoutePlanList(){
-  const orders=appState.orders;
+  const orders=(appState.planRouteOrder&&appState.planRouteOrder.length)?appState.planRouteOrder:appState.orders;
   const list=document.getElementById('routeplan-list');
   if(!list)return;
   list.innerHTML=orders.map((o,i)=>`
