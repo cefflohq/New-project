@@ -13,7 +13,11 @@
     { "source": "/sw.js", "has": [{ "type": "host", "value": "rider.cefflo.com" }], "destination": "/rider/sw.js" },
     { "source": "/icons/:path*", "has": [{ "type": "host", "value": "rider.cefflo.com" }], "destination": "/rider/icons/:path*" },
     { "source": "/:path*", "has": [{ "type": "host", "value": "rider.cefflo.com" }], "destination": "/rider/:path*" },
-    { "source": "/:path*", "has": [{ "type": "host", "value": "tracking.cefflo.com" }], "destination": "/customer/:path*" }
+    { "source": "/:path*", "has": [{ "type": "host", "value": "tracking.cefflo.com" }], "destination": "/customer/:path*" },
+    { "source": "/manifest.webmanifest", "has": [{ "type": "host", "value": "foundr.cefflo.com" }], "destination": "/foundr/manifest.webmanifest" },
+    { "source": "/sw.js", "has": [{ "type": "host", "value": "foundr.cefflo.com" }], "destination": "/foundr/sw.js" },
+    { "source": "/icons/:path*", "has": [{ "type": "host", "value": "foundr.cefflo.com" }], "destination": "/foundr/icons/:path*" },
+    { "source": "/:path*", "has": [{ "type": "host", "value": "foundr.cefflo.com" }], "destination": "/foundr/:path*" }
   ],
   "headers": [
     {

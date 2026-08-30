@@ -1,0 +1,2247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0B0F1A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>CEFFLO FOUNDR — Command Center</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<link rel="icon" href="./icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: 222 30% 6%;
+    --card: 222 26% 9%;
+    --card-2: 222 24% 12%;
+    --border: 222 18% 17%;
+    --fg: 210 20% 97%;
+    --muted: 218 12% 60%;
+    --muted-2: 218 12% 45%;
+    --blue: 217 91% 62%;
+    --green: 142 71% 50%;
+    --red: 0 84% 65%;
+    --amber: 38 92% 60%;
+    --radius: 22px;
+    --radius-sm: 14px;
+    --sidebar-w: 250px;
+    --sidebar-w-collapsed: 76px;
+    --glass-bg: hsl(var(--card) / 46%);
+    --glass-bg-2: hsl(var(--card-2) / 42%);
+    --glass-border: hsl(0 0% 100% / 9%);
+    --glass-blur: blur(22px) saturate(150%);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Poppins',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:hsl(var(--bg));
+    color:hsl(var(--fg));
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    position:relative;
+  }
+  body::before{
+    content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(circle at 12% 8%, hsl(217 91% 55% / 28%), transparent 42%),
+      radial-gradient(circle at 85% 15%, hsl(266 80% 60% / 20%), transparent 40%),
+      radial-gradient(circle at 20% 88%, hsl(217 80% 45% / 18%), transparent 38%),
+      radial-gradient(circle at 92% 92%, hsl(190 80% 50% / 12%), transparent 40%);
+  }
+  .app-shell{position:relative;z-index:1;display:flex;min-height:100vh;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;}
+  svg{display:block;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:var(--sidebar-w);flex-shrink:0;background:var(--glass-bg);border-right:1px solid var(--glass-border);
+    padding:20px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;overflow-x:hidden;
+    backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+    display:flex;flex-direction:column;transition:width .2s ease;
+  }
+  .sidebar.collapsed{width:var(--sidebar-w-collapsed);}
+  .sidebar-brand{display:flex;align-items:center;gap:11px;padding:4px 8px 20px;}
+  .sidebar-brand .logo{width:38px;height:38px;border-radius:11px;background:hsl(var(--blue));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff;flex-shrink:0;}
+  .sidebar-brand .txt{overflow:hidden;white-space:nowrap;}
+  .sidebar-brand b{font-size:16px;font-weight:800;display:block;letter-spacing:.02em;}
+  .sidebar-brand span{font-size:10px;color:hsl(var(--blue));font-weight:700;letter-spacing:.08em;}
+  .sidebar.collapsed .sidebar-brand .txt{display:none;}
+
+  .nav-group-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:hsl(var(--muted-2));padding:14px 12px 6px;white-space:nowrap;overflow:hidden;}
+  .sidebar.collapsed .nav-group-label{opacity:0;height:8px;padding:6px 0 0;}
+  .nav-item{
+    display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 12px;border-radius:12px;
+    border:none;border-left:3px solid transparent;background:none;color:hsl(var(--muted));font-size:13.5px;font-weight:500;cursor:pointer;margin-bottom:3px;white-space:nowrap;overflow:hidden;
+  }
+  .nav-item:hover{background:hsl(var(--fg) / 6%);color:hsl(var(--fg));}
+  .nav-item.active{background:hsl(var(--fg) / 6%);border-left-color:hsl(var(--blue));color:hsl(var(--blue));font-weight:600;}
+  /* Base icon rule — any .ic span not covered by a more specific scoped rule below still
+     renders as a proper stroked line icon instead of falling back to default SVG black fill. */
+  .ic{width:16px;height:16px;flex-shrink:0;display:flex;}
+  .ic svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .nav-item .ic{width:18px;height:18px;flex-shrink:0;display:flex;}
+  .nav-item .ic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .nav-item .lbl{overflow:hidden;text-overflow:ellipsis;}
+  .sidebar.collapsed .nav-item .lbl{display:none;}
+  .sidebar.collapsed .nav-item{justify-content:center;padding:11px 0;}
+
+  .sidebar-spacer{flex:1;}
+  .sidebar-foot{border-top:1px solid var(--glass-border);padding-top:12px;margin-top:10px;}
+  .sidebar-collapse-btn{
+    display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:11px;border:1px solid var(--glass-border);
+    background:hsl(var(--fg) / 4%);color:hsl(var(--muted));cursor:pointer;font-size:12px;font-weight:600;margin-bottom:10px;
+  }
+  .sidebar-collapse-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;transition:transform .2s;}
+  .sidebar.collapsed .sidebar-collapse-btn svg{transform:rotate(180deg);}
+  .sidebar.collapsed .sidebar-collapse-btn .lbl{display:none;}
+  .profile-chip{display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;cursor:pointer;position:relative;}
+  .profile-chip:hover{background:hsl(var(--fg) / 5%);}
+  .profile-chip .av{width:34px;height:34px;border-radius:50%;background:hsl(var(--fg) / 6%);border:1px solid hsl(var(--blue) / 45%);color:hsl(var(--blue));display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex-shrink:0;}
+  .profile-chip .txt{overflow:hidden;white-space:nowrap;flex:1;}
+  .profile-chip .txt b{font-size:12.5px;font-weight:700;display:block;overflow:hidden;text-overflow:ellipsis;}
+  .profile-chip .txt span{font-size:10.5px;color:hsl(var(--muted));}
+  .profile-chip .chev{width:14px;height:14px;stroke:hsl(var(--muted));fill:none;stroke-width:2;flex-shrink:0;}
+  .sidebar.collapsed .profile-chip .txt, .sidebar.collapsed .profile-chip .chev{display:none;}
+
+  /* ---------- Main / Topbar ---------- */
+  .main-area{flex:1;min-width:0;}
+  .topbar{
+    display:flex;align-items:center;gap:10px;padding:16px 28px;border-bottom:1px solid var(--glass-border);
+    position:sticky;top:0;background:hsl(var(--bg) / 55%);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);z-index:30;
+  }
+  .hamburger{display:none;width:38px;height:38px;border-radius:11px;border:1px solid var(--glass-border);background:var(--glass-bg-2);align-items:center;justify-content:center;cursor:pointer;color:hsl(var(--fg));flex-shrink:0;}
+  .hamburger svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;}
+  .topbar-spacer{flex:1;}
+  .topbar-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+  .ctrl-btn{
+    display:inline-flex;align-items:center;gap:7px;border:1px solid var(--glass-border);background:var(--glass-bg-2);
+    color:hsl(var(--fg));font-size:12.5px;font-weight:600;padding:9px 13px;border-radius:11px;cursor:pointer;white-space:nowrap;
+  }
+  .ctrl-btn:hover{background:hsl(var(--fg) / 8%);}
+  .ctrl-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
+  .ctrl-btn .chev{width:11px;height:11px;opacity:.6;}
+  .live-indicator{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:9px 13px;border-radius:11px;background:hsl(var(--fg) / 4%);border:1px solid hsl(var(--green) / 35%);color:hsl(var(--green));}
+  .live-indicator .dot{width:7px;height:7px;border-radius:50%;background:hsl(var(--green));animation:pulse 1.6s ease-in-out infinite;}
+  .live-indicator.reconnecting{border-color:hsl(var(--amber) / 35%);color:hsl(var(--amber));}
+  .live-indicator.reconnecting .dot{background:hsl(var(--amber));}
+  .live-indicator.offline{border-color:hsl(var(--red) / 35%);color:hsl(var(--red));}
+  .live-indicator.offline .dot{background:hsl(var(--red));animation:none;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.65);}}
+  .icon-btn-sq{width:38px;height:38px;border-radius:11px;border:1px solid var(--glass-border);background:var(--glass-bg-2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:hsl(var(--fg));flex-shrink:0;}
+  .icon-btn-sq:hover{background:hsl(var(--fg) / 8%);}
+  .icon-btn-sq svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;transition:transform .5s;}
+  .icon-btn-sq.spinning svg{transform:rotate(360deg);}
+
+  /* ---------- Page wrap ---------- */
+  .page-wrap{max-width:1400px;padding:26px 28px 60px;}
+  .page-title-row{margin-bottom:22px;}
+  .page-title-row h1{font-size:26px;font-weight:800;margin:0;letter-spacing:-0.01em;}
+  .page-title-row p{font-size:13.5px;color:hsl(var(--muted));margin:6px 0 0;}
+
+  /* ---------- Grid & Card ---------- */
+  .grid{display:grid;gap:16px;}
+  .grid > *{min-width:0;}
+  .grid-2{grid-template-columns:1fr 1fr;}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  .grid-4{grid-template-columns:repeat(4,1fr);}
+  .grid-5{grid-template-columns:repeat(5,1fr);}
+  .grid-6{grid-template-columns:repeat(6,1fr);}
+  .grid-main{grid-template-columns:2.1fr 1fr;}
+  .grid-main-rev{grid-template-columns:1.6fr 1fr;}
+  @media(max-width:1200px){.grid-5{grid-template-columns:repeat(3,1fr);} .grid-6{grid-template-columns:repeat(3,1fr);}}
+  @media(max-width:980px){.grid-3, .grid-4{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:860px){.grid-main, .grid-main-rev, .grid-2{grid-template-columns:1fr;}}
+  @media(max-width:640px){.grid-3, .grid-4, .grid-5, .grid-6{grid-template-columns:1fr 1fr;}}
+  @media(max-width:700px){.grid[style*="grid-template-columns"]{grid-template-columns:1fr !important;}}
+  .kpi-top .lbl{min-width:0;}
+  .grid + .grid{margin-top:16px;}
+
+  .card{
+    background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius);padding:20px;
+    backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+    box-shadow:0 8px 32px rgba(0,0,0,.28), inset 0 1px 0 hsl(0 0% 100% / 6%);
+  }
+  .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px;}
+  .card-title-wrap{display:flex;align-items:center;gap:7px;}
+  .card-title{font-size:14.5px;font-weight:700;margin:0;}
+  .card-sub{font-size:11.5px;color:hsl(var(--muted));margin:3px 0 0;}
+  .info-ic{width:14px;height:14px;stroke:hsl(var(--muted-2));fill:none;stroke-width:2;cursor:help;flex-shrink:0;}
+  .card-count{font-size:11px;font-weight:700;color:hsl(var(--blue));background:hsl(var(--fg) / 5%);border:1px solid hsl(var(--blue) / 35%);padding:2px 9px;border-radius:999px;}
+  .link-btn{font-size:12px;font-weight:600;color:hsl(var(--blue));background:none;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:4px;}
+  .link-btn:hover{text-decoration:underline;}
+  .link-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.4;}
+
+  /* ---------- KPI metric tile ---------- */
+  .kpi-tile{position:relative;}
+  .mini-kpi{padding:14px 16px;}
+  .mini-kpi .kpi-top{margin-bottom:8px;}
+  .mini-kpi .kpi-top .lbl{font-size:11px;}
+  .mini-kpi .kpi-val{font-size:20px;}
+  .mini-kpi .kpi-trend{margin-top:6px;font-size:10.5px;}
+  .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .kpi-top .lbl{display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;font-size:12.5px;font-weight:600;color:hsl(var(--muted));}
+  .kpi-ic{width:34px;height:34px;border-radius:10px;background:hsl(var(--fg) / 5%);border:1px solid hsl(var(--blue) / 30%);color:hsl(var(--blue));display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .kpi-ic svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+  .kpi-val{font-size:26px;font-weight:800;letter-spacing:-0.02em;}
+  .kpi-trend{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;margin-top:8px;}
+  .kpi-trend.up{color:hsl(var(--green));}
+  .kpi-trend.down{color:hsl(var(--red));}
+  .kpi-trend .muted{color:hsl(var(--muted-2));font-weight:500;}
+  .kpi-trend svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.6;}
+  .kpi-spark{width:100%;height:34px;margin-top:10px;}
+  .estimated-tag{font-size:9px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:hsl(var(--amber));background:hsl(var(--fg) / 5%);border:1px solid hsl(var(--amber) / 35%);padding:2px 7px;border-radius:999px;margin-left:6px;}
+
+  /* ---------- Trend pill / badge (semantic only) ---------- */
+  .trend-pill{font-size:11.5px;font-weight:700;padding:3px 9px 3px 7px;border-radius:999px;display:inline-flex;align-items:center;gap:3px;background:hsl(var(--fg) / 5%);border:1px solid transparent;}
+  .trend-pill.up{border-color:hsl(var(--green) / 35%);color:hsl(var(--green));}
+  .trend-pill.down{border-color:hsl(var(--red) / 35%);color:hsl(var(--red));}
+  .trend-pill svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.4;}
+  .badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 10px;font-size:10.5px;font-weight:700;white-space:nowrap;background:hsl(var(--fg) / 5%);border:1px solid transparent;}
+  .badge.ok{border-color:hsl(var(--green) / 35%);color:hsl(var(--green));}
+  .badge.warn{border-color:hsl(var(--amber) / 35%);color:hsl(var(--amber));}
+  .badge.crit{border-color:hsl(var(--red) / 35%);color:hsl(var(--red));}
+  .badge.neutral{border-color:var(--glass-border);color:hsl(var(--muted));}
+  .badge.info{border-color:hsl(var(--blue) / 35%);color:hsl(var(--blue));}
+  .dot-sm{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .dot-sm.ok{background:hsl(var(--green));}
+  .dot-sm.warn{background:hsl(var(--amber));}
+  .dot-sm.crit{background:hsl(var(--red));}
+  .dot-sm.neutral{background:hsl(var(--muted));}
+  .dot-sm.info{background:hsl(var(--blue));}
+
+  /* ---------- Chart ---------- */
+  .chart-wrap{position:relative;width:100%;height:220px;}
+  .chart-tooltip{
+    position:absolute;pointer-events:none;background:var(--glass-bg-2);border:1px solid var(--glass-border);
+    backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+    border-radius:10px;padding:8px 12px;font-size:11.5px;font-weight:600;color:hsl(var(--fg));min-width:150px;
+    transform:translate(-50%,-115%);opacity:0;transition:opacity .12s;white-space:nowrap;box-shadow:0 8px 20px rgba(0,0,0,.4);z-index:5;
+  }
+  .chart-tooltip .row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:3px;}
+  .chart-tooltip .row .k{display:flex;align-items:center;gap:6px;color:hsl(var(--muted));font-weight:500;}
+  .chart-tooltip .row .sw{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .chart-tooltip.show{opacity:1;}
+  .chart-tooltip .hd{font-weight:700;font-size:11px;color:hsl(var(--muted));margin-bottom:2px;}
+  .chart-legend{display:flex;gap:16px;margin-top:12px;font-size:11.5px;color:hsl(var(--muted));flex-wrap:wrap;}
+  .chart-legend .item{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;}
+  .chart-legend .item.off{opacity:.35;}
+  .chart-legend .sw{width:12px;height:3px;border-radius:2px;flex-shrink:0;}
+  .seg-toggle{display:flex;gap:4px;background:hsl(var(--fg) / 4%);border:1px solid var(--glass-border);border-radius:10px;padding:3px;}
+  .seg-toggle button{border:none;background:none;color:hsl(var(--muted));font-size:11.5px;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer;}
+  .seg-toggle button.active{background:hsl(var(--blue));color:#fff;}
+
+  /* ---------- Bars / tracks ---------- */
+  .bar-row{margin-bottom:14px;}
+  .bar-row:last-child{margin-bottom:0;}
+  .bar-top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:7px;}
+  .bar-top .name{font-weight:600;}
+  .bar-top .pct{color:hsl(var(--muted));font-weight:600;}
+  .bar-track{height:8px;background:hsl(var(--fg) / 7%);border-radius:999px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:999px;background:hsl(var(--blue));transition:width .4s ease;}
+  .bar-fill.warn{background:hsl(var(--amber));}
+  .bar-fill.crit{background:hsl(var(--red));}
+  .bar-fill.pos{background:hsl(var(--green));}
+  .bar-fill.neg{background:hsl(var(--red));}
+
+  /* ---------- Donut ring ---------- */
+  .ring-wrap{display:flex;flex-direction:column;align-items:center;}
+  .ring-legend{display:flex;flex-direction:column;gap:9px;width:100%;margin-top:16px;}
+  .ring-legend-row{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:hsl(var(--muted));}
+  .ring-legend-row .k{display:flex;align-items:center;gap:8px;}
+  .ring-legend-row .k .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .ring-legend-row b{color:hsl(var(--fg));font-weight:700;}
+  .ring-legend-row .pct{color:hsl(var(--muted-2));font-size:11px;}
+
+  /* ---------- Needs attention / exception list ---------- */
+  .attn-row{display:flex;align-items:center;gap:12px;padding:12px 4px;border-top:1px solid hsl(var(--border));cursor:pointer;border-radius:10px;}
+  .attn-row:first-child{border-top:none;}
+  .attn-row:hover{background:hsl(var(--fg) / 4%);}
+  .attn-ic{width:34px;height:34px;border-radius:10px;background:hsl(var(--fg) / 5%);border:1px solid transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:hsl(var(--muted));}
+  .attn-ic.crit{border-color:hsl(var(--red) / 35%);color:hsl(var(--red));}
+  .attn-ic.warn{border-color:hsl(var(--amber) / 35%);color:hsl(var(--amber));}
+  .attn-ic.info{border-color:hsl(var(--blue) / 35%);color:hsl(var(--blue));}
+  .attn-ic svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+  .attn-main{flex:1;min-width:0;}
+  .attn-title{font-size:13px;font-weight:600;}
+  .attn-meta{font-size:11px;color:hsl(var(--muted));margin-top:2px;}
+  .attn-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .attn-count{font-size:11.5px;color:hsl(var(--muted));white-space:nowrap;}
+  .attn-chev{width:15px;height:15px;stroke:hsl(var(--muted-2));fill:none;stroke-width:2;flex-shrink:0;}
+
+  /* ---------- Insight cards ---------- */
+  .insight-card{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:var(--radius-sm);background:hsl(var(--fg) / 3%);border:1px solid var(--glass-border);}
+  .insight-top{display:flex;align-items:center;gap:10px;}
+  .insight-ic{width:32px;height:32px;border-radius:9px;background:hsl(var(--fg) / 5%);border:1px solid hsl(var(--blue) / 30%);color:hsl(var(--blue));display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .insight-ic svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;}
+  .insight-title{font-size:13px;font-weight:700;}
+  .insight-body{font-size:12px;color:hsl(var(--muted));line-height:1.5;}
+  .insight-evidence{font-size:10.5px;color:hsl(var(--muted-2));display:flex;align-items:center;gap:5px;}
+  .insight-evidence svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;}
+  .insight-foot{display:flex;align-items:center;justify-content:space-between;margin-top:2px;}
+  .insight-metric{font-size:12px;font-weight:700;color:hsl(var(--green));background:hsl(var(--fg) / 5%);border:1px solid hsl(var(--green) / 35%);padding:3px 10px;border-radius:999px;}
+
+  /* ---------- Quick actions ---------- */
+  .qa-btn{
+    display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:10px 12px;border-radius:11px;
+    border:none;background:none;color:hsl(var(--muted));font-size:12.5px;font-weight:500;cursor:pointer;margin-bottom:2px;white-space:nowrap;overflow:hidden;
+  }
+  .qa-btn:hover{background:hsl(var(--fg) / 6%);color:hsl(var(--fg));}
+  .qa-btn .ic{width:16px;height:16px;flex-shrink:0;display:flex;}
+  .qa-btn .ic svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .sidebar.collapsed .qa-btn .lbl{display:none;}
+  .sidebar.collapsed .qa-btn{justify-content:center;}
+
+  /* ---------- Search / filter / table ---------- */
+  .search-row{display:flex;align-items:center;gap:8px;border:1px solid var(--glass-border);background:hsl(var(--fg) / 4%);border-radius:12px;padding:10px 14px;color:hsl(var(--muted));font-size:13px;}
+  .search-row svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
+  .search-row input{border:none;outline:none;background:transparent;width:100%;font-size:13px;color:hsl(var(--fg));font-family:inherit;}
+  .filter-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .filter-select{border:1px solid var(--glass-border);background:hsl(var(--fg) / 4%);color:hsl(var(--muted));font-size:12px;font-weight:600;padding:9px 12px;border-radius:10px;cursor:pointer;font-family:inherit;}
+  .table-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;justify-content:space-between;}
+  .table-toolbar .left-grp{display:flex;gap:10px;flex-wrap:wrap;flex:1;}
+  .data-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .data-table thead th{text-align:left;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:hsl(var(--muted-2));padding:0 10px 10px;border-bottom:1px solid var(--glass-border);white-space:nowrap;}
+  .data-table tbody td{padding:12px 10px;border-bottom:1px solid hsl(var(--border) / 60%);vertical-align:middle;}
+  .data-table tbody tr{cursor:pointer;}
+  .data-table tbody tr:hover td{background:hsl(var(--fg) / 3%);}
+  .data-table tbody tr:last-child td{border-bottom:none;}
+  .cell-entity{display:flex;align-items:center;gap:10px;}
+  .cell-avatar{width:32px;height:32px;border-radius:9px;background:hsl(var(--fg) / 5%);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;flex-shrink:0;}
+  .cell-name{font-weight:600;}
+  .cell-sub{font-size:11px;color:hsl(var(--muted));margin-top:1px;}
+  .table-scroll{overflow-x:auto;}
+  .pagination{display:flex;align-items:center;justify-content:space-between;margin-top:16px;font-size:12px;color:hsl(var(--muted));flex-wrap:wrap;gap:10px;}
+  .pg-btns{display:flex;gap:6px;}
+  .pg-btn{width:30px;height:30px;border-radius:9px;border:1px solid var(--glass-border);background:hsl(var(--fg) / 4%);color:hsl(var(--muted));font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .pg-btn.active{background:hsl(var(--blue));color:#fff;border-color:transparent;}
+  .pg-btn:disabled{opacity:.4;cursor:default;}
+  .pg-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.4;}
+
+  /* ---------- Map component ---------- */
+  .map-card{padding:0;overflow:hidden;}
+  .map-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:20px 20px 0;flex-wrap:wrap;}
+  .map-canvas{position:relative;height:420px;margin:16px 20px 20px;border-radius:var(--radius-sm);background:radial-gradient(ellipse at 50% 30%, hsl(217 60% 14%), hsl(222 30% 6%) 75%);border:1px solid var(--glass-border);overflow:hidden;}
+  .map-canvas svg.map-outline{position:absolute;inset:0;width:100%;height:100%;opacity:.55;}
+  .map-controls{position:absolute;left:14px;top:14px;display:flex;flex-direction:column;gap:6px;z-index:6;}
+  .map-ctrl-btn{width:32px;height:32px;border-radius:9px;border:1px solid var(--glass-border);background:var(--glass-bg-2);backdrop-filter:var(--glass-blur);color:hsl(var(--fg));display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .map-ctrl-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.4;}
+  .map-legend{position:absolute;left:14px;bottom:14px;background:var(--glass-bg-2);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:11px;padding:10px 12px;font-size:10.5px;color:hsl(var(--muted));z-index:6;}
+  .map-legend .row{display:flex;align-items:center;gap:7px;margin-bottom:5px;}
+  .map-legend .row:last-child{margin-bottom:0;}
+  .map-legend .sw{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .map-marker{position:absolute;transform:translate(-50%,-50%);cursor:pointer;z-index:4;transition:transform .15s;}
+  .map-marker:hover{z-index:7;transform:translate(-50%,-50%) scale(1.12);}
+  .map-marker .bubble{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;box-shadow:0 0 0 4px hsl(217 91% 62% / 12%), 0 4px 14px rgba(0,0,0,.4);}
+  .map-marker .mlabel{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:4px;font-size:10px;font-weight:600;color:hsl(var(--fg));white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.8);}
+  .map-marker.rider .bubble{width:15px;height:15px;box-shadow:0 0 0 5px hsl(142 71% 50% / 18%);}
+  .map-marker.rider.idle .bubble{background:hsl(var(--blue)) !important;}
+  .map-marker.rider.delayed .bubble{background:hsl(var(--red)) !important;}
+  .map-marker.rider.offline .bubble{background:hsl(var(--muted-2)) !important;}
+  .map-context{
+    position:absolute;right:14px;top:14px;width:230px;background:var(--glass-bg-2);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+    border:1px solid var(--glass-border);border-radius:14px;padding:14px;z-index:8;box-shadow:0 16px 34px rgba(0,0,0,.45);
+  }
+  .map-context .close-x{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:6px;border:none;background:hsl(var(--fg) / 6%);color:hsl(var(--muted));cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .map-context .close-x svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.4;}
+  .map-context h4{margin:0 0 2px;font-size:14px;font-weight:700;}
+  .map-context .sub{font-size:11px;color:hsl(var(--muted));margin-bottom:10px;}
+  .map-context .stat-line{display:flex;justify-content:space-between;font-size:11.5px;padding:5px 0;border-top:1px solid var(--glass-border);}
+  .map-context .stat-line:first-of-type{border-top:none;}
+  .map-context .stat-line b{font-weight:700;}
+  .map-context .view-btn{margin-top:10px;width:100%;background:hsl(var(--blue));color:#fff;border:none;padding:8px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
+
+  /* ---------- Diagnostic Workspace drawer ---------- */
+  .drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;}
+  .drawer-backdrop.show{display:block;}
+  .drawer{
+    position:fixed;top:0;right:0;height:100vh;width:460px;max-width:92vw;z-index:91;
+    background:hsl(var(--card) / 88%);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+    border-left:1px solid var(--glass-border);box-shadow:-16px 0 40px rgba(0,0,0,.5);
+    transform:translateX(100%);transition:transform .25s ease;overflow-y:auto;padding:22px;
+  }
+  .drawer.open{transform:translateX(0);}
+  .drawer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:4px;}
+  .drawer-head h3{margin:0;font-size:17px;font-weight:800;}
+  .drawer-close{width:30px;height:30px;border-radius:9px;border:1px solid var(--glass-border);background:hsl(var(--fg) / 5%);color:hsl(var(--fg));cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .drawer-close svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.4;}
+  .drawer-sub{font-size:12px;color:hsl(var(--muted));margin-bottom:18px;}
+  .drawer-section{margin-bottom:18px;}
+  .drawer-section-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:hsl(var(--muted-2));margin-bottom:10px;}
+  .drawer-kv{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:7px 0;border-top:1px solid var(--glass-border);}
+  .drawer-kv:first-child{border-top:none;}
+  .drawer-kv .k{color:hsl(var(--muted));}
+  .drawer-kv .v{font-weight:600;text-align:right;}
+  .drawer-timeline{position:relative;padding-left:20px;}
+  .drawer-timeline-item{position:relative;padding-bottom:16px;font-size:12px;}
+  .drawer-timeline-item:last-child{padding-bottom:0;}
+  .drawer-timeline-item::before{content:'';position:absolute;left:-20px;top:3px;width:8px;height:8px;border-radius:50%;background:hsl(var(--blue));}
+  .drawer-timeline-item::after{content:'';position:absolute;left:-16.5px;top:13px;bottom:-3px;width:1px;background:var(--glass-border);}
+  .drawer-timeline-item:last-child::after{display:none;}
+  .drawer-timeline-item .tt{font-weight:600;}
+  .drawer-timeline-item .ts{color:hsl(var(--muted-2));font-size:10.5px;margin-top:1px;}
+  .drawer-log{background:hsl(0 0% 0% / 25%);border:1px solid var(--glass-border);border-radius:10px;padding:10px 12px;font-family:'SF Mono',Consolas,monospace;font-size:10.5px;color:hsl(var(--muted));line-height:1.6;white-space:pre-wrap;max-height:140px;overflow-y:auto;}
+  .drawer-actions{display:flex;gap:10px;margin-top:20px;}
+  .btn-primary{flex:1;background:hsl(var(--blue));color:#fff;border:none;padding:11px;border-radius:11px;font-size:12.5px;font-weight:700;cursor:pointer;}
+  .btn-ghost{flex:1;background:hsl(var(--fg) / 5%);border:1px solid var(--glass-border);color:hsl(var(--fg));padding:11px;border-radius:11px;font-size:12.5px;font-weight:700;cursor:pointer;}
+  .diag-note{font-size:10.5px;color:hsl(var(--muted-2));background:hsl(var(--fg) / 3%);border:1px solid var(--glass-border);border-radius:9px;padding:8px 10px;display:flex;gap:7px;align-items:flex-start;}
+  .diag-note svg{width:13px;height:13px;stroke:hsl(var(--blue));fill:none;stroke-width:2;flex-shrink:0;margin-top:1px;}
+
+  /* ---------- Feature flag rows / toggle ---------- */
+  .flag-row{display:flex;align-items:center;gap:12px;padding:12px 4px;border-top:1px solid hsl(var(--border));}
+  .flag-row:first-child{border-top:none;}
+  .flag-main{flex:1;min-width:0;}
+  .flag-title{font-size:13px;font-weight:600;}
+  .flag-meta{font-size:11px;color:hsl(var(--muted));margin-top:2px;}
+  .toggle-switch{width:40px;height:23px;border-radius:999px;background:hsl(var(--fg) / 10%);border:1px solid var(--glass-border);position:relative;cursor:pointer;flex-shrink:0;transition:background .2s;}
+  .toggle-switch .knob{position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:hsl(var(--muted));transition:transform .2s,background .2s;}
+  .toggle-switch.on{background:hsl(var(--blue) / 25%);border-color:hsl(var(--blue) / 45%);}
+  .toggle-switch.on .knob{transform:translateX(17px);background:hsl(var(--blue));}
+
+  /* ---------- Modal (privileged action confirm) ---------- */
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:95;align-items:center;justify-content:center;padding:20px;}
+  .modal-backdrop.show{display:flex;}
+  .modal{
+    width:420px;max-width:100%;background:hsl(var(--card) / 92%);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+    border:1px solid var(--glass-border);border-radius:18px;padding:22px;box-shadow:0 24px 60px rgba(0,0,0,.5);
+  }
+  .modal h3{margin:0 0 6px;font-size:16px;font-weight:800;}
+  .modal p.desc{font-size:12.5px;color:hsl(var(--muted));margin:0 0 16px;line-height:1.5;}
+  .modal label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:hsl(var(--muted-2));display:block;margin-bottom:6px;}
+  .modal textarea, .modal select{width:100%;border:1px solid var(--glass-border);background:hsl(var(--fg) / 4%);border-radius:10px;padding:10px 12px;font-size:12.5px;font-family:inherit;color:hsl(var(--fg));outline:none;resize:vertical;min-height:64px;margin-bottom:14px;}
+  .modal-actions{display:flex;gap:10px;}
+  .modal-warn{display:flex;gap:8px;align-items:flex-start;font-size:11.5px;color:hsl(var(--amber));background:hsl(var(--fg) / 4%);border:1px solid hsl(var(--amber) / 30%);border-radius:10px;padding:9px 11px;margin-bottom:14px;}
+  .modal-warn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;margin-top:1px;}
+
+  /* ---------- Misc lists ---------- */
+  .feed-row{display:flex;align-items:flex-start;gap:10px;padding:8px 4px;font-size:12px;border-top:1px solid hsl(var(--border) / 60%);}
+  .feed-row:first-child{border-top:none;}
+  .feed-time{color:hsl(var(--muted-2));font-size:10.5px;flex-shrink:0;width:52px;}
+  .feed-text{flex:1;}
+  .feed-text b{font-weight:600;}
+  .feed-zone{color:hsl(var(--muted));font-size:10.5px;flex-shrink:0;white-space:nowrap;}
+
+  .opp-card{padding:16px;border-radius:var(--radius-sm);background:hsl(var(--fg) / 3%);border:1px solid var(--glass-border);margin-bottom:12px;}
+  .opp-card:last-child{margin-bottom:0;}
+  .opp-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
+  .opp-rank{width:24px;height:24px;border-radius:7px;background:hsl(var(--fg) / 5%);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;}
+  .opp-name{font-size:13px;font-weight:700;flex:1;}
+  .opp-reason{font-size:11.5px;color:hsl(var(--muted));margin-bottom:10px;line-height:1.4;}
+  .opp-stats{display:flex;gap:14px;font-size:11px;color:hsl(var(--muted));flex-wrap:wrap;margin-bottom:10px;}
+  .opp-stats b{color:hsl(var(--fg));display:block;font-size:12.5px;}
+  .opp-foot{display:flex;align-items:center;justify-content:space-between;}
+
+  .svc-card .svc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .svc-name{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;}
+  .svc-name .ic{width:16px;height:16px;color:hsl(var(--muted));}
+  .svc-name .ic svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+  .svc-meta{font-size:11px;color:hsl(var(--muted));}
+
+  .version-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 4px;border-top:1px solid hsl(var(--border));}
+  .version-row:first-child{border-top:none;}
+  .version-row .name{font-size:12.5px;font-weight:600;}
+  .version-row .ver{font-size:11px;color:hsl(var(--muted));margin-top:1px;}
+
+  .usage-row{margin-bottom:16px;}
+  .usage-row:last-child{margin-bottom:0;}
+  .usage-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12.5px;font-weight:600;}
+  .usage-top .ic{width:16px;height:16px;color:hsl(var(--blue));}
+  .usage-top .ic svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+  .usage-top .pct{margin-left:auto;color:hsl(var(--muted));font-weight:700;}
+
+  .integ-row{display:flex;align-items:center;gap:10px;padding:10px 4px;border-top:1px solid hsl(var(--border));font-size:12.5px;}
+  .integ-row:first-child{border-top:none;}
+  .integ-row .name{flex:1;font-weight:600;}
+
+  .empty-note{font-size:12px;color:hsl(var(--muted));padding:20px 4px;text-align:center;}
+  footer.note{font-size:11px;color:hsl(var(--muted-2));margin-top:24px;text-align:center;line-height:1.6;}
+
+  /* ---------- Toast ---------- */
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(8px);background:var(--glass-bg-2);border:1px solid var(--glass-border);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);color:hsl(var(--fg));font-size:12.5px;font-weight:600;padding:11px 20px;border-radius:12px;box-shadow:0 12px 28px rgba(0,0,0,.4);z-index:80;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:88vw;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ---------- Dropdown (topbar controls) ---------- */
+  .dd-wrap{position:relative;}
+  .dd-panel{
+    position:absolute;top:calc(100% + 8px);right:0;z-index:60;
+    background:var(--glass-bg-2);border:1px solid var(--glass-border);border-radius:14px;
+    backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+    box-shadow:0 16px 34px rgba(0,0,0,.45);width:250px;max-width:84vw;
+    padding:8px;display:none;opacity:0;transform:translateY(-6px);
+    transition:opacity .15s ease,transform .15s ease;
+  }
+  .dd-panel.open{display:block;opacity:1;transform:translateY(0);}
+  .dd-item{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:9px 10px;border-radius:9px;border:none;background:none;font-size:12.5px;font-family:inherit;color:hsl(var(--fg));cursor:pointer;}
+  .dd-item:hover{background:hsl(var(--fg) / 8%);}
+  .dd-item.active{color:hsl(var(--blue));}
+  .dd-item svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
+
+  /* ---------- Mobile ---------- */
+  .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40;}
+  .sidebar-backdrop.show{display:block;}
+  @media(max-width:1000px){
+    .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .22s ease;box-shadow:0 0 40px rgba(0,0,0,.4);width:var(--sidebar-w) !important;}
+    .sidebar.open{transform:translateX(0);}
+    .sidebar.collapsed .nav-item .lbl, .sidebar.collapsed .qa-btn .lbl, .sidebar.collapsed .sidebar-brand .txt, .sidebar.collapsed .profile-chip .txt, .sidebar.collapsed .profile-chip .chev{display:block;}
+    .sidebar.collapsed .nav-item{justify-content:flex-start;padding:11px 12px;}
+    .sidebar.collapsed .qa-btn{justify-content:flex-start;}
+    .sidebar-collapse-btn{display:none;}
+    .hamburger{display:flex;}
+    .page-wrap{padding:20px 16px 48px;}
+    .topbar{padding:14px 16px;}
+    .page-title-row h1{font-size:21px;}
+    .topbar-controls .ctrl-btn .lbl-full{display:none;}
+  }
+</style>
+</head>
+<body class="dark">
+<div class="app-shell">
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">C</div>
+      <div class="txt"><b>Cefflo</b><span>ADMIN</span></div>
+    </div>
+    <nav id="sidebarNav">
+      <button class="nav-item active" data-page="overview"><span class="ic" data-icon="home"></span><span class="lbl">Overview</span></button>
+      <button class="nav-item" data-page="vendors"><span class="ic" data-icon="store"></span><span class="lbl">Vendors</span></button>
+      <button class="nav-item" data-page="operations"><span class="ic" data-icon="truck"></span><span class="lbl">Operations</span></button>
+      <button class="nav-item" data-page="revenue"><span class="ic" data-icon="trending"></span><span class="lbl">Revenue</span></button>
+      <button class="nav-item" data-page="growth"><span class="ic" data-icon="markets"></span><span class="lbl">Growth &amp; Markets</span></button>
+      <button class="nav-item" data-page="platform"><span class="ic" data-icon="shield"></span><span class="lbl">Platform</span></button>
+    </nav>
+    <div class="nav-group-label">Quick Actions</div>
+    <div id="quickActions"></div>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-foot">
+      <button class="sidebar-collapse-btn" id="sidebarCollapseBtn">
+        <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
+        <span class="lbl">Collapse</span>
+      </button>
+      <div class="dd-wrap">
+        <div class="profile-chip" id="profileChipBtn" tabindex="0" role="button">
+          <div class="av">FA</div>
+          <div class="txt"><b>Founder Admin</b><span>Super Admin</span></div>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="dd-panel" id="profilePanel" style="bottom:calc(100% + 8px);top:auto;left:0;right:auto;width:220px;"></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <div class="topbar">
+      <button class="hamburger" id="hamburgerBtn"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+      <div class="topbar-spacer"></div>
+      <div class="topbar-controls">
+        <div class="dd-wrap">
+          <button class="ctrl-btn" id="countryBtn">🇲🇾 <span class="lbl-full">Malaysia</span> <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="dd-panel" id="countryPanel"></div>
+        </div>
+        <div class="dd-wrap">
+          <button class="ctrl-btn" id="dateRangeBtn"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M8 2.5v4M16 2.5v4M3 9.5h18"/></svg> <span class="lbl-full" id="dateRangeLabel">May 15 – Jun 13, 2025</span> <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="dd-panel" id="dateRangePanel"></div>
+        </div>
+        <div class="live-indicator" id="liveIndicator"><span class="dot"></span><span id="liveIndicatorLabel">Live</span></div>
+        <button class="icon-btn-sq" id="refreshBtn" title="Refresh"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg></button>
+      </div>
+    </div>
+    <div class="page-wrap" id="pageWrap">
+      <div class="page-title-row">
+        <h1 id="pageTitleText">Overview</h1>
+        <p id="pageSubtitle">Executive summary of Cefflo platform performance.</p>
+      </div>
+      <div id="pageContent"></div>
+      <footer class="note">Interactive prototype — every number is realistic mock data, ticking client-side to simulate the real Supabase-backed version. Diagnostic Workspace, feature-flag guardrails and audit trail shown here are UI/UX reference only until wired to production APIs.</footer>
+    </div>
+  </div>
+</div>
+
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<div class="drawer" id="diagDrawer"></div>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalBody"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   ICONS
+===================================================================== */
+const ICONS = {
+  home: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>',
+  store: '<path d="M3 7l1.4-4h15.2L21 7"/><path d="M4 7v12a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V7"/><path d="M3 7a2.2 2.2 0 0 0 4.4 0 2.2 2.2 0 0 0 4.4 0 2.2 2.2 0 0 0 4.4 0 2.2 2.2 0 0 0 4.4 0"/><path d="M9.5 20v-5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v5"/>',
+  truck: '<rect x="1" y="6" width="14" height="11" rx="1.5"/><path d="M15 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="1.6"/><circle cx="17.5" cy="19" r="1.6"/>',
+  trending: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+  trendingDown: '<polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/>',
+  markets: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/>',
+  shield: '<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+  bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+  calendar: '<rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M8 2.5v4M16 2.5v4M3 9.5h18"/>',
+  refresh: '<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/>',
+  users: '<circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.3 5 5.8"/>',
+  wallet: '<path d="M4 7a2 2 0 0 1 2-2h11a1 1 0 0 1 1 1v2"/><path d="M4 7v11a2 2 0 0 0 2 2h13a1 1 0 0 0 1-1v-4"/><path d="M17 12h3a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-3a2 2 0 0 1 0-4z"/>',
+  package: '<path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/>',
+  alert: '<path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><circle cx="12" cy="17" r="0.4" fill="currentColor" stroke="none"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>',
+  check: '<path d="M20 6L9 17l-5-5"/>',
+  x: '<path d="M18 6L6 18"/><path d="M6 6l12 12"/>',
+  server: '<rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="14" width="18" height="7" rx="1.5"/><circle cx="7" cy="7.5" r="0.6" fill="currentColor" stroke="none"/><circle cx="7" cy="17.5" r="0.6" fill="currentColor" stroke="none"/>',
+  lock: '<rect x="4" y="10.5" width="16" height="10" rx="2"/><path d="M7.5 10.5V7a4.5 4.5 0 0 1 9 0v3.5"/>',
+  login: '<path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M3 4h4M3 20h4"/>',
+  edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  database: '<ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/><path d="M4 11.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/>',
+  activity: '<polyline points="22 12 18 12 15 20 9 4 6 12 2 12"/>',
+  flag: '<path d="M5 3v18"/><path d="M5 4h11l-2 4 2 4H5"/>',
+  code: '<polyline points="9 8 4 12 9 16"/><polyline points="15 8 20 12 15 16"/>',
+  filter: '<path d="M4 5h16l-6.5 8v6l-3 2v-8z"/>',
+  pin: '<path d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/>',
+  navigation: '<polygon points="12 2 19 21 12 17 5 21 12 2"/>',
+  phone: '<path d="M6 3h3l2 5-2.5 2a11 11 0 0 0 5.5 5.5l2-2.5 5 2v3a2 2 0 0 1-2.2 2 18 18 0 0 1-15.8-15.8A2 2 0 0 1 6 3z"/>',
+  externalLink: '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><path d="M10 14L21 3"/>',
+  rotateCcw: '<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>',
+  plusCircle: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
+  megaphone: '<path d="M3 10v4a1 1 0 0 0 1 1h2l3 5V4l-3 5H4a1 1 0 0 0-1 1z"/><path d="M13 8a4 4 0 0 1 0 8"/><path d="M17 5a8 8 0 0 1 0 14"/>',
+  tool: '<path d="M14.7 6.3a4 4 0 0 0-5.6 5L3 17.4 6.6 21l6-6.1a4 4 0 0 0 5-5.6L15 12l-3-3z"/>',
+  fileText: '<path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/><path d="M9 13h6M9 17h6M9 9h2"/>',
+  cpu: '<rect x="6" y="6" width="12" height="12" rx="2"/><rect x="10" y="10" width="4" height="4"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>',
+  hardDrive: '<line x1="2" y1="12" x2="22" y2="12"/><path d="M5.5 5h13L22 12v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-6z"/><circle cx="6.5" cy="16" r=".6" fill="currentColor" stroke="none"/>',
+  wifi: '<path d="M2 8.5a16 16 0 0 1 20 0"/><path d="M5.5 12.5a11 11 0 0 1 13 0"/><path d="M9 16.5a5.5 5.5 0 0 1 6 0"/><circle cx="12" cy="20" r=".6" fill="currentColor" stroke="none"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>',
+  rocket: '<path d="M13.5 2.5c3 0 6 3 6 6-3 1-6 4-8 8l-4-4c4-2 7-5 8-8z"/><path d="M7.5 14.5L4 21l6.5-3.5"/><circle cx="15" cy="9" r="1.5"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r=".5" fill="currentColor" stroke="none"/>',
+  zoomIn: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/><path d="M8 11h6M11 8v6"/>',
+  zoomOut: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/><path d="M8 11h6"/>',
+  layers: '<polygon points="12 2 2 8 12 14 22 8 12 2"/><polyline points="2 14 12 20 22 14"/>',
+  download: '<path d="M12 3v13"/><polyline points="7 11 12 16 17 11"/><path d="M4 20h16"/>',
+  chevLeft: '<path d="M15 6l-6 6 6 6"/>',
+  chevRight: '<path d="M9 6l6 6-6 6"/>',
+  chevDown: '<path d="M6 9l6 6 6-6"/>',
+  percent: '<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.2"/><circle cx="17.5" cy="17.5" r="2.2"/>',
+  pieChart: '<path d="M21 12a9 9 0 1 1-9-9v9z"/><path d="M21 12A9 9 0 0 1 12 21"/>',
+  creditCard: '<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>',
+  box: '<path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/>',
+  eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
+  gauge: '<path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 12l5-5"/><path d="M12 12h.01"/>',
+  link: '<path d="M9 15l6-6"/><path d="M13 5l1-1a4 4 0 0 1 6 6l-1 1"/><path d="M11 19l-1 1a4 4 0 0 1-6-6l1-1"/>',
+};
+function iconSvg(name){ return `<svg viewBox="0 0 24 24">${ICONS[name] || ''}</svg>`; }
+function hydrateIcons(root){
+  (root || document).querySelectorAll('[data-icon]').forEach(el => {
+    el.innerHTML = iconSvg(el.dataset.icon);
+  });
+}
+
+/* =====================================================================
+   HELPERS
+===================================================================== */
+function fmtMYR(n){ return 'RM ' + n.toLocaleString('en-MY', {minimumFractionDigits:0, maximumFractionDigits:0}); }
+function fmtMYR2(n){ return 'RM ' + n.toLocaleString('en-MY', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function initials(name){ return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+function relTime(minutes){
+  if(minutes < 1) return 'just now';
+  if(minutes < 60) return Math.round(minutes) + 'm ago';
+  const h = minutes / 60;
+  if(h < 24) return Math.round(h) + 'h ago';
+  return Math.round(h/24) + 'd ago';
+}
+function trendPill(pct){
+  const up = pct >= 0;
+  return `<span class="trend-pill ${up?'up':'down'}"><svg viewBox="0 0 24 24">${up?ICONS.trending:ICONS.trendingDown}</svg>${up?'+':''}${pct}%</span>`;
+}
+function kpiTrend(pct, note){
+  const up = pct >= 0;
+  return `<div class="kpi-trend ${up?'up':'down'}"><svg viewBox="0 0 24 24">${up?ICONS.trending:ICONS.trendingDown}</svg>${up?'+':''}${pct}% <span class="muted">${note||'vs last period'}</span></div>`;
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(()=> t.classList.remove('show'), 2800);
+}
+
+/* =====================================================================
+   DATA — mock/simulated. In production every metric here maps to a
+   canonical source table/view/RPC per README section 14.
+===================================================================== */
+const DAY_LABELS = ['May 15','May 17','May 19','May 21','May 23','May 25','May 27','May 29','May 31','Jun 2','Jun 4','Jun 6','Jun 8','Jun 10','Jun 12'];
+
+const clusters = [
+  { id:'klang', name:'Klang Valley', state:'Selangor / KL', x:44, y:46, paying:328, active:287, retention:78, mrr:31420, newThisMonth:24 },
+  { id:'penang', name:'Penang', state:'Penang', x:26, y:28, paying:67, active:54, retention:71, mrr:6420, newThisMonth:6 },
+  { id:'perak', name:'Perak', state:'Perak', x:32, y:36, paying:42, active:35, retention:68, mrr:3980, newThisMonth:3 },
+  { id:'bangi', name:'Bangi / Kajang', state:'Selangor', x:47, y:52, paying:271, active:231, retention:74, mrr:24680, newThisMonth:31 },
+  { id:'johor', name:'Johor Bahru', state:'Johor', x:49, y:82, paying:94, active:79, retention:69, mrr:8760, newThisMonth:9 },
+  { id:'sabah', name:'Sabah', state:'Sabah', x:82, y:44, paying:28, active:21, retention:61, mrr:2340, newThisMonth:2 },
+  { id:'sarawak', name:'Sarawak', state:'Sarawak', x:72, y:64, paying:19, active:15, retention:58, mrr:1560, newThisMonth:1 },
+];
+
+const businessTypes = ['Bakeri','Katering','Frozen Food','Makanan Kering','Minuman'];
+const planNames = ['Starter (RM39)','Basic (RM39)','Pro (RM99)','Premium (RM179)','Enterprise (Custom)'];
+const areas = ['Shah Alam','Kuala Lumpur','Kajang','Seremban','Johor Bahru','Penang','Ipoh','Klang'];
+const vendorFirstNames = ['Bake with Hani','Dapur Emma','FrozMeal Kitchen',"Mom's Recipe",'Chef Amin Catering','Sate Kajang Rashid','Laksa Johor Ani','Nasi Lemak Wangi','Warung Selera Ibu','Roti Bakar Ceria','Boba Utara','Kopi Mak Long','Kitchen 88','Char Koay Teow King','Burger Ramly Express','Cendol Pak Ngah','Mee Bandung Muar','Pizza Kampung Baru','Kuih Muih Mak Su','Ramen Sensei KL','Roti Canai Transformer','Steamboat Segar','D\'Katering HQ','Ayam Penyet Pak Din'];
+let allVendors = vendorFirstNames.map((name,i) => {
+  const status = ['active','active','active','trial','active','past_due','active','suspended'][i % 8];
+  const plan = planNames[i % planNames.length];
+  const mrr = status === 'trial' ? 0 : [39,39,99,179,249][i % 5];
+  return {
+    id:'v'+(i+1), name, businessType: businessTypes[i % businessTypes.length], plan, status,
+    payingSince: `${['Jan','Feb','Mar','Apr','May'][i%5]} ${18+ (i%8)}, 2025`,
+    mrr, orders: 12 + (i*17)%400, retention: 55 + (i*7)%40, area: areas[i % areas.length],
+    lastActivityMin: [2,8,15,45,120,360,1440][i % 7],
+  };
+});
+
+const atRiskVendors = [
+  { name:'Dapur Kak Lina', area:'Shah Alam', reason:'No orders 14 days', level:'crit', daysAgo:14 },
+  { name:'Sweetie Bakery', area:'Kajang', reason:'Payment failed', level:'crit', daysAgo:12 },
+  { name:'Nasi Kukus Mama', area:'Kuala Lumpur', reason:'Low order frequency', level:'warn', daysAgo:7 },
+  { name:'FrozMeal Kitchen', area:'Subang Jaya', reason:'Incomplete setup', level:'warn', daysAgo:6 },
+  { name:"D'Katering HQ", area:'Bangi', reason:'New vendor — no orders yet', level:'info', daysAgo:3 },
+];
+
+const overviewAttention = [
+  { title:'Rider Stuck (No Movement)', meta:'5 riders · GPS unchanged 45+ min', level:'crit', icon:'truck', count:'5 riders', page:'operations' },
+  { title:'POD Upload Failed', meta:'12 deliveries · storage/network error', level:'warn', icon:'box', count:'12 deliveries', page:'operations' },
+  { title:'Customer Unreachable', meta:'9 deliveries · 3 call attempts made', level:'warn', icon:'phone', count:'9 deliveries', page:'operations' },
+  { title:'Vendor Not Ready', meta:'4 vendors · order accepted, not started', level:'warn', icon:'store', count:'4 vendors', page:'vendors' },
+  { title:'Payment / Renewal Issue', meta:'6 subscriptions · card declined', level:'crit', icon:'creditCard', count:'6 vendors', page:'revenue' },
+  { title:'Network / Realtime Issue', meta:'3 areas · intermittent socket drops', level:'info', icon:'wifi', count:'3 areas', page:'platform' },
+];
+
+const aiInsights = [
+  { title:'Revenue Opportunity', icon:'trending', body:'Shah Alam vendor growth is outpacing the platform average by 2.1x this month. Concentrating acquisition spend there could compound existing momentum.', evidence:'Source: vendor signups + MRR by area, last 30 days', metric:'Potential +RM12,000 MRR', page:'growth' },
+  { title:'Vendor Activation Problem', icon:'users', body:'18% of vendors who completed signup have not finished onboarding setup, which is suppressing their first-order rate.', evidence:'Source: onboarding funnel completion, last 30 days', metric:'18% incomplete', page:'vendors' },
+  { title:'Operations Efficiency', icon:'truck', body:'Average delivery time increased 12% week-over-week, concentrated in Cheras and Klang zones. Review route planning and rider allocation there.', evidence:'Source: delivery lifecycle timestamps, last 7 days', metric:'+12% vs last week', page:'operations' },
+];
+
+const quickActionsByPage = {
+  overview: [
+    { label:'Add Vendor', icon:'plusCircle', action:'privileged', title:'Add Vendor', desc:'Manually create a vendor account outside the self-serve signup flow.' },
+    { label:'Create Announcement', icon:'megaphone', action:'privileged', title:'Create Announcement', desc:'Broadcast a message to Vendor and/or Rider apps.' },
+    { label:'Maintenance Mode', icon:'tool', action:'privileged', title:'Maintenance Mode', desc:'Emergency/exception control only — not required for routine releases.' },
+    { label:'View Audit Log', icon:'fileText', action:'navigate', page:'platform' },
+  ],
+  vendors: [
+    { label:'Add Vendor', icon:'plusCircle', action:'privileged', title:'Add Vendor', desc:'Manually create a vendor account outside the self-serve signup flow.' },
+    { label:'Import Vendors', icon:'download', action:'privileged', title:'Import Vendors', desc:'Bulk-import vendors from a CSV. Requires review before activation.' },
+    { label:'Export Report', icon:'fileText', action:'toast', msg:'Vendor report exported — check your downloads.' },
+    { label:'Vendor Segments', icon:'layers', action:'toast', msg:'Vendor Segments — opens saved filter builder.' },
+    { label:'View Audit Log', icon:'shield', action:'navigate', page:'platform' },
+  ],
+  operations: [
+    { label:'Dispatch Rider', icon:'navigation', action:'privileged', title:'Dispatch Rider', desc:'Manually assign an available rider to an unassigned order.' },
+    { label:'Bulk Assignment', icon:'users', action:'privileged', title:'Bulk Assignment', desc:'Auto-assign a batch of pending orders to nearby available riders.' },
+    { label:'Route Optimizer', icon:'target', action:'toast', msg:'Route Optimizer — recalculating optimal batches.' },
+    { label:'Broadcast Message', icon:'megaphone', action:'privileged', title:'Broadcast Message', desc:'Send a message to all online riders in a zone.' },
+    { label:'View All Orders', icon:'package', action:'toast', msg:'Opens the full order/delivery workspace.' },
+  ],
+  revenue: [
+    { label:'Invoices & Payouts', icon:'fileText', action:'toast', msg:'Opens invoices & payouts ledger.' },
+    { label:'Payment Failures', icon:'alert', action:'toast', msg:'Opens payment failure queue.' },
+    { label:'Discount Management', icon:'percent', action:'privileged', title:'Discount Management', desc:'Create or modify promotional pricing rules.' },
+    { label:'Revenue Export', icon:'download', action:'toast', msg:'Revenue export queued — check your downloads.' },
+  ],
+  growth: [
+    { label:'New Campaign', icon:'rocket', action:'privileged', title:'Launch New Campaign', desc:'Create a new acquisition campaign across content, paid or affiliate channels.' },
+    { label:'Market Analysis', icon:'markets', action:'toast', msg:'Opens full market analysis workspace.' },
+    { label:'Export Report', icon:'download', action:'toast', msg:'Growth report exported — check your downloads.' },
+    { label:'Idea Lab', icon:'gauge', action:'toast', msg:'Idea Lab — experiment backlog.' },
+  ],
+  platform: [
+    { label:'Feature Flags', icon:'flag', action:'scroll', target:'flags-card' },
+    { label:'Client Versions', icon:'code', action:'scroll', target:'versions-card' },
+    { label:'Maintenance', icon:'tool', action:'privileged', title:'Maintenance Mode', desc:'Emergency/exception control only. Scope, reason, expected duration and rollback condition are required.' },
+    { label:'Announcements', icon:'megaphone', action:'privileged', title:'Create Announcement', desc:'Broadcast a message to Vendor and/or Rider apps.' },
+    { label:'Developer Mode', icon:'code', action:'privileged', title:'Developer Mode', desc:'Isolated preview/staging environment. Does not affect production users.' },
+    { label:'Integrations', icon:'link', action:'scroll', target:'integrations-card' },
+    { label:'Audit Log', icon:'shield', action:'scroll', target:'activity-card' },
+  ],
+};
+
+/* ---- Operations ---- */
+const riders = [
+  { id:'RDR-1008', x:38, y:44, state:'moving', zone:'Shah Alam', order:'OD-8295' },
+  { id:'RDR-0991', x:52, y:38, state:'moving', zone:'Subang Jaya', order:'OD-8296' },
+  { id:'RDR-1012', x:47, y:52, state:'idle', zone:'Bangi', order:null },
+  { id:'RDR-0998', x:60, y:46, state:'moving', zone:'Klang', order:'OD-8299' },
+  { id:'RDR-1021', x:44, y:60, state:'delayed', zone:'Cheras', order:'OD-8298' },
+  { id:'RDR-1023', x:41, y:33, state:'delayed', zone:'Shah Alam', order:'OD-8291' },
+  { id:'RDR-1015', x:56, y:58, state:'moving', zone:'Puchong', order:'OD-8297' },
+  { id:'RDR-0955', x:65, y:40, state:'idle', zone:'Ampang', order:null },
+  { id:'RDR-1030', x:35, y:55, state:'moving', zone:'Puchong', order:'OD-8302' },
+  { id:'RDR-0972', x:70, y:52, state:'offline', zone:'Cheras', order:null },
+];
+const opsNeedsAttention = [
+  { title:'Rider Stuck (No Movement)', meta:'Rider ID: RDR-1023 · 48 min', level:'crit', icon:'truck', area:'Shah Alam' },
+  { title:'POD Upload Failed', meta:'Order ID: OD-8291 · 12 min ago', level:'warn', icon:'box', area:'Subang Jaya' },
+  { title:'Customer Unreachable', meta:'Order ID: OD-8277 · 18 min ago', level:'warn', icon:'phone', area:'Cheras' },
+  { title:'Vendor Not Ready', meta:'Order ID: OD-8302 · 25 min ago', level:'warn', icon:'store', area:'Kajang' },
+  { title:'Wrong Address Reported', meta:'Order ID: OD-8288 · 30 min ago', level:'info', icon:'pin', area:'Bangi' },
+];
+const liveActivityFeed = [
+  { ts:'10:24 AM', text:'Rider RDR-1008 picked up order OD-8295', zone:'Shah Alam', level:'ok' },
+  { ts:'10:23 AM', text:'POD uploaded by Rider RDR-0991', zone:'Subang Jaya', level:'ok' },
+  { ts:'10:22 AM', text:'New order OD-8303 assigned to Rider RDR-1012', zone:'Bangi', level:'info' },
+  { ts:'10:21 AM', text:'Customer unreachable for order OD-8277', zone:'Cheras', level:'warn' },
+  { ts:'10:19 AM', text:'Rider RDR-1023 has no movement for 45+ min', zone:'Shah Alam', level:'crit' },
+  { ts:'10:16 AM', text:'Order OD-8296 marked completed', zone:'Subang Jaya', level:'ok' },
+];
+const liveDeliveries = [
+  { order:'OD-8295', vendor:'Bake with Hani', rider:'RDR-1008', status:'On The Way', pickup:'10:05 AM', eta:'20 min', zone:'Shah Alam', level:'info' },
+  { order:'OD-8296', vendor:'Dapur Emma', rider:'RDR-0991', status:'On The Way', pickup:'10:10 AM', eta:'25 min', zone:'Subang Jaya', level:'info' },
+  { order:'OD-8297', vendor:'FrozMeal Kitchen', rider:'RDR-1015', status:'Picked Up', pickup:'10:15 AM', eta:'30 min', zone:'Puchong', level:'ok' },
+  { order:'OD-8298', vendor:"Mom's Recipe", rider:'RDR-1021', status:'Pending Pickup', pickup:'—', eta:'—', zone:'Cheras', level:'warn' },
+  { order:'OD-8299', vendor:'Chef Amin Catering', rider:'RDR-0998', status:'On The Way', pickup:'09:50 AM', eta:'15 min', zone:'Klang', level:'info' },
+];
+
+/* ---- Revenue ---- */
+const revenueTrend = DAY_LABELS.map((d,i) => ({
+  d, total: 118000 + i*780 + (i%3)*900, mrr: 118000 + i*720, newRev: 2200 + (i%5)*400, churned: 800 + (i%4)*220,
+}));
+const cohortRetention = [
+  { cohort:'Jan 2025', m0:100, m1:92, m2:85, m3:79, m4:74, m5:71 },
+  { cohort:'Feb 2025', m0:100, m1:93, m2:87, m3:81, m4:76, m5:null },
+  { cohort:'Mar 2025', m0:100, m1:94, m2:88, m3:83, m4:null, m5:null },
+  { cohort:'Apr 2025', m0:100, m1:95, m2:90, m3:null, m4:null, m5:null },
+  { cohort:'May 2025', m0:100, m1:96, m2:null, m3:null, m4:null, m5:null },
+];
+const paymentHealth = { successful:98.2, failed:24, retrying:17, refunds:8 };
+const revenueAttention = [
+  { title:'12 vendors payment failed', meta:'Total outstanding RM3,840', level:'crit', icon:'creditCard', time:'18 min ago' },
+  { title:'Renewal rate dropped', meta:'-4.2% vs last 30 days', level:'warn', icon:'trendingDown', time:'1 hour ago' },
+  { title:'High churn in Basic plan', meta:'8.3% churn rate', level:'warn', icon:'alert', time:'2 hours ago' },
+  { title:'3 large refunds processed', meta:'Total RM2,160', level:'info', icon:'rotateCcw', time:'3 hours ago' },
+];
+
+/* ---- Growth & Markets ---- */
+const marketOpportunities = [
+  { rank:1, name:'Bangi / Kajang', reason:'High organic content activity + low competition', score:9.4, priority:'High', potentialVendors:18400, estMrr:1800000, competition:'Low', action:'Attack' },
+  { rank:2, name:'Seremban', reason:'Rising home baker + frozen-food seller activity', score:8.9, priority:'High', potentialVendors:12600, estMrr:1200000, competition:'Low', action:'Attack' },
+  { rank:3, name:'Ipoh', reason:'Strong content activity, growing demand proxy', score:8.6, priority:'Medium', potentialVendors:10200, estMrr:1000000, competition:'Medium', action:'Grow' },
+];
+const acquisitionFunnel = [
+  { label:'Content Reach', count:2400000 },
+  { label:'Landing Page Visit', count:246380 },
+  { label:'Sign Up', count:12840 },
+  { label:'Activated', count:9280 },
+  { label:'Paid Vendor', count:1324 },
+];
+const campaignPerformance = [
+  { channel:'TikTok Organic', icon:'📱', status:'Live', reach:'1.2M', newVendors:486, cpa:11.20 },
+  { channel:'Facebook', icon:'📘', status:'Live', reach:'820K', newVendors:312, cpa:15.40 },
+  { channel:'Instagram', icon:'📷', status:'Live', reach:'540K', newVendors:214, cpa:16.80 },
+  { channel:'Google SEO', icon:'🔍', status:'Growth', reach:'310K', newVendors:128, cpa:12.60 },
+  { channel:'Referral', icon:'🤝', status:'Growth', reach:'286K', newVendors:114, cpa:9.90 },
+];
+const upcomingFocus = [
+  { date:'Mon, 16 Jun', title:'Kuala Lumpur Mini Event', sub:'Booth @ Shah Alam', tag:'Live Soon' },
+  { date:'Wed, 18 Jun', title:'Content Sprint: Frozen Food', sub:'TikTok + IG Series', tag:'Content' },
+  { date:'24 Jun', title:'Penang Vendor Outreach', sub:'Partner Collaboration', tag:'Planning' },
+  { date:'28 Jun', title:'Cefflo Webinar #4', sub:'Home Baker Edition', tag:'Confirmed' },
+];
+
+/* ---- Platform ---- */
+const systemHealthServices = [
+  { name:'Web Dashboard', icon:'server', status:'Operational', responseMs:142, uptime:99.99 },
+  { name:'Vendor PWA', icon:'store', status:'Operational', responseMs:168, uptime:99.98 },
+  { name:'Rider PWA', icon:'truck', status:'Operational', responseMs:156, uptime:99.98 },
+  { name:'Customer Tracking', icon:'pin', status:'Operational', responseMs:131, uptime:99.99 },
+  { name:'API Gateway', icon:'cpu', status:'Operational', responseMs:98, uptime:99.99 },
+  { name:'Database', icon:'database', status:'Operational', responseMs:85, uptime:99.99 },
+  { name:'Storage (POD)', icon:'hardDrive', status:'Operational', responseMs:112, uptime:99.98 },
+  { name:'Edge Functions', icon:'code', status:'Operational', responseMs:120, uptime:99.97 },
+];
+const platformAlerts = [
+  { title:'High API usage detected', meta:'API Gateway · 2 min ago', level:'warn', badge:'Warning' },
+  { title:'Rider app version below minimum', meta:'17 riders · 5 min ago', level:'crit', badge:'Critical' },
+  { title:'POD storage usage 80%', meta:'Storage · 18 min ago', level:'info', badge:'Info' },
+  { title:'Scoped maintenance available', meta:'Emergency-only control · Platform', level:'neutral', badge:'Scoped' },
+  { title:'New sign-in from unrecognized device', meta:'Founder Admin · 1 hour ago', level:'info', badge:'Info' },
+];
+let recentPlatformActivity = [
+  { ts:'10:24 AM', text:'Feature flag "Rider Bulk Assign" enabled', actor:'Founder Admin' },
+  { ts:'10:12 AM', text:'Announced maintenance window to all clients', actor:'Founder Admin' },
+  { ts:'09:58 AM', text:'Updated Vendor PWA to v1.4.2', actor:'System' },
+  { ts:'09:41 AM', text:'Database backup completed', actor:'System' },
+  { ts:'09:30 AM', text:'New admin user added', actor:'Founder Admin' },
+];
+let featureFlags = [
+  { key:'rider_bulk_assign', title:'Rider Bulk Assignment', desc:'Assign multiple orders to a rider at once', scope:'Rider PWA', env:'Production', on:true, affected:'312 riders', owner:'Ops Eng' },
+  { key:'cod_enabled', title:'COD (Cash on Delivery)', desc:'Cash collection by riders', scope:'Rider PWA', env:'Production', on:false, affected:'0 riders (off)', owner:'Payments Eng' },
+  { key:'auto_batch', title:'Auto Batch Optimization', desc:'AI-optimize delivery batches', scope:'Platform', env:'Production', on:true, affected:'All zones', owner:'Ops Eng' },
+  { key:'vendor_self_onboard', title:'Vendor Self Onboarding', desc:'Allow self-registration', scope:'Vendor PWA', env:'Production', on:true, affected:'All new vendors', owner:'Growth Eng' },
+  { key:'advanced_analytics', title:'Advanced Analytics', desc:'Detailed performance insights', scope:'Admin', env:'Production', on:true, affected:'Admin only', owner:'Platform Eng' },
+];
+let clientVersions = [
+  { name:'Vendor PWA', version:'v1.4.2', status:'Latest' },
+  { name:'Rider PWA', version:'v1.3.8', status:'Latest' },
+  { name:'Customer Tracking', version:'v2.1.0', status:'Latest' },
+  { name:'Admin Dashboard', version:'v1.2.6', status:'Latest' },
+  { name:'Rider App (Beta)', version:'v0.9.3', status:'Beta' },
+];
+const systemUsage = { cpu:32, memory:48, storage:62 };
+const integrationsHealth = [
+  { name:'Supabase', status:'Healthy', icon:'database' },
+  { name:'Vercel', status:'Healthy', icon:'server' },
+  { name:'OneSignal (Push)', status:'Healthy', icon:'bell' },
+  { name:'Google Maps', status:'Healthy', icon:'pin' },
+  { name:'Cloudflare', status:'Healthy', icon:'shield' },
+];
+
+/* =====================================================================
+   CHART RENDERING (multi-series smooth line + hover tooltip)
+===================================================================== */
+function smoothPath(points){
+  if(points.length < 2) return '';
+  let d = `M ${points[0][0]},${points[0][1]}`;
+  for(let i=0;i<points.length-1;i++){
+    const p0 = points[i-1] || points[i];
+    const p1 = points[i];
+    const p2 = points[i+1];
+    const p3 = points[i+2] || p2;
+    const cp1x = p1[0] + (p2[0]-p0[0])/6;
+    const cp1y = p1[1] + (p2[1]-p0[1])/6;
+    const cp2x = p2[0] - (p3[0]-p1[0])/6;
+    const cp2y = p2[1] - (p3[1]-p1[1])/6;
+    d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2[0]},${p2[1]}`;
+  }
+  return d;
+}
+function initMultiChart(svgId, wrapId, tooltipId, series, opts){
+  const svg = document.getElementById(svgId);
+  const wrap = document.getElementById(wrapId);
+  const tooltip = document.getElementById(tooltipId);
+  if(!svg || !wrap) return;
+  const w = 900, h = 220, padX = 10, padY = 14;
+  const n = series[0].data.length;
+  // Each series is normalized to its OWN min/max range rather than one shared axis.
+  // These business metrics differ by orders of magnitude (RM MRR vs. vendor counts) —
+  // a single shared linear scale would flatten the smaller-magnitude series to the baseline.
+  // Per-series normalization keeps every line visually legible; tooltips still show true values.
+  const scales = {};
+  series.forEach(s => {
+    const smax = Math.max(...s.data) * 1.08, smin = Math.min(0, Math.min(...s.data) * 0.92);
+    scales[s.key] = v => h - padY - ((v - smin) / ((smax - smin) || 1)) * (h - padY * 2);
+  });
+  const stepX = (w - padX*2) / (n - 1);
+  const scaleY = (v, s) => scales[s.key](v);
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  let html = '';
+  series.forEach((s, si) => {
+    if(s.visible === false) return;
+    const points = s.data.map((v,i)=>[padX + i*stepX, scaleY(v, s)]);
+    const path = smoothPath(points);
+    if(s.area){
+      const areaPath = path + ` L ${points[points.length-1][0]},${h-padY} L ${points[0][0]},${h-padY} Z`;
+      html += `<defs><linearGradient id="grad_${svgId}_${si}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${s.color}" stop-opacity="0.18"/><stop offset="100%" stop-color="${s.color}" stop-opacity="0"/></linearGradient></defs>`;
+      html += `<path d="${areaPath}" fill="url(#grad_${svgId}_${si})" stroke="none"/>`;
+    }
+    html += `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" ${s.dashed?'stroke-dasharray="5 5"':''}/>`;
+  });
+  html += `<g id="${svgId}_dots" style="display:none;">${series.map(s=>`<circle r="4" fill="${s.color}" stroke="hsl(var(--bg))" stroke-width="2"/>`).join('')}</g>`;
+  html += `<rect id="${svgId}_capture" x="0" y="0" width="${w}" height="${h}" fill="transparent"/>`;
+  svg.innerHTML = html;
+
+  const capture = document.getElementById(`${svgId}_capture`);
+  const dotsGroup = document.getElementById(`${svgId}_dots`);
+  const dots = dotsGroup.querySelectorAll('circle');
+  function handleMove(clientX, clientY){
+    const rect = svg.getBoundingClientRect();
+    const scaleX = w / rect.width;
+    const localX = (clientX - rect.left) * scaleX;
+    let idx = Math.round((localX - padX) / stepX);
+    idx = Math.max(0, Math.min(n-1, idx));
+    dotsGroup.style.display = 'block';
+    let visIdx = 0;
+    series.forEach((s, si) => {
+      if(s.visible === false){ dots[si].style.display='none'; return; }
+      dots[si].style.display='block';
+      dots[si].setAttribute('cx', padX + idx*stepX);
+      dots[si].setAttribute('cy', scaleY(s.data[idx], s));
+      visIdx++;
+    });
+    if(tooltip){
+      const px = padX + idx*stepX, py = Math.min(...series.filter(s=>s.visible!==false).map(s=>scaleY(s.data[idx], s)));
+      const xPct = (px/w)*100, yPct = (py/h)*100;
+      tooltip.style.left = xPct + '%';
+      tooltip.style.top = yPct + '%';
+      tooltip.innerHTML = opts.fmt(idx, series);
+      tooltip.classList.add('show');
+    }
+  }
+  capture.addEventListener('mousemove', (e)=> handleMove(e.clientX, e.clientY));
+  capture.addEventListener('mouseleave', ()=>{ dotsGroup.style.display='none'; if(tooltip) tooltip.classList.remove('show'); });
+  wrap._chartSeries = series;
+  wrap._chartRedraw = () => initMultiChart(svgId, wrapId, tooltipId, wrap._chartSeries, opts);
+}
+
+/* =====================================================================
+   DONUT RING
+===================================================================== */
+function drawDonut(svgId, segments, centerLabel, centerSub){
+  const svg = document.getElementById(svgId);
+  if(!svg) return;
+  const total = segments.reduce((s,x)=>s+x.value,0);
+  const r = 60, cx = 80, cy = 80, circ = 2*Math.PI*r;
+  let offset = 0;
+  let html = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="hsl(var(--fg) / 8%)" stroke-width="16"/>`;
+  segments.forEach(seg => {
+    const frac = seg.value / total;
+    const dash = frac * circ;
+    html += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="16" stroke-linecap="round"
+      stroke-dasharray="${dash} ${circ-dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset += dash;
+  });
+  html += `<text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="17" font-weight="800" fill="hsl(var(--fg))">${centerLabel}</text>`;
+  html += `<text x="${cx}" y="${cy+15}" text-anchor="middle" font-size="9.5" fill="hsl(var(--muted))">${centerSub}</text>`;
+  svg.setAttribute('viewBox','0 0 160 160');
+  svg.innerHTML = html;
+}
+
+/* =====================================================================
+   MAP COMPONENT — stylized cluster map (Malaysia-illustrative, not GIS-accurate)
+===================================================================== */
+const MAP_OUTLINE_SVG = `
+  <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="map-outline">
+    <path d="M20 8 C16 14 14 20 17 26 C13 30 12 36 15 41 C11 46 12 52 17 56 C14 61 16 67 21 70 C19 76 23 82 30 84 C34 88 40 90 45 87 C42 82 44 76 49 74 C46 68 48 62 53 60 C50 54 52 48 57 46 C54 40 56 34 51 30 C48 24 42 20 36 20 C34 14 28 9 20 8 Z"
+      fill="none" stroke="hsl(var(--fg))" stroke-width="0.4" stroke-opacity="0.5"/>
+    <path d="M66 38 C62 42 61 48 65 52 C61 56 62 62 67 65 C65 70 68 75 74 76 C78 80 85 80 89 76 C93 72 93 65 89 61 C92 56 90 50 85 48 C86 43 83 39 78 38 C75 35 69 35 66 38 Z"
+      fill="none" stroke="hsl(var(--fg))" stroke-width="0.4" stroke-opacity="0.5"/>
+  </svg>
+`;
+function markerColor(kind, item){
+  if(kind === 'vendor') return 'hsl(var(--blue))';
+  if(kind === 'rider'){
+    if(item.state==='delayed') return 'hsl(var(--red))';
+    if(item.state==='idle') return 'hsl(var(--blue))';
+    if(item.state==='offline') return 'hsl(var(--muted-2))';
+    return 'hsl(var(--green))';
+  }
+  if(kind === 'market') return 'hsl(var(--blue))';
+  return 'hsl(var(--blue))';
+}
+function renderMapMarkers(items, kind, sizeFn){
+  return items.map((item,i) => {
+    const size = sizeFn ? sizeFn(item) : 16;
+    const color = markerColor(kind, item);
+    if(kind === 'rider'){
+      return `<div class="map-marker rider ${item.state}" style="left:${item.x}%;top:${item.y}%;" data-idx="${i}">
+        <div class="bubble" style="width:14px;height:14px;background:${color};"></div>
+      </div>`;
+    }
+    return `<div class="map-marker" style="left:${item.x}%;top:${item.y}%;" data-idx="${i}">
+      <div class="bubble" style="width:${size}px;height:${size}px;background:${color};font-size:${size>34?'12px':'10px'};">${item.paying ?? item.count ?? ''}</div>
+      <div class="mlabel">${item.name}</div>
+    </div>`;
+  }).join('');
+}
+function markerSizeScale(items, key){
+  const max = Math.max(...items.map(d=>d[key]));
+  return (item) => 22 + (item[key]/max) * 34;
+}
+
+/* =====================================================================
+   DIAGNOSTIC WORKSPACE (drawer) — per README section 9
+===================================================================== */
+function openDrawer(html){
+  document.getElementById('diagDrawer').innerHTML = html;
+  document.getElementById('diagDrawer').classList.add('open');
+  document.getElementById('drawerBackdrop').classList.add('show');
+}
+function closeDrawer(){
+  document.getElementById('diagDrawer').classList.remove('open');
+  document.getElementById('drawerBackdrop').classList.remove('show');
+}
+document.getElementById('drawerBackdrop').addEventListener('click', closeDrawer);
+
+function diagnosticDrawerHTML(issue){
+  const kv = (issue.context||[]).map(c=>`<div class="drawer-kv"><span class="k">${c.k}</span><span class="v">${c.v}</span></div>`).join('');
+  const timeline = (issue.timeline||[]).map(t=>`<div class="drawer-timeline-item"><div class="tt">${t.t}</div><div class="ts">${t.ts}</div></div>`).join('');
+  return `
+    <div class="drawer-head">
+      <div>
+        <h3>${issue.title}</h3>
+      </div>
+      <button class="drawer-close" onclick="closeDrawer()"><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>
+    </div>
+    <div class="drawer-sub">${issue.subtitle||'Diagnostic Workspace — reconstructed from sanitized telemetry, not a live account session.'}</div>
+
+    <div class="diag-note"><svg viewBox="0 0 24 24">${ICONS.info}</svg>Default view is privacy-safe diagnostic reconstruction. No passwords, tokens or unrelated customer data are shown.</div>
+
+    <div class="drawer-section" style="margin-top:18px;">
+      <div class="drawer-section-title">Context</div>
+      ${kv}
+    </div>
+
+    ${timeline ? `<div class="drawer-section">
+      <div class="drawer-section-title">Event Timeline</div>
+      <div class="drawer-timeline">${timeline}</div>
+    </div>` : ''}
+
+    ${issue.log ? `<div class="drawer-section">
+      <div class="drawer-section-title">Sanitized Log</div>
+      <div class="drawer-log">${issue.log}</div>
+    </div>` : ''}
+
+    <div class="drawer-actions">
+      <button class="btn-ghost" onclick="showToast('Fix task created — sanitized context attached.'); closeDrawer();">Create Fix Task</button>
+      <button class="btn-primary" onclick="showToast('Marked as investigating.'); closeDrawer();">Investigate</button>
+    </div>
+  `;
+}
+function openIssueDiagnostic(issue){
+  openDrawer(diagnosticDrawerHTML(issue));
+}
+
+/* =====================================================================
+   PRIVILEGED ACTION MODAL — confirm + reason, per README section 13
+===================================================================== */
+function openPrivilegedModal(action){
+  const body = document.getElementById('modalBody');
+  body.innerHTML = `
+    <h3>${action.title}</h3>
+    <p class="desc">${action.desc}</p>
+    <div class="modal-warn"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>This is a privileged action. It requires a reason and is recorded to the audit log.</div>
+    <label>Reason for this action</label>
+    <textarea id="modalReason" placeholder="e.g. Vendor requested manual onboarding via support call #4021"></textarea>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="modalConfirmBtn">Confirm &amp; Apply</button>
+    </div>
+  `;
+  document.getElementById('modalBackdrop').classList.add('show');
+  document.getElementById('modalConfirmBtn').addEventListener('click', () => {
+    const reason = document.getElementById('modalReason').value.trim();
+    if(!reason){ showToast('A reason is required for privileged actions.'); return; }
+    closeModal();
+    showToast(`${action.title} applied — logged to audit trail.`);
+  });
+}
+function closeModal(){ document.getElementById('modalBackdrop').classList.remove('show'); }
+document.getElementById('modalBackdrop').addEventListener('click', (e)=>{ if(e.target.id==='modalBackdrop') closeModal(); });
+
+function runQuickAction(qa){
+  if(qa.action === 'privileged') openPrivilegedModal(qa);
+  else if(qa.action === 'toast') showToast(qa.msg);
+  else if(qa.action === 'navigate') goToPage(qa.page);
+  else if(qa.action === 'scroll'){
+    const el = document.getElementById(qa.target);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
+
+/* =====================================================================
+   TOPBAR DROPDOWNS — country / date range / profile
+===================================================================== */
+function closeAllDropdowns(){
+  document.querySelectorAll('.dd-panel.open').forEach(p=> p.classList.remove('open'));
+}
+function setupDropdown(btnId, panelId, onOpen){
+  const btn = document.getElementById(btnId);
+  const panel = document.getElementById(panelId);
+  if(!btn || !panel) return;
+  btn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const willOpen = !panel.classList.contains('open');
+    closeAllDropdowns();
+    if(willOpen){ panel.classList.add('open'); if(onOpen) onOpen(panel); }
+  });
+  panel.addEventListener('click', (e)=> e.stopPropagation());
+}
+document.addEventListener('click', closeAllDropdowns);
+document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ closeAllDropdowns(); closeDrawer(); closeModal(); } });
+
+function populateCountryPanel(panel){
+  panel.innerHTML = `
+    <button class="dd-item active">🇲🇾 Malaysia</button>
+    <div style="font-size:10.5px;color:hsl(var(--muted-2));padding:8px 10px 4px;">More markets roll out as Cefflo expands. Country scope never silently converts currency.</div>
+  `;
+}
+const dateRangeOptions = ['Last 7 days','Last 30 days','This Month','Last Month','May 15 – Jun 13, 2025'];
+function populateDateRangePanel(panel){
+  const current = document.getElementById('dateRangeLabel').textContent;
+  panel.innerHTML = dateRangeOptions.map(o=>`<button class="dd-item ${o===current?'active':''}" data-range="${o}">${o===current?iconSvg('check'):''}<span style="margin-left:${o===current?'0':'21px'};">${o}</span></button>`).join('');
+  panel.querySelectorAll('[data-range]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.getElementById('dateRangeLabel').textContent = btn.dataset.range;
+      closeAllDropdowns();
+      showToast(`Date range set to ${btn.dataset.range}. Live maps and current incidents stay live.`);
+    });
+  });
+}
+function populateProfilePanel(panel){
+  panel.innerHTML = `
+    <button class="dd-item" onclick="showToast('Account settings — not wired up in this prototype.')">${iconSvg('edit')} Account settings</button>
+    <button class="dd-item" onclick="closeAllDropdowns(); goToPage('platform')">${iconSvg('shield')} View Audit Log</button>
+    <button class="dd-item" onclick="showToast('Sign out is disabled in demo mode.')">${iconSvg('login')} Sign out</button>
+  `;
+}
+setupDropdown('countryBtn', 'countryPanel', populateCountryPanel);
+setupDropdown('dateRangeBtn', 'dateRangePanel', populateDateRangePanel);
+setupDropdown('profileChipBtn', 'profilePanel', populateProfilePanel);
+
+document.getElementById('refreshBtn').addEventListener('click', function(){
+  this.classList.add('spinning');
+  showToast('Refreshing current page data…');
+  setTimeout(()=>{ this.classList.remove('spinning'); showToast('Data refreshed.'); if(typeof HOOKS !== 'undefined' && HOOKS[currentPage]) HOOKS[currentPage](); }, 700);
+});
+
+/* ---- Live indicator demo cycling (illustrative) ---- */
+function setLiveIndicator(state){
+  const el = document.getElementById('liveIndicator');
+  const lbl = document.getElementById('liveIndicatorLabel');
+  el.className = 'live-indicator' + (state==='live' ? '' : ' ' + state);
+  lbl.textContent = state === 'live' ? 'Live' : state === 'reconnecting' ? 'Reconnecting' : state === 'delayed' ? 'Delayed' : 'Offline';
+}
+
+/* =====================================================================
+   SIDEBAR: quick actions, collapse, mobile toggle
+===================================================================== */
+function renderQuickActions(pageKey){
+  const list = quickActionsByPage[pageKey] || [];
+  const container = document.getElementById('quickActions');
+  container.innerHTML = list.map((qa,i) => `
+    <button class="qa-btn" data-qa-idx="${i}"><span class="ic" data-icon="${qa.icon}"></span><span class="lbl">${qa.label}</span></button>
+  `).join('');
+  hydrateIcons(container);
+  container.querySelectorAll('[data-qa-idx]').forEach(btn=>{
+    btn.addEventListener('click', ()=> runQuickAction(list[btn.dataset.qaIdx]));
+  });
+}
+function openSidebar(){ document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarBackdrop').classList.add('show'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarBackdrop').classList.remove('show'); }
+document.getElementById('hamburgerBtn').addEventListener('click', openSidebar);
+document.getElementById('sidebarBackdrop').addEventListener('click', closeSidebar);
+document.getElementById('sidebarCollapseBtn').addEventListener('click', ()=>{
+  document.getElementById('sidebar').classList.toggle('collapsed');
+});
+
+/* =====================================================================
+   ROUTER
+===================================================================== */
+const PAGES = {
+  overview:   { title:'Overview', subtitle:'Executive summary of Cefflo platform performance.' },
+  vendors:    { title:'Vendors', subtitle:'Monitor vendor performance, distribution and health.' },
+  operations: { title:'Operations', subtitle:'Real-time delivery operations and rider tracking.' },
+  revenue:    { title:'Revenue', subtitle:'Financial performance, subscriptions and payments.' },
+  growth:     { title:'Growth & Markets', subtitle:'Track market expansion, acquisition and strategic opportunities.' },
+  platform:   { title:'Platform', subtitle:'System health, controls, and platform management.' },
+};
+let currentPage = 'overview';
+let activeIntervals = [];
+function clearPageIntervals(){ activeIntervals.forEach(clearInterval); activeIntervals = []; }
+
+function goToPage(pageKey){
+  const page = PAGES[pageKey];
+  if(!page) return;
+  currentPage = pageKey;
+  clearPageIntervals();
+  closeAllDropdowns(); closeDrawer(); closeModal();
+
+  document.querySelectorAll('.nav-item').forEach(el=>{ el.classList.toggle('active', el.dataset.page === pageKey); });
+  document.getElementById('pageTitleText').textContent = page.title;
+  document.getElementById('pageSubtitle').textContent = page.subtitle;
+
+  const content = document.getElementById('pageContent');
+  content.innerHTML = RENDERERS[pageKey]();
+  hydrateIcons(content);
+  renderQuickActions(pageKey);
+  HOOKS[pageKey]();
+
+  closeSidebar();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+document.addEventListener('click', (e)=>{
+  const navEl = e.target.closest('[data-page]');
+  if(navEl && navEl.classList.contains('nav-item')){ e.preventDefault(); goToPage(navEl.dataset.page); }
+});
+
+/* =====================================================================
+   GENERIC CLUSTER MAP INITIALIZER
+   canvasId: container div id (has .map-outline svg + markers absolutely positioned)
+   items: array of marker data (needs x,y in %)
+   opts: { kind, sizeKey, contextBuilder(item)=>{title,sub,stats:[{k,v}],viewPage}, legend: html }
+===================================================================== */
+function initClusterMap(canvasId, items, opts){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  let zoom = 1;
+  const markersLayer = canvas.querySelector('.map-markers-layer');
+  function render(){
+    markersLayer.style.transform = `scale(${zoom})`;
+    markersLayer.innerHTML = renderMapMarkers(items, opts.kind, opts.sizeFn);
+    markersLayer.querySelectorAll('.map-marker').forEach(m=>{
+      m.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const item = items[m.dataset.idx];
+        showMapContext(canvas, item, opts);
+      });
+    });
+  }
+  render();
+  const zoomIn = canvas.querySelector('[data-zoom="in"]');
+  const zoomOut = canvas.querySelector('[data-zoom="out"]');
+  if(zoomIn) zoomIn.addEventListener('click', ()=>{ zoom = Math.min(1.6, zoom+0.15); render(); });
+  if(zoomOut) zoomOut.addEventListener('click', ()=>{ zoom = Math.max(0.7, zoom-0.15); render(); });
+  canvas.addEventListener('click', ()=> hideMapContext(canvas));
+}
+function showMapContext(canvas, item, opts){
+  let ctx = canvas.querySelector('.map-context');
+  if(!ctx){ ctx = document.createElement('div'); ctx.className='map-context'; canvas.appendChild(ctx); }
+  const built = opts.contextBuilder(item);
+  ctx.innerHTML = `
+    <button class="close-x" onclick="event.stopPropagation(); this.closest('.map-context').remove();"><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>
+    <h4>${built.title}</h4>
+    <div class="sub">${built.sub}</div>
+    ${built.stats.map(s=>`<div class="stat-line"><span>${s.k}</span><b>${s.v}</b></div>`).join('')}
+    ${built.viewLabel ? `<button class="view-btn" onclick="event.stopPropagation(); ${built.viewAction}">${built.viewLabel} <svg viewBox="0 0 24 24" style="width:12px;height:12px;">${ICONS.chevRight}</svg></button>` : ''}
+  `;
+  ctx.addEventListener('click', e=>e.stopPropagation());
+}
+function hideMapContext(canvas){
+  const ctx = canvas.querySelector('.map-context');
+  if(ctx) ctx.remove();
+}
+function mapCanvasShell(canvasId, legendHtml){
+  return `
+    <div class="map-canvas" id="${canvasId}">
+      ${MAP_OUTLINE_SVG}
+      <div class="map-markers-layer" style="position:absolute;inset:0;transform-origin:50% 50%;"></div>
+      <div class="map-controls">
+        <button class="map-ctrl-btn" data-zoom="in" title="Zoom in"><svg viewBox="0 0 24 24">${ICONS.zoomIn}</svg></button>
+        <button class="map-ctrl-btn" data-zoom="out" title="Zoom out"><svg viewBox="0 0 24 24">${ICONS.zoomOut}</svg></button>
+      </div>
+      <div class="map-legend">${legendHtml}</div>
+    </div>
+  `;
+}
+
+/* =====================================================================
+   KPI TILE + SPARKLINE
+===================================================================== */
+function kpiTile(opts){
+  return `
+    <div class="card kpi-tile">
+      <div class="kpi-top">
+        <span class="lbl">${opts.label}${opts.estimated?'<span class="estimated-tag">Est.</span>':''} ${opts.tooltip?`<svg class="info-ic" viewBox="0 0 24 24" title="${opts.tooltip}">${ICONS.info}</svg>`:''}</span>
+        <div class="kpi-ic"><svg viewBox="0 0 24 24">${ICONS[opts.icon]}</svg></div>
+      </div>
+      <div class="kpi-val" id="${opts.id}">${opts.value}</div>
+      ${opts.trendPct !== undefined ? kpiTrend(opts.trendPct, opts.trendNote) : ''}
+      ${opts.spark ? `<svg class="kpi-spark" id="${opts.id}_spark" preserveAspectRatio="none"></svg>` : ''}
+    </div>
+  `;
+}
+function drawSpark(svgId, data, color){
+  const svg = document.getElementById(svgId);
+  if(!svg) return;
+  const w = 200, h = 34, pad = 3;
+  const max = Math.max(...data), min = Math.min(...data);
+  const stepX = (w - pad*2) / (data.length - 1);
+  const scaleY = v => h - pad - ((v-min)/((max-min)||1)) * (h - pad*2);
+  const points = data.map((v,i)=>[pad + i*stepX, scaleY(v)]);
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.innerHTML = `<path d="${smoothPath(points)}" fill="none" stroke="${color}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>`;
+}
+function sparkFromTrend(seed, n, driftPct){
+  const arr = [seed];
+  for(let i=1;i<n;i++){ arr.push(arr[i-1] * (1 + (Math.sin(i*1.3)+driftPct)*0.03)); }
+  return arr;
+}
+function attentionRow(item, onClick){
+  return `
+    <div class="attn-row" data-attn-click="1">
+      <div class="attn-ic ${item.level}"><svg viewBox="0 0 24 24">${ICONS[item.icon]}</svg></div>
+      <div class="attn-main"><div class="attn-title">${item.title}</div><div class="attn-meta">${item.meta}</div></div>
+      <div class="attn-right">
+        ${item.count ? `<span class="attn-count">${item.count}</span>` : item.time ? `<span class="attn-count">${item.time}</span>` : ''}
+        <svg class="attn-chev" viewBox="0 0 24 24">${ICONS.chevRight}</svg>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------------------------------------------------------------------
+   OVERVIEW
+--------------------------------------------------------------------- */
+let ovLive = { mrr: 126450, payingVendors: 1324, retention: 71, newPaid: 312 };
+function renderOverview(){
+  return `
+    <div class="grid grid-4">
+      ${kpiTile({id:'kpiMrr', icon:'wallet', label:'MRR (This Month)', value: fmtMYR(ovLive.mrr), trendPct:18.6, trendNote:'vs last 30 days', tooltip:'Sum of active subscription MRR, current period, MYR', spark:true})}
+      ${kpiTile({id:'kpiPaying', icon:'users', label:'Paying Vendors', value: ovLive.payingVendors.toLocaleString(), trendPct:14.2, trendNote:'vs last 30 days', tooltip:'Vendors with an active paid subscription', spark:true})}
+      ${kpiTile({id:'kpiRetention', icon:'shield', label:'Retention Rate', value: ovLive.retention+'%', trendPct:3.6, trendNote:'pp vs last 30 days', tooltip:'Share of paying vendors retained month-over-month', spark:true})}
+      ${kpiTile({id:'kpiNewPaid', icon:'plusCircle', label:'New Paid Vendors', value: ovLive.newPaid.toLocaleString(), trendPct:21.8, trendNote:'vs last 30 days', tooltip:'Vendors converted to a paid plan this period', spark:true})}
+    </div>
+
+    <div class="grid grid-main">
+      <div class="card">
+        <div class="card-head">
+          <div><h3 class="card-title">Business Trend</h3><p class="card-sub">Last 30 days · MRR, Paying Vendors, New Paid Vendors</p></div>
+          <div class="seg-toggle" id="trendGranularity">
+            <button class="active" data-g="daily">Daily</button>
+            <button data-g="weekly">Weekly</button>
+          </div>
+        </div>
+        <div class="chart-wrap" id="trendChartWrap">
+          <svg id="trendChart" width="100%" height="100%" preserveAspectRatio="none"></svg>
+          <div class="chart-tooltip" id="trendTooltip"></div>
+        </div>
+        <div class="chart-legend" id="trendLegend"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h3 class="card-title">Needs Attention</h3><p class="card-sub">Cross-platform exception inbox</p></div><span class="card-count">${overviewAttention.length}</span></div>
+        <div id="overviewAttnList"></div>
+        <button class="link-btn" style="margin-top:8px;" onclick="showToast('Opens filtered issue workspace across all pages.')">View All Issues <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="card-head"><div class="card-title-wrap"><span style="color:hsl(var(--blue));display:flex;"><svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;">${ICONS.rocket}</svg></span><h3 class="card-title">AI &amp; Founder Insights</h3></div><button class="link-btn" onclick="showToast('Opens all AI insights, ranked by decision relevance.')">View All Insights <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button></div>
+      <div class="grid grid-3">
+        ${aiInsights.map(ins => `
+          <div class="insight-card">
+            <div class="insight-top"><div class="insight-ic"><svg viewBox="0 0 24 24">${ICONS[ins.icon]}</svg></div><div class="insight-title">${ins.title}</div></div>
+            <div class="insight-body">${ins.body}</div>
+            <div class="insight-evidence"><svg viewBox="0 0 24 24">${ICONS.fileText}</svg>${ins.evidence}</div>
+            <div class="insight-foot"><span class="insight-metric">${ins.metric}</span><button class="link-btn" onclick="goToPage('${ins.page}')">View Details <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button></div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+function hookOverview(){
+  const series = [
+    { key:'mrr', label:'MRR (RM)', color:'hsl(var(--blue))', area:true, data: businessTrendSeries('mrr'), visible:true },
+    { key:'paying', label:'Paying Vendors', color:'hsl(var(--green))', data: businessTrendSeries('paying'), visible:true },
+    { key:'newPaid', label:'New Paid Vendors', color:'hsl(210 20% 80%)', dashed:true, data: businessTrendSeries('newPaid'), visible:true },
+  ];
+  function fmt(idx){
+    let rows = series.map(s=>`<div class="row"><span class="k"><span class="sw" style="background:${s.color};"></span>${s.label}</span><b>${s.key==='mrr'?fmtMYR(s.data[idx]):Math.round(s.data[idx])}</b></div>`).join('');
+    return `<div class="hd">${DAY_LABELS[idx] || 'Day '+(idx+1)}</div>${rows}`;
+  }
+  initMultiChart('trendChart','trendChartWrap','trendTooltip', series, {fmt});
+  const legend = document.getElementById('trendLegend');
+  legend.innerHTML = series.map(s=>`<div class="item" data-key="${s.key}"><span class="sw" style="background:${s.color};"></span>${s.label}</div>`).join('');
+  legend.querySelectorAll('[data-key]').forEach(item=>{
+    item.addEventListener('click', ()=>{
+      const s = series.find(x=>x.key===item.dataset.key);
+      s.visible = !s.visible;
+      item.classList.toggle('off', !s.visible);
+      initMultiChart('trendChart','trendChartWrap','trendTooltip', series, {fmt});
+    });
+  });
+  document.querySelectorAll('#trendGranularity button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#trendGranularity button').forEach(b=>b.classList.toggle('active', b===btn));
+      showToast(btn.dataset.g === 'weekly' ? 'Weekly granularity — aggregated view.' : 'Daily granularity.');
+    });
+  });
+
+  drawSpark('kpiMrr_spark', sparkFromTrend(3200, 14, 0.6), 'hsl(var(--blue))');
+  drawSpark('kpiPaying_spark', sparkFromTrend(1100, 14, 0.5), 'hsl(var(--blue))');
+  drawSpark('kpiRetention_spark', sparkFromTrend(65, 14, 0.2), 'hsl(var(--blue))');
+  drawSpark('kpiNewPaid_spark', sparkFromTrend(240, 14, 0.7), 'hsl(var(--blue))');
+
+  const attnList = document.getElementById('overviewAttnList');
+  attnList.innerHTML = overviewAttention.map(item => attentionRow(item)).join('');
+  attnList.querySelectorAll('.attn-row').forEach((row, i) => {
+    row.addEventListener('click', () => openIssueDiagnostic(buildIssueDiagnostic(overviewAttention[i])));
+  });
+
+  const opsId = setInterval(()=>{
+    ovLive.mrr += Math.round(Math.random()*40);
+    const el = document.getElementById('kpiMrr');
+    if(el) el.textContent = fmtMYR(ovLive.mrr);
+  }, 2400);
+  activeIntervals.push(opsId);
+}
+function businessTrendSeries(key){
+  const base = { mrr: 3120, paying: 1050, newPaid: 220 }[key];
+  const drift = { mrr: 0.55, paying: 0.4, newPaid: 0.8 }[key];
+  return sparkFromTrend(base, DAY_LABELS.length, drift).map(v => key==='mrr' ? Math.round(v*38) : Math.round(v));
+}
+/* ---------------------------------------------------------------------
+   VENDORS
+--------------------------------------------------------------------- */
+let vendorPage = 1, vendorQuery = '', vendorPlanFilter = 'all', vendorStatusFilter = 'all';
+const VENDOR_PAGE_SIZE = 5;
+const vendorStatusLevel = { active:'ok', trial:'warn', past_due:'crit', suspended:'crit' };
+const vendorStatusLabel = { active:'Active', trial:'Trial', past_due:'Past due', suspended:'Suspended' };
+function vendorMatches(v){
+  const q = vendorQuery.toLowerCase();
+  const matchesQ = !q || v.name.toLowerCase().includes(q) || v.businessType.toLowerCase().includes(q);
+  const matchesPlan = vendorPlanFilter === 'all' || v.plan === vendorPlanFilter;
+  const matchesStatus = vendorStatusFilter === 'all' || v.status === vendorStatusFilter;
+  return matchesQ && matchesPlan && matchesStatus;
+}
+function renderVendors(){
+  const activeCount = allVendors.filter(v=>v.status==='active').length;
+  return `
+    <div class="grid grid-4">
+      ${kpiTile({id:'kpiPayingV', icon:'users', label:'Paying Vendors', value: allVendors.filter(v=>v.mrr>0).length.toLocaleString(), trendPct:14.2, tooltip:'Vendors with an active paid subscription', spark:true})}
+      ${kpiTile({id:'kpiActiveV', icon:'store', label:'Active Vendors', value: activeCount.toLocaleString(), trendPct:12.7, tooltip:'Vendors that fulfilled at least one order this period', spark:true})}
+      ${kpiTile({id:'kpiRetentionV', icon:'shield', label:'Retention Rate', value:'71%', trendPct:3.6, trendNote:'pp vs last 30 days', tooltip:'Canonical definition — same as Overview', spark:true})}
+      ${kpiTile({id:'kpiNewPaidV', icon:'plusCircle', label:'New Paid Vendors', value:'312', trendPct:21.8, tooltip:'Canonical definition — same as Overview', spark:true})}
+    </div>
+
+    <div class="grid grid-main" style="margin-top:16px;">
+      <div class="card map-card">
+        <div class="map-toolbar">
+          <div><h3 class="card-title" style="display:flex;align-items:center;gap:6px;">Vendor Distribution Map <svg class="info-ic" viewBox="0 0 24 24" title="Strategic geographic view — not the live rider map. Illustrative outline; production build renders on real GIS data.">${ICONS.info}</svg></h3><p class="card-sub">Density, health and MRR by cluster</p></div>
+          <div class="seg-toggle" id="vendorMapMode">
+            <button class="active" data-mode="heat">Heat Map</button>
+            <button data-mode="cluster">Cluster</button>
+          </div>
+        </div>
+        ${mapCanvasShell('vendorMapCanvas', `
+          <div class="row"><span class="sw" style="background:hsl(var(--blue));"></span>High density</div>
+          <div class="row"><span class="sw" style="background:hsl(var(--blue) / 55%);"></span>Medium density</div>
+          <div class="row"><span class="sw" style="background:hsl(var(--blue) / 30%);"></span>Low density</div>
+        `)}
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h3 class="card-title">At-Risk Vendors</h3><p class="card-sub">Needs intervention</p></div><span class="card-count">${atRiskVendors.length}</span></div>
+        <div>
+          ${atRiskVendors.map(v => `
+            <div class="attn-row" data-risk-name="${v.name}">
+              <div class="attn-ic ${v.level}"><svg viewBox="0 0 24 24">${ICONS.store}</svg></div>
+              <div class="attn-main"><div class="attn-title">${v.name}</div><div class="attn-meta">${v.area} · ${v.reason}</div></div>
+              <div class="attn-right"><span class="attn-count">${v.daysAgo}d ago</span><svg class="attn-chev" viewBox="0 0 24 24">${ICONS.chevRight}</svg></div>
+            </div>
+          `).join('')}
+        </div>
+        <button class="link-btn" style="margin-top:8px;" onclick="showToast('Opens full at-risk vendor workspace.')">View All At-Risk Vendors <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="card-head"><div><h3 class="card-title">All Vendors</h3><p class="card-sub">${allVendors.length} vendors</p></div>
+        <button class="link-btn" onclick="showToast('Vendor export queued — subject to your export permission.')"><svg viewBox="0 0 24 24" style="width:13px;height:13px;">${ICONS.download}</svg> Export</button>
+      </div>
+      <div class="table-toolbar">
+        <div class="left-grp">
+          <div class="search-row" style="flex:1;min-width:180px;"><svg viewBox="0 0 24 24">${ICONS.search}</svg><input id="vendorSearch" placeholder="Search vendor or business..." value="${vendorQuery}"/></div>
+          <select class="filter-select" id="vendorPlanSelect"><option value="all">All Plans</option>${[...new Set(planNames)].map(p=>`<option value="${p}">${p}</option>`).join('')}</select>
+          <select class="filter-select" id="vendorStatusSelect">
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="trial">Trial</option>
+            <option value="past_due">Past due</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Vendor</th><th>Business Type</th><th>Plan</th><th>Status</th><th>MRR</th><th>Orders (30D)</th><th>Retention</th><th>Last Activity</th></tr></thead>
+          <tbody id="vendorTableBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="vendorPagination"></div>
+    </div>
+  `;
+}
+function renderVendorTable(){
+  const filtered = allVendors.filter(vendorMatches);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / VENDOR_PAGE_SIZE));
+  vendorPage = Math.min(vendorPage, totalPages);
+  const pageRows = filtered.slice((vendorPage-1)*VENDOR_PAGE_SIZE, vendorPage*VENDOR_PAGE_SIZE);
+  const body = document.getElementById('vendorTableBody');
+  body.innerHTML = pageRows.length ? pageRows.map(v => `
+    <tr data-vendor-id="${v.id}">
+      <td><div class="cell-entity"><div class="cell-avatar">${initials(v.name)}</div><div><div class="cell-name">${v.name}</div><div class="cell-sub">${v.area}</div></div></div></td>
+      <td>${v.businessType}</td>
+      <td>${v.plan}</td>
+      <td><span class="badge ${vendorStatusLevel[v.status]}">${vendorStatusLabel[v.status]}</span></td>
+      <td>${fmtMYR(v.mrr)}</td>
+      <td>${v.orders}</td>
+      <td>${v.status==='trial' ? '—' : v.retention+'%'}</td>
+      <td>${relTime(v.lastActivityMin)}</td>
+    </tr>
+  `).join('') : `<tr><td colspan="8"><div class="empty-note">No vendors match your filters.</div></td></tr>`;
+  body.querySelectorAll('tr[data-vendor-id]').forEach(tr=>{
+    tr.addEventListener('click', ()=> openVendorDetail(allVendors.find(v=>v.id===tr.dataset.vendorId)));
+  });
+  const pag = document.getElementById('vendorPagination');
+  pag.innerHTML = `
+    <span>Showing ${pageRows.length ? (vendorPage-1)*VENDOR_PAGE_SIZE+1 : 0}–${(vendorPage-1)*VENDOR_PAGE_SIZE+pageRows.length} of ${filtered.length} vendors</span>
+    <div class="pg-btns">
+      <button class="pg-btn" id="vendorPgPrev" ${vendorPage<=1?'disabled':''}><svg viewBox="0 0 24 24">${ICONS.chevLeft}</svg></button>
+      <button class="pg-btn active">${vendorPage}</button>
+      <span style="align-self:center;color:hsl(var(--muted-2));font-size:11px;">of ${totalPages}</span>
+      <button class="pg-btn" id="vendorPgNext" ${vendorPage>=totalPages?'disabled':''}><svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button>
+    </div>
+  `;
+  const prev = document.getElementById('vendorPgPrev'), next = document.getElementById('vendorPgNext');
+  if(prev) prev.addEventListener('click', ()=>{ vendorPage--; renderVendorTable(); });
+  if(next) next.addEventListener('click', ()=>{ vendorPage++; renderVendorTable(); });
+}
+function openVendorDetail(v){
+  openDrawer(`
+    <div class="drawer-head"><h3>${v.name}</h3><button class="drawer-close" onclick="closeDrawer()"><svg viewBox="0 0 24 24">${ICONS.x}</svg></button></div>
+    <div class="drawer-sub">Vendor Detail — ${v.businessType} · ${v.area}</div>
+    <div class="drawer-section">
+      <div class="drawer-section-title">Business Summary</div>
+      <div class="drawer-kv"><span class="k">Status</span><span class="v"><span class="badge ${vendorStatusLevel[v.status]}">${vendorStatusLabel[v.status]}</span></span></div>
+      <div class="drawer-kv"><span class="k">Business type</span><span class="v">${v.businessType}</span></div>
+      <div class="drawer-kv"><span class="k">Area</span><span class="v">${v.area}</span></div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-title">Subscription</div>
+      <div class="drawer-kv"><span class="k">Plan</span><span class="v">${v.plan}</span></div>
+      <div class="drawer-kv"><span class="k">MRR</span><span class="v">${fmtMYR(v.mrr)}</span></div>
+      <div class="drawer-kv"><span class="k">Paying since</span><span class="v">${v.payingSince}</span></div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-title">Activity &amp; Health</div>
+      <div class="drawer-kv"><span class="k">Orders (30D)</span><span class="v">${v.orders}</span></div>
+      <div class="drawer-kv"><span class="k">Retention signal</span><span class="v">${v.status==='trial'?'—':v.retention+'%'}</span></div>
+      <div class="drawer-kv"><span class="k">Last activity</span><span class="v">${relTime(v.lastActivityMin)}</span></div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-title">Audit Trail (admin actions)</div>
+      <div class="drawer-timeline">
+        <div class="drawer-timeline-item"><div class="tt">Vendor record viewed</div><div class="ts">Founder Admin · just now</div></div>
+        <div class="drawer-timeline-item"><div class="tt">Subscription activated</div><div class="ts">${v.payingSince}</div></div>
+      </div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn-ghost" onclick="showToast('Opens app/device diagnostic metadata for this vendor.')">Diagnose</button>
+      <button class="btn-primary" onclick="closeDrawer()">Close</button>
+    </div>
+  `);
+}
+function hookVendors(){
+  renderVendorTable();
+  document.getElementById('vendorSearch').addEventListener('input', (e)=>{ vendorQuery = e.target.value; vendorPage=1; renderVendorTable(); });
+  document.getElementById('vendorPlanSelect').addEventListener('change', (e)=>{ vendorPlanFilter = e.target.value; vendorPage=1; renderVendorTable(); });
+  document.getElementById('vendorStatusSelect').addEventListener('change', (e)=>{ vendorStatusFilter = e.target.value; vendorPage=1; renderVendorTable(); });
+
+  drawSpark('kpiPayingV_spark', sparkFromTrend(1100,14,0.5), 'hsl(var(--blue))');
+  drawSpark('kpiActiveV_spark', sparkFromTrend(900,14,0.4), 'hsl(var(--blue))');
+  drawSpark('kpiRetentionV_spark', sparkFromTrend(65,14,0.2), 'hsl(var(--blue))');
+  drawSpark('kpiNewPaidV_spark', sparkFromTrend(240,14,0.7), 'hsl(var(--blue))');
+
+  initClusterMap('vendorMapCanvas', clusters, {
+    kind:'vendor', sizeFn: markerSizeScale(clusters,'paying'),
+    contextBuilder:(c)=>({
+      title:c.name, sub:c.state,
+      stats:[
+        {k:'Paying vendors', v:c.paying}, {k:'Active vendors', v:c.active},
+        {k:'Retention rate', v:c.retention+'%'}, {k:'MRR (RM)', v:fmtMYR(c.mrr)},
+        {k:'New this month', v:'+'+c.newThisMonth},
+      ],
+      viewLabel:'View Vendors', viewAction:`vendorQuery='${c.state.split(' ')[0]}'; goToPage('vendors');`,
+    }),
+  });
+  document.querySelectorAll('#vendorMapMode button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#vendorMapMode button').forEach(b=>b.classList.toggle('active', b===btn));
+      showToast(btn.dataset.mode==='cluster' ? 'Cluster mode — aggregated bubbles by proximity.' : 'Heat map mode — density shading.');
+    });
+  });
+
+  const attnRows = document.querySelectorAll('[data-risk-name]');
+  attnRows.forEach(row=>{
+    row.addEventListener('click', ()=>{
+      const v = atRiskVendors.find(x=>x.name===row.dataset.riskName);
+      openIssueDiagnostic({
+        title: v.name, subtitle: `At-risk vendor · ${v.reason}`,
+        context: [
+          {k:'Business', v:v.name}, {k:'Area', v:v.area}, {k:'Risk reason', v:v.reason},
+          {k:'Severity', v:v.level==='crit'?'Critical':v.level==='warn'?'Warning':'Info'}, {k:'Last signal', v:v.daysAgo+' days ago'},
+        ],
+        timeline:[ {t:'Risk flagged by health scoring', ts:v.daysAgo+'d ago'}, {t:'No admin action yet', ts:'—'} ],
+      });
+    });
+  });
+}
+
+/* ---------------------------------------------------------------------
+   OPERATIONS
+--------------------------------------------------------------------- */
+let opsLive = { ridersOnline:312, deliveriesActive:184, onTheWay:152, stuckDelayed:14, podFailed:6, avgDeliveryMin:46 };
+function renderOperations(){
+  return `
+    <div class="grid grid-6">
+      <div class="card mini-kpi"><div class="kpi-top"><span class="lbl">Riders Online</span></div><div class="kpi-val" id="opRiders">${opsLive.ridersOnline}</div><div class="kpi-trend up"><svg viewBox="0 0 24 24">${ICONS.trending}</svg>+18 <span class="muted">vs yesterday</span></div></div>
+      <div class="card mini-kpi"><div class="kpi-top"><span class="lbl">Deliveries Active</span></div><div class="kpi-val" id="opActive">${opsLive.deliveriesActive}</div><div class="kpi-trend up"><svg viewBox="0 0 24 24">${ICONS.trending}</svg>+21 <span class="muted">vs yesterday</span></div></div>
+      <div class="card mini-kpi"><div class="kpi-top"><span class="lbl">On The Way</span></div><div class="kpi-val" id="opOnWay">${opsLive.onTheWay}</div><div class="kpi-trend up" style="color:hsl(var(--blue));"><svg viewBox="0 0 24 24">${ICONS.truck}</svg><span class="muted">82.6% of active</span></div></div>
+      <div class="card mini-kpi"><div class="kpi-top"><span class="lbl">Stuck / Delayed</span></div><div class="kpi-val" id="opStuck" style="color:hsl(var(--red));">${opsLive.stuckDelayed}</div><div class="kpi-trend down"><svg viewBox="0 0 24 24">${ICONS.trendingDown}</svg>+3 <span class="muted">vs yesterday</span></div></div>
+      <div class="card mini-kpi"><div class="kpi-top"><span class="lbl">POD Failed</span></div><div class="kpi-val" id="opPodFailed" style="color:hsl(var(--amber));">${opsLive.podFailed}</div><div class="kpi-trend up"><svg viewBox="0 0 24 24">${ICONS.trending}</svg>-2 <span class="muted">vs yesterday</span></div></div>
+      <div class="card mini-kpi"><div class="kpi-top"><span class="lbl">Avg. Delivery Time</span></div><div class="kpi-val" id="opAvgTime">${opsLive.avgDeliveryMin} min</div><div class="kpi-trend up"><svg viewBox="0 0 24 24">${ICONS.trending}</svg>-6 min <span class="muted">vs yesterday</span></div></div>
+    </div>
+
+    <div class="grid grid-main" style="margin-top:16px;">
+      <div class="card map-card">
+        <div class="map-toolbar">
+          <div><h3 class="card-title" style="display:flex;align-items:center;gap:8px;"><span class="live-indicator" style="padding:3px 9px;"><span class="dot"></span></span>Live Rider Map</h3><p class="card-sub">Real-time locations · click a rider for diagnostics</p></div>
+          <div class="seg-toggle" id="opsMapMode"><button class="active" data-mode="markers">Markers</button><button data-mode="heat">Heat Map</button></div>
+        </div>
+        ${mapCanvasShell('opsMapCanvas', `
+          <div class="row"><span class="sw" style="background:hsl(var(--green));"></span>Rider moving</div>
+          <div class="row"><span class="sw" style="background:hsl(var(--blue));"></span>Rider idle</div>
+          <div class="row"><span class="sw" style="background:hsl(var(--red));"></span>Rider delayed</div>
+          <div class="row"><span class="sw" style="background:hsl(var(--muted-2));"></span>Offline / inactive</div>
+        `)}
+      </div>
+      <div class="grid" style="grid-template-columns:1fr;gap:16px;">
+        <div class="card">
+          <div class="card-head"><div><h3 class="card-title">Needs Attention</h3></div><span class="card-count">${opsNeedsAttention.length}</span></div>
+          <div id="opsAttnList"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><h3 class="card-title">Live Activity Feed</h3></div></div>
+          <div id="opsFeedList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="card-head"><div><h3 class="card-title">Live Deliveries</h3><p class="card-sub">${liveDeliveries.length} in view</p></div><button class="link-btn" onclick="showToast('Opens full delivery workspace.')">View All Deliveries <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Order ID</th><th>Vendor</th><th>Rider</th><th>Status</th><th>Pickup</th><th>ETA</th><th>Zone</th></tr></thead>
+          <tbody id="opsDeliveriesBody"></tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+function renderOpsDeliveries(){
+  document.getElementById('opsDeliveriesBody').innerHTML = liveDeliveries.map(d => `
+    <tr data-order="${d.order}">
+      <td style="font-weight:700;">${d.order}</td><td>${d.vendor}</td><td>${d.rider}</td>
+      <td><span class="badge ${d.level}">${d.status}</span></td><td>${d.pickup}</td><td>${d.eta}</td><td>${d.zone}</td>
+    </tr>
+  `).join('');
+  document.querySelectorAll('#opsDeliveriesBody tr').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      const d = liveDeliveries.find(x=>x.order===tr.dataset.order);
+      openIssueDiagnostic({
+        title:`Delivery ${d.order}`, subtitle:`${d.vendor} → Rider ${d.rider}`,
+        context:[ {k:'Status', v:d.status}, {k:'Pickup time', v:d.pickup}, {k:'ETA', v:d.eta}, {k:'Zone', v:d.zone}, {k:'Rider', v:d.rider} ],
+        timeline:[ {t:'Order accepted by vendor', ts:d.pickup}, {t:'Rider assigned', ts:d.pickup}, {t:'Current: '+d.status, ts:'now'} ],
+      });
+    });
+  });
+}
+function hookOperations(){
+  renderOpsDeliveries();
+  const attnList = document.getElementById('opsAttnList');
+  attnList.innerHTML = opsNeedsAttention.map(item => attentionRow(item)).join('');
+  attnList.querySelectorAll('.attn-row').forEach((row,i)=>{
+    row.addEventListener('click', ()=> openIssueDiagnostic(buildIssueDiagnostic({...opsNeedsAttention[i], count:opsNeedsAttention[i].area})));
+  });
+  const feedList = document.getElementById('opsFeedList');
+  function renderFeed(){
+    feedList.innerHTML = liveActivityFeed.map(f => `
+      <div class="feed-row"><span class="feed-time">${f.ts}</span><span class="feed-text"><span class="dot-sm ${f.level}" style="display:inline-block;margin-right:6px;"></span>${f.text}</span><span class="feed-zone">${f.zone}</span></div>
+    `).join('');
+  }
+  renderFeed();
+
+  initClusterMap('opsMapCanvas', riders, {
+    kind:'rider',
+    contextBuilder:(r)=>({
+      title:r.id, sub:`Zone: ${r.zone}`,
+      stats:[
+        {k:'State', v:r.state.charAt(0).toUpperCase()+r.state.slice(1)}, {k:'Assigned order', v:r.order||'—'},
+        {k:'Last GPS', v:'12s ago'}, {k:'App version', v:'v1.3.8'}, {k:'Network', v:r.state==='offline'?'Disconnected':'Connected'},
+      ],
+      viewLabel:'Rider Diagnostic',
+      viewAction:`openIssueDiagnostic({title:'${r.id} Diagnostic', subtitle:'Zone: ${r.zone} · assigned order ${r.order||'none'}', context:[{k:'Lifecycle state',v:'${r.state}'},{k:'Last GPS age',v:'12s'},{k:'PWA version',v:'v1.3.8'},{k:'Network state',v:'${r.state==='offline'?'Disconnected':'Connected'}'}], timeline:[{t:'Rider went ${r.state}',ts:'2 min ago'}], log:'[info] rider ${r.id} state=${r.state}'});`,
+    }),
+  });
+  document.querySelectorAll('#opsMapMode button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#opsMapMode button').forEach(b=>b.classList.toggle('active', b===btn));
+      showToast(btn.dataset.mode==='heat' ? 'Heat map mode — delivery density.' : 'Marker mode — individual riders.');
+    });
+  });
+
+  const tickId = setInterval(()=>{
+    opsLive.ridersOnline = Math.max(200, opsLive.ridersOnline + Math.round((Math.random()-0.45)*4));
+    opsLive.deliveriesActive = Math.max(100, opsLive.deliveriesActive + Math.round((Math.random()-0.4)*5));
+    opsLive.onTheWay = Math.max(80, opsLive.onTheWay + Math.round((Math.random()-0.5)*4));
+    const rEl=document.getElementById('opRiders'), aEl=document.getElementById('opActive'), oEl=document.getElementById('opOnWay');
+    if(rEl) rEl.textContent = opsLive.ridersOnline;
+    if(aEl) aEl.textContent = opsLive.deliveriesActive;
+    if(oEl) oEl.textContent = opsLive.onTheWay;
+  }, 2200);
+  activeIntervals.push(tickId);
+}
+
+/* ---------------------------------------------------------------------
+   REVENUE
+--------------------------------------------------------------------- */
+function renderRevenue(){
+  const mrr = revenueTrend[revenueTrend.length-1].mrr;
+  const newRev = revenueTrend.reduce((s,d)=>s+d.newRev,0);
+  const renewalRev = Math.round(mrr*0.74);
+  const churnRate = 6.5;
+  return `
+    <div class="grid grid-4">
+      ${kpiTile({id:'kpiMrrR', icon:'wallet', label:'MRR (This Month)', value:fmtMYR(mrr), trendPct:18.6, tooltip:'Sum of active subscription MRR, current period', spark:true})}
+      ${kpiTile({id:'kpiNewRev', icon:'plusCircle', label:'New Revenue', value:fmtMYR(newRev), trendPct:22.4, tooltip:'MRR added by newly paid vendors this period', spark:true})}
+      ${kpiTile({id:'kpiRenewal', icon:'refresh', label:'Renewal Revenue', value:fmtMYR(renewalRev), trendPct:15.2, tooltip:'MRR from renewed existing subscriptions', spark:true})}
+      ${kpiTile({id:'kpiChurn', icon:'trendingDown', label:'Churn Rate', value:churnRate+'%', trendPct:-0.9, trendNote:'pp vs last 30 days', tooltip:'Share of paying vendors that cancelled this period', spark:true})}
+    </div>
+
+    <div class="grid grid-main-rev" style="margin-top:16px;">
+      <div class="card">
+        <div class="card-head">
+          <div><h3 class="card-title">Revenue Trend</h3><p class="card-sub">Total Revenue · MRR · New Revenue · Churned Revenue</p></div>
+          <div class="seg-toggle" id="revGranularity"><button class="active" data-g="daily">Daily</button><button data-g="weekly">Weekly</button></div>
+        </div>
+        <div class="chart-wrap" id="revChartWrap">
+          <svg id="revChart" width="100%" height="100%" preserveAspectRatio="none"></svg>
+          <div class="chart-tooltip" id="revTooltip"></div>
+        </div>
+        <div class="chart-legend" id="revLegend"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h3 class="card-title">Revenue Breakdown</h3><p class="card-sub">This month</p></div></div>
+        <div class="ring-wrap">
+          <svg id="revBreakdownRing" width="160" height="160" viewBox="0 0 160 160"></svg>
+          <div class="ring-legend" id="revBreakdownLegend"></div>
+        </div>
+        <button class="link-btn" style="margin-top:12px;" onclick="showToast('Opens full revenue breakdown report.')">View Full Breakdown <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px;">
+      <div class="card">
+        <div class="card-head"><div><h3 class="card-title">Revenue by Plan (MRR)</h3><p class="card-sub">Canonical pricing configuration</p></div></div>
+        <div class="ring-wrap" style="flex-direction:row;align-items:center;gap:20px;">
+          <svg id="revByPlanRing" width="140" height="140" viewBox="0 0 160 160"></svg>
+          <div class="ring-legend" id="revByPlanLegend" style="margin-top:0;flex:1;"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h3 class="card-title">Cohort Retention</h3><p class="card-sub">By signup month</p></div></div>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead><tr><th>Cohort</th><th>M0</th><th>M1</th><th>M2</th><th>M3</th><th>M4</th><th>M5+</th></tr></thead>
+            <tbody>
+              ${cohortRetention.map(c => `<tr style="cursor:default;"><td style="font-weight:600;">${c.cohort}</td>${['m0','m1','m2','m3','m4','m5'].map(k => `<td>${c[k]!==null ? `<span class="badge ${c[k]>=90?'ok':c[k]>=75?'warn':'crit'}" style="min-width:38px;justify-content:center;">${c[k]}%</span>` : '—'}</td>`).join('')}</tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid var(--glass-border);">
+          <span style="font-size:12px;color:hsl(var(--muted));">Overall Retention (Month 3)</span>
+          <span style="font-size:18px;font-weight:800;">82.3% ${trendPill(3.5)}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-main-rev" style="margin-top:16px;">
+      <div class="card">
+        <div class="card-head"><div><h3 class="card-title">Payment Health</h3></div><button class="link-btn" onclick="showToast('Opens payment health workspace.')">View All <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button></div>
+        <div class="grid grid-4">
+          <div class="card mini-kpi" style="background:hsl(var(--fg) / 3%);"><div class="kpi-top"><span class="lbl">Successful</span></div><div class="kpi-val" style="color:hsl(var(--green));">${paymentHealth.successful}%</div><div class="kpi-trend up"><svg viewBox="0 0 24 24">${ICONS.trending}</svg>+1.8pp</div></div>
+          <div class="card mini-kpi" style="background:hsl(var(--fg) / 3%);"><div class="kpi-top"><span class="lbl">Failed Payments</span></div><div class="kpi-val" style="color:hsl(var(--red));">${paymentHealth.failed}</div><div class="kpi-trend down"><svg viewBox="0 0 24 24">${ICONS.trendingDown}</svg>-12</div></div>
+          <div class="card mini-kpi" style="background:hsl(var(--fg) / 3%);"><div class="kpi-top"><span class="lbl">Retry In Progress</span></div><div class="kpi-val" style="color:hsl(var(--amber));">${paymentHealth.retrying}</div><div class="kpi-trend down"><svg viewBox="0 0 24 24">${ICONS.trendingDown}</svg>-5</div></div>
+          <div class="card mini-kpi" style="background:hsl(var(--fg) / 3%);"><div class="kpi-top"><span class="lbl">Refunds</span></div><div class="kpi-val">${paymentHealth.refunds}</div><div class="kpi-trend down"><svg viewBox="0 0 24 24">${ICONS.trendingDown}</svg>-3</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h3 class="card-title">Needs Attention</h3></div><span class="card-count">${revenueAttention.length}</span></div>
+        <div id="revAttnList"></div>
+      </div>
+    </div>
+  `;
+}
+function hookRevenue(){
+  const series = [
+    { key:'total', label:'Total Revenue', color:'hsl(var(--blue))', area:true, data: revenueTrend.map(d=>d.total), visible:true },
+    { key:'mrr', label:'MRR', color:'hsl(210 20% 80%)', dashed:true, data: revenueTrend.map(d=>d.mrr), visible:true },
+    { key:'newRev', label:'New Revenue', color:'hsl(var(--green))', data: revenueTrend.map(d=>d.newRev*20), visible:true },
+    { key:'churned', label:'Churned Revenue', color:'hsl(var(--red))', data: revenueTrend.map(d=>d.churned*20), visible:true },
+  ];
+  function fmt(idx){
+    const d = revenueTrend[idx];
+    return `<div class="hd">${d.d}</div>
+      <div class="row"><span class="k"><span class="sw" style="background:hsl(var(--blue));"></span>Total Revenue</span><b>${fmtMYR(d.total)}</b></div>
+      <div class="row"><span class="k"><span class="sw" style="background:hsl(210 20% 80%);"></span>MRR</span><b>${fmtMYR(d.mrr)}</b></div>
+      <div class="row"><span class="k"><span class="sw" style="background:hsl(var(--green));"></span>New Revenue</span><b>${fmtMYR(d.newRev)}</b></div>
+      <div class="row"><span class="k"><span class="sw" style="background:hsl(var(--red));"></span>Churned Revenue</span><b>${fmtMYR(d.churned)}</b></div>`;
+  }
+  initMultiChart('revChart','revChartWrap','revTooltip', series, {fmt});
+  const legend = document.getElementById('revLegend');
+  legend.innerHTML = series.map(s=>`<div class="item" data-key="${s.key}"><span class="sw" style="background:${s.color};"></span>${s.label}</div>`).join('');
+  legend.querySelectorAll('[data-key]').forEach(item=>{
+    item.addEventListener('click', ()=>{
+      const s = series.find(x=>x.key===item.dataset.key);
+      s.visible = !s.visible; item.classList.toggle('off', !s.visible);
+      initMultiChart('revChart','revChartWrap','revTooltip', series, {fmt});
+    });
+  });
+  document.querySelectorAll('#revGranularity button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ document.querySelectorAll('#revGranularity button').forEach(b=>b.classList.toggle('active', b===btn)); showToast('Granularity updated.'); });
+  });
+
+  const breakdown = [
+    { label:'MRR (Subscriptions)', value:124310, color:'hsl(var(--blue))' },
+    { label:'Setup Fees', value:9240, color:'hsl(217 91% 75%)' },
+    { label:'Add-on & Services', value:5680, color:'hsl(217 60% 45%)' },
+    { label:'Other Income', value:1220, color:'hsl(217 30% 30%)' },
+  ];
+  drawDonut('revBreakdownRing', breakdown, fmtMYR(breakdown.reduce((s,x)=>s+x.value,0)), 'Total Revenue');
+  document.getElementById('revBreakdownLegend').innerHTML = breakdown.map(b=>{
+    const total = breakdown.reduce((s,x)=>s+x.value,0);
+    return `<div class="ring-legend-row"><span class="k"><span class="dot" style="background:${b.color};"></span>${b.label}</span><span><b>${fmtMYR(b.value)}</b> <span class="pct">${(b.value/total*100).toFixed(1)}%</span></span></div>`;
+  }).join('');
+
+  const byPlan = [
+    { label:'Basic (RM39)', value:18720, color:'hsl(217 30% 30%)' },
+    { label:'Pro (RM99)', value:75240, color:'hsl(var(--blue))' },
+    { label:'Premium (RM179)', value:25670, color:'hsl(217 91% 75%)' },
+    { label:'Enterprise (Custom)', value:4680, color:'hsl(217 60% 45%)' },
+  ];
+  drawDonut('revByPlanRing', byPlan, fmtMYR(byPlan.reduce((s,x)=>s+x.value,0)), 'MRR');
+  document.getElementById('revByPlanLegend').innerHTML = byPlan.map(b=>{
+    const total = byPlan.reduce((s,x)=>s+x.value,0);
+    return `<div class="ring-legend-row"><span class="k"><span class="dot" style="background:${b.color};"></span>${b.label}</span><span><b>${fmtMYR(b.value)}</b> <span class="pct">${(b.value/total*100).toFixed(1)}%</span></span></div>`;
+  }).join('');
+
+  drawSpark('kpiMrrR_spark', revenueTrend.map(d=>d.mrr), 'hsl(var(--blue))');
+  drawSpark('kpiNewRev_spark', revenueTrend.map(d=>d.newRev), 'hsl(var(--blue))');
+  drawSpark('kpiRenewal_spark', revenueTrend.map(d=>d.mrr*0.74), 'hsl(var(--blue))');
+  drawSpark('kpiChurn_spark', revenueTrend.map(d=>d.churned/200), 'hsl(var(--blue))');
+
+  const attnList = document.getElementById('revAttnList');
+  attnList.innerHTML = revenueAttention.map(a => attentionRow({...a, count:a.time})).join('');
+  attnList.querySelectorAll('.attn-row').forEach((row,i)=>{
+    row.addEventListener('click', ()=> openIssueDiagnostic(buildIssueDiagnostic({...revenueAttention[i], count:revenueAttention[i].time})));
+  });
+}
+
+/* ---------------------------------------------------------------------
+   GROWTH & MARKETS
+--------------------------------------------------------------------- */
+function renderGrowth(){
+  return `
+    <div class="grid grid-5">
+      ${kpiTile({id:'kpiTam', icon:'markets', label:'Total Addressable Market', value:'2.4M', trendPct:1.2, trendNote:'vs last month', tooltip:'Home food businesses, Malaysia — public/third-party estimate', estimated:true})}
+      ${kpiTile({id:'kpiPenetration', icon:'target', label:'Market Penetration', value:'0.055%', trendPct:1.2, tooltip:'Paying vendors ÷ TAM — derived from first-party + estimated data', estimated:true})}
+      ${kpiTile({id:'kpiCpa', icon:'wallet', label:'Cost per Acquired Vendor', value:'RM14.70', trendPct:-18.6, tooltip:'Blended acquisition spend ÷ new paid vendors — first-party data'})}
+      ${kpiTile({id:'kpiOrganic', icon:'trending', label:'Organic Growth', value:'68%', trendPct:0, trendNote:'from content & referrals', tooltip:'Share of new vendors from unpaid channels — first-party data'})}
+      <div class="card kpi-tile">
+        <div class="kpi-top"><span class="lbl">Top Performing Channel</span><div class="kpi-ic"><svg viewBox="0 0 24 24">${ICONS.rocket}</svg></div></div>
+        <div class="kpi-val" style="font-size:18px;">TikTok Organic</div>
+        <div class="kpi-trend up"><svg viewBox="0 0 24 24">${ICONS.trending}</svg>ROI 4.2x <span class="muted">· 43% of new vendors</span></div>
+      </div>
+    </div>
+
+    <div class="grid grid-main" style="margin-top:16px;">
+      <div class="card map-card">
+        <div class="map-toolbar">
+          <div><h3 class="card-title" style="display:flex;align-items:center;gap:6px;">Market Heatmap <svg class="info-ic" viewBox="0 0 24 24" title="Illustrative placeholder unless backed by real signals — labeled per source type.">${ICONS.info}</svg></h3><p class="card-sub">Vendor growth by cluster · <span class="estimated-tag" style="margin-left:0;">Est.</span> where not first-party</p></div>
+          <div class="seg-toggle" id="growthMapLayer"><button class="active" data-layer="vendors">Vendors</button><button data-layer="demand">Demand</button><button data-layer="competition">Competition</button></div>
+        </div>
+        ${mapCanvasShell('growthMapCanvas', `
+          <div class="row"><span class="sw" style="background:hsl(var(--blue));"></span>High potential</div>
+          <div class="row"><span class="sw" style="background:hsl(var(--blue) / 55%);"></span>Growing</div>
+          <div class="row"><span class="sw" style="background:hsl(var(--blue) / 30%);"></span>Early stage</div>
+        `)}
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h3 class="card-title">Market Opportunities</h3></div><span class="badge info">AI Analysis</span></div>
+        ${marketOpportunities.map(o => `
+          <div class="opp-card" data-opp-rank="${o.rank}">
+            <div class="opp-top"><div class="opp-rank">${o.rank}</div><div class="opp-name">${o.name}</div><span class="badge ${o.priority==='High'?'crit':'warn'}">${o.priority} Priority</span></div>
+            <div class="opp-reason">${o.reason} · Score ${o.score}/10</div>
+            <div class="opp-stats">
+              <div>Potential Vendors<b>${o.potentialVendors.toLocaleString()}</b></div>
+              <div>Est. MRR<b>${fmtMYR(o.estMrr)}</b></div>
+              <div>Competition<b>${o.competition}</b></div>
+            </div>
+            <div class="opp-foot"><span class="badge info">${o.action}</span><button class="link-btn" onclick="showToast('Opportunity evidence + recommended experiment for ${o.name}.')">View Opportunity <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button></div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr 1.4fr 1fr;margin-top:16px;">
+      <div class="card">
+        <div class="card-head"><div><h3 class="card-title">Acquisition Funnel</h3><p class="card-sub">This month</p></div></div>
+        ${acquisitionFunnel.map(f => `
+          <div class="bar-row"><div class="bar-top"><span class="name">${f.label}</span><span class="pct">${f.count.toLocaleString()}</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(f.count/acquisitionFunnel[0].count*100,3)}%;"></div></div></div>
+        `).join('')}
+        <div style="font-size:11px;color:hsl(var(--muted-2));margin-top:8px;">Funnel efficiency improving. TikTok content drives 43% of new vendors.</div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h3 class="card-title">Campaign Performance</h3></div><button class="link-btn" onclick="showToast('Opens full campaign performance workspace.')">View All <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button></div>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead><tr><th>Channel</th><th>Status</th><th>Reach</th><th>New Vendors</th><th>CPA</th></tr></thead>
+            <tbody>
+              ${campaignPerformance.map(c => `<tr style="cursor:default;"><td>${c.icon} ${c.channel}</td><td><span class="badge ${c.status==='Live'?'ok':'info'}">${c.status}</span></td><td>${c.reach}</td><td>${c.newVendors}</td><td>RM${c.cpa.toFixed(2)}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h3 class="card-title">Upcoming &amp; Focus</h3></div><button class="link-btn" onclick="showToast('Opens calendar view.')">View Calendar <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button></div>
+        ${upcomingFocus.map(u => `
+          <div class="feed-row" style="align-items:flex-start;padding:10px 4px;">
+            <div style="flex:1;"><div style="font-size:11px;color:hsl(var(--muted-2));">${u.date}</div><div style="font-size:12.5px;font-weight:600;margin-top:2px;">${u.title}</div><div style="font-size:11px;color:hsl(var(--muted));">${u.sub}</div></div>
+            <span class="badge info">${u.tag}</span>
+          </div>
+        `).join('')}
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--glass-border);">
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;color:hsl(var(--muted));margin-bottom:8px;"><span>Q3 Goal: 5,000 paying vendors</span><b style="color:hsl(var(--fg));">1,324 / 5,000</b></div>
+          <div class="bar-track"><div class="bar-fill" style="width:26%;"></div></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+function hookGrowth(){
+  drawSpark('kpiTam_spark', [2.1,2.15,2.2,2.22,2.28,2.3,2.35,2.4], 'hsl(var(--blue))');
+  drawSpark('kpiPenetration_spark', [0.04,0.042,0.045,0.048,0.05,0.052,0.054,0.055], 'hsl(var(--blue))');
+  drawSpark('kpiCpa_spark', [18,17.2,16.5,16,15.4,15,14.9,14.7], 'hsl(var(--blue))');
+  drawSpark('kpiOrganic_spark', [60,62,63,64,65,66,67,68], 'hsl(var(--blue))');
+
+  initClusterMap('growthMapCanvas', clusters, {
+    kind:'market', sizeFn: markerSizeScale(clusters,'newThisMonth'),
+    contextBuilder:(c)=>({
+      title:c.name, sub:c.state,
+      stats:[
+        {k:'Vendor growth', v:'+'+Math.round(c.newThisMonth/c.paying*100)+'%'}, {k:'Potential vendors', v:(c.paying*12).toLocaleString()},
+        {k:'Competition', v: c.retention>70?'Low':'Medium'}, {k:'Source', v:'First-party + estimate'},
+      ],
+      viewLabel:'View Opportunity', viewAction:`showToast('Opportunity evidence for ${c.name}.')`,
+    }),
+  });
+  document.querySelectorAll('#growthMapLayer button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ document.querySelectorAll('#growthMapLayer button').forEach(b=>b.classList.toggle('active', b===btn)); showToast(`Layer: ${btn.textContent}`); });
+  });
+}
+
+/* ---------------------------------------------------------------------
+   PLATFORM
+--------------------------------------------------------------------- */
+function renderPlatform(){
+  const degraded = systemHealthServices.filter(s=>s.status!=='Operational').length;
+  return `
+    <div class="grid grid-6">
+      <div class="card mini-kpi"><div class="kpi-top"><span class="lbl">Platform Status</span></div><div style="display:flex;align-items:center;gap:8px;margin-top:2px;"><span class="dot-sm ok"></span><div class="kpi-val" style="font-size:15px;">Operational</div></div><div class="kpi-trend up" style="color:hsl(var(--muted));">All systems healthy</div></div>
+      <div class="card mini-kpi"><div class="kpi-top"><span class="lbl">Uptime (30D)</span></div><div class="kpi-val">99.98%</div><div class="kpi-trend up"><svg viewBox="0 0 24 24">${ICONS.trending}</svg>+0.12%</div></div>
+      <div class="card mini-kpi"><div class="kpi-top"><span class="lbl">Active Clients</span></div><div class="kpi-val">7,532</div><div class="kpi-trend up"><svg viewBox="0 0 24 24">${ICONS.trending}</svg>+15.6%</div></div>
+      <div class="card mini-kpi"><div class="kpi-top"><span class="lbl">API Requests (30D)</span></div><div class="kpi-val">2.48M</div><div class="kpi-trend up"><svg viewBox="0 0 24 24">${ICONS.trending}</svg>+16.6%</div></div>
+      <div class="card mini-kpi"><div class="kpi-top"><span class="lbl">Error Rate</span></div><div class="kpi-val">0.06%</div><div class="kpi-trend up"><svg viewBox="0 0 24 24">${ICONS.trending}</svg>-0.03pp</div></div>
+      <div class="card mini-kpi"><div class="kpi-top"><span class="lbl">Security Score</span></div><div class="kpi-val" style="color:hsl(var(--blue));">98<span style="font-size:12px;color:hsl(var(--muted));">/100</span></div><div class="kpi-trend up" style="color:hsl(var(--green));">Excellent</div></div>
+    </div>
+
+    <div class="grid grid-main" style="margin-top:16px;">
+      <div class="card">
+        <div class="card-head"><div><h3 class="card-title">System Health</h3><p class="card-sub">${degraded===0?'All regions healthy':degraded+' service(s) degraded'}</p></div></div>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead><tr><th>Service</th><th>Status</th><th>Response Time</th><th>Uptime (30D)</th></tr></thead>
+            <tbody>
+              ${systemHealthServices.map(s => `
+                <tr data-svc="${s.name}">
+                  <td><div class="cell-entity"><span class="ic" style="color:hsl(var(--muted));width:16px;height:16px;"><svg viewBox="0 0 24 24">${ICONS[s.icon]}</svg></span>${s.name}</div></td>
+                  <td><span class="badge ok"><span class="dot-sm ok"></span>${s.status}</span></td>
+                  <td>${s.responseMs} ms</td><td>${s.uptime}%</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        <button class="link-btn" style="margin-top:12px;" onclick="showToast('Opens full system health workspace.')">View Full System Health <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr;gap:16px;">
+        <div class="card">
+          <div class="card-head"><div><h3 class="card-title">Alerts &amp; Notifications</h3></div><span class="card-count">${platformAlerts.length}</span></div>
+          <div id="platformAlertsList"></div>
+        </div>
+        <div class="card" id="activity-card">
+          <div class="card-head"><div><h3 class="card-title">Recent Platform Activity</h3></div></div>
+          ${recentPlatformActivity.map(a => `<div class="feed-row"><span class="feed-time">${a.ts}</span><span class="feed-text">${a.text}</span><span class="feed-zone">${a.actor}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1.4fr 1fr 1fr;margin-top:16px;">
+      <div class="card" id="flags-card">
+        <div class="card-head"><div><h3 class="card-title">Feature Flags</h3></div><button class="link-btn" onclick="showToast('Opens full feature flag registry.')">View All <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button></div>
+        <div id="featureFlagsList"></div>
+      </div>
+      <div class="card" id="versions-card">
+        <div class="card-head"><div><h3 class="card-title">Client Version Control</h3></div><button class="link-btn" onclick="showToast('Opens release/version control workspace.')">View All <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button></div>
+        ${clientVersions.map(v => `<div class="version-row"><div><div class="name">${v.name}</div><div class="ver">${v.version}</div></div><span class="badge ${v.status==='Latest'?'ok':'info'}">${v.status}</span></div>`).join('')}
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h3 class="card-title">System Usage (Live)</h3></div></div>
+        <div class="usage-row"><div class="usage-top"><span class="ic"><svg viewBox="0 0 24 24">${ICONS.cpu}</svg></span>CPU Usage<span class="pct" id="usageCpuPct">${systemUsage.cpu}%</span></div><div class="bar-track"><div class="bar-fill" id="usageCpuBar" style="width:${systemUsage.cpu}%;"></div></div></div>
+        <div class="usage-row"><div class="usage-top"><span class="ic"><svg viewBox="0 0 24 24">${ICONS.hardDrive}</svg></span>Memory Usage<span class="pct" id="usageMemPct">${systemUsage.memory}%</span></div><div class="bar-track"><div class="bar-fill" id="usageMemBar" style="width:${systemUsage.memory}%;"></div></div></div>
+        <div class="usage-row"><div class="usage-top"><span class="ic"><svg viewBox="0 0 24 24">${ICONS.database}</svg></span>Storage Usage<span class="pct">${systemUsage.storage}%</span></div><div class="bar-track"><div class="bar-fill warn" style="width:${systemUsage.storage}%;"></div></div></div>
+        <button class="link-btn" style="margin-top:6px;" onclick="showToast('Opens detailed system metrics.')">View System Metrics <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button>
+      </div>
+    </div>
+
+    <div class="card" id="integrations-card" style="margin-top:16px;">
+      <div class="card-head"><div><h3 class="card-title">Integrations Health</h3></div><button class="link-btn" onclick="showToast('Opens integrations management.')">Manage Integrations <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button></div>
+      <div class="grid grid-5">
+        ${integrationsHealth.map(i => `<div class="integ-row" style="border:none;padding:10px;background:hsl(var(--fg) / 3%);border-radius:11px;"><span class="ic" style="color:hsl(var(--blue));width:16px;height:16px;"><svg viewBox="0 0 24 24">${ICONS[i.icon]}</svg></span><span class="name">${i.name}</span><span class="badge ok" style="margin-left:auto;">${i.status}</span></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="card-head"><div class="card-title-wrap"><span style="color:hsl(var(--blue));display:flex;"><svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;">${ICONS.rocket}</svg></span><h3 class="card-title">AI Insight</h3></div><button class="link-btn" onclick="showToast('Opens all platform insights.')">View All Insights <svg viewBox="0 0 24 24">${ICONS.chevRight}</svg></button></div>
+      <p style="font-size:12.5px;color:hsl(var(--muted));margin:0;line-height:1.6;">Platform performance is excellent. Consider enabling <b style="color:hsl(var(--fg));">Auto Batch Optimization</b> more broadly to improve delivery efficiency by up to 18% — currently on for all zones, monitor for two more weeks before declaring a full win.</p>
+    </div>
+  `;
+}
+function hookPlatform(){
+  const alertsList = document.getElementById('platformAlertsList');
+  alertsList.innerHTML = platformAlerts.map(a => `
+    <div class="attn-row" data-alert-idx="${platformAlerts.indexOf(a)}">
+      <div class="attn-ic ${a.level==='neutral'?'':a.level}"><svg viewBox="0 0 24 24">${ICONS.alert}</svg></div>
+      <div class="attn-main"><div class="attn-title">${a.title}</div><div class="attn-meta">${a.meta}</div></div>
+      <span class="badge ${a.level==='neutral'?'neutral':a.level}">${a.badge}</span>
+    </div>
+  `).join('');
+  alertsList.querySelectorAll('[data-alert-idx]').forEach(row=>{
+    row.addEventListener('click', ()=>{
+      const a = platformAlerts[row.dataset.alertIdx];
+      if(a.title.includes('maintenance')){ showToast('Maintenance Mode is emergency/exception only — routine releases never require it.'); return; }
+      openIssueDiagnostic(buildIssueDiagnostic({title:a.title, meta:a.meta, level:a.level==='neutral'?'info':a.level, icon:'alert', count:a.meta}));
+    });
+  });
+
+  const flagsList = document.getElementById('featureFlagsList');
+  function renderFlags(){
+    flagsList.innerHTML = featureFlags.map((f,i) => `
+      <div class="flag-row">
+        <div class="flag-main"><div class="flag-title">${f.title}</div><div class="flag-meta">${f.desc} · ${f.scope} · ${f.env} · owner ${f.owner} · affects ${f.affected}</div></div>
+        <div class="toggle-switch ${f.on?'on':''}" data-flag-idx="${i}"><div class="knob"></div></div>
+      </div>
+    `).join('');
+    flagsList.querySelectorAll('[data-flag-idx]').forEach(sw=>{
+      sw.addEventListener('click', ()=>{
+        const flag = featureFlags[sw.dataset.flagIdx];
+        openFlagConfirm(flag);
+      });
+    });
+  }
+  renderFlags();
+  window._renderFlags = renderFlags;
+
+  const usageId = setInterval(()=>{
+    systemUsage.cpu = Math.max(15, Math.min(75, systemUsage.cpu + Math.round((Math.random()-0.5)*6)));
+    systemUsage.memory = Math.max(20, Math.min(80, systemUsage.memory + Math.round((Math.random()-0.5)*4)));
+    const cpuEl = document.getElementById('usageCpuPct'), cpuBar = document.getElementById('usageCpuBar');
+    const memEl = document.getElementById('usageMemPct'), memBar = document.getElementById('usageMemBar');
+    if(cpuEl){ cpuEl.textContent = systemUsage.cpu+'%'; cpuBar.style.width = systemUsage.cpu+'%'; }
+    if(memEl){ memEl.textContent = systemUsage.memory+'%'; memBar.style.width = systemUsage.memory+'%'; }
+  }, 2600);
+  activeIntervals.push(usageId);
+}
+function openFlagConfirm(flag){
+  const body = document.getElementById('modalBody');
+  const turningOn = !flag.on;
+  body.innerHTML = `
+    <h3>${turningOn?'Enable':'Disable'} "${flag.title}"?</h3>
+    <p class="desc">${flag.desc} — scope: ${flag.scope}, environment: ${flag.env}. Currently affects ${flag.affected}.</p>
+    <div class="modal-warn"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>Production flag change. Requires a reason, runs a post-change health check, and is fully audited with rollback to the previous value.</div>
+    <label>Reason for this change</label>
+    <textarea id="flagReason" placeholder="e.g. Rolling out ahead of Klang Valley rider onboarding batch"></textarea>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="flagConfirmBtn">${turningOn?'Enable':'Disable'} &amp; Apply</button>
+    </div>
+  `;
+  document.getElementById('modalBackdrop').classList.add('show');
+  document.getElementById('flagConfirmBtn').addEventListener('click', async ()=>{
+    const reason = document.getElementById('flagReason').value.trim();
+    if(!reason){ showToast('A reason is required to change a production flag.'); return; }
+    const btn = document.getElementById('flagConfirmBtn');
+    btn.disabled = true;
+    try{
+      if(!window.CEFFLO_FOUNDR) throw new Error('Backend not connected.');
+      await window.CEFFLO_FOUNDR.setFeatureFlag(flag.key, turningOn, flag.desc);
+      flag.on = turningOn;
+      closeModal();
+      window._renderFlags();
+      showToast(`"${flag.title}" ${turningOn?'enabled':'disabled'} — logged to audit trail.`);
+    }catch(error){
+      showToast(error.message || 'Unable to change this flag.');
+      btn.disabled = false;
+    }
+  });
+}
+
+function buildIssueDiagnostic(item){
+  return {
+    title: item.title,
+    subtitle: `Affects ${item.count || item.area || 'multiple entities'} · Diagnostic Workspace`,
+    context: [
+      { k:'Affected app', v: item.icon==='truck' || item.icon==='box' || item.icon==='phone' ? 'Rider PWA' : item.icon==='store' ? 'Vendor PWA' : item.icon==='creditCard' ? 'Admin / Billing' : 'Platform' },
+      { k:'Severity', v: item.level==='crit' ? 'Critical' : item.level==='warn' ? 'Warning' : 'Info' },
+      { k:'Detected', v: relTime(Math.random()*60) },
+      { k:'Related entities', v: item.count || item.area || '—' },
+      { k:'Network / realtime state', v:'Connected' },
+    ],
+    timeline: [
+      { t:'Issue first detected by monitoring', ts: relTime(45) },
+      { t:'Retry attempted automatically', ts: relTime(30) },
+      { t:'Escalated to Needs Attention', ts: relTime(12) },
+    ],
+    log: `[warn] ${item.title}\ncorrelation_id: cf-${Math.floor(Math.random()*90000+10000)}\nstate: unresolved`,
+  };
+}
+
+const RENDERERS = {
+  overview: renderOverview,
+  vendors: renderVendors,
+  operations: renderOperations,
+  revenue: renderRevenue,
+  growth: renderGrowth,
+  platform: renderPlatform,
+};
+const HOOKS = {
+  overview: hookOverview,
+  vendors: hookVendors,
+  operations: hookOperations,
+  revenue: hookRevenue,
+  growth: hookGrowth,
+  platform: hookPlatform,
+};
+
+hydrateIcons();
+// Real boot (admin gate + data hydrate + first render) happens in
+// backend.js's boot(), loaded below -- it calls goToPage() itself once the
+// access check and initial hydrate have both settled.
+</script>
+
+<script>window.CEFFLO_SESSION_KEY='cefflo_foundr_auth_session';</script>
+<script src="../shared/config.js?v=20260830a"></script>
+<script src="../shared/client.js?v=20260830a"></script>
+<script src="./backend.js?v=20260830a"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  const customDomain = location.hostname === 'foundr.cefflo.com';
+  const workerUrl = customDomain ? '/sw.js' : './sw.js';
+  const scope = customDomain ? '/' : './';
+  window.addEventListener('load', () => navigator.serviceWorker.register(workerUrl, {scope}).catch(error => console.warn('CEFFLO FOUNDR service worker unavailable:', error)));
+}
+</script>
+</body>
+</html>
