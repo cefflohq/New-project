@@ -2795,6 +2795,19 @@ body{
   line-height:1.4;
 }
 
+/* Sign Up can exceed short mobile viewports after the required phone field. */
+#signup{
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#signup::-webkit-scrollbar{display:none}
+#signup>.px{
+  padding-bottom:calc(32px + env(safe-area-inset-bottom))!important;
+}
+#signup .auth-inline-status:empty{display:none}
+
 /* Premium Auth entrance: blank canvas first, then all content rises together. */
 :is(#signup,#emailLogin,#forgot,#resetPassword,#language).motion-forward.active{
   animation:authPageReveal .22s ease-out both;
@@ -2881,6 +2894,9 @@ body{
     margin-top:16px!important;
     font-size:14px;
   }
+  #signup .subtext{margin-bottom:20px!important}
+  #signup .field{margin-bottom:14px}
+  #signup .checkbox-row{margin-bottom:14px}
 }
 </style>
 </head>
