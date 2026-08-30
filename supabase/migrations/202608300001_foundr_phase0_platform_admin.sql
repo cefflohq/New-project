@@ -17,12 +17,9 @@ create table public.platform_admins (
 
 alter table public.platform_admins enable row level security;
 
--- A platform admin may see the allowlist (so FOUNDR can show "who has
--- access"); nobody may write to it through RLS/RPC -- membership changes are
--- a direct-database action only, matching the no-self-provision rule above.
-create policy platform_admins_read on public.platform_admins
-  for select using (public.is_platform_admin());
-
+-- Defined before the policy below references it -- CREATE POLICY resolves
+-- its USING expression immediately and requires the function to already
+-- exist (unlike a deferred FK constraint).
 create function public.is_platform_admin()
 returns boolean
 language sql
@@ -34,6 +31,12 @@ as $$
     select 1 from public.platform_admins where user_id = auth.uid()
   )
 $$;
+
+-- A platform admin may see the allowlist (so FOUNDR can show "who has
+-- access"); nobody may write to it through RLS/RPC -- membership changes are
+-- a direct-database action only, matching the no-self-provision rule above.
+create policy platform_admins_read on public.platform_admins
+  for select using (public.is_platform_admin());
 
 grant select on public.platform_admins to authenticated;
 grant execute on function public.is_platform_admin() to authenticated;
