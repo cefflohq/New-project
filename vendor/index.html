@@ -1790,6 +1790,18 @@ body[data-vendor-theme="dark"] .vendor-settings-v2{
 .vd2-workload-metrics small,.vd2-workload-support small{display:block;color:var(--v2-muted);font-size:9.5px;line-height:1.3}.vd2-workload-metrics b,.vd2-workload-support b{display:block;margin-top:4px;font-size:11px;line-height:1.35;font-weight:650}.vd2-workload-metrics .gap b{color:#D94B4B}
 .vd2-workload-support{min-height:57px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--v2-line)}
 .vd2-workload-support .btn{width:auto;min-width:78px;box-shadow:none}
+.vd2-workload-card.is-live{border-color:transparent;background:linear-gradient(145deg,#7865EE,#654DDB);color:#fff;box-shadow:0 10px 24px rgba(103,78,222,.22)}
+.vd2-workload-card.is-live .vd2-workload-metrics>div{border-left-color:rgba(255,255,255,.22)}
+.vd2-workload-card.is-live .vd2-workload-metrics span,.vd2-workload-card.is-live .vd2-workload-metrics small,.vd2-workload-card.is-live .vd2-workload-support small{color:rgba(255,255,255,.72)}
+.vd2-workload-card.is-live .vd2-workload-support{border-top-color:rgba(255,255,255,.2)}
+.vd2-workload-card.is-live .btn{border-color:rgba(255,255,255,.34);background:#fff;color:#604BD3}
+.vd2-workload-live-title{padding:13px 14px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}.vd2-workload-live-title strong{overflow:hidden;font-size:18px;line-height:1.2;font-weight:750;text-overflow:ellipsis;white-space:nowrap}.vd2-workload-live-title span{flex:0 0 auto;padding:4px 7px;border-radius:99px;background:rgba(255,255,255,.16);color:rgba(255,255,255,.86);font-size:8.5px;font-weight:700;text-transform:uppercase}
+.vd2-workload-card.is-live .vd2-workload-metrics{grid-template-columns:1fr 1fr;padding-top:11px}.vd2-workload-card.is-live .vd2-workload-metrics>div:first-child{padding-left:2px}
+.vd2-workload-card.is-tomorrow{border-color:#DDD6FF;background:#F7F4FF}
+.vd2-workload-card.is-empty{padding:18px 16px;border-color:#E5E5EC;background:#F8F8FA;box-shadow:none}
+.vd2-workload-empty{display:flex;align-items:center;gap:12px}
+.vd2-workload-empty>span{width:38px;height:38px;display:flex;align-items:center;justify-content:center;flex:0 0 38px;border-radius:12px;background:#ECEAF2;color:#898591}
+.vd2-workload-empty svg{width:19px;height:19px}.vd2-workload-empty b{display:block;font-size:12px;font-weight:650}.vd2-workload-empty small{display:block;margin-top:3px;color:var(--v2-muted);font-size:10px;line-height:1.35}
 
 .vs2-main{padding-top:16px}
 .vs2-profile-card{
@@ -7056,7 +7068,8 @@ function openTermsFromSheet(){closeSheet();navigate('termsOfService');}
 
 function pageDashboardProposed(){
   const currentDeliveries=getCurrentDeliveries();
-  const capacity=state.workforce?.capacity||null;
+  const workloadCard=getDashboardWorkloadCard();
+  const capacity=workloadCard.capacity;
   const openWorkSession=(state.workforce?.workSessions||[]).find(session=>session.status==='open');
   const displayRiders=state.riders.slice(0,4).map((r,index)=>{
     const delivery=currentDeliveries.find(d=>d.riderId===r.id);
@@ -7100,19 +7113,72 @@ function pageDashboardProposed(){
           <span class="vd2-eta"><small>ETA</small><b>${eta} min</b></span>
         </button>`).join('')}</div>
       </section>
-      ${capacity?`<section class="vd2-section vd2-workload">
-        <div class="vd2-section-head"><h2>Tomorrow's Workload</h2></div>
-        <div class="vd2-workload-card">
-          <div class="vd2-workload-metrics"><div><strong>${capacity.expectedWorkload}</strong><span>${capacity.unit}</span></div><div><small>Core Team capacity</small><b>${capacity.coreCapacity} ${capacity.unit}</b></div><div class="gap"><small>Capacity gap</small><b>~${capacity.gap} ${capacity.unit}</b></div></div>
-          ${capacity.gap>0?`<div class="vd2-workload-support"><span><small>Suggested support</small><b>${capacity.suggestedHelpers} ${capacity.requiredSkill} Helpers</b></span><button class="btn btn-sm btn-secondary" data-nav="capacityDetail">Review</button></div>`:''}
-        </div>
-      </section>`:''}
+      ${renderDashboardWorkloadCard(workloadCard)}
       <section class="vd2-section vd2-actions">
         <div class="vd2-section-head"><h2>${t('actionRequired')} <em>${actions.length}</em></h2></div>
         ${actions.map(a=>`<button class="vd2-action" data-nav="${a.nav}" data-navparams='${JSON.stringify(a.params||{})}'><span>${ic(a.icon)}</span><b>${a.text}</b>${ic('chev')}</button>`).join('')}
       </section>
     </main>
   </div>`;
+}
+
+function localDateKey(date){
+  const value=date instanceof Date?date:new Date(date);
+  if(Number.isNaN(value.getTime()))return '';
+  const offset=value.getTimezoneOffset()*60000;
+  return new Date(value.getTime()-offset).toISOString().slice(0,10);
+}
+function sessionDayKey(session,now=new Date()){
+  if(session?.date)return localDateKey(`${session.date}T00:00:00`);
+  const label=String(session?.dateLabel||'').trim().toLowerCase();
+  if(label==='today')return localDateKey(now);
+  if(label==='tomorrow')return localDateKey(new Date(now.getFullYear(),now.getMonth(),now.getDate()+1));
+  return '';
+}
+function getDashboardWorkloadCard(now=new Date()){
+  const workforce=state.workforce||{};
+  const sessions=Array.isArray(workforce.workSessions)?workforce.workSessions:[];
+  const todayKey=localDateKey(now);
+  const tomorrowKey=localDateKey(new Date(now.getFullYear(),now.getMonth(),now.getDate()+1));
+  const terminal=new Set(['completed','cancelled','canceled','declined','expired']);
+  const explicitlyLive=new Set(['live','active','in_progress','in-progress','started']);
+  const operationalPickup=todaysRelevantOrders().some(order=>['readyForPickup','pickedUp','delivering'].includes(order.status));
+  const todaySessions=sessions.filter(session=>sessionDayKey(session,now)===todayKey&&!terminal.has(String(session.status||'').toLowerCase()));
+  const liveSession=todaySessions.find(session=>explicitlyLive.has(String(session.status||'').toLowerCase()))||(operationalPickup?todaySessions[0]:null);
+  const forecast=sessionDayKey(workforce.capacity,now)===tomorrowKey?workforce.capacity:null;
+  if(liveSession)return {mode:'live',session:liveSession,capacity:forecast};
+  const tomorrowSession=sessions.find(session=>sessionDayKey(session,now)===tomorrowKey&&!terminal.has(String(session.status||'').toLowerCase()));
+  if(tomorrowSession||forecast)return {mode:'tomorrow',session:tomorrowSession||null,capacity:forecast};
+  return {mode:'empty',session:null,capacity:null};
+}
+function renderDashboardWorkloadCard(card){
+  if(card.mode==='live'){
+    const session=card.session;
+    const confirmed=(session.confirmed||[]).filter(person=>person.status==='confirmed').length;
+    return `<section class="vd2-section vd2-workload">
+      <div class="vd2-section-head"><h2>Live Session</h2></div>
+      <div class="vd2-workload-card is-live">
+        <div class="vd2-workload-live-title"><strong>${session.workType||session.requiredSkill||'Session'}</strong><span>In progress</span></div>
+        <div class="vd2-workload-metrics"><div><small>Session time</small><b>${session.startTime||'—'} – ${session.endTime||'—'}</b></div><div><small>Helpers</small><b>${confirmed} / ${session.helpersNeeded||0} confirmed</b></div></div>
+        <div class="vd2-workload-support"><span><small>Location</small><b>${session.location||'Not set'}</b></span><button class="btn btn-sm btn-secondary" data-nav="workSessionDetail" data-navparams='${JSON.stringify({id:session.id})}'>View Live</button></div>
+      </div>
+    </section>`;
+  }
+  if(card.mode==='tomorrow'){
+    const capacity=card.capacity;
+    const session=card.session;
+    return `<section class="vd2-section vd2-workload">
+      <div class="vd2-section-head"><h2>Tomorrow's Workload</h2></div>
+      <div class="vd2-workload-card is-tomorrow">
+        ${capacity?`<div class="vd2-workload-metrics"><div><strong>${capacity.expectedWorkload}</strong><span>${capacity.unit}</span></div><div><small>Core Team capacity</small><b>${capacity.coreCapacity} ${capacity.unit}</b></div><div class="gap"><small>Capacity gap</small><b>~${capacity.gap} ${capacity.unit}</b></div></div>
+        ${capacity.gap>0?`<div class="vd2-workload-support"><span><small>Suggested support</small><b>${capacity.suggestedHelpers} ${capacity.requiredSkill} Helpers</b></span><button class="btn btn-sm btn-secondary" data-nav="capacityDetail">Review</button></div>`:''}`:`<div class="vd2-workload-metrics"><div><strong>${session?.workType||'Session'}</strong><span>Tomorrow</span></div><div><small>Session time</small><b>${session?.startTime||'—'} – ${session?.endTime||'—'}</b></div><div><small>Helpers needed</small><b>${session?.helpersNeeded||0}</b></div></div>`}
+      </div>
+    </section>`;
+  }
+  return `<section class="vd2-section vd2-workload">
+    <div class="vd2-section-head"><h2>Tomorrow's Workload</h2></div>
+    <div class="vd2-workload-card is-empty"><div class="vd2-workload-empty"><span>${ic('clock')}</span><div><b>No Session</b><small>No work session is scheduled for tomorrow.</small></div></div></div>
+  </section>`;
 }
 
 function pageOrderDetailProposed(o, steps, stepIndex, showProgress){
