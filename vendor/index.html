@@ -2814,6 +2814,33 @@ body{background:#E9E8EE!important;}
           <input type="email" id="signupEmail" data-i18n-placeholder="emailPlaceholder" placeholder="name@example.com" autocomplete="email" inputmode="email" required>
         </div>
       </div>
+      <div class="field">
+        <label data-i18n="phoneNumber">Phone Number</label>
+        <div class="input-wrap with-prefix">
+          <div class="phone-prefix">
+            <select id="signupPhoneCode" aria-label="Country code">
+              <option value="+60" selected>🇲🇾 +60</option>
+              <option value="+65">🇸🇬 +65</option>
+              <option value="+62">🇮🇩 +62</option>
+              <option value="+66">🇹🇭 +66</option>
+              <option value="+673">🇧🇳 +673</option>
+              <option value="+63">🇵🇭 +63</option>
+              <option value="+84">🇻🇳 +84</option>
+              <option value="+855">🇰🇭 +855</option>
+              <option value="+95">🇲🇲 +95</option>
+              <option value="+856">🇱🇦 +856</option>
+              <option value="+61">🇦🇺 +61</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="+91">🇮🇳 +91</option>
+              <option value="+86">🇨🇳 +86</option>
+              <option value="+81">🇯🇵 +81</option>
+              <option value="+82">🇰🇷 +82</option>
+            </select>
+          </div>
+          <input type="tel" id="signupPhone" data-i18n-placeholder="phonePlaceholder" placeholder="12 345 6789" autocomplete="tel-national" inputmode="tel" pattern="^[0-9\-\s]{7,15}$" required>
+        </div>
+      </div>
       <div class="field" style="margin-bottom:10px;">
         <label data-i18n="password">Password</label>
         <div class="input-wrap">
@@ -7769,16 +7796,20 @@ function showAuthWelcome(){
 async function submitProductionSignup(button){
   const businessName=document.getElementById('signupBusinessName')?.value.trim();
   const email=document.getElementById('signupEmail')?.value.trim().toLowerCase();
+  const phoneCode=document.getElementById('signupPhoneCode')?.value||'+60';
+  const phoneDigits=document.getElementById('signupPhone')?.value.trim()||'';
   const password=document.getElementById('signupPw')?.value||'';
   const agreed=document.getElementById('agreeTerms')?.checked;
   setAuthStatus('signupAuthStatus');
   if(!businessName||businessName.length<2)return setAuthStatus('signupAuthStatus','Enter your business name.','error');
   if(!validEmail(email))return setAuthStatus('signupAuthStatus','Enter a valid email address.','error');
+  if(!/^[0-9\-\s]{7,15}$/.test(phoneDigits))return setAuthStatus('signupAuthStatus','Enter a valid phone number.','error');
   if(!PASSWORD_RULE.test(password))return setAuthStatus('signupAuthStatus','Password must be at least 8 characters, start with an uppercase letter, and include a digit.','error');
   if(!agreed)return setAuthStatus('signupAuthStatus','Accept the Terms of Service to continue.','error');
   setAuthBusy(button,true);setAuthStatus('signupAuthStatus','Creating your secure account…');
   try{
-    savePendingBusiness({name:businessName,email});
+    const phone=`${phoneCode}${phoneDigits.replace(/[^0-9]/g,'').replace(/^0+/,'')}`;
+    savePendingBusiness({name:businessName,email,phone});
     const result=await signUpWithPassword({email,password,metadata:{business_name:businessName,preferred_language:activeLanguage,timezone:'Asia/Kuala_Lumpur'}});
     if(result?.access_token){
       await hydrateAuthenticatedWorkspace();showAuthenticatedApp();toast('Account and business created.','success');
