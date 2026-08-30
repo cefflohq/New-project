@@ -4106,6 +4106,7 @@ function statusChip(status){
     ongoing:['chip-ongoing',t('ongoing')],
     active:['chip-active', t('active')],
     offline:['chip-offline', t('offline')],
+    pending:['chip-preparing', 'Pending'],
     delivering:['chip-delivering',t('delivering')],
     readyForPickup:['chip-preparing',t('readyForPickup')],
     pickedUp:['chip-pickedup',t('pickedUp')],
@@ -4118,6 +4119,7 @@ function statusChip(status){
 
 /* ===================== PAGE: DASHBOARD ===================== */
 function pageDashboard(){
+  if(isVendorProposed()) return pageDashboardProposed();
   const currentDeliveries = getCurrentDeliveries();
   const runProgress = computeRunProgress();
   const actionItems = [];
@@ -4367,6 +4369,7 @@ function pageOrderDetail(params){
   const steps=['pickup','delivery','complete'];
   const stepIndex={pickedUp:0,delivering:1,issue:1,completed:2}[o.status] ?? -1;
   const showProgress=['pickedUp','delivering','issue','completed'].includes(o.status);
+  if(isVendorProposed()) return pageOrderDetailProposed(o, steps, stepIndex, showProgress);
 
   return `
   ${innerHeader(o.id, {action:'openOrderMenu', actionIcon:'menu'})}
@@ -4471,7 +4474,7 @@ function markReadyForPickup(el){
 function openAssignRiderForOrder(el){
   const orderId = el.dataset.id;
   const order = state.orders.find(o=>o.id===orderId);
-  const zoneRiders = state.riders.filter(r=>r.status!=='offline');
+  const zoneRiders = state.riders.filter(r=>r.status==='active');
   openSheet(`
     <div class="sheet-title">${t('assignRider')}</div>
     ${zoneRiders.map(r=>`
@@ -5000,7 +5003,7 @@ function renderRiderListOnly(){
             <div class="order-meta">${r.plate} • ${r.zone}</div>
           </div>
         </div>
-        ${statusChip(r.status==='offline'?'offline':'active')}
+        ${statusChip(r.status)}
       </div>
       <div class="order-meta" style="margin-top:8px">${sessionOrders().filter(o=>o.riderId===r.id).length} ${t('ordersToday')}</div>
     </div>`).join('') : `<div class="empty-state">
@@ -5043,6 +5046,7 @@ function pageRiderProfile(params){
   const r = state.riders.find(x=>x.id===params.id);
   if(!r) return `${innerHeader('Rider')}<div class="content">${t('notFound')}</div>`;
   const deliveredOrders = state.orders.filter(o=>o.riderId===r.id && o.status==='completed');
+  if(isVendorProposed()) return pageRiderProfileProposed(r, deliveredOrders);
   return `
   <div class="module-page rider-profile-module">
     ${innerHeader(t('riderProfile'))}
@@ -5051,7 +5055,7 @@ function pageRiderProfile(params){
         <div class="avatar" style="width:64px;height:64px;font-size:20px">${r.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</div>
         <h2 class="t-h1" style="margin-top:12px">${r.name}</h2>
         <div class="t-caption">${r.plate} · ${r.employment}</div>
-        <div style="margin-top:8px">${statusChip(r.status==='offline'?'offline':'active')}</div>
+        <div style="margin-top:8px">${statusChip(r.status)}</div>
       </div>
 
       <button class="btn btn-primary" style="margin-bottom:18px" data-action="openAssignOrdersToRider" data-id="${r.id}">${t('assignOrders')}</button>
@@ -5901,6 +5905,7 @@ function openNotification(el){
 
 /* ===================== PAGE: SETTINGS ===================== */
 function pageSettings(){
+  if(isVendorProposed()) return pageSettingsProposed();
   const menu=[
     {icon:'card',label:t('subscription'),nav:'subscription'},
     {icon:'building',label:t('businessProfile'),nav:'businessProfile'},
@@ -6493,6 +6498,211 @@ const PAGES = {
 };
 
 /* ===================== GLOBAL EVENT DELEGATION ===================== */
+/* ===================== PROPOSED DESIGN (real production baseline) =====================
+   This redesign was approved as the real production direction; isVendorProposed()
+   is hardcoded true (no A/B toggle exists in production) so every page with a
+   Proposed variant renders it exclusively. The pre-redesign bodies of
+   pageDashboard/pageOrderDetail/pageRiderProfile/pageSettings are kept in place,
+   unreachable, only as a rollback reference -- remove them once this design has
+   been in production long enough that the fallback is no longer needed. */
+function isVendorProposed(){ return true; }
+let vendorAppearance = (()=>{ try{return localStorage.getItem('cefflo_preview_vendor_appearance')||'light';}catch(err){return 'light';} })();
+function applyVendorAppearance(){
+  const resolved=vendorAppearance==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):vendorAppearance;
+  document.body.dataset.vendorTheme=resolved;
+}
+function setVendorAppearance(el){
+  vendorAppearance=el.dataset.theme||'light';
+  try{localStorage.setItem('cefflo_preview_vendor_appearance',vendorAppearance);}catch(err){}
+  applyVendorAppearance();render();
+}
+function setVendorDarkMode(){
+  vendorAppearance=document.body.dataset.vendorTheme==='dark'?'light':'dark';
+  try{localStorage.setItem('cefflo_preview_vendor_appearance',vendorAppearance);}catch(err){}
+  applyVendorAppearance();render();
+}
+let vendorNotificationsEnabled=true;
+function toggleVendorNotifications(){vendorNotificationsEnabled=!vendorNotificationsEnabled;render();}
+function openPrivacyTerms(){
+  openSheet(`<div class="sheet-title">Privacy &amp; Terms</div><div class="opt-row" data-action="openPrivacyPolicyFromSheet"><div><div class="opt-title">Privacy Policy</div><div class="opt-sub">How we collect and protect data</div></div><span class="chev">${ic('chev')}</span></div><div class="opt-row" data-action="openTermsFromSheet"><div><div class="opt-title">Terms of Service</div><div class="opt-sub">Rules for using CEFFLO</div></div><span class="chev">${ic('chev')}</span></div>`);
+}
+function openPrivacyPolicyFromSheet(){closeSheet();navigate('privacyPolicy');}
+function openTermsFromSheet(){closeSheet();navigate('termsOfService');}
+
+function pageDashboardProposed(){
+  const currentDeliveries=getCurrentDeliveries();
+  const displayRiders=state.riders.slice(0,4).map((r,index)=>{
+    const delivery=currentDeliveries.find(d=>d.riderId===r.id);
+    const order=delivery?.orders?.[0]||state.orders.find(o=>o.riderId===r.id);
+    return {r,orderId:order?.id||`CF-${String(1024+index).padStart(4,'0')}`,eta:delivery?.etaMinutes||[18,25,32,40][index],picked:index%2===1};
+  });
+  const actions=[];
+  const wrongAddr=state.orders.find(o=>o.status==='issue');
+  actions.push({icon:'alert',text:wrongAddr?`${wrongAddr.id} ${t('deliveryIssueReported')}`:'CF-0127 has a delivery issue reported',nav:'orders',params:{tab:'issue'}});
+  const offline=state.riders.find(r=>r.status==='offline');
+  actions.push({icon:'alert',text:`${t('riderLabel')} ${offline?.name||'Farid Aziz'} ${t('riderOfflineIn')} ${offline?.zone||'Zone D'}`,nav:'riders'});
+  actions.push({icon:'alert',text:`${Math.max(4,state.orders.filter(o=>o.payment==='Pending').length)} orders awaiting payment`,nav:'orders',params:{tab:'ongoing'}});
+  return `<div class="vendor-dashboard-v2">
+    <header class="vd2-header">
+      <button class="vd2-icon" data-action="openSideMenu" aria-label="Menu">${ic('menu')}</button>
+      <div class="vd2-vendor-name">${state.storeName}</div>
+      <button class="vd2-icon vd2-bell" data-nav="notifications" aria-label="Notifications">${ic('bell')}<i></i></button>
+    </header>
+    <main class="vd2-main">
+      <section class="vd2-summary">
+        <div class="vd2-live"><i></i>${t('live')}</div>
+        <div class="vd2-kpis">
+          <button data-nav="orders" data-navparams='{"tab":"ongoing"}'><strong>${Math.max(12,totalOrders())}</strong><span>${t('orders')}</span></button>
+          <button data-nav="riders"><strong>${Math.max(6,activeRidersCount())}</strong><span>${t('riders')}</span></button>
+          <button data-nav="orders" data-navparams='{"tab":"issue"}'><strong>${Math.max(2,issuesCount())}</strong><span>${t('issues')}</span></button>
+          <button data-nav="orders" data-navparams='{"tab":"completed"}'><strong>${Math.max(75,completedPct())}%</strong><span>${t('completed')}</span></button>
+        </div>
+      </section>
+      <section class="vd2-section">
+        <div class="vd2-section-head"><h2>${t('currentDeliveries')}</h2><button data-nav="orders" data-navparams='{"tab":"ongoing"}'>${t('seeAll')}</button></div>
+        <div class="vd2-deliveries">${displayRiders.map(({r,orderId,eta,picked},index)=>`<button class="vd2-delivery" data-nav="riderProfile" data-navparams='{"id":"${r.id}"}'>
+          <span class="vd2-avatar vd2-avatar-${index}">${r.photo||r.avatar||r.profilePhoto?`<img src="${r.photo||r.avatar||r.profilePhoto}" alt="${r.name}">`:r.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</span>
+          <span class="vd2-rider"><b>${r.name}</b><small>#${orderId} · ${r.zone}</small></span>
+          <span class="vd2-chip ${picked?'picked':''}">${picked?'PICKED UP':'ON THE WAY'}</span>
+          <span class="vd2-eta"><small>ETA</small><b>${eta} min</b></span>
+        </button>`).join('')}</div>
+      </section>
+      <section class="vd2-section vd2-actions">
+        <div class="vd2-section-head"><h2>${t('actionRequired')} <em>${actions.length}</em></h2></div>
+        ${actions.map(a=>`<button class="vd2-action" data-nav="${a.nav}" data-navparams='${JSON.stringify(a.params||{})}'><span>${ic(a.icon)}</span><b>${a.text}</b>${ic('chev')}</button>`).join('')}
+      </section>
+    </main>
+  </div>`;
+}
+
+function pageOrderDetailProposed(o, steps, stepIndex, showProgress){
+  return `
+  ${innerHeader(o.id, {action:'openOrderMenu', actionIcon:'menu'})}
+  <div class="content">
+    ${showProgress?`
+    <div class="section">
+      <div class="section-title">${t('deliveryProgress')}</div>
+      <div class="progress-track">
+        ${steps.map((s,i)=>{
+          const isCompletedOrder=o.status==='completed';
+          const done=isCompletedOrder || i<stepIndex;
+          const current=!isCompletedOrder && i===stepIndex;
+          return `
+          <div class="p-step">
+            <div class="p-line ${isCompletedOrder || i<=stepIndex?'done':''}"></div>
+            <div class="p-circle ${done?'done':(current?'current':'')}">${done?ic('check'):(i+1)}</div>
+            <div class="p-label">${t(s)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`:''}
+
+    <div class="section">
+      <div class="section-title">${t('orderItems')}</div>
+      <div class="card bordered">
+        ${o.items.map(it=>`<div class="stat-inline"><span class="label">${it.name} ×${it.qty}</span></div>`).join('')}
+        <div class="stat-inline"><span class="label" style="font-weight:600;color:var(--text-main)">${t('total')}</span><span class="val">RM${o.total}</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <span>${t('customerDetail')}</span>
+        <div class="rp-title-actions">
+          <button class="rp-icon-btn rp-icon-btn-sm rp-icon-whatsapp" data-action="simWhatsapp" data-name="${o.customer}" data-phone="${o.phone}" aria-label="WhatsApp">${ic('whatsapp')}</button>
+          <button class="rp-icon-btn rp-icon-btn-sm rp-icon-call" data-action="simCall" data-name="${o.customer}" data-phone="${o.phone}" aria-label="${t('call')}">${ic('call')}</button>
+        </div>
+      </div>
+      <div class="card bordered rp-combined">
+        <div class="stat-inline"><span class="label">${t('nameLabel')}</span><span class="val">${o.customer}</span></div>
+        <div class="stat-inline"><span class="label">${t('phoneLabel')}</span><span class="val">${o.phone}</span></div>
+        <div class="stat-inline"><span class="label">${t('addressLabel')}</span><span class="val" style="text-align:right;max-width:67%">${o.address}</span></div>
+        ${o.note?`<div class="stat-inline"><span class="label">${t('notes')}</span><span class="val" style="text-align:right;max-width:67%">${o.note}</span></div>`:''}
+        ${o.riderId?`
+        <div class="stat-inline"><span class="label">${t('riderLabel')}</span><span class="val">${o.riderName||'—'}</span></div>
+        <div class="stat-inline"><span class="label">${t('zone')}</span><span class="val">${o.zone}</span></div>`:''}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">${t('actions')}</div>
+      ${!o.approvedAt?`<button class="btn btn-primary" style="margin-bottom:10px" data-action="approveOrderAction" data-id="${o.id}">Approve Order</button>`:''}
+      ${o.ratingSubmitted?`<div class="card bordered" style="margin-bottom:10px"><div class="stat-inline"><span class="label">Customer Rating</span><span class="val">Submitted</span></div></div>`:''}
+      ${!o.riderId?`<button class="btn btn-primary" style="margin-bottom:10px" data-action="openAssignRiderForOrder" data-id="${o.id}">${t('assignRider')}</button>`:
+      `<button class="btn btn-secondary" style="margin-bottom:10px" data-action="openAssignRiderForOrder" data-id="${o.id}">${t('changeRider')}</button>`}
+      <button class="btn btn-secondary" style="margin-bottom:10px" data-action="openReportIssue" data-id="${o.id}">${t('reportIssue')}</button>
+      ${o.status==='issue'?`<button class="btn btn-secondary" data-action="openReschedule" data-id="${o.id}">${t('scheduleRedelivery')}</button>`:''}
+    </div>
+  </div>`;
+}
+
+function pageRiderProfileProposed(r, deliveredOrders){
+  return `
+  <div class="module-page rider-profile-module">
+    ${innerHeader(t('riderProfile'))}
+    <div class="content">
+      <div class="center-col" style="padding:8px 0 18px">
+        <div class="avatar" style="width:64px;height:64px;font-size:20px">${r.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</div>
+        <h2 class="t-h1" style="margin-top:12px">${r.name}</h2>
+        <div class="t-caption">${r.plate} · ${r.employment}</div>
+        <div style="margin-top:8px">${statusChip(r.status)}</div>
+      </div>
+
+      <div class="rp-action-row">
+        <button class="btn btn-primary rp-assign-btn" data-action="openAssignOrdersToRider" data-id="${r.id}">${t('assignOrders')}</button>
+        <button class="rp-icon-btn rp-icon-call" data-action="simCall" data-name="${r.name}" data-phone="${r.phone}" aria-label="${t('call')}">${ic('call')}</button>
+        <button class="rp-icon-btn rp-icon-whatsapp" data-action="simWhatsapp" data-name="${r.name}" data-phone="${r.phone}" aria-label="WhatsApp">${ic('whatsapp')}</button>
+      </div>
+
+      <div class="section-title">${t('riderInfo')}</div>
+      <div class="card bordered rp-combined">
+        <div class="rp-stats-row">
+          <div class="rp-stat"><span class="rp-stat-value">${r.deliveredToday}</span><span class="rp-stat-label">${t('deliveredToday')}</span></div>
+          <div class="rp-stat success"><span class="rp-stat-value">${r.successRate}</span><span class="rp-stat-label">${t('successRate')}</span></div>
+          <div class="rp-stat"><span class="rp-stat-value">${r.avgTime}</span><span class="rp-stat-label">${t('avgTime')}</span></div>
+          <div class="rp-stat issue"><span class="rp-stat-value">${r.issuesCount}</span><span class="rp-stat-label">${t('issues')}</span></div>
+        </div>
+        <div class="rp-divider"></div>
+        <div class="stat-inline"><span class="label">${t('zoneExperience')}</span><span class="val">${r.zoneExp}</span></div>
+        <div class="stat-inline"><span class="label">${t('defaultMapApp')}</span><span class="val">${r.mapApp || t('notSet')}</span></div>
+        <div class="stat-inline"><span class="label">${t('phoneLabel')}</span><span class="val">${r.phone}</span></div>
+        <div class="stat-inline"><span class="label">${t('joined')}</span><span class="val">${r.joined}</span></div>
+      </div>
+
+      <div class="section-title">${t('historyDelivered')}</div>
+      ${deliveredOrders.length? deliveredOrders.map(o=>`
+        <div class="card bordered" data-nav="orderDetail" data-navparams='{"id":"${o.id}"}'>
+          <div class="row-between"><span class="order-id">${o.id}</span>${statusChip('completed')}</div>
+          <div class="order-meta">${o.customer} • ${o.time}</div>
+        </div>`).join('') : `<div class="t-caption">${t('noDelivered')}</div>`}
+
+      <div class="rp-deactivate-card">
+        <button class="rp-deactivate-btn" data-action="openDeactivateRider" data-id="${r.id}">${t('deactivateRider')}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function pageSettingsProposed(){
+  const row=(icon,title,nav,action='')=>`<button class="vs2-row" ${action?`data-action="${action}"`:`data-nav="${nav}"`}><span class="vs2-row-icon">${ic(icon)}</span><span><b>${title}</b></span>${ic('chev')}</button>`;
+  const toggle=(active,action,label)=>`<button class="vs2-toggle ${active?'active':''}" data-action="${action}" role="switch" aria-checked="${active}" aria-label="${label}"><i></i></button>`;
+  const dark=document.body.dataset.vendorTheme==='dark';
+  return `<div class="vendor-settings-v2">
+    <header class="vs2-header"><button class="back-btn" data-action="goBack" aria-label="Back">${ic('back')}</button><h1>${t('settings')}</h1><button class="vs2-notif" data-nav="notifications">${ic('bell')}<i></i></button></header>
+    <main class="vs2-main">
+      <section class="vs2-profile-card"><div class="vs2-logo">${state.businessLogo?`<img src="${state.businessLogo}" alt="${state.storeName}">`:'DB'}</div><div><h2>${state.storeName}</h2><p>Home Food Vendor</p><span>${ic('check')} Verified Vendor</span></div><button class="vs2-edit-btn" data-nav="businessProfile" aria-label="Edit Profile">${ic('edit')}</button></section>
+      <section class="vs2-group">
+        <div class="vs2-row"><span class="vs2-row-icon">${ic('moon')}</span><span><b>Dark Mode</b></span>${toggle(dark,'setVendorDarkMode','Dark Mode')}</div>
+        <div class="vs2-row"><span class="vs2-row-icon">${ic('bell')}</span><span><b>Notifications</b></span>${toggle(vendorNotificationsEnabled,'toggleVendorNotifications','Notifications')}</div>
+        <button class="vs2-row" data-nav="language"><span class="vs2-row-icon">${ic('globe')}</span><span><b>Language</b></span><span class="vs2-row-tail">English ${ic('chev')}</span></button>
+        ${row('user','Team','','openTeamScreen')}${row('card','Subscription Plan','subscription')}${row('help','Help & Support','helpSupport')}${row('privacy','Privacy & Terms','', 'openPrivacyTerms')}${row('info','About CEFFLO','appVersion')}
+      </section>
+      <button class="vs2-signout" data-action="logoutConfirm">${ic('logout')}<span>Sign Out</span></button>
+      <div class="vs2-build">CEFFLO v1.2.0</div>
+    </main>
+  </div>`;
+}
+
 const ACTIONS = {
   goBack, openSideMenu, openAddOrder, setOrdersTab, toggleOrdersSearch,
   openOrderMenu, simWhatsapp, simCall, markReadyForPickup, openAssignRiderForOrder, confirmAssignRiderOrder,
@@ -6510,6 +6720,8 @@ const ACTIONS = {
   openCompleteStopSheet, simulatePodPhoto, confirmMarkDelivered,
   setReportRange, openExportSheet, simulateExport,
   setNotifTab, markAllRead, openNotification,
+  setVendorAppearance, setVendorDarkMode, toggleVendorNotifications,
+  openPrivacyTerms, openPrivacyPolicyFromSheet, openTermsFromSheet,
   openSettingsExport, logoutConfirm, confirmLogout, deleteAccountConfirm, confirmDeleteAccount,
   simulateLogoUpload, saveBusinessProfile,
   selectLanguageOption, saveLanguage,

@@ -13,7 +13,7 @@
     { "source": "/sw.js", "has": [{ "type": "host", "value": "rider.cefflo.com" }], "destination": "/rider/sw.js" },
     { "source": "/icons/:path*", "has": [{ "type": "host", "value": "rider.cefflo.com" }], "destination": "/rider/icons/:path*" },
     { "source": "/:path*", "has": [{ "type": "host", "value": "rider.cefflo.com" }], "destination": "/rider/:path*" },
-    { "source": "/:path*", "has": [{ "type": "host", "value": "track.cefflo.com" }], "destination": "/customer/:path*" }
+    { "source": "/:path*", "has": [{ "type": "host", "value": "tracking.cefflo.com" }], "destination": "/customer/:path*" }
   ],
   "headers": [
     {

@@ -1,11 +1,11 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// Known-live CEFFLO Customer tracking origin (verified reachable this
-// session). Production's real tracking domain is not yet attached/resolving
-// (see docs/cefflo/PHASE_1_DEPLOYMENT_DOMAIN_MAP.md) and is deliberately NOT
-// guessed here -- it must be added via CEFFLO_TRACKING_CORS_ORIGINS once
-// established, not hard-coded speculatively.
+// tracking.cefflo.com is the canonical Customer Tracking hostname (attached
+// and Valid in Vercel's domain config); the staging preview origin is kept
+// alongside it for staging verification. Any other environment/origin still
+// comes only from CEFFLO_TRACKING_CORS_ORIGINS, never guessed here.
 const DEFAULT_ALLOWED_ORIGINS = [
+  'https://tracking.cefflo.com',
   'https://new-project-git-staging-cefflohq26-6353s-projects.vercel.app',
 ];
 

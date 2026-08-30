@@ -2,6 +2,7 @@
 dist/
 .env.*
 !.env.example
+!.env.staging.example
 node_modules/
 coverage/
 *.log

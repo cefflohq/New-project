@@ -153,6 +153,13 @@
     // same-named fields, which this canonical hydration path always
     // overwrites (never left populated with fabricated values).
     state.zones = zones.map(mapZone);
+    // Real orders carry only zoneId (a real zones.id FK); every existing
+    // display site in this UI (Orders list, Order Detail, CSV export) reads
+    // a resolved zone NAME off order.zone, a field only the old mock
+    // order-creation flow ever set. Backfill it here, once, right after both
+    // real orders and real zones are hydrated -- otherwise every real order
+    // renders the zone column as the literal text "undefined".
+    state.orders.forEach(order => { order.zone = state.zones.find(z => z.id === order.zoneId)?.name || t('unassigned'); });
     state.deliverySessions = sessions.map(mapSession);
     // S4-06.7 (P1): real assignment/stop data, replacing the two arrays this
     // path previously always hardcoded empty. riderAssignments carries the
@@ -421,7 +428,7 @@
   ACTIONS.openCustomerTracking = function (el) {
     const order = state.orders.find(item => item.id === el.dataset.id);
     if (!order?.trackingToken) return toast('Tracking link is unavailable for this browser session.', 'error');
-    const trackingBase = location.hostname === 'vendor.cefflo.com' ? 'https://track.cefflo.com/' : '../customer/';
+    const trackingBase = location.hostname === 'vendor.cefflo.com' ? 'https://tracking.cefflo.com/' : '../customer/';
     window.open(`${trackingBase}?token=${encodeURIComponent(order.trackingToken)}`, '_blank', 'noopener');
   };
   if (api.session()?.access_token) {

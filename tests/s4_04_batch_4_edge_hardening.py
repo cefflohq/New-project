@@ -90,16 +90,16 @@ class TrackingPodCorsFunctionalTests(unittest.TestCase):
 
     def test_env_configured_origin_list_overrides_default_and_is_isolated(self):
         result = self._run_node(
-            "const allowed = resolveAllowedOrigins('https://track.cefflo.com, https://another.example.com');"
+            "const allowed = resolveAllowedOrigins('https://tracking.cefflo.com, https://another.example.com');"
             "var __RESULT__ = {"
             "  configured: allowed,"
-            "  trackAllowed: isOriginAllowed('https://track.cefflo.com', allowed),"
+            "  trackingAllowed: isOriginAllowed('https://tracking.cefflo.com', allowed),"
             "  stagingStillAllowedByAccident: isOriginAllowed('https://new-project-git-staging-cefflohq26-6353s-projects.vercel.app', allowed)"
             "};"
         )
-        self.assertIn("https://track.cefflo.com", result["configured"])
+        self.assertIn("https://tracking.cefflo.com", result["configured"])
         self.assertIn("https://another.example.com", result["configured"])
-        self.assertTrue(result["trackAllowed"])
+        self.assertTrue(result["trackingAllowed"])
         self.assertFalse(
             result["stagingStillAllowedByAccident"],
             "an explicit env-configured allowlist must fully replace the default, not merge with it",

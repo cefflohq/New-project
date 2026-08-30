@@ -68,6 +68,53 @@ npm run supabase:reset
 ambiguous, hosted, or Production targets. It reapplies only tracked migrations
 to the disposable local instance.
 
+## Daily development workflow: local vs staging
+
+The local Supabase Docker stack (10 containers) does not need to stay running
+between work sessions. `cefflo-staging` is a real, dedicated, non-Production
+Supabase project already used throughout Stage 4 for full staging acceptance
+— it is safe to use as the day-to-day remote backend target, subject to the
+sequencing rules below. Production remains categorically out of reach from
+either mode: see "Environment identity" above.
+
+**Daily default (no new/risky migration involved):**
+- Local Docker does not need to be running. Stop it when idle:
+  ```bash
+  npm run supabase:stop
+  ```
+- Point tests/tools at `cefflo-staging` by loading a local, untracked
+  `.env.staging` (copy `.env.staging.example`, fill in the real values —
+  `.env.staging` is already covered by `.gitignore`'s `.env.*` rule and is
+  never committed):
+  ```bash
+  set -a; source .env.staging; set +a
+  python3 tests/check_target_identity.py
+  ```
+
+**Any new or risky migration/schema change — always local first, never
+staging first:**
+1. Start local Supabase only when you actually need it:
+   ```bash
+   npm run supabase:start
+   ```
+2. Validate/reset/test the migration locally until it passes.
+3. Only after a full local PASS may the same migration be applied to and
+   verified against staging (`export CEFFLO_ENVIRONMENT=staging`, real ref,
+   the two mutation opt-ins, exactly as documented below).
+4. `cefflo-staging` is never the first place a new migration is tried.
+
+**Full checkpoint / release validation:**
+1. `npm run supabase:start`
+2. Run the required local integration/full E2E suite.
+3. Verify against staging where required (same suites, staging identity).
+4. `npm run supabase:stop` once validation is complete and local is no
+   longer needed.
+
+This workflow changes nothing about application behavior or the identity
+guard itself — it only changes when the local Docker stack happens to be
+running and which already-supported target (`local` vs `staging`) a given
+command's environment variables point at.
+
 ## Hosted staging/test readiness
 
 The database identity tools accept `local`, `staging`, and `test`. They never
@@ -129,7 +176,7 @@ Production custom-domain mapping uses one Vercel project and the hostname rewrit
 
 - `vendor.cefflo.com` → Vendor
 - `rider.cefflo.com` → Rider
-- `track.cefflo.com/?token=<tracking-token>` → Customer Tracking
+- `tracking.cefflo.com/?token=<tracking-token>` → Customer Tracking
 
 Attach all three domains to the same Vercel project, then configure their DNS records exactly as Vercel reports. Vendor and Rider are installable PWAs. Their service workers cache only the static application shell; navigation is network-first and Supabase/API traffic is never cached.
 
