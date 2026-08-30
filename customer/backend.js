@@ -30,7 +30,10 @@
       riderName: snapshot.rider_name || 'Your rider',
       estimatedArrival: snapshot.eta ? new Date(snapshot.eta).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
       deliveredAt: snapshot.completed_at ? new Date(snapshot.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
-      podPhoto: snapshot.status === 'delivered' && snapshot.pod_available ? await podUrl().catch(() => null) : null
+      podPhoto: snapshot.status === 'delivered' && snapshot.pod_available ? await podUrl().catch(() => null) : null,
+      // Invoice content is an immutable snapshot supplied by public_tracking.
+      // Never rebuild historical invoice content from mutable live order/store data.
+      invoiceSnapshot: snapshot.invoice_snapshot || null
     });
     if (snapshot.rating_submitted) {
       const form = document.getElementById('ratingForm');
