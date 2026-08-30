@@ -1584,6 +1584,18 @@ body{
   color:var(--text-secondary);
 }
 .auth-device .password-eye svg{width:21px;height:21px}
+.auth-device .btn-demo{
+  margin-top:10px;
+  border:1.5px solid var(--primary);
+  background:#FFFFFF;
+  color:var(--primary);
+  box-shadow:none;
+}
+.auth-device .btn-demo[hidden]{display:none!important}
+.auth-device .btn-demo:active{
+  transform:scale(.985);
+  background:var(--primary-tint);
+}
 
 /* Rider profile summary — one horizontal board */
 .rider-summary-board{
@@ -3034,6 +3046,7 @@ body{
 
       <div class="auth-inline-status" id="loginAuthStatus" role="status" aria-live="polite"></div>
       <button class="btn btn-primary" style="margin-top:20px;" onclick="submitProductionLogin(this)" data-i18n="login">Login</button>
+      <button class="btn btn-demo" id="vendorDemoButton" type="button" onclick="enterVendorDemo()" hidden>View Demo</button>
       <p class="footer-note" style="padding-top:16px;"><span data-i18n="noAccount">Don't have an account?</span> <span class="link" onclick="switchScreen('signup')" data-i18n="signUp">Sign Up</span></p>
     </div>
   </div>
@@ -7791,6 +7804,7 @@ window.CEFFLO_ENGINE.version=CEFFLO_ROUTE_VERSION;
    UI remains unchanged; all external writes still pass through repository/engine boundaries. */
 const CEFFLO_PRODUCTION_VERSION='6.0.0';
 const CEFFLO_RUNTIME_CONFIG=Object.freeze({
+  environment:window.CEFFLO_CONFIG?.environment||'',
   supabaseUrl:window.CEFFLO_CONFIG?.supabaseUrl||localStorage.getItem('cefflo_supabase_url')||'',
   supabaseAnonKey:window.CEFFLO_CONFIG?.supabaseAnonKey||localStorage.getItem('cefflo_supabase_anon_key')||'',
   schema:window.CEFFLO_CONFIG?.schema||'public',
@@ -7809,7 +7823,7 @@ state.auditLogs=Array.isArray(state.auditLogs)?state.auditLogs:[];
 state.riderLocations=Array.isArray(state.riderLocations)?state.riderLocations:[];
 state.syncOperations=Array.isArray(state.syncOperations)?state.syncOperations:[];
 
-function productionConfigured(){return /^https:\/\//.test(CEFFLO_RUNTIME_CONFIG.supabaseUrl)&&Boolean(CEFFLO_RUNTIME_CONFIG.supabaseAnonKey);}
+function productionConfigured(){return !window.ceffloDemoMode&&/^https:\/\//.test(CEFFLO_RUNTIME_CONFIG.supabaseUrl)&&Boolean(CEFFLO_RUNTIME_CONFIG.supabaseAnonKey);}
 backendConfigured=function(){return productionConfigured();};
 backendHeaders=function(extra={}){
   const token=productionState.authSession?.access_token||CEFFLO_RUNTIME_CONFIG.supabaseAnonKey;
@@ -8017,7 +8031,28 @@ function showAuthenticatedApp(){
   if(authEl)authEl.style.display='none';if(appEl)appEl.style.display='block';
   state.route={name:'dashboard',params:{}};state.history=[];render();
 }
+function isVendorDemoEnvironment(){
+  const environment=String(CEFFLO_RUNTIME_CONFIG.environment||'').toLowerCase();
+  const hostname=location.hostname.toLowerCase();
+  return environment==='staging'||hostname==='localhost'||hostname==='127.0.0.1'||hostname.includes('git-staging-');
+}
+function configureVendorDemoEntry(){
+  const button=document.getElementById('vendorDemoButton');
+  if(button)button.hidden=!isVendorDemoEnvironment();
+}
+function enterVendorDemo(){
+  if(!isVendorDemoEnvironment())return;
+  window.ceffloDemoMode=true;
+  state.storeName='Kopi Mak Long';
+  state.businessProfileCompleted=true;
+  state.accountDeleted=false;
+  state.route={name:'dashboard',params:{}};
+  state.history=[];
+  showAuthenticatedApp();
+  toast('Demo mode — no live data will be changed.','success');
+}
 function showAuthWelcome(){
+  window.ceffloDemoMode=false;
   const authEl=document.getElementById('authDevice');const appEl=document.getElementById('appDevice');
   if(appEl)appEl.style.display='none';if(authEl)authEl.style.display='block';switchScreen('welcome');
 }
@@ -8128,6 +8163,7 @@ ACTIONS.exitToAuth=exitToAuth;
 
 async function initializeSprint13(){
   await initializeProductionIntegration();
+  configureVendorDemoEntry();
   const callbackType=new URLSearchParams(location.hash.replace(/^#/,''))?.get('type');
   if(callbackType==='recovery'){consumeAuthCallback();showAuthWelcome();switchScreen('resetPassword');render();return;}
   const restored=await restoreProductionAuth();
