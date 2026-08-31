@@ -6170,22 +6170,66 @@ function pageCustomerTracking(params){
 
 /* ===================== PAGE: REPORTS ===================== */
 const reportsUiState = { range:'thisWeek' };
+function reportDateKey(value, timeZone=state.timezone||'Asia/Kuala_Lumpur'){
+  const date=value instanceof Date?value:new Date(value);
+  if(Number.isNaN(date.getTime())) return '';
+  try{
+    const parts=new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
+    const get=type=>parts.find(part=>part.type===type)?.value;
+    return `${get('year')}-${get('month')}-${get('day')}`;
+  }catch(error){ return ''; }
+}
+function reportPeriodKeys(range, now=new Date()){
+  const todayKey=reportDateKey(now);
+  if(!todayKey) return [];
+  const [year,month,day]=todayKey.split('-').map(Number);
+  const todayUtc=new Date(Date.UTC(year,month-1,day));
+  let startUtc=todayUtc;
+  if(range==='thisWeek'){
+    const mondayOffset=(todayUtc.getUTCDay()+6)%7;
+    startUtc=new Date(todayUtc); startUtc.setUTCDate(todayUtc.getUTCDate()-mondayOffset);
+  }else if(range==='thisMonth'){
+    startUtc=new Date(Date.UTC(year,month-1,1));
+  }
+  const keys=[];
+  for(let cursor=new Date(startUtc);cursor<=todayUtc;cursor.setUTCDate(cursor.getUTCDate()+1)){
+    keys.push(cursor.toISOString().slice(0,10));
+  }
+  return keys;
+}
+function getReportsSnapshot(range=reportsUiState.range, now=new Date()){
+  if(backendState.mode!=='remote') return null;
+  const periodKeys=reportPeriodKeys(range,now);
+  const allowedKeys=new Set(periodKeys);
+  const orders=state.orders.filter(order=>allowedKeys.has(reportDateKey(order.createdAt)));
+  const completed=orders.filter(order=>order.status==='completed');
+  const issues=orders.filter(order=>order.status==='issue');
+  const dailyCounts=periodKeys.map(key=>orders.filter(order=>reportDateKey(order.createdAt)===key).length);
+  const zoneCounts=state.zones.map(zone=>({id:zone.id,name:zone.name,count:orders.filter(order=>order.zoneId===zone.id).length}));
+  const riderCounts=state.riders.map(rider=>({id:rider.id,name:rider.name,count:completed.filter(order=>order.riderId===rider.id).length}));
+  return {
+    orders,total:orders.length,completed:completed.length,issues:issues.length,dailyCounts,zoneCounts,riderCounts,
+    completionRate:orders.length?Math.round(completed.length/orders.length*100):null
+  };
+}
 function pageReports(){
-  if(state.orders.length===0){
+  const report=getReportsSnapshot();
+  if(!report){
     return `${innerHeader(t('reports'))}
     <div class="content">
       <div class="empty-state">
         <div class="es-icon">${ic('chart')}</div>
         <h3>${t('noReportsYet')}</h3>
-        <p>${t('reportsAfterDelivery')}</p>
+        <p>Reports are available after the canonical Vendor workspace is connected.</p>
       </div>
     </div>`;
   }
-  const total = totalOrders();
-  const successRate = completedPct();
-  const trendVals = [80,95,70,110,90,128,105];
-  const max = Math.max(...trendVals);
-  const points = trendVals.map((v,i)=> `${(i/(trendVals.length-1))*300},${100-(v/max)*90}`).join(' ');
+  const trendMax=Math.max(0,...report.dailyCounts);
+  const points=report.dailyCounts.map((value,index)=>{
+    const x=report.dailyCounts.length===1?150:(index/(report.dailyCounts.length-1))*300;
+    const y=trendMax===0?100:100-(value/trendMax)*90;
+    return `${x},${y}`;
+  }).join(' ');
   return `
   ${innerHeader(t('reports'), {action:'openExportSheet', actionIcon:'export'})}
   <div class="content">
@@ -6195,10 +6239,10 @@ function pageReports(){
       <button class="tab-btn ${reportsUiState.range==='thisMonth'?'active':''}" data-action="setReportRange" data-r="thisMonth">${t('thisMonth')}</button>
     </div>
     <div class="kpi-grid" style="margin-bottom:16px">
-      <div class="kpi-card"><div class="kpi-val">${total}</div><div class="kpi-label">${t('totalOrders')}</div></div>
-      <div class="kpi-card done"><div class="kpi-val">${successRate}%</div><div class="kpi-label">${t('successRate')}</div></div>
-      <div class="kpi-card"><div class="kpi-val">24 min</div><div class="kpi-label">${t('avgDeliveryTime')}</div></div>
-      <div class="kpi-card issue"><div class="kpi-val">${issuesCount()}</div><div class="kpi-label">${t('issues')}</div></div>
+      <div class="kpi-card"><div class="kpi-val">${report.total}</div><div class="kpi-label">${t('totalOrders')}</div></div>
+      <div class="kpi-card done"><div class="kpi-val">${report.completionRate===null?'--':`${report.completionRate}%`}</div><div class="kpi-label">${t('successRate')}</div></div>
+      <div class="kpi-card"><div class="kpi-val">--</div><div class="kpi-label">${t('avgDeliveryTime')} · ${t('notSet')}</div></div>
+      <div class="kpi-card issue"><div class="kpi-val">${report.issues}</div><div class="kpi-label">${t('issues')}</div></div>
     </div>
     <div class="chart-wrap">
       <div class="t-caption" style="margin-bottom:10px">${t('ordersTrend')}</div>
@@ -6207,9 +6251,9 @@ function pageReports(){
       </svg>
     </div>
     <div class="section-title">${t('byZone')}</div>
-    ${state.zones.map(z=>`<div class="card bordered"><div class="row-between"><span class="t-body">${t('zone')} ${z.id}</span><span class="t-body" style="font-weight:600">${z.orderIds.length} ${t('ordersUnit')}</span></div></div>`).join('')}
+    ${report.zoneCounts.length?report.zoneCounts.map(zone=>`<div class="card bordered"><div class="row-between"><span class="t-body">${zone.name}</span><span class="t-body" style="font-weight:600">${zone.count} ${t('ordersUnit')}</span></div></div>`).join(''):`<div class="t-caption">${t('noReportsYet')}</div>`}
     <div class="section-title" style="margin-top:14px">${t('byRider')}</div>
-    ${state.riders.map(r=>`<div class="card bordered"><div class="row-between"><span class="t-body">${r.name}</span><span class="t-body" style="font-weight:600">${r.deliveredToday} ${t('deliveredCount')}</span></div></div>`).join('')}
+    ${report.riderCounts.length?report.riderCounts.map(rider=>`<div class="card bordered"><div class="row-between"><span class="t-body">${rider.name}</span><span class="t-body" style="font-weight:600">${rider.count} ${t('deliveredCount')}</span></div></div>`).join(''):`<div class="t-caption">${t('noReportsYet')}</div>`}
   </div>`;
 }
 function setReportRange(el){ reportsUiState.range = el.dataset.r; render(); }
@@ -6224,7 +6268,9 @@ function downloadBlob(filename,blob){
   const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
 function exportRows(){
-  return state.orders.map(o=>({OrderID:o.id,Customer:o.customer,Phone:o.phone,Address:o.address,Zone:o.zone,Rider:o.riderName||'',Status:o.status,Payment:o.payment,Total:o.total}));
+  const report=getReportsSnapshot();
+  if(!report) throw new Error('Canonical Vendor workspace is not connected.');
+  return report.orders.map(o=>({OrderID:o.id,Customer:o.customer,Phone:o.phone,Address:o.address,Zone:o.zone,Rider:o.riderName||'',Status:o.status,CreatedAt:o.createdAt||'',CompletedAt:o.completedAt||''}));
 }
 async function simulateExport(el){
   const fmt=(el.dataset.fmt||'CSV').toUpperCase(); closeSheet();
@@ -7219,7 +7265,7 @@ function pageSettingsProposed(){
         <div class="vs2-row"><span class="vs2-row-icon">${ic('moon')}</span><span><b>Dark Mode</b></span>${toggle(dark,'setVendorDarkMode','Dark Mode')}</div>
         <div class="vs2-row"><span class="vs2-row-icon">${ic('bell')}</span><span><b>Notifications</b></span>${toggle(vendorNotificationsEnabled,'toggleVendorNotifications','Notifications')}</div>
         <button class="vs2-row" data-nav="language"><span class="vs2-row-icon">${ic('globe')}</span><span><b>Language</b></span><span class="vs2-row-tail">English ${ic('chev')}</span></button>
-        ${row('user','Team','team')}${row('card','Subscription Plan','subscription')}${row('help','Help & Support','helpSupport')}${row('privacy','Privacy & Terms','', 'openPrivacyTerms')}${row('info','About CEFFLO','appVersion')}
+        ${row('user','Team','team')}${row('report',t('reports'),'reports')}${row('card','Subscription Plan','subscription')}${row('help','Help & Support','helpSupport')}${row('privacy','Privacy & Terms','', 'openPrivacyTerms')}${row('info','About CEFFLO','appVersion')}
       </section>
       <button class="vs2-signout" data-action="logoutConfirm">${ic('logout')}<span>Sign Out</span></button>
       <div class="vs2-build">CEFFLO v1.2.0</div>
