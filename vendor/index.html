@@ -8214,8 +8214,8 @@ const CEFFLO_RUNTIME_CONFIG=Object.freeze({
   gpsMinDistanceMeters:Number(window.CEFFLO_CONFIG?.gpsMinDistanceMeters||25)
 });
 const productionState={
-  status:'initializing',online:navigator.onLine,authSession:null,user:null,realtimeStatus:'idle',
-  gpsStatus:'idle',syncQueueLength:0,lastRealtimeAt:null,lastGpsAt:null,lastHealthCheckAt:null,
+  status:'initializing',online:navigator.onLine,authSession:null,user:null,
+  gpsStatus:'idle',syncQueueLength:0,lastGpsAt:null,lastHealthCheckAt:null,
   lastError:null,metrics:{requests:0,failures:0,totalLatencyMs:0,lastLatencyMs:0}
 };
 state.auditLogs=Array.isArray(state.auditLogs)?state.auditLogs:[];
@@ -8269,26 +8269,10 @@ async function authRequest(path,payload){
 }
 function storeAuthSession(session){productionState.authSession=session||null;productionState.user=session?.user||null;if(session)localStorage.setItem('cefflo_auth_session',JSON.stringify(session));else localStorage.removeItem('cefflo_auth_session');window.CEFFLO?.setSession?.(session||null);}
 function restoreAuthSession(){try{const session=JSON.parse(localStorage.getItem('cefflo_auth_session')||'null');if(session?.access_token)storeAuthSession(session);}catch{}return productionState.authSession;}
-async function signInWithPassword({email,password}){const session=await authRequest('token?grant_type=password',{email,password});storeAuthSession(session);await hydrateOperationalStateFromBackend();startRealtime();return session;}
+async function signInWithPassword({email,password}){const session=await authRequest('token?grant_type=password',{email,password});storeAuthSession(session);await hydrateOperationalStateFromBackend();return session;}
 async function signUpWithPassword({email,password,metadata={}}){const result=await authRequest(`signup?redirect_to=${encodeURIComponent(authRedirectUrl())}`,{email,password,data:metadata});if(result.access_token)storeAuthSession(result);return result;}
 async function refreshAuthSession(){const token=productionState.authSession?.refresh_token;if(!token)return null;const session=await authRequest('token?grant_type=refresh_token',{refresh_token:token});storeAuthSession(session);return session;}
-async function productionSignOut(){try{if(productionState.authSession?.access_token)await fetch(`${CEFFLO_RUNTIME_CONFIG.supabaseUrl}/auth/v1/logout`,{method:'POST',headers:{apikey:CEFFLO_RUNTIME_CONFIG.supabaseAnonKey,Authorization:`Bearer ${productionState.authSession.access_token}`}});}finally{stopRealtime();stopRiderGps();storeAuthSession(null);}}
-
-let supabaseClient=null,realtimeChannels=[];
-async function loadSupabaseClient(){
-  if(supabaseClient||!productionConfigured())return supabaseClient;
-  if(!window.supabase){await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';s.onload=resolve;s.onerror=()=>reject(new Error('Unable to load Supabase client.'));document.head.appendChild(s);});}
-  supabaseClient=window.supabase.createClient(CEFFLO_RUNTIME_CONFIG.supabaseUrl,CEFFLO_RUNTIME_CONFIG.supabaseAnonKey,{auth:{persistSession:false,autoRefreshToken:false},db:{schema:CEFFLO_RUNTIME_CONFIG.schema}});return supabaseClient;
-}
-function stopRealtime(){realtimeChannels.forEach(channel=>{try{supabaseClient?.removeChannel(channel);}catch{}});realtimeChannels=[];productionState.realtimeStatus='stopped';}
-async function startRealtime(){
-  if(!productionConfigured()||!CEFFLO_RUNTIME_CONFIG.realtimeEnabled)return false;
-  try{const client=await loadSupabaseClient();stopRealtime();productionState.realtimeStatus='connecting';
-    const tables=['delivery_sessions','zones','riders','rider_assignments','orders','delivery_stops','issues','notifications','rider_locations'];
-    tables.forEach(table=>{const channel=client.channel(`cefflo:${state.businessId}:${table}`).on('postgres_changes',{event:'*',schema:CEFFLO_RUNTIME_CONFIG.schema,table,filter:`business_id=eq.${state.businessId}`},()=>{productionState.lastRealtimeAt=new Date().toISOString();clearTimeout(startRealtime.refreshTimer);startRealtime.refreshTimer=setTimeout(async()=>{await hydrateOperationalStateFromBackend();requestFrontendRender();},120);}).subscribe(status=>{productionState.realtimeStatus=status.toLowerCase();});realtimeChannels.push(channel);});
-    return true;
-  }catch(error){productionState.realtimeStatus='error';productionState.lastError=error.message;return false;}
-}
+async function productionSignOut(){try{if(productionState.authSession?.access_token)await fetch(`${CEFFLO_RUNTIME_CONFIG.supabaseUrl}/auth/v1/logout`,{method:'POST',headers:{apikey:CEFFLO_RUNTIME_CONFIG.supabaseAnonKey,Authorization:`Bearer ${productionState.authSession.access_token}`}});}finally{window.CEFFLO_VENDOR?.stopRealtime?.();stopRiderGps();storeAuthSession(null);}}
 
 async function uploadProductionFile({file,path,bucket=CEFFLO_RUNTIME_CONFIG.storageBucket,upsert=true}){
   if(!file)throw new Error('A file is required.');if(!productionConfigured())throw new Error('Storage is not configured.');
@@ -8327,17 +8311,17 @@ function customerTrackingSnapshot(orderId){
   const stop=state.deliveryStops.find(item=>item.orderId===order.id);const rider=state.riders.find(item=>item.id===order.riderId);const issue=state.issues.find(item=>item.orderId===order.id&&item.status!=='resolved');
   return {orderId:order.id,status:order.status,customerName:order.customerName,zone:order.zone||state.zones.find(z=>z.id===order.zoneId)?.name||null,rider:rider?{id:rider.id,name:rider.name}:null,sequence:stop?.sequence||order.deliverySequence||null,estimatedArrivalAt:stop?.estimatedArrivalAt||order.estimatedArrivalAt||null,etaMinutes:minutesUntil(stop?.estimatedArrivalAt||order.estimatedArrivalAt),issue:issue?{type:issue.type,status:issue.status}:null,completedAt:order.completedAt||stop?.completedAt||null,podUrl:stop?.podUrl||order.podPhoto||null,updatedAt:order.updatedAt||order.createdAt};
 }
-function productionHealth(){const avg=productionState.metrics.requests?Math.round(productionState.metrics.totalLatencyMs/productionState.metrics.requests):0;productionState.lastHealthCheckAt=new Date().toISOString();return {version:CEFFLO_PRODUCTION_VERSION,configured:productionConfigured(),online:navigator.onLine,backendStatus:backendState.status,realtimeStatus:productionState.realtimeStatus,gpsStatus:productionState.gpsStatus,queueLength:state.syncOperations.length,requestCount:productionState.metrics.requests,failureCount:productionState.metrics.failures,averageLatencyMs:avg,lastSyncedAt:backendState.lastSyncedAt,lastRealtimeAt:productionState.lastRealtimeAt,lastGpsAt:productionState.lastGpsAt,integrity:window.CEFFLO_ENGINE.validate(),routeIntegrity:window.CEFFLO_ENGINE.route.selectors.routeIntegrity()};}
+function productionHealth(){const avg=productionState.metrics.requests?Math.round(productionState.metrics.totalLatencyMs/productionState.metrics.requests):0;productionState.lastHealthCheckAt=new Date().toISOString();return {version:CEFFLO_PRODUCTION_VERSION,configured:productionConfigured(),online:navigator.onLine,backendStatus:backendState.status,gpsStatus:productionState.gpsStatus,queueLength:state.syncOperations.length,requestCount:productionState.metrics.requests,failureCount:productionState.metrics.failures,averageLatencyMs:avg,lastSyncedAt:backendState.lastSyncedAt,lastGpsAt:productionState.lastGpsAt,integrity:window.CEFFLO_ENGINE.validate(),routeIntegrity:window.CEFFLO_ENGINE.route.selectors.routeIntegrity()};}
 
-window.addEventListener('online',()=>{productionState.online=true;flushOfflineQueue();startRealtime();});
-window.addEventListener('offline',()=>{productionState.online=false;productionState.realtimeStatus='offline';});
-window.addEventListener('beforeunload',()=>{stopRealtime();stopRiderGps();});
+window.addEventListener('online',()=>{productionState.online=true;flushOfflineQueue();});
+window.addEventListener('offline',()=>{productionState.online=false;});
+window.addEventListener('beforeunload',()=>{stopRiderGps();});
 
 async function initializeProductionIntegration(){
   restoreOfflineQueue();restoreAuditLogs();restoreAuthSession();
   await initializeProductionRepository();
-  if(productionConfigured()){await flushOfflineQueue();await startRealtime();productionState.status='ready';}else productionState.status='configuration-required';
-  window.CEFFLO_ENGINE.production={version:CEFFLO_PRODUCTION_VERSION,config:CEFFLO_RUNTIME_CONFIG,state:productionState,auth:{signInWithPassword,signUpWithPassword,refreshAuthSession,signOut:productionSignOut,restore:restoreAuthSession},realtime:{start:startRealtime,stop:stopRealtime},storage:{upload:uploadProductionFile},gps:{start:startRiderGps,stop:stopRiderGps},sync:{flush:flushOfflineQueue,queue:queueOfflineSync},audit:{list:()=>[...state.auditLogs],append:appendAuditLog},tracking:{snapshot:customerTrackingSnapshot},monitoring:{health:productionHealth}};
+  if(productionConfigured()){await flushOfflineQueue();productionState.status='ready';}else productionState.status='configuration-required';
+  window.CEFFLO_ENGINE.production={version:CEFFLO_PRODUCTION_VERSION,config:CEFFLO_RUNTIME_CONFIG,state:productionState,auth:{signInWithPassword,signUpWithPassword,refreshAuthSession,signOut:productionSignOut,restore:restoreAuthSession},storage:{upload:uploadProductionFile},gps:{start:startRiderGps,stop:stopRiderGps},sync:{flush:flushOfflineQueue,queue:queueOfflineSync},audit:{list:()=>[...state.auditLogs],append:appendAuditLog},tracking:{snapshot:customerTrackingSnapshot},monitoring:{health:productionHealth}};
   window.CEFFLO_BACKEND.config=CEFFLO_RUNTIME_CONFIG;window.CEFFLO_BACKEND.sync=syncOperationalStateToBackend;
   return productionState;
 }
@@ -8422,7 +8406,6 @@ async function hydrateAuthenticatedWorkspace(){
   window.CEFFLO?.setSession?.(productionState.authSession);
   if(window.CEFFLO_VENDOR?.hydrate) await window.CEFFLO_VENDOR.hydrate();
   else await hydrateOperationalStateFromBackend();
-  await startRealtime();
   return selected;
 }
 function showAuthenticatedApp(){

@@ -191,6 +191,14 @@
     return true;
   }
 
+  let unsubscribeRealtime = null;
+  // Minimal public teardown: unsubscribes the active Vendor realtime channel
+  // (if any), clears the reference, and is safe to call with none active --
+  // used by Vendor logout so no old-business channel outlives the session.
+  function stopRealtime() {
+    if (unsubscribeRealtime) { try { unsubscribeRealtime(); } catch (error) { /* ignore */ } }
+    unsubscribeRealtime = null;
+  }
   function subscribe(businessId, refresh) {
     const client = window.supabase?.createClient(api.config.supabaseUrl, api.config.supabaseAnonKey, {
       global: { headers: { Authorization: `Bearer ${api.session()?.access_token || api.config.supabaseAnonKey}` } }
@@ -217,7 +225,7 @@
     listOrders, listRiders, listRatings, listZones, listDeliverySessions,
     createTeamInvitation, revokeTeamInvitation, createRiderInvitation, revokeRiderInvitation, approvePendingRider,
     listBusinessMembers, listTeamInvitations, listRiderInvitations,
-    hydrate: hydrateCanonicalWorkspace, hydrateTeam: hydrateTeamWorkspace, subscribe
+    hydrate: hydrateCanonicalWorkspace, hydrateTeam: hydrateTeamWorkspace, subscribe, stopRealtime
   });
   hydrateOperationalStateFromBackend = hydrateCanonicalWorkspace;
   syncOperationalStateToBackend = async () => true;
@@ -432,7 +440,6 @@
     window.open(`${trackingBase}?token=${encodeURIComponent(order.trackingToken)}`, '_blank', 'noopener');
   };
   if (api.session()?.access_token) {
-    let unsubscribeRealtime = null;
     const restore = () => hydrateCanonicalWorkspace().then(() => {
       render();
       // S4-06.7 (P6): subscribe exactly once, after the first hydrate has
