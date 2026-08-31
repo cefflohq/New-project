@@ -3954,7 +3954,6 @@ const state = {
   entitlementType: "beta",
   nextBillingDate: null,
   businessLogo: "",
-  localPassword: "Cefflo123!",
   paymentMethod: null,
   paymentStatus: "unavailable",
   pendingPayment: null,
@@ -6702,15 +6701,32 @@ function pageChangePassword(){
     <button class="btn btn-primary" data-action="savePasswordChange">${t('save')}</button>
   </div>`;
 }
-function savePasswordChange(){
+async function savePasswordChange(el){
   const current=document.getElementById('pw_current').value,newPw=document.getElementById('pw_new').value,confirmPw=document.getElementById('pw_confirm').value;
   document.querySelectorAll('#pw_current_field,#pw_new_field,#pw_confirm_field').forEach(f=>{f.classList.remove('has-error');const e=f.querySelector('.field-error-live');if(e)e.remove();});
   const errors=[];
-  if(current!==state.localPassword) errors.push(['pw_current_field',t('currentPasswordIncorrect')]);
-  if(newPw.length<8||!/[A-Za-z]/.test(newPw)||!/\d/.test(newPw)) errors.push(['pw_new_field',t('passwordRule')]);
+  if(!current) errors.push(['pw_current_field',t('currentPasswordIncorrect')]);
+  if(!PASSWORD_RULE.test(newPw)) errors.push(['pw_new_field','Password must be at least 8 characters, start with an uppercase letter, and include a digit.']);
   if(newPw!==confirmPw) errors.push(['pw_confirm_field',t('passwordMismatch')]);
   if(errors.length){errors.forEach(([id,msg])=>{const f=document.getElementById(id);f.classList.add('has-error');f.insertAdjacentHTML('beforeend','<div class="field-error-live">'+msg+'</div>');});toast(t('correctHighlighted'),'error');return;}
-  state.localPassword=newPw;try{localStorage.setItem('cefflo_password',newPw);}catch(err){} toast(t('passwordUpdated'),'success');navigate('settings',{},false);
+  if(el) el.disabled=true;
+  try{
+    await reauthenticateCurrentUser(current);
+    await updateAuthenticatedPassword(newPw);
+    clearPasswordChangeInputs();
+    toast(t('passwordUpdated'),'success');
+    navigate('settings',{},false);
+  }catch(error){
+    clearPasswordChangeInputs();
+    const message=String(error?.message||'');
+    toast(message==='Invalid login credentials'?t('currentPasswordIncorrect'):authErrorMessage(error),'error');
+  }finally{
+    if(el&&document.body.contains(el)) el.disabled=false;
+  }
+}
+
+function clearPasswordChangeInputs(){
+  ['pw_current','pw_new','pw_confirm'].forEach(id=>{const input=document.getElementById(id);if(input)input.value='';});
 }
 
 /* ===================== PAGE: PRIVACY / TERMS / APP VERSION ===================== */
@@ -7378,7 +7394,9 @@ document.getElementById('ceffloLogoFile').addEventListener('change',e=>handleLog
 try{
   const profile=JSON.parse(localStorage.getItem('cefflo_business_profile')||'null'); if(profile)Object.assign(state,profile);
   state.businessLogo=localStorage.getItem('cefflo_logo')||state.businessLogo;
-  state.localPassword=localStorage.getItem('cefflo_password')||state.localPassword;
+  // S4-09: purge the legacy plaintext-only password simulation. Real password
+  // authority belongs exclusively to the authenticated Supabase Auth user.
+  localStorage.removeItem('cefflo_password');
 }catch(err){}
 
 
@@ -8231,6 +8249,30 @@ async function signInWithPassword({email,password}){const session=await authRequ
 async function signUpWithPassword({email,password,metadata={}}){const result=await authRequest(`signup?redirect_to=${encodeURIComponent(authRedirectUrl())}`,{email,password,data:metadata});if(result.access_token)storeAuthSession(result);return result;}
 async function refreshAuthSession(){const token=productionState.authSession?.refresh_token;if(!token)return null;const session=await authRequest('token?grant_type=refresh_token',{refresh_token:token});storeAuthSession(session);return session;}
 async function productionSignOut(){try{if(productionState.authSession?.access_token)await fetch(`${CEFFLO_RUNTIME_CONFIG.supabaseUrl}/auth/v1/logout`,{method:'POST',headers:{apikey:CEFFLO_RUNTIME_CONFIG.supabaseAnonKey,Authorization:`Bearer ${productionState.authSession.access_token}`}});}finally{window.CEFFLO_VENDOR?.stopRealtime?.();stopRiderGps();storeAuthSession(null);}}
+
+async function reauthenticateCurrentUser(currentPassword){
+  const existingSession=productionState.authSession;
+  const existingUser=productionState.user||existingSession?.user;
+  if(!existingSession?.access_token||!existingUser?.id||!existingUser?.email) throw new Error('Your session has expired. Sign in again.');
+  const verifiedSession=await authRequest('token?grant_type=password',{email:existingUser.email,password:currentPassword});
+  if(verifiedSession?.user?.id!==existingUser.id) throw new Error('Unable to verify current password.');
+  storeAuthSession(verifiedSession);
+  return verifiedSession;
+}
+
+async function updateAuthenticatedPassword(newPassword){
+  const token=productionState.authSession?.access_token;
+  const currentUserId=productionState.user?.id||productionState.authSession?.user?.id;
+  if(!token||!currentUserId) throw new Error('Your session has expired. Sign in again.');
+  const response=await fetch(`${CEFFLO_RUNTIME_CONFIG.supabaseUrl}/auth/v1/user`,{method:'PUT',headers:{apikey:CEFFLO_RUNTIME_CONFIG.supabaseAnonKey,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({password:newPassword})});
+  const user=await response.json().catch(()=>({}));
+  if(!response.ok) throw new Error(user.message||user.msg||'Password update failed.');
+  if(user?.id&&user.id!==currentUserId) throw new Error('Authenticated user changed unexpectedly.');
+  productionState.user=user;
+  productionState.authSession={...productionState.authSession,user};
+  storeAuthSession(productionState.authSession);
+  return user;
+}
 
 async function uploadProductionFile({file,path,bucket=CEFFLO_RUNTIME_CONFIG.storageBucket,upsert=true}){
   if(!file)throw new Error('A file is required.');if(!productionConfigured())throw new Error('Storage is not configured.');
