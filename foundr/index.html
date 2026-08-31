@@ -1111,7 +1111,7 @@ function openPrivilegedModal(action){
   body.innerHTML = `
     <h3>${action.title}</h3>
     <p class="desc">${action.desc}</p>
-    <div class="modal-warn"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>This is a privileged action. It requires a reason and is recorded to the audit log.</div>
+    <div class="modal-warn"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>This is a privileged action. Once connected, it will require a reason and be recorded to the audit log.</div>
     <label>Reason for this action</label>
     <textarea id="modalReason" placeholder="e.g. Vendor requested manual onboarding via support call #4021"></textarea>
     <div class="modal-actions">
@@ -1124,7 +1124,7 @@ function openPrivilegedModal(action){
     const reason = document.getElementById('modalReason').value.trim();
     if(!reason){ showToast('A reason is required for privileged actions.'); return; }
     closeModal();
-    showToast(`${action.title} applied — logged to audit trail.`);
+    showToast(`${action.title} is not connected to a backend action yet.`);
   });
 }
 function closeModal(){ document.getElementById('modalBackdrop').classList.remove('show'); }
