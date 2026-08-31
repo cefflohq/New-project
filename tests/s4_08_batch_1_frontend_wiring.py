@@ -172,5 +172,75 @@ class CrossAppAndOfflineTests(unittest.TestCase):
         self.assertNotIn("syncOperationalStateToBackend", VENDOR_JS[VENDOR_JS.index("ACTIONS.confirmReportDeliveryIssue"):])
 
 
+class VendorOrderDetailIssueWiringTests(unittest.TestCase):
+    """S4-08-EXCEPTION-ORDER-DETAIL-REMEDIATION-01: the SECOND Vendor
+    "Report Issue" entry point (pageOrderDetail's openReportIssue ->
+    confirmReportIssue), found unaudited/unfixed by the original S4-08
+    canonical acceptance recheck. confirmReportIssue must delegate entirely
+    to the already-real, already-tested confirmReportDeliveryIssue action --
+    not a second parallel implementation.
+    """
+
+    def test_order_detail_report_issue_remains_reachable(self):
+        self.assertIn('data-action="openReportIssue"', VENDOR_HTML)
+        self.assertIn('data-action="confirmReportIssue"', VENDOR_HTML)
+        self.assertIn("function openReportIssue(", VENDOR_HTML)
+        self.assertIn("function confirmReportIssue(", VENDOR_HTML)
+
+    def test_wrong_address_maps_to_address_problem(self):
+        fn = next(line for line in VENDOR_HTML.splitlines() if "const ORDER_DETAIL_ISSUE_REASON_KEY" in line)
+        self.assertIn("'Wrong address': 'wrong'", fn)
+        # 'wrong' is the SAME key VENDOR_ISSUE_REASON_MAP (backend.js) maps
+        # to 'address_problem' -- confirmed by the shared-mapping test above
+        # (VendorIssueWiringTests.test_typed_reason_mapping_matches_
+        # canonical_backend_enum), not duplicated here.
+
+    def test_customer_unreachable_maps_to_customer_unreachable_key(self):
+        fn = next(line for line in VENDOR_HTML.splitlines() if "const ORDER_DETAIL_ISSUE_REASON_KEY" in line)
+        self.assertIn("'Customer unreachable': 'unreachable'", fn)
+
+    def test_supported_reason_delegates_to_real_authoritative_action(self):
+        fn = block(VENDOR_HTML, r"function confirmReportIssue\(el\)\{")
+        self.assertIn("ACTIONS.confirmReportDeliveryIssue(", fn)
+
+    def test_rpc_success_gate_and_failure_honesty_inherited_from_shared_action(self):
+        # confirmReportIssue has no success/failure branching of its own --
+        # it delegates entirely to confirmReportDeliveryIssue, whose own
+        # await-gated success and honest-catch behavior is already proven
+        # by VendorIssueWiringTests above. Confirm the delegation is total
+        # (no local success/failure handling exists in confirmReportIssue
+        # itself that could bypass that gate).
+        fn = block(VENDOR_HTML, r"function confirmReportIssue\(el\)\{")
+        self.assertNotIn("toast(", fn)
+        self.assertNotIn("closeSheet(", fn)
+        self.assertNotIn("await ", fn)
+
+    def test_no_local_only_order_status_mutation_remains(self):
+        fn = block(VENDOR_HTML, r"function confirmReportIssue\(el\)\{")
+        self.assertNotIn("transitionOrderStatus", fn)
+
+    def test_no_fake_state_issues_append_remains(self):
+        fn = block(VENDOR_HTML, r"function confirmReportIssue\(el\)\{")
+        self.assertNotIn("state.issues.push", fn)
+
+    def test_unsupported_reasons_honestly_gated_not_forced(self):
+        fn = next(line for line in VENDOR_HTML.splitlines() if "const ORDER_DETAIL_ISSUE_REASON_KEY" in line)
+        for unsupported in ("Packaging issue", "Payment issue", "Other"):
+            self.assertNotIn(f"'{unsupported}':", fn)
+
+    def test_delivery_execution_issue_path_remains_real_and_unchanged(self):
+        fn = block(VENDOR_JS, r"ACTIONS\.confirmReportDeliveryIssue = async function \(el\) \{")
+        self.assertIn("await reportDeliveryIssue(", fn)
+        self.assertIn("await hydrateCanonicalWorkspace();", fn)
+
+    def test_no_new_direct_table_write_introduced(self):
+        fn = block(VENDOR_HTML, r"function confirmReportIssue\(el\)\{")
+        self.assertNotIn("/rest/v1/", fn)
+        self.assertNotIn("api.request(", fn)
+
+    def test_customer_issue_compatibility_unchanged(self):
+        self.assertIn("issue: 'issue'", CUSTOMER_JS)
+
+
 if __name__ == "__main__":
     unittest.main()

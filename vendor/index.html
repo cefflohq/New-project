@@ -5032,10 +5032,16 @@ function openReportIssue(el){
     </div>`).join('')}
   `);
 }
+// S4-08: reuses the authoritative confirmReportDeliveryIssue action (and
+// its VENDOR_ISSUE_REASON_MAP) exactly as the Delivery Execution issue flow
+// does -- this is a second entry point into the SAME real RPC, not a
+// second implementation. Only 'Wrong address' and 'Customer unreachable'
+// have a truthful canonical match; 'Packaging issue', 'Payment issue' and
+// 'Other' deliberately have none and fall through to
+// confirmReportDeliveryIssue's own existing "not connected yet" gate.
+const ORDER_DETAIL_ISSUE_REASON_KEY = { 'Wrong address': 'wrong', 'Customer unreachable': 'unreachable' };
 function confirmReportIssue(el){
-  const o = state.orders.find(x=>x.id===el.dataset.id);
-  if(o){ transitionOrderStatus(o.id,'issue',{remarks:'Issue reported: '+el.dataset.reason}); state.issues.push({id:'issue_'+Date.now(),orderId:o.id,type:el.dataset.reason,status:'open',createdAt:new Date().toISOString()}); o.activity.push({label:'Issue reported: '+el.dataset.reason, time:'now'}); }
-  closeSheet(); toast('Issue reported', 'error'); render();
+  ACTIONS.confirmReportDeliveryIssue({ dataset: { id: el.dataset.id, reason: ORDER_DETAIL_ISSUE_REASON_KEY[el.dataset.reason], label: el.dataset.reason } });
 }
 function openReschedule(el){
   const orderId = el.dataset.id;
