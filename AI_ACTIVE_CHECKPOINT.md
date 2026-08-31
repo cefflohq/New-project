@@ -2462,3 +2462,187 @@ performed, and S4-08 has not started.
 
 **NEXT EXACT ACTION:** Complete local range/regression/secret verification for `607d768..HEAD`,
 then report the recovery result. Push remains Founder-gated.
+
+## 83. S4-07 — Staging Migration Reconciliation (Ledger-Gap Only) — PASS
+
+A fresh Founder-directed staging audit (read-only, `tomvvmwktehexwhktenw`) found this checkpoint's
+own Section 79-82 record of staging state to be stale: contrary to Section 79's "202608290002/003
+remain absent" and Section 82's "no migration was applied", the live staging ledger already
+contained 27 entries, not 21. Both S4-07 invitation migrations, plus all four FOUNDR phase 0-3
+migrations, were already live in the database — applied at some point after Section 82 was written,
+by a process this checkpoint never recorded. No commit/push, Production access, or S4-08 start is
+implicated; this is purely a gap in checkpoint note-taking, not an unauthorized action.
+
+**Schema/object audit — 202608290002 (Team Invitation) and 202608290003 (Rider Invitation):**
+`team_invitations`, `rider_invitations` tables; both token-hash unique indexes and business
+indexes; RLS enabled on both; `team_invitations_owner` and `rider_invitations_vendor` policies; all
+11 RPCs (`create_team_invitation`, `revoke_team_invitation`, `resolve_team_invitation`,
+`accept_team_invitation`, `create_rider_invitation`, `revoke_rider_invitation`,
+`resolve_rider_invitation`, `accept_rider_invitation`, `approve_pending_rider`, plus the
+`update_team_member`/`deactivate_rider` audit-event amendments) — every object EXISTS with the
+exact signature and grant set the repository migration files specify. Zero schema gap, zero
+conflict.
+
+**Ledger gap only:** both migrations were present in `supabase_migrations.schema_migrations` under
+runtime-timestamp versions (`20260830060503`, `20260830060544`) instead of their canonical
+repository filenames' versions (`202608290002`, `202608290003`) — same naming pattern independently
+affects the four FOUNDR migrations (`20260830060611/0709/0800/0830` vs. repo's
+`202608300001-4`), left untouched per explicit scope.
+
+**Reconciliation performed (Task S4-07-LEDGER-01, Founder-authorized):** two `UPDATE` statements
+against `supabase_migrations.schema_migrations` only — `20260830060503` -> `202608290002`,
+`20260830060544` -> `202608290003`, names preserved. No DDL, no migration replay, no RPC/RLS/policy
+change, no application code change.
+
+**Post-change verification — all PASS:**
+- Ledger: `202608290002` and `202608290003` now present under canonical versions; old timestamp
+  versions gone; total ledger count unchanged at 27.
+- Team Invitation and Rider Invitation contracts (tables/indexes/RLS/policies/all 11 RPCs)
+  independently re-queried and confirmed unchanged/intact.
+- Git working tree: clean, nothing to commit.
+- Production (`lmaxtrubwdniovxyuqdy`): not queried, not modified — only `tomvvmwktehexwhktenw` was
+  ever addressed by this task.
+
+**Observed but out of scope for this task:** `origin/staging` is 7 commits ahead of local `HEAD`
+(`0fc2f26`) — `13d17b5`, `c34c98a`, `07dfab6`, `388d088`, `7162871`, `2ad9bd4`, `9539cb0` — all
+Vendor UI-shaped commit messages, none made by this session. Local working tree is clean but stale
+relative to `origin/staging`; not pulled, merged, or investigated further here per explicit scope
+("do not proceed to the next task automatically").
+
+**S4-07 status: PASS.** All eight requested exit checks satisfied.
+
+**Remaining known issue after S4-07:** the identical ledger-version-mismatch pattern on the four
+FOUNDR migrations is unresolved (explicitly deferred, not blocking). The 7 unexplained commits
+ahead on `origin/staging` are unreviewed.
+
+**NEXT EXACT ACTION:** Founder decision on (a) whether/when to run the equivalent ledger
+reconciliation for the four FOUNDR entries, and (b) what the 7 ahead-of-local `origin/staging`
+commits are before any further staging work builds on top of them. Do not start S4-08 or any UI
+work without that review.
+
+## 84. FOUNDR-LEDGER-01 — Ledger-Gap Reconciliation (Metadata Only) — PASS
+
+Following a Founder-directed read-only audit (`FOUNDR-LEDGER-AUDIT-01`), which confirmed the same
+runtime-timestamp ledger-versioning pattern found in Section 83 also affected all four FOUNDR
+migrations, the Founder authorized `FOUNDR-LEDGER-01`: a ledger-metadata-only correction, scoped
+identically to Section 83.
+
+**Schema contract was already fully live before this task ran.** All 7 FOUNDR tables
+(`platform_admins`, `admin_audit_log`, `feature_flags`, `maintenance_windows`,
+`business_subscriptions`, `app_versions`, `platform_announcements`), all 7 RLS enablement flags, all
+7 read policies, and all 20 FOUNDR functions (signatures and return types) were independently
+verified present and correct against the repository migration files (`202608300001-4`) prior to any
+ledger change. This task changed no schema object.
+
+**Reconciliation performed:** four `UPDATE` statements against
+`supabase_migrations.schema_migrations` only — `20260830060611` -> `202608300001`,
+`20260830060709` -> `202608300002`, `20260830060800` -> `202608300003`, `20260830060830` ->
+`202608300004`, names preserved exactly. No DDL, no migration replay, no grant/revoke change, no
+RLS/policy change, no application code change.
+
+**Post-change verification — all PASS:**
+- Ledger: all four canonical versions present; all four old runtime-timestamp versions gone; total
+  ledger count unchanged at 27.
+- All 7 tables, all 7 RLS flags, all 7 policies, all 20 functions re-queried and confirmed
+  unchanged/intact.
+- Git: unchanged from Section 83's state — working tree carries only the (still uncommitted)
+  Section 83/84 checkpoint edits; local `HEAD` (`0fc2f26`) remains 7 commits behind
+  `origin/staging`; no pull, merge, or any git write operation performed.
+- Production (`lmaxtrubwdniovxyuqdy`): not queried, not modified — only `tomvvmwktehexwhktenw` was
+  addressed.
+
+**FOUNDR-LEDGER-01 status: PASS** for its own scope (ledger metadata reconciliation only).
+
+**OPEN — not resolved by this task, explicitly not to be read as closed:**
+1. **FOUNDR RPC EXECUTE grant conflict** (found in `FOUNDR-LEDGER-AUDIT-01`): all 20 FOUNDR
+   functions, including sensitive admin write RPCs (`admin_set_subscription`,
+   `admin_start_maintenance`, `admin_end_maintenance`, `admin_create_announcement`,
+   `admin_set_announcement_active`, `admin_set_feature_flag`, `admin_record_app_version`,
+   `admin_list_audit_log`, `log_admin_action`), have EXECUTE granted to `PUBLIC`/`anon`, when the
+   migration files only ever specify `authenticated` (plus `anon` for the 3 genuinely public
+   read-only functions). Every function's own `is_platform_admin()` check still fails closed for an
+   anon caller today, so this is not currently exploitable, but it is a real defense-in-depth gap
+   inconsistent with this codebase's otherwise-universal explicit-revoke discipline. **Remains
+   OPEN.**
+2. **`origin/staging` remote drift** (7 commits: `13d17b5`...`9539cb0`, audited in
+   `STAGING-REMOTE-DRIFT-AUDIT-01`): Founder decisions recorded (remove `388d088` demo auth bypass;
+   `2ad9bd4` Workforce UI not accepted as final, needs real backend wiring; `2ad9bd4` ordinary
+   Customer Invoice removed from product scope in favor of LHDN e-Invoice) but **no removal/fix has
+   been implemented yet**, and local has still not synced with `origin/staging`. **Remains OPEN.**
+
+Overall FOUNDR security/readiness work is **NOT** being declared complete — only the narrow ledger
+metadata scope of this task is PASS.
+
+**NEXT EXACT ACTION:** Founder decision on which OPEN item to address next: the FOUNDR RPC grant
+repair, or the origin/staging drift (demo-bypass removal / Workforce backend wiring / Customer
+Invoice scope removal). Do not start either automatically; do not start S4-08 or any UI work.
+
+## 85. FOUNDR-RPC-GRANT-HARDENING-01 — Grant-Only Forward Migration — PASS
+
+Founder-authorized `FOUNDR-RPC-GRANT-HARDENING-01`, implementing the plan from
+`FOUNDR-RPC-GRANT-AUDIT-01` (read-only audit, unlogged): a new forward-only migration,
+`supabase/migrations/202608300005_foundr_rpc_grant_hardening.sql`, containing only
+`REVOKE`/`GRANT EXECUTE` statements against the 20 FOUNDR functions from
+Sections 84's Phase 0-3 migrations. No table, RLS, policy, or function-body change. `202608300001-4`
+were not edited.
+
+**Resulting access model:**
+- `log_admin_action(...)`: all client-facing (`public`/`anon`/`authenticated`) execute revoked —
+  internal helper only, reachable solely from inside other `SECURITY DEFINER` admin RPCs via their
+  owner-role context.
+- `is_platform_admin()` + 16 admin read/write RPCs (`admin_stuck_riders`, `admin_list_vendors`,
+  `admin_get_vendor`, `admin_list_riders`, `admin_delivery_operations`, `admin_list_audit_log`,
+  `admin_list_subscriptions`, `admin_set_subscription`, `admin_list_app_versions`,
+  `admin_record_app_version`, `admin_set_feature_flag`, `admin_start_maintenance`,
+  `admin_end_maintenance`, `admin_create_announcement`, `admin_set_announcement_active`): `public`
+  and `anon` execute revoked, `authenticated` retained. `is_platform_admin()` remains the actual
+  authorization boundary inside each, unchanged.
+- `get_feature_flag`, `get_active_maintenance`, `get_active_announcements`: bare `PUBLIC` grant
+  revoked, `anon` and `authenticated` explicitly (re-)granted — these three remain deliberately
+  callable pre-authentication, matching their original design intent (no caller exists in the
+  codebase yet, but the grant now matches intent exactly instead of over-granting via the
+  unintended `PUBLIC` default).
+
+**Ledger:** applied via `apply_migration`, which recorded it under a runtime-timestamp version
+(`20260830191725`) — same root-cause pattern as Sections 83/84. Reconciled with the same DML-only
+`UPDATE` on `supabase_migrations.schema_migrations` (`20260830191725` -> `202608300005`), name
+preserved. Ledger count now 28 (one net new migration, correctly so — unlike 83/84 this was a
+genuinely new migration, not a rename of an already-counted entry).
+
+**Verification — all PASS:**
+- Full 20-function grant re-query: every admin/internal function shows only
+  `authenticated`/`postgres`/`service_role`; `log_admin_action` shows only
+  `postgres`/`service_role` (zero client grant); the 3 public-read functions show
+  `anon`+`authenticated`+`postgres`+`service_role`, no bare `PUBLIC` row remains anywhere.
+- Anonymous probes (`set local role anon`): `get_feature_flag('nonexistent_key')` ->
+  `false`; `get_active_maintenance()` -> 0 rows; `get_active_announcements()` -> 0 rows (all three
+  genuinely callable); `admin_list_vendors()` -> `42501: permission denied for function` (blocked
+  at the grant layer, not just internally); `log_admin_action(...)` -> same `42501` denial.
+- Authenticated-role probes (`set local role authenticated`, no real platform-admin JWT available):
+  `admin_list_vendors()`, `admin_list_audit_log()`, `admin_list_app_versions()` all reached the
+  function body and failed with `P0001: forbidden` from the internal `is_platform_admin()` check —
+  not a grant-layer denial — proving `authenticated` access is intact and the only remaining gate is
+  the intended one. A full real-session, actual-platform-admin success path was not tested: no row
+  exists in `platform_admins` (correct per its own migration's "no seed row" design) and inserting
+  one solely to test was correctly out of scope (destructive write, excluded by this task's own
+  guardrails).
+- Tables/RLS/policies: all 7 FOUNDR tables, all 7 RLS-enabled flags, all 7 policies re-queried
+  identical to Section 84 — unchanged.
+- Git: unchanged in kind from Sections 83/84 — working tree carries the still-uncommitted checkpoint
+  edits plus one new untracked file (`202608300005_foundr_rpc_grant_hardening.sql`); local `HEAD`
+  (`0fc2f26`) remains 7 commits behind `origin/staging`; no pull, merge, commit, or push performed.
+- Production (`lmaxtrubwdniovxyuqdy`): not queried, not modified.
+
+**FOUNDR-RPC-GRANT-HARDENING-01 status: PASS.**
+
+**OPEN — unchanged, not touched by this task:**
+1. `origin/staging` remote drift (7 commits, `13d17b5`...`9539cb0`) — Founder decisions recorded in
+   Section prior (remove `388d088` demo auth bypass; `2ad9bd4` Workforce UI needs real backend
+   wiring, not accepted as final; `2ad9bd4` ordinary Customer Invoice removed from product scope in
+   favor of LHDN e-Invoice) — **none implemented yet**, local still not synced.
+2. UI remains frozen — no Vendor/Rider/Customer/FOUNDR UI file touched by this task.
+
+**NEXT EXACT ACTION:** Founder decision on whether to begin origin/staging drift remediation next
+(demo-bypass removal / Workforce backend wiring / Customer Invoice scope removal) or another
+Foundation-track item. Do not start automatically; do not start S4-08 or any UI work without that
+decision.
