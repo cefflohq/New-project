@@ -5243,8 +5243,7 @@ function pageCsvImport(){
         <div class="t-caption" style="margin-top:6px">.csv, .xlsx up to 5MB</div>
       </div>
       <div class="section-title" style="margin-top:24px">${t('recentImports')}</div>
-      <div class="card bordered"><div class="stat-inline"><span class="label">Orders_16May.csv</span><span class="val">128 ${t('rows')}</span></div></div>
-      <div class="card bordered"><div class="stat-inline"><span class="label">Orders_15May.csv</span><span class="val">96 ${t('rows')}</span></div></div>
+      <div class="card bordered"><div class="t-caption" style="text-align:center">No recent imports</div></div>
     </div>`;
   }
   if(csvState.step===2){
@@ -5347,23 +5346,11 @@ function saveCsvRowFix(el){
   closeSheet(); navigate('csvImport',{},false); toast(csvState.rows[idx].status==='Valid'?'Row corrected':'More information required',csvState.rows[idx].status==='Valid'?'success':'error');
 }
 function confirmCsvImport(){
-  const validRows = csvState.rows.filter(r=>r.status==='Valid');
-  validRows.forEach(r=>{
-    const id = genOrderId(state.orderCounter++);
-    state.orders.unshift({
-      id, customer:r.name, phone:r.phone, zone:normalizeZoneName(r.zone) || deriveZoneFromAddress(r.address),
-      riderId:null, riderName:null, status:'readyForPickup', eta:15, address:r.address, note:'',
-      items:[{name:'Nasi Lemak Ayam', qty:1}], total:(10+Math.random()*15).toFixed(2), payment:'Pending',
-      time:'Just now', podPhoto:false, activity:[{label:'Order received', time:'now'}]
-    });
-  });
-  if(validRows.length){
-    syncZonesFromOrders();
-    persistOperationalStore();
-    syncNewAccountOnboarding();
-  }
-  toast(tf('ordersImportedSuccess',{count:validRows.length}), 'success');
-  navigate('orders', {tab:'ongoing'}, false);
+  // S4-09: the current CSV shape has no order items and cannot satisfy the
+  // existing authoritative create_delivery path without inventing product
+  // data. Keep parsing/preview reachable, but never commit it into local or
+  // backend operational truth until an approved compatible contract exists.
+  toast('CSV import is not connected yet.', 'error');
 }
 
 
