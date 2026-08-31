@@ -23,6 +23,16 @@ class ProductCatalogPreviewTests(unittest.TestCase):
         self.assertNotIn(">↑<", HTML)
         self.assertNotIn(">↓<", HTML)
 
+    def test_pointer_reorder_handles_touch_drop_and_cancellation(self):
+        for event in ("pointerdown", "pointermove", "pointerup", "pointercancel"):
+            self.assertIn(f"addEventListener('{event}'", HTML)
+        self.assertIn("setPointerCapture", HTML)
+        self.assertIn("releasePointerCapture", HTML)
+        self.assertIn("trackPointer", HTML)
+        self.assertIn("position==='after'", HTML)
+        self.assertIn("category.dataset.category!==source.category", HTML)
+        self.assertIn("clearDrag()", HTML)
+
     def test_restrained_visual_contract(self):
         self.assertIn("--purple:#7C6CF0", HTML)
         self.assertIn("--purple-tint:#F2F0FF", HTML)
