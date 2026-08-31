@@ -3992,50 +3992,8 @@ const state = {
     {id:'n4', type:'system', icon:'info', title:'System update', desc:'New feature available', time:'2h ago', read:true, nav:{name:'settings', params:{}}},
     {id:'n5', type:'orders', icon:'alert', title:'Packaging issue reported', desc:'Rider Siti Nor flagged CF-0122', time:'3h ago', read:true, nav:{name:'orders', params:{tab:'issue'}}},
   ],
-  workforce: {
-    coreTeam: [],
-    helpers: [],
-    helperApplications: [],
-    workSessions: [],
-    capacity: null,
-  },
 };
 
-function seedDemoWorkforce(){
-  state.workforce={
-    coreTeam:[
-      {id:'staff_aina',name:'Aina',role:'Packing',status:'active'},
-      {id:'staff_farah',name:'Farah',role:'Kitchen',status:'active'},
-    ],
-    helpers:[
-      {id:'helper_nadia',name:'Nadia',skill:'Packing',availability:'Available',status:'approved',sessionsCompleted:8,attendance:'8 / 8'},
-      {id:'helper_siti',name:'Siti',skill:'Kitchen Prep',availability:'Available',status:'approved',sessionsCompleted:5,attendance:'5 / 5'},
-    ],
-    helperApplications:[
-      {id:'application_mira',name:'Mira',skill:'Order Sorting',status:'pending'},
-      {id:'application_hana',name:'Hana',skill:'Packing',status:'pending'},
-    ],
-    workSessions:[
-      {id:'session_tomorrow_packing',workType:'Packing',dateLabel:'Tomorrow',date:'',startTime:'8:00 AM',endTime:'1:00 PM',helpersNeeded:2,requiredSkill:'Packing',location:'Kitchen A',confirmBefore:'9:00 PM',status:'open',confirmed:[{id:'helper_nadia',name:'Nadia',status:'confirmed'},{id:'staff_aina',name:'Aina',status:'waiting'}]},
-    ],
-    capacity:{dateLabel:'Tomorrow',expectedWorkload:300,unit:'packs',coreCapacity:200,gap:100,requiredSkill:'Packing',suggestedHelpers:2},
-  };
-}
-
-window.CEFFLO_VENDOR_WORKFORCE=Object.freeze({
-  hydrate(payload={}){
-    const current=state.workforce||{};
-    state.workforce={
-      coreTeam:Array.isArray(payload.coreTeam)?payload.coreTeam:(current.coreTeam||[]),
-      helpers:Array.isArray(payload.helpers)?payload.helpers:(current.helpers||[]),
-      helperApplications:Array.isArray(payload.helperApplications)?payload.helperApplications:(current.helperApplications||[]),
-      workSessions:Array.isArray(payload.workSessions)?payload.workSessions:(current.workSessions||[]),
-      capacity:payload.capacity===undefined?(current.capacity||null):payload.capacity,
-    };
-    render();
-  },
-  snapshot(){return JSON.parse(JSON.stringify(state.workforce||{}));},
-});
 
 const CUSTOMER_NAMES = ['Nurul Ain','Sarah Liyana','Aishah Amin','Farid Zulkifli','Mei Ling','Ravi Kumar','Hafiz Rahman','Chong Wei','Nadia Yusof','Amirul Hakim','Kavitha Devi','Zul Ariffin'];
 const ITEM_POOL = ['Nasi Lemak Ayam','Karipap','Roti Canai','Teh Tarik','Mee Goreng Mamak','Nasi Goreng Kampung','Kuih Lapis','Ayam Percik'];
@@ -6428,17 +6386,67 @@ function workforceListRow({id,name,meta,status,route}){
   </button>`;
 }
 function pageTeam(){
-  const workforce=state.workforce||{};
-  const core=workforce.coreTeam||[];
-  const helpers=workforce.helpers||[];
-  const applications=(workforce.helperApplications||[]).filter(item=>item.status==='pending');
-  const sessions=workforce.workSessions||[];
-  const coreContent=core.length?core.map(member=>workforceListRow({id:member.id,name:member.name,meta:member.role,status:member.status==='active'?'active':'offline',route:'teamMemberDetail'})).join(''):`<div class="empty-state"><h3>No core team members yet</h3><p>Regular operational staff will appear here.</p></div>`;
-  const helperContent=`<button class="btn btn-secondary workforce-secondary" data-action="showHelperJoinLink">${ic('link')} Helper Join Link</button>
-    ${applications.length?`<div class="workforce-pending"><div><b>Pending Approval · ${applications.length}</b><small>Registration does not activate a helper.</small></div><button class="btn btn-sm btn-secondary" data-action="reviewNextHelper">Review</button></div>`:''}
-    <div class="section-title workforce-section-title">Approved Helpers</div>
-    <div class="settings-group">${helpers.length?helpers.map(helper=>workforceListRow({id:helper.id,name:helper.name,meta:`${helper.skill} · ${helper.availability}`,status:'active',route:'helperDetail'})).join(''):`<div class="empty-state"><h3>No approved helpers</h3><p>Approved private-pool helpers will appear here.</p></div>`}</div>`;
-  const sessionsContent=`<div class="settings-group">${sessions.length?sessions.map(session=>workforceListRow({id:session.id,name:session.workType,meta:`${session.dateLabel} · ${session.startTime} – ${session.endTime}`,status:session.status==='completed'?'completed':'ongoing',route:'workSessionDetail'})).join(''):`<div class="empty-state"><h3>No work sessions</h3><p>Create one from Capacity Detail when additional support is needed.</p></div>`}</div>`;
+  const isOwner=state.currentMemberRole==='owner';
+  const members=state.teamMembers||[];
+  const teamInvites=(state.teamInvitations||[]).filter(i=>i.status==='pending');
+  const riders=state.riders||[];
+  const activeRiders=riders.filter(r=>r.status==='active');
+  const pendingRiders=riders.filter(r=>r.status==='pending');
+  const riderInvites=(state.riderInvitations||[]).filter(i=>i.status==='pending');
+
+  const teamRows=members.length?members.map(m=>`
+    <div class="card bordered" style="margin-bottom:8px;padding:12px 14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="t-body" style="font-weight:600;">${m.userId.slice(0,8)}&hellip;</div>
+        <span class="status-chip ${m.role==='owner'?'chip-active':'chip-preparing'}">${m.role==='owner'?'Owner':'Operator / Staff'}</span>
+      </div>
+      <div class="t-caption" style="margin-top:2px;">${m.status==='active'?'Active':'Inactive'}</div>
+      ${isOwner?`<button class="btn btn-secondary" style="width:100%;margin-top:8px;" data-action="openManageTeamMember" data-userid="${m.userId}" data-role="${m.role}" data-status="${m.status}">Manage</button>`:''}
+    </div>`).join(''):`<div class="empty-state"><h3>No team members yet</h3><p>Owners and Operators will appear here.</p></div>`;
+
+  const teamInviteRows=teamInvites.map(i=>`
+    <div class="card bordered" style="margin-bottom:8px;padding:12px 14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <div style="min-width:0;"><div class="t-body" style="font-weight:600;overflow:hidden;text-overflow:ellipsis;">${i.email}</div><div class="t-caption">${i.role==='owner'?'Owner':'Operator / Staff'} &middot; expires ${new Date(i.expiresAt).toLocaleDateString()}</div></div>
+        ${isOwner?`<button class="btn btn-secondary" style="flex:0 0 auto;" data-action="confirmRevokeTeamInvitation" data-id="${i.id}">Revoke</button>`:''}
+      </div>
+    </div>`).join('');
+
+  const riderRows=activeRiders.length?activeRiders.map(r=>workforceListRow({id:r.id,name:r.name,meta:'Rider · Active',status:'active',route:'teamMemberDetail'})).join(''):`<div class="empty-state"><h3>No active riders yet</h3></div>`;
+
+  const pendingRiderRows=pendingRiders.map(r=>`
+    <div class="card bordered" style="margin-bottom:8px;padding:12px 14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div><div class="t-body" style="font-weight:600;">${r.name}</div><div class="t-caption">${r.phone}</div></div>
+        <span class="status-chip chip-preparing">Pending</span>
+      </div>
+      ${isOwner?`<div class="btn-row" style="margin-top:8px;">
+        <button class="btn btn-secondary" style="flex:1;" data-action="confirmRejectPendingRider" data-id="${r.id}">Reject</button>
+        <button class="btn btn-primary" style="flex:1;" data-action="confirmApprovePendingRider" data-id="${r.id}">Approve</button>
+      </div>`:`<div class="t-caption" style="margin-top:6px;">Awaiting Owner approval</div>`}
+    </div>`).join('');
+
+  const riderInviteRows=riderInvites.map(i=>`
+    <div class="card bordered" style="margin-bottom:8px;padding:12px 14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <div style="min-width:0;"><div class="t-body" style="font-weight:600;">${i.name}</div><div class="t-caption" style="overflow:hidden;text-overflow:ellipsis;">${i.email} &middot; expires ${new Date(i.expiresAt).toLocaleDateString()}</div></div>
+        <button class="btn btn-secondary" style="flex:0 0 auto;" data-action="confirmRevokeRiderInvitation" data-id="${i.id}">Revoke</button>
+      </div>
+    </div>`).join('');
+
+  const coreContent=`
+    <div class="section-title workforce-section-title">Team</div>
+    <div class="settings-group">${teamRows}</div>
+    ${isOwner?`<button class="btn btn-primary" style="width:100%;margin-top:4px;" data-action="openInviteTeamMember">+ Invite Team Member</button>`:''}
+    ${teamInviteRows?`<div class="section-title workforce-section-title" style="margin-top:20px;">Pending Team Invitations</div>${teamInviteRows}`:''}
+    <div class="section-title workforce-section-title" style="margin-top:20px;">Riders</div>
+    <div class="settings-group">${riderRows}</div>
+    <button class="btn btn-primary" style="width:100%;margin-top:4px;" data-action="openInviteRiderReal">+ Invite Rider</button>
+    ${pendingRiderRows?`<div class="section-title workforce-section-title" style="margin-top:20px;">Pending Rider Approval</div>${pendingRiderRows}`:''}
+    ${riderInviteRows?`<div class="section-title workforce-section-title" style="margin-top:20px;">Pending Rider Invitations</div>${riderInviteRows}`:''}
+  `;
+  const helperContent=`<div class="empty-state"><h3>Helpers is not connected yet</h3><p>Helper Pool requires a backend contract that does not exist yet.</p></div>`;
+  const sessionsContent=`<div class="empty-state"><h3>Work Sessions is not connected yet</h3><p>Work Sessions requires a backend contract that does not exist yet.</p></div>`;
   return `<div class="module-page workforce-module">
     ${innerHeader('Team')}
     <div class="tabs workforce-tabs" role="tablist">
@@ -6447,92 +6455,41 @@ function pageTeam(){
       <button class="tab-btn ${teamUiTab==='sessions'?'active':''}" data-action="setTeamTab" data-tab="sessions">Work Sessions</button>
     </div>
     <div class="content workforce-content">
-      ${teamUiTab==='core'?`<div class="settings-group">${coreContent}</div>`:teamUiTab==='helpers'?helperContent:sessionsContent}
+      ${teamUiTab==='core'?coreContent:teamUiTab==='helpers'?helperContent:sessionsContent}
     </div>
   </div>`;
 }
 
 function pageTeamMemberDetail(params){
-  const member=(state.workforce?.coreTeam||[]).find(item=>item.id===params.id);
-  if(!member)return `${innerHeader('Member Detail')}<div class="content"><div class="empty-state"><h3>Member unavailable</h3></div></div>`;
-  return `<div class="module-page workforce-module">${innerHeader('Member Detail')}<div class="content">
-    <div class="center-col workforce-person"><span class="workforce-avatar">${member.name[0]}</span><h2 class="t-h1">${member.name}</h2>${statusChip(member.status||'active')}</div>
-    <div class="card bordered workforce-detail-card"><div class="stat-inline"><span class="label">Role / work type</span><span class="val">${member.role}</span></div><div class="stat-inline"><span class="label">Status</span><span class="val">${member.status==='active'?'Active':'Inactive'}</span></div></div>
-  </div></div>`;
+  const member=(state.teamMembers||[]).find(item=>item.userId===params.id);
+  if(member){
+    return `<div class="module-page workforce-module">${innerHeader('Member Detail')}<div class="content">
+      <div class="center-col workforce-person"><span class="workforce-avatar">${member.userId.slice(0,2).toUpperCase()}</span><h2 class="t-h1">${member.userId.slice(0,8)}&hellip;</h2>${statusChip(member.status==='active'?'active':'offline')}</div>
+      <div class="card bordered workforce-detail-card"><div class="stat-inline"><span class="label">Role</span><span class="val">${member.role==='owner'?'Owner':'Operator / Staff'}</span></div><div class="stat-inline"><span class="label">Status</span><span class="val">${member.status==='active'?'Active':'Inactive'}</span></div></div>
+    </div></div>`;
+  }
+  const rider=(state.riders||[]).find(item=>item.id===params.id);
+  if(rider){
+    return `<div class="module-page workforce-module">${innerHeader('Rider Detail')}<div class="content">
+      <div class="center-col workforce-person"><span class="workforce-avatar">${rider.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</span><h2 class="t-h1">${rider.name}</h2>${statusChip(rider.status)}</div>
+      <div class="card bordered workforce-detail-card"><div class="stat-inline"><span class="label">Phone</span><span class="val">${rider.phone}</span></div><div class="stat-inline"><span class="label">Vehicle plate</span><span class="val">${rider.plate}</span></div><div class="stat-inline"><span class="label">Status</span><span class="val">${rider.status}</span></div></div>
+    </div></div>`;
+  }
+  return `${innerHeader('Member Detail')}<div class="content"><div class="empty-state"><h3>Member unavailable</h3></div></div>`;
 }
 
-function pageHelperDetail(params){
-  const helper=(state.workforce?.helpers||[]).find(item=>item.id===params.id);
-  if(!helper)return `${innerHeader('Helper Detail')}<div class="content"><div class="empty-state"><h3>Helper unavailable</h3></div></div>`;
-  return `<div class="module-page workforce-module">${innerHeader('Helper Detail')}<div class="content">
-    <div class="center-col workforce-person"><span class="workforce-avatar">${helper.name[0]}</span><h2 class="t-h1">${helper.name}</h2>${statusChip('active')}</div>
-    <div class="card bordered workforce-detail-card"><div class="stat-inline"><span class="label">Skill / work type</span><span class="val">${helper.skill}</span></div><div class="stat-inline"><span class="label">Availability</span><span class="val">${helper.availability}</span></div><div class="stat-inline"><span class="label">Completed sessions</span><span class="val">${helper.sessionsCompleted??'—'}</span></div><div class="stat-inline"><span class="label">Attendance</span><span class="val">${helper.attendance||'Not available'}</span></div></div>
-    <p class="t-caption workforce-private-note">Private to ${state.storeName}. Not visible across vendors.</p>
-  </div></div>`;
+function pageHelperDetail(){
+  return `${innerHeader('Helper Detail')}<div class="content"><div class="empty-state"><h3>Helpers is not connected yet</h3><p>Helper Pool requires a backend contract that does not exist yet.</p></div></div>`;
 }
 
 function pageCapacityDetail(){
-  const capacity=state.workforce?.capacity;
-  if(!capacity)return `${innerHeader('Capacity Detail')}<div class="content"><div class="empty-state"><h3>No capacity forecast available</h3><p>Capacity details appear when an authoritative workload forecast is available.</p></div></div>`;
-  return `<div class="module-page workforce-module">${innerHeader('Capacity Detail')}<div class="content">
-    <div class="card bordered workforce-detail-card"><div class="stat-inline"><span class="label">Expected workload</span><span class="val">${capacity.expectedWorkload} ${capacity.unit}</span></div><div class="stat-inline"><span class="label">Core Team capacity</span><span class="val">${capacity.coreCapacity} ${capacity.unit}</span></div><div class="stat-inline"><span class="label">Capacity gap</span><span class="val">~${capacity.gap} ${capacity.unit}</span></div><div class="stat-inline"><span class="label">Required work type</span><span class="val">${capacity.requiredSkill}</span></div><div class="stat-inline"><span class="label">Suggested support</span><span class="val">${capacity.suggestedHelpers} ${capacity.requiredSkill} Helpers</span></div></div>
-    <button class="btn btn-primary" data-action="openCreateWorkSession">Create Work Session</button>
-  </div></div>`;
+  return `${innerHeader('Capacity Detail')}<div class="content"><div class="empty-state"><h3>Capacity Planning is not connected yet</h3><p>Capacity Planning requires a backend contract that does not exist yet.</p></div></div>`;
 }
 
-function pageWorkSessionDetail(params){
-  const session=(state.workforce?.workSessions||[]).find(item=>item.id===params.id);
-  if(!session)return `${innerHeader('Work Session')}<div class="content"><div class="empty-state"><h3>Work session unavailable</h3></div></div>`;
-  const confirmed=(session.confirmed||[]).filter(item=>item.status==='confirmed').length;
-  return `<div class="module-page workforce-module">${innerHeader('Work Session')}<div class="content">
-    <div class="workforce-session-heading"><h2>${session.workType}</h2><p>${session.dateLabel} · ${session.startTime} – ${session.endTime}</p></div>
-    <div class="card bordered workforce-detail-card"><div class="stat-inline"><span class="label">Helpers</span><span class="val">${confirmed} / ${session.helpersNeeded} confirmed</span></div><div class="stat-inline"><span class="label">Required skill</span><span class="val">${session.requiredSkill}</span></div><div class="stat-inline"><span class="label">Location</span><span class="val">${session.location}</span></div><div class="stat-inline"><span class="label">Confirm before</span><span class="val">${session.confirmBefore}</span></div></div>
-    <div class="section-title">Helper status</div><div class="settings-group">${(session.confirmed||[]).map(person=>workforceListRow({id:person.id,name:person.name,meta:person.status==='confirmed'?'Confirmed':'Waiting',status:person.status==='confirmed'?'active':'pending',route:person.id.startsWith('helper_')?'helperDetail':'teamMemberDetail'})).join('')||'<div class="empty-state"><h3>No helper responses yet</h3></div>'}</div>
-    <p class="t-caption workforce-private-note">Offer selection method is pending product decision. No individual customer orders are assigned here.</p>
-  </div></div>`;
+function pageWorkSessionDetail(){
+  return `${innerHeader('Work Session')}<div class="content"><div class="empty-state"><h3>Work Sessions is not connected yet</h3><p>Work Sessions requires a backend contract that does not exist yet.</p></div></div>`;
 }
 function setTeamTab(el){teamUiTab=el.dataset.tab||'core';render();}
-function showHelperJoinLink(){
-  const link=`${inviteBaseUrl()}?type=helper&business=${encodeURIComponent(state.businessId||'')}`;
-  openSheet(`<div class="sheet-title">Helper Join Link</div><p class="t-caption">Share this private link with a helper you already know. Registration remains pending until the Owner approves it.</p><div class="field"><input readonly value="${link}" onclick="this.select()"></div><button class="btn btn-secondary" data-action="copyHelperJoinLink" data-link="${link}">${ic('copy')} Copy Link</button>`);
-}
-async function copyHelperJoinLink(el){
-  try{await navigator.clipboard.writeText(el.dataset.link||'');toast('Helper Join Link copied.','success');closeSheet();}
-  catch{toast('Select and copy the link manually.','error');}
-}
-function reviewNextHelper(){
-  const application=(state.workforce?.helperApplications||[]).find(item=>item.status==='pending');
-  if(!application)return toast('No pending helper applications.');
-  openSheet(`<div class="sheet-title">Review Helper</div><div class="card bordered workforce-detail-card"><div class="stat-inline"><span class="label">Name</span><span class="val">${application.name}</span></div><div class="stat-inline"><span class="label">Skill / work type</span><span class="val">${application.skill}</span></div><div class="stat-inline"><span class="label">Status</span><span class="val">Pending Owner Approval</span></div></div><div class="btn-row"><button class="btn btn-secondary" data-action="decideHelperApplication" data-id="${application.id}" data-decision="rejected">Reject</button><button class="btn btn-primary" data-action="decideHelperApplication" data-id="${application.id}" data-decision="approved">Approve</button></div>`);
-}
-function decideHelperApplication(el){
-  if(!window.ceffloDemoMode){toast('Helper approval backend contract is not connected yet.','error');return;}
-  const application=(state.workforce?.helperApplications||[]).find(item=>item.id===el.dataset.id);
-  if(!application)return;
-  application.status=el.dataset.decision;
-  if(application.status==='approved')state.workforce.helpers.push({id:`helper_${application.id}`,name:application.name,skill:application.skill,availability:'Available',status:'approved',sessionsCompleted:0,attendance:'No history yet'});
-  closeSheet();render();toast(application.status==='approved'?'Helper approved.':'Helper rejected.','success');
-}
-function openCreateWorkSession(){
-  const capacity=state.workforce?.capacity||{};
-  openSheet(`<div class="sheet-title">Create Work Session</div>
-    <div class="field"><label>Work Type</label><input id="ws_work_type" value="${capacity.requiredSkill||''}" placeholder="Packing"></div>
-    <div class="field"><label>Date</label><input id="ws_date" type="date"></div>
-    <div class="btn-row"><div class="field"><label>Start Time</label><input id="ws_start" type="time" value="08:00"></div><div class="field"><label>End Time</label><input id="ws_end" type="time" value="13:00"></div></div>
-    <div class="field"><label>Helpers Needed</label><input id="ws_needed" type="number" min="1" value="${capacity.suggestedHelpers||1}"></div>
-    <div class="field"><label>Required Skill</label><input id="ws_skill" value="${capacity.requiredSkill||''}" placeholder="Packing"></div>
-    <div class="field"><label>Location</label><input id="ws_location" placeholder="Kitchen A"></div>
-    <div class="field"><label>Confirm Before</label><input id="ws_confirm" type="time" value="21:00"></div>
-    <button class="btn btn-primary" data-action="createWorkSession">Create Work Session</button>`);
-}
-function formatWorkforceTime(value){if(!value)return '—';const [hour,minute]=value.split(':').map(Number);return `${hour%12||12}:${String(minute).padStart(2,'0')} ${hour>=12?'PM':'AM'}`;}
-function createWorkSession(){
-  const values={workType:document.getElementById('ws_work_type')?.value.trim(),date:document.getElementById('ws_date')?.value,start:document.getElementById('ws_start')?.value,end:document.getElementById('ws_end')?.value,helpersNeeded:Number(document.getElementById('ws_needed')?.value||0),requiredSkill:document.getElementById('ws_skill')?.value.trim(),location:document.getElementById('ws_location')?.value.trim(),confirmBefore:document.getElementById('ws_confirm')?.value};
-  if(!values.workType||!values.date||!values.start||!values.end||values.helpersNeeded<1||!values.requiredSkill||!values.location||!values.confirmBefore)return toast('Complete all required fields.','error');
-  if(!window.ceffloDemoMode){toast('Work Session backend contract is not connected yet.','error');return;}
-  const session={id:`session_${Date.now()}`,workType:values.workType,date:values.date,dateLabel:new Date(`${values.date}T00:00:00`).toLocaleDateString(undefined,{day:'numeric',month:'short'}),startTime:formatWorkforceTime(values.start),endTime:formatWorkforceTime(values.end),helpersNeeded:values.helpersNeeded,requiredSkill:values.requiredSkill,location:values.location,confirmBefore:formatWorkforceTime(values.confirmBefore),status:'open',confirmed:[]};
-  state.workforce.workSessions.unshift(session);closeSheet();navigate('workSessionDetail',{id:session.id});toast('Demo work session created.','success');
-}
 function inviteBaseUrl(){
   return location.hostname==='vendor.cefflo.com' ? 'https://invite.cefflo.com/' : '../invite/';
 }
@@ -7322,8 +7279,7 @@ const ACTIONS = {
   toggleFaq,
   closeSheet,
   openInviteTeamMember, openInviteRiderReal, openManageTeamMember,
-  setTeamTab, showHelperJoinLink, copyHelperJoinLink, reviewNextHelper,
-  decideHelperApplication, openCreateWorkSession, createWorkSession,
+  setTeamTab,
 };
 
 function attachGlobalHandlers(){ /* delegation handles everything; nothing per-render needed */ }
