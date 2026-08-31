@@ -10,7 +10,7 @@ HTML = (ROOT / "previews/s4-10a-product-catalog/index.html").read_text()
 
 class ProductCatalogPreviewTests(unittest.TestCase):
     def test_approved_structure_and_fields(self):
-        for text in ("Products", "Active", "Hidden", "Makanan", "Minuman", "Add-on", "+ Add Product", "Product name", "Category", "Description", "Display price", "Visibility", "Archive"):
+        for text in ("Products", "Active", "Hidden", "Food", "Drinks", "Add-ons", "+ Add Product", "Product name", "Category", "Description", "Display price", "Visibility", "Archive"):
             self.assertIn(text, HTML)
 
     def test_reorder_is_direct_and_category_bounded(self):
@@ -32,6 +32,13 @@ class ProductCatalogPreviewTests(unittest.TestCase):
         self.assertIn("position==='after'", HTML)
         self.assertIn("category.dataset.category!==source.category", HTML)
         self.assertIn("clearDrag()", HTML)
+
+    def test_reorder_motion_and_english_defaults(self):
+        self.assertIn("--drag-y", HTML)
+        self.assertIn("animateReorder", HTML)
+        self.assertIn("prefers-reduced-motion: reduce", HTML)
+        for text in ("Makanan", "Minuman", "Susun Atur", "Disembunyikan"):
+            self.assertNotIn(text, HTML)
 
     def test_restrained_visual_contract(self):
         self.assertIn("--purple:#7C6CF0", HTML)
