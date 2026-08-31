@@ -23,6 +23,12 @@
   const saveRunSequence = (riderId, sessionId, orderedOrderIds) => api.rpc('save_run_sequence', { p_rider_id: riderId, p_delivery_session_id: sessionId, p_ordered_order_ids: orderedOrderIds });
   const startPickupRun = (riderId, sessionId) => api.rpc('start_pickup_run', { p_rider_id: riderId, p_delivery_session_id: sessionId });
   const startRunDelivery = (riderId, sessionId) => api.rpc('start_run_delivery', { p_rider_id: riderId, p_delivery_session_id: sessionId });
+  // S4-08: authoritative delivery-issue report. Only the four Rider "Report
+  // Issue" reasons with a genuine canonical backend match are wired here --
+  // 'Customer changed time' (redelivery) has no backend contract and is
+  // deliberately left unmapped, not force-mapped.
+  const RIDER_ISSUE_REASON_MAP = { 'Customer not reachable': 'customer_unreachable', 'Wrong address': 'address_problem', 'Vendor issue / late': 'vendor_not_ready', 'Rider vehicle breakdown': 'rider_unable_to_proceed' };
+  const reportDeliveryIssue = (riderId, orderId, reasonType, note) => api.rpc('rider_report_delivery_issue', { p_rider_id: riderId, p_order_id: orderId, p_reason_type: reasonType, p_note: note || null });
   async function complete(riderId, orderId, file, note) {
     // Same activeRiderId threaded through both calls -- never independently
     // derived, so the upload's path-embedded context and the completion
@@ -175,7 +181,7 @@
   }
   window.CEFFLO_AUTH = { login };
   window.CEFFLO_RIDER = Object.freeze({
-    orders, transition, complete, acceptAssignment, declineAssignment, hydrateOrders,
+    orders, transition, complete, acceptAssignment, declineAssignment, hydrateOrders, reportDeliveryIssue,
     acceptRun, declineRun, saveRunSequence, startPickupRun, startRunDelivery, riderRuns,
     classifyRiderRelationships, resolveActiveRiderContext, setActiveRiderContext, clearActiveRiderContext
   });
@@ -283,6 +289,38 @@
     } finally {
       pickupActionsInFlight.delete(orderId);
       renderPickupChecklist();
+    }
+  };
+
+  // ===== S4-08: real authoritative issue report. Success is reported ONLY
+  // after the RPC itself succeeds and orders have been re-hydrated -- never
+  // a local-only issue flag, never a claim beyond what the backend actually
+  // recorded (no "Vendor/admin notified", no "assignment paused", no
+  // "address updated" -- none of those actually happen). =====
+  const issueActionsInFlight = new Set();
+  submitIssue = async function (reason, note) {
+    const canonical = RIDER_ISSUE_REASON_MAP[reason];
+    if (!canonical) { showToast('This issue type is not connected yet.', 'error'); return; }
+    const order = appState.currentIssueOrder;
+    const orderId = order?.backendId;
+    if (!orderId || issueActionsInFlight.has(orderId)) return;
+    issueActionsInFlight.add(orderId);
+    try {
+      await reportDeliveryIssue(appState.activeRiderId, orderId, canonical, note || null);
+      await hydrateOrders();
+      closeIssueSheet();
+      showToast('Issue reported.', 'success');
+      // Refresh whichever screen the issue was reported from -- reporting an
+      // issue must not silently teleport the Rider away from an active
+      // delivery flow, matching applyUpdatedAddress's own former precedent.
+      if (currentScreen === 'screen-route') renderRouteOverview();
+      else if (currentScreen === 'screen-arrivedpod') renderArrivedPod();
+      else if (currentScreen === 'screen-map') renderMapPage();
+      else renderHome();
+    } catch (error) {
+      showToast(error.message || 'Unable to report this issue', 'error');
+    } finally {
+      issueActionsInFlight.delete(orderId);
     }
   };
 

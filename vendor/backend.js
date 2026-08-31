@@ -62,6 +62,12 @@
   });
   const revokeRiderInvitation = invitationId => api.rpc('revoke_rider_invitation', { p_invitation_id: invitationId });
   const approvePendingRider = riderId => api.rpc('approve_pending_rider', { p_rider_id: riderId });
+  // S4-08: authoritative delivery-issue report. Only the four Vendor "Report
+  // Issue" reasons with a genuine canonical backend match are wired here --
+  // 'time' (sudden time change) and 'spill' (packaging spill) have no
+  // truthful mapping and are deliberately left unmapped, not force-mapped.
+  const VENDOR_ISSUE_REASON_MAP = { unreachable: 'customer_unreachable', wrong: 'address_problem', bike: 'rider_unable_to_proceed', late: 'vendor_not_ready' };
+  const reportDeliveryIssue = (orderId, reasonType, note) => api.rpc('vendor_report_delivery_issue', { p_order_id: orderId, p_reason_type: reasonType, p_note: note || null });
 
   const listOrders = businessId => api.request(`/rest/v1/orders?business_id=eq.${encodeURIComponent(businessId)}&select=*&order=created_at.desc`);
   const listRiders = businessId => api.request(`/rest/v1/riders?business_id=eq.${encodeURIComponent(businessId)}&select=*&order=created_at.asc`);
@@ -234,7 +240,7 @@
     updateOrderDetails, updateTeamMember, reassignRider, updateBusinessProfile,
     createDeliverySession, buildRiderRun,
     listOrders, listRiders, listRatings, listZones, listDeliverySessions,
-    createTeamInvitation, revokeTeamInvitation, createRiderInvitation, revokeRiderInvitation, approvePendingRider,
+    createTeamInvitation, revokeTeamInvitation, createRiderInvitation, revokeRiderInvitation, approvePendingRider, reportDeliveryIssue,
     listBusinessMembers, listTeamInvitations, listRiderInvitations,
     hydrate: hydrateCanonicalWorkspace, hydrateTeam: hydrateTeamWorkspace, subscribe, startRealtime, stopRealtime
   });
@@ -435,6 +441,32 @@
       await deactivateRider(el.dataset.id);
       await hydrateCanonicalWorkspace(); await hydrateTeamWorkspace(); render(); toast('Rider request rejected', 'success');
     } catch (error) { toast(error.message || 'Unable to reject Rider', 'error'); }
+  };
+  // S4-08: real authoritative issue report. Success is reported ONLY after
+  // the RPC itself succeeds and the canonical workspace has been re-hydrated
+  // -- never a local-only status mutation, never a claim beyond what the
+  // backend actually recorded (no "customer contacted", no "WhatsApp sent",
+  // no "Rider notified" -- those never happened).
+  const issueActionsInFlight = new Set();
+  ACTIONS.confirmReportDeliveryIssue = async function (el) {
+    const canonical = VENDOR_ISSUE_REASON_MAP[el.dataset.reason];
+    if (!canonical) { toast('This issue type is not connected yet.', 'error'); return; }
+    const order = state.orders.find(item => item.id === el.dataset.id);
+    const orderId = order?.backendId || el.dataset.id;
+    if (issueActionsInFlight.has(orderId)) return;
+    issueActionsInFlight.add(orderId);
+    try {
+      await reportDeliveryIssue(orderId, canonical, null);
+      await hydrateCanonicalWorkspace();
+      if (!deliveryExecState.completedStops.includes(orderId)) deliveryExecState.completedStops.push(orderId);
+      closeSheet();
+      toast('Delivery issue reported.', 'success');
+      render();
+    } catch (error) {
+      toast(error.message || 'Unable to report delivery issue', 'error');
+    } finally {
+      issueActionsInFlight.delete(orderId);
+    }
   };
   ACTIONS.confirmManageTeamMember = async function (el) {
     try {
