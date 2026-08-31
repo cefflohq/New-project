@@ -4163,12 +4163,6 @@ function syncNewAccountOnboarding(){
   return progress;
 }
 
-const ORDER_TRANSITIONS = Object.freeze({
-  pendingConfirmation:['pendingPayment'], pendingPayment:['confirmed'], confirmed:['kitchenQueue'],
-  kitchenQueue:['packing'], packing:['sorting'], sorting:['readyForPickup'],
-  readyForPickup:['pickedUp'], pickedUp:['delivering'], delivering:['completed','issue'],
-  issue:['pickedUp','delivering','completed'], completed:[]
-});
 function operationalDateKey(date=new Date()){ return date.toISOString().slice(0,10); }
 function activeDeliverySession(){
   const today=operationalDateKey();
@@ -4254,16 +4248,6 @@ function computeRunProgress(){
     else assignmentState='Accepted';
     return {sessionId:g.sessionId,waveName:session?session.name:'Run',riderId:g.riderId,riderName:rider?rider.name:'—',assignmentState,total,pickedUp,delivered};
   }).sort((a,b)=>a.waveName.localeCompare(b.waveName)||a.riderName.localeCompare(b.riderName));
-}
-function transitionOrderStatus(orderId,nextStatus,meta={}){
-  const order=state.orders.find(o=>o.id===orderId); if(!order) throw new Error('Order not found');
-  const previous=order.status;
-  const allowed=ORDER_TRANSITIONS[previous]||[];
-  if(previous!==nextStatus && !allowed.includes(nextStatus)) throw new Error(`Invalid order transition: ${previous} → ${nextStatus}`);
-  order.status=nextStatus; order.updatedAt=new Date().toISOString();
-  if(nextStatus==='completed') order.completedAt=order.updatedAt;
-  state.orderStatusHistory.push({id:`osh_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,orderId,fromStatus:previous,toStatus:nextStatus,changedBy:meta.changedBy||'local_user',changedAt:order.updatedAt,remarks:meta.remarks||''});
-  persistOperationalStore(); return order;
 }
 function reconcileOperationalStore(){
   const today=operationalDateKey();
@@ -4991,10 +4975,6 @@ function simCall(el){
   if(!raw){ toast('No phone number available','error'); return; }
   window.location.href='tel:'+raw.replace(/[^\d+]/g,'');
   toast('Opening dialer for '+(el.dataset.name||raw),'success');
-}
-function markReadyForPickup(el){
-  const o = state.orders.find(x=>x.id===el.dataset.id);
-  if(o){ transitionOrderStatus(o.id,'readyForPickup'); toast('Order marked ready for pickup','success'); render(); }
 }
 function openAssignRiderForOrder(el){
   const orderId = el.dataset.id;
@@ -5962,7 +5942,7 @@ function startDeliveryForRider(riderId){
 }
 
 /* ===================== PAGE: DELIVERY EXECUTION ===================== */
-const deliveryExecState = { riderId:null, completedStops:[], mapAppChosen:null, podTaken:false, issueCallAttempt:0 };
+const deliveryExecState = { riderId:null, completedStops:[], mapAppChosen:null, issueCallAttempt:0 };
 function deliveringOrdersForRider(riderId){
   return state.orders.filter(o=>o.riderId===riderId && o.status==='delivering');
 }
@@ -5980,9 +5960,9 @@ function pageDeliveryExecution(params){
     ${innerHeader(t('deliveryExecution'))}
     <div class="content">
       <div class="center-col" style="padding:40px 0">
-        <div class="success-pop">${ic('check')}</div>
-        <h2 class="t-h1" style="margin-top:18px">${t('allStopsDelivered')}</h2>
-        <p class="t-caption" style="margin-top:6px">Every order for ${r?r.name:'this rider'} has been completed.</p>
+        <div style="width:48px;height:48px;color:var(--text-faint)">${ic('emptybox')}</div>
+        <h2 class="t-h1" style="margin-top:18px">No delivery stops available</h2>
+        <p class="t-caption" style="margin-top:6px">Delivery progress for ${r?r.name:'this rider'} is updated from authoritative Rider activity.</p>
       </div>
       <button class="btn btn-primary" data-nav="dashboard">${t('goToDashboard')}</button>
     </div>`;
@@ -6030,13 +6010,6 @@ function pageDeliveryExecution(params){
       ${stopNum===orders.length ? t('slideComplete').replace('Slide to ','').replace('Leret untuk ','') : t('markDelivered')}
     </button>
 
-    ${stopNum===orders.length ? `
-    <div style="margin-top:16px">
-      <div class="slide-track" id="completeDeliverySlider" data-oncomplete="finalizeCompleteDelivery" data-arg="${riderId}">
-        <div class="slide-label">${t('slideComplete')}</div>
-        <div class="slide-thumb">${ic('chev')}</div>
-      </div>
-    </div>` : ''}
   </div>`;
 }
 function openNavigateSheet(el){
@@ -6091,39 +6064,16 @@ function openUnreachableGuidance(orderId){
 }
 function openCompleteStopSheet(el){
   const orderId = el.dataset.id;
-  deliveryExecState.podTaken = false;
   openSheet(`
     <div class="sheet-title">${t('proofDelivery')}</div>
-    <p class="t-body" style="color:var(--text-secondary);margin-bottom:14px">${t('podBody')}</p>
-    <div class="card bordered" id="podArea" style="text-align:center;padding:32px;cursor:pointer" data-action="simulatePodPhoto">
-      <div style="width:40px;height:40px;margin:0 auto 10px;color:var(--text-faint)">${ic('camera')}</div>
-      <div class="t-caption">${t('tapPod')}</div>
-    </div>
-    <button class="btn btn-primary" id="markDeliveredBtn" data-action="confirmMarkDelivered" data-id="${orderId}" disabled style="margin-top:16px;opacity:.4">${t('markDelivered')}</button>
+    <p class="t-body" style="color:var(--text-secondary);margin-bottom:14px">Delivery completion and proof of delivery must be submitted by the assigned Rider. This Vendor action is not connected yet.</p>
+    <button class="btn btn-primary" id="markDeliveredBtn" data-action="confirmMarkDelivered" data-id="${orderId}">${t('markDelivered')}</button>
   `);
 }
-function simulatePodPhoto(){
-  const area = document.getElementById('podArea');
-  area.innerHTML = `<div style="width:40px;height:40px;margin:0 auto 10px;color:var(--success)">${ic('check')}</div><div class="t-caption" style="color:var(--success);font-weight:600">${t('photoCaptured')}</div>`;
-  const btn = document.getElementById('markDeliveredBtn');
-  btn.disabled = false; btn.style.opacity = '1';
-}
 function confirmMarkDelivered(el){
-  const orderId = el.dataset.id;
-  const o = state.orders.find(x=>x.id===orderId);
-  if(o){ o.podPhoto = true; transitionOrderStatus(o.id,'completed',{remarks:'Proof of delivery captured'}); o.time='Just now'; o.activity.push({label:'Delivered', time:'now'}); }
-  deliveryExecState.completedStops.push(orderId);
-  const rider = state.riders.find(r=>r.id===deliveryExecState.riderId);
-  if(rider){ rider.deliveredToday++; }
-  closeSheet();
-  toast(orderId+' marked as delivered', 'success');
-  render();
-}
-function finalizeCompleteDelivery(riderId){
-  const rider = state.riders.find(r=>r.id===riderId);
-  if(rider) rider.deliveringStatus = null;
-  toast('Delivery session completed', 'success');
-  navigate('deliveryExecution', {id: riderId});
+  // complete_delivery is Rider-authorized and requires that Rider's real POD.
+  // Vendor must neither impersonate the Rider nor create local delivery truth.
+  toast('Marking delivery as completed is not connected in Vendor yet.', 'error');
 }
 
 /* ===================== PAGE: CUSTOMER TRACKING ===================== */
@@ -7275,7 +7225,7 @@ function pageSettingsProposed(){
 
 const ACTIONS = {
   goBack, retryRender, openSideMenu, openAddOrder, setOrdersTab, toggleOrdersSearch,
-  openOrderMenu, simWhatsapp, simCall, markReadyForPickup, openAssignRiderForOrder, confirmAssignRiderOrder,
+  openOrderMenu, simWhatsapp, simCall, openAssignRiderForOrder, confirmAssignRiderOrder,
   openReportIssue, confirmReportIssue, openReschedule, confirmReschedule,
   startCsvImport, startManualKeyIn, wizAddItem, wizBack, wizNext, wizSubmit,
   openImportFilePicker, fixCsvRow, saveCsvRowFix, confirmCsvImport,
@@ -7286,7 +7236,7 @@ const ACTIONS = {
   runBuilderSelectRider, runBuilderSetWaveMode, runBuilderSelectWave,
   openVerifySheet, verifyCurrentOrder,
   openNavigateSheet, chooseMapApp, openDeliveryIssueSheet, handleDeliveryIssue, openUnreachableGuidance,
-  openCompleteStopSheet, simulatePodPhoto, confirmMarkDelivered,
+  openCompleteStopSheet, confirmMarkDelivered,
   setReportRange, openExportSheet, simulateExport,
   setNotifTab, markAllRead, openNotification,
   setVendorAppearance, setVendorDarkMode, toggleVendorNotifications,
@@ -7370,7 +7320,6 @@ render = function(){
 };
 // register slider-related fns for lookup
 ACTIONS.startDeliveryForRider = startDeliveryForRider;
-ACTIONS.finalizeCompleteDelivery = finalizeCompleteDelivery;
 
 /* ===================== AUTH <-> APP BRIDGE ===================== */
 function enterVendorApp(){
@@ -7681,7 +7630,6 @@ window.CEFFLO_BACKEND={
 const CEFFLO_ENGINE_VERSION='3.0.0';
 const SESSION_TRANSITIONS=Object.freeze({planned:['active','cancelled'],active:['completed','cancelled'],completed:[],cancelled:[]});
 const ASSIGNMENT_TRANSITIONS=Object.freeze({planned:['assigned','cancelled'],assigned:['pickup','cancelled'],pickup:['delivering','cancelled'],delivering:['completed','issue'],issue:['delivering','completed','cancelled'],completed:[],cancelled:[]});
-const STOP_TRANSITIONS=Object.freeze({pending:['ready','skipped'],ready:['active','skipped'],active:['arrived','issue','skipped'],arrived:['completed','issue'],issue:['active','arrived','completed','skipped'],completed:[],skipped:[]});
 const ACTIVE_ASSIGNMENT_STATES=new Set(['assigned','pickup','delivering','issue']);
 const TERMINAL_ORDER_STATES=new Set(['completed']);
 const ENGINE_EVENT_HANDLERS=new Map();
@@ -7832,64 +7780,6 @@ function transitionAssignment(assignmentId,nextStatus){
     assignment.status=nextStatus; assignment.updatedAt=nowIso(); emitEngineEvent('assignment.status_changed',{assignmentId,previous,nextStatus}); return assignment;
   });
 }
-const milestone1TransitionOrderStatus=transitionOrderStatus;
-transitionOrderStatus=function(orderId,nextStatus,meta={}){
-  return runEngineTransaction('transitionOrderStatus',()=>{
-    const order=state.orders.find(item=>item.id===orderId); assertEngine(order,'Order not found.','ORDER_NOT_FOUND');
-    if(nextStatus==='pickedUp') assertEngine(order.riderId,'A rider must be assigned before pickup.','ORDER_RIDER_REQUIRED');
-    if(nextStatus==='delivering'){
-      const stop=state.deliveryStops.find(item=>item.orderId===orderId); assertEngine(stop && stop.riderId,'A delivery stop and rider assignment are required before delivery.','STOP_ASSIGNMENT_REQUIRED');
-    }
-    if(nextStatus==='completed') assertEngine(!findOpenIssueByOrder(orderId) || meta.resolveIssue===true,'Resolve the open issue before completing this order.','ORDER_OPEN_ISSUE');
-    const result=milestone1TransitionOrderStatus(orderId,nextStatus,meta);
-    const stop=state.deliveryStops.find(item=>item.orderId===orderId);
-    if(stop){
-      if(nextStatus==='readyForPickup' && ['pending','ready'].includes(stop.status)) stop.status='ready';
-      if(nextStatus==='pickedUp') stop.status='active';
-      if(nextStatus==='delivering' && ['ready','active'].includes(stop.status)) stop.status='active';
-      if(nextStatus==='completed'){stop.status='completed';stop.completedAt=order.completedAt||nowIso();}
-    }
-    if(nextStatus==='completed') addOperationalNotification({type:'orders',icon:'check',title:'Order delivered',desc:`${order.id} has been completed`,nav:{name:'orderDetail',params:{id:order.id}},dedupeKey:`order-completed:${order.id}`});
-    emitEngineEvent('order.status_changed',{orderId,fromStatus:state.orderStatusHistory.at(-1)?.fromStatus,toStatus:nextStatus});
-    return result;
-  });
-};
-function transitionDeliveryStop(stopId,nextStatus,meta={}){
-  return runEngineTransaction('transitionDeliveryStop',()=>{
-    const stop=findStop(stopId); assertEngine(stop,'Delivery stop not found.','STOP_NOT_FOUND');
-    const previous=stop.status; assertEngine((STOP_TRANSITIONS[previous]||[]).includes(nextStatus),`Invalid stop transition: ${previous} → ${nextStatus}`,'STOP_TRANSITION_INVALID');
-    const order=state.orders.find(item=>item.id===stop.orderId); assertEngine(order,'Order for this stop was not found.','ORDER_NOT_FOUND');
-    if(nextStatus==='arrived') stop.arrivedAt=nowIso();
-    if(nextStatus==='completed'){
-      assertEngine(meta.podCaptured===true || order.podPhoto===true,'Proof of delivery is required before completing a stop.','POD_REQUIRED');
-      order.podPhoto=true; stop.completedAt=nowIso();
-      if(order.status!=='completed') transitionOrderStatus(order.id,'completed',{remarks:'Delivery stop completed with POD',resolveIssue:meta.resolveIssue===true});
-    }
-    stop.status=nextStatus; stop.updatedAt=nowIso(); emitEngineEvent('stop.status_changed',{stopId,previous,nextStatus,orderId:order.id}); return stop;
-  });
-}
-function reportOperationalIssue({orderId,type='customer_unreachable',remarks='',reportedBy='local_user'}){
-  return runEngineTransaction('reportOperationalIssue',()=>{
-    const order=state.orders.find(item=>item.id===orderId); assertEngine(order,'Order not found.','ORDER_NOT_FOUND');
-    assertEngine(!findOpenIssueByOrder(orderId),'This order already has an open issue.','ISSUE_ALREADY_OPEN');
-    const issue={id:engineId('issue'),businessId:state.businessId,orderId,type,status:'open',remarks,reportedBy,createdAt:nowIso(),resolvedAt:null,resolution:null};
-    state.issues.push(issue); order.issueStatus='open';
-    const stop=state.deliveryStops.find(item=>item.orderId===orderId); if(stop && !['completed','skipped'].includes(stop.status)) stop.status='issue';
-    if(order.status==='delivering') milestone1TransitionOrderStatus(orderId,'issue',{changedBy:reportedBy,remarks:`Issue reported: ${type}`});
-    addOperationalNotification({type:'orders',icon:'alert',title:'Delivery issue reported',desc:`${order.id} · ${type.replaceAll('_',' ')}`,nav:{name:'orderDetail',params:{id:order.id}},dedupeKey:`issue-open:${issue.id}`});
-    emitEngineEvent('issue.opened',{issue}); return issue;
-  });
-}
-function resolveOperationalIssue(issueId,{resolution='resolved',resumeStatus='delivering',resolvedBy='local_user'}={}){
-  return runEngineTransaction('resolveOperationalIssue',()=>{
-    const issue=state.issues.find(item=>item.id===issueId); assertEngine(issue,'Issue not found.','ISSUE_NOT_FOUND');
-    assertEngine(issue.status!=='resolved','Issue is already resolved.','ISSUE_ALREADY_RESOLVED');
-    issue.status='resolved';issue.resolution=resolution;issue.resolvedBy=resolvedBy;issue.resolvedAt=nowIso();
-    const order=state.orders.find(item=>item.id===issue.orderId); if(order){order.issueStatus=null;if(order.status==='issue' && resumeStatus) milestone1TransitionOrderStatus(order.id,resumeStatus,{changedBy:resolvedBy,remarks:`Issue resolved: ${resolution}`});}
-    const stop=state.deliveryStops.find(item=>item.orderId===issue.orderId); if(stop?.status==='issue') stop.status=resumeStatus==='completed'?'completed':'active';
-    emitEngineEvent('issue.resolved',{issueId,orderId:issue.orderId,resolution}); return issue;
-  });
-}
 function recalculateStopSequence(assignmentId,orderedStopIds=[]){
   return runEngineTransaction('recalculateStopSequence',()=>{
     const assignment=findAssignment(assignmentId); assertEngine(assignment,'Assignment not found.','ASSIGNMENT_NOT_FOUND');
@@ -7912,7 +7802,7 @@ function validateOperationalIntegrity(){
 }
 window.CEFFLO_ENGINE={
   version:CEFFLO_ENGINE_VERSION,on:onEngineEvent,emit:emitEngineEvent,snapshot:getOperationalSnapshot,validate:validateOperationalIntegrity,
-  commands:{createDeliverySession,transitionDeliverySession,createOrder:createProductionOrder,assignZoneToRider,transitionAssignment,transitionOrderStatus,transitionDeliveryStop,reportIssue:reportOperationalIssue,resolveIssue:resolveOperationalIssue,resequenceStops:recalculateStopSequence},
+  commands:{createDeliverySession,transitionDeliverySession,createOrder:createProductionOrder,assignZoneToRider,transitionAssignment,resequenceStops:recalculateStopSequence},
   selectors:{activeDeliverySession,sessionOrders,getTodayDashboardMetrics,getCurrentDeliveries,assignmentOrders,assignmentStops}
 };
 
@@ -8202,10 +8092,6 @@ window.CEFFLO_ENGINE.commands.createOrder=function(payload){
 };
 const milestone5BaseAssign=window.CEFFLO_ENGINE.commands.assignZoneToRider;
 window.CEFFLO_ENGINE.commands.assignZoneToRider=function(payload){const assignment=milestone5BaseAssign(payload);recalculateAssignmentRoute(assignment.id);return assignment;};
-const milestone5BaseOrderTransition=window.CEFFLO_ENGINE.commands.transitionOrderStatus;
-window.CEFFLO_ENGINE.commands.transitionOrderStatus=function(...args){const order=milestone5BaseOrderTransition(...args);const assignment=state.riderAssignments.find(item=>item.riderId===order.riderId&&item.zoneId===order.zoneId&&item.deliverySessionId===order.deliverySessionId);if(assignment)recalculateAssignmentRoute(assignment.id,{pickupBufferMinutes:0});return order;};
-const milestone5BaseStopTransition=window.CEFFLO_ENGINE.commands.transitionDeliveryStop;
-window.CEFFLO_ENGINE.commands.transitionDeliveryStop=function(...args){const stop=milestone5BaseStopTransition(...args);const assignment=state.riderAssignments.find(item=>item.riderId===stop.riderId&&item.zoneId===stop.zoneId&&!['completed','cancelled'].includes(item.status));if(assignment)recalculateAssignmentRoute(assignment.id,{pickupBufferMinutes:0});return stop;};
 
 window.CEFFLO_ENGINE.route={
   version:CEFFLO_ROUTE_VERSION,
