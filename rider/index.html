@@ -1977,7 +1977,7 @@ function updatePhoneCountry(){const sel=document.getElementById('phone-country')
 function toggleRiderAvailability(){
  const current=localStorage.getItem('cefflo_rider_online')!=='0';
  if(current&&appState.sessionStart&&!appState.orders.every(o=>o.delivered)){showToast('Complete or pause the active delivery session before going offline.','warning');return;}
- localStorage.setItem('cefflo_rider_online',current?'0':'1');updateAvailabilityUI();showToast(current?'You are now offline. GPS tracking is off.':'You are online. GPS tracking is active.','success');
+ localStorage.setItem('cefflo_rider_online',current?'0':'1');updateAvailabilityUI();showToast(current?'You are now offline.':'You are online. Location tracking is not connected yet.','success');
 }
 
 
