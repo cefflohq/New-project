@@ -14,6 +14,7 @@
     .section-label{margin:22px 0 8px;color:#65636C;font-size:11px;font-weight:600}
     .photo-card{position:relative;padding:16px;display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:14px;background:#fff}
     .photo-thumb{width:56px;height:56px;flex:0 0 auto;border-radius:11px;overflow:hidden;background:#F4F3F6;display:grid;place-items:center;color:#B4B0BB}
+    .photo-thumb img,.visual img,.approved-visual img,.selected-visual img,.processing-preview img{width:100%;height:100%;display:block;object-fit:contain}
     .photo-thumb svg{width:24px;height:24px}
     .photo-copy{min-width:0;flex:1}.photo-title{font-size:12.5px;font-weight:600}.photo-sub{margin-top:2px;font-size:10.5px;color:var(--muted)}
     .status-dot{display:inline-block;width:6px;height:6px;margin-right:5px;border-radius:99px;background:var(--soft)}
@@ -34,6 +35,7 @@
     .btn{height:46px;padding:0 14px;border-radius:11px;font-size:12px;font-weight:600;border:0}
     .btn.primary{background:var(--purple);color:#fff}.btn.secondary{background:#F4F3F6;color:var(--text)}
     .processing{margin-top:18px;padding:22px 16px;border:1px solid var(--line);border-radius:14px;text-align:center}
+    .processing-preview,.selected-visual{width:100%;aspect-ratio:16/10;margin-bottom:16px;overflow:hidden;border-radius:11px;background:#F4F3F6}
     .spinner{width:30px;height:30px;margin:0 auto 14px;border-radius:50%;border:3px solid var(--purple-tint);border-top-color:var(--purple);animation:spin 900ms linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
     .steps{margin-top:16px;text-align:left;display:flex;flex-direction:column;gap:9px}
@@ -42,7 +44,7 @@
     .step.done i{border-color:var(--good);background:var(--good);color:#fff}
     .compare{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .compare .photo{border:1px solid var(--line);border-radius:12px;overflow:hidden}
-    .compare .visual{aspect-ratio:1;background:#F4F3F6;display:grid;place-items:center;color:#B4B0BB}
+    .compare .visual{aspect-ratio:1;background:#F4F3F6;display:grid;place-items:center;color:#B4B0BB;overflow:hidden}
     .compare .visual.prepared{background:var(--purple-tint);color:var(--purple-dark)}
     .compare .visual svg{width:34px;height:34px}
     .compare label{display:block;padding:7px 0;text-align:center;font-size:10px;font-weight:600;color:var(--muted)}
@@ -64,19 +66,21 @@
   <div class="preview-label">S4-10B UI Preview · Local Demo</div>
   <main class="shell"><div class="app" id="app"></div></main>
   <div id="overlay"></div><div class="sr-only" aria-live="polite" id="live"></div>
+  <input class="sr-only" id="photoInput" type="file" accept="image/*" aria-label="Choose a product photo">
   <script>
-    // Deterministic mock only -- no real upload, no real processing, no
+    // Browser-local photo selection only -- no upload, no processing, no
     // network call. Matches the already-approved S4-10A visual language
     // (same tokens/components); this file is new and does not modify the
     // S4-10A preview. Story: V1 upload -> prepared -> approved, then a
     // Replace Photo (V2) walkthrough that fails once and retries into
     // approval, so every required state is directly reachable in one pass.
     const product = { name: 'Chicken Nasi Lemak', category: 'Food', description: 'House sambal · crispy chicken', price: 12 };
-    let media = null; // { version, status: 'queued'|'processing'|'prepared'|'failed'|'approved', failReason }
+    let media = null; // currently approved photo: { version, url, name }
+    let candidate = null; // selected replacement: { version, url, name, status, step, failReason }
     let screen = 'edit';
     let sheetOpen = false;
     let hasFailedOnce = false;
-    const app = document.querySelector('#app'), overlay = document.querySelector('#overlay'), live = document.querySelector('#live');
+    const app = document.querySelector('#app'), overlay = document.querySelector('#overlay'), live = document.querySelector('#live'), photoInput = document.querySelector('#photoInput');
     const icon = {
       photo: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="8.5" cy="10" r="1.5" fill="currentColor"/><path d="m4 17 5-5 3 3 4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
       dish: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.2" fill="currentColor" opacity=".5"/></svg>',
@@ -89,10 +93,7 @@
 
     function photoStatusLine(){
       if(!media) return {cls:'', text:'No photo yet'};
-      if(media.status==='approved') return {cls:'approved', text:`Live photo · v${media.version}`};
-      if(media.status==='failed') return {cls:'failed', text:'Preparation failed'};
-      if(media.status==='prepared') return {cls:'reviewing', text:'Ready for your review'};
-      return {cls:'reviewing', text:'Preparing your photo…'};
+      return {cls:'approved', text:`Live photo · v${media.version}`};
     }
 
     function renderEdit(){
@@ -102,7 +103,7 @@
         <div class="content">
           <div class="section-label">Product photo</div>
           <button class="photo-card" id="openPhoto" style="width:100%;text-align:left;cursor:pointer">
-            <div class="photo-thumb">${media && (media.status==='approved') ? icon.dish : icon.photo}</div>
+            <div class="photo-thumb">${media ? `<img src="${media.url}" alt="Approved product photo">` : icon.photo}</div>
             <div class="photo-copy">
               <div class="photo-title">${media ? 'Product photo' : 'Add a product photo'}</div>
               <div class="photo-sub status-row ${line.cls}"><span class="status-dot"></span>${line.text}</div>
@@ -135,28 +136,32 @@
     function renderSheet(){
       if(!sheetOpen){ overlay.innerHTML=''; return; }
       let body;
-      if(!media){
-        body = emptyUploadBody();
-      } else if(media.status==='queued' || media.status==='processing'){
+      if(candidate?.status==='selected'){
+        body = selectedPhotoBody();
+      } else if(candidate?.status==='queued' || candidate?.status==='processing'){
         body = processingBody();
-      } else if(media.status==='failed'){
+      } else if(candidate?.status==='failed'){
         body = failedBody();
-      } else if(media.status==='prepared'){
+      } else if(candidate?.status==='prepared'){
         body = reviewBody();
-      } else if(media.status==='approved'){
+      } else if(!media){
+        body = emptyUploadBody();
+      } else {
         body = approvedBody();
       }
       overlay.innerHTML = sheetShell(sheetTitle(), body);
       document.querySelector('#closeSheet').onclick = closeSheet;
       bindSheetActions();
-      if(media && media.status==='processing') advanceProcessing();
+      if(candidate?.status==='processing') advanceProcessing();
     }
 
     function sheetTitle(){
+      if(candidate?.status==='selected') return 'Selected Photo';
+      if(candidate?.status==='failed') return 'Preparation Failed';
+      if(candidate?.status==='prepared') return 'Review Photo';
+      if(candidate) return 'Preparing Photo';
+      if(media) return 'Product Photo';
       if(!media) return 'Add Product Photo';
-      if(media.status==='approved') return 'Product Photo';
-      if(media.status==='failed') return 'Preparation Failed';
-      if(media.status==='prepared') return 'Review Photo';
       return 'Preparing Photo';
     }
 
@@ -171,29 +176,40 @@
             <button class="btn primary" id="uploadPhoto">Upload Photo</button>
           </div>
         </div>
-        <p class="demo-note">No file is uploaded in this preview. Selecting either option simulates a real photo being received.</p>`;
+        <p class="demo-note">Your selected photo stays on this device. Nothing is uploaded in this preview.</p>`;
+    }
+
+    function selectedPhotoBody(){
+      return `
+        <p class="caption">This is the photo selected from your device. Check it before starting the simulated preparation.</p>
+        <div class="selected-visual"><img src="${candidate.url}" alt="Selected original product photo"></div>
+        <button class="btn primary save" id="preparePhoto">Use This Photo</button>
+        <button class="btn secondary save" id="replaceSelected" style="background:#F4F3F6;color:var(--text);margin-top:8px">Choose a Different Photo</button>
+        <p class="demo-note">Local preview only -- choosing this photo does not upload it.</p>`;
     }
 
     function processingBody(){
-      const step = media.step || 0;
+      const step = candidate.step || 0;
       const labels = ['Original received','Removing background','Balancing lighting & colour','Preparing product image'];
       return `
         <div class="processing">
+          <div class="processing-preview"><img src="${candidate.url}" alt="Selected original product photo"></div>
           <div class="spinner"></div>
           <div class="photo-title">Preparing your photo…</div>
           <div class="steps">${labels.map((l,i)=>`<div class="step ${step>i?'done':''}"><i>${step>i?'✓':''}</i>${l}</div>`).join('')}</div>
         </div>
-        <p class="demo-note">Simulated preview only -- no processing provider is called. Real preparation is built in S4-10C.</p>`;
+        <p class="demo-note">Simulated preview only -- the selected photo stays local and no processing provider is called.</p>`;
     }
 
     function reviewBody(){
       return `
         <p class="caption">The product stays truthful -- only presentation is prepared. Compare before approving.</p>
         <div class="compare">
-          <div class="photo"><div class="visual">${icon.dish}</div><label>Original</label></div>
-          <div class="photo"><div class="visual prepared">${icon.dish}</div><label>Prepared</label></div>
+          <div class="photo"><div class="visual"><img src="${candidate.url}" alt="Original selected photo"></div><label>Original</label></div>
+          <div class="photo"><div class="visual prepared"><img src="${candidate.url}" alt="Prepared layout preview of the same photo"></div><label>Prepared</label></div>
         </div>
-        <button class="btn primary save" id="approvePhoto">Use This Photo</button>
+        <p class="demo-note">Both sides intentionally use the same local image. Real preparation is not part of S4-10B.</p>
+        <button class="btn primary save" id="approvePhoto">Use Prepared Photo</button>
         <button class="btn secondary save" id="replaceFromReview" style="background:#F4F3F6;color:var(--text);margin-top:8px">Replace Photo</button>`;
     }
 
@@ -202,7 +218,7 @@
         <div class="fail-card">
           <div class="icon">${icon.warn}</div>
           <div class="fail-title">We couldn't prepare this photo</div>
-          <p class="caption">${media.failReason || 'Something interrupted preparation.'} Your original photo is safe and nothing has changed on your live Order Page.</p>
+          <p class="caption">${candidate.failReason || 'Something interrupted preparation.'} Your original photo is safe and nothing has changed on your live Order Page.</p>
         </div>
         <button class="btn primary save" id="retryPhoto">Retry Preparation</button>
         <button class="btn secondary save" id="replaceFromFailed" style="background:#F4F3F6;color:var(--text);margin-top:8px">Upload a Different Photo</button>`;
@@ -211,7 +227,7 @@
     function approvedBody(){
       return `
         <div class="approved-card">
-          <div class="approved-visual">${icon.dish}</div>
+          <div class="approved-visual"><img src="${media.url}" alt="Approved product photo"></div>
           <div class="badge-row">${icon.check} Approved · live on your Order Page · v${media.version}</div>
           <p class="original-note">Your original photo stays stored privately and is never shown to customers.</p>
         </div>
@@ -220,38 +236,61 @@
 
     function bindSheetActions(){
       const takePhoto = document.querySelector('#takePhoto'), uploadPhoto = document.querySelector('#uploadPhoto');
-      if(takePhoto) takePhoto.onclick = () => startUpload();
-      if(uploadPhoto) uploadPhoto.onclick = () => startUpload();
+      if(takePhoto) takePhoto.onclick = openPhotoPicker;
+      if(uploadPhoto) uploadPhoto.onclick = openPhotoPicker;
+      const prepare = document.querySelector('#preparePhoto');
+      if(prepare) prepare.onclick = startPreparation;
       const approve = document.querySelector('#approvePhoto');
       if(approve) approve.onclick = () => approveCurrent();
       const retry = document.querySelector('#retryPhoto');
       if(retry) retry.onclick = () => retryCurrent();
-      const replace = document.querySelector('#replacePhoto') || document.querySelector('#replaceFromReview') || document.querySelector('#replaceFromFailed');
-      if(replace) replace.onclick = () => startUpload();
+      const replace = document.querySelector('#replacePhoto') || document.querySelector('#replaceFromReview') || document.querySelector('#replaceFromFailed') || document.querySelector('#replaceSelected');
+      if(replace) replace.onclick = openPhotoPicker;
     }
 
-    function startUpload(){
+    function openPhotoPicker(){
+      photoInput.value = '';
+      photoInput.click();
+    }
+
+    function acceptSelectedFile(file){
+      if(!file) return;
+      if(!file.type || !file.type.startsWith('image/')){
+        announce('Please choose an image file');
+        return;
+      }
       const version = (media && media.version) ? media.version + 1 : 1;
-      media = { version, status: 'queued', step: 0 };
-      announce(`Photo v${version} received`);
+      if(candidate?.url) URL.revokeObjectURL(candidate.url);
+      candidate = { version, status: 'selected', step: 0, url: URL.createObjectURL(file), name: file.name };
+      announce(`Photo v${version} selected`);
       renderSheet();
-      setTimeout(() => { if(media && media.version===version){ media.status='processing'; renderSheet(); } }, 260);
+    }
+
+    photoInput.addEventListener('change', () => acceptSelectedFile(photoInput.files?.[0]));
+
+    function startPreparation(){
+      if(!candidate?.url || candidate.status!=='selected') return;
+      const version = candidate.version;
+      candidate.status = 'queued';
+      announce(`Preparing photo v${version}`);
+      renderSheet();
+      setTimeout(() => { if(candidate && candidate.version===version && candidate.status==='queued'){ candidate.status='processing'; renderSheet(); } }, 260);
     }
 
     function advanceProcessing(){
-      const version = media.version;
+      const version = candidate.version;
       const tick = () => {
-        if(!media || media.version!==version || media.status!=='processing') return;
-        media.step = (media.step||0) + 1;
-        if(media.step >= 4){
+        if(!candidate || candidate.version!==version || candidate.status!=='processing') return;
+        candidate.step = (candidate.step||0) + 1;
+        if(candidate.step >= 4){
           // V1 always succeeds; the first replacement (v2) deterministically
           // demonstrates the failure -> retry path once, then succeeds.
           if(version===2 && !hasFailedOnce){
             hasFailedOnce = true;
-            media.status = 'failed';
-            media.failReason = 'The uploaded photo was too dark to prepare reliably.';
+            candidate.status = 'failed';
+            candidate.failReason = 'The selected photo was too dark to prepare reliably.';
           } else {
-            media.status = 'prepared';
+            candidate.status = 'prepared';
           }
           renderSheet();
           return;
@@ -263,16 +302,21 @@
     }
 
     function approveCurrent(){
-      media.status = 'approved';
+      if(!candidate || candidate.status!=='prepared') return;
+      const previousUrl = media?.url;
+      media = { version:candidate.version, url:candidate.url, name:candidate.name };
+      candidate = null;
+      if(previousUrl && previousUrl!==media.url) URL.revokeObjectURL(previousUrl);
       announce(`Photo v${media.version} approved`);
       closeSheet();
       renderEdit();
     }
     function retryCurrent(){
-      media.status = 'queued'; media.failReason = null; media.step = 0;
+      if(!candidate) return;
+      candidate.status = 'queued'; candidate.failReason = null; candidate.step = 0;
       announce('Retrying preparation');
       renderSheet();
-      setTimeout(() => { if(media && media.status==='queued'){ media.status='processing'; renderSheet(); } }, 260);
+      setTimeout(() => { if(candidate && candidate.status==='queued'){ candidate.status='processing'; renderSheet(); } }, 260);
     }
 
     renderEdit();

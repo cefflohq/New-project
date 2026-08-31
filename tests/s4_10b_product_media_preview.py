@@ -14,6 +14,7 @@ class ProductMediaPreviewTests(unittest.TestCase):
         for text in (
             "Edit Product", "Add a product photo", "Take Photo", "Upload Photo",
             "Preparing your photo", "Original", "Prepared", "Use This Photo",
+            "Use Prepared Photo",
             "Preparation Failed", "Retry Preparation", "Replace Photo",
         ):
             self.assertIn(text, HTML)
@@ -36,11 +37,33 @@ class ProductMediaPreviewTests(unittest.TestCase):
         self.assertIn("stored privately and is never shown to customers", HTML)
 
     def test_replacement_never_shows_unapproved_as_current(self):
-        # Uploading v2 must not itself flip the visible status to approved --
-        # approval only happens through the explicit approve action.
-        fn = HTML[HTML.index("function startUpload"):HTML.index("function advanceProcessing")]
-        self.assertNotIn("status: 'approved'", fn)
-        self.assertIn("status: 'queued'", fn)
+        self.assertIn("let media = null; // currently approved photo", HTML)
+        self.assertIn("let candidate = null; // selected replacement", HTML)
+        fn = HTML[HTML.index("function acceptSelectedFile"):HTML.index("function startPreparation")]
+        self.assertNotIn("media =", fn)
+        self.assertIn("candidate = { version, status: 'selected'", fn)
+
+    def test_real_local_image_picker_and_cancel_semantics(self):
+        self.assertIn('id="photoInput" type="file" accept="image/*"', HTML)
+        self.assertIn("photoInput.click()", HTML)
+        self.assertIn("if(!file) return", HTML)
+        self.assertIn("URL.createObjectURL(file)", HTML)
+        self.assertIn("file.type.startsWith('image/')", HTML)
+        # Opening/cancelling the chooser never starts processing.
+        picker = HTML[HTML.index("function openPhotoPicker"):HTML.index("function acceptSelectedFile")]
+        self.assertNotIn("startPreparation", picker)
+        self.assertNotIn("status = 'processing'", picker)
+
+    def test_selected_image_is_used_throughout_flow(self):
+        self.assertIn('<img src="${candidate.url}" alt="Selected original product photo">', HTML)
+        self.assertIn('<img src="${candidate.url}" alt="Original selected photo">', HTML)
+        self.assertIn('<img src="${candidate.url}" alt="Prepared layout preview of the same photo">', HTML)
+        self.assertIn('<img src="${media.url}" alt="Approved product photo">', HTML)
+        self.assertIn("Both sides intentionally use the same local image", HTML)
+
+    def test_preparation_requires_explicit_selected_candidate(self):
+        fn = HTML[HTML.index("function startPreparation"):HTML.index("function advanceProcessing")]
+        self.assertIn("if(!candidate?.url || candidate.status!=='selected') return", fn)
 
     def test_no_out_of_scope_surface(self):
         forbidden = (
