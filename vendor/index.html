@@ -5055,9 +5055,12 @@ function openReschedule(el){
   `);
 }
 function confirmReschedule(el){
-  const o = state.orders.find(x=>x.id===el.dataset.id);
-  if(o){ transitionOrderStatus(o.id,'pickedUp',{remarks:'Re-delivery scheduled'}); o.activity.push({label:'Re-delivery scheduled', time:'now'}); }
-  closeSheet(); toast('Re-delivery scheduled', 'success'); render();
+  // S4-09: there is no authoritative Vendor reschedule/redelivery contract.
+  // Keep the existing action reachable, but do not turn a requested date/time
+  // into local lifecycle truth, history, delivery events, or notification
+  // claims. The sheet can be dismissed after surfacing the honest gate.
+  closeSheet();
+  toast('Re-delivery scheduling is not connected yet.', 'error');
 }
 
 /* ===================== ADD ORDER ENTRY SHEET (FAB) ===================== */
@@ -5965,15 +5968,11 @@ function undoVerify(orderId){
   navigate('pickupSession', {id: pickupSessionState.riderId}, false);
 }
 function startDeliveryForRider(riderId){
-  const orders = pickupOrdersForRider(riderId);
-  orders.forEach(o=>{ transitionOrderStatus(o.id,'delivering',{remarks:'Rider picked up'}); o.activity.push({label:'Rider picked up', time:'now'}); });
-  const rider = state.riders.find(r=>r.id===riderId);
-  if(rider) rider.deliveringStatus = 'onTheWay';
-  deliveryExecState.riderId = riderId;
-  deliveryExecState.completedStops = [];
-  deliveryExecState.mapAppChosen = null;
-  toast('Delivery started for '+(rider?rider.name:''), 'success');
-  navigate('deliveryExecution', {id: riderId});
+  // S4-09: start_run_delivery is Rider-authorized and validates the signed-in
+  // Rider identity. Vendor must not impersonate that Rider or fabricate the
+  // corresponding lifecycle locally. Keep the completed-verification slider
+  // reachable while the Vendor-side action remains unavailable.
+  toast('Starting delivery for a rider is not connected in Vendor yet.', 'error');
 }
 
 /* ===================== PAGE: DELIVERY EXECUTION ===================== */
