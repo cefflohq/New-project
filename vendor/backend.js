@@ -199,6 +199,17 @@
     if (unsubscribeRealtime) { try { unsubscribeRealtime(); } catch (error) { /* ignore */ } }
     unsubscribeRealtime = null;
   }
+  // Minimal public start: (re)establishes the one Vendor realtime channel
+  // for the current business, reusing subscribe() exactly as before. Safe
+  // to call repeatedly -- the same not-already-subscribed guard that used
+  // to live only in the initial-load restore() closure now lives here, so
+  // any later authenticated-hydration event (not just first script load)
+  // can trigger a fresh subscription after logout -> login in the same tab.
+  function startRealtime() {
+    if (!unsubscribeRealtime && state.businessId) {
+      unsubscribeRealtime = subscribe(state.businessId, () => hydrateCanonicalWorkspace().then(render).catch(() => {}));
+    }
+  }
   function subscribe(businessId, refresh) {
     const client = window.supabase?.createClient(api.config.supabaseUrl, api.config.supabaseAnonKey, {
       global: { headers: { Authorization: `Bearer ${api.session()?.access_token || api.config.supabaseAnonKey}` } }
@@ -225,7 +236,7 @@
     listOrders, listRiders, listRatings, listZones, listDeliverySessions,
     createTeamInvitation, revokeTeamInvitation, createRiderInvitation, revokeRiderInvitation, approvePendingRider,
     listBusinessMembers, listTeamInvitations, listRiderInvitations,
-    hydrate: hydrateCanonicalWorkspace, hydrateTeam: hydrateTeamWorkspace, subscribe, stopRealtime
+    hydrate: hydrateCanonicalWorkspace, hydrateTeam: hydrateTeamWorkspace, subscribe, startRealtime, stopRealtime
   });
   hydrateOperationalStateFromBackend = hydrateCanonicalWorkspace;
   syncOperationalStateToBackend = async () => true;
@@ -446,9 +457,7 @@
       // resolved the real businessId -- previously this adapter exported
       // `subscribe` but never actually called it, so no realtime channel
       // ever existed regardless of table scope.
-      if (!unsubscribeRealtime && state.businessId) {
-        unsubscribeRealtime = subscribe(state.businessId, () => hydrateCanonicalWorkspace().then(render).catch(() => {}));
-      }
+      startRealtime();
     }).catch(error => console.error('[CEFFLO vendor adapter]', error));
     restore();
     setTimeout(restore, 1800);

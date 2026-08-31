@@ -8406,6 +8406,7 @@ async function hydrateAuthenticatedWorkspace(){
   window.CEFFLO?.setSession?.(productionState.authSession);
   if(window.CEFFLO_VENDOR?.hydrate) await window.CEFFLO_VENDOR.hydrate();
   else await hydrateOperationalStateFromBackend();
+  window.CEFFLO_VENDOR?.startRealtime?.();
   return selected;
 }
 function showAuthenticatedApp(){
