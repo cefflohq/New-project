@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+  <title>S4-10D Order Page Theme Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--purple:#7C6CF0;--purple-dark:#6552D8;--purple-tint:#F2F0FF;--text:#17151D;--muted:#76737D;--soft:#A29FA8;--line:#ECEAF0;--surface:#FFF;--good:#3C8A5A}
+    *{box-sizing:border-box;min-width:0}html,body{margin:0;min-height:100%;font-family:Poppins,system-ui;color:var(--text)}body{background:#EEEDEF;overflow-x:hidden}.shell{width:100%;max-width:430px;min-height:100dvh;margin:auto;background:var(--surface);overflow-x:hidden}button,input,textarea,select{font:inherit}.preview-label{display:block;width:fit-content;margin:8px auto;padding:5px 10px;border-radius:99px;background:#211E29;color:#fff;font-size:9px;font-weight:700;letter-spacing:.05em}
+    .header{position:sticky;top:0;z-index:10;min-height:64px;padding:10px 16px;display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}.back{width:40px;height:40px;flex:0 0 auto;border:0;background:transparent;color:var(--text);display:grid;place-items:center}.back svg{width:20px;height:20px}.back.hidden{visibility:hidden}.header h1{margin:0;font-size:16px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .content{padding:16px 16px 44px}
+    .caption{margin:2px 0 0;color:var(--muted);font-size:11px;line-height:1.55}
+    .section-label{margin:24px 0 8px;color:#65636C;font-size:11px;font-weight:600}
+    .section-label:first-child{margin-top:0}
+    .identity-card{padding:14px;display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:18px;background:#fff}
+    .identity-logo{width:48px;height:48px;flex:0 0 auto;border-radius:14px;background:var(--purple-tint);color:var(--purple-dark);display:grid;place-items:center;font-size:17px;font-weight:700;overflow:hidden}
+    .identity-copy{min-width:0}
+    .identity-name{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .identity-sub{margin-top:2px;font-size:10.5px;color:var(--muted)}
+    .theme-grid{margin-top:2px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .theme-tile{position:relative;padding:12px;border:1.5px solid var(--line);border-radius:16px;background:#fff;text-align:left}
+    .theme-tile.selected{border-color:var(--purple)}
+    .theme-swatch{width:100%;aspect-ratio:2/1;border-radius:11px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    .theme-swatch span{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .theme-name{margin-top:8px;font-size:12px;font-weight:600}
+    .theme-check{position:absolute;top:8px;right:8px;width:18px;height:18px;border-radius:50%;background:var(--purple);color:#fff;display:none;align-items:center;justify-content:center}
+    .theme-check svg{width:11px;height:11px}
+    .theme-tile.selected .theme-check{display:flex}
+    .mini-preview{margin-top:16px;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+    .mini-preview-bar{padding:8px 12px;font-size:9.5px;font-weight:600;color:var(--muted);background:#FAF9FB;border-bottom:1px solid var(--line)}
+    .mini-preview-body{padding:16px 14px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+    .mini-preview-name{font-size:15px;font-weight:700}
+    .mini-preview-tag{font-size:10px;opacity:.75}
+    .btn{width:100%;height:52px;margin-top:18px;border:0;border-radius:12px;background:var(--purple);color:#fff;font-size:13px;font-weight:600;padding:0 12px;white-space:normal;line-height:1.3;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn.secondary{background:#fff;color:var(--text);border:1.5px solid var(--line)}
+    .btn svg{width:16px;height:16px;flex:0 0 auto}
+    .save-note{margin-top:10px;text-align:center;font-size:10px;color:var(--muted)}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .announcement{position:fixed;z-index:50;left:50%;bottom:20px;max-width:calc(100% - 32px);transform:translateX(-50%);padding:9px 13px;border-radius:99px;background:#211E29;color:#fff;font-size:10px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    /* Customer Order Page preview */
+    .order-page{min-height:100dvh;display:flex;flex-direction:column}
+    .op-header{position:sticky;top:0;z-index:5;padding:12px 16px;display:flex;align-items:center;gap:10px}
+    .op-header .back{color:inherit}
+    .op-brand{display:flex;align-items:center;gap:9px;min-width:0}
+    .op-logo{width:32px;height:32px;flex:0 0 auto;border-radius:10px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:12px;font-weight:700}
+    .op-brand-name{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .op-disclaimer{padding:6px 16px;font-size:9.5px;text-align:center;opacity:.7}
+    .op-hero{margin:6px 16px 18px;padding:22px 18px;border-radius:20px;display:flex;flex-direction:column;gap:10px}
+    .op-hero-eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+    .op-hero-name{font-size:21px;font-weight:700;line-height:1.2}
+    .op-hero-desc{font-size:11px;opacity:.8;line-height:1.5}
+    .op-hero-price{font-size:16px;font-weight:700}
+    .op-hero-visual{margin-top:4px;align-self:center;width:120px;height:120px;border-radius:50%;display:grid;place-items:center}
+    .op-hero-visual svg{width:46px;height:46px}
+    .op-category{margin:0 16px 4px;font-size:11px;font-weight:700;letter-spacing:.02em;opacity:.85}
+    .op-products{margin:0 16px 18px;display:flex;flex-direction:column;gap:10px}
+    .op-product{padding:10px;display:flex;align-items:center;gap:11px;border-radius:14px}
+    .op-product-visual{width:44px;height:44px;flex:0 0 auto;border-radius:11px;display:grid;place-items:center}
+    .op-product-visual svg{width:20px;height:20px}
+    .op-product-copy{min-width:0;flex:1}
+    .op-product-name{font-size:12px;font-weight:600}
+    .op-product-desc{margin-top:1px;font-size:10px;opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .op-product-price{font-size:11.5px;font-weight:700;flex:0 0 auto}
+    @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="shell"><div class="preview-label">S4-10D UI Preview · Local Demo</div><div class="app" id="app"></div></main>
+  <div class="sr-only" aria-live="polite" id="live"></div>
+  <script>
+    // Preview-only. No backend calls, no persistence, no data mutation of
+    // any kind. Every field shown here is either read from the existing
+    // (mocked-local) Business Profile identity or a local theme selection
+    // held only in this tab's memory. This file demonstrates structure and
+    // interaction for Founder review; it does not implement S4-10E/F/G, no
+    // cart, no order submission, and does not modify S4-10A/B/C.
+
+    // PAGE IDENTITY reuses the authoritative business identity fields that
+    // already exist (businesses.name via update_business_profile, matching
+    // the same field the real Business Profile screen edits) -- this preview
+    // does not introduce a second, independent "Order Page name" field.
+    const businessIdentity = { name: 'Kopi Mak Long', logoInitial: 'KM' };
+
+    // Representative S4-10A-shaped catalog (categories -> products), and
+    // S4-10B-shaped "current approved display image" concept (represented
+    // here as a placeholder icon, since no real approved image exists in a
+    // local-only preview) -- structure mirrors the real contracts, no new
+    // product/media model is introduced.
+    const catalog = [
+      { category: 'Makanan', products: [
+        { name: 'Nasi Lemak Ayam', desc: 'Coconut rice, sambal, crispy chicken', price: 12 },
+        { name: 'Mee Kari', desc: 'Spiced curry noodles', price: 10 },
+      ]},
+      { category: 'Minuman', products: [
+        { name: 'Teh Ais Limau', desc: 'Fresh lime iced tea', price: 6.5 },
+        { name: 'Kopi Susu', desc: 'House coffee, fresh milk', price: 8.5 },
+      ]},
+    ];
+    const featured = catalog[0].products[0];
+
+    // Four curated themes only -- background/type/card mood, never product
+    // truth. The interactive accent (purple) stays constant across every
+    // theme so the page always reads as unmistakably Cefflo; only the
+    // neutral surface and typography colour shift per theme.
+    const THEMES = [
+      { key: 'clean', name: 'Clean', bg: '#FFFFFF', surface: '#F7F6FB', text: '#17151D', muted: '#6B6875' },
+      { key: 'warm', name: 'Warm', bg: '#FBF3E8', surface: '#F3E4CE', text: '#3A2A1C', muted: '#7A6650' },
+      { key: 'fresh', name: 'Fresh', bg: '#F1F7F1', surface: '#DFEBDD', text: '#1E2E20', muted: '#5D7260' },
+      { key: 'midnight', name: 'Midnight', bg: '#16141D', surface: '#211F2B', text: '#F4F2F8', muted: '#9C97AA' },
+    ];
+
+    let screen = 'settings'; // 'settings' | 'fullPreview'
+    let selectedTheme = 'clean';
+    const app = document.querySelector('#app'), live = document.querySelector('#live');
+    const icon = {
+      dish: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.2" fill="currentColor" opacity=".5"/></svg>',
+      check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6 9 12l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      eye: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>'
+    };
+
+    function announce(text){live.textContent=text;document.querySelector('.announcement')?.remove();document.body.insertAdjacentHTML('beforeend',`<div class="announcement">${text}</div>`);setTimeout(()=>document.querySelector('.announcement')?.remove(),1300)}
+    function go(next){ screen = next; render(); }
+    function theme(){ return THEMES.find(t => t.key === selectedTheme); }
+
+    function header(title, showBack){
+      return `<header class="header"><button class="back ${showBack?'':'hidden'}" id="backBtn" aria-label="Back">${icon.back}</button><h1>${title}</h1></header>`;
+    }
+
+    function render(){
+      if(screen==='settings') app.innerHTML = renderSettings();
+      else app.innerHTML = renderFullPreview();
+      bindActions();
+    }
+
+    function renderSettings(){
+      const t = theme();
+      return `
+        ${header('Order Page', false)}
+        <div class="content">
+          <div class="section-label">Page identity</div>
+          <div class="identity-card">
+            <div class="identity-logo">${businessIdentity.logoInitial}</div>
+            <div class="identity-copy">
+              <div class="identity-name">${businessIdentity.name}</div>
+              <div class="identity-sub">Uses your Business Profile name &amp; logo</div>
+            </div>
+          </div>
+
+          <div class="section-label">Theme</div>
+          <div class="theme-grid">
+            ${THEMES.map(x => `
+              <button class="theme-tile ${x.key===selectedTheme?'selected':''}" data-theme-key="${x.key}" aria-pressed="${x.key===selectedTheme}">
+                <span class="theme-check">${icon.check}</span>
+                <div class="theme-swatch" style="background:${x.surface};color:${x.text}"><span>Aa</span></div>
+                <div class="theme-name">${x.name}</div>
+              </button>`).join('')}
+          </div>
+
+          <div class="mini-preview">
+            <div class="mini-preview-bar">Live preview</div>
+            <div class="mini-preview-body" style="background:${t.bg};color:${t.text}">
+              <div class="mini-preview-name">${businessIdentity.name}</div>
+              <div class="mini-preview-tag">Your favourites, presented well</div>
+            </div>
+          </div>
+
+          <div class="section-label">Preview</div>
+          <button class="btn secondary" id="viewFullPreview">${icon.eye}<span>View Full Preview</span></button>
+
+          <button class="btn" id="saveTheme">Save Theme</button>
+          <p class="save-note">Preview only · Not saved. No changes are sent to Cefflo yet.</p>
+        </div>`;
+    }
+
+    function productRow(p, t){
+      return `
+        <div class="op-product" style="background:${t.surface}">
+          <div class="op-product-visual" style="background:${t.bg};color:${t.muted}">${icon.dish}</div>
+          <div class="op-product-copy">
+            <div class="op-product-name">${p.name}</div>
+            <div class="op-product-desc">${p.desc}</div>
+          </div>
+          <div class="op-product-price">RM${p.price.toFixed(2)}</div>
+        </div>`;
+    }
+
+    function renderFullPreview(){
+      const t = theme();
+      return `
+        <div class="order-page" style="background:${t.bg};color:${t.text}">
+          <div class="op-header">
+            <button class="back" id="backBtn" aria-label="Back">${icon.back}</button>
+            <div class="op-brand">
+              <div class="op-logo">${businessIdentity.logoInitial}</div>
+              <div class="op-brand-name">${businessIdentity.name}</div>
+            </div>
+          </div>
+          <p class="op-disclaimer">Preview only -- not the live customer experience yet.</p>
+          <div class="op-hero" style="background:${t.surface}">
+            <div class="op-hero-eyebrow" style="color:${t.muted}">Featured</div>
+            <div class="op-hero-name">${featured.name}</div>
+            <div class="op-hero-desc">${featured.desc}</div>
+            <div class="op-hero-price">RM${featured.price.toFixed(2)}</div>
+            <div class="op-hero-visual" style="background:${t.bg};color:${t.muted}">${icon.dish}</div>
+          </div>
+          ${catalog.map(c => `
+            <div class="op-category" style="color:${t.muted}">${c.category}</div>
+            <div class="op-products">${c.products.map(p => productRow(p, t)).join('')}</div>
+          `).join('')}
+        </div>`;
+    }
+
+    function bindActions(){
+      const backBtn = document.querySelector('#backBtn');
+      if(backBtn) backBtn.onclick = () => go('settings');
+      document.querySelectorAll('[data-theme-key]').forEach(el => {
+        el.onclick = () => { selectedTheme = el.dataset.themeKey; announce(`${theme().name} theme selected`); render(); };
+      });
+      const viewFull = document.querySelector('#viewFullPreview');
+      if(viewFull) viewFull.onclick = () => go('fullPreview');
+      const saveBtn = document.querySelector('#saveTheme');
+      if(saveBtn) saveBtn.onclick = () => announce('Preview only -- not saved');
+    }
+
+    render();
+  </script>
+</body></html>
