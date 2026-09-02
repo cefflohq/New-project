@@ -159,6 +159,14 @@ R0 (Reconciliation)
 
 **Consequence of deferring:** This UI element continues silently contradicting a locked security/product decision for as long as it remains unaddressed.
 
+### D-07 — Grow UI acceptance and unified visual-system sequencing
+
+**Status: APPROVED / LOCKED — visual polish deferred by Founder on 2026-09-02**
+
+**Locked decision:** Visual-polish acceptance for Grow R0–R7 is deferred to a separate Founder-approved unified UI-system Master MD covering Marketing, Vendor, Rider, Customer Tracking, and FOUNDR. That future system will use Black, White, Graphite, and Signal Lime as the operational brand signal; the current purple styling is not the future brand baseline.
+
+Grow UI work must remain minimal, structurally sound, accessible, and functionally usable. It must preserve semantic structure and component boundaries for the future unified pass without introducing an independent visual direction. Per-package visual-polish gates are replaced by functional browser-verification gates. This waiver does not relax staging authentication, authoritative RPC execution, persistence after refresh, second-session visibility where applicable, RLS/business isolation, browser runtime, console, mobile usability, regression, or truthful-success requirements.
+
 ---
 
 ## E. Exact Worktree Plan
@@ -167,12 +175,12 @@ R0 (Reconciliation)
 
 | Worktree | R-stage Coverage | Scope | Depends On | Parallel-Safe? | Likely Files | Migrations | Tests | Must Not Touch | Founder Gate | Merge Order |
 |---|---|---|---|---|---|---|---|---|---|---|
-| **WT-1 Reconcile** | R0 | Zone creation UI, `assignZoneToRider`→real RPCs, remove `inviteRiderCommand` quick-add, wire issues/history read-back, remove fake GPS check | None | **No — must check `codex/vendor-auth-production` first (collision risk, Section F below)** | `vendor/index.html`, `vendor/backend.js`, `rider/index.html:1636` | None | New wiring tests matching `s4_08_batch_1_frontend_wiring.py` style | `wizSubmit`, `confirmRunBuilder`, and the other 5 already-real overrides (call, don't modify) | Yes — Vendor-visible | 1st |
-| **WT-2 Location + Coverage** | R1, R2 | Address autocomplete + coordinate capture; minimal `coverage_area` table; zone-membership validation | WT-1 (order shape) | No | New migration, `vendor/index.html` order form + coverage setup screen, S4-10E submission form | Yes — new small migration | New RLS/coordinate tests | S4-10E's closed decline/idempotency logic (additive only) | Yes — Vendor coverage setup | 2nd |
-| **WT-3 Planning Layer** | R3 | New deterministic zone-bucket planner RPC; capacity field; Vendor "Review & Dispatch" surface | WT-2 | No | New migration/RPC, `vendor/index.html` dispatch UI | Yes — capacity column + planner RPC | New idempotency/concurrency test matching `build_rider_run`'s own rigor | `build_rider_run`, `save_run_sequence` bodies (call only) | Yes — "Review & Dispatch" | 3rd |
-| **WT-4 FOUNDR Live Ops + Need Attention** | R4 | Wire `admin_delivery_operations`/`admin_stuck_riders` into FOUNDR; add Leaflet (reuse Rider's pattern); Vendor Need Attention list; replace 3 mock arrays | None | **Yes — fully independent, safe to start immediately** | `foundr/index.html`, `foundr/backend.js`, Vendor Orders tab | None | Wiring tests | Vendor order-creation logic | Yes | Anytime, independent |
-| **WT-5 Recovery V1** | R5 | New narrowly-scoped post-pickup partial-reassignment RPC | WT-1 (real orders) | No | New migration/RPC | Yes | New dedicated test suite matching `s4_06_batch_4` rigor | `reassign_rider`'s existing pre-pickup guard | Yes — Vendor recovery action | 4th (parallel with WT-3 OK — different files) |
-| **WT-6 Customer Visibility** | R6 | ETA honesty pass plus notification architecture document; no outbox, Edge Function, or live provider | WT-5 (recovery coherence) | Partial — ETA-honesty part can start after WT-1 | `customer/index.html`, documentation | ETA change only if a durable backend write is required | New ETA tests | POD/rating (already correct, untouched) | Yes | 5th |
+| **WT-1 Reconcile** | R0 | Zone creation UI, `assignZoneToRider`→real RPCs, remove `inviteRiderCommand` quick-add, wire issues/history read-back, remove fake GPS check | None | **No — must check `codex/vendor-auth-production` first (collision risk, Section F below)** | `vendor/index.html`, `vendor/backend.js`, `rider/index.html:1636` | None | New wiring tests matching `s4_08_batch_1_frontend_wiring.py` style | `wizSubmit`, `confirmRunBuilder`, and the other 5 already-real overrides (call, don't modify) | Functional browser verification; visual polish deferred | 1st |
+| **WT-2 Location + Coverage** | R1, R2 | Address autocomplete + coordinate capture; minimal `coverage_area` table; zone-membership validation | WT-1 (order shape) | No | New migration, `vendor/index.html` order form + coverage setup screen, S4-10E submission form | Yes — new small migration | New RLS/coordinate tests | S4-10E's closed decline/idempotency logic (additive only) | Functional browser verification; visual polish deferred | 2nd |
+| **WT-3 Planning Layer** | R3 | New deterministic zone-bucket planner RPC; capacity field; Vendor "Review & Dispatch" surface | WT-2 | No | New migration/RPC, `vendor/index.html` dispatch UI | Yes — capacity column + planner RPC | New idempotency/concurrency test matching `build_rider_run`'s own rigor | `build_rider_run`, `save_run_sequence` bodies (call only) | Functional browser verification; visual polish deferred | 3rd |
+| **WT-4 FOUNDR Live Ops + Need Attention** | R4 | Wire `admin_delivery_operations`/`admin_stuck_riders` into FOUNDR; add Leaflet (reuse Rider's pattern); Vendor Need Attention list; replace 3 mock arrays | None | **Yes — fully independent, safe to start immediately** | `foundr/index.html`, `foundr/backend.js`, Vendor Orders tab | None | Wiring tests | Vendor order-creation logic | Functional browser verification; visual polish deferred | Anytime, independent |
+| **WT-5 Recovery V1** | R5 | New narrowly-scoped post-pickup partial-reassignment RPC | WT-1 (real orders) | No | New migration/RPC | Yes | New dedicated test suite matching `s4_06_batch_4` rigor | `reassign_rider`'s existing pre-pickup guard | Functional browser verification; visual polish deferred | 4th (parallel with WT-3 OK — different files) |
+| **WT-6 Customer Visibility** | R6 | ETA honesty pass plus notification architecture document; no outbox, Edge Function, or live provider | WT-5 (recovery coherence) | Partial — ETA-honesty part can start after WT-1 | `customer/index.html`, documentation | ETA change only if a durable backend write is required | New ETA tests | POD/rating (already correct, untouched) | Functional browser verification; visual polish deferred | 5th |
 
 ---
 
@@ -391,7 +399,7 @@ Cefflo can credibly be called launch-ready Grow when:
 8. Customer tracking shows only what the backend can prove.
 9. The full ORDERS→...→DELIVERED-TODAY loop (R7.1) passes an end-to-end test on one known commit.
 10. Security/RLS/business-isolation regression suite passes with zero new gaps introduced by any worktree.
-11. Founder has explicitly reviewed and approved each UI-visible worktree via its preview gate.
+11. Each UI-visible worktree passes its functional browser-verification gate. Founder visual-polish approval is explicitly deferred to the future unified UI-system Master MD per D-07.
 12. This still does **not** authorize production deployment — that remains a separate, later gate per the master brief's own R7.7 boundary.
 
 ---
@@ -401,11 +409,11 @@ Cefflo can credibly be called launch-ready Grow when:
 - **Founder implementation authorization has been given for WT-1 through WT-6**, subject to their real dependency, security, staging, and UI preview gates.
 - **No production deployment is authorized** under any circumstance by this document.
 - **The `codex/vendor-auth-production` collision gate is closed** by the evidence recorded in Section F.
-- WT-1 through WT-6 must still follow the dependency order in Sections C/E/G and stop at explicit Founder preview gates before UI acceptance.
+- WT-1 through WT-6 must still follow the dependency order in Sections C/E/G. Functional browser-verification gates remain mandatory; visual-polish acceptance is deferred under D-07.
 - If no approved address-autocomplete provider/configuration exists, only the provider-dependent WT-2 path is blocked; every independently executable authorized package must continue.
 - The second worktree (`codex/vendor-auth-production`) must not be entered or modified as part of acting on this document.
 - Live notification delivery, notification outbox/Edge Function work, PostGIS/pgRouting, split-run/automatic rebalancing, Production access, and any feature outside this Master MD remain unauthorized.
 
 ---
 
-**Founder preview review remains required before any UI-visible worktree is accepted as complete.**
+**Functional browser verification remains required before any UI-visible worktree is accepted as functionally complete. Visual-polish acceptance is deferred by Founder under D-07.**
