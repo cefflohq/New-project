@@ -1633,8 +1633,6 @@ function arriveAtStop(){
     const thumbEl=document.getElementById('arriveSliderThumb'); if(thumbEl) thumbEl.style.left='4px';
     const lblEl=document.getElementById('arriveSliderLabel'); if(lblEl) lblEl.style.opacity=1;
   };
-  const away=Math.random()<0.18;
-  if(away&&!confirm(t('far_location'))){ resetArriveSlider(); return; }
   appState.orders[appState.currentStopIndex].arrivalState='arrived';
   resetArriveSlider();
   renderArrivedPod();showScreen('screen-arrivedpod');

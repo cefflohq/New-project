@@ -4435,7 +4435,7 @@ function renderBottomNav(){
   }
   const isOrders = active==='orders';
   const isRiders = active==='riders' || active==='riderProfile' || active==='dispatchPlanner';
-  const isSettings = active==='settings' || ['team','teamMemberDetail','helperDetail','workSessionDetail','businessProfile','language','notificationSettingsPage','reports','subscription','changePassword','privacyPolicy','termsOfService','appVersion','helpSupport'].includes(active);
+  const isSettings = active==='settings' || ['zones','team','teamMemberDetail','helperDetail','workSessionDetail','businessProfile','language','notificationSettingsPage','reports','subscription','changePassword','privacyPolicy','termsOfService','appVersion','helpSupport'].includes(active);
   const isHome = active==='dashboard'||active==='capacityDetail';
   root.innerHTML = `
   <div class="bottom-nav">
@@ -5369,54 +5369,6 @@ function pageRiders(){
   </div>`;
 }
 function setRiderFilter(el){ riderUiState.filter = el.dataset.f; render(); }
-function openInviteRider(){
-  openSheet(`
-    <div class="sheet-title">${t('inviteRider')}</div>
-    <div class="field"><label>${t('riderName')}</label><input id="inv_name" placeholder="e.g. Zahid Iskandar"></div>
-    <div class="field"><label>${t('phoneNumberLabel')}</label><input id="inv_phone" placeholder="012-345 6789"></div>
-    <div class="field"><label>${t('employmentType')}</label>
-      <select id="inv_type"><option>${t('fullTime')}</option><option>${t('partTime')}</option></select>
-    </div>
-    <button class="btn btn-primary" data-action="confirmInviteRider">${t('sendInvite')}</button>
-  `);
-}
-function confirmInviteRider(){
-  const name = document.getElementById('inv_name').value.trim() || 'New Rider';
-  const phone = document.getElementById('inv_phone').value.trim() || '—';
-  const employment = document.getElementById('inv_type').value || t('fullTime');
-  const nextId = 'r' + (state.riders.reduce((max,r)=>{
-    const n = Number(String(r.id).replace(/\D/g,'')) || 0;
-    return Math.max(max,n);
-  },0) + 1);
-
-  state.riders.push({
-    id:nextId,
-    name,
-    plate:'—',
-    zone:t('unassigned'),
-    status:'active',
-    deliveringStatus:null,
-    phone,
-    employment,
-    zoneExp:'—',
-    joined:new Date().toLocaleDateString(
-      {en:'en-GB',bm:'ms-MY',zh:'zh-CN',ta:'ta-IN'}[state.language] || 'en-GB',
-      {day:'2-digit',month:'short',year:'numeric'}
-    ),
-    deliveredToday:0,
-    successRate:'0%',
-    avgTime:'—',
-    issuesCount:0,
-    mapApp:null,
-  });
-
-  persistOperationalStore();
-  syncNewAccountOnboarding();
-  closeSheet();
-  toast(tf('riderAddedSuccess',{name}), 'success');
-  render();
-}
-
 /* ===================== PAGE: RIDER PROFILE ===================== */
 function renderRiderListOnly(){
   let list = state.riders;
@@ -6291,6 +6243,7 @@ function pageSettings(){
     {icon:'card',label:t('subscription'),nav:'subscription'},
     {icon:'building',label:t('businessProfile'),nav:'businessProfile'},
     {icon:'user',label:'Team',action:'openTeamScreen'},
+    {icon:'map',label:t('zones'),nav:'zones'},
     {icon:'globe',label:t('language'),nav:'language'},
     {icon:'bell',label:t('notificationSettings'),nav:'notificationSettingsPage'},
     {icon:'report',label:t('reports'),nav:'reports'},
@@ -6327,6 +6280,16 @@ function pageSettings(){
     </div>
   </div>`;
 }
+function pageZones(){
+  const zones=(state.zones||[]).slice().sort((a,b)=>a.name.localeCompare(b.name));
+  return `<div class="module-page">${innerHeader(t('zones'),{textAction:'openCreateZone',textActionLabel:'+ Add'})}<div class="content">
+    ${zones.length?`<div class="settings-group">${zones.map(zone=>`<div class="settings-row"><div class="settings-icon">${ic('map')}</div><div class="settings-label">${zone.name}</div>${statusChip(zone.status==='active'?'active':'offline')}</div>`).join('')}</div>`:`<div class="empty-state"><div class="es-icon">${ic('map')}</div><h3>${t('noZonesYet')}</h3><p>${t('createZoneFirst')}</p><button class="btn btn-primary" data-action="openCreateZone">${t('addZone')}</button></div>`}
+  </div></div>`;
+}
+function openCreateZone(){
+  openSheet(`<div class="sheet-title">${t('addZone')}</div><div class="field"><label>${t('zoneName')}</label><input id="new_zone_name" maxlength="80" placeholder="${t('zoneNamePlaceholder')}"></div><button class="btn btn-primary" data-action="confirmCreateZone">${t('addZone')}</button>`);
+}
+function confirmCreateZone(){ toast('Backend not connected.', 'error'); }
 // Vendor workforce extension: Core Team, private Helper Pool, and Work Sessions.
 // Rider management remains in the existing Riders area and is intentionally
 // not merged into this workforce surface.
@@ -6932,6 +6895,7 @@ const PAGES = {
   reports: pageReports,
   notifications: pageNotifications,
   settings: pageSettings,
+  zones: pageZones,
   team: pageTeam,
   teamMemberDetail: pageTeamMemberDetail,
   helperDetail: pageHelperDetail,
@@ -7215,7 +7179,7 @@ function pageSettingsProposed(){
         <div class="vs2-row"><span class="vs2-row-icon">${ic('moon')}</span><span><b>Dark Mode</b></span>${toggle(dark,'setVendorDarkMode','Dark Mode')}</div>
         <div class="vs2-row"><span class="vs2-row-icon">${ic('bell')}</span><span><b>Notifications</b></span>${toggle(vendorNotificationsEnabled,'toggleVendorNotifications','Notifications')}</div>
         <button class="vs2-row" data-nav="language"><span class="vs2-row-icon">${ic('globe')}</span><span><b>Language</b></span><span class="vs2-row-tail">English ${ic('chev')}</span></button>
-        ${row('user','Team','team')}${row('report',t('reports'),'reports')}${row('card','Subscription Plan','subscription')}${row('help','Help & Support','helpSupport')}${row('privacy','Privacy & Terms','', 'openPrivacyTerms')}${row('info','About CEFFLO','appVersion')}
+        ${row('user','Team','team')}${row('map',t('zones'),'zones')}${row('report',t('reports'),'reports')}${row('card','Subscription Plan','subscription')}${row('help','Help & Support','helpSupport')}${row('privacy','Privacy & Terms','', 'openPrivacyTerms')}${row('info','About CEFFLO','appVersion')}
       </section>
       <button class="vs2-signout" data-action="logoutConfirm">${ic('logout')}<span>Sign Out</span></button>
       <div class="vs2-build">CEFFLO v1.2.0</div>
@@ -7229,7 +7193,7 @@ const ACTIONS = {
   openReportIssue, confirmReportIssue, openReschedule, confirmReschedule,
   startCsvImport, startManualKeyIn, wizAddItem, wizBack, wizNext, wizSubmit,
   openImportFilePicker, fixCsvRow, saveCsvRowFix, confirmCsvImport,
-  setRiderFilter, toggleRiderSearch, openInviteRider, confirmInviteRider,
+  setRiderFilter, toggleRiderSearch,
   openAssignOrdersToRider, openDeactivateRider, confirmDeactivateRider,
   toggleOrdersSelectMode, toggleOrdersSelection, openRunBuilderFromOrdersSelection,
   runBuilderToggleZone, runBuilderClearZoneFilters, runBuilderToggleOrder,
@@ -7249,6 +7213,7 @@ const ACTIONS = {
   toggleFaq,
   closeSheet,
   openInviteTeamMember, openInviteRiderReal, openManageTeamMember,
+  openCreateZone, confirmCreateZone,
   setTeamTab,
 };
 
@@ -7887,35 +7852,10 @@ function updateBusinessProfileCommand(values){
     return values;
   });
 }
-function inviteRiderCommand(payload){
-  return runEngineTransaction('inviteRider',()=>{
-    const nextId='r'+(state.riders.reduce((m,r)=>Math.max(m,Number(String(r.id).replace(/\D/g,''))||0),0)+1);
-    const rider={id:nextId,businessId:state.businessId,name:payload.name,phone:payload.phone,employment:payload.employment,status:'active',plate:'—',zone:t('unassigned'),joined:new Date().toISOString(),mapApp:null};
-    state.riders.push(rider);emitEngineEvent('rider.created',{rider});return rider;
-  });
-}
 window.CEFFLO_ENGINE.commands.updateBusinessProfile=updateBusinessProfileCommand;
-window.CEFFLO_ENGINE.commands.inviteRider=inviteRiderCommand;
 window.CEFFLO_ENGINE.frontend={version:CEFFLO_FRONTEND_VERSION,status:FRONTEND_STATUS,selectors:FRONTEND_SELECTORS,refresh:requestFrontendRender};
 
 // Replace direct-write UI actions with command-backed integrations.
-ACTIONS.assignZoneRider=function(el){
-  try{
-    const session=ensureActiveSessionForUi();
-    const zone=state.zones.find(z=>z.id===el.dataset.zone); if(!zone) throw new Error('Zone not found.');
-    window.CEFFLO_ENGINE.commands.assignZoneToRider({deliverySessionId:session.id,zoneId:zone.id,zoneName:zone.name,riderId:el.dataset.rider});
-    closeSheet();toast('Rider assigned successfully','success');requestFrontendRender();
-  }catch(err){toast(err.message||'Unable to assign rider','error');}
-};
-ACTIONS.confirmInviteRider=function(){
-  try{
-    const name=document.getElementById('inv_name')?.value.trim();
-    const phone=document.getElementById('inv_phone')?.value.trim();
-    const employment=document.getElementById('inv_type')?.value||t('fullTime');
-    if(!name||!phone) throw new Error(t('completeRequiredFields'));
-    window.CEFFLO_ENGINE.commands.inviteRider({name,phone,employment});closeSheet();toast('Rider added','success');requestFrontendRender();
-  }catch(err){toast(err.message,'error');}
-};
 ACTIONS.saveBusinessProfile=function(){
   try{
     const values={storeName:document.getElementById('bp_storeName')?.value.trim(),businessPhone:document.getElementById('bp_phone')?.value.trim(),businessEmail:document.getElementById('bp_email')?.value.trim(),businessAddress:document.getElementById('bp_address')?.value.trim(),operatingArea:document.getElementById('bp_area')?.value.trim()};

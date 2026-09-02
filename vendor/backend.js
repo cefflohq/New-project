@@ -39,6 +39,9 @@
   const createDeliverySession = (businessId, name) => api.rpc('create_delivery_session', {
     p_business_id: businessId, p_name: name
   });
+  const createZone = (businessId, name) => api.rpc('create_zone', {
+    p_business_id: businessId, p_name: name
+  });
   const buildRiderRun = input => api.rpc('build_rider_run', {
     p_delivery_session_id: input.sessionId, p_rider_id: input.riderId,
     p_order_ids: input.orderIds, p_idempotency_key: input.idempotencyKey
@@ -79,6 +82,7 @@
     : Promise.resolve([]);
   const listZones = businessId => api.request(`/rest/v1/zones?business_id=eq.${encodeURIComponent(businessId)}&select=*&order=name.asc`);
   const listDeliverySessions = businessId => api.request(`/rest/v1/delivery_sessions?business_id=eq.${encodeURIComponent(businessId)}&select=*&order=created_at.desc`);
+  const listDeliveryEvents = businessId => api.request(`/rest/v1/delivery_events?business_id=eq.${encodeURIComponent(businessId)}&select=id,order_id,event_type,from_status,to_status,actor_role,metadata,created_at&order=created_at.desc`);
   // S4-06.7 (P1): minimal factual Run-progress hydration -- one nested embed
   // (assignments_vendor/stops_vendor RLS already permit this for a business
   // member, unchanged), mirroring the same real-embed pattern the Rider
@@ -146,10 +150,10 @@
     state.currentMemberRole = selected.member_role;
     localStorage.setItem('cefflo_active_business_id', selected.business_id);
     const orders = await listOrders(selected.business_id);
-    const [riders, ratings, zones, sessions, assignments] = await Promise.all([
+    const [riders, ratings, zones, sessions, assignments, events] = await Promise.all([
       listRiders(selected.business_id), listRatings(orders.map(order => order.id)),
       listZones(selected.business_id), listDeliverySessions(selected.business_id),
-      listRiderAssignments(selected.business_id)
+      listRiderAssignments(selected.business_id), listDeliveryEvents(selected.business_id)
     ]);
     state.riders = riders.map(mapRider);
     state.orders = orders.map(mapOrder);
@@ -174,8 +178,17 @@
     // it in the shape the existing dashboard aggregation already expects.
     state.riderAssignments = assignments.map(mapAssignment);
     state.deliveryStops = assignments.map(mapStopFromAssignment).filter(Boolean);
-    state.issues = [];
-    state.orderStatusHistory = [];
+    const orderByBackendId = new Map(state.orders.map(order => [order.backendId, order]));
+    state.orderStatusHistory = events.filter(event => event.order_id).map(event => ({
+      id: event.id, orderId: orderByBackendId.get(event.order_id)?.id || event.order_id,
+      eventType: event.event_type, fromStatus: event.from_status, toStatus: event.to_status,
+      actorRole: event.actor_role, metadata: event.metadata || {}, createdAt: event.created_at
+    }));
+    state.issues = events.filter(event => event.event_type === 'delivery.issue_reported').map(event => ({
+      id: event.id, orderId: orderByBackendId.get(event.order_id)?.id || event.order_id,
+      type: event.metadata?.reason_type || 'delivery', note: event.metadata?.note || '',
+      status: 'open', createdAt: event.created_at
+    }));
     backendState.mode = 'remote'; backendState.status = 'connected'; backendState.lastSyncedAt = new Date().toISOString();
     persistOperationalStoreLocalOnly();
     if (typeof reconcileRunBuilderAfterHydrate === 'function') reconcileRunBuilderAfterHydrate();
@@ -287,6 +300,32 @@
       }
       await hydrateCanonicalWorkspace(); closeSheet(); toast('Rider assigned', 'success'); render();
     } catch (error) { toast(error.message || 'Unable to assign rider', 'error'); }
+  };
+
+  ACTIONS.confirmCreateZone = async function () {
+    const name = document.getElementById('new_zone_name')?.value.trim();
+    if (!name) { toast('Enter a zone name.', 'error'); return; }
+    try {
+      await createZone(state.businessId, name);
+      await hydrateCanonicalWorkspace();
+      closeSheet(); render(); toast(`Zone ${name} created`, 'success');
+    } catch (error) { toast(error.message || 'Unable to create zone', 'error'); }
+  };
+
+  ACTIONS.assignZoneRider = async function (el) {
+    try {
+      const zone = state.zones.find(item => item.id === el.dataset.zone);
+      const rider = state.riders.find(item => item.id === el.dataset.rider);
+      if (!zone || !rider) throw new Error('Zone or Rider not found.');
+      const orders = state.orders.filter(order => order.zoneId === zone.id && order.backendStatus === 'created' && order.approvedAt && !order.riderId);
+      if (!orders.length) throw new Error('No approved unassigned orders in this zone.');
+      let session = state.deliverySessions.find(item => ['planned', 'active'].includes(item.status));
+      if (!session) session = await createDeliverySession(state.businessId, `${zone.name} Run`);
+      const idempotencyKey = window.crypto?.randomUUID?.();
+      if (!idempotencyKey) throw new Error('Unable to generate a secure request id.');
+      await buildRiderRun({ sessionId: session.id, riderId: rider.id, orderIds: orders.map(order => order.backendId), idempotencyKey });
+      await hydrateCanonicalWorkspace(); closeSheet(); render(); toast(`Zone orders assigned to ${rider.name}`, 'success');
+    } catch (error) { toast(error.message || 'Unable to assign zone orders', 'error'); }
   };
 
   confirmDeactivateRider = async function (el) {
