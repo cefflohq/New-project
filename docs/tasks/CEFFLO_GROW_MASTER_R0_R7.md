@@ -1,14 +1,14 @@
 # CEFFLO GROW — MASTER R0–R7 PLAN
 
-**STATUS: FOUNDER REVIEW — NOT YET AUTHORIZED FOR IMPLEMENTATION**
+**STATUS: FOUNDER APPROVED — IMPLEMENTATION AUTHORIZED (PRODUCTION EXCLUDED)**
 
 **Document type:** Master Reconciliation / Grow Implementation Planning Output
 **Produced by:** Claude, per `CEFFLO_GROW_MASTER_REPOSITORY_IMPROVEMENT_BRIEF.md`
 **Inputs:** `CEFFLO_GROW_READINESS_AUDIT.md`, `CEFFLO_BRAND_SYSTEM.md`, direct inspection of the actual `staging` repository
-**Implementation authority:** Codex only, after explicit Founder authorization
+**Implementation authority:** Codex, authorized by the Founder for WT-1 through WT-6 subject to the dependency and preview gates in this document
 **Production:** Strictly out of scope unless separately authorized
 
-**Repository:** `/home/cefflo/New-project` · **Remote:** `cefflohq/New-project` · **Branch:** `staging` · **HEAD at time of analysis:** `47a6f78fa84df8b04686ef2aa170c4b9c1a53950` · local == `origin/staging` (0 ahead/behind). Working tree carried known, isolated dirty state only (unrelated marketing-site edit, S4-10E remediation files awaiting separate closure, untouchable preview directories, local skill tooling) — none of it interfered with this analysis. A second worktree exists at `/home/cefflo/.codex/worktrees/a110/New-project` on branch `codex/vendor-auth-production` @ `9539cb0` — **not entered, flagged only**. This document is a **read-only planning output** — nothing was implemented, migrated, committed to application code, or pushed as part of producing this plan.
+**Repository:** `/home/cefflo/New-project` · **Remote:** `cefflohq/New-project` · **Branch:** `staging` · **implementation baseline:** `ed8e074453a6e4f44309e2bced38b43a53d9707a` · local == `origin/staging` (0 ahead/behind) after an authorized fetch on 2026-09-02. The working tree carries known, isolated unrelated state (`marketing/index.html`, `.claude/`, and preview directories), which must remain untouched. The secondary worktree at `/home/cefflo/.codex/worktrees/a110/New-project` is clean on `codex/vendor-auth-production` @ `9539cb07b65ad0477b2af1e87076274fc56a0bfd`; Git proves that commit is already an ancestor of `staging`, 27 commits behind with zero unique commits. The prior collision hold is therefore closed at this baseline.
 
 ---
 
@@ -68,11 +68,11 @@ R0 (Reconciliation)
 
 ## D. Founder Decision Record
 
-*Every decision below carries a current recommendation. None is approved. Each stays PENDING until the Founder explicitly marks it approved in this document or in a follow-up Founder-authored record.*
+*Every decision below was explicitly approved and locked by the Founder on 2026-09-02. Implementation must follow these decisions exactly.*
 
 ### D-01 — Coordinate acquisition method
 
-**Status: PENDING**
+**Status: APPROVED / LOCKED — option (a)**
 
 **Why it matters:** Determines cost, UX, and reliability for the entire location foundation (R1). Nothing in R2/R3 can proceed meaningfully without this.
 
@@ -82,13 +82,13 @@ R0 (Reconciliation)
 - (c) Server-side batch geocoding via a paid provider (Google/Mapbox) run after order creation.
 - (d) OneMap Malaysia / government geocoder (likely free/cheap, Malaysia-specific, less proven coverage than commercial providers).
 
-**Current recommendation:** (a), with (c)/(d) as a possible V1.1 backfill for orders that skip autocomplete — never (b) as the *delivery* coordinate.
+**Locked decision:** Client-side address autocomplete captures and persists the real delivery-address latitude/longitude. Device GPS must not be used as the delivery coordinate and coordinates must never be fabricated. Reuse an existing approved provider/configuration if present; do not silently choose or contract a paid provider. If none exists, WT-2 reports that external dependency while independent packages continue.
 
 **Consequence of deferring:** Zones, coverage, density, and any optimizer work all stay blocked.
 
 ### D-02 — Coverage model
 
-**Status: PENDING**
+**Status: APPROVED / LOCKED — option (a)**
 
 **Why it matters:** Schema choice affects every downstream planning input and the future polygon upgrade path (R2.1).
 
@@ -97,13 +97,13 @@ R0 (Reconciliation)
 - (b) Named-area/postcode list (simple, Malaysian-postcode-friendly, no lat/lng math needed at all).
 - (c) Polygon (most correct, most Vendor setup burden, needs PostGIS or manual point-in-polygon logic).
 
-**Current recommendation:** (a) for V1, with the schema deliberately allowing a nullable polygon column to be added later without migrating existing radius data.
+**Locked decision:** Radius + centroid per business for Grow V1. Polygon/PostGIS is deferred to Scale, while the V1 design must permit a future polygon addition without rebuilding radius records.
 
 **Consequence of deferring:** Zone-membership validation (R2.3) has no real "is this order in my area" answer.
 
 ### D-03 — Rider capacity model
 
-**Status: PENDING**
+**Status: APPROVED / LOCKED — option (b)**
 
 **Why it matters:** Affects the optimizer's design (R3.2); a wrong model misrepresents real physical delivery capacity.
 
@@ -112,13 +112,13 @@ R0 (Reconciliation)
 - (b) Simple `max_active_orders int` field on `riders`.
 - (c) Richer weight/volume capacity model.
 
-**Current recommendation:** (b) — the cheapest real signal, without inventing a physical capacity model nobody has asked for.
+**Locked decision:** Add nullable `max_active_orders int` per rider. Null behavior must be deterministic and documented. No weight/volume capacity model belongs in Grow V1.
 
 **Consequence of deferring:** The optimizer either has no capacity awareness (a) or the schema commits prematurely to a physical model (c) that may not match how Vendors actually think about their riders.
 
 ### D-04 — Post-pickup recovery scope
 
-**Status: PENDING**
+**Status: APPROVED / LOCKED — option (a)**
 
 **Why it matters:** This is the one genuine architectural gate standing between the current schema and Delivery Recovery V1 (R5.2). `reassign_rider` explicitly and intentionally refuses to touch anything past `ready_for_pickup`.
 
@@ -126,13 +126,13 @@ R0 (Reconciliation)
 - (a) Build a new, narrowly-scoped Recovery RPC as detailed in the WT-5 package below — do **not** weaken `reassign_rider`'s existing guard.
 - (b) Defer all post-pickup recovery to Scale; ship Grow V1 with pre-pickup-only reassignment.
 
-**Current recommendation:** (a) — it is the master brief's own named "Delivery Recovery" differentiator, and the locking/audit patterns it needs already exist elsewhere in the codebase.
+**Locked decision:** Build a new narrowly scoped Recovery RPC. Do not modify or weaken `reassign_rider`. Recovery is allowed only in `issue`, moves only remaining eligible stops, never touches delivered stops, and must enforce locking, concurrency safety, business isolation, and complete delivery-event audit history. Split-run and automatic rebalancing remain out of scope.
 
 **Consequence of deferring:** Grow ships without its second named differentiator (the first being Same-Day Autopilot / R3's planning layer).
 
 ### D-05 — Notification provider / build timing
 
-**Status: PENDING**
+**Status: APPROVED / LOCKED — option (c)**
 
 **Why it matters:** Real per-message cost and a genuine vendor-lock-in decision (R6.3). Notifications are currently, deliberately, honestly absent from the codebase.
 
@@ -141,13 +141,13 @@ R0 (Reconciliation)
 - (b) SMS via a Malaysian aggregator.
 - (c) Defer the live send entirely for Grow V1; design and skeleton the event-driven outbox now, keep the current honest "no notifications" state until a provider is authorized.
 
-**Current recommendation:** (c) for the actual launch gate — with (a) as the first real build once a provider decision is made. This should not block Grow V1 launch.
+**Locked decision:** Defer live WhatsApp/SMS delivery for Grow V1. Implement only credible ETA honesty and the notification architecture document. Do not build an outbox table, Edge Function, or provider integration, and never claim a message was sent. Live notifications require separate future Founder authorization.
 
 **Consequence of deferring:** Zero cost/vendor risk if deferred; the customer must keep manually revisiting the tracking link either way, today and under option (c).
 
 ### D-06 — `inviteRiderCommand` disposition
 
-**Status: PENDING**
+**Status: APPROVED / LOCKED — option (a)**
 
 **Why it matters:** This quick-add-rider path (`vendor/index.html:7890-7895`) doesn't just leave a gap — it actively bypasses the trusted-invitation security model that locked decision D-03 (`docs/cefflo/05_DECISIONS.md`) already establishes, and that real RPCs (`create_rider_invitation`/`create_team_invitation`) already correctly implement elsewhere in the same app.
 
@@ -155,7 +155,7 @@ R0 (Reconciliation)
 - (a) Remove the quick-add button entirely; route all rider-adding through the real, existing invitation flow.
 - (b) Keep a "quick add" affordance, but make it call a real RPC that still respects invitation/join semantics (i.e., it would just be a faster on-ramp into the same real flow, not a bypass of it).
 
-**Current recommendation:** (a) — the locked decision is not a preference to weigh against convenience; a path that silently contradicts it should not exist in the shipped product.
+**Locked decision:** Remove `inviteRiderCommand` and every live quick-add path that bypasses trusted invitations. All rider additions use the existing invitation flow; no shortcut replacement RPC is authorized for Grow V1.
 
 **Consequence of deferring:** This UI element continues silently contradicting a locked security/product decision for as long as it remains unaddressed.
 
@@ -172,17 +172,15 @@ R0 (Reconciliation)
 | **WT-3 Planning Layer** | R3 | New deterministic zone-bucket planner RPC; capacity field; Vendor "Review & Dispatch" surface | WT-2 | No | New migration/RPC, `vendor/index.html` dispatch UI | Yes — capacity column + planner RPC | New idempotency/concurrency test matching `build_rider_run`'s own rigor | `build_rider_run`, `save_run_sequence` bodies (call only) | Yes — "Review & Dispatch" | 3rd |
 | **WT-4 FOUNDR Live Ops + Need Attention** | R4 | Wire `admin_delivery_operations`/`admin_stuck_riders` into FOUNDR; add Leaflet (reuse Rider's pattern); Vendor Need Attention list; replace 3 mock arrays | None | **Yes — fully independent, safe to start immediately** | `foundr/index.html`, `foundr/backend.js`, Vendor Orders tab | None | Wiring tests | Vendor order-creation logic | Yes | Anytime, independent |
 | **WT-5 Recovery V1** | R5 | New narrowly-scoped post-pickup partial-reassignment RPC | WT-1 (real orders) | No | New migration/RPC | Yes | New dedicated test suite matching `s4_06_batch_4` rigor | `reassign_rider`'s existing pre-pickup guard | Yes — Vendor recovery action | 4th (parallel with WT-3 OK — different files) |
-| **WT-6 Customer Visibility** | R6 | ETA honesty pass; notification architecture design doc + Edge Function skeleton (provider TBD per Founder decision D-05) | WT-5 (recovery coherence) | Partial — ETA-honesty part can start after WT-1 | `customer/index.html`, new Edge Function | Possibly — depends on Founder's provider decision | New tests | POD/rating (already correct, untouched) | Yes | 5th |
+| **WT-6 Customer Visibility** | R6 | ETA honesty pass plus notification architecture document; no outbox, Edge Function, or live provider | WT-5 (recovery coherence) | Partial — ETA-honesty part can start after WT-1 | `customer/index.html`, documentation | ETA change only if a durable backend write is required | New ETA tests | POD/rating (already correct, untouched) | Yes | 5th |
 
 ---
 
 ## F. Collision Analysis with Active Worktrees
 
-Not entered (out of scope per directive), but `codex/vendor-auth-production`'s branch name directly implies active Vendor-auth-surface work. **WT-1 and WT-2 both touch `vendor/index.html`/`vendor/backend.js`** — the exact files that worktree's name suggests are in flight.
+The collision gate was resolved with read-only Git evidence on 2026-09-02. `codex/vendor-auth-production` is clean at `9539cb07b65ad0477b2af1e87076274fc56a0bfd`; that commit is the merge base and is already an ancestor of current `staging`. The branch is 27 commits behind with zero unique commits. Its sole historical commit changed only the Vendor dashboard workload-card CSS and `pageDashboardProposed` helpers in `vendor/index.html`; it did not change `vendor/backend.js`, authentication/session code, or the WT-1/WT-2 target functions.
 
-**WT-1 and WT-2 are explicitly held: do not start either until that worktree's actual scope is confirmed safe to run alongside.** WT-4 (FOUNDR) and the ETA-honesty half of WT-6 (Customer) touch entirely different files and are safe to start immediately regardless of that worktree's status. WT-3 and WT-5 depend transitively on WT-1/WT-2 and inherit the same hold.
-
-No other active-worktree collisions were found in this pass.
+**Collision gate: CLOSED.** WT-1 and WT-2 may proceed in dependency order from the recorded `staging` baseline. The secondary worktree remains out of scope and must not be modified.
 
 ---
 
@@ -195,7 +193,7 @@ No other active-worktree collisions were found in this pass.
 **Exact scope:**
 1. Zone creation: add a "New Zone" UI action calling the real `create_zone(p_business_id, p_name)` RPC (already exists, `202608280002_s4_06_batch_3_zones.sql`), following the exact same override pattern as the other 7 backend.js-reassigned actions (define a stub in `vendor/index.html`, override it in `vendor/backend.js`, `await` the RPC, only toast success after it resolves, `await hydrateCanonicalWorkspace()` to refresh).
 2. `ACTIONS.assignZoneRider` (`vendor/index.html:7902-7909`): replace the `CEFFLO_ENGINE.commands.createDeliverySession`/`assignZoneToRider` calls with real `create_delivery_session` (if no active session — reuse the existing RPC already called elsewhere in backend.js at line 320) + `assign_rider`/`build_rider_run` as appropriate to the single-order-quick-assign use case. Move this action into the same backend.js-override list as the other 7.
-3. Remove `inviteRiderCommand` (`vendor/index.html:7890-7895`) and its UI trigger entirely. Route all rider-adding through the existing real `create_rider_invitation` flow (already wired for the proper Team screen per prior audit findings). This implements Founder Decision D-06 option (a) — pending explicit approval before execution.
+3. Remove `inviteRiderCommand` (`vendor/index.html:7890-7895`) and its UI trigger entirely. Route all rider-adding through the existing real `create_rider_invitation` flow (already wired for the proper Team screen per prior audit findings). This implements locked Founder Decision D-06 option (a).
 4. Wire real reads for `issues`/`order_status_history` into `hydrateCanonicalWorkspace` (`vendor/backend.js:169-170`, currently `state.issues = []; state.orderStatusHistory = [];`) — real `delivery_events` fetch, scoped by business.
 5. `rider/index.html:1636`: delete `const away=Math.random()<0.18;` and its `confirm(t('far_location'))` gate entirely — do not substitute another approximation. (Real GPS-based proximity is R1/WT-2 scope, not this package — if WT-2 lands first, this can be revisited to use real distance; until then, remove the false claim.)
 
@@ -213,7 +211,7 @@ No other active-worktree collisions were found in this pass.
 
 **Founder preview:** Yes — this changes visible Vendor/Rider behavior.
 
-**Dependency/merge order:** First. Blocks WT-2, WT-3, WT-5. **Held pending collision resolution — see Section F.**
+**Dependency/merge order:** First. Blocks WT-2, WT-3, WT-5. Collision gate is closed — see Section F.
 
 ---
 
@@ -234,7 +232,7 @@ No other active-worktree collisions were found in this pass.
 
 **Prohibited changes:** Do not install PostGIS/pgRouting (not needed for radius math). Do not modify `zones`/`orders.zone_id` schema. Do not touch S4-10E's closed idempotency/decline logic.
 
-**Acceptance criteria:** New orders carry real coordinates captured at entry, distinguishable from missing/legacy. A business can set a coverage radius. An out-of-coverage submission is detectable (design an explicit, non-blocking flag — do not silently reject without a Founder-approved UX for that case, which is itself a small open question to resolve during implementation, not before).
+**Acceptance criteria:** New orders carry real coordinates captured at entry, distinguishable from missing/legacy. A business can set a coverage radius. An out-of-coverage submission is accepted into Needs Review with a clear Vendor warning, is excluded from automatic delivery planning until coverage or zone is resolved, and retains its original address and coordinates unchanged.
 
 **Automated tests:** New RLS/business-isolation test for the coverage table (two-business negative matrix, matching the established pattern). Haversine-distance unit test with known coordinate pairs.
 
@@ -242,7 +240,7 @@ No other active-worktree collisions were found in this pass.
 
 **Founder preview:** Yes — new Vendor coverage-setup screen and order-form autocomplete.
 
-**Dependency/merge order:** Second, after WT-1. **Held pending collision resolution — see Section F.**
+**Dependency/merge order:** Second, after WT-1. Collision gate is closed — see Section F.
 
 ---
 
@@ -328,7 +326,7 @@ No other active-worktree collisions were found in this pass.
 
 **Founder preview:** Yes — new Vendor recovery action.
 
-**Dependency/merge order:** Fourth, after WT-1 (needs real orders). Can run parallel to WT-3 (different files). **Held pending WT-1's collision resolution.**
+**Dependency/merge order:** Fourth, after WT-1 (needs real orders). Can run parallel to WT-3 (different files).
 
 ---
 
@@ -338,23 +336,23 @@ No other active-worktree collisions were found in this pass.
 
 **Exact scope:**
 - ETA: smallest credible source — even a simple "N stops ahead in the run" sequence-position-derived estimate, written to `orders.estimated_arrival_at` at each `rider_transition`. If no credible source is ready, **display nothing rather than a fabricated time** (per the master brief's own R6.2 instruction).
-- Notification architecture: **design and Edge-Function-skeleton only** unless Founder Decision D-05 selects a provider — a `notification_outbox`-style table keyed off `delivery_events`, with explicit duplicate-send protection (unique constraint on `event_id`+`channel`) and a provider-abstraction interface, but no live provider wired until authorized.
+- Notification architecture: produce a design document describing an eventual event-driven provider boundary, idempotency expectations, consent/template requirements, failure handling, and observability. Per locked Founder Decision D-05, do not build an outbox table, Edge Function, or provider integration in Grow V1.
 
 **Existing RPC/schema to reuse:** `orders.estimated_arrival_at` (exists, unpopulated), `delivery_events` (real event source), `public_tracking` (unchanged).
 
-**Migrations required:** Possibly — the ETA write is a small RPC change; the notification outbox table only if Founder authorizes starting the build now.
+**Migrations required:** Only if the credible ETA implementation needs a durable backend write. No notification migration is authorized.
 
 **Prohibited changes:** Do not rebuild tracking/POD/rating (already correct). Do not claim a message was sent before a provider confirms it.
 
-**Acceptance criteria:** ETA shown to a customer is either real (sequence-derived) or absent — never fabricated. If the notification outbox is built, it demonstrably never double-sends for the same event.
+**Acceptance criteria:** ETA shown to a customer is either real (sequence-derived) or absent — never fabricated. The architecture document must not imply that live notifications are implemented or sent.
 
-**Automated tests:** ETA computation unit test. If outbox is built: duplicate-send-prevention test.
+**Automated tests:** ETA computation and honesty tests appropriate to the chosen credible source.
 
 **Browser/manual validation:** Confirm the Customer tracking page shows a real or absent ETA, never a stale/fake one, across a full order lifecycle.
 
 **Founder preview:** Yes.
 
-**Dependency/merge order:** Fifth — ETA half can start after WT-1; full notification build waits on Founder Decision D-05.
+**Dependency/merge order:** Fifth — ETA implementation follows WT-5 for recovery coherence; the architecture document may be prepared independently.
 
 ---
 
@@ -400,14 +398,14 @@ Cefflo can credibly be called launch-ready Grow when:
 
 ## Execution Restrictions (carried forward from the authorizing brief)
 
-- **No implementation authorization has been given.** This document is planning output only.
+- **Founder implementation authorization has been given for WT-1 through WT-6**, subject to their real dependency, security, staging, and UI preview gates.
 - **No production deployment is authorized** under any circumstance by this document.
-- **WT-1 and WT-2 cannot start** until the collision with `codex/vendor-auth-production` (Section F) is explicitly resolved.
-- **WT-3 and WT-5 inherit that hold** transitively, since both depend on WT-1/WT-2.
-- **WT-4, and the ETA-honesty portion of WT-6, are not held** by the above collision and may be scheduled independently once separately authorized.
+- **The `codex/vendor-auth-production` collision gate is closed** by the evidence recorded in Section F.
+- WT-1 through WT-6 must still follow the dependency order in Sections C/E/G and stop at explicit Founder preview gates before UI acceptance.
+- If no approved address-autocomplete provider/configuration exists, only the provider-dependent WT-2 path is blocked; every independently executable authorized package must continue.
 - The second worktree (`codex/vendor-auth-production`) must not be entered or modified as part of acting on this document.
-- This document does not authorize modifying application code, migrations, tests, or any existing audit/brief file.
+- Live notification delivery, notification outbox/Edge Function work, PostGIS/pgRouting, split-run/automatic rebalancing, Production access, and any feature outside this Master MD remain unauthorized.
 
 ---
 
-**Founder review required before any worktree in Section E is authorized to begin.**
+**Founder preview review remains required before any UI-visible worktree is accepted as complete.**
