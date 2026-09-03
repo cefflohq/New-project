@@ -10,42 +10,37 @@ context waste or conflicting code.
 Founder: - sets product priorities; - approves protected actions; -
 approves phase gates; - may direct Codex remotely from Android.
 
-## AI-02 Codex
+## AI-02 through AI-04 --- SUPERSEDED
 
-Primary engineering executor and canonical code integrator: - inspect
-repo; - implement frontend/backend; - test/QA; - Git operations; -
-deployment engineering; - technical reports.
+**STATUS: SUPERSEDED.** These sections previously fixed Codex as sole
+primary executor and Claude as an occasional optional specialist. That
+single-executor model is superseded by the current multi-agent Agent
+OS, which routes substantial work (repo-wide audits,
+architecture/reconciliation, multi-file implementation, large UI/product
+rollouts) to Claude as primary heavy implementer, and small/bounded
+finishing work to Codex — see `docs/cefflo/agent-os/CEFFLO_AGENT_OS_CORE.md`
+§3, §6 and the relevant `docs/cefflo/agent-os/*_OPERATING.md` file for
+the assigned agent. Founder instruction overrides normal routing.
 
-Codex follows `00_AGENTS.md`.
-
-## AI-03 Claude
-
-Optional specialist, not mandatory in every sprint. Best use: - UI
-concept/prototype; - visual improvement; - new interface exploration; -
-architecture/product critique; - independent review.
-
-If Claude lacks GitHub write access, do not make Founder manually
-shuttle code back and forth for routine implementation. Approved
-concepts/specs are passed to Codex for clean integration.
-
-## AI-04 Handoff
-
-When Claude is used, handoff should state: - objective; - scope; -
-approved visual/product outcome; - acceptance criteria; - do-not-touch
-areas. Codex implements in canonical repo and reports result.
+Still valid from the superseded sections: avoid asking two agents to
+duplicate the same heavy analysis without reason; use a compact handoff
+rather than re-explaining Cefflo context every session (Agent OS Core
+§8, §18).
 
 ## AI-05 No Duplicate Implementation
 
-Do not ask Claude and Codex to independently build the same production
-feature unless intentionally comparing prototypes. One canonical
-executor prevents conflict and wasted usage.
+Do not ask two agents to independently build the same production
+feature unless intentionally comparing prototypes. One assigned
+implementer per task prevents conflict and wasted usage (Agent OS Core
+§6).
 
 ## AI-06 Usage Efficiency
 
--   Codex: code/repo/testing/deployment.
--   Claude: only high-value specialist work when it adds value.
+-   Route substantial work to Claude, bounded finishing to Codex (Agent
+    OS Core §6), unless Founder instructs otherwise.
 -   Avoid repeated full-repo prompts.
--   Use router docs and section IDs.
+-   Use canonical MDs (Brand Brain, Agent OS Core, role Operating MD,
+    Task MD) and section IDs rather than re-deriving context.
 -   Continue current phase/sprint instead of re-explaining Cefflo every
     session.
 

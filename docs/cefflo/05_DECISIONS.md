@@ -1,9 +1,24 @@
 # CEFFLO --- LOCKED DECISIONS
 
+Brand/product doctrine authority: `docs/cefflo/CEFFLO_BRAND_BRAIN.md`.
+Where a decision below conflicts with the Brand Brain, the Brand Brain
+wins; the decision is retained here for history and marked accordingly.
+
 ## D-01 Positioning
 
-Cefflo = Operating System for Home-Based Food Businesses. Not primarily
-marketplace/rider company/GrabFood-style delivery platform.
+**STATUS: SUPERSEDED.** This decision reflected an earlier home-food-only
+positioning. Current canonical positioning: Cefflo is a local same-day
+delivery operating system for businesses that manage deliveries within
+their own service area; food is an example, not the category boundary.
+See `docs/cefflo/CEFFLO_BRAND_BRAIN.md` §1.1, §4. Retained below for
+decision history only — not current doctrine.
+
+> Cefflo = Operating System for Home-Based Food Businesses. Not primarily
+> marketplace/rider company/GrabFood-style delivery platform.
+
+The non-marketplace / non-rider-company / non-GrabFood-style framing
+itself remains current doctrine (Brand Brain §3) — only the food-only
+category boundary is superseded.
 
 ## D-02 Acquisition
 
@@ -61,9 +76,19 @@ practical; integrate or adjust rather than rebuild wholesale.
 
 ## D-11 AI Ownership
 
-Codex is primary engineering executor and canonical code integrator.
-Claude is optional UI/prototype/review/specialist support, not parallel
-code SOT.
+**STATUS: SUPERSEDED.** This decision reflected an earlier fixed
+single-executor model. Current agent roles and task routing are defined
+by `docs/cefflo/agent-os/CEFFLO_AGENT_OS_CORE.md` §3 and §6: Claude is
+the primary implementer for substantial Cefflo work (repo-wide audits,
+architecture/reconciliation, multi-file implementation, large rollouts);
+Codex is the bounded implementer/finisher for small, focused work;
+ChatGPT orchestrates/plans for substantial tasks. Founder instruction
+overrides normal routing. Retained below for decision history only —
+not current doctrine.
+
+> Codex is primary engineering executor and canonical code integrator.
+> Claude is optional UI/prototype/review/specialist support, not parallel
+> code SOT.
 
 ## D-12 Founder Authority
 
