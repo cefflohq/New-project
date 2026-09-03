@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#FFFFFF">
+<meta name="theme-color" content="#F5F5F0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>CEFFLO — Milestone 1 Production Data Foundation</title>
@@ -3183,8 +3183,9 @@ body{
   #signup .checkbox-row{margin-bottom:14px}
 }
 </style>
+<link rel="stylesheet" href="../shared/ui-system.css?v=20260903a">
 </head>
-<body>
+<body data-ui-system="cefflo">
 
 <div class="auth-device" id="authDevice">
 
@@ -6946,6 +6947,9 @@ function openTermsFromSheet(){closeSheet();navigate('termsOfService');}
 
 function pageDashboardProposed(){
   const currentDeliveries=getCurrentDeliveries();
+  const recentOrders=[...state.orders]
+    .sort((a,b)=>new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0))
+    .slice(0,3);
   const workloadCard=getDashboardWorkloadCard();
   const capacity=workloadCard.capacity;
   const openWorkSession=(state.workforce?.workSessions||[]).find(session=>session.status==='open');
@@ -6990,6 +6994,15 @@ function pageDashboardProposed(){
           <span class="vd2-chip ${picked?'picked':''}">${picked?'PICKED UP':'ON THE WAY'}</span>
           <span class="vd2-eta"><small>ETA</small><b>${eta} min</b></span>
         </button>`).join('')}</div>
+      </section>
+      <section class="vd2-section vd2-recent-orders">
+        <div class="vd2-section-head"><h2>Recent Orders</h2><button data-nav="orders">View All</button></div>
+        <div class="vd2-order-list">${recentOrders.length?recentOrders.map(o=>`<button class="vd2-order-row" data-nav="orderDetail" data-navparams='${JSON.stringify({id:o.id})}'>
+          <span class="vd2-order-id">#${o.id}</span>
+          <span class="vd2-order-items">${Array.isArray(o.items)?o.items.length:0} item${Array.isArray(o.items)&&o.items.length===1?'':'s'}</span>
+          ${statusChip(o.status)}
+          <span class="vd2-order-chevron" aria-hidden="true">${ic('chev')}</span>
+        </button>`).join(''):`<div class="vd2-order-empty">No recent orders</div>`}</div>
       </section>
       ${renderDashboardWorkloadCard(workloadCard)}
       <section class="vd2-section vd2-actions">
