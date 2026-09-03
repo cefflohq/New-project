@@ -14,7 +14,8 @@
       p_business_id: input.businessId, p_customer_name: input.customerName,
       p_customer_phone: input.customerPhone, p_delivery_address: input.address,
       p_notes: input.notes || '', p_latitude: input.latitude ?? null,
-      p_longitude: input.longitude ?? null, p_items: input.items || []
+      p_longitude: input.longitude ?? null, p_items: input.items || [],
+      p_zone_id: input.zoneId ?? null, p_vehicle_requirement: input.vehicleRequirement || 'any'
     });
   }
   const assignRider = (orderId, riderId) => api.rpc('assign_rider', { p_order_id: orderId, p_rider_id: riderId });
@@ -22,12 +23,36 @@
   const deactivateRider = riderId => api.rpc('deactivate_rider', { p_rider_id: riderId });
   const updateRiderDetails = input => api.rpc('update_rider_details', {
     p_rider_id: input.riderId, p_name: input.name ?? null, p_phone: input.phone ?? null,
-    p_vehicle_plate: input.vehiclePlate ?? null
+    p_vehicle_plate: input.vehiclePlate ?? null, p_vehicle_type: input.vehicleType ?? null,
+    p_capacity_override: input.capacityOverride ?? null
   });
   const updateOrderDetails = input => api.rpc('update_order_details', {
     p_order_id: input.orderId, p_customer_name: input.customerName ?? null,
     p_customer_phone: input.customerPhone ?? null, p_delivery_address: input.address ?? null,
-    p_notes: input.notes ?? null, p_items: input.items ?? null
+    p_notes: input.notes ?? null, p_items: input.items ?? null,
+    p_zone_id: input.zoneId ?? null, p_clear_zone: input.clearZone ?? false,
+    p_vehicle_requirement: input.vehicleRequirement ?? null
+  });
+  // Grow V1 Flow 2 (A1-A6): new operational-engine RPC wrappers, following
+  // the exact same thin-wrapper convention as every function above.
+  const checkRunVehicleCapacity = (riderId, orderIds) => api.rpc('check_run_vehicle_capacity', {
+    p_rider_id: riderId, p_order_ids: orderIds
+  });
+  const proposeDeliveryPlan = businessId => api.rpc('propose_delivery_plan', { p_business_id: businessId });
+  const importOrdersBatch = (businessId, rows, idempotencyKey) => api.rpc('import_orders_batch', {
+    p_business_id: businessId, p_rows: rows, p_idempotency_key: idempotencyKey
+  });
+  const advancePreparation = (orderId, next) => api.rpc('advance_preparation', {
+    p_order_id: orderId, p_next: next
+  });
+  const setBusinessServiceArea = (businessId, lat, lng, radiusKm) => api.rpc('set_business_service_area', {
+    p_business_id: businessId, p_origin_latitude: lat, p_origin_longitude: lng, p_radius_km: radiusKm
+  });
+  const initiateDeliveryRecovery = (orderId, reason, note, idempotencyKey) => api.rpc('initiate_delivery_recovery', {
+    p_order_id: orderId, p_reason: reason, p_rider_id: null, p_note: note || '', p_idempotency_key: idempotencyKey
+  });
+  const setOrderLocationManual = (orderId, lat, lng) => api.rpc('set_order_location_manual', {
+    p_order_id: orderId, p_latitude: lat, p_longitude: lng
   });
   const updateTeamMember = input => api.rpc('update_team_member', {
     p_business_id: input.businessId, p_user_id: input.userId,
@@ -44,7 +69,8 @@
   });
   const buildRiderRun = input => api.rpc('build_rider_run', {
     p_delivery_session_id: input.sessionId, p_rider_id: input.riderId,
-    p_order_ids: input.orderIds, p_idempotency_key: input.idempotencyKey
+    p_order_ids: input.orderIds, p_idempotency_key: input.idempotencyKey,
+    p_override_capacity: input.overrideCapacity || false
   });
   const updateBusinessProfile = input => api.rpc('update_business_profile', {
     p_business_id: input.businessId, p_name: input.name ?? null, p_phone: input.phone ?? null,
@@ -90,6 +116,17 @@
   // status (assigned/accepted/declined/...) and this order's own stop
   // status/sequence, nothing else.
   const listRiderAssignments = businessId => api.request(`/rest/v1/rider_assignments?business_id=eq.${encodeURIComponent(businessId)}&select=id,rider_id,delivery_session_id,status,accepted_at,delivery_stops(id,order_id,status,sequence)&order=assigned_at.asc`);
+  // Grow V1 Flow 2 (C1-C3): ALL of this business's stops, not only the
+  // ones already attached to a rider_assignments row -- Prepare->Pack->
+  // Ready is upstream of assignment (a Helper works on an order before a
+  // Vendor ever builds a run for it), so listRiderAssignments' assignment-
+  // scoped join above cannot carry preparation truth for unassigned orders.
+  const listDeliveryStops = businessId => api.request(`/rest/v1/delivery_stops?business_id=eq.${encodeURIComponent(businessId)}&select=id,order_id,preparation_status,preparation_updated_at&order=created_at.asc`);
+  // Grow V1 Flow 2 (A2): the business's own service-area columns.
+  // get_my_businesses() is a curated cross-membership view that doesn't
+  // carry them; a direct, RLS-scoped single-row fetch is the smallest
+  // real addition rather than widening that RPC's contract.
+  const getServiceArea = businessId => api.request(`/rest/v1/businesses?id=eq.${encodeURIComponent(businessId)}&select=service_origin_latitude,service_origin_longitude,service_coverage_radius_km`).then(rows => rows[0] || {});
 
   function mapOrder(row) {
     return {
@@ -103,11 +140,23 @@
       approvedAt: row.approved_at, approvedBy: row.approved_by,
       delivered: row.delivery_status === 'delivered', completedAt: row.completed_at,
       time: row.completed_at ? new Date(row.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null,
-      createdAt: row.created_at, updatedAt: row.updated_at, activity: []
+      createdAt: row.created_at, updatedAt: row.updated_at, activity: [],
+      // Grow V1 Flow 2 (A1/A3): real canonical location/vehicle-requirement
+      // truth -- location_status/vehicle_requirement are real orders
+      // columns; coverageStatus is fetched lazily per-order (order detail
+      // only, not this bulk hydrate -- it's a live haversine computation,
+      // not a stored column, so calling it for every order on every list
+      // refresh would be wasteful) via CEFFLO_VENDOR.orderCoverageStatus.
+      locationStatus: row.location_status, latitude: row.latitude, longitude: row.longitude,
+      vehicleRequirement: row.vehicle_requirement || 'any'
     };
   }
   function mapRider(row) {
-    return { id: row.id, name: row.name, phone: row.phone, plate: row.vehicle_plate || '—', status: row.status === 'inactive' ? 'offline' : row.status, zone: 'Unassigned', availabilityStatus: row.availability_status };
+    return { id: row.id, name: row.name, phone: row.phone, plate: row.vehicle_plate || '—', status: row.status === 'inactive' ? 'offline' : row.status, zone: 'Unassigned', availabilityStatus: row.availability_status,
+      // Grow V1 Flow 2 (A3): real canonical Motorcycle/Car/Van truth and
+      // per-Rider capacity override, replacing the vehicle_plate-only
+      // model Flow 1 found.
+      vehicleType: row.vehicle_type || 'motorcycle', capacityOverride: row.capacity_override };
   }
   function mapZone(row) {
     return { id: row.id, name: row.name, status: row.status };
@@ -150,13 +199,24 @@
     state.currentMemberRole = selected.member_role;
     localStorage.setItem('cefflo_active_business_id', selected.business_id);
     const orders = await listOrders(selected.business_id);
-    const [riders, ratings, zones, sessions, assignments, events] = await Promise.all([
+    const [riders, ratings, zones, sessions, assignments, events, stops, serviceArea] = await Promise.all([
       listRiders(selected.business_id), listRatings(orders.map(order => order.id)),
       listZones(selected.business_id), listDeliverySessions(selected.business_id),
-      listRiderAssignments(selected.business_id), listDeliveryEvents(selected.business_id)
+      listRiderAssignments(selected.business_id), listDeliveryEvents(selected.business_id),
+      listDeliveryStops(selected.business_id), getServiceArea(selected.business_id)
     ]);
+    state.serviceArea = serviceArea;
     state.riders = riders.map(mapRider);
     state.orders = orders.map(mapOrder);
+    // Grow V1 Flow 2 (C1-C3): attach real preparation truth (Prepare->
+    // Pack->Ready) onto every order, from the full-stop query above --
+    // covers unassigned orders too, unlike the assignment-scoped join.
+    const stopByOrderId = new Map(stops.map(stop => [stop.order_id, stop]));
+    state.orders.forEach(order => {
+      const stop = stopByOrderId.get(order.backendId);
+      order.preparationStatus = stop ? stop.preparation_status : 'not_started';
+      order.deliveryStopId = stop ? stop.id : null;
+    });
     const ratingOrderIds = new Set(ratings.map(item => item.order_id));
     state.orders.forEach(order => { order.ratingSubmitted = ratingOrderIds.has(order.backendId); order.riderName = state.riders.find(r => r.id === order.riderId)?.name || null; });
     // Real S4-06.3/.5a data -- distinct from the deprecated mock engine's
@@ -248,6 +308,8 @@
     return () => client.removeChannel(channel);
   }
 
+  const orderCoverageStatus = orderId => api.rpc('order_coverage_status', { p_order_id: orderId });
+
   window.CEFFLO_VENDOR = Object.freeze({
     businesses, createDelivery, assignRider, approveOrder, deactivateRider, updateRiderDetails,
     updateOrderDetails, updateTeamMember, reassignRider, updateBusinessProfile,
@@ -255,7 +317,10 @@
     listOrders, listRiders, listRatings, listZones, listDeliverySessions,
     createTeamInvitation, revokeTeamInvitation, createRiderInvitation, revokeRiderInvitation, approvePendingRider, reportDeliveryIssue,
     listBusinessMembers, listTeamInvitations, listRiderInvitations,
-    hydrate: hydrateCanonicalWorkspace, hydrateTeam: hydrateTeamWorkspace, subscribe, startRealtime, stopRealtime
+    hydrate: hydrateCanonicalWorkspace, hydrateTeam: hydrateTeamWorkspace, subscribe, startRealtime, stopRealtime,
+    // Grow V1 Flow 2
+    checkRunVehicleCapacity, proposeDeliveryPlan, importOrdersBatch, advancePreparation,
+    setBusinessServiceArea, initiateDeliveryRecovery, setOrderLocationManual, orderCoverageStatus
   });
   hydrateOperationalStateFromBackend = hydrateCanonicalWorkspace;
   syncOperationalStateToBackend = async () => true;
@@ -263,7 +328,8 @@
   wizSubmit = async function () {
     try {
       const created = await createDelivery({ businessId: state.businessId, customerName: wizardState.data.name,
-        customerPhone: wizardState.data.phone, address: wizardState.data.address, notes: wizardState.data.note || '', items: wizardState.data.items });
+        customerPhone: wizardState.data.phone, address: wizardState.data.address, notes: wizardState.data.note || '', items: wizardState.data.items,
+        vehicleRequirement: wizardState.data.vehicleRequirement || 'any' });
       localStorage.setItem(`cefflo_tracking_token_${created.order.id}`, created.tracking_token);
       await hydrateCanonicalWorkspace();
       toast(tf('orderCreatedSuccess', { id: created.order.public_ref }), 'success');
@@ -375,11 +441,18 @@
 
       const result = await api.rpc('build_rider_run', {
         p_delivery_session_id: sessionId, p_rider_id: rider.id, p_order_ids: orderIds,
-        p_idempotency_key: runBuilderState.pendingKey
+        p_idempotency_key: runBuilderState.pendingKey,
+        // Grow V1 Flow 2 (A3): only ever true after the Vendor has seen the
+        // violation list (renderRunBuilderErrorBanner) and explicitly
+        // clicked "Assign anyway" (ACTIONS.confirmRunBuilderOverride below)
+        // -- never defaulted true, never silently retried.
+        p_override_capacity: runBuilderState.overrideCapacity
       });
       await hydrateCanonicalWorkspace();
       closeSheet();
-      toast(`${result.order_count} orders assigned to ${rider.name}`, 'success');
+      toast(result.vehicle_capacity_override_used
+        ? `${result.order_count} orders assigned to ${rider.name} (vehicle/capacity override recorded)`
+        : `${result.order_count} orders assigned to ${rider.name}`, 'success');
       resetRunBuilderState();
       render();
     } catch (error) {
@@ -389,6 +462,147 @@
     }
   };
   ACTIONS.confirmRunBuilder = confirmRunBuilder;
+
+  // Grow V1 Flow 2 (A3): overrides index.html's handleRunBuilderError with
+  // one new branch (vehicle/capacity), delegating every other message to
+  // the original implementation unchanged -- the same "backend.js adds the
+  // real RPC-aware branch, index.html keeps the pure-UI fallback" split
+  // used throughout this file.
+  const baseHandleRunBuilderError = handleRunBuilderError;
+  handleRunBuilderError = async function (error) {
+    const msg = String((error && error.message) || '');
+    if (msg.includes('vehicle/capacity incompatible')) {
+      const selectedOrders = state.orders.filter(o => runBuilderState.selectedOrderIds.has(o.backendId));
+      const rider = state.riders.find(r => r.id === runBuilderState.riderId);
+      try {
+        const check = await checkRunVehicleCapacity(rider.id, selectedOrders.map(o => o.backendId));
+        runBuilderState.capacityViolations = check.violations || [];
+      } catch (e) {
+        runBuilderState.capacityViolations = [];
+      }
+      runBuilderState.lastError = { type: 'vehicle_capacity_conflict' };
+      return;
+    }
+    return baseHandleRunBuilderError(error);
+  };
+  ACTIONS.confirmRunBuilderOverride = async function () {
+    runBuilderState.overrideCapacity = true;
+    runBuilderState.lastError = null;
+    await confirmRunBuilder();
+  };
+
+  // Grow V1 Flow 2 (B1): the real commit step. Overrides index.html's
+  // stub (which only ever showed "CSV import is not connected yet.") --
+  // parse/preview/validate/fix-row above are untouched, exactly per the
+  // Founder-approved "keep the existing foundation" direction. Only
+  // 'Valid' rows are submitted; still-invalid rows stay visible for the
+  // Vendor to fix or abandon, matching the existing per-row-fix UX.
+  const csvImportInFlight = { key: null, submitting: false };
+  confirmCsvImport = async function () {
+    if (csvImportInFlight.submitting) return;
+    const validRows = csvState.rows.filter(r => r.status === 'Valid');
+    if (!validRows.length) { toast('No valid rows to import.', 'error'); return; }
+    const idempotencyKey = window.crypto?.randomUUID?.();
+    if (!idempotencyKey) { toast('Unable to generate a secure request id in this browser.', 'error'); return; }
+    csvImportInFlight.submitting = true;
+    try {
+      const rows = validRows.map((r, i) => ({
+        source_row_ref: r.orderId || `row-${r.sourceRow || i}`,
+        customer_name: r.name, customer_phone: r.phone, delivery_address: r.address,
+        zone_name: r.zone || null
+      }));
+      const result = await importOrdersBatch(state.businessId, rows, idempotencyKey);
+      await hydrateCanonicalWorkspace();
+      csvState.step = 1; csvState.rows = [];
+      closeSheet();
+      const committedCount = (result.committed || []).length;
+      const rejectedCount = (result.rejected || []).length;
+      navigate('orders', { tab: 'ongoing' }, false);
+      toast(rejectedCount > 0
+        ? `${committedCount} orders imported, ${rejectedCount} rejected at commit time.`
+        : `${committedCount} orders imported.`, rejectedCount > 0 ? 'error' : 'success');
+    } catch (error) {
+      toast(error.message || 'Unable to commit import', 'error');
+    } finally {
+      csvImportInFlight.submitting = false;
+    }
+  };
+  ACTIONS.confirmCsvImport = confirmCsvImport;
+
+  // Grow V1 Flow 2 (C1-C3): real Prepare->Pack->Ready action, replacing
+  // index.html's stub. In-flight guard mirrors approveOrderAction's own
+  // pattern (prevent duplicate taps mutating the same stop twice).
+  const prepActionsInFlight = new Set();
+  advancePreparationAction = async function (el) {
+    const orderId = el.dataset.orderid;
+    const next = el.dataset.next;
+    if (!orderId || !next || prepActionsInFlight.has(orderId)) return;
+    prepActionsInFlight.add(orderId);
+    try {
+      await advancePreparation(orderId, next);
+      await hydrateCanonicalWorkspace();
+      toast('Preparation updated', 'success');
+      render();
+    } catch (error) {
+      toast(error.message || 'Unable to update preparation status', 'error');
+    } finally {
+      prepActionsInFlight.delete(orderId);
+    }
+  };
+  ACTIONS.advancePreparationAction = advancePreparationAction;
+
+  confirmEditRiderVehicle = async function (el) {
+    try {
+      const vehicleType = document.getElementById('erv_vehicle_type')?.value;
+      const capacityRaw = document.getElementById('erv_capacity')?.value.trim();
+      const capacityOverride = capacityRaw ? Number(capacityRaw) : null;
+      if (capacityRaw && (!Number.isFinite(capacityOverride) || capacityOverride <= 0)) throw new Error('Capacity must be a positive number.');
+      await updateRiderDetails({ riderId: el.dataset.id, vehicleType, capacityOverride });
+      await hydrateCanonicalWorkspace();
+      closeSheet(); render(); toast('Rider vehicle/capacity updated', 'success');
+    } catch (error) { toast(error.message || 'Unable to update rider', 'error'); }
+  };
+  ACTIONS.confirmEditRiderVehicle = confirmEditRiderVehicle;
+
+  confirmEditServiceArea = async function () {
+    try {
+      const lat = Number(document.getElementById('esa_lat')?.value);
+      const lng = Number(document.getElementById('esa_lng')?.value);
+      const radius = Number(document.getElementById('esa_radius')?.value);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || !Number.isFinite(radius) || radius <= 0) throw new Error('Enter a valid latitude, longitude, and radius.');
+      await setBusinessServiceArea(state.businessId, lat, lng, radius);
+      await hydrateCanonicalWorkspace();
+      closeSheet(); render(); toast('Service area saved', 'success');
+    } catch (error) { toast(error.message || 'Unable to save service area', 'error'); }
+  };
+  ACTIONS.confirmEditServiceArea = confirmEditServiceArea;
+
+  // Grow V1 Flow 2 (A6): real narrow recovery action, replacing the S4-09
+  // "not connected yet" reschedule stub. Reuses the same in-flight-guard/
+  // idempotency-key pattern as every other real mutation here.
+  const recoveryInFlight = new Set();
+  confirmReschedule = async function (el) {
+    const order = state.orders.find(item => item.id === el.dataset.id);
+    const orderId = order?.backendId || el.dataset.id;
+    if (recoveryInFlight.has(orderId)) return;
+    const reason = document.getElementById('recov_reason')?.value;
+    const note = document.getElementById('recov_note')?.value || '';
+    const idempotencyKey = window.crypto?.randomUUID?.();
+    if (!idempotencyKey) { toast('Unable to generate a secure request id in this browser.', 'error'); return; }
+    recoveryInFlight.add(orderId);
+    try {
+      await initiateDeliveryRecovery(orderId, reason, note, idempotencyKey);
+      await hydrateCanonicalWorkspace();
+      closeSheet();
+      toast('Order returned to planning', 'success');
+      render();
+    } catch (error) {
+      toast(error.message || 'Unable to recover this delivery', 'error');
+    } finally {
+      recoveryInFlight.delete(orderId);
+    }
+  };
+  ACTIONS.confirmReschedule = confirmReschedule;
 
   saveBusinessProfile = async function () {
     try {

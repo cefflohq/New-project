@@ -4754,6 +4754,7 @@ function pageOrders(params){
         <button class="tab-btn ${tab==='completed'?'active':''}" data-action="setOrdersTab" data-tab="completed">${t('completed')}</button>
       </div>
       <div class="orders-actions">
+        ${tab==='ongoing' ? `<button class="tab-btn" data-nav="suggestedRuns">Suggested Runs</button>` : ''}
         ${tab==='ongoing' ? `<button class="tab-btn ${ordersUiState.selectMode?'active':''}" data-action="toggleOrdersSelectMode">${ordersUiState.selectMode?t('cancel'):'Select'}</button>` : ''}
         <button class="search-icon-only" data-action="toggleOrdersSearch" aria-label="${t('searchOrders')}">${ic('search')}</button>
       </div>
@@ -5019,25 +5020,31 @@ const ORDER_DETAIL_ISSUE_REASON_KEY = { 'Wrong address': 'wrong', 'Customer unre
 function confirmReportIssue(el){
   ACTIONS.confirmReportDeliveryIssue({ dataset: { id: el.dataset.id, reason: ORDER_DETAIL_ISSUE_REASON_KEY[el.dataset.reason], label: el.dataset.reason } });
 }
+// Grow V1 Flow 2 (A6): narrow operational recovery, not calendar
+// scheduling -- the sheet below intentionally does NOT collect a
+// date/time (the old S4-09 stub did, but initiate_delivery_recovery does
+// not schedule a future slot; it safely returns the order to planning
+// now, preserving history via a recovery event). Asking for a date/time
+// here would imply a capability that does not exist.
 function openReschedule(el){
   const orderId = el.dataset.id;
   openSheet(`
-    <div class="sheet-title">${t('scheduleRedelivery')}</div>
-    <div class="field"><label>${t('dateLabel')}</label><input type="date" id="reschedDate"></div>
-    <div class="field"><label>${t('timeSlot')}</label>
-      <select id="reschedTime"><option>${t('morningSlot')}</option><option>${t('afternoonSlot')}</option><option>${t('eveningSlot')}</option></select>
+    <div class="sheet-title">Recover Delivery</div>
+    <p class="t-caption" style="color:var(--text-secondary);margin-bottom:10px;">This returns the order to planning so it can be assigned to a replacement Rider/run. The original assignment history is preserved, not overwritten.</p>
+    <div class="field"><label>Reason</label>
+      <select id="recov_reason">
+        <option value="rider_unable_to_proceed">Rider unable to proceed</option>
+        <option value="customer_unreachable">Customer unreachable</option>
+        <option value="address_problem">Address problem</option>
+        <option value="access_problem">Access problem</option>
+        <option value="vendor_not_ready">Vendor not ready</option>
+      </select>
     </div>
-    <button class="btn btn-primary" data-action="confirmReschedule" data-id="${orderId}">${t('save')}</button>
+    <div class="field"><label>Note (optional)</label><textarea id="recov_note" placeholder="What happened?"></textarea></div>
+    <button class="btn btn-primary" style="width:100%" data-action="confirmReschedule" data-id="${orderId}">Return to Planning</button>
   `);
 }
-function confirmReschedule(el){
-  // S4-09: there is no authoritative Vendor reschedule/redelivery contract.
-  // Keep the existing action reachable, but do not turn a requested date/time
-  // into local lifecycle truth, history, delivery events, or notification
-  // claims. The sheet can be dismissed after surfacing the honest gate.
-  closeSheet();
-  toast('Re-delivery scheduling is not connected yet.', 'error');
-}
+function confirmReschedule(el){ toast('Backend not connected.', 'error'); }
 
 /* ===================== ADD ORDER ENTRY SHEET (FAB) ===================== */
 function openAddOrder(){
@@ -5061,11 +5068,11 @@ function openAddOrder(){
 }
 
 /* ===================== MANUAL KEY-IN WIZARD ===================== */
-const wizardState = { step:1, data:{ name:'', phone:'', address:'', zone:'', items:[{name:'',qty:1}], session:'Lunch Session' }, errors:{} };
+const wizardState = { step:1, data:{ name:'', phone:'', address:'', zone:'', items:[{name:'',qty:1}], session:'Lunch Session', vehicleRequirement:'any' }, errors:{} };
 function startManualKeyIn(){
   closeSheet();
   wizardState.step = 1;
-  wizardState.data = { name:'', phone:'', address:'', zone:'', items:[{name:'',qty:1}], session:'Lunch Session' };
+  wizardState.data = { name:'', phone:'', address:'', zone:'', items:[{name:'',qty:1}], session:'Lunch Session', vehicleRequirement:'any' };
   wizardState.errors = {};
   navigate('orderIntakeWizard', {});
 }
@@ -5104,6 +5111,13 @@ function pageOrderIntakeWizard(){
           <option ${wizardState.data.session==='Lunch Session'?'selected':''}>${t('lunchSession')}</option>
           <option ${wizardState.data.session==='Dinner Session'?'selected':''}>${t('dinnerSession')}</option>
           <option ${wizardState.data.session==='Morning Session'?'selected':''}>${t('morningSession')}</option>
+        </select>
+      </div>
+      <div class="field"><label>Vehicle needed for this delivery</label>
+        <select id="wz_vehicle_requirement">
+          <option value="any" ${(wizardState.data.vehicleRequirement||'any')==='any'?'selected':''}>Any vehicle</option>
+          <option value="car_or_larger" ${wizardState.data.vehicleRequirement==='car_or_larger'?'selected':''}>Car or larger</option>
+          <option value="van_required" ${wizardState.data.vehicleRequirement==='van_required'?'selected':''}>Van required</option>
         </select>
       </div>
     `;
@@ -5179,6 +5193,7 @@ function wizNext(){
     if(!wizardState.data.items.length || !wizardState.data.items.some(i=>i.name)){ wizardState.errors.items = true; navigate('orderIntakeWizard', {}, false); return; }
   } else if(step===4){
     wizardState.data.session = document.getElementById('wz_session').value;
+    wizardState.data.vehicleRequirement = document.getElementById('wz_vehicle_requirement').value;
   }
   wizardState.step = Math.min(6, step+1);
   navigate('orderIntakeWizard', {}, false);
@@ -5510,6 +5525,10 @@ const runBuilderState = {
   waveMode:'existing', waveId:null, newWaveName:'', resolvedNewSessionId:null,
   pendingKey:null, pendingSignature:null,
   submitting:false, lastError:null,
+  // Grow V1 Flow 2 (A3): vehicle/capacity is a distinct, Founder-locked
+  // exception class -- blocked by default, requires an explicit,
+  // separately-confirmed override (never silently retried).
+  overrideCapacity:false, capacityViolations:null,
 };
 function isRunBuilderEligible(o){
   return Boolean(o.approvedAt) && !o.riderId && o.backendStatus==='created';
@@ -5528,6 +5547,7 @@ function resetRunBuilderState(){
   runBuilderState.newWaveName=''; runBuilderState.resolvedNewSessionId=null;
   runBuilderState.pendingKey=null; runBuilderState.pendingSignature=null;
   runBuilderState.submitting=false; runBuilderState.lastError=null;
+  runBuilderState.overrideCapacity=false; runBuilderState.capacityViolations=null;
 }
 // S4-06.7 (P5): scoped to today's operational delivery_date so a stale
 // Wave from another day never lingers as a normal assignment target --
@@ -5551,6 +5571,98 @@ function openRunBuilder(opts){
   runBuilderState.newWaveName = suggestedWaveName();
   openSheet(renderRunBuilderBody());
 }
+// Grow V1 Flow 2 (A4): Suggested Runs -- the deterministic optimizer
+// (propose_delivery_plan) is a RECOMMENDATION generator only. "Build This
+// Run" pre-fills and opens the exact same, already-working Run Builder
+// sheet (openRunBuilder/confirmRunBuilder) rather than a separate dispatch
+// path -- the optimizer proposes, the existing reviewed/audited commit
+// flow is the only thing that ever actually assigns/dispatches. Per the
+// Founder's map clarification: plain operational UI (orders, rider,
+// distance-in-km, conflicts), no embedded map.
+const suggestedRunsState = { loading:false, plan:null, error:null };
+// Two entry points, deliberately separate: openSuggestedRuns() is the
+// explicit user action (button click) that navigates AND triggers a fresh
+// load; loadSuggestedRuns() only performs the fetch and is safe to call
+// from inside a render (e.g. pageSuggestedRuns() itself, or Retry) --
+// it never calls navigate()/render() synchronously from within the very
+// render pass that invoked it, which was the previous version's bug
+// (navigate() -> render() -> pageSuggestedRuns() -> openSuggestedRuns()
+// -> navigate() ... an unbounded synchronous loop before `loading` was
+// ever set true).
+function openSuggestedRuns(){
+  navigate('suggestedRuns', {}, true);
+  loadSuggestedRuns();
+}
+async function loadSuggestedRuns(){
+  if(suggestedRunsState.loading) return;
+  suggestedRunsState.loading = true; suggestedRunsState.error = null; suggestedRunsState.plan = null;
+  rerenderSuggestedRunsIfOpen();
+  try {
+    if(!window.CEFFLO_VENDOR?.proposeDeliveryPlan) throw new Error('Backend not connected.');
+    suggestedRunsState.plan = await window.CEFFLO_VENDOR.proposeDeliveryPlan(state.businessId);
+  } catch (error) {
+    suggestedRunsState.error = error.message || 'Unable to generate a plan.';
+  } finally {
+    suggestedRunsState.loading = false;
+    rerenderSuggestedRunsIfOpen();
+  }
+}
+function rerenderSuggestedRunsIfOpen(){
+  if(state.route && state.route.name==='suggestedRuns') render();
+}
+function pageSuggestedRuns(){
+  if(!suggestedRunsState.plan && !suggestedRunsState.loading && !suggestedRunsState.error) loadSuggestedRuns();
+  const plan = suggestedRunsState.plan;
+  let body;
+  if(suggestedRunsState.loading){
+    body = `<div class="empty-state"><h3>Generating suggested runs&hellip;</h3></div>`;
+  } else if(suggestedRunsState.error){
+    body = `<div class="empty-state"><h3>Unable to generate a plan</h3><p>${suggestedRunsState.error}</p><button class="btn btn-secondary" data-action="loadSuggestedRuns">Retry</button></div>`;
+  } else if(!plan || (!plan.groups.length && !plan.unplannable_orders.length)){
+    body = `<div class="empty-state"><h3>Nothing to plan right now</h3><p>Approved, unassigned orders with a resolved location will appear here.</p></div>`;
+  } else {
+    const groups = plan.groups.map((g,gi)=>{
+      const zoneName = g.zone_id ? (state.zones.find(z=>z.id===g.zone_id)?.name || 'Zone') : 'Unzoned';
+      const rider = state.riders.find(r=>r.id===g.candidate_rider_id);
+      const stopsHtml = (g.stops||[]).map((s,i)=>{
+        const order = state.orders.find(o=>o.backendId===s.order_id);
+        return `<div class="stat-inline"><span class="label">${i+1}. ${order?order.customerName:s.order_id}</span><span class="val">${order?order.address:''}${s.distance_from_previous_km!=null?` &middot; +${s.distance_from_previous_km}km`:''}</span></div>`;
+      }).join('');
+      return `<div class="card bordered" style="margin-bottom:12px;padding:12px 14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="t-body" style="font-weight:600;">${zoneName} &middot; ${g.stops.length} stops</div>
+          <span class="status-chip chip-active">${g.total_distance_km}km</span>
+        </div>
+        <div class="t-caption" style="margin:4px 0 8px;">Suggested Rider: <b>${rider?rider.name:'Unknown'}</b> (${g.candidate_rider_vehicle_type}), requires ${g.required_vehicle}</div>
+        ${stopsHtml}
+        <button class="btn btn-primary" style="width:100%;margin-top:10px;" data-action="buildSuggestedRun" data-group="${gi}">Build This Run</button>
+      </div>`;
+    }).join('');
+    const unplannable = (plan.unplannable_orders||[]).map(u=>{
+      if(u.reason && u.reason.startsWith('location_')) return `<div class="stat-inline"><span class="label">Order (unresolved location)</span><span class="val">${u.reason}</span></div>`;
+      return `<div class="stat-inline"><span class="label">${(u.order_ids||[]).length} order(s), ${u.group_key}</span><span class="val">${u.reason}</span></div>`;
+    }).join('');
+    body = `${groups}${unplannable?`<div class="section-title workforce-section-title">Not Plannable Yet</div><div class="card bordered" style="padding:12px 14px;">${unplannable}</div>`:''}`;
+  }
+  return `<div class="module-page">${innerHeader('Suggested Runs')}<div class="content">${body}</div></div>`;
+}
+function buildSuggestedRun(el){
+  const g = suggestedRunsState.plan && suggestedRunsState.plan.groups[Number(el.dataset.group)];
+  if(!g) return;
+  openRunBuilder({ riderId:g.candidate_rider_id, orderIds:(g.stops||[]).map(s=>s.order_id) });
+  // Suggested Runs is meant to be reviewable in one pass: if an open Wave
+  // already exists, pre-select the first one (Vendor can still change it
+  // in the sheet) rather than leaving waveId unset -- openRunBuilder's own
+  // generic 'existing' default otherwise requires a manual dropdown pick
+  // before Confirm does anything, which defeats the point of a one-click
+  // proposal-to-review flow.
+  if(runBuilderState.waveMode==='existing'){
+    const wave = runBuilderExistingWaves()[0];
+    if(wave) runBuilderState.waveId = wave.id;
+  }
+  if(typeof rerenderRunBuilderSheet==='function') rerenderRunBuilderSheet();
+}
+
 function isRunBuilderSheetOpen(){
   return runBuilderState.open && Boolean(document.querySelector('#activeSheet [data-sheet="runbuilder"]'));
 }
@@ -5579,6 +5691,23 @@ function runBuilderWaveRiderCount(sessionId){
 function renderRunBuilderErrorBanner(){
   const err = runBuilderState.lastError;
   if(!err) return '';
+  // Grow V1 Flow 2 (A3): vehicle/capacity is not a plain error -- it's a
+  // blocked-by-default decision the Vendor can explicitly override, so it
+  // gets its own richer banner (violation list + a real "confirm anyway"
+  // action) rather than the generic one-line messages below.
+  if(err.type==='vehicle_capacity_conflict'){
+    const violations = runBuilderState.capacityViolations || [];
+    const lines = violations.map(v=>{
+      if(v.reason==='capacity_exceeded') return `Rider capacity exceeded: ${v.current_load} active + ${v.requested} requested > capacity ${v.effective_capacity}.`;
+      if(v.reason==='vehicle_incompatible') return `Order ${v.order_id} requires ${v.vehicle_requirement}, Rider vehicle is ${v.rider_vehicle_type}.`;
+      return v.reason || 'Vehicle/capacity conflict.';
+    });
+    return `<div class="card bordered" style="border-color:#e05252;margin-bottom:12px">
+      <p class="t-caption" style="color:#e05252;font-weight:600;margin-bottom:6px">This Rider is not vehicle/capacity-compatible with this selection:</p>
+      <ul class="t-caption" style="color:#e05252;margin:0 0 10px 18px;padding:0">${lines.map(l=>`<li>${l}</li>`).join('')}</ul>
+      <button class="btn btn-secondary" style="width:100%" data-action="confirmRunBuilderOverride">Assign anyway (recorded as an override)</button>
+    </div>`;
+  }
   const messages = {
     eligibility_conflict: err.disappearedCount>0
       ? `${err.disappearedCount} selected order(s) are no longer available and were removed from your selection. Please review and confirm again.`
@@ -6279,10 +6408,34 @@ function pageSettings(){
 }
 function pageZones(){
   const zones=(state.zones||[]).slice().sort((a,b)=>a.name.localeCompare(b.name));
+  // Grow V1 Flow 2 (A2): Service Area is a real, separate concept from
+  // Zone (a plain origin+radius coverage check, not a map) -- per the
+  // Founder's map clarification, this is a coordinate+number form, not an
+  // embedded map widget.
+  const area = state.serviceArea;
   return `<div class="module-page">${innerHeader(t('zones'),{textAction:'openCreateZone',textActionLabel:'+ Add'})}<div class="content">
+    <div class="section-title workforce-section-title">Service Area (Coverage)</div>
+    <div class="card bordered" style="margin-bottom:16px;padding:12px 14px;">
+      ${area && area.service_coverage_radius_km ? `
+        <div class="stat-inline"><span class="label">Origin</span><span class="val">${Number(area.service_origin_latitude).toFixed(4)}, ${Number(area.service_origin_longitude).toFixed(4)}</span></div>
+        <div class="stat-inline"><span class="label">Radius</span><span class="val">${area.service_coverage_radius_km} km</span></div>
+      ` : `<div class="t-caption" style="color:var(--text-secondary);">Not configured -- coverage checks are skipped until an origin and radius are set.</div>`}
+      <button class="btn btn-secondary" style="width:100%;margin-top:8px;" data-action="openEditServiceArea">${area && area.service_coverage_radius_km ? 'Edit Service Area' : 'Set Service Area'}</button>
+    </div>
+    <div class="section-title workforce-section-title">Zones</div>
     ${zones.length?`<div class="settings-group">${zones.map(zone=>`<div class="settings-row"><div class="settings-icon">${ic('map')}</div><div class="settings-label">${zone.name}</div>${statusChip(zone.status==='active'?'active':'offline')}</div>`).join('')}</div>`:`<div class="empty-state"><div class="es-icon">${ic('map')}</div><h3>${t('noZonesYet')}</h3><p>${t('createZoneFirst')}</p><button class="btn btn-primary" data-action="openCreateZone">${t('addZone')}</button></div>`}
   </div></div>`;
 }
+function openEditServiceArea(){
+  const area = state.serviceArea || {};
+  openSheet(`<div class="sheet-title">Service Area (Coverage)</div>
+    <p class="t-caption" style="color:var(--text-secondary);margin-bottom:10px;">A simple origin point + radius -- orders outside this radius are flagged out-of-coverage for review, not silently blocked.</p>
+    <div class="field"><label>Origin latitude</label><input id="esa_lat" type="number" step="0.0001" value="${area.service_origin_latitude||''}" placeholder="3.1390"></div>
+    <div class="field"><label>Origin longitude</label><input id="esa_lng" type="number" step="0.0001" value="${area.service_origin_longitude||''}" placeholder="101.6869"></div>
+    <div class="field"><label>Radius (km)</label><input id="esa_radius" type="number" step="0.5" min="0.5" value="${area.service_coverage_radius_km||''}" placeholder="25"></div>
+    <button class="btn btn-primary" style="width:100%" data-action="confirmEditServiceArea">Save</button>`);
+}
+function confirmEditServiceArea(){ toast('Backend not connected.', 'error'); }
 function openCreateZone(){
   openSheet(`<div class="sheet-title">${t('addZone')}</div><div class="field"><label>${t('zoneName')}</label><input id="new_zone_name" maxlength="80" placeholder="${t('zoneNamePlaceholder')}"></div><button class="btn btn-primary" data-action="confirmCreateZone">${t('addZone')}</button>`);
 }
@@ -6358,7 +6511,7 @@ function pageTeam(){
     ${pendingRiderRows?`<div class="section-title workforce-section-title" style="margin-top:20px;">Pending Rider Approval</div>${pendingRiderRows}`:''}
     ${riderInviteRows?`<div class="section-title workforce-section-title" style="margin-top:20px;">Pending Rider Invitations</div>${riderInviteRows}`:''}
   `;
-  const helperContent=`<div class="empty-state"><h3>Helpers is not connected yet</h3><p>Helper Pool requires a backend contract that does not exist yet.</p></div>`;
+  const helperContent=renderHelperPoolContent();
   const sessionsContent=`<div class="empty-state"><h3>Work Sessions is not connected yet</h3><p>Work Sessions requires a backend contract that does not exist yet.</p></div>`;
   return `<div class="module-page workforce-module">
     ${innerHeader('Team')}
@@ -6373,6 +6526,36 @@ function pageTeam(){
   </div>`;
 }
 
+// Grow V1 Flow 2 (C1-C3): Operations/Helper workspace. Real backend truth
+// throughout (order.preparationStatus comes from delivery_stops.
+// preparation_status via hydrateCanonicalWorkspace, not local state) --
+// per the Founder's map clarification, this is plain operational UI
+// (order/address/status/action), no map. Only pending-fulfillment orders
+// are shown (delivered/cancelled have nothing left to prepare).
+const PREP_STAGES = [
+  { key:'not_started', label:'Not Started', next:'preparing', nextLabel:'Start Preparing' },
+  { key:'preparing', label:'Preparing', next:'packed', nextLabel:'Mark Packed' },
+  { key:'packed', label:'Packed', next:'ready', nextLabel:'Mark Ready' },
+  { key:'ready', label:'Ready', next:null, nextLabel:null },
+];
+function renderHelperPoolContent(){
+  const orders = (state.orders||[]).filter(o=>!['delivered','cancelled'].includes(o.backendStatus));
+  if(!orders.length) return `<div class="empty-state"><h3>No active orders</h3><p>Prepare/Pack/Ready will appear here once orders come in.</p></div>`;
+  return PREP_STAGES.map(stage=>{
+    const rows = orders.filter(o=>(o.preparationStatus||'not_started')===stage.key);
+    return `<div class="section-title workforce-section-title" style="margin-top:16px;">${stage.label} (${rows.length})</div>
+      ${rows.length?`<div class="settings-group">${rows.map(o=>`
+        <div class="card bordered" style="margin-bottom:8px;padding:12px 14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <div style="min-width:0;"><div class="t-body" style="font-weight:600;overflow:hidden;text-overflow:ellipsis;">${o.id} &middot; ${o.customerName}</div><div class="t-caption" style="overflow:hidden;text-overflow:ellipsis;">${o.address}</div></div>
+            ${stage.next?`<button class="btn btn-secondary" style="flex:0 0 auto;" data-action="advancePreparationAction" data-orderid="${o.backendId}" data-next="${stage.next}">${stage.nextLabel}</button>`:`<span class="status-chip chip-active">Ready</span>`}
+          </div>
+        </div>`).join('')}</div>`:`<div class="t-caption" style="color:var(--text-secondary);margin-bottom:4px;">None</div>`}
+    `;
+  }).join('');
+}
+function advancePreparationAction(el){ toast('Backend not connected.', 'error'); }
+
 function pageTeamMemberDetail(params){
   const member=(state.teamMembers||[]).find(item=>item.userId===params.id);
   if(member){
@@ -6383,13 +6566,38 @@ function pageTeamMemberDetail(params){
   }
   const rider=(state.riders||[]).find(item=>item.id===params.id);
   if(rider){
+    const vehicleLabel={motorcycle:'Motorcycle',car:'Car',van:'Van'}[rider.vehicleType]||rider.vehicleType;
+    const defaultCapacity={motorcycle:6,car:12,van:20}[rider.vehicleType]||6;
     return `<div class="module-page workforce-module">${innerHeader('Rider Detail')}<div class="content">
       <div class="center-col workforce-person"><span class="workforce-avatar">${rider.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</span><h2 class="t-h1">${rider.name}</h2>${statusChip(rider.status)}</div>
-      <div class="card bordered workforce-detail-card"><div class="stat-inline"><span class="label">Phone</span><span class="val">${rider.phone}</span></div><div class="stat-inline"><span class="label">Vehicle plate</span><span class="val">${rider.plate}</span></div><div class="stat-inline"><span class="label">Status</span><span class="val">${rider.status}</span></div></div>
+      <div class="card bordered workforce-detail-card">
+        <div class="stat-inline"><span class="label">Phone</span><span class="val">${rider.phone}</span></div>
+        <div class="stat-inline"><span class="label">Vehicle plate</span><span class="val">${rider.plate}</span></div>
+        <div class="stat-inline"><span class="label">Vehicle type</span><span class="val">${vehicleLabel}</span></div>
+        <div class="stat-inline"><span class="label">Capacity</span><span class="val">${rider.capacityOverride||defaultCapacity} active stops${rider.capacityOverride?' (custom)':' (default)'}</span></div>
+        <div class="stat-inline"><span class="label">Status</span><span class="val">${rider.status}</span></div>
+      </div>
+      <button class="btn btn-secondary" style="width:100%;margin-top:8px;" data-action="openEditRiderVehicle" data-id="${rider.id}">Edit Vehicle & Capacity</button>
     </div></div>`;
   }
   return `${innerHeader('Member Detail')}<div class="content"><div class="empty-state"><h3>Member unavailable</h3></div></div>`;
 }
+
+function openEditRiderVehicle(el){
+  const rider=(state.riders||[]).find(item=>item.id===el.dataset.id);
+  if(!rider) return;
+  openSheet(`<div class="sheet-title">Edit Vehicle & Capacity</div>
+    <div class="field"><label>Vehicle type</label>
+      <select id="erv_vehicle_type">
+        <option value="motorcycle" ${rider.vehicleType==='motorcycle'?'selected':''}>Motorcycle</option>
+        <option value="car" ${rider.vehicleType==='car'?'selected':''}>Car</option>
+        <option value="van" ${rider.vehicleType==='van'?'selected':''}>Van</option>
+      </select>
+    </div>
+    <div class="field"><label>Capacity override (blank = vehicle default)</label><input id="erv_capacity" type="number" min="1" value="${rider.capacityOverride||''}" placeholder="e.g. 10"></div>
+    <button class="btn btn-primary" style="width:100%" data-action="confirmEditRiderVehicle" data-id="${rider.id}">Save</button>`);
+}
+function confirmEditRiderVehicle(el){ toast('Backend not connected.', 'error'); }
 
 function pageHelperDetail(){
   return `${innerHeader('Helper Detail')}<div class="content"><div class="empty-state"><h3>Helpers is not connected yet</h3><p>Helper Pool requires a backend contract that does not exist yet.</p></div></div>`;
@@ -6907,6 +7115,7 @@ const PAGES = {
   appVersion: pageAppVersion,
   subscription: pageSubscription,
   helpSupport: pageHelpSupport,
+  suggestedRuns: pageSuggestedRuns,
 };
 
 /* ===================== GLOBAL EVENT DELEGATION ===================== */
@@ -7212,6 +7421,8 @@ const ACTIONS = {
   openInviteTeamMember, openInviteRiderReal, openManageTeamMember,
   openCreateZone, confirmCreateZone,
   setTeamTab,
+  // Grow V1 Flow 2
+  buildSuggestedRun, openEditRiderVehicle, openEditServiceArea,
 };
 
 function attachGlobalHandlers(){ /* delegation handles everything; nothing per-render needed */ }
