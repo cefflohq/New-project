@@ -1,12 +1,14 @@
 # CEFFLO GROW V1 — SCOPE LOCK AUDIT REPORT
 
-**Task:** `docs/cefflo/tasks/CEFFLO_GROW_V1_FLOW_1_SCOPE_LOCK_MASTER.md`\
+**Task:** `docs/cefflo/tasks/CEFFLO_GROW_V1_FLOW_1_SCOPE_LOCK_MASTER.md` + `docs/cefflo/tasks/CEFFLO_GROW_V1_VEHICLE_CAPACITY_SCOPE_ADDENDUM.md`\
 **Baseline:** `staging @ 9e7ea2dae61deaaee068f156d4b0086d7fade14d`\
 **Branch:** `claude/grow-v1-flow-1-scope-lock`\
-**Date:** 2026-09-03\
+**Date:** 2026-09-03 (original) — revised 2026-09-03 (Vehicle & Capacity addendum)\
 **Nature:** Read-only audit. No implementation performed.
 
 This document holds the detailed evidence behind every classification in `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md`. Read that document for the readable contract; read this one for the "why."
+
+**Revision note:** all original findings below are preserved unchanged — nothing was re-litigated. §3a is new (Vehicle & Capacity evidence, added for the addendum). §4, §5, §10, §11 have short revision notes appended where a Founder Gate decision changed the recommendation without changing the underlying evidence.
 
 ---
 
@@ -56,6 +58,40 @@ This document holds the detailed evidence behind every classification in `docs/c
 
 ---
 
+## 3a. Vehicle & Capacity — new finding, Founder-approved addendum
+
+Targeted re-audit for the specific search terms the addendum requires: rider vehicle fields, vehicle type, motorcycle/motorbike, car, van, driver terminology, rider capacity, max active orders, run capacity, order load/size, delivery vehicle requirement, assignment compatibility.
+
+**Backend schema** — `riders` table (`202608130001_cefflo_foundation.sql` line 10) has exactly one vehicle-related column:
+
+```sql
+vehicle_plate text
+```
+
+That's it. No `vehicle_type`, no enum, no classification of any kind. Confirmed by:
+- `202608270001_s4_03_batch_1_contracts.sql` lines 106/123 — a vendor RPC lets the vendor update `p_vehicle_plate`, nothing else vehicle-related.
+- `202608300002_foundr_phase1_readonly_admin_rpcs.sql` lines 142/161 — FOUNDR's admin rider list reads `vehicle_plate`, nothing else.
+- Zero hits for "capacity," "max active orders," "run capacity," "order load," or "delivery load" anywhere in `supabase/migrations/` (41 files) — the capacity concept does not exist at the schema level in any form.
+
+**Frontend — Rider onboarding is hardcoded motorcycle-only.** `rider/index.html`, the 4-step signup flow, verbatim:
+
+- Step 3 of 4 (line 495): `<h2 class="step-title">Vehicle details</h2><p class="step-sub">Tell the vendor which motorcycle you will use for delivery.</p>` … `<label>Motorcycle Plate No.</label>`
+- Step 4 of 4 (line 496): `<h2 class="step-title">Identity verification</h2><p class="step-sub">Upload a clear motorcycle driving licence and a selfie holding the same licence.</p>` … `<label>Motorcycle Driving Licence</label>`
+
+This is not an inference — the word "motorcycle" is hardcoded into the step copy, the field label, and the *required identity document type*. A Car or Van rider cannot complete this flow as written: they would be asked for a "Motorcycle Plate No." and a "Motorcycle Driving Licence" regardless of their actual vehicle. **This directly and unambiguously answers Founder Gate Question 9** ("Are any existing screens/backend functions motorcycle-only by assumption?"): yes, the entire Rider onboarding screen set.
+
+**"Rider vehicle breakdown"** exists as one of the selectable reasons in the already-live delivery-issue contract (`rider/index.html` lines 727/1729/1741, feeding `rider_report_delivery_issue`, §11). This is a real, live *exception* pathway — useful context for Flow 2 (a natural place to hook vehicle-related recovery), but it is not vehicle-*type-aware planning* and doesn't change the MISSING classification above.
+
+**"Driver" terminology conflict check** — zero occurrences of "driver" anywhere in the repository (`supabase/`, `vendor/`, `rider/`, `customer/`, `foundr/`, `invite/`, `shared/`). "Rider" is already the sole, consistent term throughout. The addendum's requirement not to introduce a competing "Driver" identity is **already satisfied by default** — there is nothing to correct here, only to confirm and preserve going forward.
+
+**Recommended V1 capacity model:** vehicle-based default max-active-stops, with an explicit per-Rider Vendor override. Basis: this is the only candidate from the addendum's own list that (a) requires no new logistics concepts (weight/volume/dimensions — no evidence anywhere in the repo that Grow V1 needs these), (b) maps cleanly onto the existing `build_rider_run` all-or-nothing eligibility-check pattern (a straightforward `count(active stops) <= capacity` predicate, structurally identical to the eligibility checks that function already performs), and (c) still gives the Vendor real control (the addendum's explicit requirement) via the override.
+
+**Recommended override behavior:** block the assignment by default; allow an explicit, clearly-labeled Vendor override that writes a `delivery_events` row (matching every other consequential action in this codebase) rather than silently permitting an invalid plan. This mirrors the existing pattern exactly — every mutating RPC in this codebase logs to `delivery_events` — so it is architecturally the path of least resistance, not a new pattern.
+
+**Order-level vehicle requirement:** no evidence found that Grow V1 needs a per-order vehicle requirement field. The addendum's catering example illustrates a *business-type* reason a vendor might need Car/Van riders, not a confirmed need for customers/vendors to tag individual orders with a required vehicle at launch. Recommend deferring unless the Founder confirms otherwise.
+
+---
+
 ## 4. CSV + Excel/XLSX Import
 
 `vendor/index.html` lines ~5203–5330, function `readImportFile` / `confirmCsvImport`:
@@ -82,6 +118,8 @@ No CSV/XLSX-specific backend object exists anywhere in `supabase/migrations/` (z
 
 **Conclusion:** upload → parse → preview → validate → correct is real, working, substantial frontend engineering (roughly a full feature). The one missing piece — committing validated rows into canonical orders via `create_delivery` (or an import-shaped equivalent) — is deliberately, explicitly stubbed, for a clearly stated reason (order `items` shape mismatch). This is squarely **PARTIAL**, not MISSING and not LIVE.
 
+**Revision note (addendum):** Founder Gate decision is to keep the existing parse/preview/validate foundation as-is (no rebuild) and recommend the safest canonical-commit reconciliation: extend `create_delivery`'s accepted `items` contract to accept a CSV/import-shaped payload (a minimal synthetic single-line-item, or an explicitly-nullable items array for import-sourced orders) rather than inventing a parallel import-specific mutation path. This keeps `create_delivery` as the single authoritative order-creation RPC — consistent with every other intake path in §6 — instead of creating a second, competing write path for imported orders. Exact contract shape is a Flow 2 implementation decision; Flow 1 only locks the direction.
+
 ---
 
 ## 5. Google Sheets / Google Drive
@@ -89,6 +127,8 @@ No CSV/XLSX-specific backend object exists anywhere in `supabase/migrations/` (z
 Zero references anywhere in the repository — no code, no migration, no doc beyond `01_PRODUCT.md` P-09's forward-looking "Future areas may include manual/CSV/Google Sheets intake." Not started, not stubbed, not investigated in code.
 
 **Recommendation basis:** CSV/Excel — the simpler, no-OAuth version of this same idea — isn't finished yet (§4). Google Sheets/Drive requires OAuth consent flow, token storage/refresh, a sync scheduler, source-row identity tracking, and change/delete handling that CSV import doesn't need at all. Building this before CSV/Excel is committed to canonical orders would be building on an unfinished foundation.
+
+**Revision note (Founder Gate decision):** reclassified from POST-V1 to **DESIRABLE V1 IF LOW-RISK**. This does not change the MISSING current-truth finding above or the technical dependency on CSV/Excel being committed first — it changes launch priority only. Practical reading: Google Sheets/Drive intake may enter V1 scope *if and only if* it can be delivered as a thin layer on top of the already-reconciled CSV/Excel commit path (§4's revision note) without its own bespoke sync/identity/OAuth infrastructure being built from scratch under launch time pressure. If that condition can't be met without materially expanding scope or risk, it reverts to POST-V1 by the same logic. This is a conditional inclusion, not an unconditional V1 commitment — Flow 2 must re-confirm feasibility before committing engineering time.
 
 ---
 
@@ -135,6 +175,8 @@ Full detail in §3. In the Task Master's own required terms:
 
 **Direct answer to the Task Master's explicit question:** *"If repo only has deterministic grouping/sequencing, say so. If no optimizer exists, say so."* — **No optimizer exists.** What exists is deterministic, 100% human-driven grouping and sequencing, well-built at the state-machine/data-integrity level, with zero automated intelligence anywhere in the pipeline.
 
+**Revision note (Founder Gate decision):** the V1 optimization/planning layer must be built on a **deterministic foundation** — explicit rules over geocoded location, vehicle compatibility (§3a), and capacity (§3a), not an LLM asked to "figure out" a delivery plan. An optional AI-assisted layer (e.g. explaining a proposed grouping in plain language, or suggesting adjustments) may sit on top of the deterministic core, but must never be the sole mechanism producing the plan Riders execute — the underlying grouping/sequencing must be verifiable and reproducible. Route/distance calculation may call an optional external routing/distance provider (e.g. a mapping API) rather than requiring Cefflo to implement geospatial routing itself, but the decision of *which* orders go together and *whether* an assignment is valid (vehicle/capacity compatibility) stays deterministic and in Cefflo's own logic regardless of which routing provider is used. This directly extends the addendum's §4/§8 vehicle-and-capacity-aware planning chain — the chain itself is deterministic; only the optional stop-order distance calculation may lean on an external provider.
+
 ---
 
 ## 9. Canonical Operational Lifecycle
@@ -161,7 +203,9 @@ Separately, `approve_order` (`202608270010`) exists — an explicit vendor appro
 ## 10. Four Workspace Audit
 
 ### Vendor / Owner
-LIVE across: auth, business setup (`bootstrap_business`), order intake (manual + Storefront), order approval, rider team management + invitation, zone labeling, run building, dispatch, delivery-issue reporting, subscription/plan display. PARTIAL: CSV/Excel commit (§4), coverage/zone intelligence (§3, §7). MISSING: capacity, reschedule (§11).
+LIVE across: auth, business setup (`bootstrap_business`), order intake (manual + Storefront), order approval, rider team management + invitation, zone labeling, run building, dispatch, delivery-issue reporting, subscription/plan display. PARTIAL: CSV/Excel commit (§4), coverage/zone intelligence (§3, §7). MISSING: capacity (§3a), vehicle type (§3a), reschedule (§11).
+
+**Revision note (addendum):** the Vendor's REQUIRED V1 surface now explicitly includes: registering/viewing a Rider's vehicle type, seeing vehicle/capacity compatibility and conflicts during run building, and a labeled override action for an incompatible assignment that writes an audit event rather than silently proceeding (§3a). This is additive to the existing run-building UI, not a new workspace.
 
 ### Operations / Helper
 **MISSING as a distinct workspace.** Two independent, converging pieces of evidence:
@@ -170,11 +214,17 @@ LIVE across: auth, business setup (`bootstrap_business`), order intake (manual +
 
 A "Core Team" concept exists via `team_invitations`/`accept_team_invitation` (business members with `operator` role) — this is real and LIVE, but it is *team membership/permissions*, not a *Prepare→Pack→Ready workspace or workflow*. The two should not be conflated in the scope lock.
 
+**Revision note (Founder Gate decision):** confirmed as REQUIRED V1, and confirmed it must be its own distinct workspace/surface (Prepare → Pack → Ready) rather than being collapsed into or represented as a tab inside the Vendor/Owner workspace. Basis: the four-workspace model (§ Brand Brain) treats workspace boundaries as role/permission boundaries, not UI convenience groupings — a Helper has a narrower, task-focused permission surface than a Vendor/Owner, and merging them would either over-grant Helpers Vendor-level access or under-serve Vendors by hiding Owner controls inside a Helper-shaped screen. This does not conflict with the addendum's §9 instruction not to introduce a separate *Driver* workspace — Operations/Helper is orthogonal to Rider/vehicle and was already a planned distinct workspace before this addendum.
+
 ### Rider
-LIVE: auth (`current_rider_id`), invitation/approval (`create_rider_invitation`→`accept_rider_invitation`→`approve_pending_rider`), assignment, locked sequence with enforced stop order, POD (`complete_delivery` + `cefflo-pod` private storage bucket with RLS scoping upload/read to the assigned rider or business member), delivery-issue reporting. PARTIAL/UNVERIFIED: live GPS location writes (schema + RLS insert policy exist; no confirmed live frontend write call found this pass — consistent with a prior, explicitly-corrected false-GPS-claim in project history per git log "Remove false Rider GPS tracking claim"). MISSING: reschedule/failed-delivery recovery beyond the `issue` report.
+LIVE: auth (`current_rider_id`), invitation/approval (`create_rider_invitation`→`accept_rider_invitation`→`approve_pending_rider`), assignment, locked sequence with enforced stop order, POD (`complete_delivery` + `cefflo-pod` private storage bucket with RLS scoping upload/read to the assigned rider or business member), delivery-issue reporting. PARTIAL/UNVERIFIED: live GPS location writes (schema + RLS insert policy exist; no confirmed live frontend write call found this pass — consistent with a prior, explicitly-corrected false-GPS-claim in project history per git log "Remove false Rider GPS tracking claim"). MISSING: reschedule/failed-delivery recovery beyond the `issue` report, vehicle type, capacity (§3a).
+
+**Revision note (addendum):** the onboarding flow (`rider/index.html:495-497`) hardcodes "motorcycle" into step copy, field label, and required document type — this is the concrete MISSING gap Flow 2 must close (§3a). No change to the canonical **Rider** role name — "Driver" terminology has zero occurrences repository-wide, so the addendum's requirement to avoid a competing role is already satisfied without any correction.
 
 ### Customer
 LIVE: `public_tracking` (status, rider name, completed_at, POD path once delivered), `submit_rating` (one rating per order, idempotent). Referenced directly in `customer/index.html`. PARTIAL/MISSING: ETA — `orders.estimated_arrival_at` is **read** by `public_tracking` but **no function in any migration ever sets it** — it is effectively always null today. Storefront ordering itself is covered in §6.
+
+**Revision note (Founder Gate decision):** ETA confirmed REQUIRED V1. Given the confirmed absence of geocoding/routing (§3, §3a), a precise time-of-arrival cannot be honestly computed at V1. Recommend a range/status-based ETA (e.g. derived from run position/stop-count and a coarse per-stop duration assumption, surfaced as a range or "N stops away" rather than a clock time) that never fabricates false precision. Do not build a spinning "12:47 PM" estimate on top of the current MISSING location/optimization layer — that would misrepresent the system's actual capability to the Customer. Exact computation is a Flow 2 decision; Flow 1 locks the honesty constraint.
 
 ---
 
@@ -186,12 +236,14 @@ LIVE: `public_tracking` (status, rider name, completed_at, POD path once deliver
 | Reschedule | **MISSING** | Zero matches for "reschedule" across all 41 migrations. `docs/cefflo/DECISION_REPORT_ISSUE_RESCHEDULE.md` (still present, unedited) explicitly documents this as a live open product decision: *"No RPC or migration exists for either action [Report Issue or Reschedule]... until a Founder decision... is made."* Report Issue has since shipped (above); this doc is now **stale for "Report Issue"** but still accurate for **"Reschedule."** |
 | Invalid/unresolved address, out-of-coverage | Frontend-mock only (§3, §7) — no backend enforcement | — |
 | Duplicate/malformed import | Detected in the CSV preview UI (§4); moot until import commits | `validateImportRows` |
-| Rider unavailable / capacity exceeded | No capacity concept exists (§3) to even detect this | — |
+| Rider unavailable / capacity exceeded | No capacity concept exists (§3a) to even detect this | — |
 | Rider removed after planning | Not traced this pass | UNVERIFIED |
 | Post-pickup reassignment | Not confirmed; `reassign_rider` is referenced by name in several migration comments as an existing function whose *correction* was deferred across S4-06 batches — the function's current exact behavior after those deferrals was not independently re-read this pass | UNVERIFIED |
 | Duplicate action submission | LIVE, broadly — idempotency keys used in `build_rider_run`, `submit_public_order`, `rider_transition`/`complete_delivery` (`p_idempotency_key`) | — |
 | Cancelled order | `cancelled` is a valid `delivery_status` and `assignment_status` value; transition-trigger path not traced this pass | UNVERIFIED |
 | Network loss / refresh during run | Not a backend concern per se; sequence-lock design (§9) makes state recoverable across refreshes since it's server-persisted, not session state — reasonable but not independently tested | UNVERIFIED |
+
+**Revision note (Founder Gate decision):** Reschedule is confirmed **REQUIRED V1**, but narrowly scoped — a bounded action that lets a Vendor or Rider move a specific delivery's planned execution (e.g. to a later run, or flag it for re-planning) with an audit event, not a general-purpose calendar/scheduling system. It should reuse the existing `delivery_events` audit pattern and the existing `issue`/`delivery_issue_reason` machinery where they overlap (a reschedule is, structurally, one more typed reason a delivery leaves its current run) rather than inventing a parallel state machine. Exact RPC/state design is a Flow 2 decision; Flow 1 locks the "required but narrow" boundary so Flow 2 doesn't over-build a scheduling product.
 
 ---
 
