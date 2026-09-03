@@ -1,10 +1,11 @@
 # CEFFLO GROW V1 — SCOPE LOCK
 
-**Status:** PROPOSED — awaiting Founder approval (not yet frozen)\
+**Status:** **FROZEN — FOUNDER APPROVED (2026-09-03)**\
 **Baseline:** `staging @ 9e7ea2dae61deaaee068f156d4b0086d7fade14d`\
 **Detailed evidence:** `docs/cefflo/audits/CEFFLO_GROW_V1_SCOPE_LOCK_AUDIT_REPORT.md`\
 **Brand/positioning authority:** `docs/cefflo/CEFFLO_BRAND_BRAIN.md`\
-**Revision:** 2026-09-03 — incorporates the Founder-approved `docs/cefflo/tasks/CEFFLO_GROW_V1_VEHICLE_CAPACITY_SCOPE_ADDENDUM.md` and accompanying Founder Gate decisions (vehicle/capacity, Sheets/Drive reclassification, optimization architecture, CSV/Excel and Operations/Helper direction, Reschedule and ETA scope). Original audit evidence preserved; see §11a, §12, §22 for what changed.
+**Revision:** 2026-09-03 — incorporates the Founder-approved `docs/cefflo/tasks/CEFFLO_GROW_V1_VEHICLE_CAPACITY_SCOPE_ADDENDUM.md` and accompanying Founder Gate decisions (vehicle/capacity, Sheets/Drive reclassification, optimization architecture, CSV/Excel and Operations/Helper direction, Reschedule and ETA scope). Original audit evidence preserved; see §11a, §12, §22 for what changed.\
+**Final revision:** 2026-09-03 — **SCOPE FREEZE.** Incorporates the Founder's final scope-freeze decisions: Reschedule/Recovery required product behavior locked (§16, §22); Optimization Engine locked to hybrid deterministic architecture (§12); Operations/Helper confirmed to reuse existing Core Team/auth/invitation plumbing rather than building a competing identity system (§15); order/delivery-level vehicle compatibility promoted from a deferred recommendation to REQUIRED V1 (§4, §11a). See §22 and §23 for the full resolution record.
 
 ---
 
@@ -28,22 +29,23 @@ This chain is only as strong as its weakest link — see §20 for exactly where 
 
 ## 4. REQUIRED V1
 
-These are Founder-locked; they cannot be downgraded by an executor. **Revised 2026-09-03** per the Vehicle & Capacity Scope Addendum and accompanying Founder Gate decisions.
+These are Founder-locked; they cannot be downgraded by an executor. **Revised 2026-09-03** per the Vehicle & Capacity Scope Addendum, and **finalized 2026-09-03** per the Founder's scope-freeze decisions.
 
 1. **AI Optimization Layer — now explicitly location-aware, vehicle-aware, and capacity-aware.** Orders → location → delivery requirements → available Riders → vehicle compatibility → capacity compatibility → geographic grouping → run proposal → stop-sequence optimization → vendor review → dispatch. A shortest-route-only implementation that ignores vehicle/capacity compatibility does not satisfy this requirement. (Today: MISSING — see §12.)
 2. **Vehicle classification for Riders (Motorcycle / Car / Van).** (Today: MISSING — see §11a.)
 3. **Capacity-aware planning** — the system must not propose a plan that is obviously incompatible with a Rider's vehicle/capacity. (Today: MISSING — see §11a.)
-4. **CSV bulk order import**, committing to canonical orders. (Today: PARTIAL — see §9.)
-5. **Excel/XLSX bulk order import**, committing to canonical orders. (Today: PARTIAL — see §9.)
-6. Manual New Order intake. (Today: LIVE.)
-7. Cefflo Storefront order intake. (Today: LIVE at backend.)
-8. Location capture (address) → coordinates → coverage → zone/grouping → planning, as one working chain. (Today: capture LIVE, everything after it MISSING/mocked — see §11.)
-9. Vendor review, manual adjustment, and explicit dispatch confirmation before a run goes live — including visibility into vehicle/capacity conflicts. (Today: LIVE for the review/confirm mechanics; vehicle/capacity visibility MISSING.)
-10. Rider: receive an ordered run, execute stops in enforced order, capture POD, complete. (Today: LIVE.)
-11. Customer: truthful tracking of real delivery status. (Today: LIVE, except ETA — see §16.)
-12. Delivery-issue reporting (vendor and rider). (Today: LIVE.)
-13. **ETA that is truthful and computed from real operational information** — a range or coarser state is acceptable; a fabricated precise time is not. (Today: MISSING — the column exists but nothing ever sets it.)
-14. **Reschedule / operational recovery**, narrowly scoped to deliveries that cannot be completed as originally planned — not a general appointment/calendar system. (Today: MISSING — open Founder decision on exact behavior remains, see §22.)
+4. **Order/delivery-level vehicle compatibility requirement** — a simple, bounded field expressing whether a given delivery has a minimum vehicle requirement (e.g. any vehicle / motorcycle OK / car-or-larger / van required — illustrative only, not a locked enum). Required so vehicle-aware optimization (#1) has something to check compatibility against before Rider assignment. No weight/volume/dimension logistics. (Today: MISSING — see §11a.)
+5. **CSV bulk order import**, committing to canonical orders. (Today: PARTIAL — see §9.)
+6. **Excel/XLSX bulk order import**, committing to canonical orders. (Today: PARTIAL — see §9.)
+7. Manual New Order intake. (Today: LIVE.)
+8. Cefflo Storefront order intake. (Today: LIVE at backend.)
+9. Location capture (address) → coordinates → coverage → zone/grouping → planning, as one working chain. (Today: capture LIVE, everything after it MISSING/mocked — see §11.)
+10. Vendor review, manual adjustment, and explicit dispatch confirmation before a run goes live — including visibility into vehicle/capacity conflicts. (Today: LIVE for the review/confirm mechanics; vehicle/capacity visibility MISSING.)
+11. Rider: receive an ordered run, execute stops in enforced order, capture POD, complete. (Today: LIVE.)
+12. Customer: truthful tracking of real delivery status. (Today: LIVE, except ETA — see §16.)
+13. Delivery-issue reporting (vendor and rider). (Today: LIVE.)
+14. **ETA that is truthful and computed from real operational information** — a range or coarser state is acceptable; a fabricated precise time is not. (Today: MISSING — the column exists but nothing ever sets it.)
+15. **Reschedule / operational recovery**, narrowly scoped to deliveries that cannot be completed as originally planned — not a general appointment/calendar system. **Required product behavior, locked at Flow 1** (only the exact state-machine implementation is a Flow 2 technical decision — see §16, §22): recovery begins when a delivery cannot be completed as planned or enters a qualifying delivery exception; the original delivery/run history is preserved, never silently overwritten; a recovery/reschedule event is created and auditable; the affected order/delivery can re-enter the appropriate planning flow for a future/replacement attempt; canonical state/history is maintained throughout. (Today: MISSING.)
 
 ## 5. Desirable V1
 
@@ -124,7 +126,11 @@ CSV/Excel canonical-commit remains the prerequisite — building the OAuth-based
 
 **Vendor override behavior when an assignment is vehicle/capacity-incompatible** (the addendum's explicit open question, §7): recommend **block by default, with an explicit, clearly-labeled override action** that records an audit event (matching the existing `delivery_events` pattern used everywhere else) — never a silent invalid plan. This is a recommendation; final confirmation is a Founder decision (§22).
 
-**Order-level vehicle requirement:** no evidence in the current product/repo that individual orders need their own vehicle requirement at V1 (e.g. "this order needs a van") — catering-scale orders were given only as a *business-type* example in the addendum, not a confirmed per-order requirement. Recommend deferring an order-level vehicle-requirement field to Flow 2/Post-V1 unless the Founder confirms it's needed at launch (see §22).
+**Order-level vehicle requirement — Founder-decided REQUIRED V1** (supersedes this document's earlier deferral recommendation): Grow V1's vehicle-aware optimization must know, before Rider assignment, when a delivery workload has a minimum vehicle-compatibility requirement. This closes the loop the addendum's §4 planning chain describes:
+
+> **Order/Delivery Requirement → Rider Vehicle Type → Capacity → Compatibility → Planning → Optimization → Vendor Review → Dispatch**
+
+A bounded compatibility model is sufficient — illustrative values only, not a locked enum/schema: `ANY` (no special requirement) / `MOTORCYCLE_OK` / `CAR_OR_LARGER` / `VAN_REQUIRED`. Exact enum naming, schema placement, and UI are explicitly **not locked here** — that is a Flow 2 implementation decision. Do not introduce kilogram/volume/dimension/parcel-size logistics complexity — no evidence this pass supports that level of complexity being needed at launch. Canonical Rider vehicle types remain Motorcycle / Car / Van; canonical operational role remains **Rider** — no separate Driver workspace/role is introduced by this requirement.
 
 ## 12. AI Optimization Contract (today vs. required)
 
@@ -134,15 +140,19 @@ The single most important finding of this audit — now extended by the Vehicle 
 
 **Today:** a vendor manually picks which orders go into a run and which rider gets it (`build_rider_run`); a rider manually drags stops into an order (`save_run_sequence`). Both are well-built, safe, idempotent, all-or-nothing backend contracts — the *execution* half of the pipeline is solid. But there is no automatic grouping, no distance/time calculation, no vehicle/capacity-aware recommendation, and no sequence optimization anywhere. **No optimizer exists.** What exists is deterministic manual sequencing, exactly the thing the Task Master said not to call "AI optimization."
 
-**Optimization architecture recommendation (Founder-directed):** the route/planning engine must be built on a **deterministic foundation** — not designed around an LLM — so that plans are reproducible and reviewable, exactly like every other operational contract in this codebase (idempotent, auditable, all-or-nothing). Concretely, for V1:
+**Optimization architecture — Founder-locked (2026-09-03 scope freeze):** **DETERMINISTIC FOUNDATION + OPTIONAL EXTERNAL ROUTING/DISTANCE INPUT + OPTIONAL AI-ASSISTED LAYER.** Conceptually:
+
+> Geocoding → road/distance/travel-time information where required → deterministic vehicle/capacity-aware grouping → run construction → deterministic route/stop sequencing → operational proposal → optional AI-assisted recommendation/explanation → Vendor review/manual adjustment → dispatch
+
+The deterministic optimization foundation is authoritative. **An LLM must never be the route calculator or the source of deterministic routing truth.** Concretely, for V1:
 
 1. A deterministic geographic clustering/grouping step (orders → candidate groups), using real coordinates once geocoding exists (§11).
 2. A deterministic sequencing step within each group — nearest-neighbor or an equivalent bounded heuristic is an honest, defensible V1 (the Task Master itself allows "the implementation may ultimately use deterministic optimization... the required user outcome is operationally useful optimization").
-3. Vehicle/capacity compatibility filtering applied **before** grouping is finalized (§11a) — a candidate group is only valid if a compatible Rider/vehicle combination exists for it.
-4. Where real road distance/travel-time materially improves plan quality over straight-line distance, an appropriate routing/distance provider may be used for that specific calculation — this is a data input to the deterministic optimizer, not a replacement for it.
+3. Vehicle/capacity compatibility filtering applied **before** grouping is finalized (§11a) — a candidate group is only valid if a compatible Rider/vehicle combination exists for it, checked against the order/delivery-level vehicle-compatibility requirement (§11a) where one is set.
+4. An external routing/distance provider **may** be evaluated and used where real road distance/travel-time data is required to improve plan quality over straight-line distance — this is a data input to the deterministic optimizer, not a replacement for it. **No specific provider is selected or locked at Flow 1** — provider evaluation and selection is a Flow 2 technical-design decision, not a Founder scope blocker.
 5. An AI-assisted layer (e.g. a plain-language explanation of why a plan was proposed, or a secondary suggestion when the deterministic pass finds no clean grouping) may sit **on top of** this deterministic foundation, never underneath it or in place of it.
 
-This is an architecture recommendation for Flow 2 to implement — no engine, provider, or library is selected or integrated in this task.
+This is a locked architecture direction, not an implementation — no engine, provider, or library is selected or integrated in this task.
 
 ## 13. Planning / Review / Dispatch Contract
 
@@ -162,7 +172,7 @@ Canonical backend states: `created → ready_for_pickup → picked_up → out_fo
 | Workspace | Launch responsibility | Readiness |
 |---|---|---|
 | Vendor / Owner | Setup, intake, review, dispatch, oversight, recovery, **+ vehicle registration and capacity-conflict visibility** | **Mostly LIVE** for the original scope — CSV commit and location intelligence are the open gaps. Vehicle/capacity visibility and control is entirely **MISSING** (no UI, no backend, §11a). |
-| Operations / Helper | Prepare → Pack → Ready | **MISSING as a distinct workspace — Founder-confirmed this must not collapse into a Vendor-only view.** No backend lifecycle states exist for Prepare/Pack/Ready (the only "prepare/pack" states in the schema belong to storefront photo processing, unrelated). The Vendor UI's own "Helper Pool" screen currently reads: *"Helpers is not connected yet."* A separate "Core Team" (staff invitation/membership) is real and live but is authentication/permissions, not a workflow — it does not substitute for the required workspace. Flow 2 must define: (a) the Prepare/Pack/Ready backend states, (b) a distinct authenticated Operations/Helper surface (reusing the existing invitation/membership plumbing where possible), (c) the handoff point into Planning. |
+| Operations / Helper | Prepare → Pack → Ready | **MISSING as a distinct workspace — Founder-confirmed this must not collapse into a Vendor-only view.** No backend lifecycle states exist for Prepare/Pack/Ready (the only "prepare/pack" states in the schema belong to storefront photo processing, unrelated). The Vendor UI's own "Helper Pool" screen currently reads: *"Helpers is not connected yet."* A separate "Core Team" (staff invitation/membership) is real and live but is authentication/permissions, not a workflow — it does not substitute for the required workspace. **Founder-locked (scope freeze):** distinct workspace ≠ duplicate identity/team infrastructure — Flow 2 must **reuse** the existing Core Team/auth/invitation/permission plumbing where repository architecture safely supports it, extending shared infrastructure rather than building a competing Helper identity/team system. Workspace boundaries remain permission and operational-responsibility boundaries, not a separate auth stack. Flow 2 must still define: (a) the Prepare/Pack/Ready backend states/events, (b) how the Operations/Helper surface is exposed on top of reused plumbing, (c) the handoff point into Planning. |
 | Rider | Receive run, execute in order, POD, complete. **Canonical role stays "Rider" regardless of vehicle** — a Rider operates a Motorcycle, Car, or Van; vehicle is an attribute, not an identity. | **LIVE** for the original execution flow. Vehicle-type support is **MISSING** — onboarding is hardcoded motorcycle-only (§11a). GPS live-location and post-pickup reassignment unconfirmed. |
 | Customer | Order (where applicable), truthful tracking, rating. No vehicle-selection complexity should ever reach the customer — confirmed no evidence this pass that it needs to. | **LIVE**, except ETA is never actually computed (always effectively blank) — must become a truthful range/state, not a fabricated precise time (§16). |
 
@@ -171,8 +181,9 @@ Canonical backend states: `created → ready_for_pickup → picked_up → out_fo
 | Exception | Today | Dispatch-blocking? |
 |---|---|---|
 | Delivery issue (vendor/rider-reported) | **LIVE** — typed reason enum, both actors covered | No, tracked as an event |
-| Reschedule / operational recovery | **MISSING — now REQUIRED V1** (Founder decision), kept deliberately narrow: recovery for a delivery that cannot complete as planned, **not** a general appointment/calendar system. `docs/cefflo/DECISION_REPORT_ISSUE_RESCHEDULE.md` remains the open product-decision record for its exact behavior — this scope lock does not resolve it, only confirms it must ship at V1. | Should be, once built |
+| Reschedule / operational recovery | **MISSING — REQUIRED V1, required product behavior Founder-locked at scope freeze**, kept deliberately narrow: not a general appointment/calendar system. Locked behavior: recovery begins when a delivery cannot be completed as planned or enters a qualifying delivery exception; original delivery/run history is preserved and never silently overwritten; a recovery/reschedule event is created and auditable; the affected order/delivery can re-enter the appropriate planning flow for a future/replacement attempt; canonical state/history is maintained throughout. Only the exact state-machine implementation (trigger points, valid source states, new-entry-vs-mutation) is left to Flow 2, using the verified existing `delivery_events`/issue-reason architecture — `docs/cefflo/DECISION_REPORT_ISSUE_RESCHEDULE.md` remains the record for that remaining technical design, no longer a Founder scope blocker. | Should be, once built |
 | Vehicle/capacity-incompatible assignment | **MISSING** (new, from the addendum) — no detection exists because no vehicle/capacity data exists. Recommended: block by default with an explicit, audited override (§11a). | Recommended: yes, unless explicitly overridden |
+| Order/delivery vehicle-requirement mismatch | **MISSING — now REQUIRED V1** (Founder-decided at scope freeze) — no order/delivery-level vehicle-compatibility field exists to even detect this (§11a). | Recommended: yes, same block-by-default/audited-override pattern |
 | Invalid/unresolved address, out-of-coverage | Frontend-simulated only, not backend-enforced | No (should be, isn't) |
 | Duplicate/malformed CSV row | Caught in preview UI | Import doesn't commit yet regardless |
 | Rider unavailable/capacity exceeded | No capacity concept exists to detect this (same root cause as the row above) | No |
@@ -207,6 +218,7 @@ Full table with every item the Task Master listed is in the audit report §11.
 | **Rider onboarding vehicle-type support** | **REQUIRED V1** | **LEGACY/NON-CANONICAL** — hardcoded motorcycle-only copy and required document |
 | **Capacity model (per-Rider max stops)** | **REQUIRED V1** | **MISSING** |
 | **Vehicle/capacity-aware run eligibility** | **REQUIRED V1** | **MISSING** |
+| **Order/delivery-level vehicle compatibility requirement** | **REQUIRED V1** (Founder-decided at scope freeze) | **MISSING** |
 | Automatic grouping/optimization | REQUIRED V1 | MISSING |
 | Manual run building (vendor) | REQUIRED V1 | LIVE |
 | Manual stop sequencing (rider) | REQUIRED V1 | LIVE |
@@ -241,6 +253,7 @@ Live: Order Intake (manual/Storefront) → Canonical Validation → Address capt
 2. Coverage/zone-matching is a frontend simulation with no real data behind it.
 3. **No vehicle-type classification anywhere; Rider onboarding is hardcoded motorcycle-only.**
 4. **No capacity concept of any kind.**
+4a. **No order/delivery-level vehicle-compatibility field** — required so optimization can check a delivery's vehicle requirement before Rider assignment (Founder-decided REQUIRED V1 at scope freeze).
 5. No optimizer — grouping and sequencing are 100% manual.
 6. CSV/Excel import doesn't commit to canonical orders.
 7. Google Sheets/Drive not started.
@@ -254,30 +267,37 @@ See the audit report and the completion report for full workstream detail (objec
 
 1. **Location & Geocoding** — pick a geocoding provider, wire it into every intake path, backfill coordinates. Hard prerequisite for everything downstream in this list except #6 and #7.
 2. **Real Coverage & Zone Intelligence** — replace the frontend mock with a backend-verified coverage decision using real coordinates. Depends on #1.
-3. **Vehicle & Capacity** — add vehicle-type to the Rider schema and onboarding flow (fixing the motorcycle-only hardcoding), add the recommended capacity model (§11a), and vehicle/capacity eligibility filtering to run-building. Does not strictly depend on #1/#2 at the schema level, but must land before #4 — an optimizer cannot filter by vehicle/capacity it doesn't know about.
+3. **Vehicle & Capacity** — add vehicle-type to the Rider schema and onboarding flow (fixing the motorcycle-only hardcoding), add the recommended capacity model (§11a), the order/delivery-level vehicle-compatibility field (§11a, Founder-decided REQUIRED V1), and vehicle/capacity eligibility filtering to run-building. Does not strictly depend on #1/#2 at the schema level, but must land before #4 — an optimizer cannot filter by vehicle/capacity it doesn't know about.
 4. **Optimization Engine v1** — deterministic clustering + sequencing (§12), consuming real coordinates (#1), real coverage (#2), and vehicle/capacity eligibility (#3). This is the convergence point of #1–#3; it cannot start meaningfully before they land.
-5. **Operations / Helper Workspace** — define and build Prepare→Pack→Ready as real backend states plus a dedicated authenticated surface. **Evidence-based deviation from a naive linear order: this does not depend on #1–#4 at all** — it is an upstream-of-planning concern (an order must be prepared before it can be planned), and could reasonably be built in parallel with the location/optimization workstream rather than strictly after it, if worktree/team capacity allows.
+5. **Operations / Helper Workspace** — define and build Prepare→Pack→Ready as real backend states plus a dedicated surface, **reusing the existing Core Team/auth/invitation/permission plumbing** rather than a competing identity/team system (Founder-locked, §15). **Evidence-based deviation from a naive linear order: this does not depend on #1–#4 at all** — it is an upstream-of-planning concern (an order must be prepared before it can be planned), and could reasonably be built in parallel with the location/optimization workstream rather than strictly after it, if worktree/team capacity allows.
 6. **CSV/Excel Canonical Commit** — resolve the items-shape reconciliation (§9), wire `confirmCsvImport` to real `create_delivery` calls. **Also evidence-based deviation: this has no dependency on #1–#5 either** — it is purely an order-intake contract question and could be done any time, including in parallel or even first, since it's a comparatively small, well-scoped fix to an already-substantial feature.
 7. **ETA Computation** — compute and keep `estimated_arrival_at` current from real plan/progress data. Depends on #4 (a real plan is what makes an ETA meaningful rather than guessed).
-8. **Reschedule / Recovery** — close the open Founder decision on exact behavior, then build it. Benefits from #4/#7 existing (a reschedule needs to re-enter a real plan) but its typed-exception pattern can be scaffolded using the same approach as the already-live delivery-issue contract independently.
+8. **Reschedule / Recovery** — required product behavior is now Founder-locked (§16, §22); design the exact state-machine (trigger points, valid source states, new-entry-vs-mutation) against the verified existing `delivery_events`/issue-reason architecture, then build it. Benefits from #4/#7 existing (a reschedule needs to re-enter a real plan) but its typed-exception pattern can be scaffolded using the same approach as the already-live delivery-issue contract independently.
 9. **Google Sheets/Drive** (only if not deferred at build time per §10) — after #6, since it is architecturally "CSV/Excel's commit path, different row source."
 
 **Net evidence-based conclusion:** the Founder's suggested high-level order (Geocoding → Coverage/Zones → Vehicle & Capacity → Optimization → CSV/Excel → Operations/Helper → ETA → Recovery) is directionally correct for the *location-intelligence spine* (steps 1–4 and 7–8 above), but **Operations/Helper and CSV/Excel do not actually sit on that spine** — both are independent of it and can run in parallel with it rather than strictly after Optimization, which shortens the realistic critical path if team/worktree capacity allows more than one stream at once.
 
-## 22. Unresolved Founder Decisions
+## 22. Founder Decisions — Resolution Record
 
-**Decided this round** (recorded here for traceability, no longer open): Google Sheets/Drive is `DESIRABLE V1 IF LOW-RISK` (§10); the optimizer must be deterministic-first with an optional AI-assisted layer on top, not LLM-designed (§12); Operations/Helper ships as a genuinely distinct workspace, not a Vendor view (§15); Reschedule is `REQUIRED V1` with narrow recovery-only scope (§16); ETA must be truthful/range-honest, never fabricated precision (§16); the Rider/Driver terminology question needed no correction (already consistently "Rider," §11a).
+**Decided in the Vehicle & Capacity addendum round:** Google Sheets/Drive is `DESIRABLE V1 IF LOW-RISK` (§10); the optimizer must be deterministic-first with an optional AI-assisted layer on top, not LLM-designed (§12); Operations/Helper ships as a genuinely distinct workspace, not a Vendor view (§15); Reschedule is `REQUIRED V1` with narrow recovery-only scope (§16); ETA must be truthful/range-honest, never fabricated precision (§16); the Rider/Driver terminology question needed no correction (already consistently "Rider," §11a).
 
-**Still genuinely open:**
+**Decided at final scope freeze (this revision):**
 
-1. **Reschedule's exact behavior** — `REQUIRED V1` is now locked, but *what specifically happens* (who can trigger it, what states it's valid from, whether it creates a new run entry or mutates the existing one) is not decided. `docs/cefflo/DECISION_REPORT_ISSUE_RESCHEDULE.md` remains the open record; Flow 2 cannot build this until it's resolved.
-2. **Optimization Engine v1 technical approach** — deterministic geographic clustering (self-built) vs. a paid routing/distance provider vs. a hybrid — a real cost/complexity tradeoff within the now-locked "deterministic foundation" architecture (§12).
-3. **CSV/Excel items-shape fix** — this document now recommends the synthetic-single-line-item approach (§9) as the technically safest path; Founder confirmation of that specific approach (vs. an alternative) is still open.
-4. **Vehicle/capacity V1 model** — this document recommends vehicle-based default capacity with per-Rider Vendor override (§11a); Founder confirmation of that specific model is still open.
-5. **Vehicle/capacity override behavior** — this document recommends block-by-default with an explicit audited override (§11a); Founder confirmation is still open.
-6. **Order-level vehicle requirement** — this document recommends deferring to Flow 2/Post-V1 pending evidence of need (§11a); Founder confirmation is still open.
-7. **Operations/Helper exact build shape** — confirmed as a distinct workspace (decided), but the precise backend states and whether it reuses the existing Core Team invitation plumbing or needs its own is a Flow 2 design decision, not locked here.
+1. **Reschedule/Recovery's required product behavior** — locked, not left open (§4, §16): recovery begins on a non-completable delivery or qualifying exception; original delivery/run history is preserved, never silently overwritten; a recovery/reschedule event is created and auditable; the affected delivery can re-enter planning for a future/replacement attempt; canonical state/history is maintained throughout.
+2. **Optimization Engine architecture** — locked as hybrid deterministic: deterministic foundation, authoritative; optional external routing/distance provider as a data input only; optional AI-assisted layer on top only; an LLM is never the route calculator or source of deterministic routing truth (§12).
+3. **Operations/Helper infrastructure approach** — locked: a distinct workspace that reuses existing Core Team/auth/invitation/permission plumbing rather than a competing identity/team system (§15).
+4. **Order/delivery-level vehicle compatibility** — locked as REQUIRED V1 (reversing this document's earlier deferral recommendation), as a simple bounded compatibility field, not weight/volume/dimension logistics (§4, §11a).
+
+**Transferred to Flow 2 as technical implementation decisions (not Founder scope blockers — Flow 2 may proceed on these without further Founder gating unless it hits a genuine ambiguity):**
+
+1. Reschedule's exact state-machine — trigger points, valid source states, new-entry-vs-mutation — built on the now-locked required behavior above, using the verified existing `delivery_events`/issue-reason architecture. `docs/cefflo/DECISION_REPORT_ISSUE_RESCHEDULE.md` is the working record for this technical design.
+2. Optimization routing/distance provider selection (self-built geographic clustering vs. a paid provider vs. a hybrid) — a cost/complexity tradeoff within the now-locked deterministic-foundation architecture.
+3. CSV/Excel items-shape fix — this document's recommended synthetic-single-line-item / nullable-items-array approach (§9) is the working default; Flow 2 may implement it directly or adjust with cause.
+4. Vehicle/capacity V1 model parameters — vehicle-based default capacity with per-Rider Vendor override (§11a) is the working default.
+5. Vehicle/capacity override behavior — block-by-default with an explicit, audited override (§11a) is the working default.
+6. Order/delivery vehicle-compatibility exact enum/schema/UI naming (§11a) — the requirement itself is locked; the naming/shape is not.
+7. Operations/Helper's exact backend states and precise reuse mechanics on top of the now-locked "reuse Core Team plumbing" direction (§15).
 
 ## 23. Definition of Scope Freeze
 
-This scope is frozen only once the Founder responds `APPROVE SCOPE FREEZE` (or `APPROVE WITH CORRECTIONS`, with those corrections applied and re-confirmed) to this document and its companion audit report. Until then, this remains **PROPOSED**, and Flow 2 implementation is not authorized.
+**MET — SCOPE FROZEN, FOUNDER APPROVED, 2026-09-03.** The Founder responded `APPROVE SCOPE FREEZE WITH FOUNDER DECISIONS INCORPORATED`, with the four final decisions in §22 applied to this document and its companion audit report. Grow V1 Flow 1 scope is now locked. Flow 2 implementation is authorized only under a separate, dedicated Flow 2 task — it was not started, authorized, or scoped by this document.

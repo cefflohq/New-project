@@ -3,12 +3,15 @@
 **Task:** `docs/cefflo/tasks/CEFFLO_GROW_V1_FLOW_1_SCOPE_LOCK_MASTER.md` + `docs/cefflo/tasks/CEFFLO_GROW_V1_VEHICLE_CAPACITY_SCOPE_ADDENDUM.md`\
 **Baseline:** `staging @ 9e7ea2dae61deaaee068f156d4b0086d7fade14d`\
 **Branch:** `claude/grow-v1-flow-1-scope-lock`\
-**Date:** 2026-09-03 (original) — revised 2026-09-03 (Vehicle & Capacity addendum)\
+**Date:** 2026-09-03 (original) — revised 2026-09-03 (Vehicle & Capacity addendum) — **finalized 2026-09-03 (scope freeze)**\
+**Status:** **FROZEN — FOUNDER APPROVED (2026-09-03)**\
 **Nature:** Read-only audit. No implementation performed.
 
 This document holds the detailed evidence behind every classification in `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md`. Read that document for the readable contract; read this one for the "why."
 
 **Revision note:** all original findings below are preserved unchanged — nothing was re-litigated. §3a is new (Vehicle & Capacity evidence, added for the addendum). §4, §5, §10, §11 have short revision notes appended where a Founder Gate decision changed the recommendation without changing the underlying evidence.
+
+**Final revision note (scope freeze):** the Founder approved `APPROVE SCOPE FREEZE WITH FOUNDER DECISIONS INCORPORATED`, resolving four remaining items: Reschedule/Recovery's required product behavior is now locked (§11); the Optimization Engine architecture is locked to hybrid deterministic — deterministic foundation + optional external routing/distance input + optional AI-assisted layer, never an LLM as route calculator (§8); Operations/Helper is locked to reuse existing Core Team/auth/invitation plumbing rather than a competing identity system (§10); order/delivery-level vehicle compatibility is now REQUIRED V1, reversing this document's earlier deferral recommendation (§3a). No underlying evidence changed — only these four recommendations became Founder-locked decisions. See each section's new "Scope freeze" note below.
 
 ---
 
@@ -89,6 +92,8 @@ This is not an inference — the word "motorcycle" is hardcoded into the step co
 **Recommended override behavior:** block the assignment by default; allow an explicit, clearly-labeled Vendor override that writes a `delivery_events` row (matching every other consequential action in this codebase) rather than silently permitting an invalid plan. This mirrors the existing pattern exactly — every mutating RPC in this codebase logs to `delivery_events` — so it is architecturally the path of least resistance, not a new pattern.
 
 **Order-level vehicle requirement:** no evidence found that Grow V1 needs a per-order vehicle requirement field. The addendum's catering example illustrates a *business-type* reason a vendor might need Car/Van riders, not a confirmed need for customers/vendors to tag individual orders with a required vehicle at launch. Recommend deferring unless the Founder confirms otherwise.
+
+**Scope freeze note (Founder-decided, supersedes the deferral above):** order/delivery-level vehicle compatibility is now **REQUIRED V1**. Grow V1's vehicle-aware optimization must know, before Rider assignment, whether a given delivery has a minimum vehicle-compatibility requirement — closing the addendum's own planning chain: *Order/Delivery Requirement → Rider Vehicle Type → Capacity → Compatibility → Planning → Optimization → Vendor Review → Dispatch*. A bounded compatibility model is sufficient (illustrative only, not locked): `ANY` / `MOTORCYCLE_OK` / `CAR_OR_LARGER` / `VAN_REQUIRED`. Exact enum/schema/UI naming is explicitly a Flow 2 decision, not locked here. No kilogram/volume/dimension/parcel-size logistics — no evidence this pass supports that complexity being needed at launch. Canonical Rider vehicle types remain Motorcycle/Car/Van; canonical role remains Rider — this requirement does not introduce a Driver workspace/role.
 
 ---
 
@@ -177,6 +182,8 @@ Full detail in §3. In the Task Master's own required terms:
 
 **Revision note (Founder Gate decision):** the V1 optimization/planning layer must be built on a **deterministic foundation** — explicit rules over geocoded location, vehicle compatibility (§3a), and capacity (§3a), not an LLM asked to "figure out" a delivery plan. An optional AI-assisted layer (e.g. explaining a proposed grouping in plain language, or suggesting adjustments) may sit on top of the deterministic core, but must never be the sole mechanism producing the plan Riders execute — the underlying grouping/sequencing must be verifiable and reproducible. Route/distance calculation may call an optional external routing/distance provider (e.g. a mapping API) rather than requiring Cefflo to implement geospatial routing itself, but the decision of *which* orders go together and *whether* an assignment is valid (vehicle/capacity compatibility) stays deterministic and in Cefflo's own logic regardless of which routing provider is used. This directly extends the addendum's §4/§8 vehicle-and-capacity-aware planning chain — the chain itself is deterministic; only the optional stop-order distance calculation may lean on an external provider.
 
+**Scope freeze note (Founder-locked architecture):** confirmed and locked as **DETERMINISTIC FOUNDATION + OPTIONAL EXTERNAL ROUTING/DISTANCE INPUT + OPTIONAL AI-ASSISTED LAYER**: Geocoding → road/distance/travel-time information where required → deterministic vehicle/capacity-aware grouping (checked against the order-level vehicle-compatibility requirement, §3a) → run construction → deterministic route/stop sequencing → operational proposal → optional AI-assisted recommendation/explanation → Vendor review/manual adjustment → dispatch. The deterministic foundation is authoritative; an LLM must never be the route calculator or source of deterministic routing truth. No specific routing/distance provider is selected or locked at Flow 1 — provider evaluation and selection is a Flow 2 technical-design decision, not a Founder scope blocker.
+
 ---
 
 ## 9. Canonical Operational Lifecycle
@@ -216,6 +223,8 @@ A "Core Team" concept exists via `team_invitations`/`accept_team_invitation` (bu
 
 **Revision note (Founder Gate decision):** confirmed as REQUIRED V1, and confirmed it must be its own distinct workspace/surface (Prepare → Pack → Ready) rather than being collapsed into or represented as a tab inside the Vendor/Owner workspace. Basis: the four-workspace model (§ Brand Brain) treats workspace boundaries as role/permission boundaries, not UI convenience groupings — a Helper has a narrower, task-focused permission surface than a Vendor/Owner, and merging them would either over-grant Helpers Vendor-level access or under-serve Vendors by hiding Owner controls inside a Helper-shaped screen. This does not conflict with the addendum's §9 instruction not to introduce a separate *Driver* workspace — Operations/Helper is orthogonal to Rider/vehicle and was already a planned distinct workspace before this addendum.
 
+**Scope freeze note (Founder-locked infrastructure approach):** distinct workspace does **not** mean duplicate identity/team infrastructure. Flow 2 must reuse the existing Core Team/auth/invitation/permission plumbing (`team_invitations`/`accept_team_invitation`, already real and LIVE) where repository architecture safely supports it, extending shared infrastructure rather than building a competing Helper identity/team system. Workspace boundaries remain permission and operational-responsibility boundaries. The precise backend states (Prepare/Pack/Ready) and exact reuse mechanics remain Flow 2 technical design, not a Founder scope blocker.
+
 ### Rider
 LIVE: auth (`current_rider_id`), invitation/approval (`create_rider_invitation`→`accept_rider_invitation`→`approve_pending_rider`), assignment, locked sequence with enforced stop order, POD (`complete_delivery` + `cefflo-pod` private storage bucket with RLS scoping upload/read to the assigned rider or business member), delivery-issue reporting. PARTIAL/UNVERIFIED: live GPS location writes (schema + RLS insert policy exist; no confirmed live frontend write call found this pass — consistent with a prior, explicitly-corrected false-GPS-claim in project history per git log "Remove false Rider GPS tracking claim"). MISSING: reschedule/failed-delivery recovery beyond the `issue` report, vehicle type, capacity (§3a).
 
@@ -245,6 +254,8 @@ LIVE: `public_tracking` (status, rider name, completed_at, POD path once deliver
 
 **Revision note (Founder Gate decision):** Reschedule is confirmed **REQUIRED V1**, but narrowly scoped — a bounded action that lets a Vendor or Rider move a specific delivery's planned execution (e.g. to a later run, or flag it for re-planning) with an audit event, not a general-purpose calendar/scheduling system. It should reuse the existing `delivery_events` audit pattern and the existing `issue`/`delivery_issue_reason` machinery where they overlap (a reschedule is, structurally, one more typed reason a delivery leaves its current run) rather than inventing a parallel state machine. Exact RPC/state design is a Flow 2 decision; Flow 1 locks the "required but narrow" boundary so Flow 2 doesn't over-build a scheduling product.
 
+**Scope freeze note (Founder-locked required product behavior):** the product requirement itself is now locked, not left open. Required behavior: (1) recovery begins when a delivery cannot be completed as originally planned, or enters an appropriate delivery exception; (2) the original delivery/run history is preserved — never silently overwritten; (3) an auditable recovery/reschedule event is created; (4) the affected order/delivery can return to the appropriate planning flow for a future/replacement delivery attempt; (5) canonical state/history is maintained throughout recovery. Only the exact state-machine implementation — who can trigger it, valid source states, whether it creates a new run entry or mutates the existing one — remains a Flow 2 technical decision, to be designed using the verified existing `delivery_events`/issue-reason architecture. `docs/cefflo/DECISION_REPORT_ISSUE_RESCHEDULE.md` is now the working record for that remaining technical design, not an open Founder blocker.
+
 ---
 
 ## 12. FOUNDR Boundary
@@ -260,7 +271,8 @@ No `invoice`/`payout` RPC exists anywhere — confirms the FOUNDR "Invoices & Pa
 - No migrations, RPCs, schema, UI features, or product code were created or changed in this task — every action was `Read`/`Grep`/`Bash` (read-only) plus writing the two required Flow 1 documents and this Task Master's own placement.
 - `git status` at time of writing: clean on all tracked files; the same pre-existing untracked items from prior sessions remain (`.claude/`, Finos audit files, `previews/`).
 - No Production, staging-mutating, or deployment action was taken.
+- **Scope freeze pass:** no migrations, RPCs, schema, or product code were created or changed in this pass either — every action was editing these two documents to record the Founder's final scope-freeze decisions (Reschedule/Recovery required behavior, Optimization hybrid-deterministic architecture, Operations/Helper infrastructure-reuse direction, order/delivery vehicle-compatibility requirement). No Flow 2 work started; no Production access.
 
 ---
 
-**End of audit report.** See `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md` for the scope contract synthesized from this evidence.
+**End of audit report.** Grow V1 Flow 1 scope is **FROZEN — FOUNDER APPROVED (2026-09-03)**. See `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md` for the scope contract synthesized from this evidence.
