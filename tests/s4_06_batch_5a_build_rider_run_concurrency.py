@@ -61,13 +61,19 @@ try:
         "insert into business_members(business_id,user_id,role) values(%s,%s,'owner')",
         (business, owner),
     )
+    # vehicle_type='van' (S4-11 Batch 3, Grow V1 Flow 2): this test's order
+    # counts exercise row-locking/idempotency concurrency, not the separate
+    # vehicle/capacity eligibility feature -- default motorcycle capacity
+    # (6) would otherwise cap what this scenario can construct. Van gives
+    # enough headroom (20) without the test needing to reason about capacity
+    # at all.
     setup_cur.execute(
-        "insert into riders(business_id,name,phone,status) values(%s,'Ali',%s,'active') returning id",
+        "insert into riders(business_id,name,phone,status,vehicle_type) values(%s,'Ali',%s,'active','van') returning id",
         (business, f"+60{uuid.uuid4().int % 10**9:09d}"),
     )
     ali = setup_cur.fetchone()[0]
     setup_cur.execute(
-        "insert into riders(business_id,name,phone,status) values(%s,'Abu',%s,'active') returning id",
+        "insert into riders(business_id,name,phone,status,vehicle_type) values(%s,'Abu',%s,'active','van') returning id",
         (business, f"+60{uuid.uuid4().int % 10**9:09d}"),
     )
     abu = setup_cur.fetchone()[0]

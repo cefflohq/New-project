@@ -51,13 +51,19 @@ with psycopg.connect(target.database_url) as conn:
             "insert into business_members(business_id,user_id,role) values(%s,%s,'owner'),(%s,%s,'owner')",
             (business_a, owner_a, business_b, owner_b),
         )
+        # capacity_override=100 (S4-11 Batch 3, Grow V1 Flow 2): this test
+        # accumulates many separate build_rider_run calls onto the same two
+        # riders across its full run (all-or-nothing, idempotency, multi-
+        # rider mechanics), not the separate vehicle/capacity eligibility
+        # feature -- default motorcycle capacity (6) would otherwise cap
+        # what the later scenarios in this file can construct.
         cur.execute(
-            "insert into riders(business_id,auth_user_id,name,phone,status) values(%s,%s,'Ali',%s,'active') returning id",
+            "insert into riders(business_id,auth_user_id,name,phone,status,capacity_override) values(%s,%s,'Ali',%s,'active',100) returning id",
             (business_a, rider1_user, f"+60{uuid.uuid4().int % 10**9:09d}"),
         )
         ali = cur.fetchone()[0]
         cur.execute(
-            "insert into riders(business_id,auth_user_id,name,phone,status) values(%s,%s,'Abu',%s,'active') returning id",
+            "insert into riders(business_id,auth_user_id,name,phone,status,capacity_override) values(%s,%s,'Abu',%s,'active',100) returning id",
             (business_a, rider2_user, f"+60{uuid.uuid4().int % 10**9:09d}"),
         )
         abu = cur.fetchone()[0]
@@ -122,6 +128,14 @@ with psycopg.connect(target.database_url) as conn:
             "delivery_session_id": str(session_1),
             "rider_id": str(ali),
             "order_count": 6,
+            # S4-11 Batch 3 (Grow V1 Flow 2): vehicle/capacity eligibility is
+            # a distinct exception class from this test's original scope --
+            # every successful build_rider_run result now also reports
+            # whether a vehicle/capacity override was used to get there.
+            # This run is well within Ali's default motorcycle capacity (6)
+            # and fully vehicle-compatible (orders default to 'any'), so no
+            # override was needed.
+            "vehicle_capacity_override_used": False,
         }
 
         counts = event_counts(orders_1)
