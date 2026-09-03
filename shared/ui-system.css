@@ -61,6 +61,7 @@ body[data-ui-system="cefflo"] #welcome .welcome-copy>div:first-child,
 body[data-ui-system="cefflo"] #welcome .welcome-copy>div:nth-child(2){color:var(--cf-text)!important}
 body[data-ui-system="cefflo"] #welcome .welcome-copy .subtext,
 body[data-ui-system="cefflo"] #welcome .welcome-actions .footer-note{color:var(--cf-text-2)!important}
+body[data-ui-system="cefflo"] #welcome .link{color:var(--cf-text)!important;text-decoration:underline;text-decoration-color:var(--cf-signal);text-decoration-thickness:2px;text-underline-offset:3px}
 body[data-ui-system="cefflo"] #welcome .welcome-actions{background:linear-gradient(180deg,transparent,var(--cf-page) 35%)!important}
 body[data-ui-system="cefflo"] :is(#welcome,#emailLogin,#signup,#forgot,#resetPassword) .btn-primary{background:var(--cf-signal)!important;color:var(--cf-black)!important;border-color:var(--cf-signal)!important;box-shadow:none!important}
 body[data-ui-system="cefflo"] :is(#emailLogin,#signup,#forgot,#resetPassword){background:var(--cf-page)!important;color:var(--cf-text)!important}
