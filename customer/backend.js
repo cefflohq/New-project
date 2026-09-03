@@ -10,6 +10,21 @@
   let isRefreshing = false;
   let lastRefreshAt = 0;
 
+  // Grow V1 Flow 2 (A5): public_tracking's `eta` field is now a truthful
+  // range/state object, not a single timestamp -- never a fabricated
+  // precise time. Formats only the states that have something honest to
+  // show; every other state falls back to the template's existing
+  // "we'll update you" copy rather than inventing text.
+  function formatEta(eta) {
+    if (!eta || !eta.state) return null;
+    const clock = (iso) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (eta.state === 'estimated_range' && eta.earliest && eta.latest) {
+      return `${clock(eta.earliest)}–${clock(eta.latest)}`;
+    }
+    if (eta.state === 'arriving_now') return 'Arriving now';
+    return null;
+  }
+
   async function refresh() {
     if (!token) throw new Error('Invalid tracking reference');
     const snapshot = await api.rpc('public_tracking', { p_token: token }, { token: null });
@@ -28,7 +43,7 @@
       orderId: snapshot.order_id,
       storeName: snapshot.store_name,
       riderName: snapshot.rider_name || 'Your rider',
-      estimatedArrival: snapshot.eta ? new Date(snapshot.eta).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+      estimatedArrival: formatEta(snapshot.eta) || '—',
       deliveredAt: snapshot.completed_at ? new Date(snapshot.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
       podPhoto: snapshot.status === 'delivered' && snapshot.pod_available ? await podUrl().catch(() => null) : null
     });
