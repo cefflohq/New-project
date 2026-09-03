@@ -29,6 +29,14 @@
   // deliberately left unmapped, not force-mapped.
   const RIDER_ISSUE_REASON_MAP = { 'Customer not reachable': 'customer_unreachable', 'Wrong address': 'address_problem', 'Vendor issue / late': 'vendor_not_ready', 'Rider vehicle breakdown': 'rider_unable_to_proceed' };
   const reportDeliveryIssue = (riderId, orderId, reasonType, note) => api.rpc('rider_report_delivery_issue', { p_rider_id: riderId, p_order_id: orderId, p_reason_type: reasonType, p_note: note || null });
+  // Grow V1 Flow 2 (A6): narrow operational recovery, Rider-initiated.
+  // p_rider_id is required here (unlike the Vendor wrapper) -- backend
+  // verifies this Rider is genuinely the one currently assigned before
+  // acting, matching is_current_rider's precedent everywhere else in
+  // this file.
+  const initiateDeliveryRecovery = (riderId, orderId, reason, note, idempotencyKey) => api.rpc('initiate_delivery_recovery', {
+    p_order_id: orderId, p_reason: reason, p_rider_id: riderId, p_note: note || '', p_idempotency_key: idempotencyKey
+  });
   async function complete(riderId, orderId, file, note) {
     // Same activeRiderId threaded through both calls -- never independently
     // derived, so the upload's path-embedded context and the completion
@@ -160,7 +168,12 @@
     return { needsSelection: true, identity };
   }
   function riderUserFromRelationship(identity, riderRow) {
-    return { applicationStatus: 'approved', email: identity.user.email || null, phone: riderRow.phone || null, name: riderRow.name, plate: riderRow.vehicle_plate || '—' };
+    // Grow V1 Flow 2 (A3): real canonical vehicle type, replacing the
+    // vehicle_plate-only model Flow 1 found. Set by the Vendor
+    // (update_rider_details) -- surfaced here read-only, matching the
+    // existing vehicle_plate display's own precedent (this app has never
+    // let a Rider self-edit either field).
+    return { applicationStatus: 'approved', email: identity.user.email || null, phone: riderRow.phone || null, name: riderRow.name, plate: riderRow.vehicle_plate || '—', vehicleType: riderRow.vehicle_type || 'motorcycle' };
   }
 
   async function authenticatedRider() {
@@ -183,8 +196,35 @@
   window.CEFFLO_RIDER = Object.freeze({
     orders, transition, complete, acceptAssignment, declineAssignment, hydrateOrders, reportDeliveryIssue,
     acceptRun, declineRun, saveRunSequence, startPickupRun, startRunDelivery, riderRuns,
-    classifyRiderRelationships, resolveActiveRiderContext, setActiveRiderContext, clearActiveRiderContext
+    classifyRiderRelationships, resolveActiveRiderContext, setActiveRiderContext, clearActiveRiderContext,
+    initiateDeliveryRecovery
   });
+
+  // Grow V1 Flow 2 (A6): real recovery action, replacing the "Re-delivery
+  // request is not connected yet" stub -- same in-flight guard / re-
+  // hydrate / honest-success pattern as submitIssue below.
+  const recoveryActionsInFlight = new Set();
+  createRedelivery = async function () {
+    const order = appState.currentIssueOrder;
+    const orderId = order?.backendId;
+    if (!orderId || recoveryActionsInFlight.has(orderId)) return;
+    const reason = document.getElementById('recov-reason')?.value;
+    const note = document.getElementById('recov-note')?.value || '';
+    const idempotencyKey = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : null;
+    if (!idempotencyKey) { showToast('Unable to generate a secure request id in this browser.', 'error'); return; }
+    recoveryActionsInFlight.add(orderId);
+    try {
+      await initiateDeliveryRecovery(appState.activeRiderId, orderId, reason, note, idempotencyKey);
+      await hydrateOrders();
+      closeIssueSheet();
+      showToast('Delivery returned to planning.', 'success');
+      renderHome();
+    } catch (error) {
+      showToast(error.message || 'Unable to return this delivery to planning', 'error');
+    } finally {
+      recoveryActionsInFlight.delete(orderId);
+    }
+  };
 
   // In-flight guard shared by both actions: prevents duplicate taps firing a
   // second request for the same order while the first is still pending.
