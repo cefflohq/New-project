@@ -95,15 +95,19 @@ $$;
 revoke all on function public.advance_preparation(uuid, public.preparation_status) from public, anon;
 grant execute on function public.advance_preparation(uuid, public.preparation_status) to authenticated;
 
--- assign_rider: identical to the current version, narrowed from
--- is_business_member to is_business_operational -- a Helper can prepare an
--- order but must never be able to assign it to a Rider.
+-- assign_rider: identical to the CURRENT version (202609010002 remediation
+-- -- cancelled-order and not-yet-approved preconditions both included, not
+-- the older foundation/S4-05 shapes), narrowed from is_business_member to
+-- is_business_operational -- a Helper can prepare an order but must never
+-- be able to assign it to a Rider.
 create or replace function public.assign_rider(p_order_id uuid, p_rider_id uuid) returns public.orders
 language plpgsql security definer set search_path = public as $$
 declare o orders; a rider_assignments;
 begin
   select * into o from orders where id = p_order_id for update;
   if o.id is null or not is_business_operational(o.business_id) then raise exception 'forbidden'; end if;
+  if o.delivery_status = 'cancelled' then raise exception 'order cancelled'; end if;
+  if o.approved_at is null then raise exception 'order not approved'; end if;
   if not exists(select 1 from riders where id = p_rider_id and business_id = o.business_id and status = 'active') then
     raise exception 'invalid rider';
   end if;
@@ -116,13 +120,16 @@ begin
 end;
 $$;
 
--- approve_order: identical to the current version, narrowed the same way.
+-- approve_order: identical to the CURRENT version (202609010002
+-- remediation -- rejects a cancelled/declined order, closing the terminal-
+-- decline-must-be-terminal gap that migration fixed), narrowed the same way.
 create or replace function public.approve_order(p_order_id uuid) returns public.orders
 language plpgsql security definer set search_path = public as $$
 declare o orders;
 begin
   select * into o from orders where id = p_order_id for update;
   if o.id is null or not is_business_operational(o.business_id) then raise exception 'forbidden'; end if;
+  if o.delivery_status = 'cancelled' then raise exception 'order cancelled'; end if;
   if o.approved_at is not null then return o; end if;
   update orders set approved_at = now(), approved_by = auth.uid(), updated_at = now() where id = o.id returning * into o;
   insert into delivery_events(business_id, order_id, event_type, actor_user_id, actor_role)

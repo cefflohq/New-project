@@ -100,29 +100,69 @@ revoke all on function public.compute_order_eta(uuid) from public, anon, authent
 grant execute on function public.compute_order_eta(uuid) to authenticated, anon;
 
 -- public_tracking: replace the dead estimated_arrival_at read with the
--- live-computed truthful ETA object. Identical to the current version in
--- every other respect (same join shape, same token-hash lookup, same
--- revoked/expired guard).
+-- live-computed truthful ETA object -- the ONLY change from the current
+-- (S4-04 Batch 5.2, 202608270008) version. Rate-limiting (fail-open),
+-- pod_available boolean minimization (never the raw storage path -- a
+-- deliberate S4-04 Batch 2 security decision, not something this batch
+-- reopens), and invalid-lookup telemetry are preserved byte-identical.
 create or replace function public.public_tracking(p_token text) returns jsonb
-language sql stable security definer set search_path = public, extensions
+language plpgsql
+security definer
+set search_path = public, extensions
 as $$
-select jsonb_build_object(
-  'order_id', o.public_ref,
-  'store_name', b.name,
-  'status', o.delivery_status,
-  'eta', compute_order_eta(o.id),
-  'rider_name', r.name,
-  'completed_at', o.completed_at,
-  'pod_path', case when o.delivery_status = 'delivered' then s.pod_storage_path end,
-  'rating_submitted', rt.id is not null
-)
-from tracking_tokens t
-join orders o on o.id = t.order_id
-join businesses b on b.id = o.business_id
-left join riders r on r.id = o.assigned_rider_id
-join delivery_stops s on s.order_id = o.id
-left join ratings rt on rt.order_id = o.id
-where t.token_hash = encode(digest(p_token, 'sha256'), 'hex')
-  and t.revoked_at is null
-  and (t.expires_at is null or t.expires_at > now())
+declare
+  key text;
+  allowed boolean;
+  result jsonb;
+  eta_result jsonb;
+  order_id_lookup uuid;
+begin
+  key := encode(digest(p_token, 'sha256'), 'hex');
+
+  begin
+    allowed := check_rate_limit(key, 'public_tracking', 60, 10);
+  exception when others then
+    allowed := true;
+  end;
+
+  if not allowed then
+    raise exception 'rate limited';
+  end if;
+
+  select t.order_id into order_id_lookup
+  from tracking_tokens t
+  where t.token_hash = key
+    and t.revoked_at is null
+    and (t.expires_at is null or t.expires_at > now());
+
+  if order_id_lookup is not null then
+    eta_result := compute_order_eta(order_id_lookup);
+  end if;
+
+  select jsonb_build_object(
+    'order_id', o.public_ref,
+    'store_name', b.name,
+    'status', o.delivery_status,
+    'eta', eta_result,
+    'rider_name', r.name,
+    'completed_at', o.completed_at,
+    'pod_available', (o.delivery_status = 'delivered' and s.pod_storage_path is not null),
+    'rating_submitted', rt.id is not null
+  ) into result
+  from tracking_tokens t
+  join orders o on o.id = t.order_id
+  join businesses b on b.id = o.business_id
+  left join riders r on r.id = o.assigned_rider_id
+  join delivery_stops s on s.order_id = o.id
+  left join ratings rt on rt.order_id = o.id
+  where t.token_hash = key
+    and t.revoked_at is null
+    and (t.expires_at is null or t.expires_at > now());
+
+  if result is null then
+    perform record_invalid_lookup_telemetry('public_tracking');
+  end if;
+
+  return result;
+end;
 $$;
