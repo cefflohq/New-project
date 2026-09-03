@@ -123,7 +123,10 @@ class AuthAndRemediationRegressionTests(unittest.TestCase):
         self.assertIn("ACTIONS.confirmReportDeliveryIssue = async function", VENDOR_JS)
 
     def test_s4_09_01_gates_remain(self):
-        self.assertIn("Re-delivery scheduling is not connected yet.", VENDOR_HTML)
+        # Grow V1 Flow 2 (A6): reschedule/recovery is now genuinely wired
+        # to initiate_delivery_recovery (backend.js), not a stub -- verify
+        # the real RPC wiring instead of the old disconnected-stub text.
+        self.assertIn("api.rpc('initiate_delivery_recovery'", VENDOR_JS)
         self.assertIn("Starting delivery for a rider is not connected in Vendor yet.", VENDOR_HTML)
 
     def test_s4_09_02_csv_gate_remains(self):

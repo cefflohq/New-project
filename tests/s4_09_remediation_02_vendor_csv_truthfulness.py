@@ -93,10 +93,18 @@ class CanonicalAndRegressionTests(unittest.TestCase):
         self.assertIn("api.rpc('vendor_report_delivery_issue'", VENDOR_JS)
 
     def test_remediation_01_gates_remain_intact(self):
+        # Grow V1 Flow 2 (A6): confirmReschedule is now genuinely wired to
+        # initiate_delivery_recovery (backend.js), not a stub -- the
+        # index.html pre-declaration is the standard "Backend not
+        # connected." fallback every other real action uses before
+        # backend.js overrides it. This gate now verifies the real RPC
+        # wiring exists and never claims local-only success, rather than
+        # verifying the feature stayed disconnected.
         reschedule = block(VENDOR_HTML, r"function confirmReschedule\(el\)\{")
         start_delivery = block(VENDOR_HTML, r"function startDeliveryForRider\(riderId\)\{")
-        self.assertIn("Re-delivery scheduling is not connected yet.", reschedule)
+        self.assertIn("Backend not connected.", reschedule)
         self.assertNotIn("transitionOrderStatus", reschedule)
+        self.assertIn("api.rpc('initiate_delivery_recovery'", VENDOR_JS)
         self.assertIn("Starting delivery for a rider is not connected in Vendor yet.", start_delivery)
         self.assertNotIn("transitionOrderStatus", start_delivery)
 

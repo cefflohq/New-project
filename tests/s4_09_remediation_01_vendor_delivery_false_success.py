@@ -39,8 +39,13 @@ class RescheduleGateTests(unittest.TestCase):
             self.assertNotIn(forbidden, fn)
 
     def test_confirm_is_honestly_gated_without_success_claim(self):
+        # Grow V1 Flow 2 (A6): the index.html pre-declaration is now the
+        # standard "Backend not connected." stub text (matching every other
+        # real action's pre-backend.js-load fallback), not the older
+        # feature-specific "not connected yet" wording -- backend.js
+        # overrides this with the real initiate_delivery_recovery wiring.
         fn = block(VENDOR_HTML, r"function confirmReschedule\(el\)\{")
-        self.assertIn("not connected yet", fn)
+        self.assertIn("not connected", fn)
         self.assertIn("'error'", fn)
         self.assertNotIn("Re-delivery scheduled", fn)
         self.assertNotIn("notified", fn.lower())

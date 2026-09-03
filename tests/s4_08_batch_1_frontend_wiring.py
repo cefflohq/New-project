@@ -117,8 +117,25 @@ class RiderIssueWiringTests(unittest.TestCase):
 
     def test_redelivery_no_longer_falsely_claims_request_sent(self):
         self.assertNotIn("Re-delivery request sent for vendor approval", RIDER_HTML)
-        fn = block(RIDER_HTML, r"function createRedelivery\(reason\)\{")
-        self.assertIn("not connected yet", fn)
+        # Grow V1 Flow 2 (A6): createRedelivery is now genuinely wired to
+        # initiate_delivery_recovery, not a stub -- the index.html
+        # pre-declaration is the standard "Backend not connected." fallback
+        # every other real action in this codebase uses before backend.js
+        # loads and overrides it (matching confirmCsvImport,
+        # advancePreparationAction, etc.), and the real implementation in
+        # backend.js must call the real RPC, never claim local-only success.
+        fn = block(RIDER_HTML, r"function createRedelivery\(\)\{")
+        self.assertIn("Backend not connected.", fn)
+        self.assertIn("api.rpc('initiate_delivery_recovery'", RIDER_JS)
+
+    def test_redelivery_real_rpc_call_shape(self):
+        fn = next(
+            line for line in RIDER_JS.splitlines()
+            if "api.rpc('initiate_delivery_recovery'" in line
+        ) + "\n" + RIDER_JS[RIDER_JS.index("api.rpc('initiate_delivery_recovery'"):RIDER_JS.index("api.rpc('initiate_delivery_recovery'") + 300]
+        self.assertIn("p_rider_id", fn)
+        self.assertIn("p_reason", fn)
+        self.assertIn("p_idempotency_key", fn)
 
     def test_breakdown_no_longer_falsely_claims_assignment_paused(self):
         self.assertNotIn("Assignment paused. Waiting for vendor", RIDER_HTML)
