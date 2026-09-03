@@ -4917,6 +4917,8 @@ function pageOrderDetail(params){
       </div>
     </div>
 
+    ${renderOrderLocationSection(o)}
+
     <div class="btn-row contact-actions" style="margin-bottom:20px">
       <button class="btn contact-outline whatsapp-outline" data-action="simWhatsapp" data-name="${o.customer}" data-phone="${o.phone}">${ic('whatsapp')} WhatsApp</button>
       <button class="btn contact-outline call-outline" data-action="simCall" data-name="${o.customer}" data-phone="${o.phone}">${ic('call')} ${t('call')}</button>
@@ -4943,6 +4945,40 @@ function pageOrderDetail(params){
     </div>
   </div>`;
 }
+// Grow V1 Flow 2 -- Mapbox Permanent Geocoding provider gate. Plain
+// operational UI (status badge, coordinates when resolved, plain
+// latitude/longitude correction fields) per the Founder's map
+// clarification -- no embedded map widget merely because location data
+// exists.
+const LOCATION_STATUS_LABEL = { unresolved:'Not yet located', resolved:'Located', ambiguous:'Needs confirmation', failed:'Could not locate' };
+const LOCATION_STATUS_CHIP = { unresolved:'preparing', resolved:'active', ambiguous:'issue', failed:'issue' };
+function renderOrderLocationSection(o){
+  const status = o.locationStatus || 'unresolved';
+  return `<div class="section">
+    <div class="section-title">Location</div>
+    <div class="card bordered">
+      <div class="stat-inline"><span class="label">Status</span>${statusChip(LOCATION_STATUS_CHIP[status]||'preparing')}</div>
+      ${status==='resolved' && o.latitude!=null?`<div class="stat-inline"><span class="label">Coordinates</span><span class="val">${Number(o.latitude).toFixed(5)}, ${Number(o.longitude).toFixed(5)}</span></div>`:''}
+      ${status!=='resolved'?`<div class="stat-inline"><span class="label">Detail</span><span class="val">${LOCATION_STATUS_LABEL[status]||status}</span></div>`:''}
+    </div>
+    ${status!=='resolved'?`<div class="btn-row" style="margin-top:8px;">
+      <button class="btn btn-secondary" style="flex:1;" data-action="geocodeOrderAction" data-id="${o.id}">Geocode Address</button>
+      <button class="btn btn-secondary" style="flex:1;" data-action="openSetLocationManual" data-id="${o.id}">Set Manually</button>
+    </div>`:`<button class="btn btn-secondary" style="width:100%;margin-top:8px;" data-action="openSetLocationManual" data-id="${o.id}">Correct Location</button>`}
+  </div>`;
+}
+function geocodeOrderAction(el){ toast('Backend not connected.', 'error'); }
+function openSetLocationManual(el){
+  const order = state.orders.find(item=>item.id===el.dataset.id);
+  if(!order) return;
+  openSheet(`<div class="sheet-title">Set Location Manually</div>
+    <p class="t-caption" style="color:var(--text-secondary);margin-bottom:10px;">Enter the precise delivery coordinates. This becomes the canonical location -- used by coverage, zone, and planning immediately, no further geocoding needed.</p>
+    <div class="field"><label>Latitude</label><input id="sl_lat" type="number" step="0.00001" value="${order.latitude??''}" placeholder="3.13900"></div>
+    <div class="field"><label>Longitude</label><input id="sl_lng" type="number" step="0.00001" value="${order.longitude??''}" placeholder="101.68690"></div>
+    <button class="btn btn-primary" style="width:100%" data-action="confirmSetLocationManual" data-id="${order.id}">Save</button>`);
+}
+function confirmSetLocationManual(el){ toast('Backend not connected.', 'error'); }
+
 function openOrderMenu(){ toast('More options'); }
 function normalizePhone(raw){
   let n=String(raw||'').replace(/[^\d+]/g,'');
@@ -7314,6 +7350,8 @@ function pageOrderDetailProposed(o, steps, stepIndex, showProgress){
       </div>
     </div>
 
+    ${renderOrderLocationSection(o)}
+
     <div class="section">
       <div class="section-title">${t('actions')}</div>
       ${!o.approvedAt?`<button class="btn btn-primary" style="margin-bottom:10px" data-action="approveOrderAction" data-id="${o.id}">Approve Order</button>`:''}
@@ -7423,6 +7461,7 @@ const ACTIONS = {
   setTeamTab,
   // Grow V1 Flow 2
   buildSuggestedRun, openEditRiderVehicle, openEditServiceArea,
+  geocodeOrderAction, openSetLocationManual, confirmSetLocationManual,
 };
 
 function attachGlobalHandlers(){ /* delegation handles everything; nothing per-render needed */ }

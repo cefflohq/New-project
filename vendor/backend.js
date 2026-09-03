@@ -54,6 +54,28 @@
   const setOrderLocationManual = (orderId, lat, lng) => api.rpc('set_order_location_manual', {
     p_order_id: orderId, p_latitude: lat, p_longitude: lng
   });
+  // Grow V1 Flow 2 -- Mapbox Permanent Geocoding provider gate. Calls the
+  // geocode-order Edge Function (the only place in this codebase that
+  // talks to Mapbox), which itself enforces GEOCODE ONCE (skips the call
+  // entirely if the order is already 'resolved') and persists the result
+  // through the existing canonical set_order_location RPC -- no parallel
+  // location write path. Uses the caller's own session (Authorization
+  // header), so the Edge Function's RLS-scoped read enforces the same
+  // tenant boundary as every other Vendor action here.
+  const geocodeOrder = async (orderId) => {
+    const response = await fetch(`${api.config.supabaseUrl}/functions/v1/geocode-order`, {
+      method: 'POST',
+      headers: {
+        apikey: api.config.supabaseAnonKey,
+        Authorization: `Bearer ${api.session()?.access_token || api.config.supabaseAnonKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ order_id: orderId }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || 'Geocoding request failed');
+    return result;
+  };
   const updateTeamMember = input => api.rpc('update_team_member', {
     p_business_id: input.businessId, p_user_id: input.userId,
     p_role: input.role ?? null, p_status: input.status ?? null
@@ -320,7 +342,7 @@
     hydrate: hydrateCanonicalWorkspace, hydrateTeam: hydrateTeamWorkspace, subscribe, startRealtime, stopRealtime,
     // Grow V1 Flow 2
     checkRunVehicleCapacity, proposeDeliveryPlan, importOrdersBatch, advancePreparation,
-    setBusinessServiceArea, initiateDeliveryRecovery, setOrderLocationManual, orderCoverageStatus
+    setBusinessServiceArea, initiateDeliveryRecovery, setOrderLocationManual, orderCoverageStatus, geocodeOrder
   });
   hydrateOperationalStateFromBackend = hydrateCanonicalWorkspace;
   syncOperationalStateToBackend = async () => true;
@@ -334,6 +356,11 @@
       await hydrateCanonicalWorkspace();
       toast(tf('orderCreatedSuccess', { id: created.order.public_ref }), 'success');
       navigate('orders', { tab: 'ongoing' }, false);
+      // Fire-and-forget: geocoding failure/slowness must never block or
+      // undo a successful order creation -- the order exists either way,
+      // just 'unresolved' until a retry (automatic or the Order Detail
+      // "Geocode Address" action) succeeds.
+      geocodeOrder(created.order.id).then(() => hydrateCanonicalWorkspace()).then(render).catch(() => {});
     } catch (error) { toast(error.message || 'Unable to create delivery', 'error'); }
   };
 
@@ -521,6 +548,19 @@
       toast(rejectedCount > 0
         ? `${committedCount} orders imported, ${rejectedCount} rejected at commit time.`
         : `${committedCount} orders imported.`, rejectedCount > 0 ? 'error' : 'success');
+      // CSV/XLSX enters the exact same canonical location lifecycle as
+      // every other intake path -- no separate import-only geocoding
+      // system. Fire-and-forget per committed row: a slow/failed geocode
+      // must never undo or block the already-successful canonical commit
+      // above; each order simply stays 'unresolved' (retryable later) if
+      // its request doesn't succeed.
+      const committedIds = (result.committed || []).map(c => c.order_id).filter(Boolean);
+      if (committedIds.length) {
+        Promise.allSettled(committedIds.map(id => geocodeOrder(id)))
+          .then(() => hydrateCanonicalWorkspace())
+          .then(render)
+          .catch(() => {});
+      }
     } catch (error) {
       toast(error.message || 'Unable to commit import', 'error');
     } finally {
@@ -576,6 +616,45 @@
     } catch (error) { toast(error.message || 'Unable to save service area', 'error'); }
   };
   ACTIONS.confirmEditServiceArea = confirmEditServiceArea;
+
+  // Grow V1 Flow 2 -- Mapbox Permanent Geocoding provider gate. Manual
+  // retry action on Order Detail (unresolved/ambiguous/failed) and the
+  // preserved manual-correction path (set_order_location_manual) --
+  // required to stay functional independent of provider outcome (Task
+  // requirement #9).
+  const geocodeActionsInFlight = new Set();
+  geocodeOrderAction = async function (el) {
+    const order = state.orders.find(item => item.id === el.dataset.id);
+    const orderId = order?.backendId || el.dataset.id;
+    if (geocodeActionsInFlight.has(orderId)) return;
+    geocodeActionsInFlight.add(orderId);
+    try {
+      const result = await geocodeOrder(orderId);
+      await hydrateCanonicalWorkspace();
+      render();
+      if (result.status === 'resolved') toast(result.skipped ? 'Already located' : 'Location resolved', 'success');
+      else toast(`Could not resolve location (${result.reason || result.status})`, 'error');
+    } catch (error) {
+      toast(error.message || 'Unable to geocode this address', 'error');
+    } finally {
+      geocodeActionsInFlight.delete(orderId);
+    }
+  };
+  ACTIONS.geocodeOrderAction = geocodeOrderAction;
+
+  confirmSetLocationManual = async function (el) {
+    try {
+      const lat = Number(document.getElementById('sl_lat')?.value);
+      const lng = Number(document.getElementById('sl_lng')?.value);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) throw new Error('Enter a valid latitude and longitude.');
+      const order = state.orders.find(item => item.id === el.dataset.id);
+      const orderId = order?.backendId || el.dataset.id;
+      await setOrderLocationManual(orderId, lat, lng);
+      await hydrateCanonicalWorkspace();
+      closeSheet(); render(); toast('Location set', 'success');
+    } catch (error) { toast(error.message || 'Unable to set location', 'error'); }
+  };
+  ACTIONS.confirmSetLocationManual = confirmSetLocationManual;
 
   // Grow V1 Flow 2 (A6): real narrow recovery action, replacing the S4-09
   // "not connected yet" reschedule stub. Reuses the same in-flight-guard/
