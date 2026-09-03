@@ -511,7 +511,7 @@
       <button class="nav-item active" data-page="overview"><span class="ic" data-icon="home"></span><span class="lbl">Overview</span></button>
       <button class="nav-item" data-page="vendors"><span class="ic" data-icon="store"></span><span class="lbl">Vendors</span></button>
       <button class="nav-item" data-page="operations"><span class="ic" data-icon="truck"></span><span class="lbl">Operations</span></button>
-      <button class="nav-item" data-page="revenue"><span class="ic" data-icon="trending"></span><span class="lbl">Revenue</span></button>
+      <button class="nav-item" data-page="revenue"><span class="ic" data-icon="trending"></span><span class="lbl">Platform Revenue</span></button>
       <button class="nav-item" data-page="growth"><span class="ic" data-icon="markets"></span><span class="lbl">Growth &amp; Markets</span></button>
       <button class="nav-item" data-page="platform"><span class="ic" data-icon="shield"></span><span class="lbl">Platform</span></button>
     </nav>
@@ -746,10 +746,9 @@ const quickActionsByPage = {
     { label:'View All Orders', icon:'package', action:'toast', msg:'Opens the full order/delivery workspace.' },
   ],
   revenue: [
-    { label:'Invoices & Payouts', icon:'fileText', action:'toast', msg:'Opens invoices & payouts ledger.' },
-    { label:'Payment Failures', icon:'alert', action:'toast', msg:'Opens payment failure queue.' },
-    { label:'Discount Management', icon:'percent', action:'privileged', title:'Discount Management', desc:'Create or modify promotional pricing rules.' },
-    { label:'Revenue Export', icon:'download', action:'toast', msg:'Revenue export queued — check your downloads.' },
+    { label:'Subscription Payment Failures', icon:'alert', action:'toast', msg:'Opens Cefflo subscription payment failure queue.' },
+    { label:'Plan Discount Management', icon:'percent', action:'privileged', title:'Plan Discount Management', desc:'Create or modify promotional pricing rules for Cefflo subscription plans.' },
+    { label:'Platform Revenue Export', icon:'download', action:'toast', msg:'Cefflo platform revenue export queued — check your downloads.' },
   ],
   growth: [
     { label:'New Campaign', icon:'rocket', action:'privileged', title:'Launch New Campaign', desc:'Create a new acquisition campaign across content, paid or affiliate channels.' },
@@ -1233,7 +1232,7 @@ const PAGES = {
   overview:   { title:'Overview', subtitle:'Executive summary of Cefflo platform performance.' },
   vendors:    { title:'Vendors', subtitle:'Monitor vendor performance, distribution and health.' },
   operations: { title:'Operations', subtitle:'Real-time delivery operations and rider tracking.' },
-  revenue:    { title:'Revenue', subtitle:'Financial performance, subscriptions and payments.' },
+  revenue:    { title:'Platform Revenue', subtitle:'Cefflo platform finance — subscription revenue, MRR and plan payments from vendors to Cefflo. Not vendor-customer invoices, payouts, or delivery payments.' },
   growth:     { title:'Growth & Markets', subtitle:'Track market expansion, acquisition and strategic opportunities.' },
   platform:   { title:'Platform', subtitle:'System health, controls, and platform management.' },
 };
