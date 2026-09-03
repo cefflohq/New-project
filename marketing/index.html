@@ -159,6 +159,47 @@ body.menu-open{overflow:hidden}
 .step-row span{font-size:14.5px;color:var(--text-2)}
 .step-row span strong{color:var(--black);font-weight:600}
 
+/* ---- CH.01B: ORDER SOURCES ---- */
+.source-grid{margin-top:36px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media (max-width:820px){.source-grid{grid-template-columns:1fr}}
+.source-card{background:var(--surface);border-radius:22px;padding:26px;border:1px solid var(--border);transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
+.source-card.is-live{border-color:transparent;box-shadow:0 16px 36px -26px rgba(11,13,14,.14),0 2px 6px rgba(11,13,14,.04)}
+.source-card:hover{transform:translateY(-4px)}
+.source-status{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3)}
+.source-status .dot{width:6px;height:6px;border-radius:50%;background:var(--border-dark)}
+.source-card.is-live .source-status{color:var(--ok)}
+.source-card.is-live .source-status .dot{background:var(--ok)}
+.source-card h3{font-size:16.5px;margin-top:12px;color:var(--black)}
+.source-card p{margin-top:8px;font-size:13.5px;color:var(--text-2);line-height:1.65}
+.source-converge{margin-top:28px;display:flex;align-items:center;gap:14px;font-size:13px;color:var(--text-3);font-weight:600}
+.source-converge svg{flex:0 0 auto}
+
+/* ---- CH.01C: STOREFRONT / APPEARANCE ---- */
+.storefront-grid{margin-top:36px;display:grid;grid-template-columns:0.95fr 1.05fr;gap:52px;align-items:center}
+@media (max-width:900px){.storefront-grid{grid-template-columns:1fr;gap:36px}}
+.storefront-panel{background:var(--surface);border-radius:26px;padding:30px;box-shadow:0 20px 44px -30px rgba(11,13,14,.14),0 2px 6px rgba(11,13,14,.04)}
+.storefront-panel-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)}
+.storefront-identity{margin-top:14px;display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--border);border-radius:16px}
+.storefront-identity-logo{width:42px;height:42px;flex:0 0 auto;border-radius:12px;background:#F2F0FF;color:#6552D8;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;font-family:var(--font-display)}
+.storefront-identity-name{font-size:14px;font-weight:700;color:var(--black)}
+.storefront-identity-sub{margin-top:2px;font-size:11px;color:var(--text-3)}
+.theme-swatches{margin-top:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.theme-swatch-btn{border:1.5px solid var(--border);border-radius:14px;padding:8px;background:var(--surface);cursor:default}
+.theme-swatch-btn.selected{border-color:#6552D8}
+.theme-swatch-chip{width:100%;aspect-ratio:2/1;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.theme-swatch-name{margin-top:7px;font-size:11px;font-weight:600;color:var(--black)}
+.storefront-note{margin-top:18px;font-size:11.5px;color:var(--text-3);line-height:1.6}
+.storefront-copy p{margin-top:16px;font-size:15px;color:var(--text-2);line-height:1.75;max-width:460px}
+.storefront-copy .principle{margin-top:24px;padding:18px 20px;background:var(--surface);border-radius:16px;border-left:3px solid var(--signal);font-size:13.5px;color:var(--black);font-weight:600;line-height:1.6}
+
+/* ---- CH.05B: WHY CEFFLO ---- */
+.why-grid{margin-top:40px;display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+@media (max-width:760px){.why-grid{grid-template-columns:1fr}}
+.why-item{background:var(--surface);padding:32px}
+.why-item .why-num{font-size:11px;font-weight:800;color:var(--text-3);font-variant-numeric:tabular-nums}
+.why-item h3{font-size:18px;margin-top:12px;color:var(--black)}
+.why-item p{margin-top:10px;font-size:13.5px;color:var(--text-2);line-height:1.7;max-width:380px}
+
 /* ---- CH03: NOT A MARKETPLACE — inline definitions, no card rows ---- */
 .def-grid{margin-top:36px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 @media (max-width:820px){.def-grid{grid-template-columns:1fr}}
@@ -287,8 +328,8 @@ body.menu-open{overflow:hidden}
   <div class="wide masthead-in">
     <a href="#top" class="word">cefflo<span class="sd"></span></a>
     <nav class="nav-links" aria-label="Primary">
-      <a href="#product">Product</a>
       <a href="#model">How It Works</a>
+      <a href="#storefront">Storefront</a>
       <a href="#fit">For Business</a>
       <a href="#pricing">Pricing</a>
     </nav>
@@ -374,6 +415,40 @@ body.menu-open{overflow:hidden}
   </div>
 </section>
 
+<!-- ============ CH.01B — ORDERS COME IN YOUR WAY ============ -->
+<section class="chapter wide" id="sources">
+  <h2 style="font-size:clamp(28px,3.6vw,46px);max-width:680px;color:var(--black);letter-spacing:-.02em" class="reveal">Keep selling the way you already do</h2>
+  <p class="measure reveal" style="margin-top:16px;font-size:15px;color:var(--text-2);line-height:1.7">Cefflo doesn't ask you to change how customers find you. It organizes the orders you already collect into one place, ready to prepare and deliver.</p>
+  <div class="source-grid reveal">
+    <div class="source-card is-live">
+      <span class="source-status"><span class="dot"></span>Available now</span>
+      <h3>Your Own Storefront</h3>
+      <p>A branded order page customers can reach from a shared link, styled to match your business.</p>
+    </div>
+    <div class="source-card is-live">
+      <span class="source-status"><span class="dot"></span>Available now</span>
+      <h3>Manual Entry</h3>
+      <p>Selling through WhatsApp or Instagram DMs? Add the order into Cefflo yourself in a few taps.</p>
+    </div>
+    <div class="source-card">
+      <span class="source-status"><span class="dot"></span>Coming next</span>
+      <h3>Sheets &amp; File Import</h3>
+      <p>Bulk-import orders from a spreadsheet when you're taking dozens at once.</p>
+    </div>
+  </div>
+  <div class="source-converge reveal">
+    <svg width="120" height="24" viewBox="0 0 120 24" role="img" aria-label="Three order sources converging into one orders list">
+      <line x1="10" y1="4" x2="60" y2="12" stroke="var(--border-dark)" stroke-width="1.5"/>
+      <line x1="10" y1="20" x2="60" y2="12" stroke="var(--border-dark)" stroke-width="1.5"/>
+      <line x1="10" y1="12" x2="60" y2="12" stroke="var(--border-dark)" stroke-width="1.5"/>
+      <circle cx="10" cy="4" r="3" fill="var(--border-dark)"/><circle cx="10" cy="12" r="3" fill="var(--border-dark)"/><circle cx="10" cy="20" r="3" fill="var(--border-dark)"/>
+      <line x1="60" y1="12" x2="110" y2="12" stroke="var(--black)" stroke-width="1.5"/>
+      <circle cx="110" cy="12" r="5" fill="var(--signal)"/>
+    </svg>
+    All orders land in one place: <strong style="color:var(--black)">Today's Orders</strong>.
+  </div>
+</section>
+
 <!-- ============ CH.02 — THE MODEL ============ -->
 <section class="chapter wide" id="model">
   <h2 style="font-size:clamp(28px,3.6vw,46px);max-width:680px;color:var(--black);letter-spacing:-.02em" class="reveal">Local density, batched into same-day delivery</h2>
@@ -455,6 +530,35 @@ body.menu-open{overflow:hidden}
   </div>
 </section>
 
+<!-- ============ CH.01D — YOUR BRAND, YOUR STOREFRONT ============ -->
+<section class="chapter wide" id="storefront">
+  <h2 style="font-size:clamp(28px,3.6vw,46px);max-width:680px;color:var(--black);letter-spacing:-.02em" class="reveal">Your brand stays in front. Cefflo works behind it.</h2>
+  <div class="storefront-grid reveal">
+    <div class="storefront-panel">
+      <span class="storefront-panel-label">Order Page · Preview</span>
+      <div class="storefront-identity">
+        <div class="storefront-identity-logo">KM</div>
+        <div>
+          <div class="storefront-identity-name">Kopi Mak Long</div>
+          <div class="storefront-identity-sub">Uses your business name &amp; logo</div>
+        </div>
+      </div>
+      <div class="theme-swatches">
+        <div class="theme-swatch-btn selected"><div class="theme-swatch-chip" style="background:#F7F6FB;color:#17151D">Aa</div><div class="theme-swatch-name">Clean</div></div>
+        <div class="theme-swatch-btn"><div class="theme-swatch-chip" style="background:#F3E4CE;color:#3A2A1C">Aa</div><div class="theme-swatch-name">Warm</div></div>
+        <div class="theme-swatch-btn"><div class="theme-swatch-chip" style="background:#DFEBDD;color:#1E2E20">Aa</div><div class="theme-swatch-name">Fresh</div></div>
+        <div class="theme-swatch-btn"><div class="theme-swatch-chip" style="background:#211F2B;color:#F4F2F8">Aa</div><div class="theme-swatch-name">Midnight</div></div>
+      </div>
+      <p class="storefront-note">Four curated themes set the background and typography. Your action color and ordering flow stay consistent, so it always reads as a real storefront, not a raw template.</p>
+    </div>
+    <div class="storefront-copy">
+      <span class="problem-card-tag">Your Storefront</span>
+      <p>Give customers a branded order page under your name, not a generic marketplace listing. Pick a theme, share the link, and it looks like your business, because it is.</p>
+      <div class="principle">Vendor controls the brand. Cefflo protects the design quality.</div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ CH.03 — NOT A MARKETPLACE ============ -->
 <section class="chapter wide" id="not-a">
   <h2 style="font-size:clamp(28px,3.6vw,46px);max-width:680px;color:var(--black);letter-spacing:-.02em" class="reveal">A different operating model, on purpose</h2>
@@ -489,8 +593,8 @@ body.menu-open{overflow:hidden}
 <!-- ============ CH.05 — SEE IT WORK (filmstrip) ============ -->
 <section class="section-dark" id="product">
 <div class="wide chapter">
-  <h2 style="font-size:clamp(28px,3.6vw,46px);max-width:680px;color:#fff;letter-spacing:-.02em" class="reveal">One platform, three real apps</h2>
-  <p class="measure reveal" style="margin-top:14px;font-size:14.5px;color:rgba(255,255,255,.68)">Your dashboard, your riders' delivery app, and your customers' tracking experience, all connected and in sync.</p>
+  <h2 style="font-size:clamp(28px,3.6vw,46px);max-width:680px;color:#fff;letter-spacing:-.02em" class="reveal">One operation. Four connected views.</h2>
+  <p class="measure reveal" style="margin-top:14px;font-size:14.5px;color:rgba(255,255,255,.68)">The same order looks different depending on who's looking. You see the whole operation. Your team sees what's ready to prepare. Riders see their run. Customers see their delivery. All connected, all in sync.</p>
 
   <div class="filmstrip-wrap reveal">
     <div class="film-group">
@@ -534,6 +638,33 @@ body.menu-open{overflow:hidden}
     </div>
   </div>
 </div>
+</section>
+
+<!-- ============ CH.05B — WHY CEFFLO ============ -->
+<section class="chapter wide" id="why">
+  <h2 style="font-size:clamp(28px,3.6vw,46px);max-width:680px;color:var(--black);letter-spacing:-.02em" class="reveal">Why businesses choose Cefflo</h2>
+  <div class="why-grid reveal">
+    <div class="why-item">
+      <span class="why-num">01</span>
+      <h3>See the operation clearly</h3>
+      <p>Know what's waiting, what's ready, what's moving, and what's delivered, without asking around.</p>
+    </div>
+    <div class="why-item">
+      <span class="why-num">02</span>
+      <h3>Give every role the right view</h3>
+      <p>The owner, the rider, and the customer don't need the same screen. Each sees exactly what helps them act.</p>
+    </div>
+    <div class="why-item">
+      <span class="why-num">03</span>
+      <h3>Keep your brand &amp; your customers</h3>
+      <p>Orders, customer relationships, and the storefront stay under your name. Cefflo never sits between you and them.</p>
+    </div>
+    <div class="why-item">
+      <span class="why-num">04</span>
+      <h3>Operate the way you already sell</h3>
+      <p>Bring in orders from your own storefront or add them manually. No forced switch to a new sales channel.</p>
+    </div>
+  </div>
 </section>
 
 <!-- ============ CH.06 — FIT ============ -->
@@ -591,7 +722,7 @@ body.menu-open{overflow:hidden}
       <h3>Cefflo Plus</h3>
       <div class="pamt"><b>RM99</b><span>/month</span></div>
       <p class="pdesc">Free for 14 days. For merchants ready to run multiple zones.</p>
-      <ul class="pfeat"><li>Up to 1,000 orders / month</li><li>Up to 5 delivery zones</li><li>Up to 15 riders</li><li>Delivery analytics &amp; CSV/Excel import</li><li>Priority support</li></ul>
+      <ul class="pfeat"><li>Up to 1,000 orders / month</li><li>Up to 5 delivery zones</li><li>Up to 15 riders</li><li>Branded order page &amp; theming</li><li>Priority support</li></ul>
       <a href="https://vendor.cefflo.com/" target="_blank" rel="noopener" class="btn btn-signal">Get Started Free</a>
     </div>
     <div class="pcol">
@@ -599,7 +730,7 @@ body.menu-open{overflow:hidden}
       <h3>Cefflo Pro</h3>
       <div class="pamt"><b>RM159</b><span>/month</span></div>
       <p class="pdesc">For multi-outlet operations covering several zones at once.</p>
-      <ul class="pfeat"><li>Unlimited orders, zones &amp; riders</li><li>Multi-outlet management</li><li>API &amp; POS integration</li><li>Dedicated account manager</li><li>Custom onboarding</li></ul>
+      <ul class="pfeat"><li>Unlimited orders, zones &amp; riders</li><li>Multi-outlet management</li><li>Dedicated account manager</li><li>Custom onboarding</li></ul>
       <a href="https://vendor.cefflo.com/" target="_blank" rel="noopener" class="btn btn-outline">Get Started Free</a>
     </div>
   </div>
@@ -614,6 +745,8 @@ body.menu-open{overflow:hidden}
     <details class="faq"><summary>Do I need my own riders to use Cefflo?</summary><div class="fbody">Yes. Cefflo is built around your own rider fleet, whether that's one part-time rider or a team of twenty. The Rider app helps them run their zone, and your dashboard helps you manage them.</div></details>
     <details class="faq"><summary>How is Cefflo different from Grab, foodpanda, or Lalamove?</summary><div class="fbody">Grab and foodpanda take a commission on every order and own your customer database, not you. Lalamove charges per delivery trip with no zone or batching concept. Cefflo groups your own local orders into zones and multi-drop runs your own riders complete, for a flat monthly fee.</div></details>
     <details class="faq"><summary>Can my customers track their orders?</summary><div class="fbody">Yes. Every order comes with a live tracking link and its own Customer app experience, from "Picked Up" through "On The Way" to "Delivered."</div></details>
+    <details class="faq"><summary>Can I customize my Storefront to match my brand?</summary><div class="fbody">Yes. Your order page uses your business name and logo, and you choose from curated themes for background and typography. The ordering flow stays consistent so it's always recognizably yours, and always works.</div></details>
+    <details class="faq"><summary>Can orders come from somewhere other than my Cefflo Storefront?</summary><div class="fbody">Yes. You can add orders manually if you're still selling through WhatsApp or Instagram DMs. Bulk import from a spreadsheet is coming next.</div></details>
     <details class="faq"><summary>What happens after my free trial ends?</summary><div class="fbody">You'll be notified before your trial ends. If you don't upgrade, your account automatically continues on Cefflo Go. You won't be charged without confirming first.</div></details>
   </div>
 </section>
@@ -643,8 +776,9 @@ body.menu-open{overflow:hidden}
         <div class="colophon-group">
           <span class="colophon-group-label">Product</span>
           <nav class="index index-col">
-            <a href="#product">Product</a>
             <a href="#model">How It Works</a>
+            <a href="#storefront">Storefront</a>
+            <a href="#why">Why Cefflo</a>
             <a href="#fit">For Business</a>
             <a href="#pricing">Pricing</a>
             <a href="#faq">FAQ</a>
