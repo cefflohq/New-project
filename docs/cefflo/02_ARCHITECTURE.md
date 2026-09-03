@@ -9,7 +9,7 @@ One secure backend supports multiple Cefflo clients.
 -   `cefflo.com` --- marketing/acquisition.
 -   `vendor.cefflo.com` --- Vendor PWA.
 -   `rider.cefflo.com` --- Rider PWA.
--   `track.cefflo.com` --- tokenized Customer Tracking.
+-   `tracking.cefflo.com` --- tokenized Customer Tracking.
 -   `foundr.cefflo.com` --- FOUNDR Command Center.
 -   `api.cefflo.com` --- only if the canonical production architecture
     actually requires it.

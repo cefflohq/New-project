@@ -1,0 +1,27 @@
+-- S4-04 Batch 5.3: submit_rating — NO CHANGE, by design (documented reversion).
+--
+-- Founder policy: submit_rating is TELEMETRY-ONLY (never enforcing). While
+-- implementing that, a second instance of the same statement-atomicity issue
+-- already reported for enforcement surfaced: a `perform record_..._telemetry()`
+-- placed anywhere in this function's body is undone along with everything
+-- else whenever the SAME call later raises (`invalid tracking token or
+-- delivery incomplete`, `rating already submitted`, `invalid rating`) --
+-- which is true regardless of where in the function body the perform is
+-- placed, because Postgres rolls back the entire top-level statement, not
+-- just the portion after the point of failure. Since a given token can
+-- reach submit_rating's one non-raising path (success) at most once ever
+-- (ratings are one-per-order by design), a naive telemetry call would
+-- reliably capture only successes and silently miss every failed/invalid
+-- attempt -- exactly the signal telemetry exists to observe. Shipping that
+-- would be misleading (it would look like observability while structurally
+-- being unable to see the interesting case), not a harmless no-op.
+--
+-- Durable counting despite an enclosing rollback requires a write outside
+-- the current transaction (e.g. dblink to a loopback connection, unverified
+-- as a supported pattern on Supabase's managed instance) or moving the
+-- counting to the client/Edge-Function layer instead of inside this
+-- function. Neither is part of what's approved so far, so nothing is
+-- invented here silently. submit_rating is therefore left byte-for-byte
+-- identical to its pre-B05 (foundation) form -- this migration exists only
+-- to document that decision in the sequence, not to change any behavior.
+create or replace function public.submit_rating(p_token text,p_rating integer,p_feedback text[] default '{}') returns uuid language plpgsql security definer set search_path=public,extensions as $$declare t tracking_tokens;o orders;v uuid;begin if p_rating not between 1 and 5 then raise exception 'invalid rating';end if;select * into t from tracking_tokens where token_hash=encode(digest(p_token,'sha256'),'hex') and revoked_at is null and(expires_at is null or expires_at>now());select * into o from orders where id=t.order_id and delivery_status='delivered';if o.id is null then raise exception 'invalid tracking token or delivery incomplete';end if;insert into ratings(order_id,tracking_token_id,rider_id,rating,feedback) values(o.id,t.id,o.assigned_rider_id,p_rating,coalesce(p_feedback,'{}')) on conflict(order_id) do nothing returning id into v;if v is null then raise exception 'rating already submitted';end if;return v;end$$;

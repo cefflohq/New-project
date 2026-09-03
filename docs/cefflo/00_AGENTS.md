@@ -1,12 +1,20 @@
-# CEFFLO --- AGENTS ROUTER
+# CEFFLO --- AGENTS ROUTER (Codex context map)
 
-Status: Canonical Primary executor: Codex Final authority: Founder
+Status: Canonical routing map for the `docs/cefflo/` context documents,
+scoped to Codex tasks. Final authority: Founder.
+
+Agent roles, task routing and cross-agent authority are defined by
+`docs/cefflo/CEFFLO_BRAND_BRAIN.md` and
+`docs/cefflo/agent-os/CEFFLO_AGENT_OS_CORE.md` — read those first for
+who does what. This file does not assign a primary executor; it only
+routes Codex to the small `docs/cefflo/` context documents below.
 
 ## A-00 Purpose
 
-This file is the mandatory router for every Cefflo engineering task. It
+This file is a router for Cefflo engineering tasks worked by Codex. It
 tells Codex which small canonical documents to load, how to scope work,
-and which actions require approval.
+and which actions require approval. See `docs/cefflo/agent-os/CODEX_OPERATING.md`
+for Codex's full operating rules.
 
 ## A-01 Source of Truth
 

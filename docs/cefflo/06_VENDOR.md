@@ -2,7 +2,9 @@
 
 ## V-00 Purpose
 
-Vendor PWA is the operational cockpit for the home-food business.
+Vendor PWA is the operational cockpit for the business — its owner
+controls the operation (Brand Brain §5.1). Any specific business type
+(e.g. a home food business) is an example, not the definition.
 
 ## V-01 Canonical Route
 

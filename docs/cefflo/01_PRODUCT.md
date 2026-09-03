@@ -1,15 +1,22 @@
 # CEFFLO --- PRODUCT
 
+Brand/product doctrine authority: `docs/cefflo/CEFFLO_BRAND_BRAIN.md`.
+Where this file and the Brand Brain differ, the Brand Brain wins.
+
 ## P-00 Identity
 
-Cefflo is an **Operating System for Home-Based Food Businesses**.
-Tagline: **Operate Smarter, Deliver Better.**
+Cefflo is a **local same-day delivery operating system for businesses
+that manage deliveries within their own service area**. The operating
+model, not product category, defines the boundary — food is one
+example among several, not Cefflo's category boundary (Brand Brain
+§1.1, §4). Tagline: **Operate Smarter, Deliver Better.**
 
 ## P-01 Problem
 
-Home-based food operators often handle sales, orders, fulfillment, rider
+Local delivery operators often handle order intake, fulfillment, rider
 coordination, delivery troubleshooting and customer communication
-themselves. Cefflo reduces this operational chaos through one workflow.
+themselves, across whatever business they run. Cefflo reduces this
+operational chaos through one connected workflow.
 
 ## P-02 Not Cefflo
 
@@ -19,9 +26,11 @@ generic delivery company; - a generic SaaS dashboard.
 
 ## P-03 Primary Customer
 
-Acquisition focus: home-based food vendors, including bakeries,
-catering, frozen food, meal prep, desserts, preorder food and similar
-home food businesses.
+Acquisition focus: local businesses that manage their own same-day
+delivery operation, including bakeries, catering, meal prep, florists,
+gifts and hampers, beauty and skincare, local retailers, and similar
+local delivery businesses. These are examples, not category
+restrictions (Brand Brain §1.1).
 
 ## P-04 Ownership
 

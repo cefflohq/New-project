@@ -61,7 +61,7 @@ sessions and multi-stop delivery are required Stage 4 scope, not legacy.
 GitHub records a successful Vercel deployment for the canonical source, but
 public asset parity is blocked by Vercel SSO/protection. `cefflo.com` serves a
 Hostinger parked page with failed public HTTPS. `vendor.cefflo.com`,
-`rider.cefflo.com`, `track.cefflo.com`, `foundr.cefflo.com` and
+`rider.cefflo.com`, `tracking.cefflo.com`, `foundr.cefflo.com` and
 `api.cefflo.com` were authoritative `NXDOMAIN` during P1.3. Cloudflare remains
 the intended DNS/edge architecture; cutover is authorized only in the
 controlled production-release phase. See `PHASE_1_DEPLOYMENT_DOMAIN_MAP.md`.

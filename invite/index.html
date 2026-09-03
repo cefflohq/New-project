@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CEFFLO — Invitation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --page:#F6F7F9; --card:#FFFFFF; --border:#E9EBF1; --ink:#0D0E0D; --muted:#8A8FA3;
+    --action:#C7F000; --on-action:#0D0E0D; --info-tint:#F1F2EE;
+    --danger:#E5484D; --danger-tint:#FCEBEC;
+    --success:#1EBE71; --success-tint:#E7F9EF;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--page);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .card{width:100%;max-width:400px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 24px;box-shadow:0 4px 24px rgba(20,20,40,.06);}
+  .brand{font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--ink);text-transform:uppercase;margin-bottom:14px;}
+  h1{font-size:20px;margin:0 0 6px;font-weight:800;}
+  p.sub{font-size:13px;color:var(--muted);margin:0 0 20px;line-height:1.5;}
+  .invite-summary{background:var(--info-tint);border-radius:14px;padding:14px 16px;margin-bottom:20px;}
+  .invite-summary b{display:block;font-size:15px;margin-bottom:2px;}
+  .invite-summary span{font-size:12px;color:var(--muted);}
+  .tabs{display:flex;gap:6px;margin-bottom:16px;background:var(--page);border-radius:12px;padding:4px;}
+  .tab-btn{flex:1;border:none;background:none;padding:9px;border-radius:9px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;}
+  .tab-btn.active{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:var(--muted);}
+  .field input{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;}
+  .btn{width:100%;padding:12px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer;background:var(--action);color:var(--on-action);margin-top:6px;}
+  .btn:disabled{opacity:.5;cursor:default;}
+  .btn-link{background:none;color:var(--ink);font-weight:600;font-size:12px;padding:8px;margin-top:4px;}
+  .status{font-size:12.5px;border-radius:10px;padding:10px 12px;margin-bottom:14px;line-height:1.5;}
+  .status.error{background:var(--danger-tint);color:var(--danger);}
+  .status.success{background:var(--success-tint);color:#1a8f57;}
+  .status.warn{background:#FFF6E5;color:#9A6700;}
+  .hidden{display:none !important;}
+  .owner-warning{font-size:11.5px;background:#FFF6E5;color:#9A6700;border-radius:10px;padding:9px 11px;margin-bottom:14px;line-height:1.5;}
+  .spinner{width:28px;height:28px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--ink);animation:spin .8s linear infinite;margin:24px auto;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .pending-icon{width:56px;height:56px;border-radius:16px;background:#FFF6E5;color:#9A6700;display:grid;place-items:center;margin:0 auto 14px;}
+</style>
+</head>
+<body>
+<div class="card" id="app">
+  <div class="brand">CEFFLO</div>
+  <div id="loadingState">
+    <div class="spinner"></div>
+  </div>
+  <div id="invalidState" class="hidden">
+    <h1>Invitation unavailable</h1>
+    <p class="sub" id="invalidReason">This invitation link is invalid, expired, or has already been used.</p>
+  </div>
+  <div id="mainState" class="hidden">
+    <h1 id="headline">You're invited</h1>
+    <p class="sub" id="subheadline"></p>
+    <div class="invite-summary">
+      <b id="summaryBusiness"></b>
+      <span id="summaryRole"></span>
+    </div>
+    <div id="ownerWarning" class="owner-warning hidden">Accepting this invitation grants full Owner access to this business — including billing, team management, and every operational capability.</div>
+    <div id="formStatus"></div>
+    <div class="tabs" id="authTabs">
+      <button class="tab-btn active" data-tab="login" type="button">Log In</button>
+      <button class="tab-btn" data-tab="signup" type="button">Sign Up</button>
+    </div>
+    <div id="loginForm">
+      <div class="field"><label>Email</label><input id="li-email" type="email" autocomplete="email"></div>
+      <div class="field"><label>Password</label><input id="li-pass" type="password" autocomplete="current-password"></div>
+      <button class="btn" id="loginBtn" type="button">Log In &amp; Accept</button>
+    </div>
+    <div id="signupForm" class="hidden">
+      <div class="field"><label>Email</label><input id="su-email" type="email" autocomplete="email"></div>
+      <div class="field"><label>Password</label><input id="su-pass" type="password" autocomplete="new-password" minlength="8"></div>
+      <button class="btn" id="signupBtn" type="button">Create Account &amp; Accept</button>
+    </div>
+  </div>
+  <div id="successState" class="hidden">
+    <h1 id="successHeadline">You're in</h1>
+    <p class="sub" id="successBody"></p>
+  </div>
+  <div id="pendingState" class="hidden">
+    <div class="pending-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    </div>
+    <h1>Request sent</h1>
+    <p class="sub" id="pendingBody">You're linked to this business as a Rider. The Owner needs to approve your account before you can start receiving deliveries.</p>
+  </div>
+</div>
+<script>window.CEFFLO_SESSION_KEY='cefflo_invite_session';</script>
+<script src="../shared/config.js?v=20260829a"></script>
+<script src="../shared/client.js?v=20260829a"></script>
+<script src="./backend.js?v=20260829a"></script>
+</body>
+</html>
