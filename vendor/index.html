@@ -6459,9 +6459,30 @@ function pageZones(){
       <button class="btn btn-secondary" style="width:100%;margin-top:8px;" data-action="openEditServiceArea">${area && area.service_coverage_radius_km ? 'Edit Service Area' : 'Set Service Area'}</button>
     </div>
     <div class="section-title workforce-section-title">Zones</div>
-    ${zones.length?`<div class="settings-group">${zones.map(zone=>`<div class="settings-row"><div class="settings-icon">${ic('map')}</div><div class="settings-label">${zone.name}</div>${statusChip(zone.status==='active'?'active':'offline')}</div>`).join('')}</div>`:`<div class="empty-state"><div class="es-icon">${ic('map')}</div><h3>${t('noZonesYet')}</h3><p>${t('createZoneFirst')}</p><button class="btn btn-primary" data-action="openCreateZone">${t('addZone')}</button></div>`}
+    ${zones.length?`<div class="settings-group">${zones.map(zone=>`<button class="settings-row" data-nav="zoneDetail" data-navparams='{"id":"${zone.id}"}'><div class="settings-icon">${ic('map')}</div><div class="settings-label">${zone.name}</div>${statusChip(zone.status==='active'?'active':'offline')}<span class="chev">${ic('chev')}</span></button>`).join('')}</div>`:`<div class="empty-state"><div class="es-icon">${ic('map')}</div><h3>${t('noZonesYet')}</h3><p>${t('createZoneFirst')}</p><button class="btn btn-primary" data-action="openCreateZone">${t('addZone')}</button></div>`}
   </div></div>`;
 }
+function pageZoneDetail(params){
+  const zone=(state.zones||[]).find(item=>item.id===params.id);
+  if(!zone) return `${innerHeader('Zone')}<div class="content"><div class="empty-state"><h3>Zone unavailable</h3></div></div>`;
+  const isActive=zone.status==='active';
+  return `<div class="module-page">${innerHeader(zone.name)}<div class="content">
+    <div class="card bordered" style="margin-bottom:16px;padding:12px 14px;">
+      <div class="stat-inline"><span class="label">Name</span><span class="val">${zone.name}</span></div>
+      <div class="stat-inline"><span class="label">Status</span><span class="val">${statusChip(isActive?'active':'offline')}</span></div>
+    </div>
+    <button class="btn btn-secondary" style="width:100%;margin-bottom:8px;" data-action="openRenameZone" data-id="${zone.id}">Rename Zone</button>
+    <button class="btn ${isActive?'btn-danger':'btn-primary'}" style="width:100%;" data-action="confirmToggleZoneStatus" data-id="${zone.id}" data-next-status="${isActive?'inactive':'active'}">${isActive?'Disable Zone':'Enable Zone'}</button>
+    ${!isActive?`<p class="t-caption" style="margin-top:8px;color:var(--text-secondary);">A disabled zone stays visible for reference but is excluded from Suggested Runs and zone-scoped planning.</p>`:''}
+  </div></div>`;
+}
+function openRenameZone(el){
+  const zone=(state.zones||[]).find(item=>item.id===el.dataset.id);
+  if(!zone) return;
+  openSheet(`<div class="sheet-title">Rename Zone</div><div class="field"><label>${t('zoneName')}</label><input id="rz_name" maxlength="80" value="${zone.name}"></div><button class="btn btn-primary" style="width:100%" data-action="confirmRenameZone" data-id="${zone.id}">Save</button>`);
+}
+function confirmRenameZone(){ toast('Backend not connected.', 'error'); }
+function confirmToggleZoneStatus(){ toast('Backend not connected.', 'error'); }
 function openEditServiceArea(){
   const area = state.serviceArea || {};
   openSheet(`<div class="sheet-title">Service Area (Coverage)</div>
@@ -7127,6 +7148,7 @@ const PAGES = {
   notifications: pageNotifications,
   settings: pageSettings,
   zones: pageZones,
+  zoneDetail: pageZoneDetail,
   team: pageTeam,
   teamMemberDetail: pageTeamMemberDetail,
   helperDetail: pageHelperDetail,
@@ -7447,7 +7469,7 @@ const ACTIONS = {
   toggleFaq,
   closeSheet,
   openInviteTeamMember, openInviteRiderReal, openManageTeamMember,
-  openCreateZone, confirmCreateZone,
+  openCreateZone, confirmCreateZone, openRenameZone, confirmRenameZone, confirmToggleZoneStatus,
   setTeamTab,
   // Grow V1 Flow 2
   buildSuggestedRun, openEditRiderVehicle, openEditServiceArea,

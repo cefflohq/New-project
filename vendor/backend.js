@@ -96,6 +96,18 @@
   const createZone = (businessId, name) => api.rpc('create_zone', {
     p_business_id: businessId, p_name: name
   });
+  // Flow 3 F3-04: rename_zone/set_zone_status existed in the Flow 2
+  // canonical backend since S4-06 Batch 3 with no Vendor call-site until
+  // now -- create_zone's own is_business_member gate, not is_business_
+  // operational, so any active member (not just Owner/Operator) may
+  // rename/enable/disable a zone, matching create_zone's existing
+  // authority precedent.
+  const renameZone = (zoneId, name) => api.rpc('rename_zone', {
+    p_zone_id: zoneId, p_name: name
+  });
+  const setZoneStatus = (zoneId, status) => api.rpc('set_zone_status', {
+    p_zone_id: zoneId, p_status: status
+  });
   const buildRiderRun = input => api.rpc('build_rider_run', {
     p_delivery_session_id: input.sessionId, p_rider_id: input.riderId,
     p_order_ids: input.orderIds, p_idempotency_key: input.idempotencyKey,
@@ -410,6 +422,27 @@
       await hydrateCanonicalWorkspace();
       closeSheet(); render(); toast(`Zone ${name} created`, 'success');
     } catch (error) { toast(error.message || 'Unable to create zone', 'error'); }
+  };
+
+  ACTIONS.confirmRenameZone = async function (el) {
+    const zoneId = el.dataset.id;
+    const name = document.getElementById('rz_name')?.value.trim();
+    if (!name) { toast('Enter a zone name.', 'error'); return; }
+    try {
+      await renameZone(zoneId, name);
+      await hydrateCanonicalWorkspace();
+      closeSheet(); render(); toast('Zone renamed', 'success');
+    } catch (error) { toast(error.message || 'Unable to rename zone', 'error'); }
+  };
+
+  ACTIONS.confirmToggleZoneStatus = async function (el) {
+    const zoneId = el.dataset.id;
+    const nextStatus = el.dataset.nextStatus;
+    try {
+      await setZoneStatus(zoneId, nextStatus);
+      await hydrateCanonicalWorkspace();
+      render(); toast(nextStatus === 'active' ? 'Zone enabled' : 'Zone disabled', 'success');
+    } catch (error) { toast(error.message || 'Unable to update zone status', 'error'); }
   };
 
   ACTIONS.assignZoneRider = async function (el) {
