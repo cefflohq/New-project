@@ -9,7 +9,7 @@
 ## Canonical hierarchy
 1. `docs/cefflo/sot/01_PRODUCT_TRUTH.md` (was: CEFFLO_PRODUCT_TRUTH.md)
 2. `docs/cefflo/sot/05_BRAND_BRAIN.md` (was: CEFFLO_BRAND_BRAIN / current canonical Brand Brain)
-3. CEFFLO_MARKETING_MEMORY.md — **NOT YET PRODUCED.** No Marketing Memory schema/doc exists anywhere in this repo. This is a genuine gap flagged for the Founder, not fabricated here.
+3. `docs/cefflo/sot/marketing/07_MARKETING_MEMORY.md` (was: CEFFLO_MARKETING_MEMORY.md) — schema initialized 2026-09-04; performance memory intentionally EMPTY until real evidence is collected.
 4. `docs/cefflo/sot/marketing/01_AUDIENCE_ICP.md` (was: 04_CEFFLO_AUDIENCE_ICP.md)
 5. `docs/cefflo/sot/marketing/02_CLAIMS_REGISTRY.md` (was: 05_CEFFLO_CLAIMS_REGISTRY.md)
 6. `docs/cefflo/sot/marketing/03_CONTENT_PHILOSOPHY.md` (was: 06_CEFFLO_CONTENT_PHILOSOPHY.md)

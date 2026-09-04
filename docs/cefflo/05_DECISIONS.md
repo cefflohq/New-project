@@ -176,3 +176,15 @@ A newer, Founder-approved, more granular SOT pack was reconciled into the repo a
 2. `docs/cefflo/sot/07_BUSINESS_LAUNCH_COMMERCIAL.md` (commercial/billing/go-live governance) is a new layer complementary to `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md` (frozen V1 product/feature scope, 2026-09-03) — the two are not duplicates and neither supersedes the other.
 
 Open gap surfaced by this reconciliation (not resolved, flagged for Founder attention): no Cefflo Pricing Master exists anywhere in this repository or in the reconciled knowledge pack. `docs/cefflo/sot/07_BUSINESS_LAUNCH_COMMERCIAL.md` §4 requires pricing to come from a Founder-approved Pricing Master, which does not yet exist.
+
+## D-24 Knowledge Reconciliation, Second Pass (2026-09-04)
+
+Three of D-23's four flagged gaps were filled by newly-supplied Founder documents, reconciled into `docs/cefflo/sot/`:
+
+1. `docs/cefflo/sot/10_PRICING.md` (was: CEFFLO_PRICING_PLAN_MASTER_AUDIT.md) — status **CANDIDATE, NOT Founder-locked**. Every price/allowance in it (RM0/RM99/RM199/RM499/Custom, delivery/rider/zone/team caps) remains open per its own §16/§19 Definition of Done. This is the working input to `docs/cefflo/sot/07_BUSINESS_LAUNCH_COMMERCIAL.md` §4's Pricing Authority requirement, not itself a satisfaction of it — do not publish any figure from this file as final commercial truth.
+2. `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md` (was: CEFFLO_VENDOR_FLUTTER_60_FULL_SCREEN_MASTER.md) — status **Working Master Baseline, Founder Review Required**, not implemented. Its own internal HOLD flags are preserved as-is: Subscription/billing screens V-50–V-54 remain HOLD pending a separately-approved Cefflo-subscription payment architecture (this is Vendor-paying-Cefflo billing, not vendor-customer payment — that boundary is unchanged), and V-41 Delivery Settings needs reconciliation against Service Area/Zones before lock. Same stage-gating logic as D-23 item 1 applies: this describes target scope, not authorization to begin Vendor Flutter implementation. The current LIVE Vendor client remains Vendor Web/Desktop.
+3. `docs/cefflo/sot/marketing/07_MARKETING_MEMORY.md` (was: CEFFLO_MARKETING_MEMORY.md) — schema/doctrine only. Per its own §22, performance memory is intentionally EMPTY at initialization; no AI Marketing Engine implementation, n8n workflow, or real campaign evidence exists in this repo. Do not treat anything in this file as evidence of actual marketing results.
+
+**Remaining open gap (unchanged from D-23):** `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md` is still Founder-review-pending — no new Rider Flutter material was supplied in this pass.
+
+No conflicts were found between the three new documents and existing doctrine; all three are additive fills of previously-flagged gaps, correctly labeled CANDIDATE/HOLD/Working-Master rather than promoted to LOCKED/LIVE.

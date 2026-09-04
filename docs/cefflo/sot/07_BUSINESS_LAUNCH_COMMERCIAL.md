@@ -1,5 +1,5 @@
 **Status:** CANONICAL — Founder-approved, merged into repo 2026-09-04
-**Repo-reconciliation note:** Net-new commercial/launch governance layer. Distinct from and complementary to `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md` (Founder-approved, FROZEN, 2026-09-03), which defines WHAT product/feature scope is in the V1 launch — this file defines the commercial/billing/go-live PROCESS governance around that scope. Neither supersedes the other. See also `docs/cefflo/16_QA_RELEASE.md` and `docs/cefflo/05_DECISIONS.md` D-07/D-08 for existing release-process detail.
+**Repo-reconciliation note:** Net-new commercial/launch governance layer. Distinct from and complementary to `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md` (Founder-approved, FROZEN, 2026-09-03), which defines WHAT product/feature scope is in the V1 launch — this file defines the commercial/billing/go-live PROCESS governance around that scope. Neither supersedes the other. See also `docs/cefflo/16_QA_RELEASE.md` and `docs/cefflo/05_DECISIONS.md` D-07/D-08 for existing release-process detail. §4 "Pricing Authority" below now has a working input at `docs/cefflo/sot/10_PRICING.md` (added 2026-09-04) — status CANDIDATE, **NOT Founder-locked**; it satisfies the "current Founder-approved Pricing Master" requirement only once locked, not before.
 
 ---
 

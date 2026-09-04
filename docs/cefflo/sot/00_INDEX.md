@@ -9,13 +9,13 @@
 
 ## 1. Vendor Flutter
 Primary:
-- **NOT YET PRODUCED.** No Vendor Flutter screen specifications or "Flow 4 Vendor Flutter implementation master" exist anywhere in this repository yet. When produced, index here.
+- `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md` — status: WORKING MASTER BASELINE, "Founder Review Required," NOT YET IMPLEMENTED. Subscription/billing screens V-50–V-54 remain HOLD; V-41 Delivery Settings remains RECONCILIATION REQUIRED.
 - approved Design Lab/DNA outputs when locked — none exist yet.
 
 Authority:
 Product Truth → Architecture → Flow 3 Behavioural Contract → approved Visual DNA → Flutter implementation.
 
-Reference in the meantime: `docs/cefflo/flow3/VENDOR_BEHAVIOURAL_CONTRACT_PACK.md` (the Flow 3 Vendor Web exit contract that Flow 4 must build against).
+Reference: `docs/cefflo/flow3/VENDOR_BEHAVIOURAL_CONTRACT_PACK.md` (the Flow 3 Vendor Web exit contract Flow 4 must build against). The current LIVE Vendor client remains Vendor Web/Desktop (`docs/cefflo/06_VENDOR.md`) — this master does not authorize starting Flutter implementation.
 
 ## 2. Rider Flutter
 Primary:
@@ -49,7 +49,7 @@ Primary:
 Primary hierarchy:
 1. `docs/cefflo/sot/01_PRODUCT_TRUTH.md`
 2. `docs/cefflo/sot/05_BRAND_BRAIN.md`
-3. Marketing Memory schema — **NOT YET PRODUCED**, genuine gap.
+3. `docs/cefflo/sot/marketing/07_MARKETING_MEMORY.md` — schema initialized; performance memory intentionally EMPTY, no real campaign data exists yet.
 4. `docs/cefflo/sot/marketing/01_AUDIENCE_ICP.md`
 5. `docs/cefflo/sot/marketing/02_CLAIMS_REGISTRY.md`
 6. `docs/cefflo/sot/marketing/03_CONTENT_PHILOSOPHY.md`
@@ -59,7 +59,7 @@ Primary hierarchy:
 
 ## 7. Marketing Performance
 Runtime evidence only:
-- Marketing Memory data/exports — none exist yet.
+- Marketing Memory schema exists (`docs/cefflo/sot/marketing/07_MARKETING_MEMORY.md`) but its data/exports are empty — no experiments have run yet.
 - weekly reports — none exist yet.
 - experiment performance — none exist yet.
 - organic/paid learnings — none exist yet.
@@ -76,11 +76,11 @@ Primary:
 
 ## 9. Cefflo Pricing
 Primary:
-- Pricing Plan Master Audit — **NOT YET PRODUCED.** No Pricing Master exists anywhere in this repository or in the reconciled knowledge pack. Genuine gap, flagged for Founder attention.
-- international pricing framework — not present.
+- `docs/cefflo/sot/10_PRICING.md` — status: CANDIDATE, **NOT Founder-Locked**. RM0/RM99/RM199/RM499/Custom tier structure and all delivery/rider/zone/team allowances remain open per its own §16/§19.
+- international pricing framework — not present beyond the "regional price books, not simple currency conversion" principle in §10_PRICING.md §3 P-08.
 - approved price books — not present.
 
-Candidate/simulation values must remain labeled.
+Candidate/simulation values must remain labeled. Do not publish any figure in `docs/cefflo/sot/10_PRICING.md` as final commercial truth.
 
 ## 10. Business & Launch
 Primary:
@@ -133,10 +133,10 @@ Use:
 ## 15. Definition of Done
 The knowledge base is healthy when an agent can locate the correct domain SOT, resolve conflicts deterministically, distinguish current truth from exploration/history, and execute without inventing missing product doctrine.
 
-## 16. Open gaps surfaced by the 2026-09-04 reconciliation
-- No Cefflo Pricing Master exists (domain 9 above).
-- No Vendor Flutter screen master / Flow 4 implementation master exists (domain 1 above).
-- No Marketing Memory schema/store exists (domain 6/7 above).
+## 16. Open gaps / pending Founder decisions (updated 2026-09-04, second pass)
+- `docs/cefflo/sot/10_PRICING.md` exists but is a CANDIDATE, not Founder-locked — no final price may be published (domain 9 above).
+- `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md` exists but is "Founder Review Required," not implemented; its Subscription/billing screens V-50–V-54 are HOLD pending a separate Founder-approved payment architecture, and V-41 Delivery Settings needs reconciliation against Service Area/Zones (domain 1 above).
+- `docs/cefflo/sot/marketing/07_MARKETING_MEMORY.md` exists but its performance memory is intentionally empty — no AI Marketing Engine implementation or real campaign data exists yet (domain 6/7 above).
 - `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md` remains "Founder Review Required" — not yet locked, not yet implemented; the current live Rider client is the PWA at `docs/cefflo/07_RIDER.md`.
 
-See `docs/cefflo/05_DECISIONS.md` D-23 for the full reconciliation record.
+See `docs/cefflo/05_DECISIONS.md` D-23 and D-24 for the full reconciliation record.

@@ -2,6 +2,7 @@
 
 Fuller canonical Vendor Web/Desktop doctrine:
 `docs/cefflo/sot/03_VENDOR_WEB_DESKTOP.md`; exit contract:
+`docs/cefflo/flow3/VENDOR_BEHAVIOURAL_CONTRACT_PACK.md` (Flow 3, complete). Future companion Vendor Flutter direction (NOT YET implemented, Founder review pending, subscription screens HOLD): `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md`.
 `docs/cefflo/flow3/VENDOR_BEHAVIOURAL_CONTRACT_PACK.md` (Flow 3,
 complete).
 
