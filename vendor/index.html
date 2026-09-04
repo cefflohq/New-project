@@ -4939,7 +4939,7 @@ function renderOrdersList(list){
       </div>
       <div class="order-name">${o.customer}</div>
       <div class="order-meta">${o.zone} • ${o.riderName||'Unassigned'}</div>
-      <div class="order-meta">${o.status==='completed'?('Delivered '+o.time):(t('eta')+' '+o.eta+' min')} &nbsp;·&nbsp; ${o.payment==='Paid'?t('paid'):(o.payment==='Pending'?t('pending'):o.payment)}</div>
+      <div class="order-meta">${o.status==='completed'?('Delivered '+(o.time||'')):(t(o.status)||o.status)} &nbsp;·&nbsp; ${o.payment==='Paid'?t('paid'):(o.payment==='Pending'?t('pending'):o.payment)}</div>
     </div>
   `).join('');
 }
@@ -6913,11 +6913,11 @@ function pageBusinessProfile(){
       <div class="zone-badge" style="width:64px;height:64px;font-size:20px;background:var(--primary);color:var(--on-primary);border-radius:20px;overflow:hidden" data-action="simulateLogoUpload">${state.businessLogo?`<img class="profile-logo-image" src="${state.businessLogo}" alt="Business logo">`:state.storeName.charAt(0)}</div>
       <button class="text-action" data-action="simulateLogoUpload" style="margin-top:8px">${t('changeLogo')}</button>
     </div>
-    <div class="field"><label>${t('storeNameLabel')}</label><input id="bp_storeName" value="${state.storeName}"></div>
-    <div class="field"><label>${t('phoneLabel')}</label><input id="bp_phone" value="${state.businessPhone}"></div>
-    <div class="field"><label>${t('emailLabel')}</label><input id="bp_email" value="${state.businessEmail}"></div>
-    <div class="field"><label>${t('businessAddressLabel')}</label><textarea id="bp_address">${state.businessAddress}</textarea></div>
-    <div class="field"><label>${t('defaultOperatingArea')}</label><input id="bp_area" value="${state.operatingArea}"></div>
+    <div class="field"><label>${t('storeNameLabel')}</label><input id="bp_storeName" value="${state.storeName||''}"></div>
+    <div class="field"><label>${t('phoneLabel')}</label><input id="bp_phone" value="${state.businessPhone||''}"></div>
+    <div class="field"><label>${t('emailLabel')}</label><input id="bp_email" value="${state.businessEmail||''}"></div>
+    <div class="field"><label>${t('businessAddressLabel')}</label><textarea id="bp_address">${state.businessAddress||''}</textarea></div>
+    <div class="field"><label>${t('defaultOperatingArea')}</label><input id="bp_area" value="${state.operatingArea||''}"></div>
     <button class="btn btn-primary" data-action="saveBusinessProfile">${t('save')}</button>
   </div>
   </div>`;

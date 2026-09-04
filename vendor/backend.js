@@ -167,7 +167,13 @@
   // get_my_businesses() is a curated cross-membership view that doesn't
   // carry them; a direct, RLS-scoped single-row fetch is the smallest
   // real addition rather than widening that RPC's contract.
-  const getServiceArea = businessId => api.request(`/rest/v1/businesses?id=eq.${encodeURIComponent(businessId)}&select=service_origin_latitude,service_origin_longitude,service_coverage_radius_km`).then(rows => rows[0] || {});
+  // Flow 3 F3-10 truthfulness fix: also carries phone/email/address/
+  // operating_area -- Business Profile previously only ever populated
+  // these from the Vendor's own prior saveBusinessProfile call in this
+  // session, so a Vendor opening Business Profile for the first time
+  // (e.g. right after bootstrap_business, which already set real values)
+  // saw literal "undefined" in every field.
+  const getBusinessDetails = businessId => api.request(`/rest/v1/businesses?id=eq.${encodeURIComponent(businessId)}&select=service_origin_latitude,service_origin_longitude,service_coverage_radius_km,phone,email,address,operating_area`).then(rows => rows[0] || {});
 
   function mapOrder(row) {
     return {
@@ -244,13 +250,17 @@
     state.currentMemberRole = selected.member_role;
     localStorage.setItem('cefflo_active_business_id', selected.business_id);
     const orders = await listOrders(selected.business_id);
-    const [riders, ratings, zones, sessions, assignments, events, stops, serviceArea] = await Promise.all([
+    const [riders, ratings, zones, sessions, assignments, events, stops, businessDetails] = await Promise.all([
       listRiders(selected.business_id), listRatings(orders.map(order => order.id)),
       listZones(selected.business_id), listDeliverySessions(selected.business_id),
       listRiderAssignments(selected.business_id), listDeliveryEvents(selected.business_id),
-      listDeliveryStops(selected.business_id), getServiceArea(selected.business_id)
+      listDeliveryStops(selected.business_id), getBusinessDetails(selected.business_id)
     ]);
-    state.serviceArea = serviceArea;
+    state.serviceArea = businessDetails;
+    state.businessPhone = businessDetails.phone || state.businessPhone;
+    state.businessEmail = businessDetails.email || state.businessEmail;
+    state.businessAddress = businessDetails.address || state.businessAddress;
+    state.operatingArea = businessDetails.operating_area || state.operatingArea;
     state.riders = riders.map(mapRider);
     state.orders = orders.map(mapOrder);
     // Grow V1 Flow 2 (C1-C3): attach real preparation truth (Prepare->
