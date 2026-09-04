@@ -199,6 +199,12 @@
     };
   }
   function mapRider(row) {
+    // zone stays hardcoded 'Unassigned' -- riders have no real zone-
+    // assignment concept in this schema (only orders/zones do). Flow 3
+    // F3-12 removed every live UI site that displayed this field as if it
+    // were real per-Rider status; kept here only because riderUiView's
+    // live per-render enrichment still reads/re-sets it and removing the
+    // field itself is out of scope for this pass (see Contract Pack).
     return { id: row.id, name: row.name, phone: row.phone, plate: row.vehicle_plate || '—', status: row.status === 'inactive' ? 'offline' : row.status, zone: 'Unassigned', availabilityStatus: row.availability_status,
       // Grow V1 Flow 2 (A3, renamed under F2-13/D-03): real canonical
       // Motorcycle/Car/Van truth and per-Rider max_active_orders override,
@@ -303,6 +309,16 @@
       id: event.id, orderId: orderByBackendId.get(event.order_id)?.id || event.order_id,
       type: event.metadata?.reason_type || 'delivery', note: event.metadata?.note || '',
       status: 'open', createdAt: event.created_at
+    }));
+    // Flow 3 F3-03 truthfulness fix: import_orders_batch already ledgers
+    // one real 'import.committed' business-level event per batch (no
+    // order_id, hence excluded from orderStatusHistory above) -- this was
+    // already being fetched by listDeliveryEvents and silently discarded,
+    // while the CSV Import screen's "Recent Imports" section permanently
+    // claimed "No recent imports" regardless of real history.
+    state.recentImports = events.filter(event => event.event_type === 'import.committed').slice(0, 5).map(event => ({
+      id: event.id, committedCount: (event.metadata?.committed || []).length,
+      rejectedCount: (event.metadata?.rejected || []).length, createdAt: event.created_at
     }));
     backendState.mode = 'remote'; backendState.status = 'connected'; backendState.lastSyncedAt = new Date().toISOString();
     persistOperationalStoreLocalOnly();
