@@ -7199,21 +7199,38 @@ function openPrivacyPolicyFromSheet(){closeSheet();navigate('privacyPolicy');}
 function openTermsFromSheet(){closeSheet();navigate('termsOfService');}
 
 function pageDashboardProposed(){
+  // Flow 3 F3-02/F3-12 truthfulness fix: this is the live default Vendor
+  // Dashboard (isVendorProposed() is hardcoded true) and previously padded
+  // every real KPI to a fabricated minimum (Math.max(12, totalOrders())
+  // etc. -- a brand-new business with zero real orders would still see
+  // "12 orders"/"6 riders"/"2 issues"/"75% completed"), plus fell back to
+  // hardcoded fake alert text ('CF-0127 has a delivery issue reported',
+  // rider 'Farid Aziz' in 'Zone D') and a fake ETA/order-id table
+  // ([18,25,32,40][index], `CF-${1024+index}`) whenever real data was
+  // absent -- built from an arbitrary slice of ALL riders rather than the
+  // real getCurrentDeliveries() the function had already computed and
+  // then ignored. Master Section 12: "No fabricated metrics. If a metric
+  // is not supported by canonical backend, remove/defer it rather than
+  // calculate misleading local estimates." Rewritten to show real values
+  // (zero is a valid, honest state for a new business) with real empty
+  // states, never a fabricated floor or placeholder.
   const currentDeliveries=getCurrentDeliveries();
   const workloadCard=getDashboardWorkloadCard();
   const capacity=workloadCard.capacity;
   const openWorkSession=(state.workforce?.workSessions||[]).find(session=>session.status==='open');
-  const displayRiders=state.riders.slice(0,4).map((r,index)=>{
-    const delivery=currentDeliveries.find(d=>d.riderId===r.id);
-    const order=delivery?.orders?.[0]||state.orders.find(o=>o.riderId===r.id);
-    return {r,orderId:order?.id||`CF-${String(1024+index).padStart(4,'0')}`,eta:delivery?.etaMinutes||[18,25,32,40][index],picked:index%2===1};
-  });
+  const displayRiders=currentDeliveries.slice(0,4).map(delivery=>{
+    const rider=state.riders.find(r=>r.id===delivery.riderId);
+    const nextOrder=delivery.orders.find(o=>o.status!=='completed')||delivery.orders[0];
+    const picked=(delivery.completedStops>0)||delivery.orders.some(o=>o.status==='delivering');
+    return {rider,orderId:nextOrder?.id||null,eta:delivery.etaMinutes,picked};
+  }).filter(item=>item.rider);
   const actions=[];
   const wrongAddr=state.orders.find(o=>o.status==='issue');
-  actions.push({icon:'alert',text:wrongAddr?`${wrongAddr.id} ${t('deliveryIssueReported')}`:'CF-0127 has a delivery issue reported',nav:'orders',params:{tab:'issue'}});
+  if(wrongAddr) actions.push({icon:'alert',text:`${wrongAddr.id} ${t('deliveryIssueReported')}`,nav:'orders',params:{tab:'issue'}});
   const offline=state.riders.find(r=>r.status==='offline');
-  actions.push({icon:'alert',text:`${t('riderLabel')} ${offline?.name||'Farid Aziz'} ${t('riderOfflineIn')} ${offline?.zone||'Zone D'}`,nav:'riders'});
-  actions.push({icon:'alert',text:`${Math.max(4,state.orders.filter(o=>o.payment==='Pending').length)} orders awaiting payment`,nav:'orders',params:{tab:'ongoing'}});
+  if(offline) actions.push({icon:'alert',text:`${t('riderLabel')} ${offline.name} ${t('riderOfflineIn')} ${offline.zone}`,nav:'riders'});
+  const pendingPayment=state.orders.filter(o=>o.payment==='Pending').length;
+  if(pendingPayment>0) actions.push({icon:'alert',text:`${pendingPayment} order${pendingPayment===1?'':'s'} awaiting payment`,nav:'orders',params:{tab:'ongoing'}});
   if(capacity?.gap>0)actions.push({icon:'user',text:`Tomorrow's ${capacity.requiredSkill.toLowerCase()} capacity is short`,nav:'capacityDetail'});
   if(openWorkSession){
     const confirmed=(openWorkSession.confirmed||[]).filter(item=>item.status==='confirmed').length;
@@ -7230,25 +7247,25 @@ function pageDashboardProposed(){
       <section class="vd2-summary">
         <div class="vd2-live"><i></i>${t('live')}</div>
         <div class="vd2-kpis">
-          <button data-nav="orders" data-navparams='{"tab":"ongoing"}'><strong>${Math.max(12,totalOrders())}</strong><span>${t('orders')}</span></button>
-          <button data-nav="riders"><strong>${Math.max(6,activeRidersCount())}</strong><span>${t('riders')}</span></button>
-          <button data-nav="orders" data-navparams='{"tab":"issue"}'><strong>${Math.max(2,issuesCount())}</strong><span>${t('issues')}</span></button>
-          <button data-nav="orders" data-navparams='{"tab":"completed"}'><strong>${Math.max(75,completedPct())}%</strong><span>${t('completed')}</span></button>
+          <button data-nav="orders" data-navparams='{"tab":"ongoing"}'><strong>${totalOrders()}</strong><span>${t('orders')}</span></button>
+          <button data-nav="riders"><strong>${activeRidersCount()}</strong><span>${t('riders')}</span></button>
+          <button data-nav="orders" data-navparams='{"tab":"issue"}'><strong>${issuesCount()}</strong><span>${t('issues')}</span></button>
+          <button data-nav="orders" data-navparams='{"tab":"completed"}'><strong>${completedPct()}%</strong><span>${t('completed')}</span></button>
         </div>
       </section>
       <section class="vd2-section">
         <div class="vd2-section-head"><h2>${t('currentDeliveries')}</h2><button data-nav="orders" data-navparams='{"tab":"ongoing"}'>${t('seeAll')}</button></div>
-        <div class="vd2-deliveries">${displayRiders.map(({r,orderId,eta,picked},index)=>`<button class="vd2-delivery" data-nav="riderProfile" data-navparams='{"id":"${r.id}"}'>
+        <div class="vd2-deliveries">${displayRiders.length?displayRiders.map(({rider:r,orderId,eta,picked},index)=>`<button class="vd2-delivery" data-nav="riderProfile" data-navparams='{"id":"${r.id}"}'>
           <span class="vd2-avatar vd2-avatar-${index}">${r.photo||r.avatar||r.profilePhoto?`<img src="${r.photo||r.avatar||r.profilePhoto}" alt="${r.name}">`:r.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</span>
-          <span class="vd2-rider"><b>${r.name}</b><small>#${orderId} · ${r.zone}</small></span>
+          <span class="vd2-rider"><b>${r.name}</b><small>${orderId?`#${orderId} · `:''}${r.zone}</small></span>
           <span class="vd2-chip ${picked?'picked':''}">${picked?'PICKED UP':'ON THE WAY'}</span>
-          <span class="vd2-eta"><small>ETA</small><b>${eta} min</b></span>
-        </button>`).join('')}</div>
+          <span class="vd2-eta"><small>ETA</small><b>${eta!=null?`${eta} min`:'—'}</b></span>
+        </button>`).join(''):`<div class="t-caption" style="padding:12px 0;color:var(--text-secondary);">No deliveries currently in progress.</div>`}</div>
       </section>
       ${renderDashboardWorkloadCard(workloadCard)}
       <section class="vd2-section vd2-actions">
         <div class="vd2-section-head"><h2>${t('actionRequired')} <em>${actions.length}</em></h2></div>
-        ${actions.map(a=>`<button class="vd2-action" data-nav="${a.nav}" data-navparams='${JSON.stringify(a.params||{})}'><span>${ic(a.icon)}</span><b>${a.text}</b>${ic('chev')}</button>`).join('')}
+        ${actions.length?actions.map(a=>`<button class="vd2-action" data-nav="${a.nav}" data-navparams='${JSON.stringify(a.params||{})}'><span>${ic(a.icon)}</span><b>${a.text}</b>${ic('chev')}</button>`).join(''):`<div class="t-caption" style="padding:12px 0;color:var(--text-secondary);">Nothing needs attention right now.</div>`}
       </section>
     </main>
   </div>`;
