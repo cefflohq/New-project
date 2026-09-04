@@ -350,6 +350,12 @@
   }
 
   const orderCoverageStatus = orderId => api.rpc('order_coverage_status', { p_order_id: orderId });
+  // Flow 3 F3-06: real Rider location for Active Runs/Run Detail (Flow 2
+  // F2-08). Returns one row per Rider who has a recorded location -- no
+  // row at all for a Rider who has never sent one (nothing does yet; the
+  // Rider Flutter background-GPS client is Flow 5). Callers must treat a
+  // missing row as "location unavailable", never synthesize one.
+  const latestRiderLocations = businessId => api.rpc('latest_rider_locations', { p_business_id: businessId });
 
   window.CEFFLO_VENDOR = Object.freeze({
     businesses, createDelivery, assignRider, approveOrder, deactivateRider, updateRiderDetails,
@@ -361,7 +367,8 @@
     hydrate: hydrateCanonicalWorkspace, hydrateTeam: hydrateTeamWorkspace, subscribe, startRealtime, stopRealtime,
     // Grow V1 Flow 2
     checkRunVehicleCapacity, proposeDeliveryPlan, importOrdersBatch, advancePreparation,
-    setBusinessServiceArea, initiateDeliveryRecovery, setOrderLocationManual, orderCoverageStatus, geocodeOrder
+    setBusinessServiceArea, initiateDeliveryRecovery, setOrderLocationManual, orderCoverageStatus, geocodeOrder,
+    latestRiderLocations
   });
   hydrateOperationalStateFromBackend = hydrateCanonicalWorkspace;
   syncOperationalStateToBackend = async () => true;

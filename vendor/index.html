@@ -4246,6 +4246,94 @@ function computeRunProgress(){
     return {sessionId:g.sessionId,waveName:session?session.name:'Run',riderId:g.riderId,riderName:rider?rider.name:'—',assignmentState,total,pickedUp,delivered};
   }).sort((a,b)=>a.waveName.localeCompare(b.waveName)||a.riderName.localeCompare(b.riderName));
 }
+
+/* ===================== F3-06: ACTIVE RUNS / RUN DETAIL =====================
+   A "Run" in this data model is one Rider's assignment set within one
+   delivery_session (Wave) -- the same (deliverySessionId, riderId)
+   grouping computeRunProgress() already computes from real
+   state.riderAssignments. No local route/sequence/GPS engine is used --
+   the F3-00/F3-12 legacy engine that once existed here duplicated
+   backend-owned truth and was removed outright, not repurposed. Real
+   Rider location (Flow 2 F2-08's latest_rider_locations) is fetched
+   lazily on open, matching the Suggested Runs load-on-open precedent
+   (openSuggestedRuns/loadSuggestedRuns) -- it is a live value not worth
+   bulk-hydrating on every canonical refresh, and a missing row means
+   "no Rider Flutter client has ever sent a real location yet" (Flow 5),
+   never a fabricated placeholder. No customer-safe ETA is shown here:
+   compute_order_eta was correctly hardened to internal-only in Flow 2's
+   F2-11 (it had no tenant check at all), and no other canonical
+   Vendor-facing ETA source exists yet -- omitted honestly, not invented. */
+const runDetailState = { sessionId:null, riderId:null, locations:null, locationsLoading:false, locationsError:null };
+function activeRuns(){
+  return computeRunProgress().filter(run=>run.total>0 && run.assignmentState!=='Delivered');
+}
+function pageActiveRuns(){
+  const runs=activeRuns();
+  return `<div class="module-page">${innerHeader('Active Runs')}<div class="content">
+    ${runs.length?runs.map(run=>`<button class="card bordered" style="width:100%;text-align:left;margin-bottom:10px;padding:12px 14px;" data-nav="runDetail" data-navparams='{"sessionId":"${run.sessionId}","riderId":"${run.riderId}"}'>
+      <div class="row-between"><span class="t-body" style="font-weight:600;">${run.riderName}</span><span class="status-chip chip-preparing">${run.assignmentState}</span></div>
+      <div class="t-caption" style="margin-top:2px;">${run.waveName} &middot; ${run.delivered}/${run.total} delivered${run.pickedUp>run.delivered?` &middot; ${run.pickedUp-run.delivered} picked up`:''}</div>
+    </button>`).join(''):`<div class="empty-state"><div class="es-icon">${ic('map')}</div><h3>No active runs</h3><p>Dispatched runs appear here once a Rider accepts.</p></div>`}
+  </div></div>`;
+}
+function loadRunDetailLocation(sessionId,riderId){
+  runDetailState.sessionId=sessionId; runDetailState.riderId=riderId;
+  if(runDetailState.locationsLoading) return;
+  runDetailState.locationsLoading=true; runDetailState.locationsError=null;
+  const call=window.CEFFLO_VENDOR?.latestRiderLocations ? window.CEFFLO_VENDOR.latestRiderLocations(state.businessId) : Promise.reject(new Error('Backend not connected.'));
+  call.then(rows=>{ runDetailState.locations=Array.isArray(rows)?rows:[]; })
+    .catch(error=>{ runDetailState.locationsError=error.message||'Unable to load Rider location.'; })
+    .finally(()=>{ runDetailState.locationsLoading=false; if(state.route && state.route.name==='runDetail') render(); });
+}
+function pageRunDetail(params){
+  const sessionId=params.sessionId, riderId=params.riderId;
+  if(runDetailState.sessionId!==sessionId || runDetailState.riderId!==riderId){
+    runDetailState.locations=null; runDetailState.locationsError=null;
+    loadRunDetailLocation(sessionId,riderId);
+  }else if(runDetailState.locations===null && !runDetailState.locationsLoading && !runDetailState.locationsError){
+    loadRunDetailLocation(sessionId,riderId);
+  }
+  const rider=state.riders.find(r=>r.id===riderId);
+  const session=state.deliverySessions.find(s=>s.id===sessionId);
+  if(!rider||!session) return `${innerHeader('Run Detail')}<div class="content"><div class="empty-state"><h3>Run unavailable</h3></div></div>`;
+  const assignments=state.riderAssignments.filter(a=>a.deliverySessionId===sessionId && a.riderId===riderId && a.status!=='declined' && a.status!=='cancelled').sort((a,b)=>(a.sequence||0)-(b.sequence||0));
+  const stopOrders=assignments.map(a=>({assignment:a,order:state.orders.find(o=>o.backendId===a.orderId)})).filter(item=>item.order);
+  const orderIds=new Set(stopOrders.map(item=>item.order.id));
+  const events=state.orderStatusHistory.filter(e=>orderIds.has(e.orderId)).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,20);
+  const openIssues=state.issues.filter(i=>orderIds.has(i.orderId) && i.status!=='resolved');
+  const completed=stopOrders.filter(item=>item.assignment.stopStatus==='completed').length;
+  let locationHtml;
+  if(runDetailState.locationsLoading) locationHtml=`<div class="t-caption" style="color:var(--text-secondary);">Loading Rider location&hellip;</div>`;
+  else if(runDetailState.locationsError) locationHtml=`<div class="t-caption" style="color:var(--danger);">${runDetailState.locationsError}</div>`;
+  else{
+    const row=(runDetailState.locations||[]).find(item=>item.rider_id===riderId);
+    locationHtml=row
+      ? `<div class="stat-inline"><span class="label">Location</span><span class="val">${Number(row.latitude).toFixed(4)}, ${Number(row.longitude).toFixed(4)}</span></div><div class="stat-inline"><span class="label">Recorded</span><span class="val">${new Date(row.recorded_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></div>`
+      : `<div class="t-caption" style="color:var(--text-secondary);">No location reported yet.</div>`;
+  }
+  return `<div class="module-page">${innerHeader(session.name)}<div class="content">
+    <div class="card bordered" style="margin-bottom:16px;padding:12px 14px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div class="avatar">${rider.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</div>
+        <div><div class="order-id">${rider.name}</div><div class="order-meta">${rider.phone}</div></div>
+      </div>
+      <div class="stat-inline"><span class="label">Stops</span><span class="val">${completed}/${stopOrders.length} completed</span></div>
+      ${locationHtml}
+    </div>
+    <div class="section-title workforce-section-title">Stops</div>
+    ${stopOrders.length?stopOrders.map(({assignment,order},index)=>`<button class="card bordered" style="width:100%;text-align:left;margin-bottom:8px;padding:12px 14px;" data-nav="orderDetail" data-navparams='{"id":"${order.id}"}'>
+      <div class="row-between"><span class="order-id">${index+1}. ${order.id}</span>${statusChip(assignment.stopStatus||order.status)}</div>
+      <div class="order-meta">${order.customer}</div>
+      <div class="order-meta">${order.address}</div>
+    </button>`).join(''):`<div class="t-caption" style="color:var(--text-secondary);">No stops in this run.</div>`}
+    ${openIssues.length?`<div class="section-title workforce-section-title">Open Issues</div><div class="card bordered" style="padding:12px 14px;margin-bottom:16px;">${openIssues.map(i=>`<div class="stat-inline"><span class="label">${i.type}</span><span class="val">${new Date(i.createdAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></div>`).join('')}</div>`:''}
+    <div class="section-title workforce-section-title">Activity</div>
+    <div class="card bordered" style="padding:12px 14px;">
+      ${events.length?events.map(e=>`<div class="stat-inline"><span class="label">${(e.eventType||'').replace('delivery.','').replace(/_/g,' ')}${e.toStatus?` &rarr; ${e.toStatus}`:''}</span><span class="val">${new Date(e.createdAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></div>`).join(''):`<div class="t-caption" style="color:var(--text-secondary);">No activity recorded yet.</div>`}
+    </div>
+  </div></div>`;
+}
+
 function reconcileOperationalStore(){
   const today=operationalDateKey();
   if(state.orders.length && !state.deliverySessions.length){
@@ -4432,7 +4520,7 @@ function renderBottomNav(){
   }
   const isOrders = active==='orders';
   const isRiders = active==='riders' || active==='riderProfile' || active==='dispatchPlanner';
-  const isSettings = active==='settings' || ['zones','team','teamMemberDetail','helperDetail','workSessionDetail','businessProfile','language','notificationSettingsPage','reports','subscription','changePassword','privacyPolicy','termsOfService','appVersion','helpSupport'].includes(active);
+  const isSettings = active==='settings' || ['zones','zoneDetail','activeRuns','runDetail','team','teamMemberDetail','helperDetail','workSessionDetail','businessProfile','language','notificationSettingsPage','reports','subscription','changePassword','privacyPolicy','termsOfService','appVersion','helpSupport'].includes(active);
   const isHome = active==='dashboard'||active==='capacityDetail';
   root.innerHTML = `
   <div class="bottom-nav">
@@ -7149,6 +7237,8 @@ const PAGES = {
   settings: pageSettings,
   zones: pageZones,
   zoneDetail: pageZoneDetail,
+  activeRuns: pageActiveRuns,
+  runDetail: pageRunDetail,
   team: pageTeam,
   teamMemberDetail: pageTeamMemberDetail,
   helperDetail: pageHelperDetail,
@@ -7222,7 +7312,7 @@ function pageDashboardProposed(){
     const rider=state.riders.find(r=>r.id===delivery.riderId);
     const nextOrder=delivery.orders.find(o=>o.status!=='completed')||delivery.orders[0];
     const picked=(delivery.completedStops>0)||delivery.orders.some(o=>o.status==='delivering');
-    return {rider,orderId:nextOrder?.id||null,eta:delivery.etaMinutes,picked};
+    return {rider,orderId:nextOrder?.id||null,eta:delivery.etaMinutes,picked,sessionId:delivery.sessionId};
   }).filter(item=>item.rider);
   const actions=[];
   const wrongAddr=state.orders.find(o=>o.status==='issue');
@@ -7254,8 +7344,8 @@ function pageDashboardProposed(){
         </div>
       </section>
       <section class="vd2-section">
-        <div class="vd2-section-head"><h2>${t('currentDeliveries')}</h2><button data-nav="orders" data-navparams='{"tab":"ongoing"}'>${t('seeAll')}</button></div>
-        <div class="vd2-deliveries">${displayRiders.length?displayRiders.map(({rider:r,orderId,eta,picked},index)=>`<button class="vd2-delivery" data-nav="riderProfile" data-navparams='{"id":"${r.id}"}'>
+        <div class="vd2-section-head"><h2>${t('currentDeliveries')}</h2><button data-nav="activeRuns">${t('seeAll')}</button></div>
+        <div class="vd2-deliveries">${displayRiders.length?displayRiders.map(({rider:r,orderId,eta,picked,sessionId},index)=>`<button class="vd2-delivery" data-nav="${sessionId?'runDetail':'riderProfile'}" data-navparams='${sessionId?`{"sessionId":"${sessionId}","riderId":"${r.id}"}`:`{"id":"${r.id}"}`}'>
           <span class="vd2-avatar vd2-avatar-${index}">${r.photo||r.avatar||r.profilePhoto?`<img src="${r.photo||r.avatar||r.profilePhoto}" alt="${r.name}">`:r.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</span>
           <span class="vd2-rider"><b>${r.name}</b><small>${orderId?`#${orderId} · `:''}${r.zone}</small></span>
           <span class="vd2-chip ${picked?'picked':''}">${picked?'PICKED UP':'ON THE WAY'}</span>
@@ -7452,7 +7542,7 @@ function pageSettingsProposed(){
         <div class="vs2-row"><span class="vs2-row-icon">${ic('moon')}</span><span><b>Dark Mode</b></span>${toggle(dark,'setVendorDarkMode','Dark Mode')}</div>
         <div class="vs2-row"><span class="vs2-row-icon">${ic('bell')}</span><span><b>Notifications</b></span>${toggle(vendorNotificationsEnabled,'toggleVendorNotifications','Notifications')}</div>
         <button class="vs2-row" data-nav="language"><span class="vs2-row-icon">${ic('globe')}</span><span><b>Language</b></span><span class="vs2-row-tail">English ${ic('chev')}</span></button>
-        ${row('user','Team','team')}${row('map',t('zones'),'zones')}${row('report',t('reports'),'reports')}${row('card','Subscription Plan','subscription')}${row('help','Help & Support','helpSupport')}${row('privacy','Privacy & Terms','', 'openPrivacyTerms')}${row('info','About CEFFLO','appVersion')}
+        ${row('user','Team','team')}${row('map',t('zones'),'zones')}${row('orders','Active Runs','activeRuns')}${row('report',t('reports'),'reports')}${row('card','Subscription Plan','subscription')}${row('help','Help & Support','helpSupport')}${row('privacy','Privacy & Terms','', 'openPrivacyTerms')}${row('info','About CEFFLO','appVersion')}
       </section>
       <button class="vs2-signout" data-action="logoutConfirm">${ic('logout')}<span>Sign Out</span></button>
       <div class="vs2-build">CEFFLO v1.2.0</div>
