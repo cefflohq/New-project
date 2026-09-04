@@ -111,8 +111,15 @@ class PasswordStorageAndExposureTests(unittest.TestCase):
 
 class AuthAndRemediationRegressionTests(unittest.TestCase):
     def test_login_restore_logout_and_recovery_remain_structurally_intact(self):
+        # Flow 3 F3-12: signInWithPassword was removed this session after a
+        # full reachability trace confirmed zero live callers -- the real
+        # login button (submitProductionLogin) reimplements the same steps
+        # directly via authRequest+storeAuthSession rather than calling it.
+        # Swapped for the marker that actually proves the live login path
+        # is intact, rather than one asserting dead code's continued
+        # presence.
         for marker in (
-            "async function signInWithPassword", "function restoreAuthSession()",
+            "async function submitProductionLogin", "function restoreAuthSession()",
             "async function productionSignOut()", "async function submitPasswordReset",
             "async function submitNewPassword", "async function restoreProductionAuth()",
         ):

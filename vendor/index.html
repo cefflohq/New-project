@@ -6942,51 +6942,14 @@ async function handleLogoFile(file){
     render(); toast(t('logoUpdated'),'success');
   }catch(err){toast(t('unableLoadImage'),'error');}
 }
-function saveBusinessProfile(){
-  const values = {
-    storeName:document.getElementById('bp_storeName').value.trim(),
-    businessPhone:document.getElementById('bp_phone').value.trim(),
-    businessEmail:document.getElementById('bp_email').value.trim(),
-    businessAddress:document.getElementById('bp_address').value.trim(),
-    operatingArea:document.getElementById('bp_area').value.trim()
-  };
-  const missing = Object.entries(values).find(([,value])=>!value);
-  if(missing){
-    const fieldMap = {
-      storeName:'bp_storeName',
-      businessPhone:'bp_phone',
-      businessEmail:'bp_email',
-      businessAddress:'bp_address',
-      operatingArea:'bp_area'
-    };
-    const input = document.getElementById(fieldMap[missing[0]]);
-    if(input){
-      input.focus();
-      input.scrollIntoView({block:'center',behavior:'smooth'});
-    }
-    toast(t('completeRequiredFields'),'error');
-    return;
-  }
-  state.storeName = values.storeName;
-  state.businessPhone = values.businessPhone;
-  state.businessEmail = values.businessEmail;
-  state.businessAddress = values.businessAddress;
-  state.operatingArea = values.operatingArea;
-  state.businessProfileCompleted = true;
-  syncNewAccountOnboarding();
-  try{
-    localStorage.setItem('cefflo_business_profile',JSON.stringify({
-      storeName:state.storeName,
-      businessPhone:state.businessPhone,
-      businessEmail:state.businessEmail,
-      businessAddress:state.businessAddress,
-      operatingArea:state.operatingArea,
-      completed:state.businessProfileCompleted
-    }));
-  }catch(err){}
-  toast(t('businessProfileSaved'), 'success');
-  navigate('settings', {}, false);
-}
+// Flow 3 F3-12 truthfulness cleanup: this was a local-only landmine of the
+// same class as the already-fixed confirmAssignRiderOrder -- it mutated
+// state/localStorage and claimed "Business profile saved" success with no
+// RPC call at all, harmless only because backend.js's real
+// ACTIONS.saveBusinessProfile override (update_business_profile RPC)
+// always wins once loaded. Replaced with the standard honest stub used
+// everywhere else in this codebase for the pre-backend.js-load window.
+function saveBusinessProfile(){ toast('Backend not connected.', 'error'); }
 
 /* ===================== PAGE: LANGUAGE ===================== */
 function pageLanguage(){
@@ -8022,186 +7985,25 @@ window.CEFFLO_BACKEND={
 
 
 
-/* ===================== MILESTONE 3: CORE BUSINESS ENGINE ===================== */
-const CEFFLO_ENGINE_VERSION='3.0.0';
-const SESSION_TRANSITIONS=Object.freeze({planned:['active','cancelled'],active:['completed','cancelled'],completed:[],cancelled:[]});
-const ASSIGNMENT_TRANSITIONS=Object.freeze({planned:['assigned','cancelled'],assigned:['pickup','cancelled'],pickup:['delivering','cancelled'],delivering:['completed','issue'],issue:['delivering','completed','cancelled'],completed:[],cancelled:[]});
-const ACTIVE_ASSIGNMENT_STATES=new Set(['assigned','pickup','delivering','issue']);
-const TERMINAL_ORDER_STATES=new Set(['completed']);
-const ENGINE_EVENT_HANDLERS=new Map();
-
-function engineId(prefix){return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;}
-function nowIso(){return new Date().toISOString();}
-function assertEngine(condition,message,code='ENGINE_RULE_VIOLATION'){
-  if(condition) return;
-  const error=new Error(message); error.code=code; throw error;
-}
-function onEngineEvent(type,handler){
-  if(!ENGINE_EVENT_HANDLERS.has(type)) ENGINE_EVENT_HANDLERS.set(type,new Set());
-  ENGINE_EVENT_HANDLERS.get(type).add(handler);
-  return ()=>ENGINE_EVENT_HANDLERS.get(type)?.delete(handler);
-}
-function emitEngineEvent(type,payload={}){
-  const event={id:engineId('evt'),type,payload,occurredAt:nowIso(),engineVersion:CEFFLO_ENGINE_VERSION};
-  (ENGINE_EVENT_HANDLERS.get(type)||[]).forEach(handler=>{try{handler(event)}catch(error){console.error('[CEFFLO event handler]',type,error)}});
-  (ENGINE_EVENT_HANDLERS.get('*')||[]).forEach(handler=>{try{handler(event)}catch(error){console.error('[CEFFLO event handler]',type,error)}});
-  return event;
-}
-function runEngineTransaction(label,operation){
-  const snapshot={
-    deliverySessions:structuredClone(state.deliverySessions),riderAssignments:structuredClone(state.riderAssignments),
-    deliveryStops:structuredClone(state.deliveryStops),issues:structuredClone(state.issues),orders:structuredClone(state.orders),
-    orderStatusHistory:structuredClone(state.orderStatusHistory),notifications:structuredClone(state.notifications),zones:structuredClone(state.zones)
-  };
-  try{
-    const result=operation();
-    reconcileOperationalStore();
-    syncZonesFromOrders();
-    state.notificationsUnread=state.notifications.filter(n=>!n.read).length;
-    persistOperationalStore();
-    emitEngineEvent('transaction.committed',{label});
-    return result;
-  }catch(error){
-    Object.assign(state,snapshot);
-    emitEngineEvent('transaction.rolled_back',{label,error:error.message,code:error.code||'UNKNOWN'});
-    throw error;
-  }
-}
-function findSession(sessionId){return state.deliverySessions.find(session=>session.id===sessionId)||null;}
-function findAssignment(assignmentId){return state.riderAssignments.find(item=>item.id===assignmentId)||null;}
-function findStop(stopId){return state.deliveryStops.find(stop=>stop.id===stopId)||null;}
-function findOpenIssueByOrder(orderId){return state.issues.find(issue=>issue.orderId===orderId && issue.status!=='resolved')||null;}
-function assignmentOrders(assignment){
-  if(!assignment) return [];
-  return state.orders.filter(order=>order.deliverySessionId===assignment.deliverySessionId && order.riderId===assignment.riderId && (!assignment.zoneId || order.zoneId===assignment.zoneId));
-}
-function assignmentStops(assignment){
-  const ids=new Set(assignmentOrders(assignment).map(order=>order.id));
-  return state.deliveryStops.filter(stop=>ids.has(stop.orderId)).sort((a,b)=>(a.sequence||0)-(b.sequence||0));
-}
-function addOperationalNotification({type='system',icon='info',title,desc='',nav=null,dedupeKey=null}){
-  if(dedupeKey && state.notifications.some(item=>item.dedupeKey===dedupeKey)) return null;
-  const notification={id:engineId('notification'),type,icon,title,desc,time:'Just now',createdAt:nowIso(),read:false,nav,dedupeKey};
-  state.notifications.unshift(notification);
-  state.notificationsUnread=state.notifications.filter(item=>!item.read).length;
-  emitEngineEvent('notification.created',{notification});
-  return notification;
-}
-function createDeliverySession(input={}){
-  return runEngineTransaction('createDeliverySession',()=>{
-    const deliveryDate=input.deliveryDate||operationalDateKey();
-    const duplicate=state.deliverySessions.find(session=>session.businessId===state.businessId && session.deliveryDate===deliveryDate && session.name===(input.name||'Delivery Session') && session.status!=='cancelled');
-    assertEngine(!duplicate,'An active or planned delivery session with the same name already exists.','SESSION_DUPLICATE');
-    const session={id:input.id||engineId('session'),businessId:state.businessId,deliveryDate,name:input.name||'Delivery Session',status:'planned',startedAt:null,completedAt:null,createdAt:nowIso(),updatedAt:nowIso()};
-    state.deliverySessions.push(session); emitEngineEvent('session.created',{session}); return session;
-  });
-}
-function transitionDeliverySession(sessionId,nextStatus){
-  return runEngineTransaction('transitionDeliverySession',()=>{
-    const session=findSession(sessionId); assertEngine(session,'Delivery session not found.','SESSION_NOT_FOUND');
-    const previous=session.status; assertEngine((SESSION_TRANSITIONS[previous]||[]).includes(nextStatus),`Invalid session transition: ${previous} → ${nextStatus}`,'SESSION_TRANSITION_INVALID');
-    const orders=state.orders.filter(order=>order.deliverySessionId===sessionId);
-    if(nextStatus==='active'){
-      assertEngine(orders.length>0,'A delivery session cannot start without orders.','SESSION_EMPTY');
-      assertEngine(state.riderAssignments.some(item=>item.deliverySessionId===sessionId && ['assigned','pickup'].includes(item.status)),'A delivery session cannot start without at least one rider assignment.','SESSION_NO_ASSIGNMENT');
-      session.startedAt=nowIso();
-    }
-    if(nextStatus==='completed'){
-      assertEngine(orders.every(order=>TERMINAL_ORDER_STATES.has(order.status)),'All orders must be completed before closing the session.','SESSION_ORDERS_INCOMPLETE');
-      session.completedAt=nowIso();
-    }
-    session.status=nextStatus; session.updatedAt=nowIso(); emitEngineEvent('session.status_changed',{sessionId,previous,nextStatus}); return session;
-  });
-}
-function createProductionOrder(input={}){
-  return runEngineTransaction('createProductionOrder',()=>{
-    assertEngine(input.customerName?.trim(),'Customer name is required.','ORDER_CUSTOMER_REQUIRED');
-    assertEngine(input.customerPhone?.trim(),'Customer phone is required.','ORDER_PHONE_REQUIRED');
-    assertEngine(input.address?.trim(),'Delivery address is required.','ORDER_ADDRESS_REQUIRED');
-    const session=input.deliverySessionId?findSession(input.deliverySessionId):activeDeliverySession();
-    assertEngine(session,'A delivery session is required before an order can be created.','ORDER_SESSION_REQUIRED');
-    assertEngine(['planned','active'].includes(session.status),'Orders can only be added to planned or active sessions.','ORDER_SESSION_CLOSED');
-    const id=input.id||genOrderId(state.orderCounter++);
-    assertEngine(!state.orders.some(order=>order.id===id),'Order ID already exists.','ORDER_DUPLICATE');
-    const zoneName=normalizeZoneName(input.zone||deriveZoneFromAddress(input.address));
-    let zone=state.zones.find(item=>normalizeZoneName(item.name).toLowerCase()===zoneName.toLowerCase());
-    if(!zone && zoneName){zone={id:engineId('zone'),name:zoneName,orderIds:[],riderId:null,capacity:input.zoneCapacity||15,businessId:state.businessId};state.zones.push(zone);}
-    const createdAt=nowIso();
-    const order={id,businessId:state.businessId,deliverySessionId:session.id,deliveryDate:session.deliveryDate,zoneId:zone?.id||null,zone:zone?.name||zoneName||'',riderId:null,customerName:input.customerName.trim(),customerPhone:input.customerPhone.trim(),address:input.address.trim(),latitude:input.latitude??null,longitude:input.longitude??null,notes:input.notes||'',items:Array.isArray(input.items)?input.items:[],paymentStatus:input.paymentStatus||'pending',status:'pendingConfirmation',issueStatus:null,deliverySequence:null,createdAt,updatedAt:createdAt,completedAt:null,activity:[{label:'Order created',time:'now'}]};
-    state.orders.push(order);
-    state.deliveryStops.push({id:engineId('stop'),businessId:state.businessId,orderId:id,riderId:null,zoneId:order.zoneId,sequence:null,status:'pending',estimatedArrivalAt:null,arrivedAt:null,completedAt:null,createdAt});
-    state.orderStatusHistory.push({id:engineId('osh'),orderId:id,fromStatus:null,toStatus:'pendingConfirmation',changedBy:'system',changedAt:createdAt,remarks:'Order created'});
-    addOperationalNotification({type:'orders',icon:'box',title:'New order received',desc:`${id} · ${order.customerName}`,nav:{name:'orderDetail',params:{id}},dedupeKey:`order-created:${id}`});
-    emitEngineEvent('order.created',{order}); return order;
-  });
-}
-function assignZoneToRider({deliverySessionId,zoneId,riderId}){
-  return runEngineTransaction('assignZoneToRider',()=>{
-    const session=findSession(deliverySessionId); assertEngine(session,'Delivery session not found.','SESSION_NOT_FOUND');
-    assertEngine(['planned','active'].includes(session.status),'Cannot assign riders to a closed session.','SESSION_CLOSED');
-    const zone=state.zones.find(item=>item.id===zoneId); assertEngine(zone,'Zone not found.','ZONE_NOT_FOUND');
-    const rider=state.riders.find(item=>item.id===riderId); assertEngine(rider,'Rider not found.','RIDER_NOT_FOUND');
-    assertEngine(rider.status==='active','Only active riders can receive assignments.','RIDER_INACTIVE');
-    const riderConflict=state.riderAssignments.find(item=>item.deliverySessionId===deliverySessionId && item.riderId===riderId && item.zoneId!==zoneId && ACTIVE_ASSIGNMENT_STATES.has(item.status));
-    assertEngine(!riderConflict,'A rider can only hold one active zone per delivery session.','RIDER_ZONE_CONFLICT');
-    const zoneConflict=state.riderAssignments.find(item=>item.deliverySessionId===deliverySessionId && item.zoneId===zoneId && item.riderId!==riderId && ACTIVE_ASSIGNMENT_STATES.has(item.status));
-    assertEngine(!zoneConflict,'This zone already has an active rider assignment.','ZONE_RIDER_CONFLICT');
-    let assignment=state.riderAssignments.find(item=>item.deliverySessionId===deliverySessionId && item.zoneId===zoneId && item.status!=='cancelled');
-    if(!assignment){assignment={id:engineId('assignment'),businessId:state.businessId,deliverySessionId,zoneId,riderId,status:'assigned',assignedAt:nowIso(),startedAt:null,completedAt:null};state.riderAssignments.push(assignment);}
-    else{assignment.riderId=riderId;assignment.status='assigned';assignment.assignedAt=nowIso();}
-    const orders=state.orders.filter(order=>order.deliverySessionId===deliverySessionId && order.zoneId===zoneId && order.status!=='completed');
-    assertEngine(orders.length>0,'The selected zone has no assignable orders.','ZONE_EMPTY');
-    orders.forEach((order,index)=>{order.riderId=riderId;order.deliverySequence=index+1;order.updatedAt=nowIso();const stop=state.deliveryStops.find(item=>item.orderId===order.id);if(stop){stop.riderId=riderId;stop.zoneId=zoneId;stop.sequence=index+1;stop.status=stop.status==='pending'?'ready':stop.status;}});
-    zone.riderId=riderId; rider.zone=zone.name;
-    addOperationalNotification({type:'orders',icon:'moped',title:'Rider assigned',desc:`${rider.name} · ${zone.name} · ${orders.length} stops`,nav:{name:'riderProfile',params:{id:riderId}},dedupeKey:`assignment:${assignment.id}:${riderId}`});
-    emitEngineEvent('assignment.created',{assignment,orderIds:orders.map(order=>order.id)}); return assignment;
-  });
-}
-function transitionAssignment(assignmentId,nextStatus){
-  return runEngineTransaction('transitionAssignment',()=>{
-    const assignment=findAssignment(assignmentId); assertEngine(assignment,'Rider assignment not found.','ASSIGNMENT_NOT_FOUND');
-    const previous=assignment.status; assertEngine((ASSIGNMENT_TRANSITIONS[previous]||[]).includes(nextStatus),`Invalid assignment transition: ${previous} → ${nextStatus}`,'ASSIGNMENT_TRANSITION_INVALID');
-    const orders=assignmentOrders(assignment);
-    if(nextStatus==='pickup'){
-      assertEngine(orders.every(order=>['readyForPickup','pickedUp','delivering','completed'].includes(order.status)),'All assigned orders must be ready before pickup can begin.','PICKUP_NOT_READY');
-      assignment.startedAt=nowIso();
-    }
-    if(nextStatus==='delivering'){
-      assertEngine(orders.every(order=>['pickedUp','delivering','completed'].includes(order.status)),'Every order must be picked up before delivery starts.','DELIVERY_PICKUP_INCOMPLETE');
-    }
-    if(nextStatus==='completed'){
-      assertEngine(orders.every(order=>order.status==='completed'),'Every assigned order must be completed before closing the assignment.','ASSIGNMENT_ORDERS_INCOMPLETE');
-      assignment.completedAt=nowIso();
-    }
-    assignment.status=nextStatus; assignment.updatedAt=nowIso(); emitEngineEvent('assignment.status_changed',{assignmentId,previous,nextStatus}); return assignment;
-  });
-}
-function recalculateStopSequence(assignmentId,orderedStopIds=[]){
-  return runEngineTransaction('recalculateStopSequence',()=>{
-    const assignment=findAssignment(assignmentId); assertEngine(assignment,'Assignment not found.','ASSIGNMENT_NOT_FOUND');
-    const stops=assignmentStops(assignment); const expected=new Set(stops.map(stop=>stop.id));
-    assertEngine(orderedStopIds.length===stops.length && orderedStopIds.every(id=>expected.has(id)),'Stop sequence must contain every assigned stop exactly once.','STOP_SEQUENCE_INVALID');
-    orderedStopIds.forEach((id,index)=>{const stop=findStop(id);stop.sequence=index+1;const order=state.orders.find(item=>item.id===stop.orderId);if(order) order.deliverySequence=index+1;});
-    emitEngineEvent('route.sequence_changed',{assignmentId,stopIds:orderedStopIds}); return assignmentStops(assignment);
-  });
-}
-function getOperationalSnapshot(){
-  const session=activeDeliverySession();
-  return {engineVersion:CEFFLO_ENGINE_VERSION,generatedAt:nowIso(),session,metrics:getTodayDashboardMetrics(),currentDeliveries:getCurrentDeliveries(),openIssues:state.issues.filter(item=>item.status!=='resolved'),assignments:state.riderAssignments.filter(item=>!session||item.deliverySessionId===session.id)};
-}
-function validateOperationalIntegrity(){
-  const errors=[]; const orderIds=new Set();
-  state.orders.forEach(order=>{if(orderIds.has(order.id)) errors.push(`Duplicate order ID: ${order.id}`);orderIds.add(order.id);if(order.riderId && !state.riders.some(rider=>rider.id===order.riderId)) errors.push(`Order ${order.id} references missing rider.`);if(order.deliverySessionId && !findSession(order.deliverySessionId)) errors.push(`Order ${order.id} references missing session.`);});
-  state.riderAssignments.forEach(assignment=>{if(!findSession(assignment.deliverySessionId)) errors.push(`Assignment ${assignment.id} references missing session.`);if(!state.riders.some(rider=>rider.id===assignment.riderId)) errors.push(`Assignment ${assignment.id} references missing rider.`);});
-  state.deliveryStops.forEach(stop=>{if(!state.orders.some(order=>order.id===stop.orderId)) errors.push(`Stop ${stop.id} references missing order.`);});
-  return {valid:errors.length===0,errors,checkedAt:nowIso()};
-}
-window.CEFFLO_ENGINE={
-  version:CEFFLO_ENGINE_VERSION,on:onEngineEvent,emit:emitEngineEvent,snapshot:getOperationalSnapshot,validate:validateOperationalIntegrity,
-  commands:{createDeliverySession,transitionDeliverySession,createOrder:createProductionOrder,assignZoneToRider,transitionAssignment,resequenceStops:recalculateStopSequence},
-  selectors:{activeDeliverySession,sessionOrders,getTodayDashboardMetrics,getCurrentDeliveries,assignmentOrders,assignmentStops}
-};
-
+// Flow 3 F3-12: the former "MILESTONE 3: CORE BUSINESS ENGINE" block (a
+// complete local operational engine -- sessions/orders/assignments/stops/
+// commands, its own event bus emitEngineEvent/onEngineEvent, transaction
+// wrapper runEngineTransaction) was removed outright, not refactored.
+// Verified this session, symbol by symbol: every command
+// (createDeliverySession/createProductionOrder/assignZoneToRider/
+// transitionAssignment/recalculateStopSequence/transitionDeliverySession)
+// and every selector/helper (findSession/findAssignment/findStop/
+// assignmentOrders/assignmentStops/addOperationalNotification/
+// getOperationalSnapshot/validateOperationalIntegrity) had zero call
+// sites anywhere outside this same block -- nothing in vendor/backend.js
+// or the live Vendor UI ever called any of it. Every real order/session/
+// assignment/zone action in this app goes through backend.js's actual
+// Supabase RPC wrappers. The base window.CEFFLO_ENGINE object is kept as
+// an empty stub because Milestone 4's still-live render-path cluster and
+// Milestone 6's still-live production/auth boot code both write further
+// properties onto it (window.CEFFLO_ENGINE.frontend/.production/.version)
+// as part of their own real, live code paths.
+window.CEFFLO_ENGINE={};
 
 
 /* ================= CEFFLO MILESTONE 4 — FRONTEND INTEGRATION =================
@@ -8267,38 +8069,17 @@ function requestFrontendRender(){
   requestFrontendRender.timer=setTimeout(()=>{ if(document.getElementById('screen')) render(); },40);
 }
 
-function ensureActiveSessionForUi(){
-  let session=activeDeliverySession();
-  if(!session){
-    session=window.CEFFLO_ENGINE.commands.createDeliverySession({deliveryDate:operationalDateKey(),name:'Today Delivery'});
-  }
-  return session;
-}
-function updateBusinessProfileCommand(values){
-  return runEngineTransaction('updateBusinessProfile',()=>{
-    Object.assign(state,values,{businessProfileCompleted:true});
-    syncNewAccountOnboarding();
-    try{localStorage.setItem('cefflo_business_profile',JSON.stringify(values));}catch(err){}
-    emitEngineEvent('business.updated',{businessId:state.businessId,values});
-    return values;
-  });
-}
-window.CEFFLO_ENGINE.commands.updateBusinessProfile=updateBusinessProfileCommand;
-window.CEFFLO_ENGINE.frontend={version:CEFFLO_FRONTEND_VERSION,status:FRONTEND_STATUS,selectors:FRONTEND_SELECTORS,refresh:requestFrontendRender};
-
-// Replace direct-write UI actions with command-backed integrations.
-ACTIONS.saveBusinessProfile=function(){
-  try{
-    const values={storeName:document.getElementById('bp_storeName')?.value.trim(),businessPhone:document.getElementById('bp_phone')?.value.trim(),businessEmail:document.getElementById('bp_email')?.value.trim(),businessAddress:document.getElementById('bp_address')?.value.trim(),operatingArea:document.getElementById('bp_area')?.value.trim()};
-    if(Object.values(values).some(v=>!v)) throw new Error(t('completeRequiredFields'));
-    window.CEFFLO_ENGINE.commands.updateBusinessProfile(values);toast(t('saved'),'success');navigate('settings');
-  }catch(err){toast(err.message,'error');}
-};
-
-['order.created','order.status_changed','assignment.created','assignment.status_changed','stop.status_changed','issue.opened','issue.resolved','business.updated','rider.created','session.status_changed'].forEach(eventName=>{
-  window.CEFFLO_ENGINE.on(eventName,payload=>{FRONTEND_STATUS.lastEvent={eventName,payload,at:new Date().toISOString()};requestFrontendRender();});
-});
-
+// Flow 3 F3-12: ensureActiveSessionForUi (zero callers anywhere),
+// updateBusinessProfileCommand, the window.CEFFLO_ENGINE.commands.
+// updateBusinessProfile/.frontend top-level writes, this section's own
+// ACTIONS.saveBusinessProfile override, and its dead event-registration
+// forEach (feeding FRONTEND_STATUS.lastEvent, itself write-only/never
+// read) were all part of Milestone 3's dead command layer and removed
+// together with it -- all confirmed zero live callers this session.
+// ACTIONS.saveBusinessProfile falls back to the honest pre-load stub
+// already defined earlier in this file; backend.js's real override
+// (update_business_profile RPC) replaces it once loaded, unchanged by
+// this removal.
 
 /* Flow 3 F3-12 truthfulness cleanup: the former "CEFFLO MILESTONE 5 --
    ROUTE INTELLIGENCE ENGINE" block (local zone-resolution, nearest-
@@ -8362,28 +8143,17 @@ backendRequest=async function(path,options={}){
   }catch(error){productionState.metrics.failures++;productionState.lastError=error.message;throw error;}
 };
 
-const OFFLINE_QUEUE_KEY='cefflo_production_sync_queue_v1';
-function restoreOfflineQueue(){try{state.syncOperations=JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY)||'[]');}catch{state.syncOperations=[];}productionState.syncQueueLength=state.syncOperations.length;}
-function saveOfflineQueue(){localStorage.setItem(OFFLINE_QUEUE_KEY,JSON.stringify(state.syncOperations));productionState.syncQueueLength=state.syncOperations.length;}
-function queueOfflineSync(reason='state_changed'){
-  const existing=state.syncOperations.find(item=>item.type==='full_state_sync'&&item.status==='pending');
-  if(existing){existing.updatedAt=new Date().toISOString();existing.reason=reason;}else state.syncOperations.push({id:engineId('sync'),type:'full_state_sync',status:'pending',reason,attempts:0,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
-  saveOfflineQueue();
-}
-async function flushOfflineQueue(){
-  if(!navigator.onLine||!productionConfigured()||!state.syncOperations.length)return false;
-  for(const operation of [...state.syncOperations]){
-    try{operation.attempts++;operation.updatedAt=new Date().toISOString();await syncOperationalStateToBackend();state.syncOperations=state.syncOperations.filter(item=>item.id!==operation.id);saveOfflineQueue();}
-    catch(error){operation.lastError=error.message;saveOfflineQueue();return false;}
-  }
-  return true;
-}
-const milestone6BaseSync=syncOperationalStateToBackend;
-syncOperationalStateToBackend=async function(){
-  if(!navigator.onLine){queueOfflineSync('offline');backendState.status='offline-queued';return false;}
-  try{return await milestone6BaseSync();}catch(error){queueOfflineSync('sync_failed');throw error;}
-};
-queueBackendSync=function(){if(!productionConfigured())return;clearTimeout(backendSyncTimer);backendSyncTimer=setTimeout(()=>syncOperationalStateToBackend().catch(()=>{}),450);};
+// Flow 3 F3-12: the local offline-sync-queue apparatus (restoreOfflineQueue/
+// saveOfflineQueue/queueOfflineSync/flushOfflineQueue, plus Milestone 6's
+// own syncOperationalStateToBackend/queueBackendSync overrides of
+// Milestone 2's originals) removed -- confirmed dead-in-practice:
+// state.syncOperations starts and stays empty on every real path (nothing
+// live ever pushes to it), so flushOfflineQueue's body never actually
+// reaches queueOfflineSync, and syncOperationalStateToBackend is
+// permanently shadowed by backend.js's own `async () => true;` override
+// regardless. Milestone 2's original syncOperationalStateToBackend/
+// queueBackendSync stubs (out of scope, untouched) remain as the
+// pre-backend.js-load fallback, unchanged in behavior by this removal.
 
 async function authRequest(path,payload){
   if(!productionConfigured())throw new Error('Supabase Auth is not configured.');
@@ -8392,7 +8162,11 @@ async function authRequest(path,payload){
 }
 function storeAuthSession(session){productionState.authSession=session||null;productionState.user=session?.user||null;if(session)localStorage.setItem('cefflo_auth_session',JSON.stringify(session));else localStorage.removeItem('cefflo_auth_session');window.CEFFLO?.setSession?.(session||null);}
 function restoreAuthSession(){try{const session=JSON.parse(localStorage.getItem('cefflo_auth_session')||'null');if(session?.access_token)storeAuthSession(session);}catch{}return productionState.authSession;}
-async function signInWithPassword({email,password}){const session=await authRequest('token?grant_type=password',{email,password});storeAuthSession(session);await hydrateOperationalStateFromBackend();return session;}
+// Flow 3 F3-12: signInWithPassword removed -- confirmed zero live callers
+// (the real login button, submitProductionLogin in Sprint 1.3 below,
+// reimplements the same steps directly via authRequest+storeAuthSession
+// rather than calling this). Not to be confused with signUpWithPassword
+// immediately below, which IS live (called by submitProductionSignup).
 async function signUpWithPassword({email,password,metadata={}}){const result=await authRequest(`signup?redirect_to=${encodeURIComponent(authRedirectUrl())}`,{email,password,data:metadata});if(result.access_token)storeAuthSession(result);return result;}
 async function refreshAuthSession(){const token=productionState.authSession?.refresh_token;if(!token)return null;const session=await authRequest('token?grant_type=refresh_token',{refresh_token:token});storeAuthSession(session);return session;}
 async function productionSignOut(){try{if(productionState.authSession?.access_token)await fetch(`${CEFFLO_RUNTIME_CONFIG.supabaseUrl}/auth/v1/logout`,{method:'POST',headers:{apikey:CEFFLO_RUNTIME_CONFIG.supabaseAnonKey,Authorization:`Bearer ${productionState.authSession.access_token}`}});}finally{window.CEFFLO_VENDOR?.stopRealtime?.();stopRiderGps();storeAuthSession(null);}}
@@ -8421,12 +8195,9 @@ async function updateAuthenticatedPassword(newPassword){
   return user;
 }
 
-async function uploadProductionFile({file,path,bucket=CEFFLO_RUNTIME_CONFIG.storageBucket,upsert=true}){
-  if(!file)throw new Error('A file is required.');if(!productionConfigured())throw new Error('Storage is not configured.');
-  const safePath=String(path||`${state.businessId}/${Date.now()}-${file.name||'file'}`).replace(/^\/+/, '');
-  const response=await fetch(`${CEFFLO_RUNTIME_CONFIG.supabaseUrl}/storage/v1/object/${bucket}/${safePath}`,{method:'POST',headers:{apikey:CEFFLO_RUNTIME_CONFIG.supabaseAnonKey,Authorization:`Bearer ${productionState.authSession?.access_token||CEFFLO_RUNTIME_CONFIG.supabaseAnonKey}`,'Content-Type':file.type||'application/octet-stream','x-upsert':String(upsert)},body:file});
-  if(!response.ok)throw new Error(await response.text()||'Storage upload failed.');return {bucket,path:safePath,publicUrl:`${CEFFLO_RUNTIME_CONFIG.supabaseUrl}/storage/v1/object/public/${bucket}/${safePath}`};
-}
+// Flow 3 F3-12: uploadProductionFile removed -- confirmed zero live
+// callers (console-only via window.CEFFLO_ENGINE.production.storage.upload;
+// not used by signup, the Business Logo flow, or anywhere else).
 
 // Flow 3 F3-12 truthfulness cleanup: the former local "Rider GPS" writer
 // read navigator.geolocation from whichever browser it ran in and wrote
@@ -8441,35 +8212,27 @@ async function uploadProductionFile({file,path,bucket=CEFFLO_RUNTIME_CONFIG.stor
 // here). stopRiderGps callers below are now plain no-ops.
 function stopRiderGps(){}
 
-function appendAuditLog(eventName,payload={}){
-  const entry={id:engineId('audit'),businessId:state.businessId,userId:productionState.user?.id||null,eventName,entityType:payload.orderId?'order':payload.assignmentId?'assignment':payload.riderId?'rider':'system',entityId:payload.orderId||payload.assignmentId||payload.riderId||null,beforeState:payload.before||null,afterState:payload.after||payload,metadata:{engineVersion:window.CEFFLO_ENGINE.version,online:navigator.onLine},createdAt:new Date().toISOString()};
-  state.auditLogs.push(entry);if(state.auditLogs.length>1000)state.auditLogs.splice(0,state.auditLogs.length-1000);
-  try{localStorage.setItem('cefflo_audit_logs_v1',JSON.stringify(state.auditLogs));}catch{}
-  if(productionConfigured()&&navigator.onLine)BackendRepository.upsert('audit_logs',entry).catch(()=>queueOfflineSync('audit_write_failed'));return entry;
-}
-function restoreAuditLogs(){try{state.auditLogs=JSON.parse(localStorage.getItem('cefflo_audit_logs_v1')||'[]');}catch{state.auditLogs=[];}}
-['session.created','session.status_changed','order.created','order.status_changed','assignment.created','assignment.status_changed','stop.status_changed','issue.opened','issue.resolved','route.recalculated','rider.location_updated'].forEach(name=>window.CEFFLO_ENGINE.on(name,payload=>appendAuditLog(name,payload)));
+// Flow 3 F3-12: appendAuditLog/restoreAuditLogs and their event-
+// registration forEach removed -- confirmed dead-in-practice (the events
+// they listened for were never emitted by anything live even before this
+// pass; their only registration call site, inside
+// initializeProductionIntegration, is removed below alongside them).
 
-function customerTrackingSnapshot(orderId){
-  const order=state.orders.find(item=>item.id===orderId);if(!order)return null;
-  const stop=state.deliveryStops.find(item=>item.orderId===order.id);const rider=state.riders.find(item=>item.id===order.riderId);const issue=state.issues.find(item=>item.orderId===order.id&&item.status!=='resolved');
-  return {orderId:order.id,status:order.status,customerName:order.customerName,zone:order.zone||state.zones.find(z=>z.id===order.zoneId)?.name||null,rider:rider?{id:rider.id,name:rider.name}:null,sequence:stop?.sequence||order.deliverySequence||null,estimatedArrivalAt:stop?.estimatedArrivalAt||order.estimatedArrivalAt||null,etaMinutes:minutesUntil(stop?.estimatedArrivalAt||order.estimatedArrivalAt),issue:issue?{type:issue.type,status:issue.status}:null,completedAt:order.completedAt||stop?.completedAt||null,podUrl:stop?.podUrl||order.podPhoto||null,updatedAt:order.updatedAt||order.createdAt};
-}
-function productionHealth(){const avg=productionState.metrics.requests?Math.round(productionState.metrics.totalLatencyMs/productionState.metrics.requests):0;productionState.lastHealthCheckAt=new Date().toISOString();return {version:CEFFLO_PRODUCTION_VERSION,configured:productionConfigured(),online:navigator.onLine,backendStatus:backendState.status,gpsStatus:productionState.gpsStatus,queueLength:state.syncOperations.length,requestCount:productionState.metrics.requests,failureCount:productionState.metrics.failures,averageLatencyMs:avg,lastSyncedAt:backendState.lastSyncedAt,lastGpsAt:productionState.lastGpsAt,integrity:window.CEFFLO_ENGINE.validate()};}
+// Flow 3 F3-12: customerTrackingSnapshot and productionHealth removed --
+// both confirmed zero live callers (console-only via
+// window.CEFFLO_ENGINE.production.tracking/.monitoring).
 
-window.addEventListener('online',()=>{productionState.online=true;flushOfflineQueue();});
+window.addEventListener('online',()=>{productionState.online=true;});
 window.addEventListener('offline',()=>{productionState.online=false;});
 window.addEventListener('beforeunload',()=>{stopRiderGps();});
 
 async function initializeProductionIntegration(){
-  restoreOfflineQueue();restoreAuditLogs();restoreAuthSession();
+  restoreAuthSession();
   await initializeProductionRepository();
-  if(productionConfigured()){await flushOfflineQueue();productionState.status='ready';}else productionState.status='configuration-required';
-  window.CEFFLO_ENGINE.production={version:CEFFLO_PRODUCTION_VERSION,config:CEFFLO_RUNTIME_CONFIG,state:productionState,auth:{signInWithPassword,signUpWithPassword,refreshAuthSession,signOut:productionSignOut,restore:restoreAuthSession},storage:{upload:uploadProductionFile},gps:{stop:stopRiderGps},sync:{flush:flushOfflineQueue,queue:queueOfflineSync},audit:{list:()=>[...state.auditLogs],append:appendAuditLog},tracking:{snapshot:customerTrackingSnapshot},monitoring:{health:productionHealth}};
-  window.CEFFLO_BACKEND.config=CEFFLO_RUNTIME_CONFIG;window.CEFFLO_BACKEND.sync=syncOperationalStateToBackend;
+  productionState.status=productionConfigured()?'ready':'configuration-required';
+  window.CEFFLO_ENGINE.production={version:CEFFLO_PRODUCTION_VERSION,config:CEFFLO_RUNTIME_CONFIG,state:productionState,auth:{signUpWithPassword,refreshAuthSession,signOut:productionSignOut,restore:restoreAuthSession},gps:{stop:stopRiderGps}};
   return productionState;
 }
-window.CEFFLO_ENGINE.version=CEFFLO_PRODUCTION_VERSION;
 
 
 /* ================= CEFFLO SPRINT 1.3 — FRONTEND AUTH INTEGRATION =================
