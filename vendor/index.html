@@ -4334,6 +4334,51 @@ function pageRunDetail(params){
   </div></div>`;
 }
 
+/* ===================== F3-09: NEED ATTENTION =====================
+   A single real exception list, built only from canonical sources -- no
+   local "attention" array is ever synthesized. Shares suggestedRunsState/
+   loadSuggestedRuns() with the Suggested Runs screen (its unplannable_
+   orders IS the canonical location/capacity exception list -- Flow 2's
+   propose_delivery_plan already classifies these reasons server-side;
+   duplicating that classification client-side would violate Master
+   Section 3). Open delivery issues and offline Riders are read directly
+   from real hydrated state. "Stuck/abnormal run" detection is honestly
+   omitted -- no canonical backend signal for it exists yet (it would
+   require an arbitrary client-side staleness threshold, exactly the kind
+   of invented business logic Master Section 0 forbids); flagged as a
+   real gap in the Flow 3 checkpoint report, not silently fabricated. */
+function pageNeedAttention(){
+  if(!suggestedRunsState.plan && !suggestedRunsState.loading && !suggestedRunsState.error) loadSuggestedRuns();
+  const locationLabels={location_unresolved:'Address not resolved',location_failed:'Address resolution failed',location_ambiguous:'Address ambiguous — needs review'};
+  const rows=[];
+  ((suggestedRunsState.plan?.unplannable_orders)||[]).forEach(u=>{
+    if(u.reason && u.reason.startsWith('location_')){
+      const ids=u.order_ids||(u.order_id?[u.order_id]:[]);
+      ids.forEach(orderId=>{
+        const order=state.orders.find(o=>o.backendId===orderId);
+        rows.push({icon:'alert',title:locationLabels[u.reason]||u.reason,detail:order?order.id:orderId,nav:order?{name:'orderDetail',params:{id:order.id}}:null});
+      });
+    }else{
+      rows.push({icon:'alert',title:'No compatible/sufficient Rider available',detail:`${(u.order_ids||[]).length} order(s)${u.group_key?` · ${u.group_key}`:''}`,nav:null});
+    }
+  });
+  state.issues.filter(i=>i.status!=='resolved').forEach(i=>{
+    const order=state.orders.find(o=>o.id===i.orderId);
+    rows.push({icon:'issue',title:'Delivery issue reported',detail:order?`${order.id} · ${i.type}`:i.type,nav:order?{name:'orderDetail',params:{id:order.id}}:null});
+  });
+  state.riders.filter(r=>r.status==='offline').forEach(r=>{
+    rows.push({icon:'riders',title:'Rider offline',detail:r.name,nav:{name:'riders',params:{}}});
+  });
+  const loading=suggestedRunsState.loading && !suggestedRunsState.plan;
+  return `<div class="module-page">${innerHeader('Need Attention')}<div class="content">
+    ${loading?`<div class="t-caption" style="color:var(--text-secondary);padding:12px 0;">Loading&hellip;</div>`:''}
+    ${rows.length?rows.map(item=>`<button class="card bordered" style="width:100%;text-align:left;margin-bottom:8px;padding:12px 14px;" ${item.nav?`data-nav="${item.nav.name}" data-navparams='${JSON.stringify(item.nav.params)}'`:''}>
+      <div class="t-body" style="font-weight:600;">${item.title}</div>
+      <div class="t-caption" style="margin-top:2px;">${item.detail}</div>
+    </button>`).join(''):(loading?'':`<div class="empty-state"><div class="es-icon">${ic('check')}</div><h3>Nothing needs attention</h3><p>Exceptions across orders, planning and Riders appear here.</p></div>`)}
+  </div></div>`;
+}
+
 function reconcileOperationalStore(){
   const today=operationalDateKey();
   if(state.orders.length && !state.deliverySessions.length){
@@ -4520,7 +4565,7 @@ function renderBottomNav(){
   }
   const isOrders = active==='orders';
   const isRiders = active==='riders' || active==='riderProfile' || active==='dispatchPlanner';
-  const isSettings = active==='settings' || ['zones','zoneDetail','activeRuns','runDetail','team','teamMemberDetail','helperDetail','workSessionDetail','businessProfile','language','notificationSettingsPage','reports','subscription','changePassword','privacyPolicy','termsOfService','appVersion','helpSupport'].includes(active);
+  const isSettings = active==='settings' || ['zones','zoneDetail','activeRuns','runDetail','needAttention','team','teamMemberDetail','helperDetail','workSessionDetail','businessProfile','language','notificationSettingsPage','reports','subscription','changePassword','privacyPolicy','termsOfService','appVersion','helpSupport'].includes(active);
   const isHome = active==='dashboard'||active==='capacityDetail';
   root.innerHTML = `
   <div class="bottom-nav">
@@ -5732,7 +5777,10 @@ async function loadSuggestedRuns(){
   }
 }
 function rerenderSuggestedRunsIfOpen(){
-  if(state.route && state.route.name==='suggestedRuns') render();
+  // F3-09: Need Attention shares this same fetch/plan (its unplannable_orders
+  // list is exactly the canonical exception list) -- re-render it too when
+  // it's the currently open screen, same as Suggested Runs itself.
+  if(state.route && (state.route.name==='suggestedRuns' || state.route.name==='needAttention')) render();
 }
 function pageSuggestedRuns(){
   if(!suggestedRunsState.plan && !suggestedRunsState.loading && !suggestedRunsState.error) loadSuggestedRuns();
@@ -7239,6 +7287,7 @@ const PAGES = {
   zoneDetail: pageZoneDetail,
   activeRuns: pageActiveRuns,
   runDetail: pageRunDetail,
+  needAttention: pageNeedAttention,
   team: pageTeam,
   teamMemberDetail: pageTeamMemberDetail,
   helperDetail: pageHelperDetail,
@@ -7542,7 +7591,7 @@ function pageSettingsProposed(){
         <div class="vs2-row"><span class="vs2-row-icon">${ic('moon')}</span><span><b>Dark Mode</b></span>${toggle(dark,'setVendorDarkMode','Dark Mode')}</div>
         <div class="vs2-row"><span class="vs2-row-icon">${ic('bell')}</span><span><b>Notifications</b></span>${toggle(vendorNotificationsEnabled,'toggleVendorNotifications','Notifications')}</div>
         <button class="vs2-row" data-nav="language"><span class="vs2-row-icon">${ic('globe')}</span><span><b>Language</b></span><span class="vs2-row-tail">English ${ic('chev')}</span></button>
-        ${row('user','Team','team')}${row('map',t('zones'),'zones')}${row('orders','Active Runs','activeRuns')}${row('report',t('reports'),'reports')}${row('card','Subscription Plan','subscription')}${row('help','Help & Support','helpSupport')}${row('privacy','Privacy & Terms','', 'openPrivacyTerms')}${row('info','About CEFFLO','appVersion')}
+        ${row('user','Team','team')}${row('map',t('zones'),'zones')}${row('orders','Active Runs','activeRuns')}${row('alert','Need Attention','needAttention')}${row('report',t('reports'),'reports')}${row('card','Subscription Plan','subscription')}${row('help','Help & Support','helpSupport')}${row('privacy','Privacy & Terms','', 'openPrivacyTerms')}${row('info','About CEFFLO','appVersion')}
       </section>
       <button class="vs2-signout" data-action="logoutConfirm">${ic('logout')}<span>Sign Out</span></button>
       <div class="vs2-build">CEFFLO v1.2.0</div>
