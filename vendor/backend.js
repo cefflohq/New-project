@@ -197,7 +197,11 @@
       // Grow V1 Flow 2 (A3, renamed under F2-13/D-03): real canonical
       // Motorcycle/Car/Van truth and per-Rider max_active_orders override,
       // replacing the vehicle_plate-only model Flow 1 found.
-      vehicleType: row.vehicle_type || 'motorcycle', maxActiveOrders: row.max_active_orders };
+      vehicleType: row.vehicle_type || 'motorcycle', maxActiveOrders: row.max_active_orders,
+      // Flow 3 F3-07 truthfulness fix: real join date for the Rider Profile
+      // screen, which previously referenced r.joined even though nothing
+      // ever set it (rendered literal "undefined" for every real Rider).
+      createdAt: row.created_at };
   }
   function mapZone(row) {
     return { id: row.id, name: row.name, status: row.status };
