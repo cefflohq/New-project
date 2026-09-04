@@ -1767,6 +1767,13 @@ body[data-vendor-theme="dark"] .vendor-settings-v2{
 }
 .vd2-action>span:first-child{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:11px;background:#FFF0F0;color:#E44F4F}
 .vd2-action svg{width:18px;height:18px}.vd2-action>b{font-size:12px;line-height:1.4;font-weight:600}.vd2-action>span:last-child{color:var(--v2-muted)}
+/* F3-02: Recent Orders -- Master's "Draft B" compact treatment, reusing
+   .vd2-action's proven geometry/border/shadow rather than inventing a new
+   visual language, with an added status-pill column. */
+.vd2-order-row{width:100%;min-height:58px;margin-bottom:9px;padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto 18px;align-items:center;gap:10px;border:1px solid var(--v2-line);border-radius:17px;background:var(--v2-card);text-align:left;box-shadow:0 4px 14px rgba(39,31,75,.035)}
+.vd2-order-row .vd2-order-main{min-width:0}
+.vd2-order-row .vd2-order-main b{display:block;font-size:13px;font-weight:700;color:var(--v2-text)}
+.vd2-order-row .vd2-order-main span{display:block;margin-top:2px;font-size:11px;color:var(--v2-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vd2-workload-card{overflow:hidden;border:1px solid var(--v2-line);border-radius:20px;background:var(--v2-card);box-shadow:0 5px 18px rgba(39,31,75,.04)}
 .vd2-workload-metrics{display:grid;grid-template-columns:.8fr 1.1fr 1.1fr;align-items:center;padding:15px 12px}
 .vd2-workload-metrics>div{min-width:0;padding:0 10px;border-left:1px solid var(--v2-line)}
@@ -3732,7 +3739,7 @@ const I18N = {
     status:"Status", somethingWentWrong:"Something went wrong", tryAgain:"Please try again. Your data has not been changed.", retry:"Retry", networkMessage:"Changes may not sync until you reconnect.",
     liveOps:"Live Operations", ridersActive:"riders active", ordersToday:"orders today",
     todaysOverview:"Today's Overview", totalOrders:"Total Orders", activeRiders:"Active Riders",
-    issues:"Issues", completed:"Completed", currentDeliveries:"Current Deliveries", seeAll:"See all",
+    issues:"Issues", completed:"Completed", currentDeliveries:"Current Deliveries", recentOrders:"Recent Orders", seeAll:"See all",
     actionRequired:"Action Required", eta:"ETA",
     searchOrders:"Search order, customer or phone", ongoing:"Ongoing", issue:"Issue",
     filter:"Filter", noOrdersFound:"No orders found", tryChanging:"Try changing your search or filters.",
@@ -3781,7 +3788,7 @@ const I18N = {
     orders:"Pesanan", riders:"Rider", operations:"Operasi", menu:"Menu", home:"Utama",
     liveOps:"Operasi Langsung", ridersActive:"rider aktif", ordersToday:"pesanan hari ini",
     todaysOverview:"Gambaran Hari Ini", totalOrders:"Jumlah Pesanan", activeRiders:"Rider Aktif",
-    issues:"Isu", completed:"Selesai", currentDeliveries:"Penghantaran Semasa", seeAll:"Lihat semua",
+    issues:"Isu", completed:"Selesai", currentDeliveries:"Penghantaran Semasa", recentOrders:"Pesanan Terkini", seeAll:"Lihat semua",
     actionRequired:"Perlu Tindakan", eta:"ETA",
     searchOrders:"Cari pesanan, pelanggan atau telefon", ongoing:"Sedang Berjalan", issue:"Isu",
     filter:"Tapis", noOrdersFound:"Tiada pesanan dijumpai", tryChanging:"Cuba tukar carian atau tapisan anda.",
@@ -3831,7 +3838,7 @@ const I18N = {
     orders:"订单", riders:"骑手", operations:"运营", menu:"菜单", home:"主页",
     liveOps:"实时运营", ridersActive:"骑手在线", ordersToday:"今日订单",
     todaysOverview:"今日概览", totalOrders:"订单总数", activeRiders:"在线骑手",
-    issues:"问题", completed:"已完成", currentDeliveries:"当前配送", seeAll:"查看全部",
+    issues:"问题", completed:"已完成", currentDeliveries:"当前配送", recentOrders:"最近订单", seeAll:"查看全部",
     actionRequired:"需处理事项", eta:"预计到达",
     searchOrders:"搜索订单、顾客或电话", ongoing:"进行中", issue:"问题",
     filter:"筛选", noOrdersFound:"未找到订单", tryChanging:"请尝试更改搜索或筛选条件。",
@@ -3881,7 +3888,7 @@ const I18N = {
     orders:"ஆர்டர்கள்", riders:"ரைடர்கள்", operations:"செயல்பாடுகள்", menu:"மெனு", home:"முகப்பு",
     liveOps:"நேரடி செயல்பாடு", ridersActive:"ரைடர்கள் செயலில்", ordersToday:"இன்றைய ஆர்டர்கள்",
     todaysOverview:"இன்றைய கண்ணோட்டம்", totalOrders:"மொத்த ஆர்டர்கள்", activeRiders:"செயலில் ரைடர்கள்",
-    issues:"சிக்கல்கள்", completed:"முடிந்தது", currentDeliveries:"தற்போதைய டெலிவரி", seeAll:"அனைத்தையும் காண்க",
+    issues:"சிக்கல்கள்", completed:"முடிந்தது", currentDeliveries:"தற்போதைய டெலிவரி", recentOrders:"சமீபத்திய ஆர்டர்கள்", seeAll:"அனைத்தையும் காண்க",
     actionRequired:"நடவடிக்கை தேவை", eta:"வருகை நேரம்",
     searchOrders:"ஆர்டர், வாடிக்கையாளர் அல்லது தொலைபேசி தேடுக", ongoing:"நடந்து கொண்டிருக்கிறது", issue:"சிக்கல்",
     filter:"வடிகட்டி", noOrdersFound:"ஆர்டர்கள் இல்லை", tryChanging:"தேடல் அல்லது வடிகட்டியை மாற்றவும்.",
@@ -7163,6 +7170,12 @@ function pageDashboardProposed(){
   // (zero is a valid, honest state for a new business) with real empty
   // states, never a fabricated floor or placeholder.
   const currentDeliveries=getCurrentDeliveries();
+  // F3-02 (final DoD reconciliation): Master Section 12 explicitly
+  // requires a "Recent Orders" component using the approved compact
+  // treatment -- this was entirely absent from the Dashboard (Current
+  // Deliveries only covers in-progress orders, a narrower, different
+  // concept). Real data, most-recently-created first, capped to 5.
+  const recentOrders=[...state.orders].sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)).slice(0,5);
   const workloadCard=getDashboardWorkloadCard();
   const capacity=workloadCard.capacity;
   const openWorkSession=(state.workforce?.workSessions||[]).find(session=>session.status==='open');
@@ -7214,6 +7227,14 @@ function pageDashboardProposed(){
       <section class="vd2-section vd2-actions">
         <div class="vd2-section-head"><h2>${t('actionRequired')} <em>${actions.length}</em></h2></div>
         ${actions.length?actions.map(a=>`<button class="vd2-action" data-nav="${a.nav}" data-navparams='${JSON.stringify(a.params||{})}'><span>${ic(a.icon)}</span><b>${a.text}</b>${ic('chev')}</button>`).join(''):`<div class="t-caption" style="padding:12px 0;color:var(--text-secondary);">Nothing needs attention right now.</div>`}
+      </section>
+      <section class="vd2-section">
+        <div class="vd2-section-head"><h2>${t('recentOrders')||'Recent Orders'}</h2><button data-nav="orders">${t('seeAll')}</button></div>
+        ${recentOrders.length?recentOrders.map(o=>`<button class="vd2-order-row" data-nav="orderDetail" data-navparams='{"id":"${o.id}"}'>
+          <span class="vd2-order-main"><b>${o.id}</b><span>${o.customer}${Array.isArray(o.items)&&o.items.length?` · ${o.items.length} item${o.items.length===1?'':'s'}`:''}</span></span>
+          ${statusChip(o.status==='issue'?'issue':(o.status==='completed'?'completed':'ongoing'))}
+          ${ic('chev')}
+        </button>`).join(''):`<div class="t-caption" style="padding:12px 0;color:var(--text-secondary);">No orders yet.</div>`}
       </section>
     </main>
   </div>`;
