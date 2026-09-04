@@ -97,6 +97,20 @@ auth/config plumbing (`authRequest`, `storeAuthSession`,
 `updateAuthenticatedPassword`) is the sole, real authentication system.
 `initializeSprint13()` is the app's literal boot statement.
 
+**Verified this session (final DoD reconciliation): no operational
+localStorage truth is ever visibly rendered.** `initializeSprint13()`'s
+boot sequence calls `initializeProductionIntegration()` first, which
+does overwrite `state.orders`/`riders`/`zones`/etc. from a separate,
+older (Milestone 1/2-era, out of scope per the Founder's "Milestone 3-6"
+framing) raw-localStorage cache via `restoreOperationalStore()` — but no
+`render()` call occurs before the subsequent `restoreProductionAuth()`
+step either succeeds (real `hydrateCanonicalWorkspace()` fully overwrites
+every one of those fields with backend truth before the first paint) or
+fails (`restoreProductionAuth()`'s own `catch` signs the Vendor out and
+shows the login screen instead — never the stale-populated dashboard).
+Traced both branches directly in the source; this stale-write mechanism
+is real but provably has zero visible effect in any real user path.
+
 **Session-expiry handling**: real API failures (e.g. an expired token)
 surface as an honest error toast via each action's own `catch` block —
 never a fake success. There is no automatic redirect-to-login on a 401;
@@ -285,6 +299,26 @@ accessible name at all; fixed once, benefiting every screen. Keyboard
 `:focus-visible` was already correctly implemented globally (a genuine,
 pre-existing accessibility feature, not something this pass added).
 
+**Second known, disclosed gap, found during the final DoD reconciliation
+and deliberately not fixed this Flow: Dark Mode is not app-wide.** The
+Settings "Dark Mode" toggle only re-themes two screen containers
+(`.vendor-dashboard-v2`, `.vendor-settings-v2` — `body[data-vendor-theme=
+"dark"] .vendor-dashboard-v2, body[data-vendor-theme="dark"]
+.vendor-settings-v2{...}`); every other screen in the app (Orders, Order
+Detail, Zones/Zone Detail, Riders, Team, Active Runs, Run Detail, Need
+Attention, and all others, including every screen built this Flow) reads
+only the global, light-only `:root` tokens with no dark override defined
+anywhere, and the page's own outer background is hardcoded
+(`body{background:#E9E8EE!important;}`) with no dark variant at all. A
+Vendor toggling Dark Mode sees two screens change and the rest of the app
+stay light. **Deliberately not fixed**, for the same reason as the
+desktop-layout gap plus one more: no visual/browser verification tool is
+available in this environment, so a token-level fix could not be
+confirmed to actually produce a legible, non-jarring result across dozens
+of screens without risking an unverifiable, possibly worse, half-dark
+appearance. A real fix needs either a dedicated visual QA pass or a
+future session with browser tooling — not attempted blind.
+
 ## 17. Features explicitly HOLD/POST-V1
 
 - Vendor→Cefflo subscription/payment — HOLD per Master §4/§21, untouched.
@@ -328,7 +362,7 @@ pre-existing accessibility feature, not something this pass added).
 | F3-10 Storefront/Appearance/Business Profile | **PASS** | No Storefront feature exists (nothing to build); Logo honestly disclosed |
 | F3-11 Account/Settings/Support | **PASS** | Change Password reachable; dead notification page removed; toggle persisted |
 | F3-12 Truthfulness/Legacy/Mock Cleanup | **PASS** | Legacy Milestone 3/4/6 apparatus resolved (§7); ~10 distinct fabrication/undefined-field bugs found and fixed across the session; `pageDeliveryExecution`/`pageCustomerTracking` and their exclusive dependencies removed outright after reconfirmed zero live reachability (no longer a remaining unreachable surface — see §7a) |
-| F3-13 Responsive/Accessibility | **PARTIAL** | Shared-header accessibility fixed; genuine desktop layout is a disclosed, deliberate non-goal this pass (see §16) |
+| F3-13 Responsive/Accessibility | **PARTIAL** | Shared-header accessibility fixed; genuine desktop layout and app-wide Dark Mode coherence are disclosed, deliberate non-goals this pass — both require visual verification this environment cannot provide (see §16) |
 | F3-14 E2E/Security | **PARTIAL** | Full backend/RPC-level regression + cross-tenant security suite passes (65/66, 6 pre-existing unrelated failures); interactive click-through E2E and session/network-resilience scenarios NOT verified — no browser-automation tool available in this environment |
 | F3-15 Contract Pack | **PASS** | This document |
 
