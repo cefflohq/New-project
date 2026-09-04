@@ -183,13 +183,17 @@ class RunBuilderSharedComponentTests(unittest.TestCase):
 
 
 class DormantMockPreservedTests(unittest.TestCase):
-    """Old mock behavior must not be called from any live Run Builder path,
-    but per the Founder's explicit instruction it may remain dormant rather
-    than being deleted."""
+    """Old mock behavior must not be called from any live Run Builder path.
+    syncZonesFromOrders remains dormant per the original Founder instruction;
+    assignZoneToRiderFromProfile was fully removed in a later session (see
+    openAssignOrdersToRider's own comment in vendor/index.html) once Run
+    Builder became the sole real entry point -- this assertion was updated
+    during Flow 3 F3-00 baseline reconciliation to match that, rather than
+    reintroducing a handler no live or dormant path references anymore."""
 
     def test_old_mock_functions_still_defined_but_unreferenced_by_new_code(self):
-        for name in ("syncZonesFromOrders", "assignZoneToRiderFromProfile"):
-            self.assertIn(f"function {name}", INDEX_HTML)
+        self.assertIn("function syncZonesFromOrders", INDEX_HTML)
+        self.assertNotIn("function assignZoneToRiderFromProfile", INDEX_HTML)
 
         new_code_functions = [
             "openRunBuilder", "renderRunBuilderBody", "confirmRunBuilder",
