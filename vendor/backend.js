@@ -52,8 +52,11 @@
   const setBusinessServiceArea = (businessId, lat, lng, radiusKm) => api.rpc('set_business_service_area', {
     p_business_id: businessId, p_origin_latitude: lat, p_origin_longitude: lng, p_radius_km: radiusKm
   });
+  // Flow 2 Founder closure: initiate_delivery_recovery is Vendor-authorized
+  // only -- the RPC no longer accepts a p_rider_id argument at all (dropped
+  // from the signature, not merely ignored).
   const initiateDeliveryRecovery = (orderId, reason, note, idempotencyKey) => api.rpc('initiate_delivery_recovery', {
-    p_order_id: orderId, p_reason: reason, p_rider_id: null, p_note: note || '', p_idempotency_key: idempotencyKey
+    p_order_id: orderId, p_reason: reason, p_note: note || '', p_idempotency_key: idempotencyKey
   });
   const setOrderLocationManual = (orderId, lat, lng) => api.rpc('set_order_location_manual', {
     p_order_id: orderId, p_latitude: lat, p_longitude: lng

@@ -1730,16 +1730,6 @@ function selectIssue(reason){
     detailHtml=`<div class="sop-list">This will be reported as an operational issue.</div><button class="btn btn-red" style="margin-top:14px" onclick="pauseForBreakdown()">Report Issue</button>`;
   }else if(reason==='Wrong address'){
     detailHtml=`<div class="field"><label>What's wrong with the address? (optional)</label><div class="input-wrap"><input id="updated-address" placeholder="e.g. Unit number missing"></div></div><button class="btn btn-purple" style="margin-top:10px" onclick="applyUpdatedAddress()">Submit Issue</button>`;
-  }else if(reason==='Customer changed time'){
-    detailHtml=`<div class="sop-list">This returns the delivery to the Vendor's planning queue for a replacement run. It does not book a specific future time slot.</div>
-    <div class="field"><label>Reason</label><select id="recov-reason" class="input-wrap" style="width:100%;padding:12px">
-      <option value="customer_unreachable">Customer unreachable</option>
-      <option value="address_problem">Address problem</option>
-      <option value="access_problem">Access problem</option>
-      <option value="rider_unable_to_proceed">Rider unable to proceed</option>
-    </select></div>
-    <div class="field"><label>Note (optional)</label><div class="input-wrap"><input id="recov-note" placeholder="What happened?"></div></div>
-    <button class="btn btn-purple" style="margin-top:10px" onclick="createRedelivery()">Return to Planning</button>`;
   }else{
     detailHtml=`<div class="sop-list">Reason: <b>${reason}</b><br>This will be logged for vendor follow-up.</div><button class="btn btn-red" style="margin-top:14px" onclick="submitIssue('${reason}')">Submit Issue</button>`;
   }
@@ -1748,7 +1738,6 @@ function selectIssue(reason){
 function applyDropOutcome(){const o=appState.currentIssueOrder;o.deliveryOutcome=document.getElementById('drop-outcome').value;closeIssueSheet();renderArrivedPod();showScreen('screen-arrivedpod');showToast('Outcome selected. Add note and POD photo.','success')}
 function pauseForBreakdown(){submitIssue('Rider vehicle breakdown');}
 function applyUpdatedAddress(){const v=document.getElementById('updated-address').value.trim();submitIssue('Wrong address', v||null);}
-function createRedelivery(){showToast('Backend not connected.','error');}
 
 /* ================= COMPLETE SESSION / SUMMARY ================= */
 function renderSummary(){

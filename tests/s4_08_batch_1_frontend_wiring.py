@@ -117,25 +117,30 @@ class RiderIssueWiringTests(unittest.TestCase):
 
     def test_redelivery_no_longer_falsely_claims_request_sent(self):
         self.assertNotIn("Re-delivery request sent for vendor approval", RIDER_HTML)
-        # Grow V1 Flow 2 (A6): createRedelivery is now genuinely wired to
-        # initiate_delivery_recovery, not a stub -- the index.html
-        # pre-declaration is the standard "Backend not connected." fallback
-        # every other real action in this codebase uses before backend.js
-        # loads and overrides it (matching confirmCsvImport,
-        # advancePreparationAction, etc.), and the real implementation in
-        # backend.js must call the real RPC, never claim local-only success.
-        fn = block(RIDER_HTML, r"function createRedelivery\(\)\{")
-        self.assertIn("Backend not connected.", fn)
-        self.assertIn("api.rpc('initiate_delivery_recovery'", RIDER_JS)
 
-    def test_redelivery_real_rpc_call_shape(self):
-        fn = next(
-            line for line in RIDER_JS.splitlines()
-            if "api.rpc('initiate_delivery_recovery'" in line
-        ) + "\n" + RIDER_JS[RIDER_JS.index("api.rpc('initiate_delivery_recovery'"):RIDER_JS.index("api.rpc('initiate_delivery_recovery'") + 300]
-        self.assertIn("p_rider_id", fn)
-        self.assertIn("p_reason", fn)
-        self.assertIn("p_idempotency_key", fn)
+    def test_recovery_is_vendor_only_not_wired_from_rider(self):
+        # Flow 2 Founder closure decision (supersedes A6's earlier Rider-
+        # initiated recovery wiring, asserted by this same test file until
+        # Grow V1 Flow 2's later narrowing): "reassignment/recovery
+        # ownership changes are Vendor-authorized only; Rider may report an
+        # issue/request assistance but must not independently release/
+        # reassign the order." initiate_delivery_recovery's signature no
+        # longer even accepts a Rider identity (p_rider_id was dropped
+        # entirely, not merely ignored) -- the Rider app must carry no call
+        # to it at all, and no createRedelivery/"Return to Planning"
+        # affordance implying the Rider can trigger it.
+        self.assertNotIn("api.rpc('initiate_delivery_recovery'", RIDER_JS)
+        self.assertNotIn("createRedelivery", RIDER_HTML)
+        self.assertNotIn("createRedelivery", RIDER_JS)
+        self.assertNotIn("Return to Planning", RIDER_HTML)
+        # 'Customer changed time' remains a selectable Rider issue reason
+        # (the Rider's legitimate "report an issue / request assistance"
+        # channel), but with no canonical backend action for it, it falls
+        # through to the same honest generic-reason handling as any other
+        # unmapped reason -- never a fabricated recovery affordance.
+        self.assertIn("selectIssue('Customer changed time')", RIDER_HTML)
+        self.assertNotIn("recov-reason", RIDER_HTML)
+        self.assertNotIn("recov-note", RIDER_HTML)
 
     def test_breakdown_no_longer_falsely_claims_assignment_paused(self):
         self.assertNotIn("Assignment paused. Waiting for vendor", RIDER_HTML)
