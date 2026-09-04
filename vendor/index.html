@@ -6204,182 +6204,26 @@ function startDeliveryForRider(riderId){
   toast('Starting delivery for a rider is not connected in Vendor yet.', 'error');
 }
 
-/* ===================== PAGE: DELIVERY EXECUTION ===================== */
-const deliveryExecState = { riderId:null, completedStops:[], mapAppChosen:null, issueCallAttempt:0 };
-function deliveringOrdersForRider(riderId){
-  return state.orders.filter(o=>o.riderId===riderId && o.status==='delivering');
-}
-function pageDeliveryExecution(params){
-  const riderId = params.id || deliveryExecState.riderId;
-  deliveryExecState.riderId = riderId;
-  const r = state.riders.find(x=>x.id===riderId);
-  const orders = deliveringOrdersForRider(riderId);
-  const remaining = orders.filter(o=>!deliveryExecState.completedStops.includes(o.id));
-  const current = remaining[0];
-  const stopNum = orders.length - remaining.length + 1;
-
-  if(!current){
-    return `
-    ${innerHeader(t('deliveryExecution'))}
-    <div class="content">
-      <div class="center-col" style="padding:40px 0">
-        <div style="width:48px;height:48px;color:var(--text-faint)">${ic('emptybox')}</div>
-        <h2 class="t-h1" style="margin-top:18px">No delivery stops available</h2>
-        <p class="t-caption" style="margin-top:6px">Delivery progress for ${r?r.name:'this rider'} is updated from authoritative Rider activity.</p>
-      </div>
-      <button class="btn btn-primary" data-nav="dashboard">${t('goToDashboard')}</button>
-    </div>`;
-  }
-
-  return `
-  ${innerHeader(t('deliveryExecution'))}
-  <div class="content">
-    <div class="card bordered" style="margin-bottom:16px">
-      <div class="row-between">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div class="avatar">${r.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</div>
-          <div><div class="order-id">${r.name}</div><div class="order-meta">${r.zone}</div></div>
-        </div>
-        ${statusChip('onTheWay')}
-      </div>
-    </div>
-
-    <div class="progress-track" style="margin-bottom:18px">
-      <div class="p-step"><div class="p-line"></div><div class="p-circle done">${ic('check')}</div><div class="p-label">${t('pickup')}</div></div>
-      <div class="p-step"><div class="p-line done"></div><div class="p-circle current">2</div><div class="p-label">${t('delivery')}</div></div>
-      <div class="p-step"><div class="p-line"></div><div class="p-circle">3</div><div class="p-label">${t('complete')}</div></div>
-    </div>
-
-    <div class="kpi-grid" style="margin-bottom:18px">
-      <div class="kpi-card"><div class="kpi-val">#${stopNum}</div><div class="kpi-label">${t('nextStop')}</div></div>
-      <div class="kpi-card"><div class="kpi-val">${current.eta}m</div><div class="kpi-label">${t('eta')}</div></div>
-      <div class="kpi-card"><div class="kpi-val">${remaining.length}</div><div class="kpi-label">${t('remaining')}</div></div>
-    </div>
-
-    <div class="card bordered" style="margin-bottom:16px">
-      <div class="row-between"><span class="order-id">${current.id}</span>${statusChip('delivering')}</div>
-      <div class="order-name">${current.customer}</div>
-      <div class="order-meta">${current.address}</div>
-      ${current.note?`<div class="order-meta" style="margin-top:4px">${ic('info')} ${current.note}</div>`:''}
-    </div>
-
-    <div class="btn-row" style="margin-bottom:10px">
-      <button class="btn btn-secondary" data-action="simCall" data-name="${current.customer}">${ic('call')} ${t('callBtn')}</button>
-      <button class="btn btn-secondary" data-action="openNavigateSheet" data-id="${current.id}">${ic('navpin')} ${t('navigate')}</button>
-    </div>
-    <button class="btn btn-secondary" style="margin-bottom:20px" data-action="openDeliveryIssueSheet" data-id="${current.id}">${t('reportIssue')}</button>
-
-    <button class="btn btn-primary" data-action="openCompleteStopSheet" data-id="${current.id}">
-      ${stopNum===orders.length ? t('slideComplete').replace('Slide to ','').replace('Leret untuk ','') : t('markDelivered')}
-    </button>
-
-  </div>`;
-}
-function openNavigateSheet(el){
-  if(deliveryExecState.mapAppChosen){
-    toast('Opening '+deliveryExecState.mapAppChosen+'…', 'success');
-    return;
-  }
-  openSheet(`
-    <div class="sheet-title">${t('openWith')}</div>
-    <div class="opt-row" data-action="chooseMapApp" data-app="Google Maps"><div class="opt-title">Google Maps</div></div>
-    <div class="opt-row" data-action="chooseMapApp" data-app="Waze"><div class="opt-title">Waze</div></div>
-    <div class="opt-row" data-action="chooseMapApp" data-app="Apple Maps"><div class="opt-title">Apple Maps</div></div>
-  `);
-}
-function chooseMapApp(el){
-  deliveryExecState.mapAppChosen = el.dataset.app;
-  const rider = state.riders.find(r=>r.id===deliveryExecState.riderId);
-  if(rider) rider.mapApp = el.dataset.app;
-  closeSheet();
-  toast('Opening '+el.dataset.app+'…', 'success');
-}
-function openDeliveryIssueSheet(el){
-  const orderId = el.dataset.id;
-  const reasons = [
-    ['Customer unreachable','unreachable'],['Wrong address','wrong'],['Sudden time change','time'],
-    ['Bike breakdown','bike'],['Packaging spill','spill'],['Vendor late','late']
-  ];
-  openSheet(`
-    <div class="sheet-title">${t('reportIssue')}</div>
-    ${reasons.map(r=>`<div class="opt-row" data-action="handleDeliveryIssue" data-id="${orderId}" data-reason="${r[1]}" data-label="${r[0]}">
-      <div class="opt-title">${r[0]}</div><span class="chev">${ic('chev')}</span>
-    </div>`).join('')}
-  `);
-}
-function handleDeliveryIssue(el){
-  if(el.dataset.reason === 'unreachable'){
-    openUnreachableGuidance(el.dataset.id);
-    return;
-  }
-  ACTIONS.confirmReportDeliveryIssue(el);
-}
-// Customer Unreachable: guidance for a real action the Vendor performs
-// themselves (their own phone call/message) -- the app makes no claim of
-// having contacted anyone. Only the explicit "Mark Issue" tap below is a
-// system-confirmed action, and only once the real backend RPC succeeds.
-function openUnreachableGuidance(orderId){
-  openSheet(`
-    <div class="sheet-title">${t('customerUnreachable')}</div>
-    <p class="t-body" style="color:var(--text-secondary);margin-bottom:16px">Try calling or messaging the customer directly using your own phone before reporting this issue.</p>
-    <button class="btn btn-primary" data-action="confirmReportDeliveryIssue" data-id="${orderId}" data-reason="unreachable" data-label="Customer unreachable">${t('markIssue')}</button>
-  `);
-}
-function openCompleteStopSheet(el){
-  const orderId = el.dataset.id;
-  openSheet(`
-    <div class="sheet-title">${t('proofDelivery')}</div>
-    <p class="t-body" style="color:var(--text-secondary);margin-bottom:14px">Delivery completion and proof of delivery must be submitted by the assigned Rider. This Vendor action is not connected yet.</p>
-    <button class="btn btn-primary" id="markDeliveredBtn" data-action="confirmMarkDelivered" data-id="${orderId}">${t('markDelivered')}</button>
-  `);
-}
-function confirmMarkDelivered(el){
-  // complete_delivery is Rider-authorized and requires that Rider's real POD.
-  // Vendor must neither impersonate the Rider nor create local delivery truth.
-  toast('Marking delivery as completed is not connected in Vendor yet.', 'error');
-}
-
-/* ===================== PAGE: CUSTOMER TRACKING ===================== */
-function pageCustomerTracking(params){
-  const o = state.orders.find(x=>x.id===params.id) || state.orders[0];
-  if(!o){
-    return `
-    <div class="content" style="padding-top:24px">
-      <div class="center-col" style="min-height:70vh;justify-content:center">
-        <div style="width:48px;height:48px;color:var(--text-faint);margin-bottom:14px">${ic('emptybox')}</div>
-        <h2 class="t-h2">${t('noOrdersYet')}</h2>
-        <p class="t-caption" style="margin-top:8px;text-align:center">${t('createFirstOrder')}</p>
-      </div>
-    </div>`;
-  }
-  const stageIdx = {readyForPickup:0, pickedUp:1, delivering:2, issue:2, completed:3}[o.status] ?? 0;
-  const stages = [t('orderReceived'), t('cooking'), t('riderDelivering'), t('delivered')];
-  return `
-  <div class="content" style="padding-top:24px">
-    <div class="center-col" style="margin-bottom:24px">
-      <div style="width:44px;height:44px;border-radius:12px;background:var(--primary);color:var(--on-primary);display:flex;align-items:center;justify-content:center;font-weight:700">C</div>
-      <h2 class="t-h1" style="margin-top:10px">${state.storeName}</h2>
-      <div class="t-caption">Order ${o.id}</div>
-    </div>
-    <div class="card bordered" style="margin-bottom:20px">
-      ${stages.map((s,i)=>`
-        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;${i<stages.length-1?'border-bottom:1px dashed var(--border)':''}">
-          <div class="p-circle ${i<stageIdx?'done':(i===stageIdx?'current':'')}" style="flex-shrink:0">${i<stageIdx?ic('check'):(i+1)}</div>
-          <span class="t-body" style="font-weight:${i===stageIdx?600:400}">${s}</span>
-        </div>`).join('')}
-    </div>
-    ${stageIdx<3 ? `
-    <div class="card bordered" style="margin-bottom:20px;background:var(--primary-soft);border:none">
-      <div class="t-body" style="font-weight:600">${o.riderName||'Your rider'} is delivering your order</div>
-      <div class="t-caption" style="margin-top:4px">${t('eta')} ${o.eta} min · 3 stops before you</div>
-    </div>` : `
-    <div class="card bordered" style="margin-bottom:20px;background:var(--success-soft);border:none">
-      <div class="t-body" style="font-weight:600;color:var(--success)">${t('deliveredSuccessfully')}</div>
-      <div style="width:100%;height:100px;background:var(--white);border-radius:12px;margin-top:10px;display:flex;align-items:center;justify-content:center;color:var(--text-faint)">${ic('camera')} POD photo</div>
-    </div>`}
-    <button class="btn" style="background:var(--success-soft);color:var(--success)" data-action="simWhatsapp" data-name="admin">${ic('whatsapp')} ${t('whatsappAdmin')}</button>
-  </div>`;
-}
+// Flow 3 F3-12 cleanup: pageDeliveryExecution and pageCustomerTracking
+// (plus their exclusive dependencies -- deliveryExecState,
+// deliveringOrdersForRider, openNavigateSheet, chooseMapApp,
+// openDeliveryIssueSheet, handleDeliveryIssue, openUnreachableGuidance,
+// openCompleteStopSheet, confirmMarkDelivered) were removed here.
+// Reconfirmed genuinely unreachable before removal: zero data-nav
+// triggers anywhere in this file for either 'deliveryExecution' or
+// 'customerTracking' (only their PAGES map registrations and inert i18n
+// label strings referenced them), and every one of the exclusive
+// dependency functions/state above had no call site outside this same
+// block. Both pages internally fabricated data if ever reached (a fake
+// current.eta/ "3 stops before you" line, a placeholder POD-photo box)
+// -- Active Runs/Run Detail (F3-06) and the real per-order status already
+// cover the legitimate underlying need with real data, so this was
+// removal, not reconciliation to canonical truth. Confirmed the
+// data-action="confirmReportDeliveryIssue" calls inside the removed
+// openUnreachableGuidance/handleDeliveryIssue were calls FROM this dead
+// code INTO the real, separately-live ACTIONS.confirmReportDeliveryIssue
+// handler -- that handler itself, and its real live call sites elsewhere
+// (Order Detail's own issue-report flow), are untouched.
 
 /* ===================== PAGE: REPORTS ===================== */
 const reportsUiState = { range:'thisWeek' };
@@ -7234,8 +7078,6 @@ const PAGES = {
   riderProfile: pageRiderProfile,
   pickupQueue: pagePickupQueue,
   pickupSession: pagePickupSession,
-  deliveryExecution: pageDeliveryExecution,
-  customerTracking: pageCustomerTracking,
   reports: pageReports,
   notifications: pageNotifications,
   settings: pageSettings,
@@ -7594,8 +7436,6 @@ const ACTIONS = {
   runBuilderToggleZone, runBuilderClearZoneFilters, runBuilderToggleOrder,
   runBuilderSelectRider, runBuilderSetWaveMode, runBuilderSelectWave,
   openVerifySheet, verifyCurrentOrder,
-  openNavigateSheet, chooseMapApp, openDeliveryIssueSheet, handleDeliveryIssue, openUnreachableGuidance,
-  openCompleteStopSheet, confirmMarkDelivered,
   setReportRange, openExportSheet, simulateExport,
   setNotifTab, markAllRead, openNotification,
   setVendorAppearance, setVendorDarkMode, toggleVendorNotifications,

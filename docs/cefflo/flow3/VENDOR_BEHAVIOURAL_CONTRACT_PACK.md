@@ -158,6 +158,28 @@ Run Builder already supports), not post-dispatch resequencing. **Flow 4
 must not build a Vendor-side resequencing feature** — this is intentional
 product/security design, not an implementation defect.
 
+### 7a. Unreachable legacy pages — removed, not merely disclosed
+
+`pageDeliveryExecution` and `pageCustomerTracking` (a separate, older
+generation from the Milestone 3/4/6 apparatus in §7) were confirmed to
+have **zero live navigation entry points anywhere in the app** — no
+`data-nav`/nav-object reference to either route existed outside their own
+`PAGES` map registrations and inert i18n label strings. Both internally
+fabricated data if ever reached (a fake `current.eta`/"3 stops before
+you" line, a placeholder POD-photo box, a stub "Mark Delivered" honest
+refusal whose own reachability had never actually been verified end-to-
+end by the tests that guarded it). Removed outright, along with every
+exclusive dependency: `deliveryExecState`, `deliveringOrdersForRider`,
+`openNavigateSheet`, `chooseMapApp`, `openDeliveryIssueSheet`,
+`handleDeliveryIssue`, `openUnreachableGuidance`, `openCompleteStopSheet`,
+`confirmMarkDelivered`. The real, separately-live
+`ACTIONS.confirmReportDeliveryIssue` handler (called by the removed dead
+code, but with its own independent live call sites in Order Detail's
+issue-report flow) was verified untouched. No live Vendor surface offers
+a "Mark Delivered" action of any kind — deliveries remain exclusively
+Rider-driven, matching Master's own architecture. This is not a remaining
+unreachable surface; it is gone.
+
 ## 8. Run/stops/events model
 
 A "Run" = one Rider's `rider_assignments` set within one
@@ -305,7 +327,7 @@ pre-existing accessibility feature, not something this pass added).
 | F3-09 Need Attention + Recovery UX | **PASS** | Built from scratch this Flow |
 | F3-10 Storefront/Appearance/Business Profile | **PASS** | No Storefront feature exists (nothing to build); Logo honestly disclosed |
 | F3-11 Account/Settings/Support | **PASS** | Change Password reachable; dead notification page removed; toggle persisted |
-| F3-12 Truthfulness/Legacy/Mock Cleanup | **PASS** | Legacy Milestone 3/4/6 apparatus resolved (§7); ~10 distinct fabrication/undefined-field bugs found and fixed across the session |
+| F3-12 Truthfulness/Legacy/Mock Cleanup | **PASS** | Legacy Milestone 3/4/6 apparatus resolved (§7); ~10 distinct fabrication/undefined-field bugs found and fixed across the session; `pageDeliveryExecution`/`pageCustomerTracking` and their exclusive dependencies removed outright after reconfirmed zero live reachability (no longer a remaining unreachable surface — see §7a) |
 | F3-13 Responsive/Accessibility | **PARTIAL** | Shared-header accessibility fixed; genuine desktop layout is a disclosed, deliberate non-goal this pass (see §16) |
 | F3-14 E2E/Security | **PARTIAL** | Full backend/RPC-level regression + cross-tenant security suite passes (65/66, 6 pre-existing unrelated failures); interactive click-through E2E and session/network-resilience scenarios NOT verified — no browser-automation tool available in this environment |
 | F3-15 Contract Pack | **PASS** | This document |
@@ -313,7 +335,7 @@ pre-existing accessibility feature, not something this pass added).
 ## Tests / Regressions
 
 Full local suite (against local disposable Supabase, never staging/
-Production): **65/66 non-frontend-static tests pass.** The 6 failures are
+Production): **66/67 non-frontend-static tests pass.** The 6 failures are
 the same pre-existing, unrelated frontend static-test failures documented
 since the Flow 2 closure report — unchanged in count, one fewer than the
 original 7 (one was fixed as a byproduct of this session's F3-06 Run
@@ -323,11 +345,19 @@ Builder work). New test files added this Flow: `f3_04_zone_edit_wiring.py`,
 `f3_10_11_truthfulness_and_zone_fabrication.py`,
 `f3_12_undefined_field_sweep.py`,
 `f3_12_legacy_milestone_apparatus_removal.py`,
-`f3_13_accessibility_shared_header.py`. All new backend RPC surfaces
-consumed this Flow (`rename_zone`, `set_zone_status`,
-`latest_rider_locations`) already had real cross-tenant DB-level denial
-tests from their original Flow 2 batches (`s4_06_batch_3_zones.py`,
-`f2_08_rider_location_backend.py`) — reconfirmed passing, not duplicated.
+`f3_13_accessibility_shared_header.py`,
+`f3_12_unreachable_pages_removed.py`. One pre-existing test
+(`s4_09_remediation_05_vendor_legacy_transitions.py`) needed a justified
+update after the §7a removal — its module-level checks depended directly
+on the now-removed `confirmMarkDelivered`/`openCompleteStopSheet`
+functions; the security/truthfulness invariants it protected (no
+fabricated Rider identity, no POD simulation, no direct-table completion
+bypass) were preserved and reframed as whole-file checks rather than
+deleted. All new backend RPC surfaces consumed this Flow (`rename_zone`,
+`set_zone_status`, `latest_rider_locations`) already had real cross-tenant
+DB-level denial tests from their original Flow 2 batches
+(`s4_06_batch_3_zones.py`, `f2_08_rider_location_backend.py`) —
+reconfirmed passing, not duplicated. `test_environment_guard.py`: 30/30.
 
 ## Known limitations (no hidden failures)
 

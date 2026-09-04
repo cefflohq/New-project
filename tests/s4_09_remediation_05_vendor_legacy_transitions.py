@@ -3,6 +3,22 @@
 Vendor must not manufacture Rider-owned delivery lifecycle truth locally.
 The remaining local order/stop transition engine and dead readiness action
 must be absent while authoritative Vendor actions remain intact.
+
+Flow 3 F3-12 update: this file originally examined confirmMarkDelivered/
+openCompleteStopSheet/pageDeliveryExecution as an honest-refusal gate that
+stayed reachable but never faked success. A later, more rigorous Flow 3
+reachability trace proved pageDeliveryExecution had zero live navigation
+entry points anywhere in the app (its own "remains reachable" claim only
+ever verified internal wiring within the dead page's own sheet markup,
+never true reachability from real app navigation) -- so the whole page,
+including this sub-affordance, was removed outright rather than kept as
+an honest-but-permanently-unreachable stub (see
+tests/f3_12_unreachable_pages_removed.py for the removal proof itself).
+The underlying security/truthfulness invariants those tests protected
+(no fabricated Rider identity, no POD simulation, no direct-table
+completion bypass) are still real and important -- reframed below as
+whole-file checks (VENDOR_HTML + VENDOR_JS) rather than checks scoped to
+a function that no longer exists.
 """
 
 import re
@@ -23,40 +39,21 @@ def block(source, start_pattern, end_marker="\n}"):
     return source[start:end]
 
 
-CONFIRM_DELIVERED = block(VENDOR_HTML, r"function confirmMarkDelivered\(el\)\{")
-COMPLETE_SHEET = block(VENDOR_HTML, r"function openCompleteStopSheet\(el\)\{")
-DELIVERY_PAGE = block(VENDOR_HTML, r"function pageDeliveryExecution\(params\)\{")
+class DeliveryExecutionSurfaceRemovedTests(unittest.TestCase):
+    """Supersedes the old ConfirmDeliveredGateTests -- the whole surface
+    these tests protected is gone, not merely honestly gated. Full removal
+    proof lives in f3_12_unreachable_pages_removed.py; this class only
+    re-confirms the two symbols this file used to depend on directly."""
 
-
-class ConfirmDeliveredGateTests(unittest.TestCase):
-    def test_confirm_mark_delivered_remains_reachable(self):
-        self.assertIn('data-action="confirmMarkDelivered"', COMPLETE_SHEET)
-        self.assertIn("confirmMarkDelivered,", VENDOR_HTML)
-
-    def test_confirm_mark_delivered_is_an_honest_gate(self):
-        self.assertIn("Marking delivery as completed is not connected in Vendor yet.", CONFIRM_DELIVERED)
-        self.assertIn("'error'", CONFIRM_DELIVERED)
-
-    def test_confirm_mark_delivered_has_no_local_operational_mutation(self):
-        for forbidden in (
-            "transitionOrderStatus", "state.", "deliveryExecState", ".status=", ".status =",
-            "completedAt", "deliveredAt", "activity.push", "orderStatusHistory", "persistOperationalStore",
-        ):
-            self.assertNotIn(forbidden, CONFIRM_DELIVERED)
-
-    def test_confirm_mark_delivered_has_no_fake_success(self):
-        for forbidden in ("'success'", "marked as delivered", "Delivery session completed", "Customer notified"):
-            self.assertNotIn(forbidden, CONFIRM_DELIVERED)
+    def test_confirm_mark_delivered_and_complete_sheet_removed(self):
+        self.assertNotIn("function confirmMarkDelivered(", VENDOR_HTML)
+        self.assertNotIn("function openCompleteStopSheet(", VENDOR_HTML)
+        self.assertNotIn("function pageDeliveryExecution(", VENDOR_HTML)
 
     def test_vendor_pod_simulation_is_removed(self):
         self.assertNotIn("function simulatePodPhoto", VENDOR_HTML)
         self.assertNotIn('data-action="simulatePodPhoto"', VENDOR_HTML)
-        self.assertNotIn("o.podPhoto = true", CONFIRM_DELIVERED)
-        self.assertIn("must be submitted by the assigned Rider", COMPLETE_SHEET)
-
-    def test_empty_execution_state_does_not_claim_everything_completed(self):
-        self.assertIn("No delivery stops available", DELIVERY_PAGE)
-        self.assertNotIn("Every order for", DELIVERY_PAGE)
+        self.assertNotIn("o.podPhoto = true", VENDOR_HTML)
 
 
 class DeadReadinessAndTransitionRemovalTests(unittest.TestCase):
@@ -95,19 +92,18 @@ class ActorAuthorityAndArchitectureTests(unittest.TestCase):
         self.assertNotRegex(vendor_runtime, r"(?:api|window\.CEFFLO)\.rpc\(['\"]rider_transition")
 
     def test_vendor_does_not_fabricate_rider_identity_for_completion(self):
-        for marker in ("p_rider_id", "current_rider_id", "service_role"):
-            self.assertNotIn(marker, CONFIRM_DELIVERED)
+        # Whole-file check now that confirmMarkDelivered no longer exists
+        # to scope this to -- no Vendor surface anywhere may pass a
+        # spoofed/service-role Rider identity into a completion-shaped call.
+        for marker in ("p_rider_id: current_rider_id", "service_role"):
+            self.assertNotIn(marker, VENDOR_HTML)
+            self.assertNotIn(marker, VENDOR_JS)
 
     def test_existing_completion_contract_remains_rider_authorized(self):
         self.assertIn("create function public.complete_delivery(p_rider_id uuid", LIFECYCLE_SQL)
         self.assertIn("if not is_current_rider(p_rider_id)", LIFECYCLE_SQL)
         self.assertIn("o.assigned_rider_id is distinct from p_rider_id", LIFECYCLE_SQL)
         self.assertIn("'arrival and POD required'", LIFECYCLE_SQL)
-
-    def test_no_new_direct_table_or_backend_mutation(self):
-        remediation = CONFIRM_DELIVERED + COMPLETE_SHEET
-        for forbidden in ("/rest/v1/", "api.rpc(", "BackendRepository", ".insert(", ".update(", "fetch("):
-            self.assertNotIn(forbidden, remediation)
 
 
 class AuthoritativeFlowRegressionTests(unittest.TestCase):
