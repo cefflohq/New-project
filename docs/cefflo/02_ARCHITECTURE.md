@@ -1,5 +1,11 @@
 # CEFFLO --- ARCHITECTURE
 
+Fuller canonical architecture doctrine (target multi-client end-state
+incl. Vendor Flutter/Rider Flutter): `docs/cefflo/sot/02_ARCHITECTURE.md`
+(2026-09-04). Current live stack remains PWA-first per AR-01/AR-02
+below; see `docs/cefflo/05_DECISIONS.md` D-13 and D-23 for Flutter
+stage-gating.
+
 ## AR-00 System Model
 
 One secure backend supports multiple Cefflo clients.

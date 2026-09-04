@@ -9,6 +9,8 @@ documentation, marketing, product design and implementation\
 or CX direction that conflicts with this document\
 **Version:** 2026-09-03
 
+**SUPERSEDED-BY-NEWER-FOUNDER-DOCTRINE NOTICE (added during 2026-09-04 reconciliation):** A newer, more granular Founder-approved SOT set now supersedes this file for brand/product/UI doctrine: see `docs/cefflo/sot/00_INDEX.md` and specifically `docs/cefflo/sot/05_BRAND_BRAIN.md` (Brand Brain) and `docs/cefflo/sot/01_PRODUCT_TRUTH.md` (Product Truth). This file is substantially consistent with that newer set and is retained for historical continuity and as a single-file reference — where the two differ, `docs/cefflo/sot/` wins per the latest-Founder-decision rule. Do not delete this file.
+
 ------------------------------------------------------------------------
 
 ## 0. AUTHORITY AND GOVERNANCE

@@ -21,6 +21,7 @@ for Codex's full operating rules.
 -   GitHub `main` is canonical code SOT unless Founder explicitly
     approves another baseline.
 -   Canonical docs live in `docs/cefflo/`.
+-   The current canonical Founder-approved SOT root is `docs/cefflo/sot/00_INDEX.md` (2026-09-04); it supersedes `docs/cefflo/CEFFLO_BRAND_BRAIN.md` for brand/product/architecture doctrine per the same layering this file already describes above.
 -   Do not treat old exports, prototypes, screenshots, duplicate HTML
     files, historical deployments, or local snapshots as SOT without
     verification.
@@ -53,6 +54,8 @@ acceptance criteria.
 -   PWA/cache/version/offline → `15_PWA.md`
 -   QA/release/go-live → `16_QA_RELEASE.md`
 -   Codex/Claude/VPS/Remote workflow → `17_AI_WORKFLOW.md`
+-   Full canonical knowledge index → `docs/cefflo/sot/00_INDEX.md`
+-   Marketing/growth knowledge → `docs/cefflo/sot/marketing/00_MARKETING_KNOWLEDGE_PACK_INDEX.md`
 
 Load multiple domain docs only when the task genuinely crosses those
 contracts.

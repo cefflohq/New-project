@@ -167,3 +167,12 @@ separate backend behavior only when genuinely required. The Vendor sales/order
 page is required and feeds customer orders into the Vendor's Cefflo workflow.
 External integrations are implemented only when required for functional Stage
 4 or security/release requirements.
+
+## D-23 Knowledge Reconciliation (2026-09-04)
+
+A newer, Founder-approved, more granular SOT pack was reconciled into the repo at `docs/cefflo/sot/` on 2026-09-04 (see `docs/cefflo/sot/00_INDEX.md`). It supersedes `docs/cefflo/CEFFLO_BRAND_BRAIN.md` for brand/product/architecture doctrine (that file is retained, marked superseded, not deleted). Two clarifications from this reconciliation:
+
+1. The new Architecture/Vendor-Web/Rider-Flutter-Master doctrine names Vendor Flutter and Rider Flutter as target first-class clients in Cefflo's canonical multi-client architecture. This describes the TARGET end-state, not a change to build sequencing. D-13's stage-gating for native Rider Flutter remains in force: it is a FUTURE capability per the Capability Truth States system, and its own source master (`docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md`) is self-labeled "Founder Review Required" with an unchecked Definition of Done. No Vendor Flutter master exists in this repo yet.
+2. `docs/cefflo/sot/07_BUSINESS_LAUNCH_COMMERCIAL.md` (commercial/billing/go-live governance) is a new layer complementary to `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md` (frozen V1 product/feature scope, 2026-09-03) — the two are not duplicates and neither supersedes the other.
+
+Open gap surfaced by this reconciliation (not resolved, flagged for Founder attention): no Cefflo Pricing Master exists anywhere in this repository or in the reconciled knowledge pack. `docs/cefflo/sot/07_BUSINESS_LAUNCH_COMMERCIAL.md` §4 requires pricing to come from a Founder-approved Pricing Master, which does not yet exist.

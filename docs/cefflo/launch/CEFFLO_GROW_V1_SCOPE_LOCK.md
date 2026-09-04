@@ -4,6 +4,7 @@
 **Baseline:** `staging @ 9e7ea2dae61deaaee068f156d4b0086d7fade14d`\
 **Detailed evidence:** `docs/cefflo/audits/CEFFLO_GROW_V1_SCOPE_LOCK_AUDIT_REPORT.md`\
 **Brand/positioning authority:** `docs/cefflo/CEFFLO_BRAND_BRAIN.md`\
+**Commercial/launch governance authority:** `docs/cefflo/sot/07_BUSINESS_LAUNCH_COMMERCIAL.md` (complementary — this file remains the frozen V1 feature-scope lock; the sot/ file governs commercial/billing/go-live process).\
 **Revision:** 2026-09-03 — incorporates the Founder-approved `docs/cefflo/tasks/CEFFLO_GROW_V1_VEHICLE_CAPACITY_SCOPE_ADDENDUM.md` and accompanying Founder Gate decisions (vehicle/capacity, Sheets/Drive reclassification, optimization architecture, CSV/Excel and Operations/Helper direction, Reschedule and ETA scope). Original audit evidence preserved; see §11a, §12, §22 for what changed.\
 **Final revision:** 2026-09-03 — **SCOPE FREEZE.** Incorporates the Founder's final scope-freeze decisions: Reschedule/Recovery required product behavior locked (§16, §22); Optimization Engine locked to hybrid deterministic architecture (§12); Operations/Helper confirmed to reuse existing Core Team/auth/invitation plumbing rather than building a competing identity system (§15); order/delivery-level vehicle compatibility promoted from a deferred recommendation to REQUIRED V1 (§4, §11a). See §22 and §23 for the full resolution record.
 

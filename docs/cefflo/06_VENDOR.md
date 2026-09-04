@@ -1,5 +1,10 @@
 # CEFFLO --- VENDOR PWA
 
+Fuller canonical Vendor Web/Desktop doctrine:
+`docs/cefflo/sot/03_VENDOR_WEB_DESKTOP.md`; exit contract:
+`docs/cefflo/flow3/VENDOR_BEHAVIOURAL_CONTRACT_PACK.md` (Flow 3,
+complete).
+
 ## V-00 Purpose
 
 Vendor PWA is the operational cockpit for the business — its owner

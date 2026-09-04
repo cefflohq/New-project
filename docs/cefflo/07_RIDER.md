@@ -1,5 +1,9 @@
 # CEFFLO --- RIDER PWA
 
+Current section describes the LIVE Rider PWA. Future target direction
+(NOT YET implemented, Founder review pending):
+`docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md`.
+
 ## RI-00 Purpose
 
 Rider PWA executes the vendor's delivery plan.

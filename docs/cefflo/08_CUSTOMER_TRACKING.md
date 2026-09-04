@@ -1,5 +1,8 @@
 # CEFFLO --- CUSTOMER TRACKING
 
+Fuller canonical Customer Tracking doctrine:
+`docs/cefflo/sot/04_CUSTOMER_TRACKING.md`.
+
 ## CT-00 Purpose
 
 Give customers clear delivery visibility without requiring an account.
