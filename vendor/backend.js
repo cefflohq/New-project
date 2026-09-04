@@ -24,7 +24,11 @@
   const updateRiderDetails = input => api.rpc('update_rider_details', {
     p_rider_id: input.riderId, p_name: input.name ?? null, p_phone: input.phone ?? null,
     p_vehicle_plate: input.vehiclePlate ?? null, p_vehicle_type: input.vehicleType ?? null,
-    p_capacity_override: input.capacityOverride ?? null
+    // Flow 2 Canonical Backend Completion Master, D-03: canonical field
+    // name is max_active_orders (nullable integer; null = fall back to
+    // the vehicle-type default). Renamed from capacity_override -- same
+    // semantics, same RPC parameter position.
+    p_max_active_orders: input.maxActiveOrders ?? null
   });
   const updateOrderDetails = input => api.rpc('update_order_details', {
     p_order_id: input.orderId, p_customer_name: input.customerName ?? null,
@@ -175,10 +179,10 @@
   }
   function mapRider(row) {
     return { id: row.id, name: row.name, phone: row.phone, plate: row.vehicle_plate || '—', status: row.status === 'inactive' ? 'offline' : row.status, zone: 'Unassigned', availabilityStatus: row.availability_status,
-      // Grow V1 Flow 2 (A3): real canonical Motorcycle/Car/Van truth and
-      // per-Rider capacity override, replacing the vehicle_plate-only
-      // model Flow 1 found.
-      vehicleType: row.vehicle_type || 'motorcycle', capacityOverride: row.capacity_override };
+      // Grow V1 Flow 2 (A3, renamed under F2-13/D-03): real canonical
+      // Motorcycle/Car/Van truth and per-Rider max_active_orders override,
+      // replacing the vehicle_plate-only model Flow 1 found.
+      vehicleType: row.vehicle_type || 'motorcycle', maxActiveOrders: row.max_active_orders };
   }
   function mapZone(row) {
     return { id: row.id, name: row.name, status: row.status };
@@ -594,10 +598,10 @@
   confirmEditRiderVehicle = async function (el) {
     try {
       const vehicleType = document.getElementById('erv_vehicle_type')?.value;
-      const capacityRaw = document.getElementById('erv_capacity')?.value.trim();
-      const capacityOverride = capacityRaw ? Number(capacityRaw) : null;
-      if (capacityRaw && (!Number.isFinite(capacityOverride) || capacityOverride <= 0)) throw new Error('Capacity must be a positive number.');
-      await updateRiderDetails({ riderId: el.dataset.id, vehicleType, capacityOverride });
+      const maxActiveOrdersRaw = document.getElementById('erv_capacity')?.value.trim();
+      const maxActiveOrders = maxActiveOrdersRaw ? Number(maxActiveOrdersRaw) : null;
+      if (maxActiveOrdersRaw && (!Number.isFinite(maxActiveOrders) || maxActiveOrders <= 0)) throw new Error('Capacity must be a positive number.');
+      await updateRiderDetails({ riderId: el.dataset.id, vehicleType, maxActiveOrders });
       await hydrateCanonicalWorkspace();
       closeSheet(); render(); toast('Rider vehicle/capacity updated', 'success');
     } catch (error) { toast(error.message || 'Unable to update rider', 'error'); }

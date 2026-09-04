@@ -51,19 +51,19 @@ with psycopg.connect(target.database_url) as conn:
             "insert into business_members(business_id,user_id,role) values(%s,%s,'owner'),(%s,%s,'owner')",
             (business_a, owner_a, business_b, owner_b),
         )
-        # capacity_override=100 (S4-11 Batch 3, Grow V1 Flow 2): this test
+        # max_active_orders=100 (S4-11 Batch 3/F2-13, Grow V1 Flow 2): this test
         # accumulates many separate build_rider_run calls onto the same two
         # riders across its full run (all-or-nothing, idempotency, multi-
         # rider mechanics), not the separate vehicle/capacity eligibility
         # feature -- default motorcycle capacity (6) would otherwise cap
         # what the later scenarios in this file can construct.
         cur.execute(
-            "insert into riders(business_id,auth_user_id,name,phone,status,capacity_override) values(%s,%s,'Ali',%s,'active',100) returning id",
+            "insert into riders(business_id,auth_user_id,name,phone,status,max_active_orders) values(%s,%s,'Ali',%s,'active',100) returning id",
             (business_a, rider1_user, f"+60{uuid.uuid4().int % 10**9:09d}"),
         )
         ali = cur.fetchone()[0]
         cur.execute(
-            "insert into riders(business_id,auth_user_id,name,phone,status,capacity_override) values(%s,%s,'Abu',%s,'active',100) returning id",
+            "insert into riders(business_id,auth_user_id,name,phone,status,max_active_orders) values(%s,%s,'Abu',%s,'active',100) returning id",
             (business_a, rider2_user, f"+60{uuid.uuid4().int % 10**9:09d}"),
         )
         abu = cur.fetchone()[0]

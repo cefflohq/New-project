@@ -6610,7 +6610,7 @@ function pageTeamMemberDetail(params){
         <div class="stat-inline"><span class="label">Phone</span><span class="val">${rider.phone}</span></div>
         <div class="stat-inline"><span class="label">Vehicle plate</span><span class="val">${rider.plate}</span></div>
         <div class="stat-inline"><span class="label">Vehicle type</span><span class="val">${vehicleLabel}</span></div>
-        <div class="stat-inline"><span class="label">Capacity</span><span class="val">${rider.capacityOverride||defaultCapacity} active stops${rider.capacityOverride?' (custom)':' (default)'}</span></div>
+        <div class="stat-inline"><span class="label">Capacity</span><span class="val">${rider.maxActiveOrders||defaultCapacity} active stops${rider.maxActiveOrders?' (custom)':' (default)'}</span></div>
         <div class="stat-inline"><span class="label">Status</span><span class="val">${rider.status}</span></div>
       </div>
       <button class="btn btn-secondary" style="width:100%;margin-top:8px;" data-action="openEditRiderVehicle" data-id="${rider.id}">Edit Vehicle & Capacity</button>
@@ -6630,7 +6630,7 @@ function openEditRiderVehicle(el){
         <option value="van" ${rider.vehicleType==='van'?'selected':''}>Van</option>
       </select>
     </div>
-    <div class="field"><label>Capacity override (blank = vehicle default)</label><input id="erv_capacity" type="number" min="1" value="${rider.capacityOverride||''}" placeholder="e.g. 10"></div>
+    <div class="field"><label>Capacity override (blank = vehicle default)</label><input id="erv_capacity" type="number" min="1" value="${rider.maxActiveOrders||''}" placeholder="e.g. 10"></div>
     <button class="btn btn-primary" style="width:100%" data-action="confirmEditRiderVehicle" data-id="${rider.id}">Save</button>`);
 }
 function confirmEditRiderVehicle(el){ toast('Backend not connected.', 'error'); }

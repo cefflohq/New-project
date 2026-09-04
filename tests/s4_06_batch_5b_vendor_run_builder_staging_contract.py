@@ -63,7 +63,7 @@ with psycopg.connect(target.database_url) as conn:
             "insert into business_members(business_id,user_id,role) values(%s,%s,'owner')",
             (business, owner_a),
         )
-        # capacity_override=100 (S4-11 Batch 3, Grow V1 Flow 2): this
+        # max_active_orders=100 (S4-11 Batch 3/F2-13, Grow V1 Flow 2): this
         # contract accumulates many separate build_rider_run/assign_rider
         # calls onto these two riders across its full run (zone/session/
         # eligibility reconciliation, batches up to 20 orders plus solo
@@ -72,12 +72,12 @@ with psycopg.connect(target.database_url) as conn:
         # would otherwise cap what the later scenarios in this file can
         # construct.
         cur.execute(
-            "insert into riders(business_id,auth_user_id,name,phone,status,capacity_override) values(%s,%s,'Ali',%s,'active',100) returning id",
+            "insert into riders(business_id,auth_user_id,name,phone,status,max_active_orders) values(%s,%s,'Ali',%s,'active',100) returning id",
             (business, rider_ali_user, f"+60{uuid.uuid4().int % 10**9:09d}"),
         )
         ali = cur.fetchone()[0]
         cur.execute(
-            "insert into riders(business_id,auth_user_id,name,phone,status,capacity_override) values(%s,%s,'Abu',%s,'active',100) returning id",
+            "insert into riders(business_id,auth_user_id,name,phone,status,max_active_orders) values(%s,%s,'Abu',%s,'active',100) returning id",
             (business, rider_abu_user, f"+60{uuid.uuid4().int % 10**9:09d}"),
         )
         abu = cur.fetchone()[0]
@@ -192,7 +192,7 @@ with psycopg.connect(target.database_url) as conn:
         assert result == {
             "delivery_session_id": str(wave_a), "rider_id": str(ali), "order_count": 10,
             # S4-11 Batch 3 (Grow V1 Flow 2): both riders have a large
-            # capacity_override and every order defaults to
+            # max_active_orders and every order defaults to
             # vehicle_requirement 'any', so no override was ever needed.
             "vehicle_capacity_override_used": False,
         }
