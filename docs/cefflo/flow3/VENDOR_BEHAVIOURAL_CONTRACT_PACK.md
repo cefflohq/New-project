@@ -351,7 +351,7 @@ future session with browser tooling — not attempted blind.
 |---|---|---|
 | F3-00 Baseline + Contract Reconciliation | **PASS** | Corrected 3 stale Master/prior-audit assumptions this session (Zone→Rider quick-assign is real; no Workforce duplicate; Planning is genuinely wired) |
 | F3-01 App Shell/Auth/Hydration | **PASS** | Real, live (§3, §7); session-expiry handling safe-not-graceful, disclosed |
-| F3-02 Today Dashboard | **PASS** | Fabricated KPI padding/fallbacks removed |
+| F3-02 Today Dashboard | **PASS** | Fabricated KPI padding/fallbacks removed; the required "Recent Orders" component (Master §12) was found entirely absent during final DoD reconciliation and added, real-data-only |
 | F3-03 Orders/Order Detail/Intake | **PASS** | Bulk import already canonical; 2 minor honesty fixes (zone-required mismatch, Recent Imports) |
 | F3-04 Zones + Service Area | **PASS** | Rename/enable-disable wired to real, previously-unused RPCs |
 | F3-05 Planning/Review & Dispatch | **PASS** | Re-verified real; no changes needed |
@@ -369,7 +369,7 @@ future session with browser tooling — not attempted blind.
 ## Tests / Regressions
 
 Full local suite (against local disposable Supabase, never staging/
-Production): **66/67 non-frontend-static tests pass.** The 6 failures are
+Production): **67/68 non-frontend-static tests pass.** The 6 failures are
 the same pre-existing, unrelated frontend static-test failures documented
 since the Flow 2 closure report — unchanged in count, one fewer than the
 original 7 (one was fixed as a byproduct of this session's F3-06 Run
@@ -380,7 +380,8 @@ Builder work). New test files added this Flow: `f3_04_zone_edit_wiring.py`,
 `f3_12_undefined_field_sweep.py`,
 `f3_12_legacy_milestone_apparatus_removal.py`,
 `f3_13_accessibility_shared_header.py`,
-`f3_12_unreachable_pages_removed.py`. One pre-existing test
+`f3_12_unreachable_pages_removed.py`,
+`f3_02_recent_orders_dashboard.py`. One pre-existing test
 (`s4_09_remediation_05_vendor_legacy_transitions.py`) needed a justified
 update after the §7a removal — its module-level checks depended directly
 on the now-removed `confirmMarkDelivered`/`openCompleteStopSheet`
@@ -408,6 +409,28 @@ reconfirmed passing, not duplicated. `test_environment_guard.py`: 30/30.
 5. Vercel preview builds for arbitrary branches fail on a missing
    `CEFFLO_ENVIRONMENT` project setting (fail-closed by design) — no
    dashboard access to fix; not weakened.
+6. Dark Mode is not app-wide (§16) — found during final DoD
+   reconciliation, deliberately not fixed blind for the same reason as
+   item 2.
+7. No distinct personal "user Profile" (Master §21's "Profile; Edit
+   Profile") exists separate from Business Profile — the app's Settings
+   profile card is the business identity only (store name/logo), with no
+   personal name/email/avatar concept anywhere in the current data model
+   or UI. A reasonable, defensible design choice for a single-owner-
+   operator tool, but not what Master's abstract IA sketch describes.
+   Not built this pass — a new screen with real backend wiring (the
+   `profiles` table's own RLS policy suggests real backend support may
+   already exist) is a genuine future scoped addition, not a bounded fix.
+8. Master §14's "Ready; Ongoing; Completed" Zone-workspace grouping is
+   only partially, indirectly represented: `delivery_sessions.status`
+   (`planned/active/completed`) maps closely to this concept and is
+   visible split across Suggested Runs (ready-to-build) and Active Runs
+   (in-progress), but there is no single unified tabbed view and no
+   dedicated "Completed runs" history screen. Interpreted as substantially
+   addressed rather than literally built as a 3-tab Zone workspace, since
+   the underlying concept in this schema is a Wave/session lifecycle, not
+   a Zone property — flagged for Founder confirmation of this reading
+   rather than silently assumed correct.
 
 ## P0/P1 blockers
 
