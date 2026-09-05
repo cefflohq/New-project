@@ -18,6 +18,13 @@ void main() {
     }
   });
 
+  test('every declared scene destination resolves', () {
+    final ids = scenes.map((scene) => scene.id).toSet();
+    for (final scene in scenes) {
+      if (scene.next != null) expect(ids, contains(scene.next));
+    }
+  });
+
   testWidgets('primary navigation and 60-scene index work', (tester) async {
     await tester.pumpWidget(const CeffloVendorApp());
     expect(find.text('FRIDAY · 4 SEP'), findsOneWidget);
@@ -55,5 +62,64 @@ void main() {
     await tester.pumpWidget(const CeffloVendorApp());
     final context = tester.element(find.byType(Scaffold).first);
     expect(Theme.of(context).textTheme.bodyMedium?.fontFamily, 'Roboto');
+  });
+
+  testWidgets('scene IDs are removed from the live page header', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const CeffloVendorApp());
+    await tester.tap(find.text('Orders'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('#CF-1048'));
+    await tester.pumpAndSettle();
+    expect(find.text('Order Detail'), findsOneWidget);
+    expect(find.text('V-13'), findsNothing);
+  });
+
+  testWidgets('bottom navigation uses a stable glass surface', (tester) async {
+    await tester.pumpWidget(const CeffloVendorApp());
+    expect(find.byType(BackdropFilter), findsOneWidget);
+    expect(find.byKey(const ValueKey('nav-V-11')), findsOneWidget);
+    await tester.tap(find.text('Zones'));
+    await tester.pumpAndSettle();
+    expect(find.text('Zone North'), findsOneWidget);
+    expect(find.byType(BackdropFilter), findsOneWidget);
+  });
+
+  testWidgets('contract-gated subsections are navigable without fake prices', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const CeffloVendorApp());
+    await tester.tap(find.text('Menu'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Plan'), 280);
+    await tester.tap(find.text('Plan'));
+    await tester.pumpAndSettle();
+    expect(find.text('COMMERCIAL STATUS'), findsOneWidget);
+    expect(find.textContaining('RM'), findsNothing);
+    await tester.tap(find.text('Compare plan structure'));
+    await tester.pumpAndSettle();
+    expect(find.text('PLAN OPTION'), findsOneWidget);
+  });
+
+  testWidgets('elastic card response yields safely to vertical scrolling', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 780);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(const CeffloVendorApp());
+    final target = find.text('Orders today');
+    final gesture = await tester.startGesture(tester.getCenter(target));
+    await tester.pump(const Duration(milliseconds: 80));
+    await gesture.moveBy(const Offset(3, 3));
+    await tester.pump(const Duration(milliseconds: 80));
+    await gesture.moveBy(const Offset(0, 36));
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('FRIDAY · 4 SEP'), findsOneWidget);
   });
 }

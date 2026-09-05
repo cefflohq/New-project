@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import 'scenes.dart';
@@ -33,17 +35,18 @@ class CeffloVendorApp extends StatelessWidget {
       colorScheme: ColorScheme.fromSeed(seedColor: lime, surface: Colors.white),
       dividerColor: line,
       textTheme: const TextTheme(
-        bodyMedium: TextStyle(color: ink, fontSize: 14),
+        bodyMedium: TextStyle(color: ink, fontSize: 14, height: 1.35),
         titleLarge: TextStyle(
           color: ink,
-          fontSize: 26,
+          fontSize: 27,
           fontWeight: FontWeight.w800,
-          letterSpacing: -.7,
+          height: 1.08,
         ),
         titleMedium: TextStyle(
           color: ink,
           fontSize: 18,
           fontWeight: FontWeight.w700,
+          height: 1.15,
         ),
       ),
     ),
@@ -108,15 +111,20 @@ class _PrototypeShellState extends State<PrototypeShell> {
         body: SafeArea(
           bottom: false,
           child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
+            duration: const Duration(milliseconds: 280),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
             transitionBuilder: (c, a) => FadeTransition(
               opacity: a,
-              child: SlideTransition(
-                position: Tween(begin: const Offset(.025, 0), end: Offset.zero)
-                    .animate(
-                      CurvedAnimation(parent: a, curve: Curves.easeOutCubic),
-                    ),
-                child: c,
+              child: ScaleTransition(
+                scale: Tween(begin: .985, end: 1.0).animate(a),
+                child: SlideTransition(
+                  position: Tween(
+                    begin: const Offset(.018, .006),
+                    end: Offset.zero,
+                  ).animate(a),
+                  child: c,
+                ),
               ),
             ),
             child: KeyedSubtree(
@@ -153,7 +161,7 @@ class CeffloHeader extends StatelessWidget implements PreferredSizeWidget {
   final Scene scene;
   final VoidCallback? back, index;
   @override
-  Size get preferredSize => const Size.fromHeight(66);
+  Size get preferredSize => const Size.fromHeight(60);
   @override
   Widget build(BuildContext context) => AppBar(
     surfaceTintColor: Colors.white,
@@ -166,27 +174,16 @@ class CeffloHeader extends StatelessWidget implements PreferredSizeWidget {
             icon: const Icon(Icons.arrow_back_rounded),
           ),
     titleSpacing: back == null ? 20 : 0,
-    title: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          scene.id,
-          style: const TextStyle(
-            fontSize: 9,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.2,
-            color: muted,
-          ),
-        ),
-        Text(
-          scene.title,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -.4,
-          ),
-        ),
-      ],
+    title: Text(
+      scene.title,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      textWidthBasis: TextWidthBasis.parent,
+      style: const TextStyle(
+        fontSize: 20,
+        height: 1.1,
+        fontWeight: FontWeight.w800,
+      ),
     ),
     actions: [
       TextButton.icon(
@@ -203,6 +200,90 @@ class CeffloHeader extends StatelessWidget implements PreferredSizeWidget {
   );
 }
 
+class ElasticSurface extends StatefulWidget {
+  const ElasticSurface({super.key, required this.child, this.enabled = true});
+
+  final Widget child;
+  final bool enabled;
+
+  @override
+  State<ElasticSurface> createState() => _ElasticSurfaceState();
+}
+
+class _ElasticSurfaceState extends State<ElasticSurface> {
+  int? _pointer;
+  Offset _offset = Offset.zero;
+  Offset _travel = Offset.zero;
+  bool _pressed = false;
+
+  double _clamp(double value) => value.clamp(-3.5, 3.5).toDouble();
+
+  void _start(PointerDownEvent event) {
+    if (!widget.enabled || _pointer != null) return;
+    setState(() {
+      _pointer = event.pointer;
+      _travel = Offset.zero;
+      _pressed = true;
+    });
+  }
+
+  void _move(PointerMoveEvent event) {
+    if (event.pointer != _pointer) return;
+    _travel += event.delta;
+    if (_travel.distance > 14) {
+      setState(() {
+        _pointer = null;
+        _pressed = false;
+        _offset = Offset.zero;
+        _travel = Offset.zero;
+      });
+      return;
+    }
+    setState(() {
+      _offset = Offset(
+        _clamp(_offset.dx + event.delta.dx * .22),
+        _clamp(_offset.dy + event.delta.dy * .22),
+      );
+    });
+  }
+
+  void _release(PointerEvent event) {
+    if (event.pointer != _pointer) return;
+    setState(() {
+      _pointer = null;
+      _pressed = false;
+      _offset = Offset.zero;
+      _travel = Offset.zero;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.enabled ||
+        MediaQuery.maybeOf(context)?.disableAnimations == true) {
+      return widget.child;
+    }
+    return RepaintBoundary(
+      child: Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: _start,
+        onPointerMove: _move,
+        onPointerUp: _release,
+        onPointerCancel: _release,
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: _pressed ? 70 : 280),
+          curve: _pressed ? Curves.easeOutCubic : Curves.easeOutBack,
+          transformAlignment: Alignment.center,
+          transform: Matrix4.identity()
+            ..translateByDouble(_offset.dx, _offset.dy, 0, 1)
+            ..scaleByDouble(_pressed ? .988 : 1.0, _pressed ? .988 : 1.0, 1, 1),
+          child: widget.child,
+        ),
+      ),
+    );
+  }
+}
+
 class CeffloBottomNav extends StatelessWidget {
   const CeffloBottomNav({super.key, required this.current, required this.open});
   final String current;
@@ -215,31 +296,93 @@ class CeffloBottomNav extends StatelessWidget {
     ('V-46', 'Menu', Icons.menu_rounded),
   ];
   @override
-  Widget build(BuildContext context) => NavigationBar(
-    height: 62,
-    indicatorColor: Colors.transparent,
-    backgroundColor: Colors.white,
-    selectedIndex: items.indexWhere((e) => e.$1 == current),
-    onDestinationSelected: (i) => open(items[i].$1),
-    destinations: items
-        .map(
-          (e) => NavigationDestination(
-            icon: Icon(e.$3, size: 21),
-            selectedIcon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(e.$3, size: 21),
-                const Positioned(
-                  bottom: -7,
-                  left: 7,
-                  child: CircleAvatar(radius: 2, backgroundColor: lime),
-                ),
-              ],
-            ),
-            label: e.$2,
+  Widget build(BuildContext context) => SafeArea(
+    top: false,
+    minimum: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+    child: Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x18000000),
+            blurRadius: 24,
+            offset: Offset(0, 10),
           ),
-        )
-        .toList(),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: const Color(0xE6ECECEA),
+              border: Border.all(color: const Color(0xBFFFFFFF)),
+            ),
+            child: SizedBox(
+              height: 64,
+              child: Row(
+                children: items.map((e) {
+                  final selected = e.$1 == current;
+                  return Expanded(
+                    child: ElasticSurface(
+                      key: ValueKey('nav-${e.$1}'),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => open(e.$1),
+                          child: Semantics(
+                            selected: selected,
+                            button: true,
+                            label: e.$2,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Stack(
+                                  clipBehavior: Clip.none,
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Icon(
+                                      e.$3,
+                                      size: 21,
+                                      color: selected ? ink : muted,
+                                    ),
+                                    if (selected)
+                                      const Positioned(
+                                        bottom: -7,
+                                        child: CircleAvatar(
+                                          radius: 2.5,
+                                          backgroundColor: lime,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  e.$2,
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                    color: selected ? ink : muted,
+                                    fontSize: 10,
+                                    fontWeight: selected
+                                        ? FontWeight.w800
+                                        : FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
   );
 }
 
@@ -270,11 +413,11 @@ class SceneView extends StatelessWidget {
     SceneKind.products => ProductsScene(open: open),
     SceneKind.product => ProductScene(scene: scene, open: open),
     SceneKind.storefront => const StorefrontScene(),
-    SceneKind.hold => HoldScene(scene: scene),
+    SceneKind.hold => ContractPreviewScene(scene: scene, open: open),
     SceneKind.form => FormScene(scene: scene, open: open),
     SceneKind.list => ListScene(scene: scene, open: open),
     SceneKind.settings => SettingsScene(scene: scene),
-    SceneKind.support => SupportScene(scene: scene),
+    SceneKind.support => SupportScene(scene: scene, open: open),
     SceneKind.legal => LegalScene(scene: scene),
   };
 }
@@ -392,52 +535,62 @@ class ListRow extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onTap;
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(10),
-    child: Container(
-      constraints: const BoxConstraints(minHeight: 66),
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: line)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              border: Border.all(color: line),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, size: 18),
+  Widget build(BuildContext context) => ElasticSurface(
+    enabled: onTap != null,
+    child: Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 66),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: const BoxDecoration(
+            border: Border(bottom: BorderSide(color: line)),
           ),
-          const SizedBox(width: 11),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                  ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  border: Border.all(color: line),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12, color: muted),
+                child: Icon(icon, size: 18),
+              ),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12, color: muted),
+                    ),
+                  ],
                 ),
+              ),
+              if (status != null) StatusPill(status!, live: live),
+              if (onTap != null) ...const [
+                SizedBox(width: 6),
+                Icon(Icons.chevron_right_rounded, size: 19, color: Colors.grey),
               ],
-            ),
+            ],
           ),
-          if (status != null) StatusPill(status!, live: live),
-          const SizedBox(width: 6),
-          const Icon(Icons.chevron_right_rounded, size: 19, color: Colors.grey),
-        ],
+        ),
       ),
     ),
   );
@@ -454,17 +607,21 @@ class PrimaryButton extends StatelessWidget {
   final VoidCallback onTap;
   final bool signal;
   @override
-  Widget build(BuildContext context) => SizedBox(
-    width: double.infinity,
-    height: 50,
-    child: FilledButton(
-      onPressed: onTap,
-      style: FilledButton.styleFrom(
-        backgroundColor: signal ? lime : ink,
-        foregroundColor: signal ? ink : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
+  Widget build(BuildContext context) => ElasticSurface(
+    child: SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: FilledButton(
+        onPressed: onTap,
+        style: FilledButton.styleFrom(
+          backgroundColor: signal ? lime : ink,
+          foregroundColor: signal ? ink : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(13),
+          ),
+        ),
+        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
       ),
-      child: Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
     ),
   );
 }
@@ -578,11 +735,14 @@ class TodayScene extends StatelessWidget {
               ),
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () => localFeedback(
+                context,
+                'Search is ready for prototype review.',
+              ),
               icon: const Icon(Icons.search_rounded),
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () => open('V-47'),
               icon: const Icon(Icons.notifications_none_rounded),
             ),
             IconButton(
@@ -597,45 +757,54 @@ class TodayScene extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: ink,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Orders today',
-                            style: TextStyle(color: Color(0xFFD6D7D5)),
+              ElasticSurface(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => open('V-12'),
+                    borderRadius: BorderRadius.circular(18),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: ink,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Orders today',
+                                  style: TextStyle(color: Color(0xFFD6D7D5)),
+                                ),
+                              ),
+                              StatusPill('LIVE', live: true),
+                            ],
                           ),
-                        ),
-                        StatusPill('LIVE', live: true),
-                      ],
-                    ),
-                    const Text(
-                      '42',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 48,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -2,
+                          const Text(
+                            '42',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 48,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -2,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            children: [
+                              metric('18', 'Ready'),
+                              metric('16', 'Ongoing'),
+                              metric('8', 'Done'),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        metric('18', 'Ready'),
-                        metric('16', 'Ongoing'),
-                        metric('8', 'Done'),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
               ),
               SectionTitle(
@@ -643,42 +812,45 @@ class TodayScene extends StatelessWidget {
                 action: 'See All ›',
                 onTap: () => open('V-12'),
               ),
-              InkWell(
-                onTap: () => open('V-12'),
-                child: Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: soft,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: lime,
-                        foregroundColor: ink,
-                        child: Text(
-                          '2',
-                          style: TextStyle(fontWeight: FontWeight.w800),
+              ElasticSurface(
+                child: InkWell(
+                  onTap: () => open('V-12'),
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: soft,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: lime,
+                          foregroundColor: ink,
+                          child: Text(
+                            '2',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
                         ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Orders need action',
-                              style: TextStyle(fontWeight: FontWeight.w700),
-                            ),
-                            Text(
-                              '1 unassigned · 1 delayed',
-                              style: TextStyle(color: muted, fontSize: 12),
-                            ),
-                          ],
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Orders need action',
+                                style: TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                              Text(
+                                '1 unassigned · 1 delayed',
+                                style: TextStyle(color: muted, fontSize: 12),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Icon(Icons.chevron_right_rounded, color: Colors.grey),
-                    ],
+                        Icon(Icons.chevron_right_rounded, color: Colors.grey),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -1102,11 +1274,12 @@ class RidersScene extends StatelessWidget {
           icon: Icons.pedal_bike_outlined,
           onTap: () => open('V-21'),
         ),
-        const ListRow(
+        ListRow(
           title: 'Farid',
           subtitle: 'Van · Last seen yesterday',
           status: 'Offline',
           icon: Icons.airport_shuttle_outlined,
+          onTap: () => open('V-21'),
         ),
         const SizedBox(height: 18),
         PrimaryButton('Invite Rider', onTap: () => open('V-22')),
@@ -1223,7 +1396,7 @@ final menuMap = <String, List<(String, String, String, IconData)>>{
     ('Business hours', 'Open today · 9am–8pm', 'V-40', Icons.schedule_outlined),
     (
       'Delivery settings',
-      'Reconciliation hold',
+      'Coverage and operating boundaries',
       'V-41',
       Icons.local_shipping_outlined,
     ),
@@ -1274,7 +1447,15 @@ final menuMap = <String, List<(String, String, String, IconData)>>{
     ),
     ('Language', 'English', 'V-48', Icons.language_outlined),
     ('Appearance', 'System', 'V-49', Icons.contrast_outlined),
+    (
+      'Plan',
+      'Commercial structure preview',
+      'V-50',
+      Icons.workspace_premium_outlined,
+    ),
     ('Help & Support', 'Guidance and contact', 'V-55', Icons.help_outline),
+    ('Privacy', 'Information handling', 'V-58', Icons.privacy_tip_outlined),
+    ('Terms', 'Service terms', 'V-59', Icons.description_outlined),
     (
       'About Cefflo',
       'Version 0.1 Flutter prototype',
@@ -1382,15 +1563,27 @@ class ProductScene extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Intro(scene),
-        Container(
-          height: 150,
-          decoration: BoxDecoration(
-            color: soft,
-            border: Border.all(color: line),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Center(
-            child: Icon(Icons.image_outlined, size: 34, color: muted),
+        ElasticSurface(
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => localFeedback(
+                context,
+                'Product photo selection is preview-only.',
+              ),
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                height: 150,
+                decoration: BoxDecoration(
+                  color: soft,
+                  border: Border.all(color: line),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Center(
+                  child: Icon(Icons.image_outlined, size: 34, color: muted),
+                ),
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 14),
@@ -1558,29 +1751,9 @@ class SettingsScene extends StatelessWidget {
           ),
         ],
         if (scene.id == 'V-48')
-          ...['English', 'Bahasa Melayu'].map(
-            (l) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(l),
-              trailing: Icon(
-                l == 'English'
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_off,
-              ),
-            ),
-          ),
+          const OptionPicker(options: ['English', 'Bahasa Melayu'], initial: 0),
         if (scene.id == 'V-49')
-          ...['System', 'Light', 'Dark'].map(
-            (l) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(l),
-              trailing: Icon(
-                l == 'System'
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_off,
-              ),
-            ),
-          ),
+          const OptionPicker(options: ['System', 'Light', 'Dark'], initial: 0),
         if (scene.id == 'V-24') ...const [
           InfoBlock('MEMBER', 'Sarah Lim', 'Owner · Active'),
           SettingsToggle(
@@ -1641,8 +1814,53 @@ class _SettingsToggleState extends State<SettingsToggle> {
   );
 }
 
-class ThemeTiles extends StatelessWidget {
+class OptionPicker extends StatefulWidget {
+  const OptionPicker({super.key, required this.options, required this.initial});
+
+  final List<String> options;
+  final int initial;
+
+  @override
+  State<OptionPicker> createState() => _OptionPickerState();
+}
+
+class _OptionPickerState extends State<OptionPicker> {
+  late int selected = widget.initial;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: List.generate(widget.options.length, (index) {
+      final active = selected == index;
+      return ElasticSurface(
+        child: ListTile(
+          contentPadding: EdgeInsets.zero,
+          onTap: () => setState(() => selected = index),
+          title: Text(
+            widget.options[index],
+            style: TextStyle(
+              fontWeight: active ? FontWeight.w800 : FontWeight.w600,
+            ),
+          ),
+          trailing: Icon(
+            active ? Icons.radio_button_checked : Icons.radio_button_off,
+            color: active ? ink : muted,
+          ),
+        ),
+      );
+    }),
+  );
+}
+
+class ThemeTiles extends StatefulWidget {
   const ThemeTiles({super.key});
+
+  @override
+  State<ThemeTiles> createState() => _ThemeTilesState();
+}
+
+class _ThemeTilesState extends State<ThemeTiles> {
+  int selected = 0;
+
   @override
   Widget build(BuildContext context) => GridView.count(
     shrinkWrap: true,
@@ -1651,28 +1869,47 @@ class ThemeTiles extends StatelessWidget {
     mainAxisSpacing: 10,
     crossAxisSpacing: 10,
     childAspectRatio: 1.4,
-    children: ['Clean', 'Warm', 'Fresh', 'Midnight']
-        .map(
-          (t) => Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: t == 'Midnight' ? graphite : soft,
-              border: Border.all(color: t == 'Clean' ? ink : line),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Align(
-              alignment: Alignment.bottomLeft,
-              child: Text(
-                t,
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: t == 'Midnight' ? Colors.white : ink,
-                ),
+    children: List.generate(4, (index) {
+      const themes = ['Clean', 'Warm', 'Fresh', 'Midnight'];
+      final theme = themes[index];
+      final active = selected == index;
+      return ElasticSurface(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => setState(() => selected = index),
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: theme == 'Midnight' ? graphite : soft,
+                border: Border.all(color: active ? ink : line),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Stack(
+                children: [
+                  if (active)
+                    const Align(
+                      alignment: Alignment.topRight,
+                      child: CircleAvatar(radius: 5, backgroundColor: lime),
+                    ),
+                  Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Text(
+                      theme,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: theme == 'Midnight' ? Colors.white : ink,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        )
-        .toList(),
+        ),
+      );
+    }),
   );
 }
 
@@ -1743,7 +1980,13 @@ class StorefrontScene extends StatelessWidget {
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 14),
-        PrimaryButton('Preview only · Ordering not connected', onTap: () {}),
+        PrimaryButton(
+          'Preview only · Ordering not connected',
+          onTap: () => localFeedback(
+            context,
+            'This storefront is a visual prototype. No order is submitted.',
+          ),
+        ),
       ],
     ),
   );
@@ -1784,7 +2027,6 @@ class EntryScene extends StatelessWidget {
           style: TextStyle(
             fontSize: 38,
             fontWeight: FontWeight.w800,
-            letterSpacing: -1.5,
             height: 1.05,
           ),
         ),
@@ -1822,10 +2064,11 @@ class AuthScene extends StatelessWidget {
           const SizedBox(height: 36),
           Text(
             scene.title,
+            maxLines: 2,
             style: const TextStyle(
               fontSize: 34,
               fontWeight: FontWeight.w800,
-              letterSpacing: -1.2,
+              height: 1.08,
             ),
           ),
           const SizedBox(height: 8),
@@ -1910,10 +2153,11 @@ class SetupScene extends StatelessWidget {
           const SizedBox(height: 18),
           Text(
             scene.title,
+            maxLines: 2,
             style: const TextStyle(
               fontSize: 34,
               fontWeight: FontWeight.w800,
-              letterSpacing: -1.2,
+              height: 1.08,
             ),
           ),
           const SizedBox(height: 8),
@@ -1932,65 +2176,128 @@ class SetupScene extends StatelessWidget {
   );
 }
 
-class HoldScene extends StatelessWidget {
-  const HoldScene({super.key, required this.scene});
+class ContractPreviewScene extends StatelessWidget {
+  const ContractPreviewScene({
+    super.key,
+    required this.scene,
+    required this.open,
+  });
+
   final Scene scene;
+  final ValueChanged<String> open;
+
   @override
   Widget build(BuildContext context) => PagePad(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: ink,
-            borderRadius: BorderRadius.circular(18),
+        Intro(scene),
+        if (scene.id == 'V-41') ...[
+          const InfoBlock(
+            'CURRENT RESPONSIBILITY',
+            'Coverage lives under Service Area',
+            'The operating centre, radius and zones remain the working source for this prototype.',
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(Icons.lock_clock_outlined, color: lime, size: 30),
-              const SizedBox(height: 24),
-              const Text(
-                'FOUNDER HOLD',
-                style: TextStyle(
-                  color: lime,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.4,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                scene.title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                scene.subtitle,
-                style: const TextStyle(color: Color(0xFFBFC2C1), height: 1.5),
-              ),
-            ],
+          ListRow(
+            title: 'Open Service Area',
+            subtitle: 'Operating centre, radius and zones',
+            icon: Icons.radar_outlined,
+            onTap: () => open('V-26'),
           ),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'This scene remains visible without simulating an unsupported contract or success state.',
-          style: TextStyle(color: muted, height: 1.6),
-        ),
+          ListRow(
+            title: 'Open Business Hours',
+            subtitle: 'Review the current operating schedule',
+            icon: Icons.schedule_outlined,
+            onTap: () => open('V-40'),
+          ),
+          const SizedBox(height: 18),
+          PrimaryButton(
+            'Review current delivery boundary',
+            onTap: () => localFeedback(
+              context,
+              'No separate delivery setting is saved in this prototype.',
+            ),
+          ),
+        ] else ...[
+          const InfoBlock(
+            'COMMERCIAL STATUS',
+            'Plan terms are not published',
+            'This screen is available for flow review without inventing prices, billing or payment success.',
+          ),
+          if (scene.id == 'V-50') ...[
+            ListRow(
+              title: 'Compare plan structure',
+              subtitle: 'No commercial price is asserted',
+              icon: Icons.view_column_outlined,
+              onTap: () => open('V-51'),
+            ),
+            ListRow(
+              title: 'Plan details',
+              subtitle: 'Review the non-operational account surface',
+              icon: Icons.receipt_long_outlined,
+              onTap: () => open('V-54'),
+            ),
+          ],
+          if (scene.id == 'V-51') ...[
+            const InfoBlock(
+              'PLAN OPTION',
+              'Commercial name to be confirmed',
+              'Allowances, price and billing cadence remain intentionally absent.',
+            ),
+            const SizedBox(height: 10),
+            PrimaryButton(
+              'Continue to checkout preview',
+              onTap: () => open('V-52'),
+            ),
+          ],
+          if (scene.id == 'V-52') ...[
+            const InfoBlock(
+              'CHECKOUT BOUNDARY',
+              'No payment connection',
+              'No card, charge, subscription or confirmation is created from this prototype.',
+            ),
+            const SizedBox(height: 10),
+            PrimaryButton('Return to plan overview', onTap: () => open('V-50')),
+          ],
+          if (scene.id == 'V-53') ...[
+            const InfoBlock(
+              'CONFIRMATION BOUNDARY',
+              'No payment occurred',
+              'This state exists only to preserve the 60-screen information architecture.',
+            ),
+            const SizedBox(height: 10),
+            PrimaryButton('Return to plan overview', onTap: () => open('V-50')),
+          ],
+          if (scene.id == 'V-54') ...[
+            const InfoBlock(
+              'PLAN DETAILS',
+              'Commercial contract pending',
+              'Renewal, invoice and payment information are not simulated.',
+            ),
+            ListRow(
+              title: 'Open plan overview',
+              subtitle: 'Return to the account plan surface',
+              icon: Icons.arrow_back_rounded,
+              onTap: () => open('V-50'),
+            ),
+          ],
+          const SizedBox(height: 14),
+          const Text(
+            'Prototype only · No subscription or payment operation is available.',
+            style: TextStyle(color: muted, fontSize: 11, height: 1.5),
+          ),
+        ],
       ],
     ),
   );
 }
 
 class SupportScene extends StatelessWidget {
-  const SupportScene({super.key, required this.scene});
+  const SupportScene({super.key, required this.scene, required this.open});
+
   final Scene scene;
+  final ValueChanged<String> open;
+
   @override
   Widget build(BuildContext context) => PagePad(
     child: Column(
@@ -2002,26 +2309,51 @@ class SupportScene extends StatelessWidget {
           'Operational help',
           'Guidance for orders, zones and riders.',
         ),
-        ...[
-          'Getting started',
-          'Managing today’s orders',
-          'Preparing a delivery plan',
-          'Inviting a rider',
-        ].map(
-          (q) => ExpansionTile(
-            tilePadding: EdgeInsets.zero,
-            title: Text(q, style: const TextStyle(fontWeight: FontWeight.w700)),
-            children: const [
-              Padding(
-                padding: EdgeInsets.only(bottom: 16),
-                child: Text(
-                  'Prototype guidance content. No support request is sent.',
-                  style: TextStyle(color: muted),
-                ),
-              ),
-            ],
+        if (scene.id == 'V-55') ...[
+          ListRow(
+            title: 'Help Centre',
+            subtitle: 'Browse common workflow guidance',
+            icon: Icons.menu_book_outlined,
+            onTap: () => open('V-56'),
           ),
-        ),
+          ListRow(
+            title: 'Contact Support',
+            subtitle: 'Prepare a local-only support request',
+            icon: Icons.support_agent_outlined,
+            onTap: () => open('V-57'),
+          ),
+        ],
+        if (scene.id == 'V-56')
+          ...[
+            'Getting started',
+            'Managing today’s orders',
+            'Preparing a delivery plan',
+            'Inviting a rider',
+          ].map(
+            (q) => ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              title: Text(
+                q,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              children: const [
+                Padding(
+                  padding: EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    'Prototype guidance content. No support request is sent.',
+                    style: TextStyle(color: muted),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        if (scene.id == 'V-55') ...[
+          const SizedBox(height: 12),
+          const Text(
+            'Prototype only · No support message is sent.',
+            style: TextStyle(color: muted, fontSize: 11),
+          ),
+        ],
       ],
     ),
   );
@@ -2147,9 +2479,8 @@ class _SceneIndexState extends State<SceneIndex> {
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (s.hold) const StatusPill('HOLD'),
-                          const Icon(Icons.chevron_right_rounded, size: 18),
+                        children: const [
+                          Icon(Icons.chevron_right_rounded, size: 18),
                         ],
                       ),
                       onTap: () => widget.open(s.id),
