@@ -4,6 +4,7 @@ import '../core/routes.dart';
 import '../core/theme.dart';
 import 'screens/directory.dart';
 import 'screens/operations.dart';
+import 'screens/planning.dart';
 import 'shell.dart';
 import 'widgets.dart';
 
@@ -22,6 +23,9 @@ Widget buildScreen(BuildContext context, VendorLocation loc) {
     VRoute.editOrder => OrderFormScreen(orderId: id!),
     VRoute.zones => const ZonesScreen(),
     VRoute.zoneDetail => ZoneDetailScreen(zoneId: id!),
+    VRoute.reviewDispatch => const ReviewDispatchScreen(),
+    VRoute.serviceArea => const ServiceAreaScreen(),
+    VRoute.coverageEdit => const ServiceAreaScreen(),
     VRoute.riders => const RidersScreen(),
     VRoute.riderDetail => RiderDetailScreen(riderId: id!),
     VRoute.team => const TeamScreen(),

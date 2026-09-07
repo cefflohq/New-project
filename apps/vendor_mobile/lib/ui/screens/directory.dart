@@ -141,10 +141,9 @@ class ZoneDetailScreen extends StatelessWidget {
                   ),
                 ),
             const SizedBox(height: Gap.section),
-            const StateBlock.blocked(
-              'Plan proposal and dispatch need the planning contracts '
-              '(propose_delivery_plan, list_plannable_orders), which are not '
-              'deployed on this environment yet.',
+            CefButton(
+              'Review & dispatch',
+              onTap: () => app.go(VRoute.reviewDispatch, entityId: zoneId),
             ),
           ],
         );

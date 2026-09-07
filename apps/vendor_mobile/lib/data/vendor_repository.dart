@@ -289,13 +289,125 @@ class VendorRepository {
     return Product.fromRow(_single(row));
   }
 
-  /// Canonical planning contract. Present in supabase/migrations but not
-  /// deployed to every environment; callers must surface the blocked state.
-  Future<Map<String, dynamic>> proposePlan({required String sessionId}) async {
+  // ------------------------------------------- coverage / planning / dispatch
+  //
+  // Every decision below is the server's. This client never computes
+  // coverage, grouping, sequencing, capacity or ETA locally; it renders what
+  // the canonical RPCs return.
+
+  /// Service-area configuration (origin + radius) for one business.
+  Future<Map<String, dynamic>> setServiceArea({
+    required String businessId,
+    required double latitude,
+    required double longitude,
+    required num radiusKm,
+  }) async {
     final row = await _run(
       () => _db.rpc(
-        'propose_delivery_plan',
-        params: {'p_session_id': sessionId},
+        'set_business_service_area',
+        params: {
+          'p_business_id': businessId,
+          'p_origin_latitude': latitude,
+          'p_origin_longitude': longitude,
+          'p_radius_km': radiusKm,
+        },
+      ),
+    );
+    return _single(row);
+  }
+
+  /// Server verdict for one order: unconfigured | pending_location |
+  /// covered | out_of_coverage.
+  Future<String> orderCoverageStatus(String orderId) async {
+    final value = await _run(
+      () => _db.rpc('order_coverage_status', params: {'p_order_id': orderId}),
+    );
+    return value?.toString() ?? 'unknown';
+  }
+
+  /// Returns null when the business has no service area configured — that is
+  /// "not decidable", not "outside coverage".
+  Future<bool?> isWithinCoverage({
+    required String businessId,
+    required double latitude,
+    required double longitude,
+  }) async {
+    final value = await _run(
+      () => _db.rpc(
+        'is_within_coverage',
+        params: {
+          'p_business_id': businessId,
+          'p_latitude': latitude,
+          'p_longitude': longitude,
+        },
+      ),
+    );
+    return value as bool?;
+  }
+
+  /// The shared definition of "what is plannable right now", used by both the
+  /// planning screen and the optimizer, so the two can never disagree.
+  Future<List<PlannableOrder>> plannableOrders(String businessId) async {
+    final rows = await _run(
+      () => _db.rpc('list_plannable_orders', params: {'p_business_id': businessId}),
+    );
+    return _rows(rows).map(PlannableOrder.fromRow).toList();
+  }
+
+  /// Server-computed grouping, rider candidate and stop sequence.
+  Future<PlanProposal> proposePlan(String businessId) async {
+    final row = await _run(
+      () => _db.rpc('propose_delivery_plan', params: {'p_business_id': businessId}),
+    );
+    return PlanProposal.fromJson(_single(row));
+  }
+
+  Future<Map<String, dynamic>> createDeliverySession({
+    required String businessId,
+    String? name,
+  }) async {
+    final row = await _run(
+      () => _db.rpc(
+        'create_delivery_session',
+        params: {'p_business_id': businessId, 'p_name': ?name},
+      ),
+    );
+    return _single(row);
+  }
+
+  /// Server-side pre-check so a vehicle/capacity conflict is shown before
+  /// dispatch is attempted, rather than surfacing as a raised exception.
+  Future<CapacityCheck> checkRunCapacity({
+    required String riderId,
+    required List<String> orderIds,
+  }) async {
+    final row = await _run(
+      () => _db.rpc(
+        'check_run_vehicle_capacity',
+        params: {'p_rider_id': riderId, 'p_order_ids': orderIds},
+      ),
+    );
+    return CapacityCheck.fromJson(_single(row));
+  }
+
+  /// Dispatch. [idempotencyKey] must be stable for a retry of the same run.
+  Future<Map<String, dynamic>> buildRiderRun({
+    required String sessionId,
+    required String riderId,
+    required List<String> orderIds,
+    required String idempotencyKey,
+    bool overrideCapacity = false,
+  }) async {
+    final row = await _run(
+      () => _db.rpc(
+        'build_rider_run',
+        params: {
+          'p_delivery_session_id': sessionId,
+          'p_rider_id': riderId,
+          'p_order_ids': orderIds,
+          'p_idempotency_key': idempotencyKey,
+          'p_override_capacity': overrideCapacity,
+        },
       ),
     );
     return _single(row);

@@ -251,3 +251,184 @@ class Product {
     categoryId: r['category_id'] as String?,
   );
 }
+
+// --------------------------------------------------- coverage and planning
+
+/// Server verdict from `order_coverage_status`. 'unconfigured' and
+/// 'pending_location' are distinct from a real out-of-coverage answer and must
+/// never be presented as one.
+enum CoverageStatus {
+  unconfigured,
+  pendingLocation,
+  covered,
+  outOfCoverage,
+  unknown;
+
+  static CoverageStatus parse(String? v) => switch (v) {
+    'unconfigured' => CoverageStatus.unconfigured,
+    'pending_location' => CoverageStatus.pendingLocation,
+    'covered' => CoverageStatus.covered,
+    'out_of_coverage' => CoverageStatus.outOfCoverage,
+    _ => CoverageStatus.unknown,
+  };
+
+  String get label => switch (this) {
+    CoverageStatus.unconfigured => 'Service area not set',
+    CoverageStatus.pendingLocation => 'Awaiting location',
+    CoverageStatus.covered => 'In coverage',
+    CoverageStatus.outOfCoverage => 'Outside coverage',
+    CoverageStatus.unknown => 'Unknown',
+  };
+
+  bool get needsAttention =>
+      this == CoverageStatus.outOfCoverage || this == CoverageStatus.pendingLocation;
+}
+
+/// One row of `list_plannable_orders`.
+class PlannableOrder {
+  const PlannableOrder({
+    required this.orderId,
+    required this.customerName,
+    required this.deliveryAddress,
+    required this.locationStatus,
+    required this.coverage,
+    this.publicRef,
+    this.zoneId,
+    this.latitude,
+    this.longitude,
+  });
+
+  final String orderId, customerName, deliveryAddress, locationStatus;
+  final CoverageStatus coverage;
+  final String? publicRef, zoneId;
+  final double? latitude, longitude;
+
+  factory PlannableOrder.fromRow(Map<String, dynamic> r) => PlannableOrder(
+    orderId: r['order_id'] as String,
+    customerName: (r['customer_name'] as String?) ?? '',
+    deliveryAddress: (r['delivery_address'] as String?) ?? '',
+    locationStatus: (r['location_status'] as String?) ?? 'unresolved',
+    coverage: CoverageStatus.parse(r['coverage_status'] as String?),
+    publicRef: r['public_ref'] as String?,
+    zoneId: r['zone_id'] as String?,
+    latitude: (r['latitude'] as num?)?.toDouble(),
+    longitude: (r['longitude'] as num?)?.toDouble(),
+  );
+
+  String get reference => publicRef ?? orderId.substring(0, 8).toUpperCase();
+  bool get locationResolved => locationStatus == 'resolved';
+}
+
+/// `propose_delivery_plan` result. The server decides the groups, the
+/// candidate rider and the stop order; this type only carries them.
+class PlanProposal {
+  const PlanProposal({required this.groups, required this.unplannable});
+  final List<PlanGroup> groups;
+  final List<UnplannableEntry> unplannable;
+
+  factory PlanProposal.fromJson(Map<String, dynamic> j) => PlanProposal(
+    groups: (j['groups'] as List? ?? [])
+        .whereType<Map>()
+        .map((g) => PlanGroup.fromJson(Map<String, dynamic>.from(g)))
+        .toList(),
+    unplannable: (j['unplannable_orders'] as List? ?? [])
+        .whereType<Map>()
+        .map((g) => UnplannableEntry.fromJson(Map<String, dynamic>.from(g)))
+        .toList(),
+  );
+
+  bool get isEmpty => groups.isEmpty && unplannable.isEmpty;
+}
+
+class PlanGroup {
+  const PlanGroup({
+    required this.groupKey,
+    required this.stops,
+    this.zoneId,
+    this.candidateRiderId,
+    this.candidateRiderName,
+    this.candidateRiderVehicleType,
+    this.requiredVehicle,
+    this.totalDistanceKm,
+  });
+
+  final String groupKey;
+  final List<PlanStop> stops;
+  final String? zoneId, candidateRiderId, candidateRiderName;
+  final String? candidateRiderVehicleType, requiredVehicle;
+  final num? totalDistanceKm;
+
+  factory PlanGroup.fromJson(Map<String, dynamic> j) => PlanGroup(
+    groupKey: (j['group_key'] ?? 'group').toString(),
+    zoneId: j['zone_id'] as String?,
+    candidateRiderId: j['candidate_rider_id'] as String?,
+    candidateRiderName: j['candidate_rider_name'] as String?,
+    candidateRiderVehicleType: j['candidate_rider_vehicle_type'] as String?,
+    requiredVehicle: j['required_vehicle'] as String?,
+    totalDistanceKm: j['total_distance_km'] as num?,
+    stops: (j['stops'] as List? ?? [])
+        .whereType<Map>()
+        .map((s) => PlanStop.fromJson(Map<String, dynamic>.from(s)))
+        .toList(),
+  );
+
+  List<String> get orderIds => stops.map((s) => s.orderId).toList();
+}
+
+class PlanStop {
+  const PlanStop({required this.orderId, required this.sequence, this.distanceKm});
+  final String orderId;
+  final int sequence;
+  final num? distanceKm;
+
+  factory PlanStop.fromJson(Map<String, dynamic> j) => PlanStop(
+    orderId: j['order_id'] as String,
+    sequence: (j['sequence'] as num?)?.toInt() ?? 0,
+    distanceKm: j['distance_from_previous_km'] as num?,
+  );
+}
+
+/// Why the server could not plan something. Surfaced verbatim rather than
+/// hidden, so the vendor sees the real reason.
+class UnplannableEntry {
+  const UnplannableEntry({required this.reason, this.orderId, this.groupKey, this.groupSize});
+  final String reason;
+  final String? orderId, groupKey;
+  final int? groupSize;
+
+  factory UnplannableEntry.fromJson(Map<String, dynamic> j) => UnplannableEntry(
+    reason: (j['reason'] ?? 'unknown').toString(),
+    orderId: j['order_id'] as String?,
+    groupKey: j['group_key'] as String?,
+    groupSize: (j['group_size'] as num?)?.toInt(),
+  );
+
+  String get label => switch (reason) {
+    'location_unresolved' => 'Address not yet located',
+    'location_ambiguous' => 'Address is ambiguous',
+    'location_failed' => 'Address could not be located',
+    'no_compatible_capacity_sufficient_rider' =>
+      'No rider with a compatible vehicle and enough spare capacity',
+    _ => reason,
+  };
+}
+
+/// `check_run_vehicle_capacity` result.
+class CapacityCheck {
+  const CapacityCheck({required this.compatible, required this.violations});
+  final bool compatible;
+  final List<String> violations;
+
+  factory CapacityCheck.fromJson(Map<String, dynamic> j) => CapacityCheck(
+    compatible: j['compatible'] == true,
+    violations: (j['violations'] as List? ?? []).whereType<Map>().map((v) {
+      final reason = (v['reason'] ?? '').toString();
+      if (reason == 'capacity_exceeded') {
+        return 'Capacity exceeded: ${v['current_load']} active + '
+            '${v['requested']} requested exceeds ${v['effective_capacity']}.';
+      }
+      return 'Vehicle incompatible: needs ${v['vehicle_requirement']}, '
+          'rider has ${v['rider_vehicle_type']}.';
+    }).toList(),
+  );
+}
