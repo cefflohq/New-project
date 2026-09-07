@@ -10,3 +10,8 @@ coverage/
 /supabase/.temp/
 __pycache__/
 *.py[cod]
+
+# Flutter (apps/vendor_mobile)
+apps/**/build/
+apps/**/.dart_tool/
+apps/**/.flutter-plugins-dependencies
