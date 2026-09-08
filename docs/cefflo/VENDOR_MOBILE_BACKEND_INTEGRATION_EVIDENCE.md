@@ -121,10 +121,15 @@ reads configuration at build time and the app refuses to start unless
 The master cites `docs/cefflo/reference/vendor-prototype-20260906/`
 (`index.html`, `style.css`, `app.js`, `experience.css`, `experience.js`,
 `assets/`). That path does not exist on any branch, and the supplied ZIP is the
-earlier pack (`index.html`, `style.css`, `app.js` only). Logo F, rider and
-product photography, the login gradient composition and the customer storefront
-layout could not be reproduced from source. The preview URL is owner-private
-(HTTP 401 for this agent).
+earlier pack (`index.html`, `style.css`, `app.js` only). Rider and product
+photography, the login composition and the customer storefront layout could not
+be reproduced from source. The preview URL is owner-private (HTTP 401 for this
+agent).
+
+No brand mark is referenced, bundled or implied by this work. The Founder has
+confirmed there is no approved Cefflo logo asset in scope here; the Flutter
+client ships Flutter's default placeholder icons and a plain text wordmark
+until an approved asset is supplied.
 
 ## Canonical-doc conflict recorded
 
@@ -199,7 +204,7 @@ corrected to the repository's canonical version numbers so a future
 
 ## Remaining implementation scope
 
-1. Provide the 20260906 reference package with assets (Logo F, rider/product
+1. Provide the 20260906 reference package with its assets (rider/product
    photography) — visual-system completion is deliberately out of this pass.
 2. Decide and authorize a background-removal provider for product media.
 3. Create a staging test identity so authenticated end-to-end flows
