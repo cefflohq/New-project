@@ -1,0 +1,58 @@
+{
+  "id": "10000000-0000-4000-8000-000000000004",
+  "name": "CEFFLO - 04 - Creative Router",
+  "description": "Creates exactly three production lanes. Instagram and Facebook share one Meta package by default.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0a14448c-0000-4000-8000-dd4a41ded972",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nif (input.status !== 'CONCEPT_READY') throw new Error('ERROR_VALIDATION: concept not ready');\nreturn [{ json: { ...input, creative_lanes: [\n  { lane: 'meta', destinations: ['instagram','facebook'], workflow_id: '10000000-0000-4000-8000-000000000005' },\n  { lane: 'tiktok', destinations: ['tiktok'], workflow_id: '10000000-0000-4000-8000-000000000006' },\n  { lane: 'threads', destinations: ['threads'], workflow_id: '10000000-0000-4000-8000-000000000007' }\n], stage: 'CREATIVE_ROUTER', status: 'CREATIVE_GENERATING', updated_at: new Date().toISOString() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "27118788-0000-4000-8000-8f5abc0c0149",
+      "name": "Create Three Lane Plan"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Create Three Lane Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloRoi": true,
+    "providerMode": "stub",
+    "activationProhibited": true
+  },
+  "pinData": {},
+  "tags": []
+}

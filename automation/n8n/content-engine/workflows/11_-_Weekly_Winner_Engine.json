@@ -1,0 +1,79 @@
+{
+  "id": "10000000-0000-4000-8000-000000000013",
+  "name": "CEFFLO - 11 - Weekly Winner Engine",
+  "description": "Weekly Winner boundary reads Marketing Memory and returns up to five deterministic candidates. No schedule is active in ROI.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "77fe412f-0000-4000-8000-f9092b9b29bb",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nconst memory = Array.isArray(input.marketing_memory_records) ? input.marketing_memory_records : [];\nconst top = [...memory].sort((a,b) => Number(b.performance_score || 0) - Number(a.performance_score || 0)).slice(0, 5);\nreturn [{ json: { ...input, weekly_winners: top, stage: 'WEEKLY_WINNER_ENGINE', status: 'HOLD', schedule_active: false, updated_at: new Date().toISOString() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "5d3a2d6d-0000-4000-8000-7c41ff97b5b6",
+      "name": "Select Weekly Winners Stub"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        160
+      ],
+      "id": "06e686f3-0000-4000-8000-4f7b4906f53f",
+      "name": "Production Schedule (DISABLED)",
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Select Weekly Winners Stub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloRoi": true,
+    "providerMode": "stub",
+    "activationProhibited": true
+  },
+  "pinData": {},
+  "tags": []
+}

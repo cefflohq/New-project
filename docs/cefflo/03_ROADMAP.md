@@ -1,5 +1,7 @@
 # CEFFLO --- STAGE 4 ROADMAP
 
+**Reconciliation note (2026-09-12 — `docs/cefflo/05_DECISIONS.md` D-29):** this document's "Phase 0–7" is a narrower, already-partially-executed framework, distinct from the new parent "PHASE 01–07 Execution Roadmap" in `docs/cefflo/sot/00_INDEX.md` §0 — same "Phase N" numbering convention, different scope (no Marketing phase here). Do not confuse the two. Mapping: this doc's Phase 1 (Baseline & SOT Lock) → new Phase 01; Phase 2 (Backend & Security) + Phase 3 (Vendor PWA) → new Phase 02/04; Phase 4 (Rider + Customer) → new Phase 05 (Delivery Experience); Phase 5 (FOUNDR) → new Phase 06 (Platform + Commercial); Phase 6–7 (Integration/RC, Production/Go-Live) → new Phase 07. This document's sprint-level detail (S4-01 etc.) remains valid execution evidence, unchanged.
+
 ## R-00 Goal
 
 Move Cefflo from current verified baseline to Stage 4 production-ready

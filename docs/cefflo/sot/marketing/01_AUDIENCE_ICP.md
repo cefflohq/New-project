@@ -1,5 +1,6 @@
 **Status:** CANONICAL — Founder-approved, merged into repo 2026-09-04
 **Repo-reconciliation note:** Net-new marketing knowledge domain; no prior equivalent existed in this repo (`marketing/` previously contained only the built website, no knowledge docs).
+**Reconciliation update (2026-09-10):** §5's Segment Families now have a corresponding, finer-grained production/visual-continuity layer — see `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §3 Content Worlds and Addendum A3 for the explicit mapping. Content Worlds do not redefine who the audience is; §5's own rule ("never let one segment become the master positioning") applies equally to them. See `docs/cefflo/05_DECISIONS.md` D-26.
 
 ---
 
@@ -90,6 +91,8 @@ Likely situations: local order batches, social-commerce order sources, owner-man
 Any business matching the operating model should remain eligible.
 
 Rule: never let one segment become the master positioning.
+
+**Content World cross-reference:** for video/visual production, each segment family maps to one or more persistent Content Worlds (CW-01–CW-06) defined in `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §3 — e.g. Segment A maps to CW-01/CW-04, Segment B to CW-03. Content Worlds are a production-continuity layer under this section, not a parallel audience definition.
 
 ## 6. Operating-Maturity Segments
 ### ICP-1 — Manual Starter

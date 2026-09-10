@@ -1,5 +1,7 @@
 # CEFFLO GROW V1 — SCOPE LOCK
 
+**Reconciliation note (2026-09-12, Phase 02 — `docs/cefflo/05_DECISIONS.md` D-29):** this document IS the Grow V1 REQUIRED/DESIRABLE/POST-V1/OUT-OF-SCOPE matrix the new 7-Phase Execution Roadmap's Phase 02 (Gate: V1 READY) calls for — not recreated elsewhere. §7's "Nationwide rider marketplace; public helper marketplace" Out-of-Scope line already covers the new instruction that a public driver-hiring/marketplace/community feature must not become V1 scope. One terminology note only, nothing else in this frozen document is altered: §11a/§15's "'Driver' is not introduced as a competing term" / "Rider/Driver terminology question needed no correction" reflected the product/schema position, which remains unchanged and correct today — the canonical role stays "Rider." A newer, separate clarification (same decision record) additionally establishes that *general, unscoped* marketing/content/UI references to the workforce should prefer "Driver / Delivery Team" rather than "Rider" as a universal term; this is a documentation/terminology layer, not a reopening of §11a/§15's frozen product scope.
+
 **Status:** **FROZEN — FOUNDER APPROVED (2026-09-03)**\
 **Baseline:** `staging @ 9e7ea2dae61deaaee068f156d4b0086d7fade14d`\
 **Detailed evidence:** `docs/cefflo/audits/CEFFLO_GROW_V1_SCOPE_LOCK_AUDIT_REPORT.md`\

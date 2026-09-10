@@ -49,6 +49,8 @@ Supports operational preparation where implemented/authorized. No public Helper 
 ### Rider — EXECUTE
 Receives assigned work and executes pickup/delivery runs. Execution-level stop resequencing is Rider-owned where the canonical contract permits it.
 
+**Workforce terminology (canonical statement, reconciled 2026-09-12 — see `docs/cefflo/05_DECISIONS.md` D-29):** the product/backend/schema/API role name stays exactly **"Rider"** — unchanged, no migration, matching every existing decision (D-03, D-09, D-14, D-16, D-18, D-19, D-21) and the real `riders`/`rider_vehicle_type` schema. For general/unscoped references to the delivery workforce (not naming a specific vehicle), use **Driver / Delivery Driver / Delivery Team** — "Rider" is not the universal term. Vehicle-contextual: Motorcycle → Rider is natural, Driver is also acceptable; Car → Driver/Delivery Driver; Van → Driver/Van Driver/Delivery Driver. The target-state mobile surface this workspace maps to (`docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md`) is architecturally named **Driver Product** in the five-canonical-product-surface freeze (`docs/cefflo/sot/02_ARCHITECTURE.md` §0) — a surface/label distinction only, not a role rename.
+
 ### Customer — ORDER + TRACK
 Customer-facing order/storefront/tracking experience where available. Public-facing information must remain truthful to canonical state.
 

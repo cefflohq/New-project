@@ -8,6 +8,22 @@
 **Version:** 1.0 — 2026-09-04
 **Owner:** Founder
 
+## 0. Five Canonical Product Surfaces (frozen 2026-09-12, Phase 02 — see `docs/cefflo/05_DECISIONS.md` D-29)
+
+| # | Surface | Presentation | Maps to existing client topology (§4 below) |
+|---|---|---|---|
+| 1 | **Vendor Product** | Web/Desktop + Flutter Mobile — **one product, two presentation surfaces**, not two products | "Vendor Web/Desktop" (LIVE) + "Vendor Flutter" (FUTURE, `09_VENDOR_FLUTTER_60_SCREEN_MASTER.md`) |
+| 2 | **Driver Product** | Flutter Mobile | "Rider Flutter" (FUTURE, `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`) — target-state surface name only; live today as the Rider PWA (`docs/cefflo/07_RIDER.md`) |
+| 3 | **Customer Tracking** | Web/PWA | "Customer Tracking" — native app not required unless a future Founder decision changes this |
+| 4 | **CEFFLO Website** | Public Web | `docs/cefflo/sot/11_CEFFLO_WEBSITE.md` (added 2026-09-12, closing the gap flagged at initial freeze). Phase 03 = lightweight pre-launch landing; Phase 06 = full commercial site. Not yet implemented — `marketing/index.html` remains the current built public site. |
+| 5 | **FOUNDR Command Center** | Internal Web/Desktop | "FOUNDR" — see `docs/cefflo/09_FOUNDR.md` |
+
+Operations/Helper is a permission-scoped role within Vendor Product's team system (D-22; `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md` §15 — "reuse existing Core Team/auth/invitation plumbing... not a competing identity system"), not a sixth surface.
+
+**Workforce terminology:** the "Rider" product/backend/schema role is unchanged (see `docs/cefflo/sot/01_PRODUCT_TRUTH.md` §4). "Driver Product" is this freeze's architectural surface name for what `08_RIDER_FLUTTER_33_SCREEN_MASTER.md` describes — the file is not renamed, no schema is touched.
+
+This freeze does not authorize starting Vendor Flutter, Driver Product (Rider Flutter), Customer Tracking rebuild, FOUNDR build, or CEFFLO Website work — each remains gated by its own existing stage-gating decisions (D-13 etc.).
+
 ## 1. Architecture Principle
 Cefflo has one canonical operational truth.
 
@@ -71,7 +87,7 @@ First-class broad operational/configuration client.
 Separate mobile app; companion, not replacement.
 
 ### Rider Flutter
-Separate execution app with Rider-specific state/authorization.
+Separate execution app with Rider-specific state/authorization. Named "Driver Product" in the five-canonical-surface freeze (§0 above) — surface/architecture naming only; the app's internal role/state/authorization remains "Rider," unchanged.
 
 ### Customer Tracking
 Public tokenized safe projection, not direct operational-table access.

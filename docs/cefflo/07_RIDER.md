@@ -4,6 +4,8 @@ Current section describes the LIVE Rider PWA. Future target direction
 (NOT YET implemented, Founder review pending):
 `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md`.
 
+**Terminology note (2026-09-12):** this surface is named "Driver Product" in the five-canonical-product-surface freeze (`docs/cefflo/sot/02_ARCHITECTURE.md` §0) — a surface/architecture label only. The canonical role/schema/API name stays "Rider," unchanged (`docs/cefflo/sot/01_PRODUCT_TRUTH.md` §4).
+
 ## RI-00 Purpose
 
 Rider PWA executes the vendor's delivery plan.

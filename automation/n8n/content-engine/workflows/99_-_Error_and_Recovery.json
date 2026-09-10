@@ -1,0 +1,92 @@
+{
+  "id": "10000000-0000-4000-8000-000000000099",
+  "name": "CEFFLO - 99 - Error & Recovery",
+  "description": "Standard error envelope, event contract and deterministic manual recovery route.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "972971c9-0000-4000-8000-9cae6fcd6fac",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json; const now = new Date().toISOString();\nconst error = { run_id: input.run_id ?? null, workflow_name: input.workflow_name || 'CEFFLO - 99 - Error & Recovery', stage: input.stage || 'UNKNOWN', status: 'ERROR', retry_count: Number(input.retry_count || 0), error_code: input.error_code || 'ERROR_VALIDATION', error_message: input.error_message || 'Unspecified recoverable error', timestamp: now };\nreturn [{ json: { ...input, error, manual_recovery: { permitted: true, retry_stage: input.stage || null, preserve_ids: true }, content_engine_event: { ...error, payload: input.event_payload || null }, updated_at: now } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "e64cc4fa-0000-4000-8000-e59d97ccad6f",
+      "name": "Build Standard Error Envelope"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT cefflo_content_engine.log_event($1::jsonb) AS event_id",
+        "options": {
+          "queryReplacement": "={{ [JSON.stringify($json.content_engine_event)] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        520,
+        0
+      ],
+      "id": "c52ba6a9-0000-4000-8000-804ffadd9cf4",
+      "name": "Persist Error Event",
+      "credentials": {
+        "postgres": {
+          "id": "CEFFLO_CONTENT_ENGINE_POSTGRES",
+          "name": "CEFFLO Content Engine PostgreSQL"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Standard Error Envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Standard Error Envelope": {
+      "main": [
+        [
+          {
+            "node": "Persist Error Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloRoi": true,
+    "providerMode": "stub",
+    "activationProhibited": true
+  },
+  "pinData": {},
+  "tags": []
+}

@@ -37,7 +37,7 @@ The inventory is intended to prevent missing screens, duplicate responsibilities
 5. Secondary navigation remains grouped into **Business**, **Account**, and **Support**.
 6. Zones operational workspace uses the Founder-approved primary states: **Ready · Ongoing · Completed**.
 7. Recent Orders should preserve the approved compact Draft B treatment.
-8. Cefflo visual foundation: **Black / White / Graphite**, with **Signal Lime candidate #C7F000** used deliberately as the operational signal. Exact lime HEX remains subject to final Founder lock.
+8. Cefflo visual foundation: **Black / White / Graphite**, with **Signal Lime — locked #C7F000** (updated 2026-09-12, `docs/cefflo/05_DECISIONS.md` D-30) used deliberately as the operational signal.
 9. Support both **Light and Dark** modes. Current experience direction: Draft B structural baseline; Dark retains that structure with the approved sectional treatment direction.
 10. Cefflo does **not** manage vendor-customer payments. Do not introduce customer balance, deposit, payment status, or ordinary invoice/receipt workflows.
 11. Subscription/payment in this document refers only to a Vendor paying **Cefflo for Cefflo service**, and its final architecture is not yet approved.

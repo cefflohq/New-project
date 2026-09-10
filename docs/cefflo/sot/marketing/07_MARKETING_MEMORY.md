@@ -1,5 +1,8 @@
 **Status:** CANONICAL SCHEMA — Founder-approved, performance memory intentionally EMPTY (merged into repo 2026-09-04)
 **Repo-reconciliation note:** Fills the "no Marketing Memory schema/store exists" gap flagged in `docs/cefflo/sot/00_INDEX.md` §6/§7 and `docs/cefflo/sot/marketing/00_MARKETING_KNOWLEDGE_PACK_INDEX.md` item 3. This is a schema/doctrine document only — no `marketing_experiments`/`marketing_assets`/`marketing_posts`/`marketing_metrics`/`marketing_learnings`/`marketing_paid_campaigns`/`marketing_cost_ledger` tables or n8n workflows exist in this repo yet (see `docs/cefflo/sot/marketing/06_AI_MARKETING_ENGINE_MASTER.md` repo-state note). Per its own §22, "Performance memory is intentionally EMPTY" — do not treat anything in this file as evidence of real campaign results; it is the framework evidence will be stored in once collected.
+**Reconciliation update (2026-09-10):** §3's platform-lane count and theoretical ceiling corrected to match the Founder-approved `08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` Meta-shared-by-default model. §5 Experiment Identity's `CEFFLO-YYYY-Wxx-E###` scheme remains canonical and unchanged — it is now explicitly mapped to that document's `master_concept_id` (Addendum A2). See `docs/cefflo/05_DECISIONS.md` D-25.
+**Reconciliation update (2026-09-10, second pass):** §4.B Asset Memory and §6 Memory Taxonomy extended with Content-World/scenario/language fields per `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §17 and `10_BRAND_VOICE_LANGUAGE_SYSTEM.md` §27 — see `docs/cefflo/05_DECISIONS.md` D-26.
+**Reconciliation update (2026-09-11, third pass):** §4.B extended with CIL scenario fields per `11_CREATIVE_INTELLIGENCE_LAYER.md` §13 — see `docs/cefflo/05_DECISIONS.md` D-27.
 
 ---
 
@@ -44,12 +47,14 @@ Canonical loop:
 Target:
 **5 core experiments/day → ~35/week**
 
-Each core experiment may create platform-native derivatives for TikTok, Instagram, Facebook and Threads.
+Each core experiment may create platform-native derivatives across three default lanes: Meta (Instagram + Facebook, one shared package by default), TikTok, and Threads. Instagram/Facebook may still split into separate packages for a genuine platform-fit reason.
 
 Theoretical ceiling:
-**~140 platform outputs/week**
+**~105 platform outputs/week**
 
-140 is not a quota. Do not publish weak or inappropriate derivatives merely to hit volume.
+**Superseded 2026-09-10:** the previous figure of ~140 platform outputs/week assumed four independent platform lanes. Corrected per the Founder-approved Meta-shared-default model in `08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` — see `docs/cefflo/05_DECISIONS.md` D-25.
+
+105 is not a quota. Do not publish weak or inappropriate derivatives merely to hit volume.
 
 Note: any older Content Engine rule specifying 3/day or 21/week is superseded for this Marketing Engine by the Founder-approved 5/day model.
 
@@ -76,7 +81,14 @@ Note: any older Content Engine rule specifying 3/day or 21/week is superseded fo
 - duration/aspect ratio;
 - script/copy version;
 - QA result;
-- production cost.
+- production cost;
+- business_world (Content World ID, e.g. CW-01) — where applicable, per `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §3;
+- operational_pain (OP-* ID) and scenario variables (scale, constraint) — per `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §4–5;
+- hook_family — per `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §5.4;
+- generation provider/model (image/video) and generation attempt count — per `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §14–15, §21;
+- world/character/location/vehicle/packaging reference IDs — per `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §13;
+- language and speech register (Clean Natural / Everyday Business / Pasar Beradab) where dialogue/narration is present — per `10_BRAND_VOICE_LANGUAGE_SYSTEM.md` §4, §27;
+- CIL scenario reference: vehicle_mix, delivery_team size, personas depicted, operational_situation — per `11_CREATIVE_INTELLIGENCE_LAYER.md` §13, stored durably in `cefflo_content_engine.cil_scenarios` (`automation/n8n/content-engine/migrations/202609110001_cil_scenarios.sql`, not yet applied to any database).
 
 ### C. Publication Memory
 - platform;
@@ -166,9 +178,12 @@ Tag experiments by:
 - format;
 - platform;
 - CTA;
-- product capability referenced.
+- product capability referenced;
+- Content World (CW-* ID, video/visual production only — `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §3);
+- Operational Pain (OP-* ID, production-scenario tagging distinct from the audience-level "operational pain" tag above — `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §4, Addendum A2);
+- language and speech register (`10_BRAND_VOICE_LANGUAGE_SYSTEM.md` §4, §27).
 
-Taxonomy should be controlled enough for comparison but extensible as real patterns emerge.
+Taxonomy should be controlled enough for comparison but extensible as real patterns emerge. Per `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` Addendum A2, this pack now carries five related-but-distinct pain/situation/world taxonomies (Segment Families, Pain Library P01–17, Situation Library S01–18, Operational Pain OP-01–14, Content Worlds CW-01–06) — tag against the correct one for the consumer at hand rather than treating overlapping entries as duplicates.
 
 ## 7. Funnel Memory
 Track movement through:
@@ -331,6 +346,8 @@ Founder may:
 - change scoring emphasis.
 
 Do not delete raw evidence merely because strategy changes. Preserve history and version interpretation.
+
+**Language-calibration cross-reference:** per `10_BRAND_VOICE_LANGUAGE_SYSTEM.md` §27, Founder corrections to language/register/phrasing are high-value calibration evidence — if the Founder repeatedly corrects a phrase pattern, that should update the language calibration rules rather than being treated as isolated one-off feedback each time.
 
 ## 20. Minimum Durable Data Entities
 - marketing_experiments

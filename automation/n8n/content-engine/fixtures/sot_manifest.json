@@ -1,0 +1,12 @@
+[
+  { "domain": "product", "source": "docs/cefflo/sot/01_PRODUCT_TRUTH.md", "section": "Canonical Definition" },
+  { "domain": "brand", "source": "docs/cefflo/sot/05_BRAND_BRAIN.md", "section": "Brand Core" },
+  { "domain": "audience", "source": "docs/cefflo/sot/marketing/01_AUDIENCE_ICP.md", "section": "Audience" },
+  { "domain": "claims", "source": "docs/cefflo/sot/marketing/02_CLAIMS_REGISTRY.md", "section": "Claims" },
+  { "domain": "content", "source": "docs/cefflo/sot/marketing/03_CONTENT_PHILOSOPHY.md", "section": "Content Philosophy" },
+  { "domain": "creative_playbook", "source": "docs/cefflo/sot/marketing/04_CREATIVE_PLAYBOOK.md", "section": "Creative Playbook" },
+  { "domain": "marketing_memory", "source": "docs/cefflo/sot/marketing/07_MARKETING_MEMORY.md", "section": "Marketing Memory" },
+  { "domain": "engine_master", "source": "docs/cefflo/sot/marketing/06_AI_MARKETING_ENGINE_MASTER.md", "section": "AI Marketing Engine Master" },
+  { "domain": "orchestrator", "source": "docs/cefflo/sot/marketing/08_AI_CONTENT_ENGINE_ORCHESTRATOR.md", "section": "Orchestrator" },
+  { "domain": "paid_growth", "source": "docs/cefflo/sot/marketing/05_PAID_GROWTH_PLAYBOOK.md", "section": "Paid Growth" }
+]

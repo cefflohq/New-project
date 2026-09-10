@@ -1,5 +1,6 @@
 **Status:** CANONICAL — Founder-approved, merged into repo 2026-09-04
 **Repo-reconciliation note:** Supersedes `docs/cefflo/CEFFLO_BRAND_BRAIN.md` (2026-09-03) as the current canonical brand/product/UI doctrine per the latest-Founder-decision authority rule. The two documents are substantially aligned (same positioning, same Black/White/Graphite/Signal Lime `#C7F000` foundation, same four-workspace model) — this is a refinement and reorganization into the domain-specific SOT set under `docs/cefflo/sot/`, not a reversal. The older file is retained, marked superseded, and must not be deleted.
+**Reconciliation update (2026-09-10):** §4 Voice is elaborated in full, including a native Malaysian Malay language system, by `docs/cefflo/sot/marketing/10_BRAND_VOICE_LANGUAGE_SYSTEM.md` — see `docs/cefflo/05_DECISIONS.md` D-26. That document does not replace this section; it operates within the voice principles set here.
 
 ---
 
@@ -77,6 +78,8 @@ Avoid:
 
 Prefer real operational language over startup jargon.
 
+Full elaboration, including the Malaysian Malay language system (native generation, speech registers, respect boundary, speaker-voice matrix): `docs/cefflo/sot/marketing/10_BRAND_VOICE_LANGUAGE_SYSTEM.md`.
+
 ## 5. Tone by Context
 ### Awareness
 Sharp, relatable, pattern-recognition driven.
@@ -120,11 +123,12 @@ Relevant pains include:
 Never assume all businesses share the same category, fleet size or workflow.
 
 ## 8. Visual Identity
+**Updated 2026-09-12 (Founder baseline closeout, `docs/cefflo/05_DECISIONS.md` D-30):** Signal Lime is now locked, not a candidate.
 Foundation:
+- **Fresh White**
 - **Black**
-- **White**
-- **Graphite**
-- **Signal Lime** candidate `#C7F000`
+- **Graphite** (supporting neutral)
+- **Signal Lime — locked** `#C7F000`
 
 Signal Lime semantics:
 **active / live / current / ready / selected / moving / primary operational action**

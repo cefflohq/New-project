@@ -1,4 +1,5 @@
 **Status:** CANONICAL SOURCE ARTIFACT — merged into repo 2026-09-04. The master itself remains "Revised Working Master — Founder Review Required" (see its own status line below) — it is NOT YET IMPLEMENTED and NOT YET Founder-locked (its own Definition of Done checklist is unchecked, Founder Gates A-I are open). The current LIVE Rider client remains the PWA described in `docs/cefflo/07_RIDER.md`, consistent with `docs/cefflo/05_DECISIONS.md` D-13 stage-gating. Do not treat this file as authorizing Rider Flutter implementation to begin.
+**Terminology note (2026-09-12):** this target surface is named "Driver Product" in the five-canonical-product-surface freeze (`docs/cefflo/sot/02_ARCHITECTURE.md` §0). Surface/architecture naming only — this file's filename, screen inventory, and the canonical "Rider" role/schema/API name are all unchanged. See `docs/cefflo/05_DECISIONS.md` D-29.
 
 ---
 
@@ -45,7 +46,7 @@ The target is not to maximize screen count. The target is complete functional co
 10. Returning from external navigation must restore the exact current run/stop and revalidate stale state.
 11. Never claim GPS/background tracking is active unless the native service is genuinely running and backend writes are verified.
 12. Never claim customer notification success, ETA, route optimization, POD upload, completion or recovery success unless canonical backend/provider state supports the claim.
-13. Cefflo visual foundation remains **Black / White / Graphite**, with **Signal Lime candidate #C7F000** as operational signal.
+13. Cefflo visual foundation remains **Black / White / Graphite**, with **Signal Lime — locked #C7F000** (updated 2026-09-12, `docs/cefflo/05_DECISIONS.md` D-30; was "candidate" through 2026-09-11) as operational signal.
 14. Support **Light / Dark / System** presentation while preserving the approved Rider structure.
 15. Rider UI must prioritize one-handed use, large touch targets, minimal reading and low distraction.
 

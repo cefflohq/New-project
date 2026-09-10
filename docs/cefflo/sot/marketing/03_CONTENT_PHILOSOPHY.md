@@ -1,5 +1,7 @@
 **Status:** CANONICAL — Founder-approved, merged into repo 2026-09-04
 **Repo-reconciliation note:** Net-new marketing knowledge domain; no prior equivalent existed in this repo (`marketing/` previously contained only the built website, no knowledge docs).
+**Reconciliation update (2026-09-10):** §2's platform-lane count and theoretical ceiling corrected to match the Founder-approved `08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` Meta-shared-by-default model — see `docs/cefflo/05_DECISIONS.md` D-25.
+**Reconciliation update (2026-09-10, second pass):** §4's content-type mix, §6's Situation Library, §7's Angle formula, and §8's Hook Doctrine are cross-referenced from `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` (video-specific V1 mix, Operational Pain taxonomy, Scenario formula) and `10_BRAND_VOICE_LANGUAGE_SYSTEM.md` (hook/dialogue language doctrine, Malaysian Malay generation) — see `docs/cefflo/05_DECISIONS.md` D-26.
 
 ---
 
@@ -22,16 +24,19 @@ Never manufacture that quote as a testimonial.
 Target:
 **5 core experiments/day × 7 = ~35 core experiments/week**
 
-Each core experiment may produce platform-native derivatives for:
+Each core experiment may produce platform-native derivatives across three default lanes:
+- Meta (Instagram + Facebook, one shared package by default);
 - TikTok;
-- Instagram;
-- Facebook;
 - Threads.
 
-Theoretical ceiling:
-**35 × 4 = ~140 outputs/week**
+Instagram and Facebook may still be split into separate packages when a genuine platform-fit reason exists (`08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` §10).
 
-140 is not a quota. Platform fit and quality override multiplication.
+Theoretical ceiling:
+**35 × 3 = ~105 outputs/week**
+
+**Superseded 2026-09-10:** the previous figure of ~140 outputs/week assumed four independent platform lanes. Corrected per the Founder-approved Meta-shared-default model — see `docs/cefflo/05_DECISIONS.md` D-25.
+
+105 is not a quota. Platform fit and quality override multiplication.
 
 ## 3. Content Is Experimentation
 Every core item should test something:
@@ -57,6 +62,8 @@ Default portfolio can draw from:
 5. Proof / Conversion / experimental slot.
 
 Exact mix is configurable by launch stage and Marketing Memory.
+
+**Video-specific addendum:** for V1 short-form video specifically, `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §6 sets a target split of ~45% Problem→Product→Outcome, ~35% Product-led Proof, ~20% Education. This is a video-only refinement of the mix above, not a repo-wide override — non-video content (Threads text, static/carousel) remains governed by this section's general "configurable" framing.
 
 ## 5. Core Pillars
 P1 Operational Pain
@@ -93,6 +100,8 @@ S18 delivered-today clarity
 
 Situations are expandable. They are scenario hypotheses, not claims that a specific customer experienced them.
 
+**Taxonomy cross-reference:** for video/visual production specifically, `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §4 defines a parallel, more operationally granular Operational Pain taxonomy (OP-01–OP-14) feeding its Scenario Generation Engine. This does not replace the Situation Library above — it serves a different consumer (production scenario composition vs. angle-mining hypotheses). See `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` Addendum A2 for the full cross-reference table across all pain/situation taxonomies in the pack.
+
 ## 7. Angle Library
 A01 Pain
 A02 Relatable POV
@@ -117,6 +126,8 @@ A20 Conversion
 
 Formula:
 **Pillar × Situation × Angle × Audience × Hook × Format × Product Truth × Platform**
+
+**Scenario Formula cross-reference:** `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §5.1 defines a video/Content-World-specific specialization of this formula (`Business World × Operational Pain × Scale × Constraint × Persona × Hook Type × Content Format × Product Proof × CTA`) for scenario-based video production. This formula above remains the cross-platform (including text-native Threads) content-philosophy formula; the two coexist per `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` Addendum A4.
 
 ## 8. Hook Doctrine
 Families:
@@ -144,6 +155,8 @@ Rules:
 - no invented statistics;
 - no generic AI clichés;
 - first seconds/lines must earn attention.
+
+**Language cross-reference:** for Malaysian Malay hooks/dialogue specifically, `10_BRAND_VOICE_LANGUAGE_SYSTEM.md` §12 (Hook Doctrine) and §21 (Language QA) govern native-generation and naturalness requirements — hooks must never be produced by translating an English master.
 
 ## 9. Don't Tell, Show
 Product content should prefer:

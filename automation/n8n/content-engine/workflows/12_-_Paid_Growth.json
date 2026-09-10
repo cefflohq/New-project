@@ -1,0 +1,79 @@
+{
+  "id": "10000000-0000-4000-8000-000000000014",
+  "name": "CEFFLO - 12 - Paid Growth",
+  "description": "Disabled/stubbed Paid Growth production boundary. No spend, campaign activation, live advertising API or active schedule is possible.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a27166b1-0000-4000-8000-c1fc98ecb92c",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nif ((input.paid_growth_mode || 'stub') !== 'stub') throw new Error('ERROR_PUBLISH: paid execution is prohibited in ROI');\nreturn [{ json: { ...input, paid_growth: { mode: 'stub', campaign_status: 'STUBBED', spend: 0, currency: null, advertising_api_called: false, founder_budget_gate: 'REQUIRED' }, stage: 'PAID_GROWTH', status: 'HOLD', schedule_active: false, updated_at: new Date().toISOString() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "9697686c-0000-4000-8000-3df3fd2d67bd",
+      "name": "Return Paid Growth Stub Boundary"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        160
+      ],
+      "id": "61057997-0000-4000-8000-50dabb4f3b53",
+      "name": "Production Schedule (DISABLED)",
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Return Paid Growth Stub Boundary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloRoi": true,
+    "providerMode": "stub",
+    "activationProhibited": true
+  },
+  "pinData": {},
+  "tags": []
+}

@@ -1,0 +1,58 @@
+{
+  "id": "10000000-0000-4000-8000-000000000009",
+  "name": "CEFFLO - 07 - Founder Approval",
+  "description": "Separate human gate. APPROVE, REVISE, REJECT and HOLD are explicit; only APPROVE can continue to Publisher.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "07bead72-0000-4000-8000-6ee24de47b92",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nconst decision = input.founder_status || 'HOLD';\nif (!['APPROVE','REVISE','REJECT','HOLD'].includes(decision)) throw new Error('ERROR_VALIDATION: invalid Founder decision');\nif (input.qa_status !== 'PASS' && decision === 'APPROVE') throw new Error('ERROR_VALIDATION: Founder approval cannot bypass failed QA');\nconst status = { APPROVE: 'APPROVED', REVISE: 'REVISION_REQUIRED', REJECT: 'REJECTED', HOLD: 'HOLD' }[decision];\nreturn [{ json: { ...input, founder_status: decision, founder_feedback: input.founder_feedback ?? null, revision_target: input.founder_revision_target ?? input.revision_target ?? { stage: null, lane: null }, approved_at: decision === 'APPROVE' ? new Date().toISOString() : null, stage: 'FOUNDER_APPROVAL', status, updated_at: new Date().toISOString() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "ffc097c0-0000-4000-8000-264e89e65f48",
+      "name": "Apply Founder Decision"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Apply Founder Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloRoi": true,
+    "providerMode": "stub",
+    "activationProhibited": true
+  },
+  "pinData": {},
+  "tags": []
+}

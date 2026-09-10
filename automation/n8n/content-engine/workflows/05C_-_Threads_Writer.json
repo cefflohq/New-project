@@ -1,0 +1,58 @@
+{
+  "id": "10000000-0000-4000-8000-000000000007",
+  "name": "CEFFLO - 05C - Threads Writer",
+  "description": "Deterministic Threads-native text stub; it is not an Instagram-caption copy.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6e726685-0000-4000-8000-796ec7611b42",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nconst payload = { lane: 'threads', destinations: ['threads'], format: 'text_post', opening_line: 'Local delivery gets complicated when orders multiply.', body: 'The real shift is treating delivery as one visible operation: orders, coverage, zones, plan, runs, riders and completion.', conversation_angle: 'Operational clarity for local business owners', cta_or_question: 'Which part of today’s delivery operation takes the most mental effort?', optional_followup_posts: [], status: 'QA_PENDING' };\nreturn [{ json: { ...input, creative_packages: [...(input.creative_packages || []).filter((p) => p.lane !== 'threads'), payload], stage: 'THREADS_WRITER', status: 'QA_PENDING', updated_at: new Date().toISOString() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "c7cadf9f-0000-4000-8000-735151ade5f3",
+      "name": "Create Threads Stub Package"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Create Threads Stub Package",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloRoi": true,
+    "providerMode": "stub",
+    "activationProhibited": true
+  },
+  "pinData": {},
+  "tags": []
+}

@@ -1,0 +1,8 @@
+{
+  "taxonomy_version": "1.0",
+  "formats": [
+    "situational", "pov", "dialogue", "ugc_style", "product_in_context", "product_demo",
+    "screen_recording", "b_roll_narrative", "educational", "light_humour", "static_carousel"
+  ],
+  "doctrine": "One validated operational scenario should be reusable across several formats where appropriate -- see docs/cefflo/sot/marketing/11_CREATIVE_INTELLIGENCE_LAYER.md §18/§19."
+}

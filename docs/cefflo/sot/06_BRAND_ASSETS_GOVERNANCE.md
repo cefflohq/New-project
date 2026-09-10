@@ -1,5 +1,6 @@
 **Status:** CANONICAL — Founder-approved, merged into repo 2026-09-04
 **Repo-reconciliation note:** Net-new canonical domain; no equivalent asset-governance doc existed in the repo before this reconciliation. Complements `docs/cefflo/CEFFLO_BRAND_BRAIN.md` §8 (Visual Identity), which remains historically accurate but should be read alongside this file for the fuller asset-registry/logo-lock governance model.
+**Reconciliation update (2026-09-12, Founder baseline closeout — see `docs/cefflo/05_DECISIONS.md` D-30):** §2 and §5 below described the logo as unlocked and Signal Lime as a candidate. Both are now Founder-locked. §2 and §5 are corrected in place; the original text is annotated, not deleted, so the history of what changed and when remains traceable. Canonical logo asset: `docs/cefflo/brand/assets/logo/cefflo-logo-official.png` (plus transparent/wordmark variants in the same folder) — see §5.
 
 ---
 
@@ -12,16 +13,16 @@
 Separate what is already locked about Cefflo identity from what is still under exploration, so generated logos/mockups cannot accidentally become canonical brand assets.
 
 ## 2. Locked Brand Foundation
-Structural identity:
-**Black / White / Graphite**
+Structural identity/primary core colours:
+**Fresh White / Black** — major structural identity colours depending on theme/context.
 
 Signature operational signal:
-**Signal Lime**
+**Signal Lime — locked at `#C7F000`** (2026-09-12, Founder baseline closeout — see `docs/cefflo/05_DECISIONS.md` D-30). Signal Lime is a signal/accent colour, not a default surface treatment — do not turn UI into lime-heavy surfaces or introduce Signal Lime cards as a default.
 
-Current Signal Lime candidate:
-`#C7F000`
+Supporting neutrals:
+**Graphite greys** and **very light cool grey**.
 
-Important: the exact Signal Lime HEX remains a candidate until Founder locks it after real cross-surface visual validation.
+**Superseded 2026-09-12:** the previous line here — *"the exact Signal Lime HEX remains a candidate until Founder locks it after real cross-surface visual validation"* — is no longer current. `#C7F000` is locked, not a candidate. (Historical note: it was correctly described as candidate from 2026-09-04 through 2026-09-11; every place in this repo that said "Signal Lime candidate" during that window was accurate at the time.)
 
 Purple and blue are superseded as Cefflo primary/signature colors.
 
@@ -53,9 +54,19 @@ Semantic success/warning/danger/info remain separate from brand signal.
 ## 5. Logo Status
 The text name is **Cefflo**.
 
-The official master logo/brand mark is **NOT YET FOUNDER-LOCKED**.
+**LOCKED 2026-09-12 (Founder baseline closeout — see `docs/cefflo/05_DECISIONS.md` D-30).** The official master logo/brand mark is Founder-approved: a white folded-ribbon "C" mark with a Signal Lime directional/navigation arrow at the left-center junction, on a canonical black-background presentation.
 
-Generated logo boards, old purple logos, wordmarks, icons and explorations are references only unless explicitly approved.
+**Canonical asset (Founder-supplied, stored unaltered — do not redraw/regenerate/retrace):**
+- `docs/cefflo/brand/assets/logo/cefflo-logo-official.png` — **primary master reference**, clean black-background app-icon presentation.
+- `docs/cefflo/brand/assets/logo/cefflo-logo-official-transparent.png` — transparent-background variant, as supplied.
+- `docs/cefflo/brand/assets/logo/cefflo-logo-official-wordmark.png` — mark + "Cefflo" wordmark, as supplied.
+- `docs/cefflo/brand/assets/logo/cefflo-logo-official-wordmark-white.png` — wordmark-only variant, as supplied.
+
+The transparent and wordmark variants (as supplied) carry visible extraction/matting artifacts around the edges and the wordmark-only variant is very low-contrast. These are stored exactly as provided, unaltered — no redrawing, retracing, or "cleanup" has been performed on any file per explicit Founder instruction. If clean production exports (transparent PNG/WebP, SVG/vector master, monochrome, app-icon, favicon, social exports per §17) are needed, that is a separate, later production task starting from `cefflo-logo-official.png` as the geometry source of truth — not performed here.
+
+**Superseded 2026-09-12:** the previous line here — *"The official master logo/brand mark is NOT YET FOUNDER-LOCKED"* — is no longer current.
+
+Generated logo boards, old purple logos, prior wordmarks/icons/explorations not listed above (including `previews/cefflo-logo-identity-exploration/`) are **SUPERSEDED / HISTORICAL / NON-CANONICAL** — retained for lineage, not to be treated as current or reused as a source. Logo redesign/exploration must not resume without a new, explicit Founder decision.
 
 ## 6. Logo Direction
 Future master mark should be:
@@ -149,6 +160,22 @@ Light and Dark are one brand, not separate visual identities.
 Structure/components should remain coherent. Dark Mode may use sectional treatment while preserving hierarchy.
 
 ## 15. Asset Registry
+
+**First registered entry (2026-09-12):**
+- asset_id: `cefflo-logo-official`
+- name: Cefflo primary mark (folded-ribbon "C" + Signal Lime arrow)
+- type: logo, master reference
+- status: **LOCKED**
+- version: 1.0
+- source: Founder-supplied PNG, 2026-09-12
+- owner: Founder
+- approved date: 2026-09-12
+- permitted surfaces: all (product, web, social, print) — production-format exports not yet generated
+- file formats: PNG only at this time (RGBA, 3438×3438 for the primary reference) — see §5 for the four files stored
+- color variants: black-background (primary), transparent, wordmark, wordmark-only — as supplied
+- clear-space/min-size rules: not yet specified — Founder decision pending if needed before production use
+- licensing/provenance: Founder-supplied original
+
 Every canonical asset should record:
 - asset_id;
 - name;
@@ -165,7 +192,7 @@ Every canonical asset should record:
 - licensing/provenance.
 
 ## 16. Canonical Asset Folder
-Recommended:
+Recommended structure (conceptual):
 `Brand Assets/`
 - `01_LOGO/`
 - `02_COLOR/`
@@ -175,6 +202,8 @@ Recommended:
 - `06_SOCIAL_TEMPLATES/`
 - `07_PRODUCT_ASSETS/`
 - `99_EXPLORATION_ARCHIVE/`
+
+**Actual repo path (2026-09-12):** realized under the repo's existing `docs/cefflo/` tree rather than a new top-level folder — `docs/cefflo/brand/assets/logo/` holds the `01_LOGO/` category (§5). Other categories (`02_COLOR/` etc.) are not yet populated with files; color/typography/icon truth lives in this document's own sections until dedicated assets exist.
 
 Only LOCKED assets go into canonical production folders.
 

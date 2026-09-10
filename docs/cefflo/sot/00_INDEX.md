@@ -7,6 +7,30 @@
 **Version:** 1.0 — 2026-09-04
 **Purpose:** Top-level map of Cefflo canonical knowledge domains.
 
+## 0. CEFFLO 7-Phase Execution Roadmap (parent hierarchy — added 2026-09-12, see `docs/cefflo/05_DECISIONS.md` D-29)
+
+The Founder-directed top-level execution structure, PHASE 01 (Founder-approved 2026-09-12 as the current run's baseline; not yet finally reviewed/approved — see D-29) through PHASE 07:
+
+```text
+PHASE 01 — TRUTH / SOT BASELINE                    Gate: TRUTH READY
+PHASE 02 — GROW V1 PRODUCT ARCHITECTURE            Gate: V1 READY
+PHASE 03 — MARKETING ENGINE + CONTENT PILOT        Gate: MARKETING MACHINE READY
+PHASE 04 — VENDOR PRODUCT                          Gate: VENDOR READY
+PHASE 05 — DELIVERY EXPERIENCE                     Gate: DELIVERY LOOP READY
+PHASE 06 — PLATFORM + COMMERCIAL                   Gate: PLATFORM READY
+PHASE 07 — PRODUCT PILOT → LAUNCH                  Gate: GO / NO-GO
+```
+
+**Deliberate sequencing change (Founder-directed, 2026-09-12):** Marketing Engine execution (Phase 03) is intentionally earlier than full product completion. Once Phase 01+02 are approved, the marketing/content machine may build and run in parallel with Vendor (Phase 04) and Delivery Experience (Phase 05) product work — marketing does not wait for the whole product to finish, but must never represent the product as more commercially available than Product Truth supports.
+
+**Relationship to `docs/cefflo/03_ROADMAP.md`'s existing "Stage 4 Roadmap, Phase 0–7":** that is a *different, narrower, already-partially-executed* framework (AI Workstation → Baseline & SOT Lock → Backend & Security → Vendor PWA → Rider+Customer → FOUNDR → Integration & RC → Production & Go-Live) — same "Phase N" numbering convention, different scope, no Marketing phase. To prevent the two "Phase N" sequences being confused: the Stage-4 roadmap's Phase 1 (Baseline & SOT Lock) is subsumed by this hierarchy's Phase 01; its Phase 2 (Backend & Security) and Phase 3 (Vendor PWA) map into this hierarchy's Phase 02/04; its Phase 4 (Rider+Customer) maps into Phase 05 (Delivery Experience); its Phase 5 (FOUNDR) and commercial/billing scope map into Phase 06; its Phase 6–7 (Integration/RC, Production/Go-Live) map into Phase 07. `03_ROADMAP.md`'s sprint-level detail (S4-01 etc.) remains valid execution-level evidence — see the reconciliation note added to that file.
+
+**Five Canonical Product Surfaces** (frozen 2026-09-12, Phase 02 — see `docs/cefflo/sot/02_ARCHITECTURE.md` §0 for the full freeze): Vendor Product (Web/Desktop + Flutter — one product, two presentation surfaces), Driver Product (Flutter Mobile — the target-state surface described by `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md`/`docs/cefflo/07_RIDER.md`'s live PWA; canonical backend/schema role remains "Rider," unchanged), Customer Tracking (Web/PWA), CEFFLO Website (Public Web — `docs/cefflo/sot/11_CEFFLO_WEBSITE.md`, domain 17 below), FOUNDR Command Center (Internal Web/Desktop). Operations/Helper is a permission-scoped role within Vendor Product's team system (D-22, `CEFFLO_GROW_V1_SCOPE_LOCK.md` §15), not a sixth surface.
+
+**Workforce terminology (reconciled 2026-09-12):** general/unscoped term is Driver / Delivery Driver / Delivery Team; "Rider" is natural specifically for motorcycle context (Driver is also acceptable there); Car/Van use Driver / Van Driver / Delivery Driver. **No backend/schema/API renaming performed or authorized** — `riders` table, `rider_vehicle_type` enum, and all D-01–D-28 "Rider" product/role terminology remain exactly as-is. See `docs/cefflo/sot/01_PRODUCT_TRUTH.md` §4 for the canonical statement.
+
+Full Phase 01+02 execution report: `docs/cefflo/05_DECISIONS.md` D-29.
+
 ## 1. Vendor Flutter
 Primary:
 - `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md` — status: WORKING MASTER BASELINE, "Founder Review Required," NOT YET IMPLEMENTED. Subscription/billing screens V-50–V-54 remain HOLD; V-41 Delivery Settings remains RECONCILIATION REQUIRED.
@@ -56,6 +80,10 @@ Primary hierarchy:
 7. `docs/cefflo/sot/marketing/04_CREATIVE_PLAYBOOK.md`
 8. `docs/cefflo/sot/marketing/05_PAID_GROWTH_PLAYBOOK.md`
 9. `docs/cefflo/sot/marketing/06_AI_MARKETING_ENGINE_MASTER.md`
+10. `docs/cefflo/sot/marketing/08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` — Founder-approved v1.1 (2026-09-10), n8n orchestration blueprint for item 9's daily pipeline; see `docs/cefflo/05_DECISIONS.md` D-25.
+11. `docs/cefflo/sot/marketing/09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` — Founder-approved FG-1 reconciliation (2026-09-10); FG-2 (Content World Baseline) not yet granted. See `docs/cefflo/05_DECISIONS.md` D-26.
+12. `docs/cefflo/sot/marketing/10_BRAND_VOICE_LANGUAGE_SYSTEM.md` — Founder-approved FG-1-equivalent reconciliation (2026-09-10), Malaysian Malay brand-voice doctrine; FG-V1–V4 not yet granted. See `docs/cefflo/05_DECISIONS.md` D-26.
+13. `docs/cefflo/sot/marketing/11_CREATIVE_INTELLIGENCE_LAYER.md` — reconciled and implemented (2026-09-11): taxonomy, scenario contract/engine/validator, tested. GATE B (Rider/Driver terminology) RESOLVED — product/schema stays "Rider"; display terms are vehicle-contextual (Motorcycle=Rider, Car/Van=Driver, mixed=Delivery Team). See `docs/cefflo/05_DECISIONS.md` D-27.
 
 ## 7. Marketing Performance
 Runtime evidence only:
@@ -67,11 +95,12 @@ Runtime evidence only:
 Do not store invented winner data here. This domain is N/A until real campaign data exists — no AI Marketing Engine implementation exists in this repo yet (see `docs/cefflo/sot/marketing/00_MARKETING_KNOWLEDGE_PACK_INDEX.md`).
 
 ## 8. Brand Assets
+**Updated 2026-09-12 (Founder baseline closeout, D-30):** logo and Signal Lime are now Founder-locked.
 Primary:
 - `docs/cefflo/sot/06_BRAND_ASSETS_GOVERNANCE.md`
-- current Brand System — no logo is Founder-locked yet (see governance file §5).
-- locked logo/color/type/icon assets — none locked yet.
-- exploration archive clearly separated — see `previews/cefflo-logo-identity-exploration/` (untracked, exploration only).
+- current Brand System — **logo LOCKED** (`docs/cefflo/brand/assets/logo/cefflo-logo-official.png`, see governance file §5); **Signal Lime LOCKED** at `#C7F000` (governance file §2).
+- locked assets: logo (master + transparent + wordmark variants, PNG only), Signal Lime hex. Not yet locked: typography, icon family, production logo exports (SVG/monochrome/app-icon/favicon).
+- exploration archive clearly separated — see `previews/cefflo-logo-identity-exploration/` (untracked, exploration only) — **superseded/historical, not canonical.**
 - historical visual notes: `docs/cefflo/CEFFLO_BRAND_BRAIN.md` §8 (superseded, retained for history).
 
 ## 9. Cefflo Pricing
@@ -140,3 +169,10 @@ The knowledge base is healthy when an agent can locate the correct domain SOT, r
 - `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md` remains "Founder Review Required" — not yet locked, not yet implemented; the current live Rider client is the PWA at `docs/cefflo/07_RIDER.md`.
 
 See `docs/cefflo/05_DECISIONS.md` D-23 and D-24 for the full reconciliation record.
+
+## 17. CEFFLO Website (added 2026-09-12, Founder baseline closeout — D-30)
+Primary:
+- `docs/cefflo/sot/11_CEFFLO_WEBSITE.md` — the fifth canonical product surface (§0 above / `02_ARCHITECTURE.md` §0). Public Web, acquisition/commercial surface only, not operational.
+- current implementation: `marketing/index.html` (built public site) — Phase 03 pre-launch landing and Phase 06 full commercial site are both not yet built.
+
+This closes the gap originally flagged when the five-canonical-product-surface architecture was frozen (2026-09-12, D-29).

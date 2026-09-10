@@ -1,5 +1,6 @@
 **Status:** CANONICAL — Founder-approved, merged into repo 2026-09-04
 **Repo-reconciliation note:** Net-new implementation master for the AI Marketing Engine (n8n-orchestrated). No implementation work (n8n workflows, marketing_* tables, etc.) exists in this repo yet — this file is the target specification only, per its own Phase M0 (Audit & SOT Reconciliation) being satisfied by this very reconciliation pass.
+**Reconciliation update (2026-09-10):** `docs/cefflo/sot/marketing/08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` (Founder-approved v1.1) is now the concrete n8n orchestration blueprint implementing Teams 1–4 below. §5's volume ceiling and §8's workflow naming are corrected/annotated to match it; see the inline notes at each section and `docs/cefflo/05_DECISIONS.md` D-25. Team 5 (Paid Growth) and the Weekly Winner Loop are preserved and unaffected — see `08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` Addendum A1.
 
 ---
 
@@ -125,11 +126,11 @@ At seven days:
 
 A core experiment may create multiple platform-native outputs.
 
-The theoretical ceiling if every experiment produced an output for all four platforms is:
+**Superseded 2026-09-10 (Founder Decision Gate, see D-25):** the figure below assumed four independent platform lanes. Canonical default is now **three lanes** — Instagram and Facebook share one Meta package by default (`08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` §3, §10) — with TikTok and Threads independent. The corrected ceiling replaces the superseded one:
 
-**35 × 4 = 140 platform outputs/week**
+**35 × 3 = ~105 platform outputs/week**
 
-140 is a ceiling, not a quota.
+105 is a ceiling, not a quota. Instagram/Facebook may still be split into separate packages when a genuine platform-fit reason exists (`08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` §10).
 
 The router must not create an inappropriate platform version simply to increase output count.
 
@@ -138,7 +139,7 @@ Example:
 - a strong text observation may be Threads-first;
 - a product workflow demonstration may be TikTok/Reels-first;
 - a carousel may be Instagram/Facebook-first;
-- one concept may genuinely work on all four after adaptation.
+- one concept may genuinely work on all three lanes after adaptation.
 
 Quality and platform fit override output volume.
 
@@ -473,6 +474,21 @@ It coordinates:
 - logging.
 
 ## Recommended logical workflows
+
+**Superseded-in-detail 2026-09-10 (Founder Decision Gate, see D-25):** the `WF-01`..`WF-08` naming below is retained for historical context only. The canonical n8n workflow family is now `CEFFLO - 00` through `12`, plus `CEFFLO - 99 - Error & Recovery`, defined in `08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` §21 and Addendum A1/A4. Mapping:
+
+| Old (historical) | New (canonical) |
+|---|---|
+| WF-01 Daily Marketing Planner | CEFFLO-01 SOT Retrieval + CEFFLO-02 Research & Angle Miner + CEFFLO-03 Master Concept Builder |
+| WF-02 Creative Production Router | CEFFLO-04 Creative Router + CEFFLO-05A Meta Creator + CEFFLO-05B TikTok Creator + CEFFLO-05C Threads Writer |
+| WF-03 Publishing Router | CEFFLO-08 Publisher |
+| WF-04 Metrics Collector | CEFFLO-09 Analytics & Scoring |
+| WF-05 Weekly Winner Engine | CEFFLO-11 Weekly Winner Engine (weekly cadence, layered after the daily chain) |
+| WF-06 Paid Amplification | CEFFLO-12 Paid Growth (weekly cadence, layered after the daily chain) |
+| WF-07 Learning Memory | CEFFLO-10 Marketing Memory |
+| WF-08 Failure / Cost / Safety Monitor | CEFFLO-99 Error & Recovery |
+
+No AI QA or Founder Approval workflow existed as a named stage in the old list; these are new explicit stages in the canonical family (`CEFFLO-06 AI QA`, `CEFFLO-07 Founder Approval`).
 
 ### WF-01 — Daily Marketing Planner
 
