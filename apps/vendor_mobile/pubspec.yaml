@@ -1,0 +1,21 @@
+name: cefflo_vendor_mobile
+description: "Cefflo Vendor Mobile — Flutter client wired to the canonical Cefflo backend (staging only)."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  supabase_flutter: ^2.8.0
+  lucide_icons_flutter: ^3.1.18
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
