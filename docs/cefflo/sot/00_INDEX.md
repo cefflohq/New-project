@@ -102,7 +102,7 @@ Do not store invented winner data here. This domain is N/A until real campaign d
 Primary:
 - `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — **CANONICAL, current palette/typography/surface-system authority.** CEFFLO Yellow `#FEC819` is the current locked primary/signature accent.
 - `docs/cefflo/sot/06_BRAND_ASSETS_GOVERNANCE.md` — logo governance remains current here; §2's palette section is historical as of D-33 (annotated in place, not deleted).
-- current Brand System — **logo LOCKED** (`docs/cefflo/brand/assets/logo/cefflo-logo-official.png`, see governance file §5, unaffected by D-33); **Signal Lime RETIRED** as primary colour (was locked at `#C7F000` under D-30; superseded by CEFFLO Yellow `#FEC819` under D-33 — see `12_EXPERIENCE_SYSTEM.md` §1).
+- current Brand System — **logo LOCKED** (geometry: D-30, unaffected by D-33; production asset set updated to CEFFLO Yellow/Navy under D-35 — `docs/cefflo/brand/assets/logo/cefflo-logo-icon-navy.png`, see governance file §5); **Signal Lime RETIRED** as primary colour (was locked at `#C7F000` under D-30; superseded by CEFFLO Yellow `#FEC819` under D-33 — see `12_EXPERIENCE_SYSTEM.md` §1).
 - locked assets: logo (master + transparent + wordmark variants, PNG only), full palette/typography/surface system per `12_EXPERIENCE_SYSTEM.md`.
 - exploration archive clearly separated — see `previews/cefflo-logo-identity-exploration/` (untracked, exploration only) — **superseded/historical, not canonical.**
 - historical visual notes: `docs/cefflo/CEFFLO_BRAND_BRAIN.md` §8 (superseded, retained for history).

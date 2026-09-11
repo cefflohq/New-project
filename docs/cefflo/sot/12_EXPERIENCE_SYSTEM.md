@@ -1,10 +1,10 @@
-**Status:** CANONICAL — v1.1, locked 2026-09-11 by Founder decision `docs/cefflo/05_DECISIONS.md` D-33 (palette/typography/surface system) and D-34 (Warning semantic token, Founder Gate 0). This is the single visual implementation authority for Vendor Web/Desktop, Vendor Flutter, Rider Flutter, and future CEFFLO product surfaces. It supersedes `docs/cefflo/05_DECISIONS.md` D-30 **only where D-30 named Signal Lime as the current primary/signature colour** — D-30 itself is preserved unedited as the historical record of that earlier decision; nothing here rewrites it.
+**Status:** CANONICAL — v1.2, locked 2026-09-11 by Founder decision `docs/cefflo/05_DECISIONS.md` D-33 (palette/typography/surface system), D-34 (Warning semantic token, Founder Gate 0), and D-35 (master logo production asset set updated to CEFFLO Yellow/Navy). This is the single visual implementation authority for Vendor Web/Desktop, Vendor Flutter, Rider Flutter, and future CEFFLO product surfaces. It supersedes `docs/cefflo/05_DECISIONS.md` D-30 **only where D-30 named Signal Lime as the current primary/signature colour** — D-30 itself is preserved unedited as the historical record of that earlier decision; nothing here rewrites it.
 **Implementation boundary — read this before doing anything with it:** this document is documentation/SOT canonicalization only. It does **not** authorize Flutter palette migration, Vendor screen redesign, Rider Flutter build-out, backend changes, or merging `claude/vendor-mobile-backend-integration`. Those are separate, later, not-yet-authorized execution stages.
 
 ---
 
 # CEFFLO — EXPERIENCE SYSTEM (VISUAL DNA)
-**Version:** 1.1 — 2026-09-11 (Warning semantic token added, D-34)
+**Version:** 1.2 — 2026-09-11 (master logo production asset set updated, D-35)
 **Owner:** Founder
 **Scope:** How CEFFLO products look. Product/behaviour truth remains governed separately by `01_PRODUCT_TRUTH.md`, `02_ARCHITECTURE.md`, and the relevant product SOT.
 
@@ -132,7 +132,7 @@ Bottom navigation: white background, neutral inactive icon/label, CEFFLO Yellow 
 
 **Business/store name text** (distinct from the logo) may appear contextually where useful — explicitly including Today/Dashboard — but is not mandatory global header branding. Evaluated screen-by-screen against whether it does real operational work there.
 
-**Master logo geometry does not change.** Reconciling its presentation context with Navy (e.g. background colour behind it) remains deferred to the implementation stage, not performed here.
+**Master logo geometry does not change.** Its presentation context with Navy is resolved 2026-09-11 (D-35): the Founder supplied an updated production asset set with the arrow recoloured to CEFFLO Yellow and the icon's background moved to Navy — `docs/cefflo/brand/assets/logo/cefflo-logo-icon-navy.png` (app/icon), `cefflo-logo-mark.png` (standalone, transparent), `cefflo-logo-primary.png` (mark + wordmark, transparent), `cefflo-logo-wordmark.png` (wordmark-only, transparent). Full detail: `06_BRAND_ASSETS_GOVERNANCE.md` §5/§15.
 
 ## 10. Flutter implementation baseline — evidence status only, no migration authorized
 
@@ -191,3 +191,5 @@ No adjustment materially changed any hue's identity — every adjustment was a l
 3. Flutter token migration, Vendor screen work, Rider Flutter build-out — all explicitly out of scope for this canonicalization, belong to the next authorized execution stage.
 
 Resolved by v1.1 (D-34): the Warning semantic token gap is closed (§2.1).
+
+Resolved by v1.2 (D-35): §9's deferred "presentation context with Navy" item is closed — the master logo production asset set now includes a Navy-background icon variant and Yellow-arrow transparent variants.

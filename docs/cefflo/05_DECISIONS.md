@@ -404,3 +404,19 @@ Founder decision, closing the one gap `docs/cefflo/audits/CEFFLO_EXPERIENCE_SYST
 Full detail: `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` §2.1, now v1.1.
 
 **Scope:** documentation only. Does not itself migrate any implementation — that proceeds under the separate `CEFFLO_EXPERIENCE_SYSTEM_IMPLEMENTATION_MASTER.md` execution, Phase B onward.
+
+## D-35 CEFFLO Master Logo — Production Asset Set Updated to CEFFLO Yellow/Navy (2026-09-11)
+
+Founder-supplied replacement production asset set for the D-30-locked master logo. **Not a redesign and not a geometry change** — the folded-ribbon "C" mark and wordmark geometry locked under D-30 are unchanged. What changed is the colour treatment, matching the D-33 palette supersession that had already retired Signal Lime everywhere else: the arrow at the mark's left-centre junction moves from Signal Lime to CEFFLO Yellow `#FEC819`, and the icon's background container moves from black to the canonical Navy family (`#12213E`).
+
+**New canonical production assets**, stored unaltered — no redrawing, retracing, regeneration, or "cleanup," same standard as D-30 — at `docs/cefflo/brand/assets/logo/`:
+- `cefflo-logo-icon-navy.png` — app/icon variant, mark inside a Navy rounded-square container. Primary master reference.
+- `cefflo-logo-mark.png` — standalone mark (ribbon "C" + Yellow arrow), transparent background.
+- `cefflo-logo-primary.png` — primary lockup (mark + "Cefflo" wordmark), transparent background.
+- `cefflo-logo-wordmark.png` — wordmark-only, transparent background.
+
+All four are 4375×4375 RGBA PNGs with alpha preserved exactly as supplied; each verified byte-for-byte (SHA-256) against the Founder's original upload before being committed.
+
+**The four D-30 files are retained, unmodified, as SUPERSEDED/HISTORICAL** — `cefflo-logo-official.png`, `-transparent.png`, `-wordmark.png`, `-wordmark-white.png` — not deleted, no longer the current production reference. `docs/cefflo/sot/06_BRAND_ASSETS_GOVERNANCE.md` §5/§15 updated accordingly; `12_EXPERIENCE_SYSTEM.md` §9's prior note that Navy presentation context was "deferred to the implementation stage" is resolved by `cefflo-logo-icon-navy.png`.
+
+**Scope:** documentation and asset-file placement, plus the narrow set of live product references the Experience System permits logo usage on (Invite, Marketing Prelaunch). Does not reopen the D-30 geometry lock or the D-33 palette decision.

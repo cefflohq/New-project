@@ -2,6 +2,7 @@
 **Repo-reconciliation note:** Net-new canonical domain; no equivalent asset-governance doc existed in the repo before this reconciliation. Complements `docs/cefflo/CEFFLO_BRAND_BRAIN.md` §8 (Visual Identity), which remains historically accurate but should be read alongside this file for the fuller asset-registry/logo-lock governance model.
 **Reconciliation update (2026-09-12, Founder baseline closeout — see `docs/cefflo/05_DECISIONS.md` D-30):** §2 and §5 below described the logo as unlocked and Signal Lime as a candidate. Both are now Founder-locked. §2 and §5 are corrected in place; the original text is annotated, not deleted, so the history of what changed and when remains traceable. Canonical logo asset: `docs/cefflo/brand/assets/logo/cefflo-logo-official.png` (plus transparent/wordmark variants in the same folder) — see §5.
 **Reconciliation update (2026-09-11, Experience System canonicalization — see `docs/cefflo/05_DECISIONS.md` D-33):** §2's Signal Lime lock is superseded as current colour authority — CEFFLO Yellow `#FEC819` is now the locked primary accent. §2 is annotated in place, not deleted. The logo lock from D-30 is unaffected. Full current palette authority: `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md`.
+**Reconciliation update (2026-09-11, master logo asset set updated — see `docs/cefflo/05_DECISIONS.md` D-35):** §5's canonical production asset list below is superseded by four new Founder-supplied files with the mark's colour treatment brought in line with D-33 (Signal Lime arrow → CEFFLO Yellow, black/background → Navy). The D-30 geometry lock itself is unchanged — this is a production-asset-set update, not a redesign. §5 is corrected in place; the original D-30 file list is retained below as historical, not deleted.
 
 ---
 
@@ -57,15 +58,25 @@ Semantic success/warning/danger/info remain separate from brand signal.
 ## 5. Logo Status
 The text name is **Cefflo**.
 
-**LOCKED 2026-09-12 (Founder baseline closeout — see `docs/cefflo/05_DECISIONS.md` D-30).** The official master logo/brand mark is Founder-approved: a white folded-ribbon "C" mark with a Signal Lime directional/navigation arrow at the left-center junction, on a canonical black-background presentation.
+**LOCKED 2026-09-12 (Founder baseline closeout — see `docs/cefflo/05_DECISIONS.md` D-30).** The official master logo/brand mark is Founder-approved: a white folded-ribbon "C" mark with a directional/navigation arrow at the left-center junction. **Geometry locked by D-30 and unchanged since.**
 
-**Canonical asset (Founder-supplied, stored unaltered — do not redraw/regenerate/retrace):**
-- `docs/cefflo/brand/assets/logo/cefflo-logo-official.png` — **primary master reference**, clean black-background app-icon presentation.
-- `docs/cefflo/brand/assets/logo/cefflo-logo-official-transparent.png` — transparent-background variant, as supplied.
-- `docs/cefflo/brand/assets/logo/cefflo-logo-official-wordmark.png` — mark + "Cefflo" wordmark, as supplied.
-- `docs/cefflo/brand/assets/logo/cefflo-logo-official-wordmark-white.png` — wordmark-only variant, as supplied.
+**Production asset set updated 2026-09-11 (see `docs/cefflo/05_DECISIONS.md` D-35)** — colour treatment only, matching the D-33 palette supersession: the arrow is now CEFFLO Yellow `#FEC819` (was Signal Lime), and the icon's container is the canonical Navy family `#12213E` (was black).
 
-The transparent and wordmark variants (as supplied) carry visible extraction/matting artifacts around the edges and the wordmark-only variant is very low-contrast. These are stored exactly as provided, unaltered — no redrawing, retracing, or "cleanup" has been performed on any file per explicit Founder instruction. If clean production exports (transparent PNG/WebP, SVG/vector master, monochrome, app-icon, favicon, social exports per §17) are needed, that is a separate, later production task starting from `cefflo-logo-official.png` as the geometry source of truth — not performed here.
+**Current canonical asset (Founder-supplied, stored unaltered — do not redraw/regenerate/retrace):**
+- `docs/cefflo/brand/assets/logo/cefflo-logo-icon-navy.png` — **primary master reference**, mark inside a Navy rounded-square container (app/icon presentation).
+- `docs/cefflo/brand/assets/logo/cefflo-logo-mark.png` — standalone mark (ribbon "C" + Yellow arrow), transparent background.
+- `docs/cefflo/brand/assets/logo/cefflo-logo-primary.png` — primary lockup (mark + "Cefflo" wordmark), transparent background.
+- `docs/cefflo/brand/assets/logo/cefflo-logo-wordmark.png` — wordmark-only, transparent background.
+
+All four are 4375×4375 RGBA, alpha preserved as supplied, SHA-256-verified byte-identical to the Founder's original upload. No redrawing, retracing, regeneration, or "cleanup" performed, same standard as D-30.
+
+**Superseded 2026-09-11 (D-35), retained as historical, not deleted:** the original D-30 file set —
+- `docs/cefflo/brand/assets/logo/cefflo-logo-official.png` (was primary master reference, black-background)
+- `docs/cefflo/brand/assets/logo/cefflo-logo-official-transparent.png`
+- `docs/cefflo/brand/assets/logo/cefflo-logo-official-wordmark.png`
+- `docs/cefflo/brand/assets/logo/cefflo-logo-official-wordmark-white.png`
+
+— all four still present on disk, still carry the Signal Lime arrow / black background exactly as originally supplied, no longer the current production reference. The transparent and wordmark variants among them carry visible extraction/matting artifacts around the edges and the wordmark-only variant is very low-contrast — noted here for anyone who encounters them, not corrected, since they are historical record rather than current production source.
 
 **Superseded 2026-09-12:** the previous line here — *"The official master logo/brand mark is NOT YET FOUNDER-LOCKED"* — is no longer current.
 
@@ -168,7 +179,7 @@ Structure/components should remain coherent. Dark Mode may use sectional treatme
 - asset_id: `cefflo-logo-official`
 - name: Cefflo primary mark (folded-ribbon "C" + Signal Lime arrow)
 - type: logo, master reference
-- status: **LOCKED**
+- status: **SUPERSEDED** (2026-09-11, D-35 — colour treatment only, geometry unaffected; files retained on disk as historical)
 - version: 1.0
 - source: Founder-supplied PNG, 2026-09-12
 - owner: Founder
@@ -176,6 +187,21 @@ Structure/components should remain coherent. Dark Mode may use sectional treatme
 - permitted surfaces: all (product, web, social, print) — production-format exports not yet generated
 - file formats: PNG only at this time (RGBA, 3438×3438 for the primary reference) — see §5 for the four files stored
 - color variants: black-background (primary), transparent, wordmark, wordmark-only — as supplied
+- clear-space/min-size rules: not yet specified — Founder decision pending if needed before production use
+- licensing/provenance: Founder-supplied original
+
+**Second registered entry (2026-09-11, D-35 — supersedes the entry above):**
+- asset_id: `cefflo-logo-official`
+- name: Cefflo primary mark (folded-ribbon "C" + CEFFLO Yellow arrow, Navy icon background)
+- type: logo, master reference
+- status: **LOCKED**
+- version: 2.0
+- source: Founder-supplied PNG, 2026-09-11
+- owner: Founder
+- approved date: 2026-09-11
+- permitted surfaces: all (product, web, social, print) — production-format exports not yet generated
+- file formats: PNG only at this time (RGBA, 4375×4375, alpha preserved) — see §5 for the four files stored
+- color variants: Navy-icon (primary), transparent mark, transparent primary lockup, transparent wordmark-only — as supplied
 - clear-space/min-size rules: not yet specified — Founder decision pending if needed before production use
 - licensing/provenance: Founder-supplied original
 
