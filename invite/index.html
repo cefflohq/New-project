@@ -6,45 +6,54 @@
 <title>CEFFLO — Invitation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  /* CEFFLO Experience System v1.1 (docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md, D-33/D-34) */
   :root{
-    --page:#F6F7F9; --card:#FFFFFF; --border:#E9EBF1; --ink:#0D0E0D; --muted:#8A8FA3;
-    --action:#C7F000; --on-action:#0D0E0D; --info-tint:#F1F2EE;
-    --danger:#E5484D; --danger-tint:#FCEBEC;
-    --success:#1EBE71; --success-tint:#E7F9EF;
+    --workspace:#F7F8FA; --surface:#FFFFFF; --border:#E3E6EE; --ink:#181818; --muted:#666C80;
+    --yellow:#FEC819; --on-yellow:#181818; --neutral-tint:#F1F2EE;
+    --attention:#D73C2B; --attention-tint:#FBEBE9;
+    --success:#248648; --success-tint:#E7F3EC;
+    --warning:#9A6700; --warning-fill:#F59E0B; --warning-tint:#FFF6E5;
+    --shadow-tight:0 1px 2px rgba(18,33,62,.05); --shadow-soft:0 6px 16px -4px rgba(18,33,62,.08);
   }
   *{box-sizing:border-box;}
-  body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--page);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
-  .card{width:100%;max-width:400px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 24px;box-shadow:0 4px 24px rgba(20,20,40,.06);}
+  body{margin:0;font-family:'Manrope',system-ui,sans-serif;background:var(--workspace);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 24px;box-shadow:var(--shadow-tight),var(--shadow-soft);}
   .brand{font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--ink);text-transform:uppercase;margin-bottom:14px;}
   h1{font-size:20px;margin:0 0 6px;font-weight:800;}
   p.sub{font-size:13px;color:var(--muted);margin:0 0 20px;line-height:1.5;}
-  .invite-summary{background:var(--info-tint);border-radius:14px;padding:14px 16px;margin-bottom:20px;}
+  .invite-summary{background:var(--neutral-tint);border-radius:14px;padding:14px 16px;margin-bottom:20px;}
   .invite-summary b{display:block;font-size:15px;margin-bottom:2px;}
   .invite-summary span{font-size:12px;color:var(--muted);}
-  .tabs{display:flex;gap:6px;margin-bottom:16px;background:var(--page);border-radius:12px;padding:4px;}
-  .tab-btn{flex:1;border:none;background:none;padding:9px;border-radius:9px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;}
-  .tab-btn.active{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+  .tabs{display:flex;gap:6px;margin-bottom:16px;background:var(--workspace);border-radius:12px;padding:4px;}
+  .tab-btn{flex:1;border:none;background:none;padding:9px;border-radius:9px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;}
+  .tab-btn.active{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-tight);}
   .field{margin-bottom:12px;}
   .field label{display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:var(--muted);}
-  .field input{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;}
-  .btn{width:100%;padding:12px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer;background:var(--action);color:var(--on-action);margin-top:6px;}
+  .field input{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:14px;font-size:14px;font-family:inherit;}
+  .btn{width:100%;padding:12px;border-radius:999px;border:none;font-size:14px;font-weight:700;cursor:pointer;background:var(--yellow);color:var(--on-yellow);margin-top:6px;font-family:inherit;}
   .btn:disabled{opacity:.5;cursor:default;}
-  .btn-link{background:none;color:var(--ink);font-weight:600;font-size:12px;padding:8px;margin-top:4px;}
+  .btn-link{background:none;color:var(--ink);font-weight:600;font-size:12px;padding:8px;margin-top:4px;font-family:inherit;}
   .status{font-size:12.5px;border-radius:10px;padding:10px 12px;margin-bottom:14px;line-height:1.5;}
-  .status.error{background:var(--danger-tint);color:var(--danger);}
-  .status.success{background:var(--success-tint);color:#1a8f57;}
-  .status.warn{background:#FFF6E5;color:#9A6700;}
+  .status.error{background:var(--attention-tint);color:var(--attention);}
+  .status.success{background:var(--success-tint);color:var(--success);}
+  .status.warn{background:var(--warning-tint);color:var(--warning);}
   .hidden{display:none !important;}
-  .owner-warning{font-size:11.5px;background:#FFF6E5;color:#9A6700;border-radius:10px;padding:9px 11px;margin-bottom:14px;line-height:1.5;}
+  .owner-warning{font-size:11.5px;background:var(--warning-tint);color:var(--warning);border-radius:10px;padding:9px 11px;margin-bottom:14px;line-height:1.5;}
   .spinner{width:28px;height:28px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--ink);animation:spin .8s linear infinite;margin:24px auto;}
   @keyframes spin{to{transform:rotate(360deg);}}
-  .pending-icon{width:56px;height:56px;border-radius:16px;background:#FFF6E5;color:#9A6700;display:grid;place-items:center;margin:0 auto 14px;}
+  .pending-icon{width:56px;height:56px;border-radius:16px;background:var(--warning-tint);color:var(--warning);display:grid;place-items:center;margin:0 auto 14px;}
 </style>
 </head>
 <body>
 <div class="card" id="app">
+  <!-- Text wordmark, not the master logo asset: every available master file
+       (docs/cefflo/brand/assets/logo/*) either has the retired Signal Lime
+       baked into its pixels or is a white-only variant illegible on this
+       light card. Per SOT §9, the asset is never redrawn/recolored, so this
+       uses the documented neutral-placeholder fallback until a Lime-free,
+       light-background master asset is produced. -->
   <div class="brand">CEFFLO</div>
   <div id="loadingState">
     <div class="spinner"></div>

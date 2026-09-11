@@ -7,58 +7,61 @@
 <meta name="description" content="Cefflo helps businesses running their own local same-day delivery turn today's orders into a clear, controlled operation. Join Early Access.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  /* CEFFLO Experience System v1.1 (docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md, D-33/D-34).
+     This page is a public pre-launch landing surface -- an "external brand
+     moment" per §9, so it deliberately keeps its full Navy background rather
+     than the neutral-heavy Workspace treatment operational screens use. */
   :root{
-    --black:#0D0E0D; --white:#FFFFFF; --graphite:#3A3D3F; --lightgrey:#F1F2EE;
-    --lime:#C7F000; --on-lime:#0D0E0D; --muted:#6B6F73; --border:#26282A;
-    --danger:#E5484D; --danger-tint:#2A1416; --success:#1EBE71; --success-tint:#0F241A;
+    --navy:#12213E; --navy-raised:#1A2C50; --white:#FFFFFF; --lightgrey:#F1F2EE;
+    --yellow:#FEC819; --on-yellow:#181818; --muted:#8C93A8; --border:#2A3B5C;
+    --attention:#E37569; --attention-tint:#3A1D18; --success:#72D998; --success-tint:#153327;
   }
   *{box-sizing:border-box;}
-  body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--black);color:var(--white);line-height:1.5;}
+  body{margin:0;font-family:'Manrope',system-ui,sans-serif;background:var(--navy);color:var(--white);line-height:1.5;}
   .wrap{max-width:680px;margin:0 auto;padding:0 20px;}
   header{padding:28px 0 8px;}
-  .brand{font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;}
-  .brand .dot{color:var(--lime);}
+  .brand img{height:22px;display:block;}
   section.hero{padding:56px 0 40px;}
   h1{font-size:34px;line-height:1.2;font-weight:800;margin:0 0 16px;}
-  h1 .lime{color:var(--lime);}
-  p.lede{font-size:16px;color:#C7CACC;margin:0 0 28px;max-width:52ch;}
-  .cta-btn{display:inline-block;background:var(--lime);color:var(--on-lime);font-weight:800;font-size:15px;border:none;border-radius:12px;padding:14px 24px;cursor:pointer;text-decoration:none;}
+  h1 .accent{color:var(--yellow);}
+  p.lede{font-size:16px;color:#C4CAE0;margin:0 0 28px;max-width:52ch;}
+  .cta-btn{display:inline-block;background:var(--yellow);color:var(--on-yellow);font-weight:800;font-size:15px;border:none;border-radius:999px;padding:14px 24px;cursor:pointer;text-decoration:none;}
   section{padding:36px 0;border-top:1px solid var(--border);}
-  h2{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--lime);margin:0 0 14px;}
+  h2{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--yellow);margin:0 0 14px;}
   h3{font-size:20px;font-weight:800;margin:0 0 10px;}
-  p{color:#C7CACC;font-size:15px;margin:0 0 12px;}
-  .flow{display:flex;flex-wrap:wrap;gap:8px;font-size:13px;color:#C7CACC;margin:16px 0;}
-  .flow span{background:var(--graphite);border-radius:999px;padding:6px 12px;}
-  .flow span.active{background:var(--lime);color:var(--on-lime);font-weight:700;}
+  p{color:#C4CAE0;font-size:15px;margin:0 0 12px;}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;font-size:13px;color:#C4CAE0;margin:16px 0;}
+  .flow span{background:var(--navy-raised);border-radius:999px;padding:6px 12px;}
+  .flow span.active{background:var(--yellow);color:var(--on-yellow);font-weight:700;}
   .examples{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:8px;}
-  .examples div{background:var(--graphite);border-radius:12px;padding:12px 14px;font-size:13.5px;}
+  .examples div{background:var(--navy-raised);border-radius:14px;padding:12px 14px;font-size:13.5px;box-shadow:0 1px 2px rgba(0,0,0,.15),0 6px 16px -4px rgba(0,0,0,.2);}
   .examples div b{display:block;font-size:14px;margin-bottom:2px;}
-  form{background:var(--graphite);border-radius:16px;padding:22px;margin-top:18px;}
+  form{background:var(--navy-raised);border-radius:16px;padding:22px;margin-top:18px;box-shadow:0 1px 2px rgba(0,0,0,.15),0 6px 16px -4px rgba(0,0,0,.2);}
   .field{margin-bottom:12px;}
-  .field label{display:block;font-size:12px;font-weight:700;color:#C7CACC;margin-bottom:5px;}
-  .field input,.field select{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:var(--black);color:var(--white);}
-  .consent{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#9DA1A4;margin:14px 0;}
+  .field label{display:block;font-size:12px;font-weight:700;color:#C4CAE0;margin-bottom:5px;}
+  .field input,.field select{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:14px;font-size:14px;font-family:inherit;background:var(--navy);color:var(--white);}
+  .consent{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#9CA3BA;margin:14px 0;}
   .consent input{margin-top:3px;}
-  .submit-btn{width:100%;padding:13px;border-radius:12px;border:none;font-size:14px;font-weight:800;cursor:pointer;background:var(--lime);color:var(--on-lime);}
+  .submit-btn{width:100%;padding:13px;border-radius:999px;border:none;font-size:14px;font-weight:800;cursor:pointer;background:var(--yellow);color:var(--on-yellow);font-family:inherit;}
   .submit-btn:disabled{opacity:.5;cursor:default;}
   .status{font-size:13px;border-radius:10px;padding:11px 13px;margin-top:12px;line-height:1.5;}
-  .status.error{background:var(--danger-tint);color:#FF8A8F;}
-  .status.success{background:var(--success-tint);color:#5FE0A0;}
+  .status.error{background:var(--attention-tint);color:var(--attention);}
+  .status.success{background:var(--success-tint);color:var(--success);}
   .hidden{display:none !important;}
-  footer{padding:28px 0 44px;font-size:12px;color:#6B6F73;}
-  .disclaimer{font-size:12px;color:#6B6F73;margin-top:6px;}
+  footer{padding:28px 0 44px;font-size:12px;color:var(--muted);}
+  .disclaimer{font-size:12px;color:var(--muted);margin-top:6px;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="brand">Cefflo<span class="dot">.</span></div>
+    <div class="brand"><img src="../../shared/brand/cefflo-logo-official-wordmark-white.png" alt="Cefflo"></div>
   </header>
 
   <section class="hero">
-    <h1>Today's local orders. <span class="lime">One controlled operation.</span></h1>
+    <h1>Today's local orders. <span class="accent">One controlled operation.</span></h1>
     <p class="lede">Cefflo is a local same-day delivery operating system for businesses that manage deliveries within their own service area — not a rider marketplace, not a courier company. Your team, your riders, your customers, run clearly.</p>
     <a class="cta-btn" href="#waitlist">Join Early Access</a>
   </section>
