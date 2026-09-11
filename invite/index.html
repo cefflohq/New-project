@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  /* CEFFLO Experience System v1.1 (docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md, D-33/D-34) */
+  /* CEFFLO Experience System v1.2 (docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md, D-33/D-34/D-35) */
   :root{
     --workspace:#F7F8FA; --surface:#FFFFFF; --border:#E3E6EE; --ink:#181818; --muted:#666C80;
     --yellow:#FEC819; --on-yellow:#181818; --neutral-tint:#F1F2EE;
@@ -20,7 +20,8 @@
   *{box-sizing:border-box;}
   body{margin:0;font-family:'Manrope',system-ui,sans-serif;background:var(--workspace);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
   .card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 24px;box-shadow:var(--shadow-tight),var(--shadow-soft);}
-  .brand{font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--ink);text-transform:uppercase;margin-bottom:14px;}
+  .brand{margin-bottom:16px;}
+  .brand img{width:40px;height:40px;border-radius:12px;display:block;}
   h1{font-size:20px;margin:0 0 6px;font-weight:800;}
   p.sub{font-size:13px;color:var(--muted);margin:0 0 20px;line-height:1.5;}
   .invite-summary{background:var(--neutral-tint);border-radius:14px;padding:14px 16px;margin-bottom:20px;}
@@ -48,13 +49,11 @@
 </head>
 <body>
 <div class="card" id="app">
-  <!-- Text wordmark, not the master logo asset: every available master file
-       (docs/cefflo/brand/assets/logo/*) either has the retired Signal Lime
-       baked into its pixels or is a white-only variant illegible on this
-       light card. Per SOT §9, the asset is never redrawn/recolored, so this
-       uses the documented neutral-placeholder fallback until a Lime-free,
-       light-background master asset is produced. -->
-  <div class="brand">CEFFLO</div>
+  <!-- Real master logo asset (D-35): the Navy-icon variant is self-contained
+       (its own Navy background), so it reads correctly on this light card
+       without the light-background contrast problem the transparent/
+       wordmark variants still have. -->
+  <div class="brand"><img src="../shared/brand/cefflo-logo-icon-navy.png" alt="CEFFLO"></div>
   <div id="loadingState">
     <div class="spinner"></div>
   </div>
