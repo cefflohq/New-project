@@ -20,3 +20,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    # D-35 canonical logo assets, byte-identical to
+    # docs/cefflo/brand/assets/logo/ (SHA-256 verified on copy).
+    - assets/brand/

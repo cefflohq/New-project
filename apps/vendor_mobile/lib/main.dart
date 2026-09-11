@@ -65,7 +65,9 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
         darkTheme: buildVendorTheme(Brightness.dark),
         home: Builder(
           builder: (context) {
-            if (widget.repo.currentUser == null) return const SignInScreen();
+            // Founder-locked Vendor Auth batch (2026-09-11): the auth family
+            // owns its own stage flow, starting at the locked Splash.
+            if (widget.repo.currentUser == null) return const AuthFlow();
             if (app.loadingSession) {
               return const Scaffold(body: StateBlock.loading());
             }

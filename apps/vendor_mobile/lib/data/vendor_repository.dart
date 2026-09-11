@@ -4,12 +4,19 @@ import 'models.dart';
 
 /// Thrown for any backend failure the UI is expected to surface truthfully.
 class RepositoryError implements Exception {
-  RepositoryError(this.message, {this.isMissingContract = false});
+  RepositoryError(this.message, {this.isMissingContract = false, this.code});
   final String message;
 
   /// True when the canonical RPC does not exist on the connected backend.
   /// The UI must show a blocked state instead of pretending the action worked.
   final bool isMissingContract;
+
+  /// The backend's own error code where it supplies one (GoTrue's
+  /// `error_code`, e.g. invalid_credentials / over_email_send_rate_limit /
+  /// email_not_confirmed). The locked auth states branch on this rather
+  /// than on English message text, so a backend copy change can't silently
+  /// reroute the UI.
+  final String? code;
 
   @override
   String toString() => message;
@@ -35,6 +42,54 @@ class VendorRepository {
       type: OtpType.email,
     ),
   );
+
+  /// Email + password sign-in, as locked in the Vendor Auth UI batch
+  /// (2026-09-11). Canonical Supabase GoTrue password grant -- the same
+  /// grant the live Rider PWA already uses, so no new backend capability
+  /// is introduced by this screen.
+  Future<void> signInWithPassword({
+    required String email,
+    required String password,
+  }) => _run(
+    () => _db.auth.signInWithPassword(email: email.trim(), password: password),
+  );
+
+  /// Account creation for the locked Create Account screen. Whether the
+  /// returned session is null (email confirmation required) or non-null
+  /// (confirmation disabled on this project) is backend truth the UI reads
+  /// rather than assumes -- it drives Verify-your-email vs straight-in.
+  Future<bool> signUpWithPassword({
+    required String email,
+    required String password,
+  }) async {
+    final res = await _run(
+      () => _db.auth.signUp(email: email.trim(), password: password),
+    );
+    return res.session == null; // true => verification step is required
+  }
+
+  /// Locked Forgot Password screen. Supabase deliberately does not reveal
+  /// whether the address exists; the locked "Check your email" copy matches
+  /// that ("If an account exists for this email...").
+  Future<void> sendPasswordReset(String email) =>
+      _run(() => _db.auth.resetPasswordForEmail(email.trim()));
+
+  /// Locked Verify-your-email / Verification-link-expired screens.
+  Future<void> resendSignUpVerification(String email) =>
+      _run(() => _db.auth.resend(type: OtpType.signup, email: email.trim()));
+
+  /// Locked Set-a-new-password screen. Requires an active recovery session,
+  /// which only exists after the emailed link has been opened -- this method
+  /// never invents one.
+  Future<void> updatePassword(String newPassword) =>
+      _run(() => _db.auth.updateUser(UserAttributes(password: newPassword)));
+
+  /// Locked Continue-with-Apple / Continue-with-Google buttons. No OAuth
+  /// provider is configured for this environment, so this call surfaces the
+  /// provider's real error rather than a fabricated success -- see the
+  /// batch report's disclosed gap.
+  Future<void> signInWithProvider(OAuthProvider provider) =>
+      _run(() => _db.auth.signInWithOAuth(provider));
 
   Future<void> signOut() => _run(() => _db.auth.signOut());
 
@@ -466,7 +521,7 @@ class VendorRepository {
         isMissingContract: missing,
       );
     } on AuthException catch (e) {
-      throw RepositoryError(e.message);
+      throw RepositoryError(e.message, code: e.code);
     } catch (e) {
       throw RepositoryError('$e');
     }
