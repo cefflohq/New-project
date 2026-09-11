@@ -44,7 +44,7 @@ class CefCard extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
 
-  /// Selected state uses a full Signal Lime outline — never a lime fill.
+  /// Selected state uses a full CEFFLO Yellow outline — never a filled card.
   final bool selected;
   final bool padded;
 
@@ -59,9 +59,10 @@ class CefCard extends StatelessWidget {
         color: c.card,
         borderRadius: BorderRadius.circular(Sizes.cardRadius),
         border: Border.all(
-          color: selected ? CefColors.lime : c.border,
+          color: selected ? CefColors.accent : c.border,
           width: selected ? 1.6 : 1,
         ),
+        boxShadow: cefCardShadow(Theme.of(context).brightness),
       ),
       child: child,
     );
@@ -88,7 +89,9 @@ class SectionHeading extends StatelessWidget {
     padding: const EdgeInsets.only(top: Gap.section, bottom: Gap.sm),
     child: Row(
       children: [
-        Expanded(child: Text(title, style: Theme.of(context).textTheme.titleLarge)),
+        Expanded(
+          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+        ),
         ?trailing,
       ],
     ),
@@ -149,19 +152,32 @@ class CefButton extends StatelessWidget {
       child: FilledButton(
         onPressed: busy ? null : onTap,
         style: FilledButton.styleFrom(
-          backgroundColor: secondary ? c.card : CefColors.lime,
-          foregroundColor: secondary ? c.textPrimary : const Color(0xFF181818),
-          disabledBackgroundColor: secondary ? c.card : CefColors.lime.withValues(alpha: .5),
+          backgroundColor: secondary ? c.card : CefColors.accent,
+          foregroundColor: secondary ? c.textPrimary : CefColors.onAccent,
+          disabledBackgroundColor: secondary
+              ? c.card
+              : CefColors.accent.withValues(alpha: .5),
           side: secondary ? BorderSide(color: c.border) : null,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+          ),
         ),
         child: busy
             ? const SizedBox(
                 width: 18,
                 height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF181818)),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: CefColors.onAccent,
+                ),
               )
-            : Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            : Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
       ),
     );
   }
@@ -210,7 +226,7 @@ class CefField extends StatelessWidget {
               contentPadding: const EdgeInsets.all(Gap.md),
               border: _border(c.border),
               enabledBorder: _border(c.border),
-              focusedBorder: _border(CefColors.lime, width: 1.6),
+              focusedBorder: _border(CefColors.accent, width: 1.6),
               errorBorder: _border(c.attention),
               focusedErrorBorder: _border(c.attention, width: 1.6),
             ),
@@ -220,10 +236,11 @@ class CefField extends StatelessWidget {
     );
   }
 
-  OutlineInputBorder _border(Color color, {double width = 1}) => OutlineInputBorder(
-    borderRadius: BorderRadius.circular(12),
-    borderSide: BorderSide(color: color, width: width),
-  );
+  OutlineInputBorder _border(Color color, {double width = 1}) =>
+      OutlineInputBorder(
+        borderRadius: BorderRadius.circular(Sizes.inputRadius),
+        borderSide: BorderSide(color: color, width: width),
+      );
 }
 
 class StatusChip extends StatelessWidget {
@@ -254,7 +271,7 @@ class StatusChip extends StatelessWidget {
 }
 
 /// Segmented control used for Orders/Zones/Riders tabs — outlined container,
-/// lime outline on the active segment.
+/// accent outline on the active segment.
 class SegmentedTabs extends StatelessWidget {
   const SegmentedTabs({
     super.key,
@@ -291,7 +308,7 @@ class SegmentedTabs extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(9),
                     border: Border.all(
-                      color: sel ? CefColors.lime : Colors.transparent,
+                      color: sel ? CefColors.accent : Colors.transparent,
                       width: 1.6,
                     ),
                   ),

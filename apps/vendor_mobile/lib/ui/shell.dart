@@ -8,7 +8,7 @@ import '../core/theme.dart';
 import 'widgets.dart';
 
 /// Flat white chrome: 60px header and 60px sticky bottom navigation, no
-/// floating glass bar, no FAB, no lime underline beneath the title.
+/// floating glass bar, no FAB, no accent underline beneath the title.
 class VendorShell extends StatelessWidget {
   const VendorShell({super.key, required this.child});
   final Widget child;
@@ -25,7 +25,9 @@ class VendorShell extends StatelessWidget {
         statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
         statusBarBrightness: dark ? Brightness.dark : Brightness.light,
         systemNavigationBarColor: c.chrome,
-        systemNavigationBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+        systemNavigationBarIconBrightness: dark
+            ? Brightness.light
+            : Brightness.dark,
       ),
       child: PopScope(
         canPop: !app.canGoBack,
@@ -151,7 +153,9 @@ class _BottomNav extends StatelessWidget {
                             item.$2,
                             style: TextStyle(
                               fontSize: 11,
-                              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                              fontWeight: selected
+                                  ? FontWeight.w600
+                                  : FontWeight.w500,
                               color: selected ? c.textPrimary : c.textSecondary,
                             ),
                           ),
@@ -160,7 +164,9 @@ class _BottomNav extends StatelessWidget {
                             height: 2,
                             width: 18,
                             decoration: BoxDecoration(
-                              color: selected ? CefColors.lime : Colors.transparent,
+                              color: selected
+                                  ? CefColors.accent
+                                  : Colors.transparent,
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
@@ -187,7 +193,12 @@ class PageBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final list = ListView(
-      padding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.md, Gap.gutter, Gap.section),
+      padding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.md,
+        Gap.gutter,
+        Gap.section,
+      ),
       children: children,
     );
     if (onRefresh == null) return list;
