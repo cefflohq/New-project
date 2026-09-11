@@ -821,14 +821,21 @@
 .status-chip{
   font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;display:inline-block;
 }
-.chip-ontheway{background:var(--warning-soft);color:var(--warning);}
+/* .chip-ongoing had no rule at all -- every order status other than
+   issue/completed (i.e. most orders, see statusChip()'s call site in
+   renderOrdersList) rendered as an unstyled pill: no background, no
+   colour, just the bare .status-chip padding/radius. Genuine pre-existing
+   bug, found while repairing Orders' status display, fixed here rather
+   than left in place. */
+.chip-ongoing{background:var(--info-soft);color:var(--info);}
+.chip-ontheway{background:var(--warning-soft);color:var(--warning-text);}
 .chip-active{background:var(--success-soft);color:var(--success);}
 .chip-offline{background:var(--surface);color:var(--text-faint);border:1px solid var(--border);}
-.chip-delivering{background:var(--warning-soft);color:var(--warning);}
-.chip-preparing{background:var(--primary-soft);color:var(--primary-dark);}
+.chip-delivering{background:var(--warning-soft);color:var(--warning-text);}
+.chip-preparing{background:var(--info-soft);color:var(--info);}
 .chip-issue{background:var(--danger-soft);color:var(--danger);}
 .chip-completed{background:var(--success-soft);color:var(--success);}
-.chip-pickedup{background:var(--primary-soft);color:var(--primary-dark);}
+.chip-pickedup{background:var(--warning-soft);color:var(--warning-text);}
 .dots{display:flex;gap:3px;margin:8px 0 6px;}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--border);}
 .dot.filled{background:var(--success);}
@@ -1298,7 +1305,7 @@ body,
 .contact-outline:active{transform:scale(.98);background:#fff!important;}
 
 /* Completed is neutral history, not an active green state */
-.chip-completed{background:#F1F2F4!important;color:#747987!important;border:1px solid #E2E4E8!important;}
+.chip-completed{background:var(--surface-muted)!important;color:var(--text-secondary)!important;border:1px solid var(--border)!important;}
 
 /* Full-width white canvases on the affected modules */
 .orders-module .page-header,.orders-module .search-box,.orders-module .filter-row,
@@ -1900,8 +1907,8 @@ body[data-vendor-theme="dark"] .vendor-settings-v2{
 .rider-summary-metric.issue .rider-summary-value{color:var(--danger)}
 
 /* Rider states are only Active and Offline */
-.status-chip.chip-active{background:#EAF8EF;color:#18A853}
-.status-chip.chip-offline{background:#F1F2F5;color:#858B97}
+.status-chip.chip-active{background:var(--success-soft);color:var(--success)}
+.status-chip.chip-offline{background:var(--surface-muted);color:var(--text-secondary)}
 
 /* Side-menu logout without icon */
 .side-menu .logout-menu-row{justify-content:flex-start}
@@ -2073,7 +2080,7 @@ body[data-vendor-theme="dark"] .vendor-settings-v2{
   height:34px!important;
   flex:0 0 34px!important;
   padding:0!important;
-  color:#A0A4AE!important;
+  color:var(--text-faint)!important;
   border:0!important;
   background:transparent!important;
   box-shadow:none!important;
@@ -2087,7 +2094,7 @@ body[data-vendor-theme="dark"] .vendor-settings-v2{
   padding:0 15px!important;
   border:1px solid var(--border)!important;
   border-radius:16px!important;
-  background:#FFFFFF!important;
+  background:var(--card-bg)!important;
   color:var(--text-main)!important;
   font:500 13px "Manrope",sans-serif!important;
   outline:0!important;
@@ -2123,7 +2130,7 @@ body[data-vendor-theme="dark"] .vendor-settings-v2{
   height:34px!important;
   flex:0 0 34px!important;
   padding:0!important;
-  color:#A0A4AE!important;
+  color:var(--text-faint)!important;
   border:0!important;
   background:transparent!important;
   box-shadow:none!important;
