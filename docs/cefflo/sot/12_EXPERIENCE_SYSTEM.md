@@ -1,10 +1,10 @@
-**Status:** CANONICAL — v1.0, locked 2026-09-11 by Founder decision `docs/cefflo/05_DECISIONS.md` D-33. This is the single visual implementation authority for Vendor Web/Desktop, Vendor Flutter, Rider Flutter, and future CEFFLO product surfaces. It supersedes `docs/cefflo/05_DECISIONS.md` D-30 **only where D-30 named Signal Lime as the current primary/signature colour** — D-30 itself is preserved unedited as the historical record of that earlier decision; nothing here rewrites it.
+**Status:** CANONICAL — v1.1, locked 2026-09-11 by Founder decision `docs/cefflo/05_DECISIONS.md` D-33 (palette/typography/surface system) and D-34 (Warning semantic token, Founder Gate 0). This is the single visual implementation authority for Vendor Web/Desktop, Vendor Flutter, Rider Flutter, and future CEFFLO product surfaces. It supersedes `docs/cefflo/05_DECISIONS.md` D-30 **only where D-30 named Signal Lime as the current primary/signature colour** — D-30 itself is preserved unedited as the historical record of that earlier decision; nothing here rewrites it.
 **Implementation boundary — read this before doing anything with it:** this document is documentation/SOT canonicalization only. It does **not** authorize Flutter palette migration, Vendor screen redesign, Rider Flutter build-out, backend changes, or merging `claude/vendor-mobile-backend-integration`. Those are separate, later, not-yet-authorized execution stages.
 
 ---
 
 # CEFFLO — EXPERIENCE SYSTEM (VISUAL DNA)
-**Version:** 1.0 — 2026-09-11
+**Version:** 1.1 — 2026-09-11 (Warning semantic token added, D-34)
 **Owner:** Founder
 **Scope:** How CEFFLO products look. Product/behaviour truth remains governed separately by `01_PRODUCT_TRUTH.md`, `02_ARCHITECTURE.md`, and the relevant product SOT.
 
@@ -41,6 +41,19 @@ The Founder-confirmed candidates from the prior review round were contrast-check
 **Constraint carried forward unchanged from the Founder's own instruction:** these are semantic operational colours only, never secondary CEFFLO brand colours. Route/Info in particular must never be used for emphasis, selection, or CTA purposes — those belong to CEFFLO Yellow alone.
 
 **One narrow, disclosed residual gap:** on the low-opacity status-chip tint background (§7.2) these three land at 3.97–4.03:1 — short of the strict 4.5:1 normal-text threshold, though above the 3:1 UI-component/large-text threshold that applies to small bold chip labels under WCAG 1.4.11. Judged acceptable for chip use as-is; flagged rather than silently accepted. On dark surfaces specifically, all three land near 3.5:1 (§13) — acceptable for the UI-component threshold, not yet at full text-contrast — this is called out again in §3 as part of the still-open dark-mode fine-tuning, not blocking this light-mode-focused lock.
+
+### 2.1 Warning — LOCKED 2026-09-11 (Founder Gate 0, D-34)
+
+Closes the gap the implementation reconciliation audit found: no canonical Warning token existed even though the live Vendor client already had one. Recovered from real, already-shipped product evidence rather than invented — `vendor/index.html` and `invite/index.html` had already independently solved the text-contrast problem for one use case (the owner-access warning banner) without the fix ever reaching the token itself; this lock generalizes what was already correct.
+
+| Role | Hex | Evidence / contrast |
+|---|---|---|
+| **Fill / icon** | `#F59E0B` | Unchanged from existing product usage. Fine as a fill with near-black foreground on top (8.27:1) — the failure mode was always text-on-light, not the fill itself. |
+| **Text-on-tint, Light** | `#9A6700` | Adopted directly from the existing, already-shipped owner-warning banner in `vendor/index.html` and `invite/index.html`. 4.54:1 on the Warning tint, 4.87:1 on Surface — both PASS. The existing `--warning` token used directly as chip text (`#F59E0B` on `#FFF6E5`, 2.00:1) is a real, currently-shipped accessibility failure this correction fixes. |
+| **Tint, Light** | `#FFF6E5` | Unchanged, already proven. |
+| **Text-on-tint, Dark** | `#F5A524` | Adopted from `rider/index.html`'s existing dark-mode `--warning` value — already correct (9.65:1 on dark canvas, 7.96:1 on dark surface). Confirms the general principle that a semantic hue's *lightness direction* inverts between Light and Dark text roles, same pattern already established for the other semantic colours. |
+
+**`#935C08`** (a third value found in `rider/index.html`, used only as a solid toast-notification background with white text) **is explicitly not promoted to a general canonical token.** It remains a component-specific choice for that one toast role only, documented here so it isn't mistaken for an orphaned/unauthorized colour during future audits — not because it fails accessibility (it passes, 5.56:1), but because no case was made for it beyond that single component.
 
 ## 3. Light / Dark mode
 
@@ -163,6 +176,10 @@ Computed via WCAG 2.1 relative-luminance contrast ratio, checked 2026-09-11 befo
 | Route/Info `#3D7BEE` on white (pre-adjustment) | 3.99:1 | FAIL (normal text) → adjusted to `#2A6EEC`, 4.63:1 PASS |
 | Locked semantic values on chip-tint backgrounds | 3.97–4.03:1 | Below 4.5 normal-text, above 3.0 UI/large-text — accepted for chip use, disclosed |
 | Locked semantic values on dark surface `#1A2030` | ~3.5:1 | Above UI threshold, below full text threshold — disclosed, open follow-up for dark-mode implementation |
+| Warning `#F59E0B` fill with near-black text | 8.27:1 | PASS — fine as fill, not as light-mode text |
+| Warning text-on-tint (pre-correction) `#F59E0B` on `#FFF6E5` | 2.00:1 | Real FAIL (currently shipped) → corrected to `#9A6700`, 4.54:1 PASS |
+| Warning `#9A6700` on Surface | 4.87:1 | PASS |
+| Warning Dark text `#F5A524` on dark canvas/surface | 9.65:1 / 7.96:1 | PASS |
 
 No adjustment materially changed any hue's identity — every adjustment was a lightness-only shift within the same hue/saturation family, smallest value that cleared the threshold.
 
@@ -172,3 +189,5 @@ No adjustment materially changed any hue's identity — every adjustment was a l
 1. Semantic colour legibility on dark surfaces specifically (§2, §3.2) — narrow, disclosed, deferred to the first real dark-mode implementation pass.
 2. Exact final dark-mode production values — architecture and relationship approved; final numbers get one more look when dark-mode screens are actually built.
 3. Flutter token migration, Vendor screen work, Rider Flutter build-out — all explicitly out of scope for this canonicalization, belong to the next authorized execution stage.
+
+Resolved by v1.1 (D-34): the Warning semantic token gap is closed (§2.1).

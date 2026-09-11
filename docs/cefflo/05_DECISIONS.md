@@ -388,3 +388,19 @@ Founder decision, following a dedicated Phase 04 repository audit, a two-round t
 **Flutter implementation baseline confirmed as evidence, not merge-authorized:** `claude/vendor-mobile-backend-integration` remains the leading Vendor Flutter implementation reference. This decision does **not** authorize merging that branch, migrating its tokens, redesigning Vendor screens, building Rider Flutter, or any backend change. Token migration is explicitly deferred to a separate, later, not-yet-authorized execution stage.
 
 **Files reconciled by this decision:** `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` (canonicalized), `docs/cefflo/sot/06_BRAND_ASSETS_GOVERNANCE.md` §2 (Signal Lime lock annotated superseded, in place, not deleted), `docs/cefflo/sot/00_INDEX.md` §1/§2/§8 (Visual DNA authority reference filled in, Brand Assets status updated).
+
+## D-34 CEFFLO Experience System — Warning Semantic Token (Founder Gate 0, 2026-09-11)
+
+Founder decision, closing the one gap `docs/cefflo/audits/CEFFLO_EXPERIENCE_SYSTEM_IMPLEMENTATION_RECONCILIATION_AUDIT.md` found in the otherwise-locked palette: no canonical Warning token existed in `12_EXPERIENCE_SYSTEM.md`, even though the live Vendor client already had one.
+
+**Locked Warning family**, recovered from already-shipped product evidence rather than invented:
+- Fill/icon: `#F59E0B` (unchanged from existing usage; verified fine as a fill with near-black text, 8.27:1).
+- Text-on-tint, Light: `#9A6700` — adopted from `vendor/index.html` and `invite/index.html`'s own existing owner-access warning banner, which had already solved this correctly (4.54:1 on tint, 4.87:1 on Surface) while the `--warning` token itself, used directly as chip text, was a real, currently-shipped contrast failure (`#F59E0B` on `#FFF6E5`, 2.00:1 — below even the lenient UI threshold).
+- Tint, Light: `#FFF6E5` (unchanged).
+- Text-on-tint, Dark: `#F5A524` — adopted from `rider/index.html`'s existing dark-mode value, already correct (9.65:1 / 7.96:1).
+
+`#935C08` (a third value found in `rider/index.html`, used only for one toast-notification background) is **explicitly not promoted to a general canonical token** — it remains a documented, component-specific exception for that one role, not an orphaned colour.
+
+Full detail: `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` §2.1, now v1.1.
+
+**Scope:** documentation only. Does not itself migrate any implementation — that proceeds under the separate `CEFFLO_EXPERIENCE_SYSTEM_IMPLEMENTATION_MASTER.md` execution, Phase B onward.
