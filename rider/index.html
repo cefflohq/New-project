@@ -3375,6 +3375,21 @@ html[data-theme="dark"] #screen-pickup #startDeliverySlider{background:#0D0E0D!i
 .map-stop.selected{background:#FEC819;color:#0D0E0D}
 .map-stop.done{background:var(--success);border-color:var(--success);color:#fff}
 .map-stop.issue{border-color:var(--danger);color:var(--danger)}
+/* .cefflo-map-marker / .cefflo-rider-marker had NO CSS anywhere in the file
+   (grep-confirmed) -- unlike .map-stop/.rider-marker above (the illustrative
+   percentage-positioned map background, fully styled), these are the REAL
+   Leaflet L.divIcon markers on the actual interactive route map
+   (renderRealMap-family functions): every numbered stop pin and the rider's
+   own live-position dot rendered as invisible, unstyled empty divs. Genuine
+   pre-existing bug on a core Rider screen, found while auditing C5/Light
+   scope, fixed here reusing the exact same visual language as .map-stop/
+   .rider-marker for consistency (same Yellow/success/danger states, sized
+   to each marker's real Leaflet iconSize instead of .map-stop's 28px). */
+.cefflo-map-marker{width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid #FEC819;color:#0D0E0D;font-size:11px;font-weight:800;display:grid;place-items:center;box-shadow:0 3px 10px rgba(20,20,30,.18)}
+.cefflo-map-marker.selected{background:#FEC819;color:#0D0E0D}
+.cefflo-map-marker.done{background:var(--success);border-color:var(--success);color:#fff}
+.cefflo-map-marker.issue{border-color:var(--danger);color:var(--danger)}
+.cefflo-rider-marker{width:18px;height:18px;border-radius:50%;background:#FEC819;border:3px solid #fff;box-shadow:0 2px 8px rgba(20,20,30,.3)}
 html[data-theme="dark"] .route-map-stage{background:linear-gradient(155deg,#1B1D24 0%,#15161C 100%)}
 html[data-theme="dark"] .map-stop{background:#20222B;color:#fff;border-color:#0D0E0D}
 html[data-theme="dark"] .map-stop.selected{background:#FEC819;color:#0D0E0D}
