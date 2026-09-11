@@ -124,6 +124,7 @@ Never assume all businesses share the same category, fleet size or workflow.
 
 ## 8. Visual Identity
 **Updated 2026-09-12 (Founder baseline closeout, `docs/cefflo/05_DECISIONS.md` D-30):** Signal Lime is now locked, not a candidate.
+**Superseded 2026-09-11 (`docs/cefflo/05_DECISIONS.md` D-33, `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md`):** Signal Lime's primary/signature-colour status above is no longer current — CEFFLO Yellow `#FEC819` is the current locked primary accent. This section preserved for history; `12_EXPERIENCE_SYSTEM.md` is canonical for current palette.
 Foundation:
 - **Fresh White**
 - **Black**

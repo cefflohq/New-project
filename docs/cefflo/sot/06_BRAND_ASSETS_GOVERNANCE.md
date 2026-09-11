@@ -1,6 +1,7 @@
 **Status:** CANONICAL — Founder-approved, merged into repo 2026-09-04
 **Repo-reconciliation note:** Net-new canonical domain; no equivalent asset-governance doc existed in the repo before this reconciliation. Complements `docs/cefflo/CEFFLO_BRAND_BRAIN.md` §8 (Visual Identity), which remains historically accurate but should be read alongside this file for the fuller asset-registry/logo-lock governance model.
 **Reconciliation update (2026-09-12, Founder baseline closeout — see `docs/cefflo/05_DECISIONS.md` D-30):** §2 and §5 below described the logo as unlocked and Signal Lime as a candidate. Both are now Founder-locked. §2 and §5 are corrected in place; the original text is annotated, not deleted, so the history of what changed and when remains traceable. Canonical logo asset: `docs/cefflo/brand/assets/logo/cefflo-logo-official.png` (plus transparent/wordmark variants in the same folder) — see §5.
+**Reconciliation update (2026-09-11, Experience System canonicalization — see `docs/cefflo/05_DECISIONS.md` D-33):** §2's Signal Lime lock is superseded as current colour authority — CEFFLO Yellow `#FEC819` is now the locked primary accent. §2 is annotated in place, not deleted. The logo lock from D-30 is unaffected. Full current palette authority: `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md`.
 
 ---
 
@@ -19,12 +20,14 @@ Structural identity/primary core colours:
 Signature operational signal:
 **Signal Lime — locked at `#C7F000`** (2026-09-12, Founder baseline closeout — see `docs/cefflo/05_DECISIONS.md` D-30). Signal Lime is a signal/accent colour, not a default surface treatment — do not turn UI into lime-heavy surfaces or introduce Signal Lime cards as a default.
 
+**Superseded 2026-09-11 (see `docs/cefflo/05_DECISIONS.md` D-33, `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md`):** the Signal Lime lock above is no longer current visual authority. **CEFFLO Yellow `#FEC819` is the current locked primary/signature accent.** This line and the D-30 record above are preserved unedited for history — Signal Lime's D-30 lock was genuine and accurate at the time — but must no longer be read as current implementation instruction. `12_EXPERIENCE_SYSTEM.md` is canonical for all current palette authority; this section is historical from this point forward.
+
 Supporting neutrals:
 **Graphite greys** and **very light cool grey**.
 
 **Superseded 2026-09-12:** the previous line here — *"the exact Signal Lime HEX remains a candidate until Founder locks it after real cross-surface visual validation"* — is no longer current. `#C7F000` is locked, not a candidate. (Historical note: it was correctly described as candidate from 2026-09-04 through 2026-09-11; every place in this repo that said "Signal Lime candidate" during that window was accurate at the time.)
 
-Purple and blue are superseded as Cefflo primary/signature colors.
+Purple and blue were superseded as Cefflo primary/signature colors as of the D-30 baseline. **Note (2026-09-11):** the current locked dark anchor, Navy `#12213E` per D-33/`12_EXPERIENCE_SYSTEM.md`, is a blue. This supersedes the blanket "purple and blue are superseded" line above for Navy specifically — Navy is now locked, selective-use brand doctrine, not a rejected colour. Purple remains superseded; blue is superseded only as a *primary/signature* colour, not as Navy's selective anchor role.
 
 ## 3. Signal Lime Meaning
 Use for:

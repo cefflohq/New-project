@@ -367,3 +367,24 @@ Founder explicitly approved the Phase 01 + Phase 02 Final Baseline Closeout repr
 **Confirmed no out-of-scope work:** no Vendor/Driver/Customer/FOUNDR/full-commercial-Website work; no Curlec; no driver marketplace/community/payroll; no Veo; no live Seedance/DeepSeek call; no workflow activated; no publish; no commit/push performed as part of this pass (not requested).
 
 **Gate result: PHASE 03 PASS — MARKETING MACHINE READY**, on dry-run/evidence-complete-but-not-yet-activated terms — matching how Phase 01/02 reached PASS before Founder review/lock. Batches 03F (Codex n8n wiring/deployment) and 03M (live controlled pilot) are the explicitly deferred, correctly-gated remainder, not blockers to this assessment. Not stated as finally exited/live until the Founder reviews this entry and its evidence and explicitly approves — same pattern as D-29→D-31.
+
+## D-33 CEFFLO Experience System — Visual DNA Canonicalized, Signal Lime Superseded (2026-09-11)
+
+Founder decision, following a dedicated Phase 04 repository audit, a two-round theoretical reconciliation pass, and a live visual validation gate (Vendor + Rider boards, both built against the same proposed system): `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` is CANONICALIZED as the single visual implementation authority for Vendor Web/Desktop, Vendor Flutter, Rider Flutter, and future CEFFLO product surfaces.
+
+**This supersedes D-30 (2026-09-12) only where D-30 defined Signal Lime `#C7F000` as CEFFLO's current primary/signature colour.** D-30 is preserved unedited and unremoved as the historical record of that earlier, genuinely-Founder-approved decision — this entry documents a change of direction, it does not rewrite history. D-30's logo lock is unaffected and remains in force.
+
+**Locked palette:**
+- Primary brand/action accent: **CEFFLO Yellow `#FEC819`**.
+- Dark anchor: **Navy `#12213E`**, selective use only — never permanent chrome.
+- Light Workspace `#F7F8FA`, Surface `#FFFFFF`.
+- Semantic (operational meaning only, never brand accents): Attention `#D73C2B`, Success `#248648`, Route/Info `#2A6EEC` — each a small, documented, accessibility-driven adjustment from the originally-approved candidates (`#D8402F`/`#2FAE5E`/`#3D7BEE` respectively); full before/after and contrast math in `12_EXPERIENCE_SYSTEM.md` §2/§13.
+- Signal Lime `#C7F000` is **retired** as current primary/signature colour.
+
+**Locked system decisions:** Manrope as the primary product typeface (no separate monospace default, tabular numerals from Manrope's own numeral set); compact surface system (14px card radius, pill buttons, 14px inputs); a restrained-border + subtle two-layer soft shadow surface treatment (not zero-shadow, not heavy elevation); the three-level dark-mode architecture (dark canvas → tinted dark surface → Navy anchor) approved directionally with accessibility-verified core values, one narrow disclosed follow-up (semantic-colour legibility specifically on dark surfaces) left for the first real dark-mode implementation pass; master logo/wordmark reserved for genuine brand moments only, never repeated on internal operational screens; business/store name permitted contextually, not mandatory global branding.
+
+**Evidence base:** `docs/cefflo/audits/CEFFLO_PHASE_04_VISUAL_DNA_REPOSITORY_RECONCILIATION_AUDIT.md` (repository audit — found Signal Lime locked in writing under D-30, no Visual DNA doc existed, real Vendor Flutter implementation evidence on `claude/vendor-mobile-backend-integration`, no Rider Flutter implementation anywhere), `docs/cefflo/tasks/CEFFLO_PHASE_04_EXPERIENCE_SYSTEM_RECONCILIATION_PACKAGE.md` (the reviewed-then-applied reconciliation plan), and a live visual validation pass (Vendor + Rider 2×2 boards, both built against the same tokens, plus a dark-mode surface/token relationship comparison) that the Founder reviewed before granting this approval.
+
+**Flutter implementation baseline confirmed as evidence, not merge-authorized:** `claude/vendor-mobile-backend-integration` remains the leading Vendor Flutter implementation reference. This decision does **not** authorize merging that branch, migrating its tokens, redesigning Vendor screens, building Rider Flutter, or any backend change. Token migration is explicitly deferred to a separate, later, not-yet-authorized execution stage.
+
+**Files reconciled by this decision:** `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` (canonicalized), `docs/cefflo/sot/06_BRAND_ASSETS_GOVERNANCE.md` §2 (Signal Lime lock annotated superseded, in place, not deleted), `docs/cefflo/sot/00_INDEX.md` §1/§2/§8 (Visual DNA authority reference filled in, Brand Assets status updated).

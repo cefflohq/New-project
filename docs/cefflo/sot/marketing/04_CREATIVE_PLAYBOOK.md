@@ -27,6 +27,7 @@ Production Router chooses the lane from:
 
 ## 3. Visual DNA
 **Updated 2026-09-12:** Signal Lime is now locked, not a candidate (`docs/cefflo/05_DECISIONS.md` D-30).
+**Superseded 2026-09-11 (D-33):** Signal Lime's primary-colour status above is no longer current — CEFFLO Yellow `#FEC819` is now locked. See `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md`.
 Foundation:
 - Black;
 - White;

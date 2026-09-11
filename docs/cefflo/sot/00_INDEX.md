@@ -34,16 +34,17 @@ Full Phase 01+02 execution report: `docs/cefflo/05_DECISIONS.md` D-29.
 ## 1. Vendor Flutter
 Primary:
 - `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md` — status: WORKING MASTER BASELINE, "Founder Review Required," NOT YET IMPLEMENTED. Subscription/billing screens V-50–V-54 remain HOLD; V-41 Delivery Settings remains RECONCILIATION REQUIRED.
-- approved Design Lab/DNA outputs when locked — none exist yet.
+- `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — **CANONICAL as of 2026-09-11 (D-33)**, the approved Visual DNA/Experience System. Fills the previously-empty "approved Design Lab/DNA outputs" slot.
 
 Authority:
-Product Truth → Architecture → Flow 3 Behavioural Contract → approved Visual DNA → Flutter implementation.
+Product Truth → Architecture → Flow 3 Behavioural Contract → approved Visual DNA (`docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md`) → Flutter implementation.
 
-Reference: `docs/cefflo/flow3/VENDOR_BEHAVIOURAL_CONTRACT_PACK.md` (the Flow 3 Vendor Web exit contract Flow 4 must build against). The current LIVE Vendor client remains Vendor Web/Desktop (`docs/cefflo/06_VENDOR.md`) — this master does not authorize starting Flutter implementation.
+Reference: `docs/cefflo/flow3/VENDOR_BEHAVIOURAL_CONTRACT_PACK.md` (the Flow 3 Vendor Web exit contract Flow 4 must build against). The current LIVE Vendor client remains Vendor Web/Desktop (`docs/cefflo/06_VENDOR.md`) — neither this master nor the now-canonical Experience System authorizes starting Flutter implementation or migrating existing Flutter code; that remains a separate, not-yet-authorized execution stage.
 
 ## 2. Rider Flutter
 Primary:
 - `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md` — status: ACTIVE MASTER, "Founder Review Required," NOT YET IMPLEMENTED.
+- `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — **CANONICAL as of 2026-09-11 (D-33)**, the same shared Visual DNA authority as Vendor Flutter. No Rider Flutter implementation exists in the repository yet — this is the visual authority it will build against once authorized.
 - Rider execution behavior — see `docs/cefflo/07_RIDER.md` for the current LIVE Rider PWA (the actual live client today).
 - shared canonical backend contracts — see `docs/cefflo/sot/02_ARCHITECTURE.md` and `docs/cefflo/11_SUPABASE.md`.
 
@@ -59,6 +60,7 @@ Primary:
 - `docs/cefflo/sot/03_VENDOR_WEB_DESKTOP.md` (canonical doctrine)
 - `docs/cefflo/06_VENDOR.md` (current implementation routing)
 - `docs/cefflo/flow3/VENDOR_BEHAVIOURAL_CONTRACT_PACK.md` (Flow 3 exit contract, complete)
+- `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — **CANONICAL as of 2026-09-11 (D-33)**, shared visual authority (also applies to Vendor Flutter and Rider Flutter). Does not authorize any implementation change to the live Vendor Web client by itself.
 
 Vendor Web/Desktop remains first-class.
 
@@ -96,10 +98,12 @@ Do not store invented winner data here. This domain is N/A until real campaign d
 
 ## 8. Brand Assets
 **Updated 2026-09-12 (Founder baseline closeout, D-30):** logo and Signal Lime are now Founder-locked.
+**Updated 2026-09-11 (Experience System canonicalization, D-33):** Signal Lime's primary/signature-colour status is **superseded** — see below. Logo lock from D-30 is unaffected.
 Primary:
-- `docs/cefflo/sot/06_BRAND_ASSETS_GOVERNANCE.md`
-- current Brand System — **logo LOCKED** (`docs/cefflo/brand/assets/logo/cefflo-logo-official.png`, see governance file §5); **Signal Lime LOCKED** at `#C7F000` (governance file §2).
-- locked assets: logo (master + transparent + wordmark variants, PNG only), Signal Lime hex. Not yet locked: typography, icon family, production logo exports (SVG/monochrome/app-icon/favicon).
+- `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — **CANONICAL, current palette/typography/surface-system authority.** CEFFLO Yellow `#FEC819` is the current locked primary/signature accent.
+- `docs/cefflo/sot/06_BRAND_ASSETS_GOVERNANCE.md` — logo governance remains current here; §2's palette section is historical as of D-33 (annotated in place, not deleted).
+- current Brand System — **logo LOCKED** (`docs/cefflo/brand/assets/logo/cefflo-logo-official.png`, see governance file §5, unaffected by D-33); **Signal Lime RETIRED** as primary colour (was locked at `#C7F000` under D-30; superseded by CEFFLO Yellow `#FEC819` under D-33 — see `12_EXPERIENCE_SYSTEM.md` §1).
+- locked assets: logo (master + transparent + wordmark variants, PNG only), full palette/typography/surface system per `12_EXPERIENCE_SYSTEM.md`.
 - exploration archive clearly separated — see `previews/cefflo-logo-identity-exploration/` (untracked, exploration only) — **superseded/historical, not canonical.**
 - historical visual notes: `docs/cefflo/CEFFLO_BRAND_BRAIN.md` §8 (superseded, retained for history).
 

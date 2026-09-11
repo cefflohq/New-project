@@ -46,7 +46,7 @@ The target is not to maximize screen count. The target is complete functional co
 10. Returning from external navigation must restore the exact current run/stop and revalidate stale state.
 11. Never claim GPS/background tracking is active unless the native service is genuinely running and backend writes are verified.
 12. Never claim customer notification success, ETA, route optimization, POD upload, completion or recovery success unless canonical backend/provider state supports the claim.
-13. Cefflo visual foundation remains **Black / White / Graphite**, with **Signal Lime — locked #C7F000** (updated 2026-09-12, `docs/cefflo/05_DECISIONS.md` D-30; was "candidate" through 2026-09-11) as operational signal.
+13. Cefflo visual foundation remains **Black / White / Graphite**, with **Signal Lime — locked #C7F000** (updated 2026-09-12, `docs/cefflo/05_DECISIONS.md` D-30; was "candidate" through 2026-09-11) as operational signal. **Superseded 2026-09-11 (D-33):** current visual authority is `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — CEFFLO Yellow `#FEC819` primary accent, Navy `#12213E` dark anchor. This canonicalization does not itself authorize Rider Flutter implementation to begin — none exists in the repository yet.
 14. Support **Light / Dark / System** presentation while preserving the approved Rider structure.
 15. Rider UI must prioritize one-handed use, large touch targets, minimal reading and low distraction.
 
