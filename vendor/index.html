@@ -1385,7 +1385,7 @@ html,body{width:100%;max-width:none;background:#fff;}
   border-radius:25px;
   background:#FFFFFF;
   box-shadow:
-    0 18px 44px rgba(39,31,75,.14);
+    0 18px 44px rgba(18,33,62,.14);
   backdrop-filter:none;
   -webkit-backdrop-filter:none;
   overflow:visible;
@@ -1593,11 +1593,11 @@ body{
 /* Vendor V2 Dashboard + Settings — scoped production presentation */
 .vendor-dashboard-v2,
 .vendor-settings-v2{
-  --v2-bg:#F7F6FB;
+  --v2-bg:#F7F8FA;
   --v2-card:#FFFFFF;
-  --v2-line:#EBE8F4;
-  --v2-text:#171321;
-  --v2-muted:#777583;
+  --v2-line:#E3E6EE;
+  --v2-text:#181818;
+  --v2-muted:#666C80;
   width:100%;
   min-height:100dvh;
   color:var(--v2-text);
@@ -1605,11 +1605,11 @@ body{
 }
 body[data-vendor-theme="dark"] .vendor-dashboard-v2,
 body[data-vendor-theme="dark"] .vendor-settings-v2{
-  --v2-bg:#15131C;
-  --v2-card:#211E2A;
-  --v2-line:#332E41;
-  --v2-text:#F8F7FB;
-  --v2-muted:#AAA5B5;
+  --v2-bg:#0A0B0D;
+  --v2-card:#1A2030;
+  --v2-line:#2C2F3A;
+  --v2-text:#F4F6F8;
+  --v2-muted:#AFB6BD;
 }
 .vendor-dashboard-v2 button,
 .vendor-settings-v2 button{
@@ -1677,7 +1677,7 @@ body[data-vendor-theme="dark"] .vendor-settings-v2{
   height:7px;
   border:2px solid var(--v2-bg);
   border-radius:50%;
-  background:#EF4444;
+  background:var(--danger);
 }
 .vd2-main,
 .vs2-main{padding:18px 16px calc(116px + env(safe-area-inset-bottom))}
@@ -1685,8 +1685,8 @@ body[data-vendor-theme="dark"] .vendor-settings-v2{
   padding:17px;
   border-radius:22px;
   color:#FFFFFF;
-  background:linear-gradient(145deg,#8C7EF3 0%,#6D59E2 100%);
-  box-shadow:0 15px 32px rgba(89,67,202,.20);
+  background:linear-gradient(145deg,#1A2C50 0%,#0B1526 100%);
+  box-shadow:0 15px 32px rgba(18,33,62,.28);
 }
 .vd2-live{
   display:flex;
@@ -1698,7 +1698,7 @@ body[data-vendor-theme="dark"] .vendor-settings-v2{
   letter-spacing:.08em;
   text-transform:uppercase;
 }
-.vd2-live i{width:8px;height:8px;border-radius:50%;background:#55ED83;box-shadow:0 0 0 4px rgba(85,237,131,.18)}
+.vd2-live i{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 0 4px rgba(36,134,72,.18)}
 .vd2-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px}
 .vd2-kpis button{
   min-width:0;
@@ -1724,13 +1724,13 @@ body[data-vendor-theme="dark"] .vendor-settings-v2{
   align-items:center;
   justify-content:center;
   border-radius:99px;
-  background:#FDECEC;
-  color:#E24646;
+  background:var(--danger-soft);
+  color:var(--danger);
   font-size:11px;
   font-style:normal;
 }
 .vd2-section-head>button{padding:7px 0;border:0;background:transparent;color:var(--primary-dark);font-size:12px;font-weight:650}
-.vd2-deliveries{overflow:hidden;border:1px solid var(--v2-line);border-radius:20px;background:var(--v2-card);box-shadow:0 5px 18px rgba(39,31,75,.04)}
+.vd2-deliveries{overflow:hidden;border:1px solid var(--v2-line);border-radius:20px;background:var(--v2-card);box-shadow:0 5px 18px rgba(18,33,62,.04)}
 .vd2-delivery{
   width:100%;
   min-height:68px;
@@ -1747,14 +1747,14 @@ body[data-vendor-theme="dark"] .vendor-settings-v2{
 }
 .vd2-delivery:last-child{border-bottom:0}
 .vd2-delivery:active,.vd2-action:active,.vs2-row:active{background:var(--primary-soft)}
-.vd2-avatar{grid-area:avatar;width:40px;height:40px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:13px;background:#EFEAFE;color:#6653D8;font-size:12px;font-weight:750}
+.vd2-avatar{grid-area:avatar;width:40px;height:40px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:13px;background:var(--surface-muted);color:var(--text-secondary);font-size:12px;font-weight:750}
 .vd2-avatar-1{background:#E8F5EE;color:#25875A}.vd2-avatar-2{background:#FFF0E7;color:#BA6536}.vd2-avatar-3{background:#E8F2FF;color:#3978BE}
 .vd2-avatar img{width:100%;height:100%;object-fit:cover}
 .vd2-rider{grid-area:rider;min-width:0;display:flex;flex-direction:column}
 .vd2-rider b{overflow:hidden;font-size:13px;font-weight:650;text-overflow:ellipsis;white-space:nowrap}
 .vd2-rider small{margin-top:3px;overflow:hidden;color:var(--v2-muted);font-size:10.5px;text-overflow:ellipsis;white-space:nowrap}
-.vd2-chip{grid-area:chip;justify-self:end;padding:4px 7px;border-radius:99px;background:#EFEAFE;color:#6752DC;font-size:8.5px;font-weight:700;letter-spacing:.025em;white-space:nowrap}
-.vd2-chip.picked{background:#EAF9F0;color:#238A53}
+.vd2-chip{grid-area:chip;justify-self:end;padding:4px 7px;border-radius:99px;background:var(--warning-soft);color:var(--warning-text);font-size:8.5px;font-weight:700;letter-spacing:.025em;white-space:nowrap}
+.vd2-chip.picked{background:var(--success-soft);color:var(--success)}
 .vd2-eta{grid-area:eta;justify-self:end;display:flex;align-items:baseline;gap:3px;white-space:nowrap}
 .vd2-eta small{color:var(--v2-muted);font-size:8.5px}.vd2-eta b{font-size:11px;font-weight:700}
 .vd2-actions{padding-bottom:4px}
@@ -1771,36 +1771,35 @@ body[data-vendor-theme="dark"] .vendor-settings-v2{
   border-radius:17px;
   background:var(--v2-card);
   text-align:left;
-  box-shadow:0 4px 14px rgba(39,31,75,.035);
+  box-shadow:0 4px 14px rgba(18,33,62,.035);
 }
-.vd2-action>span:first-child{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:11px;background:#FFF0F0;color:#E44F4F}
+.vd2-action>span:first-child{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:11px;background:var(--danger-soft);color:var(--danger)}
 .vd2-action svg{width:18px;height:18px}.vd2-action>b{font-size:12px;line-height:1.4;font-weight:600}.vd2-action>span:last-child{color:var(--v2-muted)}
 /* F3-02: Recent Orders -- Master's "Draft B" compact treatment, reusing
    .vd2-action's proven geometry/border/shadow rather than inventing a new
    visual language, with an added status-pill column. */
-.vd2-order-row{width:100%;min-height:58px;margin-bottom:9px;padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto 18px;align-items:center;gap:10px;border:1px solid var(--v2-line);border-radius:17px;background:var(--v2-card);text-align:left;box-shadow:0 4px 14px rgba(39,31,75,.035)}
+.vd2-order-row{width:100%;min-height:58px;margin-bottom:9px;padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto 18px;align-items:center;gap:10px;border:1px solid var(--v2-line);border-radius:17px;background:var(--v2-card);text-align:left;box-shadow:0 4px 14px rgba(18,33,62,.035)}
 .vd2-order-row .vd2-order-main{min-width:0}
 .vd2-order-row .vd2-order-main b{display:block;font-size:13px;font-weight:700;color:var(--v2-text)}
 .vd2-order-row .vd2-order-main span{display:block;margin-top:2px;font-size:11px;color:var(--v2-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vd2-workload-card{overflow:hidden;border:1px solid var(--v2-line);border-radius:20px;background:var(--v2-card);box-shadow:0 5px 18px rgba(39,31,75,.04)}
+.vd2-workload-card{overflow:hidden;border:1px solid var(--v2-line);border-radius:20px;background:var(--v2-card);box-shadow:0 5px 18px rgba(18,33,62,.04)}
 .vd2-workload-metrics{display:grid;grid-template-columns:.8fr 1.1fr 1.1fr;align-items:center;padding:15px 12px}
 .vd2-workload-metrics>div{min-width:0;padding:0 10px;border-left:1px solid var(--v2-line)}
 .vd2-workload-metrics>div:first-child{border-left:0;padding-left:2px}
 .vd2-workload-metrics strong{display:block;font-size:23px;line-height:1;font-weight:750}.vd2-workload-metrics span{display:block;margin-top:4px;color:var(--v2-muted);font-size:10px}
-.vd2-workload-metrics small,.vd2-workload-support small{display:block;color:var(--v2-muted);font-size:9.5px;line-height:1.3}.vd2-workload-metrics b,.vd2-workload-support b{display:block;margin-top:4px;font-size:11px;line-height:1.35;font-weight:650}.vd2-workload-metrics .gap b{color:#D94B4B}
+.vd2-workload-metrics small,.vd2-workload-support small{display:block;color:var(--v2-muted);font-size:9.5px;line-height:1.3}.vd2-workload-metrics b,.vd2-workload-support b{display:block;margin-top:4px;font-size:11px;line-height:1.35;font-weight:650}.vd2-workload-metrics .gap b{color:var(--danger)}
 .vd2-workload-support{min-height:57px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--v2-line)}
 .vd2-workload-support .btn{width:auto;min-width:78px;box-shadow:none}
-.vd2-workload-card.is-live{border-color:transparent;background:linear-gradient(145deg,#7865EE,#654DDB);color:#fff;box-shadow:0 10px 24px rgba(103,78,222,.22)}
-.vd2-workload-card.is-live .vd2-workload-metrics>div{border-left-color:rgba(255,255,255,.22)}
-.vd2-workload-card.is-live .vd2-workload-metrics span,.vd2-workload-card.is-live .vd2-workload-metrics small,.vd2-workload-card.is-live .vd2-workload-support small{color:rgba(255,255,255,.72)}
-.vd2-workload-card.is-live .vd2-workload-support{border-top-color:rgba(255,255,255,.2)}
-.vd2-workload-card.is-live .btn{border-color:rgba(255,255,255,.34);background:#fff;color:#604BD3}
-.vd2-workload-live-title{padding:13px 14px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}.vd2-workload-live-title strong{overflow:hidden;font-size:18px;line-height:1.2;font-weight:750;text-overflow:ellipsis;white-space:nowrap}.vd2-workload-live-title span{flex:0 0 auto;padding:4px 7px;border-radius:99px;background:rgba(255,255,255,.16);color:rgba(255,255,255,.86);font-size:8.5px;font-weight:700;text-transform:uppercase}
+/* Not a second hero fill -- .vd2-summary above is already the one Navy hero
+   card for this screen (SOT S3.1: one status/hero card per screen). This
+   card stays Surface white; "live" is signalled by the badge only. */
+.vd2-workload-card.is-live .btn{background:var(--primary);color:var(--on-primary)}
+.vd2-workload-live-title{padding:13px 14px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}.vd2-workload-live-title strong{overflow:hidden;font-size:18px;line-height:1.2;font-weight:750;text-overflow:ellipsis;white-space:nowrap;color:var(--v2-text)}.vd2-workload-live-title span{flex:0 0 auto;padding:4px 7px;border-radius:99px;background:var(--success-soft);color:var(--success);font-size:8.5px;font-weight:700;text-transform:uppercase}
 .vd2-workload-card.is-live .vd2-workload-metrics{grid-template-columns:1fr 1fr;padding-top:11px}.vd2-workload-card.is-live .vd2-workload-metrics>div:first-child{padding-left:2px}
-.vd2-workload-card.is-tomorrow{border-color:#DDD6FF;background:#F7F4FF}
-.vd2-workload-card.is-empty{padding:18px 16px;border-color:#E5E5EC;background:#F8F8FA;box-shadow:none}
+.vd2-workload-card.is-tomorrow{border-color:var(--border);background:var(--bg-app)}
+.vd2-workload-card.is-empty{padding:18px 16px;border-color:var(--border);background:var(--bg-app);box-shadow:none}
 .vd2-workload-empty{display:flex;align-items:center;gap:12px}
-.vd2-workload-empty>span{width:38px;height:38px;display:flex;align-items:center;justify-content:center;flex:0 0 38px;border-radius:12px;background:#ECEAF2;color:#898591}
+.vd2-workload-empty>span{width:38px;height:38px;display:flex;align-items:center;justify-content:center;flex:0 0 38px;border-radius:12px;background:var(--surface-muted);color:var(--text-secondary)}
 .vd2-workload-empty svg{width:19px;height:19px}.vd2-workload-empty b{display:block;font-size:12px;font-weight:650}.vd2-workload-empty small{display:block;margin-top:3px;color:var(--v2-muted);font-size:10px;line-height:1.35}
 
 .vs2-main{padding-top:16px}
@@ -1815,7 +1814,7 @@ body[data-vendor-theme="dark"] .vendor-settings-v2{
   border:1px solid var(--v2-line);
   border-radius:21px;
   background:var(--v2-card);
-  box-shadow:0 5px 18px rgba(39,31,75,.045);
+  box-shadow:0 5px 18px rgba(18,33,62,.045);
 }
 .vs2-logo{width:58px;height:58px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:17px;background:linear-gradient(145deg,#8B7DF3,#6854DE);color:#fff;font-size:16px;font-weight:750}
 .vs2-logo img{width:100%;height:100%;object-fit:cover}
@@ -1825,7 +1824,7 @@ body[data-vendor-theme="dark"] .vendor-settings-v2{
 .vs2-profile-card span svg{width:13px;height:13px}
 .vs2-edit-btn{position:absolute;top:13px;right:12px;width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;border:0;border-radius:11px;background:var(--primary-soft);color:var(--primary-dark)}
 .vs2-edit-btn svg{width:17px;height:17px}
-.vs2-group{margin-top:16px;overflow:hidden;border:1px solid var(--v2-line);border-radius:21px;background:var(--v2-card);box-shadow:0 5px 18px rgba(39,31,75,.04)}
+.vs2-group{margin-top:16px;overflow:hidden;border:1px solid var(--v2-line);border-radius:21px;background:var(--v2-card);box-shadow:0 5px 18px rgba(18,33,62,.04)}
 .vs2-row{
   width:100%;
   min-height:57px;
