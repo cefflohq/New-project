@@ -776,7 +776,7 @@ Before approval, verify:
 - no misleading customer communication claim
 
 ### Brand
-- official CEFFLO logo (**updated 2026-09-12 — now Founder-locked; `docs/cefflo/brand/assets/logo/cefflo-logo-official.png`, see `docs/cefflo/sot/06_BRAND_ASSETS_GOVERNANCE.md` §5. Was correctly "not yet locked" from 2026-09-10 through 2026-09-11.**)
+- official CEFFLO logo (**updated 2026-09-12 — now Founder-locked; `docs/cefflo/brand/assets/logo/cefflo-logo-official.png`, see `docs/cefflo/sot/06_BRAND_ASSETS_GOVERNANCE.md` §5. Was correctly "not yet locked" from 2026-09-10 through 2026-09-11.** **Superseded 2026-09-11 (D-35): the production asset set was updated to CEFFLO Yellow/Navy — use `docs/cefflo/brand/assets/logo/cefflo-logo-icon-navy.png` (or the matching mark/primary/wordmark variant for the surface) going forward. Geometry unchanged; `cefflo-logo-official.png` itself is retained as historical, not current production source.**)
 - Fresh White / Black / Signal Lime — **locked** `#C7F000` system (**updated 2026-09-12 — now Founder-locked, matching `docs/cefflo/sot/marketing/04_CREATIVE_PLAYBOOK.md` §3. Was correctly "candidate" from 2026-09-10 through 2026-09-11.** **Superseded 2026-09-11 (D-33): CEFFLO Yellow `#FEC819` is now the locked primary colour — see `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md`.**)
 - Signal Lime used as accent, not uncontrolled dominant decoration
 - no unrelated brand hues
