@@ -817,6 +817,40 @@
   display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0;
 }
 
+/* Rider Profile action row / stats -- .rp-* had no CSS at all anywhere in
+   the file (grep-confirmed) despite being used by both the live Rider
+   Profile screen (pageRiderProfileProposed) and Order Detail's customer-
+   contact row (pageOrderDetailProposed): unstyled buttons, an invisible
+   divider (no height/background), no stats grid. Genuine pre-existing gap,
+   found and fixed here since C4's scope is Riders. Call/WhatsApp accent
+   colours reuse this same file's own existing .call-outline/.whatsapp-
+   outline convention (line ~1303), now via canonical tokens. */
+.rp-action-row,.rp-title-actions{display:flex;gap:10px;align-items:center;}
+.rp-action-row{margin-bottom:18px;}
+.rp-title-actions{gap:8px;}
+.rp-assign-btn{flex:1;}
+.rp-icon-btn{
+  width:48px;height:48px;flex:0 0 48px;padding:0;border:1px solid var(--border);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;background:var(--card-bg);
+}
+.rp-icon-btn svg{width:20px;height:20px;}
+.rp-icon-btn-sm{width:38px;height:38px;flex:0 0 38px;border-radius:12px;}
+.rp-icon-btn-sm svg{width:17px;height:17px;}
+.rp-icon-call{color:var(--danger);}
+.rp-icon-whatsapp{color:var(--success);}
+.rp-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:4px 0 14px;}
+.rp-stat{display:flex;flex-direction:column;align-items:center;text-align:center;}
+.rp-stat-value{font-size:20px;font-weight:700;color:var(--text-main);}
+.rp-stat-label{margin-top:4px;font-size:11px;color:var(--text-secondary);}
+.rp-stat.success .rp-stat-value{color:var(--success);}
+.rp-stat.issue .rp-stat-value{color:var(--danger);}
+.rp-divider{height:1px;background:var(--border);margin:0 0 14px;}
+.rp-deactivate-card{margin-top:16px;}
+.rp-deactivate-btn{
+  width:100%;padding:14px;border-radius:999px;border:1px solid var(--danger-soft);
+  background:var(--card-bg);color:var(--danger);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;
+}
+
 
 .status-chip{
   font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;display:inline-block;
@@ -1299,9 +1333,9 @@ body,
 
 
 /* Outline-only communication actions */
-.contact-outline{background:#fff!important;box-shadow:none!important;border:1.5px solid currentColor!important;}
-.whatsapp-outline{color:#16A34A!important;}
-.call-outline{color:#EF4444!important;}
+.contact-outline{background:var(--card-bg)!important;box-shadow:none!important;border:1.5px solid currentColor!important;}
+.whatsapp-outline{color:var(--success)!important;}
+.call-outline{color:var(--danger)!important;}
 .contact-outline:active{transform:scale(.98);background:#fff!important;}
 
 /* Completed is neutral history, not an active green state */
@@ -1470,8 +1504,8 @@ html,body{width:100%;max-width:none;background:#fff;}
   box-shadow:none!important;
 }
 .contact-actions .btn svg{width:17px!important;height:17px!important;flex:0 0 17px!important;}
-.contact-actions .whatsapp-outline{border-color:#16A34A!important;color:#16A34A!important;background:#fff!important;}
-.contact-actions .call-outline{border-color:#EF4444!important;color:#EF4444!important;background:#fff!important;}
+.contact-actions .whatsapp-outline{border-color:var(--success)!important;color:var(--success)!important;background:var(--card-bg)!important;}
+.contact-actions .call-outline{border-color:var(--danger)!important;color:var(--danger)!important;background:var(--card-bg)!important;}
 .contact-actions .btn:active{transform:scale(.975)!important;}
 
 /* Delete state must visually match its actual enabled/disabled state. */
