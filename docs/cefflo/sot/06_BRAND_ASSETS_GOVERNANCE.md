@@ -70,13 +70,13 @@ The text name is **Cefflo**.
 
 All four are 4375×4375 RGBA, alpha preserved as supplied, SHA-256-verified byte-identical to the Founder's original upload. No redrawing, retracing, regeneration, or "cleanup" performed, same standard as D-30.
 
-**Superseded 2026-09-11 (D-35), retained as historical, not deleted:** the original D-30 file set —
+**Superseded 2026-09-11 (D-35)** — the original D-30 file set:
 - `docs/cefflo/brand/assets/logo/cefflo-logo-official.png` (was primary master reference, black-background)
 - `docs/cefflo/brand/assets/logo/cefflo-logo-official-transparent.png`
 - `docs/cefflo/brand/assets/logo/cefflo-logo-official-wordmark.png`
 - `docs/cefflo/brand/assets/logo/cefflo-logo-official-wordmark-white.png`
 
-— all four still present on disk, still carry the Signal Lime arrow / black background exactly as originally supplied, no longer the current production reference. The transparent and wordmark variants among them carry visible extraction/matting artifacts around the edges and the wordmark-only variant is very low-contrast — noted here for anyone who encounters them, not corrected, since they are historical record rather than current production source.
+**Removed from the working tree 2026-09-11 (D-36, legacy visual baseline cleanup)** — all four carried the Signal Lime arrow / black background exactly as originally supplied, no longer the current production reference, and their presence risked reading as a competing valid baseline. Git history preserves them exactly (last present at commit `29038a6`, `git show 29038a6:docs/cefflo/brand/assets/logo/cefflo-logo-official.png` etc.) — nothing was lost, only removed from the active tree. The transparent and wordmark variants carried visible extraction/matting artifacts around the edges and the wordmark-only variant was very low-contrast, noted here for anyone who inspects the git history, not corrected there since it was historical record rather than current production source.
 
 **Superseded 2026-09-12:** the previous line here — *"The official master logo/brand mark is NOT YET FOUNDER-LOCKED"* — is no longer current.
 
@@ -179,7 +179,7 @@ Structure/components should remain coherent. Dark Mode may use sectional treatme
 - asset_id: `cefflo-logo-official`
 - name: Cefflo primary mark (folded-ribbon "C" + Signal Lime arrow)
 - type: logo, master reference
-- status: **SUPERSEDED** (2026-09-11, D-35 — colour treatment only, geometry unaffected; files retained on disk as historical)
+- status: **SUPERSEDED** (2026-09-11, D-35 — colour treatment only, geometry unaffected) and **REMOVED from the working tree** (2026-09-11, D-36 — files recoverable via git history at commit `29038a6`, not deleted from git)
 - version: 1.0
 - source: Founder-supplied PNG, 2026-09-12
 - owner: Founder

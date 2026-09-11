@@ -82,18 +82,31 @@ verification.
 
 Do not reintroduce: - Home Food OS; - home-food-only positioning; -
 food-category-first positioning; - old purple/blue signature styling; -
+old Signal Lime signature styling (retired 2026-09-11, D-33) -
 unsupported product claims; - fake operational states.
 
 Follow Brand Brain for doctrine and current repo/runtime for
-implementation facts.
+implementation facts. **Current visual authority for all UI work:
+`docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` (D-33/D-34/D-35) — not this
+file's older colour references below, which describe a superseded system
+and are retained as historical context only, per the 2026-09-11 legacy
+visual baseline cleanup.**
 
 ------------------------------------------------------------------------
 
 ## 7. UI FINISHING RULE
 
+**Superseded 2026-09-11 (legacy visual baseline cleanup):** this section
+described the Black/White/Graphite/Signal Lime system, now retired (D-33).
+Current authority is `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — CEFFLO
+Yellow `#FEC819`/Navy `#12213E`, canonical semantic palette, Manrope,
+locked surface/shadow system. Use it, not the line below.
+
 When polishing Cefflo UI: - preserve the approved
-Black/White/Graphite/Signal Lime system; - preserve Light/Dark
-structural parity; - use Signal Lime semantically; - maintain
+~~Black/White/Graphite/Signal Lime system~~ CEFFLO Yellow/Navy Experience
+System (`12_EXPERIENCE_SYSTEM.md`); - preserve Light/Dark
+structural parity; - use CEFFLO Yellow semantically (controlled brand/
+action signal only, never a status substitute — SOT §1.1); - maintain
 spacing/typography hierarchy; - prefer compact operational lists where
 specified; - preserve Rider critical slide safety patterns; - maintain
 responsive/accessibility behavior; - avoid patchwork that conflicts with

@@ -505,6 +505,8 @@ Avoid:
 
 # 8. VISUAL IDENTITY
 
+**Superseded 2026-09-11 (legacy visual baseline cleanup, D-33/D-34/D-35):** this section's Signal Lime `#C7F000` colour system is retired. Current visual authority for all colour/typography/surface decisions is `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — CEFFLO Yellow `#FEC819` / Navy `#12213E`. Retained below unedited as historical record of the original brand direction, per this file's own top-of-document notice that `docs/cefflo/sot/` wins where the two differ.
+
 ## 8.1 Core palette
 
 Neutral structural foundation:
