@@ -1,12 +1,14 @@
 {
   "id": "10000000-0000-4000-8000-000000000005",
   "name": "CEFFLO - 05A - Meta Creator",
-  "description": "Deterministic Meta stub package reused for Instagram and Facebook; no media provider is called.",
+  "description": "Adapts the real shared content package into the Meta lane, reused for Instagram and Facebook; no media provider is called.",
   "active": false,
   "isArchived": false,
   "nodes": [
     {
-      "parameters": {},
+      "parameters": {
+        "inputSource": "passthrough"
+      },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
@@ -18,7 +20,7 @@
     },
     {
       "parameters": {
-        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nconst payload = { lane: 'meta', destinations: ['instagram','facebook'], format: 'reel', hook: 'When local orders multiply, delivery becomes an operation.', script: 'Show the real order-to-delivery operating flow without fabricated product proof.', scene_plan: [], on_screen_text: ['Orders','Coverage','Zones','Plan','Runs','Delivered'], visual_direction: 'Real Cefflo UI or clearly labelled illustration only.', caption: 'One operation. Everyone knows what happens next.', cta: 'See the operating flow.', duration_seconds: 20, aspect_ratio: '9:16', media_requirements: [], status: 'QA_PENDING' };\nreturn [{ json: { ...input, creative_packages: [...(input.creative_packages || []).filter((p) => p.lane !== 'meta'), payload], stage: 'META_CREATOR', status: 'QA_PENDING', updated_at: new Date().toISOString() } }];"
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nif (!input.content_package) throw new Error('ERROR_VALIDATION: content_package required from Creative Router');\nconst lanePkg = input.content_package.platform_packages.find((p) => p.lane === 'meta');\nif (!lanePkg) throw new Error('ERROR_VALIDATION: meta lane package missing from content_package');\nconst payload = { ...lanePkg, status: 'QA_PENDING' };\nreturn [{ json: { ...input, creative_packages: [...(input.creative_packages || []).filter((p) => p.lane !== 'meta'), payload], stage: 'META_CREATOR', status: 'QA_PENDING', updated_at: new Date().toISOString() } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

@@ -1,12 +1,14 @@
 {
   "id": "10000000-0000-4000-8000-000000000006",
   "name": "CEFFLO - 05B - TikTok Creator",
-  "description": "Deterministic TikTok-native stub package; no AI or media provider is called.",
+  "description": "Adapts the real shared content package into the TikTok-native lane; no AI or media provider is called.",
   "active": false,
   "isArchived": false,
   "nodes": [
     {
-      "parameters": {},
+      "parameters": {
+        "inputSource": "passthrough"
+      },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
@@ -18,7 +20,7 @@
     },
     {
       "parameters": {
-        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nconst payload = { lane: 'tiktok', destinations: ['tiktok'], format: 'short_form_video', hook: 'Your riders may not be the problem. The run may be.', first_2_seconds: 'Show scattered orders becoming one visible run.', script: 'Explain the operational problem using truthful product language.', scene_plan: [], on_screen_text: ['Too many orders?','Build the delivery operation'], visual_direction: 'Fast, native, real UI where available.', caption: 'Local delivery gets harder when orders multiply.', cta: 'See how the operation fits together.', duration_seconds: 18, aspect_ratio: '9:16', media_requirements: [], status: 'QA_PENDING' };\nreturn [{ json: { ...input, creative_packages: [...(input.creative_packages || []).filter((p) => p.lane !== 'tiktok'), payload], stage: 'TIKTOK_CREATOR', status: 'QA_PENDING', updated_at: new Date().toISOString() } }];"
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nif (!input.content_package) throw new Error('ERROR_VALIDATION: content_package required from Creative Router');\nconst lanePkg = input.content_package.platform_packages.find((p) => p.lane === 'tiktok');\nif (!lanePkg) throw new Error('ERROR_VALIDATION: tiktok lane package missing from content_package');\nconst payload = { ...lanePkg, status: 'QA_PENDING' };\nreturn [{ json: { ...input, creative_packages: [...(input.creative_packages || []).filter((p) => p.lane !== 'tiktok'), payload], stage: 'TIKTOK_CREATOR', status: 'QA_PENDING', updated_at: new Date().toISOString() } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

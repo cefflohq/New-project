@@ -6,7 +6,9 @@
   "isArchived": false,
   "nodes": [
     {
-      "parameters": {},
+      "parameters": {
+        "inputSource": "passthrough"
+      },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
@@ -18,7 +20,7 @@
     },
     {
       "parameters": {
-        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nconst decision = input.founder_status || 'HOLD';\nif (!['APPROVE','REVISE','REJECT','HOLD'].includes(decision)) throw new Error('ERROR_VALIDATION: invalid Founder decision');\nif (input.qa_status !== 'PASS' && decision === 'APPROVE') throw new Error('ERROR_VALIDATION: Founder approval cannot bypass failed QA');\nconst status = { APPROVE: 'APPROVED', REVISE: 'REVISION_REQUIRED', REJECT: 'REJECTED', HOLD: 'HOLD' }[decision];\nreturn [{ json: { ...input, founder_status: decision, founder_feedback: input.founder_feedback ?? null, revision_target: input.founder_revision_target ?? input.revision_target ?? { stage: null, lane: null }, approved_at: decision === 'APPROVE' ? new Date().toISOString() : null, stage: 'FOUNDER_APPROVAL', status, updated_at: new Date().toISOString() } }];"
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nconst decision = input.founder_status || 'HOLD';\nif (!['APPROVE','REVISE','REJECT','HOLD'].includes(decision)) throw new Error('ERROR_VALIDATION: invalid Founder decision');\nif (input.qa_status !== 'PASS' && decision === 'APPROVE') throw new Error('ERROR_VALIDATION: Founder approval cannot bypass failed QA');\nconst status = { APPROVE: 'APPROVED', REVISE: 'REVISION_REQUIRED', REJECT: 'REJECTED', HOLD: 'HOLD' }[decision];\nconst revision_target = input.founder_revision_target ?? input.revision_target ?? { stage: null, lane: null };\nlet next = { ...input };\nif (decision === 'REVISE' && revision_target.stage === 'MASTER_CONCEPT') {\n  next = { ...next, creative_packages: [], qa_status: null, qa_score: null, publish_records: [], analytics_records: [], marketing_memory_records: [] };\n} else if (decision === 'REVISE' && revision_target.lane) {\n  next = { ...next, creative_packages: (next.creative_packages || []).filter((p) => p.lane !== revision_target.lane), publish_records: [], analytics_records: [], marketing_memory_records: [] };\n}\nreturn [{ json: { ...next, founder_status: decision, founder_feedback: input.founder_feedback ?? null, revision_target, approved_at: decision === 'APPROVE' ? new Date().toISOString() : null, stage: 'FOUNDER_APPROVAL', status, updated_at: new Date().toISOString() } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

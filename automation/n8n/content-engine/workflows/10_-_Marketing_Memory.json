@@ -6,7 +6,9 @@
   "isArchived": false,
   "nodes": [
     {
-      "parameters": {},
+      "parameters": {
+        "inputSource": "passthrough"
+      },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
@@ -51,6 +53,19 @@
           "name": "CEFFLO Content Engine PostgreSQL"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ...$('Build Marketing Memory Records').item.json, marketing_memory_persisted: true } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        0
+      ],
+      "id": "9fa65766-0000-4000-8000-cc0cf20fe779",
+      "name": "Confirm Marketing Memory Persisted"
     }
   ],
   "connections": {
@@ -70,6 +85,17 @@
         [
           {
             "node": "Persist Marketing Memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Persist Marketing Memory": {
+      "main": [
+        [
+          {
+            "node": "Confirm Marketing Memory Persisted",
             "type": "main",
             "index": 0
           }

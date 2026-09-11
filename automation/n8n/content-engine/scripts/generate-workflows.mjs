@@ -50,7 +50,11 @@ function nodeId(key, suffix) {
 
 function trigger(key, position = [0, 0]) {
   return {
-    parameters: {},
+    // n8n 2.36 defaults an omitted input mode to "Define using fields
+    // below", which rejects an empty field list. The CEFFLO envelope is a
+    // versioned object, so subworkflows intentionally accept and validate the
+    // complete upstream item in their first Code node.
+    parameters: { inputSource: 'passthrough' },
     type: 'n8n-nodes-base.executeWorkflowTrigger',
     typeVersion: 1.1,
     position,
@@ -149,6 +153,83 @@ function linear(key, name, jsCode, description) {
   }, description);
 }
 
+// --- Phase 03 real-engine embedding ---------------------------------------
+// n8n Code nodes run isolated JS with no filesystem/module resolution, so the
+// only way for a workflow's Code node to run the REAL, tested Phase 03 logic
+// (not a hand-copied re-implementation that can drift from it) is to embed
+// the actual scripts/*.mjs source verbatim at generation time. This reads
+// each file fresh on every `node scripts/generate-workflows.mjs` run, so the
+// workflow JSON can never silently go stale relative to the module it embeds.
+function stripFunction(src, name) {
+  const marker = new RegExp(`^(export )?(async )?function ${name}\\(`, 'm');
+  const m = marker.exec(src);
+  if (!m) return src;
+  const start = m.index;
+  let i = src.indexOf('{', start);
+  let depth = 0;
+  for (; i < src.length; i += 1) {
+    if (src[i] === '{') depth += 1;
+    else if (src[i] === '}') { depth -= 1; if (depth === 0) { i += 1; break; } }
+  }
+  while (src[i] === '\n') i += 1;
+  return src.slice(0, start) + src.slice(i);
+}
+
+function embedFile(relPath, { dropLinePatterns = [], stripFunctions = [] } = {}) {
+  let src = fs.readFileSync(path.join(root, 'scripts', relPath), 'utf8');
+  src = src.split('\n').filter((l) => !/^import /.test(l) && !dropLinePatterns.some((p) => p.test(l))).join('\n');
+  for (const name of stripFunctions) src = stripFunction(src, name);
+  src = src.replace(/^export (async function|function|const)/gm, '$1');
+  return src.trim();
+}
+
+// loadTaxonomy() is excluded -- it reads the fixture files from disk, which a
+// live n8n Code node cannot do. The same fixture content is embedded below as
+// a plain object literal (TAXONOMY) instead; every other function in the file
+// (proposeVehicleMix, resolveWorkforceLabel, buildScenario) is pure and is
+// embedded unchanged.
+const cilScenarioEmbed = embedFile('cil-scenario-engine.mjs', {
+  dropLinePatterns: [/^const CIL_DIR = /],
+  stripFunctions: ['loadTaxonomy'],
+});
+const cilValidateEmbed = embedFile('cil-validate.mjs');
+const contentScriptEmbed = embedFile('content-script-engine.mjs');
+const qaEngineEmbed = embedFile('qa-engine.mjs');
+
+const cilFixturesDir = path.join(root, 'fixtures/cil');
+const readFixture = (name) => JSON.parse(fs.readFileSync(path.join(cilFixturesDir, name), 'utf8'));
+const taxonomy = {
+  vehicleTypes: readFixture('vehicle_types.json'),
+  businessArchetypes: readFixture('business_archetypes.json'),
+  personas: readFixture('personas.json'),
+  operationalSituations: readFixture('operational_situations.json'),
+  emotionalTensions: readFixture('emotional_tensions.json'),
+  creativeFormats: readFixture('creative_formats.json'),
+};
+const taxonomyLiteral = `const TAXONOMY = ${JSON.stringify(taxonomy)};`;
+
+// Deterministic default CIL scenario seed used only when no caller-supplied
+// cil_scenario_input is present on the envelope. Identical to the baseInput
+// already exercised and asserted PASS by tests/phase03_test.mjs, so the
+// default path through the real validator/QA is a known-good one.
+const defaultScenarioInput = {
+  business_archetype: { business_type: 'meal_prep', scale: 'small_team', daily_order_volume: 50, delivery_window: 'lunch' },
+  archetype_category: 'food_and_meal_operations',
+  order_profile: { count: 50, delivery_window: 'lunch', characteristics: ['multi_drop'] },
+  delivery_team: { expected: 3, available: 3 },
+  vehicle_mix: [{ type: 'motorcycle', count: 2 }, { type: 'car', count: 1 }],
+  trigger: { type: 'delivery_person_unavailable' },
+  operational_problem: { primary: 'workload_redistribution' },
+  personas: ['owner_founder', 'delivery_person'],
+  human_behaviour: ['owner_reviews_orders'],
+  emotional_tension: ['urgency'],
+  cefflo_relevance: ['delivery_planning', 'rider_assignment'],
+  desired_outcome: ['clearer_delivery_plan'],
+  creative_opportunities: ['pov_owner'],
+  language_context: { register: 'everyday_business', primary_language: 'ms-MY' },
+};
+const defaultScenarioInputLiteral = `const DEFAULT_CIL_SCENARIO_INPUT = ${JSON.stringify(defaultScenarioInput)};`;
+
 const envelopeGuard = `
 const input = $input.first().json;
 const required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];
@@ -192,8 +273,12 @@ linear('research', 'Mine Deterministic Angles', `${envelopeGuard}
 if (!input.context_pack || input.context_pack.status !== 'CONTEXT_READY') throw new Error('ERROR_SOT: Context Pack required');
 const memory = Array.isArray(input.marketing_memory) ? input.marketing_memory : [];
 const angle = { angle_id: 'angle-roi-001', topic: 'Local delivery operational clarity', audience: input.target_audience || 'Local business operator', pain_or_desire: 'Multiple local orders become hard to coordinate', angle: 'Turn scattered delivery activity into one visible operating flow', hook_direction: 'Show the operational contrast without unsupported claims', priority_score: 90, duplication_score: memory.some((m) => m.angle === 'Turn scattered delivery activity into one visible operating flow') ? 100 : 0, source_basis: input.context_pack.source_references };
-return [{ json: { ...input, candidate_angles: [angle], selected_angles: [angle], stage: 'RESEARCH', status: 'ANGLES_READY', updated_at: new Date().toISOString() } }];`,
-'Research-only boundary. Produces ranked angle contracts and checks Marketing Memory; it does not write platform copy.');
+${taxonomyLiteral}
+${defaultScenarioInputLiteral}
+${cilScenarioEmbed}
+const cil_scenario = buildScenario(input.cil_scenario_input || DEFAULT_CIL_SCENARIO_INPUT, TAXONOMY);
+return [{ json: { ...input, candidate_angles: [angle], selected_angles: [angle], cil_scenario, stage: 'RESEARCH', status: 'ANGLES_READY', updated_at: new Date().toISOString() } }];`,
+'Research-only boundary. Produces ranked angle contracts, checks Marketing Memory, and builds the real CIL scenario (scripts/cil-scenario-engine.mjs embedded verbatim below) that the Creative Router turns into a content package. It does not write platform copy.');
 
 linear('concept', 'Build Core Experiment', `${envelopeGuard}
 const angle = input.selected_angle || input.selected_angles?.[0];
@@ -206,40 +291,58 @@ return [{ json: { ...input, ...concept, stage: 'MASTER_CONCEPT', status: 'CONCEP
 
 linear('router', 'Create Three Lane Plan', `${envelopeGuard}
 if (input.status !== 'CONCEPT_READY') throw new Error('ERROR_VALIDATION: concept not ready');
-return [{ json: { ...input, creative_lanes: [
+if (!input.cil_scenario) throw new Error('ERROR_VALIDATION: cil_scenario required before Creative Router');
+${taxonomyLiteral}
+${cilScenarioEmbed}
+${contentScriptEmbed}
+const content_package = buildContentPackage(input.cil_scenario, TAXONOMY);
+return [{ json: { ...input, content_package, creative_lanes: [
   { lane: 'meta', destinations: ['instagram','facebook'], workflow_id: '${ids.meta}' },
   { lane: 'tiktok', destinations: ['tiktok'], workflow_id: '${ids.tiktok}' },
   { lane: 'threads', destinations: ['threads'], workflow_id: '${ids.threads}' }
 ], stage: 'CREATIVE_ROUTER', status: 'CREATIVE_GENERATING', updated_at: new Date().toISOString() } }];`,
-'Creates exactly three production lanes. Instagram and Facebook share one Meta package by default.');
+'Creates exactly three production lanes and builds the real shared content package (scripts/content-script-engine.mjs embedded verbatim below) each lane creator adapts from. Instagram and Facebook share one Meta package by default.');
 
 linear('meta', 'Create Meta Stub Package', `${envelopeGuard}
-const payload = { lane: 'meta', destinations: ['instagram','facebook'], format: 'reel', hook: 'When local orders multiply, delivery becomes an operation.', script: 'Show the real order-to-delivery operating flow without fabricated product proof.', scene_plan: [], on_screen_text: ['Orders','Coverage','Zones','Plan','Runs','Delivered'], visual_direction: 'Real Cefflo UI or clearly labelled illustration only.', caption: 'One operation. Everyone knows what happens next.', cta: 'See the operating flow.', duration_seconds: 20, aspect_ratio: '9:16', media_requirements: [], status: 'QA_PENDING' };
+if (!input.content_package) throw new Error('ERROR_VALIDATION: content_package required from Creative Router');
+const lanePkg = input.content_package.platform_packages.find((p) => p.lane === 'meta');
+if (!lanePkg) throw new Error('ERROR_VALIDATION: meta lane package missing from content_package');
+const payload = { ...lanePkg, status: 'QA_PENDING' };
 return [{ json: { ...input, creative_packages: [...(input.creative_packages || []).filter((p) => p.lane !== 'meta'), payload], stage: 'META_CREATOR', status: 'QA_PENDING', updated_at: new Date().toISOString() } }];`,
-'Deterministic Meta stub package reused for Instagram and Facebook; no media provider is called.');
+'Adapts the real shared content package into the Meta lane, reused for Instagram and Facebook; no media provider is called.');
 
 linear('tiktok', 'Create TikTok Stub Package', `${envelopeGuard}
-const payload = { lane: 'tiktok', destinations: ['tiktok'], format: 'short_form_video', hook: 'Your riders may not be the problem. The run may be.', first_2_seconds: 'Show scattered orders becoming one visible run.', script: 'Explain the operational problem using truthful product language.', scene_plan: [], on_screen_text: ['Too many orders?','Build the delivery operation'], visual_direction: 'Fast, native, real UI where available.', caption: 'Local delivery gets harder when orders multiply.', cta: 'See how the operation fits together.', duration_seconds: 18, aspect_ratio: '9:16', media_requirements: [], status: 'QA_PENDING' };
+if (!input.content_package) throw new Error('ERROR_VALIDATION: content_package required from Creative Router');
+const lanePkg = input.content_package.platform_packages.find((p) => p.lane === 'tiktok');
+if (!lanePkg) throw new Error('ERROR_VALIDATION: tiktok lane package missing from content_package');
+const payload = { ...lanePkg, status: 'QA_PENDING' };
 return [{ json: { ...input, creative_packages: [...(input.creative_packages || []).filter((p) => p.lane !== 'tiktok'), payload], stage: 'TIKTOK_CREATOR', status: 'QA_PENDING', updated_at: new Date().toISOString() } }];`,
-'Deterministic TikTok-native stub package; no AI or media provider is called.');
+'Adapts the real shared content package into the TikTok-native lane; no AI or media provider is called.');
 
 linear('threads', 'Create Threads Stub Package', `${envelopeGuard}
-const payload = { lane: 'threads', destinations: ['threads'], format: 'text_post', opening_line: 'Local delivery gets complicated when orders multiply.', body: 'The real shift is treating delivery as one visible operation: orders, coverage, zones, plan, runs, riders and completion.', conversation_angle: 'Operational clarity for local business owners', cta_or_question: 'Which part of today’s delivery operation takes the most mental effort?', optional_followup_posts: [], status: 'QA_PENDING' };
+if (!input.content_package) throw new Error('ERROR_VALIDATION: content_package required from Creative Router');
+const lanePkg = input.content_package.platform_packages.find((p) => p.lane === 'threads');
+if (!lanePkg) throw new Error('ERROR_VALIDATION: threads lane package missing from content_package');
+const payload = { ...lanePkg, status: 'QA_PENDING' };
 return [{ json: { ...input, creative_packages: [...(input.creative_packages || []).filter((p) => p.lane !== 'threads'), payload], stage: 'THREADS_WRITER', status: 'QA_PENDING', updated_at: new Date().toISOString() } }];`,
-'Deterministic Threads-native text stub; it is not an Instagram-caption copy.');
+'Adapts the real shared content package into the Threads-native text lane; it is not an Instagram-caption copy.');
 
 linear('qa', 'Run Deterministic QA', `${envelopeGuard}
+if (!input.cil_scenario || !input.content_package) throw new Error('ERROR_VALIDATION: cil_scenario and content_package required before AI QA');
+${taxonomyLiteral}
+${cilValidateEmbed}
+${qaEngineEmbed}
 const packages = input.creative_packages || [];
 const expected = ['meta','tiktok','threads'];
 const missing = expected.filter((lane) => !packages.some((p) => p.lane === lane));
-const fake = packages.some((p) => JSON.stringify(p).match(/guaranteed|live gps|automatic route optimization/i));
-let qa_status = missing.length || fake ? 'REVISE' : 'PASS';
+const preQa = preProductionQA(input.cil_scenario, input.content_package, TAXONOMY, input.recent_hooks || []);
+let qa_status = missing.length || preQa.status !== 'PASS' ? 'REVISE' : 'PASS';
 const revision = input.qa_fixture?.revision_target || (missing.length ? { stage: 'CREATIVE', lane: missing[0] } : { stage: null, lane: null });
 if (input.qa_fixture?.force_status) qa_status = input.qa_fixture.force_status;
 const retry = Number(input.retry_count || 0);
 if (qa_status === 'REVISE' && retry >= Number(input.max_retries ?? 2)) throw new Error('ERROR_VALIDATION: targeted retry limit exhausted');
-return [{ json: { ...input, qa_status, qa_score: qa_status === 'PASS' ? 100 : 60, failed_rules: missing.map((x) => 'missing_' + x), qa_feedback: fake ? ['Unsupported claim detected'] : [], revision_target: revision, stage: 'AI_QA', status: qa_status === 'PASS' ? 'FOUNDER_REVIEW' : qa_status === 'REJECT' ? 'REJECTED' : 'REVISION_REQUIRED', updated_at: new Date().toISOString() } }];`,
-'Automated Product Truth, brand, claim and platform-fit gate with bounded targeted revision.');
+return [{ json: { ...input, qa_status, qa_score: qa_status === 'PASS' ? 100 : 60, failed_rules: [...missing.map((x) => 'missing_' + x), ...preQa.failed_checks], qa_feedback: preQa.failed_checks, revision_target: revision, stage: 'AI_QA', status: qa_status === 'PASS' ? 'FOUNDER_REVIEW' : qa_status === 'REJECT' ? 'REJECTED' : 'REVISION_REQUIRED', updated_at: new Date().toISOString() } }];`,
+'Automated Product Truth, brand, claim and platform-fit gate -- the real preProductionQA + validateScenario (scripts/qa-engine.mjs + cil-validate.mjs embedded verbatim below) -- with bounded targeted revision.');
 
 linear('approval', 'Apply Founder Decision', `${envelopeGuard}
 const decision = input.founder_status || 'HOLD';
@@ -318,15 +421,30 @@ for (const [key, filePrefix] of [['winners','11_-_Weekly_Winner_Engine'], ['paid
 
 // PostgreSQL nodes are importable credential references only. The credential
 // itself must be created in n8n's encrypted store by an authorized operator.
+//
+// A Postgres node's output is its query result columns, not a passthrough of
+// its input. That's only harmless when nothing downstream ever reads the
+// workflow's return value -- true for CEFFLO - 99 (error path, nothing reads
+// it afterward), but NOT true for CEFFLO - 03 (04-10 still run after it) or
+// CEFFLO - 10 (the Master Orchestrator's own Run Summary node reads its
+// output for roi_summary.destinations). Both of those need a restoreFrom
+// step that re-emits the full envelope from the node named in restoreFrom,
+// confirmed persisted via a marker flag, rather than leaving the raw
+// Postgres query result as the workflow's final output.
 for (const spec of [
-  ['memory', '10_-_Marketing_Memory', 'Build Marketing Memory Records', 'Persist Marketing Memory', 'SELECT cefflo_content_engine.persist_marketing_memory($1::jsonb) AS result', '={{ [JSON.stringify($json)] }}'],
-  ['error', '99_-_Error_and_Recovery', 'Build Standard Error Envelope', 'Persist Error Event', 'SELECT cefflo_content_engine.log_event($1::jsonb) AS event_id', '={{ [JSON.stringify($json.content_engine_event)] }}'],
+  ['concept', '03_-_Master_Concept_Builder', 'Build Core Experiment', 'Persist Master Concept', 'SELECT cefflo_content_engine.persist_master_concept($1::jsonb) AS master_concept_id', '={{ [JSON.stringify($json)] }}', 'Build Core Experiment', 'Confirm Master Concept Persisted', 'master_concept_persisted'],
+  ['memory', '10_-_Marketing_Memory', 'Build Marketing Memory Records', 'Persist Marketing Memory', 'SELECT cefflo_content_engine.persist_marketing_memory($1::jsonb) AS result', '={{ [JSON.stringify($json)] }}', 'Build Marketing Memory Records', 'Confirm Marketing Memory Persisted', 'marketing_memory_persisted'],
+  ['error', '99_-_Error_and_Recovery', 'Build Standard Error Envelope', 'Persist Error Event', 'SELECT cefflo_content_engine.log_event($1::jsonb) AS event_id', '={{ [JSON.stringify($json.content_engine_event)] }}', null, null, null],
 ]) {
-  const [key, filePrefix, previous, name, query, queryReplacement] = spec;
+  const [key, filePrefix, previous, name, query, queryReplacement, restoreFrom, restoreName, markerField] = spec;
   const file = path.join(out, `${filePrefix}.json`);
   const artifact = JSON.parse(fs.readFileSync(file, 'utf8'));
   artifact.nodes.push(postgresNode(key, name, query, queryReplacement));
   artifact.connections[previous] = { main: [[{ node: name, type: 'main', index: 0 }]] };
+  if (restoreFrom) {
+    artifact.nodes.push(codeNode(key, restoreName, `return [{ json: { ...$('${restoreFrom}').item.json, ${markerField}: true } }];`, [780, 0]));
+    artifact.connections[name] = { main: [[{ node: restoreName, type: 'main', index: 0 }]] };
+  }
   fs.writeFileSync(file, JSON.stringify(artifact, null, 2) + '\n');
 }
 

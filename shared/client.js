@@ -4,15 +4,23 @@
   const sessionKey = window.CEFFLO_SESSION_KEY || 'cefflo.auth.session.v1';
   let session = JSON.parse(localStorage.getItem(sessionKey) || 'null');
 
-  async function request(path, { method = 'GET', body, token = session?.access_token } = {}) {
+  async function request(path, { method = 'GET', body, token = session?.access_token, profile } = {}) {
+    const headers = {
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${token || config.supabaseAnonKey}`,
+      'Content-Type': 'application/json'
+    };
+    // PostgREST only routes to a non-default schema when the caller names it
+    // explicitly (Accept-Profile for reads, Content-Profile for writes) --
+    // config.schema ('public') stays the default for every existing caller.
+    if (profile && profile !== config.schema) {
+      headers['Accept-Profile'] = profile;
+      headers['Content-Profile'] = profile;
+    }
     const response = await fetch(`${config.supabaseUrl}${path}`, {
       method,
       cache: 'no-store',
-      headers: {
-        apikey: config.supabaseAnonKey,
-        Authorization: `Bearer ${token || config.supabaseAnonKey}`,
-        'Content-Type': 'application/json'
-      },
+      headers,
       body: body === undefined ? undefined : JSON.stringify(body)
     });
     const text = await response.text();

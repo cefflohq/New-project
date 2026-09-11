@@ -6,7 +6,9 @@
   "isArchived": false,
   "nodes": [
     {
-      "parameters": {},
+      "parameters": {
+        "inputSource": "passthrough"
+      },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
@@ -28,6 +30,42 @@
       ],
       "id": "a4562000-0000-4000-8000-d4ac75832b95",
       "name": "Build Core Experiment"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT cefflo_content_engine.persist_master_concept($1::jsonb) AS master_concept_id",
+        "options": {
+          "queryReplacement": "={{ [JSON.stringify($json)] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        520,
+        0
+      ],
+      "id": "ff1edeb1-0000-4000-8000-b438ed40198e",
+      "name": "Persist Master Concept",
+      "credentials": {
+        "postgres": {
+          "id": "CEFFLO_CONTENT_ENGINE_POSTGRES",
+          "name": "CEFFLO Content Engine PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ...$('Build Core Experiment').item.json, master_concept_persisted: true } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        0
+      ],
+      "id": "844cb2a2-0000-4000-8000-7feeccee450e",
+      "name": "Confirm Master Concept Persisted"
     }
   ],
   "connections": {
@@ -36,6 +74,28 @@
         [
           {
             "node": "Build Core Experiment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Core Experiment": {
+      "main": [
+        [
+          {
+            "node": "Persist Master Concept",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Persist Master Concept": {
+      "main": [
+        [
+          {
+            "node": "Confirm Master Concept Persisted",
             "type": "main",
             "index": 0
           }
