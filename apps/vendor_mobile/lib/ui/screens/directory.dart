@@ -1100,14 +1100,12 @@ class MenuScreen extends StatelessWidget {
             ],
           ),
         ),
-        group('Operations', [
-          ('Zones', LucideIcons.mapPin, VRoute.zones),
-          ('Riders', LucideIcons.bike, VRoute.riders),
-        ]),
         group('Business', [
           ('Team', LucideIcons.users, VRoute.team),
           ('Service area', LucideIcons.map, VRoute.serviceArea),
           ('Storefront', LucideIcons.store, VRoute.storefront),
+          ('Products', LucideIcons.boxes, VRoute.products),
+          ('Customers', LucideIcons.users, VRoute.customers),
           ('Business profile', LucideIcons.building2, VRoute.businessProfile),
         ]),
         group('Preferences', [

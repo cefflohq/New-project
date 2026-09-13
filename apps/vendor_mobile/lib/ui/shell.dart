@@ -149,9 +149,9 @@ class _BottomNav extends StatelessWidget {
   static const _items = <(NavTab, String, IconData)>[
     (NavTab.today, 'Today', LucideIcons.house),
     (NavTab.orders, 'Orders', LucideIcons.package),
-    (NavTab.products, 'Products', LucideIcons.boxes),
-    (NavTab.customers, 'Customers', LucideIcons.users),
-    (NavTab.more, 'More', LucideIcons.menu),
+    (NavTab.zones, 'Zones', LucideIcons.mapPin),
+    (NavTab.riders, 'Riders', LucideIcons.users),
+    (NavTab.menu, 'Settings', LucideIcons.settings),
   ];
 
   @override

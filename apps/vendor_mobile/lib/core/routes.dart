@@ -7,7 +7,7 @@
 /// bound to the record that was actually selected.
 library;
 
-enum NavTab { today, orders, products, customers, more, zones, riders, menu }
+enum NavTab { today, orders, zones, riders, menu }
 
 enum VRoute {
   splash,
@@ -188,14 +188,14 @@ const routeSpecs = <VRoute, RouteSpec>{
     route: VRoute.zones,
     id: 'V-16',
     title: 'Zones',
-    tab: NavTab.more,
+    tab: NavTab.zones,
   ),
   VRoute.zoneDetail: RouteSpec(
     route: VRoute.zoneDetail,
     id: 'V-17',
     title: 'Delivery plan',
     parent: VRoute.zones,
-    tab: NavTab.more,
+    tab: NavTab.zones,
     requiresEntityId: true,
   ),
   VRoute.reviewDispatch: RouteSpec(
@@ -203,7 +203,7 @@ const routeSpecs = <VRoute, RouteSpec>{
     id: 'V-18',
     title: 'Review & dispatch',
     parent: VRoute.zoneDetail,
-    tab: NavTab.more,
+    tab: NavTab.zones,
     requiresEntityId: true,
   ),
   VRoute.runDetail: RouteSpec(
@@ -211,7 +211,7 @@ const routeSpecs = <VRoute, RouteSpec>{
     id: 'V-19',
     title: 'Delivery progress',
     parent: VRoute.zones,
-    tab: NavTab.more,
+    tab: NavTab.zones,
     requiresEntityId: true,
   ),
 
@@ -219,14 +219,14 @@ const routeSpecs = <VRoute, RouteSpec>{
     route: VRoute.riders,
     id: 'V-20',
     title: 'Riders',
-    tab: NavTab.more,
+    tab: NavTab.riders,
   ),
   VRoute.riderDetail: RouteSpec(
     route: VRoute.riderDetail,
     id: 'V-21',
     title: 'Rider detail',
     parent: VRoute.riders,
-    tab: NavTab.more,
+    tab: NavTab.riders,
     requiresEntityId: true,
   ),
   VRoute.riderRegistrationLink: RouteSpec(
@@ -234,7 +234,7 @@ const routeSpecs = <VRoute, RouteSpec>{
     id: 'V-22',
     title: 'Rider registration link',
     parent: VRoute.riders,
-    tab: NavTab.more,
+    tab: NavTab.riders,
   ),
 
   VRoute.team: RouteSpec(
@@ -323,20 +323,21 @@ const routeSpecs = <VRoute, RouteSpec>{
     id: 'V-34',
     title: 'Products',
     parent: VRoute.storefront,
-    tab: NavTab.products,
+    tab: NavTab.menu,
   ),
   VRoute.customers: RouteSpec(
     route: VRoute.customers,
     id: 'X-02',
     title: 'Customers',
-    tab: NavTab.customers,
+    parent: VRoute.settings,
+    tab: NavTab.menu,
   ),
   VRoute.customerDetail: RouteSpec(
     route: VRoute.customerDetail,
     id: 'X-03',
     title: 'Customer',
     parent: VRoute.customers,
-    tab: NavTab.customers,
+    tab: NavTab.menu,
     requiresEntityId: true,
   ),
   VRoute.productDetail: RouteSpec(
@@ -422,7 +423,7 @@ const routeSpecs = <VRoute, RouteSpec>{
   VRoute.settings: RouteSpec(
     route: VRoute.settings,
     id: 'V-46',
-    title: 'More',
+    title: 'Settings',
     tab: NavTab.menu,
   ),
   VRoute.notificationSettings: RouteSpec(

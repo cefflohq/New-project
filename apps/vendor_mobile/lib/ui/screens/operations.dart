@@ -558,10 +558,14 @@ class TodayScreen extends StatelessWidget {
         ],
       );
     }
-    return AsyncView<List<VendorOrder>>(
+    return AsyncView<(List<VendorOrder>, List<RiderRow>)>(
       key: ValueKey('today-${business.id}'),
-      load: () => app.repo.orders(business.id),
-      builder: (context, orders, reload) {
+      load: () async => (
+        await app.repo.orders(business.id),
+        await app.repo.riders(business.id),
+      ),
+      builder: (context, data, reload) {
+        final (orders, riders) = data;
         final ready = orders
             .where((o) => o.status == DeliveryStatus.readyForPickup)
             .toList();
@@ -628,30 +632,59 @@ class TodayScreen extends StatelessWidget {
               const StateBlock.empty('No completed deliveries yet.')
             else
               // Audit fix 2: each card is bound to its own order id.
+              // Recent Delivery is delivery/rider context, not customer
+              // identity: it shows who delivered it, not who ordered it.
               for (final o in delivered.take(6))
-                FlatListRow(
-                  title: o.customerName.isEmpty ? o.reference : o.customerName,
-                  subtitle: [
-                    if (o.publicRef != null) o.publicRef!,
-                    o.deliveryAddress,
-                    if (o.completedAt != null) _formatTime(o.completedAt!),
-                  ].join(' · '),
-                  leading: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: const Color(0xFFF0F3F8),
-                    child: Text(
-                      _initials(
-                        o.customerName.isEmpty ? o.reference : o.customerName,
+                Builder(
+                  builder: (context) {
+                    RiderRow? rider;
+                    for (final r in riders) {
+                      if (r.id == o.assignedRiderId) {
+                        rider = r;
+                        break;
+                      }
+                    }
+                    return FlatListRow(
+                      title: rider?.name ?? 'Unassigned rider',
+                      subtitle: [
+                        if (rider?.plate != null) rider!.plate!,
+                        o.deliveryAddress,
+                      ].join(' · '),
+                      leading: CircleAvatar(
+                        radius: 18,
+                        backgroundColor: CefColors.navy,
+                        child: rider == null
+                            ? Icon(
+                                LucideIcons.user,
+                                size: 16,
+                                color: Colors.white.withValues(alpha: .85),
+                              )
+                            : Text(
+                                _initials(rider.name),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                              ),
                       ),
-                      style: const TextStyle(
-                        color: CefColors.navy,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
+                      trailing: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const StatusChip('Delivered'),
+                          if (o.completedAt != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              _formatTime(o.completedAt!),
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ],
                       ),
-                    ),
-                  ),
-                  trailing: const StatusChip('Delivered'),
-                  onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
+                      onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
+                    );
+                  },
                 ),
             const SizedBox(height: Gap.md),
             YellowFab(
