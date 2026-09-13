@@ -4,10 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 /// Spacing per the Founder-approved compact spec: 12px gutter, ~13px card
 /// padding, 11-12px card gaps, 20px section gaps.
 class Gap {
-  static const gutter = 12.0;
-  static const cardPadding = 13.0;
-  static const cardGap = 11.0;
-  static const section = 20.0;
+  static const gutter = 20.0;
+  static const cardPadding = 16.0;
+  static const cardGap = 12.0;
+  static const section = 22.0;
   static const xs = 4.0;
   static const sm = 8.0;
   static const md = 12.0;
@@ -19,12 +19,12 @@ class Gap {
 /// this reconciliation; buttonRadius/inputRadius are new here, replacing
 /// widgets.dart's previously hardcoded 12px on both.
 class Sizes {
-  static const chrome = 60.0; // header + bottom nav, excluding safe areas
+  static const chrome = 64.0; // header + bottom nav, excluding safe areas
   static const icon = 22.0; // visual icon size
   static const tapTarget = 44.0; // minimum interactive target
-  static const cardRadius = 14.0;
+  static const cardRadius = 18.0;
   static const buttonRadius = 999.0; // pill
-  static const inputRadius = 14.0;
+  static const inputRadius = 18.0;
 }
 
 class CefColors extends ThemeExtension<CefColors> {
@@ -59,7 +59,7 @@ class CefColors extends ThemeExtension<CefColors> {
   static const navy = Color(0xFF12213E);
 
   static const light = CefColors(
-    canvas: Color(0xFFF7F8FA), // Workspace
+    canvas: Color(0xFFFFFFFF), // Mobile workspace
     card: Color(0xFFFFFFFF), // Surface
     border: Color(0xFFE3E6EE),
     chrome: Color(0xFFFFFFFF),
@@ -147,11 +147,11 @@ ThemeData buildVendorTheme(Brightness brightness) {
     ),
     extensions: [c],
     textTheme: TextTheme(
-      // Page/section titles 18/650.
-      titleLarge: t(18, FontWeight.w600, c.textPrimary, spacing: -0.2),
+      // Page/section titles.
+      titleLarge: t(22, FontWeight.w700, c.textPrimary, spacing: -0.5),
       // Card primary 15-16/650.
-      titleMedium: t(16, FontWeight.w600, c.textPrimary),
-      titleSmall: t(15, FontWeight.w600, c.textPrimary),
+      titleMedium: t(17, FontWeight.w700, c.textPrimary, spacing: -0.2),
+      titleSmall: t(16, FontWeight.w600, c.textPrimary, spacing: -0.1),
       // Supporting 14/500.
       bodyMedium: t(14, FontWeight.w500, c.textSecondary),
       bodySmall: t(13, FontWeight.w500, c.textSecondary),

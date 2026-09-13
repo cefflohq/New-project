@@ -5,6 +5,7 @@ import '../core/theme.dart';
 import 'screens/directory.dart';
 import 'screens/operations.dart';
 import 'screens/planning.dart';
+import 'screens/prototype.dart';
 import 'shell.dart';
 import 'widgets.dart';
 
@@ -17,6 +18,7 @@ Widget buildScreen(BuildContext context, VendorLocation loc) {
   final id = loc.entityId;
   return switch (loc.route) {
     VRoute.today => const TodayScreen(),
+    VRoute.setupComplete => const SetupCompleteScreen(),
     VRoute.orders => const OrdersScreen(),
     VRoute.orderDetail => OrderDetailScreen(orderId: id!),
     VRoute.newOrder => const OrderFormScreen(),
@@ -24,15 +26,17 @@ Widget buildScreen(BuildContext context, VendorLocation loc) {
     VRoute.zones => const ZonesScreen(),
     VRoute.zoneDetail => ZoneDetailScreen(zoneId: id!),
     VRoute.reviewDispatch => const ReviewDispatchScreen(),
+    VRoute.runDetail => RunDetailScreen(runId: id ?? 'RUN-0182'),
     VRoute.serviceArea => const ServiceAreaScreen(),
     VRoute.coverageEdit => const ServiceAreaScreen(),
     VRoute.riders => const RidersScreen(),
     VRoute.riderDetail => RiderDetailScreen(riderId: id!),
     VRoute.team => const TeamScreen(),
     VRoute.products => const ProductsScreen(),
+    VRoute.customers => const CustomersScreen(),
+    VRoute.customerDetail => CustomerDetailScreen(customerName: id!),
     VRoute.settings => const MenuScreen(),
-    VRoute.appearance => const AppearanceScreen(),
-    _ => NotMigratedScreen(spec: loc.spec),
+    _ => UiPrototypeScreen(spec: loc.spec),
   };
 }
 

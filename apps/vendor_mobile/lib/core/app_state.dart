@@ -56,6 +56,9 @@ class AppState extends ChangeNotifier {
     final root = switch (tab) {
       NavTab.today => VRoute.today,
       NavTab.orders => VRoute.orders,
+      NavTab.products => VRoute.products,
+      NavTab.customers => VRoute.customers,
+      NavTab.more => VRoute.settings,
       NavTab.zones => VRoute.zones,
       NavTab.riders => VRoute.riders,
       NavTab.menu => VRoute.settings,
@@ -120,8 +123,8 @@ class AppScope extends InheritedNotifier<AppState> {
   static AppState of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<AppScope>()!.notifier!;
 
-  static AppState read(BuildContext context) => (context
-          .getElementForInheritedWidgetOfExactType<AppScope>()!
-          .widget as AppScope)
-      .notifier!;
+  static AppState read(BuildContext context) =>
+      (context.getElementForInheritedWidgetOfExactType<AppScope>()!.widget
+              as AppScope)
+          .notifier!;
 }

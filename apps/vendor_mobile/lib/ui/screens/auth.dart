@@ -14,6 +14,8 @@
 /// is in — Dark Mode is HOLD and is not implemented or expanded here.
 library;
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show OAuthProvider;
@@ -34,7 +36,7 @@ const _navyLift = Color(0xFF1E4585);
 
 const _sheetRadius = 28.0;
 const _buttonRadius = 14.0;
-const _buttonHeight = 54.0;
+const _buttonHeight = 48.0;
 const _fieldRadius = 14.0;
 
 const _disabledFill = Color(0xFFE6E8EE);
@@ -59,7 +61,9 @@ enum _Stage {
 }
 
 class AuthFlow extends StatefulWidget {
-  const AuthFlow({super.key});
+  const AuthFlow({super.key, this.onPrototypeAuthenticated});
+
+  final VoidCallback? onPrototypeAuthenticated;
 
   @override
   State<AuthFlow> createState() => _AuthFlowState();
@@ -109,12 +113,14 @@ class _AuthFlowState extends State<AuthFlow> {
       _Stage.signIn => SignInScreen(
         onEmail: () => _go(_Stage.emailSignIn),
         onSignUp: () => _go(_Stage.signUp),
+        onPrototypeAuthenticated: widget.onPrototypeAuthenticated,
       ),
       _Stage.emailSignIn => EmailSignInScreen(
         onBack: _back,
         onForgotPassword: () => _go(_Stage.forgotPassword),
         onSignUp: () => _go(_Stage.signUp),
         onNeedsVerification: (email) => _go(_Stage.verifyEmail, email: email),
+        onPrototypeAuthenticated: widget.onPrototypeAuthenticated,
       ),
       _Stage.signUp => SignUpScreen(
         onBack: _back,
@@ -157,56 +163,99 @@ class _AuthFlowState extends State<AuthFlow> {
 
 /// The locked Navy backdrop: diagonal gradient plus the soft lighter-blue
 /// lift the boards show toward the centre-right.
+///
+/// The gradient always spans the whole box it is given. On the sheet screens
+/// that box is the header band alone, not the screen — otherwise only the
+/// darkest top slice of the sweep would show and the header read as flat
+/// near-black, instead of carrying the same blue as Splash.
 class _NavyBackdrop extends StatelessWidget {
   const _NavyBackdrop({required this.child});
+
   final Widget child;
 
   @override
-  // SizedBox.expand is load-bearing: DecoratedBox sizes to its child, so on
-  // Splash — whose widest child is the ~168px progress indicator — the
-  // gradient shrink-wrapped to a narrow strip and left the rest of the screen
-  // flat navy. The other screens hid the bug behind full-width buttons.
-  Widget build(BuildContext context) => SizedBox.expand(
-    child: DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [_navyDeep, _navyBase, _navyLift, _navyBase],
-          stops: [0.0, 0.34, 0.66, 1.0],
-        ),
-      ),
+  Widget build(BuildContext context) {
+    // DecoratedBox sizes to its child, so on Splash — whose widest child is
+    // the ~168px progress indicator — the gradient once shrink-wrapped to a
+    // narrow strip and left the rest of the screen flat navy. The other
+    // screens hid that behind full-width buttons. SizedBox.expand pins it to
+    // whatever box the caller gives: the screen on Splash and Sign In, the
+    // header band alone on the sheet screens.
+    return SizedBox.expand(
       child: DecoratedBox(
         decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment(-0.05, -0.12),
-            radius: 0.95,
-            colors: [Color(0x332F6BD0), Color(0x00000000)],
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [_navyDeep, _navyBase, _navyLift, _navyBase],
+            stops: [0.0, 0.34, 0.66, 1.0],
           ),
         ),
-        child: child,
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment(-0.05, -0.12),
+              radius: 0.95,
+              colors: [Color(0x332F6BD0), Color(0x00000000)],
+            ),
+          ),
+          child: child,
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
+
+/// Share of the canonical master's height that the lockup actually occupies.
+/// The D-35 file is a 4375x4375 canvas with the portrait lockup centred in
+/// it, so a plain `height:` renders a logo visibly ~28% smaller than the
+/// number implies — which is exactly why it read as too small on the boards.
+const _lockupInkRatio = 0.7225;
 
 /// D-35 canonical primary lockup (mark + wordmark), bundled from
 /// docs/cefflo/brand/assets/logo/ and never redrawn.
+///
+/// [height] is the height of the *visible* lockup, not of the asset's square
+/// canvas, so the numbers at each call site can be read straight off the
+/// locked boards.
 class _BrandLockup extends StatelessWidget {
-  const _BrandLockup({this.height = 150});
+  const _BrandLockup({this.height = 150, this.blurSigma = 0, this.opacity = 1});
+
   final double height;
 
+  /// Soft-focus pass. The locked sheet boards render the header lockup
+  /// defocused; Splash and Sign In keep it crisp, as board 1 shows.
+  final double blurSigma;
+  final double opacity;
+
   @override
-  Widget build(BuildContext context) => Image.asset(
-    'assets/brand/cefflo-logo-primary.png',
-    height: height,
-    fit: BoxFit.contain,
-    filterQuality: FilterQuality.high,
-    // The canonical asset is 4375x4375; decoding it at full size costs
-    // ~76MB per instance. Decode at 3x the display size instead — the
-    // file itself is untouched, only how much of it we rasterize.
-    cacheWidth: (height * 3).round(),
-  );
+  Widget build(BuildContext context) {
+    final box = height / _lockupInkRatio;
+    Widget image = Image.asset(
+      'assets/brand/cefflo-logo-primary.png',
+      height: box,
+      fit: BoxFit.contain,
+      filterQuality: FilterQuality.high,
+      // The canonical asset is 4375x4375; decoding it at full size costs
+      // ~76MB per instance. Decode at 3x the display size instead — the
+      // file itself is untouched, only how much of it we rasterize.
+      cacheWidth: (box * 3).round(),
+    );
+    if (opacity < 1) {
+      image = Opacity(opacity: opacity, child: image);
+    }
+    if (blurSigma > 0) {
+      image = ImageFiltered(
+        imageFilter: ui.ImageFilter.blur(
+          sigmaX: blurSigma,
+          sigmaY: blurSigma,
+          tileMode: TileMode.decal,
+        ),
+        child: image,
+      );
+    }
+    return image;
+  }
 }
 
 class _Tagline extends StatelessWidget {
@@ -238,70 +287,104 @@ class _SheetScaffold extends StatelessWidget {
   final VoidCallback? onBack;
   final bool showHandle;
 
+  /// Visible height of the header lockup on the locked sheet boards.
+  static const _headerLockup = 112.0;
+  static const _backRow = 44.0;
+
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: _navyBase,
-    body: _NavyBackdrop(
-      child: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            SizedBox(
-              height: 44,
-              child: Row(
-                children: [
-                  if (onBack != null)
-                    _BackButton(onTap: onBack!)
-                  else
-                    const SizedBox(width: Gap.lg),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: Gap.lg),
-              child: const _BrandLockup(height: 104),
-            ),
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(_sheetRadius),
+  Widget build(BuildContext context) {
+    // Deterministic, so the backdrop behind the header can be sized to the
+    // same band. The gradient always spans its own box: give it the whole
+    // screen and the header shows only the dark top of the sweep, which is
+    // why it used to read as flat near-black instead of the locked blue.
+    final headerHeight =
+        MediaQuery.paddingOf(context).top +
+        _backRow +
+        _headerLockup / _lockupInkRatio +
+        Gap.lg;
+
+    return Scaffold(
+      backgroundColor: _navyBase,
+      body: Stack(
+        children: [
+          // Runs _sheetRadius past the header so the sheet's rounded corners
+          // reveal gradient rather than flat navy, as the boards show.
+          SizedBox(
+            width: double.infinity,
+            height: headerHeight + _sheetRadius,
+            child: const _NavyBackdrop(child: SizedBox.expand()),
+          ),
+          Column(
+            children: [
+              SizedBox(
+                height: headerHeight,
+                child: SafeArea(
+                  bottom: false,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: _backRow,
+                        child: Row(
+                          children: [
+                            if (onBack != null)
+                              _BackButton(onTap: onBack!)
+                            else
+                              const SizedBox(width: Gap.lg),
+                          ],
+                        ),
+                      ),
+                      // Soft-focus, per the locked sheet boards.
+                      const _BrandLockup(
+                        height: _headerLockup,
+                        blurSigma: 5.2,
+                        opacity: .74,
+                      ),
+                    ],
                   ),
                 ),
-                child: SafeArea(
-                  top: false,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (showHandle) ...[
-                          Center(
-                            child: Container(
-                              width: 44,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFD7DAE2),
-                                borderRadius: BorderRadius.circular(99),
+              ),
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(_sheetRadius),
+                    ),
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (showHandle) ...[
+                            Center(
+                              child: Container(
+                                width: 44,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFD7DAE2),
+                                  borderRadius: BorderRadius.circular(99),
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: Gap.lg),
+                            const SizedBox(height: Gap.lg),
+                          ],
+                          child,
                         ],
-                        child,
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _BackButton extends StatelessWidget {
@@ -635,20 +718,29 @@ class _AuthFieldState extends State<_AuthField> {
 
 /// Locked status icon: Navy outline circle with a Navy glyph.
 class _StatusIcon extends StatelessWidget {
-  const _StatusIcon(this.icon);
+  const _StatusIcon(this.icon, {this.circled = true});
+
   final IconData icon;
+
+  /// Boards 10/11/12 ring the glyph; board 06 shows the envelope bare and
+  /// larger. Each screen follows its own locked board — the inconsistency
+  /// between the two boards is flagged for the Founder rather than smoothed
+  /// over by picking one treatment for both.
+  final bool circled;
 
   @override
   Widget build(BuildContext context) => Center(
-    child: Container(
-      width: 76,
-      height: 76,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: _navyBase, width: 2),
-      ),
-      child: Icon(icon, size: 34, color: _navyBase),
-    ),
+    child: circled
+        ? Container(
+            width: 76,
+            height: 76,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: _navyBase, width: 2),
+            ),
+            child: Icon(icon, size: 34, color: _navyBase),
+          )
+        : Icon(icon, size: 62, color: _navyBase),
   );
 }
 
@@ -773,7 +865,7 @@ class _SplashScreenState extends State<SplashScreen>
         child: Column(
           children: [
             const Spacer(flex: 5),
-            const _BrandLockup(height: 210),
+            const _BrandLockup(height: 200),
             const Spacer(flex: 5),
             const _Tagline(),
             const SizedBox(height: Gap.section),
@@ -826,9 +918,11 @@ class SignInScreen extends StatefulWidget {
     super.key,
     required this.onEmail,
     required this.onSignUp,
+    this.onPrototypeAuthenticated,
   });
   final VoidCallback onEmail;
   final VoidCallback onSignUp;
+  final VoidCallback? onPrototypeAuthenticated;
 
   @override
   State<SignInScreen> createState() => _SignInScreenState();
@@ -839,6 +933,10 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _busy = false;
 
   Future<void> _provider(OAuthProvider provider) async {
+    if (widget.onPrototypeAuthenticated != null) {
+      widget.onPrototypeAuthenticated!();
+      return;
+    }
     setState(() {
       _busy = true;
       _providerError = null;
@@ -887,7 +985,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         child: _LanguagePill(onTap: _openLanguageSheet),
                       ),
                       const SizedBox(height: 34),
-                      const Center(child: _BrandLockup(height: 156)),
+                      const Center(child: _BrandLockup(height: 145)),
                       const SizedBox(height: 26),
                       const Text(
                         'Welcome back',
@@ -912,11 +1010,11 @@ class _SignInScreenState extends State<SignInScreen> {
                       const SizedBox(height: 30),
                       _ProviderButton(
                         label: 'Continue with Apple',
-                        background: Colors.black,
-                        foreground: Colors.white,
+                        background: Colors.white,
+                        foreground: const Color(0xFF181818),
                         leading: const Icon(
                           Icons.apple,
-                          color: Colors.white,
+                          color: Color(0xFF181818),
                           size: 23,
                         ),
                         onTap: _busy
@@ -936,7 +1034,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       const SizedBox(height: 12),
                       _ProviderButton(
                         label: 'Continue with Email',
-                        background: Colors.white,
+                        background: CefColors.accent,
                         foreground: const Color(0xFF181818),
                         leading: const Icon(
                           LucideIcons.mail,
@@ -1194,6 +1292,7 @@ class _ProviderButton extends StatelessWidget {
         foregroundColor: foreground,
         disabledBackgroundColor: background.withValues(alpha: .6),
         elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 18),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(_buttonRadius),
         ),
@@ -1224,27 +1323,23 @@ class _ProviderButton extends StatelessWidget {
 }
 
 /// Placeholder mark. Google's official multi-colour "G" is a third-party
-/// brand asset that is not in this repository, and this project's own logo
-/// doctrine forbids redrawing a brand mark — so this renders a neutral
-/// stand-in and the gap is reported rather than approximated.
+/// brand asset that is not in this repository, so this remains a neutral
+/// stand-in until the official asset/dependency is approved.
 class _GoogleGlyph extends StatelessWidget {
   const _GoogleGlyph();
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => const SizedBox(
     width: 22,
     height: 22,
-    alignment: Alignment.center,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      border: Border.all(color: const Color(0xFFDDE1EA), width: 1.2),
-    ),
-    child: const Text(
-      'G',
-      style: TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w800,
-        color: Color(0xFF4285F4),
+    child: Center(
+      child: Text(
+        'G',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF4285F4),
+        ),
       ),
     ),
   );
@@ -1259,12 +1354,14 @@ class EmailSignInScreen extends StatefulWidget {
     required this.onForgotPassword,
     required this.onSignUp,
     required this.onNeedsVerification,
+    this.onPrototypeAuthenticated,
   });
 
   final VoidCallback onBack;
   final VoidCallback onForgotPassword;
   final VoidCallback onSignUp;
   final ValueChanged<String> onNeedsVerification;
+  final VoidCallback? onPrototypeAuthenticated;
 
   @override
   State<EmailSignInScreen> createState() => _EmailSignInScreenState();
@@ -1290,6 +1387,11 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     });
     try {
       final app = AppScope.read(context);
+      if (widget.onPrototypeAuthenticated != null) {
+        await app.loadSession();
+        if (mounted) widget.onPrototypeAuthenticated!();
+        return;
+      }
       await app.repo.signInWithPassword(
         email: _email.text,
         password: _password.text,
@@ -1614,7 +1716,7 @@ class CheckYourEmailScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 6),
-        const _StatusIcon(LucideIcons.mail),
+        const _StatusIcon(LucideIcons.mail, circled: false),
         const SizedBox(height: 20),
         const Text(
           'Check your email',

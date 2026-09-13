@@ -49,7 +49,9 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
         return;
       }
 
-      final session = await app.repo.createDeliverySession(businessId: business.id);
+      final session = await app.repo.createDeliverySession(
+        businessId: business.id,
+      );
       final run = await app.repo.buildRiderRun(
         sessionId: session['id'] as String,
         riderId: group.candidateRiderId!,
@@ -58,8 +60,11 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
         idempotencyKey: _idempotencyKey(session['id'] as String, group),
       );
       if (!mounted) return;
-      setState(() => _result = 'Dispatched ${run['order_count']} order(s) to '
-          '${group.candidateRiderName ?? 'the selected rider'}.');
+      setState(
+        () => _result =
+            'Dispatched ${run['order_count']} order(s) to '
+            '${group.candidateRiderName ?? 'the selected rider'}.',
+      );
       await _viewKey.currentState?.reload();
     } on RepositoryError catch (e) {
       if (mounted) setState(() => _error = e.message);
@@ -70,7 +75,9 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
 
   String _idempotencyKey(String sessionId, PlanGroup group) {
     // Deterministic UUID-shaped key from the session and the group's orders.
-    final seed = '$sessionId|${group.orderIds.join(',')}'.hashCode.abs().toString();
+    final seed = '$sessionId|${group.orderIds.join(',')}'.hashCode
+        .abs()
+        .toString();
     final hex = seed.padLeft(12, '0').substring(0, 12);
     return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-4000-8000-${hex.padRight(12, '0').substring(0, 12)}';
   }
@@ -80,7 +87,9 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
     final app = AppScope.of(context);
     final business = app.business;
     if (business == null) {
-      return const PageBody(children: [StateBlock.empty('No business linked.')]);
+      return const PageBody(
+        children: [StateBlock.empty('No business linked.')],
+      );
     }
     return AsyncView<PlanProposal>(
       key: _viewKey,
@@ -88,6 +97,24 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
       builder: (context, plan, reload) => PageBody(
         onRefresh: reload,
         children: [
+          NavySummaryPanel(
+            title: 'Review Delivery Plan',
+            subtitle: 'Bangsar · Today · Ready to dispatch',
+            children: [
+              SummaryMetric(
+                label: 'Orders',
+                value:
+                    '${plan.groups.fold<int>(0, (n, g) => n + g.orderIds.length)}',
+              ),
+              SummaryMetric(label: 'Runs', value: '${plan.groups.length}'),
+              SummaryMetric(
+                label: 'Stops',
+                value:
+                    '${plan.groups.fold<int>(0, (n, g) => n + g.stops.length)}',
+              ),
+            ],
+          ),
+          const SectionHeading('Proposed runs'),
           if (_result != null)
             Padding(
               padding: const EdgeInsets.only(bottom: Gap.cardGap),
@@ -97,7 +124,10 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                     const Icon(LucideIcons.circleCheck, size: Sizes.icon),
                     const SizedBox(width: Gap.md),
                     Expanded(
-                      child: Text(_result!, style: Theme.of(context).textTheme.bodyMedium),
+                      child: Text(
+                        _result!,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
                     ),
                   ],
                 ),
@@ -110,10 +140,17 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(LucideIcons.triangleAlert, size: Sizes.icon, color: context.c.attention),
+                    Icon(
+                      LucideIcons.triangleAlert,
+                      size: Sizes.icon,
+                      color: context.c.attention,
+                    ),
                     const SizedBox(width: Gap.md),
                     Expanded(
-                      child: Text(_error!, style: Theme.of(context).textTheme.bodyMedium),
+                      child: Text(
+                        _error!,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
                     ),
                   ],
                 ),
@@ -128,7 +165,7 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
 
           for (final group in plan.groups) ...[
             SectionHeading(
-              group.zoneId == null ? 'Ungrouped orders' : 'Zone group',
+              group.zoneId == null ? 'Run group' : 'Zone run',
               trailing: Text(
                 '${group.stops.length} stop${group.stops.length == 1 ? '' : 's'}',
                 style: Theme.of(context).textTheme.bodySmall,
@@ -158,20 +195,23 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
               ),
             ),
             for (final stop in group.stops)
-              Padding(
-                padding: const EdgeInsets.only(bottom: Gap.cardGap),
-                child: CefListRow(
-                  title: 'Stop ${stop.sequence}',
-                  subtitle: stop.distanceKm == null
-                      ? null
-                      : '${stop.distanceKm} km from previous',
-                  icon: LucideIcons.mapPin,
-                  onTap: () => app.go(VRoute.orderDetail, entityId: stop.orderId),
+              FlatListRow(
+                title: 'Stop ${stop.sequence}',
+                subtitle: stop.distanceKm == null
+                    ? null
+                    : '${stop.distanceKm} km from previous',
+                leading: Icon(
+                  LucideIcons.mapPin,
+                  size: Sizes.icon,
+                  color: context.c.info,
                 ),
+                onTap: () => app.go(VRoute.orderDetail, entityId: stop.orderId),
               ),
             if (group.candidateRiderId != null)
               CefButton(
-                _dispatchingGroup == group.groupKey ? 'Dispatching…' : 'Dispatch this run',
+                _dispatchingGroup == group.groupKey
+                    ? 'Dispatching…'
+                    : 'Dispatch this run',
                 busy: _dispatchingGroup == group.groupKey,
                 onTap: () => _dispatch(group),
               ),
@@ -187,13 +227,20 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(LucideIcons.triangleAlert, size: Sizes.icon, color: context.c.attention),
+                      Icon(
+                        LucideIcons.triangleAlert,
+                        size: Sizes.icon,
+                        color: context.c.attention,
+                      ),
                       const SizedBox(width: Gap.md),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(u.label, style: Theme.of(context).textTheme.titleSmall),
+                            Text(
+                              u.label,
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
                             if (u.groupSize != null)
                               Text(
                                 '${u.groupSize} order(s) affected',
@@ -206,7 +253,8 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                         IconAction(
                           icon: LucideIcons.chevronRight,
                           tooltip: 'Open order',
-                          onTap: () => app.go(VRoute.orderDetail, entityId: u.orderId!),
+                          onTap: () =>
+                              app.go(VRoute.orderDetail, entityId: u.orderId!),
                         ),
                     ],
                   ),
@@ -217,6 +265,68 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
       ),
     );
   }
+}
+
+/// V-19 — Active Run presentation. This is a preview/read model shell until
+/// the repo exposes a dedicated run read endpoint for the route id.
+class RunDetailScreen extends StatelessWidget {
+  const RunDetailScreen({super.key, required this.runId});
+
+  final String runId;
+
+  @override
+  Widget build(BuildContext context) => PageBody(
+    children: [
+      SizedBox(
+        height: 220,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: context.c.card,
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+            border: Border.all(color: context.c.border),
+          ),
+          child: Center(
+            child: Text(
+              'Route map',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: Gap.md),
+      NavySummaryPanel(
+        title: 'Active Run',
+        subtitle: '$runId · Ahmad Razi · VFY 7281',
+        children: const [
+          SummaryMetric(label: 'Delivered', value: '3'),
+          SummaryMetric(label: 'Remaining', value: '4'),
+          SummaryMetric(label: 'Stops', value: '7'),
+        ],
+      ),
+      const SectionHeading('Next stop'),
+      FlatListRow(
+        title: 'Nadia Rahman',
+        subtitle: 'Bangsar · 1.2 km · 8 min',
+        leading: Icon(
+          LucideIcons.mapPin,
+          size: Sizes.icon,
+          color: context.c.info,
+        ),
+        trailing: const StatusChip('Next'),
+      ),
+      const SectionHeading('Upcoming stops'),
+      for (final i in const [
+        ('Faridus Cafe', 'Mont Kiara · 2.1 km'),
+        ('Amy Lee', 'Damansara · 3.4 km'),
+        ('Restaurant Ali', 'Petaling Jaya · 4.0 km'),
+      ])
+        FlatListRow(title: i.$1, subtitle: i.$2),
+      const SizedBox(height: Gap.md),
+      const StateBlock.blocked(
+        'Route sequencing and live ETA are backend-owned. This screen is presentation-only until Phase 3 wiring.',
+      ),
+    ],
+  );
 }
 
 /// V-26 / V-27 — Service area. Coverage is a server decision; this screen only
@@ -288,7 +398,9 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
     final app = AppScope.of(context);
     final business = app.business;
     if (business == null) {
-      return const PageBody(children: [StateBlock.empty('No business linked.')]);
+      return const PageBody(
+        children: [StateBlock.empty('No business linked.')],
+      );
     }
     return AsyncView<Map<String, dynamic>>(
       key: ValueKey('service-area-${business.id}'),
@@ -302,9 +414,13 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
               child: Row(
                 children: [
                   Icon(
-                    configured ? LucideIcons.circleCheck : LucideIcons.circleAlert,
+                    configured
+                        ? LucideIcons.circleCheck
+                        : LucideIcons.circleAlert,
                     size: Sizes.icon,
-                    color: configured ? context.c.iconColor : context.c.attention,
+                    color: configured
+                        ? context.c.iconColor
+                        : context.c.attention,
                   ),
                   const SizedBox(width: Gap.md),
                   Expanded(
@@ -321,13 +437,28 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
               ),
             ),
             const SectionHeading('Origin and radius'),
-            CefField(label: 'Origin latitude', controller: lat, keyboardType: TextInputType.number),
-            CefField(label: 'Origin longitude', controller: lng, keyboardType: TextInputType.number),
-            CefField(label: 'Radius (km)', controller: radius, keyboardType: TextInputType.number),
+            CefField(
+              label: 'Origin latitude',
+              controller: lat,
+              keyboardType: TextInputType.number,
+            ),
+            CefField(
+              label: 'Origin longitude',
+              controller: lng,
+              keyboardType: TextInputType.number,
+            ),
+            CefField(
+              label: 'Radius (km)',
+              controller: radius,
+              keyboardType: TextInputType.number,
+            ),
             if (saved != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: Gap.sm),
-                child: Text(saved!, style: Theme.of(context).textTheme.bodySmall),
+                child: Text(
+                  saved!,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
             if (error != null)
               Padding(
@@ -337,7 +468,11 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
                   style: TextStyle(color: context.c.attention, fontSize: 13),
                 ),
               ),
-            CefButton('Save service area', busy: busy, onTap: () => _save(reload)),
+            CefButton(
+              'Save service area',
+              busy: busy,
+              onTap: () => _save(reload),
+            ),
           ],
         );
       },

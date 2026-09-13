@@ -13,6 +13,12 @@ import 'ui/widgets.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  const uiPrototype = bool.fromEnvironment('CEFFLO_UI_PROTOTYPE');
+  if (uiPrototype) {
+    runApp(VendorMobileApp(repo: VendorRepository.demo()));
+    return;
+  }
+
   if (!Env.isConfigured || !Env.isNonProduction) {
     runApp(ConfigurationErrorApp(message: Env.configurationProblem));
     return;
@@ -36,11 +42,14 @@ class VendorMobileApp extends StatefulWidget {
 
 class _VendorMobileAppState extends State<VendorMobileApp> {
   late final AppState app = AppState(widget.repo);
+  bool _prototypeAuthenticated = false;
 
   @override
   void initState() {
     super.initState();
-    if (widget.repo.currentUser != null) {
+    if (widget.repo.isDemo) {
+      app.loadSession();
+    } else if (widget.repo.currentUser != null) {
       app.loadSession();
     } else {
       app.loadingSession = false;
@@ -67,7 +76,14 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
           builder: (context) {
             // Founder-locked Vendor Auth batch (2026-09-11): the auth family
             // owns its own stage flow, starting at the locked Splash.
-            if (widget.repo.currentUser == null) return const AuthFlow();
+            if ((widget.repo.isDemo && !_prototypeAuthenticated) ||
+                (!widget.repo.isDemo && widget.repo.currentUser == null)) {
+              return AuthFlow(
+                onPrototypeAuthenticated: widget.repo.isDemo
+                    ? () => setState(() => _prototypeAuthenticated = true)
+                    : null,
+              );
+            }
             if (app.loadingSession) {
               return const Scaffold(body: StateBlock.loading());
             }

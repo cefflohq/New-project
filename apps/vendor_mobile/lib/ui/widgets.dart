@@ -131,6 +131,95 @@ class KpiTile extends StatelessWidget {
   );
 }
 
+class NavySummaryPanel extends StatelessWidget {
+  const NavySummaryPanel({
+    super.key,
+    required this.title,
+    required this.children,
+    this.subtitle,
+  });
+
+  final String title;
+  final String? subtitle;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF102344), Color(0xFF1B3668), Color(0xFF27427E)],
+      ),
+      borderRadius: BorderRadius.circular(Sizes.cardRadius),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 2),
+          Text(
+            subtitle!,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: .72),
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+        const SizedBox(height: 14),
+        Row(children: children),
+      ],
+    ),
+  );
+}
+
+class SummaryMetric extends StatelessWidget {
+  const SummaryMetric({super.key, required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            height: 1,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: .72),
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 class CefButton extends StatelessWidget {
   const CefButton(
     this.label, {
@@ -148,7 +237,7 @@ class CefButton extends StatelessWidget {
     final c = context.c;
     return SizedBox(
       width: double.infinity,
-      height: 48,
+      height: 52,
       child: FilledButton(
         onPressed: busy ? null : onTap,
         style: FilledButton.styleFrom(
@@ -181,6 +270,38 @@ class CefButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class YellowFab extends StatelessWidget {
+  const YellowFab({super.key, required this.tooltip, required this.onTap});
+
+  final String tooltip;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: Alignment.centerRight,
+    child: Tooltip(
+      message: tooltip,
+      child: SizedBox(
+        width: 52,
+        height: 52,
+        child: Material(
+          color: CefColors.accent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onTap,
+            child: const Icon(
+              LucideIcons.plus,
+              size: 26,
+              color: CefColors.onAccent,
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 class CefField extends StatelessWidget {
@@ -251,27 +372,19 @@ class StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: c.canvas,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: c.border),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: attention ? c.attention : c.textSecondary,
-        ),
+    return Text(
+      label,
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: attention ? c.attention : c.textSecondary,
       ),
     );
   }
 }
 
-/// Segmented control used for Orders/Zones/Riders tabs — outlined container,
-/// accent outline on the active segment.
+/// Underlined, evenly stretched tabs used by Orders/Zones/Riders. No pill
+/// cards: the selected state is a blue underline per the locked mobile spec.
 class SegmentedTabs extends StatelessWidget {
   const SegmentedTabs({
     super.key,
@@ -286,46 +399,95 @@ class SegmentedTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    return Container(
-      padding: const EdgeInsets.all(3),
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: c.border),
+        border: Border(bottom: BorderSide(color: c.border)),
       ),
       child: Row(
         children: labels.map((l) {
           final sel = l == active;
           return Expanded(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(9),
-                onTap: () => onChange(l),
-                child: Container(
-                  height: 38,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(9),
-                    border: Border.all(
-                      color: sel ? CefColors.accent : Colors.transparent,
-                      width: 1.6,
+            child: InkWell(
+              onTap: () => onChange(l),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    height: 42,
+                    child: Center(
+                      child: Text(
+                        l,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: sel ? FontWeight.w700 : FontWeight.w600,
+                          color: sel ? c.textPrimary : c.textSecondary,
+                        ),
+                      ),
                     ),
                   ),
-                  child: Text(
-                    l,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: sel ? FontWeight.w600 : FontWeight.w500,
-                      color: sel ? c.textPrimary : c.textSecondary,
+                  Container(
+                    height: 3,
+                    margin: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: sel ? c.info : Colors.transparent,
+                      borderRadius: BorderRadius.circular(4),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
           );
         }).toList(),
       ),
+    );
+  }
+}
+
+class SearchBarField extends StatelessWidget {
+  const SearchBarField({super.key, required this.hint, this.onFilter});
+
+  final String hint;
+  final VoidCallback? onFilter;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 54,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: c.card,
+              borderRadius: BorderRadius.circular(Sizes.inputRadius),
+              border: Border.all(color: c.border),
+            ),
+            child: Row(
+              children: [
+                Icon(LucideIcons.search, size: 22, color: c.textSecondary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    hint,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (onFilter != null) ...[
+          const SizedBox(width: 6),
+          IconAction(
+            icon: LucideIcons.slidersHorizontal,
+            tooltip: 'Filter',
+            onTap: onFilter!,
+          ),
+        ],
+      ],
     );
   }
 }
@@ -348,31 +510,131 @@ class CefListRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    return CefCard(
-      onTap: onTap,
-      child: Row(
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: Sizes.icon, color: c.iconColor),
-            const SizedBox(width: Gap.md),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: Theme.of(context).textTheme.titleSmall),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 2),
-                  Text(subtitle!, style: Theme.of(context).textTheme.bodySmall),
-                ],
-              ],
-            ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 68),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: c.border)),
           ),
-          if (trailing != null)
-            trailing!
-          else if (onTap != null)
-            Icon(LucideIcons.chevronRight, size: 18, color: c.textSecondary),
-        ],
+          child: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: icon == null
+                    ? const SizedBox(width: Sizes.icon)
+                    : Icon(icon, size: Sizes.icon, color: c.iconColor),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              if (trailing != null)
+                trailing!
+              else if (onTap != null)
+                Icon(
+                  LucideIcons.chevronRight,
+                  size: 18,
+                  color: c.textSecondary,
+                ),
+              const SizedBox(width: 4),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class FlatListRow extends StatelessWidget {
+  const FlatListRow({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.leading,
+    this.trailing,
+    this.onTap,
+  });
+
+  final String title;
+  final String? subtitle;
+  final Widget? leading;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 68),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: c.border)),
+          ),
+          child: Row(
+            children: [
+              if (leading != null) ...[leading!, const SizedBox(width: 14)],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        subtitle!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              ?trailing,
+              if (onTap != null) ...[
+                const SizedBox(width: 8),
+                Icon(
+                  LucideIcons.chevronRight,
+                  size: 18,
+                  color: c.textSecondary,
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
