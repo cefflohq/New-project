@@ -1240,11 +1240,11 @@ class _LanguagePill extends StatelessWidget {
 class _LanguageSheet extends StatelessWidget {
   const _LanguageSheet();
 
-  // Endonyms would be the right call, but the bundled Manrope carries no Han
-  // or Tamil glyphs and CanvasKit does not fall back to system fonts, so
-  // '中文' and 'தமிழ்' rendered as tofu boxes. English names render correctly
-  // in the type we actually ship; restoring the endonyms needs a font that
-  // covers those scripts to be bundled first.
+  // English names are used here rather than endonyms ('中文', 'தமிழ்') as a
+  // deliberate, currently-unchanged copy choice for this unlocked sheet —
+  // not a font limitation. The Inter migration bundles Noto Sans SC and
+  // Noto Sans Tamil as fontFamilyFallback, so native endonyms would render
+  // correctly if a future Founder-locked copy change calls for them.
   static const _languages = [
     ('English', 'en', true),
     ('Bahasa Melayu', 'ms', false),

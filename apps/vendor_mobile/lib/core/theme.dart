@@ -1,5 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+/// Primary Latin typeface, bundled locally (see pubspec.yaml `fonts:`) --
+/// no runtime font downloading. Weights available: 400/500/600/700/800.
+const kFontFamily = 'Inter';
+
+/// Declared on every TextStyle and at the ThemeData level so Simplified
+/// Chinese and Tamil glyphs render from bundled fonts (also declared in
+/// pubspec.yaml) instead of tofu boxes or a CanvasKit network font fetch.
+/// Malay/English text is Latin and is covered by Inter itself.
+const kFontFamilyFallback = ['Noto Sans SC', 'Noto Sans Tamil'];
 
 /// Spacing per the Founder-approved compact spec: 12px gutter, ~13px card
 /// padding, 11-12px card gaps, 20px section gaps.
@@ -124,9 +133,10 @@ List<BoxShadow> cefCardShadow(Brightness brightness) {
 
 ThemeData buildVendorTheme(Brightness brightness) {
   final c = brightness == Brightness.dark ? CefColors.dark : CefColors.light;
-  final base = GoogleFonts.manropeTextTheme();
   TextStyle t(double size, FontWeight weight, Color color, {double? spacing}) =>
-      base.bodyMedium!.copyWith(
+      TextStyle(
+        fontFamily: kFontFamily,
+        fontFamilyFallback: kFontFamilyFallback,
         fontSize: size,
         fontWeight: weight,
         color: color,
@@ -140,6 +150,8 @@ ThemeData buildVendorTheme(Brightness brightness) {
     splashFactory: NoSplash.splashFactory,
     highlightColor: Colors.transparent,
     dividerColor: c.border,
+    fontFamily: kFontFamily,
+    fontFamilyFallback: kFontFamilyFallback,
     colorScheme: ColorScheme.fromSeed(
       seedColor: CefColors.accent,
       brightness: brightness,
@@ -156,8 +168,9 @@ ThemeData buildVendorTheme(Brightness brightness) {
       bodyMedium: t(14, FontWeight.w500, c.textSecondary),
       bodySmall: t(13, FontWeight.w500, c.textSecondary),
       labelLarge: t(14, FontWeight.w600, c.textLabel),
-      // KPI 29.
-      displaySmall: t(29, FontWeight.w600, c.textPrimary, spacing: -0.8),
+      // KPI 29. ExtraBold per the locked weight table (major KPI values
+      // only) -- matches SummaryMetric's already-w800 dashboard KPI style.
+      displaySmall: t(29, FontWeight.w800, c.textPrimary, spacing: -0.8),
     ),
   );
 }

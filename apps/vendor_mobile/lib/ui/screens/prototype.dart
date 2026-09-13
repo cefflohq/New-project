@@ -897,6 +897,7 @@ class _PrototypeField extends StatelessWidget {
                 child: Text(
                   value,
                   maxLines: lines,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 13.5,
                     color: disabled ? const Color(0xFF8A90A0) : CefColors.navy,
@@ -2073,7 +2074,8 @@ class _InviteLinkScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final link = 'https://cefflo.app/invite/${kind.toLowerCase().replaceAll(' ', '-')}';
+    final link =
+        'https://cefflo.app/invite/${kind.toLowerCase().replaceAll(' ', '-')}';
     return PageBody(
       children: [
         _HeroPanel(
@@ -2192,7 +2194,9 @@ class _BrandingScreenState extends State<_BrandingScreen> {
     return PageBody(
       children: [
         _EditableAvatar(
-          label: (app.business?.name ?? 'Kopi Kita').substring(0, 2).toUpperCase(),
+          label: (app.business?.name ?? 'Kopi Kita')
+              .substring(0, 2)
+              .toUpperCase(),
         ),
         const SizedBox(height: 20),
         _PrototypeField(label: 'Tagline', value: tagline.text),
@@ -2234,7 +2238,10 @@ class _BrandingScreenState extends State<_BrandingScreen> {
                 backgroundColor: Colors.white.withValues(alpha: .22),
                 child: Text(
                   (app.business?.name ?? 'Kopi Kita').substring(0, 1),
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
               const SizedBox(width: Gap.md),
@@ -2251,7 +2258,10 @@ class _BrandingScreenState extends State<_BrandingScreen> {
                     ),
                     Text(
                       tagline.text,
-                      style: TextStyle(color: Colors.white.withValues(alpha: .85), fontSize: 12.5),
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: .85),
+                        fontSize: 12.5,
+                      ),
                     ),
                   ],
                 ),

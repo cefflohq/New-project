@@ -11,7 +11,6 @@ dependencies:
     sdk: flutter
   supabase_flutter: ^2.8.0
   lucide_icons_flutter: ^3.1.18
-  google_fonts: ^8.2.1
 
 dev_dependencies:
   flutter_test:
@@ -24,3 +23,39 @@ flutter:
     # D-35 canonical logo assets, byte-identical to
     # docs/cefflo/brand/assets/logo/ (SHA-256 verified on copy).
     - assets/brand/
+  fonts:
+    # Primary Latin typeface (Inter, OFL-1.1, bundled locally -- no runtime
+    # font downloading). Weights match the locked hierarchy: Regular for
+    # supporting text, Medium for body, SemiBold for labels/buttons/
+    # navigation/statuses, Bold for headings/card titles, ExtraBold for KPI
+    # values only.
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/inter/Inter-Regular.otf
+          weight: 400
+        - asset: assets/fonts/inter/Inter-Medium.otf
+          weight: 500
+        - asset: assets/fonts/inter/Inter-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/inter/Inter-Bold.otf
+          weight: 700
+        - asset: assets/fonts/inter/Inter-ExtraBold.otf
+          weight: 800
+    # Multilingual fallback: Inter covers Latin only. These are declared in
+    # ThemeData.fontFamilyFallback (see core/theme.dart) so Simplified
+    # Chinese and Tamil glyphs render from bundled files instead of tofu
+    # boxes or a CanvasKit network font fetch.
+    - family: Noto Sans SC
+      fonts:
+        - asset: assets/fonts/noto_sans_sc/NotoSansSC-Regular.otf
+          weight: 400
+        - asset: assets/fonts/noto_sans_sc/NotoSansSC-Medium.otf
+          weight: 500
+        - asset: assets/fonts/noto_sans_sc/NotoSansSC-Bold.otf
+          weight: 700
+    - family: Noto Sans Tamil
+      fonts:
+        - asset: assets/fonts/noto_sans_tamil/NotoSansTamil-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/noto_sans_tamil/NotoSansTamil-Bold.ttf
+          weight: 700
