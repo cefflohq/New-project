@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/app_state.dart';
 import 'core/env.dart';
+import 'core/routes.dart';
 import 'core/theme.dart';
 import 'data/vendor_repository.dart';
 import 'ui/router.dart';
@@ -82,6 +83,12 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
               return AuthFlow(
                 onPrototypeAuthenticated: widget.repo.isDemo
                     ? () => setState(() => _prototypeAuthenticated = true)
+                    : null,
+                onPrototypeSignedUp: widget.repo.isDemo
+                    ? () => setState(() {
+                        _prototypeAuthenticated = true;
+                        app.resetTo(VRoute.welcomeSetup);
+                      })
                     : null,
               );
             }

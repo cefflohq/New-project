@@ -61,9 +61,18 @@ enum _Stage {
 }
 
 class AuthFlow extends StatefulWidget {
-  const AuthFlow({super.key, this.onPrototypeAuthenticated});
+  const AuthFlow({
+    super.key,
+    this.onPrototypeAuthenticated,
+    this.onPrototypeSignedUp,
+  });
 
   final VoidCallback? onPrototypeAuthenticated;
+
+  /// UI-prototype-only: a brand new demo account goes through the
+  /// first-time business setup wizard (V06-V10) instead of straight to
+  /// Today, mirroring what a real sign-up would do.
+  final VoidCallback? onPrototypeSignedUp;
 
   @override
   State<AuthFlow> createState() => _AuthFlowState();
@@ -126,6 +135,7 @@ class _AuthFlowState extends State<AuthFlow> {
         onBack: _back,
         onSignIn: () => _replace(_Stage.emailSignIn),
         onNeedsVerification: (email) => _go(_Stage.verifyEmail, email: email),
+        onPrototypeSignedUp: widget.onPrototypeSignedUp,
       ),
       _Stage.forgotPassword => ForgotPasswordScreen(
         onBack: _back,
@@ -1482,11 +1492,16 @@ class SignUpScreen extends StatefulWidget {
     required this.onBack,
     required this.onSignIn,
     required this.onNeedsVerification,
+    this.onPrototypeSignedUp,
   });
 
   final VoidCallback onBack;
   final VoidCallback onSignIn;
   final ValueChanged<String> onNeedsVerification;
+
+  /// UI-prototype-only: a brand new demo account goes through the
+  /// first-time business setup wizard, not straight to Today.
+  final VoidCallback? onPrototypeSignedUp;
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -1511,6 +1526,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _create() async {
     if (_password.text != _confirm.text) {
       setState(() => _confirmError = 'Passwords do not match.');
+      return;
+    }
+    if (widget.onPrototypeSignedUp != null) {
+      widget.onPrototypeSignedUp!();
       return;
     }
     setState(() {

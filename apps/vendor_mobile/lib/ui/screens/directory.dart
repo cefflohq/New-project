@@ -100,6 +100,73 @@ class _ZonesScreenState extends State<ZonesScreen> {
   }
 }
 
+/// V-28 — Service Area's zone configuration list. Distinct from the
+/// operational V-16 Zones tab: no today's-order counts, just what is
+/// configured and whether it is Active/Inactive.
+class ZoneConfigurationScreen extends StatelessWidget {
+  const ZoneConfigurationScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final business = app.business;
+    if (business == null) {
+      return const PageBody(
+        children: [StateBlock.empty('No business linked.')],
+      );
+    }
+    return AsyncView<List<Zone>>(
+      key: ValueKey('zone-configuration-${business.id}'),
+      load: () => app.repo.zones(business.id),
+      builder: (context, zones, reload) => PageBody(
+        onRefresh: reload,
+        children: [
+          CefCard(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(LucideIcons.info, size: Sizes.icon, color: context.c.info),
+                const SizedBox(width: Gap.md),
+                Expanded(
+                  child: Text(
+                    'These are the areas you deliver to. Cefflo decides '
+                    'coverage for each order from the zones you configure '
+                    'here.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: Gap.md),
+          if (zones.isEmpty)
+            const StateBlock.empty('No zones configured yet.')
+          else
+            for (final z in zones)
+              FlatListRow(
+                title: z.name,
+                leading: Icon(
+                  LucideIcons.mapPin,
+                  size: Sizes.icon,
+                  color: context.c.info,
+                ),
+                trailing: StatusChip(
+                  z.isActive ? 'Active' : 'Inactive',
+                  success: z.isActive,
+                ),
+                onTap: () => app.go(VRoute.editZone, entityId: z.id),
+              ),
+          const SizedBox(height: Gap.md),
+          YellowFab(
+            tooltip: 'Add zone',
+            onTap: () => app.go(VRoute.createZone),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class ZoneDetailScreen extends StatelessWidget {
   const ZoneDetailScreen({super.key, required this.zoneId});
   final String zoneId;
@@ -226,6 +293,212 @@ class ZoneDetailScreen extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// V-29 / V-30 — Create/Edit zone, bound to a real zone name and the
+/// canonical create/status contracts instead of a generic Name/Phone/Email
+/// stand-in. Coverage geometry itself stays server-owned: this only names
+/// the zone and previews it, it never draws or computes a boundary.
+class ZoneFormScreen extends StatefulWidget {
+  const ZoneFormScreen({super.key, this.zoneId});
+  final String? zoneId;
+  bool get isNew => zoneId == null;
+
+  @override
+  State<ZoneFormScreen> createState() => _ZoneFormScreenState();
+}
+
+class _ZoneFormScreenState extends State<ZoneFormScreen> {
+  final name = TextEditingController();
+  bool active = true;
+  bool loading = false;
+  bool busy = false;
+  String? error;
+  final errors = <String, String>{};
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.isNew) _prefill();
+  }
+
+  Future<void> _prefill() async {
+    setState(() => loading = true);
+    try {
+      final app = AppScope.read(context);
+      final zones = await app.repo.zones(app.business!.id);
+      final z = zones.firstWhere((z) => z.id == widget.zoneId);
+      name.text = z.name;
+      active = z.isActive;
+    } catch (e) {
+      error = '$e';
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  Future<void> _save() async {
+    errors.clear();
+    if (name.text.trim().isEmpty) errors['name'] = 'Zone name is required.';
+    setState(() {});
+    if (errors.isNotEmpty) return;
+
+    final app = AppScope.read(context);
+    if (app.repo.isDemo) {
+      final ok = await runAsyncFeedback(
+        context,
+        action: () async {},
+        processingTitle: 'Processing...',
+        processingSubtitle: widget.isNew
+            ? 'Creating your zone'
+            : 'Saving your changes',
+        successTitle: 'Successful',
+        successSubtitle: widget.isNew
+            ? 'Your new zone has been created successfully.'
+            : 'Your zone has been updated successfully.',
+      );
+      if (!mounted || !ok) return;
+      app.back();
+      return;
+    }
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      if (widget.isNew) {
+        await app.repo.createZone(app.business!.id, name.text.trim());
+      } else {
+        await app.repo.setZoneStatus(
+          widget.zoneId!,
+          active ? 'active' : 'inactive',
+        );
+      }
+      if (!mounted) return;
+      app.back();
+    } catch (e) {
+      if (mounted) setState(() => error = '$e');
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> _delete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete this zone?'),
+        content: const Text(
+          'Orders already assigned to this zone are not affected.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Delete',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) AppScope.read(context).back();
+  }
+
+  @override
+  void dispose() {
+    name.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) return const StateBlock.loading();
+    return PageBody(
+      children: [
+        SizedBox(
+          height: 170,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+            child: CustomPaint(
+              painter: _CoverageMapPainter(),
+              child: const Center(
+                child: Icon(
+                  LucideIcons.mapPin,
+                  color: Color(0xFF075BC7),
+                  size: 32,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: Gap.md),
+        CefField(label: 'Zone name', controller: name, errorText: errors['name']),
+        if (!widget.isNew)
+          CefCard(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Active',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      Text(
+                        'Orders can be assigned to this zone',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                CefSwitch(
+                  value: active,
+                  onChanged: (v) => setState(() => active = v),
+                ),
+              ],
+            ),
+          ),
+        if (error != null)
+          Padding(
+            padding: const EdgeInsets.only(top: Gap.md),
+            child: Text(
+              error!,
+              style: TextStyle(color: context.c.attention, fontSize: 13),
+            ),
+          ),
+        const SizedBox(height: Gap.section),
+        CefButton(
+          widget.isNew ? 'Create Zone' : 'Save Changes',
+          busy: busy,
+          onTap: _save,
+        ),
+        if (!widget.isNew) ...[
+          const SizedBox(height: Gap.sm),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: OutlinedButton(
+              onPressed: _delete,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: context.c.attention,
+                side: BorderSide(color: context.c.attention),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+                ),
+              ),
+              child: const Text('Delete Zone'),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
@@ -420,10 +693,158 @@ class TeamScreen extends StatelessWidget {
                       app.go(VRoute.teamMemberDetail, entityId: m.userId),
                 ),
               ),
+          const SizedBox(height: Gap.md),
+          YellowFab(
+            tooltip: 'Invite team member',
+            onTap: () => app.go(VRoute.helperRegistrationLink),
+          ),
         ],
       ),
     );
   }
+}
+
+/// V-24 — Team member detail. `TeamMember` only carries id/role/display
+/// name, so this shows what is real rather than inventing contact fields
+/// the backend does not track.
+class TeamMemberDetailScreen extends StatelessWidget {
+  const TeamMemberDetailScreen({super.key, required this.memberId});
+  final String memberId;
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    return AsyncView<TeamMember>(
+      key: ValueKey('team-member-$memberId'),
+      load: () async {
+        final members = await app.repo.team(app.business!.id);
+        return members.firstWhere(
+          (m) => m.userId == memberId,
+          orElse: () => throw StateError('Team member not found'),
+        );
+      },
+      builder: (context, member, reload) => PageBody(
+        onRefresh: reload,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF102344), Color(0xFF1453B7), Color(0xFF12213E)],
+              ),
+              borderRadius: BorderRadius.circular(Sizes.cardRadius),
+            ),
+            child: Column(
+              children: [
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.white.withValues(alpha: .16),
+                  child: Text(
+                    (member.displayName ?? member.userId)
+                        .split(' ')
+                        .where((part) => part.isNotEmpty)
+                        .take(2)
+                        .map((part) => part[0])
+                        .join()
+                        .toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  member.displayName ?? member.userId,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  member.role,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .78),
+                    fontSize: 13.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SectionHeading('Role & access'),
+          CefCard(
+            child: Column(
+              children: [
+                _kv(context, 'Role', member.role),
+                _kv(context, 'Status', 'Active'),
+              ],
+            ),
+          ),
+          const SizedBox(height: Gap.section),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: OutlinedButton(
+              onPressed: () => _confirmRemove(context, member),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: context.c.attention,
+                side: BorderSide(color: context.c.attention),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+                ),
+              ),
+              child: const Text('Remove from Team'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmRemove(BuildContext context, TeamMember member) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Remove ${member.displayName ?? member.userId}?'),
+        content: const Text(
+          'They will lose access to this business immediately.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Remove',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) AppScope.read(context).back();
+  }
+
+  Widget _kv(BuildContext context, String k, String v) => Padding(
+    padding: const EdgeInsets.only(bottom: 6),
+    child: Row(
+      children: [
+        SizedBox(
+          width: 120,
+          child: Text(k, style: Theme.of(context).textTheme.bodySmall),
+        ),
+        Expanded(child: Text(v, style: Theme.of(context).textTheme.titleSmall)),
+      ],
+    ),
+  );
 }
 
 class _CoverageMapPainter extends CustomPainter {

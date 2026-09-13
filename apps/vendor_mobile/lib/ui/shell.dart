@@ -7,6 +7,17 @@ import '../core/routes.dart';
 import '../core/theme.dart';
 import 'widgets.dart';
 
+/// First-time business setup (V06-V10). Before the business exists there is
+/// nothing for Orders/Products/Customers/More to show, so the wizard hides
+/// the primary bottom navigation instead of exposing a shell it can't serve.
+const _onboardingRoutes = {
+  VRoute.welcomeSetup,
+  VRoute.setupBusinessInfo,
+  VRoute.setupAddress,
+  VRoute.setupServiceArea,
+  VRoute.setupComplete,
+};
+
 /// Flat white chrome: 60px header and 60px sticky bottom navigation, no
 /// floating glass bar, no FAB, no accent underline beneath the title.
 class VendorShell extends StatelessWidget {
@@ -18,6 +29,7 @@ class VendorShell extends StatelessWidget {
     final app = AppScope.of(context);
     final c = context.c;
     final dark = Theme.of(context).brightness == Brightness.dark;
+    final isOnboarding = _onboardingRoutes.contains(app.current.route);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
@@ -40,7 +52,7 @@ class VendorShell extends StatelessWidget {
             children: [
               _Header(app: app),
               Expanded(child: child),
-              const _BottomNav(),
+              if (!isOnboarding) const _BottomNav(),
             ],
           ),
         ),

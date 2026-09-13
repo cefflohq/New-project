@@ -377,6 +377,13 @@ class VendorRepository {
     required double longitude,
     required num radiusKm,
   }) async {
+    if (_demo) {
+      return {
+        'service_origin_latitude': latitude,
+        'service_origin_longitude': longitude,
+        'service_coverage_radius_km': radiusKm,
+      };
+    }
     final row = await _run(
       () => _db!.rpc(
         'set_business_service_area',
@@ -443,6 +450,7 @@ class VendorRepository {
     required String businessId,
     String? name,
   }) async {
+    if (_demo) return {'id': 'session-demo'};
     final row = await _run(
       () => _db!.rpc(
         'create_delivery_session',
@@ -458,6 +466,7 @@ class VendorRepository {
     required String riderId,
     required List<String> orderIds,
   }) async {
+    if (_demo) return const CapacityCheck(compatible: true, violations: []);
     final row = await _run(
       () => _db!.rpc(
         'check_run_vehicle_capacity',
@@ -475,6 +484,9 @@ class VendorRepository {
     required String idempotencyKey,
     bool overrideCapacity = false,
   }) async {
+    if (_demo) {
+      return {'id': 'RUN-0182', 'order_count': orderIds.length};
+    }
     final row = await _run(
       () => _db!.rpc(
         'build_rider_run',

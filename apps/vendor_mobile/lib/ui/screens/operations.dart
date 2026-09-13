@@ -27,6 +27,441 @@ String _initials(String name) => name
     .join()
     .toUpperCase();
 
+/// V-06 — Welcome. Opens first-time business setup for a brand-new demo
+/// account; existing accounts skip straight to Today. Presentation only —
+/// nothing here persists, real setup truth is Phase 3.
+class WelcomeSetupScreen extends StatelessWidget {
+  const WelcomeSetupScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    const steps = [
+      (
+        'Business Information',
+        'Name, type and contact details',
+        LucideIcons.store,
+      ),
+      ('Pickup Location', 'Where deliveries start from', LucideIcons.mapPin),
+      ('Service Area', 'How far you deliver', LucideIcons.map),
+    ];
+    return PageBody(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF102344), Color(0xFF1B3668), Color(0xFF27427E)],
+            ),
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Let’s set up your business',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 25,
+                  height: 1.14,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Just a few details before you start delivering with '
+                'Cefflo. Takes about 2 minutes.',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: .82),
+                  fontSize: 14.5,
+                  height: 1.4,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: Gap.section),
+        for (final (index, step) in steps.indexed)
+          Padding(
+            padding: const EdgeInsets.only(bottom: Gap.cardGap),
+            child: Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF0F3F8),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    '${index + 1}',
+                    style: const TextStyle(
+                      color: CefColors.navy,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: Gap.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        step.$1,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        step.$2,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(step.$3, size: Sizes.icon, color: context.c.textSecondary),
+              ],
+            ),
+          ),
+        const SizedBox(height: Gap.section),
+        CefButton('Get Started', onTap: () => app.go(VRoute.setupBusinessInfo)),
+      ],
+    );
+  }
+}
+
+/// Shared step header for the V07–V09 setup wizard.
+class _SetupStepHeader extends StatelessWidget {
+  const _SetupStepHeader({
+    required this.step,
+    required this.totalSteps,
+    required this.title,
+    required this.subtitle,
+  });
+  final int step, totalSteps;
+  final String title, subtitle;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          for (var i = 0; i < totalSteps; i++)
+            Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: Container(
+                width: i == step - 1 ? 22 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: i <= step - 1
+                      ? CefColors.accent
+                      : const Color(0xFFE3E6EE),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Text('Step $step of $totalSteps', style: Theme.of(context).textTheme.bodySmall),
+      const SizedBox(height: 10),
+      Text(title, style: Theme.of(context).textTheme.titleLarge),
+      const SizedBox(height: 4),
+      Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
+      const SizedBox(height: Gap.section),
+    ],
+  );
+}
+
+/// V-07 — First-time business information. Required fields only, per the
+/// locked "do not create a long enterprise wizard" guidance.
+class SetupBusinessInfoScreen extends StatefulWidget {
+  const SetupBusinessInfoScreen({super.key});
+  @override
+  State<SetupBusinessInfoScreen> createState() =>
+      _SetupBusinessInfoScreenState();
+}
+
+class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
+  final name = TextEditingController();
+  final phone = TextEditingController();
+  String type = _types.first;
+  final errors = <String, String>{};
+
+  static const _types = [
+    'Food & Beverage',
+    'Home & Living',
+    'Retail',
+    'Groceries',
+    'Other',
+  ];
+
+  @override
+  void dispose() {
+    name.dispose();
+    phone.dispose();
+    super.dispose();
+  }
+
+  void _continue() {
+    errors.clear();
+    if (name.text.trim().isEmpty) {
+      errors['name'] = 'Business name is required.';
+    }
+    if (phone.text.trim().length < 7) {
+      errors['phone'] = 'Enter a valid phone number.';
+    }
+    setState(() {});
+    if (errors.isEmpty) AppScope.read(context).go(VRoute.setupAddress);
+  }
+
+  @override
+  Widget build(BuildContext context) => PageBody(
+    children: [
+      const _SetupStepHeader(
+        step: 1,
+        totalSteps: 3,
+        title: 'Tell us about your business',
+        subtitle: 'This appears on your delivery orders and receipts.',
+      ),
+      CefField(
+        label: 'Business Name',
+        controller: name,
+        hint: 'e.g. Kopi Kita',
+        errorText: errors['name'],
+      ),
+      Padding(
+        padding: const EdgeInsets.only(bottom: Gap.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Business Type', style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: Gap.xs),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final t in _types)
+                  ChoiceChip(
+                    label: Text(t),
+                    selected: type == t,
+                    onSelected: (_) => setState(() => type = t),
+                    selectedColor: CefColors.accent,
+                    labelStyle: TextStyle(
+                      color: type == t
+                          ? CefColors.onAccent
+                          : context.c.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    backgroundColor: context.c.card,
+                    side: BorderSide(color: context.c.border),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      CefField(
+        label: 'Contact Phone',
+        controller: phone,
+        hint: '+60 12 345 6789',
+        keyboardType: TextInputType.phone,
+        errorText: errors['phone'],
+      ),
+      const SizedBox(height: Gap.sm),
+      CefButton('Continue', onTap: _continue),
+    ],
+  );
+}
+
+/// V-08 — Pickup location. Keeps the same map-box + address field language
+/// as Business Address (V39) so the two never feel like different products.
+class SetupAddressScreen extends StatefulWidget {
+  const SetupAddressScreen({super.key});
+  @override
+  State<SetupAddressScreen> createState() => _SetupAddressScreenState();
+}
+
+class _SetupAddressScreenState extends State<SetupAddressScreen> {
+  final address = TextEditingController();
+  final postcode = TextEditingController();
+  final city = TextEditingController();
+  final errors = <String, String>{};
+
+  @override
+  void dispose() {
+    address.dispose();
+    postcode.dispose();
+    city.dispose();
+    super.dispose();
+  }
+
+  void _continue() {
+    errors.clear();
+    if (address.text.trim().isEmpty) {
+      errors['address'] = 'Pickup address is required.';
+    }
+    setState(() {});
+    if (errors.isEmpty) AppScope.read(context).go(VRoute.setupServiceArea);
+  }
+
+  @override
+  Widget build(BuildContext context) => PageBody(
+    children: [
+      const _SetupStepHeader(
+        step: 2,
+        totalSteps: 3,
+        title: 'Where do deliveries start from?',
+        subtitle: 'Riders pick up orders from this location.',
+      ),
+      Container(
+        height: 180,
+        decoration: BoxDecoration(
+          color: const Color(0xFFEAF0F4),
+          borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          border: Border.all(color: context.c.border),
+        ),
+        child: Stack(
+          children: [
+            const Center(
+              child: Icon(LucideIcons.mapPin, size: 44, color: CefColors.navy),
+            ),
+            Positioned(
+              right: 12,
+              bottom: 12,
+              child: CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(LucideIcons.locateFixed, color: context.c.iconColor),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: Gap.md),
+      CefField(
+        label: 'Pickup Address',
+        controller: address,
+        hint: 'Search or enter your address',
+        errorText: errors['address'],
+      ),
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: CefField(
+              label: 'Postcode',
+              controller: postcode,
+              keyboardType: TextInputType.number,
+            ),
+          ),
+          const SizedBox(width: Gap.md),
+          Expanded(child: CefField(label: 'City', controller: city)),
+        ],
+      ),
+      const SizedBox(height: Gap.sm),
+      CefButton('Continue', onTap: _continue),
+    ],
+  );
+}
+
+/// V-09 — Service area. A friendly radius picker rather than raw
+/// latitude/longitude fields, per the locked "avoid technical geometry
+/// terminology" guidance.
+class SetupServiceAreaScreen extends StatefulWidget {
+  const SetupServiceAreaScreen({super.key});
+  @override
+  State<SetupServiceAreaScreen> createState() =>
+      _SetupServiceAreaScreenState();
+}
+
+class _SetupServiceAreaScreenState extends State<SetupServiceAreaScreen> {
+  double radiusKm = 5;
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    return PageBody(
+      children: [
+        const _SetupStepHeader(
+          step: 3,
+          totalSteps: 3,
+          title: 'How far do you deliver?',
+          subtitle: 'Cefflo uses this to decide which orders you can accept.',
+        ),
+        SizedBox(
+          height: 190,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+            child: CustomPaint(
+              painter: _CoveragePreviewPainter(radiusKm: radiusKm),
+              child: const Center(
+                child: Icon(LucideIcons.mapPin, color: CefColors.navy, size: 30),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: Gap.md),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Delivery radius',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            Text(
+              '${radiusKm.round()} km',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+          ],
+        ),
+        Slider(
+          value: radiusKm,
+          min: 2,
+          max: 20,
+          divisions: 18,
+          activeColor: CefColors.accent,
+          onChanged: (v) => setState(() => radiusKm = v),
+        ),
+        const SizedBox(height: Gap.sm),
+        CefButton('Finish Setup', onTap: () => app.go(VRoute.setupComplete)),
+      ],
+    );
+  }
+}
+
+class _CoveragePreviewPainter extends CustomPainter {
+  _CoveragePreviewPainter({required this.radiusKm});
+  final double radiusKm;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()..color = const Color(0xFFF0F4F8),
+    );
+    final center = size.center(Offset.zero);
+    final maxRadius = size.shortestSide * .42;
+    final r = maxRadius * (radiusKm / 20).clamp(.25, 1.0);
+    canvas.drawCircle(center, r, Paint()..color = const Color(0x332A6EEC));
+    canvas.drawCircle(
+      center,
+      r,
+      Paint()
+        ..color = const Color(0xFF2A6EEC)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _CoveragePreviewPainter oldDelegate) =>
+      oldDelegate.radiusKm != radiusKm;
+}
+
 /// V-10 — Setup Complete presentation. It does not persist anything; real
 /// setup truth is Phase 3.
 class SetupCompleteScreen extends StatelessWidget {
@@ -600,6 +1035,224 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
         const SizedBox(height: 16),
         _BlueButton(
           widget.isNew ? 'Create Order' : 'Update Order',
+          onTap: _save,
+        ),
+      ],
+    );
+  }
+}
+
+/// V-35 / V-36 — Edit/Add product, bound to the canonical Product fields
+/// instead of a generic Name/Phone/Email stand-in.
+class ProductFormScreen extends StatefulWidget {
+  const ProductFormScreen({super.key, this.productId});
+  final String? productId;
+  bool get isNew => productId == null;
+
+  @override
+  State<ProductFormScreen> createState() => _ProductFormScreenState();
+}
+
+class _ProductFormScreenState extends State<ProductFormScreen> {
+  final name = TextEditingController();
+  final description = TextEditingController();
+  final price = TextEditingController();
+  bool active = true;
+  bool loading = false;
+  bool busy = false;
+  String? error;
+  final errors = <String, String>{};
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.isNew) _prefill();
+  }
+
+  Future<void> _prefill() async {
+    setState(() => loading = true);
+    try {
+      final app = AppScope.read(context);
+      final products = await app.repo.products(app.business!.id);
+      final p = products.firstWhere((p) => p.id == widget.productId);
+      name.text = p.name;
+      description.text = p.description ?? '';
+      price.text = p.displayPrice?.toStringAsFixed(2) ?? '';
+      active = p.status == 'active';
+    } catch (e) {
+      error = '$e';
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  bool _validate() {
+    errors.clear();
+    if (name.text.trim().isEmpty) {
+      errors['name'] = 'Product name is required.';
+    }
+    final parsed = num.tryParse(price.text.trim());
+    if (parsed == null || parsed < 0) {
+      errors['price'] = 'Enter a valid price.';
+    }
+    setState(() {});
+    return errors.isEmpty;
+  }
+
+  Future<void> _save() async {
+    if (!_validate()) return;
+    final app = AppScope.read(context);
+    if (app.repo.isDemo) {
+      final ok = await runAsyncFeedback(
+        context,
+        action: () async {},
+        processingTitle: 'Processing...',
+        processingSubtitle: widget.isNew
+            ? 'Adding your product'
+            : 'Updating your product',
+        successTitle: 'Successful',
+        successSubtitle: widget.isNew
+            ? 'Your new product has been added successfully.'
+            : 'Your product has been updated successfully.',
+      );
+      if (!mounted || !ok) return;
+      app.back();
+      return;
+    }
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      final priceValue = num.parse(price.text.trim());
+      if (widget.isNew) {
+        await app.repo.createProduct(
+          businessId: app.business!.id,
+          name: name.text.trim(),
+          description: description.text.trim(),
+          displayPrice: priceValue,
+          status: active ? 'active' : 'inactive',
+        );
+      } else {
+        await app.repo.updateProduct(
+          productId: widget.productId!,
+          name: name.text.trim(),
+          description: description.text.trim(),
+          displayPrice: priceValue,
+          status: active ? 'active' : 'inactive',
+        );
+      }
+      if (!mounted) return;
+      app.back();
+    } catch (e) {
+      if (mounted) setState(() => error = '$e');
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    name.dispose();
+    description.dispose();
+    price.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) return const StateBlock.loading();
+    return PageBody(
+      children: [
+        Container(
+          height: 120,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0F3F8),
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+            border: Border.all(color: context.c.border),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                LucideIcons.imagePlus,
+                color: context.c.textSecondary,
+                size: 28,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Add product photo',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _FormSection(
+          icon: LucideIcons.package,
+          title: 'Product Details',
+          child: Column(
+            children: [
+              CefField(
+                label: 'Product name',
+                controller: name,
+                errorText: errors['name'],
+              ),
+              CefField(
+                label: 'Description',
+                controller: description,
+                maxLines: 2,
+              ),
+              CefField(
+                label: 'Price (RM)',
+                controller: price,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                errorText: errors['price'],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        CefCard(
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Available',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    Text(
+                      'Show this product in your storefront',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              CefSwitch(
+                value: active,
+                onChanged: (v) => setState(() => active = v),
+              ),
+            ],
+          ),
+        ),
+        if (error != null)
+          Padding(
+            padding: const EdgeInsets.only(top: Gap.md),
+            child: Text(
+              error!,
+              style: TextStyle(color: context.c.attention, fontSize: 13),
+            ),
+          ),
+        const SizedBox(height: 16),
+        CefButton(
+          widget.isNew ? 'Add Product' : 'Save Changes',
+          busy: busy,
           onTap: _save,
         ),
       ],

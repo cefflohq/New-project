@@ -28,6 +28,7 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
   String? _dispatchingGroup;
   String? _error;
   String? _result;
+  String? _dispatchedRunId;
 
   Future<void> _dispatch(PlanGroup group) async {
     final app = AppScope.read(context);
@@ -60,11 +61,12 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
         idempotencyKey: _idempotencyKey(session['id'] as String, group),
       );
       if (!mounted) return;
-      setState(
-        () => _result =
+      setState(() {
+        _result =
             'Dispatched ${run['order_count']} order(s) to '
-            '${group.candidateRiderName ?? 'the selected rider'}.',
-      );
+            '${group.candidateRiderName ?? 'the selected rider'}.';
+        _dispatchedRunId = run['id'] as String?;
+      });
       await _viewKey.currentState?.reload();
     } on RepositoryError catch (e) {
       if (mounted) setState(() => _error = e.message);
@@ -119,6 +121,12 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
             Padding(
               padding: const EdgeInsets.only(bottom: Gap.cardGap),
               child: CefCard(
+                onTap: _dispatchedRunId == null
+                    ? null
+                    : () => app.go(
+                        VRoute.runDetail,
+                        entityId: _dispatchedRunId,
+                      ),
                 child: Row(
                   children: [
                     const Icon(LucideIcons.circleCheck, size: Sizes.icon),
@@ -129,6 +137,12 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ),
+                    if (_dispatchedRunId != null)
+                      Icon(
+                        LucideIcons.chevronRight,
+                        size: 18,
+                        color: context.c.textSecondary,
+                      ),
                   ],
                 ),
               ),
@@ -279,18 +293,9 @@ class RunDetailScreen extends StatelessWidget {
     children: [
       SizedBox(
         height: 220,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: context.c.card,
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-            border: Border.all(color: context.c.border),
-          ),
-          child: Center(
-            child: Text(
-              'Route map',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          child: CustomPaint(painter: _RoutePreviewPainter()),
         ),
       ),
       const SizedBox(height: Gap.md),
@@ -329,8 +334,83 @@ class RunDetailScreen extends StatelessWidget {
   );
 }
 
-/// V-26 / V-27 — Service area. Coverage is a server decision; this screen only
-/// configures the origin and radius the server uses.
+/// Locked V-19 direction: a blue route with a Yellow driver marker, never a
+/// bare placeholder box. Illustrative only — real polylines/ETA are
+/// backend-owned and land in Phase 3.
+class _RoutePreviewPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()..color = const Color(0xFFF0F4F8),
+    );
+    final roads = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 5;
+    for (var i = -2; i < 8; i++) {
+      canvas.drawLine(
+        Offset(0, i * 40.0),
+        Offset(size.width, i * 40.0 + 90),
+        roads,
+      );
+    }
+    final route = Path()
+      ..moveTo(size.width * .12, size.height * .82)
+      ..quadraticBezierTo(
+        size.width * .35,
+        size.height * .30,
+        size.width * .58,
+        size.height * .48,
+      )
+      ..quadraticBezierTo(
+        size.width * .78,
+        size.height * .62,
+        size.width * .90,
+        size.height * .18,
+      );
+    canvas.drawPath(
+      route,
+      Paint()
+        ..color = const Color(0xFF2A6EEC)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4
+        ..strokeCap = StrokeCap.round,
+    );
+    for (final stop in [
+      Offset(size.width * .12, size.height * .82),
+      Offset(size.width * .58, size.height * .48),
+    ]) {
+      canvas.drawCircle(stop, 5, Paint()..color = const Color(0xFF2A6EEC));
+      canvas.drawCircle(
+        stop,
+        5,
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2,
+      );
+    }
+    final driver = Offset(size.width * .90, size.height * .18);
+    canvas.drawCircle(driver, 9, Paint()..color = const Color(0xFFFEC819));
+    canvas.drawCircle(
+      driver,
+      9,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _RoutePreviewPainter oldDelegate) => false;
+}
+
+/// V-26 / V-27 — Service area. Coverage is a server decision; this screen
+/// only configures the origin and radius the server uses. The origin is
+/// carried as plain doubles rather than shown as raw latitude/longitude —
+/// the locked guidance is to avoid technical geometry language, so the
+/// vendor only ever sees a delivery-radius slider and a coverage preview.
 class ServiceAreaScreen extends StatefulWidget {
   const ServiceAreaScreen({super.key});
   @override
@@ -338,53 +418,47 @@ class ServiceAreaScreen extends StatefulWidget {
 }
 
 class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
-  final lat = TextEditingController();
-  final lng = TextEditingController();
-  final radius = TextEditingController();
+  // Kuala Lumpur city-centre fallback: the demo/UI-only origin used until a
+  // real pickup-location picker is wired in Phase 3.
+  double latitude = 3.1390;
+  double longitude = 101.6869;
+  double radiusKm = 5;
   bool busy = false;
   String? error;
-  String? saved;
   bool loaded = false;
-
-  @override
-  void dispose() {
-    lat.dispose();
-    lng.dispose();
-    radius.dispose();
-    super.dispose();
-  }
 
   void _prefill(Map<String, dynamic> b) {
     if (loaded) return;
     loaded = true;
-    lat.text = (b['service_origin_latitude'] ?? '').toString();
-    lng.text = (b['service_origin_longitude'] ?? '').toString();
-    radius.text = (b['service_coverage_radius_km'] ?? '').toString();
+    latitude = (b['service_origin_latitude'] as num?)?.toDouble() ?? latitude;
+    longitude =
+        (b['service_origin_longitude'] as num?)?.toDouble() ?? longitude;
+    radiusKm = (b['service_coverage_radius_km'] as num?)?.toDouble() ?? radiusKm;
   }
 
   Future<void> _save(Future<void> Function() reload) async {
     final app = AppScope.read(context);
-    final latitude = double.tryParse(lat.text.trim());
-    final longitude = double.tryParse(lng.text.trim());
-    final km = num.tryParse(radius.text.trim());
-    if (latitude == null || longitude == null || km == null || km <= 0) {
-      setState(() => error = 'Enter a valid origin and a positive radius.');
-      return;
-    }
     setState(() {
       busy = true;
       error = null;
-      saved = null;
     });
     try {
       await app.repo.setServiceArea(
         businessId: app.business!.id,
         latitude: latitude,
         longitude: longitude,
-        radiusKm: km,
+        radiusKm: radiusKm,
       );
       if (!mounted) return;
-      setState(() => saved = 'Service area saved.');
+      await runAsyncFeedback(
+        context,
+        action: () async {},
+        processingTitle: 'Processing...',
+        processingSubtitle: 'Saving your service area',
+        successTitle: 'Successful',
+        successSubtitle: 'Your service area has been saved.',
+      );
+      if (!mounted) return;
       await reload();
     } on RepositoryError catch (e) {
       if (mounted) setState(() => error = e.message);
@@ -426,40 +500,55 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
                   Expanded(
                     child: Text(
                       configured
-                          ? 'Coverage is configured. The server decides each '
-                                'order’s coverage from this origin and radius.'
-                          : 'No service area configured. Orders will report '
-                                '“Service area not set” instead of a coverage verdict.',
+                          ? 'Coverage is configured. Cefflo decides each '
+                                'order’s coverage from this.'
+                          : 'No service area configured yet. Orders will show '
+                                '“Not set” instead of a coverage verdict.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
                 ],
               ),
             ),
-            const SectionHeading('Origin and radius'),
-            CefField(
-              label: 'Origin latitude',
-              controller: lat,
-              keyboardType: TextInputType.number,
-            ),
-            CefField(
-              label: 'Origin longitude',
-              controller: lng,
-              keyboardType: TextInputType.number,
-            ),
-            CefField(
-              label: 'Radius (km)',
-              controller: radius,
-              keyboardType: TextInputType.number,
-            ),
-            if (saved != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: Gap.sm),
-                child: Text(
-                  saved!,
-                  style: Theme.of(context).textTheme.bodySmall,
+            const SectionHeading('How far do you deliver?'),
+            SizedBox(
+              height: 190,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(Sizes.cardRadius),
+                child: CustomPaint(
+                  painter: _CoveragePreviewPainter(radiusKm: radiusKm),
+                  child: const Center(
+                    child: Icon(
+                      LucideIcons.mapPin,
+                      color: CefColors.navy,
+                      size: 30,
+                    ),
+                  ),
                 ),
               ),
+            ),
+            const SizedBox(height: Gap.md),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Delivery radius',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                Text(
+                  '${radiusKm.round()} km',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ],
+            ),
+            Slider(
+              value: radiusKm,
+              min: 2,
+              max: 20,
+              divisions: 18,
+              activeColor: CefColors.accent,
+              onChanged: (v) => setState(() => radiusKm = v),
+            ),
             if (error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: Gap.sm),
@@ -468,14 +557,55 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
                   style: TextStyle(color: context.c.attention, fontSize: 13),
                 ),
               ),
+            const SizedBox(height: Gap.sm),
             CefButton(
               'Save service area',
               busy: busy,
               onTap: () => _save(reload),
+            ),
+            const SizedBox(height: Gap.section),
+            FlatListRow(
+              title: 'Manage zones',
+              subtitle: 'See and configure the zones you deliver to',
+              leading: Icon(
+                LucideIcons.mapPin,
+                size: Sizes.icon,
+                color: context.c.info,
+              ),
+              onTap: () => app.go(VRoute.zoneConfiguration),
             ),
           ],
         );
       },
     );
   }
+}
+
+class _CoveragePreviewPainter extends CustomPainter {
+  _CoveragePreviewPainter({required this.radiusKm});
+  final double radiusKm;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()..color = const Color(0xFFF0F4F8),
+    );
+    final center = size.center(Offset.zero);
+    final maxRadius = size.shortestSide * .42;
+    final r = maxRadius * (radiusKm / 20).clamp(.25, 1.0);
+    canvas.drawCircle(center, r, Paint()..color = const Color(0x332A6EEC));
+    canvas.drawCircle(
+      center,
+      r,
+      Paint()
+        ..color = const Color(0xFF2A6EEC)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _CoveragePreviewPainter oldDelegate) =>
+      oldDelegate.radiusKm != radiusKm;
 }

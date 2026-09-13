@@ -255,7 +255,7 @@ const routeSpecs = <VRoute, RouteSpec>{
   VRoute.helperRegistrationLink: RouteSpec(
     route: VRoute.helperRegistrationLink,
     id: 'V-25',
-    title: 'Helper registration link',
+    title: 'Team member registration link',
     parent: VRoute.team,
     tab: NavTab.menu,
   ),

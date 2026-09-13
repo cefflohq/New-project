@@ -18,21 +18,12 @@ class UiPrototypeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => switch (spec.route) {
     VRoute.riderRegistrationLink => const _InviteLinkScreen(kind: 'Rider'),
-    VRoute.teamMemberDetail => const _ProfileDetailScreen(title: 'Team member'),
-    VRoute.helperRegistrationLink => const _InviteLinkScreen(kind: 'Helper'),
-    VRoute.coverageEdit => const _FormPrototypeScreen(title: 'Coverage'),
-    VRoute.zoneConfiguration => const _ListPrototypeScreen(
-      title: 'Zone configuration',
-      subtitle: 'Manage operational zones.',
-      rows: ['Bangsar', 'Mont Kiara', 'TTDI', 'Damansara'],
+    VRoute.helperRegistrationLink => const _InviteLinkScreen(
+      kind: 'Team member',
     ),
-    VRoute.createZone => const _FormPrototypeScreen(title: 'Create zone'),
-    VRoute.editZone => const _FormPrototypeScreen(title: 'Edit zone'),
     VRoute.storefront => const _StorefrontScreen(),
     VRoute.storefrontPreview => const _StorefrontPreviewScreen(),
-    VRoute.branding => const _FormPrototypeScreen(title: 'Branding'),
-    VRoute.productDetail => const _FormPrototypeScreen(title: 'Edit product'),
-    VRoute.addProduct => const _FormPrototypeScreen(title: 'Add product'),
+    VRoute.branding => const _BrandingScreen(),
     VRoute.businessProfile => const _BusinessProfileScreen(),
     VRoute.businessInformation => const _BusinessInformationScreen(),
     VRoute.businessAddress => const _BusinessAddressScreen(),
@@ -2074,127 +2065,215 @@ class _NotificationInboxScreen extends StatelessWidget {
   );
 }
 
-class _ProfileDetailScreen extends StatelessWidget {
-  const _ProfileDetailScreen({required this.title});
-  final String title;
-
-  @override
-  Widget build(BuildContext context) => PageBody(
-    children: [
-      Center(child: Text(title, style: Theme.of(context).textTheme.titleLarge)),
-      const SizedBox(height: Gap.md),
-      const StateBlock.empty('Profile detail prototype.'),
-      FlatListRow(
-        title: 'Role',
-        subtitle: 'Operator',
-        leading: _icon(context, LucideIcons.badgeCheck),
-      ),
-      FlatListRow(
-        title: 'Status',
-        subtitle: 'Active',
-        leading: _icon(context, LucideIcons.circleCheck),
-      ),
-    ],
-  );
-}
-
+/// V-22 / V-25 — Rider/Team invitation link. Vendor shares a trusted-link
+/// invitation; it never collects the invitee's profile directly.
 class _InviteLinkScreen extends StatelessWidget {
   const _InviteLinkScreen({required this.kind});
   final String kind;
 
   @override
-  Widget build(BuildContext context) => PageBody(
-    children: [
-      StateBlock.empty('$kind registration link'),
-      CefCard(
-        child: Text(
-          'https://cefflo.app/invite/${kind.toLowerCase()}',
-          style: Theme.of(context).textTheme.titleSmall,
+  Widget build(BuildContext context) {
+    final link = 'https://cefflo.app/invite/${kind.toLowerCase().replaceAll(' ', '-')}';
+    return PageBody(
+      children: [
+        _HeroPanel(
+          kicker: 'Trusted invitation',
+          title: 'Invite a $kind',
+          subtitle: kind == 'Rider'
+              ? 'Share this link so a rider can register themselves. They '
+                    'appear here as Pending Review once they finish.'
+              : 'Share this link so a team member can register themselves. '
+                    'They appear as Pending once they finish.',
         ),
-      ),
-      const SizedBox(height: Gap.section),
-      CefButton('Copy Link', onTap: () {}),
-    ],
-  );
-}
-
-class _ListPrototypeScreen extends StatelessWidget {
-  const _ListPrototypeScreen({
-    required this.title,
-    required this.subtitle,
-    required this.rows,
-  });
-
-  final String title;
-  final String subtitle;
-  final List<String> rows;
-
-  @override
-  Widget build(BuildContext context) => PageBody(
-    children: [
-      _HeroPanel(kicker: title, title: subtitle),
-      const SizedBox(height: Gap.md),
-      for (final row in rows)
-        FlatListRow(
-          title: row,
-          subtitle: 'Prototype item',
-          leading: _icon(context, LucideIcons.circle),
+        const SizedBox(height: Gap.section),
+        Center(
+          child: Container(
+            width: 148,
+            height: 148,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(Sizes.cardRadius),
+              border: Border.all(color: context.c.border),
+            ),
+            child: Icon(
+              LucideIcons.qrCode,
+              size: 96,
+              color: context.c.textPrimary,
+            ),
+          ),
         ),
-    ],
-  );
+        const SizedBox(height: Gap.section),
+        CefCard(
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  link,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ),
+              const SizedBox(width: Gap.sm),
+              Icon(LucideIcons.copy, size: 18, color: context.c.textSecondary),
+            ],
+          ),
+        ),
+        const SizedBox(height: Gap.md),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _ShareChannel(icon: LucideIcons.messageCircle, label: 'WhatsApp'),
+            _ShareChannel(icon: LucideIcons.send, label: 'Telegram'),
+            _ShareChannel(icon: LucideIcons.messageSquare, label: 'SMS'),
+            _ShareChannel(icon: LucideIcons.share, label: 'More'),
+          ],
+        ),
+        const SizedBox(height: Gap.section),
+        CefButton('Share Invite', onTap: () {}),
+      ],
+    );
+  }
 }
 
-class _FormPrototypeScreen extends StatelessWidget {
-  const _FormPrototypeScreen({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) => PageBody(
-    children: [
-      Center(child: Text(title, style: Theme.of(context).textTheme.titleLarge)),
-      const SizedBox(height: Gap.md),
-      const _FormFields(fields: ['Name', 'Phone', 'Email']),
-      CefButton('Save', onTap: () {}),
-    ],
-  );
-}
-
-class _FormFields extends StatelessWidget {
-  const _FormFields({required this.fields});
-  final List<String> fields;
+class _ShareChannel extends StatelessWidget {
+  const _ShareChannel({required this.icon, required this.label});
+  final IconData icon;
+  final String label;
 
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      for (final field in fields)
+      Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0F3F8),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 22, color: context.c.textPrimary),
+      ),
+      const SizedBox(height: 6),
+      Text(label, style: Theme.of(context).textTheme.bodySmall),
+    ],
+  );
+}
+
+/// V-33 — Branding. Storefront identity only: logo, tagline and an accent
+/// colour choice, with a small live preview.
+class _BrandingScreen extends StatefulWidget {
+  const _BrandingScreen();
+  @override
+  State<_BrandingScreen> createState() => _BrandingScreenState();
+}
+
+class _BrandingScreenState extends State<_BrandingScreen> {
+  final tagline = TextEditingController(text: 'A better delivery day. Today.');
+  int colorIndex = 0;
+
+  static const _colors = [
+    CefColors.navy,
+    Color(0xFF0F766E),
+    Color(0xFF9333EA),
+    Color(0xFFB45309),
+    Color(0xFF1D4ED8),
+  ];
+
+  @override
+  void dispose() {
+    tagline.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final accent = _colors[colorIndex];
+    return PageBody(
+      children: [
+        _EditableAvatar(
+          label: (app.business?.name ?? 'Kopi Kita').substring(0, 2).toUpperCase(),
+        ),
+        const SizedBox(height: 20),
+        _PrototypeField(label: 'Tagline', value: tagline.text),
+        Text('Accent Colour', style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: Gap.xs),
+        Row(
+          children: [
+            for (final (index, color) in _colors.indexed)
+              Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: GestureDetector(
+                  onTap: () => setState(() => colorIndex = index),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      border: colorIndex == index
+                          ? Border.all(color: Colors.black, width: 2)
+                          : null,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: Gap.section),
+        const SectionHeading('Live preview'),
         Container(
-          margin: const EdgeInsets.only(bottom: Gap.md),
-          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: context.c.card,
-            borderRadius: BorderRadius.circular(Sizes.inputRadius),
-            border: Border.all(color: context.c.border),
+            color: accent,
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
           ),
           child: Row(
             children: [
-              Icon(
-                LucideIcons.circle,
-                size: 16,
-                color: context.c.textSecondary,
-              ),
-              const SizedBox(width: Gap.sm),
-              Expanded(
+              CircleAvatar(
+                backgroundColor: Colors.white.withValues(alpha: .22),
                 child: Text(
-                  field,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  (app.business?.name ?? 'Kopi Kita').substring(0, 1),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                ),
+              ),
+              const SizedBox(width: Gap.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      app.business?.name ?? 'Kopi Kita',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Text(
+                      tagline.text,
+                      style: TextStyle(color: Colors.white.withValues(alpha: .85), fontSize: 12.5),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
-    ],
-  );
+        const SizedBox(height: Gap.section),
+        CefButton(
+          'Save',
+          onTap: () => runAsyncFeedback(
+            context,
+            action: () async {},
+            processingTitle: 'Processing...',
+            processingSubtitle: 'Saving your branding',
+            successTitle: 'Successful',
+            successSubtitle: 'Your branding has been updated successfully.',
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _ComingSoonScreen extends StatelessWidget {
