@@ -60,6 +60,74 @@ enum _Stage {
   setNewPassword,
 }
 
+/// Preview-build-only deterministic entry points for Founder visual audit.
+/// This does not participate in canonical product navigation.
+class AuthAuditScreen extends StatelessWidget {
+  const AuthAuditScreen({super.key, required this.id});
+
+  final int id;
+
+  void _noop() {}
+
+  @override
+  Widget build(BuildContext context) => switch (id) {
+    1 => SplashScreen(onReady: _noop),
+    2 => SignInScreen(onEmail: _noop, onSignUp: _noop),
+    3 => EmailSignInScreen(
+      onBack: _noop,
+      onForgotPassword: _noop,
+      onSignUp: _noop,
+      onNeedsVerification: (_) {},
+    ),
+    4 => SignUpScreen(
+      onBack: _noop,
+      onSignIn: _noop,
+      onNeedsVerification: (_) {},
+    ),
+    5 => ForgotPasswordScreen(onBack: _noop, onSent: (_) {}),
+    6 => CheckYourEmailScreen(
+      onBack: _noop,
+      onBackToSignIn: _noop,
+      onTryAnotherEmail: _noop,
+    ),
+    7 => SetNewPasswordScreen(onBack: _noop, onUpdated: _noop),
+    8 => const _MissingPasswordUpdatedAuditScreen(),
+    _ => const SizedBox.shrink(),
+  };
+}
+
+class _MissingPasswordUpdatedAuditScreen extends StatelessWidget {
+  const _MissingPasswordUpdatedAuditScreen();
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    body: SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(Gap.section),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'V08 · Password Updated',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: Gap.sm),
+              Text('MISSING', style: Theme.of(context).textTheme.bodyMedium),
+              const SizedBox(height: Gap.sm),
+              Text(
+                'No canonical Vendor Mobile implementation is currently present. This audit marker does not invent a replacement screen.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 class AuthFlow extends StatefulWidget {
   const AuthFlow({
     super.key,

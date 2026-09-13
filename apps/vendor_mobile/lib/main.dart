@@ -16,7 +16,14 @@ Future<void> main() async {
 
   const uiPrototype = bool.fromEnvironment('CEFFLO_UI_PROTOTYPE');
   if (uiPrototype) {
-    runApp(VendorMobileApp(repo: VendorRepository.demo()));
+    final auditId = _auditIdFromUri(Uri.base);
+    runApp(
+      VendorMobileApp(
+        repo: VendorRepository.demo(),
+        auditId: auditId,
+        auditLocation: auditId == null ? null : _auditLocation(auditId),
+      ),
+    );
     return;
   }
 
@@ -34,8 +41,15 @@ Future<void> main() async {
 }
 
 class VendorMobileApp extends StatefulWidget {
-  const VendorMobileApp({super.key, required this.repo});
+  const VendorMobileApp({
+    super.key,
+    required this.repo,
+    this.auditId,
+    this.auditLocation,
+  });
   final VendorRepository repo;
+  final int? auditId;
+  final VendorLocation? auditLocation;
 
   @override
   State<VendorMobileApp> createState() => _VendorMobileAppState();
@@ -48,6 +62,13 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
   @override
   void initState() {
     super.initState();
+    if (widget.auditLocation != null) {
+      _prototypeAuthenticated = true;
+      final location = widget.auditLocation!;
+      if (location.route != VRoute.today || location.entityId != null) {
+        app.go(location.route, entityId: location.entityId);
+      }
+    }
     if (widget.repo.isDemo) {
       app.loadSession();
     } else if (widget.repo.currentUser != null) {
@@ -76,6 +97,17 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
         theme: buildVendorTheme(Brightness.light),
         home: Builder(
           builder: (context) {
+            final id = widget.auditId;
+            if (widget.repo.isDemo && id != null && id <= 8) {
+              return AuthAuditScreen(id: id);
+            }
+            if (widget.repo.isDemo && widget.auditId == 41) {
+              return const _ReservedAuditScreen(
+                id: 'V41',
+                title: 'Delivery Settings',
+                status: 'REMOVED / RESERVED',
+              );
+            }
             // Founder-locked Vendor Auth batch (2026-09-11): the auth family
             // owns its own stage flow, starting at the locked Splash.
             if ((widget.repo.isDemo && !_prototypeAuthenticated) ||
@@ -107,6 +139,82 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
             }
             return VendorShell(child: buildScreen(context, app.current));
           },
+        ),
+      ),
+    ),
+  );
+}
+
+int? _auditIdFromUri(Uri uri) {
+  if (uri.pathSegments.length != 2 ||
+      uri.pathSegments.first.toLowerCase() != 'audit') {
+    return null;
+  }
+  final raw = uri.pathSegments[1].toUpperCase();
+  if (!RegExp(r'^V\d{2}$').hasMatch(raw)) return null;
+  final id = int.tryParse(raw.substring(1));
+  return id != null && id >= 1 && id <= 60 ? id : null;
+}
+
+VendorLocation? _auditLocation(int id) {
+  if (id <= 8 || id == 41) return null;
+  if (id == 9) return const VendorLocation(VRoute.welcomeSetup);
+  if (id == 10) return const VendorLocation(VRoute.setupComplete);
+
+  final canonicalId = 'V-${id.toString().padLeft(2, '0')}';
+  final spec = routeSpecs.values.cast<RouteSpec?>().firstWhere(
+    (candidate) => candidate?.id == canonicalId,
+    orElse: () => null,
+  );
+  if (spec == null) return null;
+
+  final entityId = switch (spec.route) {
+    VRoute.orderDetail || VRoute.editOrder => 'ord-1001',
+    VRoute.zoneDetail || VRoute.reviewDispatch => 'zone-bangsar',
+    VRoute.runDetail => 'RUN-0182',
+    VRoute.riderDetail => 'rider-ahmad',
+    VRoute.teamMemberDetail => 'team-owner',
+    VRoute.editZone => 'zone-bangsar',
+    VRoute.productDetail => 'prod-1',
+    _ => null,
+  };
+  return VendorLocation(spec.route, entityId: entityId);
+}
+
+class _ReservedAuditScreen extends StatelessWidget {
+  const _ReservedAuditScreen({
+    required this.id,
+    required this.title,
+    required this.status,
+  });
+
+  final String id;
+  final String title;
+  final String status;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    body: SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(Gap.section),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '$id · $title',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: Gap.sm),
+              Text(status, style: Theme.of(context).textTheme.bodyMedium),
+              const SizedBox(height: Gap.sm),
+              Text(
+                'Inventory position retained for audit only. No product screen is implemented.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
         ),
       ),
     ),
