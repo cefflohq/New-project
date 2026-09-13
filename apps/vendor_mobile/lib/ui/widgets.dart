@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -11,10 +14,14 @@ class IconAction extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     required this.onTap,
+    this.showDot = false,
   });
   final IconData icon;
   final String tooltip;
   final VoidCallback onTap;
+
+  /// Small red unread indicator anchored to the icon's top-right corner.
+  final bool showDot;
 
   @override
   Widget build(BuildContext context) => Tooltip(
@@ -26,7 +33,26 @@ class IconAction extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          child: Icon(icon, size: Sizes.icon, color: context.c.iconColor),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(icon, size: Sizes.icon, color: context.c.iconColor),
+              if (showDot)
+                Positioned(
+                  top: 11,
+                  right: 11,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: context.c.attention,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: context.c.chrome, width: 1.5),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     ),
@@ -365,9 +391,18 @@ class CefField extends StatelessWidget {
 }
 
 class StatusChip extends StatelessWidget {
-  const StatusChip(this.label, {super.key, this.attention = false});
+  const StatusChip(
+    this.label, {
+    super.key,
+    this.attention = false,
+    this.success = false,
+  });
   final String label;
   final bool attention;
+
+  /// Ongoing/active states render in the semantic success green per the
+  /// locked V12 Orders spec (Ongoing green, Issue red, Delivered neutral).
+  final bool success;
 
   @override
   Widget build(BuildContext context) {
@@ -377,7 +412,7 @@ class StatusChip extends StatelessWidget {
       style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w600,
-        color: attention ? c.attention : c.textSecondary,
+        color: attention ? c.attention : success ? c.success : c.textSecondary,
       ),
     );
   }
@@ -490,6 +525,65 @@ class SearchBarField extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Locked list-screen header pattern: the title bar carries a compact search
+/// icon rather than an inline full-width field. This opens that search as a
+/// focused sheet instead of permanently occupying body space.
+Future<void> showSearchSheet(BuildContext context, {required String hint}) {
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) => Padding(
+      padding: EdgeInsets.only(
+        left: Gap.gutter,
+        right: Gap.gutter,
+        top: Gap.lg,
+        bottom: MediaQuery.of(context).viewInsets.bottom + Gap.lg,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Search', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: Gap.md),
+          TextField(
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: hint,
+              prefixIcon: const Icon(LucideIcons.search, size: 22),
+              filled: true,
+              fillColor: context.c.canvas,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(Sizes.inputRadius),
+                borderSide: BorderSide(color: context.c.border),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Preference on/off toggle. Locked: the ON state is semantic green, never
+/// the yellow the app's Material seed color would otherwise apply.
+class CefSwitch extends StatelessWidget {
+  const CefSwitch({super.key, required this.value, required this.onChanged});
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+
+  @override
+  Widget build(BuildContext context) => Switch(
+    value: value,
+    onChanged: onChanged,
+    activeThumbColor: Colors.white,
+    activeTrackColor: context.c.success,
+  );
 }
 
 class CefListRow extends StatelessWidget {
@@ -699,3 +793,354 @@ class StateBlock extends StatelessWidget {
 }
 
 enum StateKind { loading, empty, error, blocked }
+
+/// Locked global async action feedback: Tap -> Processing -> Success/Error
+/// as one persistent sheet over a blurred, dimmed, non-interactive backdrop.
+///
+/// [action] is demo-only here: it runs against local/static prototype state,
+/// never a real backend call, per the current UI-only scope. Returns whether
+/// the sheet ended on Success.
+Future<bool> runAsyncFeedback(
+  BuildContext context, {
+  required Future<void> Function() action,
+  required String processingTitle,
+  required String processingSubtitle,
+  required String successTitle,
+  required String successSubtitle,
+  Widget? successDetail,
+  String doneLabel = 'Done',
+}) {
+  final completer = Completer<bool>();
+  showGeneralDialog<void>(
+    context: context,
+    barrierLabel: processingTitle,
+    barrierDismissible: false,
+    barrierColor: Colors.transparent,
+    transitionDuration: const Duration(milliseconds: 180),
+    pageBuilder: (context, _, _) => _AsyncFeedbackOverlay(
+      action: action,
+      processingTitle: processingTitle,
+      processingSubtitle: processingSubtitle,
+      successTitle: successTitle,
+      successSubtitle: successSubtitle,
+      successDetail: successDetail,
+      doneLabel: doneLabel,
+      onSettled: (success) {
+        if (!completer.isCompleted) completer.complete(success);
+      },
+    ),
+  );
+  return completer.future;
+}
+
+enum _FeedbackStage { processing, success, error }
+
+class _AsyncFeedbackOverlay extends StatefulWidget {
+  const _AsyncFeedbackOverlay({
+    required this.action,
+    required this.processingTitle,
+    required this.processingSubtitle,
+    required this.successTitle,
+    required this.successSubtitle,
+    required this.successDetail,
+    required this.doneLabel,
+    required this.onSettled,
+  });
+
+  final Future<void> Function() action;
+  final String processingTitle;
+  final String processingSubtitle;
+  final String successTitle;
+  final String successSubtitle;
+  final Widget? successDetail;
+  final String doneLabel;
+  final ValueChanged<bool> onSettled;
+
+  @override
+  State<_AsyncFeedbackOverlay> createState() => _AsyncFeedbackOverlayState();
+}
+
+class _AsyncFeedbackOverlayState extends State<_AsyncFeedbackOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _dots = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1100),
+  )..repeat();
+  _FeedbackStage _stage = _FeedbackStage.processing;
+
+  @override
+  void initState() {
+    super.initState();
+    _run();
+  }
+
+  Future<void> _run() async {
+    setState(() => _stage = _FeedbackStage.processing);
+    try {
+      // Keeps the wave animation visible for a beat even on instant demo
+      // actions, so the state change never feels like a flicker.
+      await Future.wait([
+        widget.action(),
+        Future.delayed(const Duration(milliseconds: 900)),
+      ]);
+      if (mounted) setState(() => _stage = _FeedbackStage.success);
+    } catch (_) {
+      if (mounted) setState(() => _stage = _FeedbackStage.error);
+    }
+  }
+
+  void _finish(bool success) {
+    widget.onSettled(success);
+    Navigator.of(context).pop();
+  }
+
+  @override
+  void dispose() {
+    _dots.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    children: [
+      Positioned.fill(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+          child: Container(color: Colors.black.withValues(alpha: .28)),
+        ),
+      ),
+      Align(
+        alignment: Alignment.bottomCenter,
+        child: Material(
+          color: Colors.white,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(24),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 14, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 36,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 22),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE3E6EE),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                  switch (_stage) {
+                    _FeedbackStage.processing => _ProcessingBody(
+                      dots: _dots,
+                      title: widget.processingTitle,
+                      subtitle: widget.processingSubtitle,
+                    ),
+                    _FeedbackStage.success => _SuccessBody(
+                      title: widget.successTitle,
+                      subtitle: widget.successSubtitle,
+                      detail: widget.successDetail,
+                      doneLabel: widget.doneLabel,
+                      onDone: () => _finish(true),
+                    ),
+                    _FeedbackStage.error => _ErrorBody(
+                      onCancel: () => _finish(false),
+                      onRetry: _run,
+                    ),
+                  },
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+class _ProcessingBody extends StatelessWidget {
+  const _ProcessingBody({
+    required this.dots,
+    required this.title,
+    required this.subtitle,
+  });
+  final Animation<double> dots;
+  final String title;
+  final String subtitle;
+
+  static const _dotColors = [
+    Color(0xFF12213E),
+    Color(0xFFFEC819),
+    Color(0xFF12213E),
+    Color(0xFFFEC819),
+  ];
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      SizedBox(
+        height: 22,
+        child: AnimatedBuilder(
+          animation: dots,
+          builder: (context, _) => Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(4, (i) {
+              final wave = Curves.easeInOut.transform(
+                (((dots.value - i * 0.16) % 1) + 1) % 1,
+              );
+              final scale = 0.55 + 0.45 * (wave < 0.5 ? wave * 2 : (1 - wave) * 2);
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                child: Opacity(
+                  opacity: 0.45 + 0.55 * scale,
+                  child: Transform.scale(
+                    scale: 0.7 + 0.3 * scale,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: _dotColors[i],
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
+      const SizedBox(height: 22),
+      Text(
+        title,
+        style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+      ),
+      const SizedBox(height: 6),
+      Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
+      const SizedBox(height: 14),
+      Text(
+        'Please keep this app open.\nThis may take a few moments.',
+        textAlign: TextAlign.center,
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: const Color(0xFF9AA1B2)),
+      ),
+    ],
+  );
+}
+
+class _SuccessBody extends StatelessWidget {
+  const _SuccessBody({
+    required this.title,
+    required this.subtitle,
+    required this.detail,
+    required this.doneLabel,
+    required this.onDone,
+  });
+  final String title;
+  final String subtitle;
+  final Widget? detail;
+  final String doneLabel;
+  final VoidCallback onDone;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Container(
+        width: 64,
+        height: 64,
+        decoration: const BoxDecoration(
+          color: Color(0xFFE7F0FE),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(LucideIcons.check, color: Color(0xFF1769D2), size: 30),
+      ),
+      const SizedBox(height: 16),
+      Text(
+        title,
+        style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+      ),
+      const SizedBox(height: 6),
+      Text(
+        subtitle,
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      if (detail != null) ...[const SizedBox(height: 16), detail!],
+      const SizedBox(height: 22),
+      CefButton(doneLabel, onTap: onDone),
+    ],
+  );
+}
+
+class _ErrorBody extends StatelessWidget {
+  const _ErrorBody({required this.onCancel, required this.onRetry});
+  final VoidCallback onCancel;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Container(
+        width: 64,
+        height: 64,
+        decoration: const BoxDecoration(
+          color: Color(0xFFE7F0FE),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(
+          LucideIcons.triangleAlert,
+          color: Color(0xFF1769D2),
+          size: 28,
+        ),
+      ),
+      const SizedBox(height: 16),
+      const Text(
+        'Something went wrong',
+        style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+      ),
+      const SizedBox(height: 6),
+      Text(
+        'We couldn\'t complete this action right now.\nPlease try again.',
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      const SizedBox(height: 16),
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF4F5F8),
+          borderRadius: BorderRadius.circular(Sizes.inputRadius),
+        ),
+        child: Row(
+          children: const [
+            Icon(LucideIcons.wifiOff, size: 18, color: Color(0xFF666C80)),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Please check your internet connection and try again.',
+                style: TextStyle(fontSize: 12.5, color: Color(0xFF666C80)),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 18),
+      Row(
+        children: [
+          Expanded(
+            child: CefButton('Cancel', secondary: true, onTap: onCancel),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: CefButton('Try Again', onTap: onRetry)),
+        ],
+      ),
+    ],
+  );
+}

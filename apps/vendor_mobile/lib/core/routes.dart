@@ -422,13 +422,13 @@ const routeSpecs = <VRoute, RouteSpec>{
   VRoute.settings: RouteSpec(
     route: VRoute.settings,
     id: 'V-46',
-    title: 'Menu',
+    title: 'More',
     tab: NavTab.menu,
   ),
   VRoute.notificationSettings: RouteSpec(
     route: VRoute.notificationSettings,
     id: 'V-47',
-    title: 'Notification settings',
+    title: 'Notification preferences',
     parent: VRoute.settings,
     tab: NavTab.menu,
   ),

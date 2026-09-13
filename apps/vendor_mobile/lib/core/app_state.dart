@@ -22,7 +22,6 @@ class AppState extends ChangeNotifier {
 
   List<Business> businesses = const [];
   Business? business;
-  ThemeMode themeMode = ThemeMode.system;
   String locale = 'en';
 
   bool loadingSession = true;
@@ -73,11 +72,6 @@ class AppState extends ChangeNotifier {
     _stack
       ..clear()
       ..add(VendorLocation(route));
-    notifyListeners();
-  }
-
-  void setThemeMode(ThemeMode mode) {
-    themeMode = mode;
     notifyListeners();
   }
 

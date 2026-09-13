@@ -19,6 +19,14 @@ String _formatTime(DateTime t) {
 Widget _plainIcon(BuildContext context, IconData icon, {Color? color}) =>
     Icon(icon, size: Sizes.icon, color: color ?? context.c.iconColor);
 
+String _initials(String name) => name
+    .split(' ')
+    .where((part) => part.isNotEmpty)
+    .take(2)
+    .map((part) => part[0])
+    .join()
+    .toUpperCase();
+
 /// V-10 — Setup Complete presentation. It does not persist anything; real
 /// setup truth is Phase 3.
 class SetupCompleteScreen extends StatelessWidget {
@@ -166,7 +174,21 @@ class TodayScreen extends StatelessWidget {
                 ),
             ],
 
-            const SectionHeading('Recent delivery'),
+            SectionHeading(
+              'Recent delivery',
+              trailing: delivered.isEmpty
+                  ? null
+                  : GestureDetector(
+                      onTap: () => app.switchTab(NavTab.orders),
+                      child: const Text(
+                        'View All',
+                        style: TextStyle(
+                          color: Color(0xFF1769D2),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+            ),
             if (delivered.isEmpty)
               const StateBlock.empty('No completed deliveries yet.')
             else
@@ -181,11 +203,16 @@ class TodayScreen extends StatelessWidget {
                   ].join(' · '),
                   leading: CircleAvatar(
                     radius: 18,
-                    backgroundColor: context.c.canvas,
-                    child: Icon(
-                      LucideIcons.user,
-                      size: 18,
-                      color: context.c.textSecondary,
+                    backgroundColor: const Color(0xFFF0F3F8),
+                    child: Text(
+                      _initials(
+                        o.customerName.isEmpty ? o.reference : o.customerName,
+                      ),
+                      style: const TextStyle(
+                        color: CefColors.navy,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                   trailing: const StatusChip('Delivered'),
@@ -236,11 +263,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
         return PageBody(
           onRefresh: reload,
           children: [
-            SearchBarField(
-              hint: 'Search order number or customer...',
-              onFilter: () {},
-            ),
-            const SizedBox(height: Gap.md),
             SegmentedTabs(
               labels: tabLabels,
               active: tabLabels[OrderTab.values.indexOf(tab)],
@@ -261,6 +283,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   trailing: StatusChip(
                     o.status.label,
                     attention: o.status == DeliveryStatus.issue,
+                    success: OrderTab.ongoing.accepts(o.status),
                   ),
                   onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
                 ),
@@ -434,6 +457,19 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     if (!_validate()) return;
     final app = AppScope.read(context);
     if (app.repo.isDemo) {
+      final ok = await runAsyncFeedback(
+        context,
+        action: () async {},
+        processingTitle: 'Processing...',
+        processingSubtitle: widget.isNew
+            ? 'Creating your order'
+            : 'Updating your order',
+        successTitle: 'Successful',
+        successSubtitle: widget.isNew
+            ? 'Your new order has been created successfully.'
+            : 'Your order has been updated successfully.',
+      );
+      if (!mounted || !ok) return;
       if (widget.isNew) {
         app.go(VRoute.orderDetail, entityId: 'ord-1001');
       } else {

@@ -69,9 +69,10 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
       builder: (context, _) => MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Cefflo Vendor',
-        themeMode: app.themeMode,
+        // Locked: Light Mode only for the current release. No system/dark
+        // theme switch is exposed (Appearance is a "Coming Soon" surface).
+        themeMode: ThemeMode.light,
         theme: buildVendorTheme(Brightness.light),
-        darkTheme: buildVendorTheme(Brightness.dark),
         home: Builder(
           builder: (context) {
             // Founder-locked Vendor Auth batch (2026-09-11): the auth family

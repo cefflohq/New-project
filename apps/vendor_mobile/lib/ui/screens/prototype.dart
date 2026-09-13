@@ -174,7 +174,7 @@ class _BusinessProfileScreen extends StatelessWidget {
                     ),
                   ),
                   SizedBox(
-                    width: 72,
+                    width: 96,
                     child: CefButton(
                       'Edit',
                       secondary: true,
@@ -415,7 +415,7 @@ class _ProfileScreen extends StatelessWidget {
           ),
         ),
         FlatListRow(
-          title: 'RUMA Living',
+          title: app.business?.name ?? 'Kopi Kita',
           subtitle: 'Owner',
           leading: _icon(context, LucideIcons.store),
           onTap: () => app.go(VRoute.businessProfile),
@@ -543,7 +543,7 @@ class _SecurityScreen extends StatelessWidget {
           title: 'Biometric Login',
           subtitle: 'Use Face ID or Touch ID',
           leading: _icon(context, LucideIcons.fingerprint),
-          trailing: Switch(value: true, onChanged: (_) {}),
+          trailing: CefSwitch(value: true, onChanged: (_) {}),
         ),
         FlatListRow(
           title: 'Two-Factor Authentication',
@@ -603,7 +603,17 @@ class _ChangePasswordScreen extends StatelessWidget {
         trailing: LucideIcons.eyeOff,
       ),
       const SizedBox(height: 24),
-      CefButton('Update Password', onTap: () {}),
+      CefButton(
+        'Update Password',
+        onTap: () => runAsyncFeedback(
+          context,
+          action: () async {},
+          processingTitle: 'Processing...',
+          processingSubtitle: 'Updating your password',
+          successTitle: 'Successful',
+          successSubtitle: 'Your password has been updated successfully.',
+        ),
+      ),
     ],
   );
 }
@@ -635,7 +645,7 @@ class _NotificationPreferencesScreen extends StatelessWidget {
             title: row.$1,
             subtitle: row.$2,
             leading: _icon(context, LucideIcons.bell),
-            trailing: Switch(
+            trailing: CefSwitch(
               value: row.$1 != 'Team Activity',
               onChanged: (_) {},
             ),
@@ -651,7 +661,7 @@ class _NotificationPreferencesScreen extends StatelessWidget {
                   ? LucideIcons.truck
                   : LucideIcons.triangleAlert,
             ),
-            trailing: Switch(value: true, onChanged: (_) {}),
+            trailing: CefSwitch(value: true, onChanged: (_) {}),
           ),
         const _PreferenceLabel('RIDERS & TEAM'),
         for (final row in rows.skip(4).take(2))
@@ -664,7 +674,7 @@ class _NotificationPreferencesScreen extends StatelessWidget {
                   ? LucideIcons.users
                   : LucideIcons.userPlus,
             ),
-            trailing: Switch(
+            trailing: CefSwitch(
               value: row.$1 != 'Team Activity',
               onChanged: (_) {},
             ),
@@ -674,7 +684,7 @@ class _NotificationPreferencesScreen extends StatelessWidget {
           title: rows.last.$1,
           subtitle: rows.last.$2,
           leading: _icon(context, LucideIcons.settings),
-          trailing: Switch(value: true, onChanged: (_) {}),
+          trailing: CefSwitch(value: true, onChanged: (_) {}),
         ),
       ],
     );
@@ -687,7 +697,12 @@ class _LanguageScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    const langs = ['English', 'Bahasa Melayu', '中文（简体）', 'தமிழ்'];
+    const langs = [
+      ('English', 'Default language'),
+      ('Bahasa Melayu', 'Bahasa utama anda'),
+      ('中文（简体）', '简体中文'),
+      ('தமிழ்', 'உங்கள் விருப்ப மொழி'),
+    ];
     return PageBody(
       children: [
         Opacity(
@@ -726,15 +741,15 @@ class _LanguageScreen extends StatelessWidget {
               const SizedBox(height: 10),
               for (final lang in langs)
                 FlatListRow(
-                  title: lang,
-                  subtitle: lang == 'English' ? 'Default language' : null,
-                  trailing: lang == 'English'
+                  title: lang.$1,
+                  subtitle: lang.$2,
+                  trailing: lang.$1 == 'English'
                       ? Icon(LucideIcons.circleDot, color: context.c.info)
                       : Icon(
                           LucideIcons.circle,
                           color: context.c.textSecondary,
                         ),
-                  onTap: () => app.setLocale(lang),
+                  onTap: () => app.setLocale(lang.$1),
                 ),
               const SizedBox(height: 14),
               CefButton('Confirm', onTap: () {}),
@@ -753,7 +768,7 @@ class _AppearanceScreen extends StatelessWidget {
   Widget build(BuildContext context) => PageBody(
     children: [
       const _RoundIconHeader(
-        icon: LucideIcons.paintbrush,
+        icon: LucideIcons.penLine,
         title: 'Coming Soon',
         subtitle: 'Appearance settings will be available\nin a future update.',
       ),
@@ -1019,7 +1034,7 @@ class _BusinessHourRow extends StatelessWidget {
         ),
         Transform.scale(
           scale: .8,
-          child: Switch(value: enabled, onChanged: (_) {}),
+          child: CefSwitch(value: enabled, onChanged: (_) {}),
         ),
         if (enabled) ...[
           const Expanded(child: _FieldBox('08:00')),
@@ -1621,7 +1636,17 @@ class _ContactSupportScreen extends StatelessWidget {
       const SizedBox(height: Gap.md),
       const _PrototypeField(label: 'Contact Email', value: 'yusuf@cefflo.com'),
       const SizedBox(height: Gap.md),
-      CefButton('Send Request', onTap: () {}),
+      CefButton(
+        'Send Request',
+        onTap: () => runAsyncFeedback(
+          context,
+          action: () async {},
+          processingTitle: 'Processing...',
+          processingSubtitle: 'Sending your request',
+          successTitle: 'Successful',
+          successSubtitle: 'Your support request has been sent.',
+        ),
+      ),
       const SizedBox(height: Gap.sm),
       Text(
         'ⓘ Our support team will get back to you as soon as possible.',

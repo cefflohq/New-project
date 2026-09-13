@@ -9,6 +9,14 @@ import '../async_view.dart';
 import '../shell.dart';
 import '../widgets.dart';
 
+/// Presentation-only: canonical values stay lowercase ('active', 'van'); this
+/// only affects how they are displayed.
+String _titleCase(String value) => value
+    .split(' ')
+    .where((w) => w.isNotEmpty)
+    .map((w) => w[0].toUpperCase() + w.substring(1))
+    .join(' ');
+
 class ZonesScreen extends StatefulWidget {
   const ZonesScreen({super.key});
   @override
@@ -39,8 +47,6 @@ class _ZonesScreenState extends State<ZonesScreen> {
         return PageBody(
           onRefresh: reload,
           children: [
-            SearchBarField(hint: 'Search zones...', onFilter: () {}),
-            const SizedBox(height: Gap.md),
             SegmentedTabs(
               labels: tabLabels,
               active: tab,
@@ -73,9 +79,10 @@ class _ZonesScreenState extends State<ZonesScreen> {
                         size: Sizes.icon,
                         color: context.c.info,
                       ),
-                      trailing: z.isActive
-                          ? null
-                          : const StatusChip('Disabled'),
+                      trailing: StatusChip(
+                        z.isActive ? 'Active' : 'Inactive',
+                        success: z.isActive,
+                      ),
                       // Audit fix 2: bound to this zone's id.
                       onTap: () => app.go(VRoute.zoneDetail, entityId: z.id),
                     );
@@ -182,7 +189,10 @@ class ZoneDetailScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: Gap.sm),
-            StatusChip(zone.isActive ? 'Active' : 'Disabled'),
+            StatusChip(
+              zone.isActive ? 'Active' : 'Inactive',
+              success: zone.isActive,
+            ),
             const SectionHeading('Operational status'),
             NavySummaryPanel(
               title: 'Zone activity',
@@ -201,7 +211,11 @@ class ZoneDetailScreen extends StatelessWidget {
                 FlatListRow(
                   title: o.reference,
                   subtitle: '${o.customerName} · ${o.deliveryAddress}',
-                  trailing: StatusChip(o.status.label),
+                  trailing: StatusChip(
+                    o.status.label,
+                    attention: o.status == DeliveryStatus.issue,
+                    success: OrderTab.ongoing.accepts(o.status),
+                  ),
                   onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
                 ),
             const SizedBox(height: Gap.section),
@@ -260,7 +274,7 @@ class _RidersScreenState extends State<RidersScreen> {
                 FlatListRow(
                   title: r.name,
                   subtitle: [
-                    if (r.vehicleType != null) r.vehicleType!,
+                    if (r.vehicleType != null) _titleCase(r.vehicleType!),
                     if (r.plate != null) r.plate!,
                   ].join(' · '),
                   leading: CircleAvatar(
@@ -275,7 +289,10 @@ class _RidersScreenState extends State<RidersScreen> {
                       ),
                     ),
                   ),
-                  trailing: StatusChip(r.status),
+                  trailing: StatusChip(
+                    r.isActive ? 'Active' : 'Offline',
+                    success: r.status == 'active',
+                  ),
                   // Audit fix 2: bound to this rider's id.
                   onTap: () => app.go(VRoute.riderDetail, entityId: r.id),
                 ),
@@ -341,8 +358,12 @@ class RiderDetailScreen extends StatelessWidget {
           CefCard(
             child: Column(
               children: [
-                _row(context, 'Status', rider.status),
-                _row(context, 'Vehicle', rider.vehicleType ?? '—'),
+                _row(context, 'Status', rider.isActive ? 'Active' : 'Offline'),
+                _row(
+                  context,
+                  'Vehicle',
+                  rider.vehicleType == null ? '—' : _titleCase(rider.vehicleType!),
+                ),
                 _row(context, 'Plate', rider.plate ?? '—'),
                 _row(context, 'Phone', rider.phone ?? '—'),
                 _row(
@@ -584,7 +605,11 @@ class CustomerDetailScreen extends StatelessWidget {
               FlatListRow(
                 title: order.reference,
                 subtitle: order.deliveryAddress,
-                trailing: StatusChip(order.status.label),
+                trailing: StatusChip(
+                order.status.label,
+                attention: order.status == DeliveryStatus.issue,
+                success: OrderTab.ongoing.accepts(order.status),
+              ),
                 onTap: () => app.go(VRoute.orderDetail, entityId: order.id),
               ),
           ],
@@ -693,36 +718,3 @@ class MenuScreen extends StatelessWidget {
   }
 }
 
-/// Appearance (V-49) — real, applies immediately.
-class AppearanceScreen extends StatelessWidget {
-  const AppearanceScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final app = AppScope.of(context);
-    Widget option(String label, ThemeMode mode) => Padding(
-      padding: const EdgeInsets.only(bottom: Gap.cardGap),
-      child: CefCard(
-        selected: app.themeMode == mode,
-        onTap: () => app.setThemeMode(mode),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(label, style: Theme.of(context).textTheme.titleSmall),
-            ),
-            if (app.themeMode == mode)
-              const Icon(LucideIcons.check, size: 18, color: Color(0xFF181818)),
-          ],
-        ),
-      ),
-    );
-
-    return PageBody(
-      children: [
-        option('Use device setting', ThemeMode.system),
-        option('Light', ThemeMode.light),
-        option('Dark', ThemeMode.dark),
-      ],
-    );
-  }
-}

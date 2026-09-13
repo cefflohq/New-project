@@ -93,8 +93,10 @@ class _Header extends StatelessWidget {
                   IconAction(
                     icon: LucideIcons.bell,
                     tooltip: 'Notifications',
+                    showDot: true,
                     onTap: () => app.go(VRoute.notificationInbox),
                   ),
+                ..._searchHeaderActions(context, app.current.route),
               ],
             ),
           ),
@@ -104,13 +106,38 @@ class _Header extends StatelessWidget {
   }
 }
 
+/// Locked list-screen header pattern: a compact search icon (and, on Orders,
+/// a filter icon) in the title bar, in place of an inline full-width field.
+List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
+  final hint = switch (route) {
+    VRoute.orders => 'Search order number or customer...',
+    VRoute.zones => 'Search zones...',
+    VRoute.riders => 'Search riders...',
+    _ => null,
+  };
+  if (hint == null) return const [];
+  return [
+    IconAction(
+      icon: LucideIcons.search,
+      tooltip: 'Search',
+      onTap: () => showSearchSheet(context, hint: hint),
+    ),
+    if (route == VRoute.orders)
+      IconAction(
+        icon: LucideIcons.slidersHorizontal,
+        tooltip: 'Filter',
+        onTap: () {},
+      ),
+  ];
+}
+
 class _BottomNav extends StatelessWidget {
   const _BottomNav();
 
   static const _items = <(NavTab, String, IconData)>[
     (NavTab.today, 'Today', LucideIcons.house),
     (NavTab.orders, 'Orders', LucideIcons.package),
-    (NavTab.products, 'Products', LucideIcons.package),
+    (NavTab.products, 'Products', LucideIcons.boxes),
     (NavTab.customers, 'Customers', LucideIcons.users),
     (NavTab.more, 'More', LucideIcons.menu),
   ];
