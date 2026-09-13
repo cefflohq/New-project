@@ -290,9 +290,9 @@ void main() {
         const Size(390, 844),
       );
 
-      // Splash holds a real 900ms minimum-brand-moment timer; let it expire
-      // so the binding does not fail the test on a pending timer.
-      await tester.pump(const Duration(milliseconds: 950));
+      // Splash holds a real 3s minimum-brand-moment timer; let it expire so
+      // the binding does not fail the test on a pending timer.
+      await tester.pump(const Duration(seconds: 3, milliseconds: 50));
     });
 
     testWidgets('02 Sign In fills the full width', (tester) async {

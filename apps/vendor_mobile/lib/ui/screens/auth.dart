@@ -922,7 +922,7 @@ class _SplashScreenState extends State<SplashScreen>
       await app.loadSession();
     }
     final elapsed = DateTime.now().difference(started);
-    const minimumBrandMoment = Duration(milliseconds: 900);
+    const minimumBrandMoment = Duration(seconds: 3);
     if (elapsed < minimumBrandMoment) {
       await Future<void>.delayed(minimumBrandMoment - elapsed);
     }
