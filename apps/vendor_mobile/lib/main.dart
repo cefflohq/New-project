@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/app_state.dart';
 import 'core/env.dart';
+import 'core/preview_path.dart';
 import 'core/routes.dart';
 import 'core/theme.dart';
 import 'data/vendor_repository.dart';
@@ -19,8 +20,10 @@ Future<void> main() async {
     // Flutter's web bootstrap owns the browser location. Reading the initial
     // route keeps preview-only deep links deterministic even though index.html
     // uses a root <base> for static assets.
-    final initialRoute =
-        WidgetsBinding.instance.platformDispatcher.defaultRouteName;
+    final browserPath = previewBrowserPath();
+    final initialRoute = browserPath.isNotEmpty
+        ? browserPath
+        : WidgetsBinding.instance.platformDispatcher.defaultRouteName;
     final auditId = _auditIdFromUri(
       initialRoute.isEmpty ? Uri.base : Uri.parse(initialRoute),
     );
