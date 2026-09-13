@@ -20,6 +20,22 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A new Flutter project.">
 
+  <!--
+    Responsive normalization root cause: without this tag, mobile browsers
+    fall back to their own undocumented default layout-viewport width
+    (historically ~980px on Chrome/Android, but inconsistent per engine and
+    OEM browser). Flutter Web reads that layout-viewport width as its
+    logical-pixel canvas, so the identical fixed-logical-pixel UI ends up
+    perceptually smaller/larger depending on which fallback a given
+    browser happens to apply -- correct on one phone, off on another, with
+    no Dart-side scaling bug involved. Pinning width=device-width,
+    initial-scale=1 makes every browser report the real device CSS width,
+    so Flutter's fixed component sizes render at consistent density
+    everywhere. Deliberately omits user-scalable=no / maximum-scale so
+    legitimate pinch-zoom and OS accessibility text scaling still work.
+  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">

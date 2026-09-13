@@ -229,6 +229,11 @@ class PageBody extends StatelessWidget {
   final List<Widget> children;
   final Future<void> Function()? onRefresh;
 
+  /// Beyond normal phone widths, content gains a centered margin rather
+  /// than stretching indefinitely -- a foldable/tablet-width safeguard.
+  /// No-op at every tested phone width (largest is ~412dp).
+  static const _maxContentWidth = 480.0;
+
   @override
   Widget build(BuildContext context) {
     final list = ListView(
@@ -240,7 +245,13 @@ class PageBody extends StatelessWidget {
       ),
       children: children,
     );
-    if (onRefresh == null) return list;
-    return RefreshIndicator(onRefresh: onRefresh!, child: list);
+    final constrained = Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+        child: list,
+      ),
+    );
+    if (onRefresh == null) return constrained;
+    return RefreshIndicator(onRefresh: onRefresh!, child: constrained);
   }
 }
