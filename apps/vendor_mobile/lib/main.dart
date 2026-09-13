@@ -16,7 +16,14 @@ Future<void> main() async {
 
   const uiPrototype = bool.fromEnvironment('CEFFLO_UI_PROTOTYPE');
   if (uiPrototype) {
-    final auditId = _auditIdFromUri(Uri.base);
+    // Flutter's web bootstrap owns the browser location. Reading the initial
+    // route keeps preview-only deep links deterministic even though index.html
+    // uses a root <base> for static assets.
+    final initialRoute =
+        WidgetsBinding.instance.platformDispatcher.defaultRouteName;
+    final auditId = _auditIdFromUri(
+      initialRoute.isEmpty ? Uri.base : Uri.parse(initialRoute),
+    );
     runApp(
       VendorMobileApp(
         repo: VendorRepository.demo(),
