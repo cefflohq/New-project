@@ -105,6 +105,9 @@ class CefCard extends StatelessWidget {
   }
 }
 
+/// Sub-section header within a page (e.g. "Items (3)", "Contact"). Deliberately
+/// one size step below the page-level titleLarge H1 so hierarchy stays
+/// readable: page title > section heading > card/row title > body.
 class SectionHeading extends StatelessWidget {
   const SectionHeading(this.title, {super.key, this.trailing});
   final String title;
@@ -116,7 +119,7 @@ class SectionHeading extends StatelessWidget {
     child: Row(
       children: [
         Expanded(
-          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+          child: Text(title, style: Theme.of(context).textTheme.titleMedium),
         ),
         ?trailing,
       ],
@@ -363,6 +366,9 @@ class CefButton extends StatelessWidget {
   }
 }
 
+/// A page-level "add" action. Always passed to [PageBody.floatingAction] so
+/// it stays pinned at a fixed corner above the bottom navigation instead of
+/// scrolling with the list content.
 class YellowFab extends StatelessWidget {
   const YellowFab({super.key, required this.tooltip, required this.onTap});
 
@@ -370,24 +376,22 @@ class YellowFab extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Align(
-    alignment: Alignment.centerRight,
-    child: Tooltip(
-      message: tooltip,
-      child: SizedBox(
-        width: 52,
-        height: 52,
-        child: Material(
-          color: CefColors.accent,
-          shape: const CircleBorder(),
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: onTap,
-            child: const Icon(
-              LucideIcons.plus,
-              size: 26,
-              color: CefColors.onAccent,
-            ),
+  Widget build(BuildContext context) => Tooltip(
+    message: tooltip,
+    child: SizedBox(
+      width: 52,
+      height: 52,
+      child: Material(
+        color: CefColors.accent,
+        shape: const CircleBorder(),
+        elevation: 3,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: const Icon(
+            LucideIcons.plus,
+            size: 26,
+            color: CefColors.onAccent,
           ),
         ),
       ),

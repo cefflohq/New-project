@@ -46,6 +46,10 @@ class _ZonesScreenState extends State<ZonesScreen> {
         final tabLabels = const ['All', 'Active', 'Inactive'];
         return PageBody(
           onRefresh: reload,
+          floatingAction: YellowFab(
+            tooltip: 'Add zone',
+            onTap: () => app.go(VRoute.createZone),
+          ),
           children: [
             SegmentedTabs(
               labels: tabLabels,
@@ -88,11 +92,6 @@ class _ZonesScreenState extends State<ZonesScreen> {
                     );
                   },
                 ),
-            const SizedBox(height: Gap.md),
-            YellowFab(
-              tooltip: 'Add zone',
-              onTap: () => app.go(VRoute.createZone),
-            ),
           ],
         );
       },
@@ -138,6 +137,10 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
             : zones.where((z) => z.name.toLowerCase().contains(q)).toList();
         return PageBody(
           onRefresh: reload,
+          floatingAction: YellowFab(
+            tooltip: 'Add zone',
+            onTap: () => app.go(VRoute.createZone),
+          ),
           children: [
             CefCard(
               child: Row(
@@ -199,11 +202,6 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
                   ),
                   onTap: () => app.go(VRoute.editZone, entityId: z.id),
                 ),
-            const SizedBox(height: Gap.md),
-            YellowFab(
-              tooltip: 'Add zone',
-              onTap: () => app.go(VRoute.createZone),
-            ),
           ],
         );
       },
@@ -604,6 +602,10 @@ class _RidersScreenState extends State<RidersScreen> {
         };
         return PageBody(
           onRefresh: reload,
+          floatingAction: YellowFab(
+            tooltip: 'Add rider',
+            onTap: () => app.go(VRoute.riderRegistrationLink),
+          ),
           children: [
             SegmentedTabs(
               labels: const ['All', 'Active', 'Offline', 'Pending'],
@@ -640,11 +642,6 @@ class _RidersScreenState extends State<RidersScreen> {
                   // Audit fix 2: bound to this rider's id.
                   onTap: () => app.go(VRoute.riderDetail, entityId: r.id),
                 ),
-            const SizedBox(height: Gap.md),
-            YellowFab(
-              tooltip: 'Add rider',
-              onTap: () => app.go(VRoute.riderRegistrationLink),
-            ),
           ],
         );
       },
@@ -906,6 +903,10 @@ class _TeamScreenState extends State<TeamScreen> {
                   .toList();
         return PageBody(
           onRefresh: reload,
+          floatingAction: YellowFab(
+            tooltip: 'Invite team member',
+            onTap: () => app.go(VRoute.helperRegistrationLink),
+          ),
           children: [
             Text(
               '${members.length} Member${members.length == 1 ? '' : 's'}',
@@ -951,11 +952,6 @@ class _TeamScreenState extends State<TeamScreen> {
                   onTap: () =>
                       app.go(VRoute.teamMemberDetail, entityId: m.userId),
                 ),
-            const SizedBox(height: Gap.md),
-            YellowFab(
-              tooltip: 'Invite team member',
-              onTap: () => app.go(VRoute.helperRegistrationLink),
-            ),
           ],
         );
       },
@@ -1223,6 +1219,10 @@ class ProductsScreen extends StatelessWidget {
       load: () => app.repo.products(app.business!.id),
       builder: (context, products, reload) => PageBody(
         onRefresh: reload,
+        floatingAction: YellowFab(
+          tooltip: 'Add product',
+          onTap: () => app.go(VRoute.addProduct),
+        ),
         children: [
           const SearchBarField(hint: 'Search products...'),
           const SizedBox(height: Gap.md),
@@ -1238,11 +1238,6 @@ class ProductsScreen extends StatelessWidget {
                 icon: LucideIcons.package,
                 onTap: () => app.go(VRoute.productDetail, entityId: p.id),
               ),
-          const SizedBox(height: Gap.md),
-          YellowFab(
-            tooltip: 'Add product',
-            onTap: () => app.go(VRoute.addProduct),
-          ),
         ],
       ),
     );

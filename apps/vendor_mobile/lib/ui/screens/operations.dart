@@ -167,7 +167,10 @@ class _SetupStepHeader extends StatelessWidget {
         ],
       ),
       const SizedBox(height: 8),
-      Text('Step $step of $totalSteps', style: Theme.of(context).textTheme.bodySmall),
+      Text(
+        'Step $step of $totalSteps',
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
       const SizedBox(height: 10),
       Text(title, style: Theme.of(context).textTheme.titleLarge),
       const SizedBox(height: 4),
@@ -239,7 +242,10 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Business Type', style: Theme.of(context).textTheme.labelLarge),
+            Text(
+              'Business Type',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
             const SizedBox(height: Gap.xs),
             Wrap(
               spacing: 8,
@@ -335,7 +341,10 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
               bottom: 12,
               child: CircleAvatar(
                 backgroundColor: Colors.white,
-                child: Icon(LucideIcons.locateFixed, color: context.c.iconColor),
+                child: Icon(
+                  LucideIcons.locateFixed,
+                  color: context.c.iconColor,
+                ),
               ),
             ),
           ],
@@ -359,7 +368,9 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
             ),
           ),
           const SizedBox(width: Gap.md),
-          Expanded(child: CefField(label: 'City', controller: city)),
+          Expanded(
+            child: CefField(label: 'City', controller: city),
+          ),
         ],
       ),
       const SizedBox(height: Gap.sm),
@@ -374,8 +385,7 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
 class SetupServiceAreaScreen extends StatefulWidget {
   const SetupServiceAreaScreen({super.key});
   @override
-  State<SetupServiceAreaScreen> createState() =>
-      _SetupServiceAreaScreenState();
+  State<SetupServiceAreaScreen> createState() => _SetupServiceAreaScreenState();
 }
 
 class _SetupServiceAreaScreenState extends State<SetupServiceAreaScreen> {
@@ -399,7 +409,11 @@ class _SetupServiceAreaScreenState extends State<SetupServiceAreaScreen> {
             child: CustomPaint(
               painter: _CoveragePreviewPainter(radiusKm: radiusKm),
               child: const Center(
-                child: Icon(LucideIcons.mapPin, color: CefColors.navy, size: 30),
+                child: Icon(
+                  LucideIcons.mapPin,
+                  color: CefColors.navy,
+                  size: 30,
+                ),
               ),
             ),
           ),
@@ -581,6 +595,10 @@ class TodayScreen extends StatelessWidget {
 
         return PageBody(
           onRefresh: reload,
+          floatingAction: YellowFab(
+            tooltip: 'Add order',
+            onTap: () => app.go(VRoute.newOrder),
+          ),
           children: [
             NavySummaryPanel(
               title: "Today's Orders",
@@ -686,11 +704,6 @@ class TodayScreen extends StatelessWidget {
                     );
                   },
                 ),
-            const SizedBox(height: Gap.md),
-            YellowFab(
-              tooltip: 'Add order',
-              onTap: () => app.go(VRoute.newOrder),
-            ),
           ],
         );
       },
@@ -730,6 +743,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
             .toList();
         return PageBody(
           onRefresh: reload,
+          floatingAction: YellowFab(
+            tooltip: 'Add order',
+            onTap: () => app.go(VRoute.newOrder),
+          ),
           children: [
             SegmentedTabs(
               labels: tabLabels,
@@ -755,11 +772,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   ),
                   onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
                 ),
-            const SizedBox(height: Gap.md),
-            YellowFab(
-              tooltip: 'Add order',
-              onTap: () => app.go(VRoute.newOrder),
-            ),
           ],
         );
       },
@@ -1299,13 +1311,14 @@ class _OrderProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const labels = ['Ready', 'Picked Up', 'On the Way', 'Delivered'];
+    // Three visible steps -- "Ready for pickup" is not yet Pickup, so it
+    // shows the tracker with nothing checked rather than a fourth node.
+    const labels = ['Pickup', 'On the Way', 'Delivered'];
     final active = switch (status) {
-      DeliveryStatus.readyForPickup => 0,
-      DeliveryStatus.pickedUp => 1,
-      DeliveryStatus.outForDelivery || DeliveryStatus.arrived => 2,
-      DeliveryStatus.delivered => 3,
-      _ => 0,
+      DeliveryStatus.pickedUp => 0,
+      DeliveryStatus.outForDelivery || DeliveryStatus.arrived => 1,
+      DeliveryStatus.delivered => 2,
+      _ => -1,
     };
     return Row(
       children: List.generate(

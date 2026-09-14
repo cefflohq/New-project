@@ -225,9 +225,19 @@ class _BottomNav extends StatelessWidget {
 
 /// Standard scrollable page body with the approved 12px gutter.
 class PageBody extends StatelessWidget {
-  const PageBody({super.key, required this.children, this.onRefresh});
+  const PageBody({
+    super.key,
+    required this.children,
+    this.onRefresh,
+    this.floatingAction,
+  });
   final List<Widget> children;
   final Future<void> Function()? onRefresh;
+
+  /// A page-level action (e.g. [YellowFab]) pinned at a fixed bottom-right
+  /// position, above the bottom navigation -- it never scrolls with the
+  /// list content beneath it.
+  final Widget? floatingAction;
 
   /// Beyond normal phone widths, content gains a centered margin rather
   /// than stretching indefinitely -- a foldable/tablet-width safeguard.
@@ -237,11 +247,11 @@ class PageBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final list = ListView(
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
         Gap.gutter,
         Gap.md,
         Gap.gutter,
-        Gap.section,
+        floatingAction == null ? Gap.section : Gap.section + 64,
       ),
       children: children,
     );
@@ -251,7 +261,19 @@ class PageBody extends StatelessWidget {
         child: list,
       ),
     );
-    if (onRefresh == null) return constrained;
-    return RefreshIndicator(onRefresh: onRefresh!, child: constrained);
+    final body = onRefresh == null
+        ? constrained
+        : RefreshIndicator(onRefresh: onRefresh!, child: constrained);
+    if (floatingAction == null) return body;
+    return Stack(
+      children: [
+        body,
+        Positioned(
+          right: Gap.gutter,
+          bottom: Gap.gutter,
+          child: floatingAction!,
+        ),
+      ],
+    );
   }
 }

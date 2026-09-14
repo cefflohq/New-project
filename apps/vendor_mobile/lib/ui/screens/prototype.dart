@@ -1221,10 +1221,7 @@ class _ChoosePlanScreen extends StatelessWidget {
     final app = AppScope.of(context);
     return PageBody(
       children: [
-        Text(
-          'Choose your plan',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
+        Text('Choose your plan', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 5),
         Text(
           'Pick the plan that fits your business today.',
@@ -1265,7 +1262,7 @@ class _CheckoutScreen extends StatelessWidget {
     final app = AppScope.of(context);
     return PageBody(
       children: [
-        Text('Review & pay', style: Theme.of(context).textTheme.headlineSmall),
+        Text('Review & pay', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 5),
         Text(
           'Confirm your plan and payment details.',
@@ -1327,7 +1324,7 @@ class _PaymentSuccessScreen extends StatelessWidget {
       Text(
         'Subscription Activated',
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.headlineSmall,
+        style: Theme.of(context).textTheme.titleLarge,
       ),
       const SizedBox(height: 6),
       Text(
@@ -1729,7 +1726,7 @@ class _AboutScreen extends StatelessWidget {
       Text(
         'Cefflo',
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.headlineSmall,
+        style: Theme.of(context).textTheme.titleLarge,
       ),
       const SizedBox(height: 4),
       Text(
