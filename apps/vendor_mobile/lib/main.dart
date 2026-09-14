@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/app_state.dart';
+import 'core/chrome_color.dart';
 import 'core/env.dart';
 import 'core/preview_path.dart';
 import 'core/responsive.dart';
@@ -15,6 +16,12 @@ import 'ui/widgets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Keeps the browser/OS status bar in sync with the app's own chrome
+  // colour instead of a hand-edited hex string in index.html that can
+  // silently drift out of sync with it. Locked Light Mode only (see
+  // themeMode below), so CefColors.light is always the correct source.
+  syncBrowserChromeColor(CefColors.light.chrome);
 
   const uiPrototype = bool.fromEnvironment('CEFFLO_UI_PROTOTYPE');
   if (uiPrototype) {
