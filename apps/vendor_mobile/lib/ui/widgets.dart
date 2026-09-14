@@ -997,53 +997,41 @@ class _AsyncFeedbackOverlayState extends State<_AsyncFeedbackOverlay>
   @override
   Widget build(BuildContext context) => Stack(
     children: [
+      // Dim + blur the entire screen behind the card, not just a scrim --
+      // this is what makes the popup read as a focused, modal moment
+      // instead of a thin overlay on top of the still-legible page.
       Positioned.fill(
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-          child: Container(color: Colors.black.withValues(alpha: .28)),
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Container(color: Colors.black.withValues(alpha: .45)),
         ),
       ),
-      Align(
-        alignment: Alignment.bottomCenter,
-        child: Material(
-          color: Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          child: SafeArea(
-            top: false,
+      Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 28),
+          child: Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 14, 24, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 36,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 22),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE3E6EE),
-                      borderRadius: BorderRadius.circular(99),
-                    ),
-                  ),
-                  switch (_stage) {
-                    _FeedbackStage.processing => _ProcessingBody(
-                      dots: _dots,
-                      title: widget.processingTitle,
-                      subtitle: widget.processingSubtitle,
-                    ),
-                    _FeedbackStage.success => _SuccessBody(
-                      title: widget.successTitle,
-                      subtitle: widget.successSubtitle,
-                      detail: widget.successDetail,
-                      doneLabel: widget.doneLabel,
-                      onDone: () => _finish(true),
-                    ),
-                    _FeedbackStage.error => _ErrorBody(
-                      onCancel: () => _finish(false),
-                      onRetry: _run,
-                    ),
-                  },
-                ],
-              ),
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+              child: switch (_stage) {
+                _FeedbackStage.processing => _ProcessingBody(
+                  dots: _dots,
+                  title: widget.processingTitle,
+                  subtitle: widget.processingSubtitle,
+                ),
+                _FeedbackStage.success => _SuccessBody(
+                  title: widget.successTitle,
+                  subtitle: widget.successSubtitle,
+                  detail: widget.successDetail,
+                  doneLabel: widget.doneLabel,
+                  onDone: () => _finish(true),
+                ),
+                _FeedbackStage.error => _ErrorBody(
+                  onCancel: () => _finish(false),
+                  onRetry: _run,
+                ),
+              },
             ),
           ),
         ),
@@ -1109,16 +1097,14 @@ class _ProcessingBody extends StatelessWidget {
       const SizedBox(height: 22),
       Text(
         title,
+        textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 6),
-      Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
-      const SizedBox(height: 14),
       Text(
-        'Please keep this app open.\nThis may take a few moments.',
+        subtitle,
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodySmall
-            ?.copyWith(color: const Color(0xFF9AA1B2)),
+        style: Theme.of(context).textTheme.bodyMedium,
       ),
     ],
   );
@@ -1145,19 +1131,16 @@ class _SuccessBody extends StatelessWidget {
       Container(
         width: 64,
         height: 64,
-        decoration: const BoxDecoration(
-          color: Color(0xFFE7F0FE),
+        decoration: BoxDecoration(
+          color: context.c.success.withValues(alpha: .12),
           shape: BoxShape.circle,
         ),
-        child: const Icon(
-          LucideIcons.check,
-          color: Color(0xFF1769D2),
-          size: 30,
-        ),
+        child: Icon(LucideIcons.check, color: context.c.success, size: 30),
       ),
       const SizedBox(height: 16),
       Text(
         title,
+        textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 6),
