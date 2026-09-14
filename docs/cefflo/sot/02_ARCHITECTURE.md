@@ -13,16 +13,16 @@
 | # | Surface | Presentation | Maps to existing client topology (§4 below) |
 |---|---|---|---|
 | 1 | **Vendor Product** | Web/Desktop + Flutter Mobile — **one product, two presentation surfaces**, not two products | "Vendor Web/Desktop" (LIVE) + "Vendor Flutter" (FUTURE, `09_VENDOR_FLUTTER_60_SCREEN_MASTER.md`) |
-| 2 | **Driver Product** | Flutter Mobile | "Rider Flutter" (FUTURE, `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`) — target-state surface name only; live today as the Rider PWA (`docs/cefflo/07_RIDER.md`) |
+| 2 | **Driver Product** — "Cefflo Driver" LOCKED as the user-facing product name (D-38); "Rider" LOCKED as the internal/backend/schema/API role | Flutter Mobile | "Driver Flutter" (FUTURE, `13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` — active master as of 2026-09-14, D-37, superseding `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`) — target-state name; live today as the Rider PWA (`docs/cefflo/07_RIDER.md`) |
 | 3 | **Customer Tracking** | Web/PWA | "Customer Tracking" — native app not required unless a future Founder decision changes this |
 | 4 | **CEFFLO Website** | Public Web | `docs/cefflo/sot/11_CEFFLO_WEBSITE.md` (added 2026-09-12, closing the gap flagged at initial freeze). Phase 03 = lightweight pre-launch landing; Phase 06 = full commercial site. Not yet implemented — `marketing/index.html` remains the current built public site. |
 | 5 | **FOUNDR Command Center** | Internal Web/Desktop | "FOUNDR" — see `docs/cefflo/09_FOUNDR.md` |
 
 Operations/Helper is a permission-scoped role within Vendor Product's team system (D-22; `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md` §15 — "reuse existing Core Team/auth/invitation plumbing... not a competing identity system"), not a sixth surface.
 
-**Workforce terminology:** the "Rider" product/backend/schema role is unchanged (see `docs/cefflo/sot/01_PRODUCT_TRUTH.md` §4). "Driver Product" is this freeze's architectural surface name for what `08_RIDER_FLUTTER_33_SCREEN_MASTER.md` describes — the file is not renamed, no schema is touched.
+**Workforce terminology — LOCKED (2026-09-14, D-38):** "Cefflo Driver" is the locked user-facing product name; "Rider" is the locked internal/backend/schema/API role and is unchanged (see `docs/cefflo/sot/01_PRODUCT_TRUTH.md` §4). "Driver Product" in this freeze is that locked product name applied to the Flutter Mobile surface described by `13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` (formerly `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`, superseded 2026-09-14 per D-37) — no schema is touched, and none is authorized to be touched merely to match the product label. The terminology-scope question this freeze originally left open (whether "Driver Product" was a surface label or a broader reopening) was closed by D-38: it is a permanent, intentional dual-namespace — product name "Driver," schema/backend role "Rider" — not a migration in either direction.
 
-This freeze does not authorize starting Vendor Flutter, Driver Product (Rider Flutter), Customer Tracking rebuild, FOUNDR build, or CEFFLO Website work — each remains gated by its own existing stage-gating decisions (D-13 etc.).
+This freeze does not authorize starting Vendor Flutter, Driver Product (Driver Flutter), Customer Tracking rebuild, FOUNDR build, or CEFFLO Website work — each remains gated by its own existing stage-gating decisions (D-13 etc.).
 
 ## 1. Architecture Principle
 Cefflo has one canonical operational truth.
@@ -86,8 +86,8 @@ First-class broad operational/configuration client.
 ### Vendor Flutter
 Separate mobile app; companion, not replacement.
 
-### Rider Flutter
-Separate execution app with Rider-specific state/authorization. Named "Driver Product" in the five-canonical-surface freeze (§0 above) — surface/architecture naming only; the app's internal role/state/authorization remains "Rider," unchanged.
+### Driver Flutter (formerly "Rider Flutter")
+Separate execution app with Rider-specific state/authorization. **"Cefflo Driver" is the LOCKED user-facing product name (D-38, 2026-09-14)** — not merely a freeze-era architectural label. The app's internal role/state/authorization remains "Rider," unchanged — also locked, permanently, at the backend/schema/API layer. UI/UX screen-inventory authority: `13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` (D-37, 2026-09-14).
 
 ### Customer Tracking
 Public tokenized safe projection, not direct operational-table access.
