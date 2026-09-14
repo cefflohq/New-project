@@ -321,10 +321,12 @@ class CefButton extends StatelessWidget {
     required this.onTap,
     this.secondary = false,
     this.busy = false,
+    this.icon,
   });
   final String label;
   final VoidCallback? onTap;
   final bool secondary, busy;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -354,12 +356,22 @@ class CefButton extends StatelessWidget {
                   color: CefColors.onAccent,
                 ),
               )
-            : Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, size: 17),
+                    const SizedBox(width: 8),
+                  ],
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
       ),
     );

@@ -11,6 +11,17 @@ import '../widgets.dart';
 Widget _icon(BuildContext context, IconData icon, {Color? color}) =>
     Icon(icon, size: Sizes.icon, color: color ?? context.c.iconColor);
 
+class _StatusDot extends StatelessWidget {
+  const _StatusDot({required this.color});
+  final Color color;
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 7,
+    height: 7,
+    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+  );
+}
+
 class UiPrototypeScreen extends StatelessWidget {
   const UiPrototypeScreen({super.key, required this.spec});
 
@@ -1189,6 +1200,9 @@ class _StorefrontPreviewScreen extends StatelessWidget {
 /// summary that tapped through to a separate details screen is now the
 /// details screen itself, since both showed the same plan for the same
 /// purpose.
+/// V-50 — Subscription. Demo-only figures throughout (no real billing
+/// backend is wired for Vendor Flutter); matches the Founder-approved board
+/// exactly, including the current-plan name and usage numbers.
 class _SubscriptionScreen extends StatelessWidget {
   const _SubscriptionScreen();
 
@@ -1197,7 +1211,76 @@ class _SubscriptionScreen extends StatelessWidget {
     final app = AppScope.of(context);
     return PageBody(
       children: [
-        const _PlanSummaryCard(active: true),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(Gap.cardPadding),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF102344), Color(0xFF1453B7), Color(0xFF12213E)],
+            ),
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'CURRENT PLAN',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: .65),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: .8,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: .18),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _StatusDot(color: Color(0xFF35D878)),
+                        SizedBox(width: 6),
+                        Text(
+                          'Active',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Grow',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Perfect to start and operate your local delivery.',
+                style: TextStyle(color: Colors.white.withValues(alpha: .82)),
+              ),
+            ],
+          ),
+        ),
         const SizedBox(height: Gap.md),
         CefCard(
           child: Column(
@@ -1205,15 +1288,13 @@ class _SubscriptionScreen extends StatelessWidget {
             children: [
               const Row(
                 children: [
-                  Icon(LucideIcons.chartNoAxesColumnIncreasing),
-                  SizedBox(width: Gap.sm),
                   Text(
-                    'Order Usage',
+                    'Monthly Orders',
                     style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                   Spacer(),
                   Text(
-                    '1,240 / 5,000',
+                    '120 / 150',
                     style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ],
@@ -1222,15 +1303,15 @@ class _SubscriptionScreen extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(99),
                 child: const LinearProgressIndicator(
-                  value: .248,
-                  minHeight: 10,
+                  value: .8,
+                  minHeight: 8,
                   color: Color(0xFF1672E8),
                   backgroundColor: Color(0xFFE3E8F0),
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                '3,760 remaining this year',
+                '30 remaining',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -1238,9 +1319,9 @@ class _SubscriptionScreen extends StatelessWidget {
         ),
         const SizedBox(height: Gap.md),
         const _InfoLine(
-          icon: LucideIcons.clipboardList,
-          label: 'Plan Details',
-          value: 'View features and limits',
+          icon: LucideIcons.calendarDays,
+          label: 'Billing Cycle',
+          value: 'Renews on 12 Oct 2024',
           chevron: true,
         ),
         const _InfoLine(
@@ -1256,25 +1337,34 @@ class _SubscriptionScreen extends StatelessWidget {
           chevron: true,
         ),
         const SizedBox(height: Gap.md),
-        CefCard(
+        Container(
+          padding: const EdgeInsets.all(Gap.cardPadding),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0F4FB),
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _icon(context, LucideIcons.arrowRightLeft),
+              const Icon(LucideIcons.lightbulb, color: Color(0xFF1672E8)),
               const SizedBox(width: Gap.md),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Need to make changes?',
-                      style: TextStyle(fontWeight: FontWeight.w700),
+                      'Need more orders?',
+                      style: Theme.of(context).textTheme.titleSmall,
                     ),
-                    SizedBox(height: 3),
-                    Text('Upgrade, downgrade or switch plans anytime.'),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Upgrade your plan anytime to get higher limits and '
+                      'additional features.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ],
                 ),
               ),
-              const Icon(LucideIcons.chevronRight),
             ],
           ),
         ),
@@ -1285,101 +1375,582 @@ class _SubscriptionScreen extends StatelessWidget {
   }
 }
 
-class _ChoosePlanScreen extends StatelessWidget {
+class _ChoosePlanScreen extends StatefulWidget {
   const _ChoosePlanScreen();
+  @override
+  State<_ChoosePlanScreen> createState() => _ChoosePlanScreenState();
+}
+
+class _ChoosePlanScreenState extends State<_ChoosePlanScreen> {
+  bool annual = true;
+  String selected = 'Operate';
 
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     return PageBody(
       children: [
-        Text('Choose your plan', style: Theme.of(context).textTheme.titleLarge),
+        Text('Choose a Plan', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 5),
         Text(
-          'Pick the plan that fits your business today.',
+          'Pick the plan that fits your business.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
+        const SizedBox(height: 28),
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0F3F8),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Row(
+                children: [
+                  Expanded(child: _periodTab('Monthly', !annual)),
+                  Expanded(child: _periodTab('Annual', annual)),
+                ],
+              ),
+            ),
+            Positioned(
+              top: -14,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: CefColors.accent,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: const Text(
+                  'Save up to 20%',
+                  style: TextStyle(
+                    color: CefColors.navy,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: Gap.section),
-        _PlanCard(
-          name: 'Start',
-          price: 'RM790',
-          description: 'For new businesses starting local delivery.',
-          onTap: () => app.go(VRoute.subscriptionCheckout),
+        _PlanOptionCard(
+          name: 'Grow',
+          price: 'RM990',
+          originalPrice: 'RM1,200',
+          period: 'per year',
+          description: 'Everything you need to start and operate.',
+          features: const [
+            'Up to 1,500 orders/year',
+            'Zones & delivery planning',
+            'Rider management',
+            'Email support',
+          ],
+          selected: selected == 'Grow',
+          onTap: () => setState(() => selected = 'Grow'),
         ),
         const SizedBox(height: Gap.md),
-        _PlanCard(
+        _PlanOptionCard(
           name: 'Operate',
           price: 'RM2,190',
+          originalPrice: 'RM2,640',
+          period: 'per year',
           description: 'For growing businesses with higher volume.',
-          recommended: true,
-          onTap: () => app.go(VRoute.subscriptionCheckout),
+          badge: 'Most Popular',
+          features: const [
+            'Up to 5,000 orders/year',
+            'Advanced route optimization',
+            'Team & multi-location',
+            'Priority support',
+          ],
+          selected: selected == 'Operate',
+          onTap: () => setState(() => selected = 'Operate'),
         ),
         const SizedBox(height: Gap.md),
-        _PlanCard(
+        _PlanOptionCard(
           name: 'Scale',
-          price: 'Let’s talk',
-          description: 'For larger teams and complex operations.',
-          onTap: () {},
+          price: 'RM4,999',
+          originalPrice: 'RM6,000',
+          period: 'per year',
+          description: 'For high volume operations and larger teams.',
+          features: const [
+            'Up to 15,000 orders/year',
+            'Advanced analytics',
+            'Multi-location & advanced controls',
+            'Dedicated support',
+          ],
+          selected: selected == 'Scale',
+          onTap: () => setState(() => selected = 'Scale'),
+        ),
+        const SizedBox(height: Gap.section),
+        CefButton('Continue', onTap: () => app.go(VRoute.subscriptionCheckout)),
+      ],
+    );
+  }
+
+  Widget _periodTab(String label, bool active) => GestureDetector(
+    onTap: () => setState(() => annual = label == 'Annual'),
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: active ? CefColors.navy : Colors.transparent,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: active ? Colors.white : const Color(0xFF6B7280),
+          fontWeight: FontWeight.w700,
+          fontSize: 13.5,
+        ),
+      ),
+    ),
+  );
+}
+
+class _PlanOptionCard extends StatelessWidget {
+  const _PlanOptionCard({
+    required this.name,
+    required this.price,
+    required this.originalPrice,
+    required this.period,
+    required this.description,
+    required this.features,
+    required this.selected,
+    required this.onTap,
+    this.badge,
+  });
+  final String name, price, originalPrice, period, description;
+  final List<String> features;
+  final bool selected;
+  final String? badge;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final fg = selected ? Colors.white : context.c.textPrimary;
+    final fgMuted = selected
+        ? Colors.white.withValues(alpha: .8)
+        : context.c.textSecondary;
+    final checkColor = selected ? Colors.white : const Color(0xFF1672E8);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(
+          Gap.cardPadding,
+          Gap.cardPadding,
+          40,
+          Gap.cardPadding,
+        ),
+        decoration: BoxDecoration(
+          gradient: selected
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF102344),
+                    Color(0xFF1453B7),
+                    Color(0xFF12213E),
+                  ],
+                )
+              : null,
+          color: selected ? null : context.c.card,
+          borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          border: Border.all(
+            color: selected ? Colors.transparent : context.c.border,
+          ),
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        children: [
+                          Text(
+                            name,
+                            style: TextStyle(
+                              fontSize: 19,
+                              fontWeight: FontWeight.w800,
+                              color: fg,
+                            ),
+                          ),
+                          if (badge != null)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1FA463),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                badge!,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          price,
+                          style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w800,
+                            color: fg,
+                          ),
+                        ),
+                        Text(
+                          period,
+                          style: TextStyle(fontSize: 11.5, color: fgMuted),
+                        ),
+                        Text(
+                          originalPrice,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: fgMuted,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(fontSize: 13, color: fgMuted, height: 1.3),
+                ),
+                const SizedBox(height: 14),
+                for (final f in features)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Icon(
+                          LucideIcons.circleCheck,
+                          size: 16,
+                          color: checkColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            f,
+                            style: TextStyle(fontSize: 13, color: fg),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            Positioned(
+              right: -28,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: selected ? Colors.white : context.c.border,
+                      width: 2,
+                    ),
+                  ),
+                  child: selected
+                      ? Center(
+                          child: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                          ),
+                        )
+                      : null,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CheckoutScreen extends StatefulWidget {
+  const _CheckoutScreen();
+  @override
+  State<_CheckoutScreen> createState() => _CheckoutScreenState();
+}
+
+class _CheckoutScreenState extends State<_CheckoutScreen> {
+  String method = 'card';
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    return PageBody(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(Gap.cardPadding),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF102344), Color(0xFF1453B7), Color(0xFF12213E)],
+            ),
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Operate',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 21,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Annual Plan',
+                          style: TextStyle(color: Color(0xFFC7D6EE)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      const Text(
+                        'RM2,190',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 21,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const Text(
+                        'per year',
+                        style: TextStyle(color: Color(0xFFC7D6EE)),
+                      ),
+                      Text(
+                        'RM2,640',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: .6),
+                          fontSize: 12,
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Divider(color: Colors.white.withValues(alpha: .18), height: 1),
+              const SizedBox(height: 14),
+              for (final f in const [
+                'Up to 5,000 orders/year',
+                'Advanced route optimization',
+                'Team & multi-location',
+                'Priority support',
+              ])
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        LucideIcons.circleCheck,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(f, style: const TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SectionHeading('Payment Method'),
+        _PaymentOptionRow(
+          icon: LucideIcons.creditCard,
+          title: 'Credit / Debit Card',
+          subtitle: 'Visa, Mastercard, AMEX',
+          selected: method == 'card',
+          onTap: () => setState(() => method = 'card'),
+        ),
+        _PaymentOptionRow(
+          icon: LucideIcons.landmark,
+          title: 'FPX Online Banking',
+          subtitle: 'Pay with your bank account',
+          selected: method == 'fpx',
+          onTap: () => setState(() => method = 'fpx'),
+        ),
+        _PaymentOptionRow(
+          icon: LucideIcons.wallet,
+          title: 'E-Wallet (Soon)',
+          subtitle: 'TnG eWallet, ShopeePay',
+          selected: method == 'ewallet',
+          enabled: false,
+        ),
+        const SectionHeading('Order Summary'),
+        CefCard(
+          child: Column(
+            children: [
+              const Row(
+                children: [Text('Operate (Annual)'), Spacer(), Text('RM2,640')],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const Text('Annual Discount (17%)'),
+                  const Spacer(),
+                  Text(
+                    '-RM450',
+                    style: TextStyle(
+                      color: context.c.success,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Divider(height: 1),
+              const SizedBox(height: 12),
+              const Row(
+                children: [
+                  Text('Total', style: TextStyle(fontWeight: FontWeight.w800)),
+                  Spacer(),
+                  Text(
+                    'RM2,190',
+                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: Gap.md),
+        Text(
+          'By confirming, you agree to our Terms of Service and '
+          'Subscription Policy.',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(decoration: TextDecoration.underline),
+        ),
+        const SizedBox(height: Gap.md),
+        CefButton(
+          'Subscribe Now',
+          icon: LucideIcons.lock,
+          onTap: () => app.go(VRoute.paymentSuccess),
         ),
       ],
     );
   }
 }
 
-class _CheckoutScreen extends StatelessWidget {
-  const _CheckoutScreen();
+class _PaymentOptionRow extends StatelessWidget {
+  const _PaymentOptionRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+    this.onTap,
+    this.enabled = true,
+  });
+  final IconData icon;
+  final String title, subtitle;
+  final bool selected;
+  final bool enabled;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final app = AppScope.of(context);
-    return PageBody(
-      children: [
-        Text('Review & pay', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 5),
-        Text(
-          'Confirm your plan and payment details.',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const SectionHeading('Plan summary'),
-        const _PlanSummaryCard(),
-        const SectionHeading('Payment method'),
-        CefCard(
-          child: Row(
-            children: [
-              _icon(context, LucideIcons.creditCard),
-              const SizedBox(width: Gap.md),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Visa ending 4242',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    SizedBox(height: 3),
-                    Text('Expires 10/28'),
-                  ],
+    final c = context.c;
+    final fg = enabled ? c.textPrimary : c.textSecondary;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Gap.cardGap),
+      child: CefCard(
+        onTap: enabled ? onTap : null,
+        child: Row(
+          children: [
+            Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: selected ? const Color(0xFF1672E8) : c.border,
+                  width: 2,
                 ),
               ),
-              const Icon(LucideIcons.chevronRight),
-            ],
-          ),
+              child: selected
+                  ? Center(
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF1672E8),
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: Gap.md),
+            Icon(icon, size: Sizes.icon, color: fg),
+            const SizedBox(width: Gap.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleSmall
+                        ?.copyWith(color: fg),
+                  ),
+                  Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+                ],
+              ),
+            ),
+          ],
         ),
-        const SectionHeading('Billing details'),
-        const _PrototypeField(label: 'Business name', value: 'Kopi Kita'),
-        const _PrototypeField(
-          label: 'Billing email',
-          value: 'yusuf@cefflo.com',
-        ),
-        const SizedBox(height: Gap.sm),
-        CefButton('Pay RM2,190', onTap: () => app.go(VRoute.paymentSuccess)),
-        const SizedBox(height: Gap.sm),
-        Text(
-          'Prototype only — no payment will be processed.',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-      ],
+      ),
     );
   }
 }
@@ -1742,54 +2313,6 @@ class _AboutScreen extends StatelessWidget {
         style: Theme.of(context).textTheme.bodySmall,
       ),
     ],
-  );
-}
-
-class _PlanCard extends StatelessWidget {
-  const _PlanCard({
-    required this.name,
-    required this.price,
-    required this.description,
-    required this.onTap,
-    this.recommended = false,
-  });
-  final String name, price, description;
-  final VoidCallback onTap;
-  final bool recommended;
-
-  @override
-  Widget build(BuildContext context) => CefCard(
-    selected: recommended,
-    onTap: onTap,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(name, style: Theme.of(context).textTheme.titleLarge),
-            if (recommended) ...[
-              const SizedBox(width: 9),
-              const Text(
-                'Recommended',
-                style: TextStyle(
-                  color: Color(0xFF0A63CE),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-            const Spacer(),
-            Text(price, style: Theme.of(context).textTheme.titleLarge),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          price.startsWith('RM') ? 'Annual Plan · per year' : 'Custom plan',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        const SizedBox(height: 13),
-        Text(description, style: Theme.of(context).textTheme.bodyMedium),
-      ],
-    ),
   );
 }
 
