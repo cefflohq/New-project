@@ -8,6 +8,7 @@ import '../../data/models.dart';
 import '../async_view.dart';
 import '../shell.dart';
 import '../widgets.dart';
+import 'review_parts.dart';
 
 /// Presentation-only: canonical values stay lowercase ('active', 'van'); this
 /// only affects how they are displayed.
@@ -675,77 +676,16 @@ class RiderDetailScreen extends StatelessWidget {
         return PageBody(
           onRefresh: reload,
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF102344),
-                    Color(0xFF1453B7),
-                    Color(0xFF12213E),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(Sizes.cardRadius),
-              ),
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Colors.white.withValues(alpha: .16),
-                    child: Text(
-                      _initialsOf(rider.name),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    rider.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: pending
-                          ? const Color(0xFFFFC107)
-                          : Colors.white.withValues(alpha: .18),
-                      borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-                    ),
-                    child: Text(
-                      pending
-                          ? 'Pending Review'
-                          : (rider.isActive ? 'Active' : 'Offline'),
-                      style: TextStyle(
-                        color: pending ? CefColors.navy : Colors.white,
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    pending ? 'Rider Applicant' : 'Rider',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: .78),
-                      fontSize: 13.5,
-                    ),
-                  ),
-                ],
-              ),
+            ReviewProfileHero(
+              name: rider.name,
+              role: pending ? 'Rider Applicant' : 'Rider',
+              status: pending
+                  ? 'Pending Review'
+                  : rider.isActive
+                  ? 'Active'
+                  : 'Offline',
+              pending: pending,
+              square: true,
             ),
             const SectionHeading('Contact'),
             CefCard(
@@ -795,6 +735,28 @@ class RiderDetailScreen extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
+            ),
+            const SectionHeading('Driving Licence'),
+            const CefCard(
+              child: Row(
+                children: [
+                  Icon(LucideIcons.fileText, size: 24),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      'No licence document available',
+                      style: TextStyle(fontSize: 13, color: Color(0xFF858BA3)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SectionHeading('Additional Information'),
+            const CefCard(
+              child: Text(
+                'No additional information available.',
+                style: TextStyle(fontSize: 13, color: Color(0xFF858BA3)),
               ),
             ),
             if (rider.maxActiveOrders != null) ...[
@@ -908,6 +870,20 @@ class _TeamScreenState extends State<TeamScreen> {
             onTap: () => app.go(VRoute.helperRegistrationLink),
           ),
           children: [
+            const Text(
+              'Team',
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF091A3C),
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Manage who can access your business.',
+              style: TextStyle(fontSize: 13, color: Color(0xFF858BA3)),
+            ),
+            const SizedBox(height: 24),
             Text(
               '${members.length} Member${members.length == 1 ? '' : 's'}',
               style: Theme.of(context).textTheme.bodyMedium,
@@ -981,80 +957,39 @@ class TeamMemberDetailScreen extends StatelessWidget {
       builder: (context, member, reload) => PageBody(
         onRefresh: reload,
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF102344),
-                  Color(0xFF1453B7),
-                  Color(0xFF12213E),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(Sizes.cardRadius),
-            ),
-            child: Column(
+          ReviewProfileHero(
+            name: member.displayName ?? member.userId,
+            role: member.role,
+            status: 'Active',
+          ),
+          const SectionHeading('Contact'),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Row(
               children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.white.withValues(alpha: .16),
-                  child: Text(
-                    (member.displayName ?? member.userId)
-                        .split(' ')
-                        .where((part) => part.isNotEmpty)
-                        .take(2)
-                        .map((part) => part[0])
-                        .join()
-                        .toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
+                Icon(LucideIcons.phone, size: 20),
+                SizedBox(width: 18),
                 Text(
-                  member.displayName ?? member.userId,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  member.role,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: .78),
-                    fontSize: 13.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: .18),
-                    borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-                  ),
-                  child: const Text(
-                    'Active',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  'Phone not provided',
+                  style: TextStyle(fontSize: 13, color: Color(0xFF858BA3)),
                 ),
               ],
             ),
           ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Row(
+              children: [
+                Icon(LucideIcons.mail, size: 20),
+                SizedBox(width: 18),
+                Text(
+                  'Email not provided',
+                  style: TextStyle(fontSize: 13, color: Color(0xFF858BA3)),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 28),
           const SectionHeading('Role & Access'),
           CefCard(
             child: Column(

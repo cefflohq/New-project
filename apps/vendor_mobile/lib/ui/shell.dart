@@ -18,6 +18,15 @@ const _onboardingRoutes = {
   VRoute.setupComplete,
 };
 
+const _reviewTitles = <VRoute, String>{
+  VRoute.reviewDispatch: 'Review Delivery Plan',
+  VRoute.runDetail: 'Active Run',
+  VRoute.riderDetail: 'Rider Detail',
+  VRoute.riderRegistrationLink: 'Invite Rider',
+  VRoute.team: 'Team',
+  VRoute.teamMemberDetail: 'Team Member',
+};
+
 /// Flat white chrome: 60px header and 60px sticky bottom navigation, no
 /// floating glass bar, no FAB, no accent underline beneath the title.
 class VendorShell extends StatelessWidget {
@@ -52,7 +61,9 @@ class VendorShell extends StatelessWidget {
             children: [
               _Header(app: app),
               Expanded(child: child),
-              if (!isOnboarding) const _BottomNav(),
+              if (!isOnboarding &&
+                  !_reviewTitles.containsKey(app.current.route))
+                const _BottomNav(),
             ],
           ),
         ),
@@ -70,6 +81,36 @@ class _Header extends StatelessWidget {
     final c = context.c;
     final spec = app.current.spec;
     final isTodayRoot = app.current.route == VRoute.today;
+    final reviewTitle = _reviewTitles[app.current.route];
+    if (reviewTitle != null) {
+      return SafeArea(
+        bottom: false,
+        child: SizedBox(
+          height: 56,
+          child: Row(
+            children: [
+              IconAction(
+                icon: LucideIcons.arrowLeft,
+                tooltip: 'Back',
+                onTap: app.back,
+              ),
+              Expanded(
+                child: Text(
+                  reviewTitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF091A3C),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 44),
+            ],
+          ),
+        ),
+      );
+    }
     return Container(
       color: c.chrome,
       child: SafeArea(

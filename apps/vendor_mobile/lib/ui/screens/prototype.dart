@@ -2620,8 +2620,8 @@ class _InviteLinkScreen extends StatelessWidget {
       children: [
         Center(
           child: Container(
-            width: 64,
-            height: 64,
+            width: kind == 'Rider' ? 54 : 64,
+            height: kind == 'Rider' ? 54 : 64,
             decoration: const BoxDecoration(
               color: Color(0xFFE9EEF7),
               shape: BoxShape.circle,
@@ -2635,7 +2635,13 @@ class _InviteLinkScreen extends StatelessWidget {
               ? 'Invite Riders to Your Business'
               : 'Invite a Team Member',
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.titleMedium,
+          style: kind == 'Rider'
+              ? const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF091A3C),
+                )
+              : Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: Gap.xs),
         Text(
@@ -2646,17 +2652,33 @@ class _InviteLinkScreen extends StatelessWidget {
               : 'Give access to your team so they can help run your '
                     'deliveries, manage orders and more.',
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: kind == 'Rider'
+              ? const TextStyle(
+                  fontSize: 13,
+                  height: 1.5,
+                  color: Color(0xFF858BA3),
+                )
+              : Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: Gap.section),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(Gap.cardPadding),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF102344), Color(0xFF1453B7), Color(0xFF12213E)],
+              colors: kind == 'Rider'
+                  ? const [
+                      Color(0xFF0065E4),
+                      Color(0xFF003B91),
+                      Color(0xFF071C46),
+                    ]
+                  : const [
+                      Color(0xFF102344),
+                      Color(0xFF1453B7),
+                      Color(0xFF12213E),
+                    ],
             ),
             borderRadius: BorderRadius.circular(Sizes.cardRadius),
           ),
@@ -2785,7 +2807,7 @@ class _InviteLinkScreen extends StatelessWidget {
                 child: Text(
                   kind == 'Rider'
                       ? 'Invited riders will appear in your Riders list '
-                            'once they accept and complete their '
+                            'as Pending Review once they complete their '
                             'registration.'
                       : 'Invited team members will appear in your Team '
                             'list once they accept and complete their '

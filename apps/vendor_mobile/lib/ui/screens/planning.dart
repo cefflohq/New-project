@@ -186,9 +186,9 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF102344),
-                    Color(0xFF1453B7),
-                    Color(0xFF12213E),
+                    Color(0xFF0065E4),
+                    Color(0xFF003B91),
+                    Color(0xFF071C46),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(Sizes.cardRadius),
@@ -371,9 +371,22 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                           ),
-                          Text(
-                            '${group.stops.length} stop${group.stops.length == 1 ? '' : 's'}',
-                            style: Theme.of(context).textTheme.bodySmall,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE9F2FF),
+                              borderRadius: BorderRadius.circular(9),
+                            ),
+                            child: Text(
+                              '${group.stops.length} stops',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF0864E8),
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -601,56 +614,50 @@ class RunDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PageBody(
     children: [
-      SizedBox(
-        height: 220,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(Sizes.cardRadius),
-          child: CustomPaint(painter: _RoutePreviewPainter()),
-        ),
-      ),
-      const SizedBox(height: Gap.md),
       Row(
         children: [
-          Expanded(
-            child: Text(runId, style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            runId,
+            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
           ),
+          const SizedBox(width: 12),
           const StatusChip('Active', success: true),
         ],
       ),
-      const SizedBox(height: 2),
+      const SizedBox(height: 6),
       Text(
         'Bangsar · Ahmad Razi · VFY 7281',
         style: Theme.of(context).textTheme.bodySmall,
       ),
-      const SizedBox(height: Gap.section),
-      CefCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '3 of 7 delivered',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                Text(
-                  '4 remaining',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
+      const SizedBox(height: 10),
+      SizedBox(
+        height: 270,
+        width: double.infinity,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: CustomPaint(painter: _RoutePreviewPainter()),
+        ),
+      ),
+      const SizedBox(height: 12),
+      Row(
+        children: [
+          const Expanded(
+            child: Text(
+              '3 of 7 delivered',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
             ),
-            const SizedBox(height: Gap.sm),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(999),
-              child: LinearProgressIndicator(
-                value: 3 / 7,
-                minHeight: 6,
-                backgroundColor: context.c.border,
-                valueColor: const AlwaysStoppedAnimation(CefColors.accent),
-              ),
-            ),
-          ],
+          ),
+          Text('4 remaining', style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
+      const SizedBox(height: 10),
+      ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: const LinearProgressIndicator(
+          value: 3 / 7,
+          minHeight: 10,
+          backgroundColor: Color(0xFFE3E7F0),
+          valueColor: AlwaysStoppedAnimation(Color(0xFF0864E8)),
         ),
       ),
       const SectionHeading('Next stop'),
@@ -735,11 +742,45 @@ class _RoutePreviewPainter extends CustomPainter {
           ..strokeWidth = 2,
       );
     }
+    for (final fraction in const [
+      Offset(.25, .58),
+      Offset(.43, .43),
+      Offset(.73, .48),
+    ]) {
+      final center = Offset(
+        size.width * fraction.dx,
+        size.height * fraction.dy,
+      );
+      canvas.drawCircle(center, 12, Paint()..color = const Color(0xFF0864E8));
+      final check = Path()
+        ..moveTo(center.dx - 4, center.dy)
+        ..lineTo(center.dx - 1, center.dy + 3)
+        ..lineTo(center.dx + 5, center.dy - 4);
+      canvas.drawPath(
+        check,
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2,
+      );
+    }
     final driver = Offset(size.width * .90, size.height * .18);
-    canvas.drawCircle(driver, 9, Paint()..color = const Color(0xFFFEC819));
+    canvas.drawCircle(driver, 20, Paint()..color = const Color(0xFFFEC819));
+    final marker = TextPainter(
+      text: TextSpan(
+        text: String.fromCharCode(Icons.two_wheeler.codePoint),
+        style: TextStyle(
+          fontFamily: Icons.two_wheeler.fontFamily,
+          fontSize: 23,
+          color: const Color(0xFF12213E),
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    marker.paint(canvas, driver - Offset(marker.width / 2, marker.height / 2));
     canvas.drawCircle(
       driver,
-      9,
+      20,
       Paint()
         ..color = Colors.white
         ..style = PaintingStyle.stroke
