@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/app_state.dart';
 import 'core/env.dart';
 import 'core/preview_path.dart';
+import 'core/responsive.dart';
 import 'core/routes.dart';
 import 'core/theme.dart';
 import 'data/vendor_repository.dart';
@@ -105,6 +106,9 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
         // theme switch is exposed (Appearance is a "Coming Soon" surface).
         themeMode: ThemeMode.light,
         theme: buildVendorTheme(Brightness.light),
+        // Applied above the Navigator so every route, dialog and bottom
+        // sheet lays out against the same normalized canvas.
+        builder: (context, child) => ResponsiveDensity(child: child!),
         home: Builder(
           builder: (context) {
             final id = widget.auditId;
