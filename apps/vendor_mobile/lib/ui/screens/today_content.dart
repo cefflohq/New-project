@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
 import '../../core/routes.dart';
+import '../../core/theme.dart';
 import '../../data/models.dart';
+import '../shell.dart';
+import '../widgets.dart';
 
-/// Founder reference layout, scoped exclusively to Today.
+/// V-11 — Today. Uses the same shared building blocks (PageBody,
+/// NavySummaryPanel, SectionHeading, FlatListRow) as every other screen, so
+/// its type/spacing/card density matches V-01..V-60 rather than a
+/// screen-specific set of hand-picked sizes.
 class TodayContent extends StatelessWidget {
   const TodayContent({
     super.key,
@@ -15,12 +22,11 @@ class TodayContent extends StatelessWidget {
   final List<VendorOrder> orders;
   final List<RiderRow> riders;
   final Future<void> Function() reload;
-  static const navy = Color(0xFF091A3C);
-  static const muted = Color(0xFF858BA3);
 
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
+    final c = context.c;
     final demo = app.repo.isDemo;
     final delivered = orders
         .where((o) => o.status == DeliveryStatus.delivered)
@@ -59,295 +65,136 @@ class TodayContent extends StatelessWidget {
               time,
             );
           }).toList();
-    return RefreshIndicator(
+
+    return PageBody(
       onRefresh: reload,
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-            children: [
-              Container(
-                padding: const EdgeInsets.fromLTRB(16, 13, 16, 15),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF0864E8),
-                      Color(0xFF003888),
-                      Color(0xFF061C48),
-                    ],
+      children: [
+        NavySummaryPanel(
+          title: "Today's Orders",
+          children: [
+            SummaryMetric(label: 'Total', value: '${counts[0]}'),
+            SummaryMetric(
+              label: 'Ready',
+              value: '${counts[1]}',
+              valueColor: const Color(0xFF42CE82),
+            ),
+            SummaryMetric(
+              label: 'Issue',
+              value: '${counts[2]}',
+              valueColor: const Color(0xFFFF3653),
+            ),
+            SummaryMetric(label: 'Delivered', value: '${counts[3]}'),
+          ],
+        ),
+        const SizedBox(height: Gap.cardGap),
+        Material(
+          color: c.attention.withValues(alpha: .08),
+          borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+            onTap: () {
+              if (issues.isNotEmpty) {
+                app.go(VRoute.orderDetail, entityId: issues.first.id);
+              } else {
+                app.switchTab(NavTab.orders);
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(Gap.cardPadding),
+              child: Row(
+                children: [
+                  Icon(
+                    LucideIcons.triangleAlert,
+                    color: c.attention,
+                    size: Sizes.icon,
                   ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Today's Orders",
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: List.generate(
-                        4,
-                        (i) => Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: i == 0
-                                  ? null
-                                  : const Border(
-                                      left: BorderSide(
-                                        color: Color(0x334E8AEA),
-                                      ),
-                                    ),
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  '${counts[i]}',
-                                  style: TextStyle(
-                                    fontSize: 25,
-                                    height: 1.15,
-                                    fontWeight: FontWeight.w600,
-                                    color: [
-                                      Colors.white,
-                                      const Color(0xFF42CE82),
-                                      const Color(0xFFFF3653),
-                                      Colors.white,
-                                    ][i],
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  ['Total', 'Ready', 'Issue', 'Delivered'][i],
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: [
-                                      Colors.white,
-                                      const Color(0xFF42CE82),
-                                      const Color(0xFFFF3653),
-                                      Colors.white,
-                                    ][i],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
-              Material(
-                color: const Color(0xFFFDE9ED),
-                borderRadius: BorderRadius.circular(10),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(10),
-                  onTap: () {
-                    if (issues.isNotEmpty) {
-                      app.go(VRoute.orderDetail, entityId: issues.first.id);
-                    } else {
-                      app.switchTab(NavTab.orders);
-                    }
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    child: Row(
+                  const SizedBox(width: Gap.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
-                          Icons.warning_rounded,
-                          color: Color(0xFFF20D2A),
-                          size: 34,
+                        Text(
+                          'Need Attention',
+                          style: Theme.of(context).textTheme.titleSmall,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Need Attention',
-                                style: TextStyle(
-                                  color: navy,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                counts[2] == 0
-                                    ? 'Nothing needs your attention'
-                                    : '${counts[2]} orders need your action',
-                                style: const TextStyle(
-                                  color: muted,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
+                        const SizedBox(height: 2),
+                        Text(
+                          counts[2] == 0
+                              ? 'Nothing needs your attention'
+                              : '${counts[2]} orders need your action',
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
-                        const Icon(Icons.chevron_right, color: navy, size: 22),
                       ],
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 17),
-              Row(
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'Recent Delivery',
-                      style: TextStyle(
-                        color: navy,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () => app.switchTab(NavTab.orders),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 6),
-                      child: Text(
-                        'View All',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF096BD8),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
+                  Icon(
+                    LucideIcons.chevronRight,
+                    size: 18,
+                    color: c.textSecondary,
                   ),
                 ],
               ),
-              if (rows.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Text('No completed deliveries yet.'),
-                ),
-              for (var i = 0; i < rows.length; i++)
-                InkWell(
-                  onTap: () {
-                    if (!demo) {
-                      app.go(VRoute.orderDetail, entityId: delivered[i].id);
-                    } else {
-                      app.switchTab(NavTab.riders);
-                    }
-                  },
-                  child: Container(
-                    constraints: const BoxConstraints(minHeight: 61),
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(color: Color(0xFFF0F1F5)),
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 21,
-                          backgroundColor: const Color(0xFFE9EEF5),
-                          child: Text(
-                            rows[i].$1
-                                .split(' ')
-                                .map((s) => s[0])
-                                .take(2)
-                                .join(),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: navy,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                rows[i].$1,
-                                style: const TextStyle(
-                                  color: navy,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Text(
-                                    rows[i].$2,
-                                    style: const TextStyle(
-                                      color: navy,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      rows[i].$3,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: muted,
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF0F3F8),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Text(
-                                'Delivered',
-                                style: TextStyle(color: muted, fontSize: 10),
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              rows[i].$4,
-                              style: const TextStyle(
-                                color: muted,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.chevron_right, color: navy, size: 21),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
+            ),
           ),
         ),
-      ),
+        SectionHeading(
+          'Recent Delivery',
+          trailing: GestureDetector(
+            onTap: () => app.switchTab(NavTab.orders),
+            child: const Text(
+              'View All',
+              style: TextStyle(
+                color: Color(0xFF1769D2),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+        if (rows.isEmpty)
+          const StateBlock.empty('No completed deliveries yet.')
+        else
+          for (var i = 0; i < rows.length; i++)
+            FlatListRow(
+              title: rows[i].$1,
+              subtitle: [
+                if (rows[i].$2.isNotEmpty) rows[i].$2,
+                rows[i].$3,
+              ].join(' · '),
+              leading: CircleAvatar(
+                radius: 21,
+                backgroundColor: const Color(0xFFE9EEF5),
+                child: Text(
+                  rows[i].$1.split(' ').map((s) => s[0]).take(2).join(),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: CefColors.navy,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              trailing: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const StatusChip('Delivered'),
+                  if (rows[i].$4.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      rows[i].$4,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ],
+              ),
+              onTap: () {
+                if (!demo) {
+                  app.go(VRoute.orderDetail, entityId: delivered[i].id);
+                } else {
+                  app.switchTab(NavTab.riders);
+                }
+              },
+            ),
+      ],
     );
   }
 }

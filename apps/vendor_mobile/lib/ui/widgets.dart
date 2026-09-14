@@ -279,10 +279,19 @@ class NavySummaryPanel extends StatelessWidget {
 }
 
 class SummaryMetric extends StatelessWidget {
-  const SummaryMetric({super.key, required this.label, required this.value});
+  const SummaryMetric({
+    super.key,
+    required this.label,
+    required this.value,
+    this.valueColor,
+  });
 
   final String label;
   final String value;
+
+  /// Overrides the value colour for a semantic count (e.g. a red "Issue"
+  /// tile) inside an otherwise all-white navy panel. Defaults to white.
+  final Color? valueColor;
 
   @override
   Widget build(BuildContext context) => Expanded(
@@ -291,8 +300,8 @@ class SummaryMetric extends StatelessWidget {
       children: [
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: valueColor ?? Colors.white,
             fontSize: 24,
             height: 1,
             fontWeight: FontWeight.w800,
@@ -304,7 +313,7 @@ class SummaryMetric extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: .72),
+            color: (valueColor ?? Colors.white).withValues(alpha: .72),
             fontSize: 11.5,
             fontWeight: FontWeight.w600,
           ),
