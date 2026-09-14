@@ -103,20 +103,30 @@ class ResponsiveDensity extends StatelessWidget {
         viewInsets: mq.viewInsets / scale,
         systemGestureInsets: mq.systemGestureInsets / scale,
       ),
-      child: Transform.scale(
-        scale: scale,
-        alignment: Alignment.topLeft,
-        // OverflowBox (not SizedBox) because the incoming constraints are the
-        // device's own, and the whole point is to lay the app out against a
-        // *larger* canvas than the device reports before scaling it back
-        // down to fit. A SizedBox would simply be clamped to the device size
-        // and the normalization would silently do nothing but shrink.
-        child: OverflowBox(
-          alignment: Alignment.topLeft,
-          minWidth: logicalSize.width,
-          maxWidth: logicalSize.width,
-          minHeight: logicalSize.height,
-          maxHeight: logicalSize.height,
+      // FittedBox, specifically:
+      //
+      //  * it lays the child out *unconstrained*, so the SizedBox really does
+      //    get the enlarged canvas. A bare SizedBox under the device's own
+      //    constraints would simply be clamped back to the device size and
+      //    the normalization would do nothing but shrink the UI into a
+      //    corner.
+      //  * it sizes *itself* to the incoming constraints, i.e. the true
+      //    viewport. That is what makes input work: RenderBox.hitTest
+      //    rejects any position outside the box's own size, so a wrapper
+      //    that instead reports the enlarged size (an OverflowBox) leaves
+      //    the bottom/right strip of the screen unable to receive taps --
+      //    exactly where the bottom navigation lives.
+      //  * it hit-tests through its own paint transform, so a tap lands on
+      //    whatever is actually drawn under the finger.
+      //
+      // BoxFit.fill is uniform here by construction: logicalSize is the
+      // viewport divided by a single scale, so both axes resolve to that
+      // same scale and nothing is distorted.
+      child: FittedBox(
+        fit: BoxFit.fill,
+        child: SizedBox(
+          width: logicalSize.width,
+          height: logicalSize.height,
           child: child,
         ),
       ),

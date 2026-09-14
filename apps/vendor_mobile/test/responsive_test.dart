@@ -2,25 +2,45 @@ import 'package:cefflo_vendor_mobile/core/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-Widget _harness(Size size, {TextScaler textScaler = TextScaler.noScaling}) =>
+/// Pumps [child] as if the app were running on a device of [size] logical
+/// pixels.
+///
+/// The test surface itself is resized, not just the reported MediaQuery:
+/// `pumpWidget` lays out against the view, so injecting a MediaQuery alone
+/// would report one size while the subtree was constrained to another --
+/// which silently invalidates any geometry or hit-test assertion.
+Future<void> _pumpDevice(
+  WidgetTester tester,
+  Size size,
+  Widget child, {
+  TextScaler textScaler = TextScaler.noScaling,
+}) async {
+  const dpr = 3.0;
+  tester.view.devicePixelRatio = dpr;
+  tester.view.physicalSize = size * dpr;
+  addTearDown(tester.view.reset);
+  await tester.pumpWidget(
     MediaQuery(
-      data: MediaQueryData(size: size, textScaler: textScaler),
+      data: MediaQueryData.fromView(tester.view)
+          .copyWith(textScaler: textScaler),
       child: Directionality(
         textDirection: TextDirection.ltr,
-        child: ResponsiveDensity(
-          child: Builder(
-            builder: (context) {
-              final mq = MediaQuery.of(context);
-              return Text(
-                '${mq.size.width.toStringAsFixed(2)}'
-                'x${mq.size.height.toStringAsFixed(2)}',
-                textDirection: TextDirection.ltr,
-              );
-            },
-          ),
-        ),
+        child: ResponsiveDensity(child: child),
       ),
+    ),
+  );
+}
+
+Widget _reportedSize() => Builder(
+  builder: (context) {
+    final mq = MediaQuery.of(context);
+    return Text(
+      '${mq.size.width.toStringAsFixed(2)}'
+      'x${mq.size.height.toStringAsFixed(2)}',
+      textDirection: TextDirection.ltr,
     );
+  },
+);
 
 void main() {
   group('density scale is a pure function of viewport width', () {
@@ -88,21 +108,21 @@ void main() {
     testWidgets('the baseline is passed through with no wrapper at all', (
       tester,
     ) async {
-      await tester.pumpWidget(_harness(const Size(390, 844)));
+      await _pumpDevice(tester, const Size(390, 844), _reportedSize());
       // Untouched canvas: the child still sees the real viewport.
       expect(find.text('390.00x844.00'), findsOneWidget);
-      expect(find.byType(Transform), findsNothing);
+      expect(find.byType(FittedBox), findsNothing);
     });
 
     testWidgets('a narrow Android canvas gains logical space', (tester) async {
-      await tester.pumpWidget(_harness(const Size(360, 804)));
+      await _pumpDevice(tester, const Size(360, 804), _reportedSize());
       final scale = 360 / 390;
       final width = (360 / scale).toStringAsFixed(2);
       final height = (804 / scale).toStringAsFixed(2);
       // The app lays out against a wider/taller canvas, so more content fits
       // instead of the components growing.
       expect(find.text('${width}x$height'), findsOneWidget);
-      expect(find.byType(Transform), findsOneWidget);
+      expect(find.byType(FittedBox), findsOneWidget);
     });
 
     testWidgets('the child is really laid out at the normalized size', (
@@ -113,16 +133,10 @@ void main() {
       // merely shrunk into a corner, leaving dead space at the right/bottom.
       // The child must actually receive the enlarged constraints.
       const key = Key('canvas');
-      await tester.pumpWidget(
-        MediaQuery(
-          data: const MediaQueryData(size: Size(360, 804)),
-          child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: ResponsiveDensity(
-              child: Container(key: key, color: const Color(0xFF000000)),
-            ),
-          ),
-        ),
+      await _pumpDevice(
+        tester,
+        const Size(360, 804),
+        Container(key: key, color: const Color(0xFF000000)),
       );
 
       final scale = 360 / 390;
@@ -139,9 +153,52 @@ void main() {
       expect(bottomRight.dy, closeTo(804, 0.01));
     });
 
+    testWidgets('taps reach the bottom edge, where the nav bar lives', (
+      tester,
+    ) async {
+      // Regression: a wrapper that reports the *enlarged* canvas as its own
+      // size (e.g. OverflowBox) makes RenderBox.hitTest reject anything past
+      // the device size, killing input in the bottom/right strip -- which is
+      // precisely where the bottom navigation sits. Geometry tests pass
+      // happily while the app is untappable, so assert on input directly.
+      for (final size in const [
+        Size(390, 844), // baseline, no wrapper
+        Size(360, 804), // Honor X7B
+        Size(320, 693), // clamped floor
+      ]) {
+        var taps = 0;
+        await _pumpDevice(
+          tester,
+          size,
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => taps++,
+              child: const SizedBox(height: 56, width: double.infinity),
+            ),
+          ),
+        );
+
+        // Tap in device coordinates, near the very bottom of the screen.
+        await tester.tapAt(Offset(size.width / 2, size.height - 10));
+        await tester.pump();
+        expect(taps, 1, reason: 'bottom bar unreachable at $size');
+
+        // ...and the far bottom-right corner, the worst case for a
+        // size-gated hit test.
+        await tester.tapAt(Offset(size.width - 4, size.height - 4));
+        await tester.pump();
+        expect(taps, 2, reason: 'bottom-right corner unreachable at $size');
+      }
+    });
+
     testWidgets('runaway OS text scaling is capped', (tester) async {
-      await tester.pumpWidget(
-        _harness(const Size(390, 844), textScaler: const TextScaler.linear(2)),
+      await _pumpDevice(
+        tester,
+        const Size(390, 844),
+        _reportedSize(),
+        textScaler: const TextScaler.linear(2),
       );
       final context = tester.element(find.byType(Builder));
       expect(
@@ -151,11 +208,11 @@ void main() {
     });
 
     testWidgets('text scaling within the cap is left alone', (tester) async {
-      await tester.pumpWidget(
-        _harness(
-          const Size(390, 844),
-          textScaler: const TextScaler.linear(1.15),
-        ),
+      await _pumpDevice(
+        tester,
+        const Size(390, 844),
+        _reportedSize(),
+        textScaler: const TextScaler.linear(1.15),
       );
       final context = tester.element(find.byType(Builder));
       expect(MediaQuery.of(context).textScaler.scale(16), closeTo(18.4, 0.001));
