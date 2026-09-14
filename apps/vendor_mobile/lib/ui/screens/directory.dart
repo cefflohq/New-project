@@ -1375,78 +1375,77 @@ class MenuScreen extends StatelessWidget {
 
     return PageBody(
       children: [
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0B2A57), Color(0xFF0867D5), Color(0xFF12213E)],
-            ),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'YOUR APP, YOUR WAY',
-                style: TextStyle(
-                  color: Color(0xFF69B6FF),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Simple settings\nfor a smoother experience.',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 21,
-                  height: 1.12,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                width: 32,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: CefColors.accent,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ],
-          ),
-        ),
         group('Business', [
+          ('Business profile', LucideIcons.building2, VRoute.businessProfile),
           ('Team', LucideIcons.users, VRoute.team),
           ('Service area', LucideIcons.map, VRoute.serviceArea),
           ('Storefront', LucideIcons.store, VRoute.storefront),
           ('Products', LucideIcons.boxes, VRoute.products),
           ('Customers', LucideIcons.users, VRoute.customers),
-          ('Business profile', LucideIcons.building2, VRoute.businessProfile),
         ]),
-        group('Preferences', [
-          ('Notifications', LucideIcons.bell, VRoute.notificationSettings),
-          ('Language', LucideIcons.globe, VRoute.language),
-          ('Appearance', LucideIcons.sun, VRoute.appearance),
-        ]),
-        group('Account', [
+        group('App & Account', [
           ('Profile', LucideIcons.user, VRoute.profile),
           ('Security', LucideIcons.shieldCheck, VRoute.security),
-          ('Privacy', LucideIcons.shield, VRoute.privacyPolicy),
+          ('Privacy', LucideIcons.lock, VRoute.privacyPolicy),
+          ('Notifications', LucideIcons.bell, VRoute.notificationSettings),
+          ('Language', LucideIcons.globe, VRoute.language),
+          ('Appearance', LucideIcons.contrast, VRoute.appearance),
           ('Subscription', LucideIcons.creditCard, VRoute.subscription),
         ]),
-        group('Support', [
-          ('Help & support', LucideIcons.circleHelp, VRoute.helpSupport),
-          ('About Cefflo', LucideIcons.info, VRoute.about),
-        ]),
         const SizedBox(height: Gap.section),
-        CefButton(
-          'Sign out',
-          secondary: true,
-          onTap: () async {
-            await app.repo.signOut();
-            app.clearSession();
-          },
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: OutlinedButton.icon(
+            onPressed: () async {
+              await app.repo.signOut();
+              app.clearSession();
+            },
+            icon: Icon(
+              LucideIcons.logOut,
+              size: 18,
+              color: context.c.attention,
+            ),
+            label: const Text('Sign out'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: context.c.attention,
+              side: BorderSide(color: context.c.attention),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: Gap.md),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: () => app.go(VRoute.helpSupport),
+              child: Text(
+                'Help & Support',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text('|', style: Theme.of(context).textTheme.bodySmall),
+            ),
+            GestureDetector(
+              onTap: () => app.go(VRoute.about),
+              child: Text(
+                'About Cefflo',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Center(
+          child: Text(
+            'Version 1.0.0',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         ),
       ],
     );
