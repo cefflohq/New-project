@@ -80,7 +80,7 @@ class _Header extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
             child: Row(
               children: [
-                if (app.canGoBack)
+                if (app.canGoBack && !isTodayRoot)
                   IconAction(
                     icon: LucideIcons.arrowLeft,
                     tooltip: 'Back',
@@ -97,7 +97,13 @@ class _Header extends StatelessWidget {
                           : spec.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: isTodayRoot
+                          ? const TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF091A3C),
+                            )
+                          : Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
                 ),
@@ -158,6 +164,7 @@ class _BottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     final c = context.c;
+    final today = app.current.route == VRoute.today;
     return Container(
       decoration: BoxDecoration(
         color: c.chrome,
@@ -166,7 +173,7 @@ class _BottomNav extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: Sizes.chrome,
+          height: today ? 58 : Sizes.chrome,
           child: Row(
             children: _items.map((item) {
               final selected = app.activeTab == item.$1;
@@ -183,15 +190,19 @@ class _BottomNav extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            item.$3,
-                            size: Sizes.icon,
-                            color: selected ? c.textPrimary : c.textSecondary,
+                            today && selected ? Icons.home_rounded : item.$3,
+                            size: today ? 24 : Sizes.icon,
+                            color: today && selected
+                                ? CefColors.accent
+                                : selected
+                                ? c.textPrimary
+                                : c.textSecondary,
                           ),
                           const SizedBox(height: 3),
                           Text(
                             item.$2,
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: today ? 10 : 11,
                               fontWeight: selected
                                   ? FontWeight.w600
                                   : FontWeight.w500,
@@ -203,7 +214,7 @@ class _BottomNav extends StatelessWidget {
                             height: 2,
                             width: 18,
                             decoration: BoxDecoration(
-                              color: selected
+                              color: selected && !today
                                   ? CefColors.accent
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(2),

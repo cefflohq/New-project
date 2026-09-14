@@ -9,6 +9,7 @@ import '../../data/vendor_repository.dart';
 import '../async_view.dart';
 import '../shell.dart';
 import '../widgets.dart';
+import 'today_content.dart';
 
 String _formatTime(DateTime t) {
   final h = t.hour % 12 == 0 ? 12 : t.hour % 12;
@@ -18,14 +19,6 @@ String _formatTime(DateTime t) {
 
 Widget _plainIcon(BuildContext context, IconData icon, {Color? color}) =>
     Icon(icon, size: Sizes.icon, color: color ?? context.c.iconColor);
-
-String _initials(String name) => name
-    .split(' ')
-    .where((part) => part.isNotEmpty)
-    .take(2)
-    .map((part) => part[0])
-    .join()
-    .toUpperCase();
 
 /// V-06 — Welcome. Opens first-time business setup for a brand-new demo
 /// account; existing accounts skip straight to Today. Presentation only —
@@ -579,133 +572,7 @@ class TodayScreen extends StatelessWidget {
         await app.repo.riders(business.id),
       ),
       builder: (context, data, reload) {
-        final (orders, riders) = data;
-        final ready = orders
-            .where((o) => o.status == DeliveryStatus.readyForPickup)
-            .toList();
-        final issues = orders
-            .where((o) => o.status == DeliveryStatus.issue)
-            .toList();
-        final delivered = orders
-            .where((o) => o.status == DeliveryStatus.delivered)
-            .toList();
-        final pendingApproval = orders
-            .where((o) => o.status == DeliveryStatus.created)
-            .toList();
-
-        return PageBody(
-          onRefresh: reload,
-          floatingAction: YellowFab(
-            tooltip: 'Add order',
-            onTap: () => app.go(VRoute.newOrder),
-          ),
-          children: [
-            NavySummaryPanel(
-              title: "Today's Orders",
-              children: [
-                SummaryMetric(label: 'Total', value: '${orders.length}'),
-                SummaryMetric(label: 'Ready', value: '${ready.length}'),
-                SummaryMetric(label: 'Issue', value: '${issues.length}'),
-                SummaryMetric(label: 'Delivered', value: '${delivered.length}'),
-              ],
-            ),
-
-            const SectionHeading('Needs attention'),
-            if (issues.isEmpty && pendingApproval.isEmpty)
-              const StateBlock.empty('Nothing needs your attention right now.')
-            else ...[
-              for (final o in [...issues, ...pendingApproval].take(4))
-                FlatListRow(
-                  title: o.reference,
-                  subtitle: o.status == DeliveryStatus.issue
-                      ? 'Delivery issue · ${o.customerName}'
-                      : 'Awaiting approval · ${o.customerName}',
-                  leading: o.status == DeliveryStatus.issue
-                      ? null
-                      : _plainIcon(
-                          context,
-                          LucideIcons.clock,
-                          color: context.c.textSecondary,
-                        ),
-                  onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
-                ),
-            ],
-
-            SectionHeading(
-              'Recent delivery',
-              trailing: delivered.isEmpty
-                  ? null
-                  : GestureDetector(
-                      onTap: () => app.switchTab(NavTab.orders),
-                      child: const Text(
-                        'View All',
-                        style: TextStyle(
-                          color: Color(0xFF1769D2),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-            ),
-            if (delivered.isEmpty)
-              const StateBlock.empty('No completed deliveries yet.')
-            else
-              // Audit fix 2: each card is bound to its own order id.
-              // Recent Delivery is delivery/rider context, not customer
-              // identity: it shows who delivered it, not who ordered it.
-              for (final o in delivered.take(6))
-                Builder(
-                  builder: (context) {
-                    RiderRow? rider;
-                    for (final r in riders) {
-                      if (r.id == o.assignedRiderId) {
-                        rider = r;
-                        break;
-                      }
-                    }
-                    return FlatListRow(
-                      title: rider?.name ?? 'Unassigned rider',
-                      subtitle: [
-                        if (rider?.plate != null) rider!.plate!,
-                        o.deliveryAddress,
-                      ].join(' · '),
-                      leading: CircleAvatar(
-                        radius: 18,
-                        backgroundColor: CefColors.navy,
-                        child: rider == null
-                            ? Icon(
-                                LucideIcons.user,
-                                size: 16,
-                                color: Colors.white.withValues(alpha: .85),
-                              )
-                            : Text(
-                                _initials(rider.name),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12,
-                                ),
-                              ),
-                      ),
-                      trailing: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const StatusChip('Delivered'),
-                          if (o.completedAt != null) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              _formatTime(o.completedAt!),
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                        ],
-                      ),
-                      onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
-                    );
-                  },
-                ),
-          ],
-        );
+        return TodayContent(orders: data.$1, riders: data.$2, reload: reload);
       },
     );
   }
