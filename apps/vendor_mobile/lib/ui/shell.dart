@@ -160,6 +160,14 @@ class _BottomNav extends StatelessWidget {
     (NavTab.menu, 'Settings', LucideIcons.settings),
   ];
 
+  static const _filledIcons = <NavTab, IconData>{
+    NavTab.today: Icons.home_rounded,
+    NavTab.orders: Icons.inventory_2_rounded,
+    NavTab.zones: Icons.location_on_rounded,
+    NavTab.riders: Icons.people_alt_rounded,
+    NavTab.menu: Icons.settings_rounded,
+  };
+
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
@@ -190,12 +198,10 @@ class _BottomNav extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            today && selected ? Icons.home_rounded : item.$3,
+                            selected ? _filledIcons[item.$1]! : item.$3,
                             size: today ? 24 : Sizes.icon,
-                            color: today && selected
+                            color: selected
                                 ? CefColors.accent
-                                : selected
-                                ? c.textPrimary
                                 : c.textSecondary,
                           ),
                           const SizedBox(height: 3),
@@ -210,16 +216,7 @@ class _BottomNav extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 3),
-                          Container(
-                            height: 2,
-                            width: 18,
-                            decoration: BoxDecoration(
-                              color: selected && !today
-                                  ? CefColors.accent
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
+                          const SizedBox(height: 2),
                         ],
                       ),
                     ),
