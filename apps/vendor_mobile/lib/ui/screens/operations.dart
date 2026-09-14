@@ -730,7 +730,7 @@ class OrderDetailScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          _BlueButton(
+          CefButton(
             order.status == DeliveryStatus.readyForPickup
                 ? 'Mark as On the Way'
                 : 'Edit Order',
@@ -945,10 +945,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
             ),
           ),
         const SizedBox(height: 16),
-        _BlueButton(
-          widget.isNew ? 'Create Order' : 'Update Order',
-          onTap: _save,
-        ),
+        CefButton(widget.isNew ? 'Create Order' : 'Update Order', onTap: _save),
       ],
     );
   }
@@ -1391,33 +1388,6 @@ class _ActionRow extends StatelessWidget {
         ),
         const Icon(LucideIcons.chevronRight, size: 19),
       ],
-    ),
-  );
-}
-
-class _BlueButton extends StatelessWidget {
-  const _BlueButton(this.label, {required this.onTap});
-  final String label;
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: double.infinity,
-    height: 52,
-    child: FilledButton(
-      onPressed: onTap,
-      style: FilledButton.styleFrom(
-        backgroundColor: const Color(0xFF075BC7),
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
-          const SizedBox(width: 12),
-          const Icon(LucideIcons.chevronRight, size: 18),
-        ],
-      ),
     ),
   );
 }
