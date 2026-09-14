@@ -157,6 +157,71 @@ class KpiTile extends StatelessWidget {
   );
 }
 
+/// A compact icon + value + label stat, bordered, meant to sit three-across
+/// in a Row (e.g. distance/stops/orders, or zones/active orders/coverage).
+class MetricTile extends StatelessWidget {
+  const MetricTile({
+    super.key,
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
+  final IconData icon;
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+        border: Border.all(color: c.border),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: c.info),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(fontSize: 10.5),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A row of exactly three [MetricTile]s with the standard gutter between.
+class MetricTileRow extends StatelessWidget {
+  const MetricTileRow({super.key, required this.tiles});
+  final List<MetricTile> tiles;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      for (final (index, tile) in tiles.indexed) ...[
+        if (index > 0) const SizedBox(width: Gap.sm),
+        Expanded(child: tile),
+      ],
+    ],
+  );
+}
+
 class NavySummaryPanel extends StatelessWidget {
   const NavySummaryPanel({
     super.key,
@@ -412,7 +477,11 @@ class StatusChip extends StatelessWidget {
       style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w600,
-        color: attention ? c.attention : success ? c.success : c.textSecondary,
+        color: attention
+            ? c.attention
+            : success
+            ? c.success
+            : c.textSecondary,
       ),
     );
   }
@@ -913,9 +982,7 @@ class _AsyncFeedbackOverlayState extends State<_AsyncFeedbackOverlay>
         alignment: Alignment.bottomCenter,
         child: Material(
           color: Colors.white,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(24),
-          ),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           child: SafeArea(
             top: false,
             child: Padding(
@@ -991,7 +1058,8 @@ class _ProcessingBody extends StatelessWidget {
               final wave = Curves.easeInOut.transform(
                 (((dots.value - i * 0.16) % 1) + 1) % 1,
               );
-              final scale = 0.55 + 0.45 * (wave < 0.5 ? wave * 2 : (1 - wave) * 2);
+              final scale =
+                  0.55 + 0.45 * (wave < 0.5 ? wave * 2 : (1 - wave) * 2);
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 5),
                 child: Opacity(
@@ -1024,9 +1092,8 @@ class _ProcessingBody extends StatelessWidget {
       Text(
         'Please keep this app open.\nThis may take a few moments.',
         textAlign: TextAlign.center,
-        style: Theme.of(
-          context,
-        ).textTheme.bodySmall?.copyWith(color: const Color(0xFF9AA1B2)),
+        style: Theme.of(context).textTheme.bodySmall
+            ?.copyWith(color: const Color(0xFF9AA1B2)),
       ),
     ],
   );
@@ -1057,7 +1124,11 @@ class _SuccessBody extends StatelessWidget {
           color: Color(0xFFE7F0FE),
           shape: BoxShape.circle,
         ),
-        child: const Icon(LucideIcons.check, color: Color(0xFF1769D2), size: 30),
+        child: const Icon(
+          LucideIcons.check,
+          color: Color(0xFF1769D2),
+          size: 30,
+        ),
       ),
       const SizedBox(height: 16),
       Text(

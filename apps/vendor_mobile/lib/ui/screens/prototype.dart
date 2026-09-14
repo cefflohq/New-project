@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
@@ -2072,92 +2073,272 @@ class _InviteLinkScreen extends StatelessWidget {
   const _InviteLinkScreen({required this.kind});
   final String kind;
 
+  void _copyLink(BuildContext context, String link) {
+    Clipboard.setData(ClipboardData(text: link));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Link copied')));
+  }
+
+  void _showQrSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(Sizes.cardRadius),
+        ),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(Gap.section),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '$kind${kind.endsWith('s') ? '' : 's'} can scan this code',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: Gap.section),
+            Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(Sizes.cardRadius),
+                border: Border.all(color: context.c.border),
+              ),
+              child: Icon(
+                LucideIcons.qrCode,
+                size: 140,
+                color: context.c.textPrimary,
+              ),
+            ),
+            const SizedBox(height: Gap.section),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final link =
-        'https://cefflo.app/invite/${kind.toLowerCase().replaceAll(' ', '-')}';
+        'https://cefflo.app/${kind == 'Rider' ? 'team' : 'join'}/AB3K9D';
     return PageBody(
       children: [
-        _HeroPanel(
-          kicker: 'Trusted invitation',
-          title: 'Invite a $kind',
-          subtitle: kind == 'Rider'
-              ? 'Share this link so a rider can register themselves. They '
-                    'appear here as Pending Review once they finish.'
-              : 'Share this link so a team member can register themselves. '
-                    'They appear as Pending once they finish.',
-        ),
-        const SizedBox(height: Gap.section),
         Center(
           child: Container(
-            width: 148,
-            height: 148,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(Sizes.cardRadius),
-              border: Border.all(color: context.c.border),
+            width: 64,
+            height: 64,
+            decoration: const BoxDecoration(
+              color: Color(0xFFE9EEF7),
+              shape: BoxShape.circle,
             ),
-            child: Icon(
-              LucideIcons.qrCode,
-              size: 96,
-              color: context.c.textPrimary,
-            ),
+            child: Icon(LucideIcons.userPlus, size: 28, color: CefColors.navy),
           ),
+        ),
+        const SizedBox(height: Gap.md),
+        Text(
+          kind == 'Rider'
+              ? 'Invite Riders to Your Business'
+              : 'Invite a Team Member',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: Gap.xs),
+        Text(
+          kind == 'Rider'
+              ? 'Share this link with your riders so they can join your '
+                    'team. They\'ll complete their own profile, vehicle and '
+                    'documents.'
+              : 'Give access to your team so they can help run your '
+                    'deliveries, manage orders and more.',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const SizedBox(height: Gap.section),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(Gap.cardPadding),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF102344), Color(0xFF1453B7), Color(0xFF12213E)],
+            ),
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(LucideIcons.link, size: 18, color: Colors.white),
+                  const SizedBox(width: Gap.sm),
+                  Text(
+                    'Your Invitation Link',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14.5,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: Gap.md),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(Sizes.inputRadius),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        link,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                    const SizedBox(width: Gap.sm),
+                    GestureDetector(
+                      onTap: () => _copyLink(context, link),
+                      child: Icon(
+                        LucideIcons.copy,
+                        size: 18,
+                        color: context.c.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: Gap.sm),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _copyLink(context, link),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: CefColors.navy,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+                    ),
+                  ),
+                  child: const Text(
+                    'Copy Link',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: Gap.cardGap),
+        FlatListRow(
+          title: 'Show QR Code',
+          subtitle: '$kind${kind.endsWith('s') ? '' : 's'} can scan this code',
+          leading: Icon(
+            LucideIcons.qrCode,
+            size: Sizes.icon,
+            color: context.c.info,
+          ),
+          onTap: () => _showQrSheet(context),
+        ),
+        const SizedBox(height: Gap.section),
+        const SectionHeading('Share via'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _ShareChannel(
+              icon: LucideIcons.messageCircle,
+              label: 'WhatsApp',
+              color: const Color(0xFF25D366),
+              onTap: () => _copyLink(context, link),
+            ),
+            _ShareChannel(
+              icon: LucideIcons.send,
+              label: 'Telegram',
+              color: const Color(0xFF29A9EA),
+              onTap: () => _copyLink(context, link),
+            ),
+            _ShareChannel(
+              icon: LucideIcons.messageSquare,
+              label: 'SMS',
+              color: const Color(0xFF34C759),
+              onTap: () => _copyLink(context, link),
+            ),
+            _ShareChannel(
+              icon: LucideIcons.ellipsis,
+              label: 'More',
+              color: const Color(0xFFE9ECF2),
+              iconColor: context.c.textSecondary,
+              onTap: () => _copyLink(context, link),
+            ),
+          ],
         ),
         const SizedBox(height: Gap.section),
         CefCard(
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Icon(LucideIcons.info, size: 18, color: context.c.info),
+              const SizedBox(width: Gap.sm),
               Expanded(
                 child: Text(
-                  link,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall,
+                  kind == 'Rider'
+                      ? 'Invited riders will appear in your Riders list '
+                            'once they accept and complete their '
+                            'registration.'
+                      : 'Invited team members will appear in your Team '
+                            'list once they accept and complete their '
+                            'registration.',
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
-              const SizedBox(width: Gap.sm),
-              Icon(LucideIcons.copy, size: 18, color: context.c.textSecondary),
             ],
           ),
         ),
-        const SizedBox(height: Gap.md),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _ShareChannel(icon: LucideIcons.messageCircle, label: 'WhatsApp'),
-            _ShareChannel(icon: LucideIcons.send, label: 'Telegram'),
-            _ShareChannel(icon: LucideIcons.messageSquare, label: 'SMS'),
-            _ShareChannel(icon: LucideIcons.share, label: 'More'),
-          ],
-        ),
         const SizedBox(height: Gap.section),
-        CefButton('Share Invite', onTap: () {}),
+        CefButton('Share Invite', onTap: () => _copyLink(context, link)),
       ],
     );
   }
 }
 
 class _ShareChannel extends StatelessWidget {
-  const _ShareChannel({required this.icon, required this.label});
+  const _ShareChannel({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+    this.iconColor,
+  });
   final IconData icon;
   final String label;
+  final Color color;
+  final Color? iconColor;
+  final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      Container(
-        width: 52,
-        height: 52,
-        decoration: BoxDecoration(
-          color: const Color(0xFFF0F3F8),
-          shape: BoxShape.circle,
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Column(
+      children: [
+        Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          child: Icon(icon, size: 22, color: iconColor ?? Colors.white),
         ),
-        child: Icon(icon, size: 22, color: context.c.textPrimary),
-      ),
-      const SizedBox(height: 6),
-      Text(label, style: Theme.of(context).textTheme.bodySmall),
-    ],
+        const SizedBox(height: 6),
+        Text(label, style: Theme.of(context).textTheme.bodySmall),
+      ],
+    ),
   );
 }
 
