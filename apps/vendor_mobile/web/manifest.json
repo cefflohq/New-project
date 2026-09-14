@@ -1,11 +1,11 @@
 {
-    "name": "cefflo_vendor_mobile",
-    "short_name": "cefflo_vendor_mobile",
+    "name": "Cefflo Vendor",
+    "short_name": "Cefflo Vendor",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FFFFFF",
+    "theme_color": "#FFFFFF",
+    "description": "Cefflo Vendor — manage your deliveries.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

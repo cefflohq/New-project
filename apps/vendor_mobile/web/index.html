@@ -18,7 +18,22 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="Cefflo Vendor — manage your deliveries.">
+
+  <!--
+    Matches the app's own chrome colour (CefColors.light.chrome, #FFFFFF --
+    see lib/core/theme.dart). Without this, the browser/OS status bar and
+    "add to home screen" surfaces fall back to Flutter's unedited scaffold
+    default (#0175C2, a bright blue never used anywhere in this app's
+    palette), which is exactly the mismatched band visible at the top of
+    every screenshot: real app content is white/navy/yellow, but the strip
+    just above it was still the untouched `flutter create` placeholder.
+    manifest.json below must be kept in sync with this value.
+  -->
+  <meta name="theme-color" content="#FFFFFF">
+  <meta name="msapplication-navbutton-color" content="#FFFFFF">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Cefflo Vendor">
 
   <!--
     Responsive normalization root cause: without this tag, mobile browsers
@@ -38,14 +53,12 @@
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="cefflo_vendor_mobile">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>cefflo_vendor_mobile</title>
+  <title>Cefflo Vendor</title>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
