@@ -74,14 +74,11 @@ class _ZonesScreenState extends State<ZonesScreen> {
                     return FlatListRow(
                       title: z.name,
                       subtitle: '${inZone.length} orders',
-                      leading: Icon(
-                        LucideIcons.mapPin,
-                        size: Sizes.icon,
-                        color: context.c.info,
-                      ),
+                      leading: const _ListIconDisc(icon: LucideIcons.mapPin),
                       trailing: StatusChip(
                         z.isActive ? 'Active' : 'Inactive',
                         success: z.isActive,
+                        pill: true,
                       ),
                       // Audit fix 2: bound to this zone's id.
                       onTap: () => app.go(VRoute.zoneDetail, entityId: z.id),
@@ -256,19 +253,46 @@ class ZoneDetailScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: Gap.sm),
-            StatusChip(
-              zone.isActive ? 'Active' : 'Inactive',
-              success: zone.isActive,
-            ),
-            const SectionHeading('Operational status'),
-            NavySummaryPanel(
-              title: 'Zone activity',
+            Row(
               children: [
-                SummaryMetric(label: 'Total', value: '${orders.length}'),
-                SummaryMetric(label: 'Ready', value: '$ready'),
-                SummaryMetric(label: 'Active', value: '$active'),
-                SummaryMetric(label: 'Delivered', value: '$delivered'),
+                Expanded(
+                  child: Text(
+                    'Status',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                StatusChip(
+                  zone.isActive ? 'Active' : 'Inactive',
+                  success: zone.isActive,
+                  pill: true,
+                ),
               ],
+            ),
+            const SizedBox(height: Gap.md),
+            _ZoneMetricRow(
+              icon: LucideIcons.mapPin,
+              label: 'Coverage Area',
+              value: 'Configured',
+            ),
+            _ZoneMetricRow(
+              icon: LucideIcons.clipboardList,
+              label: 'Total Orders (Today)',
+              value: '${orders.length}',
+            ),
+            _ZoneMetricRow(
+              icon: LucideIcons.clock3,
+              label: 'Ready',
+              value: '$ready',
+            ),
+            _ZoneMetricRow(
+              icon: LucideIcons.truck,
+              label: 'In Progress',
+              value: '$active',
+            ),
+            _ZoneMetricRow(
+              icon: LucideIcons.circleCheck,
+              label: 'Delivered',
+              value: '$delivered',
             ),
             const SectionHeading('Orders'),
             if (orders.isEmpty)
@@ -546,10 +570,8 @@ class _RidersScreenState extends State<RidersScreen> {
               for (final r in visible)
                 FlatListRow(
                   title: r.name,
-                  subtitle: [
-                    if (r.vehicleType != null) _titleCase(r.vehicleType!),
-                    if (r.plate != null) r.plate!,
-                  ].join(' · '),
+                  subtitle:
+                      r.plate ?? _titleCase(r.vehicleType ?? 'Vehicle not set'),
                   leading: CircleAvatar(
                     radius: 22,
                     backgroundColor: CefColors.navy,
@@ -565,6 +587,7 @@ class _RidersScreenState extends State<RidersScreen> {
                   trailing: StatusChip(
                     r.isActive ? 'Active' : 'Offline',
                     success: r.status == 'active',
+                    pill: true,
                   ),
                   // Audit fix 2: bound to this rider's id.
                   onTap: () => app.go(VRoute.riderDetail, entityId: r.id),
@@ -579,6 +602,56 @@ class _RidersScreenState extends State<RidersScreen> {
       },
     );
   }
+}
+
+class _ListIconDisc extends StatelessWidget {
+  const _ListIconDisc({required this.icon});
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 40,
+    height: 40,
+    decoration: const BoxDecoration(
+      color: Color(0xFFF2F4F8),
+      shape: BoxShape.circle,
+    ),
+    child: Icon(icon, size: 20, color: CefColors.navy),
+  );
+}
+
+class _ZoneMetricRow extends StatelessWidget {
+  const _ZoneMetricRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: 42,
+    child: Row(
+      children: [
+        Icon(icon, size: 20, color: context.c.textPrimary),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
+        ),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: context.c.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class RiderDetailScreen extends StatelessWidget {
@@ -1136,4 +1209,3 @@ class MenuScreen extends StatelessWidget {
     );
   }
 }
-

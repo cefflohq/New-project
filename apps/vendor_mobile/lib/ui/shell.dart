@@ -30,6 +30,7 @@ class VendorShell extends StatelessWidget {
     final c = context.c;
     final dark = Theme.of(context).brightness == Brightness.dark;
     final isOnboarding = _onboardingRoutes.contains(app.current.route);
+    final isSetupComplete = app.current.route == VRoute.setupComplete;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
@@ -50,7 +51,7 @@ class VendorShell extends StatelessWidget {
           backgroundColor: c.canvas,
           body: Column(
             children: [
-              _Header(app: app),
+              if (!isSetupComplete) _Header(app: app),
               Expanded(child: child),
               if (!isOnboarding) const _BottomNav(),
             ],

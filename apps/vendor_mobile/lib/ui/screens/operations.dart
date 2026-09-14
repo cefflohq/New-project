@@ -476,67 +476,130 @@ class SetupCompleteScreen extends StatelessWidget {
       ('Team & Riders', 'Ready', LucideIcons.users),
       ('Preferences', 'Set', LucideIcons.settings),
     ];
-    return PageBody(
+    return Stack(
+      fit: StackFit.expand,
       children: [
-        Container(
-          height: 280,
-          padding: const EdgeInsets.all(24),
+        Image.asset(
+          'assets/images/setup-complete-hero.jpg',
+          fit: BoxFit.cover,
+          alignment: Alignment.center,
+        ),
+        const DecoratedBox(
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF102344), Color(0xFF1B3668), Color(0xFF27427E)],
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xA6102344), Color(0x2412213E), Color(0xB812213E)],
+              stops: [0, .52, 1],
             ),
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Spacer(),
-              RichText(
-                text: const TextSpan(
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 34,
-                    height: 1.04,
-                    fontWeight: FontWeight.w800,
-                  ),
-                  children: [
-                    TextSpan(text: 'Your Business\nis '),
-                    TextSpan(
-                      text: 'Ready!',
-                      style: TextStyle(color: CefColors.accent),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Your delivery setup is complete.\nLet’s start delivering with Cefflo.',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: .82),
-                  fontSize: 14.5,
-                  height: 1.4,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
           ),
         ),
-        const SizedBox(height: Gap.md),
-        for (final item in checks)
-          FlatListRow(
-            title: item.$1,
-            subtitle: item.$2,
-            leading: _plainIcon(context, item.$3),
-            trailing: Icon(
-              LucideIcons.circleCheck,
-              size: Sizes.icon,
-              color: context.c.success,
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 26, 20, 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: const TextSpan(
+                    style: TextStyle(
+                      fontFamily: kFontFamily,
+                      fontFamilyFallback: kFontFamilyFallback,
+                      color: Colors.white,
+                      fontSize: 35,
+                      height: 1.04,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    children: [
+                      TextSpan(text: 'Your Business\nis '),
+                      TextSpan(
+                        text: 'Ready!',
+                        style: TextStyle(color: CefColors.accent),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Your delivery setup is complete.\nLet’s start delivering with Cefflo.',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .88),
+                    fontSize: 14,
+                    height: 1.4,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: .94),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: cefCardShadow(Brightness.light),
+                  ),
+                  child: Column(
+                    children: [
+                      for (final (index, item) in checks.indexed) ...[
+                        SizedBox(
+                          height: 58,
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFF2F4F8),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  item.$3,
+                                  size: 20,
+                                  color: CefColors.navy,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.$1,
+                                      style: Theme.of(context).textTheme.titleSmall,
+                                    ),
+                                    Text(
+                                      item.$2,
+                                      style: Theme.of(context).textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(
+                                LucideIcons.circleCheck,
+                                size: 24,
+                                color: context.c.success,
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (index != checks.length - 1)
+                          Divider(height: 1, color: context.c.border),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+                CefButton(
+                  'Go to Today',
+                  onTap: () => app.switchTab(NavTab.today),
+                ),
+              ],
             ),
           ),
-        const SizedBox(height: Gap.section),
-        CefButton('Go to Today', onTap: () => app.switchTab(NavTab.today)),
+        ),
       ],
     );
   }
@@ -592,26 +655,18 @@ class TodayScreen extends StatelessWidget {
               ],
             ),
 
-            const SectionHeading('Needs attention'),
-            if (issues.isEmpty && pendingApproval.isEmpty)
-              const StateBlock.empty('Nothing needs your attention right now.')
-            else ...[
-              for (final o in [...issues, ...pendingApproval].take(4))
-                FlatListRow(
-                  title: o.reference,
-                  subtitle: o.status == DeliveryStatus.issue
-                      ? 'Delivery issue · ${o.customerName}'
-                      : 'Awaiting approval · ${o.customerName}',
-                  leading: o.status == DeliveryStatus.issue
-                      ? null
-                      : _plainIcon(
-                          context,
-                          LucideIcons.clock,
-                          color: context.c.textSecondary,
-                        ),
-                  onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
-                ),
-            ],
+            const SizedBox(height: 14),
+            _AttentionSummaryCard(
+              count: issues.length + pendingApproval.length,
+              onTap: issues.isNotEmpty
+                  ? () => app.go(VRoute.orderDetail, entityId: issues.first.id)
+                  : pendingApproval.isNotEmpty
+                  ? () => app.go(
+                      VRoute.orderDetail,
+                      entityId: pendingApproval.first.id,
+                    )
+                  : null,
+            ),
 
             SectionHeading(
               'Recent delivery',
@@ -672,7 +727,7 @@ class TodayScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const StatusChip('Delivered'),
+                          const StatusChip('Delivered', pill: true),
                           if (o.completedAt != null) ...[
                             const SizedBox(height: 2),
                             Text(
@@ -686,11 +741,6 @@ class TodayScreen extends StatelessWidget {
                     );
                   },
                 ),
-            const SizedBox(height: Gap.md),
-            YellowFab(
-              tooltip: 'Add order',
-              onTap: () => app.go(VRoute.newOrder),
-            ),
           ],
         );
       },
@@ -744,15 +794,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
               StateBlock.empty('No ${tab.label.toLowerCase()} orders.')
             else
               for (final o in visible)
-                FlatListRow(
-                  title: o.reference,
-                  subtitle: '${o.customerName} · ${o.deliveryAddress}',
-                  leading: _plainIcon(context, LucideIcons.package),
-                  trailing: StatusChip(
-                    o.status.label,
-                    attention: o.status == DeliveryStatus.issue,
-                    success: OrderTab.ongoing.accepts(o.status),
-                  ),
+                _OrderListRow(
+                  order: o,
                   onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
                 ),
             const SizedBox(height: Gap.md),
@@ -763,6 +806,144 @@ class _OrdersScreenState extends State<OrdersScreen> {
           ],
         );
       },
+    );
+  }
+}
+
+class _AttentionSummaryCard extends StatelessWidget {
+  const _AttentionSummaryCard({required this.count, this.onTap});
+
+  final int count;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasAttention = count > 0;
+    final c = context.c;
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(Sizes.cardRadius),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          decoration: BoxDecoration(
+            color: hasAttention
+                ? c.attention.withValues(alpha: .08)
+                : c.success.withValues(alpha: .08),
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                hasAttention
+                    ? LucideIcons.triangleAlert
+                    : LucideIcons.circleCheck,
+                color: hasAttention ? c.attention : c.success,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      hasAttention ? 'Need Attention' : 'All Clear',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      hasAttention
+                          ? '$count ${count == 1 ? 'order needs' : 'orders need'} your action'
+                          : 'Nothing needs your attention right now',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              if (hasAttention)
+                Icon(LucideIcons.chevronRight, size: 20, color: c.textPrimary),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OrderListRow extends StatelessWidget {
+  const _OrderListRow({required this.order, required this.onTap});
+
+  final VendorOrder order;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final status = order.status;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 78),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: c.border)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      order.reference,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      order.customerName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: c.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${order.items.length} ${order.items.length == 1 ? 'item' : 'items'} · ${order.deliveryAddress}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  StatusChip(
+                    status.label,
+                    attention: status == DeliveryStatus.issue,
+                    success: OrderTab.ongoing.accepts(status),
+                    pill: true,
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    _formatTime(order.createdAt),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+              const SizedBox(width: 8),
+              Icon(LucideIcons.chevronRight, size: 19, color: c.textPrimary),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

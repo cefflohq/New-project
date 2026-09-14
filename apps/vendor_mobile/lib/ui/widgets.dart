@@ -396,9 +396,11 @@ class StatusChip extends StatelessWidget {
     super.key,
     this.attention = false,
     this.success = false,
+    this.pill = false,
   });
   final String label;
   final bool attention;
+  final bool pill;
 
   /// Ongoing/active states render in the semantic success green per the
   /// locked V12 Orders spec (Ongoing green, Issue red, Delivered neutral).
@@ -407,13 +409,33 @@ class StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    return Text(
+    final foreground = attention
+        ? c.attention
+        : success
+        ? c.success
+        : c.textSecondary;
+    final background = attention
+        ? c.attention.withValues(alpha: .10)
+        : success
+        ? c.success.withValues(alpha: .10)
+        : c.border.withValues(alpha: .55);
+    final text = Text(
       label,
       style: TextStyle(
         fontSize: 12,
+        height: 1.1,
         fontWeight: FontWeight.w600,
-        color: attention ? c.attention : success ? c.success : c.textSecondary,
+        color: foreground,
       ),
+    );
+    if (!pill) return text;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: text,
     );
   }
 }
