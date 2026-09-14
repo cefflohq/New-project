@@ -44,7 +44,7 @@ class UiPrototypeScreen extends StatelessWidget {
     VRoute.choosePlan => const _ChoosePlanScreen(),
     VRoute.subscriptionCheckout => const _CheckoutScreen(),
     VRoute.paymentSuccess => const _PaymentSuccessScreen(),
-    VRoute.subscriptionDetails => const _SubscriptionDetailsScreen(),
+    VRoute.subscriptionDetails => const _SubscriptionScreen(),
     VRoute.helpSupport => const _HelpSupportScreen(),
     VRoute.faq => const _FaqScreen(),
     VRoute.contactSupport => const _ContactSupportScreen(),
@@ -1185,6 +1185,10 @@ class _StorefrontPreviewScreen extends StatelessWidget {
   );
 }
 
+/// V-50 / V-54 — Subscription. One page: what used to be a thin "Your plan"
+/// summary that tapped through to a separate details screen is now the
+/// details screen itself, since both showed the same plan for the same
+/// purpose.
 class _SubscriptionScreen extends StatelessWidget {
   const _SubscriptionScreen();
 
@@ -1193,21 +1197,89 @@ class _SubscriptionScreen extends StatelessWidget {
     final app = AppScope.of(context);
     return PageBody(
       children: [
-        const _HeroPanel(
-          kicker: 'Plans that grow with you',
-          title: 'Choose how you operate.',
-          subtitle: 'Simple plans for every stage of your delivery business.',
-        ),
-        const SectionHeading('Your plan'),
-        _PlanCard(
-          name: 'Operate',
-          price: 'RM2,190',
-          description: 'More power to grow your deliveries.',
-          active: true,
-          onTap: () => app.go(VRoute.subscriptionDetails),
+        const _PlanSummaryCard(active: true),
+        const SizedBox(height: Gap.md),
+        CefCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(LucideIcons.chartNoAxesColumnIncreasing),
+                  SizedBox(width: Gap.sm),
+                  Text(
+                    'Order Usage',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  Spacer(),
+                  Text(
+                    '1,240 / 5,000',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 13),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(99),
+                child: const LinearProgressIndicator(
+                  value: .248,
+                  minHeight: 10,
+                  color: Color(0xFF1672E8),
+                  backgroundColor: Color(0xFFE3E8F0),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '3,760 remaining this year',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: Gap.md),
-        CefButton('View all plans', onTap: () => app.go(VRoute.choosePlan)),
+        const _InfoLine(
+          icon: LucideIcons.clipboardList,
+          label: 'Plan Details',
+          value: 'View features and limits',
+          chevron: true,
+        ),
+        const _InfoLine(
+          icon: LucideIcons.creditCard,
+          label: 'Payment Method',
+          value: '•••• 4242',
+          chevron: true,
+        ),
+        const _InfoLine(
+          icon: LucideIcons.fileText,
+          label: 'Billing History',
+          value: 'View past invoices',
+          chevron: true,
+        ),
+        const SizedBox(height: Gap.md),
+        CefCard(
+          child: Row(
+            children: [
+              _icon(context, LucideIcons.arrowRightLeft),
+              const SizedBox(width: Gap.md),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Need to make changes?',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    SizedBox(height: 3),
+                    Text('Upgrade, downgrade or switch plans anytime.'),
+                  ],
+                ),
+              ),
+              const Icon(LucideIcons.chevronRight),
+            ],
+          ),
+        ),
+        const SizedBox(height: Gap.section),
+        CefButton('Change Plan', onTap: () => app.go(VRoute.choosePlan)),
       ],
     );
   }
@@ -1352,102 +1424,6 @@ class _PaymentSuccessScreen extends StatelessWidget {
       ),
     ],
   );
-}
-
-class _SubscriptionDetailsScreen extends StatelessWidget {
-  const _SubscriptionDetailsScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    final app = AppScope.of(context);
-    return PageBody(
-      children: [
-        const _PlanSummaryCard(active: true),
-        const SizedBox(height: Gap.md),
-        CefCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Row(
-                children: [
-                  Icon(LucideIcons.chartNoAxesColumnIncreasing),
-                  SizedBox(width: Gap.sm),
-                  Text(
-                    'Order Usage',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  Spacer(),
-                  Text(
-                    '1,240 / 5,000',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 13),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(99),
-                child: const LinearProgressIndicator(
-                  value: .248,
-                  minHeight: 10,
-                  color: Color(0xFF1672E8),
-                  backgroundColor: Color(0xFFE3E8F0),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '3,760 remaining this year',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: Gap.md),
-        const _InfoLine(
-          icon: LucideIcons.clipboardList,
-          label: 'Plan Details',
-          value: 'View features and limits',
-          chevron: true,
-        ),
-        const _InfoLine(
-          icon: LucideIcons.creditCard,
-          label: 'Payment Method',
-          value: '•••• 4242',
-          chevron: true,
-        ),
-        const _InfoLine(
-          icon: LucideIcons.fileText,
-          label: 'Billing History',
-          value: 'View past invoices',
-          chevron: true,
-        ),
-        const SizedBox(height: Gap.md),
-        CefCard(
-          child: Row(
-            children: [
-              _icon(context, LucideIcons.arrowRightLeft),
-              const SizedBox(width: Gap.md),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Need to make changes?',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    SizedBox(height: 3),
-                    Text('Upgrade, downgrade or switch plans anytime.'),
-                  ],
-                ),
-              ),
-              const Icon(LucideIcons.chevronRight),
-            ],
-          ),
-        ),
-        const SizedBox(height: Gap.section),
-        CefButton('Change Plan', onTap: () => app.go(VRoute.choosePlan)),
-      ],
-    );
-  }
 }
 
 class _HelpSupportScreen extends StatelessWidget {
@@ -1775,12 +1751,11 @@ class _PlanCard extends StatelessWidget {
     required this.price,
     required this.description,
     required this.onTap,
-    this.active = false,
     this.recommended = false,
   });
   final String name, price, description;
   final VoidCallback onTap;
-  final bool active, recommended;
+  final bool recommended;
 
   @override
   Widget build(BuildContext context) => CefCard(
@@ -1792,14 +1767,12 @@ class _PlanCard extends StatelessWidget {
         Row(
           children: [
             Text(name, style: Theme.of(context).textTheme.titleLarge),
-            if (active || recommended) ...[
+            if (recommended) ...[
               const SizedBox(width: 9),
-              Text(
-                active ? 'Active' : 'Recommended',
+              const Text(
+                'Recommended',
                 style: TextStyle(
-                  color: active
-                      ? const Color(0xFF0F9B51)
-                      : const Color(0xFF0A63CE),
+                  color: Color(0xFF0A63CE),
                   fontWeight: FontWeight.w700,
                 ),
               ),
