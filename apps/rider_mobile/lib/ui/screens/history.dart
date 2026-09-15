@@ -348,7 +348,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       _ => all,
     };
     return CeffloNavySheetScaffold(
-      header: CeffloScreenHeader(title: 'Notifications', onBack: app.back),
+      header: CeffloScreenHeader(
+        title: 'Notifications',
+        onBack: app.back,
+        // D33's reference carries the same bell as every other inner header;
+        // it is inert here because this *is* the notifications screen.
+        onBell: () {},
+      ),
       bodyPadding: const EdgeInsets.fromLTRB(
         Gap.gutter,
         Gap.lg,
