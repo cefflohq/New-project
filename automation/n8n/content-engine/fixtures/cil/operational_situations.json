@@ -1,0 +1,13 @@
+{
+  "taxonomy_version": "1.0",
+  "_cross_reference": "Complements docs/cefflo/sot/marketing/09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md §4 Operational Pain (OP-01..14) with CIL's own situation categories. Both are consulted; neither replaces the other -- see docs/cefflo/sot/marketing/09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md Addendum A2.",
+  "categories": [
+    { "category": "order_pressure", "op_ref": "OP-01/OP-02", "situations": ["sudden_order_spike", "last_minute_orders", "missing_order", "duplicate_information", "incomplete_address", "delivery_instructions_changed", "order_added_after_planning"] },
+    { "category": "delivery_team_pressure", "op_ref": "OP-07", "situations": ["delivery_person_unavailable", "delivery_person_late", "insufficient_delivery_team", "uneven_workload", "delivery_person_finishes_early", "one_delivery_person_overloaded", "new_delivery_person_unfamiliar_with_area"] },
+    { "category": "vehicle_pressure", "op_ref": "OP-08", "situations": ["van_unavailable", "motorcycle_unsuitable_for_load", "car_already_full", "bulky_order", "fragile_order", "mixed_vehicle_fleet"] },
+    { "category": "planning_pressure", "op_ref": "OP-05/OP-06", "situations": ["too_many_drops", "unclear_grouping", "manual_route_planning", "wrong_delivery_grouping", "delivery_window_conflict", "difficult_service_area_split"] },
+    { "category": "execution_pressure", "op_ref": "OP-09/OP-12", "situations": ["traffic", "rain", "parking", "gated_property", "condominium_access", "loading_bay_delay", "customer_unavailable", "wrong_address", "cannot_find_entrance"] },
+    { "category": "customer_communication", "op_ref": "OP-11", "situations": ["order_status_question", "driver_location_question", "eta_question", "instructions_changed", "recipient_unavailable", "staff_repeatedly_answering_delivery_questions"] },
+    { "category": "owner_admin_pressure", "op_ref": "OP-02/OP-14", "situations": ["whatsapp_overload", "spreadsheet_chaos", "manually_calling_delivery_team", "checking_multiple_chats", "trying_to_remember_which_orders_left", "manually_dividing_orders", "unclear_delivery_status"] }
+  ]
+}

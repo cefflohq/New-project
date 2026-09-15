@@ -1,0 +1,11 @@
+{
+  "taxonomy_version": "1.0",
+  "personas": [
+    { "id": "owner_founder", "label": "Owner / Founder", "concerns": ["overall_operation", "customer_experience", "staff", "delivery_cost", "whether_everything_gets_delivered"] },
+    { "id": "operations_admin", "label": "Operations / Admin", "concerns": ["order_list", "assignments", "delivery_team_coordination", "customer_messages", "delivery_status"] },
+    { "id": "packing_staff", "label": "Packing Staff", "concerns": ["preparing_correct_orders", "labeling", "handoff"] },
+    { "id": "delivery_person", "label": "Rider / Driver (vehicle-contextual)", "canonical_role": "rider", "_terminology_note": "Display label is resolved per-scenario from vehicle_mix via resolveWorkforceLabel() in scripts/cil-scenario-engine.mjs, per the GATE B resolution (Motorcycle->Rider, Car/Van->Driver, mixed fleet->'Delivery Team') -- see docs/cefflo/05_DECISIONS.md D-27 and fixtures/cil/vehicle_types.json. canonical_role stays 'rider' regardless of display label.", "concerns": ["assigned_run", "drop_sequence", "address", "customer_contact", "delivery_completion"] },
+    { "id": "customer_recipient", "label": "Customer / Recipient", "concerns": ["whether_delivery_is_coming", "eta", "delivery_status", "receiving_the_order"] }
+  ],
+  "voice_register_cross_reference": "docs/cefflo/sot/marketing/10_BRAND_VOICE_LANGUAGE_SYSTEM.md §8 Speaker Voice Matrix defines the tone for each of these personas in Malaysian Malay and English."
+}

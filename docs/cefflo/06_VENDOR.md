@@ -1,8 +1,16 @@
 # CEFFLO --- VENDOR PWA
 
+Fuller canonical Vendor Web/Desktop doctrine:
+`docs/cefflo/sot/03_VENDOR_WEB_DESKTOP.md`; exit contract:
+`docs/cefflo/flow3/VENDOR_BEHAVIOURAL_CONTRACT_PACK.md` (Flow 3, complete). Future companion Vendor Flutter direction (NOT YET implemented, Founder review pending, subscription screens HOLD): `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md`.
+`docs/cefflo/flow3/VENDOR_BEHAVIOURAL_CONTRACT_PACK.md` (Flow 3,
+complete).
+
 ## V-00 Purpose
 
-Vendor PWA is the operational cockpit for the home-food business.
+Vendor PWA is the operational cockpit for the business — its owner
+controls the operation (Brand Brain §5.1). Any specific business type
+(e.g. a home food business) is an example, not the definition.
 
 ## V-01 Canonical Route
 

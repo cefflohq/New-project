@@ -1,9 +1,24 @@
 # CEFFLO --- LOCKED DECISIONS
 
+Brand/product doctrine authority: `docs/cefflo/CEFFLO_BRAND_BRAIN.md`.
+Where a decision below conflicts with the Brand Brain, the Brand Brain
+wins; the decision is retained here for history and marked accordingly.
+
 ## D-01 Positioning
 
-Cefflo = Operating System for Home-Based Food Businesses. Not primarily
-marketplace/rider company/GrabFood-style delivery platform.
+**STATUS: SUPERSEDED.** This decision reflected an earlier home-food-only
+positioning. Current canonical positioning: Cefflo is a local same-day
+delivery operating system for businesses that manage deliveries within
+their own service area; food is an example, not the category boundary.
+See `docs/cefflo/CEFFLO_BRAND_BRAIN.md` §1.1, §4. Retained below for
+decision history only — not current doctrine.
+
+> Cefflo = Operating System for Home-Based Food Businesses. Not primarily
+> marketplace/rider company/GrabFood-style delivery platform.
+
+The non-marketplace / non-rider-company / non-GrabFood-style framing
+itself remains current doctrine (Brand Brain §3) — only the food-only
+category boundary is superseded.
 
 ## D-02 Acquisition
 
@@ -61,9 +76,19 @@ practical; integrate or adjust rather than rebuild wholesale.
 
 ## D-11 AI Ownership
 
-Codex is primary engineering executor and canonical code integrator.
-Claude is optional UI/prototype/review/specialist support, not parallel
-code SOT.
+**STATUS: SUPERSEDED.** This decision reflected an earlier fixed
+single-executor model. Current agent roles and task routing are defined
+by `docs/cefflo/agent-os/CEFFLO_AGENT_OS_CORE.md` §3 and §6: Claude is
+the primary implementer for substantial Cefflo work (repo-wide audits,
+architecture/reconciliation, multi-file implementation, large rollouts);
+Codex is the bounded implementer/finisher for small, focused work;
+ChatGPT orchestrates/plans for substantial tasks. Founder instruction
+overrides normal routing. Retained below for decision history only —
+not current doctrine.
+
+> Codex is primary engineering executor and canonical code integrator.
+> Claude is optional UI/prototype/review/specialist support, not parallel
+> code SOT.
 
 ## D-12 Founder Authority
 
@@ -142,3 +167,337 @@ separate backend behavior only when genuinely required. The Vendor sales/order
 page is required and feeds customer orders into the Vendor's Cefflo workflow.
 External integrations are implemented only when required for functional Stage
 4 or security/release requirements.
+
+## D-23 Knowledge Reconciliation (2026-09-04)
+
+A newer, Founder-approved, more granular SOT pack was reconciled into the repo at `docs/cefflo/sot/` on 2026-09-04 (see `docs/cefflo/sot/00_INDEX.md`). It supersedes `docs/cefflo/CEFFLO_BRAND_BRAIN.md` for brand/product/architecture doctrine (that file is retained, marked superseded, not deleted). Two clarifications from this reconciliation:
+
+1. The new Architecture/Vendor-Web/Rider-Flutter-Master doctrine names Vendor Flutter and Rider Flutter as target first-class clients in Cefflo's canonical multi-client architecture. This describes the TARGET end-state, not a change to build sequencing. D-13's stage-gating for native Rider Flutter remains in force: it is a FUTURE capability per the Capability Truth States system, and its own source master (`docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md`) is self-labeled "Founder Review Required" with an unchecked Definition of Done. No Vendor Flutter master exists in this repo yet.
+2. `docs/cefflo/sot/07_BUSINESS_LAUNCH_COMMERCIAL.md` (commercial/billing/go-live governance) is a new layer complementary to `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md` (frozen V1 product/feature scope, 2026-09-03) — the two are not duplicates and neither supersedes the other.
+
+Open gap surfaced by this reconciliation (not resolved, flagged for Founder attention): no Cefflo Pricing Master exists anywhere in this repository or in the reconciled knowledge pack. `docs/cefflo/sot/07_BUSINESS_LAUNCH_COMMERCIAL.md` §4 requires pricing to come from a Founder-approved Pricing Master, which does not yet exist.
+
+## D-24 Knowledge Reconciliation, Second Pass (2026-09-04)
+
+Three of D-23's four flagged gaps were filled by newly-supplied Founder documents, reconciled into `docs/cefflo/sot/`:
+
+1. `docs/cefflo/sot/10_PRICING.md` (was: CEFFLO_PRICING_PLAN_MASTER_AUDIT.md) — status **CANDIDATE, NOT Founder-locked**. Every price/allowance in it (RM0/RM99/RM199/RM499/Custom, delivery/rider/zone/team caps) remains open per its own §16/§19 Definition of Done. This is the working input to `docs/cefflo/sot/07_BUSINESS_LAUNCH_COMMERCIAL.md` §4's Pricing Authority requirement, not itself a satisfaction of it — do not publish any figure from this file as final commercial truth.
+2. `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md` (was: CEFFLO_VENDOR_FLUTTER_60_FULL_SCREEN_MASTER.md) — status **Working Master Baseline, Founder Review Required**, not implemented. Its own internal HOLD flags are preserved as-is: Subscription/billing screens V-50–V-54 remain HOLD pending a separately-approved Cefflo-subscription payment architecture (this is Vendor-paying-Cefflo billing, not vendor-customer payment — that boundary is unchanged), and V-41 Delivery Settings needs reconciliation against Service Area/Zones before lock. Same stage-gating logic as D-23 item 1 applies: this describes target scope, not authorization to begin Vendor Flutter implementation. The current LIVE Vendor client remains Vendor Web/Desktop.
+3. `docs/cefflo/sot/marketing/07_MARKETING_MEMORY.md` (was: CEFFLO_MARKETING_MEMORY.md) — schema/doctrine only. Per its own §22, performance memory is intentionally EMPTY at initialization; no AI Marketing Engine implementation, n8n workflow, or real campaign evidence exists in this repo. Do not treat anything in this file as evidence of actual marketing results.
+
+**Remaining open gap (unchanged from D-23):** `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md` is still Founder-review-pending — no new Rider Flutter material was supplied in this pass.
+
+No conflicts were found between the three new documents and existing doctrine; all three are additive fills of previously-flagged gaps, correctly labeled CANDIDATE/HOLD/Working-Master rather than promoted to LOCKED/LIVE.
+
+## D-25 AI Content Engine v1.1 Reconciliation (2026-09-10)
+
+A newer, Founder-approved AI Content Engine orchestration document (`CEFFLO_AI_CONTENT_ENGINE_MASTER_ORCHESTRATOR_SOT_v1.1_FINAL.md`) was reconciled against the existing marketing knowledge pack (`docs/cefflo/sot/marketing/`, merged 2026-09-04) via a Founder Decision Gate. Full analysis: `docs/cefflo/audits/CEFFLO_AI_CONTENT_ENGINE_V1.1_RECONCILIATION_REPORT.md`. Six decisions were approved:
+
+1. **Lane model:** Instagram + Facebook share one Meta package by default; TikTok and Threads remain independent lanes. Canonical default = 3 publishing lanes. Theoretical ceiling for 5 core experiments/day corrected from the superseded ~140/week (4-lane assumption) to **~105/week** (3-lane). IG/FB may still split for a genuine platform-fit reason. Corrected in `docs/cefflo/sot/marketing/03_CONTENT_PHILOSOPHY.md` §2, `06_AI_MARKETING_ENGINE_MASTER.md` §5, `07_MARKETING_MEMORY.md` §3, and `00_MARKETING_KNOWLEDGE_PACK_INDEX.md`; clarified in `04_CREATIVE_PLAYBOOK.md` §11.
+2. **Weekly Winner Engine + Paid Growth preserved:** modeled as `CEFFLO - 11 - Weekly Winner Engine` and `CEFFLO - 12 - Paid Growth`, weekly-cadence workflows layered after (not spliced into) the daily `CEFFLO - 00..10` chain, reading from Marketing Memory. Workflow 12 remains subject to the existing Founder/budget spend gate in `05_PAID_GROWTH_PLAYBOOK.md` §5. `05_PAID_GROWTH_PLAYBOOK.md` is unmodified — this decision only gives it explicit architectural placement.
+3. **Master Concept = Core Experiment:** `master_concept_id` is the same persisted entity as the existing `CEFFLO-YYYY-Wxx-E###` experiment ID (`07_MARKETING_MEMORY.md` §5) — no new ID format introduced. `angle_id` remains an internal working identifier scoped to the Research & Angle Miner stage, tracked via Marketing Memory taxonomy tagging, not a new persisted top-level lineage ID. Platform-derivative suffixes (`-TT01`, `-IGR01`, `-FBR01`, `-TH01`, etc.) are unchanged.
+4. **n8n workflow naming:** `CEFFLO - 00` through `12`, plus `CEFFLO - 99 - Error & Recovery`, is now canonical. The older `WF-01`..`WF-08` naming in `06_AI_MARKETING_ENGINE_MASTER.md` §8 is marked superseded-in-detail there (retained, not deleted) with an explicit mapping table to the new naming.
+5. **New document created:** `docs/cefflo/sot/marketing/08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` — the v1.1 source text (unedited) plus a clearly separated Repo Reconciliation Addendum covering decisions 1-4 and 6. It is the 10th item in the marketing knowledge hierarchy (`00_MARKETING_KNOWLEDGE_PACK_INDEX.md` and `docs/cefflo/sot/00_INDEX.md` §6 updated accordingly), implementing Teams 1-4 of `06_AI_MARKETING_ENGINE_MASTER.md` as a concrete n8n architecture. It does not replace that document's charter-level content (governance, cost, testing, evidence, Team 5, full Definition of Done), which remains canonical and unmodified.
+6. **n8n repo-tracking policy — deferred:** whether `CEFFLO - 00 - Orchestrator Test` or any future n8n workflow export is version-controlled in this repository is explicitly deferred to the actual implementation/build gate. No `infra/n8n/` directory was created, no export policy was introduced, and `docs/cefflo/12_SECURITY.md`'s secrets doctrine is unchanged. Per D-23/D-24, no n8n workflows or `marketing_*` tables exist anywhere in this repository as of this reconciliation.
+
+Untouched by this reconciliation, confirmed no direct conflict: `docs/cefflo/sot/marketing/01_AUDIENCE_ICP.md`, `02_CLAIMS_REGISTRY.md`, and the doctrine (as opposed to volume-math) content of `03_CONTENT_PHILOSOPHY.md` and `04_CREATIVE_PLAYBOOK.md`. `05_PAID_GROWTH_PLAYBOOK.md` is untouched and remains fully in force per decision 2.
+
+## D-26 Content World & Brand Voice Doctrine — FG-1 Reconciliation (2026-09-10)
+
+Two Founder-supplied working masters — `CEFFLO_CONTENT_WORLD_CONTENT_PRODUCTION_DOCTRINE_MASTER.md` and `CEFFLO_BRAND_VOICE_MALAYSIAN_LANGUAGE_SYSTEM_MASTER.md` — were reconciled against the existing marketing pack, `08_AI_CONTENT_ENGINE_ORCHESTRATOR.md`, and D-25, per `docs/cefflo/audits/CEFFLO_CONTENT_WORLD_DOCTRINE_RECONCILIATION_REPORT.md`. Founder approved FG-1 (SOT Reconciliation) for the Content World doctrine with five explicit decisions; the Brand Voice doctrine was reconciled in the same pass with no material conflict found.
+
+1. **Content Quantity Doctrine corrected to D-25:** the Content World doctrine's §16 originally restated the superseded 4-lane/~140-outputs/week model. Corrected in place to the Founder-approved 3-lane Meta-shared model (~105/week, `35 × 3`). The superseded 4-lane/~140 model is not restored or preserved. The doctrine's underlying point (distribution volume ≠ production volume) is preserved.
+2. **Five pain/situation/world taxonomies kept separate, cross-referenced, not consolidated:** Segment Families (`01_AUDIENCE_ICP.md` §5, *who*), Pain Library P01–17 (`01_AUDIENCE_ICP.md` §8, audience pains), Situation Library S01–18 (`03_CONTENT_PHILOSOPHY.md` §6, angle-mining contexts), Operational Pain OP-01–14 (`09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §4, production-scenario problems), and Content Worlds CW-01–06 (`09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §3, persistent production environments) each keep their own scope and numbering. Cross-references added across `01_AUDIENCE_ICP.md`, `03_CONTENT_PHILOSOPHY.md`, `07_MARKETING_MEMORY.md`, and `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` Addendum A2/A3/A4 so agents do not treat overlapping entries as contradictory duplicates.
+3. **Signal Lime / logo wording corrected, not locked:** `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §19 originally described "official CEFFLO logo" and a locked Signal Lime "system." Corrected in place to reflect current repository truth — no logo is Founder-locked yet (`docs/cefflo/sot/06_BRAND_ASSETS_GOVERNANCE.md` §5) and Signal Lime `#C7F000` remains a candidate color (`04_CREATIVE_PLAYBOOK.md` §3). The color value itself is unchanged; only the finality claim was corrected. This reconciliation does not lock either.
+4. **Video Editor/Assembler — capability documented, no insertion point adopted:** `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` Addendum A6 documents the required capability and presents two unselected options for inserting it into the `CEFFLO-00..12,99` family (internal to 05A/05B, or a new shared sub-workflow) for a future, separate Founder review. Nothing was applied to `docs/cefflo/tasks/CEFFLO_DEEPSEEK_AI_ROUTER_IMPLEMENTATION_MASTER.md` or any n8n workflow.
+5. **FG-2 (Content World Baseline) remains ungranted; Brand Voice & Language System dependency now supplied.** The Content World doctrine's own Founder Gates FG-2 through FG-5 remain unauthorized — no structured Content World/Operational Pain/Scenario data, no video model benchmark, no Editor/Assembler build, and no production/publishing/ads activation may begin. The CEFFLO Brand Voice & Malaysian Language System doctrine this gate was waiting on has since been supplied and reconciled as `docs/cefflo/sot/marketing/10_BRAND_VOICE_LANGUAGE_SYSTEM.md` (native BM generation — never translated from an English master — speech-register system, respect boundary, speaker-voice matrix). No material conflict was found between it and existing Brand Brain (`05_BRAND_BRAIN.md` §4 Voice, §16 Brand Vocabulary), Content Philosophy, or Creative Playbook doctrine — it is a previously-missing elaboration, not a contradiction. Supplying this input does not itself grant FG-2, nor this document's own FG-V1 through FG-V4 (Voice Baseline / Calibration Set / Voice-Audio Test / Production Integration) — all remain separate, explicit Founder approvals.
+
+**New documents created:** `docs/cefflo/sot/marketing/09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` (hierarchy item 11) and `docs/cefflo/sot/marketing/10_BRAND_VOICE_LANGUAGE_SYSTEM.md` (hierarchy item 12), both cross-referenced from `00_MARKETING_KNOWLEDGE_PACK_INDEX.md`, `docs/cefflo/sot/00_INDEX.md` §6, and — for the Brand Voice document — `docs/cefflo/sot/05_BRAND_BRAIN.md` §4. Cross-reference notes (no doctrine changes) added to `01_AUDIENCE_ICP.md` §5, `03_CONTENT_PHILOSOPHY.md` §4/§6/§7/§8, `04_CREATIVE_PLAYBOOK.md` §3/§6–9/§7/§13, and `07_MARKETING_MEMORY.md` §4.B/§6/§19.
+
+**Untouched, confirmed no direct conflict:** `02_CLAIMS_REGISTRY.md`, `05_PAID_GROWTH_PLAYBOOK.md`, `06_AI_MARKETING_ENGINE_MASTER.md`, `08_AI_CONTENT_ENGINE_ORCHESTRATOR.md`, `docs/cefflo/tasks/CEFFLO_DEEPSEEK_AI_ROUTER_IMPLEMENTATION_MASTER.md`, and the `automation/n8n/content-engine` ROI skeleton — none required changes for this reconciliation.
+
+**No n8n workflow, credential, migration, or production/publishing/ads/schedule was touched.** No commit or push was made as part of this reconciliation.
+
+## D-27 Creative Intelligence Layer — Reconciliation + Implementation (2026-09-11)
+
+`CEFFLO — CREATIVE INTELLIGENCE LAYER: Master Specification & Implementation Directive` (Founder-directed, dated 2026-09-11) was reconciled and — per explicit Founder instruction to execute all non-conflicting phases through testing — substantially implemented, per its own §1 (Repo/SOT Reconciliation) through §10 (Testing).
+
+**One material conflict found (GATE B), flagged and resolved conservatively, not silently:** the source document's §2 instructs marketing content to call car/van operators "Driver"/"Delivery Driver," reserving "Rider" for motorcycle only. This directly conflicts with `docs/cefflo/audits/CEFFLO_GROW_V1_SCOPE_LOCK_AUDIT_REPORT.md` §11a (Founder-locked: *"'Driver' is not introduced as a competing term"*), `docs/cefflo/tasks/CEFFLO_GROW_V1_VEHICLE_CAPACITY_SCOPE_ADDENDUM.md` §2, `docs/cefflo/sot/01_PRODUCT_TRUTH.md`'s canonical spine, and the real live schema (`supabase/migrations/202609030003_s4_11_batch_3_vehicle_capacity_compatibility.sql`'s `rider_vehicle_type` enum on the `riders` table — no `drivers` table or terminology exists anywhere in the codebase). Resolution: the taxonomy defaults `canonical_role`/`natural_language_label` to **"Rider"** for all vehicle types (the existing locked doctrine), flagged with `_terminology_note` fields and an explicit regression test (`GATE_B_terminology_guardrail`) in `automation/n8n/content-engine/tests/cil_test.mjs`. Not applied as originally written; not silently discarded either — the source document's own §2 opening line reads as a deliberate instruction, so this is presented for Founder resolution rather than decided unilaterally. Reversing the default (to CIL's original "Driver for car/van" proposal) is a one-line change once the Founder decides.
+
+**No other material conflict found** (Gates A/C/D/E all clear — see the reconciliation addendum in the new SOT document for detail).
+
+**New SOT document:** `docs/cefflo/sot/marketing/11_CREATIVE_INTELLIGENCE_LAYER.md` (hierarchy item 13) — source text reproduced with the GATE B correction applied in place at §2/§29, plus a Repo Reconciliation Addendum (relationship to `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md`'s Phase B, full GATE B analysis, implementation summary).
+
+**Implemented (Phases 3–8, 10), all under `automation/n8n/content-engine/` (uncommitted, matching the rest of this session's work):**
+- Taxonomy (Phase 3): `fixtures/cil/{vehicle_types,business_archetypes,personas,operational_situations,emotional_tensions,creative_formats}.json`.
+- Scenario contract (Phase 4): `contracts/cil-scenario.schema.json`.
+- Scenario engine (Phase 5): `scripts/cil-scenario-engine.mjs` — deterministic, includes a vehicle-mix realism heuristic.
+- Validation (Phase 6): `scripts/cil-validate.mjs` — plausibility, business/vehicle/human fit, Product-Truth allowlist check, language-register check, creative-value check, anti-fabrication, diversity/novelty check.
+- Marketing Memory contract (Phase 8): `migrations/202609110001_cil_scenarios.sql` (additive `cil_scenarios` table) — **created, not applied to any database**; target Postgres instance is the same open item already recorded against the DeepSeek AI Router Master's Phase 0.
+- Tests (Phase 10): `tests/cil_test.mjs` — all 10 representative scenarios (meal prep+motorcycles, catering+van, florist+car, ecommerce+mixed fleet, factory/B2B+van, bakery+motorcycle/car, delivery-person shortage, order spike, customer-communication pressure, mixed-vehicle workload) plus negative tests for vehicle-realism rejection, Product-Truth rejection, anti-fabrication rejection, diversity/novelty flagging, the GATE B terminology guardrail, and taxonomy breadth. **Executed — all passed** (`{"result":"PASS","scenarios_tested":10,...}`). Existing regression suite re-run: `tests/validate_artifacts.mjs` passed unchanged; `tests/roi_smoke.mjs` fails at the same pre-existing, already-disclosed step as before this task (SOT-manifest resolution against `HEAD` for `08_AI_CONTENT_ENGINE_ORCHESTRATOR.md`, which remains uncommitted from an earlier reconciliation pass) — not a regression introduced by this work.
+
+**Not implemented in this pass, by design:** Phase 7 (Content & Strategy handoff) is satisfied by the scenario contract itself — no separate code was needed. Phase 9 (n8n integration) is documented only (CIL slots into `CEFFLO - 02 - Research & Angle Miner` per the architecture diagram) — no live n8n workflow was created, modified, or imported, consistent with Production Safety (GATE D). No migration was applied to any database.
+
+**Final status (superseded by the update below): ~~PASS WITH LIMITATIONS~~**
+
+### D-27 update — GATE B Resolved (2026-09-11)
+
+Founder resolved the GATE B conflict flagged above. Decision: **the product/backend/API/schema role stays exactly "Rider" everywhere — no Rider → Driver product or schema migration of any kind.** "Driver" is adopted only as a Creative Intelligence / Content World / marketing-copy **display term**, vehicle-contextual: Motorcycle → Rider; Car → Driver; Van → Driver (alt. "Van Driver"); a mixed/general workforce (more than one vehicle type in a scenario) → "Delivery Team", never a singular Rider/Driver label.
+
+**Implemented:** `automation/n8n/content-engine/fixtures/cil/vehicle_types.json` (`canonical_role` unchanged at `"rider"`; `natural_language_label` vehicle-contextual; `mixed_fleet_label: "Delivery Team"` added); `fixtures/cil/personas.json` (fixed "Rider" label replaced with a per-scenario-resolved note); `scripts/cil-scenario-engine.mjs` (new `resolveWorkforceLabel()`, wired into `buildScenario()` → `delivery_team.label`); `contracts/cil-scenario.schema.json` (`delivery_team.label` documented); `scripts/cil-validate.mjs` (new `WORKFORCE_LABEL` check). `docs/cefflo/sot/marketing/11_CREATIVE_INTELLIGENCE_LAYER.md` §2/§29 annotations and Addendum C1 updated from "flagged, unresolved" to "resolved," with the exact mapping recorded.
+
+**Tests re-run, all passed:** `tests/cil_test.mjs` — `canonical_role` confirmed `"rider"` for all three vehicle types; `natural_language_label` confirmed Motorcycle=Rider/Car=Driver/Van=Driver; `resolveWorkforceLabel()` verified for single motorcycle, single car, single van, 2-type mixed, and 3-type mixed fleets; end-to-end verification through all affected representative scenarios (catering→van→Driver, florist→car→Driver, ecommerce→mixed→Delivery Team, mixed-vehicle-workload→3-type mixed→Delivery Team); and a direct read of `supabase/migrations/202609030003_s4_11_batch_3_vehicle_capacity_compatibility.sql` confirming the real `rider_vehicle_type` enum is byte-for-byte untouched and no competing `driver_vehicle_type` enum exists (`git status`/`git diff --stat` on `supabase/` confirmed empty). All 10 representative scenarios plus every prior negative test (vehicle-realism, Product-Truth, anti-fabrication, diversity, taxonomy-breadth) still pass. `tests/validate_artifacts.mjs` regression suite re-run: PASS, unchanged.
+
+**No backend/schema/product terminology was changed.** No migration was applied. No n8n workflow was created, modified, or activated. No commit or push was made.
+
+**Final status: PASS.** GATE B is closed. No Founder gate remains open for the CIL taxonomy/schema/engine/validator/tests deliverable itself; the Postgres-target confirmation and n8n wiring remain deliberately out of scope for this pass, as they were for the DeepSeek AI Router Master (`docs/cefflo/tasks/CEFFLO_DEEPSEEK_AI_ROUTER_IMPLEMENTATION_MASTER.md` Phase 0), not new limitations introduced here.
+
+## D-28 PHASE 01/02 Baseline-Consolidation Run — BLOCKED AT FOUNDER GATE (2026-09-12)
+
+A Founder-directed "PHASE 01 — Repository Truth, SOT & Baseline Freeze" / "PHASE 02 — Product Architecture & Contract Freeze" run was requested, framed as steps within a referenced "7-Phase Master Execution Roadmap." Full report: this session's Phase 01/02 execution report (chat-delivered; no separate file, per the task's own instruction not to make unrelated changes).
+
+**Evidence search performed:** exhaustive search of the repository, `/home/cefflo`, all git worktrees (`.codex/worktrees/a110`, `/tmp/cefflo-*`), and common doc locations for any "7-Phase Master Execution Roadmap," "PHASE 01 —", "PHASE 02 —", or equivalent document. **None found anywhere on this machine.** Unlike every other Founder Master MD this session (v1.1 Orchestrator, Content World Doctrine, Brand Voice, DeepSeek Router, CIL — each supplied via upload or full paste), no such document was attached to or pasted into this task.
+
+**Phase 01 (Repository Truth, SOT & Baseline Freeze) — executed on the evidence that does exist** (git state, `05_DECISIONS.md` D-01–D-27, the full `docs/cefflo/sot/` hierarchy, `00_INDEX.md`/`00_MARKETING_KNOWLEDGE_PACK_INDEX.md`) — see the chat report's Document Authority Matrix. **Gate 1: PASS** on that basis.
+
+**Phase 02 (Product Architecture & Contract Freeze) — BLOCKED**, for two compounding, evidence-based reasons, neither resolved unilaterally:
+
+1. **No formal Gate 2 criteria available.** Freezing five-product-surface architecture, backend/client ownership, and a Grow V1 REQUIRED/OPTIONAL/HOLD/FUTURE matrix as *Founder-reviewable canonical truth* without the actual roadmap's stated freeze criteria risks presenting an invented framework as authoritative — exactly what this task's own "evidence, not guessed" instruction prohibits.
+2. **Genuine terminology-scope conflict, newly surfaced by this task's own "latest Founder clarifications":** the five-surface list names the mobile delivery-workforce app **"Driver Product — Flutter Mobile"**, not "Rider Product/Flutter." The live app is `rider/` (a real, deployed directory), the live schema is `riders`/`rider_vehicle_type` (`supabase/migrations/202609030003_...sql`), the target-state master is `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md`, and D-03/D-09/D-14/D-16/D-18/D-19/D-21 all lock "Rider" terminology at the product/workspace level. D-27 (above, this same log) explicitly records a Founder decision, one task ago: *"the product/backend/API/schema role stays exactly 'Rider' everywhere — no Rider → Driver product or schema migration of any kind."* Whether "Driver Product" in the new five-surface list is (a) a surface/brand-label rename compatible with D-27 (schema/internal identifiers stay `rider`), or (b) a broader reopening of D-27's product-terminology lock, is not decidable from existing authority — it is exactly the kind of Founder Gate this task instructs Claude to stop at rather than infer.
+
+**RESOLVED 2026-09-14 — see D-38:** the Founder locked option (a). "Cefflo Driver" is the permanent user-facing product name; "Rider" is the permanent internal/backend/schema/API role name. This paragraph is preserved as the historical record of the gate being opened; it is no longer open.
+
+**Applied (low-risk, unambiguous, marketing/CIL layer only):** `automation/n8n/content-engine/fixtures/cil/vehicle_types.json` gained a `general_workforce_term: "Driver / Delivery Team"` field (generic/unscoped references only — distinct from the scenario-scoped `resolveWorkforceLabel()` output from D-27, which is unchanged), explicitly marked PENDING repo-wide reconciliation and explicitly scoped to NOT touch the live `rider/` app, `riders` schema, FOUNDR's Riders section, or `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`'s naming.
+
+**Not done:** no product surface was renamed; no file was archived/superseded; no Grow V1 scope matrix was frozen; no cross-surface contract was frozen. Nothing beyond the one taxonomy field above was changed as part of this entry.
+
+**Final status: BLOCKED AT FOUNDER GATE** — (1) confirm/supply the 7-Phase Master Execution Roadmap (or explicitly authorize proceeding on this task's own stated requirements as the full specification), and (2) resolve whether "Driver Product" naming is surface-label-only or reopens D-27's product-terminology lock.
+
+## D-29 PHASE 01 + PHASE 02 Founder Baseline Consolidation (2026-09-12)
+
+Both blockers in D-28 were resolved by a full Founder directive supplying the 7-Phase Execution Roadmap in complete detail and explicitly clarifying "Driver Product" is a surface/architecture label — the product/backend/schema/API role stays "Rider," unchanged, no migration. Phase 01 and Phase 02 were executed against that directive. Full execution report: this session's chat-delivered Phase 01+02 report (per instruction, no unrelated file created for the report itself).
+
+**7-Phase Execution Roadmap recorded as canonical parent hierarchy:** `docs/cefflo/sot/00_INDEX.md` new §0 — PHASE 01 (Truth/SOT, Gate: TRUTH READY) → 02 (Grow V1 Architecture, Gate: V1 READY) → 03 (Marketing Engine + Content Pilot, Gate: MARKETING MACHINE READY) → 04 (Vendor Product, Gate: VENDOR READY) → 05 (Delivery Experience, Gate: DELIVERY LOOP READY) → 06 (Platform + Commercial, Gate: PLATFORM READY) → 07 (Pilot → Launch, Gate: GO/NO-GO). Marketing (03) is deliberately sequenced before full product completion (04/05) — a real, Founder-directed roadmap change from the implicit old assumption.
+
+**Reconciled against the existing `docs/cefflo/03_ROADMAP.md` "Stage 4 Roadmap, Phase 0–7"** (a different, narrower, already-partially-executed framework, same "Phase N" numbering by coincidence): mapping note added to that file (D-29 body above is duplicated there) so the two are never confused; its sprint-level detail (S4-01 etc.) remains valid, unchanged.
+
+**Five Canonical Product Surfaces frozen** in `docs/cefflo/sot/02_ARCHITECTURE.md` new §0: Vendor Product (Web/Desktop + Flutter — one product, two surfaces), Driver Product (Flutter Mobile — target-state name for what `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`/live `07_RIDER.md` PWA describe), Customer Tracking (Web/PWA), CEFFLO Website (Public Web — **flagged gap, no dedicated SOT exists**), FOUNDR Command Center (Internal Web/Desktop). Operations/Helper confirmed as a Vendor Product team-role, not a sixth surface (D-22).
+
+**Workforce terminology reconciled (not migrated):** general/unscoped term is Driver / Delivery Driver / Delivery Team; Motorcycle context: Rider primary, Driver also acceptable; Car/Van: Driver / Van Driver / Delivery Driver. Canonical statement added to `docs/cefflo/sot/01_PRODUCT_TRUTH.md` §4; cross-referenced (not rewritten) from `02_ARCHITECTURE.md` §4, `07_RIDER.md`, `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`, `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md` (frozen body untouched, reconciliation preamble added only). **No backend/schema/API renaming performed** — `riders` table, `rider_vehicle_type` enum untouched, confirmed via `git status`/`git diff --stat supabase/` (empty). CIL taxonomy (`automation/n8n/content-engine/fixtures/cil/vehicle_types.json`) updated: motorcycle `alt_label` set to `"Driver"` (previously `null`); `resolveWorkforceLabel()` behavior unchanged (still returns the primary label by default) — `cil_test.mjs` re-run, still PASS.
+
+**Grow V1 scope matrix — not recreated.** `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md` (frozen 2026-09-03) already is the REQUIRED/DESIRABLE/POST-V1/OUT-OF-SCOPE matrix Phase 02 calls for; its §7 "Nationwide rider marketplace; public helper marketplace" Out-of-Scope line already excludes a public driver-marketplace/community feature from V1. A reconciliation preamble was added confirming this and the terminology note above; the frozen body (§1–§23) was not altered.
+
+**Backend/client ownership, cross-surface contracts:** already canonical in `02_ARCHITECTURE.md` §2–3, `03_VENDOR_WEB_DESKTOP.md` §4/§18, `04_CUSTOMER_TRACKING.md` §17 — confirmed consistent with the five-surface freeze, no changes required.
+
+**No SWOT document found anywhere in this repository** — nothing to map for that item.
+
+**Not done, explicitly out of scope for this run:** Phase 03 was not started (no n8n runtime change, no Seedance/Veo integration, no pre-launch page); Vendor/Driver Flutter completion was not started; no publishing was activated; existing working product surfaces were not redesigned.
+
+**Files modified this pass:** `docs/cefflo/sot/00_INDEX.md`, `docs/cefflo/sot/01_PRODUCT_TRUTH.md`, `docs/cefflo/sot/02_ARCHITECTURE.md`, `docs/cefflo/07_RIDER.md`, `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md`, `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md`, `docs/cefflo/03_ROADMAP.md`, `docs/cefflo/05_DECISIONS.md` (this entry), plus `automation/n8n/content-engine/fixtures/cil/vehicle_types.json` (uncommitted, pre-existing session work). No file created. No file superseded/archived/deleted. No commit, push, merge, or tag.
+
+**Gate 1 (TRUTH READY): PASS.** **Gate 2 (V1 READY): PASS**, on the basis that the Grow V1 scope matrix was already frozen and required only reconciliation, not fresh invention, and the five-surface architecture is now explicitly frozen with the one genuine gap (CEFFLO Website) disclosed rather than guessed shut.
+
+**Final status: PHASE 01 PASS / PHASE 02 PASS — READY FOR FOUNDER BASELINE REVIEW.** Not stated as finally frozen or Founder-approved until the Founder reviews this entry and the accompanying report/diff and explicitly approves it.
+
+## D-30 Founder Baseline Closeout (2026-09-12, second pass)
+
+Four closeout items from a Founder-supplied closeout directive, executed on top of D-29's baseline without reopening it.
+
+1. **Official logo LOCKED.** Founder supplied 4 PNGs (canonical black-background mark; transparent variant; mark+wordmark variant; wordmark-only variant), stored unaltered — byte-for-byte checksum-verified identical to the originals — at `docs/cefflo/brand/assets/logo/cefflo-logo-official.png` (primary master reference), `-transparent.png`, `-wordmark.png`, `-wordmark-white.png`. No redrawing, retracing, regeneration, or "cleanup" was performed, including on the two variants that carry visible extraction-matting artifacts and the near-invisible low-contrast wordmark-only variant — all stored exactly as supplied. `docs/cefflo/sot/06_BRAND_ASSETS_GOVERNANCE.md` §5/§15/§16 updated: logo status LOCKED, asset registry entry added, actual repo path recorded against the doc's own recommended `Brand Assets/01_LOGO/` structure. Old logo explorations (`previews/cefflo-logo-identity-exploration/`, prior generated boards) marked SUPERSEDED/HISTORICAL/NON-CANONICAL, not deleted.
+2. **Signal Lime `#C7F000` LOCKED** (color value unchanged from the prior "candidate" state — only the finality status changed). Every live-doctrine location updated in place, each annotated with what it said before and when: `docs/cefflo/sot/06_BRAND_ASSETS_GOVERNANCE.md` §2, `05_BRAND_BRAIN.md` §8, `sot/marketing/04_CREATIVE_PLAYBOOK.md` §3, `sot/marketing/09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §19 + Addendum A5, `sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md`, `sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md`, `sot/00_INDEX.md` §8. Historical records (old `CEFFLO_BRAND_BRAIN.md`, D-26's own entry above, the Content World audit report) left untouched — they accurately described the state at the time they were written. Repo-wide sweep confirmed zero remaining live/current "candidate" claims; all matches are either the new correction annotations themselves or clearly historical.
+3. **CEFFLO Website SOT created.** `docs/cefflo/sot/11_CEFFLO_WEBSITE.md` — lightweight, matching FOUNDR's brevity: role, Phase 03 (lightweight pre-launch landing/waitlist funnel) vs. Phase 06 (full commercial site) boundary, payment boundary (Curlec = Vendor→Cefflo only), explicit "must not own" operational-truth list, current implementation state (`marketing/index.html` built site only, no pre-launch page built). Wired into `docs/cefflo/sot/00_INDEX.md` (new domain 17) and `02_ARCHITECTURE.md` §0 (gap flag removed, now points to the new SOT). Not implemented — doctrine only, per explicit instruction.
+4. **Fresh implementation-truth verification performed** (real evidence, not re-guessed from prior docs):
+
+| Surface | Status | Evidence |
+|---|---|---|
+| Backend Core | **PARTIAL** (substantial + real gaps) | 51 migration files in `supabase/migrations/`; matches `CEFFLO_GROW_V1_SCOPE_LOCK.md` §18/§20's already-documented gaps (no geocoding, no optimizer) — consistent, no change needed |
+| Vendor Web/Desktop | **IMPLEMENTED** | `vendor/` — 9,228 lines across `index.html`+`backend.js`; matches Flow 3 completion record |
+| Vendor Flutter | **NOT STARTED** | No `pubspec.yaml` anywhere in the repo; matches `09_VENDOR_FLUTTER_60_SCREEN_MASTER.md`'s own "NOT YET IMPLEMENTED" status |
+| Driver current implementation (Rider PWA) | **IMPLEMENTED** (PWA) | `rider/` — 4,618 lines across `index.html`+`backend.js` |
+| Driver Flutter (target Driver Product) | **NOT STARTED** | No `pubspec.yaml`; matches `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`'s own status |
+| Customer Tracking | **IMPLEMENTED** (lightweight, by design) | `customer/` — 216 lines across `index.html`+`backend.js`, consistent with the SOT's own "lightweight" doctrine |
+| FOUNDR | **PARTIAL** | `foundr/` — 2,389 lines; matches Scope Lock §17's "LAUNCH REQUIRED items already LIVE, deeper analytics POST-V1" |
+| CEFFLO Website | **PARTIAL** (built site only) | `marketing/index.html` — 1,467 lines (built bundle); Phase 03 pre-launch landing and Phase 06 commercial site both NOT STARTED |
+| Marketing automation/n8n | **SCAFFOLDED** | `automation/n8n/content-engine/workflows/` — 16 workflow files, all inactive, uncommitted; matches D-27/D-29's own characterization exactly |
+| Supporting infra | **PARTIAL** | Supabase local stack running, Vercel linked, Cloudflare cutover not done — matches `04_CURRENT_STATE.md` CS-05/CS-08, no new evidence contradicts it |
+
+All findings **VERIFIED — NO CHANGE REQUIRED** against `04_CURRENT_STATE.md` and `CEFFLO_GROW_V1_SCOPE_LOCK.md`'s capability matrix — no discrepancy found between documentation and fresh evidence, so neither document was edited.
+
+**Preserved without reopening (per explicit closeout instruction):** Rider/Driver terminology (D-27/D-29 stands, no schema migration), Delivery Resources model (no new invention), five-surface architecture (D-29 stands), Grow V1 scope (unchanged), Phase 03 future-direction items (Seedance-primary/Veo-HOLD, cost doctrine — recorded as future context only, nothing implemented).
+
+**No commit, push, merge, rebase, or tag.** No Phase 03 work started. No Website/Vendor/Driver/Customer/FOUNDR implementation performed. No Seedance/Veo integration. No publishing. Logo not redesigned, regenerated, or altered — checksums confirm the four stored files are byte-for-byte identical to the Founder-supplied originals.
+
+**Final status: PHASE 01 PASS / PHASE 02 PASS — READY FOR FOUNDER BASELINE APPROVAL.**
+
+## D-31 Founder Baseline Approval — PHASE 01 + PHASE 02 LOCKED (2026-09-12)
+
+Founder explicitly approved the Phase 01 + Phase 02 Final Baseline Closeout represented by D-30 ("Founder approves the Phase 01 + Phase 02 Final Baseline Closeout represented by D-30. Proceed with baseline finalization only."). The baseline (D-23 through D-30: knowledge-pack reconciliation, AI Content Engine v1.1, Content World + Brand Voice, Creative Intelligence Layer, DeepSeek AI Router Master, PHASE 01/02 truth/architecture consolidation, logo + Signal Lime lock, CEFFLO Website SOT) is committed and pushed to `origin/claude/flow-3-vendor-web-desktop-completion` as one coherent baseline commit — see the commit SHA recorded in this session's execution report.
+
+**Explicitly excluded from the baseline commit** (pre-existing, unrelated to this work, present in the working tree before this session began): `.claude/`, `docs/cefflo/finos-framer-source-audit.{html,md}`, `previews/cefflo-logo-identity-exploration/`, `previews/s4-10-ui-structure-preview/`, `previews/s4-10d-interactive-canvas-concept/`. These remain uncommitted and untouched — not part of this baseline, not evaluated for inclusion beyond confirming they predate this session's work.
+
+**PHASE 01 — TRUTH READY. PHASE 02 — V1 READY. Baseline LOCKED — Phase 03 (Marketing Engine + Content Pilot) is cleared to begin as a separate, future task.** No Phase 03 work, n8n activation, publishing, or Seedance integration was performed as part of this commit/push.
+
+## D-32 PHASE 03 — Marketing Engine + Content Pilot Execution (2026-09-13)
+
+`CEFFLO_PHASE_03_MARKETING_ENGINE_CONTENT_PILOT_MASTER.md` (Founder-directed, entry gate Phase 01/02 already LOCKED per D-31) executed against the already-committed `automation/n8n/content-engine/` scaffold, per the MD's own division of labor: Claude owns repository implementation outside the n8n-instance boundary; Codex owns n8n setup/deployment/import (§2-3); Founder is not asked to manually build n8n.
+
+**Batch 03A (Audit):** confirmed the committed scaffold (38 files: 16 inactive workflows, CIL taxonomy/engine/validator, contracts, migrations, tests) as starting truth. No rewrite performed.
+
+**Batches 03B/03C/03D/03E/03G/03I (Claude-owned repository logic) — implemented, tested:**
+- `scripts/content-script-engine.mjs` — deterministic hook/script/caption/platform-adaptation generation (§9: zero-cost by default; `routeToAIRouter()` is the documented, unused seam for a future live DeepSeek call).
+- `scripts/qa-engine.mjs` — `preProductionQA()` (§15) / `postProductionQA()` (§16), extending `cil-validate.mjs`.
+- `scripts/seedance-adapter.mjs` — stub adapter. Seedance's real contract (verified 2026-09-13 via web search, not invented): ByteDance's Volcano Engine ARK platform, async submit/poll job model, AK/SK request-signing — not a simple bearer token. Exact endpoint/model ID intentionally left unhardcoded pending a real credential. Live calls hard-blocked (`ERROR_SEEDANCE`) until Founder Gate 2 is granted. Veo never auto-escalated (§12).
+- `scripts/approval-state-machine.mjs` — formalizes the §17 `DRAFT→QA_PASS→FOUNDER_REVIEW→APPROVED→SCHEDULED→PUBLISHED` chain; `canPublish()` is the single enforcement point.
+- `scripts/dry-run-batch.mjs` — real, deterministic 30-50 candidate batch generator.
+- `contracts/content-package.schema.json` — formalizes the shape the above modules produce/consume.
+- `tests/phase03_test.mjs` — all suites executed, **PASS**. Full regression (`validate_artifacts.mjs`, `cil_test.mjs`) re-run, unaffected.
+
+**Batch 03L (Dry Run) — executed for real, zero cost:** 40 candidates generated. 27 accepted (67.5% pass rate), 13 correctly rejected/revised by the QA gates (10 for insufficient distinctness from recent output — the dry run's own limited hook-template library correctly triggering the anti-repetition check; 3 for implausible single-motorcycle load — the vehicle-realism check correctly triggering). 30 unique business archetypes touched, all 3 vehicle types (motorcycle/car/van) exercised — no food-only or motorcycle-only bias (§33/§34 satisfied). **Known, disclosed limitation:** the deterministic hook-template library is intentionally small for this pass; a production system needs either a larger hook library (per `09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` §5.4) or live AI Router routing for HIGH-tier scenarios to sustain higher accepted-volume without duplicate hooks. Not fixed by weakening the QA gate — the gate working correctly is the evidence, not a bug.
+
+**Batch 03J (Pre-Launch Website):** `marketing/prelaunch/index.html` + `backend.js` built — Hero, operational problem, what Cefflo organizes, business examples, Early Access/waitlist form with consent, source/campaign attribution parsing. Matches `docs/cefflo/sot/11_CEFFLO_WEBSITE.md`'s Phase 03 scope exactly. **Not connected to a live backend** — `backend.js` calls a `submit_waitlist_entry` RPC that does not exist in any live database yet; submissions fail honestly with a clear message rather than showing a fake success state (matching this repo's established truth-telling convention across every other client).
+
+**Batch 03K (Cost telemetry + Marketing Memory):** `migrations/202609130001_phase03_cost_and_waitlist.sql` — `production_cost_log`, a `production_cost_summary` view computing CPAC/CPPC from raw rows (never a stored aggregate), a seeded-but-disabled `budget_guardrails` row for Seedance, and `prelaunch_waitlist`. **Not applied** — same Postgres-target confirmation gap open since the DeepSeek AI Router Master's Phase 0.
+
+**Batch 03F (n8n Setup by Codex) — explicitly NOT performed by Claude, per the MD's own ownership boundary and this task's explicit instruction not to redirect it to the Founder.** `docs/cefflo/tasks/CEFFLO_PHASE_03_N8N_CODEX_HANDOFF.md` created: documents that n8n is already running with all 16 workflows already imported (from earlier work), what changed this pass that needs re-import/re-wiring, the Postgres-target and waitlist-RPC infrastructure work Codex owns, and the exact unavoidable Founder actions (credential entry, Postgres-target confirmation) — none performed here. No live Codex session was reachable this turn (`ListAgents` checked) to hand off in real time; the task document is queued for whenever Codex is next invoked.
+
+**Batch 03M (Controlled Content Pilot) — explicitly NOT performed.** Requires real Founder-approved publishing and/or paid Seedance spend, both Founder-gated (§38 items 2-5). Correctly deferred, not a blocker to the rest of Phase 03's evidence.
+
+**Batch 03N (Hardening):** idempotency/failure-handling patterns already established in the ROI-era Code nodes (idempotent publisher, bounded retry, `WAITING_AI`/`ERROR` states) extended conceptually to the new modules (bounded retry in `seedance-adapter.mjs`, hard-reject vs. revise distinction in `qa-engine.mjs`); no new infrastructure hardening performed (secrets/backups remain Codex's Batch 03F scope).
+
+**Files created:** 10 new files under `automation/n8n/content-engine/` (5 scripts, 1 contract, 1 migration, 1 test), `marketing/prelaunch/{index.html,backend.js}`, `docs/cefflo/tasks/CEFFLO_PHASE_03_N8N_CODEX_HANDOFF.md`. **Files modified:** `automation/n8n/content-engine/README.md` (Phase 03 section added). No SOT document was rewritten; no existing file's doctrine was altered.
+
+**Confirmed no out-of-scope work:** no Vendor/Driver/Customer/FOUNDR/full-commercial-Website work; no Curlec; no driver marketplace/community/payroll; no Veo; no live Seedance/DeepSeek call; no workflow activated; no publish; no commit/push performed as part of this pass (not requested).
+
+**Gate result: PHASE 03 PASS — MARKETING MACHINE READY**, on dry-run/evidence-complete-but-not-yet-activated terms — matching how Phase 01/02 reached PASS before Founder review/lock. Batches 03F (Codex n8n wiring/deployment) and 03M (live controlled pilot) are the explicitly deferred, correctly-gated remainder, not blockers to this assessment. Not stated as finally exited/live until the Founder reviews this entry and its evidence and explicitly approves — same pattern as D-29→D-31.
+
+## D-33 CEFFLO Experience System — Visual DNA Canonicalized, Signal Lime Superseded (2026-09-11)
+
+Founder decision, following a dedicated Phase 04 repository audit, a two-round theoretical reconciliation pass, and a live visual validation gate (Vendor + Rider boards, both built against the same proposed system): `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` is CANONICALIZED as the single visual implementation authority for Vendor Web/Desktop, Vendor Flutter, Rider Flutter, and future CEFFLO product surfaces.
+
+**This supersedes D-30 (2026-09-12) only where D-30 defined Signal Lime `#C7F000` as CEFFLO's current primary/signature colour.** D-30 is preserved unedited and unremoved as the historical record of that earlier, genuinely-Founder-approved decision — this entry documents a change of direction, it does not rewrite history. D-30's logo lock is unaffected and remains in force.
+
+**Locked palette:**
+- Primary brand/action accent: **CEFFLO Yellow `#FEC819`**.
+- Dark anchor: **Navy `#12213E`**, selective use only — never permanent chrome.
+- Light Workspace `#F7F8FA`, Surface `#FFFFFF`.
+- Semantic (operational meaning only, never brand accents): Attention `#D73C2B`, Success `#248648`, Route/Info `#2A6EEC` — each a small, documented, accessibility-driven adjustment from the originally-approved candidates (`#D8402F`/`#2FAE5E`/`#3D7BEE` respectively); full before/after and contrast math in `12_EXPERIENCE_SYSTEM.md` §2/§13.
+- Signal Lime `#C7F000` is **retired** as current primary/signature colour.
+
+**Locked system decisions:** Manrope as the primary product typeface (no separate monospace default, tabular numerals from Manrope's own numeral set); compact surface system (14px card radius, pill buttons, 14px inputs); a restrained-border + subtle two-layer soft shadow surface treatment (not zero-shadow, not heavy elevation); the three-level dark-mode architecture (dark canvas → tinted dark surface → Navy anchor) approved directionally with accessibility-verified core values, one narrow disclosed follow-up (semantic-colour legibility specifically on dark surfaces) left for the first real dark-mode implementation pass; master logo/wordmark reserved for genuine brand moments only, never repeated on internal operational screens; business/store name permitted contextually, not mandatory global branding.
+
+**Evidence base:** `docs/cefflo/audits/CEFFLO_PHASE_04_VISUAL_DNA_REPOSITORY_RECONCILIATION_AUDIT.md` (repository audit — found Signal Lime locked in writing under D-30, no Visual DNA doc existed, real Vendor Flutter implementation evidence on `claude/vendor-mobile-backend-integration`, no Rider Flutter implementation anywhere), `docs/cefflo/tasks/CEFFLO_PHASE_04_EXPERIENCE_SYSTEM_RECONCILIATION_PACKAGE.md` (the reviewed-then-applied reconciliation plan), and a live visual validation pass (Vendor + Rider 2×2 boards, both built against the same tokens, plus a dark-mode surface/token relationship comparison) that the Founder reviewed before granting this approval.
+
+**Flutter implementation baseline confirmed as evidence, not merge-authorized:** `claude/vendor-mobile-backend-integration` remains the leading Vendor Flutter implementation reference. This decision does **not** authorize merging that branch, migrating its tokens, redesigning Vendor screens, building Rider Flutter, or any backend change. Token migration is explicitly deferred to a separate, later, not-yet-authorized execution stage.
+
+**Files reconciled by this decision:** `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` (canonicalized), `docs/cefflo/sot/06_BRAND_ASSETS_GOVERNANCE.md` §2 (Signal Lime lock annotated superseded, in place, not deleted), `docs/cefflo/sot/00_INDEX.md` §1/§2/§8 (Visual DNA authority reference filled in, Brand Assets status updated).
+
+## D-34 CEFFLO Experience System — Warning Semantic Token (Founder Gate 0, 2026-09-11)
+
+Founder decision, closing the one gap `docs/cefflo/audits/CEFFLO_EXPERIENCE_SYSTEM_IMPLEMENTATION_RECONCILIATION_AUDIT.md` found in the otherwise-locked palette: no canonical Warning token existed in `12_EXPERIENCE_SYSTEM.md`, even though the live Vendor client already had one.
+
+**Locked Warning family**, recovered from already-shipped product evidence rather than invented:
+- Fill/icon: `#F59E0B` (unchanged from existing usage; verified fine as a fill with near-black text, 8.27:1).
+- Text-on-tint, Light: `#9A6700` — adopted from `vendor/index.html` and `invite/index.html`'s own existing owner-access warning banner, which had already solved this correctly (4.54:1 on tint, 4.87:1 on Surface) while the `--warning` token itself, used directly as chip text, was a real, currently-shipped contrast failure (`#F59E0B` on `#FFF6E5`, 2.00:1 — below even the lenient UI threshold).
+- Tint, Light: `#FFF6E5` (unchanged).
+- Text-on-tint, Dark: `#F5A524` — adopted from `rider/index.html`'s existing dark-mode value, already correct (9.65:1 / 7.96:1).
+
+`#935C08` (a third value found in `rider/index.html`, used only for one toast-notification background) is **explicitly not promoted to a general canonical token** — it remains a documented, component-specific exception for that one role, not an orphaned colour.
+
+Full detail: `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` §2.1, now v1.1.
+
+**Scope:** documentation only. Does not itself migrate any implementation — that proceeds under the separate `CEFFLO_EXPERIENCE_SYSTEM_IMPLEMENTATION_MASTER.md` execution, Phase B onward.
+
+## D-35 CEFFLO Master Logo — Production Asset Set Updated to CEFFLO Yellow/Navy (2026-09-11)
+
+Founder-supplied replacement production asset set for the D-30-locked master logo. **Not a redesign and not a geometry change** — the folded-ribbon "C" mark and wordmark geometry locked under D-30 are unchanged. What changed is the colour treatment, matching the D-33 palette supersession that had already retired Signal Lime everywhere else: the arrow at the mark's left-centre junction moves from Signal Lime to CEFFLO Yellow `#FEC819`, and the icon's background container moves from black to the canonical Navy family (`#12213E`).
+
+**New canonical production assets**, stored unaltered — no redrawing, retracing, regeneration, or "cleanup," same standard as D-30 — at `docs/cefflo/brand/assets/logo/`:
+- `cefflo-logo-icon-navy.png` — app/icon variant, mark inside a Navy rounded-square container. Primary master reference.
+- `cefflo-logo-mark.png` — standalone mark (ribbon "C" + Yellow arrow), transparent background.
+- `cefflo-logo-primary.png` — primary lockup (mark + "Cefflo" wordmark), transparent background.
+- `cefflo-logo-wordmark.png` — wordmark-only, transparent background.
+
+All four are 4375×4375 RGBA PNGs with alpha preserved exactly as supplied; each verified byte-for-byte (SHA-256) against the Founder's original upload before being committed.
+
+**The four D-30 files are retained, unmodified, as SUPERSEDED/HISTORICAL** — `cefflo-logo-official.png`, `-transparent.png`, `-wordmark.png`, `-wordmark-white.png` — not deleted, no longer the current production reference. `docs/cefflo/sot/06_BRAND_ASSETS_GOVERNANCE.md` §5/§15 updated accordingly; `12_EXPERIENCE_SYSTEM.md` §9's prior note that Navy presentation context was "deferred to the implementation stage" is resolved by `cefflo-logo-icon-navy.png`.
+
+**Scope:** documentation and asset-file placement, plus the narrow set of live product references the Experience System permits logo usage on (Invite, Marketing Prelaunch). Does not reopen the D-30 geometry lock or the D-33 palette decision.
+
+## D-36 Legacy Visual Baseline Cleanup — Purple/Signal-Lime Removed From Active Repository (2026-09-11)
+
+Founder correction to D-35's "retained, unmodified" plan for the superseded D-30 logo files, and a broader targeted cleanup: superseded Purple-era and Signal-Lime-era **presentation** must be removed from the active repository, not merely stopped-from-being-referenced, so no competing visual baseline survives for a future Claude/Codex session to mistake as current. Functional product truth (backend wiring, routes, data models, business logic, tests) is explicitly preserved throughout — only presentation was touched.
+
+**A. DELETE — obsolete active visual implementation:**
+- The four D-30 master-logo files (`cefflo-logo-official.png`, `-transparent.png`, `-wordmark.png`, `-wordmark-white.png`) removed from `docs/cefflo/brand/assets/logo/` via `git rm`. Git history preserves them exactly (last present at commit `29038a6`) — nothing lost, only removed from the active tree. Supersedes D-35's "retained, unmodified" language above; that text is left as-is (historical record of the plan at the time), this entry is the correction.
+- Three **untracked, never-committed** preview directories deleted outright (no git history existed to preserve): `previews/cefflo-logo-identity-exploration/` (a lowercase-wordmark logo exploration board using Signal Lime, a materially different concept from the D-30/D-35-locked folded-ribbon "C" mark — could have read as a valid alternative logo direction), `previews/s4-10-ui-structure-preview/` and `previews/s4-10d-interactive-canvas-concept/` (both confirmed via hex-literal inspection to use the same Purple/violet family found in `vendor/index.html`'s `.vd2-*`/`.vs2-*` blocks below). The other four `previews/s4-10*` directories were inspected and left alone — git-tracked, no Purple/Lime content, unrelated product-catalog/photography preview work.
+
+**B. MIGRATE — presentation moved to Experience System, functional logic preserved:**
+- `vendor/index.html`: every live Purple-family hex (`.vd2-summary`/`.vd2-workload-card.is-live` hero gradients, `.vd2-avatar`/`.vd2-chip`/`.vd2-action` icon chips, `.vs2-logo`/`.vs2-profile-card`/`.vs2-row-icon`/`.vs2-toggle`/`.vs2-signout`, `.workforce-pending`, the shared purple-tinted card shadow, three independent hardcoded copies of the call/WhatsApp contact-icon convention) recoloured to canonical CEFFLO Yellow/Navy/semantic tokens across the C1–C4 Codex batches and this cleanup pass. Zero HTML structure, `id`, or JS logic touched in any of these commits — verified by id-diff and post-`</style>` byte-diff on every commit. Two Purple hex values in CSS rules confirmed to have zero live *or* dead references anywhere in the file (`.summary-hero`, `.native-confirm-logo`) were recoloured rather than surgically deleted — same zero-Purple grep outcome, lower risk than excising scattered dead CSS blocks (`.checkout-page` alone has rules spread across ~10 non-contiguous locations) for no functional benefit, since they can never render.
+
+**C. HISTORICAL — retained, not current instruction, already or newly marked as such:**
+- `docs/cefflo/05_DECISIONS.md` (D-25 through D-35), all audit reports under `docs/cefflo/audits/`, `docs/cefflo/CEFFLO_BRAND_BRAIN.md` §8, `docs/cefflo/sot/05_BRAND_BRAIN.md` §8, `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`, `09_VENDOR_FLUTTER_60_SCREEN_MASTER.md`, `marketing/04_CREATIVE_PLAYBOOK.md`, `marketing/09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md`, `00_INDEX.md` — all already carry clear "Superseded" annotations pointing to D-33/`12_EXPERIENCE_SYSTEM.md` from the original canonicalization work; Signal Lime text preserved as historical record immediately alongside its own supersession notice, not silently rewritten.
+- Newly annotated this pass (found still reading as live/forward-looking instruction, not just retrospective narration): `docs/cefflo/CEFFLO_BRAND_BRAIN.md` §8 header (the file's own top-of-document notice already redirected to `sot/05_BRAND_BRAIN.md`, but §8 itself had no colour-specific pointer to `12_EXPERIENCE_SYSTEM.md`); `docs/tasks/CEFFLO_GROW_MASTER_R0_R7.md` D-07 (a "Locked decision" describing a *future* UI-system Master MD "will use... Signal Lime" — that future system has since arrived and is Yellow/Navy).
+
+**D. CURRENT — genuinely required, unaffected:**
+- `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` (v1.2), D-33/D-34/D-35 above, `docs/cefflo/sot/06_BRAND_ASSETS_GOVERNANCE.md` §5/§15 (updated to reflect the actual current asset state), `docs/cefflo/agent-os/CODEX_OPERATING.md` §6/§7 (see below).
+
+**Active-instruction correction:** `docs/cefflo/agent-os/CODEX_OPERATING.md` §7 "UI FINISHING RULE" was a live operating instruction telling any Codex/implementer session to "preserve the approved Black/White/Graphite/Signal Lime system" and "use Signal Lime semantically" — genuinely the kind of stale current-instruction risk this cleanup targets, since a fresh session loading this file would follow it. Reconciled in place (original text struck through and preserved alongside the correction, not deleted) to point at `12_EXPERIENCE_SYSTEM.md` and CEFFLO Yellow.
+
+**Remaining occurrences after this pass:** `apps/vendor_mobile/lib/core/theme.dart` line 52 — one intentional historical doc-comment ("Formerly Signal Lime (0xFFC7F000), retired per D-33"), correct as-is. No other `#C7F000` or Purple-family hex found anywhere in tracked files repo-wide (verified by regex sweep across `.html`/`.dart`/`.js`/`.css`/`.md`).
+
+**Scope:** presentation-layer cleanup and documentation reconciliation only. No backend/database/RPC/routing/auth/persistence/business-logic change of any kind. Continues the existing `CEFFLO_EXPERIENCE_SYSTEM_IMPLEMENTATION_MASTER.md` execution from the Codex repair stage; does not restart or re-audit completed work.
+
+---
+
+## D-37 Driver Flutter UI/UX Master Replaced — v2 42-Screen Register Becomes Sole Active Authority (2026-09-14)
+
+Founder supplied `CEFFLO_DRIVER_FLUTTER_UI_UX_MASTER_SOT_v2.md` (42 screens, `D01`–`D42`, primary nav Today/Runs/History/Profile) with an explicit instruction: replace "the existing active 36-screen Driver Flutter UI/UX master" as the single active canonical Driver Flutter UI/UX authority; mark the existing master superseded/historical; update all active indexes/pointers/Driver-Rider UI references; reconcile old `D01`–`D36` references using v2's own §21 mapping; leave only one active authority afterward.
+
+**Predecessor mismatch, surfaced before acting:** a repo-wide search (every local branch, every git-tracked file across the full commit history, every worktree, and every uploaded file from every prior Claude session on this machine) found **no file matching "36-screen Driver Flutter UI/UX master"** — no `D01`–`D36` register, no filename containing "DRIVER," nothing. The only related document is `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md` — 33 screens, `R-01`–`R-33`, a structurally different register (different IDs, different screen list, different count), listed as this repo's `ACTIVE MASTER` for the "Driver Product" surface per the D-29 terminology freeze. v2's own §21 reconciliation table (`D01`–`D36` → v2 `D01`–`D42`) does not map onto `R-01`–`R-33` at all.
+
+**Stopped and asked rather than inferring.** This is exactly the kind of Founder Gate a prior entry in this same log (D-28, the "genuine terminology-scope conflict" paragraph) already flagged as not decidable from existing authority. Presented three options: (1) treat the 33-screen `R`-register as the predecessor despite the mismatch, (2) install v2 as a new parallel-scoped authority with no predecessor touched, (3) stop and wait for the actual 36-screen file. **Founder selected option (1).**
+
+**Action taken:**
+- **Created** `docs/cefflo/sot/13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` — v2's content installed verbatim (unedited body) behind a provenance header recording: ACTIVE MASTER status, not yet Founder-locked, not yet implemented (no `pubspec.yaml` for any Driver Flutter app exists in this repo), the predecessor-mismatch finding above, and an explicit scope note that this action changes **only which UI/UX screen-inventory document is canonical** — it does not resolve, reopen, or otherwise touch the standing D-27/D-29 lock that the product/backend/schema/API role stays exactly **"Rider"** (the `riders` table and `rider_vehicle_type` enum are untouched, confirmed unchanged in this pass). v2's own §21 table is preserved as supplied, with a repo-reconciliation footnote clarifying it describes v2's own account of its predecessor, not a claim that a matching repo file existed.
+- **Marked superseded, not deleted:** `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md` status line changed to SUPERSEDED / HISTORICAL, pointing to the new file; its prior status/terminology-note text preserved immediately below, labeled historical — same pattern as every other supersession in this log (D-33, D-35, D-36).
+- **Pointers updated** (status/references only, no other content changed) in: `docs/cefflo/sot/00_INDEX.md` (§0 five-surfaces summary, domain-2 section renamed "Driver Flutter," §16 open-gaps line), `docs/cefflo/sot/02_ARCHITECTURE.md` (§0 surfaces table, workforce-terminology note, §4 Client Topology "Rider Flutter" subsection renamed "Driver Flutter"), `docs/cefflo/sot/01_PRODUCT_TRUTH.md` §4, `docs/cefflo/07_RIDER.md` (its "future target direction" pointer).
+
+**Explicitly NOT done / left open:**
+- No backend, schema, database, RPC, or API terminology change of any kind — "Rider" remains the product/backend/schema role everywhere, per D-27/D-29, unaffected by this entry.
+- The standing terminology-scope Founder Gate from D-28 (whether "Driver Product" is a surface label or a broader reopening of the Rider lock) was **not resolved** by this action and remained open; v2's own text names "Cefflo Driver" as the product throughout, installed as supplied without independently asserting that framing as new product truth. **RESOLVED 2026-09-14 — see D-38:** this is no longer the case; the gate is closed.
+- v2's own Definition of Done (§23) is unchecked; no screen was designed, implemented, or Founder-reviewed in this pass — document reconciliation only.
+- `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md` and `docs/cefflo/03_ROADMAP.md` were checked and contain no direct pointer to the superseded file — no change needed there.
+
+**Files modified this pass:** `docs/cefflo/sot/13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` (created), `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md`, `docs/cefflo/sot/00_INDEX.md`, `docs/cefflo/sot/02_ARCHITECTURE.md`, `docs/cefflo/sot/01_PRODUCT_TRUTH.md`, `docs/cefflo/07_RIDER.md`, `docs/cefflo/05_DECISIONS.md` (this entry). No commit, push, merge, or tag performed as part of this reconciliation itself.
+
+---
+
+## D-38 Cefflo Driver Locked as User-Facing Product Name; Rider Locked as Internal/Backend/Schema/API Role (2026-09-14)
+
+**Founder decision, closing the terminology-scope Founder Gate opened at D-28 and left explicitly open at D-37:**
+
+> Lock Cefflo Driver as the user-facing mobile product name. Preserve Rider as the internal/backend/schema/API role terminology. Do not rename tables, enums, RPCs, API contracts, auth roles, or backend identifiers merely to match the UI product label. Update the active docs so this distinction is explicit and no longer remains an unresolved Founder Gate.
+
+**LOCKED, effective 2026-09-14:**
+
+1. **"Cefflo Driver" is the locked user-facing mobile product name** — what appears in the app itself, app-store listing, UI copy, splash/brand moments, and product/marketing communications for the Flutter mobile delivery-workforce app. This is no longer a provisional "surface/architecture label" pending a decision; it is decided.
+2. **"Rider" remains the locked internal/backend/schema/API role terminology** — the `riders` table, `rider_vehicle_type` enum, RPC/API contracts, auth roles, and every other backend identifier. Unchanged from D-27/D-29 — this decision does not touch, weaken, or reopen that lock in any way.
+3. **These are two permanently distinct, intentionally different namespaces — not a pending or partial rename in either direction.** Backend/schema/API identifiers must **not** be renamed to match "Driver" merely for cosmetic consistency with the UI product label. Conversely, the UI product label must not revert to "Rider" — the app the user opens is Cefflo Driver.
+4. This closes option (a) of the two possibilities D-28 left undecided ("a surface/brand-label rename compatible with D-27, schema/internal identifiers stay `rider`") and formally resolves D-37's "remains open" note. D-27, D-28, D-29, and D-37 are preserved unedited as historical record of how the gate was opened and carried, each annotated in place with a forward pointer to this entry — none rewritten.
+
+**Action taken — active docs updated so the distinction is explicit, not inferred:**
+- `docs/cefflo/05_DECISIONS.md` — this entry; D-28 and D-37 annotated in place with forward pointers (above).
+- `docs/cefflo/sot/01_PRODUCT_TRUTH.md` §4 — canonical workforce-terminology statement updated: "Driver Product" language replaced with the explicit LOCKED dual-name statement (Cefflo Driver = product name, Rider = backend/schema/API role).
+- `docs/cefflo/sot/02_ARCHITECTURE.md` §0 (five-surfaces table + workforce-terminology note) and §4 (Client Topology "Driver Flutter" subsection) — "does not itself decide... standing open Founder Gate" language replaced with the locked statement.
+- `docs/cefflo/sot/00_INDEX.md` — §0 five-surfaces summary and domain-2 section header updated to cite D-38 instead of framing the distinction as pending.
+- `docs/cefflo/sot/13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` — this file's own provenance header (added by Claude when the file was created at D-37, not part of the Founder-supplied v2 body) updated: the "does not... resolve the standing open Founder Gate... remains open" paragraph replaced with a statement that the naming is now locked per D-38. v2's actual supplied body (§1–§24) is untouched — it already names "Cefflo Driver" as the product throughout, which is now the locked, not merely supplied, framing.
+- `docs/cefflo/07_RIDER.md` — terminology note updated to cite D-38 as the point the surface/product-label question was locked, not just frozen.
+
+**Explicitly NOT done:**
+- No backend/database/RPC/API/schema file touched or renamed. `riders` table, `rider_vehicle_type` enum, and all backend role identifiers are unchanged — confirmed via `git diff --stat supabase/` (empty) and `apps/` backend-adjacent code (empty) for this pass.
+- No historical audit/task report modified — `docs/cefflo/audits/*`, `docs/cefflo/tasks/*`, and `docs/cefflo/PHASE_1_STAGE4_GAP_REPORT.md` were checked and left untouched, per explicit instruction and consistent with this log's standing convention that dated point-in-time reports are not rewritten.
+- `docs/cefflo/sot/13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` remains the single active Driver Flutter UI/UX authority — unchanged by this entry; its own body content was not touched, only its provenance header.
+- `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md` — already SUPERSEDED/HISTORICAL as of D-37; not further modified.
+- `docs/cefflo/README_PACK.md`, `docs/cefflo/sot/10_PRICING.md`, `docs/cefflo/02_ARCHITECTURE.md` (root) — checked; each mentions "Rider Flutter" only as a generic surface/feature reference, not an assertion about the naming-lock status, and none is a live index/pointer this task targets — no change needed.
+
+**Files modified this pass:** `docs/cefflo/05_DECISIONS.md` (this entry + D-28/D-37 annotations), `docs/cefflo/sot/01_PRODUCT_TRUTH.md`, `docs/cefflo/sot/02_ARCHITECTURE.md`, `docs/cefflo/sot/00_INDEX.md`, `docs/cefflo/sot/13_DRIVER_FLUTTER_42_SCREEN_MASTER.md`, `docs/cefflo/07_RIDER.md`. No commit, push, merge, or tag performed as part of drafting this entry — see the immediately following commit for that.

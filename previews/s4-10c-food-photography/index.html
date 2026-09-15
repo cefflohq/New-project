@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+  <title>S4-10C Food Photography Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--purple:#7C6CF0;--purple-dark:#6552D8;--purple-tint:#F2F0FF;--text:#17151D;--muted:#76737D;--soft:#A29FA8;--line:#ECEAF0;--surface:#FFF;--danger:#C84949;--good:#3C8A5A}
+    *{box-sizing:border-box;min-width:0}html,body{margin:0;min-height:100%;font-family:Poppins,system-ui;color:var(--text)}body{background:#EEEDEF;overflow-x:hidden}.shell{width:100%;max-width:430px;min-height:100dvh;margin:auto;background:var(--surface);overflow-x:hidden}button,input,textarea,select{font:inherit}.preview-label{display:block;width:fit-content;margin:8px auto;padding:5px 10px;border-radius:99px;background:#211E29;color:#fff;font-size:9px;font-weight:700;letter-spacing:.05em}
+    .header{position:sticky;top:0;z-index:10;min-height:64px;padding:10px 16px;display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}.back{width:40px;height:40px;flex:0 0 auto;border:0;background:transparent;color:var(--text);display:grid;place-items:center}.back svg{width:20px;height:20px}.back.hidden{visibility:hidden}.header h1{margin:0;font-size:16px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .content{padding:16px 16px 44px}
+    .caption{margin:2px 0 0;color:var(--muted);font-size:11px;line-height:1.55}
+    .hero-visual{width:100%;aspect-ratio:1;margin-top:2px;overflow:hidden;border-radius:18px;background:#F4F3F6;display:grid;place-items:center;color:#C3C0C9;border:1px solid var(--line)}
+    .hero-visual.compact{aspect-ratio:auto;height:240px}
+    .hero-visual img{width:100%;height:100%;display:block;object-fit:cover}
+    .hero-visual svg{width:44px;height:44px}
+    .hero-status{margin-top:10px;font-size:11px;color:var(--muted);display:flex;align-items:center}
+    .status-dot{display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:99px;background:var(--soft);flex:0 0 auto}
+    .product-actions{margin-top:20px;display:flex;flex-direction:column;gap:10px}
+    .feature-sub{margin-top:4px;font-size:12px;color:var(--muted);line-height:1.5}
+    .how-toggle{width:100%;height:44px;margin-top:18px;padding:0;border:0;border-top:1px solid var(--line);background:transparent;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600;color:var(--text)}
+    .how-chev{width:16px;height:16px;flex:0 0 auto;color:#B4B0BB;transition:transform .15s}
+    .how-chev.open{transform:rotate(90deg)}
+    .steps-list{margin-top:14px;display:flex;flex-direction:column;gap:13px}
+    .step-row{display:flex;align-items:flex-start;gap:11px}
+    .step-num{width:20px;height:20px;flex:0 0 auto;border-radius:50%;background:var(--purple-tint);color:var(--purple-dark);display:grid;place-items:center;font-size:10.5px;font-weight:700}
+    .step-copy{min-width:0;padding-top:1px}
+    .step-title{font-size:12px;font-weight:600}
+    .step-sub{margin-top:1px;font-size:10.5px;color:var(--muted);line-height:1.4}
+    .btn{width:100%;height:52px;margin-top:18px;border:0;border-radius:12px;background:var(--purple);color:#fff;font-size:13px;font-weight:600;padding:0 12px;white-space:normal;line-height:1.3;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn svg{width:16px;height:16px;flex:0 0 auto}
+    .btn.secondary{background:#fff;color:var(--text);border:1.5px solid var(--line)}
+    .btn:disabled{background:#DAD6EA;color:#fff}
+    .copy-feedback{margin-top:10px;display:flex;align-items:flex-start;gap:7px}
+    .copy-feedback.ok svg{color:var(--good)}
+    .copy-feedback.fail svg{color:var(--danger)}
+    .copy-feedback svg{width:14px;height:14px;flex:0 0 auto;margin-top:2px}
+    .copy-feedback .cf-copy{min-width:0;font-size:11px;line-height:1.45}
+    .copy-feedback .cf-copy b{display:block;font-size:11.5px}
+    .copy-feedback.ok .cf-copy b{color:var(--good)}
+    .copy-feedback.fail .cf-copy b{color:var(--danger)}
+    .fallback{margin-top:10px}
+    .fallback textarea{width:100%;height:90px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#FAF9FB;color:var(--text);font-size:9.5px;line-height:1.4;font-family:ui-monospace,monospace;resize:none}
+    .safety-note{margin-top:12px;display:flex;gap:7px;align-items:flex-start;color:var(--muted);font-size:10.5px;line-height:1.5}
+    .safety-note svg{width:14px;height:14px;flex:0 0 auto;margin-top:2px;color:var(--soft)}
+    .continuation-title{font-size:15px;font-weight:600}
+    .result-actions{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+    .recovery-actions{margin-top:12px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px}
+    .recovery-actions button{background:transparent;border:0;padding:6px 2px;color:var(--muted);font-size:11px;font-weight:600;text-decoration:underline;text-underline-offset:2px}
+    .recovery-sep{color:var(--soft);font-size:11px}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .announcement{position:fixed;z-index:50;left:50%;bottom:20px;max-width:calc(100% - 32px);transform:translateX(-50%);padding:9px 13px;border-radius:99px;background:#211E29;color:#fff;font-size:10px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="shell"><div class="preview-label">S4-10C UI Preview · Local Demo</div><div class="app" id="app"></div></main>
+  <input class="sr-only" id="resultInput" type="file" accept="image/*" aria-label="Choose the finished photo from your device">
+  <div class="sr-only" aria-live="polite" id="live"></div>
+  <script>
+    // Preview-only. No backend calls, no upload, no network, no image
+    // generation of any kind. Cefflo never processes the photo itself in
+    // this package -- the Vendor generates the finished image in their own
+    // external AI chat and brings it back. This file only demonstrates the
+    // Vendor-facing instructional flow and a genuine local file picker; it
+    // does not modify or reuse code from the S4-10A/S4-10B preview files.
+    //
+    // Truthfulness rules enforced by this preview's own state machine:
+    //  - the clipboard "copied" state only ever appears after a resolved
+    //    Clipboard API promise (see copyPrompt()) -- never optimistically.
+    //  - there is no processing/generating screen of any kind: Cefflo has
+    //    no way to know what happens in the Vendor's external AI chat, so
+    //    nothing here simulates or claims to track it.
+    //  - the "selected result" preview only ever shows the real local file
+    //    the Vendor just picked (URL.createObjectURL), never a stand-in.
+    //  - "Use This Photo" only ever becomes reachable after a real local
+    //    selection exists.
+    const CANONICAL_PROMPT = `CEFFLO FOOD PHOTOGRAPHY
+
+Use the uploaded photograph as the ONLY source of truth for the actual food/product.
+
+This is a TWO-STEP image-generation workflow.
+
+STEP 1:
+Ask the user exactly ONE question:
+
+"What theme or vibe would you like for this menu photo?"
+
+You may include brief examples:
+Clean & Minimal, Warm & Cozy, Rustic, Modern, Elegant,
+Fresh & Bright, Traditional, Dark & Moody, or a custom theme.
+
+Wait for the user's answer.
+
+STEP 2 — MANDATORY:
+IMMEDIATELY after the user answers with a theme or vibe,
+GENERATE THE FINAL IMAGE.
+
+Do NOT ask another question.
+Do NOT ask for confirmation.
+Do NOT explain what you are going to generate.
+Do NOT return a written prompt.
+Do NOT provide instructions.
+
+The user's theme answer is the trigger to proceed directly
+with image generation using all rules below.
+
+==================================================
+CORE PRINCIPLE
+==================================================
+
+THE FOOD IS PRESERVED SOURCE CONTENT.
+
+THE ENVIRONMENT IS THE CREATIVE AREA.
+
+The objective is:
+
+SAME REAL FOOD.
+NEW PROFESSIONAL PHOTOGRAPHIC PRESENTATION.
+
+The result should look like the vendor's actual food was physically
+placed into the selected environment and photographed by a professional
+food photographer.
+
+It must NOT look like AI created a prettier replacement dish.
+
+==================================================
+1. FOOD FIDELITY — HIGHEST PRIORITY
+==================================================
+
+Treat all visible food in the uploaded photograph as LOCKED.
+
+Preserve faithfully:
+
+- ingredients
+- portion and quantity
+- relative ingredient sizes
+- food geometry
+- arrangement
+- toppings and garnish
+- sauce quantity
+- cooking marks
+- colour relationships
+- natural imperfections
+- original photographic texture
+- primary serving vessel
+
+DO NOT:
+
+- add or remove food
+- replace ingredients
+- enlarge portions
+- rearrange the meal
+- invent garnish or side dishes
+- change sauce quantity
+- improve grill marks
+- increase browning
+- create fake crispiness
+- create fake moisture
+- create artificial gloss
+- make ingredients cleaner or more symmetrical
+- make the food artificially perfect
+
+If something is irregular in the source,
+KEEP IT IRREGULAR.
+
+If something looks ordinary,
+KEEP IT ORDINARY.
+
+PRODUCT TRUTH OVERRIDES BEAUTY.
+
+==================================================
+2. ANTI-AI FOOD APPEARANCE — CRITICAL
+==================================================
+
+Do NOT reinterpret the food into typical AI food photography.
+
+NO:
+
+- hyper-detailed ingredients
+- exaggerated rice grains
+- perfect vegetable shapes
+- perfect garnish distribution
+- exaggerated meat fibres
+- exaggerated sauce texture
+- fake steam
+- artificial gloss
+- HDR food texture
+- excessive micro-contrast
+- oversharpening
+- plastic surfaces
+- CGI cleanliness
+- advertising-style food perfection
+
+Do NOT independently enhance individual ingredients.
+
+Preserve natural camera softness, irregularity and imperfect detail.
+
+The food should retain the visual character of the uploaded photograph.
+
+Improve the PHOTOGRAPHY.
+
+DO NOT improve the physical food.
+
+==================================================
+3. PRIMARY SERVING VESSEL
+==================================================
+
+Preserve the actual primary:
+
+plate
+bowl
+tray
+basket
+cup
+glass
+container
+lunchbox
+tiffin
+or primary packaging.
+
+The COMPLETE serving vessel must remain visible.
+
+NO outer edge may be cropped.
+
+There must be visible environmental space around the entire vessel:
+
+front
+back
+left
+right.
+
+If necessary, zoom out rather than crop.
+
+==================================================
+4. CAMERA & COMPOSITION
+==================================================
+
+FINAL FORMAT:
+
+1:1 SQUARE.
+
+Preferred camera perspective:
+
+approximately 45° elevated three-quarter view.
+
+The viewer should clearly see:
+
+- food surface
+- food volume
+- arrangement
+- front edge of the vessel
+- complete vessel shape
+
+IMPORTANT PRIORITY:
+
+FOOD FIDELITY
+>
+CAMERA ANGLE
+>
+BEAUTY
+
+45° is the target, NOT permission to reconstruct the meal.
+
+If changing the source to exactly 45° would require inventing unseen
+food or substantially changing food geometry, use the closest truthful
+elevated three-quarter perspective instead.
+
+Keep the complete product naturally centered.
+
+Leave approximately 10–15% comfortable environmental breathing room
+around the complete serving vessel.
+
+NO extreme close-up.
+NO cropped plate.
+NO flat-lay unless truth preservation makes another angle impossible.
+
+==================================================
+5. USER-SELECTED THEME
+==================================================
+
+Use the theme selected by the user to create ONLY the photographic
+presentation around the real product.
+
+The theme may determine:
+
+- background
+- table or supporting surface
+- environment
+- atmosphere
+- non-food props
+- lighting character
+- colour atmosphere
+- material choices
+
+Interpret the selected theme naturally and professionally.
+
+Do NOT change the food to make it fit the theme.
+
+MAKE THE ENVIRONMENT SUPPORT THE FOOD.
+
+==================================================
+6. MINIMAL PROPS
+==================================================
+
+Use approximately 0–3 subtle props only when appropriate.
+
+Props must remain secondary.
+
+Suitable examples may include:
+
+- linen
+- cutlery
+- glassware
+- simple ceramics
+- subtle greenery
+- other non-food decorative elements appropriate to the theme
+
+Do NOT overcrowd the scene.
+
+Do NOT add decorative food, ingredients, sauces or side dishes that
+could be mistaken for something included in the customer's order.
+
+==================================================
+7. PROFESSIONAL PHOTOGRAPHIC LIGHTING
+==================================================
+
+Use realistic professional food-photography lighting appropriate
+to the selected theme.
+
+Lighting must behave coherently across:
+
+FOOD
+VESSEL
+SURFACE
+PROPS
+BACKGROUND.
+
+The food must remain naturally readable.
+
+Maintain:
+
+- open shadow detail
+- realistic highlights
+- smooth highlight roll-off
+- believable contrast
+- natural dimensionality
+
+Avoid:
+
+- HDR
+- crushed blacks
+- glowing food
+- fake rim light
+- excessive specular highlights
+- dramatic lighting that hides the actual product
+
+Lighting may improve how the product is photographed.
+
+Lighting must NOT create new food texture.
+
+==================================================
+8. NATURAL COLOUR
+==================================================
+
+Preserve the source food's fundamental colour relationships.
+
+The selected theme may influence ambient environmental colour,
+but must NOT fundamentally recolour the ingredients.
+
+Do NOT automatically make food:
+
+- warmer
+- more golden
+- more orange
+- richer
+- darker
+- more saturated
+- more colourful
+
+Keep ingredient colours believable.
+
+Environmental colour influence should remain subtle and physically
+plausible.
+
+==================================================
+9. PHYSICAL GROUNDING
+==================================================
+
+The serving vessel must look physically present on the new surface.
+
+Create a restrained CONTACT SHADOW directly at the real
+vessel-to-surface contact area.
+
+Add a soft CAST SHADOW only as required by the scene's actual
+light direction.
+
+Both shadows must follow the real vessel geometry.
+
+NO:
+
+- generic oval drop shadow
+- uniform black blur
+- dark halo around the plate
+- floating plate
+- oversized dramatic shadow
+- Photoshop-style drop shadow
+
+The vessel must look like it genuinely rests on the surface.
+
+==================================================
+10. REALISTIC DEPTH OF FIELD
+==================================================
+
+Keep the complete food product clearly readable.
+
+Do NOT blur important parts of the actual food unnecessarily.
+
+Supporting props and background may progressively soften according
+to realistic lens depth of field.
+
+The result should feel optically photographed rather than digitally
+composited.
+
+==================================================
+11. FINAL OUTPUT — MANDATORY
+==================================================
+
+GENERATE THE IMAGE after the user provides their theme.
+
+Output:
+
+HIGH-RESOLUTION
+1:1 SQUARE
+PROFESSIONAL MENU PHOTOGRAPH.
+
+Mandatory:
+
+- same real food
+- same ingredients
+- same portion
+- same arrangement
+- natural imperfections retained
+- complete serving vessel visible
+- approximately 45° elevated view where truthfully possible
+- 10–15% breathing room
+- user-selected theme
+- minimal props
+- realistic professional lighting
+- natural colour
+- realistic physical shadows
+- photographic depth of field
+
+NO:
+
+- text
+- price
+- logo
+- watermark
+- poster typography
+- graphic border
+- UI elements
+
+==================================================
+FINAL REALISM TEST
+==================================================
+
+Before finalising, compare the FOOD against the uploaded photograph.
+
+Ask internally:
+
+"Did I improve the photograph,
+or did I recreate the food?"
+
+If the food became:
+
+cleaner
+larger
+richer
+sharper
+more symmetrical
+more detailed
+more colourful
+more glossy
+more crispy
+more perfect
+or materially different,
+
+the result FAILS.
+
+Preserve/restore the source food appearance.
+
+If the serving vessel is cropped:
+
+FAIL.
+
+If the product looks pasted onto the environment:
+
+FAIL.
+
+If achieving 45° required substantial food reconstruction:
+
+FAIL.
+
+Correct the PHOTOGRAPHY and ENVIRONMENT,
+not the physical food.
+
+==================================================
+ABSOLUTE FINAL PRINCIPLE
+==================================================
+
+ASK THE USER FOR THE THEME FIRST.
+
+WHEN THE USER ANSWERS:
+
+GENERATE THE IMAGE IMMEDIATELY.
+
+NO SECOND QUESTION.
+NO CONFIRMATION.
+NO TEXT RESPONSE INSTEAD OF GENERATION.
+
+SAME REAL FOOD.
+SAME REAL PORTION.
+SAME NATURAL IMPERFECTIONS.
+
+NEW PROFESSIONAL ENVIRONMENT.
+REALISTIC PHOTOGRAPHIC LIGHTING.
+MINIMAL PROPS.
+
+1:1 SQUARE.
+FULL SERVING VESSEL IN FRAME.
+TARGET 45° ELEVATED VIEW WHEN TRUTHFULLY POSSIBLE.
+
+CHANGE THE PHOTOGRAPHY.
+
+DO NOT REDESIGN THE PRODUCT.
+
+THE FINAL RESULT MUST LOOK PHOTOGRAPHED,
+NOT AI-GENERATED.`;
+
+    let screen = 'productPhoto';
+    let approvedPhoto = null; // { url } -- mock existing approved photo context
+    let promptCopyState = null; // null | 'ok' | 'fail'
+    let selectedResult = null; // { url, name } -- real local file only
+    let howItWorksOpen = false; // collapsed by default
+    // 'idle' (State 2, showing Copy Prompt) -> 'pending' (copy succeeded,
+    // ChatGPT opened, Vendor is away) -> 'returned' (State 3, Vendor is
+    // genuinely back in this tab -- only ever set by a real visibility/focus
+    // signal guarded on 'pending', never on initial page load).
+    let handoffState = 'idle';
+    let pickerContext = 'improve'; // 'improve' | 'direct' -- which entry point opened the file picker
+    const CHATGPT_URL = 'https://chatgpt.com/';
+    const app = document.querySelector('#app'), live = document.querySelector('#live'), resultInput = document.querySelector('#resultInput');
+    const icon = {
+      dish: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.2" fill="currentColor" opacity=".5"/></svg>',
+      camera: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>',
+      copy: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>',
+      upload: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4m0 0-4 4m4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+      check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      warn: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 2 20h20L12 4Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 10v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="16.6" r="1" fill="currentColor"/></svg>',
+      info: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="8" r="1" fill="currentColor"/></svg>',
+      chev: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6 9 12l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    };
+
+    function announce(text){live.textContent=text;document.querySelector('.announcement')?.remove();document.body.insertAdjacentHTML('beforeend',`<div class="announcement">${text}</div>`);setTimeout(()=>document.querySelector('.announcement')?.remove(),1300)}
+    function escapeHtml(text){return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+    function go(next){ screen = next; render(); }
+
+    function header(title, showBack){
+      return `<header class="header"><button class="back ${showBack?'':'hidden'}" id="backBtn" aria-label="Back">${icon.back}</button><h1>${title}</h1></header>`;
+    }
+
+    function render(){
+      if(screen==='productPhoto') app.innerHTML = renderProductPhoto();
+      else if(screen==='foodPhotography') app.innerHTML = renderFoodPhotography();
+      else if(screen==='resultPreview') app.innerHTML = renderResultPreview();
+      bindScreenActions();
+    }
+
+    function renderProductPhoto(){
+      return `
+        ${header('Product Photo', false)}
+        <div class="content">
+          <div class="hero-visual">${approvedPhoto ? `<img src="${approvedPhoto.url}" alt="Approved product photo">` : icon.dish}</div>
+          <div class="hero-status"><span class="status-dot"></span>Preview only · Not saved</div>
+
+          <div class="product-actions">
+            <button class="btn secondary" id="uploadPhotoDirect">${icon.upload}<span>Upload Photo</span></button>
+            <button class="btn" id="openFoodPhotography">Improve Photo</button>
+          </div>
+        </div>`;
+    }
+
+    function howItWorksBlock(){
+      return `
+        <button class="how-toggle" id="howItWorksToggle" aria-expanded="${howItWorksOpen}">
+          <span>How it works</span>
+          <span class="how-chev ${howItWorksOpen?'open':''}">${icon.chev}</span>
+        </button>
+        ${howItWorksOpen ? `<div class="steps-list">
+          <div class="step-row"><span class="step-num">1</span><div class="step-copy"><div class="step-title">Copy Prompt</div><div class="step-sub">Copy the Cefflo Food Photography prompt</div></div></div>
+          <div class="step-row"><span class="step-num">2</span><div class="step-copy"><div class="step-title">Add your food photo</div><div class="step-sub">Use the prompt with your original photo in an image-capable AI chat</div></div></div>
+          <div class="step-row"><span class="step-num">3</span><div class="step-copy"><div class="step-title">Choose your vibe</div><div class="step-sub">Choose the look or mood you want</div></div></div>
+          <div class="step-row"><span class="step-num">4</span><div class="step-copy"><div class="step-title">Generate</div><div class="step-sub">Let the AI create your menu photo</div></div></div>
+          <div class="step-row"><span class="step-num">5</span><div class="step-copy"><div class="step-title">Return &amp; upload</div><div class="step-sub">Bring the finished photo back to Cefflo</div></div></div>
+        </div>` : ''}`;
+    }
+
+    function renderFoodPhotography(){
+      const preHandoffBody = `
+        <p class="feature-sub" style="margin-top:0;font-size:13px;color:var(--text)">Make your food photo stand out.</p>
+        <div class="hero-visual compact">${approvedPhoto ? `<img src="${approvedPhoto.url}" alt="Approved product photo">` : icon.dish}</div>
+        ${howItWorksBlock()}
+        <button class="btn" id="copyPromptBtn">${icon.copy}<span>Copy Prompt</span></button>
+        ${promptCopyState==='ok' ? `<div class="copy-feedback ok">${icon.check}<span class="cf-copy"><b>Prompt copied</b>ChatGPT is opening -- paste it there with your food photo.</span></div>` : ''}
+        ${promptCopyState==='fail' ? `<div class="copy-feedback fail">${icon.warn}<span class="cf-copy"><b>Couldn't copy automatically</b>Select the text below and copy it manually.</span><div class="fallback"><textarea readonly id="fallbackText">${escapeHtml(CANONICAL_PROMPT)}</textarea></div></div>` : ''}`;
+      // Return State: the Vendor merely came back to this tab -- that is
+      // not proof a finished photo exists, only that we should now offer
+      // the upload action instead of the copy action. No expanded
+      // instructions, no repeated hero photo, no claim of completion.
+      const returnedBody = `
+        <div class="continuation-title" style="margin-top:0">Got your finished photo?</div>
+        <p class="caption">Upload your finished menu photo to continue.</p>
+        <div class="safety-note">${icon.info}<span>Check that the generated photo still matches your actual food and portion.</span></div>
+        <button class="btn" id="continueToUpload">${icon.upload}<span>Upload Finished Photo</span></button>
+        <div class="recovery-actions">
+          <button type="button" id="openChatGptAgain">Open ChatGPT again</button>
+          <span class="recovery-sep" aria-hidden="true">·</span>
+          <button type="button" id="copyPromptAgain">Copy Prompt again</button>
+        </div>
+        ${promptCopyState==='ok' ? `<div class="copy-feedback ok">${icon.check}<span class="cf-copy"><b>Prompt copied</b>Paste it in ChatGPT with your food photo.</span></div>` : ''}
+        ${promptCopyState==='fail' ? `<div class="copy-feedback fail">${icon.warn}<span class="cf-copy"><b>Couldn't copy automatically</b>Select the text below and copy it manually.</span><div class="fallback"><textarea readonly id="fallbackTextRecovery">${escapeHtml(CANONICAL_PROMPT)}</textarea></div></div>` : ''}`;
+      return `
+        ${header('Improve Photo', true)}
+        <div class="content">
+          ${handoffState==='returned' ? returnedBody : preHandoffBody}
+        </div>`;
+    }
+
+    function renderResultPreview(){
+      return `
+        ${header('Your Photo', true)}
+        <div class="content">
+          <p class="caption" style="font-size:11.5px;color:var(--text)">This is the photo you selected.</p>
+          <div class="hero-visual"><img src="${selectedResult.url}" alt="Selected generated photo"></div>
+          <div class="safety-note">${icon.info}<span>Check that the generated photo still matches your actual food and portion.</span></div>
+          <div class="result-actions">
+            <button class="btn" id="useThisPhoto">Use This Photo</button>
+            <button class="btn secondary" id="chooseDifferent">Change Photo</button>
+          </div>
+        </div>`;
+    }
+
+    function bindScreenActions(){
+      const backBtn = document.querySelector('#backBtn');
+      if(backBtn) backBtn.onclick = () => {
+        if(screen==='foodPhotography') go('productPhoto');
+        else if(screen==='resultPreview'){ abandonCandidate(); go('foodPhotography'); }
+      };
+      const uploadDirect = document.querySelector('#uploadPhotoDirect');
+      if(uploadDirect) uploadDirect.onclick = () => openResultPicker('direct');
+      const openFP = document.querySelector('#openFoodPhotography');
+      if(openFP) openFP.onclick = () => { promptCopyState = null; handoffState = 'idle'; howItWorksOpen = false; go('foodPhotography'); };
+      const howToggle = document.querySelector('#howItWorksToggle');
+      if(howToggle) howToggle.onclick = () => { howItWorksOpen = !howItWorksOpen; render(); };
+      const copyBtn = document.querySelector('#copyPromptBtn');
+      if(copyBtn) copyBtn.onclick = copyPrompt;
+      const continueBtn = document.querySelector('#continueToUpload');
+      if(continueBtn) continueBtn.onclick = () => openResultPicker('improve');
+      const chatGptAgainBtn = document.querySelector('#openChatGptAgain');
+      if(chatGptAgainBtn) chatGptAgainBtn.onclick = openChatGptAgain;
+      const copyAgainBtn = document.querySelector('#copyPromptAgain');
+      if(copyAgainBtn) copyAgainBtn.onclick = copyPromptAgain;
+      const useBtn = document.querySelector('#useThisPhoto');
+      if(useBtn) useBtn.onclick = useSelectedResult;
+      const differentBtn = document.querySelector('#chooseDifferent');
+      if(differentBtn) differentBtn.onclick = () => openResultPicker('improve');
+    }
+
+    async function writePromptToClipboard(){
+      // Shared by the initial handoff and the "Copy Prompt again" recovery
+      // action -- both must copy the exact same canonical prompt the exact
+      // same genuine way, never a stand-in or a re-derived string.
+      try{
+        if(!navigator.clipboard || !navigator.clipboard.writeText) throw new Error('clipboard unavailable');
+        await navigator.clipboard.writeText(CANONICAL_PROMPT);
+        promptCopyState = 'ok';
+        return true;
+      }catch(error){
+        promptCopyState = 'fail';
+        return false;
+      }
+    }
+
+    async function copyPrompt(){
+      const ok = await writePromptToClipboard();
+      if(ok){
+        announce('Prompt copied');
+        // Cefflo only copies the prompt and opens ChatGPT -- it never pastes
+        // the prompt or uploads the photo into ChatGPT itself; the Vendor
+        // does both of those manually once there.
+        handoffState = 'pending';
+        window.open(CHATGPT_URL, '_blank', 'noopener');
+      }else{
+        announce('Copy failed -- select the text manually');
+      }
+      render();
+    }
+
+    async function copyPromptAgain(){
+      // Recovery: copy only. Does not reset the workflow, does not leave
+      // Return State, and does not itself reopen ChatGPT.
+      const ok = await writePromptToClipboard();
+      announce(ok ? 'Prompt copied' : 'Copy failed -- select the text manually');
+      render();
+    }
+
+    function openChatGptAgain(){
+      // Recovery: open only. Does not copy, does not change the canonical
+      // prompt, does not claim generation happened, and does not itself
+      // alter handoffState -- Cefflo stays in Return State regardless of
+      // what the Vendor does in the ChatGPT tab.
+      window.open(CHATGPT_URL, '_blank', 'noopener');
+    }
+
+    function openResultPicker(context){
+      pickerContext = context || 'improve';
+      resultInput.value = '';
+      resultInput.click();
+    }
+
+    resultInput.addEventListener('change', () => {
+      const file = resultInput.files?.[0];
+      if(!file) return; // cancelling the picker leaves all existing state untouched
+      if(!file.type || !file.type.startsWith('image/')){
+        announce('Please choose an image file');
+        return;
+      }
+      if(pickerContext === 'direct'){
+        // Upload Photo: a direct replace, separate from the Food
+        // Photography round trip -- no intermediate AI-review screen.
+        const previousUrl = approvedPhoto?.url;
+        const url = URL.createObjectURL(file);
+        approvedPhoto = { url };
+        if(previousUrl && previousUrl!==url) URL.revokeObjectURL(previousUrl);
+        announce('Photo selected for preview');
+        go('productPhoto');
+        return;
+      }
+      if(selectedResult?.url) URL.revokeObjectURL(selectedResult.url);
+      selectedResult = { url: URL.createObjectURL(file), name: file.name };
+      announce('Photo selected');
+      go('resultPreview');
+    });
+
+    function handleReturnFocus(){
+      // Only a genuine return from a real handoff flips State 2 -> State 3.
+      // handoffState starts 'idle' and is set to 'pending' exclusively
+      // inside a successful copyPrompt() call, so this can never fire on
+      // initial page load. Because the guard checks specifically for
+      // 'pending', it also can never re-fire once already 'returned' --
+      // reopening ChatGPT again, toggling How it works, or a file-picker
+      // focus blip cannot reset or repeat this transition. A focus/
+      // visibility return is only ever treated as "the Vendor is back," not
+      // as proof a finished photo exists -- Return State still requires the
+      // Vendor to actually pick a file before anything is treated as real.
+      if(handoffState === 'pending'){
+        handoffState = 'returned';
+        promptCopyState = null;
+        if(screen === 'foodPhotography') render();
+      }
+    }
+    document.addEventListener('visibilitychange', () => {
+      if(document.visibilityState === 'visible') handleReturnFocus();
+    });
+    window.addEventListener('focus', handleReturnFocus);
+
+    function abandonCandidate(){
+      // Called only when the Vendor explicitly leaves the result-preview
+      // screen without using or replacing the selected photo (back
+      // navigation). Replacement and approval already own/revoke the URL
+      // through their own paths, so this must never fire while the
+      // candidate is still the one actively shown or about to be used.
+      if(selectedResult?.url) URL.revokeObjectURL(selectedResult.url);
+      selectedResult = null;
+    }
+
+    window.addEventListener('beforeunload', () => {
+      if(selectedResult?.url) URL.revokeObjectURL(selectedResult.url);
+      if(approvedPhoto?.url) URL.revokeObjectURL(approvedPhoto.url);
+    });
+
+    function useSelectedResult(){
+      if(!selectedResult?.url) return; // Use This Photo is only reachable after a real local selection
+      const previousUrl = approvedPhoto?.url;
+      approvedPhoto = { url: selectedResult.url };
+      selectedResult = null;
+      if(previousUrl && previousUrl!==approvedPhoto.url) URL.revokeObjectURL(previousUrl);
+      announce('Photo selected for preview');
+      go('productPhoto');
+    }
+
+    render();
+  </script>
+</body></html>

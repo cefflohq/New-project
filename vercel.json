@@ -5,6 +5,7 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/shared/:path*", "destination": "/shared/:path*" },
+    { "source": "/:path*", "has": [{ "type": "host", "value": "www.cefflo.com" }], "destination": "/marketing/:path*" },
     { "source": "/manifest.webmanifest", "has": [{ "type": "host", "value": "vendor.cefflo.com" }], "destination": "/vendor/manifest.webmanifest" },
     { "source": "/sw.js", "has": [{ "type": "host", "value": "vendor.cefflo.com" }], "destination": "/vendor/sw.js" },
     { "source": "/icons/:path*", "has": [{ "type": "host", "value": "vendor.cefflo.com" }], "destination": "/vendor/icons/:path*" },
@@ -13,7 +14,11 @@
     { "source": "/sw.js", "has": [{ "type": "host", "value": "rider.cefflo.com" }], "destination": "/rider/sw.js" },
     { "source": "/icons/:path*", "has": [{ "type": "host", "value": "rider.cefflo.com" }], "destination": "/rider/icons/:path*" },
     { "source": "/:path*", "has": [{ "type": "host", "value": "rider.cefflo.com" }], "destination": "/rider/:path*" },
-    { "source": "/:path*", "has": [{ "type": "host", "value": "track.cefflo.com" }], "destination": "/customer/:path*" }
+    { "source": "/:path*", "has": [{ "type": "host", "value": "tracking.cefflo.com" }], "destination": "/customer/:path*" },
+    { "source": "/manifest.webmanifest", "has": [{ "type": "host", "value": "foundr.cefflo.com" }], "destination": "/foundr/manifest.webmanifest" },
+    { "source": "/sw.js", "has": [{ "type": "host", "value": "foundr.cefflo.com" }], "destination": "/foundr/sw.js" },
+    { "source": "/icons/:path*", "has": [{ "type": "host", "value": "foundr.cefflo.com" }], "destination": "/foundr/icons/:path*" },
+    { "source": "/:path*", "has": [{ "type": "host", "value": "foundr.cefflo.com" }], "destination": "/foundr/:path*" }
   ],
   "headers": [
     {

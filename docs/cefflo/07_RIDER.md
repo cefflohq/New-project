@@ -1,5 +1,13 @@
 # CEFFLO --- RIDER PWA
 
+Current section describes the LIVE Rider PWA. Future target direction
+(NOT YET implemented, Founder review pending):
+`docs/cefflo/sot/13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` (active master as of
+2026-09-14, D-37; supersedes `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md`,
+now historical).
+
+**Terminology note — LOCKED (2026-09-12 freeze, locked 2026-09-14 per D-38):** "Cefflo Driver" is the locked user-facing product name for this surface's target-state Flutter app. The canonical role/schema/API name stays "Rider," unchanged and separately locked (`docs/cefflo/sot/01_PRODUCT_TRUTH.md` §4). This live PWA's own code/routes/schema are unaffected — "Rider" backend identifiers here are unchanged by the product-name lock.
+
 ## RI-00 Purpose
 
 Rider PWA executes the vendor's delivery plan.

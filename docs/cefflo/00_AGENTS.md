@@ -1,18 +1,27 @@
-# CEFFLO --- AGENTS ROUTER
+# CEFFLO --- AGENTS ROUTER (Codex context map)
 
-Status: Canonical Primary executor: Codex Final authority: Founder
+Status: Canonical routing map for the `docs/cefflo/` context documents,
+scoped to Codex tasks. Final authority: Founder.
+
+Agent roles, task routing and cross-agent authority are defined by
+`docs/cefflo/CEFFLO_BRAND_BRAIN.md` and
+`docs/cefflo/agent-os/CEFFLO_AGENT_OS_CORE.md` — read those first for
+who does what. This file does not assign a primary executor; it only
+routes Codex to the small `docs/cefflo/` context documents below.
 
 ## A-00 Purpose
 
-This file is the mandatory router for every Cefflo engineering task. It
+This file is a router for Cefflo engineering tasks worked by Codex. It
 tells Codex which small canonical documents to load, how to scope work,
-and which actions require approval.
+and which actions require approval. See `docs/cefflo/agent-os/CODEX_OPERATING.md`
+for Codex's full operating rules.
 
 ## A-01 Source of Truth
 
 -   GitHub `main` is canonical code SOT unless Founder explicitly
     approves another baseline.
 -   Canonical docs live in `docs/cefflo/`.
+-   The current canonical Founder-approved SOT root is `docs/cefflo/sot/00_INDEX.md` (2026-09-04); it supersedes `docs/cefflo/CEFFLO_BRAND_BRAIN.md` for brand/product/architecture doctrine per the same layering this file already describes above.
 -   Do not treat old exports, prototypes, screenshots, duplicate HTML
     files, historical deployments, or local snapshots as SOT without
     verification.
@@ -45,6 +54,8 @@ acceptance criteria.
 -   PWA/cache/version/offline → `15_PWA.md`
 -   QA/release/go-live → `16_QA_RELEASE.md`
 -   Codex/Claude/VPS/Remote workflow → `17_AI_WORKFLOW.md`
+-   Full canonical knowledge index → `docs/cefflo/sot/00_INDEX.md`
+-   Marketing/growth knowledge → `docs/cefflo/sot/marketing/00_MARKETING_KNOWLEDGE_PACK_INDEX.md`
 
 Load multiple domain docs only when the task genuinely crosses those
 contracts.

@@ -1,10 +1,16 @@
 import os
 import psycopg
+from environment_guard import TargetRefused, validate_database_target
 
 EXPECTED_TABLES = {'businesses','business_members','riders','orders','rider_assignments','delivery_stops','delivery_events','rider_locations','tracking_tokens','ratings'}
 EXPECTED_RPCS = {'bootstrap_business','get_my_businesses','create_delivery','assign_rider','rider_transition','complete_delivery','public_tracking','submit_rating'}
 
-with psycopg.connect(os.environ['DATABASE_URL']) as conn:
+try:
+    target = validate_database_target(allowed_environments=frozenset({'local', 'staging', 'test'}))
+except TargetRefused as error:
+    raise SystemExit(f'target_refused: {error}') from error
+
+with psycopg.connect(target.database_url) as conn:
     with conn.cursor() as cur:
         cur.execute("select table_name from information_schema.tables where table_schema='public'")
         tables = {r[0] for r in cur.fetchall()}
