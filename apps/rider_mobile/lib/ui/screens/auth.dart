@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -212,65 +214,191 @@ class CeffloAuthChip extends StatelessWidget {
   }
 }
 
-/// The multi-coloured Google "G", drawn as a mark rather than an imported
-/// brand asset the repo does not carry.
-class GoogleGlyph extends StatelessWidget {
-  const GoogleGlyph({super.key, this.size = 22});
+// ---------------------------------------------------------------------------
+// Third-party sign-in marks
+// ---------------------------------------------------------------------------
+//
+// `lucide_icons_flutter` ships no brand logos (its `apple` glyph is the fruit,
+// not the Apple Inc. mark), and `assets/brand/` is Cefflo-only by policy, so
+// the two marks the references draw on D02/D03 are reproduced here from their
+// official outlines rather than approximated with drawing primitives.
+
+/// Minimal SVG path-data reader — enough for the two brand outlines below
+/// (`M m L l H h V v C c S s Z z`; neither mark uses arcs or quadratics).
+Path _svgPath(String d) {
+  final tokens = RegExp(r'[MmLlHhVvCcSsZz]|-?\d*\.?\d+(?:[eE][-+]?\d+)?')
+      .allMatches(d)
+      .map((m) => m[0]!)
+      .toList();
+
+  final path = Path();
+  var i = 0;
+  var x = 0.0, y = 0.0; // current point
+  var cx = 0.0, cy = 0.0; // last cubic control point, for S/s reflection
+  var startX = 0.0, startY = 0.0;
+  var command = '';
+  var lastWasCubic = false;
+
+  double next() => double.parse(tokens[i++]);
+
+  while (i < tokens.length) {
+    if (RegExp(r'^[A-Za-z]$').hasMatch(tokens[i])) command = tokens[i++];
+    final rel = command.toLowerCase() == command;
+    switch (command.toLowerCase()) {
+      case 'm':
+        final nx = next(), ny = next();
+        x = rel ? x + nx : nx;
+        y = rel ? y + ny : ny;
+        path.moveTo(x, y);
+        startX = x;
+        startY = y;
+        // A repeated coordinate pair after M is an implicit lineTo.
+        command = rel ? 'l' : 'L';
+        lastWasCubic = false;
+      case 'l':
+        final nx = next(), ny = next();
+        x = rel ? x + nx : nx;
+        y = rel ? y + ny : ny;
+        path.lineTo(x, y);
+        lastWasCubic = false;
+      case 'h':
+        final nx = next();
+        x = rel ? x + nx : nx;
+        path.lineTo(x, y);
+        lastWasCubic = false;
+      case 'v':
+        final ny = next();
+        y = rel ? y + ny : ny;
+        path.lineTo(x, y);
+        lastWasCubic = false;
+      case 'c':
+        final x1 = rel ? x + next() : next(), y1 = rel ? y + next() : next();
+        final x2 = rel ? x + next() : next(), y2 = rel ? y + next() : next();
+        final nx = rel ? x + next() : next(), ny = rel ? y + next() : next();
+        path.cubicTo(x1, y1, x2, y2, nx, ny);
+        cx = x2;
+        cy = y2;
+        x = nx;
+        y = ny;
+        lastWasCubic = true;
+      case 's':
+        final x1 = lastWasCubic ? 2 * x - cx : x;
+        final y1 = lastWasCubic ? 2 * y - cy : y;
+        final x2 = rel ? x + next() : next(), y2 = rel ? y + next() : next();
+        final nx = rel ? x + next() : next(), ny = rel ? y + next() : next();
+        path.cubicTo(x1, y1, x2, y2, nx, ny);
+        cx = x2;
+        cy = y2;
+        x = nx;
+        y = ny;
+        lastWasCubic = true;
+      case 'z':
+        path.close();
+        x = startX;
+        y = startY;
+        lastWasCubic = false;
+    }
+  }
+  return path;
+}
+
+/// Paints one or more SVG outlines, scaled uniformly into the widget box.
+class _BrandMarkPainter extends CustomPainter {
+  const _BrandMarkPainter(this.shapes, this.viewBox);
+
+  /// (path data, fill colour) pairs, painted in order.
+  final List<(String, Color)> shapes;
+  final Size viewBox;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = math.min(
+      size.width / viewBox.width,
+      size.height / viewBox.height,
+    );
+    canvas.save();
+    canvas.translate(
+      (size.width - viewBox.width * scale) / 2,
+      (size.height - viewBox.height * scale) / 2,
+    );
+    canvas.scale(scale);
+    for (final (d, color) in shapes) {
+      canvas.drawPath(_svgPath(d), Paint()..color = color);
+    }
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _BrandMarkPainter oldDelegate) =>
+      oldDelegate.shapes != shapes || oldDelegate.viewBox != viewBox;
+}
+
+/// The Apple mark used by "Continue with Apple" (D02) and D03's Apple chip.
+class AppleGlyph extends StatelessWidget {
+  const AppleGlyph({super.key, this.size = 22, this.color = Colors.black});
   final double size;
+  final Color color;
+
+  static const _body =
+      'M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 '
+      '134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 '
+      '123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57-'
+      '155.5-127C46.7 790.7 0 663 0 541.8c0-194.4 126.4-297.5 250.8-297.5 '
+      '66.1 0 121.2 43.4 162.7 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 '
+      '2.6 198.3 99.2z';
+  static const _leaf =
+      'M554.1 159.4c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1'
+      '-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 '
+      '7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 '
+      '135.5-71.3z';
 
   @override
   Widget build(BuildContext context) => SizedBox(
     width: size,
     height: size,
-    child: CustomPaint(painter: _GooglePainter()),
+    child: CustomPaint(
+      painter: _BrandMarkPainter([
+        (_body, color),
+        (_leaf, color),
+      ], const Size(814, 1000)),
+    ),
   );
 }
 
-class _GooglePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromLTWH(
-      0,
-      0,
-      size.width,
-      size.height,
-    ).deflate(size.width * 0.08);
-    final stroke = size.width * 0.22;
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = stroke
-      ..strokeCap = StrokeCap.butt;
+/// The four-colour Google "G" used by "Continue with Google" (D02) and
+/// D03's Google chip.
+class GoogleGlyph extends StatelessWidget {
+  const GoogleGlyph({super.key, this.size = 22});
+  final double size;
 
-    void arc(double startDeg, double sweepDeg, Color color) {
-      paint.color = color;
-      canvas.drawArc(
-        rect.deflate(stroke / 2),
-        startDeg * 3.1415926 / 180,
-        sweepDeg * 3.1415926 / 180,
-        false,
-        paint,
-      );
-    }
-
-    arc(-18, -72, const Color(0xFFEA4335)); // red, top-right to top
-    arc(-90, -80, const Color(0xFFFBBC05)); // yellow, left
-    arc(170, 80, const Color(0xFF34A853)); // green, bottom
-    arc(-18, 90, const Color(0xFF4285F4)); // blue, right
-    // The blue crossbar into the centre.
-    final bar = Paint()..color = const Color(0xFF4285F4);
-    canvas.drawRect(
-      Rect.fromLTWH(
-        size.width * 0.50,
-        size.height * 0.42,
-        size.width * 0.45,
-        stroke,
-      ),
-      bar,
-    );
-  }
+  static const _blue =
+      'M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 '
+      '5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z';
+  static const _green =
+      'M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 '
+      '2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 '
+      '46 24 46z';
+  static const _yellow =
+      'M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34'
+      'C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z';
+  static const _red =
+      'M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 '
+      '24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 '
+      '12.31-9.07z';
 
   @override
-  bool shouldRepaint(covariant _GooglePainter oldDelegate) => false;
+  Widget build(BuildContext context) => SizedBox(
+    width: size,
+    height: size,
+    child: CustomPaint(
+      painter: _BrandMarkPainter(const [
+        (_blue, Color(0xFF4285F4)),
+        (_green, Color(0xFF34A853)),
+        (_yellow, Color(0xFFFBBC05)),
+        (_red, Color(0xFFEA4335)),
+      ], const Size(48, 48)),
+    ),
+  );
 }
 
 /// "OR" rule with a hairline either side (D02, D03).
@@ -468,7 +596,7 @@ class _SignInScreenState extends State<SignInScreen> {
       children: [
         CeffloAuthOption(
           label: 'Continue with Apple',
-          icon: LucideIcons.apple,
+          iconChild: const AppleGlyph(size: 24),
           onTap: widget.onEmail,
         ),
         const SizedBox(height: Gap.md),
@@ -675,7 +803,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             Expanded(
               child: CeffloAuthChip(
                 label: 'Apple',
-                icon: LucideIcons.apple,
+                iconChild: const AppleGlyph(size: 21),
                 onTap: widget.onSignIn,
               ),
             ),
