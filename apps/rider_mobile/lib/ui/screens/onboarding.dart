@@ -93,7 +93,6 @@ class AcceptInvitationScreen extends StatelessWidget {
           const SizedBox(height: Gap.lg),
           CeffloPrimaryButton(
             'Accept & Continue',
-            trailingArrow: true,
             onTap: () => app.go(DRoute.driverDetails),
           ),
           const SizedBox(height: Gap.md),
@@ -348,7 +347,6 @@ class _DriverDetailsScreenState extends State<DriverDetailsScreen> {
           const SizedBox(height: Gap.lg),
           CeffloPrimaryButton(
             'Continue',
-            trailingArrow: true,
             onTap: () => app.go(DRoute.personalDetails),
           ),
         ],
@@ -520,7 +518,6 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
           const SizedBox(height: Gap.lg),
           CeffloPrimaryButton(
             'Next',
-            trailingArrow: true,
             onTap: () => app.go(DRoute.vehicleAndDocuments),
           ),
         ],
@@ -627,11 +624,7 @@ class _VehicleAndDocumentsScreenState extends State<VehicleAndDocumentsScreen> {
               onRemove: () {},
             ),
           const SizedBox(height: Gap.lg),
-          CeffloPrimaryButton(
-            'Submit for Review',
-            trailingArrow: true,
-            onTap: _submit,
-          ),
+          CeffloPrimaryButton('Submit for Review', onTap: _submit),
           const SizedBox(height: Gap.md),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -991,7 +984,6 @@ class ApprovedScreen extends StatelessWidget {
           const SizedBox(height: Gap.lg),
           CeffloPrimaryButton(
             'Go to Today',
-            trailingArrow: true,
             onTap: () {
               app.setStage(DriverStage.active);
               app.resetTo(DRoute.today);
@@ -1420,7 +1412,6 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
           const SizedBox(height: Gap.lg),
           CeffloPrimaryButton(
             'Continue',
-            trailingArrow: true,
             onTap: () => app.go(DRoute.businessJoined),
           ),
           const SizedBox(height: Gap.lg),
@@ -1552,7 +1543,6 @@ class BusinessJoinedScreen extends StatelessWidget {
           const SizedBox(height: Gap.lg),
           CeffloPrimaryButton(
             'Go to Home',
-            trailingArrow: true,
             onTap: () {
               app.setStage(DriverStage.active);
               app.resetTo(DRoute.today);

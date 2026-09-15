@@ -389,7 +389,6 @@ class TodayScreen extends StatelessWidget {
                 const SizedBox(height: Gap.lg),
                 CeffloPrimaryButton(
                   'View Run Details',
-                  trailingArrow: true,
                   height: 52,
                   onTap: () => app.go(DRoute.runDetails, entityId: run.id),
                 ),
@@ -523,7 +522,6 @@ class RunDetailsScreen extends StatelessWidget {
           const SizedBox(height: Gap.lg),
           CeffloPrimaryButton(
             'View Orders',
-            trailingArrow: true,
             onTap: () => app.go(DRoute.stopList, entityId: run.id),
           ),
         ],

@@ -622,7 +622,6 @@ class DocumentsScreen extends StatelessWidget {
             Builder(
               builder: (sheetContext) => CeffloPrimaryButton(
                 'Submit for Review',
-                trailingArrow: true,
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
                   await showCeffloSubmitFlow(

@@ -775,11 +775,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           body: 'Password must be at least 8 characters\nwith a number and a letter.',
         ),
         const SizedBox(height: Gap.lg),
-        CeffloPrimaryButton(
-          'Create Account',
-          trailingArrow: true,
-          onTap: widget.onCreated,
-        ),
+        CeffloPrimaryButton('Create Account', onTap: widget.onCreated),
         const SizedBox(height: Gap.lg),
         CeffloInlinePrompt(
           prompt: 'Already have an account?',
@@ -843,11 +839,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           keyboardType: TextInputType.emailAddress,
         ),
         const SizedBox(height: Gap.lg),
-        CeffloPrimaryButton(
-          'Send Reset Link',
-          trailingArrow: true,
-          onTap: widget.onSent,
-        ),
+        CeffloPrimaryButton('Send Reset Link', onTap: widget.onSent),
         const SizedBox(height: Gap.lg),
         CeffloTextLink('Back to Sign In', onTap: widget.onBackToSignIn),
         const SizedBox(height: 44),
@@ -1125,11 +1117,7 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
           body: 'Password must be at least 8 characters\nwith a number and a letter.',
         ),
         const SizedBox(height: Gap.lg),
-        CeffloPrimaryButton(
-          'Update Password',
-          trailingArrow: true,
-          onTap: widget.onUpdated,
-        ),
+        CeffloPrimaryButton('Update Password', onTap: widget.onUpdated),
       ],
     ),
   );
@@ -1185,11 +1173,7 @@ class PasswordUpdatedScreen extends StatelessWidget {
           body: 'On this device, you can continue using the app.',
         ),
         const SizedBox(height: Gap.section),
-        CeffloPrimaryButton(
-          'Back to Sign In',
-          trailingArrow: true,
-          onTap: onBackToSignIn,
-        ),
+        CeffloPrimaryButton('Back to Sign In', onTap: onBackToSignIn),
       ],
     ),
   );
@@ -1298,11 +1282,7 @@ class InvitationLandingScreen extends StatelessWidget {
             body: 'Orders, navigation and support.',
           ),
           const SizedBox(height: Gap.lg),
-          CeffloPrimaryButton(
-            'Accept Invitation',
-            trailingArrow: true,
-            onTap: onAccept,
-          ),
+          CeffloPrimaryButton('Accept Invitation', onTap: onAccept),
           const SizedBox(height: Gap.md),
           Center(child: CeffloTextLink('Decline', onTap: onDecline)),
         ],

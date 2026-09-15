@@ -14,19 +14,14 @@ import 'brand.dart';
 
 /// The approved yellow primary CTA.
 ///
-/// The trailing arrow is **not** a blanket rule: each reference shows its own
-/// button either with an arrow ("Create Account →", "Send Reset Link →",
-/// "Update Password →", "Back to Sign In →", "Accept Invitation →",
-/// "Continue →", "Next →", "Submit for Review →", "Go to Today →",
-/// "Go to Home →", "View Run Details →", "View Orders →") or without it
-/// ("Sign Up", "Sign In", "Save", "Done", "Submit", "Next" on D28,
-/// "Submit Ticket"). Callers state which, per button.
+/// The label is always centred and carries no decorative trailing arrow.
+/// (The only arrows that remain in the app are the mechanical handle glyphs
+/// on the genuine slide-to-confirm controls — see [CeffloSlideAction].)
 class CeffloPrimaryButton extends StatelessWidget {
   const CeffloPrimaryButton(
     this.label, {
     super.key,
     required this.onTap,
-    this.trailingArrow = false,
     this.busy = false,
     this.pill = true,
     this.height = Sizes.buttonHeight,
@@ -34,7 +29,6 @@ class CeffloPrimaryButton extends StatelessWidget {
 
   final String label;
   final VoidCallback? onTap;
-  final bool trailingArrow;
   final bool busy;
 
   /// Pill (D02/D03/D12.x/D34-D40) vs the softer 16px radius the operational
@@ -68,28 +62,16 @@ class CeffloPrimaryButton extends StatelessWidget {
                     color: CefColors.onAccent,
                   ),
                 )
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: CefColors.onAccent,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                    if (trailingArrow) ...[
-                      const SizedBox(width: 10),
-                      const Icon(
-                        LucideIcons.arrowRight,
-                        size: 19,
-                        color: CefColors.onAccent,
-                      ),
-                    ],
-                  ],
+              : Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: CefColors.onAccent,
+                    letterSpacing: -0.2,
+                  ),
                 ),
         ),
       ),
