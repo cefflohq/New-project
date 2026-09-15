@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -1837,13 +1838,25 @@ class CeffloSuccessTick extends StatelessWidget {
   }
 }
 
-/// Dimmed + blurred backdrop host for the processing/success modal pair.
+/// Dimmed **and blurred** backdrop host for every blocking modal.
+///
+/// The reference renders of the pop-up pairs (D12.2 Submitting / D12.3
+/// Application Submitted, and the support Submitting… / Request submitted
+/// pair) all show the screen underneath defocused, not merely darkened —
+/// the underlying form is unreadable behind the card. A dim alone left the
+/// page sharp and competing with the modal, so the barrier carries a
+/// Gaussian blur as well as the tint.
 Future<T?> showCeffloModal<T>(BuildContext context, Widget modal) =>
     showDialog<T>(
       context: context,
       barrierDismissible: false,
-      barrierColor: const Color(0x99101C33),
-      builder: (_) => modal,
+      // The tint is painted inside the filtered layer instead of by the
+      // barrier, so a single stacking context carries both treatments.
+      barrierColor: Colors.transparent,
+      builder: (_) => BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 7, sigmaY: 7),
+        child: ColoredBox(color: const Color(0x99101C33), child: modal),
+      ),
     );
 
 /// The processing half of the reference's two-step submit motif: four dots
