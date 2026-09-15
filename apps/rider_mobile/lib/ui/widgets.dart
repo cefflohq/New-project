@@ -385,16 +385,15 @@ class CeffloBrandHeader extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 /// The shared D02–D12 auth geometry: navy gradient top with an optional back
-/// control and step progress, a display heading + supporting line, and a
-/// white surface **attached to the bottom edge of the screen** (never a
-/// floating card) with rounded top corners.
+/// control, a display heading + supporting line, and a white surface
+/// **attached to the bottom edge of the screen** (never a floating card)
+/// with rounded top corners.
 class CeffloAuthScaffold extends StatelessWidget {
   const CeffloAuthScaffold({
     super.key,
     this.onBack,
     this.title,
     this.subtitle,
-    this.step,
     this.headerTrailing,
     this.headerAction,
     required this.sheet,
@@ -411,7 +410,6 @@ class CeffloAuthScaffold extends StatelessWidget {
   final VoidCallback? onBack;
   final String? title;
   final String? subtitle;
-  final CeffloStepProgress? step;
 
   /// e.g. D12.1's avatar chip sitting to the right of the heading block.
   final Widget? headerTrailing;
@@ -435,7 +433,6 @@ class CeffloAuthScaffold extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (step != null) ...[step!, const SizedBox(height: Gap.lg)],
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -625,65 +622,6 @@ class CeffloNavySheetScaffold extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Segmented step indicator — "Step 1 of 3" under a row of pill segments
-/// (D04, D07, D10, D12, D12.1, D12.2).
-class CeffloStepProgress extends StatelessWidget {
-  const CeffloStepProgress({
-    super.key,
-    required this.current,
-    required this.total,
-    required this.segments,
-    this.label,
-  });
-
-  /// 1-based index of the current step.
-  final int current;
-
-  /// Total steps, as printed in the caption line.
-  final int total;
-
-  /// Number of segment bars drawn. The references do not always draw one
-  /// bar per step (D04 shows 4 bars for "Step 1 of 3"), so this is explicit.
-  final int segments;
-
-  final String? label;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Row(
-        children: [
-          for (var i = 0; i < segments; i++) ...[
-            if (i > 0) const SizedBox(width: 6),
-            Container(
-              width: 34,
-              height: 5,
-              decoration: BoxDecoration(
-                color: i < current
-                    ? CefColors.accent
-                    : CefColors.onNavy.withValues(alpha: 0.28),
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-          ],
-        ],
-      ),
-      const SizedBox(height: Gap.sm),
-      Text(
-        label ?? 'Step $current of $total',
-        style: TextStyle(
-          fontFamily: 'Manrope',
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-          color: CefColors.onNavy.withValues(alpha: 0.85),
-        ),
-      ),
-    ],
-  );
 }
 
 // ---------------------------------------------------------------------------

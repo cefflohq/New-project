@@ -22,7 +22,6 @@ class AcceptInvitationScreen extends StatelessWidget {
     final business = DemoData.invitingBusiness;
     return CeffloAuthScaffold(
       onBack: app.back,
-      step: const CeffloStepProgress(current: 2, total: 2, segments: 3),
       title: 'Accept Invitation',
       subtitle: 'You’ve been invited to join this\nbusiness on Cefflo.',
       sheetPadding: const EdgeInsets.fromLTRB(
@@ -280,7 +279,6 @@ class _DriverDetailsScreenState extends State<DriverDetailsScreen> {
     final app = AppScope.of(context);
     return CeffloAuthScaffold(
       onBack: app.back,
-      headerAction: const CeffloStepProgress(current: 2, total: 2, segments: 2),
       title: 'Driver Details',
       subtitle: 'Tell us a bit more so the business\ncan verify your profile.',
       sheetPadding: const EdgeInsets.fromLTRB(
@@ -470,7 +468,6 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
     final app = AppScope.of(context);
     return CeffloAuthScaffold(
       onBack: app.back,
-      step: const CeffloStepProgress(current: 1, total: 2, segments: 4),
       title: 'Personal Details',
       subtitle: 'Let’s get to know you. This information\nwill be shared with the business.',
       headerTrailing: const AvatarPicker(size: 66),
@@ -578,7 +575,6 @@ class _VehicleAndDocumentsScreenState extends State<VehicleAndDocumentsScreen> {
     final app = AppScope.of(context);
     return CeffloAuthScaffold(
       onBack: app.back,
-      step: const CeffloStepProgress(current: 2, total: 2, segments: 3),
       title: 'Vehicle & Documents',
       subtitle: 'Add your vehicle details and required\ndocuments to complete your profile.',
       sheetPadding: const EdgeInsets.fromLTRB(

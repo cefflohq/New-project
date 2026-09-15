@@ -738,7 +738,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   @override
   Widget build(BuildContext context) => CeffloAuthScaffold(
     onBack: widget.onBack,
-    step: const CeffloStepProgress(current: 1, total: 3, segments: 4),
     title: 'Create your\naccount',
     subtitle: 'Let’s get you started. Create your\nCefflo Driver account.',
     sheet: Column(
@@ -1104,7 +1103,6 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
   @override
   Widget build(BuildContext context) => CeffloAuthScaffold(
     onBack: widget.onBack,
-    step: const CeffloStepProgress(current: 2, total: 3, segments: 4),
     title: 'Set a new\npassword',
     subtitle: 'Choose a strong password for\nyour Cefflo Driver account.',
     sheet: Column(
