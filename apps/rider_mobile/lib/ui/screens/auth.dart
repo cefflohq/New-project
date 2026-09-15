@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -524,10 +525,33 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  /// D01 is a hold, not a gate: it shows for ~3 seconds and then continues
+  /// into D02 on its own. Tapping still skips ahead.
+  Timer? _hold;
+
+  @override
+  void initState() {
+    super.initState();
+    _hold = Timer(const Duration(seconds: 3), _continue);
+  }
+
+  @override
+  void dispose() {
+    _hold?.cancel();
+    super.dispose();
+  }
+
+  void _continue() {
+    if (!mounted || _hold == null) return;
+    _hold!.cancel();
+    _hold = null;
+    widget.onContinue();
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     body: GestureDetector(
-      onTap: widget.onContinue,
+      onTap: _continue,
       child: NavyBackdrop(
         watermark: false,
         child: SafeArea(
