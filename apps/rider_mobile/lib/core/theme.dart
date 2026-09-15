@@ -1,40 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-/// Spacing per the CEFFLO Experience System (docs/cefflo/sot/
-/// 12_EXPERIENCE_SYSTEM.md): 12px gutter, ~13px card padding, 11-12px card
-/// gaps, 20px section gaps. Same values as Vendor Mobile's Gap -- one shared
-/// spacing language across both Flutter clients.
+/// Spacing derived from the locked Cefflo Driver reference set (D01–D40C).
+/// The screen gutter in the references measures ~20 logical px against the
+/// 390pt iPhone 13 Pro baseline, card padding ~16, card gaps ~12 and
+/// section gaps ~20. The `gutter`/`cardPadding`/`cardGap`/`section` names
+/// the existing scaffold already used are kept so nothing downstream has to
+/// be renamed.
 class Gap {
-  static const gutter = 12.0;
-  static const cardPadding = 13.0;
-  static const cardGap = 11.0;
+  static const gutter = 20.0; // screen side padding in every reference
+  static const cardPadding = 16.0;
+  static const cardGap = 12.0;
   static const section = 20.0;
   static const xs = 4.0;
   static const sm = 8.0;
   static const md = 12.0;
   static const lg = 16.0;
+  static const xl = 24.0;
 }
 
-/// Rider-specific addition to the shared Sizes vocabulary: R-flow slide
-/// actions need a taller, thumb-reachable target than a normal button
-/// (Founder-locked safety rule, docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_
-/// MASTER.md S3 -- one-handed operation, no accidental tap fallback).
+/// Geometry measured off the reference renders. Every value here exists
+/// because a reference shows it, not because it is a round number.
 class Sizes {
-  static const chrome = 60.0; // header + bottom nav, excluding safe areas
-  static const icon = 22.0; // visual icon size
-  static const tapTarget = 44.0; // minimum interactive target
-  static const cardRadius = 14.0;
-  static const buttonRadius = 999.0; // pill
-  static const inputRadius = 14.0;
-  static const slideHeight = 64.0; // Critical Slide Action track height
-  static const slideKnob = 56.0; // Critical Slide Action knob diameter
+  static const headerBar = 56.0; // title row height on inner screens
+  static const icon = 22.0;
+  static const tapTarget = 44.0;
+
+  /// The white surfaces attached to the bottom edge in D02–D12 read ~28
+  /// radius on their top corners; list/option cards inside them read ~14–16.
+  static const sheetRadius = 28.0;
+  static const cardRadius = 16.0;
+  static const innerRadius = 12.0;
+  static const buttonRadius = 999.0; // pill — D02 Sign Up, D03 Sign In, …
+  static const softButtonRadius = 16.0; // D28 Next / D29 Submit / D30 Done
+  static const inputRadius = 12.0;
+  static const inputHeight = 52.0;
+  static const buttonHeight = 56.0;
+
+  /// Critical Slide Action (D21.1/D21.2 Slide to Confirm Route, D22 Slide to
+  /// Arrive, D23 Slide to Complete). The knob deliberately overflows the
+  /// track vertically, exactly as the references draw it.
+  static const slideHeight = 60.0;
+  static const slideKnob = 68.0;
+
+  static const bottomNav = 64.0;
 }
 
-/// Light Mode only (Founder scope correction, 2026-09-11): Rider Flutter is
-/// a new build and ships Light Mode only for now. Dark Mode is HOLD for a
-/// later pass -- no CefColors.dark exists here, unlike Vendor Mobile's
-/// theme.dart, deliberately.
+/// Light Mode only (Founder scope decision). D38 Settings shows an
+/// "Appearance" row and that row is reproduced, but no dark theme is built
+/// behind it because no reference shows a dark screen.
 class CefColors extends ThemeExtension<CefColors> {
   const CefColors({
     required this.canvas,
@@ -55,31 +68,46 @@ class CefColors extends ThemeExtension<CefColors> {
   final Color textPrimary, textLabel, textSecondary;
   final Color attention, success, warning, info, iconColor;
 
-  /// CEFFLO Yellow -- active selection, primary controls, and the Critical
-  /// Slide Action knob only. Never body text, never a generic filled
-  /// content card, never a permanent background.
+  /// CEFFLO Yellow (D-34 locked token) — primary CTAs, the slide knob, the
+  /// active bottom-nav indicator and the step-progress fill. Never body
+  /// text, never a generic filled content card.
   static const accent = Color(0xFFFEC819);
-  static const onAccent = Color(0xFF181818);
+  static const onAccent = Color(0xFF12213E);
 
-  /// Navy -- selective raised surface (status/hero cards, auth screens,
-  /// the field-execution header per the SOT's "black card" Slide direction
-  /// re-expressed as Navy under D-33). Same value as Vendor Mobile's Navy.
+  /// Navy — auth/header structure, the slide track, headings on white.
   static const navy = Color(0xFF12213E);
 
+  /// The stops sampled off the reference header gradient: bright cobalt in
+  /// the top-right corner falling to deep navy at bottom-left.
+  static const gradientBright = Color(0xFF0A6BE0);
+  static const gradientMid = Color(0xFF01305F);
+  static const gradientDeep = Color(0xFF011F3F);
+
+  /// Text sitting directly on the navy gradient.
+  static const onNavy = Color(0xFFFFFFFF);
+  static const onNavyMuted = Color(0xFFC3D3E8);
+
   static const light = CefColors(
-    canvas: Color(0xFFF7F8FA), // Workspace
-    card: Color(0xFFFFFFFF), // Surface
-    border: Color(0xFFE3E6EE),
+    canvas: Color(0xFFF5F7FA),
+    card: Color(0xFFFFFFFF),
+    border: Color(0xFFE4E8F0),
     chrome: Color(0xFFFFFFFF),
-    textPrimary: Color(0xFF181818),
-    textLabel: Color(0xFF242424),
-    textSecondary: Color(0xFF666C80),
+    textPrimary: Color(0xFF101C33),
+    textLabel: Color(0xFF1B2B4B),
+    textSecondary: Color(0xFF6B7A94),
     attention: Color(0xFFD73C2B),
-    success: Color(0xFF248648),
-    warning: Color(0xFF9A6700), // text-on-tint, D-34
+    success: Color(0xFF17A34A),
+    warning: Color(0xFF9A6700),
     info: Color(0xFF2A6EEC),
-    iconColor: Color(0xFF242424),
+    iconColor: Color(0xFF1B2B4B),
   );
+
+  /// Tint surfaces the references use for inset info rows (the pale blue
+  /// blocks inside D04/D06/D08/D10/D14 cards).
+  static const tintInfo = Color(0xFFEFF4FC);
+  static const tintSuccess = Color(0xFFEAF7EF);
+  static const tintWarning = Color(0xFFFEF6E2);
+  static const tintNeutral = Color(0xFFF4F6FA);
 
   @override
   CefColors copyWith() => this;
@@ -91,25 +119,64 @@ class CefColors extends ThemeExtension<CefColors> {
 
 extension CefColorsX on BuildContext {
   CefColors get c => Theme.of(this).extension<CefColors>()!;
+  TextTheme get t => Theme.of(this).textTheme;
 }
 
-/// SOT S5A: restrained border + subtle two-layer soft shadow, both
-/// Navy-tinted rather than pure black. Same two layers as Vendor Mobile's
-/// cefCardShadow() and the web pilots' --shadow-card-tight/-soft tokens.
+/// The navy header gradient behind every Cefflo Driver screen chrome.
+const cefHeaderGradient = LinearGradient(
+  begin: Alignment.topRight,
+  end: Alignment.bottomLeft,
+  colors: [
+    CefColors.gradientBright,
+    CefColors.gradientMid,
+    CefColors.gradientDeep,
+  ],
+  stops: [0.0, 0.48, 1.0],
+);
+
+/// Restrained two-layer navy-tinted shadow — the only elevation the
+/// references show on white cards.
 List<BoxShadow> cefCardShadow() => const [
-  BoxShadow(color: Color(0x0D12213E), blurRadius: 2, offset: Offset(0, 1)),
-  BoxShadow(color: Color(0x1412213E), blurRadius: 16, offset: Offset(0, 6), spreadRadius: -4),
+  BoxShadow(color: Color(0x0A12213E), blurRadius: 2, offset: Offset(0, 1)),
+  BoxShadow(
+    color: Color(0x1412213E),
+    blurRadius: 18,
+    offset: Offset(0, 8),
+    spreadRadius: -8,
+  ),
+];
+
+/// Softer lift for a white surface sitting over the navy header.
+List<BoxShadow> cefSheetShadow() => const [
+  BoxShadow(
+    color: Color(0x1A0A1B33),
+    blurRadius: 24,
+    offset: Offset(0, -6),
+    spreadRadius: -6,
+  ),
 ];
 
 ThemeData buildRiderTheme() {
   const c = CefColors.light;
-  final base = GoogleFonts.manropeTextTheme();
-  TextStyle t(double size, FontWeight weight, Color color, {double? spacing}) =>
-      base.bodyMedium!.copyWith(fontSize: size, fontWeight: weight, color: color, letterSpacing: spacing);
+  TextStyle t(
+    double size,
+    FontWeight weight,
+    Color color, {
+    double? spacing,
+    double? height,
+  }) => TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: size,
+    fontWeight: weight,
+    color: color,
+    letterSpacing: spacing,
+    height: height,
+  );
 
   return ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
+    fontFamily: 'Manrope',
     scaffoldBackgroundColor: c.canvas,
     splashFactory: NoSplash.splashFactory,
     highlightColor: Colors.transparent,
@@ -118,20 +185,25 @@ ThemeData buildRiderTheme() {
       seedColor: CefColors.accent,
       brightness: Brightness.light,
       surface: c.card,
+      primary: CefColors.navy,
     ),
     extensions: const [c],
     textTheme: TextTheme(
-      // Page/section titles 18/650.
-      titleLarge: t(18, FontWeight.w600, c.textPrimary, spacing: -0.2),
-      // Card primary 15-16/650.
-      titleMedium: t(16, FontWeight.w600, c.textPrimary),
-      titleSmall: t(15, FontWeight.w600, c.textPrimary),
-      // Supporting 14/500.
-      bodyMedium: t(14, FontWeight.w500, c.textSecondary),
-      bodySmall: t(13, FontWeight.w500, c.textSecondary),
+      // Auth display headings — "Welcome Back", "Create your account".
+      displayLarge: t(32, FontWeight.w800, CefColors.onNavy, spacing: -0.8, height: 1.15),
+      displayMedium: t(26, FontWeight.w800, CefColors.onNavy, spacing: -0.6, height: 1.2),
+      displaySmall: t(22, FontWeight.w800, c.textPrimary, spacing: -0.4),
+      // Screen/section titles.
+      titleLarge: t(18, FontWeight.w700, c.textPrimary, spacing: -0.2),
+      titleMedium: t(16, FontWeight.w700, c.textPrimary),
+      titleSmall: t(15, FontWeight.w700, c.textPrimary),
+      // Supporting copy.
+      bodyLarge: t(15, FontWeight.w500, c.textSecondary, height: 1.4),
+      bodyMedium: t(14, FontWeight.w500, c.textSecondary, height: 1.4),
+      bodySmall: t(13, FontWeight.w500, c.textSecondary, height: 1.4),
       labelLarge: t(14, FontWeight.w600, c.textLabel),
-      // KPI/display 29.
-      displaySmall: t(29, FontWeight.w600, c.textPrimary, spacing: -0.8),
+      labelMedium: t(13, FontWeight.w600, c.textLabel),
+      labelSmall: t(12, FontWeight.w600, c.textSecondary),
     ),
   );
 }

@@ -1,5 +1,5 @@
 name: cefflo_rider_mobile
-description: "Cefflo Rider Mobile — Flutter client wired to the canonical Cefflo backend (staging only)."
+description: "Cefflo Driver Mobile — Flutter client wired to the canonical Cefflo backend (staging only). Internal/package naming stays 'rider' per D-38; the product name rendered in the UI is 'Cefflo Driver'."
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -11,7 +11,6 @@ dependencies:
     sdk: flutter
   supabase_flutter: ^2.8.0
   lucide_icons_flutter: ^3.1.18
-  google_fonts: ^8.2.1
 
 dev_dependencies:
   flutter_test:
@@ -20,3 +19,25 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    # D-35 canonical logo assets, copied byte-identical from
+    # docs/cefflo/brand/assets/logo/. The mark is never redrawn in code.
+    - assets/brand/
+  fonts:
+    # Manrope, bundled locally rather than fetched at runtime (the previous
+    # google_fonts dependency), so the app renders identically offline and in
+    # headless preview/screenshot builds. Weights match the reference set:
+    # Medium/SemiBold for supporting text and labels, Bold for card titles,
+    # ExtraBold for the auth display headings.
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/manrope/Manrope-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/manrope/Manrope-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/manrope/Manrope-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/manrope/Manrope-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/manrope/Manrope-ExtraBold.ttf
+          weight: 800

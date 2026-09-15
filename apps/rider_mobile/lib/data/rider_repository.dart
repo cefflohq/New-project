@@ -24,11 +24,31 @@ class RepositoryError implements Exception {
 /// the server owns those decisions (docs/cefflo/sot/
 /// 08_RIDER_FLUTTER_33_SCREEN_MASTER.md S2).
 class RiderRepository {
-  RiderRepository(this._db);
-  final SupabaseClient _db;
+  RiderRepository(SupabaseClient db) : _client = db, isDemo = false;
 
-  User? get currentUser => _db.auth.currentUser;
-  Stream<AuthState> get authChanges => _db.auth.onAuthStateChange;
+  /// Prototype/preview boot mode: no Supabase client, no credentials, and
+  /// every backend call short-circuits. The UI reads its content from
+  /// `demo_data.dart` fixtures instead. Ported from Vendor Mobile's
+  /// `VendorRepository.demo()` so this app has a runnable, screenshot-able
+  /// preview build (`--dart-define=CEFFLO_UI_PROTOTYPE=true`).
+  RiderRepository.demo() : _client = null, isDemo = true;
+
+  final SupabaseClient? _client;
+  final bool isDemo;
+
+  SupabaseClient get _db {
+    final db = _client;
+    if (db == null) {
+      throw RepositoryError(
+        'This build runs in UI prototype mode and is not connected to a backend.',
+      );
+    }
+    return db;
+  }
+
+  User? get currentUser => isDemo ? null : _db.auth.currentUser;
+  Stream<AuthState> get authChanges =>
+      isDemo ? const Stream<AuthState>.empty() : _db.auth.onAuthStateChange;
 
   Future<void> signInWithPassword(String identifier, String password) => _run(
     () => _db.auth.signInWithPassword(
