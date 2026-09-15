@@ -247,7 +247,11 @@ class TodayScreen extends StatelessWidget {
       header: CeffloBrandHeader(
         onBell: () => app.go(DRoute.notifications),
         child: Padding(
-          padding: const EdgeInsets.only(top: 14, bottom: Gap.lg, right: Gap.sm),
+          padding: const EdgeInsets.only(
+            top: 14,
+            bottom: Gap.lg,
+            right: Gap.sm,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -288,7 +292,9 @@ class TodayScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: Text('Today’s Overview', style: context.t.titleMedium)),
+              Expanded(
+                child: Text('Today’s Overview', style: context.t.titleMedium),
+              ),
               Text(DemoData.todayDateLabel, style: context.t.bodySmall),
             ],
           ),
@@ -341,7 +347,9 @@ class TodayScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   run.reference,
-                                  style: context.t.displaySmall?.copyWith(fontSize: 20),
+                                  style: context.t.displaySmall?.copyWith(
+                                    fontSize: 20,
+                                  ),
                                 ),
                                 const SizedBox(width: Gap.sm),
                                 CeffloStatusChip(
@@ -351,10 +359,15 @@ class TodayScreen extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: Gap.sm),
-                            MetaRow(icon: LucideIcons.mapPin, text: run.zone, dense: true),
+                            MetaRow(
+                              icon: LucideIcons.mapPin,
+                              text: run.zone,
+                              dense: true,
+                            ),
                             MetaRow(
                               icon: LucideIcons.package,
-                              text: '${run.orderCount} orders  •  ${run.distanceKm} km',
+                              text:
+                                  '${run.orderCount} orders  •  ${run.distanceKm} km',
                               dense: true,
                             ),
                             MetaRow(
@@ -365,7 +378,11 @@ class TodayScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Icon(LucideIcons.chevronRight, size: 22, color: c.textSecondary),
+                      Icon(
+                        LucideIcons.chevronRight,
+                        size: 22,
+                        color: c.textSecondary,
+                      ),
                     ],
                   ),
                 ),
@@ -405,7 +422,12 @@ class RunDetailsScreen extends StatelessWidget {
             onBell: () => app.go(DRoute.notifications),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, Gap.lg),
+            padding: const EdgeInsets.fromLTRB(
+              Gap.gutter,
+              0,
+              Gap.gutter,
+              Gap.lg,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -434,7 +456,12 @@ class RunDetailsScreen extends StatelessWidget {
           ),
         ],
       ),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.section),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.section,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -447,8 +474,14 @@ class RunDetailsScreen extends StatelessWidget {
             child: Column(
               children: [
                 MetaRow(icon: LucideIcons.mapPin, text: run.zone),
-                MetaRow(icon: LucideIcons.package, text: '${run.orderCount} orders'),
-                MetaRow(icon: LucideIcons.arrowRight, text: '${run.distanceKm} km'),
+                MetaRow(
+                  icon: LucideIcons.package,
+                  text: '${run.orderCount} orders',
+                ),
+                MetaRow(
+                  icon: LucideIcons.arrowRight,
+                  text: '${run.distanceKm} km',
+                ),
                 MetaRow(
                   icon: LucideIcons.clock,
                   text: 'Started ${run.startedAtLabel}',
@@ -580,7 +613,11 @@ class _RunStep extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Icon(LucideIcons.chevronRight, size: 20, color: c.textSecondary),
+                    Icon(
+                      LucideIcons.chevronRight,
+                      size: 20,
+                      color: c.textSecondary,
+                    ),
                   ],
                 ),
               ),
@@ -608,7 +645,9 @@ class StopListScreen extends StatefulWidget {
 }
 
 class _StopListScreenState extends State<StopListScreen> {
-  int _planTab = 0; // 0 = List (D21.1), 1 = Map (D21.2)
+  late int _planTab = AppScope.read(context).stopListMapView
+      ? 1
+      : 0; // 0 = List (D21.1), 1 = Map (D21.2)
   int _filter = 0; // 0 = All, 1 = Pending, 2 = Delivered
 
   /// Unit-space stop positions for the painted map in D21.2. They trace the
@@ -678,7 +717,9 @@ class _StopListScreenState extends State<StopListScreen> {
   ) {
     final all = run.stops;
     final pending = all.where((s) => s.status != StopStatus.delivered).toList();
-    final delivered = all.where((s) => s.status == StopStatus.delivered).toList();
+    final delivered = all
+        .where((s) => s.status == StopStatus.delivered)
+        .toList();
     final shown = switch (_filter) {
       1 => pending,
       2 => delivered,
@@ -686,7 +727,12 @@ class _StopListScreenState extends State<StopListScreen> {
     };
     return CeffloNavySheetScaffold(
       header: header,
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -756,16 +802,16 @@ class _StopListScreenState extends State<StopListScreen> {
                   title: isMap
                       ? 'This map shows your current stop order.'
                       : 'Drag and drop to reorder your stops.',
-                  body: isMap
-                      ? 'Switch to List view to drag and reorder.'
-                      : 'This will update your route. Available before you start.',
+                  body: isMap ? 'Switch to List view to drag and reorder.' : 'This will update your route. Available before you start.',
                 ),
                 const SizedBox(height: Gap.md),
               ],
             ),
           ),
           Expanded(
-            child: isMap ? _mapView(context, run) : _reorderList(context, app, run),
+            child: isMap
+                ? _mapView(context, run)
+                : _reorderList(context, app, run),
           ),
         ],
       ),
@@ -803,7 +849,10 @@ class _StopListScreenState extends State<StopListScreen> {
               trailing: ReorderableDragStartListener(
                 index: i,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 8,
+                  ),
                   child: Icon(
                     LucideIcons.menu,
                     size: 22,
@@ -826,6 +875,9 @@ class _StopListScreenState extends State<StopListScreen> {
             Positioned.fill(
               child: MapCanvas(
                 route: _mapPoints,
+                // Offset from stop 1 so the driver puck and the first stop
+                // pin do not sit on top of each other.
+                heading: const Offset(0.23, 0.92),
                 labels: const [
                   MapLabel('Setapak', Offset(0.70, 0.52), big: true),
                   MapLabel('Taman\nSetapak', Offset(0.56, 0.14)),
@@ -850,7 +902,11 @@ class _StopListScreenState extends State<StopListScreen> {
                 ],
               ),
             ),
-            const Positioned(right: Gap.md, bottom: Gap.md, child: MapRecenterPill()),
+            const Positioned(
+              right: Gap.md,
+              bottom: Gap.md,
+              child: MapRecenterPill(),
+            ),
           ],
         ),
       ),
@@ -862,7 +918,10 @@ class _StopListScreenState extends State<StopListScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SheetGrabber(),
-            Text(run.reference, style: context.t.displaySmall?.copyWith(fontSize: 20)),
+            Text(
+              run.reference,
+              style: context.t.displaySmall?.copyWith(fontSize: 20),
+            ),
             const SizedBox(height: Gap.sm),
             Row(
               children: [
@@ -957,7 +1016,9 @@ class StopRow extends StatelessWidget {
                               const SizedBox(height: 1),
                               Text(
                                 stop.customerName,
-                                style: context.t.titleSmall?.copyWith(fontSize: 15.5),
+                                style: context.t.titleSmall?.copyWith(
+                                  fontSize: 15.5,
+                                ),
                               ),
                             ],
                           ),
@@ -972,10 +1033,16 @@ class StopRow extends StatelessWidget {
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(top: 1),
-                          child: Icon(LucideIcons.mapPin, size: 14, color: c.info),
+                          child: Icon(
+                            LucideIcons.mapPin,
+                            size: 14,
+                            color: c.info,
+                          ),
                         ),
                         const SizedBox(width: 5),
-                        Expanded(child: Text(address, style: context.t.bodySmall)),
+                        Expanded(
+                          child: Text(address, style: context.t.bodySmall),
+                        ),
                       ],
                     ),
                   ],
@@ -1030,7 +1097,12 @@ class NavigationToStopScreen extends StatelessWidget {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.md, Gap.lg, Gap.lg),
+                padding: const EdgeInsets.fromLTRB(
+                  Gap.lg,
+                  Gap.md,
+                  Gap.lg,
+                  Gap.lg,
+                ),
                 child: Row(
                   children: [
                     const Icon(
@@ -1076,8 +1148,12 @@ class NavigationToStopScreen extends StatelessWidget {
                 Positioned.fill(
                   child: MapCanvas(
                     route: _route,
-                    labels: const [MapLabel('Setapak', Offset(0.66, 0.60), big: true)],
-                    markers: const [MapMarker(position: Offset(0.57, 0.18), pin: true)],
+                    labels: const [
+                      MapLabel('Setapak', Offset(0.66, 0.60), big: true),
+                    ],
+                    markers: const [
+                      MapMarker(position: Offset(0.57, 0.18), pin: true),
+                    ],
                   ),
                 ),
                 Positioned(
@@ -1118,7 +1194,12 @@ class NavigationToStopScreen extends StatelessWidget {
             child: SafeArea(
               top: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, Gap.lg),
+                padding: const EdgeInsets.fromLTRB(
+                  Gap.gutter,
+                  0,
+                  Gap.gutter,
+                  Gap.lg,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -1201,7 +1282,12 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -1228,7 +1314,11 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                     const SizedBox(height: 2),
                     _iconLine(context, LucideIcons.mapPin, stop.addressLine1),
                     if (stop.addressLine2 != null)
-                      _iconLine(context, LucideIcons.milestone, stop.addressLine2!),
+                      _iconLine(
+                        context,
+                        LucideIcons.milestone,
+                        stop.addressLine2!,
+                      ),
                   ],
                 ),
               ),
@@ -1240,7 +1330,6 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
               const SizedBox(width: 8),
               _RoundAction(
                 icon: LucideIcons.messageCircle,
-                color: const Color(0xFF1FA855),
                 onTap: () => _toast(context, 'Opening chat…'),
               ),
             ],
@@ -1254,8 +1343,13 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 children: [
-                  Expanded(child: Text('Order Details', style: context.t.titleMedium)),
-                  Text('${stop.items.length} items', style: context.t.bodyMedium),
+                  Expanded(
+                    child: Text('Order Details', style: context.t.titleMedium),
+                  ),
+                  Text(
+                    '${stop.items.length} items',
+                    style: context.t.bodyMedium,
+                  ),
                   const SizedBox(width: 6),
                   Icon(
                     _expanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
@@ -1297,7 +1391,10 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                 ),
               ),
             if (stop.items.isEmpty)
-              Text('No itemised order lines for this stop.', style: context.t.bodySmall),
+              Text(
+                'No itemised order lines for this stop.',
+                style: context.t.bodySmall,
+              ),
           ],
           const SizedBox(height: Gap.lg),
           Text('Proof of Delivery', style: context.t.titleMedium),
@@ -1348,11 +1445,16 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
             ),
           ),
           const SizedBox(height: Gap.lg),
+          // Not a screen of its own in the reference set, but D28 has to be
+          // reachable from somewhere: the reference numbers it as a child of
+          // D23, so this is the link into it. Deliberately quiet — it is the
+          // exception path, not a peer of "Slide to Complete".
           Center(
             child: CeffloTextLink(
               'Unable to deliver? Report an issue',
               fontSize: 13.5,
-              color: c.attention,
+              weight: FontWeight.w600,
+              color: c.textSecondary,
               onTap: () => app.go(DRoute.deliveryIssue, entityId: stop.id),
             ),
           ),
@@ -1408,14 +1510,13 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
 }
 
 class _RoundAction extends StatelessWidget {
-  const _RoundAction({required this.icon, required this.onTap, this.color});
+  const _RoundAction({required this.icon, required this.onTap});
   final IconData icon;
   final VoidCallback onTap;
-  final Color? color;
 
   @override
   Widget build(BuildContext context) => Material(
-    color: color ?? CefColors.navy,
+    color: CefColors.navy,
     shape: const CircleBorder(),
     child: InkWell(
       customBorder: const CircleBorder(),
@@ -1526,7 +1627,12 @@ class _DeliveryIssueScreenState extends State<DeliveryIssueScreen> {
             onBell: () => app.go(DRoute.notifications),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, Gap.lg),
+            padding: const EdgeInsets.fromLTRB(
+              Gap.gutter,
+              0,
+              Gap.gutter,
+              Gap.lg,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1549,7 +1655,12 @@ class _DeliveryIssueScreenState extends State<DeliveryIssueScreen> {
           ),
         ],
       ),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.sm, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.sm,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -1663,7 +1774,12 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -1683,7 +1799,10 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                     children: [
                       Text('Selected Issue', style: context.t.labelSmall),
                       const SizedBox(height: 1),
-                      Text(reason.title, style: context.t.titleSmall?.copyWith(fontSize: 15.5)),
+                      Text(
+                        reason.title,
+                        style: context.t.titleSmall?.copyWith(fontSize: 15.5),
+                      ),
                       const SizedBox(height: 2),
                       Text(reason.body, style: context.t.bodySmall),
                     ],
@@ -1702,7 +1821,10 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
           const SizedBox(height: 4),
           Align(
             alignment: Alignment.centerRight,
-            child: Text('${_notes.text.length}/500', style: context.t.labelSmall),
+            child: Text(
+              '${_notes.text.length}/500',
+              style: context.t.labelSmall,
+            ),
           ),
           const SizedBox(height: Gap.md),
           const CeffloFieldLabel('Add Photos (Optional)'),
@@ -1728,7 +1850,8 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
         onTap: _notes.text.trim().isEmpty
             ? null
             : () async {
-                final stopId = app.activeStopId ?? app.currentRun.stops.first.id;
+                final stopId =
+                    app.activeStopId ?? app.currentRun.stops.first.id;
                 app.markStopIssue(stopId);
                 await showCeffloSubmitFlow(
                   context,
@@ -1736,10 +1859,8 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                   submittingBody: 'Please wait a moment.',
                   successTitle: 'Report submitted',
                   successBody: 'The business team will review your report.',
-                  onDone: () => app.resetTo(
-                    DRoute.stopList,
-                    entityId: app.currentRun.id,
-                  ),
+                  onDone: () =>
+                      app.resetTo(DRoute.stopList, entityId: app.currentRun.id),
                 );
               },
       ),
@@ -1808,7 +1929,12 @@ class RunCompletedScreen extends StatelessWidget {
             onBell: () => app.go(DRoute.notifications),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.sm, Gap.gutter, Gap.xl),
+            padding: const EdgeInsets.fromLTRB(
+              Gap.gutter,
+              Gap.sm,
+              Gap.gutter,
+              Gap.xl,
+            ),
             child: Column(
               children: [
                 const CeffloSuccessTick(size: 84, glow: true),
@@ -1834,7 +1960,12 @@ class RunCompletedScreen extends StatelessWidget {
           ),
         ],
       ),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

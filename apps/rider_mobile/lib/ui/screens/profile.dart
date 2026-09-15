@@ -150,7 +150,12 @@ class ProfileScreen extends StatelessWidget {
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -203,7 +208,11 @@ class ProfileScreen extends StatelessWidget {
                           onTap: () => app.go(DRoute.editProfile),
                           child: Row(
                             children: [
-                              Icon(LucideIcons.pencil, size: 14, color: c.textLabel),
+                              Icon(
+                                LucideIcons.pencil,
+                                size: 14,
+                                color: c.textLabel,
+                              ),
                               const SizedBox(width: 5),
                               Text(
                                 'Edit',
@@ -262,7 +271,10 @@ class ProfileScreen extends StatelessWidget {
             child: InkWell(
               onTap: () => showLogOutConfirm(context, app),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 6,
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -298,7 +310,11 @@ Future<void> showLogOutConfirm(BuildContext context, AppState app) =>
         builder: (modalContext) => CeffloModal(
           child: Column(
             children: [
-              Icon(LucideIcons.logOut, size: 34, color: modalContext.c.attention),
+              Icon(
+                LucideIcons.logOut,
+                size: 34,
+                color: modalContext.c.attention,
+              ),
               const SizedBox(height: Gap.lg),
               Text(
                 'Log out?',
@@ -366,7 +382,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.xl, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.xl,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -385,7 +406,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       customBorder: const CircleBorder(),
                       onTap: () => ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Photo upload is not wired up in this preview.'),
+                          content: Text(
+                            'Photo upload is not wired up in this preview.',
+                          ),
                           behavior: SnackBarBehavior.floating,
                           backgroundColor: CefColors.navy,
                         ),
@@ -393,7 +416,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       child: const SizedBox(
                         width: 34,
                         height: 34,
-                        child: Icon(LucideIcons.camera, size: 17, color: Colors.white),
+                        child: Icon(
+                          LucideIcons.camera,
+                          size: 17,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -402,19 +429,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
           const SizedBox(height: Gap.xl),
-          CeffloTextField(
-            label: 'Full Name',
-            controller: _name,
-            onTap: null,
-          ),
+          CeffloTextField(label: 'Full Name', controller: _name, onTap: null),
           const SizedBox(height: Gap.lg),
           CeffloPhoneField(label: 'Phone Number', controller: _phone),
           const SizedBox(height: Gap.lg),
-          CeffloTextField(
-            label: 'Email',
-            controller: _email,
-            readOnly: true,
-          ),
+          CeffloTextField(label: 'Email', controller: _email, readOnly: true),
           const SizedBox(height: Gap.xl),
           CeffloPrimaryButton(
             'Save',
@@ -468,7 +487,12 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.xl, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.xl,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -528,7 +552,12 @@ class DocumentsScreen extends StatelessWidget {
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -632,7 +661,12 @@ class SettingsScreen extends StatelessWidget {
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -670,7 +704,9 @@ class SettingsScreen extends StatelessWidget {
             label: 'Security',
             onTap: () => ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Security settings are not wired up in this preview.'),
+                content: Text(
+                  'Security settings are not wired up in this preview.',
+                ),
                 behavior: SnackBarBehavior.floating,
                 backgroundColor: CefColors.navy,
               ),
@@ -694,7 +730,9 @@ class SettingsScreen extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-                    border: Border.all(color: c.attention.withValues(alpha: 0.45)),
+                    border: Border.all(
+                      color: c.attention.withValues(alpha: 0.45),
+                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,

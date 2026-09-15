@@ -57,6 +57,10 @@ class AppState extends ChangeNotifier {
   /// shows. Both are the same D21 screen family, distinguished by this flag.
   bool routeConfirmed = false;
 
+  /// Which of the two planning tabs D21.1/D21.2 opens on. Only the preview
+  /// deep link sets this; in normal use the Driver just taps the toggle.
+  bool stopListMapView = false;
+
   void confirmRoute() {
     routeConfirmed = true;
     notifyListeners();
@@ -118,14 +122,17 @@ class AppState extends ChangeNotifier {
   DRoute get homeRoute => switch (stage) {
     DriverStage.noBusiness => DRoute.noBusinessConnected,
     DriverStage.pendingReview => DRoute.pendingReview,
-    DriverStage.approved => DRoute.approved,
+    // Once approved, Home is D14.3 Ready to Go. D14.2 "You're Approved!" is
+    // the one-time arrival screen, not a tab destination.
+    DriverStage.approved => DRoute.readyToGo,
     DriverStage.active => DRoute.today,
   };
 
   void switchTab(NavTab tab) {
     final root = switch (tab) {
       NavTab.home => homeRoute,
-      NavTab.runs => stage == DriverStage.active ? DRoute.runDetails : homeRoute,
+      NavTab.runs =>
+        stage == DriverStage.active ? DRoute.runDetails : homeRoute,
       NavTab.history => DRoute.deliveryHistory,
       NavTab.profile => DRoute.profile,
     };

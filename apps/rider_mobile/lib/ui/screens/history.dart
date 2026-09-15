@@ -39,7 +39,12 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> {
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -61,7 +66,8 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> {
                 run: run,
                 onTap: () => app.go(DRoute.historyDetail, entityId: run.id),
               ),
-              if (run != shown.last) Divider(height: 1, color: context.c.border),
+              if (run != shown.last)
+                Divider(height: 1, color: context.c.border),
             ],
         ],
       ),
@@ -104,7 +110,9 @@ class _HistoryRow extends StatelessWidget {
                         Expanded(
                           child: Text(
                             run.reference,
-                            style: context.t.titleSmall?.copyWith(fontSize: 15.5),
+                            style: context.t.titleSmall?.copyWith(
+                              fontSize: 15.5,
+                            ),
                           ),
                         ),
                         Text(run.dateLabel, style: context.t.bodySmall),
@@ -150,7 +158,12 @@ class HistoryDetailScreen extends StatelessWidget {
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -190,7 +203,10 @@ class HistoryDetailScreen extends StatelessWidget {
             ),
             child: Row(
               children: [
-                _Stat(icon: LucideIcons.mapPin, label: '${run.orderCount} stops'),
+                _Stat(
+                  icon: LucideIcons.mapPin,
+                  label: '${run.orderCount} stops',
+                ),
                 _divider(c),
                 _Stat(icon: LucideIcons.route, label: '${run.distanceKm} km'),
                 _divider(c),
@@ -269,7 +285,10 @@ class _DeliveredStopRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(stop.reference, style: context.t.titleSmall?.copyWith(fontSize: 14.5)),
+                Text(
+                  stop.reference,
+                  style: context.t.titleSmall?.copyWith(fontSize: 14.5),
+                ),
                 const SizedBox(height: 1),
                 Text(stop.addressLine1, style: context.t.bodySmall),
               ],
@@ -330,7 +349,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     };
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(title: 'Notifications', onBack: app.back),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -430,7 +454,10 @@ class _NotificationRow extends StatelessWidget {
                             style: context.t.titleSmall?.copyWith(fontSize: 15),
                           ),
                         ),
-                        Text(notification.timeLabel, style: context.t.bodySmall),
+                        Text(
+                          notification.timeLabel,
+                          style: context.t.bodySmall,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 2),

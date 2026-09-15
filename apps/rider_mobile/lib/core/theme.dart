@@ -190,8 +190,20 @@ ThemeData buildRiderTheme() {
     extensions: const [c],
     textTheme: TextTheme(
       // Auth display headings — "Welcome Back", "Create your account".
-      displayLarge: t(32, FontWeight.w800, CefColors.onNavy, spacing: -0.8, height: 1.15),
-      displayMedium: t(26, FontWeight.w800, CefColors.onNavy, spacing: -0.6, height: 1.2),
+      displayLarge: t(
+        32,
+        FontWeight.w800,
+        CefColors.onNavy,
+        spacing: -0.8,
+        height: 1.15,
+      ),
+      displayMedium: t(
+        26,
+        FontWeight.w800,
+        CefColors.onNavy,
+        spacing: -0.6,
+        height: 1.2,
+      ),
       displaySmall: t(22, FontWeight.w800, c.textPrimary, spacing: -0.4),
       // Screen/section titles.
       titleLarge: t(18, FontWeight.w700, c.textPrimary, spacing: -0.2),

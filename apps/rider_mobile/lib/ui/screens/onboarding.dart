@@ -25,15 +25,17 @@ class AcceptInvitationScreen extends StatelessWidget {
       step: const CeffloStepProgress(current: 2, total: 2, segments: 3),
       title: 'Accept Invitation',
       subtitle: 'You’ve been invited to join this\nbusiness on Cefflo.',
-      sheetPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.xl),
+      sheetPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.xl,
+      ),
       sheet: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _tinted(
-            context,
-            BusinessIdentityRow(business: business),
-          ),
+          _tinted(context, BusinessIdentityRow(business: business)),
           const SizedBox(height: Gap.md),
           _tinted(
             context,
@@ -78,7 +80,8 @@ class AcceptInvitationScreen extends StatelessWidget {
                 CeffloFeatureRow(
                   icon: LucideIcons.fileText,
                   title: 'Simple and straightforward',
-                  body: 'Complete your details and get approved by the business.',
+                  body:
+                      'Complete your details and get approved by the business.',
                 ),
                 CeffloFeatureRow(
                   icon: LucideIcons.users,
@@ -98,7 +101,10 @@ class AcceptInvitationScreen extends StatelessWidget {
           Center(
             child: CeffloTextLink(
               'Decline Invitation',
-              onTap: () => app.resetTo(DRoute.noBusinessConnected),
+              onTap: () {
+                app.setStage(DriverStage.noBusiness);
+                app.resetTo(DRoute.noBusinessConnected);
+              },
             ),
           ),
         ],
@@ -274,19 +280,23 @@ class _DriverDetailsScreenState extends State<DriverDetailsScreen> {
     final app = AppScope.of(context);
     return CeffloAuthScaffold(
       onBack: app.back,
-      headerAction: const CeffloStepProgress(
-        current: 2,
-        total: 2,
-        segments: 2,
-      ),
+      headerAction: const CeffloStepProgress(current: 2, total: 2, segments: 2),
       title: 'Driver Details',
       subtitle: 'Tell us a bit more so the business\ncan verify your profile.',
-      sheetPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.xl),
+      sheetPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.xl,
+      ),
       sheet: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SectionRow(icon: LucideIcons.package, label: 'Profile Information'),
+          const SectionRow(
+            icon: LucideIcons.package,
+            label: 'Profile Information',
+          ),
           const SizedBox(height: Gap.lg),
           Row(
             children: [
@@ -318,7 +328,10 @@ class _DriverDetailsScreenState extends State<DriverDetailsScreen> {
           const SizedBox(height: Gap.section),
           Divider(height: 1, color: context.c.border),
           const SizedBox(height: Gap.section),
-          const SectionRow(icon: LucideIcons.bike, label: 'Vehicle Information'),
+          const SectionRow(
+            icon: LucideIcons.bike,
+            label: 'Vehicle Information',
+          ),
           const SizedBox(height: Gap.lg),
           CeffloSelectField<String>(
             label: 'Vehicle Type',
@@ -461,7 +474,12 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
       title: 'Personal Details',
       subtitle: 'Let’s get to know you. This information\nwill be shared with the business.',
       headerTrailing: const AvatarPicker(size: 66),
-      sheetPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.xl),
+      sheetPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.xl,
+      ),
       sheet: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -563,12 +581,20 @@ class _VehicleAndDocumentsScreenState extends State<VehicleAndDocumentsScreen> {
       step: const CeffloStepProgress(current: 2, total: 2, segments: 3),
       title: 'Vehicle & Documents',
       subtitle: 'Add your vehicle details and required\ndocuments to complete your profile.',
-      sheetPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.xl),
+      sheetPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.xl,
+      ),
       sheet: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SectionRow(icon: LucideIcons.bike, label: 'Vehicle Information'),
+          const SectionRow(
+            icon: LucideIcons.bike,
+            label: 'Vehicle Information',
+          ),
           const SizedBox(height: Gap.lg),
           CeffloSelectField<String>(
             label: 'Vehicle Type',
@@ -586,7 +612,10 @@ class _VehicleAndDocumentsScreenState extends State<VehicleAndDocumentsScreen> {
           const SizedBox(height: Gap.section),
           Divider(height: 1, color: context.c.border),
           const SizedBox(height: Gap.section),
-          const SectionRow(icon: LucideIcons.fileText, label: 'Required Documents'),
+          const SectionRow(
+            icon: LucideIcons.fileText,
+            label: 'Required Documents',
+          ),
           const SizedBox(height: Gap.sm),
           for (final doc in app.onboardingDocuments)
             CeffloDocumentRow(
@@ -595,7 +624,9 @@ class _VehicleAndDocumentsScreenState extends State<VehicleAndDocumentsScreen> {
               subtitle: doc.helper,
               statusLabel: 'Uploaded',
               thumbnail: DocumentThumbPlaceholder(
-                icon: doc.id == 'licence' ? LucideIcons.idCard : LucideIcons.fileText,
+                icon: doc.id == 'licence'
+                    ? LucideIcons.idCard
+                    : LucideIcons.fileText,
               ),
               onRemove: () {},
             ),
@@ -647,7 +678,10 @@ class SubmittingDetailsModal extends StatelessWidget {
           ),
         ),
         const SizedBox(height: Gap.lg),
-        Text('Submitting your details', style: context.t.displaySmall?.copyWith(fontSize: 20)),
+        Text(
+          'Submitting your details',
+          style: context.t.displaySmall?.copyWith(fontSize: 20),
+        ),
         const SizedBox(height: Gap.sm),
         Text(
           'Please wait while we send\nyour information to the business.',
@@ -782,7 +816,11 @@ class PendingReviewScreen extends StatelessWidget {
       header: CeffloBrandHeader(
         onBell: () => app.go(DRoute.notifications),
         child: Padding(
-          padding: const EdgeInsets.only(top: Gap.lg, bottom: Gap.xl, right: Gap.sm),
+          padding: const EdgeInsets.only(
+            top: Gap.lg,
+            bottom: Gap.xl,
+            right: Gap.sm,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -832,6 +870,23 @@ class PendingReviewScreen extends StatelessWidget {
             'View Submitted Details',
             trailingChevron: true,
             onTap: () => app.go(DRoute.personalDetails),
+          ),
+          const SizedBox(height: Gap.md),
+          // Prototype scaffolding, labelled as such. In the product this
+          // screen advances when the *business* approves the Driver, and no
+          // reference draws a CTA out of it — so the preview needs a way to
+          // reach D14.2 without inventing a product control.
+          Center(
+            child: CeffloTextLink(
+              'Preview: simulate approval',
+              fontSize: 13,
+              weight: FontWeight.w600,
+              color: context.c.textSecondary,
+              onTap: () {
+                app.setStage(DriverStage.approved);
+                app.resetTo(DRoute.approved);
+              },
+            ),
           ),
         ],
       ),
@@ -966,7 +1021,11 @@ class ReadyToGoScreen extends StatelessWidget {
       header: CeffloBrandHeader(
         onBell: () => app.go(DRoute.notifications),
         child: Padding(
-          padding: const EdgeInsets.only(top: Gap.lg, bottom: Gap.lg, right: Gap.sm),
+          padding: const EdgeInsets.only(
+            top: Gap.lg,
+            bottom: Gap.lg,
+            right: Gap.sm,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -997,7 +1056,9 @@ class ReadyToGoScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF071A33).withValues(alpha: 0.45),
                   borderRadius: BorderRadius.circular(Sizes.cardRadius),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.18),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -1074,7 +1135,8 @@ class ReadyToGoScreen extends StatelessWidget {
               icon: LucideIcons.map,
               title: 'View Available Jobs',
               subtitle: 'See nearby delivery requests',
-              onTap: () => app.go(DRoute.runDetails, entityId: app.currentRun.id),
+              onTap: () =>
+                  app.go(DRoute.runDetails, entityId: app.currentRun.id),
             ),
           ),
           const SizedBox(height: Gap.cardGap),
@@ -1175,7 +1237,9 @@ class NoBusinessConnectedScreen extends StatelessWidget {
                     Text.rich(
                       TextSpan(
                         children: [
-                          const TextSpan(text: 'Join a business to start\ndelivering with '),
+                          const TextSpan(
+                            text: 'Join a business to start\ndelivering with ',
+                          ),
                           TextSpan(
                             text: 'Cefflo',
                             style: TextStyle(
@@ -1213,17 +1277,28 @@ class NoBusinessConnectedScreen extends StatelessWidget {
             CeffloOptionRow(
               icon: LucideIcons.link,
               title: 'Got an invitation?',
-              subtitle: 'Join your business with an invite link from your employer.',
+              subtitle:
+                  'Join your business with an invite link from your employer.',
               onTap: () => app.go(DRoute.joinBusiness),
             ),
-            Divider(height: 1, color: context.c.border, indent: 12, endIndent: 12),
+            Divider(
+              height: 1,
+              color: context.c.border,
+              indent: 12,
+              endIndent: 12,
+            ),
             CeffloOptionRow(
               icon: LucideIcons.qrCode,
               title: 'Scan QR Code',
               subtitle: 'Use a QR code from your business to join.',
               onTap: () => app.go(DRoute.joinBusiness),
             ),
-            Divider(height: 1, color: context.c.border, indent: 12, endIndent: 12),
+            Divider(
+              height: 1,
+              color: context.c.border,
+              indent: 12,
+              endIndent: 12,
+            ),
             CeffloOptionRow(
               icon: LucideIcons.mail,
               title: 'Need help?',
@@ -1366,7 +1441,10 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
                 borderRadius: BorderRadius.circular(Sizes.cardRadius),
                 onTap: () => setState(() => _tab = 1),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 16,
+                  ),
                   child: Row(
                     children: [
                       const Icon(
@@ -1376,7 +1454,10 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
                       ),
                       const SizedBox(width: 13),
                       Expanded(
-                        child: Text('Scan QR Code', style: context.t.titleSmall),
+                        child: Text(
+                          'Scan QR Code',
+                          style: context.t.titleSmall,
+                        ),
                       ),
                       Icon(
                         LucideIcons.chevronRight,
@@ -1440,7 +1521,10 @@ class BusinessJoinedScreen extends StatelessWidget {
               ),
               const SizedBox(height: Gap.md),
               CeffloCard(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 child: BusinessIdentityRow(
                   business: business,
                   compact: true,
@@ -1456,9 +1540,17 @@ class BusinessJoinedScreen extends StatelessWidget {
         children: [
           const ChecklistBlock(
             rows: [
-              ('Account connected', 'Your account is linked to the business.', LucideIcons.user),
+              (
+                'Account connected',
+                'Your account is linked to the business.',
+                LucideIcons.user,
+              ),
               ('Business details', 'Bakes & Co.', LucideIcons.fileText),
-              ('You’re all set', 'You can now start receiving deliveries once assigned by your business.', LucideIcons.shieldCheck),
+              (
+                'You’re all set',
+                'You can now start receiving deliveries once assigned by your business.',
+                LucideIcons.shieldCheck,
+              ),
             ],
           ),
           const SizedBox(height: Gap.lg),

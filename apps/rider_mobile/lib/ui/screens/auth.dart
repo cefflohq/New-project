@@ -18,8 +18,11 @@ class AuthFlow extends StatefulWidget {
 
   final DRoute initial;
 
-  /// Fired when the Driver reaches the signed-in app.
-  final VoidCallback onAuthenticated;
+  /// Fired when the Driver reaches the signed-in app, carrying the route the
+  /// shell should open on: an existing Driver lands on their own home, one
+  /// arriving from an invitation lands on D10, one who declined lands on
+  /// D16.
+  final ValueChanged<DRoute?> onAuthenticated;
 
   @override
   State<AuthFlow> createState() => _AuthFlowState();
@@ -55,7 +58,7 @@ class _AuthFlowState extends State<AuthFlow> {
     ),
     DRoute.emailSignIn => EmailSignInScreen(
       onBack: _back,
-      onSignIn: widget.onAuthenticated,
+      onSignIn: () => widget.onAuthenticated(null),
       onForgotPassword: () => _go(DRoute.forgotPassword),
       onSignUp: () => _go(DRoute.createAccount),
     ),
@@ -81,10 +84,12 @@ class _AuthFlowState extends State<AuthFlow> {
     DRoute.passwordUpdated => PasswordUpdatedScreen(
       onBackToSignIn: () => _resetTo(DRoute.emailSignIn),
     ),
+    // Accepting the invitation drops the Driver into the signed-in shell at
+    // D10; "Maybe Later" lands on the same shell with no business connected.
     DRoute.invitationLanding => InvitationLandingScreen(
-      onAccept: widget.onAuthenticated,
+      onAccept: () => widget.onAuthenticated(DRoute.acceptInvitation),
       onDecline: () => _resetTo(DRoute.signIn),
-      onMaybeLater: widget.onAuthenticated,
+      onMaybeLater: () => widget.onAuthenticated(DRoute.noBusinessConnected),
     ),
     _ => SignInScreen(
       onEmail: () => _go(DRoute.emailSignIn),
@@ -122,7 +127,11 @@ class CeffloAuthOption extends StatelessWidget {
         borderRadius: BorderRadius.circular(Sizes.cardRadius),
         onTap: onTap,
         child: Container(
-          height: 58,
+          // Full width explicitly: the row is centred in a Column, so
+          // without this the Stack would shrink-wrap the label and the
+          // left-positioned icon would land on top of it.
+          width: double.infinity,
+          height: 56,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(Sizes.cardRadius),
             border: Border.all(color: c.border),
@@ -220,9 +229,12 @@ class GoogleGlyph extends StatelessWidget {
 class _GooglePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height).deflate(
-      size.width * 0.08,
-    );
+    final rect = Rect.fromLTWH(
+      0,
+      0,
+      size.width,
+      size.height,
+    ).deflate(size.width * 0.08);
     final stroke = size.width * 0.22;
     final paint = Paint()
       ..style = PaintingStyle.stroke
@@ -352,11 +364,7 @@ class LanguagePill extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 6),
-                Icon(
-                  LucideIcons.chevronDown,
-                  size: 18,
-                  color: c.textSecondary,
-                ),
+                Icon(LucideIcons.chevronDown, size: 18, color: c.textSecondary),
               ],
             ),
           ),
@@ -435,7 +443,11 @@ class _SplashScreenState extends State<SplashScreen> {
 // ---------------------------------------------------------------------------
 
 class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key, required this.onEmail, required this.onSignUp});
+  const SignInScreen({
+    super.key,
+    required this.onEmail,
+    required this.onSignUp,
+  });
   final VoidCallback onEmail;
   final VoidCallback onSignUp;
 
@@ -478,10 +490,7 @@ class _SignInScreenState extends State<SignInScreen> {
         const SizedBox(height: Gap.md),
         CeffloPrimaryButton('Sign Up', onTap: widget.onSignUp),
         const SizedBox(height: Gap.section),
-        LanguagePill(
-          language: _language,
-          onTap: () => _pickLanguage(context),
-        ),
+        LanguagePill(language: _language, onTap: () => _pickLanguage(context)),
       ],
     ),
   );
@@ -534,11 +543,21 @@ Future<String?> showLanguageSheet(BuildContext context, String current) {
                     ),
                   ),
                 ),
-                Divider(height: 1, color: context.c.border, indent: Gap.gutter, endIndent: Gap.gutter),
+                Divider(
+                  height: 1,
+                  color: context.c.border,
+                  indent: Gap.gutter,
+                  endIndent: Gap.gutter,
+                ),
               ],
             ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.lg),
+            padding: const EdgeInsets.fromLTRB(
+              Gap.gutter,
+              Gap.lg,
+              Gap.gutter,
+              Gap.lg,
+            ),
             child: CeffloPrimaryButton(
               'Done',
               onTap: () => Navigator.of(context).pop(selected),
@@ -808,7 +827,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     title: 'Forgot\nPassword?',
     subtitle: 'No worries. Enter your email and\nwe’ll send you a reset link.',
     scrollable: false,
-    sheetPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.xl, Gap.gutter, Gap.xl),
+    sheetPadding: const EdgeInsets.fromLTRB(
+      Gap.gutter,
+      Gap.xl,
+      Gap.gutter,
+      Gap.xl,
+    ),
     sheet: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -955,9 +979,24 @@ class CheckEmailScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _numbered(context, 1, 'Open your email inbox', 'Check your inbox (and spam folder).'),
-          _numbered(context, 2, 'Click the reset link', 'Follow the instructions in the email.'),
-          _numbered(context, 3, 'Set a new password', 'Return to the app and sign in.'),
+          _numbered(
+            context,
+            1,
+            'Open your email inbox',
+            'Check your inbox (and spam folder).',
+          ),
+          _numbered(
+            context,
+            2,
+            'Click the reset link',
+            'Follow the instructions in the email.',
+          ),
+          _numbered(
+            context,
+            3,
+            'Set a new password',
+            'Return to the app and sign in.',
+          ),
           const SizedBox(height: Gap.md),
           Divider(color: c.border, height: 1),
           const SizedBox(height: Gap.lg),
@@ -970,7 +1009,10 @@ class CheckEmailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Didn’t receive the email?', style: context.t.titleSmall),
+                    Text(
+                      'Didn’t receive the email?',
+                      style: context.t.titleSmall,
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       'You can request a new link in 60 seconds.',
@@ -1229,7 +1271,12 @@ class InvitationLandingScreen extends StatelessWidget {
           ),
         ],
       ),
-      sheetPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.xl),
+      sheetPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.xl,
+      ),
       scrollable: false,
       sheet: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1310,10 +1357,7 @@ class BusinessIdentityRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      business.name as String,
-                      style: context.t.titleMedium,
-                    ),
+                    Text(business.name as String, style: context.t.titleMedium),
                     if (!compact) ...[
                       const SizedBox(height: 1),
                       Text(
@@ -1324,7 +1368,11 @@ class BusinessIdentityRow extends StatelessWidget {
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        Icon(LucideIcons.mapPin, size: 13, color: c.textSecondary),
+                        Icon(
+                          LucideIcons.mapPin,
+                          size: 13,
+                          color: c.textSecondary,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           business.location as String,
@@ -1336,7 +1384,11 @@ class BusinessIdentityRow extends StatelessWidget {
                 ),
               ),
               if (onTap != null)
-                Icon(LucideIcons.chevronRight, size: 20, color: c.textSecondary),
+                Icon(
+                  LucideIcons.chevronRight,
+                  size: 20,
+                  color: c.textSecondary,
+                ),
             ],
           ),
         ),

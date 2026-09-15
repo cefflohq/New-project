@@ -71,16 +71,18 @@ class RiderRelationship {
   bool get isActive => status == 'active';
   bool get isPending => status == 'pending';
 
-  static RiderRelationship fromRow(Map<String, dynamic> row, {String? businessName}) =>
-      RiderRelationship(
-        id: row['id'].toString(),
-        businessId: row['business_id'].toString(),
-        status: (row['status'] ?? '').toString(),
-        name: (row['name'] ?? '').toString(),
-        businessName: businessName,
-        phone: row['phone']?.toString(),
-        vehicleType: row['vehicle_type']?.toString(),
-      );
+  static RiderRelationship fromRow(
+    Map<String, dynamic> row, {
+    String? businessName,
+  }) => RiderRelationship(
+    id: row['id'].toString(),
+    businessId: row['business_id'].toString(),
+    status: (row['status'] ?? '').toString(),
+    name: (row['name'] ?? '').toString(),
+    businessName: businessName,
+    phone: row['phone']?.toString(),
+    vehicleType: row['vehicle_type']?.toString(),
+  );
 }
 
 /// One `delivery_sessions` row -- a Wave/run grouping orders belong to.
@@ -140,7 +142,9 @@ class RiderOrder {
     final assignmentsRaw = stop?['rider_assignments'];
     final assignment = assignmentsRaw is List && assignmentsRaw.isNotEmpty
         ? Map<String, dynamic>.from(assignmentsRaw.first as Map)
-        : (assignmentsRaw is Map ? Map<String, dynamic>.from(assignmentsRaw) : null);
+        : (assignmentsRaw is Map
+              ? Map<String, dynamic>.from(assignmentsRaw)
+              : null);
     final items = row['items'];
     return RiderOrder(
       id: row['id'].toString(),
@@ -163,16 +167,24 @@ class RiderOrder {
 /// grouped client-side for presentation only -- grouping never invents
 /// membership the backend rows didn't already state.
 class RiderRun {
-  const RiderRun({required this.sessionId, required this.waveName, required this.orders});
+  const RiderRun({
+    required this.sessionId,
+    required this.waveName,
+    required this.orders,
+  });
   final String? sessionId;
   final String? waveName;
   final List<RiderOrder> orders;
 
   int get total => orders.length;
   int get delivered => orders.where((o) => o.isDelivered).length;
-  int get pickedUp => orders.where((o) =>
-      o.status == DeliveryStatus.pickedUp ||
-      o.status == DeliveryStatus.outForDelivery ||
-      o.status == DeliveryStatus.arrived ||
-      o.status == DeliveryStatus.delivered).length;
+  int get pickedUp => orders
+      .where(
+        (o) =>
+            o.status == DeliveryStatus.pickedUp ||
+            o.status == DeliveryStatus.outForDelivery ||
+            o.status == DeliveryStatus.arrived ||
+            o.status == DeliveryStatus.delivered,
+      )
+      .length;
 }

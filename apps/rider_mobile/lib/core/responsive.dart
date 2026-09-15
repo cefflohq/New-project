@@ -65,7 +65,10 @@ class ResponsiveDensity extends StatelessWidget {
         : mq.textScaler;
 
     if (scale == 1.0) {
-      return MediaQuery(data: mq.copyWith(textScaler: textScaler), child: child);
+      return MediaQuery(
+        data: mq.copyWith(textScaler: textScaler),
+        child: child,
+      );
     }
 
     final logicalSize = mq.size / scale;

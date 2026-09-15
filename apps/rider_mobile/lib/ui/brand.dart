@@ -61,12 +61,7 @@ class NavyBackdrop extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
     decoration: const BoxDecoration(gradient: cefHeaderGradient),
-    child: Stack(
-      children: [
-        if (watermark) const ChevronWatermark(),
-        child,
-      ],
-    ),
+    child: Stack(children: [if (watermark) const ChevronWatermark(), child]),
   );
 }
 

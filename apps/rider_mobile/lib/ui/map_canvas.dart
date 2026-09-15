@@ -17,7 +17,7 @@ class MapCanvas extends StatelessWidget {
     super.key,
     required this.route,
     this.markers = const [],
-    this.showHeading = true,
+    this.heading,
     this.labels = const [],
   });
 
@@ -27,8 +27,9 @@ class MapCanvas extends StatelessWidget {
   /// Numbered stop pins, positioned in the same unit space.
   final List<MapMarker> markers;
 
-  /// The driver's own heading puck, drawn at the first route point.
-  final bool showHeading;
+  /// The driver's own heading puck. Defaults to the first route point; pass
+  /// an explicit position where a stop pin already sits there (D21.2).
+  final Offset? heading;
 
   /// Flat place labels ("Setapak", "Taman Setapak").
   final List<MapLabel> labels;
@@ -39,6 +40,7 @@ class MapCanvas extends StatelessWidget {
       final size = Size(constraints.maxWidth, constraints.maxHeight);
       Offset at(Offset unit) =>
           Offset(unit.dx * size.width, unit.dy * size.height);
+      final origin = heading ?? (route.isEmpty ? null : route.first);
       return Stack(
         children: [
           Positioned.fill(
@@ -58,10 +60,10 @@ class MapCanvas extends StatelessWidget {
                 ),
               ),
             ),
-          if (showHeading && route.isNotEmpty)
+          if (origin != null)
             Positioned(
-              left: at(route.first).dx - 17,
-              top: at(route.first).dy - 17,
+              left: at(origin).dx - 17,
+              top: at(origin).dy - 17,
               child: const _HeadingPuck(),
             ),
           for (final marker in markers)
@@ -169,8 +171,7 @@ class _MapPainter extends CustomPainter {
     // Route polyline — rounded, drawn with a soft outer casing so it reads
     // on top of the street grid exactly as the reference does.
     if (route.length > 1) {
-      final path = Path()
-        ..moveTo(route.first.dx * w, route.first.dy * h);
+      final path = Path()..moveTo(route.first.dx * w, route.first.dy * h);
       for (final point in route.skip(1)) {
         path.lineTo(point.dx * w, point.dy * h);
       }
@@ -214,7 +215,11 @@ class _StopDot extends StatelessWidget {
       shape: BoxShape.circle,
       border: Border.all(color: Colors.white, width: 2),
       boxShadow: const [
-        BoxShadow(color: Color(0x33101C33), blurRadius: 6, offset: Offset(0, 2)),
+        BoxShadow(
+          color: Color(0x33101C33),
+          blurRadius: 6,
+          offset: Offset(0, 2),
+        ),
       ],
     ),
     child: Text(
@@ -255,11 +260,7 @@ class _PinPainter extends CustomPainter {
       ..close();
     canvas.drawShadow(path, const Color(0xFF101C33), 3, false);
     canvas.drawPath(path, Paint()..color = red);
-    canvas.drawCircle(
-      Offset(cx, r),
-      r * 0.36,
-      Paint()..color = Colors.white,
-    );
+    canvas.drawCircle(Offset(cx, r), r * 0.36, Paint()..color = Colors.white);
   }
 
   @override
@@ -279,7 +280,11 @@ class _HeadingPuck extends StatelessWidget {
       shape: BoxShape.circle,
       border: Border.all(color: Colors.white, width: 3),
       boxShadow: const [
-        BoxShadow(color: Color(0x401668E3), blurRadius: 10, offset: Offset(0, 3)),
+        BoxShadow(
+          color: Color(0x401668E3),
+          blurRadius: 10,
+          offset: Offset(0, 3),
+        ),
       ],
     ),
     child: Transform.rotate(
@@ -333,7 +338,11 @@ class MapRecenterPill extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(LucideIcons.locateFixed, size: 17, color: Color(0xFF1668E3)),
+            const Icon(
+              LucideIcons.locateFixed,
+              size: 17,
+              color: Color(0xFF1668E3),
+            ),
             const SizedBox(width: 7),
             Text(
               'Re-center',

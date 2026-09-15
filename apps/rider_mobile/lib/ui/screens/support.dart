@@ -60,7 +60,12 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -108,27 +113,34 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
             StateBlock.empty('No topics match “${_search.text.trim()}”.')
           else
             for (var row = 0; row < (topics.length + 1) ~/ 2; row++) ...[
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: _TopicCard(
-                      icon: topics[row * 2].$2,
-                      topic: topics[row * 2].$1,
-                      onTap: () => showContactSupportSheet(context, app),
+              // IntrinsicHeight so the two cards in a row match height even
+              // when their body copy wraps to a different number of lines.
+              // (A bare stretch here would hand the cards unbounded height,
+              // because the column scrolls.)
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: _TopicCard(
+                        icon: topics[row * 2].$2,
+                        topic: topics[row * 2].$1,
+                        onTap: () => showContactSupportSheet(context, app),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: Gap.md),
-                  Expanded(
-                    child: row * 2 + 1 < topics.length
-                        ? _TopicCard(
-                            icon: topics[row * 2 + 1].$2,
-                            topic: topics[row * 2 + 1].$1,
-                            onTap: () => showContactSupportSheet(context, app),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ],
+                    const SizedBox(width: Gap.md),
+                    Expanded(
+                      child: row * 2 + 1 < topics.length
+                          ? _TopicCard(
+                              icon: topics[row * 2 + 1].$2,
+                              topic: topics[row * 2 + 1].$1,
+                              onTap: () =>
+                                  showContactSupportSheet(context, app),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: Gap.md),
             ],
@@ -229,7 +241,10 @@ class _HelpRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: context.t.titleSmall?.copyWith(fontSize: 15.5)),
+              Text(
+                title,
+                style: context.t.titleSmall?.copyWith(fontSize: 15.5),
+              ),
               const SizedBox(height: 2),
               Text(subtitle, style: context.t.bodySmall),
             ],
@@ -352,7 +367,12 @@ class VendorSupportScreen extends StatelessWidget {
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.xl, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.xl,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -364,7 +384,11 @@ class VendorSupportScreen extends StatelessWidget {
                 color: CefColors.tintInfo,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(LucideIcons.store, size: 32, color: CefColors.navy),
+              child: const Icon(
+                LucideIcons.store,
+                size: 32,
+                color: CefColors.navy,
+              ),
             ),
           ),
           const SizedBox(height: Gap.lg),
@@ -421,7 +445,9 @@ class VendorSupportScreen extends StatelessWidget {
                         children: [
                           Text(
                             vendor.name,
-                            style: context.t.titleMedium?.copyWith(fontSize: 16.5),
+                            style: context.t.titleMedium?.copyWith(
+                              fontSize: 16.5,
+                            ),
                           ),
                           Text(vendor.category, style: context.t.bodySmall),
                         ],
@@ -450,7 +476,8 @@ class VendorSupportScreen extends StatelessWidget {
           const SizedBox(height: Gap.md),
           const CeffloNote(
             icon: LucideIcons.info,
-            body: 'Cefflo does not manage vendor operations. For app or account '
+            body:
+                'Cefflo does not manage vendor operations. For app or account '
                 'issues, please go back and select the relevant category.',
           ),
           const SizedBox(height: Gap.lg),
@@ -502,7 +529,10 @@ class _ContactRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: context.t.titleSmall?.copyWith(fontSize: 15.5)),
+                  Text(
+                    title,
+                    style: context.t.titleSmall?.copyWith(fontSize: 15.5),
+                  ),
                   const SizedBox(height: 2),
                   Text(subtitle, style: context.t.bodySmall),
                 ],
@@ -553,7 +583,12 @@ class _SubmitTicketScreenState extends State<SubmitTicketScreen> {
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
-      bodyPadding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.xl, Gap.gutter, Gap.lg),
+      bodyPadding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.xl,
+        Gap.gutter,
+        Gap.lg,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -597,7 +632,8 @@ class _SubmitTicketScreenState extends State<SubmitTicketScreen> {
           CeffloTextField(
             label: 'Describe your issue',
             controller: _description,
-            hint: 'Please provide as much detail as possible…\n'
+            hint:
+                'Please provide as much detail as possible…\n'
                 '(e.g. what happened, when, steps to reproduce)',
             maxLines: 4,
           ),
@@ -692,10 +728,7 @@ class _DashedRectPainter extends CustomPainter {
     for (final metric in path.computeMetrics()) {
       var distance = 0.0;
       while (distance < metric.length) {
-        canvas.drawPath(
-          metric.extractPath(distance, distance + 6),
-          paint,
-        );
+        canvas.drawPath(metric.extractPath(distance, distance + 6), paint);
         distance += 11;
       }
     }

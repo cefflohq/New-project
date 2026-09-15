@@ -76,21 +76,26 @@ class RiderRepository {
     final businessIds = relationships.map((r) => r.businessId).toSet();
     if (businessIds.isEmpty) return relationships;
     final businessRows = await _run(
-      () => _db.from('businesses').select('id,name').inFilter('id', businessIds.toList()),
+      () => _db
+          .from('businesses')
+          .select('id,name')
+          .inFilter('id', businessIds.toList()),
     );
-    final nameById = {for (final b in _rows(businessRows)) b['id'].toString(): (b['name'] ?? '').toString()};
+    final nameById = {
+      for (final b in _rows(businessRows))
+        b['id'].toString(): (b['name'] ?? '').toString(),
+    };
     return relationships
-        .map((r) => RiderRelationship.fromRow(
-              {
-                'id': r.id,
-                'business_id': r.businessId,
-                'status': r.status,
-                'name': r.name,
-                'phone': r.phone,
-                'vehicle_type': r.vehicleType,
-              },
-              businessName: nameById[r.businessId],
-            ))
+        .map(
+          (r) => RiderRelationship.fromRow({
+            'id': r.id,
+            'business_id': r.businessId,
+            'status': r.status,
+            'name': r.name,
+            'phone': r.phone,
+            'vehicle_type': r.vehicleType,
+          }, businessName: nameById[r.businessId]),
+        )
         .toList();
   }
 
@@ -105,7 +110,9 @@ class RiderRepository {
     final rows = await _run(
       () => _db
           .from('orders')
-          .select('*,delivery_stops(id,sequence,sequence_locked_at,assignment_id,rider_assignments(status,accepted_at))')
+          .select(
+            '*,delivery_stops(id,sequence,sequence_locked_at,assignment_id,rider_assignments(status,accepted_at))',
+          )
           .eq('assigned_rider_id', riderId)
           .order('created_at'),
     );
@@ -114,27 +121,54 @@ class RiderRepository {
 
   Future<List<DeliverySession>> sessions(String businessId) async {
     final rows = await _run(
-      () => _db.from('delivery_sessions').select('id,name').eq('business_id', businessId),
+      () => _db
+          .from('delivery_sessions')
+          .select('id,name')
+          .eq('business_id', businessId),
     );
     return _rows(rows).map(DeliverySession.fromRow).toList();
   }
 
   // --------------------------------------------------------- run lifecycle
 
-  Future<void> acceptAssignment({required String riderId, required String orderId}) => _run(
-    () => _db.rpc('accept_assignment', params: {'p_rider_id': riderId, 'p_order_id': orderId}),
+  Future<void> acceptAssignment({
+    required String riderId,
+    required String orderId,
+  }) => _run(
+    () => _db.rpc(
+      'accept_assignment',
+      params: {'p_rider_id': riderId, 'p_order_id': orderId},
+    ),
   );
 
-  Future<void> declineAssignment({required String riderId, required String orderId}) => _run(
-    () => _db.rpc('decline_assignment', params: {'p_rider_id': riderId, 'p_order_id': orderId}),
+  Future<void> declineAssignment({
+    required String riderId,
+    required String orderId,
+  }) => _run(
+    () => _db.rpc(
+      'decline_assignment',
+      params: {'p_rider_id': riderId, 'p_order_id': orderId},
+    ),
   );
 
-  Future<void> acceptRun({required String riderId, required String sessionId}) => _run(
-    () => _db.rpc('accept_run', params: {'p_rider_id': riderId, 'p_delivery_session_id': sessionId}),
+  Future<void> acceptRun({
+    required String riderId,
+    required String sessionId,
+  }) => _run(
+    () => _db.rpc(
+      'accept_run',
+      params: {'p_rider_id': riderId, 'p_delivery_session_id': sessionId},
+    ),
   );
 
-  Future<void> declineRun({required String riderId, required String sessionId}) => _run(
-    () => _db.rpc('decline_run', params: {'p_rider_id': riderId, 'p_delivery_session_id': sessionId}),
+  Future<void> declineRun({
+    required String riderId,
+    required String sessionId,
+  }) => _run(
+    () => _db.rpc(
+      'decline_run',
+      params: {'p_rider_id': riderId, 'p_delivery_session_id': sessionId},
+    ),
   );
 
   /// R-09 Plan Route: persist the Rider's reorder of permitted stops.
@@ -145,32 +179,54 @@ class RiderRepository {
     required String sessionId,
     required List<String> orderedOrderIds,
   }) => _run(
-    () => _db.rpc('save_run_sequence', params: {
-      'p_rider_id': riderId,
-      'p_delivery_session_id': sessionId,
-      'p_ordered_order_ids': orderedOrderIds,
-    }),
+    () => _db.rpc(
+      'save_run_sequence',
+      params: {
+        'p_rider_id': riderId,
+        'p_delivery_session_id': sessionId,
+        'p_ordered_order_ids': orderedOrderIds,
+      },
+    ),
   );
 
   /// SLIDE Start Pickup (R-10).
-  Future<void> startPickupRun({required String riderId, required String sessionId}) => _run(
-    () => _db.rpc('start_pickup_run', params: {'p_rider_id': riderId, 'p_delivery_session_id': sessionId}),
+  Future<void> startPickupRun({
+    required String riderId,
+    required String sessionId,
+  }) => _run(
+    () => _db.rpc(
+      'start_pickup_run',
+      params: {'p_rider_id': riderId, 'p_delivery_session_id': sessionId},
+    ),
   );
 
   /// SLIDE Start Delivery (R-12).
-  Future<void> startRunDelivery({required String riderId, required String sessionId}) => _run(
-    () => _db.rpc('start_run_delivery', params: {'p_rider_id': riderId, 'p_delivery_session_id': sessionId}),
+  Future<void> startRunDelivery({
+    required String riderId,
+    required String sessionId,
+  }) => _run(
+    () => _db.rpc(
+      'start_run_delivery',
+      params: {'p_rider_id': riderId, 'p_delivery_session_id': sessionId},
+    ),
   );
 
   /// SLIDE Arrive / general per-stop transitions (R-14). [next] is a
   /// canonical delivery_status wire value.
-  Future<void> transition({required String riderId, required String orderId, required String next}) => _run(
-    () => _db.rpc('rider_transition', params: {
-      'p_rider_id': riderId,
-      'p_order_id': orderId,
-      'p_next': next,
-      'p_idempotency_key': _idempotencyKey(),
-    }),
+  Future<void> transition({
+    required String riderId,
+    required String orderId,
+    required String next,
+  }) => _run(
+    () => _db.rpc(
+      'rider_transition',
+      params: {
+        'p_rider_id': riderId,
+        'p_order_id': orderId,
+        'p_next': next,
+        'p_idempotency_key': _idempotencyKey(),
+      },
+    ),
   );
 
   /// R-16 Delivery Issue. Only reasons with a genuine canonical backend
@@ -181,12 +237,15 @@ class RiderRepository {
     required String reasonType,
     String? note,
   }) => _run(
-    () => _db.rpc('rider_report_delivery_issue', params: {
-      'p_rider_id': riderId,
-      'p_order_id': orderId,
-      'p_reason_type': reasonType,
-      if (note != null && note.isNotEmpty) 'p_note': note,
-    }),
+    () => _db.rpc(
+      'rider_report_delivery_issue',
+      params: {
+        'p_rider_id': riderId,
+        'p_order_id': orderId,
+        'p_reason_type': reasonType,
+        if (note != null && note.isNotEmpty) 'p_note': note,
+      },
+    ),
   );
 
   /// Rider-facing label -> canonical reason_type. Kept in the repository,
@@ -214,20 +273,30 @@ class RiderRepository {
   }) async {
     final path = await _uploadPod(riderId, orderId, photoBytes, photoExtension);
     await _run(
-      () => _db.rpc('complete_delivery', params: {
-        'p_rider_id': riderId,
-        'p_order_id': orderId,
-        'p_pod_path': path,
-        'p_note': note,
-        'p_idempotency_key': _idempotencyKey(),
-      }),
+      () => _db.rpc(
+        'complete_delivery',
+        params: {
+          'p_rider_id': riderId,
+          'p_order_id': orderId,
+          'p_pod_path': path,
+          'p_note': note,
+          'p_idempotency_key': _idempotencyKey(),
+        },
+      ),
     );
   }
 
-  Future<String> _uploadPod(String riderId, String orderId, List<int> bytes, String extension) async {
+  Future<String> _uploadPod(
+    String riderId,
+    String orderId,
+    List<int> bytes,
+    String extension,
+  ) async {
     final path = '$riderId/$orderId/${_idempotencyKey()}.$extension';
     await _run(
-      () => _db.storage.from('cefflo-pod').uploadBinary(path, Uint8List.fromList(bytes)),
+      () => _db.storage
+          .from('cefflo-pod')
+          .uploadBinary(path, Uint8List.fromList(bytes)),
     );
     return path;
   }

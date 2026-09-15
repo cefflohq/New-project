@@ -150,7 +150,11 @@ class CeffloSecondaryButton extends StatelessWidget {
                   ),
                 ),
                 if (trailingChevron)
-                  Icon(LucideIcons.chevronRight, size: 20, color: c.textSecondary),
+                  Icon(
+                    LucideIcons.chevronRight,
+                    size: 20,
+                    color: c.textSecondary,
+                  ),
               ],
             ),
           ),
@@ -425,7 +429,8 @@ class CeffloAuthScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final header = headerChild ??
+    final header =
+        headerChild ??
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -489,7 +494,12 @@ class CeffloAuthScaffold extends StatelessWidget {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(Gap.gutter, 6, Gap.gutter, Gap.xl),
+                padding: const EdgeInsets.fromLTRB(
+                  Gap.gutter,
+                  6,
+                  Gap.gutter,
+                  Gap.xl,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -1081,7 +1091,10 @@ class CeffloOptionRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(Sizes.innerRadius),
         onTap: onTap,
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: dense ? 10 : 13, horizontal: 12),
+          padding: EdgeInsets.symmetric(
+            vertical: dense ? 10 : 13,
+            horizontal: 12,
+          ),
           child: Row(
             children: [
               iconChild ??
@@ -1216,7 +1229,12 @@ enum ChipTone { neutral, info, warning, success, attention }
 /// Numbered navy circle used for stop indices (D21, D21.1, D32) and the
 /// ordered step list in D06/D20.
 class CeffloIndexBadge extends StatelessWidget {
-  const CeffloIndexBadge(this.index, {super.key, this.tone = ChipTone.neutral, this.size = 30});
+  const CeffloIndexBadge(
+    this.index, {
+    super.key,
+    this.tone = ChipTone.neutral,
+    this.size = 30,
+  });
   final int index;
   final ChipTone tone;
   final double size;
@@ -1293,7 +1311,9 @@ class CeffloSegmentedTabs extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 13.5,
-                      fontWeight: i == index ? FontWeight.w700 : FontWeight.w600,
+                      fontWeight: i == index
+                          ? FontWeight.w700
+                          : FontWeight.w600,
                       color: i == index ? c.textPrimary : c.textSecondary,
                     ),
                   ),
@@ -1353,7 +1373,11 @@ class CeffloListTile extends StatelessWidget {
                 const SizedBox(width: 8),
               ],
               if (!danger)
-                Icon(LucideIcons.chevronRight, size: 20, color: c.textSecondary),
+                Icon(
+                  LucideIcons.chevronRight,
+                  size: 20,
+                  color: c.textSecondary,
+                ),
             ],
           ),
         ),
@@ -1436,7 +1460,11 @@ class CeffloDocumentRow extends StatelessWidget {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(6),
-                          child: SizedBox(width: 54, height: 36, child: thumbnail),
+                          child: SizedBox(
+                            width: 54,
+                            height: 36,
+                            child: thumbnail,
+                          ),
                         ),
                         if (onRemove != null) ...[
                           const SizedBox(width: 8),
@@ -1664,7 +1692,10 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
                       onHorizontalDragUpdate: !_active
                           ? null
                           : (d) => setState(() {
-                              _dragX = (_dragX + d.delta.dx).clamp(0.0, maxDrag);
+                              _dragX = (_dragX + d.delta.dx).clamp(
+                                0.0,
+                                maxDrag,
+                              );
                             }),
                       onHorizontalDragEnd: !_active
                           ? null
@@ -1737,7 +1768,10 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
                 Expanded(
                   child: Text(
                     widget.errorText!,
-                    style: TextStyle(fontSize: 12.5, color: context.c.attention),
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: context.c.attention,
+                    ),
                   ),
                 ),
               ],
@@ -1947,12 +1981,7 @@ class CeffloSubmittedModal extends StatelessWidget {
         const SizedBox(height: Gap.sm),
         Text(body, textAlign: TextAlign.center, style: context.t.bodyMedium),
         const SizedBox(height: Gap.lg),
-        CeffloPrimaryButton(
-          doneLabel,
-          onTap: onDone,
-          height: 52,
-          pill: false,
-        ),
+        CeffloPrimaryButton(doneLabel, onTap: onDone, height: 52, pill: false),
       ],
     ),
   );
@@ -2003,22 +2032,20 @@ Future<void> showCeffloSubmitFlow(
 /// Reference bottom sheet geometry: white, 24px top radius, grabber, and
 /// content padded to the screen gutter (D39 Select Language, D40-A Contact
 /// Support).
-Future<T?> showCeffloSheet<T>(
-  BuildContext context, {
-  required Widget child,
-}) => showModalBottomSheet<T>(
-  context: context,
-  backgroundColor: Colors.transparent,
-  barrierColor: const Color(0x66101C33),
-  isScrollControlled: true,
-  builder: (_) => Container(
-    decoration: BoxDecoration(
-      color: CefColors.light.card,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-    ),
-    child: SafeArea(top: false, child: child),
-  ),
-);
+Future<T?> showCeffloSheet<T>(BuildContext context, {required Widget child}) =>
+    showModalBottomSheet<T>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: const Color(0x66101C33),
+      isScrollControlled: true,
+      builder: (_) => Container(
+        decoration: BoxDecoration(
+          color: CefColors.light.card,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(top: false, child: child),
+      ),
+    );
 
 class SheetGrabber extends StatelessWidget {
   const SheetGrabber({super.key});

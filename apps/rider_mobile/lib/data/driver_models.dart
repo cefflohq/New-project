@@ -128,7 +128,14 @@ class DriverRun {
   );
 }
 
-enum NotificationKind { runAssigned, deliveryIssue, customerUpdate, runCompleted, documentApproved, appUpdate }
+enum NotificationKind {
+  runAssigned,
+  deliveryIssue,
+  customerUpdate,
+  runCompleted,
+  documentApproved,
+  appUpdate,
+}
 
 /// D33 Notifications.
 class DriverNotification {
@@ -270,9 +277,11 @@ enum IssueReason {
   };
 
   String get body => switch (this) {
-    IssueReason.customerNotAvailable => 'Customer did not answer or not at location.',
+    IssueReason.customerNotAvailable =>
+      'Customer did not answer or not at location.',
     IssueReason.wrongAddress => 'Address not found or incorrect.',
-    IssueReason.customerRequestedReschedule => 'Customer asked to deliver at a later time.',
+    IssueReason.customerRequestedReschedule =>
+      'Customer asked to deliver at a later time.',
     IssueReason.itemsNotAvailable => 'Item(s) not available at store.',
     IssueReason.safetyConcern => 'Unsafe to complete delivery.',
     IssueReason.other => 'Tell us more about the issue.',
@@ -298,7 +307,8 @@ enum SupportCategory {
 
   String get body => switch (this) {
     SupportCategory.deliveryRunIssue => 'Orders, pickup, delivery, customer',
-    SupportCategory.vendorBusinessIssue => 'Assignment, payment, customer issue',
+    SupportCategory.vendorBusinessIssue =>
+      'Assignment, payment, customer issue',
     SupportCategory.ceffloAppIssue => 'App bug, error, technical problem',
     SupportCategory.accountDocuments => 'Profile, documents, verification',
     SupportCategory.other => 'Something else',
