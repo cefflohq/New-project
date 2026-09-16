@@ -159,7 +159,9 @@ function pickupScreen(vm) {
           <p class="pickup__address">${esc(vm.vendor.address)}</p>
         </div>
       </div>
-      <h2 class="card__title card__title--spaced">Order Information</h2>
+    </section>
+    <section class="card card--stacked">
+      <h2 class="card__title">Order Information</h2>
       ${infoRow('Tracking ID', `<span class="mono" id="trackingReference">${esc(vm.reference)}</span>
         <button class="ghost-btn" type="button" data-action="copy-reference" aria-label="Copy tracking reference">${icon('copy', { size: 18 })}</button>`, 'info-row--tight')}
       ${infoRow('Items', esc(vm.order.itemsLabel))}

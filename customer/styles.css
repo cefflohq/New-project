@@ -146,12 +146,18 @@ img { display: block; max-width: 100%; }
   -webkit-overflow-scrolling: touch;
   position: relative;
   z-index: 1;
+  /* Flex column instead of relying on .screen's percentage height: a
+     percentage height inside a scrolling flex child does not reliably
+     resolve, which left the footer sitting right after short content
+     (e.g. C1) instead of pinned to the true bottom of the viewport. */
+  display: flex;
+  flex-direction: column;
 }
 
 .screen {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  flex: 1 1 auto;
   padding: 20px 18px calc(12px + env(safe-area-inset-bottom));
   transition: opacity var(--screen) var(--ease), transform var(--screen) var(--ease);
 }
@@ -259,13 +265,12 @@ img { display: block; max-width: 100%; }
 
 .card__title--spaced { margin-top: 18px; }
 
+.card--stacked { margin-top: 12px; }
+
 .pickup {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px;
-  border-radius: 12px;
-  background: var(--surface-muted);
 }
 
 .pickup__thumb {
