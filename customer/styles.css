@@ -95,7 +95,11 @@ img { display: block; max-width: 100%; }
 }
 
 .vendor-header {
-  background: linear-gradient(180deg, var(--vendor-primary-strong) 0%, var(--vendor-primary-deep) 100%);
+  /* Flat, not a top-to-bottom gradient: the .sheet's rounded top corners
+     overlap up into the bottom of this element (margin-top: -18px), so a
+     gradient made the corner notch read as a visibly different, darker
+     blue than the rest of the header bar. One flat colour removes that. */
+  background: var(--vendor-primary-strong);
   color: var(--vendor-on-primary);
   padding: max(12px, env(safe-area-inset-top)) 18px 30px;
   flex: 0 0 auto;
