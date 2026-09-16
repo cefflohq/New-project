@@ -224,6 +224,13 @@ class CeffloBackButton extends StatelessWidget {
 
 /// Navy bar with a back control, a centred title and the notifications bell
 /// — the header on D20–D23, D28–D40C.
+///
+/// Draws **no backdrop of its own**: it is always hosted by a surface that
+/// already paints the navy gradient (and the chevron watermark) full-bleed —
+/// see [CeffloNavySheetScaffold]. Painting a second gradient here restarted
+/// the ramp at the header's own height, which put a hard horizontal seam, a
+/// doubled watermark and a mismatched navy in the content sheet's rounded
+/// corner notches exactly where the two boxes met.
 class CeffloScreenHeader extends StatelessWidget {
   const CeffloScreenHeader({
     super.key,
@@ -241,55 +248,53 @@ class CeffloScreenHeader extends StatelessWidget {
   final Widget? subtitle;
 
   @override
-  Widget build(BuildContext context) => NavyBackdrop(
-    child: SafeArea(
-      bottom: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(Gap.md, 6, Gap.md, 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              height: Sizes.tapTarget,
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: Sizes.tapTarget,
-                    child: onBack == null
-                        ? null
-                        : CeffloBackButton(onTap: onBack!),
-                  ),
-                  Expanded(
-                    child: Text(
-                      title,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
-                        color: CefColors.onNavy,
-                        letterSpacing: -0.2,
-                      ),
+  Widget build(BuildContext context) => SafeArea(
+    bottom: false,
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(Gap.md, 6, Gap.md, 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            height: Sizes.tapTarget,
+            child: Row(
+              children: [
+                SizedBox(
+                  width: Sizes.tapTarget,
+                  child: onBack == null
+                      ? null
+                      : CeffloBackButton(onTap: onBack!),
+                ),
+                Expanded(
+                  child: Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 19,
+                      fontWeight: FontWeight.w700,
+                      color: CefColors.onNavy,
+                      letterSpacing: -0.2,
                     ),
                   ),
-                  SizedBox(
-                    width: Sizes.tapTarget,
-                    child: onBell == null
-                        ? null
-                        : CeffloBellButton(onTap: onBell!),
-                  ),
-                ],
-              ),
+                ),
+                SizedBox(
+                  width: Sizes.tapTarget,
+                  child: onBell == null
+                      ? null
+                      : CeffloBellButton(onTap: onBell!),
+                ),
+              ],
             ),
-            if (subtitle != null) ...[
-              const SizedBox(height: 6),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: subtitle!,
-              ),
-            ],
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: subtitle!,
+            ),
           ],
-        ),
+        ],
       ),
     ),
   );
@@ -451,6 +456,8 @@ class CeffloAuthScaffold extends StatelessWidget {
           ],
         );
 
+    // No lift shadow: this surface is attached to the header, not floating
+    // over it, and an upward shadow only draws a dark line along the join.
     final sheetSurface = Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -458,7 +465,6 @@ class CeffloAuthScaffold extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(Sizes.sheetRadius),
         ),
-        boxShadow: cefSheetShadow(),
       ),
       padding: sheetPadding.copyWith(
         bottom: sheetPadding.bottom + MediaQuery.of(context).padding.bottom,
@@ -567,6 +573,10 @@ class CeffloNavySheetScaffold extends StatelessWidget {
           Column(
             children: [
               header,
+              // No lift shadow: the surface is attached to the header rather
+              // than floating over it, and an upward shadow only paints a
+              // dark seam line (and a dark arc in the corner notches) along
+              // the join.
               Expanded(
                 child: Container(
                   width: double.infinity,
@@ -575,7 +585,6 @@ class CeffloNavySheetScaffold extends StatelessWidget {
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(sheetRadius),
                     ),
-                    boxShadow: cefSheetShadow(),
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: Column(

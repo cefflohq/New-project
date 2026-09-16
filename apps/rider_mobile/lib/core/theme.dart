@@ -146,7 +146,10 @@ List<BoxShadow> cefCardShadow() => const [
   ),
 ];
 
-/// Softer lift for a white surface sitting over the navy header.
+/// Softer lift for a white surface that genuinely floats over live content
+/// behind it — D22's sheet over the map. Surfaces that are *attached* to the
+/// navy header (the auth and navy-sheet scaffolds) take no shadow: there the
+/// upward offset only paints a dark line along the join.
 List<BoxShadow> cefSheetShadow() => const [
   BoxShadow(
     color: Color(0x1A0A1B33),
