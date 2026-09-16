@@ -354,7 +354,7 @@ img { display: block; max-width: 100%; }
 
 .map__note {
   margin: 8px 2px 0;
-  color: var(--ink-faint);
+  color: var(--ink-soft);
   font-size: 11.5px;
 }
 
@@ -515,11 +515,12 @@ img { display: block; max-width: 100%; }
 
 .rating__hint {
   margin: 0;
-  color: var(--ink-faint);
+  /* --ink-soft keeps this hint above 4.5:1 on the muted rating surface. */
+  color: var(--ink-soft);
   font-size: 12.5px;
 }
 
-.rating__hint--rated { color: var(--ink-soft); font-weight: 600; }
+.rating__hint--rated { color: var(--ink); font-weight: 600; }
 
 /* --------------------------------------------------------- unavailable */
 
