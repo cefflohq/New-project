@@ -118,8 +118,21 @@ class CeffloDriverWordmark extends StatelessWidget {
   );
 }
 
-/// D01's stacked lockup: the mark above a two-line "Cefflo" / "Driver"
-/// wordmark. Sizes/weights/spacing match the splash reference.
+/// D01's splash artwork: the folded chevron mark with its yellow accent above
+/// the "Cefflo" wordmark, supplied as one combined lockup. The master is a
+/// 2813×2813 canvas that is mostly transparent margin; the shipped asset is
+/// that master cropped to its ink (x 796–2100, y 568–2446, so 1304×1878),
+/// with no resampling or recolouring, so the artwork's box is the artwork and
+/// the "Driver" line below it sits against the wordmark rather than against a
+/// band of nothing.
+const _splashAsset = 'assets/brand/cefflo-logo-splash.png';
+const _splashArtworkWidth = 200.0;
+const _splashArtworkHeight = _splashArtworkWidth * 1878 / 1304;
+
+/// D01's stacked lockup: the supplied mark-and-"Cefflo" artwork with
+/// "Driver" set beneath it as the second line of the same lockup — lighter
+/// weight, white, sized and tracked against the baked wordmark so the two
+/// read as one mark. Proportions/spacing match the splash reference.
 class CeffloSplashLockup extends StatelessWidget {
   const CeffloSplashLockup({super.key});
 
@@ -127,28 +140,23 @@ class CeffloSplashLockup extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     mainAxisSize: MainAxisSize.min,
     children: [
-      const CeffloLogoMark(size: 118),
-      const SizedBox(height: 2),
-      const Text(
-        'Cefflo',
-        style: TextStyle(
-          fontFamily: 'Manrope',
-          fontSize: 54,
-          fontWeight: FontWeight.w800,
-          height: 1.05,
-          letterSpacing: -1.6,
-          color: CefColors.onNavy,
-        ),
+      Image.asset(
+        _splashAsset,
+        width: _splashArtworkWidth,
+        height: _splashArtworkHeight,
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.medium,
       ),
+      const SizedBox(height: 6),
       Text(
         'Driver',
         style: TextStyle(
           fontFamily: 'Manrope',
-          fontSize: 30,
+          fontSize: 34,
           fontWeight: FontWeight.w500,
-          height: 1.1,
-          letterSpacing: 0.4,
-          color: CefColors.onNavy.withValues(alpha: 0.88),
+          height: 1.0,
+          letterSpacing: 1.2,
+          color: CefColors.onNavy.withValues(alpha: 0.9),
         ),
       ),
     ],
