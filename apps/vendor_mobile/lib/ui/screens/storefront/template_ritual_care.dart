@@ -473,177 +473,188 @@ class _RitualDetailViewState extends State<_RitualDetailView> {
   Widget build(BuildContext context) {
     final item = widget.item;
     final tokens = widget.tokens;
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                tokens.secondary.withValues(alpha: .45),
-                tokens.primary.withValues(alpha: .85),
-              ],
+    // SizedBox.expand (rather than a bare Stack) so this view reliably
+    // fills the preview frame even when an ancestor (the Template Preview
+    // screen centers the frame with a Center -> ConstrainedBox) hands this
+    // subtree loose height constraints: a plain Stack sizes to its
+    // children under loose constraints and would otherwise collapse to the
+    // frosted panel's own height, leaving the rest of the frame blank.
+    return SizedBox.expand(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  tokens.secondary.withValues(alpha: .45),
+                  tokens.primary.withValues(alpha: .85),
+                ],
+              ),
             ),
           ),
-        ),
-        Center(
-          child: Icon(
-            item.icon,
-            size: 190,
-            color: Colors.white.withValues(alpha: .28),
-          ),
-        ),
-        SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-            child: Row(
-              children: [
-                InkWell(
-                  onTap: widget.onBack,
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      LucideIcons.chevronLeft,
-                      size: 18,
-                      color: StorefrontThemeTokens.textPrimary,
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                InkWell(
-                  onTap: widget.onToggleFavorite,
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      LucideIcons.heart,
-                      size: 17,
-                      color: widget.favored
-                          ? tokens.primary
-                          : StorefrontThemeTokens.textSecondary,
-                    ),
-                  ),
-                ),
-              ],
+          Center(
+            child: Icon(
+              item.icon,
+              size: 190,
+              color: Colors.white.withValues(alpha: .28),
             ),
           ),
-        ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .82),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 19,
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+              child: Row(
+                children: [
+                  InkWell(
+                    onTap: widget.onBack,
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        LucideIcons.chevronLeft,
+                        size: 18,
+                        color: StorefrontThemeTokens.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.description ?? 'Light daily-use formula.',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: StorefrontThemeTokens.textSecondary,
+                  ),
+                  const Spacer(),
+                  InkWell(
+                    onTap: widget.onToggleFavorite,
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        LucideIcons.heart,
+                        size: 17,
+                        color: widget.favored
+                            ? tokens.primary
+                            : StorefrontThemeTokens.textSecondary,
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        const Text(
-                          'Quantity',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(28),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: .82),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 19,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        item.description ?? 'Light daily-use formula.',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: StorefrontThemeTokens.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          const Text(
+                            'Quantity',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
                           ),
-                        ),
-                        const Spacer(),
-                        StorefrontQtyStepper(
-                          qty: qty,
-                          tokens: tokens,
-                          onChanged: (q) => setState(() => qty = q < 1 ? 1 : q),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Total Price',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: tokens.primary.withValues(alpha: .7),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      '\$${(item.price * qty).toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 24,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: StorefrontBrandButton(
-                            label: 'Add to cart',
-                            trailing: '>>>',
-                            outlined: true,
+                          const Spacer(),
+                          StorefrontQtyStepper(
+                            qty: qty,
                             tokens: tokens,
+                            onChanged: (q) =>
+                                setState(() => qty = q < 1 ? 1 : q),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Total Price',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: tokens.primary.withValues(alpha: .7),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        '\$${(item.price * qty).toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 24,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: StorefrontBrandButton(
+                              label: 'Add to cart',
+                              trailing: '>>>',
+                              outlined: true,
+                              tokens: tokens,
+                              onTap: () {
+                                widget.cart.add(item, qty: qty);
+                                widget.onBack();
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          InkWell(
                             onTap: () {
                               widget.cart.add(item, qty: qty);
                               widget.onBack();
                             },
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        InkWell(
-                          onTap: () {
-                            widget.cart.add(item, qty: qty);
-                            widget.onBack();
-                          },
-                          child: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: tokens.accentDecoration(radius: 12),
-                            child: Icon(
-                              LucideIcons.shoppingCart,
-                              size: 20,
-                              color: tokens.onPrimary,
+                            child: Container(
+                              width: 48,
+                              height: 48,
+                              decoration: tokens.accentDecoration(radius: 12),
+                              child: Icon(
+                                LucideIcons.shoppingCart,
+                                size: 20,
+                                color: tokens.onPrimary,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
