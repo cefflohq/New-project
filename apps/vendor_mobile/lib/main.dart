@@ -12,10 +12,17 @@ import 'data/vendor_repository.dart';
 import 'ui/router.dart';
 import 'ui/screens/auth.dart';
 import 'ui/shell.dart';
+import 'ui/system_bars.dart';
 import 'ui/widgets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Global edge-to-edge system chrome (see ui/system_bars.dart). Must run
+  // once before the first frame so Android lays the Flutter canvas out
+  // full-screen behind the status/navigation bars -- a no-op on Web, where
+  // there is no native system bar to affect.
+  CefSystemBars.enableEdgeToEdge();
 
   // Keeps the browser/OS status bar in sync with the app's own chrome
   // colour instead of a hand-edited hex string in index.html that can
@@ -123,8 +130,16 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
         themeMode: ThemeMode.light,
         theme: buildVendorTheme(Brightness.light),
         // Applied above the Navigator so every route, dialog and bottom
-        // sheet lays out against the same normalized canvas.
-        builder: (context, child) => ResponsiveDensity(child: child!),
+        // sheet lays out against the same normalized canvas, and -- since
+        // this app is overwhelmingly light-background -- gets the
+        // reusable edge-to-edge system-bar treatment for a light screen by
+        // default. Screens with a dark background (Splash, Sign In, the
+        // Auth sheet family) nest their own CefSystemBars deeper in the
+        // tree, which takes precedence for that route.
+        builder: (context, child) => CefSystemBars(
+          background: Brightness.light,
+          child: ResponsiveDensity(child: child!),
+        ),
         home: Builder(
           builder: (context) {
             final id = widget.auditId;
@@ -259,28 +274,31 @@ class ConfigurationErrorApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
     debugShowCheckedModeBanner: false,
     theme: buildVendorTheme(Brightness.light),
-    home: Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(Gap.section),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Cefflo Vendor is not configured',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: Gap.md),
-                Text(message, textAlign: TextAlign.center),
-                const SizedBox(height: Gap.md),
-                const Text(
-                  'Pass CEFFLO_ENVIRONMENT, SUPABASE_URL and '
-                  'SUPABASE_PUBLISHABLE_KEY with --dart-define.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13),
-                ),
-              ],
+    home: CefSystemBars(
+      background: Brightness.light,
+      child: Scaffold(
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(Gap.section),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Cefflo Vendor is not configured',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: Gap.md),
+                  Text(message, textAlign: TextAlign.center),
+                  const SizedBox(height: Gap.md),
+                  const Text(
+                    'Pass CEFFLO_ENVIRONMENT, SUPABASE_URL and '
+                    'SUPABASE_PUBLISHABLE_KEY with --dart-define.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 13),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

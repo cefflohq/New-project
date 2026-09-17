@@ -23,6 +23,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' show OAuthProvider;
 import '../../core/app_state.dart';
 import '../../core/theme.dart';
 import '../../data/vendor_repository.dart';
+import '../system_bars.dart';
 
 // ---------------------------------------------------------------- palette
 //
@@ -381,85 +382,93 @@ class _SheetScaffold extends StatelessWidget {
         _headerLockup / _lockupInkRatio +
         Gap.lg;
 
-    return Scaffold(
-      backgroundColor: _navyBase,
-      body: Stack(
-        children: [
-          // Runs _sheetRadius past the header so the sheet's rounded corners
-          // reveal gradient rather than flat navy, as the boards show.
-          SizedBox(
-            width: double.infinity,
-            height: headerHeight + _sheetRadius,
-            child: const _NavyBackdrop(child: SizedBox.expand()),
-          ),
-          Column(
-            children: [
-              SizedBox(
-                height: headerHeight,
-                child: SafeArea(
-                  bottom: false,
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: _backRow,
-                        child: Row(
+    // Navy header band at the top, white rounded sheet filling the rest of
+    // the screen down to the physical bottom edge -- so the status bar
+    // sits over navy (light icons) while the navigation bar sits over the
+    // white sheet (dark icons).
+    return CefSystemBars.split(
+      statusBarBackground: Brightness.dark,
+      navigationBarBackground: Brightness.light,
+      child: Scaffold(
+        backgroundColor: _navyBase,
+        body: Stack(
+          children: [
+            // Runs _sheetRadius past the header so the sheet's rounded corners
+            // reveal gradient rather than flat navy, as the boards show.
+            SizedBox(
+              width: double.infinity,
+              height: headerHeight + _sheetRadius,
+              child: const _NavyBackdrop(child: SizedBox.expand()),
+            ),
+            Column(
+              children: [
+                SizedBox(
+                  height: headerHeight,
+                  child: SafeArea(
+                    bottom: false,
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: _backRow,
+                          child: Row(
+                            children: [
+                              if (onBack != null)
+                                _BackButton(onTap: onBack!)
+                              else
+                                const SizedBox(width: Gap.lg),
+                            ],
+                          ),
+                        ),
+                        // Soft-focus, per the locked sheet boards.
+                        const _BrandLockup(
+                          height: _headerLockup,
+                          blurSigma: 5.2,
+                          opacity: .74,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(_sheetRadius),
+                      ),
+                    ),
+                    child: SafeArea(
+                      top: false,
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            if (onBack != null)
-                              _BackButton(onTap: onBack!)
-                            else
-                              const SizedBox(width: Gap.lg),
+                            if (showHandle) ...[
+                              Center(
+                                child: Container(
+                                  width: 44,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFD7DAE2),
+                                    borderRadius: BorderRadius.circular(99),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: Gap.lg),
+                            ],
+                            child,
                           ],
                         ),
                       ),
-                      // Soft-focus, per the locked sheet boards.
-                      const _BrandLockup(
-                        height: _headerLockup,
-                        blurSigma: 5.2,
-                        opacity: .74,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(_sheetRadius),
-                    ),
-                  ),
-                  child: SafeArea(
-                    top: false,
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (showHandle) ...[
-                            Center(
-                              child: Container(
-                                width: 44,
-                                height: 4,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFD7DAE2),
-                                  borderRadius: BorderRadius.circular(99),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: Gap.lg),
-                          ],
-                          child,
-                        ],
-                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -936,20 +945,23 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: _navyBase,
-    body: _NavyBackdrop(
-      child: SafeArea(
-        child: Column(
-          children: [
-            const Spacer(flex: 5),
-            const _BrandLockup(height: 200),
-            const Spacer(flex: 5),
-            const _Tagline(),
-            const SizedBox(height: Gap.section),
-            _SplashProgress(animation: _progress),
-            const SizedBox(height: Gap.section),
-          ],
+  Widget build(BuildContext context) => CefSystemBars(
+    background: Brightness.dark,
+    child: Scaffold(
+      backgroundColor: _navyBase,
+      body: _NavyBackdrop(
+        child: SafeArea(
+          child: Column(
+            children: [
+              const Spacer(flex: 5),
+              const _BrandLockup(height: 200),
+              const Spacer(flex: 5),
+              const _Tagline(),
+              const SizedBox(height: Gap.section),
+              _SplashProgress(animation: _progress),
+              const SizedBox(height: Gap.section),
+            ],
+          ),
         ),
       ),
     ),
@@ -1040,152 +1052,163 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: _navyBase,
-    body: _NavyBackdrop(
-      child: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) => SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              // IntrinsicHeight gives the Column a bounded height inside the
-              // scroll view, so the Spacer below can actually pin the
-              // tagline to the bottom edge the locked board shows it at.
-              child: IntrinsicHeight(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 4),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: _LanguagePill(onTap: _openLanguageSheet),
-                      ),
-                      const SizedBox(height: 34),
-                      const Center(child: _BrandLockup(height: 145)),
-                      const SizedBox(height: 26),
-                      const Text(
-                        'Welcome back',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.2,
+  Widget build(BuildContext context) => CefSystemBars(
+    background: Brightness.dark,
+    child: Scaffold(
+      backgroundColor: _navyBase,
+      body: _NavyBackdrop(
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                // IntrinsicHeight gives the Column a bounded height inside the
+                // scroll view, so the Spacer below can actually pin the
+                // tagline to the bottom edge the locked board shows it at.
+                child: IntrinsicHeight(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 4),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: _LanguagePill(onTap: _openLanguageSheet),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Sign in to manage your deliveries today.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: .82),
-                          fontSize: 14.5,
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: 30),
-                      _ProviderButton(
-                        label: 'Continue with Apple',
-                        background: Colors.white,
-                        foreground: const Color(0xFF181818),
-                        leading: const Icon(
-                          Icons.apple,
-                          color: Color(0xFF181818),
-                          size: 23,
-                        ),
-                        onTap: _busy
-                            ? null
-                            : () => _provider(OAuthProvider.apple),
-                      ),
-                      const SizedBox(height: 12),
-                      _ProviderButton(
-                        label: 'Continue with Google',
-                        background: Colors.white,
-                        foreground: const Color(0xFF181818),
-                        leading: const _GoogleGlyph(),
-                        onTap: _busy
-                            ? null
-                            : () => _provider(OAuthProvider.google),
-                      ),
-                      const SizedBox(height: 12),
-                      _ProviderButton(
-                        label: 'Continue with Email',
-                        background: CefColors.accent,
-                        foreground: const Color(0xFF181818),
-                        leading: const Icon(
-                          LucideIcons.mail,
-                          size: 20,
-                          color: _navyBase,
-                        ),
-                        onTap: widget.onEmail,
-                      ),
-                      if (_providerError != null) ...[
-                        const SizedBox(height: 14),
-                        Text(
-                          _providerError!,
+                        const SizedBox(height: 34),
+                        const Center(child: _BrandLockup(height: 145)),
+                        const SizedBox(height: 26),
+                        const Text(
+                          'Welcome back',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Color(0xFFFFC9C3),
-                            fontSize: 12.5,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Sign in to manage your deliveries today.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: .82),
+                            fontSize: 14.5,
                             height: 1.4,
                           ),
                         ),
-                      ],
-                      const SizedBox(height: 22),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(height: 1, color: Colors.white24),
+                        const SizedBox(height: 30),
+                        _ProviderButton(
+                          label: 'Continue with Apple',
+                          background: Colors.white,
+                          foreground: const Color(0xFF181818),
+                          leading: const Icon(
+                            Icons.apple,
+                            color: Color(0xFF181818),
+                            size: 23,
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            child: Text(
-                              'or',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: .75),
-                                fontSize: 13,
-                              ),
-                            ),
+                          onTap: _busy
+                              ? null
+                              : () => _provider(OAuthProvider.apple),
+                        ),
+                        const SizedBox(height: 12),
+                        _ProviderButton(
+                          label: 'Continue with Google',
+                          background: Colors.white,
+                          foreground: const Color(0xFF181818),
+                          leading: const _GoogleGlyph(),
+                          onTap: _busy
+                              ? null
+                              : () => _provider(OAuthProvider.google),
+                        ),
+                        const SizedBox(height: 12),
+                        _ProviderButton(
+                          label: 'Continue with Email',
+                          background: CefColors.accent,
+                          foreground: const Color(0xFF181818),
+                          leading: const Icon(
+                            LucideIcons.mail,
+                            size: 20,
+                            color: _navyBase,
                           ),
-                          Expanded(
-                            child: Container(height: 1, color: Colors.white24),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
+                          onTap: widget.onEmail,
+                        ),
+                        if (_providerError != null) ...[
+                          const SizedBox(height: 14),
                           Text(
-                            "Don't have an account? ",
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: .85),
-                              fontSize: 14,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: widget.onSignUp,
-                            child: const Text(
-                              'Sign up',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                decoration: TextDecoration.underline,
-                                decorationColor: Colors.white,
-                              ),
+                            _providerError!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Color(0xFFFFC9C3),
+                              fontSize: 12.5,
+                              height: 1.4,
                             ),
                           ),
                         ],
-                      ),
-                      const Spacer(),
-                      const SizedBox(height: 28),
-                      const _Tagline(),
-                      const SizedBox(height: 20),
-                    ],
+                        const SizedBox(height: 22),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                height: 1,
+                                color: Colors.white24,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                              ),
+                              child: Text(
+                                'or',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: .75),
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Container(
+                                height: 1,
+                                color: Colors.white24,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              "Don't have an account? ",
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: .85),
+                                fontSize: 14,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: widget.onSignUp,
+                              child: const Text(
+                                'Sign up',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        const SizedBox(height: 28),
+                        const _Tagline(),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
                   ),
                 ),
               ),

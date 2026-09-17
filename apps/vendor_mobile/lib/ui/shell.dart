@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/app_state.dart';
 import '../core/routes.dart';
 import '../core/theme.dart';
+import 'system_bars.dart';
 import 'widgets.dart';
 
 /// First-time business setup (V06-V10). Before the business exists there is
@@ -44,16 +44,12 @@ class VendorShell extends StatelessWidget {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final isOnboarding = _onboardingRoutes.contains(app.current.route);
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: c.chrome,
-        statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
-        statusBarBrightness: dark ? Brightness.dark : Brightness.light,
-        systemNavigationBarColor: c.chrome,
-        systemNavigationBarIconBrightness: dark
-            ? Brightness.light
-            : Brightness.dark,
-      ),
+    return CefSystemBars(
+      // The header and bottom nav paint their own `c.chrome` fill behind
+      // the status/navigation bars (see _Header/_BottomNav below); this
+      // only has to pick the matching transparent-bar icon treatment for
+      // whichever brightness that fill actually is.
+      background: dark ? Brightness.dark : Brightness.light,
       child: PopScope(
         canPop: !app.canGoBack,
         onPopInvokedWithResult: (didPop, _) {
