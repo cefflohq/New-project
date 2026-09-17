@@ -50,7 +50,9 @@ Widget buildScreen(BuildContext context, VendorLocation loc) {
     VRoute.settings => const MenuScreen(),
     VRoute.storefront => const StorefrontScreen(),
     VRoute.storefrontPreview => const StorefrontTemplatePreviewScreen(),
-    VRoute.storefrontTemplatePreview => StorefrontTemplatePreviewScreen(templateKey: id),
+    VRoute.storefrontTemplatePreview => StorefrontTemplatePreviewScreen(
+      templateId: id,
+    ),
     VRoute.branding => const CustomizeStorefrontScreen(),
     _ => UiPrototypeScreen(spec: loc.spec),
   };

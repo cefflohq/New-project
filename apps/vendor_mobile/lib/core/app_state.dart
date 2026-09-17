@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/models.dart';
 import '../data/storefront_config.dart';
+import '../data/storefront_templates.dart';
 import '../data/vendor_repository.dart';
 import 'routes.dart';
 
@@ -28,34 +29,43 @@ class AppState extends ChangeNotifier {
   bool loadingSession = true;
   String? sessionError;
 
-  // ---- Storefront presentation config (V-31/V-33). Deliberately separate
-  // from product/catalogue and order data: this only ever describes layout
-  // (selectedStorefrontTemplate) and brand identity (customStorefrontBranding).
-  // No backend yet, so it's in-memory session state -- a Storefront
-  // configuration adapter boundary, not a parallel production API.
-  StorefrontTemplate selectedStorefrontTemplate = StorefrontTemplate.browseShop;
+  // ---- Storefront presentation config (V-31/X-02/V-33). Deliberately
+  // separate from product/catalogue and order data: this only ever
+  // describes which library template is active (activeStorefrontTemplateId)
+  // and per-template brand identity (_brandingOverrides). No backend yet, so
+  // it's in-memory session state -- a Storefront configuration adapter
+  // boundary, not a parallel production API.
+  String activeStorefrontTemplateId = kDefaultStorefrontTemplateId;
 
-  /// Null until the vendor explicitly saves a brand colour; until then, the
-  /// effective branding just follows whichever template is selected. Once
-  /// set, it persists across template switches ("the template controls
-  /// layout, the vendor controls brand identity").
-  StorefrontBranding? customStorefrontBranding;
+  StorefrontTemplateDef get activeStorefrontTemplate =>
+      storefrontTemplateById(activeStorefrontTemplateId);
+
+  /// Per-template branding overrides. Keyed by library entry id so a
+  /// vendor's edits to e.g. "Luma" survive switching to another template
+  /// and back, without ever bleeding into a different template's identity.
+  final Map<String, StorefrontBranding> _brandingOverrides = {};
+
+  StorefrontBranding brandingFor(String templateId) =>
+      _brandingOverrides[templateId] ??
+      storefrontTemplateById(templateId).defaultBranding;
 
   StorefrontBranding get storefrontBranding =>
-      customStorefrontBranding ?? StorefrontBranding.defaultFor(selectedStorefrontTemplate);
+      brandingFor(activeStorefrontTemplateId);
 
-  void selectStorefrontTemplate(StorefrontTemplate template) {
-    selectedStorefrontTemplate = template;
+  /// "Use This Template" -- makes [templateId] the active storefront.
+  /// Never touches product/catalogue data.
+  void useStorefrontTemplate(String templateId) {
+    activeStorefrontTemplateId = templateId;
     notifyListeners();
   }
 
-  void saveStorefrontBranding(StorefrontBranding branding) {
-    customStorefrontBranding = branding;
+  void saveStorefrontBranding(String templateId, StorefrontBranding branding) {
+    _brandingOverrides[templateId] = branding;
     notifyListeners();
   }
 
-  void resetStorefrontBranding() {
-    customStorefrontBranding = null;
+  void resetStorefrontBranding(String templateId) {
+    _brandingOverrides.remove(templateId);
     notifyListeners();
   }
 

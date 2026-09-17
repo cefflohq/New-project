@@ -31,6 +31,21 @@ const _reviewTitles = <VRoute, String>{
   VRoute.storefrontTemplatePreview: 'Template Preview',
 };
 
+/// Small subtitle shown under a review-title header, for routes where the
+/// spec calls for one (Screen 02 -- Template Preview).
+const _reviewSubtitles = <VRoute, String>{
+  VRoute.storefrontPreview: 'See how your products look with this template',
+  VRoute.storefrontTemplatePreview:
+      'See how your products look with this template',
+};
+
+/// Routes that render their own full header (back arrow, dynamic title,
+/// trailing actions) and own chrome entirely -- e.g. Screen 03, Customize
+/// {Template Name}, which needs a Reset action wired to screen-local draft
+/// state that the shared header cannot reach. No default header or bottom
+/// nav is rendered for these.
+const _ownChromeRoutes = {VRoute.branding};
+
 /// Flat white chrome: 60px header and 60px sticky bottom navigation, no
 /// floating glass bar, no FAB, no accent underline beneath the title.
 class VendorShell extends StatelessWidget {
@@ -59,10 +74,12 @@ class VendorShell extends StatelessWidget {
           backgroundColor: c.canvas,
           body: Column(
             children: [
-              _Header(app: app),
+              if (!_ownChromeRoutes.contains(app.current.route))
+                _Header(app: app),
               Expanded(child: child),
               if (!isOnboarding &&
-                  !_reviewTitles.containsKey(app.current.route))
+                  !_reviewTitles.containsKey(app.current.route) &&
+                  !_ownChromeRoutes.contains(app.current.route))
                 const _BottomNav(),
             ],
           ),
@@ -83,11 +100,13 @@ class _Header extends StatelessWidget {
     final isTodayRoot = app.current.route == VRoute.today;
     final reviewTitle = _reviewTitles[app.current.route];
     if (reviewTitle != null) {
+      final subtitle = _reviewSubtitles[app.current.route];
       return SafeArea(
         bottom: false,
         child: SizedBox(
-          height: 56,
+          height: subtitle == null ? 56 : 68,
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               IconAction(
                 icon: LucideIcons.arrowLeft,
@@ -95,14 +114,33 @@ class _Header extends StatelessWidget {
                 onTap: app.back,
               ),
               Expanded(
-                child: Text(
-                  reviewTitle,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF091A3C),
-                  ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      reviewTitle,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF091A3C),
+                      ),
+                    ),
+                    if (subtitle != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          subtitle,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: c.textSecondary,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(width: 44),
@@ -174,7 +212,35 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
     VRoute.riders => 'Search riders...',
     _ => null,
   };
-  if (hint == null) return const [];
+  if (hint == null) {
+    if (route == VRoute.storefront) {
+      return [
+        IconAction(
+          icon: LucideIcons.circleHelp,
+          tooltip: 'Help',
+          onTap: () => showDialog<void>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('About the Template Library'),
+              content: const Text(
+                'Pick a template and preview it with your own products, '
+                'then tap "Use This Template" to make it your live '
+                'storefront. Switching templates never changes your '
+                'products, prices or stock.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Got it'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ];
+    }
+    return const [];
+  }
   return [
     IconAction(
       icon: LucideIcons.search,

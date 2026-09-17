@@ -1,11 +1,17 @@
-/// V-33 -- Customize storefront. Brand Color customization: a saturation
-/// /brightness field, hue slider, HEX input, Color/Gradient toggle with an
-/// optional secondary colour, and Reset to Template Default -- all driving
-/// the live Storefront Preview immediately, before Save. Logo & tagline
-/// editing is preserved from the previous Branding screen.
+/// V-33 -- Screen 03, "Customize {Template Name}". Owns its own full header
+/// (back arrow, dynamic title, Reset) since the shared [VendorShell] header
+/// can't reach this screen's local draft state -- see the
+/// `_ownChromeRoutes` note in `shell.dart`.
 ///
-/// Accessible foreground colour is always computed automatically
-/// (`accessibleForeground`) -- the vendor never picks text colour by hand.
+/// Tabs: Branding (fully implemented, per the spec), Banner/Layout/Advanced
+/// (structurally present -- the reference shows all 4 -- but honestly
+/// scoped as "coming soon" since no real capability backs them yet; the
+/// spec explicitly says to "only expose what's genuinely supported").
+///
+/// Branding tab: Store Logo (text wordmark placeholder -- there is no image
+/// upload pipeline in this prototype), Store Name, Tagline, Primary/
+/// Secondary Colour (swatch + hex each), Font Style, and a compact live
+/// "Preview" strip that updates immediately as any field changes.
 library;
 
 import 'package:flutter/material.dart';
@@ -13,247 +19,660 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../core/app_state.dart';
+import '../../../core/routes.dart';
 import '../../../core/theme.dart';
 import '../../../data/storefront_config.dart';
+import '../../../data/storefront_templates.dart';
 import '../../widgets.dart';
-import 'storefront_screens.dart';
 
 class CustomizeStorefrontScreen extends StatefulWidget {
   const CustomizeStorefrontScreen({super.key});
 
   @override
-  State<CustomizeStorefrontScreen> createState() => _CustomizeStorefrontScreenState();
+  State<CustomizeStorefrontScreen> createState() =>
+      _CustomizeStorefrontScreenState();
 }
 
 class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
+  late StorefrontTemplateDef def;
   late StorefrontBranding draft;
-  String tab = 'Preview';
-  bool colorSheetOpen = false;
-  final tagline = TextEditingController(text: 'A better delivery day. Today.');
+  String tab = 'Branding';
+
+  late final storeNameCtrl = TextEditingController();
+  late final taglineCtrl = TextEditingController();
+  late final primaryHexCtrl = TextEditingController();
+  late final secondaryHexCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     final app = AppScope.of(context);
-    draft = app.storefrontBranding;
+    def = app.activeStorefrontTemplate;
+    draft = app.brandingFor(def.id);
+    _syncControllers();
+  }
+
+  void _syncControllers() {
+    storeNameCtrl.text = draft.storeName;
+    taglineCtrl.text = draft.tagline;
+    primaryHexCtrl.text = draft.primary.hex;
+    secondaryHexCtrl.text = draft.effectiveSecondary.hex;
   }
 
   @override
   void dispose() {
-    tagline.dispose();
+    storeNameCtrl.dispose();
+    taglineCtrl.dispose();
+    primaryHexCtrl.dispose();
+    secondaryHexCtrl.dispose();
     super.dispose();
   }
 
+  void _apply(StorefrontBranding next) => setState(() => draft = next);
+
+  void _resetToDefault() {
+    final app = AppScope.of(context);
+    app.resetStorefrontBranding(def.id);
+    setState(() {
+      draft = def.defaultBranding;
+      _syncControllers();
+    });
+  }
+
+  Future<void> _save() async {
+    final app = AppScope.of(context);
+    app.saveStorefrontBranding(def.id, draft);
+    await runAsyncFeedback(
+      context,
+      action: () async {},
+      processingTitle: 'Saving...',
+      processingSubtitle: 'Updating your storefront branding',
+      successTitle: 'Saved',
+      successSubtitle: 'Your storefront branding has been updated.',
+    );
+  }
+
+  Future<void> _changeLogo() async {
+    final ctrl = TextEditingController(text: draft.effectiveLogoText);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Change Logo'),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          textCapitalization: TextCapitalization.characters,
+          decoration: const InputDecoration(
+            hintText: 'Wordmark text, e.g. LUMA',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(ctrl.text),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    if (result != null && result.trim().isNotEmpty) {
+      _apply(draft.copyWith(logoText: result.trim(), hasLogo: true));
+    }
+  }
+
+  Future<void> _pickColor({required bool primary}) =>
+      showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        builder: (context) => _ColorPickerSheet(
+          initial: primary ? draft.primary : draft.effectiveSecondary,
+          onPicked: (c) {
+            if (primary) {
+              primaryHexCtrl.text = c.hex;
+              _apply(draft.copyWith(primary: c));
+            } else {
+              secondaryHexCtrl.text = c.hex;
+              _apply(draft.copyWith(secondary: c));
+            }
+          },
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    final template = app.selectedStorefrontTemplate;
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.sm, Gap.gutter, 0),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Brand identity for ${template.label}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
-              SizedBox(
-                height: 36,
-                child: FilledButton(
-                  onPressed: () async {
-                    app.saveStorefrontBranding(draft);
-                    await runAsyncFeedback(
-                      context,
-                      action: () async {},
-                      processingTitle: 'Processing...',
-                      processingSubtitle: 'Saving your storefront brand',
-                      successTitle: 'Successful',
-                      successSubtitle: 'Your storefront branding has been updated.',
-                    );
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: CefColors.navy,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-                  ),
-                  child: const Text('Publish', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
-                ),
-              ),
-            ],
+    return SafeArea(
+      bottom: false,
+      child: Column(
+        children: [
+          _CustomizeHeader(
+            templateName: def.name,
+            onBack: app.back,
+            onReset: _resetToDefault,
           ),
-        ),
-        SegmentedTabs(labels: const ['Preview', 'Settings'], active: tab, onChange: (v) => setState(() => tab = v)),
-        Expanded(
-          child: tab == 'Preview'
-              ? Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: StorefrontCatalogueBoundPreview(template: template, branding: draft),
-                    ),
-                    if (colorSheetOpen)
-                      Positioned.fill(
-                        child: GestureDetector(
-                          onTap: () => setState(() => colorSheetOpen = false),
-                          child: Container(color: Colors.black.withValues(alpha: .25)),
-                        ),
-                      ),
-                    if (colorSheetOpen)
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: _BrandColorSheet(
-                          initial: draft,
-                          template: template,
-                          onChanged: (b) => setState(() => draft = b),
-                          onDone: () => setState(() => colorSheetOpen = false),
-                        ),
-                      ),
-                  ],
-                )
-              : _SettingsTab(
-                  draft: draft,
-                  tagline: tagline,
-                  onEditColor: () => setState(() {
-                    tab = 'Preview';
-                    colorSheetOpen = true;
-                  }),
-                ),
-        ),
-      ],
+          SegmentedTabs(
+            labels: const ['Branding', 'Banner', 'Layout', 'Advanced'],
+            active: tab,
+            onChange: (v) => setState(() => tab = v),
+          ),
+          Expanded(
+            child: tab == 'Branding'
+                ? _buildBrandingTab(context)
+                : _ComingSoonTab(label: tab),
+          ),
+          _SaveBar(onSave: _save),
+        ],
+      ),
     );
   }
-}
 
-class _SettingsTab extends StatelessWidget {
-  const _SettingsTab({required this.draft, required this.tagline, required this.onEditColor});
-  final StorefrontBranding draft;
-  final TextEditingController tagline;
-  final VoidCallback onEditColor;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildBrandingTab(BuildContext context) {
     final app = AppScope.of(context);
     return ListView(
-      padding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.md, Gap.gutter, Gap.section),
+      padding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.md,
+        Gap.gutter,
+        Gap.section,
+      ),
       children: [
-        Center(
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              CircleAvatar(
-                radius: 44,
-                backgroundColor: CefColors.navy,
-                child: Text(
-                  (app.business?.name ?? 'Kopi Kita').substring(0, 2).toUpperCase(),
-                  style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800),
+        const SectionHeading('Brand Identity'),
+        Text('Store Logo', style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: Gap.xs),
+        Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: context.c.card,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: context.c.border),
+              ),
+              child: draft.hasLogo
+                  ? Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: FittedBox(
+                        child: Text(
+                          draft.font.transform(
+                            draft.effectiveLogoText.isEmpty
+                                ? 'BRAND'
+                                : draft.effectiveLogoText,
+                          ),
+                          style: draft.font.apply(
+                            const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF14171C),
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Icon(
+                      LucideIcons.image,
+                      color: context.c.textSecondary,
+                      size: 20,
+                    ),
+            ),
+            const SizedBox(width: 12),
+            OutlinedButton(
+              onPressed: _changeLogo,
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: context.c.border),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
                 ),
               ),
-              const Positioned(
-                right: -2,
-                bottom: 0,
-                child: CircleAvatar(
-                  radius: 15,
-                  backgroundColor: Colors.white,
-                  child: Icon(LucideIcons.camera, size: 15, color: CefColors.navy),
+              child: const Text(
+                'Change Logo',
+                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+              ),
+            ),
+            const SizedBox(width: 8),
+            TextButton(
+              onPressed: () => _apply(draft.copyWith(hasLogo: false)),
+              child: Text(
+                'Remove',
+                style: TextStyle(
+                  color: context.c.attention,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12.5,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-        const SizedBox(height: Gap.section),
-        CefListRow(
-          title: 'Brand Color',
-          subtitle: draft.isGradient ? 'Gradient' : '#${draft.primary.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
-          icon: LucideIcons.palette,
-          trailing: Container(
-            width: 26,
-            height: 26,
-            decoration: BoxDecoration(
-              color: draft.isGradient ? null : draft.primary,
-              gradient: draft.isGradient ? LinearGradient(colors: [draft.primary, draft.effectiveSecondary]) : null,
-              shape: BoxShape.circle,
-              border: Border.all(color: context.c.border),
+        const SizedBox(height: Gap.lg),
+        CefField(
+          label: 'Store Name',
+          controller: storeNameCtrl,
+          onChanged: (v) => _apply(draft.copyWith(storeName: v)),
+        ),
+        CefField(
+          label: 'Tagline (Optional)',
+          controller: taglineCtrl,
+          onChanged: (v) => _apply(draft.copyWith(tagline: v)),
+        ),
+        const SectionHeading('Brand Colours'),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _ColorField(
+                label: 'Primary Colour',
+                color: draft.primary,
+                hexCtrl: primaryHexCtrl,
+                onColorTap: () => _pickColor(primary: true),
+                onHexSubmit: (raw) {
+                  final c = parseStorefrontHex(raw);
+                  if (c != null) _apply(draft.copyWith(primary: c));
+                },
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _ColorField(
+                label: 'Secondary Colour',
+                color: draft.effectiveSecondary,
+                hexCtrl: secondaryHexCtrl,
+                onColorTap: () => _pickColor(primary: false),
+                onHexSubmit: (raw) {
+                  final c = parseStorefrontHex(raw);
+                  if (c != null) _apply(draft.copyWith(secondary: c));
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: Gap.lg),
+        Text('Font Style', style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: Gap.xs),
+        _FontDropdown(
+          value: draft.font,
+          onChanged: (f) => _apply(draft.copyWith(font: f)),
+        ),
+        SectionHeading(
+          'Preview',
+          trailing: TextButton.icon(
+            onPressed: () {
+              app.saveStorefrontBranding(def.id, draft);
+              app.go(VRoute.storefrontTemplatePreview, entityId: def.id);
+            },
+            style: TextButton.styleFrom(foregroundColor: context.c.info),
+            icon: const Icon(LucideIcons.externalLink, size: 13),
+            label: const Text(
+              'See Live Preview',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
             ),
           ),
-          onTap: onEditColor,
         ),
-        _TaglineRow(controller: tagline),
+        _BrandingPreviewStrip(branding: draft),
       ],
     );
   }
 }
 
-class _TaglineRow extends StatelessWidget {
-  const _TaglineRow({required this.controller});
-  final TextEditingController controller;
+class _CustomizeHeader extends StatelessWidget {
+  const _CustomizeHeader({
+    required this.templateName,
+    required this.onBack,
+    required this.onReset,
+  });
+  final String templateName;
+  final VoidCallback onBack;
+  final VoidCallback onReset;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: Gap.md),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Tagline', style: TextStyle(fontSize: 12.5, color: CefColors.navy, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: const Color(0xFFF8F9FB),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFDDE1EA)),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+  Widget build(BuildContext context) => Container(
+    color: context.c.chrome,
+    child: SizedBox(
+      height: 60,
+      child: Row(
+        children: [
+          IconAction(
+            icon: LucideIcons.arrowLeft,
+            tooltip: 'Back',
+            onTap: onBack,
           ),
-        ),
-      ],
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Customize $templateName',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                Text(
+                  'Make it yours with your brand identity',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: context.c.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextButton.icon(
+            onPressed: onReset,
+            icon: const Icon(LucideIcons.rotateCcw, size: 14),
+            label: const Text(
+              'Reset',
+              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+            ),
+          ),
+          const SizedBox(width: 6),
+        ],
+      ),
     ),
   );
 }
 
-// --------------------------------------------------------- brand colour sheet
-
-enum _Editing { primary, secondary }
-
-class _BrandColorSheet extends StatefulWidget {
-  const _BrandColorSheet({
-    required this.initial,
-    required this.template,
-    required this.onChanged,
-    required this.onDone,
-  });
-
-  final StorefrontBranding initial;
-  final StorefrontTemplate template;
-  final ValueChanged<StorefrontBranding> onChanged;
-  final VoidCallback onDone;
+class _ComingSoonTab extends StatelessWidget {
+  const _ComingSoonTab({required this.label});
+  final String label;
 
   @override
-  State<_BrandColorSheet> createState() => _BrandColorSheetState();
+  Widget build(BuildContext context) => Center(
+    child: Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            LucideIcons.construction,
+            size: 34,
+            color: context.c.textSecondary,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '$label controls aren\'t available for this template yet.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: context.c.textSecondary, fontSize: 13),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
-class _BrandColorSheetState extends State<_BrandColorSheet> {
-  late BrandColorMode mode = widget.initial.mode;
-  late Color primary = widget.initial.primary;
-  late Color secondary = widget.initial.secondary ?? widget.initial.primary;
-  _Editing editing = _Editing.primary;
-  late final hexCtrl = TextEditingController(text: _hex(primary));
+class _SaveBar extends StatelessWidget {
+  const _SaveBar({required this.onSave});
+  final Future<void> Function() onSave;
 
-  Color get active => editing == _Editing.primary ? primary : secondary;
-  set active(Color c) {
-    setState(() {
-      if (editing == _Editing.primary) {
-        primary = c;
-      } else {
-        secondary = c;
-      }
-      hexCtrl.text = _hex(c);
-    });
-    _emit();
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: EdgeInsets.fromLTRB(
+      16,
+      12,
+      16,
+      12 + MediaQuery.of(context).viewPadding.bottom,
+    ),
+    decoration: BoxDecoration(
+      color: context.c.chrome,
+      border: Border(top: BorderSide(color: context.c.border)),
+    ),
+    child: SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: FilledButton(
+        onPressed: onSave,
+        style: FilledButton.styleFrom(
+          backgroundColor: context.c.info,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999),
+          ),
+        ),
+        child: const Text(
+          'Save Changes',
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+        ),
+      ),
+    ),
+  );
+}
+
+class _ColorField extends StatelessWidget {
+  const _ColorField({
+    required this.label,
+    required this.color,
+    required this.hexCtrl,
+    required this.onColorTap,
+    required this.onHexSubmit,
+  });
+
+  final String label;
+  final Color color;
+  final TextEditingController hexCtrl;
+  final VoidCallback onColorTap;
+  final ValueChanged<String> onHexSubmit;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(label, style: Theme.of(context).textTheme.labelLarge),
+      const SizedBox(height: Gap.xs),
+      Row(
+        children: [
+          InkWell(
+            onTap: onColorTap,
+            borderRadius: BorderRadius.circular(999),
+            child: Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(color: context.c.border),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: hexCtrl,
+              textCapitalization: TextCapitalization.characters,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[#0-9A-Fa-f]')),
+                LengthLimitingTextInputFormatter(7),
+              ],
+              style: const TextStyle(fontSize: 13),
+              decoration: InputDecoration(
+                isDense: true,
+                filled: true,
+                fillColor: const Color(0xFFF8F9FB),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 11,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFDDE1EA)),
+                ),
+              ),
+              onSubmitted: onHexSubmit,
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+class _FontDropdown extends StatelessWidget {
+  const _FontDropdown({required this.value, required this.onChanged});
+  final StorefrontFontTreatment value;
+  final ValueChanged<StorefrontFontTreatment> onChanged;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    height: 48,
+    padding: const EdgeInsets.symmetric(horizontal: 13),
+    decoration: BoxDecoration(
+      color: context.c.card,
+      borderRadius: BorderRadius.circular(Sizes.inputRadius),
+      border: Border.all(color: context.c.border),
+    ),
+    child: DropdownButtonHideUnderline(
+      child: DropdownButton<StorefrontFontTreatment>(
+        value: value,
+        isExpanded: true,
+        icon: Icon(
+          LucideIcons.chevronDown,
+          size: 18,
+          color: context.c.iconColor,
+        ),
+        items: [
+          for (final f in StorefrontFontTreatment.values)
+            DropdownMenuItem(
+              value: f,
+              child: Text(f.label, style: const TextStyle(fontSize: 14)),
+            ),
+        ],
+        onChanged: (f) {
+          if (f != null) onChanged(f);
+        },
+      ),
+    ),
+  );
+}
+
+class _BrandingPreviewStrip extends StatelessWidget {
+  const _BrandingPreviewStrip({required this.branding});
+  final StorefrontBranding branding;
+
+  @override
+  Widget build(BuildContext context) {
+    final fg = accessibleForeground(branding.primary);
+    final logo = branding.font.transform(
+      branding.effectiveLogoText.isEmpty ? 'BRAND' : branding.effectiveLogoText,
+    );
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: context.c.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      logo,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: branding.font.apply(
+                        const TextStyle(fontSize: 15, color: Color(0xFF14171C)),
+                      ),
+                    ),
+                  ),
+                  const Icon(
+                    LucideIcons.search,
+                    size: 16,
+                    color: Color(0xFF6C7280),
+                  ),
+                  const SizedBox(width: 12),
+                  const Icon(
+                    LucideIcons.shoppingCart,
+                    size: 16,
+                    color: Color(0xFF6C7280),
+                  ),
+                  const SizedBox(width: 12),
+                  const Icon(
+                    LucideIcons.menu,
+                    size: 16,
+                    color: Color(0xFF6C7280),
+                  ),
+                ],
+              ),
+            ),
+            AspectRatio(
+              aspectRatio: 16 / 8,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [branding.primary, branding.effectiveSecondary],
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      branding.tagline.isEmpty
+                          ? 'Your tagline here.'
+                          : branding.tagline,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: branding.font.apply(
+                        TextStyle(fontSize: 16, color: fg, height: 1.2),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: fg,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        'Shop Now',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w800,
+                          color: branding.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
+}
+
+// --------------------------------------------------------- single-colour picker sheet
+
+class _ColorPickerSheet extends StatefulWidget {
+  const _ColorPickerSheet({required this.initial, required this.onPicked});
+  final Color initial;
+  final ValueChanged<Color> onPicked;
+
+  @override
+  State<_ColorPickerSheet> createState() => _ColorPickerSheetState();
+}
+
+class _ColorPickerSheetState extends State<_ColorPickerSheet> {
+  late Color color = widget.initial;
+  late final hexCtrl = TextEditingController(text: widget.initial.hex);
 
   @override
   void dispose() {
@@ -261,15 +680,17 @@ class _BrandColorSheetState extends State<_BrandColorSheet> {
     super.dispose();
   }
 
-  void _emit() => widget.onChanged(
-    StorefrontBranding(primary: primary, secondary: mode == BrandColorMode.gradient ? secondary : null, mode: mode),
-  );
-
-  String _hex(Color c) => '#${c.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+  void _set(Color c) {
+    setState(() {
+      color = c;
+      hexCtrl.text = c.hex;
+    });
+    widget.onPicked(c);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final hsv = HSVColor.fromColor(active);
+    final hsv = HSVColor.fromColor(color);
     return Material(
       color: Colors.white,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -289,75 +710,52 @@ class _BrandColorSheetState extends State<_BrandColorSheet> {
                 width: 36,
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 14),
-                decoration: BoxDecoration(color: const Color(0xFFE3E6EE), borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE3E6EE),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
             Row(
               children: [
                 const Expanded(
-                  child: Text('Brand Color', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                  child: Text(
+                    'Pick a Colour',
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                  ),
                 ),
-                TextButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      primary = widget.template.defaultColor;
-                      secondary = primary;
-                      mode = BrandColorMode.solid;
-                      hexCtrl.text = _hex(active);
-                    });
-                    _emit();
-                  },
-                  icon: const Icon(LucideIcons.rotateCcw, size: 14),
-                  label: const Text('Reset', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(LucideIcons.x, size: 20),
                 ),
-                IconButton(onPressed: widget.onDone, icon: const Icon(LucideIcons.x, size: 20)),
               ],
             ),
-            SegmentedTabs(
-              labels: const ['Color', 'Gradient'],
-              active: mode == BrandColorMode.solid ? 'Color' : 'Gradient',
-              onChange: (v) {
-                setState(() => mode = v == 'Color' ? BrandColorMode.solid : BrandColorMode.gradient);
-                _emit();
-              },
-            ),
-            const SizedBox(height: 14),
-            if (mode == BrandColorMode.gradient)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _swatchTab('Primary', primary, editing == _Editing.primary, () => setState(() {
-                        editing = _Editing.primary;
-                        hexCtrl.text = _hex(primary);
-                      })),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _swatchTab('Secondary', secondary, editing == _Editing.secondary, () => setState(() {
-                        editing = _Editing.secondary;
-                        hexCtrl.text = _hex(secondary);
-                      })),
-                    ),
-                  ],
-                ),
-              ),
+            const SizedBox(height: 6),
             _SaturationValueField(
               hue: hsv.hue,
               saturation: hsv.saturation,
               value: hsv.value,
-              onChanged: (s, v) => active = HSVColor.fromAHSV(1, hsv.hue, s, v).toColor(),
+              onChanged: (s, v) =>
+                  _set(HSVColor.fromAHSV(1, hsv.hue, s, v).toColor()),
             ),
             const SizedBox(height: 14),
-            _HueSlider(hue: hsv.hue, onChanged: (h) => active = HSVColor.fromAHSV(1, h, hsv.saturation, hsv.value).toColor()),
+            _HueSlider(
+              hue: hsv.hue,
+              onChanged: (h) => _set(
+                HSVColor.fromAHSV(1, h, hsv.saturation, hsv.value).toColor(),
+              ),
+            ),
             const SizedBox(height: 14),
             Row(
               children: [
                 Container(
                   width: 40,
                   height: 40,
-                  decoration: BoxDecoration(color: active, shape: BoxShape.circle, border: Border.all(color: const Color(0xFFE3E6EE))),
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFE3E6EE)),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -365,19 +763,27 @@ class _BrandColorSheetState extends State<_BrandColorSheet> {
                     controller: hexCtrl,
                     textCapitalization: TextCapitalization.characters,
                     inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[#0-9A-Fa-f]')),
+                      FilteringTextInputFormatter.allow(
+                        RegExp(r'[#0-9A-Fa-f]'),
+                      ),
                       LengthLimitingTextInputFormatter(7),
                     ],
                     decoration: InputDecoration(
                       isDense: true,
                       filled: true,
                       fillColor: const Color(0xFFF8F9FB),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFDDE1EA))),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFDDE1EA)),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 13,
+                        vertical: 12,
+                      ),
                     ),
                     onSubmitted: (raw) {
-                      final parsed = _parseHex(raw);
-                      if (parsed != null) active = parsed;
+                      final parsed = parseStorefrontHex(raw);
+                      if (parsed != null) _set(parsed);
                     },
                   ),
                 ),
@@ -388,46 +794,23 @@ class _BrandColorSheetState extends State<_BrandColorSheet> {
               width: double.infinity,
               height: 50,
               child: FilledButton(
-                onPressed: widget.onDone,
+                onPressed: () => Navigator.of(context).pop(),
                 style: FilledButton.styleFrom(
                   backgroundColor: CefColors.navy,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                 ),
-                child: const Text('Done', style: TextStyle(fontWeight: FontWeight.w700)),
+                child: const Text(
+                  'Done',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
             ),
           ],
         ),
       ),
     );
-  }
-
-  Widget _swatchTab(String label, Color color, bool active, VoidCallback onTap) => InkWell(
-    borderRadius: BorderRadius.circular(10),
-    onTap: onTap,
-    child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: active ? CefColors.navy : const Color(0xFFE3E6EE), width: active ? 1.6 : 1),
-      ),
-      child: Row(
-        children: [
-          Container(width: 16, height: 16, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-          const SizedBox(width: 8),
-          Text(label, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
-        ],
-      ),
-    ),
-  );
-
-  Color? _parseHex(String raw) {
-    var v = raw.trim();
-    if (v.startsWith('#')) v = v.substring(1);
-    if (v.length != 6) return null;
-    final value = int.tryParse(v, radix: 16);
-    if (value == null) return null;
-    return Color(0xFF000000 | value);
   }
 }
 
@@ -468,7 +851,9 @@ class _SaturationValueField extends StatelessWidget {
                   ColoredBox(color: hueColor),
                   const DecoratedBox(
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: [Colors.white, Color(0x00FFFFFF)]),
+                      gradient: LinearGradient(
+                        colors: [Colors.white, Color(0x00FFFFFF)],
+                      ),
                     ),
                   ),
                   const DecoratedBox(
@@ -481,15 +866,23 @@ class _SaturationValueField extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    left: (saturation * constraints.maxWidth - 10).clamp(-10, constraints.maxWidth - 10),
-                    top: ((1 - value) * constraints.maxHeight - 10).clamp(-10, constraints.maxHeight - 10),
+                    left: (saturation * constraints.maxWidth - 10).clamp(
+                      -10,
+                      constraints.maxWidth - 10,
+                    ),
+                    top: ((1 - value) * constraints.maxHeight - 10).clamp(
+                      -10,
+                      constraints.maxHeight - 10,
+                    ),
                     child: Container(
                       width: 20,
                       height: 20,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 3),
-                        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black26, blurRadius: 4),
+                        ],
                       ),
                     ),
                   ),
@@ -543,7 +936,10 @@ class _HueSlider extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: (hue / 360 * constraints.maxWidth - 13).clamp(-13, constraints.maxWidth - 13),
+                left: (hue / 360 * constraints.maxWidth - 13).clamp(
+                  -13,
+                  constraints.maxWidth - 13,
+                ),
                 child: Container(
                   width: 26,
                   height: 26,
@@ -551,7 +947,9 @@ class _HueSlider extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: HSVColor.fromAHSV(1, hue, 1, 1).toColor(),
                     border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black26, blurRadius: 4),
+                    ],
                   ),
                 ),
               ),
