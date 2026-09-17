@@ -6,6 +6,8 @@ import 'screens/directory.dart';
 import 'screens/operations.dart';
 import 'screens/planning.dart';
 import 'screens/prototype.dart';
+import 'screens/storefront/storefront_customize.dart';
+import 'screens/storefront/storefront_screens.dart';
 import 'shell.dart';
 import 'widgets.dart';
 
@@ -46,6 +48,10 @@ Widget buildScreen(BuildContext context, VendorLocation loc) {
     VRoute.customers => const CustomersScreen(),
     VRoute.customerDetail => CustomerDetailScreen(customerName: id!),
     VRoute.settings => const MenuScreen(),
+    VRoute.storefront => const StorefrontScreen(),
+    VRoute.storefrontPreview => const StorefrontTemplatePreviewScreen(),
+    VRoute.storefrontTemplatePreview => StorefrontTemplatePreviewScreen(templateKey: id),
+    VRoute.branding => const CustomizeStorefrontScreen(),
     _ => UiPrototypeScreen(spec: loc.spec),
   };
 }

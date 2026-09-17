@@ -25,6 +25,10 @@ const _reviewTitles = <VRoute, String>{
   VRoute.riderRegistrationLink: 'Invite Rider',
   VRoute.team: 'Team',
   VRoute.teamMemberDetail: 'Team Member',
+  // Storefront preview renders an immersive customer-facing view -- the
+  // vendor bottom nav would break that illusion.
+  VRoute.storefrontPreview: 'Storefront Preview',
+  VRoute.storefrontTemplatePreview: 'Template Preview',
 };
 
 /// Flat white chrome: 60px header and 60px sticky bottom navigation, no

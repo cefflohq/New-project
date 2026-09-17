@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/models.dart';
+import '../data/storefront_config.dart';
 import '../data/vendor_repository.dart';
 import 'routes.dart';
 
@@ -26,6 +27,37 @@ class AppState extends ChangeNotifier {
 
   bool loadingSession = true;
   String? sessionError;
+
+  // ---- Storefront presentation config (V-31/V-33). Deliberately separate
+  // from product/catalogue and order data: this only ever describes layout
+  // (selectedStorefrontTemplate) and brand identity (customStorefrontBranding).
+  // No backend yet, so it's in-memory session state -- a Storefront
+  // configuration adapter boundary, not a parallel production API.
+  StorefrontTemplate selectedStorefrontTemplate = StorefrontTemplate.browseShop;
+
+  /// Null until the vendor explicitly saves a brand colour; until then, the
+  /// effective branding just follows whichever template is selected. Once
+  /// set, it persists across template switches ("the template controls
+  /// layout, the vendor controls brand identity").
+  StorefrontBranding? customStorefrontBranding;
+
+  StorefrontBranding get storefrontBranding =>
+      customStorefrontBranding ?? StorefrontBranding.defaultFor(selectedStorefrontTemplate);
+
+  void selectStorefrontTemplate(StorefrontTemplate template) {
+    selectedStorefrontTemplate = template;
+    notifyListeners();
+  }
+
+  void saveStorefrontBranding(StorefrontBranding branding) {
+    customStorefrontBranding = branding;
+    notifyListeners();
+  }
+
+  void resetStorefrontBranding() {
+    customStorefrontBranding = null;
+    notifyListeners();
+  }
 
   void go(VRoute route, {String? entityId}) {
     final spec = routeSpecs[route]!;
@@ -97,12 +129,21 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Set by the app root so [clearSession] can reset the "is a prototype
+  /// session authenticated" flag it owns. That flag lives outside AppState
+  /// (it gates which widget MaterialApp.home builds, before AppScope even
+  /// exists), so without this hook Sign Out clears business data but never
+  /// reaches the flag that actually decides whether AuthFlow or the app
+  /// shell is shown -- the user stays "signed in" on screen.
+  VoidCallback? onSignOut;
+
   void clearSession() {
     businesses = const [];
     business = null;
     _stack
       ..clear()
       ..add(const VendorLocation(VRoute.today));
+    onSignOut?.call();
     notifyListeners();
   }
 }
