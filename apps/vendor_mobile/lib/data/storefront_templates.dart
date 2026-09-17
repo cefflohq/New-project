@@ -30,6 +30,8 @@ const List<String> kStorefrontTemplateCategories = [
   'Gifts',
   'Florist',
   'Retail',
+  'Sports',
+  'Electronics',
 ];
 
 /// One card in the Template Library.
@@ -77,9 +79,12 @@ class StorefrontTemplateDef {
   final int version;
 }
 
-/// 8 library entries across all 6 categories, deliberately mapped onto only
-/// 3 renderers (browseShop x3, catalogue x3, quickOrder x2) -- see the
-/// implementation report for why each entry was grouped the way it was.
+/// 14 library entries across 8 categories. The original 8 entries
+/// deliberately share only 3 renderers (browseShop x3, catalogue x3,
+/// quickOrder x2); 6 later entries (MatchPoint, CircuitHub, Ritual, Bag
+/// Drop, Origin Run, Tide Table) each ship a genuinely distinct renderer of
+/// their own -- see the implementation report for why each entry was
+/// grouped the way it was.
 final List<StorefrontTemplateDef> kStorefrontTemplateLibrary = [
   StorefrontTemplateDef(
     id: 'foundation',
@@ -222,6 +227,114 @@ final List<StorefrontTemplateDef> kStorefrontTemplateLibrary = [
       storeName: 'BrewBar Café',
       tagline: 'Your daily brew, done right.',
       logoText: 'BREWBAR',
+      font: StorefrontFontTreatment.modern,
+    ),
+  ),
+  StorefrontTemplateDef(
+    id: 'matchpoint',
+    name: 'MatchPoint',
+    category: 'Sports',
+    typeTag: 'Sports • Team Kit',
+    renderer: StorefrontTemplate.matchDay,
+    previewColors: const [Color(0xFFB4222E), Color(0xFF17233D)],
+    previewIcon: LucideIcons.shirt,
+    defaultBranding: const StorefrontBranding(
+      primary: Color(0xFF17233D),
+      secondary: Color(0xFFB4222E),
+      mode: BrandColorMode.gradient,
+      storeName: 'MatchPoint',
+      tagline: 'Kit up for game day.',
+      logoText: 'MATCHPOINT',
+      font: StorefrontFontTreatment.bold,
+    ),
+  ),
+  StorefrontTemplateDef(
+    id: 'circuithub',
+    name: 'CircuitHub',
+    category: 'Electronics',
+    typeTag: 'Electronics • Marketplace',
+    renderer: StorefrontTemplate.discoverMarket,
+    previewColors: const [Color(0xFF15A66E), Color(0xFF0B7A4F)],
+    previewIcon: LucideIcons.smartphone,
+    defaultBranding: const StorefrontBranding(
+      primary: Color(0xFF15A66E),
+      secondary: Color(0xFF0B7A4F),
+      mode: BrandColorMode.gradient,
+      storeName: 'CircuitHub',
+      tagline: 'Tech worth discovering.',
+      logoText: 'CIRCUITHUB',
+      font: StorefrontFontTreatment.modern,
+    ),
+  ),
+  StorefrontTemplateDef(
+    id: 'ritualcare',
+    name: 'Ritual',
+    category: 'Beauty',
+    typeTag: 'Beauty • Natural Care',
+    renderer: StorefrontTemplate.ritualCare,
+    previewColors: const [Color(0xFFAFC7AE), Color(0xFF4C6B52)],
+    previewIcon: LucideIcons.leaf,
+    defaultBranding: const StorefrontBranding(
+      primary: Color(0xFF4C6B52),
+      secondary: Color(0xFFAFC7AE),
+      mode: BrandColorMode.gradient,
+      storeName: 'Ritual',
+      tagline: 'Your complete natural care routine.',
+      logoText: 'RITUAL',
+      font: StorefrontFontTreatment.elegant,
+    ),
+  ),
+  StorefrontTemplateDef(
+    id: 'bagdrop',
+    name: 'Bag Drop',
+    category: 'Fashion',
+    typeTag: 'Fashion • Streetwear',
+    renderer: StorefrontTemplate.bagDrop,
+    previewColors: const [Color(0xFF14171C), Color(0xFFE2571C)],
+    previewIcon: LucideIcons.shoppingBag,
+    defaultBranding: const StorefrontBranding(
+      primary: Color(0xFF14171C),
+      secondary: Color(0xFFE2571C),
+      mode: BrandColorMode.solid,
+      storeName: 'Bag Drop',
+      tagline: 'Fresh drops, straight to your bag.',
+      logoText: 'BAG DROP',
+      font: StorefrontFontTreatment.bold,
+    ),
+  ),
+  StorefrontTemplateDef(
+    id: 'originrun',
+    name: 'Origin Run',
+    category: 'Fashion',
+    typeTag: 'Fashion • Athletic Editorial',
+    renderer: StorefrontTemplate.originRun,
+    previewColors: const [Color(0xFF2A2E36), Color(0xFF0A0B0D)],
+    previewIcon: LucideIcons.footprints,
+    defaultBranding: const StorefrontBranding(
+      primary: Color(0xFF14171C),
+      secondary: Color(0xFFE23B3B),
+      mode: BrandColorMode.solid,
+      storeName: 'Origin Run',
+      tagline: 'Engineered for the next mile.',
+      logoText: 'ORIGIN RUN',
+      font: StorefrontFontTreatment.elegant,
+    ),
+  ),
+  StorefrontTemplateDef(
+    id: 'tidetable',
+    name: 'Tide Table',
+    category: 'Food',
+    typeTag: 'Food • Fresh Catch',
+    renderer: StorefrontTemplate.tideTable,
+    previewColors: const [Color(0xFF3E5C52), Color(0xFF1F2A24)],
+    previewIcon: LucideIcons.fish,
+    defaultBranding: const StorefrontBranding(
+      primary: Color(0xFF1F2A24),
+      secondary: Color(0xFFE0562C),
+      mode: BrandColorMode.solid,
+      storeName: 'Tide Table',
+      tagline: 'We made healthy seafood for you.',
+      logoText: 'TIDE TABLE',
       font: StorefrontFontTreatment.modern,
     ),
   ),

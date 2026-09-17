@@ -20,9 +20,15 @@ import '../../async_view.dart';
 import '../../shell.dart';
 import '../../widgets.dart';
 import 'storefront_theme.dart';
+import 'template_bag_drop.dart';
 import 'template_browse_shop.dart';
 import 'template_catalogue.dart';
+import 'template_discover_market.dart';
+import 'template_match_day.dart';
+import 'template_origin_run.dart';
 import 'template_quick_order.dart';
+import 'template_ritual_care.dart';
+import 'template_tide_table.dart';
 
 /// Renders the right renderer engine for [template], themed and branded
 /// from [branding], fed by [items]/[categories]. No AppState/repository
@@ -65,6 +71,42 @@ class StorefrontPreviewSurface extends StatelessWidget {
         tokens: tokens,
       ),
       StorefrontTemplate.catalogue => CataloguePreview(
+        businessName: businessName,
+        items: items,
+        categories: categories,
+        tokens: tokens,
+      ),
+      StorefrontTemplate.matchDay => MatchDayPreview(
+        businessName: businessName,
+        items: items,
+        categories: categories,
+        tokens: tokens,
+      ),
+      StorefrontTemplate.discoverMarket => DiscoverMarketPreview(
+        businessName: businessName,
+        items: items,
+        categories: categories,
+        tokens: tokens,
+      ),
+      StorefrontTemplate.ritualCare => RitualCarePreview(
+        businessName: businessName,
+        items: items,
+        categories: categories,
+        tokens: tokens,
+      ),
+      StorefrontTemplate.bagDrop => BagDropPreview(
+        businessName: businessName,
+        items: items,
+        categories: categories,
+        tokens: tokens,
+      ),
+      StorefrontTemplate.originRun => OriginRunPreview(
+        businessName: businessName,
+        items: items,
+        categories: categories,
+        tokens: tokens,
+      ),
+      StorefrontTemplate.tideTable => TideTablePreview(
         businessName: businessName,
         items: items,
         categories: categories,

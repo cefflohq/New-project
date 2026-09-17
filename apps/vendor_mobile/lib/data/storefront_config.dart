@@ -48,6 +48,70 @@ enum StorefrontTemplate {
         'Editorial, collection-led storefront built around large imagery. '
         'Best for furniture, home, florist, gifts and fashion.',
     defaultColor: Color(0xFF4C2A85),
+  ),
+  matchDay(
+    key: 'match_day',
+    label: 'Match Day',
+    tagline: 'Team-kit drop',
+    description:
+        'Bold, diagonal-split sports-kit storefront: club/team-style '
+        'category badges, a swipeable hero product card and a size-run '
+        'selector. Best for sportswear, team kits and athletic gear.',
+    defaultColor: Color(0xFF17233D),
+  ),
+  discoverMarket(
+    key: 'discover_market',
+    label: 'Discover Market',
+    tagline: 'Marketplace first',
+    description:
+        'Clean electronics-marketplace storefront: a promo clearance '
+        'banner, pill category filters and a persistent bottom tab bar '
+        'with Home, Search, Favorites and Profile. Best for electronics '
+        'and gadget retailers.',
+    defaultColor: Color(0xFF15A66E),
+  ),
+  ritualCare(
+    key: 'ritual_care',
+    label: 'Ritual Care',
+    tagline: 'Routine first',
+    description:
+        'Calm, sage-toned skincare storefront built around one hero '
+        'product at a time, with a frosted glass product-detail panel '
+        'over a full-bleed photo. Best for skincare and natural care.',
+    defaultColor: Color(0xFF4C6B52),
+  ),
+  bagDrop(
+    key: 'bag_drop',
+    label: 'Bag Drop',
+    tagline: 'Streetwear drop',
+    description:
+        'High-contrast streetwear storefront: a bold promo drop banner, '
+        'square quick-category tiles and a photo-gallery product detail '
+        'with an uppercase name and a full-width bag CTA. Best for '
+        'streetwear and apparel drops.',
+    defaultColor: Color(0xFFE2571C),
+  ),
+  originRun(
+    key: 'origin_run',
+    label: 'Origin Run',
+    tagline: 'Athletic editorial',
+    description:
+        'Stark black-and-white athletic-editorial storefront: an italic '
+        'wordmark, angled hero shots and a product detail with a '
+        'vertical size list, colour-swatch rail and a "Swipe" bag CTA. '
+        'Best for sneakers and performance footwear.',
+    defaultColor: Color(0xFF14171C),
+  ),
+  tideTable(
+    key: 'tide_table',
+    label: 'Tide Table',
+    tagline: 'Fresh catch',
+    description:
+        'Airy seafood/food-delivery storefront: dish photos that break '
+        'out of the top of their card, heart/quick-add actions and a '
+        'floating dark cart FAB on product detail. Best for seafood, '
+        'fresh-food and delivery-led menus.',
+    defaultColor: Color(0xFF1F2A24),
   );
 
   const StorefrontTemplate({
