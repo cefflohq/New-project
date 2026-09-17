@@ -692,7 +692,17 @@ class OrderDetailScreen extends StatelessWidget {
             eyebrow: 'Customer',
             title: order.customerName,
             subtitle: order.customerPhone,
-            actions: const [LucideIcons.phone, LucideIcons.messageCircle],
+            actions: [
+              (
+                LucideIcons.phone,
+                () => showNotWiredYetSnackBar(context, 'Calling the customer'),
+              ),
+              (
+                LucideIcons.messageCircle,
+                () =>
+                    showNotWiredYetSnackBar(context, 'Messaging the customer'),
+              ),
+            ],
           ),
           const SizedBox(height: 10),
           _DetailCard(
@@ -709,16 +719,7 @@ class OrderDetailScreen extends StatelessWidget {
               title: order.notes!,
             ),
           ],
-          SectionHeading(
-            'Items (${order.items.length})',
-            trailing: const Text(
-              'View All',
-              style: TextStyle(
-                color: Color(0xFF1769D2),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+          SectionHeading('Items (${order.items.length})'),
           SizedBox(
             height: 110,
             child: ListView.separated(
@@ -925,10 +926,11 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        const _ActionRow(
+        _ActionRow(
           icon: LucideIcons.package,
           title: 'Order Items',
           subtitle: 'Add items',
+          onTap: () => showNotWiredYetSnackBar(context, 'Adding order items'),
         ),
         const SizedBox(height: 12),
         _FormSection(
@@ -1256,7 +1258,7 @@ class _DetailCard extends StatelessWidget {
   final String eyebrow;
   final String title;
   final String? subtitle;
-  final List<IconData> actions;
+  final List<(IconData, VoidCallback)> actions;
 
   @override
   Widget build(BuildContext context) => CefCard(
@@ -1276,13 +1278,25 @@ class _DetailCard extends StatelessWidget {
             ],
           ),
         ),
-        for (final action in actions)
+        for (final (actionIcon, onTap) in actions)
           Padding(
             padding: const EdgeInsets.only(left: 8),
-            child: CircleAvatar(
-              radius: 20,
-              backgroundColor: const Color(0xFFF0F5FF),
-              child: Icon(action, color: const Color(0xFF1769D2), size: 19),
+            child: Material(
+              color: const Color(0xFFF0F5FF),
+              shape: const CircleBorder(),
+              child: InkWell(
+                onTap: onTap,
+                customBorder: const CircleBorder(),
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Icon(
+                    actionIcon,
+                    color: const Color(0xFF1769D2),
+                    size: 19,
+                  ),
+                ),
+              ),
             ),
           ),
       ],
@@ -1367,12 +1381,15 @@ class _ActionRow extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
+    required this.onTap,
   });
   final IconData icon;
   final String title;
   final String subtitle;
+  final VoidCallback onTap;
   @override
   Widget build(BuildContext context) => CefCard(
+    onTap: onTap,
     child: Row(
       children: [
         Icon(icon, color: const Color(0xFF1769D2)),

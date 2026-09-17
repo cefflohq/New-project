@@ -6,6 +6,14 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/theme.dart';
 
+/// Shared feedback for controls that must visibly react to a tap even though
+/// no backend action exists for them yet -- keeps affordances honest instead
+/// of silently doing nothing.
+void showNotWiredYetSnackBar(BuildContext context, String action) {
+  ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(content: Text('$action is not wired up yet.')));
+}
+
 /// Standalone outline icon at the approved 22px visual size inside a 44px
 /// minimum interactive target. No icon tile, badge or decorative background.
 class IconAction extends StatelessWidget {

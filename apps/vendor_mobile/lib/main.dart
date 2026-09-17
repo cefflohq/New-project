@@ -80,6 +80,15 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
   @override
   void initState() {
     super.initState();
+    // Sign Out calls app.clearSession(), which lives in AppState -- but the
+    // "is a prototype session authenticated" flag below has to live here
+    // instead, since it gates which widget MaterialApp.home builds, before
+    // AppScope/AppState even exists in the tree. Without this hook, Sign
+    // Out cleared business data but never reached this flag, so the app
+    // shell stayed on screen instead of returning to Sign In.
+    app.onSignOut = () {
+      if (mounted) setState(() => _prototypeAuthenticated = false);
+    };
     if (widget.auditLocation != null) {
       _prototypeAuthenticated = true;
       final location = widget.auditLocation!;
