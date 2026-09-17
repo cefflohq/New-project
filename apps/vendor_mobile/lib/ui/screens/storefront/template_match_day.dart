@@ -562,7 +562,14 @@ class _KitDetailView extends StatefulWidget {
 }
 
 class _KitDetailViewState extends State<_KitDetailView> {
-  late List<String> sizes = widget.item.variantGroups.isNotEmpty
+  // Only trust the catalogue's own variant options when they already read
+  // like a size run (short tokens, e.g. "S"/"XL"/"9.5") -- the shared
+  // catalogue adapter also hands generic products longer, non-size option
+  // labels (e.g. "Standard"/"Large"), which would overflow this template's
+  // compact circular size chips.
+  late List<String> sizes =
+      widget.item.variantGroups.isNotEmpty &&
+          widget.item.variantGroups.first.options.every((o) => o.length <= 4)
       ? widget.item.variantGroups.first.options
       : _defaultSizeRun;
   late String size = sizes.length > 2 ? sizes[2] : sizes.first;
@@ -690,14 +697,25 @@ class _KitDetailViewState extends State<_KitDetailView> {
                                                 ),
                                               ),
                                             ),
-                                            child: Text(
-                                              s,
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w800,
-                                                color: size == s
-                                                    ? const Color(0xFF17233D)
-                                                    : Colors.white,
+                                            child: FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 2,
+                                                    ),
+                                                child: Text(
+                                                  s,
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w800,
+                                                    color: size == s
+                                                        ? const Color(
+                                                            0xFF17233D,
+                                                          )
+                                                        : Colors.white,
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                           ),
