@@ -274,6 +274,8 @@ class _DishCard extends StatelessWidget {
                     children: [
                       Text(
                         item.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 14.5,
@@ -301,7 +303,7 @@ class _DishCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 74),
+                const SizedBox(width: 12),
                 Column(
                   children: [
                     InkWell(
@@ -333,6 +335,11 @@ class _DishCard extends StatelessWidget {
                     ),
                   ],
                 ),
+                // Clears the circular dish photo, which is Positioned to
+                // overlap this card's top-right corner -- without this gap
+                // the photo fully covers the heart/add icon column above,
+                // per manual screenshot verification.
+                const SizedBox(width: 84),
               ],
             ),
           ),
