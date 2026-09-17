@@ -7,7 +7,7 @@ const output = new URL('../dist/', import.meta.url);
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 
-for (const directory of ['vendor', 'rider', 'customer', 'invite', 'foundr', 'marketing', 'shared']) {
+for (const directory of ['vendor', 'rider', 'customer', 'invite', 'foundr', 'marketing', 'storefront', 'shared']) {
   await cp(new URL(`../${directory}/`, import.meta.url), new URL(`../dist/${directory}/`, import.meta.url), { recursive: true });
 }
 
