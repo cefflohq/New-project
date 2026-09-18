@@ -660,83 +660,407 @@ class OrderDetailScreen extends StatelessWidget {
       builder: (context, order, reload) => PageBody(
         onRefresh: reload,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      order.reference,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      'Today, ${_formatTime(order.createdAt)}  ·  ${order.items.length} items',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-              StatusChip(
-                order.status.label,
-                attention: order.status == DeliveryStatus.issue,
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _OrderProgress(status: order.status),
-          const SizedBox(height: 18),
-          _DetailCard(
+          _OrderHeroCard(order: order),
+          const SizedBox(height: Gap.section),
+          _OrderInfoRow(
             icon: LucideIcons.user,
-            eyebrow: 'Customer',
+            label: 'Customer',
             title: order.customerName,
             subtitle: order.customerPhone,
-            actions: [
-              (
-                LucideIcons.phone,
-                () => showNotWiredYetSnackBar(context, 'Calling the customer'),
-              ),
-              (
-                LucideIcons.messageCircle,
-                () =>
-                    showNotWiredYetSnackBar(context, 'Messaging the customer'),
-              ),
-            ],
+            trailing: Row(
+              children: [
+                _StackedAction(
+                  icon: LucideIcons.phone,
+                  label: 'Call',
+                  onTap: () =>
+                      showNotWiredYetSnackBar(context, 'Calling the customer'),
+                ),
+                const SizedBox(width: Gap.sm),
+                _StackedAction(
+                  icon: LucideIcons.messageCircle,
+                  label: 'Message',
+                  onTap: () => showNotWiredYetSnackBar(
+                    context,
+                    'Messaging the customer',
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 10),
-          _DetailCard(
+          const SizedBox(height: Gap.lg),
+          _OrderInfoRow(
             icon: LucideIcons.mapPin,
-            eyebrow: 'Deliver to',
+            label: 'Deliver to',
             title: order.deliveryAddress,
             subtitle: '59100 Kuala Lumpur',
+            trailing: _TintedPillButton(
+              icon: LucideIcons.map,
+              label: 'Navigate',
+              onTap: () =>
+                  showNotWiredYetSnackBar(context, 'Navigating to the address'),
+            ),
           ),
           if ((order.notes ?? '').isNotEmpty) ...[
-            const SizedBox(height: 10),
-            _DetailCard(
-              icon: LucideIcons.clipboardList,
-              eyebrow: 'Delivery Instruction',
+            const SizedBox(height: Gap.lg),
+            _OrderInfoRow(
+              icon: LucideIcons.fileText,
+              label: 'Delivery Instruction',
               title: order.notes!,
             ),
           ],
-          SectionHeading('Items (${order.items.length})'),
-          SizedBox(
-            height: 110,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: order.items.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (context, index) =>
-                  _ItemTile(item: order.items[index], index: index),
+          const SizedBox(height: Gap.section),
+          Divider(height: 1, color: context.c.border),
+          SectionHeading(
+            'Items (${order.items.length})',
+            trailing: _TintedLink(
+              icon: LucideIcons.fileText,
+              label: 'View receipt',
+              onTap: () => showNotWiredYetSnackBar(context, 'The receipt view'),
             ),
           ),
-          const SizedBox(height: 18),
+          for (final (index, item) in order.items.indexed) ...[
+            if (index > 0) Divider(height: 1, color: context.c.border),
+            _OrderItemRow(item: item, index: index),
+          ],
+          const SizedBox(height: Gap.section),
           CefButton(
             order.status == DeliveryStatus.readyForPickup
                 ? 'Mark as On the Way'
                 : 'Edit Order',
+            icon: order.status == DeliveryStatus.readyForPickup
+                ? LucideIcons.truck
+                : null,
             onTap: () => app.go(VRoute.editOrder, entityId: order.id),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Blue gradient summary card that opens V-13: reference, status pill, meta
+/// line and the three-step tracker all live inside it.
+class _OrderHeroCard extends StatelessWidget {
+  const _OrderHeroCard({required this.order});
+  final VendorOrder order;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [c.info, const Color(0xFF0B57C7)],
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  order.reference,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 27,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.6,
+                  ),
+                ),
+              ),
+              _HeroStatusPill(status: order.status),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Today, ${_formatTime(order.createdAt)}  ·  ${order.items.length} items',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: .78),
+              fontSize: 13.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 18),
+          _OrderProgress(status: order.status),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroStatusPill extends StatelessWidget {
+  const _HeroStatusPill({required this.status});
+  final DeliveryStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final attention = status == DeliveryStatus.issue;
+    final dot = attention ? context.c.attention : context.c.success;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: attention
+            ? context.c.attention.withValues(alpha: .16)
+            : const Color(0xFFDFF4E7),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            status.label,
+            style: TextStyle(
+              color: dot,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A labelled row: tinted circular icon, label + value, optional trailing
+/// action. Replaces the bordered detail cards -- the reference draws these
+/// as plain rows on the page, not as cards.
+class _OrderInfoRow extends StatelessWidget {
+  const _OrderInfoRow({
+    required this.icon,
+    required this.label,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+  });
+  final IconData icon;
+  final String label;
+  final String title;
+  final String? subtitle;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: c.info.withValues(alpha: .1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 20, color: c.info),
+        ),
+        const SizedBox(width: Gap.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 2),
+              Text(title, style: Theme.of(context).textTheme.titleSmall),
+              if (subtitle != null)
+                Text(subtitle!, style: Theme.of(context).textTheme.bodySmall),
+            ],
+          ),
+        ),
+        if (trailing != null) ...[const SizedBox(width: Gap.sm), trailing!],
+      ],
+    );
+  }
+}
+
+/// Circular tinted icon with its label underneath (Call / Message).
+class _StackedAction extends StatelessWidget {
+  const _StackedAction({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Semantics(
+      button: true,
+      label: label,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: c.info.withValues(alpha: .1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 20, color: c.info),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(fontSize: 11.5),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Tinted pill button used for the inline Navigate action.
+class _TintedPillButton extends StatelessWidget {
+  const _TintedPillButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Material(
+      color: c.info.withValues(alpha: .1),
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 17, color: c.info),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: c.info,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Inline text link with a leading icon (View receipt).
+class _TintedLink extends StatelessWidget {
+  const _TintedLink({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 17, color: c.info),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: c.info,
+                fontSize: 13.5,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One item line: thumbnail, name, quantity x unit price, chevron.
+class _OrderItemRow extends StatelessWidget {
+  const _OrderItemRow({required this.item, required this.index});
+  final OrderItem item;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    const icons = [
+      LucideIcons.cakeSlice,
+      LucideIcons.coffee,
+      LucideIcons.cookie,
+    ];
+    final c = context.c;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F3F7),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icons[index % icons.length],
+              color: CefColors.navy,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: Gap.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item.name, style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: 2),
+                Text(
+                  '${item.quantity} × RM${(item.unitPrice ?? 0).toStringAsFixed(2)}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+          Icon(LucideIcons.chevronRight, size: 18, color: c.textSecondary),
         ],
       ),
     );
@@ -1177,19 +1501,29 @@ class _OrderProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Three visible steps -- "Ready for pickup" is not yet Pickup, so it
-    // shows the tracker with nothing checked rather than a fourth node.
+    // Three visible steps. The V-13 reference draws a "Ready" order with the
+    // Pickup node already highlighted, so readyForPickup lights node 0 rather
+    // than leaving the whole tracker dim.
     const labels = ['Pickup', 'On the Way', 'Delivered'];
     final active = switch (status) {
-      DeliveryStatus.pickedUp => 0,
+      DeliveryStatus.readyForPickup || DeliveryStatus.pickedUp => 0,
       DeliveryStatus.outForDelivery || DeliveryStatus.arrived => 1,
       DeliveryStatus.delivered => 2,
       _ => -1,
     };
+    // Rendered on the blue hero card, so every colour here is white-on-blue:
+    // reached nodes are solid white with a blue glyph, future nodes are a
+    // translucent white wash.
+    const icons = [
+      LucideIcons.package,
+      LucideIcons.truck,
+      LucideIcons.circleCheck,
+    ];
+    final blue = context.c.info;
     return Row(
-      children: List.generate(
-        labels.length,
-        (index) => Expanded(
+      children: List.generate(labels.length, (index) {
+        final reached = index <= active;
+        return Expanded(
           child: Column(
             children: [
               Row(
@@ -1198,152 +1532,53 @@ class _OrderProgress extends StatelessWidget {
                     Expanded(
                       child: Container(
                         height: 2,
-                        color: index <= active
-                            ? const Color(0xFF1769D2)
-                            : const Color(0xFFDCE1EA),
+                        color: Colors.white.withValues(
+                          alpha: index <= active ? 1 : .3,
+                        ),
                       ),
                     ),
                   Container(
-                    width: 30,
-                    height: 30,
+                    width: 34,
+                    height: 34,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: index <= active
-                          ? const Color(0xFF1769D2)
-                          : const Color(0xFFDCE1EA),
+                      color: reached
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: .22),
                     ),
                     child: Icon(
-                      index <= active ? LucideIcons.check : LucideIcons.circle,
-                      size: 15,
-                      color: Colors.white,
+                      icons[index],
+                      size: 17,
+                      color: reached
+                          ? blue
+                          : Colors.white.withValues(alpha: .85),
                     ),
                   ),
                   if (index < labels.length - 1)
                     Expanded(
                       child: Container(
                         height: 2,
-                        color: index < active
-                            ? const Color(0xFF1769D2)
-                            : const Color(0xFFDCE1EA),
+                        color: Colors.white.withValues(
+                          alpha: index < active ? 1 : .3,
+                        ),
                       ),
                     ),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 7),
               Text(
                 labels[index],
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w600,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: reached ? FontWeight.w700 : FontWeight.w500,
+                  color: Colors.white.withValues(alpha: reached ? 1 : .75),
                 ),
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DetailCard extends StatelessWidget {
-  const _DetailCard({
-    required this.icon,
-    required this.eyebrow,
-    required this.title,
-    this.subtitle,
-    this.actions = const [],
-  });
-  final IconData icon;
-  final String eyebrow;
-  final String title;
-  final String? subtitle;
-  final List<(IconData, VoidCallback)> actions;
-
-  @override
-  Widget build(BuildContext context) => CefCard(
-    child: Row(
-      children: [
-        Icon(icon, color: const Color(0xFF1769D2), size: 24),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(eyebrow, style: Theme.of(context).textTheme.bodySmall),
-              const SizedBox(height: 2),
-              Text(title, style: Theme.of(context).textTheme.titleSmall),
-              if (subtitle != null)
-                Text(subtitle!, style: Theme.of(context).textTheme.bodySmall),
-            ],
-          ),
-        ),
-        for (final (actionIcon, onTap) in actions)
-          Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: Material(
-              color: const Color(0xFFF0F5FF),
-              shape: const CircleBorder(),
-              child: InkWell(
-                onTap: onTap,
-                customBorder: const CircleBorder(),
-                child: SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: Icon(
-                    actionIcon,
-                    color: const Color(0xFF1769D2),
-                    size: 19,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    ),
-  );
-}
-
-class _ItemTile extends StatelessWidget {
-  const _ItemTile({required this.item, required this.index});
-  final OrderItem item;
-  final int index;
-
-  @override
-  Widget build(BuildContext context) {
-    final icons = [
-      LucideIcons.cakeSlice,
-      LucideIcons.coffee,
-      LucideIcons.cookie,
-    ];
-    return SizedBox(
-      width: 96,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 58,
-            width: 76,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F3F7),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icons[index % icons.length], color: CefColors.navy),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            item.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700),
-          ),
-          Text(
-            '${item.quantity} × RM${(item.unitPrice ?? 0).toStringAsFixed(2)}',
-            style: Theme.of(context).textTheme.bodySmall
-                ?.copyWith(fontSize: 10.5),
-          ),
-        ],
-      ),
+        );
+      }),
     );
   }
 }
