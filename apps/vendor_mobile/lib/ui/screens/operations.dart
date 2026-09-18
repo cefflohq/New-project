@@ -1067,7 +1067,396 @@ class _OrderItemRow extends StatelessWidget {
   }
 }
 
-/// V-14 / V-15 — Save validates and persists through the canonical RPC. The
+/// V-14 — How the order gets created: one manual order, or a bulk import.
+class NewOrderEntryScreen extends StatelessWidget {
+  const NewOrderEntryScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final c = context.c;
+    return PageBody(
+      children: [
+        _EntryModeCard(
+          icon: LucideIcons.filePlus,
+          title: 'Manual Entry',
+          subtitle: 'Create a single order step by step',
+          primary: true,
+          onTap: () => app.go(VRoute.newOrderManual),
+        ),
+        const SizedBox(height: Gap.cardGap),
+        _EntryModeCard(
+          icon: LucideIcons.cloudUpload,
+          title: 'Import Orders',
+          subtitle: 'Import multiple orders from your files',
+          primary: false,
+          onTap: () => app.go(VRoute.importOrders),
+        ),
+        SectionHeading(
+          'Recent Imports',
+          trailing: _TintedLink(
+            icon: LucideIcons.list,
+            label: 'View all',
+            onTap: () => showNotWiredYetSnackBar(context, 'The import history'),
+          ),
+        ),
+        for (final source in _ImportSource.values)
+          Padding(
+            padding: const EdgeInsets.only(bottom: Gap.cardGap),
+            child: CefCard(
+              onTap: () =>
+                  showNotWiredYetSnackBar(context, 'Opening this import'),
+              child: Row(
+                children: [
+                  _ImportSourceMark(source: source),
+                  const SizedBox(width: Gap.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          source.sampleBatch,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${source.label} · ${source.sampleCount} orders',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        source.sampleDate,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: c.success.withValues(alpha: .12),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: c.success,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              'Connected',
+                              style: TextStyle(
+                                color: c.success,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// The two big mode cards at the top of V-14. The selected/primary one is
+/// filled with the vendor blue, the other sits on the plain surface.
+class _EntryModeCard extends StatelessWidget {
+  const _EntryModeCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.primary,
+    required this.onTap,
+  });
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool primary;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final fg = primary ? Colors.white : c.textPrimary;
+    return Material(
+      color: primary ? c.info : c.card,
+      borderRadius: BorderRadius.circular(Sizes.cardRadius),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+            border: primary ? null : Border.all(color: c.border),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: primary
+                      ? Colors.white.withValues(alpha: .18)
+                      : c.info.withValues(alpha: .1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  icon,
+                  size: 26,
+                  color: primary ? Colors.white : c.info,
+                ),
+              ),
+              const SizedBox(width: Gap.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(color: fg),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: primary
+                            ? Colors.white.withValues(alpha: .85)
+                            : c.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                LucideIcons.chevronRight,
+                size: 20,
+                color: primary ? Colors.white : c.textSecondary,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The three file sources the import flow accepts. Brand marks are drawn as
+/// tinted lettered tiles -- the real provider logos are not bundled assets.
+enum _ImportSource {
+  googleSheets(
+    'Google Sheets',
+    'Import from your Google Sheets',
+    'S',
+    Color(0xFF0F9D58),
+    'Meal Prep Orders',
+    32,
+    '16 Sep 2026',
+  ),
+  excel(
+    'Excel',
+    'Upload an Excel file (.xlsx, .xls)',
+    'X',
+    Color(0xFF217346),
+    'Catering Sept',
+    24,
+    '14 Sep 2026',
+  ),
+  googleDrive(
+    'Google Drive',
+    'Import from files in your Google Drive',
+    'D',
+    Color(0xFF1A73E8),
+    'Hamper Orders',
+    18,
+    '12 Sep 2026',
+  );
+
+  const _ImportSource(
+    this.label,
+    this.description,
+    this.mark,
+    this.tint,
+    this.sampleBatch,
+    this.sampleCount,
+    this.sampleDate,
+  );
+  final String label;
+  final String description;
+  final String mark;
+  final Color tint;
+  final String sampleBatch;
+  final int sampleCount;
+  final String sampleDate;
+}
+
+class _ImportSourceMark extends StatelessWidget {
+  const _ImportSourceMark({required this.source});
+  final _ImportSource source;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 42,
+    height: 42,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: source.tint.withValues(alpha: .12),
+      borderRadius: BorderRadius.circular(11),
+    ),
+    child: Text(
+      source.mark,
+      style: TextStyle(
+        color: source.tint,
+        fontWeight: FontWeight.w800,
+        fontSize: 18,
+      ),
+    ),
+  );
+}
+
+/// X-04 — Pick where the bulk orders come from.
+class ImportOrdersScreen extends StatelessWidget {
+  const ImportOrdersScreen({super.key});
+
+  static const _steps = [
+    'Select your source (Google Sheets, Excel or Google Drive)',
+    'Choose a file or connected sheet',
+    'Map the columns and preview your orders',
+    'Import and review the orders',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return PageBody(
+      children: [
+        Text(
+          'Choose a source to import multiple orders.',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 16),
+        for (final source in _ImportSource.values)
+          Padding(
+            padding: const EdgeInsets.only(bottom: Gap.cardGap),
+            child: CefCard(
+              onTap: () => showNotWiredYetSnackBar(
+                context,
+                'Importing from ${source.label}',
+              ),
+              child: Row(
+                children: [
+                  _ImportSourceMark(source: source),
+                  const SizedBox(width: Gap.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          source.label,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          source.description,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    LucideIcons.chevronRight,
+                    size: 20,
+                    color: c.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        const SizedBox(height: Gap.sm),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: c.info.withValues(alpha: .07),
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(LucideIcons.info, size: 18, color: c.info),
+                  const SizedBox(width: Gap.sm),
+                  Text(
+                    'How it works?',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ],
+              ),
+              const SizedBox(height: Gap.md),
+              for (final (index, step) in _steps.indexed)
+                Padding(
+                  padding: EdgeInsets.only(
+                    bottom: index == _steps.length - 1 ? 0 : Gap.md,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 22,
+                        height: 22,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: c.info.withValues(alpha: .14),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${index + 1}',
+                          style: TextStyle(
+                            color: c.info,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: Gap.sm),
+                      Expanded(
+                        child: Text(
+                          step,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// X-03 / V-15 — Save validates and persists through the canonical RPC. The
 /// screen only navigates after the backend confirms the write.
 class OrderFormScreen extends StatefulWidget {
   const OrderFormScreen({super.key, this.orderId});
