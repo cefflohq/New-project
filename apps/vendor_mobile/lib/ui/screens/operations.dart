@@ -1197,18 +1197,23 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     return PageBody(
       children: [
         Text(
-          widget.isNew ? 'Create a new delivery order' : 'Update order details',
+          widget.isNew
+              ? 'Create a new order step by step.'
+              : 'Update order details.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 16),
         _FormSection(
           icon: LucideIcons.user,
           title: 'Customer',
+          subtitle: 'Select an existing customer or add a new one.',
           child: Column(
             children: [
               CefField(
                 label: 'Customer name',
                 controller: name,
+                hint: 'Search customer by name, phone or email...',
+                prefixIcon: LucideIcons.search,
                 errorText: errors['name'],
               ),
               CefField(
@@ -1223,44 +1228,37 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
         const SizedBox(height: 12),
         _FormSection(
           icon: LucideIcons.mapPin,
-          title: 'Delivery Address',
-          child: Column(
-            children: [
-              CefField(
-                label: 'Address',
-                controller: address,
-                maxLines: 2,
-                errorText: errors['address'],
-              ),
-              Container(
-                height: 68,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF0F3F8),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Center(
-                  child: Icon(
-                    LucideIcons.mapPin,
-                    color: CefColors.accent,
-                    size: 28,
-                  ),
-                ),
-              ),
-            ],
+          title: 'Address',
+          subtitle: 'Delivery address',
+          child: CefField(
+            label: 'Address',
+            controller: address,
+            hint: 'Enter delivery address...',
+            maxLines: 2,
+            errorText: errors['address'],
           ),
         ),
         const SizedBox(height: 12),
-        _ActionRow(
+        _FormSection(
           icon: LucideIcons.package,
-          title: 'Order Items',
-          subtitle: 'Add items',
-          onTap: () => showNotWiredYetSnackBar(context, 'Adding order items'),
+          title: 'Items',
+          subtitle: 'Add order items',
+          child: _PickerField(
+            hint: 'Add items to this order...',
+            onTap: () => showNotWiredYetSnackBar(context, 'Adding order items'),
+          ),
         ),
         const SizedBox(height: 12),
         _FormSection(
           icon: LucideIcons.clipboardList,
-          title: 'Delivery Instruction (Optional)',
-          child: CefField(label: 'Instruction', controller: notes, maxLines: 2),
+          title: 'Instructions',
+          subtitle: 'Special requests (optional)',
+          child: CefField(
+            label: 'Instruction',
+            controller: notes,
+            hint: 'Add delivery notes...',
+            maxLines: 2,
+          ),
         ),
         if (error != null)
           Padding(
@@ -1271,7 +1269,10 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
             ),
           ),
         const SizedBox(height: 16),
-        CefButton(widget.isNew ? 'Create Order' : 'Update Order', onTap: _save),
+        CefButton(
+          widget.isNew ? 'Review & Create' : 'Update Order',
+          onTap: _save,
+        ),
       ],
     );
   }
@@ -1588,9 +1589,11 @@ class _FormSection extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.child,
+    this.subtitle,
   });
   final IconData icon;
   final String title;
+  final String? subtitle;
   final Widget child;
   @override
   Widget build(BuildContext context) => CefCard(
@@ -1598,50 +1601,72 @@ class _FormSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: CefColors.navy),
-            const SizedBox(width: 10),
-            Text(title, style: Theme.of(context).textTheme.titleSmall),
+            Icon(icon, color: context.c.info, size: 22),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: Theme.of(context).textTheme.titleMedium),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle!,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ],
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         child,
       ],
     ),
   );
 }
 
-class _ActionRow extends StatelessWidget {
-  const _ActionRow({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-  final IconData icon;
-  final String title;
-  final String subtitle;
+/// A field-shaped row that opens something instead of accepting typing --
+/// the reference draws Address and Items this way (placeholder + chevron).
+class _PickerField extends StatelessWidget {
+  const _PickerField({required this.hint, required this.onTap});
+  final String hint;
   final VoidCallback onTap;
+
   @override
-  Widget build(BuildContext context) => CefCard(
-    onTap: onTap,
-    child: Row(
-      children: [
-        Icon(icon, color: const Color(0xFF1769D2)),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(Sizes.inputRadius),
+        child: Container(
+          height: 50,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: c.card,
+            border: Border.all(color: c.border),
+            borderRadius: BorderRadius.circular(Sizes.inputRadius),
+          ),
+          child: Row(
             children: [
-              Text(title, style: Theme.of(context).textTheme.titleSmall),
-              Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+              Expanded(
+                child: Text(
+                  hint,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+              Icon(LucideIcons.chevronRight, size: 18, color: c.textSecondary),
             ],
           ),
         ),
-        const Icon(LucideIcons.chevronRight, size: 19),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 /// Runs a backend action and only reports success when the call returns.

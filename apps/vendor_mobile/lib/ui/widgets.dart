@@ -438,6 +438,7 @@ class CefField extends StatelessWidget {
     this.maxLines = 1,
     this.errorText,
     this.onChanged,
+    this.prefixIcon,
   });
   final String label;
   final TextEditingController controller;
@@ -445,6 +446,7 @@ class CefField extends StatelessWidget {
   final TextInputType? keyboardType;
   final int maxLines;
   final ValueChanged<String>? onChanged;
+  final IconData? prefixIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -468,6 +470,9 @@ class CefField extends StatelessWidget {
               isDense: true,
               filled: true,
               fillColor: c.card,
+              prefixIcon: prefixIcon == null
+                  ? null
+                  : Icon(prefixIcon, size: 19, color: c.textSecondary),
               contentPadding: const EdgeInsets.all(Gap.md),
               border: _border(c.border),
               enabledBorder: _border(c.border),
