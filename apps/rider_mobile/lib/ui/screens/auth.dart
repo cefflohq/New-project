@@ -457,13 +457,60 @@ class CeffloInlinePrompt extends StatelessWidget {
 
 /// The globe + language + chevron pill at the foot of D02.
 class LanguagePill extends StatelessWidget {
-  const LanguagePill({super.key, required this.language, required this.onTap});
+  const LanguagePill({
+    super.key,
+    required this.language,
+    required this.onTap,
+    this.onDark = false,
+  });
   final String language;
   final VoidCallback onTap;
+
+  /// D02 sits the selector straight on the blue backdrop with no pill behind
+  /// it; every other placement draws it on a white sheet.
+  final bool onDark;
 
   @override
   Widget build(BuildContext context) {
     final c = context.c;
+    final row = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          LucideIcons.globe,
+          size: 20,
+          color: onDark ? CefColors.onNavy : CefColors.navy,
+        ),
+        const SizedBox(width: 10),
+        Text(
+          language,
+          style: TextStyle(
+            fontFamily: 'Manrope',
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: onDark ? CefColors.onNavy : c.textPrimary,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Icon(
+          LucideIcons.chevronDown,
+          size: 18,
+          color: onDark
+              ? CefColors.onNavy.withValues(alpha: .9)
+              : c.textSecondary,
+        ),
+      ],
+    );
+    if (onDark) {
+      return InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: row,
+        ),
+      );
+    }
     return Center(
       child: Material(
         color: CefColors.tintNeutral,
@@ -478,24 +525,7 @@ class LanguagePill extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
               border: Border.all(color: c.border),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(LucideIcons.globe, size: 20, color: CefColors.navy),
-                const SizedBox(width: 10),
-                Text(
-                  language,
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: c.textPrimary,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Icon(LucideIcons.chevronDown, size: 18, color: c.textSecondary),
-              ],
-            ),
+            child: row,
           ),
         ),
       ),
@@ -611,39 +641,82 @@ class _SignInScreenState extends State<SignInScreen> {
   String _language = 'English';
 
   @override
-  Widget build(BuildContext context) => CeffloAuthScaffold(
-    title: 'Welcome Back',
-    subtitle: 'Sign in to your Cefflo Driver account\nand get on the road.',
-    scrollable: false,
-    sheet: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        CeffloAuthOption(
-          label: 'Continue with Apple',
-          iconChild: const AppleGlyph(size: 24),
-          onTap: widget.onEmail,
+  Widget build(BuildContext context) => Scaffold(
+    body: NavyBackdrop(
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Gap.gutter),
+          child: Column(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: LanguagePill(
+                  language: _language,
+                  onDark: true,
+                  onTap: () => _pickLanguage(context),
+                ),
+              ),
+              const Spacer(flex: 3),
+              const CeffloSplashLockup(),
+              const Spacer(flex: 4),
+              CeffloAuthOption(
+                label: 'Continue with Apple',
+                iconChild: const AppleGlyph(size: 24),
+                onTap: widget.onEmail,
+              ),
+              const SizedBox(height: Gap.md),
+              CeffloAuthOption(
+                label: 'Continue with Google',
+                iconChild: const GoogleGlyph(size: 24),
+                onTap: widget.onEmail,
+              ),
+              const SizedBox(height: Gap.md),
+              CeffloAuthOption(
+                label: 'Continue with Email',
+                icon: LucideIcons.mail,
+                onTap: widget.onEmail,
+              ),
+              const SizedBox(height: Gap.xl),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Have an invite?',
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w500,
+                      color: CefColors.onNavy.withValues(alpha: .85),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  InkWell(
+                    onTap: widget.onSignUp,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 2,
+                        vertical: 4,
+                      ),
+                      child: Text(
+                        'Get started',
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                          color: CefColors.onNavy,
+                          decoration: TextDecoration.underline,
+                          decorationColor: CefColors.onNavy,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: Gap.lg),
+            ],
+          ),
         ),
-        const SizedBox(height: Gap.md),
-        CeffloAuthOption(
-          label: 'Continue with Google',
-          iconChild: const GoogleGlyph(size: 24),
-          onTap: widget.onEmail,
-        ),
-        const SizedBox(height: Gap.md),
-        CeffloAuthOption(
-          label: 'Continue with Email',
-          icon: LucideIcons.mail,
-          onTap: widget.onEmail,
-        ),
-        const SizedBox(height: Gap.section),
-        const CeffloOrDivider(),
-        const SizedBox(height: Gap.section),
-        Text('Don’t have an account?', style: context.t.bodyLarge),
-        const SizedBox(height: Gap.md),
-        CeffloPrimaryButton('Sign Up', onTap: widget.onSignUp),
-        const SizedBox(height: Gap.section),
-        LanguagePill(language: _language, onTap: () => _pickLanguage(context)),
-      ],
+      ),
     ),
   );
 
