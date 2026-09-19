@@ -1,6 +1,10 @@
 **Status:** CANONICAL — Founder-approved, merged into repo 2026-09-04
 **Repo-reconciliation note:** This is the current canonical Founder-approved knowledge-base root. It supersedes `docs/cefflo/CEFFLO_BRAND_BRAIN.md` for brand/product/architecture doctrine and extends the same "newer canonical layer above the numbered pack" pattern already established by `docs/cefflo/00_AGENTS.md`. Each domain below is resolved to its actual repo path (or flagged as a genuine gap) rather than left as a bare filename placeholder.
 
+**Engineering and security authorities added 2026-09-19 (D-39):**
+- `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md` — canonical Engineering Department E1–E5 architecture.
+- `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md` — canonical cross-company security architecture. During Engineering Bootstrap Phase 01 it constrains only the approved Engineering attack surface; it does not authorize building the wider Cyber Security system.
+
 ---
 
 # CEFFLO — KNOWLEDGE BASE MASTER INDEX
@@ -130,6 +134,8 @@ Primary:
 - `docs/cefflo/agent-os/CLAUDE_OPERATING.md`
 - `docs/cefflo/agent-os/CODEX_OPERATING.md`
 - `docs/CODEX_WORKING_RULES.md` (repo-root `docs/`, not `docs/cefflo/`)
+- `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md` (Engineering Department roles, orchestration, gates and evidence)
+- `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md` (security boundaries for agents, tools, credentials and Crown Jewels)
 
 Agent rules govern how work is performed; they do not override Product Truth or Founder decisions.
 

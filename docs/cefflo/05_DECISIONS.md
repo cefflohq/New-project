@@ -501,3 +501,58 @@ Founder supplied `CEFFLO_DRIVER_FLUTTER_UI_UX_MASTER_SOT_v2.md` (42 screens, `D0
 - `docs/cefflo/README_PACK.md`, `docs/cefflo/sot/10_PRICING.md`, `docs/cefflo/02_ARCHITECTURE.md` (root) — checked; each mentions "Rider Flutter" only as a generic surface/feature reference, not an assertion about the naming-lock status, and none is a live index/pointer this task targets — no change needed.
 
 **Files modified this pass:** `docs/cefflo/05_DECISIONS.md` (this entry + D-28/D-37 annotations), `docs/cefflo/sot/01_PRODUCT_TRUTH.md`, `docs/cefflo/sot/02_ARCHITECTURE.md`, `docs/cefflo/sot/00_INDEX.md`, `docs/cefflo/sot/13_DRIVER_FLUTTER_42_SCREEN_MASTER.md`, `docs/cefflo/07_RIDER.md`. No commit, push, merge, or tag performed as part of drafting this entry — see the immediately following commit for that.
+
+---
+
+## D-39 Engineering Department Bootstrap Phase 01 — Plan Approved, Baseline Gate Pending (2026-09-19)
+
+Founder approved `FG-ENG-01 Phase Authorization` for the canonical
+`CEFFLO ENGINEERING BOOTSTRAP — PHASE 01 FINAL PLAN`.
+
+The approved Engineering architecture is:
+
+```text
+E1 Lead → E2 Build ⇄ E3 Pixel → E4 Verify → E5 Ship
+```
+
+n8n is the deterministic control plane. The minimum workflow family is locked
+to four responsibilities: `CEFFLO ENG - 00 - Control Plane`, `01 - Context
+Builder`, `02 - Role Executor`, and `99 - Failure & Escalation`. The Role
+Executor is infrastructure, not a sixth Engineering agent.
+
+Phase 01 is DEV/STAGING only. The latest Engineering Master and Cyber Security
+Master are canonical at:
+
+- `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md`
+- `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md`
+
+Security is enforced by deterministic runner/tool controls outside model
+prompts. Routine AI roles receive no production credentials, production DB
+administration, production VPS/root authority, production Supabase service-role
+authority, generic remote shell, Docker socket, arbitrary egress, unrestricted
+model-generated commands, or direct access to Crown Jewels.
+
+Only `FG-ENG-01` is granted. The following remain unapproved:
+
+- `FG-ENG-02` baseline selection;
+- `FG-ENG-03` canonical UI reference;
+- `FG-ENG-04` spend/credential envelope beyond already available
+  non-production capabilities;
+- `FG-ENG-05` scope exception;
+- `FG-ENG-06` security exception;
+- `FG-ENG-07` pilot activation;
+- `FG-ENG-08` operational acceptance.
+
+The current implementation stop is `FG-ENG-02`. Before that gate, work is
+limited to tracking the two masters, creating the approved bootstrap
+documentation/contracts/configuration structure, and producing a non-destructive
+decision/dependency-aware reconciliation packet for:
+
+- `claude/flow-3-vendor-web-desktop-completion`
+- `claude/experience-system-implementation`
+
+No merge, cherry-pick, rebase, branch deletion, destructive reconciliation,
+workflow activation, migration execution, Vendor V11 pilot, production action,
+Marketing workflow modification, wider department implementation, Cyber
+Security system rollout, or n8n PostgreSQL upgrade is authorized before the
+applicable later gate.

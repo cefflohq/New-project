@@ -56,6 +56,15 @@ acceptance criteria.
 -   Codex/Claude/VPS/Remote workflow → `17_AI_WORKFLOW.md`
 -   Full canonical knowledge index → `docs/cefflo/sot/00_INDEX.md`
 -   Marketing/growth knowledge → `docs/cefflo/sot/marketing/00_MARKETING_KNOWLEDGE_PACK_INDEX.md`
+-   Engineering Department architecture and E1–E5 doctrine →
+    `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md`
+-   Cross-company security architecture and AI/tool boundaries →
+    `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md`
+
+For Engineering Department bootstrap work, load both masters above. The
+Engineering Master defines the department; the Cyber Security Master constrains
+the relevant attack surface. The security master is not authority to build the
+full company Cyber Security system unless the Founder grants that scope.
 
 Load multiple domain docs only when the task genuinely crosses those
 contracts.
