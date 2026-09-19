@@ -73,11 +73,12 @@
   "product_truth_conflicts": [
     {
       "id": "REF-CONFLICT-V11-NAV-001",
-      "status": "FOUNDER_DECISION_REQUIRED",
+      "status": "RESOLVED — PRODUCT TRUTH PREVAILS",
+      "resolution_decision": "D-42",
       "reference_observation": "The V11 panel labels the fifth bottom-navigation item Settings.",
       "product_truth": "The active Vendor Mobile master specifies Today · Orders · Zones · Riders · Menu.",
       "authority_path": "docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md §2 item 4",
-      "handling": "Do not change navigation terminology or behaviour to imitate the image. Preserve Product Truth until Founder explicitly resolves the conflict."
+      "handling": "Use Menu. Preserve reference placement, spacing, icon treatment, typography treatment, navigation-bar structure and active/inactive visual behaviour where applicable. Product Truth governs terminology and navigation behaviour; the reference governs visual presentation. No V11 implementation is authorized by this resolution."
     }
   ],
   "execution_state": {

@@ -14,10 +14,10 @@ are not embedded in the JPEG; it is interpreted as a modern iPhone-class
 portrait viewport with Dynamic Island. The complete JPEG remains the immutable
 reference artifact and has not been cropped or recompressed.
 
-One authority conflict is registered without implementation action: the image
-labels the fifth bottom-navigation item `Settings`, while active Product Truth
-specifies `Menu`. Product terminology and behaviour remain unchanged until the
-Founder explicitly resolves `REF-CONFLICT-V11-NAV-001`.
+`REF-CONFLICT-V11-NAV-001` is **RESOLVED — PRODUCT TRUTH PREVAILS** under D-42.
+Use `Menu`, preserving the reference's placement, spacing, icon treatment,
+typography treatment, navigation-bar structure and applicable active/inactive
+visual behaviour. The reference remains ACTIVE. This changes metadata only.
 
 This registration did not run E1–E5, change V11, activate a workflow, call a
 model, create a preview or deploy anything.

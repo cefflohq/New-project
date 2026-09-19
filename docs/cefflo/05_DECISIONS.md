@@ -631,3 +631,20 @@ activation, pilot activation, deployment or any later Founder gate. The next
 formal gate is `FG-ENG-04 — Spend/Credential Envelope`; the navigation conflict
 also requires explicit Founder resolution before implementation may treat the
 reference label as product truth.
+
+## D-42 V11 Navigation Reference Conflict Resolved — Product Truth Prevails
+
+Recorded 2026-09-19. Founder explicitly resolved REF-CONFLICT-V11-NAV-001:
+the canonical fifth navigation item is **Menu**. Do not amend Product Truth
+to Settings. Preserve the reference's placement, spacing, icon treatment,
+typography treatment, navigation-bar structure and applicable active/inactive
+visual behaviour. Product Truth governs terminology and navigation behaviour;
+the reference governs visual presentation.
+
+UI-VENDOR-V11-TODAY-v1 remains ACTIVE with its original JPEG bytes and hash.
+The conflict status is **RESOLVED — PRODUCT TRUTH PREVAILS**. D-41's request
+for a navigation decision is closed by this decision.
+
+Only FG-ENG-04 preparation is authorized next. No V11 modification, E1–E5
+execution, pilot activation, purchase, credential provisioning or deployment
+is authorized. FG-ENG-04 remains pending Founder approval.
