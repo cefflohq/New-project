@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "architecture": "role_to_capability_to_router_to_provider",
+  "defaultMode": "deny_unconfigured",
+  "requiredCapabilities": {
+    "E1": ["structured_output", "planning", "long_context"],
+    "E2": ["structured_output", "code_reasoning", "tool_request_generation"],
+    "E3": ["structured_output", "multiple_image_inputs", "visual_comparison"],
+    "E4": ["structured_output", "independent_verification"],
+    "E5": ["structured_output"]
+  },
+  "routes": [],
+  "rules": {
+    "providerIdsInWorkflow": false,
+    "credentialValuesInConfig": false,
+    "requireHealthCheck": true,
+    "requirePriceMetadataForPaidRoute": true,
+    "e3RequiresReferenceAndRender": true,
+    "fallbackRequiresClassifiedReason": true,
+    "fallbackMustRespectRemainingBudget": true
+  }
+}

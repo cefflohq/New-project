@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cefflo.local/schemas/engineering/task-pack.schema.json",
+  "title": "CEFFLO Engineering Immutable Task Pack",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "version", "environment", "base_sha", "sources", "scope", "gates", "sha256"],
+  "properties": {
+    "task_id": {"type": "string", "pattern": "^ENG-TASK-[A-Z0-9-]+$"},
+    "version": {"type": "integer", "minimum": 1},
+    "environment": {"enum": ["local", "development", "staging"]},
+    "base_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "objective": {"type": "string"},
+    "scope": {"type": "object"},
+    "acceptance_criteria": {"type": "array", "items": {"type": "string"}},
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_id", "location", "version", "sha256", "trust", "status"],
+        "properties": {
+          "source_id": {"type": "string"},
+          "location": {"type": "string"},
+          "version": {"type": "string"},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "trust": {"enum": ["canonical", "canonical_constraint", "verified_evidence", "untrusted"]},
+          "status": {"enum": ["active", "historical", "superseded", "quarantined"]}
+        }
+      }
+    },
+    "reference_ids": {"type": "array", "items": {"type": "string"}},
+    "gates": {"type": "object"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

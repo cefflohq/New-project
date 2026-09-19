@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "generated": false,
+  "source": "docs/cefflo/05_DECISIONS.md",
+  "activeEngineeringDecisions": [
+    {
+      "id": "D-39",
+      "status": "ACTIVE",
+      "summary": "Engineering Bootstrap Phase 01 approved; FG-ENG-02 remains pending"
+    }
+  ],
+  "gates": {
+    "FG-ENG-01": "APPROVED",
+    "FG-ENG-02": "PENDING",
+    "FG-ENG-03": "PENDING",
+    "FG-ENG-04": "PENDING",
+    "FG-ENG-05": "PENDING",
+    "FG-ENG-06": "PENDING",
+    "FG-ENG-07": "PENDING",
+    "FG-ENG-08": "PENDING"
+  },
+  "currentStop": "FG-ENG-02"
+}

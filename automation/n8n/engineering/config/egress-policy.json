@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "default": "deny",
+  "arbitraryDestinations": false,
+  "validateRedirectTargets": true,
+  "allowlistedDestinations": [],
+  "profiles": {
+    "build_default": [],
+    "dependency_install": [],
+    "model_adapter": [],
+    "git_task_branch": [],
+    "staging_preview": []
+  },
+  "rules": {
+    "destinationFromModelOutput": false,
+    "credentialForwarding": false,
+    "productionDestination": false,
+    "logDeniedAttempt": true
+  }
+}
