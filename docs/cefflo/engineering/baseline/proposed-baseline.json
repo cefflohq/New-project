@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "status": "PROPOSED_REQUIRES_FG_ENG_02",
+  "status": "APPROVED_WITH_AMENDMENTS_D40",
   "sourceSnapshots": {
     "currentProductAuthority": "2e02edc4d6e0eabdc15d4e9c028e9bce37a87ae1",
-    "currentBootstrapSnapshot": "734cc1c3990c81402df67b5d563df918f73da7cb",
+    "currentBootstrapSnapshot": "e8793900cc387c48c4cc30cd4328df5f0799043c",
     "experienceImplementation": "e5d47cc7e310f91e71e9220bdda79eae08686ea3",
     "mergeBase": "1b69084b9f955eba8c4be6af39fd3102af5b07c3"
   },
@@ -28,11 +28,11 @@
   "requiresManualIntegration": [
     {
       "area": "Vendor Mobile design tokens",
-      "requiredResult": "Manrope; 12px gutter; 13px card padding; 11px card gap; 20px section gap; 60px chrome; 14px card/input radius; canonical typography weights and workspace colours"
+      "requiredResult": "Preserve the safest current implementation; do not restore historical exact compact values. Defer visual value judgments to FG-ENG-03"
     },
     {
       "area": "Vendor Mobile fonts",
-      "requiredResult": "Remove Inter as primary, bundle canonical Manrope locally, retain only validated multilingual fallback assets"
+      "requiredResult": "Keep locally bundled Inter as the active app UI font and retain validated multilingual fallback assets"
     },
     {
       "area": "Vendor subscription V-50–V-54",
@@ -59,10 +59,6 @@
     {
       "path": "apps/vendor_mobile/CLAUDE_UI_HANDOFF.md",
       "reason": "Session handoff referencing external authority and old scope; replaced by canonical masters and task packs."
-    },
-    {
-      "path": "apps/vendor_mobile/assets/fonts/inter/**",
-      "reason": "Inter conflicts with locked Manrope typography."
     },
     {
       "path": "all untracked worktree files",

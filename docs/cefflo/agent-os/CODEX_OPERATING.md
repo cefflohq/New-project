@@ -99,7 +99,7 @@ visual baseline cleanup.**
 **Superseded 2026-09-11 (legacy visual baseline cleanup):** this section
 described the Black/White/Graphite/Signal Lime system, now retired (D-33).
 Current authority is `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — CEFFLO
-Yellow `#FEC819`/Navy `#12213E`, canonical semantic palette, Manrope,
+Yellow `#FEC819`/Navy `#12213E`, canonical semantic palette, Inter (D-40),
 locked surface/shadow system. Use it, not the line below.
 
 When polishing Cefflo UI: - preserve the approved

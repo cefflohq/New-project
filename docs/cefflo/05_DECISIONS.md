@@ -383,7 +383,12 @@ Founder decision, following a dedicated Phase 04 repository audit, a two-round t
 - Semantic (operational meaning only, never brand accents): Attention `#D73C2B`, Success `#248648`, Route/Info `#2A6EEC` — each a small, documented, accessibility-driven adjustment from the originally-approved candidates (`#D8402F`/`#2FAE5E`/`#3D7BEE` respectively); full before/after and contrast math in `12_EXPERIENCE_SYSTEM.md` §2/§13.
 - Signal Lime `#C7F000` is **retired** as current primary/signature colour.
 
-**Locked system decisions:** Manrope as the primary product typeface (no separate monospace default, tabular numerals from Manrope's own numeral set); compact surface system (14px card radius, pill buttons, 14px inputs); a restrained-border + subtle two-layer soft shadow surface treatment (not zero-shadow, not heavy elevation); the three-level dark-mode architecture (dark canvas → tinted dark surface → Navy anchor) approved directionally with accessibility-verified core values, one narrow disclosed follow-up (semantic-colour legibility specifically on dark surfaces) left for the first real dark-mode implementation pass; master logo/wordmark reserved for genuine brand moments only, never repeated on internal operational screens; business/store name permitted contextually, not mandatory global branding.
+**Historical lock, partially superseded by D-40:** Manrope and the exact compact
+token values recorded here were the active direction at this decision point.
+D-40 later replaces Manrope with Inter for CEFFLO app UI and removes those
+historical numeric compact tokens as mandatory current truth. The palette,
+surface-treatment principles, dark-mode architecture and brand-mark rules in
+this decision remain active unless D-40 says otherwise.
 
 **Evidence base:** `docs/cefflo/audits/CEFFLO_PHASE_04_VISUAL_DNA_REPOSITORY_RECONCILIATION_AUDIT.md` (repository audit — found Signal Lime locked in writing under D-30, no Visual DNA doc existed, real Vendor Flutter implementation evidence on `claude/vendor-mobile-backend-integration`, no Rider Flutter implementation anywhere), `docs/cefflo/tasks/CEFFLO_PHASE_04_EXPERIENCE_SYSTEM_RECONCILIATION_PACKAGE.md` (the reviewed-then-applied reconciliation plan), and a live visual validation pass (Vendor + Rider 2×2 boards, both built against the same tokens, plus a dark-mode surface/token relationship comparison) that the Founder reviewed before granting this approval.
 
@@ -556,3 +561,44 @@ workflow activation, migration execution, Vendor V11 pilot, production action,
 Marketing workflow modification, wider department implementation, Cyber
 Security system rollout, or n8n PostgreSQL upgrade is authorized before the
 applicable later gate.
+
+---
+
+## D-40 Engineering Baseline Selection — Approved with Amendments (2026-09-19)
+
+Founder approved `FG-ENG-02` using the curated clean-integration strategy with
+these immutable source points:
+
+- Current bootstrap stop: `e8793900cc387c48c4cc30cd4328df5f0799043c`.
+- Experience snapshot: `e5d47cc7e310f91e71e9220bdda79eae08686ea3`.
+
+The isolated baseline preserves D-37, D-38, D-39 and the Phase 01 Engineering
+bootstrap; imports selected valid Experience web/shared work and the substantial
+Vendor Mobile implementation; excludes the obsolete Rider 33-screen scaffold,
+`previews/vendor-auth-prototype/**`, and
+`apps/vendor_mobile/CLAUDE_UI_HANDOFF.md`; and keeps V-50–V-54 outside the
+active baseline. The original source branches remain intact for evidence and
+rollback. Driver is not rebuilt or reconciled under this gate.
+
+**Typography amendment:** Inter is the active Founder-approved typeface for
+CEFFLO app UI, including Vendor Mobile and future Driver Mobile work. This
+supersedes D-33's Manrope direction. The valid locally bundled Inter
+implementation is retained; Manrope must not be restored as active runtime
+truth unless a later Founder decision explicitly changes the direction.
+
+**Compact-token amendment:** the historical `12 / 13 / 11 / 20 / 60 / 14`
+values are not mandatory current tokens. Baseline integration preserves the
+latest valid implementation and removes duplicate or clearly superseded token
+systems where authority is sufficient. It does not perform broad visual
+retuning. Any unresolved value requiring design judgment is held for
+`FG-ENG-03`, where Founder-approved references and E3 Pixel can validate exact
+values.
+
+Vendor Mobile lifecycle truth is **IMPLEMENTED / INTEGRATION IN PROGRESS / UI
+NOT YET LOCKED / DEV-STAGING**. This is evidence of a substantial working
+implementation, not a production-readiness claim.
+
+This decision authorizes only isolated baseline creation and technical
+validation. It does not grant FG-ENG-03 through FG-ENG-08, Vendor V11 execution,
+Engineering workflow activation, production deployment, or the n8n PostgreSQL
+upgrade. The next required Founder gate is `FG-ENG-03 — Canonical Reference`.

@@ -1,9 +1,18 @@
 # CEFFLO Engineering Baseline Reconciliation
 
-**Status:** FOUNDER DECISION REQUIRED — FG-ENG-02  
+**Status:** HISTORICAL FG-ENG-02 EVIDENCE PACKET — APPROVED WITH AMENDMENTS
 **Evidence date:** 2026-09-19  
 **Mode:** Non-destructive Git and dependency analysis  
-**Merge/integration performed:** No
+**Merge/integration performed when captured:** No
+
+> **D-40 approval addendum (2026-09-19):** Founder approved the curated
+> clean-integration strategy using current stop
+> `e8793900cc387c48c4cc30cd4328df5f0799043c` and Experience snapshot
+> `e5d47cc7e310f91e71e9220bdda79eae08686ea3`. Recommendations below to
+> restore Manrope or force historical `12 / 13 / 11 / 20 / 60 / 14` compact
+> values are superseded. Inter remains active; safe current token values are
+> preserved pending FG-ENG-03. This packet remains unchanged elsewhere as the
+> pre-decision evidence record; the integration result records actual execution.
 
 ## 1. Branch snapshot
 

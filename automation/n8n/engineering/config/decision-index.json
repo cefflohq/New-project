@@ -6,12 +6,17 @@
     {
       "id": "D-39",
       "status": "ACTIVE",
-      "summary": "Engineering Bootstrap Phase 01 approved; FG-ENG-02 remains pending"
+      "summary": "Engineering Bootstrap Phase 01 approved"
+    },
+    {
+      "id": "D-40",
+      "status": "ACTIVE",
+      "summary": "FG-ENG-02 curated baseline approved with Inter and token amendments"
     }
   ],
   "gates": {
     "FG-ENG-01": "APPROVED",
-    "FG-ENG-02": "PENDING",
+    "FG-ENG-02": "APPROVED_WITH_AMENDMENTS",
     "FG-ENG-03": "PENDING",
     "FG-ENG-04": "PENDING",
     "FG-ENG-05": "PENDING",
@@ -19,5 +24,5 @@
     "FG-ENG-07": "PENDING",
     "FG-ENG-08": "PENDING"
   },
-  "currentStop": "FG-ENG-02"
+  "currentStop": "FG-ENG-03"
 }

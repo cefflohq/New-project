@@ -1,10 +1,10 @@
-**Status:** CANONICAL — v1.2, locked 2026-09-11 by Founder decision `docs/cefflo/05_DECISIONS.md` D-33 (palette/typography/surface system), D-34 (Warning semantic token, Founder Gate 0), and D-35 (master logo production asset set updated to CEFFLO Yellow/Navy). This is the single visual implementation authority for Vendor Web/Desktop, Vendor Flutter, Rider Flutter, and future CEFFLO product surfaces. It supersedes `docs/cefflo/05_DECISIONS.md` D-30 **only where D-30 named Signal Lime as the current primary/signature colour** — D-30 itself is preserved unedited as the historical record of that earlier decision; nothing here rewrites it.
-**Implementation boundary — read this before doing anything with it:** this document is documentation/SOT canonicalization only. It does **not** authorize Flutter palette migration, Vendor screen redesign, Rider Flutter build-out, backend changes, or merging `claude/vendor-mobile-backend-integration`. Those are separate, later, not-yet-authorized execution stages.
+**Status:** CANONICAL — v1.3, amended 2026-09-19 by Founder decision D-40. D-33/D-34/D-35 remain the palette, semantic-colour, surface-principle and production-logo authorities; D-40 supersedes D-33 only for app typography and the mandatory status of its historical exact compact-token values.
+**Implementation boundary:** FG-ENG-02 authorizes the isolated DEV/STAGING baseline integration recorded by D-40. It does not authorize visual retuning, Driver build-out, Vendor V11 execution, production deployment, or any later Engineering gate.
 
 ---
 
 # CEFFLO — EXPERIENCE SYSTEM (VISUAL DNA)
-**Version:** 1.2 — 2026-09-11 (master logo production asset set updated, D-35)
+**Version:** 1.3 — 2026-09-19 (FG-ENG-02 amendments, D-40)
 **Owner:** Founder
 **Scope:** How CEFFLO products look. Product/behaviour truth remains governed separately by `01_PRODUCT_TRUTH.md`, `02_ARCHITECTURE.md`, and the relevant product SOT.
 
@@ -75,24 +75,39 @@ Three-level stack approved as the basis: **Dark Canvas → Dark/Tinted Surface �
 
 **What is NOT yet final, and why this doesn't block the rest of this lock:** the semantic colours (§2) land around 3.5:1 against the dark surface — acceptable for UI components, not yet at full text contrast. Dark mode itself has no shipped screens to apply this to yet (§10) — this is flagged as the one specific, narrow follow-up item for whoever does the first real dark-mode implementation pass, not a reason to withhold the rest of this canonicalization. **Do not treat the dark-mode numbers above as final production values** — they are the approved *relationship*, contrast-checked for the core surface/text/accent combinations, with one disclosed semantic-on-dark gap still open.
 
-## 4. Typography — LOCKED
+## 4. Typography — LOCKED BY D-40
 
-**Manrope is the primary CEFFLO product typeface**, for both display and body use. No separate monospace family is used as a default — tabular (lining) numerals come from Manrope's own numeral set wherever digits stack in a column (KPI tiles, earnings, distance/duration/time fields, order counts), enabled via font-feature settings, not a second typeface.
+**Inter is the primary CEFFLO app UI typeface**, including Vendor Mobile and
+future Driver Mobile work. The Vendor implementation bundles Inter locally and
+retains Noto Sans SC/Tamil for validated multilingual fallback coverage.
+Manrope is historical direction from D-33 and is no longer active runtime
+truth. Tabular numerals should use the active font's numeral features rather
+than introducing a separate default monospace family.
 
 IBM Plex Sans and Public Sans remain documented alternatives from the evaluation (§4, prior revision) — not rejected, not canonical, retained for reference only.
 
-### 4.1 Scale (unchanged from prior revision)
-Page/section title 18/600 (−0.2 tracking) · Card primary 16/600 · Card secondary 15/600 · Body/supporting 14/500 · Small body 13/500 · Label 14/600 · KPI/display 29/600 (−0.8 tracking).
+### 4.1 Scale
+Preserve the latest valid implementation during baseline integration. Exact
+sizes, weights and tracking remain subject to reference-based validation at
+FG-ENG-03; do not force the historical D-33 scale across the product without
+that evidence.
 
 ### 4.2 Line heights
 1.2 titles/display, 1.4–1.5 body/secondary text, 1.3 labels/chips.
 
-## 5. Surface system — LOCKED
+## 5. Surface system — PRINCIPLES LOCKED; EXACT COMPACT VALUES PENDING FG-ENG-03
 
-Compact operational surfaces. Spacing values preserved from the validated Founder Gate Matrix where they form part of the coherent system (screen gutter 12px, card padding 13px, card-to-card gap 11px, section gap 20px, base steps 4/8/12/16px, header/bottom-nav height 60px, icon 22px visual in a 44px tap target) — these are accessibility-driven or industry-standard 4pt-grid choices with no dependency on the retired Lime palette, re-justified independently rather than defaulted.
+Keep compact operational surfaces and accessible tap targets. D-40 removes the
+historical `12 / 13 / 11 / 20 / 60 / 14` sequence as mandatory current truth.
+The selected Vendor baseline currently uses a 20px gutter, 16px card padding,
+12px card gap, 22px section gap and 64px chrome; these are implementation
+evidence, not a new global lock. Preserve them safely until exact values are
+validated against a Founder-approved reference at FG-ENG-03.
 
-### 5.1 Radius — LOCKED
-Card radius **14px**. Buttons **pill (999px)** — reference-informed, validated visually. Inputs **14px** (rectangular, matches card radius — not pill, reads more precise/operational).
+### 5.1 Radius
+Buttons remain pill-shaped. The selected Vendor implementation's 18px
+card/input radius is retained as baseline evidence. Exact card/input radius is
+not visually locked until FG-ENG-03.
 
 ## 5A. Shadow/elevation — LOCKED
 
@@ -105,7 +120,8 @@ Lucide, outline style, 22px visual size in a 44px tap target. No icon containers
 ## 7. Components
 
 ### 7.1 Cards — LOCKED
-White surface (dark: navy-tinted dark surface, §3.2), 14px radius, lightened border + soft shadow (§5A), accent-colour border when selected.
+White surface (dark: navy-tinted dark surface, §3.2), current implementation
+radius, lightened border + soft shadow (§5A), accent-colour border when selected.
 
 ### 7.2 Status chips — LOCKED pattern
 Small pill, semantic-coloured text (§2 locked values) on a ~12% tint of the same colour, never solid fill. Semantic palette only, never the brand accent.
@@ -114,13 +130,13 @@ Small pill, semantic-coloured text (§2 locked values) on a ~12% tint of the sam
 Pill radius. Primary: solid CEFFLO Yellow fill, near-black text. Secondary: outline/neutral fill, same pill radius. Only one Yellow-filled primary action per screen.
 
 ### 7.4 Inputs — LOCKED pattern, component itself still to be built
-14px radius, matching cards.
+Rectangular and matching cards; exact radius pending FG-ENG-03.
 
 ### 7.5 Sheets/dialogs, list rows, loading/empty/error/blocked/retry/offline states
 Still genuinely missing from any audited implementation — not proposed here, real unfilled scope for the next execution stage.
 
 ### 7.6 KPI blocks — LOCKED (unchanged)
-Existing `KpiTile` pattern, 29/600 display size.
+Existing `KpiTile` pattern; exact display sizing pending FG-ENG-03.
 
 ## 8. Navigation — LOCKED
 
@@ -134,17 +150,24 @@ Bottom navigation: white background, neutral inactive icon/label, CEFFLO Yellow 
 
 **Master logo geometry does not change.** Its presentation context with Navy is resolved 2026-09-11 (D-35): the Founder supplied an updated production asset set with the arrow recoloured to CEFFLO Yellow and the icon's background moved to Navy — `docs/cefflo/brand/assets/logo/cefflo-logo-icon-navy.png` (app/icon), `cefflo-logo-mark.png` (standalone, transparent), `cefflo-logo-primary.png` (mark + wordmark, transparent), `cefflo-logo-wordmark.png` (wordmark-only, transparent). Full detail: `06_BRAND_ASSETS_GOVERNANCE.md` §5/§15.
 
-## 10. Flutter implementation baseline — evidence status only, no migration authorized
+## 10. Flutter implementation baseline — D-40
 
-`claude/vendor-mobile-backend-integration` (`apps/vendor_mobile/`) remains the confirmed leading Vendor Flutter implementation evidence. **This canonicalization does not authorize merging that branch, migrating its tokens, or any other implementation change to it.** Token migration is a distinct, separately-authorized future execution stage.
+`apps/vendor_mobile/` is now part of the isolated Engineering baseline. Its
+lifecycle state is **IMPLEMENTED / INTEGRATION IN PROGRESS / UI NOT YET LOCKED /
+DEV-STAGING**. It is substantial working implementation evidence, not a
+production-ready claim. V-50–V-54 remain HOLD and are excluded from active
+routes/navigation.
 
 `codex/cefflo-vendor-flutter-prototype` remains de-prioritized as forward evidence (heavier Lime usage, older naming scheme) — not deleted, not acted on here.
 
-**No Rider Flutter implementation exists anywhere in the repository.** This document is now the visual authority Rider Flutter will build against once that work is authorized — nothing has been built yet.
+No active Driver Flutter implementation exists in this baseline. The obsolete
+R-01–R-33 scaffold is excluded; the newer D-series authority governs future
+Driver work under a separate gate.
 
 ## 11. Vendor / Rider scoping
 
-Shared rules (§1–§9) apply to both surfaces. Vendor has real implementation evidence to reconcile against later (§10); Rider has none yet.
+Shared principles (§1–§9) apply to both surfaces. Vendor has the DEV/STAGING
+implementation described in §10; Driver remains unimplemented in this baseline.
 
 ## 12. Preview / evidence format
 
@@ -188,8 +211,14 @@ No adjustment materially changed any hue's identity — every adjustment was a l
 **LOCKED.** Remaining open items, none of which block this canonicalization:
 1. Semantic colour legibility on dark surfaces specifically (§2, §3.2) — narrow, disclosed, deferred to the first real dark-mode implementation pass.
 2. Exact final dark-mode production values — architecture and relationship approved; final numbers get one more look when dark-mode screens are actually built.
-3. Flutter token migration, Vendor screen work, Rider Flutter build-out — all explicitly out of scope for this canonicalization, belong to the next authorized execution stage.
+3. Exact Vendor typography scale, compact spacing and radius values — pending
+   reference-based validation at FG-ENG-03. Driver Flutter build-out remains a
+   separately authorized future stage.
 
 Resolved by v1.1 (D-34): the Warning semantic token gap is closed (§2.1).
 
 Resolved by v1.2 (D-35): §9's deferred "presentation context with Navy" item is closed — the master logo production asset set now includes a Navy-background icon variant and Yellow-arrow transparent variants.
+
+Resolved by v1.3 (D-40): Inter is current app UI typography; historical exact
+compact-token values are no longer mandatory; Vendor Mobile is integrated as a
+DEV/STAGING baseline with UI lock deferred to FG-ENG-03.

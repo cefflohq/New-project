@@ -1,7 +1,7 @@
 **Status:** CANONICAL — Founder-approved, merged into repo 2026-09-04
 **Repo-reconciliation note:** This is the current canonical Founder-approved knowledge-base root. It supersedes `docs/cefflo/CEFFLO_BRAND_BRAIN.md` for brand/product/architecture doctrine and extends the same "newer canonical layer above the numbered pack" pattern already established by `docs/cefflo/00_AGENTS.md`. Each domain below is resolved to its actual repo path (or flagged as a genuine gap) rather than left as a bare filename placeholder.
 
-**Engineering and security authorities added 2026-09-19 (D-39):**
+**Engineering and security authorities added 2026-09-19 (D-39; baseline selection amended by D-40):**
 - `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md` — canonical Engineering Department E1–E5 architecture.
 - `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md` — canonical cross-company security architecture. During Engineering Bootstrap Phase 01 it constrains only the approved Engineering attack surface; it does not authorize building the wider Cyber Security system.
 
@@ -37,13 +37,13 @@ Full Phase 01+02 execution report: `docs/cefflo/05_DECISIONS.md` D-29.
 
 ## 1. Vendor Flutter
 Primary:
-- `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md` — status: WORKING MASTER BASELINE, "Founder Review Required," NOT YET IMPLEMENTED. Subscription/billing screens V-50–V-54 remain HOLD; V-41 Delivery Settings remains RECONCILIATION REQUIRED.
-- `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — **CANONICAL as of 2026-09-11 (D-33)**, the approved Visual DNA/Experience System. Fills the previously-empty "approved Design Lab/DNA outputs" slot.
+- `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md` — WORKING MASTER BASELINE, Founder Review Required; **IMPLEMENTED / INTEGRATION IN PROGRESS / UI NOT YET LOCKED / DEV-STAGING** under D-40. V-50–V-54 remain HOLD and excluded from active routes; V-41 remains RECONCILIATION REQUIRED.
+- `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — **CANONICAL v1.3 under D-33–D-35 and D-40**. Inter is active app UI typography; exact compact values await FG-ENG-03 reference validation.
 
 Authority:
 Product Truth → Architecture → Flow 3 Behavioural Contract → approved Visual DNA (`docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md`) → Flutter implementation.
 
-Reference: `docs/cefflo/flow3/VENDOR_BEHAVIOURAL_CONTRACT_PACK.md` (the Flow 3 Vendor Web exit contract Flow 4 must build against). The current LIVE Vendor client remains Vendor Web/Desktop (`docs/cefflo/06_VENDOR.md`) — neither this master nor the now-canonical Experience System authorizes starting Flutter implementation or migrating existing Flutter code; that remains a separate, not-yet-authorized execution stage.
+Reference: `docs/cefflo/flow3/VENDOR_BEHAVIOURAL_CONTRACT_PACK.md` (the Flow 3 Vendor Web exit contract). Vendor Web/Desktop remains the current LIVE Vendor client. D-40 authorizes the isolated Vendor Flutter DEV/STAGING baseline integration only; visual lock and later operation remain gated.
 
 ## 2. Driver Flutter ("Cefflo Driver" = LOCKED product name; "Rider" = LOCKED backend/schema/API role — D-38)
 Primary:
@@ -175,7 +175,7 @@ The knowledge base is healthy when an agent can locate the correct domain SOT, r
 
 ## 16. Open gaps / pending Founder decisions (updated 2026-09-04, second pass)
 - `docs/cefflo/sot/10_PRICING.md` exists but is a CANDIDATE, not Founder-locked — no final price may be published (domain 9 above).
-- `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md` exists but is "Founder Review Required," not implemented; its Subscription/billing screens V-50–V-54 are HOLD pending a separate Founder-approved payment architecture, and V-41 Delivery Settings needs reconciliation against Service Area/Zones (domain 1 above).
+- `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md` remains "Founder Review Required" while its DEV/STAGING implementation is integrated and awaits UI lock. Subscription/billing V-50–V-54 are HOLD and excluded from active routes pending separate Founder approval; V-41 Delivery Settings still needs reconciliation against Service Area/Zones (domain 1 above).
 - `docs/cefflo/sot/marketing/07_MARKETING_MEMORY.md` exists but its performance memory is intentionally empty — no AI Marketing Engine implementation or real campaign data exists yet (domain 6/7 above).
 - `docs/cefflo/sot/13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` (active master as of 2026-09-14, D-37, superseding `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`) remains a "WORKING MASTER BASELINE" — not yet Founder-locked, not yet implemented; the current live Rider client is the PWA at `docs/cefflo/07_RIDER.md`.
 

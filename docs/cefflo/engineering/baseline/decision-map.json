@@ -39,6 +39,12 @@
       ],
       "status": "ACTIVE",
       "effect": "Engineering Bootstrap Phase 01 is authorized through the FG-ENG-02 stop"
+    },
+    {
+      "decision": "D-40 / FG-ENG-02",
+      "commit": "pending baseline result commit",
+      "status": "APPROVED_WITH_AMENDMENTS",
+      "effect": "Curated baseline integration authorized; Inter retained; historical exact compact tokens deferred to FG-ENG-03"
     }
   ],
   "experienceBranchImplementationClaims": [
@@ -57,8 +63,8 @@
     {
       "area": "Vendor typography",
       "commit": "5ac0594532fc46a439d0db123bb10c10f0835bf2",
-      "decisionRelationship": "Uses Inter although canonical Experience System locks Manrope",
-      "classification": "CONFLICTING"
+      "decisionRelationship": "Inter is approved as active app UI typography by D-40",
+      "classification": "INCLUDED"
     },
     {
       "area": "Vendor subscription/billing screens V-50–V-54",
@@ -72,6 +78,6 @@
   ],
   "authorityResolution": {
     "rule": "Latest explicit Founder decision and canonical SOT override implementation claims",
-    "requiredResult": "Preserve D-37/D-39, reconcile Vendor implementation to D-33/D-34, and do not activate HOLD scope"
+    "requiredResult": "Preserve D-37 through D-40, retain Inter, preserve safe current token implementation pending FG-ENG-03, and do not activate HOLD scope"
   }
 }

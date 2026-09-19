@@ -1,5 +1,5 @@
-**Status:** WORKING MASTER BASELINE — Founder Review Required (merged into repo 2026-09-04)
-**Repo-reconciliation note:** Fills the "no Vendor Flutter master exists" gap flagged in `docs/cefflo/sot/00_INDEX.md` §1 and `docs/cefflo/05_DECISIONS.md` D-23. This is a screen-map/scope baseline only — **not** blanket implementation authorization. Its own internal HOLD/reconciliation flags (Subscription/payment V-50–V-54, and V-41 Delivery Settings) must be preserved exactly as written below, not softened or silently resolved. The current LIVE Vendor client remains Vendor Web/Desktop (`docs/cefflo/06_VENDOR.md`, `docs/cefflo/sot/03_VENDOR_WEB_DESKTOP.md`); this file describes a FUTURE companion Flutter app per `docs/cefflo/sot/02_ARCHITECTURE.md`'s target multi-client architecture, gated the same way as Rider Flutter under `docs/cefflo/05_DECISIONS.md` D-13/D-23.
+**Status:** WORKING MASTER BASELINE — Founder Review Required; implementation lifecycle: **IMPLEMENTED / INTEGRATION IN PROGRESS / UI NOT YET LOCKED / DEV-STAGING** (D-40, 2026-09-19)
+**Repo-reconciliation note:** A substantial Vendor Flutter implementation now exists at `apps/vendor_mobile/` in the isolated Engineering baseline authorized by FG-ENG-02. This remains a screen-map/scope baseline rather than blanket scope authorization. Subscription/payment V-50–V-54 remain HOLD and are excluded from active routes/navigation; V-41 remains RECONCILIATION REQUIRED. Vendor Web/Desktop remains the current live operational client. Vendor Mobile is not production-ready and cannot be visually locked until FG-ENG-03 supplies a canonical Founder reference.
 
 ---
 
@@ -7,7 +7,7 @@
 
 **Document Type:** Product / UX Screen Inventory  
 **Platform:** Cefflo Vendor Flutter Mobile  
-**Status:** Working Master Baseline — Founder Review Required  
+**Status:** Working Master Baseline — Founder Review Required; DEV/STAGING implementation integration in progress, UI not yet locked
 **Date:** 2026-09-04  
 
 > This document is a screen-map and scope baseline. It is **not** blanket implementation authorization. Subscription/payment architecture remains **HOLD / Founder Decision Pending** until explicitly resolved.
@@ -37,7 +37,7 @@ The inventory is intended to prevent missing screens, duplicate responsibilities
 5. Secondary navigation remains grouped into **Business**, **Account**, and **Support**.
 6. Zones operational workspace uses the Founder-approved primary states: **Ready · Ongoing · Completed**.
 7. Recent Orders should preserve the approved compact Draft B treatment.
-8. Cefflo visual foundation: **Black / White / Graphite**, with **Signal Lime — locked #C7F000** (updated 2026-09-12, `docs/cefflo/05_DECISIONS.md` D-30) used deliberately as the operational signal. **Superseded 2026-09-11 (D-33):** current visual authority is `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — CEFFLO Yellow `#FEC819` primary accent, Navy `#12213E` dark anchor. This canonicalization does not itself authorize Flutter implementation to begin.
+8. Current visual authority is `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md`: CEFFLO Yellow `#FEC819`, Navy `#12213E`, and Inter for app UI under D-40. Historical Signal Lime/Manrope directions are superseded. Exact compact values remain pending FG-ENG-03 reference validation.
 9. Support both **Light and Dark** modes. Current experience direction: Draft B structural baseline; Dark retains that structure with the approved sectional treatment direction.
 10. Cefflo does **not** manage vendor-customer payments. Do not introduce customer balance, deposit, payment status, or ordinary invoice/receipt workflows.
 11. Subscription/payment in this document refers only to a Vendor paying **Cefflo for Cefflo service**, and its final architecture is not yet approved.

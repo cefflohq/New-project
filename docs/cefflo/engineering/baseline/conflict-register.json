@@ -4,7 +4,7 @@
   "conflicts": [
     {
       "id": "BASE-001",
-      "severity": "blocking",
+      "severity": "resolved",
       "type": "authority",
       "summary": "Experience branch lacks D-37/D-38 and contains a scaffold based on the superseded 33-screen Rider master",
       "evidence": ["2e02edc4d6e0eabdc15d4e9c028e9bce37a87ae1", "21f002c38c60d0fe5141b1c879e969407c3f4097"],
@@ -14,24 +14,24 @@
       "id": "BASE-002",
       "severity": "blocking",
       "type": "design_system",
-      "summary": "Vendor Mobile uses Inter while the canonical Experience System locks Manrope",
+      "summary": "Vendor Mobile used Inter while D-33 previously named Manrope",
       "evidence": ["5ac0594532fc46a439d0db123bb10c10f0835bf2", "docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md §4"],
-      "resolution": "Use locally bundled Manrope and preserve only justified multilingual fallbacks"
+      "resolution": "Founder D-40 makes Inter active app UI truth; keep bundled Inter and validated multilingual fallbacks"
     },
     {
       "id": "BASE-003",
-      "severity": "blocking",
+      "severity": "deferred_to_fg_eng_03",
       "type": "design_system",
       "summary": "Vendor Mobile theme values drift from locked compact tokens",
       "evidence": [
         "Experience System: 12px gutter, 13px card padding, 11px card gap, 20px section, 60px chrome, 14px card/input radius",
         "Experience branch theme: 20px gutter, 16px card padding, 12px card gap, 22px section, 64px chrome, 18px card/input radius"
       ],
-      "resolution": "Reconcile theme and dependent layout/tests before adopting Vendor Mobile"
+      "resolution": "D-40 removes the historical values as mandatory truth. Preserve the safest current implementation and validate exact values against a Founder-approved reference at FG-ENG-03"
     },
     {
       "id": "BASE-004",
-      "severity": "blocking",
+      "severity": "resolved",
       "type": "product_hold",
       "summary": "V-50–V-54 subscription/payment UI is implemented and navigable although canonical scope keeps it on HOLD",
       "evidence": ["ee114a962f33827cd10864579131940f5f34612e", "17e4121f41d57bc8f707f042f4748f038facd61b", "docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md §O"],
@@ -39,9 +39,9 @@
     },
     {
       "id": "BASE-005",
-      "severity": "high",
+      "severity": "resolved",
       "type": "truth_status",
-      "summary": "Canonical docs say Vendor Flutter is not implemented while the Experience branch contains a substantial implementation",
+      "summary": "Canonical docs previously said Vendor Flutter was not implemented while the Experience branch contained a substantial implementation",
       "evidence": ["apps/vendor_mobile/**", "docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md"],
       "resolution": "If selected, update implementation-status documentation from evidence without promoting unapproved HOLD scope"
     },
