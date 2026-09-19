@@ -1,0 +1,32 @@
+{
+  "gateId": "FG-ENG-02",
+  "status": "PENDING",
+  "decisionRequired": "Select or amend the proposed curated Engineering baseline before any integration action",
+  "scope": {
+    "currentRef": "claude/flow-3-vendor-web-desktop-completion",
+    "currentProductSnapshot": "2e02edc4d6e0eabdc15d4e9c028e9bce37a87ae1",
+    "currentBootstrapSnapshot": "734cc1c3990c81402df67b5d563df918f73da7cb",
+    "experienceRef": "claude/experience-system-implementation",
+    "experienceSnapshot": "e5d47cc7e310f91e71e9220bdda79eae08686ea3",
+    "mergeBase": "1b69084b9f955eba8c4be6af39fd3102af5b07c3"
+  },
+  "recommendedDecision": "APPROVE_CURATED_CLEAN_INTEGRATION",
+  "approvalMustConfirm": [
+    "Current D-37/D-39 authority and Engineering bootstrap files remain",
+    "Selected Experience Web and Vendor Mobile implementation is integrated",
+    "apps/rider_mobile is excluded from the active baseline",
+    "Vendor Mobile is reconciled back to canonical Manrope and locked compact tokens",
+    "V-50–V-54 remain HOLD and are absent from active routes/navigation",
+    "Superseded Vendor Auth prototype and session handoff are excluded",
+    "Original branches remain unchanged and recoverable"
+  ],
+  "notAuthorizedByApproval": [
+    "FG-ENG-03 canonical reference",
+    "FG-ENG-04 paid model spend or new credential provisioning",
+    "FG-ENG-05 scope exception",
+    "FG-ENG-06 security exception",
+    "FG-ENG-07 pilot activation",
+    "FG-ENG-08 operational acceptance",
+    "production actions"
+  ]
+}

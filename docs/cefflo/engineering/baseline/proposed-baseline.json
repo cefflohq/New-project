@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "status": "PROPOSED_REQUIRES_FG_ENG_02",
+  "sourceSnapshots": {
+    "currentProductAuthority": "2e02edc4d6e0eabdc15d4e9c028e9bce37a87ae1",
+    "currentBootstrapSnapshot": "734cc1c3990c81402df67b5d563df918f73da7cb",
+    "experienceImplementation": "e5d47cc7e310f91e71e9220bdda79eae08686ea3",
+    "mergeBase": "1b69084b9f955eba8c4be6af39fd3102af5b07c3"
+  },
+  "targetBranch": "claude/engineering-baseline-phase-01",
+  "base": "FG-ENG-02 stop commit on claude/flow-3-vendor-web-desktop-completion",
+  "strategy": "curated_clean_integration",
+  "strategyReason": "A blind merge would import known superseded/HOLD/conflicting implementation and require a patch stack. Build the approved tree once from selected Experience content plus canonical manual reconciliation.",
+  "keepFromCurrent": [
+    "All tracked shared-base product/backend/test history",
+    "D-37 and D-38 decision/SOT changes from 2e02edc4d6e0eabdc15d4e9c028e9bce37a87ae1",
+    "D-39 canonical masters and FG-ENG-01 record",
+    "Engineering Phase 01 documentation, contracts and deny-by-default configuration",
+    "FG-ENG-02 evidence packet"
+  ],
+  "keepFromExperience": [
+    "Invite and Marketing Prelaunch Experience System presentation changes",
+    "Vendor Web Experience System consolidation and C1–C4 repairs",
+    "Rider Web styling/dark-mode consolidation and marker repair",
+    "Current Yellow/Navy shared brand assets",
+    "Vendor Mobile application, backend adapter, auth, operations, audit routes, tests and Storefront implementation except the explicit exclusions/manual reconciliations below"
+  ],
+  "requiresManualIntegration": [
+    {
+      "area": "Vendor Mobile design tokens",
+      "requiredResult": "Manrope; 12px gutter; 13px card padding; 11px card gap; 20px section gap; 60px chrome; 14px card/input radius; canonical typography weights and workspace colours"
+    },
+    {
+      "area": "Vendor Mobile fonts",
+      "requiredResult": "Remove Inter as primary, bundle canonical Manrope locally, retain only validated multilingual fallback assets"
+    },
+    {
+      "area": "Vendor subscription V-50–V-54",
+      "requiredResult": "No active route, navigation or executable billing/payment flow; manifest remains HOLD pending a separate Founder decision"
+    },
+    {
+      "area": "Vendor implementation status",
+      "requiredResult": "Update current-state/SOT status using verified evidence while preserving Founder Review and HOLD labels"
+    },
+    {
+      "area": "Static Vendor rollback bodies",
+      "requiredResult": "Retain until dependency/rollback verification; register for later clean removal, not Phase 01 baseline deletion"
+    }
+  ],
+  "excludeFromActiveBaseline": [
+    {
+      "path": "apps/rider_mobile/**",
+      "reason": "Unfinished scaffold tied to superseded R-01–R-33 authority and pre-D-38 user-facing naming. Valid backend research remains recoverable from commit 21f002c."
+    },
+    {
+      "path": "previews/vendor-auth-prototype/**",
+      "reason": "Superseded standalone prototype with no tracked consumers; real Vendor Flutter auth exists."
+    },
+    {
+      "path": "apps/vendor_mobile/CLAUDE_UI_HANDOFF.md",
+      "reason": "Session handoff referencing external authority and old scope; replaced by canonical masters and task packs."
+    },
+    {
+      "path": "apps/vendor_mobile/assets/fonts/inter/**",
+      "reason": "Inter conflicts with locked Manrope typography."
+    },
+    {
+      "path": "all untracked worktree files",
+      "reason": "Not part of either audited Git tree."
+    }
+  ],
+  "implementationAfterApproval": [
+    "Create target branch in a new isolated worktree from the exact FG-ENG-02 stop commit",
+    "Import selected Experience web/shared changes as one audited commit",
+    "Import Vendor Mobile as one clean reconciled commit with excluded/HOLD/conflicting content already removed or corrected",
+    "Update implementation-status documentation as one evidence-backed documentation commit",
+    "Run static build, Vendor/Rider checks, Flutter analyze/tests/build, secret scan and diff review",
+    "Record the final resulting commit/tree only after validation"
+  ],
+  "expectedActiveSurfaces": [
+    "Vendor Web/Desktop",
+    "Rider Web/PWA",
+    "Customer Tracking",
+    "Invite",
+    "Marketing site/prelaunch",
+    "Vendor Flutter DEV/STAGING implementation"
+  ],
+  "explicitlyNotActivated": [
+    "Driver Flutter implementation",
+    "Vendor V11 pilot",
+    "Vendor subscription/payment V-50–V-54",
+    "Engineering n8n workflows",
+    "Production deployment"
+  ]
+}

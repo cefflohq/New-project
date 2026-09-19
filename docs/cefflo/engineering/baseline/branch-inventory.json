@@ -1,0 +1,1733 @@
+{
+  "schemaVersion": 1,
+  "evidenceDate": "2026-09-19",
+  "mode": "read_only_branch_reconciliation",
+  "refs": {
+    "current": "claude/flow-3-vendor-web-desktop-completion",
+    "experience": "claude/experience-system-implementation"
+  },
+  "tips": {
+    "current": "734cc1c3990c81402df67b5d563df918f73da7cb",
+    "experience": "e5d47cc7e310f91e71e9220bdda79eae08686ea3"
+  },
+  "mergeBase": "1b69084b9f955eba8c4be6af39fd3102af5b07c3",
+  "topology": {
+    "currentUniqueCommitCount": 3,
+    "experienceUniqueCommitCount": 53,
+    "currentShortStat": "32 files changed, 4758 insertions(+), 15 deletions(-)",
+    "experienceShortStat": "103 files changed, 29208 insertions(+), 264 deletions(-)"
+  },
+  "pathOverlap": [],
+  "branches": {
+    "current": {
+      "ref": "claude/flow-3-vendor-web-desktop-completion",
+      "tip": "734cc1c3990c81402df67b5d563df918f73da7cb",
+      "tree": "90442fe944b25ac3e4df1476dbf0dd551fb8355f",
+      "uniqueCommits": [
+        {
+          "sha": "2e02edc4d6e0eabdc15d4e9c028e9bce37a87ae1",
+          "parents": [
+            "1b69084b9f955eba8c4be6af39fd3102af5b07c3"
+          ],
+          "authoredAt": "2026-09-14T15:24:44+02:00",
+          "author": "Codex",
+          "subject": "docs(cefflo): Driver Flutter UI/UX master replaced; Driver/Rider naming locked (D-37, D-38)",
+          "files": [
+            "docs/cefflo/05_DECISIONS.md",
+            "docs/cefflo/07_RIDER.md",
+            "docs/cefflo/sot/00_INDEX.md",
+            "docs/cefflo/sot/01_PRODUCT_TRUTH.md",
+            "docs/cefflo/sot/02_ARCHITECTURE.md",
+            "docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md",
+            "docs/cefflo/sot/13_DRIVER_FLUTTER_42_SCREEN_MASTER.md"
+          ]
+        },
+        {
+          "sha": "5c01ab36b395ad28057193621eb14f4753ba6643",
+          "parents": [
+            "2e02edc4d6e0eabdc15d4e9c028e9bce37a87ae1"
+          ],
+          "authoredAt": "2026-09-19T15:39:16+02:00",
+          "author": "Codex",
+          "subject": "docs(engineering): track approved bootstrap authorities",
+          "files": [
+            "docs/cefflo/00_AGENTS.md",
+            "docs/cefflo/05_DECISIONS.md",
+            "docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md",
+            "docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md",
+            "docs/cefflo/sot/00_INDEX.md"
+          ]
+        },
+        {
+          "sha": "734cc1c3990c81402df67b5d563df918f73da7cb",
+          "parents": [
+            "5c01ab36b395ad28057193621eb14f4753ba6643"
+          ],
+          "authoredAt": "2026-09-19T15:43:49+02:00",
+          "author": "Codex",
+          "subject": "feat(engineering): define phase 01 bootstrap contracts",
+          "files": [
+            "automation/n8n/engineering/.env.example",
+            "automation/n8n/engineering/README.md",
+            "automation/n8n/engineering/config/command-policy.json",
+            "automation/n8n/engineering/config/context-sources.json",
+            "automation/n8n/engineering/config/cost-policy.json",
+            "automation/n8n/engineering/config/decision-index.json",
+            "automation/n8n/engineering/config/egress-policy.json",
+            "automation/n8n/engineering/config/model-routes.json",
+            "automation/n8n/engineering/config/risk-policy.json",
+            "automation/n8n/engineering/config/roles.json",
+            "automation/n8n/engineering/contracts/e4-verdict.schema.json",
+            "automation/n8n/engineering/contracts/evidence-manifest.schema.json",
+            "automation/n8n/engineering/contracts/gate-decision.schema.json",
+            "automation/n8n/engineering/contracts/role-request.schema.json",
+            "automation/n8n/engineering/contracts/role-result.schema.json",
+            "automation/n8n/engineering/contracts/state-machine.json",
+            "automation/n8n/engineering/contracts/task-pack.schema.json",
+            "automation/n8n/engineering/contracts/task-request.schema.json",
+            "automation/n8n/engineering/contracts/visual-comparison.schema.json",
+            "docs/cefflo/engineering/ENGINEERING_RUNTIME.md",
+            "docs/cefflo/engineering/PHASE_01_FINAL_PLAN.md",
+            "docs/cefflo/engineering/SECURITY_BOUNDARY.md"
+          ]
+        }
+      ],
+      "changedFiles": [
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/.env.example"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/README.md"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/config/command-policy.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/config/context-sources.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/config/cost-policy.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/config/decision-index.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/config/egress-policy.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/config/model-routes.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/config/risk-policy.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/config/roles.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/contracts/e4-verdict.schema.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/contracts/evidence-manifest.schema.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/contracts/gate-decision.schema.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/contracts/role-request.schema.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/contracts/role-result.schema.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/contracts/state-machine.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/contracts/task-pack.schema.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/contracts/task-request.schema.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "automation/n8n/engineering/contracts/visual-comparison.schema.json"
+          ]
+        },
+        {
+          "status": "M",
+          "paths": [
+            "docs/cefflo/00_AGENTS.md"
+          ]
+        },
+        {
+          "status": "M",
+          "paths": [
+            "docs/cefflo/05_DECISIONS.md"
+          ]
+        },
+        {
+          "status": "M",
+          "paths": [
+            "docs/cefflo/07_RIDER.md"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "docs/cefflo/engineering/ENGINEERING_RUNTIME.md"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "docs/cefflo/engineering/PHASE_01_FINAL_PLAN.md"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "docs/cefflo/engineering/SECURITY_BOUNDARY.md"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md"
+          ]
+        },
+        {
+          "status": "M",
+          "paths": [
+            "docs/cefflo/sot/00_INDEX.md"
+          ]
+        },
+        {
+          "status": "M",
+          "paths": [
+            "docs/cefflo/sot/01_PRODUCT_TRUTH.md"
+          ]
+        },
+        {
+          "status": "M",
+          "paths": [
+            "docs/cefflo/sot/02_ARCHITECTURE.md"
+          ]
+        },
+        {
+          "status": "M",
+          "paths": [
+            "docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "docs/cefflo/sot/13_DRIVER_FLUTTER_42_SCREEN_MASTER.md"
+          ]
+        }
+      ]
+    },
+    "experience": {
+      "ref": "claude/experience-system-implementation",
+      "tip": "e5d47cc7e310f91e71e9220bdda79eae08686ea3",
+      "tree": "775ea6974588084f74aa07ca76896e025eb004c8",
+      "uniqueCommits": [
+        {
+          "sha": "db474a2e371ff4f389a3381b7a0c6b01cd52b682",
+          "parents": [
+            "1b69084b9f955eba8c4be6af39fd3102af5b07c3"
+          ],
+          "authoredAt": "2026-09-11T12:50:30+02:00",
+          "author": "Codex",
+          "subject": "feat(experience-system): migrate Invite + Marketing Prelaunch to v1.1 tokens",
+          "files": [
+            "invite/index.html",
+            "marketing/prelaunch/index.html",
+            "shared/brand/cefflo-logo-official-wordmark-white.png"
+          ]
+        },
+        {
+          "sha": "ce55ce56ed4ad99acdd5b01a01718aea773f1c9b",
+          "parents": [
+            "db474a2e371ff4f389a3381b7a0c6b01cd52b682"
+          ],
+          "authoredAt": "2026-09-11T13:00:40+02:00",
+          "author": "Codex",
+          "subject": "refactor(vendor-web): consolidate 5 :root blocks into one canonical foundation",
+          "files": [
+            "vendor/index.html"
+          ]
+        },
+        {
+          "sha": "147c4166cdf1a5545ea1e672e78b8615a70ade1a",
+          "parents": [
+            "ce55ce56ed4ad99acdd5b01a01718aea773f1c9b"
+          ],
+          "authoredAt": "2026-09-11T13:06:09+02:00",
+          "author": "Codex",
+          "subject": "refactor(rider-web): consolidate 6 :root blocks, reconcile Dark Mode",
+          "files": [
+            "rider/index.html"
+          ]
+        },
+        {
+          "sha": "5210f85c8d7a6eeae04dd09af132c7e166bd0131",
+          "parents": [
+            "147c4166cdf1a5545ea1e672e78b8615a70ade1a"
+          ],
+          "authoredAt": "2026-09-11T13:06:53+02:00",
+          "author": "Codex",
+          "subject": "chore(vendor-flutter): import app as-is from claude/vendor-mobile-backend-integration",
+          "files": [
+            "apps/vendor_mobile/.gitignore",
+            "apps/vendor_mobile/.metadata",
+            "apps/vendor_mobile/README.md",
+            "apps/vendor_mobile/analysis_options.yaml",
+            "apps/vendor_mobile/lib/core/app_state.dart",
+            "apps/vendor_mobile/lib/core/env.dart",
+            "apps/vendor_mobile/lib/core/routes.dart",
+            "apps/vendor_mobile/lib/core/theme.dart",
+            "apps/vendor_mobile/lib/data/models.dart",
+            "apps/vendor_mobile/lib/data/vendor_repository.dart",
+            "apps/vendor_mobile/lib/main.dart",
+            "apps/vendor_mobile/lib/ui/async_view.dart",
+            "apps/vendor_mobile/lib/ui/router.dart",
+            "apps/vendor_mobile/lib/ui/screens/auth.dart",
+            "apps/vendor_mobile/lib/ui/screens/directory.dart",
+            "apps/vendor_mobile/lib/ui/screens/operations.dart",
+            "apps/vendor_mobile/lib/ui/screens/planning.dart",
+            "apps/vendor_mobile/lib/ui/shell.dart",
+            "apps/vendor_mobile/lib/ui/widgets.dart",
+            "apps/vendor_mobile/pubspec.lock",
+            "apps/vendor_mobile/pubspec.yaml",
+            "apps/vendor_mobile/test/routing_test.dart",
+            "apps/vendor_mobile/test/staging_contract_test.dart",
+            "apps/vendor_mobile/web/favicon.png",
+            "apps/vendor_mobile/web/icons/Icon-192.png",
+            "apps/vendor_mobile/web/icons/Icon-512.png",
+            "apps/vendor_mobile/web/icons/Icon-maskable-192.png",
+            "apps/vendor_mobile/web/icons/Icon-maskable-512.png",
+            "apps/vendor_mobile/web/index.html",
+            "apps/vendor_mobile/web/manifest.json"
+          ]
+        },
+        {
+          "sha": "5d53101aa0566544d8e4a61af62992b666ce68b2",
+          "parents": [
+            "5210f85c8d7a6eeae04dd09af132c7e166bd0131"
+          ],
+          "authoredAt": "2026-09-11T13:19:34+02:00",
+          "author": "Codex",
+          "subject": "refactor(vendor-flutter): reconcile theme.dart to Experience System v1.1",
+          "files": [
+            "apps/vendor_mobile/lib/core/theme.dart",
+            "apps/vendor_mobile/lib/ui/shell.dart",
+            "apps/vendor_mobile/lib/ui/widgets.dart",
+            "apps/vendor_mobile/pubspec.lock",
+            "apps/vendor_mobile/pubspec.yaml"
+          ]
+        },
+        {
+          "sha": "144881f4ab77b37507d2178eb65d0f541fc99275",
+          "parents": [
+            "5d53101aa0566544d8e4a61af62992b666ce68b2"
+          ],
+          "authoredAt": "2026-09-11T13:48:52+02:00",
+          "author": "Codex",
+          "subject": "feat(experience-system): use the new Yellow/Navy master logo (D-35)",
+          "files": [
+            "invite/index.html",
+            "marketing/prelaunch/index.html",
+            "shared/brand/cefflo-logo-icon-navy.png",
+            "shared/brand/cefflo-logo-official-wordmark-white.png",
+            "shared/brand/cefflo-logo-wordmark.png"
+          ]
+        },
+        {
+          "sha": "d27b3a58ec218675f07679de836d1102d17adb1a",
+          "parents": [
+            "144881f4ab77b37507d2178eb65d0f541fc99275"
+          ],
+          "authoredAt": "2026-09-11T13:59:55+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-web): Codex C1 -- Today/Dashboard visual repair",
+          "files": [
+            "vendor/index.html"
+          ]
+        },
+        {
+          "sha": "5f93e9a45d0f834a72e1b2fb5c23557c40828354",
+          "parents": [
+            "d27b3a58ec218675f07679de836d1102d17adb1a"
+          ],
+          "authoredAt": "2026-09-11T14:03:24+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-web): Codex C2 -- Orders visual repair",
+          "files": [
+            "vendor/index.html"
+          ]
+        },
+        {
+          "sha": "6505159eb1fcd9619f2626470fa2662ff8b403ec",
+          "parents": [
+            "5f93e9a45d0f834a72e1b2fb5c23557c40828354"
+          ],
+          "authoredAt": "2026-09-11T14:05:09+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-web): Codex C3 -- Zones/Dispatch/Active Runs visual repair",
+          "files": [
+            "vendor/index.html"
+          ]
+        },
+        {
+          "sha": "68d68c5bf292d4c9b6d5420a64af1c2e8efa8885",
+          "parents": [
+            "6505159eb1fcd9619f2626470fa2662ff8b403ec"
+          ],
+          "authoredAt": "2026-09-11T14:08:58+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-web): Codex C4 (partial) -- Rider Profile action row had zero CSS",
+          "files": [
+            "vendor/index.html"
+          ]
+        },
+        {
+          "sha": "4f23bf82246b5344e172b537a9154bf5529fffc4",
+          "parents": [
+            "68d68c5bf292d4c9b6d5420a64af1c2e8efa8885"
+          ],
+          "authoredAt": "2026-09-11T14:17:50+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-web): legacy Purple-era visual baseline cleanup",
+          "files": [
+            "vendor/index.html"
+          ]
+        },
+        {
+          "sha": "51a6e4c2d1e2a91681348ff3c0b55e9ce5d4677f",
+          "parents": [
+            "4f23bf82246b5344e172b537a9154bf5529fffc4"
+          ],
+          "authoredAt": "2026-09-11T14:23:58+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-web): Codex C4 (complete) -- Riders/Team/Business/Account",
+          "files": [
+            "vendor/index.html"
+          ]
+        },
+        {
+          "sha": "a836afed07b065f16762d0aa35ba7381d7d51bee",
+          "parents": [
+            "51a6e4c2d1e2a91681348ff3c0b55e9ce5d4677f"
+          ],
+          "authoredAt": "2026-09-11T14:26:26+02:00",
+          "author": "Codex",
+          "subject": "fix(rider-web): Codex C5 -- real Leaflet map markers had zero CSS",
+          "files": [
+            "rider/index.html"
+          ]
+        },
+        {
+          "sha": "21f002c38c60d0fe5141b1c879e969407c3f4097",
+          "parents": [
+            "a836afed07b065f16762d0aa35ba7381d7d51bee"
+          ],
+          "authoredAt": "2026-09-11T14:43:35+02:00",
+          "author": "Codex",
+          "subject": "chore(rider-flutter): scaffold app + backend/routing/data foundation only",
+          "files": [
+            "apps/rider_mobile/.gitignore",
+            "apps/rider_mobile/.metadata",
+            "apps/rider_mobile/README.md",
+            "apps/rider_mobile/analysis_options.yaml",
+            "apps/rider_mobile/lib/core/app_state.dart",
+            "apps/rider_mobile/lib/core/env.dart",
+            "apps/rider_mobile/lib/core/routes.dart",
+            "apps/rider_mobile/lib/core/theme.dart",
+            "apps/rider_mobile/lib/data/models.dart",
+            "apps/rider_mobile/lib/data/rider_repository.dart",
+            "apps/rider_mobile/lib/ui/widgets.dart",
+            "apps/rider_mobile/pubspec.lock",
+            "apps/rider_mobile/pubspec.yaml",
+            "apps/rider_mobile/web/favicon.png",
+            "apps/rider_mobile/web/icons/Icon-192.png",
+            "apps/rider_mobile/web/icons/Icon-512.png",
+            "apps/rider_mobile/web/icons/Icon-maskable-192.png",
+            "apps/rider_mobile/web/icons/Icon-maskable-512.png",
+            "apps/rider_mobile/web/index.html",
+            "apps/rider_mobile/web/manifest.json"
+          ]
+        },
+        {
+          "sha": "5d52fb281a1d43af01f06259d80057f1ecea948d",
+          "parents": [
+            "21f002c38c60d0fe5141b1c879e969407c3f4097"
+          ],
+          "authoredAt": "2026-09-11T19:01:08+02:00",
+          "author": "Codex",
+          "subject": "feat(vendor-mobile): implement the locked Vendor Flutter Auth batch",
+          "files": [
+            "apps/vendor_mobile/assets/brand/cefflo-logo-primary.png",
+            "apps/vendor_mobile/lib/data/vendor_repository.dart",
+            "apps/vendor_mobile/lib/main.dart",
+            "apps/vendor_mobile/lib/ui/screens/auth.dart",
+            "apps/vendor_mobile/pubspec.yaml",
+            "apps/vendor_mobile/test/auth_ui_test.dart"
+          ]
+        },
+        {
+          "sha": "97945118ef1582aea1590397ecb4872dd01c6b7e",
+          "parents": [
+            "5d52fb281a1d43af01f06259d80057f1ecea948d"
+          ],
+          "authoredAt": "2026-09-12T06:02:36+02:00",
+          "author": "Codex",
+          "subject": "feat(previews): add the Vendor Auth interactive UI prototype",
+          "files": [
+            "previews/vendor-auth-prototype/index.html"
+          ]
+        },
+        {
+          "sha": "bc1d1be4bdea2e21e2b0fa8313f95933a0b3c25a",
+          "parents": [
+            "97945118ef1582aea1590397ecb4872dd01c6b7e"
+          ],
+          "authoredAt": "2026-09-13T10:39:13+02:00",
+          "author": "Codex",
+          "subject": "feat(vendor-mobile): build full UI prototype handoff",
+          "files": [
+            "apps/vendor_mobile/CLAUDE_UI_HANDOFF.md",
+            "apps/vendor_mobile/lib/core/app_state.dart",
+            "apps/vendor_mobile/lib/core/routes.dart",
+            "apps/vendor_mobile/lib/core/theme.dart",
+            "apps/vendor_mobile/lib/data/vendor_repository.dart",
+            "apps/vendor_mobile/lib/main.dart",
+            "apps/vendor_mobile/lib/ui/router.dart",
+            "apps/vendor_mobile/lib/ui/screens/auth.dart",
+            "apps/vendor_mobile/lib/ui/screens/directory.dart",
+            "apps/vendor_mobile/lib/ui/screens/operations.dart",
+            "apps/vendor_mobile/lib/ui/screens/planning.dart",
+            "apps/vendor_mobile/lib/ui/screens/prototype.dart",
+            "apps/vendor_mobile/lib/ui/shell.dart",
+            "apps/vendor_mobile/lib/ui/widgets.dart"
+          ]
+        },
+        {
+          "sha": "2370bcfa0b59da72dcbf14374ce3b86f6f532e54",
+          "parents": [
+            "bc1d1be4bdea2e21e2b0fa8313f95933a0b3c25a"
+          ],
+          "authoredAt": "2026-09-13T12:22:51+02:00",
+          "author": "Codex",
+          "subject": "polish(vendor-mobile): screen-by-screen 1:1 pass against Founder V1-V60 references",
+          "files": [
+            "apps/vendor_mobile/lib/core/app_state.dart",
+            "apps/vendor_mobile/lib/core/routes.dart",
+            "apps/vendor_mobile/lib/main.dart",
+            "apps/vendor_mobile/lib/ui/screens/directory.dart",
+            "apps/vendor_mobile/lib/ui/screens/operations.dart",
+            "apps/vendor_mobile/lib/ui/screens/prototype.dart",
+            "apps/vendor_mobile/lib/ui/shell.dart",
+            "apps/vendor_mobile/lib/ui/widgets.dart"
+          ]
+        },
+        {
+          "sha": "60a203b4c923d137dc80c3ca19aefc31b1bef09e",
+          "parents": [
+            "2370bcfa0b59da72dcbf14374ce3b86f6f532e54"
+          ],
+          "authoredAt": "2026-09-13T16:12:24+02:00",
+          "author": "Codex",
+          "subject": "feat(vendor-mobile): build the missing onboarding wizard and replace generic placeholder screens",
+          "files": [
+            "apps/vendor_mobile/lib/core/routes.dart",
+            "apps/vendor_mobile/lib/data/vendor_repository.dart",
+            "apps/vendor_mobile/lib/main.dart",
+            "apps/vendor_mobile/lib/ui/router.dart",
+            "apps/vendor_mobile/lib/ui/screens/auth.dart",
+            "apps/vendor_mobile/lib/ui/screens/directory.dart",
+            "apps/vendor_mobile/lib/ui/screens/operations.dart",
+            "apps/vendor_mobile/lib/ui/screens/planning.dart",
+            "apps/vendor_mobile/lib/ui/screens/prototype.dart",
+            "apps/vendor_mobile/lib/ui/shell.dart"
+          ]
+        },
+        {
+          "sha": "606615b62bc9b43944c81fe3885955ba3386035d",
+          "parents": [
+            "60a203b4c923d137dc80c3ca19aefc31b1bef09e"
+          ],
+          "authoredAt": "2026-09-13T16:46:58+02:00",
+          "author": "Codex",
+          "subject": "feat(vendor-mobile): add preview-only audit deep links",
+          "files": [
+            "apps/vendor_mobile/PREVIEW_AUDIT_MANIFEST.md",
+            "apps/vendor_mobile/lib/main.dart",
+            "apps/vendor_mobile/lib/ui/screens/auth.dart"
+          ]
+        },
+        {
+          "sha": "e0a21d16c7fa38c54e46fbcd9bc6c9bf75586190",
+          "parents": [
+            "606615b62bc9b43944c81fe3885955ba3386035d"
+          ],
+          "authoredAt": "2026-09-13T17:10:45+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): restore canonical Today/Orders/Zones/Riders/Settings navigation",
+          "files": [
+            "apps/vendor_mobile/lib/core/app_state.dart",
+            "apps/vendor_mobile/lib/core/routes.dart",
+            "apps/vendor_mobile/lib/ui/screens/directory.dart",
+            "apps/vendor_mobile/lib/ui/screens/operations.dart",
+            "apps/vendor_mobile/lib/ui/shell.dart"
+          ]
+        },
+        {
+          "sha": "f410b2102de71cf42adbc5a80108cc4eaca3de31",
+          "parents": [
+            "e0a21d16c7fa38c54e46fbcd9bc6c9bf75586190"
+          ],
+          "authoredAt": "2026-09-13T17:32:43+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): resolve audit routes from browser path",
+          "files": [
+            "apps/vendor_mobile/lib/main.dart"
+          ]
+        },
+        {
+          "sha": "9e90f07af85978659181074ec89d0b10fb403505",
+          "parents": [
+            "f410b2102de71cf42adbc5a80108cc4eaca3de31"
+          ],
+          "authoredAt": "2026-09-13T17:43:28+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): read audit path from browser location",
+          "files": [
+            "apps/vendor_mobile/lib/core/preview_path.dart",
+            "apps/vendor_mobile/lib/core/preview_path_stub.dart",
+            "apps/vendor_mobile/lib/core/preview_path_web.dart",
+            "apps/vendor_mobile/lib/main.dart"
+          ]
+        },
+        {
+          "sha": "f6510cc68fabc118578faebe4dabb2ab9f1e0ca6",
+          "parents": [
+            "9e90f07af85978659181074ec89d0b10fb403505"
+          ],
+          "authoredAt": "2026-09-13T18:33:05+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): normalize responsive density across phone sizes",
+          "files": [
+            "apps/vendor_mobile/lib/ui/shell.dart",
+            "apps/vendor_mobile/web/index.html"
+          ]
+        },
+        {
+          "sha": "d97be6ffaaed8c116d427f295496039166669efd",
+          "parents": [
+            "f6510cc68fabc118578faebe4dabb2ab9f1e0ca6"
+          ],
+          "authoredAt": "2026-09-13T18:52:47+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): extend Splash minimum brand moment to 3s",
+          "files": [
+            "apps/vendor_mobile/lib/ui/screens/auth.dart",
+            "apps/vendor_mobile/test/auth_ui_test.dart"
+          ]
+        },
+        {
+          "sha": "5ac0594532fc46a439d0db123bb10c10f0835bf2",
+          "parents": [
+            "d97be6ffaaed8c116d427f295496039166669efd"
+          ],
+          "authoredAt": "2026-09-13T19:39:34+02:00",
+          "author": "Codex",
+          "subject": "feat(vendor-mobile): migrate global typography from Manrope to Inter",
+          "files": [
+            "apps/vendor_mobile/assets/fonts/inter/Inter-Bold.otf",
+            "apps/vendor_mobile/assets/fonts/inter/Inter-ExtraBold.otf",
+            "apps/vendor_mobile/assets/fonts/inter/Inter-Medium.otf",
+            "apps/vendor_mobile/assets/fonts/inter/Inter-Regular.otf",
+            "apps/vendor_mobile/assets/fonts/inter/Inter-SemiBold.otf",
+            "apps/vendor_mobile/assets/fonts/inter/LICENSE",
+            "apps/vendor_mobile/assets/fonts/noto_sans_sc/LICENSE",
+            "apps/vendor_mobile/assets/fonts/noto_sans_sc/NotoSansSC-Bold.otf",
+            "apps/vendor_mobile/assets/fonts/noto_sans_sc/NotoSansSC-Medium.otf",
+            "apps/vendor_mobile/assets/fonts/noto_sans_sc/NotoSansSC-Regular.otf",
+            "apps/vendor_mobile/assets/fonts/noto_sans_tamil/LICENSE",
+            "apps/vendor_mobile/assets/fonts/noto_sans_tamil/NotoSansTamil-Bold.ttf",
+            "apps/vendor_mobile/assets/fonts/noto_sans_tamil/NotoSansTamil-Regular.ttf",
+            "apps/vendor_mobile/lib/core/theme.dart",
+            "apps/vendor_mobile/lib/ui/screens/auth.dart",
+            "apps/vendor_mobile/lib/ui/screens/prototype.dart",
+            "apps/vendor_mobile/pubspec.lock",
+            "apps/vendor_mobile/pubspec.yaml",
+            "apps/vendor_mobile/test/theme_test.dart"
+          ]
+        },
+        {
+          "sha": "36f1987b49782c7c8a41826c18f66e36128f571e",
+          "parents": [
+            "5ac0594532fc46a439d0db123bb10c10f0835bf2"
+          ],
+          "authoredAt": "2026-09-14T04:24:33+02:00",
+          "author": "Codex",
+          "subject": "feat(vendor-mobile): polish Review Delivery Plan, Team, Rider and Zone screens to reference",
+          "files": [
+            "apps/vendor_mobile/lib/ui/router.dart",
+            "apps/vendor_mobile/lib/ui/screens/directory.dart",
+            "apps/vendor_mobile/lib/ui/screens/planning.dart",
+            "apps/vendor_mobile/lib/ui/screens/prototype.dart",
+            "apps/vendor_mobile/lib/ui/widgets.dart"
+          ]
+        },
+        {
+          "sha": "ebdb32f8a3c668661d47a006d80d0f60ced68b7f",
+          "parents": [
+            "36f1987b49782c7c8a41826c18f66e36128f571e"
+          ],
+          "authoredAt": "2026-09-14T04:53:55+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): pin page FABs, fix orphaned heading font, simplify order tracker",
+          "files": [
+            "apps/vendor_mobile/lib/ui/screens/directory.dart",
+            "apps/vendor_mobile/lib/ui/screens/operations.dart",
+            "apps/vendor_mobile/lib/ui/screens/prototype.dart",
+            "apps/vendor_mobile/lib/ui/shell.dart",
+            "apps/vendor_mobile/lib/ui/widgets.dart"
+          ]
+        },
+        {
+          "sha": "17e4121f41d57bc8f707f042f4748f038facd61b",
+          "parents": [
+            "ebdb32f8a3c668661d47a006d80d0f60ced68b7f"
+          ],
+          "authoredAt": "2026-09-14T05:30:35+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): merge Subscription and Subscription details into one page",
+          "files": [
+            "apps/vendor_mobile/lib/ui/screens/prototype.dart"
+          ]
+        },
+        {
+          "sha": "3ca428eafaf3d3541e4f83fee77d5660e9e12093",
+          "parents": [
+            "17e4121f41d57bc8f707f042f4748f038facd61b"
+          ],
+          "authoredAt": "2026-09-14T05:40:01+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): rebuild Settings to match Founder reference layout",
+          "files": [
+            "apps/vendor_mobile/lib/ui/screens/directory.dart"
+          ]
+        },
+        {
+          "sha": "4029488350b90b86baf833bcdf536730f36355bc",
+          "parents": [
+            "3ca428eafaf3d3541e4f83fee77d5660e9e12093"
+          ],
+          "authoredAt": "2026-09-14T06:02:04+02:00",
+          "author": "Codex",
+          "subject": "polish(vendor-mobile): match Today reference layout only",
+          "files": [
+            "apps/vendor_mobile/lib/ui/screens/operations.dart",
+            "apps/vendor_mobile/lib/ui/screens/today_content.dart",
+            "apps/vendor_mobile/lib/ui/shell.dart"
+          ]
+        },
+        {
+          "sha": "3dccab6ef78a0b7ff45ce62f350041d71208b913",
+          "parents": [
+            "4029488350b90b86baf833bcdf536730f36355bc"
+          ],
+          "authoredAt": "2026-09-14T06:09:25+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): fill every active navigation icon yellow",
+          "files": [
+            "apps/vendor_mobile/lib/ui/shell.dart"
+          ]
+        },
+        {
+          "sha": "ee114a962f33827cd10864579131940f5f34612e",
+          "parents": [
+            "3dccab6ef78a0b7ff45ce62f350041d71208b913"
+          ],
+          "authoredAt": "2026-09-14T07:54:50+02:00",
+          "author": "Codex",
+          "subject": "feat(vendor-mobile): rebuild Subscription/Choose Plan/Checkout to reference",
+          "files": [
+            "apps/vendor_mobile/lib/ui/screens/prototype.dart",
+            "apps/vendor_mobile/lib/ui/widgets.dart"
+          ]
+        },
+        {
+          "sha": "a695b1fe745a655c455a952e4675ec6c891a54b6",
+          "parents": [
+            "ee114a962f33827cd10864579131940f5f34612e"
+          ],
+          "authoredAt": "2026-09-14T08:21:01+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): normalize logical canvas density for high-DPR Android",
+          "files": [
+            "apps/vendor_mobile/lib/core/responsive.dart",
+            "apps/vendor_mobile/lib/main.dart",
+            "apps/vendor_mobile/test/responsive_test.dart"
+          ]
+        },
+        {
+          "sha": "ace34a81fde620ee1ac5cacb172e871b6a318129",
+          "parents": [
+            "a695b1fe745a655c455a952e4675ec6c891a54b6"
+          ],
+          "authoredAt": "2026-09-14T08:38:38+02:00",
+          "author": "Codex",
+          "subject": "polish(vendor-mobile): align the six reviewed operations screens to reference",
+          "files": [
+            "apps/vendor_mobile/lib/ui/screens/directory.dart",
+            "apps/vendor_mobile/lib/ui/screens/planning.dart",
+            "apps/vendor_mobile/lib/ui/screens/prototype.dart",
+            "apps/vendor_mobile/lib/ui/screens/review_parts.dart",
+            "apps/vendor_mobile/lib/ui/shell.dart"
+          ]
+        },
+        {
+          "sha": "5647280dcee14279f7697c64ee9a6d509ecf4433",
+          "parents": [
+            "ace34a81fde620ee1ac5cacb172e871b6a318129"
+          ],
+          "authoredAt": "2026-09-14T08:53:07+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): restore tap input below the density-normalized canvas",
+          "files": [
+            "apps/vendor_mobile/lib/core/responsive.dart",
+            "apps/vendor_mobile/test/responsive_test.dart"
+          ]
+        },
+        {
+          "sha": "0d4a9d63565e5d706c7364ffda5db21202b5fb66",
+          "parents": [
+            "5647280dcee14279f7697c64ee9a6d509ecf4433"
+          ],
+          "authoredAt": "2026-09-14T13:37:26+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): rebuild Today on the shared design tokens, not ad hoc sizes",
+          "files": [
+            "apps/vendor_mobile/lib/ui/screens/today_content.dart",
+            "apps/vendor_mobile/lib/ui/widgets.dart"
+          ]
+        },
+        {
+          "sha": "c3373f5212a8435a4ab7cbad2d1adc52a45cb4ef",
+          "parents": [
+            "0d4a9d63565e5d706c7364ffda5db21202b5fb66"
+          ],
+          "authoredAt": "2026-09-14T20:14:47+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): match browser/PWA chrome colour to the app's own white theme",
+          "files": [
+            "apps/vendor_mobile/web/index.html",
+            "apps/vendor_mobile/web/manifest.json"
+          ]
+        },
+        {
+          "sha": "42d11302e4bf5ed5a956fde0790b68e8db5a0437",
+          "parents": [
+            "c3373f5212a8435a4ab7cbad2d1adc52a45cb4ef"
+          ],
+          "authoredAt": "2026-09-14T20:25:51+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): bind browser chrome colour to CefColors at runtime, not a static hex",
+          "files": [
+            "apps/vendor_mobile/lib/core/chrome_color.dart",
+            "apps/vendor_mobile/lib/core/chrome_color_stub.dart",
+            "apps/vendor_mobile/lib/core/chrome_color_web.dart",
+            "apps/vendor_mobile/lib/main.dart"
+          ]
+        },
+        {
+          "sha": "9320b102290d0a844de2c5f3a1da9d774798f985",
+          "parents": [
+            "42d11302e4bf5ed5a956fde0790b68e8db5a0437"
+          ],
+          "authoredAt": "2026-09-14T20:48:21+02:00",
+          "author": "Codex",
+          "subject": "polish(vendor-mobile): async feedback popup as a dimmed/blurred centred modal",
+          "files": [
+            "apps/vendor_mobile/lib/ui/widgets.dart"
+          ]
+        },
+        {
+          "sha": "a6470edc003549fd5f7564424647a369af3ae62f",
+          "parents": [
+            "9320b102290d0a844de2c5f3a1da9d774798f985"
+          ],
+          "authoredAt": "2026-09-14T21:16:20+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): align Order Detail/Form primary buttons to the CEFFLO Yellow standard",
+          "files": [
+            "apps/vendor_mobile/lib/ui/screens/operations.dart"
+          ]
+        },
+        {
+          "sha": "e22325c3ed950b43379a482af7912a50e5fd1223",
+          "parents": [
+            "a6470edc003549fd5f7564424647a369af3ae62f"
+          ],
+          "authoredAt": "2026-09-17T04:14:13+02:00",
+          "author": "Codex",
+          "subject": "feat(vendor-mobile): storefront template selector, previews and brand colour customization",
+          "files": [
+            "apps/vendor_mobile/lib/core/app_state.dart",
+            "apps/vendor_mobile/lib/core/routes.dart",
+            "apps/vendor_mobile/lib/data/storefront_catalog.dart",
+            "apps/vendor_mobile/lib/data/storefront_config.dart",
+            "apps/vendor_mobile/lib/ui/router.dart",
+            "apps/vendor_mobile/lib/ui/screens/prototype.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/storefront_common.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/storefront_customize.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/storefront_screens.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/storefront_theme.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_browse_shop.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_catalogue.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_quick_order.dart",
+            "apps/vendor_mobile/lib/ui/shell.dart"
+          ]
+        },
+        {
+          "sha": "664baa05b484f788f7970dfc9cb239878a5876d8",
+          "parents": [
+            "e22325c3ed950b43379a482af7912a50e5fd1223"
+          ],
+          "authoredAt": "2026-09-17T06:15:00+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): redirect to Sign In on Sign Out; wire up dead card controls",
+          "files": [
+            "apps/vendor_mobile/lib/main.dart",
+            "apps/vendor_mobile/lib/ui/screens/operations.dart",
+            "apps/vendor_mobile/lib/ui/widgets.dart"
+          ]
+        },
+        {
+          "sha": "2ad65d58b7eb1f2222671f161845ffa9b79c028f",
+          "parents": [
+            "664baa05b484f788f7970dfc9cb239878a5876d8"
+          ],
+          "authoredAt": "2026-09-17T08:47:56+02:00",
+          "author": "Codex",
+          "subject": "feat(vendor-mobile): reusable edge-to-edge system UI treatment",
+          "files": [
+            "apps/vendor_mobile/lib/main.dart",
+            "apps/vendor_mobile/lib/ui/screens/auth.dart",
+            "apps/vendor_mobile/lib/ui/shell.dart",
+            "apps/vendor_mobile/lib/ui/system_bars.dart"
+          ]
+        },
+        {
+          "sha": "6b41464fa88f821353690f225c6aa782833a7c8d",
+          "parents": [
+            "2ad65d58b7eb1f2222671f161845ffa9b79c028f"
+          ],
+          "authoredAt": "2026-09-17T09:40:43+02:00",
+          "author": "Codex",
+          "subject": "feat(vendor-mobile): rebuild Storefront as a scalable template library (X-02/V-31/V-33)",
+          "files": [
+            "apps/vendor_mobile/lib/core/app_state.dart",
+            "apps/vendor_mobile/lib/data/storefront_config.dart",
+            "apps/vendor_mobile/lib/data/storefront_templates.dart",
+            "apps/vendor_mobile/lib/ui/router.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/storefront_customize.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/storefront_screens.dart",
+            "apps/vendor_mobile/lib/ui/shell.dart"
+          ]
+        },
+        {
+          "sha": "cf7c66f3c2854d1c354d239ba3b3769693e37656",
+          "parents": [
+            "6b41464fa88f821353690f225c6aa782833a7c8d"
+          ],
+          "authoredAt": "2026-09-17T10:43:22+02:00",
+          "author": "Codex",
+          "subject": "feat(vendor-mobile): add 6 new Storefront templates from Founder reference images",
+          "files": [
+            "apps/vendor_mobile/lib/data/storefront_config.dart",
+            "apps/vendor_mobile/lib/data/storefront_templates.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/storefront_screens.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_bag_drop.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_discover_market.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_match_day.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_origin_run.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_ritual_care.dart",
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_tide_table.dart"
+          ]
+        },
+        {
+          "sha": "eb9fc0beebad56129f9ff419b5f780ef7317795e",
+          "parents": [
+            "cf7c66f3c2854d1c354d239ba3b3769693e37656"
+          ],
+          "authoredAt": "2026-09-17T14:00:48+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): MatchPoint size chips overflow on generic variant labels",
+          "files": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_match_day.dart"
+          ]
+        },
+        {
+          "sha": "48f415dda7d255ce2077fadbeb4889fc01f76d13",
+          "parents": [
+            "eb9fc0beebad56129f9ff419b5f780ef7317795e"
+          ],
+          "authoredAt": "2026-09-17T14:11:19+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): Ritual product-detail Stack collapses under loose height",
+          "files": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_ritual_care.dart"
+          ]
+        },
+        {
+          "sha": "e4640e0018212286b55bb4973c70d1b66389823d",
+          "parents": [
+            "48f415dda7d255ce2077fadbeb4889fc01f76d13"
+          ],
+          "authoredAt": "2026-09-17T14:31:27+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): Ritual product-detail panel pinned to frame top, not bottom",
+          "files": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_ritual_care.dart"
+          ]
+        },
+        {
+          "sha": "09b347614b7ec4110e6313b1bc96c27594f732cd",
+          "parents": [
+            "e4640e0018212286b55bb4973c70d1b66389823d"
+          ],
+          "authoredAt": "2026-09-17T19:00:35+02:00",
+          "author": "Codex",
+          "subject": "fix(vendor-mobile): Tide Table dish-card heart/add icons hidden behind photo",
+          "files": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_tide_table.dart"
+          ]
+        },
+        {
+          "sha": "941ef28a8bd3625e89696071bcaf5fb0477a5927",
+          "parents": [
+            "09b347614b7ec4110e6313b1bc96c27594f732cd"
+          ],
+          "authoredAt": "2026-09-18T02:36:37+02:00",
+          "author": "Codex",
+          "subject": "feat(vendor-mobile): rebuild V-13 Order detail to the supplied reference",
+          "files": [
+            "apps/vendor_mobile/lib/ui/screens/operations.dart"
+          ]
+        },
+        {
+          "sha": "2e04cf7c6eab2c4399bfe48406f074314129fdfd",
+          "parents": [
+            "941ef28a8bd3625e89696071bcaf5fb0477a5927"
+          ],
+          "authoredAt": "2026-09-18T02:42:12+02:00",
+          "author": "Codex",
+          "subject": "feat(vendor-mobile): restructure V-14 New order to the supplied reference",
+          "files": [
+            "apps/vendor_mobile/lib/ui/screens/operations.dart",
+            "apps/vendor_mobile/lib/ui/widgets.dart"
+          ]
+        },
+        {
+          "sha": "e5d47cc7e310f91e71e9220bdda79eae08686ea3",
+          "parents": [
+            "2e04cf7c6eab2c4399bfe48406f074314129fdfd"
+          ],
+          "authoredAt": "2026-09-18T02:48:18+02:00",
+          "author": "Codex",
+          "subject": "feat(vendor-mobile): add New order entry chooser and Import orders screens",
+          "files": [
+            "apps/vendor_mobile/lib/core/routes.dart",
+            "apps/vendor_mobile/lib/ui/router.dart",
+            "apps/vendor_mobile/lib/ui/screens/operations.dart"
+          ]
+        }
+      ],
+      "changedFiles": [
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/.gitignore"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/.metadata"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/README.md"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/analysis_options.yaml"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/lib/core/app_state.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/lib/core/env.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/lib/core/routes.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/lib/core/theme.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/lib/data/models.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/lib/data/rider_repository.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/lib/ui/widgets.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/pubspec.lock"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/pubspec.yaml"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/web/favicon.png"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/web/icons/Icon-192.png"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/web/icons/Icon-512.png"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/web/icons/Icon-maskable-192.png"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/web/icons/Icon-maskable-512.png"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/web/index.html"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/rider_mobile/web/manifest.json"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/.gitignore"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/.metadata"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/CLAUDE_UI_HANDOFF.md"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/PREVIEW_AUDIT_MANIFEST.md"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/README.md"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/analysis_options.yaml"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/assets/brand/cefflo-logo-primary.png"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/assets/fonts/inter/Inter-Bold.otf"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/assets/fonts/inter/Inter-ExtraBold.otf"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/assets/fonts/inter/Inter-Medium.otf"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/assets/fonts/inter/Inter-Regular.otf"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/assets/fonts/inter/Inter-SemiBold.otf"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/assets/fonts/inter/LICENSE"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/assets/fonts/noto_sans_sc/LICENSE"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/assets/fonts/noto_sans_sc/NotoSansSC-Bold.otf"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/assets/fonts/noto_sans_sc/NotoSansSC-Medium.otf"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/assets/fonts/noto_sans_sc/NotoSansSC-Regular.otf"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/assets/fonts/noto_sans_tamil/LICENSE"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/assets/fonts/noto_sans_tamil/NotoSansTamil-Bold.ttf"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/assets/fonts/noto_sans_tamil/NotoSansTamil-Regular.ttf"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/core/app_state.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/core/chrome_color.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/core/chrome_color_stub.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/core/chrome_color_web.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/core/env.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/core/preview_path.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/core/preview_path_stub.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/core/preview_path_web.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/core/responsive.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/core/routes.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/core/theme.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/data/models.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/data/storefront_catalog.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/data/storefront_config.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/data/storefront_templates.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/data/vendor_repository.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/main.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/async_view.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/router.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/auth.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/directory.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/operations.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/planning.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/prototype.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/review_parts.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/storefront_common.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/storefront_customize.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/storefront_screens.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/storefront_theme.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_bag_drop.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_browse_shop.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_catalogue.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_discover_market.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_match_day.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_origin_run.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_quick_order.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_ritual_care.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/storefront/template_tide_table.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/screens/today_content.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/shell.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/system_bars.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/lib/ui/widgets.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/pubspec.lock"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/pubspec.yaml"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/test/auth_ui_test.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/test/responsive_test.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/test/routing_test.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/test/staging_contract_test.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/test/theme_test.dart"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/web/favicon.png"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/web/icons/Icon-192.png"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/web/icons/Icon-512.png"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/web/icons/Icon-maskable-192.png"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/web/icons/Icon-maskable-512.png"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/web/index.html"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "apps/vendor_mobile/web/manifest.json"
+          ]
+        },
+        {
+          "status": "M",
+          "paths": [
+            "invite/index.html"
+          ]
+        },
+        {
+          "status": "M",
+          "paths": [
+            "marketing/prelaunch/index.html"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "previews/vendor-auth-prototype/index.html"
+          ]
+        },
+        {
+          "status": "M",
+          "paths": [
+            "rider/index.html"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "shared/brand/cefflo-logo-icon-navy.png"
+          ]
+        },
+        {
+          "status": "A",
+          "paths": [
+            "shared/brand/cefflo-logo-wordmark.png"
+          ]
+        },
+        {
+          "status": "M",
+          "paths": [
+            "vendor/index.html"
+          ]
+        }
+      ]
+    }
+  }
+}
