@@ -25,6 +25,12 @@
       "path": "docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md",
       "trust": "canonical_constraint",
       "retrieval": "git_at_sha"
+    },
+    {
+      "id": "approved_ui_reference_registry",
+      "path": "docs/cefflo/engineering/references/registry.json",
+      "trust": "canonical",
+      "retrieval": "git_at_sha"
     }
   ],
   "normalRetrievalExcludes": [

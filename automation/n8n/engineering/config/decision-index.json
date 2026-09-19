@@ -12,17 +12,22 @@
       "id": "D-40",
       "status": "ACTIVE",
       "summary": "FG-ENG-02 curated baseline approved with Inter and token amendments"
+    },
+    {
+      "id": "D-41",
+      "status": "ACTIVE",
+      "summary": "FG-ENG-03 registers UI-VENDOR-V11-TODAY-v1 as the active canonical V11 visual reference"
     }
   ],
   "gates": {
     "FG-ENG-01": "APPROVED",
     "FG-ENG-02": "APPROVED_WITH_AMENDMENTS",
-    "FG-ENG-03": "PENDING",
+    "FG-ENG-03": "APPROVED_REFERENCE_REGISTERED",
     "FG-ENG-04": "PENDING",
     "FG-ENG-05": "PENDING",
     "FG-ENG-06": "PENDING",
     "FG-ENG-07": "PENDING",
     "FG-ENG-08": "PENDING"
   },
-  "currentStop": "FG-ENG-03"
+  "currentStop": "FG-ENG-04"
 }

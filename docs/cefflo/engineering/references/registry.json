@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "status": "ACTIVE",
+  "authority": "Founder-approved canonical UI references",
+  "references": [
+    {
+      "reference_id": "UI-VENDOR-V11-TODAY-v1",
+      "version": 1,
+      "status": "ACTIVE",
+      "product": "CEFFLO Vendor Mobile",
+      "screen_id": "V11",
+      "screen_name": "Today",
+      "record": "vendor-mobile/UI-VENDOR-V11-TODAY-v1/reference.json",
+      "record_sha256": "632883f7d6581ffe101524b404a91842246c353bce42c174516fb480c7042006",
+      "asset": "vendor-mobile/UI-VENDOR-V11-TODAY-v1/reference.jpg",
+      "sha256": "0940081867837b1a51c18d7917cfba4cbff493f130cce9e0de730cedfea86bcb",
+      "approved_at": "2026-09-19T16:13:50+02:00",
+      "decision": "D-41 / FG-ENG-03"
+    }
+  ]
+}

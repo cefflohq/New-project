@@ -602,3 +602,32 @@ This decision authorizes only isolated baseline creation and technical
 validation. It does not grant FG-ENG-03 through FG-ENG-08, Vendor V11 execution,
 Engineering workflow activation, production deployment, or the n8n PostgreSQL
 upgrade. The next required Founder gate is `FG-ENG-03 — Canonical Reference`.
+
+---
+
+## D-41 Vendor Mobile V11 Canonical Reference Registered (2026-09-19)
+
+Founder approved `FG-ENG-03` for reference registration only. The active
+canonical visual reference is:
+
+- Reference ID: `UI-VENDOR-V11-TODAY-v1`.
+- Product/screen: CEFFLO Vendor Mobile, V11 Today.
+- Asset: `docs/cefflo/engineering/references/vendor-mobile/UI-VENDOR-V11-TODAY-v1/reference.jpg`.
+- SHA-256: `0940081867837b1a51c18d7917cfba4cbff493f130cce9e0de730cedfea86bcb`.
+- Approved baseline: commit `2f3e49af1d649a79fcd7d6e7b1894cd56de6f378`, tree
+  `b28fd255cf45afa390fb7ca1cc4a13f96de5a973`.
+
+The asset is visual authority for V11 only. Product Truth and active Founder
+decisions continue to govern behaviour, terminology, lifecycle and
+functionality. Inter remains canonical. No global design-system rule may be
+derived from this single screenshot without additional shared evidence.
+
+`REF-CONFLICT-V11-NAV-001` is escalated: the image labels the fifth navigation
+item `Settings`, while the active Vendor Mobile master specifies `Menu`. No
+navigation terminology or behaviour is changed by this registration.
+
+FG-ENG-03 does not authorize E1–E5 execution, V11 repair, model spend, workflow
+activation, pilot activation, deployment or any later Founder gate. The next
+formal gate is `FG-ENG-04 — Spend/Credential Envelope`; the navigation conflict
+also requires explicit Founder resolution before implementation may treat the
+reference label as product truth.

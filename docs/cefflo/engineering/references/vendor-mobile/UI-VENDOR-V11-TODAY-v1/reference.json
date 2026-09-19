@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "reference_id": "UI-VENDOR-V11-TODAY-v1",
+  "version": 1,
+  "status": "ACTIVE",
+  "authority": "Founder-approved",
+  "purpose": "Engineering Bootstrap acceptance pilot canonical visual reference",
+  "product": "CEFFLO Vendor Mobile",
+  "screen": {
+    "id": "V11",
+    "name": "Today",
+    "canonical_region": "centre device panel",
+    "surrounding_panels": "context only; not visual authority for other screen IDs"
+  },
+  "approval": {
+    "gate": "FG-ENG-03",
+    "decision": "D-41",
+    "approved_by": "Founder",
+    "approved_at": "2026-09-19T16:13:50+02:00"
+  },
+  "asset": {
+    "artifact_id": "UI-VENDOR-V11-TODAY-v1-ASSET",
+    "path": "docs/cefflo/engineering/references/vendor-mobile/UI-VENDOR-V11-TODAY-v1/reference.jpg",
+    "original_filename": "1-Photo-1.jpg",
+    "mime_type": "image/jpeg",
+    "sha256": "0940081867837b1a51c18d7917cfba4cbff493f130cce9e0de730cedfea86bcb",
+    "size_bytes": 152758,
+    "original_dimensions": {
+      "width_px": 1280,
+      "height_px": 960
+    },
+    "preservation": "byte-for-byte copy; verify with SHA-256 and binary comparison"
+  },
+  "viewport_device_interpretation": {
+    "artifact_type": "landscape composite board containing three portrait device mockups",
+    "canonical_target": "middle device showing V11 Today",
+    "device_class": "modern iPhone-class portrait device with Dynamic Island",
+    "exact_device_model": "not embedded in source artifact",
+    "exact_logical_viewport": "not embedded in source artifact",
+    "source_canvas_px": "1280x960",
+    "comparison_rule": "use the middle V11 device content as visual authority; do not crop or replace the stored canonical asset"
+  },
+  "baseline": {
+    "branch": "claude/engineering-baseline-phase-01",
+    "commit": "2f3e49af1d649a79fcd7d6e7b1894cd56de6f378",
+    "tree": "b28fd255cf45afa390fb7ca1cc4a13f96de5a973",
+    "relationship": "reference approved against this immutable pre-registration baseline"
+  },
+  "contract_bindings": {
+    "context_source_required_metadata": {
+      "source_id": "UI-VENDOR-V11-TODAY-v1",
+      "path_or_artifact_id": "UI-VENDOR-V11-TODAY-v1-ASSET",
+      "git_sha_or_version": "v1",
+      "sha256": "0940081867837b1a51c18d7917cfba4cbff493f130cce9e0de730cedfea86bcb",
+      "trust": "canonical",
+      "status": "active",
+      "retrieved_at": "2026-09-19T16:13:50+02:00"
+    },
+    "visual_comparison_image_evidence": {
+      "artifact_id": "UI-VENDOR-V11-TODAY-v1-ASSET",
+      "sha256": "0940081867837b1a51c18d7917cfba4cbff493f130cce9e0de730cedfea86bcb",
+      "mime_type": "image/jpeg"
+    }
+  },
+  "authority_boundaries": {
+    "visual_presentation": "canonical for V11 Today",
+    "behaviour_terminology_lifecycle_functionality": "governed by Product Truth and active Founder decisions",
+    "typography": "Inter remains canonical",
+    "global_design_system_derivation": "forbidden from this single reference",
+    "historical_visual_evidence": "not authoritative",
+    "visual_repair_authorized": false
+  },
+  "product_truth_conflicts": [
+    {
+      "id": "REF-CONFLICT-V11-NAV-001",
+      "status": "FOUNDER_DECISION_REQUIRED",
+      "reference_observation": "The V11 panel labels the fifth bottom-navigation item Settings.",
+      "product_truth": "The active Vendor Mobile master specifies Today · Orders · Zones · Riders · Menu.",
+      "authority_path": "docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md §2 item 4",
+      "handling": "Do not change navigation terminology or behaviour to imitate the image. Preserve Product Truth until Founder explicitly resolves the conflict."
+    }
+  ],
+  "execution_state": {
+    "e1_started": false,
+    "e2_started": false,
+    "e3_started": false,
+    "v11_modified": false,
+    "workflow_activated": false,
+    "deployed": false
+  }
+}
