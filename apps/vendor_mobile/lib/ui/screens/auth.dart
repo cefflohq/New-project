@@ -285,6 +285,39 @@ class _NavyBackdrop extends StatelessWidget {
   }
 }
 
+/// Bright blue Sign In treatment from the current Founder reference. Kept
+/// local to V02 so the rest of the authentication family retains its
+/// existing navy chrome and behaviour.
+class _SignInBackdrop extends StatelessWidget {
+  const _SignInBackdrop({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.expand(
+    child: DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF51BDF8), Color(0xFF0B67E8), Color(0xFF031A50)],
+          stops: [0, .44, 1],
+        ),
+      ),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            center: Alignment(.42, -.08),
+            radius: .82,
+            colors: [Color(0x663CA8FF), Color(0x00000000)],
+          ),
+        ),
+        child: child,
+      ),
+    ),
+  );
+}
+
 /// Share of the canonical master's height that the lockup actually occupies.
 /// The D-35 file is a 4375x4375 canvas with the portrait lockup centred in
 /// it, so a plain `height:` renders a logo visibly ~28% smaller than the
@@ -1056,7 +1089,7 @@ class _SignInScreenState extends State<SignInScreen> {
     background: Brightness.dark,
     child: Scaffold(
       backgroundColor: _navyBase,
-      body: _NavyBackdrop(
+      body: _SignInBackdrop(
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) => SingleChildScrollView(
@@ -1071,35 +1104,24 @@ class _SignInScreenState extends State<SignInScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 12),
                         Align(
                           alignment: Alignment.centerLeft,
                           child: _LanguagePill(onTap: _openLanguageSheet),
                         ),
-                        const SizedBox(height: 34),
-                        const Center(child: _BrandLockup(height: 145)),
-                        const SizedBox(height: 26),
+                        const Spacer(flex: 5),
+                        const Center(child: _BrandLockup(height: 128)),
                         const Text(
-                          'Welcome back',
+                          'VENDOR',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.2,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 6,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Sign in to manage your deliveries today.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: .82),
-                            fontSize: 14.5,
-                            height: 1.4,
-                          ),
-                        ),
-                        const SizedBox(height: 30),
+                        const Spacer(flex: 4),
                         _ProviderButton(
                           label: 'Continue with Apple',
                           background: Colors.white,
@@ -1126,11 +1148,11 @@ class _SignInScreenState extends State<SignInScreen> {
                         const SizedBox(height: 12),
                         _ProviderButton(
                           label: 'Continue with Email',
-                          background: CefColors.accent,
-                          foreground: const Color(0xFF181818),
+                          background: Colors.white,
+                          foreground: _navyBase,
                           leading: const Icon(
                             LucideIcons.mail,
-                            size: 20,
+                            size: 22,
                             color: _navyBase,
                           ),
                           onTap: widget.onEmail,
@@ -1147,42 +1169,13 @@ class _SignInScreenState extends State<SignInScreen> {
                             ),
                           ),
                         ],
-                        const SizedBox(height: 22),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                height: 1,
-                                color: Colors.white24,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                              ),
-                              child: Text(
-                                'or',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: .75),
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Container(
-                                height: 1,
-                                color: Colors.white24,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 26),
                         Wrap(
                           alignment: WrapAlignment.center,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             Text(
-                              "Don't have an account? ",
+                              'Have an invite? ',
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: .85),
                                 fontSize: 14,
@@ -1191,7 +1184,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             GestureDetector(
                               onTap: widget.onSignUp,
                               child: const Text(
-                                'Sign up',
+                                'Get started',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 14,
@@ -1203,10 +1196,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             ),
                           ],
                         ),
-                        const Spacer(),
-                        const SizedBox(height: 28),
-                        const _Tagline(),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 30),
                       ],
                     ),
                   ),
@@ -1385,7 +1375,7 @@ class _ProviderButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: _buttonHeight,
+    height: 54,
     child: FilledButton(
       onPressed: onTap,
       style: FilledButton.styleFrom(
@@ -1394,9 +1384,7 @@ class _ProviderButton extends StatelessWidget {
         disabledBackgroundColor: background.withValues(alpha: .6),
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 18),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(_buttonRadius),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,

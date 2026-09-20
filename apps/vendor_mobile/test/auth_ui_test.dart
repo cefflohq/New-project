@@ -42,14 +42,13 @@ void main() {
       await tester.pumpWidget(host(SignInScreen(onEmail: () {}, onSignUp: () {})));
       await tester.pump();
 
-      expect(find.text('Welcome back'), findsOneWidget);
-      expect(find.text('Sign in to manage your deliveries today.'), findsOneWidget);
+      expect(find.text('VENDOR'), findsOneWidget);
       expect(find.text('Continue with Apple'), findsOneWidget);
       expect(find.text('Continue with Google'), findsOneWidget);
       expect(find.text('Continue with Email'), findsOneWidget);
-      expect(find.text('Sign up'), findsOneWidget);
+      expect(find.text('Have an invite? '), findsOneWidget);
+      expect(find.text('Get started'), findsOneWidget);
       expect(find.text('English'), findsOneWidget);
-      expect(find.text('Operate Today.\nGrow Tomorrow.'), findsOneWidget);
     });
 
     testWidgets('03 Email Sign In shows the locked form', (tester) async {
