@@ -89,3 +89,29 @@ permissions, events, model routing, tools, cost, audit and system guards.
 
 Agents reason. Control Layer governs. Tools execute. Company Truth grounds.
 Founder decides exceptions.
+
+
+## AR-09 CEFFLO Marketing Department
+
+The sole active Marketing architecture is
+`docs/cefflo/marketing/CEFFLO_MARKETING_MASTER.md`:
+
+```text
+Founder
+  ↓
+CEFFLO Control Layer
+  ↓
+n8n — primary technical execution/control-plane engine
+  ↓
+CEFFLO Marketing Department
+  ↓
+M1 Lead → M2 Radar → M3 Story → M4 Studio when required
+        → M5 Guard → M6 Growth → Marketing Memory → M1/M2
+```
+
+M1–M6 are bounded Marketing roles. Control Layer contracts remain company
+owned. M5 is independent. Organic publishing requires Founder approval during
+migration and the initial implementation/pilot. Paid media remains
+Founder-gated. The legacy Teams 1–5, `WF-01..08`, `CEFFLO - 00..12,99` and
+`automation/n8n/content-engine/**` are migration sources, not parallel active
+architectures.

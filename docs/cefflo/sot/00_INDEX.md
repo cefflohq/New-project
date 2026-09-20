@@ -79,30 +79,30 @@ Primary:
 - "Flow 2 Canonical Backend Completion Master" — no separate master doc exists in this repo; its outcomes are reflected in the current migrations/RPCs/tests.
 - migrations/RPC/security architecture references — see `docs/cefflo/11_SUPABASE.md`, `docs/cefflo/12_SECURITY.md`.
 
-## 6. Marketing Engine
-Primary hierarchy:
-1. `docs/cefflo/sot/01_PRODUCT_TRUTH.md`
-2. `docs/cefflo/sot/05_BRAND_BRAIN.md`
-3. `docs/cefflo/sot/marketing/07_MARKETING_MEMORY.md` — schema initialized; performance memory intentionally EMPTY, no real campaign data exists yet.
-4. `docs/cefflo/sot/marketing/01_AUDIENCE_ICP.md`
-5. `docs/cefflo/sot/marketing/02_CLAIMS_REGISTRY.md`
-6. `docs/cefflo/sot/marketing/03_CONTENT_PHILOSOPHY.md`
-7. `docs/cefflo/sot/marketing/04_CREATIVE_PLAYBOOK.md`
-8. `docs/cefflo/sot/marketing/05_PAID_GROWTH_PLAYBOOK.md`
-9. `docs/cefflo/sot/marketing/06_AI_MARKETING_ENGINE_MASTER.md`
-10. `docs/cefflo/sot/marketing/08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` — Founder-approved v1.1 (2026-09-10), n8n orchestration blueprint for item 9's daily pipeline; see `docs/cefflo/05_DECISIONS.md` D-25.
-11. `docs/cefflo/sot/marketing/09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` — Founder-approved FG-1 reconciliation (2026-09-10); FG-2 (Content World Baseline) not yet granted. See `docs/cefflo/05_DECISIONS.md` D-26.
-12. `docs/cefflo/sot/marketing/10_BRAND_VOICE_LANGUAGE_SYSTEM.md` — Founder-approved FG-1-equivalent reconciliation (2026-09-10), Malaysian Malay brand-voice doctrine; FG-V1–V4 not yet granted. See `docs/cefflo/05_DECISIONS.md` D-26.
-13. `docs/cefflo/sot/marketing/11_CREATIVE_INTELLIGENCE_LAYER.md` — reconciled and implemented (2026-09-11): taxonomy, scenario contract/engine/validator, tested. GATE B (Rider/Driver terminology) RESOLVED — product/schema stays "Rider"; display terms are vehicle-contextual (Motorcycle=Rider, Car/Van=Driver, mixed=Delivery Team). See `docs/cefflo/05_DECISIONS.md` D-27.
+## 6. CEFFLO Marketing Department
+
+Canonical authority:
+- `docs/cefflo/marketing/CEFFLO_MARKETING_MASTER.md` — sole active Marketing
+  architecture; M1 Lead, M2 Radar, M3 Story, M4 Studio, M5 Guard and M6 Growth.
+
+Parent governance:
+- `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md` — company governance,
+  including Founder Gate, cross-department event, model/tool/cost/audit and
+  system-guard contracts.
+
+The previous Marketing knowledge pack, Teams 1–5, `WF-01..08`,
+`CEFFLO - 00..12,99`, their reconciliation addenda and
+`automation/n8n/content-engine/**` are **LEGACY MIGRATION SOURCE / REPLACEMENT
+CANDIDATE**. They are excluded from normal Marketing runtime retrieval. Existing
+workflows, schemas, data and credentials remain untouched pending replacement
+validation and a later Founder decision.
 
 ## 7. Marketing Performance
-Runtime evidence only:
-- Marketing Memory schema exists (`docs/cefflo/sot/marketing/07_MARKETING_MEMORY.md`) but its data/exports are empty — no experiments have run yet.
-- weekly reports — none exist yet.
-- experiment performance — none exist yet.
-- organic/paid learnings — none exist yet.
 
-Do not store invented winner data here. This domain is N/A until real campaign data exists — no AI Marketing Engine implementation exists in this repo yet (see `docs/cefflo/sot/marketing/00_MARKETING_KNOWLEDGE_PACK_INDEX.md`).
+Marketing performance truth must come from verified operational records and
+the canonical Marketing context/memory contracts. Legacy memory tables and
+reports are migration evidence only until reconciled. Do not invent performance,
+winner or learning data.
 
 ## 8. Brand Assets
 **Updated 2026-09-12 (Founder baseline closeout, D-30):** logo and Signal Lime are now Founder-locked.

@@ -56,7 +56,8 @@ acceptance criteria.
 -   QA/release/go-live → `16_QA_RELEASE.md`
 -   Codex/Claude/VPS/Remote workflow → `17_AI_WORKFLOW.md`
 -   Full canonical knowledge index → `docs/cefflo/sot/00_INDEX.md`
--   Marketing/growth knowledge → `docs/cefflo/sot/marketing/00_MARKETING_KNOWLEDGE_PACK_INDEX.md`
+-   CEFFLO Marketing Department architecture and M1–M6 doctrine →
+    `docs/cefflo/marketing/CEFFLO_MARKETING_MASTER.md`
 -   Engineering Department architecture and E1–E5 doctrine →
     `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md`
 -   Cross-company security architecture and AI/tool boundaries →
@@ -68,6 +69,13 @@ For Control Layer work, load the Control Layer Master first, then only the
 relevant department master and the Cyber Security Master. The Control Layer
 governs between departments; n8n is its primary technical execution/control-
 plane engine; departments retain their internal reasoning and ownership.
+
+For Marketing Department work, load the Marketing Master and Control Layer
+Master. Load Product Truth, Brand Truth or other company truth only as scoped by
+the task. Do not load `docs/cefflo/sot/marketing/**`, Marketing reconciliation
+reports, or `automation/n8n/content-engine/**` into normal context; those paths
+are legacy migration evidence unless a historical or replacement-analysis task
+explicitly requires them.
 
 For Engineering Department bootstrap work, load both masters above. The
 Engineering Master defines the department; the Cyber Security Master constrains

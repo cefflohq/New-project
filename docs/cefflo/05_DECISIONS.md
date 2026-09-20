@@ -681,3 +681,39 @@ paid API calls, Engineering changes, V11 execution, FG-ENG-07, Jev setup or
 legacy-file deletion. Engineering checkpoint
 `053011c3af92c6b392b256208b743444275c4f6a` remains the frozen parent of this
 documentation migration.
+
+
+---
+
+## D-44 CEFFLO Marketing Department Canonical Migration (2026-09-20)
+
+Founder decisions D-MKT-01 through D-MKT-07 establish the sole active Marketing
+architecture:
+
+- Master: `docs/cefflo/marketing/CEFFLO_MARKETING_MASTER.md`
+- SHA-256: `19f2ca5767aff7d5da2d3db4cda4df87953339a02d0cf2df9b97826472873579`
+- Department: **CEFFLO Marketing Department**
+- Roles: M1 Lead, M2 Radar, M3 Story, M4 Studio, M5 Guard, M6 Growth
+
+Canonical hierarchy is Founder → CEFFLO Control Layer → n8n as primary
+technical execution/control-plane engine → CEFFLO Marketing Department →
+M1–M6. Marketing consumes company Control Layer contracts rather than
+recreating them. M5 is independent.
+
+The former Teams 1–5, `WF-01..08`, `CEFFLO - 00..12,99`, FG-2 and FG-V1–FG-V4
+architectures are superseded as active authority. Their documents, workflows,
+schemas, operational data and evidence remain untouched where not replaced by
+concise documentation pointers, classified as legacy migration sources pending
+replacement validation and a later Founder decision.
+
+Founder approval remains required for organic publishing during migration and
+the initial implementation/pilot. Paid media remains Founder-gated. No bounded
+autonomous publishing is authorized. No `/am6/MASTER.md` or second Marketing
+Master is permitted. Jev remains **CANDIDATE JUDGMENT ENGINE — NOT QUALIFIED /
+NOT REQUIRED / NO ACTIVE DEPENDENCY**.
+
+This decision authorizes canonical documentation migration only. It does not
+authorize M1–M6 runtime implementation, new or activated workflows, workflow
+JSON changes, database/schema/data changes, credentials, providers, paid API
+calls, publishing, scheduling, advertising, Control Layer runtime, Engineering
+changes, Engineering qualification or the V11 pilot.

@@ -1,6 +1,9 @@
-# Cefflo Content Engine — ROI workflow family
+# Cefflo Content Engine — LEGACY MIGRATION SOURCE
 
-Status: import-ready ROI production skeleton. All provider modes are stubbed and every workflow is inactive.
+**Status:** LEGACY MIGRATION SOURCE / REPLACEMENT CANDIDATE. Every repository
+workflow remains inactive. This directory is not the active CEFFLO Marketing
+architecture and must not participate in default Marketing runtime retrieval.
+Final disposition requires replacement validation and a later Founder decision.
 
 This is a Marketing department workflow family beneath
 `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`. Its `CEFFLO - 00..12,99`
@@ -15,7 +18,7 @@ workflow in this directory is the company Control Layer.
 - Credentials are references only. Configure them in n8n's encrypted credential store; never commit secrets.
 - Founder Approval is mandatory. Publisher rejects every state other than `APPROVE`/`APPROVED`.
 
-## Canonical workflows
+## Legacy workflow inventory
 
 | Workflow | Responsibility | ROI activation |
 |---|---|---|
