@@ -14,8 +14,9 @@
       "routeId": "openai-gpt-5.4-mini",
       "provider": "openai",
       "model": "gpt-5.4-mini",
-      "credentialRef": "n8n:BLg2BvJMiBBd9gw8",
-      "status": "not_qualified_insufficient_quota",
+      "credentialRef": null,
+      "targetProjectId": "proj_mQtcb9RRJj5euIafLwn8GICr",
+      "status": "blocked_dedicated_dev_credential_pending",
       "capabilitiesClaimed": ["structured_output", "planning", "long_context", "code_reasoning", "tool_request_generation", "multiple_image_inputs", "visual_comparison", "independent_verification"],
       "pricingUsdPerMillion": {"input": 0.75, "cachedInput": 0.075, "output": 4.5},
       "rolesEligibleAfterQualification": ["E1", "E2", "E3", "E4"]

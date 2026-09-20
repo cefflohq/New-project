@@ -27,5 +27,11 @@ single cumulative ledger includes qualification, retry, and fallback usage and
 fails closed at the Founder-approved USD 3.00 ceiling. A request with uncertain
 usage retains its full reservation until reconciled.
 
+The canonical OpenAI target is the dedicated Engineering DEV project
+`proj_mQtcb9RRJj5euIafLwn8GICr`. Until its isolated n8n credential is created
+and registered in `config/provider-credentials.json`, the OpenAI provider is
+disabled and the Role Executor fails closed. The shared Content Creator
+credential is not an Engineering credential.
+
 Configuration and contracts in this package contain credential references
 only. Secret values must never be committed.

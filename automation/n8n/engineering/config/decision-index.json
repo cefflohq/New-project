@@ -27,6 +27,11 @@
       "id": "D-43",
       "status": "ACTIVE",
       "summary": "FG-ENG-04 approves a cumulative USD 3.00 qualification and V11 pilot envelope; pilot activation remains pending"
+    },
+    {
+      "id": "D-44",
+      "status": "ACTIVE",
+      "summary": "Canonical Engineering DEV OpenAI project is proj_mQtcb9RRJj5euIafLwn8GICr; the prior shared credential/project is prohibited for Engineering"
     }
   ],
   "gates": {

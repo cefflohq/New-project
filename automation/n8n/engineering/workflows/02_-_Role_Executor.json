@@ -98,42 +98,16 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://api.openai.com/v1/responses",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "openAiApi",
-        "sendBody": true,
-        "contentType": "raw",
-        "rawContentType": "application/json",
-        "body": "={{ JSON.stringify($json.provider_request) }}",
-        "options": {
-          "timeout": 120000,
-          "redirect": {
-            "redirect": {
-              "followRedirects": false
-            }
-          },
-          "response": {
-            "response": {
-              "neverError": true
-            }
-          }
-        }
+        "jsCode": "throw new Error('ENGINEERING_OPENAI_CREDENTIAL_NOT_CONFIGURED');"
       },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
         780,
-        -100
+        0
       ],
       "id": "20000000-0000-4000-8000-000000000123",
-      "name": "OpenAI Responses",
-      "credentials": {
-        "openAiApi": {
-          "id": "BLg2BvJMiBBd9gw8",
-          "name": "OpenAI account"
-        }
-      }
+      "name": "OpenAI Responses"
     },
     {
       "parameters": {

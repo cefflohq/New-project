@@ -6,9 +6,13 @@ if (!['openai', 'deepseek'].includes(provider) || !referencePath || !renderPath 
 const image = async (path, mime) => `data:${mime};base64,${(await readFile(path)).toString('base64')}`;
 const reference = await image(referencePath, 'image/jpeg');
 const render = await image(renderPath, 'image/png');
+const credentialConfig = JSON.parse(await readFile(resolve('automation/n8n/engineering/config/provider-credentials.json'), 'utf8'));
+if (provider === 'openai' && (credentialConfig.openai.status !== 'CONFIGURED' || !credentialConfig.openai.n8nCredentialId || credentialConfig.openai.qualificationAuthorized !== true)) {
+  throw new Error('engineering_openai_credential_or_qualification_not_authorized');
+}
 const route = provider === 'openai' ? {
   id: '21000000-0000-4000-8000-000000000001', model: 'gpt-5.4-mini', url: 'https://api.openai.com/v1/responses',
-  credentialType: 'openAiApi', credentialId: 'BLg2BvJMiBBd9gw8', credentialName: 'OpenAI account'
+  credentialType: 'openAiApi', credentialId: credentialConfig.openai.n8nCredentialId, credentialName: credentialConfig.openai.intendedN8nCredentialName
 } : {
   id: '21000000-0000-4000-8000-000000000002', model: 'deepseek-flash', url: 'https://api.deepseek.com/responses',
   credentialType: 'deepSeekApi', credentialId: '52e3f617-3565-4c58-8405-93e2d4f1a980', credentialName: 'DeepSeek'

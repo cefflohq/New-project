@@ -1,10 +1,11 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
 const output = resolve(root, 'workflows');
+const credentialConfig = JSON.parse(await readFile(resolve(root, 'config/provider-credentials.json'), 'utf8'));
 const trigger = (id) => ({ parameters: { inputSource: 'passthrough' }, type: 'n8n-nodes-base.executeWorkflowTrigger', typeVersion: 1.1, position: [0, 0], id, name: 'Execute Workflow Trigger' });
 const code = (id, name, jsCode, x) => ({ parameters: { jsCode }, type: 'n8n-nodes-base.code', typeVersion: 2, position: [x, 0], id, name });
 const link = (node) => ({ main: [[{ node, type: 'main', index: 0 }]] });
@@ -72,10 +73,14 @@ const http = (id, name, url, credentialType, credentialId, credentialName, y) =>
   type: 'n8n-nodes-base.httpRequest', typeVersion: 4.2, position: [780, y], id, name,
   credentials: { [credentialType]: { id: credentialId, name: credentialName } }
 });
+const openAiCredential = credentialConfig.openai;
+const openAiNode = openAiCredential.status === 'CONFIGURED' && openAiCredential.n8nCredentialId
+  ? http('20000000-0000-4000-8000-000000000123', 'OpenAI Responses', 'https://api.openai.com/v1/responses', 'openAiApi', openAiCredential.n8nCredentialId, openAiCredential.intendedN8nCredentialName, -100)
+  : code('20000000-0000-4000-8000-000000000123', 'OpenAI Responses', `throw new Error('ENGINEERING_OPENAI_CREDENTIAL_NOT_CONFIGURED');`, 780);
 const roleExecutor = base('20000000-0000-4000-8000-000000000002', 'CEFFLO ENG - 02 - Role Executor',
   'Dispatches only pre-reserved, qualified E1-E4 requests through existing encrypted n8n credentials. E5 is excluded.', [
     trigger('20000000-0000-4000-8000-000000000120'), routeGate, providerSwitch,
-    http('20000000-0000-4000-8000-000000000123', 'OpenAI Responses', 'https://api.openai.com/v1/responses', 'openAiApi', 'BLg2BvJMiBBd9gw8', 'OpenAI account', -100),
+    openAiNode,
     http('20000000-0000-4000-8000-000000000124', 'DeepSeek Responses', 'https://api.deepseek.com/responses', 'deepSeekApi', '52e3f617-3565-4c58-8405-93e2d4f1a980', 'DeepSeek', 100),
     code('20000000-0000-4000-8000-000000000125', 'Normalize Provider Result', `const i=$input.first().json;
 return [{json:{provider_body:i,budget_settlement_required:true}}];`, 1060)
