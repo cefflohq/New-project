@@ -1,0 +1,275 @@
+{
+  "id": "20000000-0000-4000-8000-000000000002",
+  "name": "CEFFLO ENG - 02 - Role Executor",
+  "description": "Dispatches only pre-reserved, qualified E1-E4 requests through existing encrypted n8n credentials. E5 is excluded.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "20000000-0000-4000-8000-000000000120",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const i=$input.first().json;\nif(!['E1','E2','E3','E4'].includes(i.role)) throw new Error('MODEL_ROLE_DENIED');\nif(!i.budget_reservation_id||i.budget_status!=='reserved') throw new Error('BUDGET_NOT_RESERVED');\nif(i.role==='E4'&&i.requested_actions?.some(a=>a.startsWith('source.'))) throw new Error('E4_REPAIR_DENIED');\nif(['E3','E4'].includes(i.role)&&i.visual_artifacts?.length!==2) throw new Error('TWO_IMAGE_CONTRACT_REQUIRED');\nif(!['openai-gpt-5.4-mini','deepseek-flash'].includes(i.route_id)) throw new Error('ROUTE_NOT_QUALIFIED');\nreturn [{json:i}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "20000000-0000-4000-8000-000000000121",
+      "name": "Enforce Route And Budget Reservation"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.route_id }}",
+                    "rightValue": "openai-gpt-5.4-mini",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "openai"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.route_id }}",
+                    "rightValue": "deepseek-flash",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "deepseek"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        500,
+        0
+      ],
+      "id": "20000000-0000-4000-8000-000000000122",
+      "name": "Route Qualified Provider"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/responses",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($json.provider_request) }}",
+        "options": {
+          "timeout": 120000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        -100
+      ],
+      "id": "20000000-0000-4000-8000-000000000123",
+      "name": "OpenAI Responses",
+      "credentials": {
+        "openAiApi": {
+          "id": "BLg2BvJMiBBd9gw8",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/responses",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "deepSeekApi",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($json.provider_request) }}",
+        "options": {
+          "timeout": 120000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        100
+      ],
+      "id": "20000000-0000-4000-8000-000000000124",
+      "name": "DeepSeek Responses",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "52e3f617-3565-4c58-8405-93e2d4f1a980",
+          "name": "DeepSeek"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const i=$input.first().json; const h=i.headers||{}; delete h.authorization; delete h['set-cookie'];\nreturn [{json:{provider_status_code:i.statusCode,provider_body:i.body??i,budget_settlement_required:true,provider_headers:h}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        0
+      ],
+      "id": "20000000-0000-4000-8000-000000000125",
+      "name": "Normalize Provider Result"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Enforce Route And Budget Reservation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enforce Route And Budget Reservation": {
+      "main": [
+        [
+          {
+            "node": "Route Qualified Provider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Qualified Provider": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Responses",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DeepSeek Responses",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "OpenAI Responses": {
+      "main": [
+        [
+          {
+            "node": "Normalize Provider Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Responses": {
+      "main": [
+        [
+          {
+            "node": "Normalize Provider Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloEngineering": true,
+    "environment": "DEV_STAGING",
+    "activationProhibitedUntil": "FG-ENG-07",
+    "pilotEnabled": false,
+    "credentialValuesInWorkflow": false,
+    "e5ModelPath": false
+  },
+  "pinData": {},
+  "tags": []
+}
