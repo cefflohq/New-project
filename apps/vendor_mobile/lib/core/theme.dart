@@ -27,7 +27,7 @@ class Gap {
 /// D-33 through D-40). Button shape remains pill; exact card/input radius is
 /// baseline evidence pending FG-ENG-03 rather than a global visual lock.
 class Sizes {
-  static const chrome = 64.0; // header + bottom nav, excluding safe areas
+  static const chrome = 60.0; // header + bottom nav, excluding safe areas
   static const icon = 22.0; // visual icon size
   static const tapTarget = 44.0; // minimum interactive target
   static const cardRadius = 18.0;

@@ -46,7 +46,7 @@ const _reviewSubtitles = <VRoute, String>{
 /// nav is rendered for these.
 const _ownChromeRoutes = {VRoute.branding};
 
-/// Flat white chrome: 60px header and 60px sticky bottom navigation, no
+/// Flat chrome: 60px header and 60px sticky bottom navigation, no
 /// floating glass bar, no FAB, no accent underline beneath the title.
 class VendorShell extends StatelessWidget {
   const VendorShell({super.key, required this.child});
@@ -71,12 +71,18 @@ class VendorShell extends StatelessWidget {
           if (!didPop && app.canGoBack) app.back();
         },
         child: Scaffold(
-          backgroundColor: c.canvas,
+          // Keep the native status/navigation-bar underlay in the same
+          // colour family as the app chrome. The page body paints its own
+          // canvas below, so an iPhone safe-area can never expose a detached
+          // strip beneath the bottom navigation.
+          backgroundColor: c.chrome,
           body: Column(
             children: [
               if (!_ownChromeRoutes.contains(app.current.route))
                 _Header(app: app),
-              Expanded(child: child),
+              Expanded(
+                child: ColoredBox(color: c.canvas, child: child),
+              ),
               if (!isOnboarding &&
                   !_reviewTitles.containsKey(app.current.route) &&
                   !_ownChromeRoutes.contains(app.current.route))
@@ -309,7 +315,7 @@ class _BottomNav extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: today ? 58 : Sizes.chrome,
+          height: Sizes.chrome,
           child: Row(
             children: _items.map((item) {
               final selected = app.activeTab == item.$1;
