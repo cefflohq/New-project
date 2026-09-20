@@ -100,14 +100,13 @@ class TodayContent extends StatelessWidget {
               }
             },
             child: Padding(
-              padding: const EdgeInsets.all(Gap.cardPadding),
+              padding: const EdgeInsets.symmetric(
+                horizontal: Gap.cardPadding,
+                vertical: Gap.md,
+              ),
               child: Row(
                 children: [
-                  Icon(
-                    LucideIcons.triangleAlert,
-                    color: c.attention,
-                    size: Sizes.icon,
-                  ),
+                  Icon(Icons.warning_rounded, color: c.attention, size: 30),
                   const SizedBox(width: Gap.md),
                   Expanded(
                     child: Column(
@@ -156,6 +155,7 @@ class TodayContent extends StatelessWidget {
           for (var i = 0; i < rows.length; i++)
             FlatListRow(
               title: rows[i].$1,
+              dense: true,
               subtitle: [
                 if (rows[i].$2.isNotEmpty) rows[i].$2,
                 rows[i].$3,
@@ -176,7 +176,7 @@ class TodayContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const StatusChip('Delivered'),
+                  const StatusChip('Delivered', tinted: true),
                   if (rows[i].$4.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(

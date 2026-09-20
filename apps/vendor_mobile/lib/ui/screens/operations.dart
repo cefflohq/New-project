@@ -486,8 +486,8 @@ class SetupCompleteScreen extends StatelessWidget {
     return PageBody(
       children: [
         Container(
-          height: 280,
-          padding: const EdgeInsets.all(24),
+          height: 256,
+          padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
@@ -504,7 +504,7 @@ class SetupCompleteScreen extends StatelessWidget {
                 text: const TextSpan(
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 34,
+                    fontSize: 32,
                     height: 1.04,
                     fontWeight: FontWeight.w800,
                   ),
@@ -535,6 +535,7 @@ class SetupCompleteScreen extends StatelessWidget {
           FlatListRow(
             title: item.$1,
             subtitle: item.$2,
+            dense: true,
             leading: _plainIcon(context, item.$3),
             trailing: Icon(
               LucideIcons.circleCheck,
@@ -627,11 +628,13 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 FlatListRow(
                   title: o.reference,
                   subtitle: '${o.customerName} · ${o.deliveryAddress}',
+                  dense: true,
                   leading: _plainIcon(context, LucideIcons.package),
                   trailing: StatusChip(
                     o.status.label,
                     attention: o.status == DeliveryStatus.issue,
                     success: OrderTab.ongoing.accepts(o.status),
+                    tinted: true,
                   ),
                   onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
                 ),

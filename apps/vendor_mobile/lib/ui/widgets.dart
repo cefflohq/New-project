@@ -466,6 +466,7 @@ class StatusChip extends StatelessWidget {
     super.key,
     this.attention = false,
     this.success = false,
+    this.tinted = false,
   });
   final String label;
   final bool attention;
@@ -473,21 +474,28 @@ class StatusChip extends StatelessWidget {
   /// Ongoing/active states render in the semantic success green per the
   /// locked V12 Orders spec (Ongoing green, Issue red, Delivered neutral).
   final bool success;
+  final bool tinted;
 
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    return Text(
+    final color = attention
+        ? c.attention
+        : success
+        ? c.success
+        : c.textSecondary;
+    final labelWidget = Text(
       label,
-      style: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: attention
-            ? c.attention
-            : success
-            ? c.success
-            : c.textSecondary,
+      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
+    );
+    if (!tinted) return labelWidget;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: .09),
+        borderRadius: BorderRadius.circular(999),
       ),
+      child: labelWidget,
     );
   }
 }
@@ -745,6 +753,7 @@ class FlatListRow extends StatelessWidget {
     this.leading,
     this.trailing,
     this.onTap,
+    this.dense = false,
   });
 
   final String title;
@@ -752,6 +761,7 @@ class FlatListRow extends StatelessWidget {
   final Widget? leading;
   final Widget? trailing;
   final VoidCallback? onTap;
+  final bool dense;
 
   @override
   Widget build(BuildContext context) {
@@ -761,14 +771,20 @@ class FlatListRow extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          constraints: const BoxConstraints(minHeight: 68),
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+          constraints: BoxConstraints(minHeight: dense ? 60 : 68),
+          padding: EdgeInsets.symmetric(
+            horizontal: 4,
+            vertical: dense ? 7 : 10,
+          ),
           decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: c.border)),
           ),
           child: Row(
             children: [
-              if (leading != null) ...[leading!, const SizedBox(width: 14)],
+              if (leading != null) ...[
+                leading!,
+                SizedBox(width: dense ? 12 : 14),
+              ],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -780,7 +796,7 @@ class FlatListRow extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     if (subtitle != null) ...[
-                      const SizedBox(height: 3),
+                      SizedBox(height: dense ? 2 : 3),
                       Text(
                         subtitle!,
                         maxLines: 1,

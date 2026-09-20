@@ -8,6 +8,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   final routes = <VRoute>[
+    VRoute.setupComplete,
     VRoute.today,
     VRoute.orders,
     VRoute.zones,
@@ -36,7 +37,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      if (route != VRoute.team) {
+      if (route != VRoute.team && route != VRoute.setupComplete) {
         expect(find.text('Menu'), findsWidgets);
       }
     });
