@@ -296,6 +296,9 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
 class _BottomNav extends StatelessWidget {
   const _BottomNav();
 
+  static const _iconSize = 24.0;
+  static const _labelSize = 11.0;
+
   static const _items = <(NavTab, String, IconData)>[
     (NavTab.today, 'Today', LucideIcons.house),
     (NavTab.orders, 'Orders', LucideIcons.package),
@@ -316,7 +319,6 @@ class _BottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     final c = context.c;
-    final today = app.current.route == VRoute.today;
     return Container(
       decoration: BoxDecoration(
         color: c.chrome,
@@ -343,14 +345,14 @@ class _BottomNav extends StatelessWidget {
                         children: [
                           Icon(
                             selected ? _filledIcons[item.$1]! : item.$3,
-                            size: today ? 24 : Sizes.icon,
+                            size: _iconSize,
                             color: selected ? c.info : c.textSecondary,
                           ),
                           const SizedBox(height: 3),
                           Text(
                             item.$2,
                             style: TextStyle(
-                              fontSize: today ? 10 : 11,
+                              fontSize: _labelSize,
                               fontWeight: selected
                                   ? FontWeight.w600
                                   : FontWeight.w500,
