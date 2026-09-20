@@ -115,7 +115,6 @@
           },
           "response": {
             "response": {
-              "fullResponse": true,
               "neverError": true
             }
           }
@@ -155,7 +154,6 @@
           },
           "response": {
             "response": {
-              "fullResponse": true,
               "neverError": true
             }
           }
@@ -178,7 +176,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const i=$input.first().json; const h=i.headers||{}; delete h.authorization; delete h['set-cookie'];\nreturn [{json:{provider_status_code:i.statusCode,provider_body:i.body??i,budget_settlement_required:true,provider_headers:h}}];"
+        "jsCode": "const i=$input.first().json;\nreturn [{json:{provider_body:i,budget_settlement_required:true}}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

@@ -68,7 +68,7 @@ const providerSwitch = {
   type: 'n8n-nodes-base.switch', typeVersion: 3.2, position: [500, 0], id: '20000000-0000-4000-8000-000000000122', name: 'Route Qualified Provider'
 };
 const http = (id, name, url, credentialType, credentialId, credentialName, y) => ({
-  parameters: { method: 'POST', url, authentication: 'predefinedCredentialType', nodeCredentialType: credentialType, sendBody: true, contentType: 'raw', rawContentType: 'application/json', body: '={{ JSON.stringify($json.provider_request) }}', options: { timeout: 120000, redirect: { redirect: { followRedirects: false } }, response: { response: { fullResponse: true, neverError: true } } } },
+  parameters: { method: 'POST', url, authentication: 'predefinedCredentialType', nodeCredentialType: credentialType, sendBody: true, contentType: 'raw', rawContentType: 'application/json', body: '={{ JSON.stringify($json.provider_request) }}', options: { timeout: 120000, redirect: { redirect: { followRedirects: false } }, response: { response: { neverError: true } } } },
   type: 'n8n-nodes-base.httpRequest', typeVersion: 4.2, position: [780, y], id, name,
   credentials: { [credentialType]: { id: credentialId, name: credentialName } }
 });
@@ -77,8 +77,8 @@ const roleExecutor = base('20000000-0000-4000-8000-000000000002', 'CEFFLO ENG - 
     trigger('20000000-0000-4000-8000-000000000120'), routeGate, providerSwitch,
     http('20000000-0000-4000-8000-000000000123', 'OpenAI Responses', 'https://api.openai.com/v1/responses', 'openAiApi', 'BLg2BvJMiBBd9gw8', 'OpenAI account', -100),
     http('20000000-0000-4000-8000-000000000124', 'DeepSeek Responses', 'https://api.deepseek.com/responses', 'deepSeekApi', '52e3f617-3565-4c58-8405-93e2d4f1a980', 'DeepSeek', 100),
-    code('20000000-0000-4000-8000-000000000125', 'Normalize Provider Result', `const i=$input.first().json; const h=i.headers||{}; delete h.authorization; delete h['set-cookie'];
-return [{json:{provider_status_code:i.statusCode,provider_body:i.body??i,budget_settlement_required:true,provider_headers:h}}];`, 1060)
+    code('20000000-0000-4000-8000-000000000125', 'Normalize Provider Result', `const i=$input.first().json;
+return [{json:{provider_body:i,budget_settlement_required:true}}];`, 1060)
   ], {
     'Execute Workflow Trigger': link('Enforce Route And Budget Reservation'),
     'Enforce Route And Budget Reservation': link('Route Qualified Provider'),

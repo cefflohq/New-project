@@ -15,7 +15,7 @@
       "provider": "openai",
       "model": "gpt-5.4-mini",
       "credentialRef": "n8n:BLg2BvJMiBBd9gw8",
-      "status": "qualification_pending",
+      "status": "not_qualified_insufficient_quota",
       "capabilitiesClaimed": ["structured_output", "planning", "long_context", "code_reasoning", "tool_request_generation", "multiple_image_inputs", "visual_comparison", "independent_verification"],
       "pricingUsdPerMillion": {"input": 0.75, "cachedInput": 0.075, "output": 4.5},
       "rolesEligibleAfterQualification": ["E1", "E2", "E3", "E4"]
@@ -25,7 +25,7 @@
       "provider": "deepseek",
       "model": "deepseek-flash",
       "credentialRef": "n8n:52e3f617-3565-4c58-8405-93e2d4f1a980",
-      "status": "qualification_pending",
+      "status": "not_qualified_invalid_authentication",
       "capabilitiesClaimed": ["structured_output", "planning", "long_context", "code_reasoning", "tool_request_generation", "multiple_image_inputs", "visual_comparison", "independent_verification"],
       "pricingUsdPerMillion": {"inputPeak": 0.3, "inputOffPeak": 0.15, "cachedInputPeak": 0.006, "cachedInputOffPeak": 0.003, "outputPeak": 1.2, "outputOffPeak": 0.6},
       "rolesEligibleAfterQualification": ["E1", "E2", "E3", "E4"]
@@ -39,6 +39,26 @@
       "capabilitiesClaimed": ["exact_tree_gate", "verified_artifact_ship"],
       "pricingUsdPerMillion": null,
       "rolesEligibleAfterQualification": ["E5"]
+    },
+    {
+      "routeId": "codex-cli-chatgpt-subscription",
+      "provider": "openai_subscription",
+      "model": null,
+      "credentialRef": "local:chatgpt-login",
+      "status": "not_qualified_unmetered_interactive_route",
+      "capabilitiesClaimed": ["structured_output", "code_reasoning", "multiple_image_inputs"],
+      "pricingUsdPerMillion": null,
+      "rolesEligibleAfterQualification": []
+    },
+    {
+      "routeId": "claude-code-pro-subscription",
+      "provider": "anthropic_subscription",
+      "model": null,
+      "credentialRef": "local:claude-ai-login",
+      "status": "not_qualified_unmetered_interactive_route",
+      "capabilitiesClaimed": ["structured_output", "code_reasoning"],
+      "pricingUsdPerMillion": null,
+      "rolesEligibleAfterQualification": []
     }
   ],
   "rules": {

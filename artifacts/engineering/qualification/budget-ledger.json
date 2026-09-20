@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "hardBudgetMicros": 3000000,
+  "entries": [
+    {
+      "id": "3326fe4c-cbf8-41d1-99f3-c59ac5b1016b",
+      "taskId": "ENG-TASK-V11-ACCEPTANCE-PILOT",
+      "role": "E1-E4-QUALIFICATION",
+      "routeId": "deepseek-flash",
+      "attempt": 1,
+      "retry": 0,
+      "kind": "qualification",
+      "status": "settled",
+      "amountMicros": 0,
+      "createdAt": "2026-09-20T01:39:11.705Z",
+      "usage": {
+        "providerDispatched": false
+      },
+      "outcome": "workflow_import_permission_failure",
+      "settledAt": "2026-09-20T01:39:57.494Z"
+    },
+    {
+      "id": "f9652446-925d-464c-8a49-b860465e7d5e",
+      "taskId": "ENG-TASK-V11-ACCEPTANCE-PILOT",
+      "role": "E1-E4-QUALIFICATION",
+      "routeId": "deepseek-flash",
+      "attempt": 2,
+      "retry": 1,
+      "kind": "qualification",
+      "status": "settled",
+      "amountMicros": 0,
+      "createdAt": "2026-09-20T01:40:32.319Z",
+      "usage": {
+        "providerDispatched": true,
+        "httpStatus": 401,
+        "inputTokens": 0,
+        "outputTokens": 0
+      },
+      "outcome": "credential_authentication_failed",
+      "settledAt": "2026-09-20T01:41:13.644Z"
+    },
+    {
+      "id": "60910043-c66e-44f9-add4-4584b5fc1291",
+      "taskId": "ENG-TASK-V11-ACCEPTANCE-PILOT",
+      "role": "E1-E4-QUALIFICATION",
+      "routeId": "openai-gpt-5.4-mini",
+      "attempt": 1,
+      "retry": 0,
+      "kind": "qualification",
+      "status": "settled",
+      "amountMicros": 0,
+      "createdAt": "2026-09-20T01:41:14.110Z",
+      "usage": {
+        "providerDispatched": true,
+        "httpStatus": 429,
+        "inputTokens": 0,
+        "outputTokens": 0
+      },
+      "outcome": "insufficient_quota_pre_inference",
+      "settledAt": "2026-09-20T01:42:30.411Z"
+    }
+  ]
+}
