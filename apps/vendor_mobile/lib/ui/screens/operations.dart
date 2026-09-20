@@ -1260,14 +1260,13 @@ class _EntryModeCard extends StatelessWidget {
   }
 }
 
-/// The three file sources the import flow accepts. Brand marks are drawn as
-/// tinted lettered tiles -- the real provider logos are not bundled assets.
+/// The three file sources the import flow accepts. Each source uses the
+/// provider's official product mark bundled locally for deterministic render.
 enum _ImportSource {
   googleSheets(
     'Google Sheets',
     'Import from your Google Sheets',
-    'S',
-    Color(0xFF0F9D58),
+    'assets/brand/google-sheets-logo.png',
     'Meal Prep Orders',
     32,
     '16 Sep 2026',
@@ -1275,8 +1274,7 @@ enum _ImportSource {
   excel(
     'Excel',
     'Upload an Excel file (.xlsx, .xls)',
-    'X',
-    Color(0xFF217346),
+    'assets/brand/microsoft-excel-logo.png',
     'Catering Sept',
     24,
     '14 Sep 2026',
@@ -1284,8 +1282,7 @@ enum _ImportSource {
   googleDrive(
     'Google Drive',
     'Import from files in your Google Drive',
-    'D',
-    Color(0xFF1A73E8),
+    'assets/brand/google-drive-logo.png',
     'Hamper Orders',
     18,
     '12 Sep 2026',
@@ -1294,16 +1291,14 @@ enum _ImportSource {
   const _ImportSource(
     this.label,
     this.description,
-    this.mark,
-    this.tint,
+    this.assetPath,
     this.sampleBatch,
     this.sampleCount,
     this.sampleDate,
   );
   final String label;
   final String description;
-  final String mark;
-  final Color tint;
+  final String assetPath;
   final String sampleBatch;
   final int sampleCount;
   final String sampleDate;
@@ -1314,20 +1309,16 @@ class _ImportSourceMark extends StatelessWidget {
   final _ImportSource source;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => SizedBox(
     width: 42,
     height: 42,
-    alignment: Alignment.center,
-    decoration: BoxDecoration(
-      color: source.tint.withValues(alpha: .12),
-      borderRadius: BorderRadius.circular(11),
-    ),
-    child: Text(
-      source.mark,
-      style: TextStyle(
-        color: source.tint,
-        fontWeight: FontWeight.w800,
-        fontSize: 18,
+    child: Center(
+      child: Image.asset(
+        source.assetPath,
+        width: 32,
+        height: 32,
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.high,
       ),
     ),
   );
@@ -1354,48 +1345,11 @@ class ImportOrdersScreen extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 16),
-        for (final source in _ImportSource.values)
-          Padding(
-            padding: const EdgeInsets.only(bottom: Gap.cardGap),
-            child: CefCard(
-              onTap: () => showNotWiredYetSnackBar(
-                context,
-                'Importing from ${source.label}',
-              ),
-              child: Row(
-                children: [
-                  _ImportSourceMark(source: source),
-                  const SizedBox(width: Gap.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          source.label,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          source.description,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    LucideIcons.chevronRight,
-                    size: 20,
-                    color: c.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        const SizedBox(height: Gap.sm),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: c.info.withValues(alpha: .07),
+            color: const Color(0xFFF5F6F8),
+            border: Border.all(color: c.border),
             borderRadius: BorderRadius.circular(Sizes.cardRadius),
           ),
           child: Column(
@@ -1450,6 +1404,44 @@ class ImportOrdersScreen extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(height: Gap.section),
+        for (final source in _ImportSource.values)
+          Padding(
+            padding: const EdgeInsets.only(bottom: Gap.cardGap),
+            child: CefCard(
+              onTap: () => showNotWiredYetSnackBar(
+                context,
+                'Importing from ${source.label}',
+              ),
+              child: Row(
+                children: [
+                  _ImportSourceMark(source: source),
+                  const SizedBox(width: Gap.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          source.label,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          source.description,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    LucideIcons.chevronRight,
+                    size: 20,
+                    color: c.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }

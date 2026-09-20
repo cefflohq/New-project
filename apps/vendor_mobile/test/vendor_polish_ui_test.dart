@@ -11,6 +11,7 @@ void main() {
     VRoute.setupComplete,
     VRoute.today,
     VRoute.orders,
+    VRoute.importOrders,
     VRoute.zones,
     VRoute.riders,
     VRoute.team,
@@ -42,6 +43,31 @@ void main() {
       }
     });
   }
+
+  testWidgets('Import orders shows guidance before official source cards', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      VendorMobileApp(
+        repo: VendorRepository.demo(),
+        auditLocation: const VendorLocation(VRoute.importOrders),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(
+      tester.getTopLeft(find.text('How it works?')).dy,
+      lessThan(tester.getTopLeft(find.text('Google Sheets')).dy),
+    );
+    expect(find.text('Excel'), findsOneWidget);
+    expect(find.text('Google Drive'), findsOneWidget);
+  });
 
   testWidgets('Products exposes its add action in the header', (tester) async {
     tester.view.physicalSize = const Size(393, 852);
