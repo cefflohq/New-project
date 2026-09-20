@@ -22,17 +22,22 @@
       "id": "D-42",
       "status": "ACTIVE",
       "summary": "REF-CONFLICT-V11-NAV-001 resolved: Menu; Product Truth prevails. FG-ENG-04 preparation only."
+    },
+    {
+      "id": "D-43",
+      "status": "ACTIVE",
+      "summary": "FG-ENG-04 approves a cumulative USD 3.00 qualification and V11 pilot envelope; pilot activation remains pending"
     }
   ],
   "gates": {
     "FG-ENG-01": "APPROVED",
     "FG-ENG-02": "APPROVED_WITH_AMENDMENTS",
     "FG-ENG-03": "APPROVED_REFERENCE_REGISTERED",
-    "FG-ENG-04": "PENDING",
+    "FG-ENG-04": "APPROVED_WITH_AMENDMENTS",
     "FG-ENG-05": "PENDING",
     "FG-ENG-06": "PENDING",
     "FG-ENG-07": "PENDING",
     "FG-ENG-08": "PENDING"
   },
-  "currentStop": "FG-ENG-04"
+  "currentStop": "FG-ENG-07"
 }

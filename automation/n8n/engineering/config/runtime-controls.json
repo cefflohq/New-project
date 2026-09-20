@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "engineeringEnabled": true,
+  "qualificationEnabled": true,
+  "pilotEnabled": false,
+  "outboundModelCallsEnabled": true,
+  "gitPushEnabled": false,
+  "previewPublishEnabled": false,
+  "roles": {"E1": true, "E2": true, "E3": true, "E4": true, "E5": true},
+  "providers": {"openai": true, "deepseek": true, "cli": false},
+  "reason": "FG-ENG-04 qualification only; FG-ENG-07 pilot activation pending"
+}

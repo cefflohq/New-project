@@ -9,7 +9,38 @@
     "E4": ["structured_output", "independent_verification"],
     "E5": ["structured_output"]
   },
-  "routes": [],
+  "routes": [
+    {
+      "routeId": "openai-gpt-5.4-mini",
+      "provider": "openai",
+      "model": "gpt-5.4-mini",
+      "credentialRef": "n8n:BLg2BvJMiBBd9gw8",
+      "status": "qualification_pending",
+      "capabilitiesClaimed": ["structured_output", "planning", "long_context", "code_reasoning", "tool_request_generation", "multiple_image_inputs", "visual_comparison", "independent_verification"],
+      "pricingUsdPerMillion": {"input": 0.75, "cachedInput": 0.075, "output": 4.5},
+      "rolesEligibleAfterQualification": ["E1", "E2", "E3", "E4"]
+    },
+    {
+      "routeId": "deepseek-flash",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "credentialRef": "n8n:52e3f617-3565-4c58-8405-93e2d4f1a980",
+      "status": "qualification_pending",
+      "capabilitiesClaimed": ["structured_output", "planning", "long_context", "code_reasoning", "tool_request_generation", "multiple_image_inputs", "visual_comparison", "independent_verification"],
+      "pricingUsdPerMillion": {"inputPeak": 0.3, "inputOffPeak": 0.15, "cachedInputPeak": 0.006, "cachedInputOffPeak": 0.003, "outputPeak": 1.2, "outputOffPeak": 0.6},
+      "rolesEligibleAfterQualification": ["E1", "E2", "E3", "E4"]
+    },
+    {
+      "routeId": "deterministic-e5",
+      "provider": "deterministic_runner",
+      "model": null,
+      "credentialRef": null,
+      "status": "configured",
+      "capabilitiesClaimed": ["exact_tree_gate", "verified_artifact_ship"],
+      "pricingUsdPerMillion": null,
+      "rolesEligibleAfterQualification": ["E5"]
+    }
+  ],
   "rules": {
     "providerIdsInWorkflow": false,
     "credentialValuesInConfig": false,
@@ -17,6 +48,9 @@
     "requirePriceMetadataForPaidRoute": true,
     "e3RequiresReferenceAndRender": true,
     "fallbackRequiresClassifiedReason": true,
-    "fallbackMustRespectRemainingBudget": true
+    "fallbackMustRespectRemainingBudget": true,
+    "leastExpensiveQualifiedRoute": true,
+    "pilotActivationRequired": "FG-ENG-07",
+    "e5NormalPathModel": false
   }
 }

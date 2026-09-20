@@ -1,7 +1,11 @@
 {
   "version": 1,
-  "currency": null,
-  "hardBudget": null,
+  "currency": "USD",
+  "hardBudget": 3.0,
+  "budgetScope": "ENG-TASK-V11-ACCEPTANCE-PILOT",
+  "approvedBy": "FG-ENG-04",
+  "budgetResets": false,
+  "qualificationIncluded": true,
   "spendGate": "FG-ENG-04",
   "maxImplementationAttempts": 3,
   "initialAttemptCounts": true,
@@ -15,7 +19,10 @@
     "maxConcurrentMutatingPilotTasks": 1,
     "unpricedPaidRouteAllowed": false,
     "missingUsageRecordedAsZero": false,
-    "fallbackRequiresRemainingBudget": true
+    "fallbackRequiresRemainingBudget": true,
+    "reserveWorstCaseBeforeDispatch": true,
+    "unknownCostFailsClosed": true,
+    "failedRequestsRetainReservationUntilUsageReconciled": true
   },
   "requiredTelemetry": [
     "task_id",
