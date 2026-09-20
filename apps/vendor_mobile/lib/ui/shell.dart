@@ -107,56 +107,65 @@ class _Header extends StatelessWidget {
     final reviewTitle = _reviewTitles[app.current.route];
     if (reviewTitle != null) {
       final subtitle = _reviewSubtitles[app.current.route];
-      return SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: subtitle == null ? 56 : 68,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              IconAction(
-                icon: LucideIcons.arrowLeft,
-                tooltip: 'Back',
-                onTap: app.back,
-              ),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      reviewTitle,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF091A3C),
-                      ),
-                    ),
-                    if (subtitle != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Text(
-                          subtitle,
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            color: c.textSecondary,
-                          ),
+      return Container(
+        decoration: BoxDecoration(
+          color: c.chrome,
+          border: Border(bottom: BorderSide(color: c.border)),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: SizedBox(
+            height: subtitle == null ? 56 : 68,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                IconAction(
+                  icon: LucideIcons.arrowLeft,
+                  tooltip: 'Back',
+                  onTap: app.back,
+                ),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        reviewTitle,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF091A3C),
                         ),
                       ),
-                  ],
+                      if (subtitle != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            subtitle,
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: c.textSecondary,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 44),
-            ],
+                const SizedBox(width: 44),
+              ],
+            ),
           ),
         ),
       );
     }
     return Container(
-      color: c.chrome,
+      decoration: BoxDecoration(
+        color: c.chrome,
+        border: Border(bottom: BorderSide(color: c.border)),
+      ),
       child: SafeArea(
         bottom: false,
         child: SizedBox(
@@ -334,9 +343,7 @@ class _BottomNav extends StatelessWidget {
                           Icon(
                             selected ? _filledIcons[item.$1]! : item.$3,
                             size: today ? 24 : Sizes.icon,
-                            color: selected
-                                ? CefColors.accent
-                                : c.textSecondary,
+                            color: selected ? c.info : c.textSecondary,
                           ),
                           const SizedBox(height: 3),
                           Text(
@@ -346,7 +353,7 @@ class _BottomNav extends StatelessWidget {
                               fontWeight: selected
                                   ? FontWeight.w600
                                   : FontWeight.w500,
-                              color: selected ? c.textPrimary : c.textSecondary,
+                              color: selected ? c.info : c.textSecondary,
                             ),
                           ),
                           const SizedBox(height: 3),
