@@ -52,9 +52,9 @@ They do not alter canonical product navigation or Production.
 | V43 | `/audit/V43` | Edit Profile |
 | V44 | `/audit/V44` | Security |
 | V45 | `/audit/V45` | Change Password |
-| V46 | `/audit/V46` | Settings / More |
+| V46 | `/audit/V46` | Menu |
 | V47 | `/audit/V47` | Notification Preferences |
-| V48 | `/audit/V48` | Contextual Language bottom sheet |
+| V48 | `/audit/V48` | Language |
 | V49 | `/audit/V49` | Appearance — HOLD / inactive |
 | V50 | — | Subscription / Plan — HOLD, excluded from active baseline |
 | V51 | — | Choose / Change Plan — HOLD, excluded from active baseline |

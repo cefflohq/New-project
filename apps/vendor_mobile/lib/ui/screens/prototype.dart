@@ -689,40 +689,20 @@ class _LanguageScreen extends StatelessWidget {
     ];
     return PageBody(
       children: [
-        Opacity(
-          opacity: .45,
-          child: const _HeroPanel(
-            kicker: 'Your app, your way',
-            title: 'Simple settings for a smoother experience.',
-          ),
+        Text(
+          'Choose the language used throughout the Vendor app.',
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
-        const SizedBox(height: 24),
-        Container(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: cefCardShadow(Brightness.light),
-          ),
+        const SizedBox(height: Gap.md),
+        CefCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  width: 44,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFABB2C2),
-                    borderRadius: BorderRadius.circular(9),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
               Text(
-                'Select Language',
-                style: Theme.of(context).textTheme.titleLarge,
+                'App language',
+                style: Theme.of(context).textTheme.titleMedium,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: Gap.sm),
               for (final lang in langs)
                 FlatListRow(
                   title: lang.$1,
@@ -735,11 +715,11 @@ class _LanguageScreen extends StatelessWidget {
                         ),
                   onTap: () => app.setLocale(lang.$1),
                 ),
-              const SizedBox(height: 14),
-              CefButton('Confirm', onTap: () {}),
             ],
           ),
         ),
+        const SizedBox(height: Gap.md),
+        CefButton('Confirm', onTap: () {}),
       ],
     );
   }
