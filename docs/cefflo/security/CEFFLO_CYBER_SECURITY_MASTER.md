@@ -4,7 +4,7 @@
 **Date:** 2026-09-19  
 **Scope:** Company-wide product, infrastructure, data, software supply-chain, AI/agent security, continuous threat intelligence, vulnerability management, incident response, and recovery.  
 **Owner / Final Authority:** Founder  
-**Enforcement:** Technical controls + n8n Control Layer + Engineering workflows + infrastructure policy  
+**Enforcement:** Technical controls + CEFFLO Control Layer governance + n8n execution engine + department workflows + infrastructure policy
 **Role:** Cross-company security architecture — **not a sixth department and not an AI super-agent**.
 
 ---
@@ -626,7 +626,7 @@ Backups count only if restoration works.
 
 Track backup scope, retention, restricted access, restore tests and recovery documentation.
 
-Prioritize recovery for production DB, auth, Vendor/Driver backend, Customer Tracking, n8n Control Layer, Founder access and deployment pipeline.
+Prioritize recovery for production DB, auth, Vendor/Driver backend, Customer Tracking, CEFFLO Control Layer governance and its n8n execution engine, Founder access and deployment pipeline.
 
 Track:
 

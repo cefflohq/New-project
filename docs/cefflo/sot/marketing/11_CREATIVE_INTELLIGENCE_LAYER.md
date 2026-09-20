@@ -1225,7 +1225,7 @@ Avoid hardcoding the entire creative universe directly into n8n nodes.
 
 ## 31. N8N IMPLEMENTATION PRINCIPLE
 
-n8n remains the central orchestrator.
+n8n remains the Marketing department orchestrator beneath the CEFFLO Control Layer.
 
 CIL should be designed as modular stages rather than one giant AI prompt.
 
@@ -1822,7 +1822,7 @@ This document substantially operationalizes `09_CONTENT_WORLD_PRODUCTION_DOCTRIN
 
 ## C4. Phase 9 — n8n Integration (documented only, nothing activated)
 
-CIL slots in as an enrichment step inside `CEFFLO - 02 - Research & Angle Miner`, upstream of `CEFFLO - 03 - Master Concept Builder`, per §26's architecture. **No live n8n workflow was created, modified, or imported in this pass** — the taxonomy/engine/validator exist as standalone, tested code ready to be wired into that stage's existing Code node the same way the DeepSeek AI Router is planned to be (`docs/cefflo/tasks/CEFFLO_DEEPSEEK_AI_ROUTER_IMPLEMENTATION_MASTER.md`). This satisfies GATE D (Production Safety) — no workflow was activated, no schedule enabled, no publishing touched.
+CIL slots in as an enrichment step inside `CEFFLO - 02 - Research & Angle Miner`, upstream of `CEFFLO - 03 - Master Concept Builder`, per §26's architecture. **No live n8n workflow was created, modified, or imported in this pass** — the taxonomy/engine/validator exist as standalone, tested code ready for a later authorized department integration. Any model call must use capability-based Control Layer policy (CL8–CL10), not the deprecated DeepSeek Router task master. This satisfies GATE D (Production Safety) — no workflow was activated, no schedule enabled, no publishing touched.
 
 ## C5. Cross-References
 

@@ -1128,13 +1128,13 @@ Applied in-place at §19 above. No color value changed — `#C7F000` is unchange
 
 ## A6. Video Editor / Assembler — Capability Documented, Insertion Point PROPOSED ONLY (Founder decision 4)
 
-**No insertion point is adopted by this reconciliation.** The following is a proposal for a future, separate Founder review before any implementation — nothing below has been applied to `docs/cefflo/tasks/CEFFLO_DEEPSEEK_AI_ROUTER_IMPLEMENTATION_MASTER.md` or any n8n workflow.
+**No insertion point is adopted by this reconciliation.** The following is a proposal for a future, separate Founder review before any implementation — nothing below has been applied to any n8n workflow. The former DeepSeek Router task master is deprecated; any future model path must comply with Control Layer CL8–CL10.
 
 **Capability required** (per §12 above): select approved generated clips, select real product recordings, order shots per shot list, crop/reframe to 9:16, trim, transitions, voiceover/music/SFX placement, captions, typography, brand-safe end card/CTA, export variants, platform-safe output — using deterministic media tooling where practical rather than delegating every edit to an LLM.
 
 **Proposed mapping for Founder review:** no existing top-level `CEFFLO-00..12,99` workflow name currently covers this. Two options, presented — not decided:
 - **(a)** An internal sub-stage inside the existing `CEFFLO - 05A - Meta Creator` / `CEFFLO - 05B - TikTok Creator` video path (no renumbering of the already-approved 00–12/99 family; Editor/Assembler runs as a step within each platform-creator workflow after its generation calls return).
-- **(b)** A new shared sub-workflow (analogous to the proposed `CEFFLO - AI Router`) called by 05A/05B whenever video assembly is required, keeping assembly logic in one place rather than duplicated per platform.
+- **(b)** A new shared Marketing sub-workflow called by 05A/05B whenever video assembly is required, keeping assembly logic in one place rather than duplicated per platform. Any future provider route remains governed by Control Layer CL8–CL10.
 
 No option is selected here. This is documentation of the gap and a proposal only, per the Founder's explicit instruction not to invent an insertion point yet.
 
@@ -1154,4 +1154,4 @@ No option is selected here. This is documentation of the gap and a proposal only
 - `docs/cefflo/sot/marketing/11_CREATIVE_INTELLIGENCE_LAYER.md` — operationalizes this document's Phase B (Content Intelligence Foundation) in schema/code form (taxonomy, scenario contract, scenario engine, validator, tests), and adds a Vehicle Model layer this document does not cover. Does not itself grant FG-2. Hierarchy item 13.
 - `docs/cefflo/05_DECISIONS.md` D-25 (lane model), D-26 (this FG-1 reconciliation, both MDs).
 - `docs/cefflo/audits/CEFFLO_CONTENT_WORLD_DOCTRINE_RECONCILIATION_REPORT.md` — full reconciliation analysis this addendum executes.
-- `docs/cefflo/sot/marketing/08_AI_CONTENT_ENGINE_ORCHESTRATOR.md`, `docs/cefflo/tasks/CEFFLO_DEEPSEEK_AI_ROUTER_IMPLEMENTATION_MASTER.md` — this document's Phase C/E/§22 content operates within, not in place of, those already-approved architectures.
+- `docs/cefflo/sot/marketing/08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` and `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md` — this document's Phase C/E/§22 content operates within, not in place of, those authorities.

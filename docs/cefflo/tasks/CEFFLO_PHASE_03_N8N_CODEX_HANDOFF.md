@@ -30,11 +30,11 @@
 | 7. Live smoke test | BLOCKED / OPEN | Editor is reachable, but manual trigger is gated by n8n sign-in. No authorized authenticated session or Personal API Key was provided; do not create one or bypass access. Founder must provide an authorized trigger path. |
 | 8. Backups/exports | DONE | Existing export/export-post/export-verify backups present; an additional pre-credential-placeholder export captured before task 4. |
 
-1. **Confirm target Postgres for `cefflo_content_engine`.** Same open item since the DeepSeek AI Router Master's Phase 0 — still unconfirmed. Recommended default (from that Master): the product's Supabase instance, not `cefflo-n8n-postgres` (reserved for n8n's own tables). Do not apply any migration until this is confirmed.
+1. **Confirm target Postgres for `cefflo_content_engine`.** This target remains unconfirmed; the deprecated DeepSeek Router task master is not authority for the decision. The prior recommendation was the product's Supabase instance, not `cefflo-n8n-postgres` (reserved for n8n's own tables), but no migration may be applied until the target is explicitly confirmed.
 2. **Apply `202609100001_content_engine_roi.sql`, `202609110001_cil_scenarios.sql`, and `202609130001_phase03_cost_and_waitlist.sql`** (in that order — later files reference tables from earlier ones) to the confirmed target, once (1) is resolved.
 3. **Create the `prelaunch_waitlist` write path.** Write a `cefflo_content_engine.submit_waitlist_entry(jsonb) RETURNS uuid` function (matching the existing `SECURITY DEFINER`-style pattern of `persist_marketing_memory`/`log_event` in `202609100001_content_engine_roi.sql`), then expose the `cefflo_content_engine` schema (or just this one RPC) through PostgREST's exposed-schema config so `marketing/prelaunch/backend.js`'s `window.CEFFLO.rpc('submit_waitlist_entry', ...)` call resolves. This is genuinely new infrastructure work, not just an import.
 4. **Create credential placeholders** in n8n's encrypted credential store — names only, Founder supplies the actual keys later, out-of-band, never in chat:
-   - `DeepSeek` (type `deepSeekApi`, already confirmed available in the installed `@n8n/n8n-nodes-langchain` package per `docs/cefflo/audits/CEFFLO_DEEPSEEK_N8N_PRE_IMPLEMENTATION_REPORT.md`) — for any future live AI Router wiring (`docs/cefflo/tasks/CEFFLO_DEEPSEEK_AI_ROUTER_IMPLEMENTATION_MASTER.md`), not required for Phase 03's deterministic-by-default content engine.
+   - `DeepSeek` (type `deepSeekApi`, already confirmed available in the installed `@n8n/n8n-nodes-langchain` package per `docs/cefflo/audits/CEFFLO_DEEPSEEK_N8N_PRE_IMPLEMENTATION_REPORT.md`) — for a future Founder-authorized capability route governed by Control Layer CL8–CL10, not required for Phase 03's deterministic-by-default content engine.
    - `Seedance` / Volcano Engine ARK (AK/SK-style credential, per `automation/n8n/content-engine/scripts/seedance-adapter.mjs`'s header) — **do not create this yet**, it is gated behind Founder Gate 2 (`CEFFLO_PHASE_03_MARKETING_ENGINE_CONTENT_PILOT_MASTER.md` §38 item 2, paid activation). Preparing the placeholder is fine; entering a real key is not authorized by this document.
 5. **Re-run `node scripts/generate-workflows.mjs`** if/when the Code-node wiring described in §2 above is done, and re-import the regenerated JSON — still inactive, still `activationProhibited: true`.
 6. **Run the test suite** (`node tests/validate_artifacts.mjs`, `node tests/cil_test.mjs`, `node tests/phase03_test.mjs`, `node tests/roi_smoke.mjs` once the SOT-manifest commit gap from D-27/D-29 is resolved) after any change, before considering the change complete.
@@ -44,7 +44,7 @@
 # 4. UNAVOIDABLE FOUNDER ACTIONS (exception-only, per §2.3)
 
 Do not turn these into a manual-setup tutorial — one short instruction each, at the point they're actually needed:
-- Supplying the real DeepSeek API key into the `DeepSeek` credential (out-of-band, never in chat) — only once live AI Router wiring is actually being turned on, which is not part of this handoff.
+- Supplying the real DeepSeek API key into the `DeepSeek` credential (out-of-band, never in chat) — only after a separate Founder gate authorizes a qualified Control Layer route; this is not part of the handoff.
 - Supplying real Seedance/Volcano Engine ARK credentials — only after Founder Gate 2 (§38 item 2) is explicitly granted.
 - Confirming the Postgres target (task 1 above) — a one-line decision, not a setup task.
 

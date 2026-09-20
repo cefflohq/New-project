@@ -8,6 +8,14 @@
 # CEFFLO — MARKETING KNOWLEDGE PACK INDEX
 **Version:** 2026-09-04
 
+## Parent governance boundary
+
+Marketing is a CEFFLO department governed at company level by
+`docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`. The hierarchy below is
+authoritative inside Marketing. Its n8n workflow family, approvals, model
+routing and cost rules are department-local child policies; they do not replace
+CL6–CL10.
+
 ## Canonical hierarchy
 1. `docs/cefflo/sot/01_PRODUCT_TRUTH.md` (was: CEFFLO_PRODUCT_TRUTH.md)
 2. `docs/cefflo/sot/05_BRAND_BRAIN.md` (was: CEFFLO_BRAND_BRAIN / current canonical Brand Brain)

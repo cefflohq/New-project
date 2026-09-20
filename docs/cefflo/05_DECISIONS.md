@@ -648,3 +648,36 @@ for a navigation decision is closed by this decision.
 Only FG-ENG-04 preparation is authorized next. No V11 modification, E1–E5
 execution, pilot activation, purchase, credential provisioning or deployment
 is authorized. FG-ENG-04 remains pending Founder approval.
+
+
+---
+
+## D-43 Control Layer Master Canonical Migration (2026-09-20)
+
+Founder approved the documentation-only migration of the CEFFLO Control Layer
+Master. The single active company AI governance authority is:
+
+- Path: `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`
+- Source SHA-256: `bccaad1b21d7f285636d47e2c2be6fec292cd416eccb47e320922a913fab4693`
+
+The canonical hierarchy is Founder → CEFFLO Control Layer → n8n as primary
+technical execution/control-plane engine → Engineering, Product Intelligence,
+Marketing, Sales & CRM and Customer Service. Cyber Security remains a
+cross-company guardrail. Department masters retain internal authority.
+
+Agents reason. Control Layer governs. Tools execute. Company Truth grounds.
+Founder decides exceptions.
+
+Agent OS and `17_AI_WORKFLOW.md` govern human-led development collaboration
+only. The former DeepSeek AI Router task master is deprecated; company model
+routing, tool dispatch and cost governance belong to CL8–CL10. Jev is recorded
+only as **CANDIDATE JUDGMENT ENGINE — NOT QUALIFIED / NOT REQUIRED / NO ACTIVE
+DEPENDENCY**.
+
+This decision authorizes documentation reconciliation only. It does not
+authorize Control Layer runtime or n8n workflow implementation, workflow
+activation, database/schema or credential changes, provider qualification,
+paid API calls, Engineering changes, V11 execution, FG-ENG-07, Jev setup or
+legacy-file deletion. Engineering checkpoint
+`053011c3af92c6b392b256208b743444275c4f6a` remains the frozen parent of this
+documentation migration.

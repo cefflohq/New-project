@@ -3,11 +3,12 @@
 Status: Canonical routing map for the `docs/cefflo/` context documents,
 scoped to Codex tasks. Final authority: Founder.
 
-Agent roles, task routing and cross-agent authority are defined by
-`docs/cefflo/CEFFLO_BRAND_BRAIN.md` and
-`docs/cefflo/agent-os/CEFFLO_AGENT_OS_CORE.md` — read those first for
-who does what. This file does not assign a primary executor; it only
-routes Codex to the small `docs/cefflo/` context documents below.
+Company AI governance and cross-department orchestration are defined by
+`docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`. Human-led development
+collaboration is defined by `docs/cefflo/agent-os/CEFFLO_AGENT_OS_CORE.md`.
+Brand and product authority is routed through `docs/cefflo/sot/00_INDEX.md`.
+This file does not create a company super-agent or assign runtime authority;
+it routes Codex to the smallest relevant canonical context set.
 
 ## A-00 Purpose
 
@@ -60,6 +61,13 @@ acceptance criteria.
     `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md`
 -   Cross-company security architecture and AI/tool boundaries →
     `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md`
+-   Company AI governance, cross-department routing and n8n control-plane
+    contracts → `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`
+
+For Control Layer work, load the Control Layer Master first, then only the
+relevant department master and the Cyber Security Master. The Control Layer
+governs between departments; n8n is its primary technical execution/control-
+plane engine; departments retain their internal reasoning and ownership.
 
 For Engineering Department bootstrap work, load both masters above. The
 Engineering Master defines the department; the Cyber Security Master constrains

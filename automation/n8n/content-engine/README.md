@@ -2,6 +2,11 @@
 
 Status: import-ready ROI production skeleton. All provider modes are stubbed and every workflow is inactive.
 
+This is a Marketing department workflow family beneath
+`docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`. Its `CEFFLO - 00..12,99`
+identifiers are distinct from the company `CEFFLO-CTRL-*` logical family. No
+workflow in this directory is the company Control Layer.
+
 ## Safety boundary
 
 - `CEFFLO - 00 - Orchestrator Test` is instance-only prototype state and is not included, renamed, overwritten or converted here.

@@ -1,4 +1,6 @@
 **Status:** CANONICAL — Founder-approved, merged into repo 2026-09-10
+**Control Layer boundary (2026-09-20):** `CEFFLO - 00..12,99` is a Marketing department workflow family, distinct from the company `CEFFLO-CTRL-*` logical family. It operates beneath `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`.
+
 **Repo-reconciliation note:** This is the n8n orchestration/architecture blueprint for the daily content-production pipeline described at a charter level in `06_AI_MARKETING_ENGINE_MASTER.md`. It does not replace that document — it implements Teams 1–4 of it as a concrete workflow family. Team 5 (Paid Growth) and the weekly winner-selection loop are preserved and given explicit architectural placement in the **Repo Reconciliation Addendum** at the end of this file, per Founder Decision Gate approval 2026-09-10 (see `docs/cefflo/05_DECISIONS.md` D-25). The body below (§0–§25) is the Founder-approved source text, reproduced as supplied and unedited; all reconciliation additions are isolated in the clearly marked addendum so the original Founder text stays traceable. See also `docs/cefflo/audits/CEFFLO_AI_CONTENT_ENGINE_V1.1_RECONCILIATION_REPORT.md` for the full reconciliation analysis this file and D-25 are based on.
 
 ---
@@ -21,7 +23,7 @@ Content Engine in n8n.
     campaign/rule documents.
 -   **PostgreSQL** = dynamic operational state + Marketing Memory +
     performance history.
--   **n8n** = central orchestrator: trigger, retrieval, routing, state,
+-   **n8n** = Marketing department orchestrator: trigger, retrieval, routing, state,
     retries, approvals, publishing coordination, analytics loop.
 -   **LLMs / AI workers** = research, reasoning, concepts, scripts/copy,
     platform adaptation, QA assistance.

@@ -1,6 +1,9 @@
 **Status:** CANONICAL — Founder-approved, merged into repo 2026-09-04
 **Repo-reconciliation note:** This is the current canonical Founder-approved knowledge-base root. It supersedes `docs/cefflo/CEFFLO_BRAND_BRAIN.md` for brand/product/architecture doctrine and extends the same "newer canonical layer above the numbered pack" pattern already established by `docs/cefflo/00_AGENTS.md`. Each domain below is resolved to its actual repo path (or flagged as a genuine gap) rather than left as a bare filename placeholder.
 
+**Company AI governance authority added 2026-09-20 (D-43):**
+- `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md` — canonical company AI governance and cross-department orchestration architecture. n8n is its primary technical execution/control-plane engine. Departments retain their internal authority; Cyber Security remains a cross-company guardrail.
+
 **Engineering and security authorities added 2026-09-19 (D-39; baseline selection amended by D-40):**
 - `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md` — canonical Engineering Department E1–E5 architecture.
 - `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md` — canonical cross-company security architecture. During Engineering Bootstrap Phase 01 it constrains only the approved Engineering attack surface; it does not authorize building the wider Cyber Security system.
@@ -127,7 +130,11 @@ Primary:
 - Curlec subscription implementation/onboarding artifacts — none exist yet.
 - legal/support/commercial launch decisions — see `docs/cefflo/05_DECISIONS.md`.
 
-## 11. AI Agent Rules
+## 11. AI Governance and Development Agent Rules
+Company governance authority:
+- `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`
+
+Development collaboration rules:
 Primary:
 - `docs/cefflo/agent-os/CEFFLO_AGENT_OS_CORE.md`
 - `docs/cefflo/agent-os/CHATGPT_OPERATING.md`
@@ -137,7 +144,11 @@ Primary:
 - `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md` (Engineering Department roles, orchestration, gates and evidence)
 - `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md` (security boundaries for agents, tools, credentials and Crown Jewels)
 
-Agent rules govern how work is performed; they do not override Product Truth or Founder decisions.
+Development agent rules govern how repository work is performed; they do not
+override Product Truth, department masters, the Control Layer Master, or Founder
+decisions. The Control Layer is governance architecture, not a sixth department.
+Jev is recorded only as **CANDIDATE JUDGMENT ENGINE — NOT QUALIFIED / NOT
+REQUIRED / NO ACTIVE DEPENDENCY**.
 
 ## 12. Global Authority Order
 1. Latest explicit Founder decision

@@ -65,3 +65,27 @@ Any material change to client boundaries, backend ownership, deployment
 topology, identity model, lifecycle contract or SOT requires
 architecture review and Founder approval when protected by
 `00_AGENTS.md`.
+
+
+## AR-08 Company AI Governance
+
+The canonical company AI governance and cross-department orchestration
+architecture is `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`.
+
+```text
+Founder
+  ↓
+CEFFLO Control Layer
+  ↓
+n8n — primary technical execution/control-plane engine
+  ↓
+Engineering / Product Intelligence / Marketing / Sales & CRM / Customer Service
+```
+
+Cyber Security is a cross-company guardrail, not a department or AI
+super-agent. Department masters remain authoritative inside their departments.
+The Control Layer governs between departments and across company-level gates,
+permissions, events, model routing, tools, cost, audit and system guards.
+
+Agents reason. Control Layer governs. Tools execute. Company Truth grounds.
+Founder decides exceptions.

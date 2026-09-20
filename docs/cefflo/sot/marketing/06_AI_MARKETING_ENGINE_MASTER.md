@@ -1,4 +1,6 @@
 **Status:** CANONICAL — Founder-approved, merged into repo 2026-09-04
+**Control Layer boundary (2026-09-20):** This is the Marketing department master. Its n8n orchestration, approvals, model choices and cost rules are department-local child policies beneath `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`; they do not define company-wide Control Layer authority.
+
 **Repo-reconciliation note:** Net-new implementation master for the AI Marketing Engine (n8n-orchestrated). No implementation work (n8n workflows, marketing_* tables, etc.) exists in this repo yet — this file is the target specification only, per its own Phase M0 (Audit & SOT Reconciliation) being satisfied by this very reconciliation pass.
 **Reconciliation update (2026-09-10):** `docs/cefflo/sot/marketing/08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` (Founder-approved v1.1) is now the concrete n8n orchestration blueprint implementing Teams 1–4 below. §5's volume ceiling and §8's workflow naming are corrected/annotated to match it; see the inline notes at each section and `docs/cefflo/05_DECISIONS.md` D-25. Team 5 (Paid Growth) and the Weekly Winner Loop are preserved and unaffected — see `08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` Addendum A1.
 
