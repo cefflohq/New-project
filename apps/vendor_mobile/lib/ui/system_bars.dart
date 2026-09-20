@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/chrome_color.dart';
+
 /// Cefflo's single reusable mechanism for edge-to-edge Android/iOS system
 /// chrome. No screen or widget should call
 /// `SystemChrome.setSystemUIOverlayStyle` / build a raw
@@ -34,6 +36,7 @@ class CefSystemBars extends StatelessWidget {
   const CefSystemBars({
     super.key,
     required Brightness background,
+    this.browserChromeColor,
     required this.child,
   }) : statusBarBackground = background,
        navigationBarBackground = background;
@@ -45,6 +48,7 @@ class CefSystemBars extends StatelessWidget {
     super.key,
     required this.statusBarBackground,
     required this.navigationBarBackground,
+    this.browserChromeColor,
     required this.child,
   });
 
@@ -58,6 +62,12 @@ class CefSystemBars extends StatelessWidget {
   /// itself. `Brightness.dark` means a dark background, which gets
   /// light/white navigation bar icons.
   final Brightness navigationBarBackground;
+
+  /// Opaque colour exposed to mobile browsers through `<meta
+  /// name="theme-color">`. Native builds continue to use the overlay style
+  /// below; Flutter Web needs this separate DOM path because SystemChrome
+  /// cannot recolour Android's browser-owned status bar.
+  final Color? browserChromeColor;
 
   final Widget child;
 
@@ -104,11 +114,68 @@ class CefSystemBars extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
-    value: styleFor(
-      statusBarBackground: statusBarBackground,
-      navigationBarBackground: navigationBarBackground,
+  Widget build(BuildContext context) => _BrowserChromeSync(
+    color: browserChromeColor,
+    child: AnnotatedRegion<SystemUiOverlayStyle>(
+      value: styleFor(
+        statusBarBackground: statusBarBackground,
+        navigationBarBackground: navigationBarBackground,
+      ),
+      child: child,
     ),
-    child: child,
   );
+}
+
+class _BrowserChromeSync extends StatefulWidget {
+  const _BrowserChromeSync({required this.color, required this.child});
+
+  final Color? color;
+  final Widget child;
+
+  @override
+  State<_BrowserChromeSync> createState() => _BrowserChromeSyncState();
+}
+
+class _BrowserChromeSyncState extends State<_BrowserChromeSync> {
+  final Object _owner = Object();
+
+  @override
+  void initState() {
+    super.initState();
+    _setBrowserChromeEntry(_owner, widget.color);
+  }
+
+  @override
+  void didUpdateWidget(_BrowserChromeSync oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.color != oldWidget.color) {
+      _setBrowserChromeEntry(_owner, widget.color);
+    }
+  }
+
+  @override
+  void dispose() {
+    _removeBrowserChromeEntry(_owner);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+final List<({Object owner, Color color})> _browserChromeStack = [];
+
+void _setBrowserChromeEntry(Object owner, Color? color) {
+  _browserChromeStack.removeWhere((entry) => identical(entry.owner, owner));
+  if (color != null) _browserChromeStack.add((owner: owner, color: color));
+  if (_browserChromeStack.isNotEmpty) {
+    syncBrowserChromeColor(_browserChromeStack.last.color);
+  }
+}
+
+void _removeBrowserChromeEntry(Object owner) {
+  _browserChromeStack.removeWhere((entry) => identical(entry.owner, owner));
+  if (_browserChromeStack.isNotEmpty) {
+    syncBrowserChromeColor(_browserChromeStack.last.color);
+  }
 }

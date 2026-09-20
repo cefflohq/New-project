@@ -65,6 +65,7 @@ class VendorShell extends StatelessWidget {
       // only has to pick the matching transparent-bar icon treatment for
       // whichever brightness that fill actually is.
       background: dark ? Brightness.dark : Brightness.light,
+      browserChromeColor: c.chrome,
       child: PopScope(
         canPop: !app.canGoBack,
         onPopInvokedWithResult: (didPop, _) {

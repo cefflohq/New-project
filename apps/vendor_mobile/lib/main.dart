@@ -138,6 +138,7 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
         // tree, which takes precedence for that route.
         builder: (context, child) => CefSystemBars(
           background: Brightness.light,
+          browserChromeColor: CefColors.light.chrome,
           child: ResponsiveDensity(child: child!),
         ),
         home: Builder(
@@ -276,6 +277,7 @@ class ConfigurationErrorApp extends StatelessWidget {
     theme: buildVendorTheme(Brightness.light),
     home: CefSystemBars(
       background: Brightness.light,
+      browserChromeColor: CefColors.light.chrome,
       child: Scaffold(
         body: SafeArea(
           child: Padding(

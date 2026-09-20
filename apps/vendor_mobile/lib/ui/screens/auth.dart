@@ -980,6 +980,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) => CefSystemBars(
     background: Brightness.dark,
+    browserChromeColor: _navyDeep,
     child: Scaffold(
       backgroundColor: _navyBase,
       body: _NavyBackdrop(
@@ -1087,6 +1088,7 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) => CefSystemBars(
     background: Brightness.dark,
+    browserChromeColor: const Color(0xFF51BDF8),
     child: Scaffold(
       backgroundColor: _navyBase,
       body: _SignInBackdrop(
