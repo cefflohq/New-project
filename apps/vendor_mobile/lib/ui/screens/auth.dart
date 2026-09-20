@@ -1413,24 +1413,22 @@ class _ProviderButton extends StatelessWidget {
   );
 }
 
-/// Placeholder mark. Google's official multi-colour "G" is a third-party
-/// brand asset that is not in this repository, so this remains a neutral
-/// stand-in until the official asset/dependency is approved.
+/// Official multicolour Google "G", downloaded from Google's current Sign
+/// in with Google branding asset and kept at its original aspect ratio.
 class _GoogleGlyph extends StatelessWidget {
   const _GoogleGlyph();
 
   @override
-  Widget build(BuildContext context) => const SizedBox(
+  Widget build(BuildContext context) => SizedBox(
     width: 22,
     height: 22,
     child: Center(
-      child: Text(
-        'G',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w800,
-          color: Color(0xFF4285F4),
-        ),
+      child: Image.asset(
+        'assets/brand/google-g-logo.png',
+        width: 20,
+        height: 20.4,
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.high,
       ),
     ),
   );
