@@ -58,5 +58,29 @@ void main() {
 
     expect(find.byTooltip('Add product'), findsOneWidget);
     expect(find.byType(FloatingActionButton), findsNothing);
+
+    await tester.tap(find.byTooltip('Add product'));
+    await tester.pumpAndSettle();
+    expect(find.text('Add product'), findsOneWidget);
+  });
+
+  testWidgets('the fifth navigation item opens Menu', (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      VendorMobileApp(
+        repo: VendorRepository.demo(),
+        auditLocation: const VendorLocation(VRoute.products),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Menu'));
+    await tester.pumpAndSettle();
+    expect(find.text('Business'), findsOneWidget);
+    expect(find.text('App & Account'), findsOneWidget);
   });
 }
