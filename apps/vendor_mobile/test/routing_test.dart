@@ -4,21 +4,24 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('route inventory', () {
-    test('covers the active inventory exactly once and excludes HOLD routes', () {
-      final ids = routeSpecs.values
-          .map((s) => s.id)
-          .where((id) => id.startsWith('V-'))
-          .toList();
-      expect(ids.toSet(), hasLength(55));
-      for (var i = 1; i <= 60; i++) {
-        final id = 'V-${i.toString().padLeft(2, '0')}';
-        if (i >= 50 && i <= 54) {
-          expect(ids, isNot(contains(id)), reason: '$id is on Founder HOLD');
-        } else {
-          expect(ids, contains(id));
+    test(
+      'covers the active inventory exactly once and excludes HOLD routes',
+      () {
+        final ids = routeSpecs.values
+            .map((s) => s.id)
+            .where((id) => id.startsWith('V-'))
+            .toList();
+        expect(ids.toSet(), hasLength(55));
+        for (var i = 1; i <= 60; i++) {
+          final id = 'V-${i.toString().padLeft(2, '0')}';
+          if (i >= 50 && i <= 54) {
+            expect(ids, isNot(contains(id)), reason: '$id is on Founder HOLD');
+          } else {
+            expect(ids, contains(id));
+          }
         }
-      }
-    });
+      },
+    );
 
     test('additional surfaces are not counted inside the 60', () {
       final extra = routeSpecs.values
@@ -34,6 +37,11 @@ void main() {
       for (final s in routeSpecs.values) {
         if (s.parent != null) expect(routeSpecs.containsKey(s.parent), isTrue);
       }
+    });
+
+    test('the fifth primary destination uses canonical Menu terminology', () {
+      expect(routeSpecs[VRoute.settings]!.title, 'Menu');
+      expect(routeSpecs[VRoute.settings]!.tab, NavTab.menu);
     });
   });
 

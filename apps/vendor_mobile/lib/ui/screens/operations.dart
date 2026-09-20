@@ -610,10 +610,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
             .toList();
         return PageBody(
           onRefresh: reload,
-          floatingAction: YellowFab(
-            tooltip: 'Add order',
-            onTap: () => app.go(VRoute.newOrder),
-          ),
           children: [
             SegmentedTabs(
               labels: tabLabels,

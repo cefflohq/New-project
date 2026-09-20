@@ -395,39 +395,6 @@ class CefButton extends StatelessWidget {
   }
 }
 
-/// A page-level "add" action. Always passed to [PageBody.floatingAction] so
-/// it stays pinned at a fixed corner above the bottom navigation instead of
-/// scrolling with the list content.
-class YellowFab extends StatelessWidget {
-  const YellowFab({super.key, required this.tooltip, required this.onTap});
-
-  final String tooltip;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => Tooltip(
-    message: tooltip,
-    child: SizedBox(
-      width: 52,
-      height: 52,
-      child: Material(
-        color: CefColors.accent,
-        shape: const CircleBorder(),
-        elevation: 3,
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onTap,
-          child: const Icon(
-            LucideIcons.plus,
-            size: 26,
-            color: CefColors.onAccent,
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
 class CefField extends StatelessWidget {
   const CefField({
     super.key,

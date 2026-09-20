@@ -443,7 +443,7 @@ const routeSpecs = <VRoute, RouteSpec>{
   VRoute.settings: RouteSpec(
     route: VRoute.settings,
     id: 'V-46',
-    title: 'Settings',
+    title: 'Menu',
     tab: NavTab.menu,
   ),
   VRoute.notificationSettings: RouteSpec(

@@ -47,10 +47,6 @@ class _ZonesScreenState extends State<ZonesScreen> {
         final tabLabels = const ['All', 'Active', 'Inactive'];
         return PageBody(
           onRefresh: reload,
-          floatingAction: YellowFab(
-            tooltip: 'Add zone',
-            onTap: () => app.go(VRoute.createZone),
-          ),
           children: [
             SegmentedTabs(
               labels: tabLabels,
@@ -138,10 +134,6 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
             : zones.where((z) => z.name.toLowerCase().contains(q)).toList();
         return PageBody(
           onRefresh: reload,
-          floatingAction: YellowFab(
-            tooltip: 'Add zone',
-            onTap: () => app.go(VRoute.createZone),
-          ),
           children: [
             CefCard(
               child: Row(
@@ -603,10 +595,6 @@ class _RidersScreenState extends State<RidersScreen> {
         };
         return PageBody(
           onRefresh: reload,
-          floatingAction: YellowFab(
-            tooltip: 'Add rider',
-            onTap: () => app.go(VRoute.riderRegistrationLink),
-          ),
           children: [
             SegmentedTabs(
               labels: const ['All', 'Active', 'Offline', 'Pending'],
@@ -865,10 +853,6 @@ class _TeamScreenState extends State<TeamScreen> {
                   .toList();
         return PageBody(
           onRefresh: reload,
-          floatingAction: YellowFab(
-            tooltip: 'Invite team member',
-            onTap: () => app.go(VRoute.helperRegistrationLink),
-          ),
           children: [
             const Text(
               'Team',
@@ -884,11 +868,14 @@ class _TeamScreenState extends State<TeamScreen> {
               style: TextStyle(fontSize: 13, color: Color(0xFF858BA3)),
             ),
             const SizedBox(height: 24),
-            Text(
+            SectionHeading(
               '${members.length} Member${members.length == 1 ? '' : 's'}',
-              style: Theme.of(context).textTheme.bodyMedium,
+              trailing: IconAction(
+                icon: LucideIcons.userPlus,
+                tooltip: 'Invite team member',
+                onTap: () => app.go(VRoute.helperRegistrationLink),
+              ),
             ),
-            const SizedBox(height: Gap.md),
             TextField(
               controller: _query,
               onChanged: (_) => setState(() {}),
@@ -1154,10 +1141,6 @@ class ProductsScreen extends StatelessWidget {
       load: () => app.repo.products(app.business!.id),
       builder: (context, products, reload) => PageBody(
         onRefresh: reload,
-        floatingAction: YellowFab(
-          tooltip: 'Add product',
-          onTap: () => app.go(VRoute.addProduct),
-        ),
         children: [
           const SearchBarField(hint: 'Search products...'),
           const SizedBox(height: Gap.md),

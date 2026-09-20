@@ -206,10 +206,18 @@ class _Header extends StatelessWidget {
 /// Locked list-screen header pattern: a compact search icon (and, on Orders,
 /// a filter icon) in the title bar, in place of an inline full-width field.
 List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
+  final app = AppScope.of(context);
   final hint = switch (route) {
     VRoute.orders => 'Search order number or customer...',
     VRoute.zones => 'Search zones...',
     VRoute.riders => 'Search riders...',
+    _ => null,
+  };
+  final addAction = switch (route) {
+    VRoute.orders => ('Add order', VRoute.newOrder),
+    VRoute.zones || VRoute.zoneConfiguration => ('Add zone', VRoute.createZone),
+    VRoute.riders => ('Invite rider', VRoute.riderRegistrationLink),
+    VRoute.products => ('Add product', VRoute.addProduct),
     _ => null,
   };
   if (hint == null) {
@@ -239,7 +247,14 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
         ),
       ];
     }
-    return const [];
+    if (addAction == null) return const [];
+    return [
+      IconAction(
+        icon: LucideIcons.plus,
+        tooltip: addAction.$1,
+        onTap: () => app.go(addAction.$2),
+      ),
+    ];
   }
   return [
     IconAction(
@@ -253,6 +268,12 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
         tooltip: 'Filter',
         onTap: () {},
       ),
+    if (addAction != null)
+      IconAction(
+        icon: LucideIcons.plus,
+        tooltip: addAction.$1,
+        onTap: () => app.go(addAction.$2),
+      ),
   ];
 }
 
@@ -264,7 +285,7 @@ class _BottomNav extends StatelessWidget {
     (NavTab.orders, 'Orders', LucideIcons.package),
     (NavTab.zones, 'Zones', LucideIcons.mapPin),
     (NavTab.riders, 'Riders', LucideIcons.users),
-    (NavTab.menu, 'Settings', LucideIcons.settings),
+    (NavTab.menu, 'Menu', LucideIcons.menu),
   ];
 
   static const _filledIcons = <NavTab, IconData>{
@@ -272,7 +293,7 @@ class _BottomNav extends StatelessWidget {
     NavTab.orders: Icons.inventory_2_rounded,
     NavTab.zones: Icons.location_on_rounded,
     NavTab.riders: Icons.people_alt_rounded,
-    NavTab.menu: Icons.settings_rounded,
+    NavTab.menu: Icons.menu_rounded,
   };
 
   @override
@@ -340,19 +361,9 @@ class _BottomNav extends StatelessWidget {
 
 /// Standard scrollable page body with the approved 12px gutter.
 class PageBody extends StatelessWidget {
-  const PageBody({
-    super.key,
-    required this.children,
-    this.onRefresh,
-    this.floatingAction,
-  });
+  const PageBody({super.key, required this.children, this.onRefresh});
   final List<Widget> children;
   final Future<void> Function()? onRefresh;
-
-  /// A page-level action (e.g. [YellowFab]) pinned at a fixed bottom-right
-  /// position, above the bottom navigation -- it never scrolls with the
-  /// list content beneath it.
-  final Widget? floatingAction;
 
   /// Beyond normal phone widths, content gains a centered margin rather
   /// than stretching indefinitely -- a foldable/tablet-width safeguard.
@@ -362,12 +373,7 @@ class PageBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final list = ListView(
-      padding: EdgeInsets.fromLTRB(
-        Gap.gutter,
-        Gap.md,
-        Gap.gutter,
-        floatingAction == null ? Gap.section : Gap.section + 64,
-      ),
+      padding: EdgeInsets.fromLTRB(Gap.gutter, Gap.md, Gap.gutter, Gap.section),
       children: children,
     );
     final constrained = Center(
@@ -376,19 +382,8 @@ class PageBody extends StatelessWidget {
         child: list,
       ),
     );
-    final body = onRefresh == null
+    return onRefresh == null
         ? constrained
         : RefreshIndicator(onRefresh: onRefresh!, child: constrained);
-    if (floatingAction == null) return body;
-    return Stack(
-      children: [
-        body,
-        Positioned(
-          right: Gap.gutter,
-          bottom: Gap.gutter,
-          child: floatingAction!,
-        ),
-      ],
-    );
   }
 }
