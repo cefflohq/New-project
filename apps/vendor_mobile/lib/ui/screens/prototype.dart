@@ -230,16 +230,16 @@ class _BusinessInformationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PageBody(
     children: [
-      const _EditableAvatar(label: 'RUMA\nLIVING'),
+      const _EditableAvatar(label: 'KOPI\nKITA'),
       const SizedBox(height: 18),
-      const _PrototypeField(label: 'Business Name', value: 'RUMA Living'),
+      const _PrototypeField(label: 'Business Name', value: 'Kopi Kita'),
       const _PrototypeField(
         label: 'Tagline (Optional)',
-        value: 'A Better Home. Today.',
+        value: 'A better delivery day. Today.',
       ),
       const _PrototypeField(
         label: 'Business Type',
-        value: 'Home & Living',
+        value: 'Food & Beverage',
         icon: LucideIcons.package,
         trailing: LucideIcons.chevronDown,
       ),
@@ -250,17 +250,17 @@ class _BusinessInformationScreen extends StatelessWidget {
       ),
       const _PrototypeField(
         label: 'Business Email',
-        value: 'hello@rumaliving.my',
+        value: 'hello@kopikita.my',
       ),
       const _PrototypeField(
         label: 'Short Description',
-        value: 'Modern home essentials for a more comfortable everyday life.',
+        value: 'Handcrafted coffee and light bites, delivered fresh across Kuala Lumpur.',
         lines: 2,
       ),
       const Align(
         alignment: Alignment.centerRight,
         child: Text(
-          '53/160',
+          '72/160',
           style: TextStyle(fontSize: 12, color: Color(0xFF666C80)),
         ),
       ),
@@ -477,7 +477,7 @@ class _EditProfileScreen extends StatelessWidget {
       ),
       const _PrototypeField(
         label: 'Email Address',
-        value: 'yusuf@rumaliving.my',
+        value: 'yusuf@kopikita.my',
         icon: LucideIcons.mail,
         disabled: true,
       ),
@@ -608,9 +608,9 @@ class _NotificationPreferencesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const rows = [
-      ('New Orders', 'Get notified when new orders come in.'),
-      ('Order Updates', 'Status changes and delivery progress.'),
-      ('Run Updates', 'When runs are dispatched or completed.'),
+      ('New Orders', 'Get notified about new orders.'),
+      ('Order Updates', 'Status and delivery updates.'),
+      ('Run Updates', 'When runs are dispatched or done.'),
       ('Delivery Issues', 'Get notified about delivery issues.'),
       ('Rider Updates', 'When riders go online/offline.'),
       ('Team Activity', 'New team members or role changes.'),
@@ -1262,7 +1262,7 @@ class _ContactSupportScreen extends StatelessWidget {
         ),
       ),
       const SizedBox(height: Gap.md),
-      const _PrototypeField(label: 'Contact Email', value: 'yusuf@cefflo.com'),
+      const _PrototypeField(label: 'Contact Email', value: 'yusuf@kopikita.my'),
       const SizedBox(height: Gap.md),
       CefButton(
         'Send Request',
@@ -1301,7 +1301,7 @@ class _PolicyScreen extends StatelessWidget {
       ),
       const SizedBox(height: Gap.sm),
       Text(
-        'Last updated: 12 Sep 2025',
+        'Last updated: 12 Sep 2026',
         style: Theme.of(context).textTheme.bodySmall,
       ),
       const SizedBox(height: Gap.md),
@@ -1399,7 +1399,7 @@ class _AboutScreen extends StatelessWidget {
       ),
       const SizedBox(height: Gap.section),
       Text(
-        '© 2025 Cefflo. All rights reserved.',
+        '© 2026 Cefflo. All rights reserved.',
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.bodySmall,
       ),

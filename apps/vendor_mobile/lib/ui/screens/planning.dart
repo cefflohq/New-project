@@ -673,9 +673,9 @@ class RunDetailScreen extends StatelessWidget {
       ),
       const SectionHeading('Upcoming stops'),
       for (final i in const [
-        ('Faridus Cafe', 'Mont Kiara · 2.1 km'),
+        ('Firdaus Cafe', 'Mont Kiara · 2.1 km'),
         ('Amy Lee', 'Damansara · 3.4 km'),
-        ('Restaurant Ali', 'Petaling Jaya · 4.0 km'),
+        ('Restoran Ali', 'Petaling Jaya · 4.0 km'),
       ])
         FlatListRow(title: i.$1, subtitle: i.$2),
       const SizedBox(height: Gap.md),
