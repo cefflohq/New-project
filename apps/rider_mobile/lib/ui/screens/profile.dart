@@ -159,77 +159,84 @@ class ProfileScreen extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
+          Column(
             children: [
-              DriverAvatar(name: profile.fullName, size: 76),
-              const SizedBox(width: Gap.lg),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      profile.fullName,
-                      style: context.t.displaySmall?.copyWith(fontSize: 20),
+              DriverAvatar(name: profile.fullName, size: 82),
+              const SizedBox(height: Gap.md),
+              Text(
+                profile.fullName,
+                textAlign: TextAlign.center,
+                style: context.t.displaySmall?.copyWith(fontSize: 20),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                profile.phone,
+                textAlign: TextAlign.center,
+                style: context.t.bodyMedium,
+              ),
+              Text(
+                profile.email,
+                textAlign: TextAlign.center,
+                style: context.t.bodyMedium?.copyWith(color: c.info),
+              ),
+              const SizedBox(height: Gap.sm),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: c.success,
+                      shape: BoxShape.circle,
                     ),
-                    const SizedBox(height: 3),
-                    Text(profile.phone, style: context.t.bodyMedium),
-                    Text(
-                      profile.email,
-                      style: context.t.bodyMedium?.copyWith(color: c.info),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    profile.statusLabel,
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: c.success,
                     ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: c.success,
-                            shape: BoxShape.circle,
+                  ),
+                  Container(
+                    width: 1,
+                    height: 13,
+                    color: c.border,
+                    margin: const EdgeInsets.symmetric(horizontal: 10),
+                  ),
+                  InkWell(
+                    onTap: () => app.go(DRoute.editProfile),
+                    borderRadius: BorderRadius.circular(Sizes.actionRadius),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 4,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            LucideIcons.pencil,
+                            size: 14,
+                            color: c.textLabel,
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          profile.statusLabel,
-                          style: TextStyle(
-                            fontFamily: 'Manrope',
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: c.success,
+                          const SizedBox(width: 5),
+                          Text(
+                            'Edit',
+                            style: TextStyle(
+                              fontFamily: 'Manrope',
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: c.textPrimary,
+                            ),
                           ),
-                        ),
-                        Container(
-                          width: 1,
-                          height: 13,
-                          color: c.border,
-                          margin: const EdgeInsets.symmetric(horizontal: 10),
-                        ),
-                        InkWell(
-                          onTap: () => app.go(DRoute.editProfile),
-                          child: Row(
-                            children: [
-                              Icon(
-                                LucideIcons.pencil,
-                                size: 14,
-                                color: c.textLabel,
-                              ),
-                              const SizedBox(width: 5),
-                              Text(
-                                'Edit',
-                                style: TextStyle(
-                                  fontFamily: 'Manrope',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: c.textPrimary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -264,37 +271,37 @@ class ProfileScreen extends StatelessWidget {
             label: 'Help & Support',
             onTap: () => app.go(DRoute.helpSupport),
           ),
-          const SizedBox(height: Gap.sm),
+        ],
+      ),
+      footer: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           Divider(height: 1, color: c.border),
-          const SizedBox(height: Gap.lg),
-          Center(
-            child: InkWell(
-              onTap: () => showLogOutConfirm(context, app),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 6,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(LucideIcons.logOut, size: 20, color: c.attention),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Log Out',
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: c.attention,
-                      ),
+          const SizedBox(height: Gap.md),
+          InkWell(
+            onTap: () => showLogOutConfirm(context, app),
+            borderRadius: BorderRadius.circular(Sizes.actionRadius),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(LucideIcons.logOut, size: 20, color: c.attention),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Log Out',
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: c.attention,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: Gap.lg),
+          const SizedBox(height: Gap.sm),
           const AppVersionFooter(items: ['About', 'v1.2.0 (Driver)']),
         ],
       ),
@@ -722,13 +729,13 @@ class SettingsScreen extends StatelessWidget {
             height: Sizes.buttonHeight,
             child: Material(
               color: c.card,
-              borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+              borderRadius: BorderRadius.circular(Sizes.actionRadius),
               child: InkWell(
-                borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+                borderRadius: BorderRadius.circular(Sizes.actionRadius),
                 onTap: () => showLogOutConfirm(context, app),
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+                    borderRadius: BorderRadius.circular(Sizes.actionRadius),
                     border: Border.all(
                       color: c.attention.withValues(alpha: 0.45),
                     ),

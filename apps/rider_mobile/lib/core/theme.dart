@@ -30,8 +30,9 @@ class Sizes {
   static const sheetRadius = 28.0;
   static const cardRadius = 16.0;
   static const innerRadius = 12.0;
-  static const buttonRadius = 999.0; // pill — D02 Sign Up, D03 Sign In, …
-  static const softButtonRadius = 16.0; // D28 Next / D29 Submit / D30 Done
+  // Canonical interactive card shape, matched to the D02 Sign In options.
+  static const actionRadius = 16.0;
+  static const actionHorizontalPadding = 22.0;
   static const inputRadius = 12.0;
   static const inputHeight = 52.0;
   static const buttonHeight = 56.0;
@@ -39,7 +40,7 @@ class Sizes {
   /// Critical Slide Action (D21.1/D21.2 Slide to Confirm Route, D22 Slide to
   /// Arrive, D23 Slide to Complete). The knob deliberately overflows the
   /// track vertically, exactly as the references draw it.
-  static const slideHeight = 60.0;
+  static const slideHeight = 68.0;
   static const slideKnob = 68.0;
 
   static const bottomNav = 64.0;

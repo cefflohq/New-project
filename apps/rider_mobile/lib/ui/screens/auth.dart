@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/routes.dart';
@@ -125,9 +126,9 @@ class CeffloAuthOption extends StatelessWidget {
     final c = context.c;
     return Material(
       color: c.card,
-      borderRadius: BorderRadius.circular(Sizes.cardRadius),
+      borderRadius: BorderRadius.circular(Sizes.actionRadius),
       child: InkWell(
-        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+        borderRadius: BorderRadius.circular(Sizes.actionRadius),
         onTap: onTap,
         child: Container(
           // Full width explicitly: the row is centred in a Column, so
@@ -136,16 +137,15 @@ class CeffloAuthOption extends StatelessWidget {
           width: double.infinity,
           height: 56,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+            borderRadius: BorderRadius.circular(Sizes.actionRadius),
             border: Border.all(color: c.border),
           ),
-          child: Stack(
-            alignment: Alignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
             children: [
-              Positioned(
-                left: 22,
-                child: iconChild ?? Icon(icon, size: 24, color: CefColors.navy),
-              ),
+              iconChild ?? Icon(icon, size: 24, color: CefColors.navy),
+              const SizedBox(width: 16),
               Text(
                 label,
                 style: TextStyle(
@@ -183,14 +183,14 @@ class CeffloAuthChip extends StatelessWidget {
     final c = context.c;
     return Material(
       color: c.card,
-      borderRadius: BorderRadius.circular(Sizes.cardRadius),
+      borderRadius: BorderRadius.circular(Sizes.actionRadius),
       child: InkWell(
-        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+        borderRadius: BorderRadius.circular(Sizes.actionRadius),
         onTap: onTap,
         child: Container(
           height: 54,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+            borderRadius: BorderRadius.circular(Sizes.actionRadius),
             border: Border.all(color: c.border),
           ),
           child: Row(
@@ -579,39 +579,50 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: GestureDetector(
-      onTap: _continue,
-      child: NavyBackdrop(
-        watermark: false,
-        child: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Spacer(flex: 3),
-                const CeffloSplashLockup(),
-                const SizedBox(height: 30),
-                Column(
-                  children: [
-                    for (final line in ['DRIVE.', 'DELIVER.', 'TODAY.'])
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 3),
-                        child: Text(
-                          line,
-                          style: TextStyle(
-                            fontFamily: 'Manrope',
-                            fontSize: 19,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 5.5,
-                            color: CefColors.onNavy.withValues(alpha: 0.92),
+  Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
+    value: const SystemUiOverlayStyle(
+      statusBarColor: CefColors.gradientBright,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+      systemNavigationBarColor: CefColors.gradientDeep,
+      systemNavigationBarDividerColor: CefColors.gradientDeep,
+      systemNavigationBarIconBrightness: Brightness.light,
+      systemNavigationBarContrastEnforced: false,
+    ),
+    child: Scaffold(
+      body: GestureDetector(
+        onTap: _continue,
+        child: NavyBackdrop(
+          watermark: false,
+          child: SafeArea(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Spacer(flex: 3),
+                  const CeffloSplashLockup(),
+                  const SizedBox(height: 30),
+                  Column(
+                    children: [
+                      for (final line in ['DRIVE.', 'DELIVER.', 'TODAY.'])
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 3),
+                          child: Text(
+                            line,
+                            style: TextStyle(
+                              fontFamily: 'Manrope',
+                              fontSize: 19,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 5.5,
+                              color: CefColors.onNavy.withValues(alpha: 0.92),
+                            ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
-                const Spacer(flex: 5),
-              ],
+                    ],
+                  ),
+                  const Spacer(flex: 5),
+                ],
+              ),
             ),
           ),
         ),
@@ -641,79 +652,90 @@ class _SignInScreenState extends State<SignInScreen> {
   String _language = 'English';
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: NavyBackdrop(
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Gap.gutter),
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: LanguagePill(
-                  language: _language,
-                  onDark: true,
-                  onTap: () => _pickLanguage(context),
-                ),
-              ),
-              const Spacer(flex: 3),
-              const CeffloSplashLockup(),
-              const Spacer(flex: 4),
-              CeffloAuthOption(
-                label: 'Continue with Apple',
-                iconChild: const AppleGlyph(size: 24),
-                onTap: widget.onEmail,
-              ),
-              const SizedBox(height: Gap.md),
-              CeffloAuthOption(
-                label: 'Continue with Google',
-                iconChild: const GoogleGlyph(size: 24),
-                onTap: widget.onEmail,
-              ),
-              const SizedBox(height: Gap.md),
-              CeffloAuthOption(
-                label: 'Continue with Email',
-                icon: LucideIcons.mail,
-                onTap: widget.onEmail,
-              ),
-              const SizedBox(height: Gap.xl),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Have an invite?',
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w500,
-                      color: CefColors.onNavy.withValues(alpha: .85),
-                    ),
+  Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
+    value: const SystemUiOverlayStyle(
+      statusBarColor: CefColors.gradientBright,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+      systemNavigationBarColor: CefColors.gradientDeep,
+      systemNavigationBarDividerColor: CefColors.gradientDeep,
+      systemNavigationBarIconBrightness: Brightness.light,
+      systemNavigationBarContrastEnforced: false,
+    ),
+    child: Scaffold(
+      body: NavyBackdrop(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Gap.gutter),
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: LanguagePill(
+                    language: _language,
+                    onDark: true,
+                    onTap: () => _pickLanguage(context),
                   ),
-                  const SizedBox(width: 6),
-                  InkWell(
-                    onTap: widget.onSignUp,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 2,
-                        vertical: 4,
+                ),
+                const Spacer(flex: 3),
+                const CeffloSplashLockup(),
+                const Spacer(flex: 4),
+                CeffloAuthOption(
+                  label: 'Continue with Apple',
+                  iconChild: const AppleGlyph(size: 24),
+                  onTap: widget.onEmail,
+                ),
+                const SizedBox(height: Gap.md),
+                CeffloAuthOption(
+                  label: 'Continue with Google',
+                  iconChild: const GoogleGlyph(size: 24),
+                  onTap: widget.onEmail,
+                ),
+                const SizedBox(height: Gap.md),
+                CeffloAuthOption(
+                  label: 'Continue with Email',
+                  icon: LucideIcons.mail,
+                  onTap: widget.onEmail,
+                ),
+                const SizedBox(height: Gap.xl),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Have an invite?',
+                      style: TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w500,
+                        color: CefColors.onNavy.withValues(alpha: .85),
                       ),
-                      child: Text(
-                        'Get started',
-                        style: TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w700,
-                          color: CefColors.onNavy,
-                          decoration: TextDecoration.underline,
-                          decorationColor: CefColors.onNavy,
+                    ),
+                    const SizedBox(width: 6),
+                    InkWell(
+                      onTap: widget.onSignUp,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 2,
+                          vertical: 4,
+                        ),
+                        child: Text(
+                          'Get started',
+                          style: TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: CefColors.onNavy,
+                            decoration: TextDecoration.underline,
+                            decorationColor: CefColors.onNavy,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: Gap.lg),
-            ],
+                  ],
+                ),
+                const SizedBox(height: Gap.lg),
+              ],
+            ),
           ),
         ),
       ),
@@ -1246,7 +1268,7 @@ class CheckEmailScreen extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: CefColors.tintNeutral,
-              borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+              borderRadius: BorderRadius.circular(Sizes.actionRadius),
             ),
             child: Text(
               'Resend Email (58s)',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
@@ -1085,169 +1086,180 @@ class NavigationToStopScreen extends StatelessWidget {
     final app = AppScope.of(context);
     final stop = app.activeStop;
     final c = context.c;
-    return Scaffold(
-      backgroundColor: c.card,
-      body: Column(
-        children: [
-          // Turn instruction card, sitting on the device status bar.
-          Container(
-            color: CefColors.navy,
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  Gap.lg,
-                  Gap.md,
-                  Gap.lg,
-                  Gap.lg,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: CefColors.navy,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+        systemNavigationBarColor: c.card,
+        systemNavigationBarDividerColor: c.card,
+        systemNavigationBarIconBrightness: Brightness.dark,
+        systemNavigationBarContrastEnforced: false,
+      ),
+      child: Scaffold(
+        backgroundColor: c.card,
+        body: Column(
+          children: [
+            // Turn instruction card, sitting on the device status bar.
+            Container(
+              color: CefColors.navy,
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    Gap.lg,
+                    Gap.md,
+                    Gap.lg,
+                    Gap.lg,
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        LucideIcons.cornerUpRight,
+                        size: 40,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: Gap.lg),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${stop.distanceMetres ?? 350} m',
+                              style: const TextStyle(
+                                fontFamily: 'Manrope',
+                                fontSize: 30,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: -0.6,
+                              ),
+                            ),
+                            Text(
+                              stop.addressLine1.replaceAll(',', ''),
+                              style: const TextStyle(
+                                fontFamily: 'Manrope',
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: CefColors.onNavyMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      LucideIcons.cornerUpRight,
-                      size: 40,
-                      color: Colors.white,
+              ),
+            ),
+            Expanded(
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: MapCanvas(
+                      route: _route,
+                      labels: const [
+                        MapLabel('Setapak', Offset(0.66, 0.60), big: true),
+                      ],
+                      markers: const [
+                        MapMarker(position: Offset(0.57, 0.18), pin: true),
+                      ],
                     ),
-                    const SizedBox(width: Gap.lg),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                  Positioned(
+                    left: Gap.md,
+                    top: Gap.md,
+                    child: Column(
+                      children: [
+                        MapControlButton(
+                          icon: LucideIcons.chevronLeft,
+                          onTap: app.back,
+                        ),
+                        const SizedBox(height: Gap.sm),
+                        const MapControlButton(icon: LucideIcons.volume2),
+                        const SizedBox(height: Gap.sm),
+                        const MapControlButton(icon: LucideIcons.layers),
+                        const SizedBox(height: Gap.sm),
+                        const MapControlButton(icon: LucideIcons.navigation),
+                      ],
+                    ),
+                  ),
+                  const Positioned(
+                    right: Gap.md,
+                    bottom: Gap.md,
+                    child: MapRecenterPill(),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: c.card,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(Sizes.sheetRadius),
+                ),
+                boxShadow: cefSheetShadow(),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    Gap.gutter,
+                    0,
+                    Gap.gutter,
+                    Gap.lg,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SheetGrabber(),
+                      const SizedBox(height: 4),
+                      Text(stop.reference, style: context.t.labelSmall),
+                      const SizedBox(height: 1),
+                      Text(
+                        stop.customerName,
+                        style: context.t.displaySmall?.copyWith(fontSize: 20),
+                      ),
+                      const SizedBox(height: 4),
+                      MetaRow(
+                        icon: LucideIcons.mapPin,
+                        text: [
+                          stop.addressLine1,
+                          if (stop.addressLine2 != null) stop.addressLine2!,
+                        ].join(' '),
+                        dense: true,
+                      ),
+                      Row(
                         children: [
-                          Text(
-                            '${stop.distanceMetres ?? 350} m',
-                            style: const TextStyle(
-                              fontFamily: 'Manrope',
-                              fontSize: 30,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                              letterSpacing: -0.6,
+                          Expanded(
+                            child: MetaRow(
+                              icon: LucideIcons.clock,
+                              text: '${stop.etaMinutes ?? 2} min',
+                              dense: true,
                             ),
                           ),
-                          Text(
-                            stop.addressLine1.replaceAll(',', ''),
-                            style: const TextStyle(
-                              fontFamily: 'Manrope',
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: CefColors.onNavyMuted,
+                          Expanded(
+                            child: MetaRow(
+                              icon: LucideIcons.route,
+                              text: '${stop.distanceMetres ?? 650} m',
+                              dense: true,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: MapCanvas(
-                    route: _route,
-                    labels: const [
-                      MapLabel('Setapak', Offset(0.66, 0.60), big: true),
-                    ],
-                    markers: const [
-                      MapMarker(position: Offset(0.57, 0.18), pin: true),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  left: Gap.md,
-                  top: Gap.md,
-                  child: Column(
-                    children: [
-                      MapControlButton(
-                        icon: LucideIcons.chevronLeft,
-                        onTap: app.back,
+                      const SizedBox(height: Gap.md),
+                      CeffloSlideAction(
+                        label: 'Slide to Arrive',
+                        onConfirmed: () async =>
+                            app.go(DRoute.confirmDelivery, entityId: stop.id),
                       ),
-                      const SizedBox(height: Gap.sm),
-                      const MapControlButton(icon: LucideIcons.volume2),
-                      const SizedBox(height: Gap.sm),
-                      const MapControlButton(icon: LucideIcons.layers),
-                      const SizedBox(height: Gap.sm),
-                      const MapControlButton(icon: LucideIcons.navigation),
                     ],
                   ),
                 ),
-                const Positioned(
-                  right: Gap.md,
-                  bottom: Gap.md,
-                  child: MapRecenterPill(),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: c.card,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(Sizes.sheetRadius),
-              ),
-              boxShadow: cefSheetShadow(),
-            ),
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  Gap.gutter,
-                  0,
-                  Gap.gutter,
-                  Gap.lg,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SheetGrabber(),
-                    const SizedBox(height: 4),
-                    Text(stop.reference, style: context.t.labelSmall),
-                    const SizedBox(height: 1),
-                    Text(
-                      stop.customerName,
-                      style: context.t.displaySmall?.copyWith(fontSize: 20),
-                    ),
-                    const SizedBox(height: 4),
-                    MetaRow(
-                      icon: LucideIcons.mapPin,
-                      text: [
-                        stop.addressLine1,
-                        if (stop.addressLine2 != null) stop.addressLine2!,
-                      ].join(' '),
-                      dense: true,
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: MetaRow(
-                            icon: LucideIcons.clock,
-                            text: '${stop.etaMinutes ?? 2} min',
-                            dense: true,
-                          ),
-                        ),
-                        Expanded(
-                          child: MetaRow(
-                            icon: LucideIcons.route,
-                            text: '${stop.distanceMetres ?? 650} m',
-                            dense: true,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: Gap.md),
-                    CeffloSlideAction(
-                      label: 'Slide to Arrive',
-                      onConfirmed: () async =>
-                          app.go(DRoute.confirmDelivery, entityId: stop.id),
-                    ),
-                  ],
-                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1266,8 +1278,14 @@ class ConfirmDeliveryScreen extends StatefulWidget {
 
 class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
   bool _expanded = true;
-  bool _received = true;
   String? _proof;
+  OverlayEntry? _notice;
+
+  @override
+  void dispose() {
+    _notice?.remove();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1323,12 +1341,20 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
               const SizedBox(width: 8),
               _RoundAction(
                 icon: LucideIcons.phone,
-                onTap: () => _toast(context, 'Calling ${stop.customerName}…'),
+                onTap: () => _showTopNotice(
+                  context,
+                  'Calling ${stop.customerName}…',
+                  LucideIcons.phone,
+                ),
               ),
               const SizedBox(width: 8),
               _RoundAction(
                 icon: LucideIcons.messageCircle,
-                onTap: () => _toast(context, 'Opening chat…'),
+                onTap: () => _showTopNotice(
+                  context,
+                  'Opening chat…',
+                  LucideIcons.messageCircle,
+                ),
               ),
             ],
           ),
@@ -1345,7 +1371,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                     child: Text('Order Details', style: context.t.titleMedium),
                   ),
                   Text(
-                    '${stop.items.length} items',
+                    '${stop.items.length} ${stop.items.length == 1 ? 'item' : 'items'}',
                     style: context.t.bodyMedium,
                   ),
                   const SizedBox(width: 6),
@@ -1397,50 +1423,11 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
           const SizedBox(height: Gap.lg),
           Text('Proof of Delivery', style: context.t.titleMedium),
           const SizedBox(height: Gap.md),
-          Row(
-            children: [
-              Expanded(
-                child: _ProofTile(
-                  icon: LucideIcons.camera,
-                  label: 'Take Photo',
-                  selected: _proof == 'camera',
-                  onTap: () => setState(() => _proof = 'camera'),
-                ),
-              ),
-              const SizedBox(width: Gap.md),
-              Expanded(
-                child: _ProofTile(
-                  icon: LucideIcons.image,
-                  label: 'Choose from Gallery',
-                  selected: _proof == 'gallery',
-                  onTap: () => setState(() => _proof = 'gallery'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: Gap.lg),
-          InkWell(
-            onTap: () => setState(() => _received = !_received),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  _CheckBox(value: _received),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Customer received the order',
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w600,
-                        color: c.textPrimary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          _ProofTile(
+            icon: LucideIcons.camera,
+            label: 'Take Photo',
+            selected: _proof == 'camera',
+            onTap: () => setState(() => _proof = 'camera'),
           ),
           const SizedBox(height: Gap.lg),
           // Not a screen of its own in the reference set, but D28 has to be
@@ -1460,10 +1447,6 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
       ),
       footer: CeffloSlideAction(
         label: 'Slide to Complete',
-        enabled: _received,
-        errorText: _received
-            ? null
-            : 'Confirm the customer received the order first.',
         onConfirmed: () async {
           app.markStopDelivered(stop.id);
           await showCeffloSubmitFlow(
@@ -1497,14 +1480,57 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
     ),
   );
 
-  void _toast(BuildContext context, String message) =>
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: CefColors.navy,
+  void _showTopNotice(BuildContext context, String message, IconData icon) {
+    _notice?.remove();
+    final overlay = Overlay.of(context);
+    final c = context.c;
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.paddingOf(context).top + Gap.md,
+        left: Gap.gutter,
+        right: Gap.gutter,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Gap.lg,
+              vertical: 14,
+            ),
+            decoration: BoxDecoration(
+              color: CefColors.tintNeutral,
+              borderRadius: BorderRadius.circular(Sizes.actionRadius),
+              border: Border.all(color: c.border),
+              boxShadow: cefCardShadow(),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, size: 20, color: c.info),
+                const SizedBox(width: Gap.md),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: context.t.bodyMedium?.copyWith(
+                      color: c.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      );
+      ),
+    );
+    _notice = entry;
+    overlay.insert(entry);
+    Future<void>.delayed(const Duration(seconds: 2), () {
+      if (_notice == entry) {
+        entry.remove();
+        _notice = null;
+      }
+    });
+  }
 }
 
 class _RoundAction extends StatelessWidget {
@@ -1577,28 +1603,6 @@ class _ProofTile extends StatelessWidget {
       ),
     );
   }
-}
-
-class _CheckBox extends StatelessWidget {
-  const _CheckBox({required this.value});
-  final bool value;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 22,
-    height: 22,
-    decoration: BoxDecoration(
-      color: value ? const Color(0xFF1668E3) : Colors.transparent,
-      borderRadius: BorderRadius.circular(6),
-      border: Border.all(
-        color: value ? const Color(0xFF1668E3) : context.c.border,
-        width: 1.6,
-      ),
-    ),
-    child: value
-        ? const Icon(LucideIcons.check, size: 15, color: Colors.white)
-        : null,
-  );
 }
 
 // ---------------------------------------------------------------------------

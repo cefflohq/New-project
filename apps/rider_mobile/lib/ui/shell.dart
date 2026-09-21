@@ -38,11 +38,13 @@ class DriverShell extends StatelessWidget {
       // Every Driver screen opens on the navy gradient, so the status bar
       // carries light icons over it.
       value: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
+        statusBarColor: CefColors.gradientBright,
         statusBarIconBrightness: Brightness.light,
         statusBarBrightness: Brightness.dark,
         systemNavigationBarColor: c.chrome,
+        systemNavigationBarDividerColor: c.chrome,
         systemNavigationBarIconBrightness: Brightness.dark,
+        systemNavigationBarContrastEnforced: false,
       ),
       child: PopScope(
         canPop: !app.canGoBack,

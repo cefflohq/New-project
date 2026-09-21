@@ -3,11 +3,29 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/routes.dart';
 import '../core/theme.dart';
 import 'brand.dart';
+
+SystemUiOverlayStyle _surfaceSystemUi({
+  required Color top,
+  required Color bottom,
+  Brightness topIcons = Brightness.light,
+  Brightness bottomIcons = Brightness.dark,
+}) => SystemUiOverlayStyle(
+  statusBarColor: top,
+  statusBarIconBrightness: topIcons,
+  statusBarBrightness: topIcons == Brightness.light
+      ? Brightness.dark
+      : Brightness.light,
+  systemNavigationBarColor: bottom,
+  systemNavigationBarDividerColor: bottom,
+  systemNavigationBarIconBrightness: bottomIcons,
+  systemNavigationBarContrastEnforced: false,
+);
 
 // ---------------------------------------------------------------------------
 // Buttons
@@ -32,8 +50,8 @@ class CeffloPrimaryButton extends StatelessWidget {
   final VoidCallback? onTap;
   final bool busy;
 
-  /// Pill (D02/D03/D12.x/D34-D40) vs the softer 16px radius the operational
-  /// screens use (D28 Next, D29 Submit, D30 Done).
+  /// Kept for source compatibility. All rectangular action buttons now use
+  /// the same rounded-card geometry as the D02 Sign In options.
   final bool pill;
   final double height;
 
@@ -45,13 +63,9 @@ class CeffloPrimaryButton extends StatelessWidget {
       color: onTap == null && !busy
           ? CefColors.accent.withValues(alpha: 0.45)
           : CefColors.accent,
-      borderRadius: BorderRadius.circular(
-        pill ? Sizes.buttonRadius : Sizes.softButtonRadius,
-      ),
+      borderRadius: BorderRadius.circular(Sizes.actionRadius),
       child: InkWell(
-        borderRadius: BorderRadius.circular(
-          pill ? Sizes.buttonRadius : Sizes.softButtonRadius,
-        ),
+        borderRadius: BorderRadius.circular(Sizes.actionRadius),
         onTap: busy ? null : onTap,
         child: Center(
           child: busy
@@ -99,9 +113,7 @@ class CeffloSecondaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    final radius = BorderRadius.circular(
-      pill ? Sizes.buttonRadius : Sizes.softButtonRadius,
-    );
+    final radius = BorderRadius.circular(Sizes.actionRadius);
     return SizedBox(
       width: double.infinity,
       height: Sizes.buttonHeight,
@@ -116,7 +128,9 @@ class CeffloSecondaryButton extends StatelessWidget {
               borderRadius: radius,
               border: Border.all(color: c.border),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: Gap.lg),
+            padding: const EdgeInsets.symmetric(
+              horizontal: Sizes.actionHorizontalPadding,
+            ),
             child: Row(
               mainAxisAlignment: trailingChevron
                   ? MainAxisAlignment.spaceBetween
@@ -185,7 +199,7 @@ class CeffloTextLink extends StatelessWidget {
   );
 }
 
-/// Circular translucent back control on the navy header (D03–D10, D12.x).
+/// Independent back icon on the navy header.
 class CeffloBackButton extends StatelessWidget {
   const CeffloBackButton({super.key, required this.onTap, this.onNavy = true});
 
@@ -199,18 +213,12 @@ class CeffloBackButton extends StatelessWidget {
     child: GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: Container(
+      child: SizedBox(
         width: Sizes.tapTarget,
         height: Sizes.tapTarget,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: onNavy
-              ? const Color(0xFF0B1B33).withValues(alpha: 0.55)
-              : CefColors.tintNeutral,
-        ),
         child: Icon(
           LucideIcons.chevronLeft,
-          size: 22,
+          size: 28,
           color: onNavy ? CefColors.onNavy : CefColors.navy,
         ),
       ),
@@ -472,54 +480,83 @@ class CeffloAuthScaffold extends StatelessWidget {
       child: sheet,
     );
 
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      body: NavyBackdrop(
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  Gap.gutter,
-                  6,
-                  Gap.gutter,
-                  Gap.xl,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      height: Sizes.tapTarget,
-                      child: Row(
-                        children: [
-                          if (onBack != null) CeffloBackButton(onTap: onBack!),
-                          const Spacer(),
-                          ?headerAction,
-                        ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: _surfaceSystemUi(
+        top: CefColors.gradientBright,
+        bottom: context.c.card,
+      ),
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        body: NavyBackdrop(
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    Gap.gutter,
+                    6,
+                    Gap.gutter,
+                    Gap.xl,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        height: Sizes.tapTarget,
+                        child: Row(
+                          children: [
+                            if (onBack != null)
+                              CeffloBackButton(onTap: onBack!),
+                            const Spacer(),
+                            ?headerAction,
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: Gap.md),
-                    header,
-                  ],
+                      const SizedBox(height: Gap.md),
+                      SizedBox(
+                        width: double.infinity,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            const Positioned(
+                              right: -4,
+                              top: -38,
+                              child: CeffloAuthWatermark(),
+                            ),
+                            header,
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Expanded(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
+                Expanded(
                   child: scrollable
-                      ? SingleChildScrollView(
-                          reverse: true,
-                          padding: EdgeInsets.only(
-                            bottom: MediaQuery.of(context).viewInsets.bottom,
+                      ? LayoutBuilder(
+                          builder: (context, viewport) => SingleChildScrollView(
+                            padding: EdgeInsets.only(
+                              bottom: MediaQuery.of(context).viewInsets.bottom,
+                            ),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight: viewport.maxHeight,
+                              ),
+                              child: Align(
+                                alignment: Alignment.bottomCenter,
+                                child: sheetSurface,
+                              ),
+                            ),
                           ),
-                          child: sheetSurface,
                         )
-                      : sheetSurface,
+                      : Align(
+                          alignment: Alignment.bottomCenter,
+                          child: sheetSurface,
+                        ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -565,52 +602,58 @@ class CeffloNavySheetScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sheetChild = Padding(padding: bodyPadding, child: body);
-    return DecoratedBox(
-      decoration: const BoxDecoration(gradient: cefHeaderGradient),
-      child: Stack(
-        children: [
-          const ChevronWatermark(),
-          Column(
-            children: [
-              header,
-              // No lift shadow: the surface is attached to the header rather
-              // than floating over it, and an upward shadow only paints a
-              // dark seam line (and a dark arc in the corner notches) along
-              // the join.
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: context.c.card,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(sheetRadius),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: _surfaceSystemUi(
+        top: CefColors.gradientBright,
+        bottom: context.c.card,
+      ),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(gradient: cefHeaderGradient),
+        child: Stack(
+          children: [
+            const ChevronWatermark(),
+            Column(
+              children: [
+                header,
+                // No lift shadow: the surface is attached to the header rather
+                // than floating over it, and an upward shadow only paints a
+                // dark seam line (and a dark arc in the corner notches) along
+                // the join.
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: context.c.card,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(sheetRadius),
+                      ),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: scrollable
+                              ? SingleChildScrollView(child: sheetChild)
+                              : sheetChild,
+                        ),
+                        if (footer != null)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                              Gap.gutter,
+                              Gap.sm,
+                              Gap.gutter,
+                              Gap.lg,
+                            ),
+                            child: footer!,
+                          ),
+                      ],
                     ),
                   ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: scrollable
-                            ? SingleChildScrollView(child: sheetChild)
-                            : sheetChild,
-                      ),
-                      if (footer != null)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            Gap.gutter,
-                            Gap.sm,
-                            Gap.gutter,
-                            Gap.lg,
-                          ),
-                          child: footer!,
-                        ),
-                    ],
-                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1464,6 +1507,13 @@ class CeffloBottomNav extends StatelessWidget {
     (NavTab.profile, LucideIcons.user, 'Profile'),
   ];
 
+  static const _activeIcons = <NavTab, IconData>{
+    NavTab.home: Icons.home_rounded,
+    NavTab.runs: Icons.local_offer_rounded,
+    NavTab.history: Icons.inventory_2_rounded,
+    NavTab.profile: Icons.person_rounded,
+  };
+
   @override
   Widget build(BuildContext context) {
     final c = context.c;
@@ -1487,11 +1537,9 @@ class CeffloBottomNav extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          icon,
-                          size: 23,
-                          color: tab == active
-                              ? CefColors.accent
-                              : c.textSecondary,
+                          tab == active ? _activeIcons[tab] : icon,
+                          size: 24,
+                          color: tab == active ? c.info : c.textSecondary,
                         ),
                         const SizedBox(height: 3),
                         Text(
@@ -1502,20 +1550,7 @@ class CeffloBottomNav extends StatelessWidget {
                             fontWeight: tab == active
                                 ? FontWeight.w700
                                 : FontWeight.w600,
-                            color: tab == active
-                                ? CefColors.navy
-                                : c.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Container(
-                          width: 22,
-                          height: 3,
-                          decoration: BoxDecoration(
-                            color: tab == active
-                                ? CefColors.accent
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(999),
+                            color: tab == active ? c.info : c.textSecondary,
                           ),
                         ),
                       ],
@@ -1584,19 +1619,18 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
                 alignment: Alignment.centerLeft,
                 clipBehavior: Clip.none,
                 children: [
-                  Center(
+                  Positioned.fill(
                     child: Container(
-                      height: Sizes.slideHeight,
                       decoration: BoxDecoration(
+                        gradient: _active ? cefHeaderGradient : null,
                         color: _active
-                            ? CefColors.navy
-                            : CefColors.navy.withValues(alpha: 0.45),
+                            ? null
+                            : CefColors.gradientMid.withValues(alpha: 0.45),
                         borderRadius: BorderRadius.circular(
-                          Sizes.slideHeight / 2,
+                          Sizes.slideKnob / 2,
                         ),
                       ),
                       alignment: Alignment.center,
-                      padding: const EdgeInsets.only(left: Sizes.slideKnob),
                       child: Opacity(
                         opacity: 1 - progress,
                         child: Text(
@@ -1674,8 +1708,8 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
                                 ),
                               )
                             : const Icon(
-                                LucideIcons.chevronRight,
-                                size: 26,
+                                Icons.arrow_forward_ios_rounded,
+                                size: 31,
                                 color: CefColors.onAccent,
                               ),
                       ),

@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
@@ -81,6 +83,42 @@ class CeffloLogoMark extends StatelessWidget {
   );
 }
 
+/// Soft-focus Cefflo lockup used as a quiet identity layer behind auth
+/// headings. The source remains the canonical supplied asset; only the
+/// presentation is softened so form copy stays dominant.
+class CeffloAuthWatermark extends StatelessWidget {
+  const CeffloAuthWatermark({
+    super.key,
+    this.width = 112,
+    this.blurSigma = 4.2,
+    this.opacity = 0.28,
+  });
+
+  final double width;
+  final double blurSigma;
+  final double opacity;
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+    child: Opacity(
+      opacity: opacity,
+      child: ImageFiltered(
+        imageFilter: ui.ImageFilter.blur(
+          sigmaX: blurSigma,
+          sigmaY: blurSigma,
+          tileMode: TileMode.decal,
+        ),
+        child: Image.asset(
+          _splashAsset,
+          width: width,
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+        ),
+      ),
+    ),
+  );
+}
+
 /// "Cefflo Driver" as a single-line inline lockup — bold "Cefflo" followed
 /// by a lighter "Driver". This is the header treatment in D11, D14.1–14.3,
 /// D16, D17, D18 and D19.
@@ -126,15 +164,16 @@ class CeffloDriverWordmark extends StatelessWidget {
 /// the "Driver" line below it sits against the wordmark rather than against a
 /// band of nothing.
 const _splashAsset = 'assets/brand/cefflo-logo-splash.png';
-const _splashArtworkWidth = 200.0;
-const _splashArtworkHeight = _splashArtworkWidth * 1878 / 1304;
+const _splashArtworkAspect = 1878 / 1304;
 
 /// D01's stacked lockup: the supplied mark-and-"Cefflo" artwork with
 /// "Driver" set beneath it as the second line of the same lockup — lighter
 /// weight, white, sized and tracked against the baked wordmark so the two
 /// read as one mark. Proportions/spacing match the splash reference.
 class CeffloSplashLockup extends StatelessWidget {
-  const CeffloSplashLockup({super.key});
+  const CeffloSplashLockup({super.key, this.width = 156});
+
+  final double width;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -142,20 +181,20 @@ class CeffloSplashLockup extends StatelessWidget {
     children: [
       Image.asset(
         _splashAsset,
-        width: _splashArtworkWidth,
-        height: _splashArtworkHeight,
+        width: width,
+        height: width * _splashArtworkAspect,
         fit: BoxFit.contain,
         filterQuality: FilterQuality.medium,
       ),
-      const SizedBox(height: 6),
+      const SizedBox(height: 4),
       Text(
         'Driver',
         style: TextStyle(
           fontFamily: 'Manrope',
-          fontSize: 34,
+          fontSize: width * 0.17,
           fontWeight: FontWeight.w500,
           height: 1.0,
-          letterSpacing: 1.2,
+          letterSpacing: 1.0,
           color: CefColors.onNavy.withValues(alpha: 0.9),
         ),
       ),
