@@ -24,6 +24,7 @@ import '../../core/app_state.dart';
 import '../../core/theme.dart';
 import '../../data/vendor_repository.dart';
 import '../system_bars.dart';
+import '../widgets.dart';
 
 // ---------------------------------------------------------------- palette
 //
@@ -92,41 +93,47 @@ class AuthAuditScreen extends StatelessWidget {
       onTryAnotherEmail: _noop,
     ),
     7 => SetNewPasswordScreen(onBack: _noop, onUpdated: _noop),
-    8 => const _MissingPasswordUpdatedAuditScreen(),
+    8 => const _PasswordUpdatedAuditScreen(),
     _ => const SizedBox.shrink(),
   };
 }
 
-class _MissingPasswordUpdatedAuditScreen extends StatelessWidget {
-  const _MissingPasswordUpdatedAuditScreen();
+/// V08 · Password Updated is not a standalone screen/route — it is the
+/// shared [runAsyncFeedback] success popup, shown over Set a new password
+/// once the update completes, before returning to Sign In. This audit entry
+/// renders that real flow (Set a new password underneath, popup on top) so
+/// the Founder can review the actual popup rather than a placeholder.
+class _PasswordUpdatedAuditScreen extends StatefulWidget {
+  const _PasswordUpdatedAuditScreen();
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: SafeArea(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(Gap.section),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'V08 · Password Updated',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: Gap.sm),
-              Text('MISSING', style: Theme.of(context).textTheme.bodyMedium),
-              const SizedBox(height: Gap.sm),
-              Text(
-                'No canonical Vendor Mobile implementation is currently present. This audit marker does not invent a replacement screen.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
+  State<_PasswordUpdatedAuditScreen> createState() =>
+      _PasswordUpdatedAuditScreenState();
+}
+
+class _PasswordUpdatedAuditScreenState
+    extends State<_PasswordUpdatedAuditScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      runAsyncFeedback(
+        context,
+        action: () async {},
+        processingTitle: 'Updating password…',
+        processingSubtitle: 'Saving your new password.',
+        successTitle: 'Password updated',
+        successSubtitle: 'You can now sign in with your new password.',
+      );
+    });
+  }
+
+  void _noop() {}
+
+  @override
+  Widget build(BuildContext context) =>
+      SetNewPasswordScreen(onBack: _noop, onUpdated: _noop);
 }
 
 class AuthFlow extends StatefulWidget {
@@ -2145,6 +2152,19 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
     });
     try {
       await AppScope.read(context).repo.updatePassword(_password.text);
+      if (!mounted) return;
+      setState(() => _busy = false);
+      // V08 · Password Updated: confirm the change with the shared
+      // async-feedback popup (locked pattern, see runAsyncFeedback) before
+      // returning to Sign In, instead of silently jumping back.
+      await runAsyncFeedback(
+        context,
+        action: () async {},
+        processingTitle: 'Updating password…',
+        processingSubtitle: 'Saving your new password.',
+        successTitle: 'Password updated',
+        successSubtitle: 'You can now sign in with your new password.',
+      );
       if (mounted) widget.onUpdated();
     } on RepositoryError catch (e) {
       if (mounted) setState(() => _error = authErrorText(e));

@@ -14,7 +14,7 @@ They do not alter canonical product navigation or Production.
 | V05 | `/audit/V05` | Forgot Password |
 | V06 | `/audit/V06` | Check Your Email |
 | V07 | `/audit/V07` | Set New Password |
-| V08 | `/audit/V08` | Password Updated — currently missing; audit marker only |
+| V08 | `/audit/V08` | Password Updated — shared async-feedback success popup over Set a new password, not a standalone screen |
 | V09 | `/audit/V09` | First-time Business Setup |
 | V10 | `/audit/V10` | Setup Complete |
 | V11 | `/audit/V11` | Today |
