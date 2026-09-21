@@ -347,14 +347,14 @@ const routeSpecs = <VRoute, RouteSpec>{
   ),
   VRoute.customers: RouteSpec(
     route: VRoute.customers,
-    id: 'X-02',
+    id: 'X-05',
     title: 'Customers',
     parent: VRoute.settings,
     tab: NavTab.menu,
   ),
   VRoute.customerDetail: RouteSpec(
     route: VRoute.customerDetail,
-    id: 'X-03',
+    id: 'X-06',
     title: 'Customer',
     parent: VRoute.customers,
     tab: NavTab.menu,

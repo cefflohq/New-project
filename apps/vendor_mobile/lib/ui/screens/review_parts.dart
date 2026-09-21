@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 
 /// Shared presentation for the six Founder-reviewed operations screens only.
+///
+/// The avatar tile is always a rounded square -- both call sites (Rider
+/// Detail, Team Member Detail) represent the same "person profile" pattern
+/// and should render identically. This used to take a `square` flag that
+/// defaulted to false on one call site only, which combined a 94x108
+/// (non-square) box with a 54px corner radius into a lopsided oval instead
+/// of a clean shape. Removed rather than fixed-and-kept, since the two call
+/// sites never had a reason to look different.
 class ReviewProfileHero extends StatelessWidget {
   const ReviewProfileHero({
     super.key,
@@ -8,10 +16,9 @@ class ReviewProfileHero extends StatelessWidget {
     required this.role,
     required this.status,
     this.pending = false,
-    this.square = false,
   });
   final String name, role, status;
-  final bool pending, square;
+  final bool pending;
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
@@ -32,7 +39,7 @@ class ReviewProfileHero extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFFDCE7F3),
             border: Border.all(color: Colors.white, width: 2),
-            borderRadius: BorderRadius.circular(square ? 16 : 54),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
             name

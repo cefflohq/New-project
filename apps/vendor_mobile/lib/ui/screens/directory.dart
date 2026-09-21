@@ -673,7 +673,6 @@ class RiderDetailScreen extends StatelessWidget {
                   ? 'Active'
                   : 'Offline',
               pending: pending,
-              square: true,
             ),
             const SectionHeading('Contact'),
             CefCard(
