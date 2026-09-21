@@ -1,6 +1,6 @@
-const CACHE_NAME = 'cefflo-foundr-shell-v1';
+const CACHE_NAME = 'cefflo-foundr-prototype-v5';
 const ROOT = new URL('./', self.registration.scope).pathname;
-const SHELL = [ROOT, `${ROOT}backend.js`, '/shared/config.js', '/shared/client.js', `${ROOT}icons/icon-192.png`, `${ROOT}icons/icon-512.png`];
+const SHELL = [ROOT, `${ROOT}app.css`, `${ROOT}mock-data.js`, `${ROOT}app.js`, `${ROOT}icons/icon-192.png`, `${ROOT}icons/icon-512.png`, `${ROOT}assets/product/vendor-web.jpg`, `${ROOT}assets/product/vendor-mobile.jpg`, `${ROOT}assets/product/driver-app.jpg`, `${ROOT}assets/product/customer-tracking.jpg`, `${ROOT}assets/product/website.jpg`];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)));
