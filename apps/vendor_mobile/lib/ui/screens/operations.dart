@@ -740,17 +740,12 @@ class _OrderHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.c;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [c.info, const Color(0xFF0B57C7)],
-        ),
+        gradient: CeffloBrandGradient.heroCard,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

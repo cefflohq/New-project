@@ -88,8 +88,11 @@ class VendorShell extends StatelessWidget {
           ? Brightness.dark
           : (dark ? Brightness.dark : Brightness.light),
       navigationBarBackground: dark ? Brightness.dark : Brightness.light,
+      // Middle stop of CeffloBrandGradient.header -- kept as a literal
+      // (rather than reading the LinearGradient's colors list) since this
+      // is a single flat browser-chrome colour, not a paintable gradient.
       browserChromeColor: forcesLightStatusIcons
-          ? const Color(0xFF1257C4)
+          ? const Color(0xFF0B67E8)
           : c.chrome,
       child: PopScope(
         canPop: !app.canGoBack,
@@ -267,7 +270,10 @@ class _Header extends StatelessWidget {
                       showDot: true,
                       onTap: () => app.go(VRoute.notificationInbox),
                       color: Colors.white,
-                      dotRingColor: const Color(0xFF1257C4),
+                      // Middle stop of CeffloBrandGradient.header, so the
+                      // unread-dot ring reads as cut into the header
+                      // background rather than the old gradient's colour.
+                      dotRingColor: const Color(0xFF0B67E8),
                     ),
                   ..._searchHeaderActions(
                     context,

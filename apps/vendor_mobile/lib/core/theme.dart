@@ -44,33 +44,35 @@ class Sizes {
 }
 
 /// CeffloBrandGradient -- the ONE canonical Cefflo Vendor branded-blue
-/// surface. Deep navy -> bright cyan-blue diagonal wash, brightening
-/// toward the top-right corner. Every gradient header in the app (the
-/// shared tab-root header in shell.dart, and screen-drawn "tall profile"
-/// headers like Rider Detail/Team Member Detail in review_parts.dart)
-/// must reuse this single definition rather than redefining its own
-/// LinearGradient literal, per the UI convergence pass's "brand blue
-/// lock": one concept, one token, one source of truth.
+/// surface. Founder resolution (2026-09-22): Sign In's background
+/// (`_SignInBackdrop` in auth.dart, itself sourced from "the current
+/// Founder reference" per that widget's own doc comment) is now THE
+/// canonical brand gradient -- not the previous operational-header value.
+/// These are the exact colors/stops/direction from `_SignInBackdrop`'s
+/// base `LinearGradient` (its separate radial highlight overlay is
+/// deliberately NOT copied here: that's a one-off auth-screen flourish,
+/// and this pass exists specifically to make every OTHER branded-blue
+/// surface a plain, clean instance of the same gradient rather than each
+/// screen inventing its own lighting effect on top of it).
+///
+/// auth.dart itself is the source, not a target: it is intentionally left
+/// on its own literal, untouched by this token.
 class CeffloBrandGradient {
   static const header = LinearGradient(
-    begin: Alignment(-1, 1),
-    end: Alignment(1, -1),
-    colors: [Color(0xFF0B1E4E), Color(0xFF1257C4), Color(0xFF1E9CF2)],
-    stops: [0, 0.55, 1],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFF51BDF8), Color(0xFF0B67E8), Color(0xFF031A50)],
+    stops: [0, 0.44, 1],
   );
 
   /// Secondary "navy hero card" treatment used for in-body branded blue
   /// surfaces that aren't the page header itself (e.g. NavySummaryPanel,
   /// Welcome/Setup-complete hero cards, invite-link cards, planning's
-  /// dispatch-summary card). Before the convergence pass these were 3
-  /// independently hand-picked navy/blue triples across widgets.dart,
-  /// operations.dart, prototype.dart and planning.dart; this is the one
-  /// (already the majority value) they all now share.
-  static const heroCard = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF102344), Color(0xFF1B3668), Color(0xFF27427E)],
-  );
+  /// dispatch-summary card, Rider/Team Member Detail's tall profile
+  /// header). Sign In's source treatment is a single gradient (no
+  /// separate "hero card" variant), so per Founder direction this points
+  /// at the exact same definition as [header] rather than a modified one.
+  static const heroCard = header;
 }
 
 class CefColors extends ThemeExtension<CefColors> {
