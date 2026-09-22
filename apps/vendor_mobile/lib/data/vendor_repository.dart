@@ -715,7 +715,9 @@ class _DemoData {
     RiderRow(
       id: 'rider-daniel',
       name: 'Daniel Tan',
-      status: 'inactive',
+      // Pending (not inactive/offline), per the locked reference screen's
+      // "Pending (1)" tab count and Daniel Tan's "Pending" status pill.
+      status: 'pending',
       phone: '+60 14 888 6683',
       vehicleType: 'van',
       plate: 'BPL 6683',

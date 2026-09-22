@@ -45,6 +45,11 @@ class _ZonesScreenState extends State<ZonesScreen> {
       builder: (context, data, reload) {
         final (zones, orders) = data;
         final tabLabels = const ['All', 'Active', 'Inactive'];
+        // Plain alphabetical by name, per the locked reference screen --
+        // not grouped by status (which previously pushed inactive zones
+        // to the bottom regardless of name).
+        final sortedZones = [...zones]
+          ..sort((a, b) => a.name.compareTo(b.name));
         return PageBody(
           onRefresh: reload,
           children: [
@@ -59,7 +64,7 @@ class _ZonesScreenState extends State<ZonesScreen> {
                 'No zones configured yet. Create one under Menu → Service area.',
               )
             else
-              for (final z in zones)
+              for (final z in sortedZones)
                 Builder(
                   builder: (context) {
                     // Counts derive from the same scoped orders read.
@@ -588,20 +593,20 @@ class _RidersScreenState extends State<RidersScreen> {
       key: ValueKey('riders-${business.id}'),
       load: () => app.repo.riders(business.id),
       builder: (context, riders, reload) {
+        // Exactly the 3 tabs shown in the locked reference screen -- the
+        // "Offline" filter previously here was removed to match strictly.
         final visible = switch (tab) {
           'Active' => riders.where((r) => r.isActive).toList(),
-          'Offline' => riders.where((r) => !r.isActive).toList(),
           'Pending' => riders.where((r) => r.status == 'pending').toList(),
           _ => riders,
         };
         // Count suffixes per tab label, per the locked reference screen
         // ("All (4) / Active (3) / Pending (1)").
-        const tabs = ['All', 'Active', 'Offline', 'Pending'];
+        const tabs = ['All', 'Active', 'Pending'];
         final tabLabels = tabs
             .map((t) {
               final count = switch (t) {
                 'Active' => riders.where((r) => r.isActive).length,
-                'Offline' => riders.where((r) => !r.isActive).length,
                 'Pending' => riders.where((r) => r.status == 'pending').length,
                 _ => riders.length,
               };
@@ -628,14 +633,14 @@ class _RidersScreenState extends State<RidersScreen> {
                     if (r.plate != null) r.plate!,
                   ].join(' · '),
                   leading: CircleAvatar(
-                    radius: 22,
+                    radius: 28,
                     backgroundColor: CefColors.navy,
                     child: Text(
                       r.name.split(' ').take(2).map((part) => part[0]).join(),
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
-                        fontSize: 12,
+                        fontSize: 14,
                       ),
                     ),
                   ),
@@ -1289,6 +1294,14 @@ class CustomerDetailScreen extends StatelessWidget {
 }
 
 /// V-46 — the Menu tab root.
+///
+/// Trimmed to the 8 rows the locked reference screen shows (strict 1:1 per
+/// Founder direction). `VRoute.serviceArea`, `VRoute.privacyPolicy` and
+/// `VRoute.appearance` lost their only in-app entry point when their rows
+/// were removed -- their screens/routes still exist and are still wired in
+/// `router.dart`/`routes.dart`, just unreachable via navigation now. Flagged
+/// rather than silently orphaned; re-adding an entry point for them (if
+/// wanted) is a separate decision from this visual pass.
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
 
@@ -1321,21 +1334,22 @@ class MenuScreen extends StatelessWidget {
 
     return PageBody(
       children: [
+        // Trimmed to exactly the 8 rows (4+4, in this order) shown in the
+        // locked reference screen -- strict 1:1 per Founder direction.
+        // Business profile/Service area/Privacy/Language/Appearance rows
+        // were removed from this list; see the class-level orphan note
+        // below for which of those routes lost their only entry point.
         group('Business', [
-          ('Business profile', LucideIcons.building2, VRoute.businessProfile),
-          ('Team', LucideIcons.users, VRoute.team),
-          ('Service area', LucideIcons.map, VRoute.serviceArea),
           ('Storefront', LucideIcons.store, VRoute.storefront),
           ('Products', LucideIcons.boxes, VRoute.products),
+          ('Team', LucideIcons.users, VRoute.team),
           ('Customers', LucideIcons.users, VRoute.customers),
         ]),
-        group('App & Account', [
+        group('Account', [
           ('Profile', LucideIcons.user, VRoute.profile),
           ('Security', LucideIcons.shieldCheck, VRoute.security),
-          ('Privacy', LucideIcons.lock, VRoute.privacyPolicy),
           ('Notifications', LucideIcons.bell, VRoute.notificationSettings),
-          ('Language', LucideIcons.globe, VRoute.language),
-          ('Appearance', LucideIcons.contrast, VRoute.appearance),
+          ('Help & Support', LucideIcons.circleHelp, VRoute.helpSupport),
         ]),
         const SizedBox(height: Gap.section),
         SizedBox(

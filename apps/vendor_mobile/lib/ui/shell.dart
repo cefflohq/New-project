@@ -209,9 +209,11 @@ class _Header extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
                       child: Text(
-                        isTodayRoot
-                            ? (app.business?.name ?? 'Cefflo Vendor')
-                            : spec.title,
+                        // Per the locked reference screen, Today's header
+                        // reads the static "Overview" -- the business name
+                        // is not shown here (it still appears elsewhere,
+                        // e.g. Business profile/Settings, untouched).
+                        isTodayRoot ? 'Overview' : spec.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -326,13 +328,9 @@ List<Widget> _searchHeaderActions(
       color: iconColor,
       onTap: () => showSearchSheet(context, hint: hint),
     ),
-    if (route == VRoute.orders)
-      IconAction(
-        icon: LucideIcons.slidersHorizontal,
-        tooltip: 'Filter',
-        color: iconColor,
-        onTap: () {},
-      ),
+    // Orders' header carries exactly search + plus in the locked reference
+    // screen -- the separate filter/sliders icon previously here was
+    // removed to match strictly (Zones/Riders never had it).
     if (addAction != null)
       IconAction(
         icon: LucideIcons.plus,
@@ -448,7 +446,9 @@ class PageBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final list = ListView(
-      padding: EdgeInsets.fromLTRB(Gap.gutter, Gap.md, Gap.gutter, Gap.section),
+      // Gap.lg (not Gap.md) between the header's rounded lip and the first
+      // row -- more breathing room, per the locked reference screens.
+      padding: EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.section),
       children: children,
     );
     final constrained = Center(

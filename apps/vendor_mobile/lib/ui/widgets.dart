@@ -91,8 +91,8 @@ class IconBadge extends StatelessWidget {
     super.key,
     this.color,
     this.background,
-    this.diameter = 44,
-    this.iconSize = 20,
+    this.diameter = 56,
+    this.iconSize = 24,
   });
   final IconData icon;
   final Color? color;
@@ -746,8 +746,8 @@ class CefListRow extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          constraints: const BoxConstraints(minHeight: 68),
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          constraints: const BoxConstraints(minHeight: 92),
+          padding: const EdgeInsets.symmetric(vertical: 18),
           decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: c.border)),
           ),
@@ -756,10 +756,10 @@ class CefListRow extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 4),
                 child: icon == null
-                    ? const SizedBox(width: 44)
+                    ? const SizedBox(width: 56)
                     : IconBadge(icon!),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -826,10 +826,10 @@ class FlatListRow extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          constraints: BoxConstraints(minHeight: dense ? 60 : 68),
+          constraints: BoxConstraints(minHeight: dense ? 80 : 92),
           padding: EdgeInsets.symmetric(
             horizontal: 4,
-            vertical: dense ? 7 : 10,
+            vertical: dense ? 14 : 18,
           ),
           decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: c.border)),
@@ -838,7 +838,7 @@ class FlatListRow extends StatelessWidget {
             children: [
               if (leading != null) ...[
                 leading!,
-                SizedBox(width: dense ? 12 : 14),
+                SizedBox(width: dense ? 14 : 16),
               ],
               Expanded(
                 child: Column(

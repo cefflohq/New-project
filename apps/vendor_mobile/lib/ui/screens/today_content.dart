@@ -39,18 +39,19 @@ class TodayContent extends StatelessWidget {
     final counts = demo
         ? [48, 12, 3, 33]
         : [orders.length, ready, issues.length, delivered.length];
+    // Exactly the 5 riders/times shown in the locked reference screen --
+    // strict 1:1 with the reference takes priority over the longer demo
+    // list previously here.
     const samples = [
       ('Ahmad Razi', 'VFY 7281', 'Bangsar', '2:24 PM'),
       ('Siti Aminah', 'BMD 4120', 'Sentul', '1:56 PM'),
       ('Jason Lim', 'VDT 3302', 'Setapak', '12:41 PM'),
       ('Nur Iman', 'VFE 9812', 'Shah Alam', '11:28 AM'),
       ('Daniel Tan', 'BPL 6683', 'Petaling Jaya', '10:54 AM'),
-      ('Farah Lee', 'VDS 7721', 'Putrajaya', '09:17 AM'),
-      ('Hafiz Khan', 'BPQ 3091', 'Klang', '08:36 AM'),
     ];
     final rows = demo
         ? samples
-        : delivered.take(7).map((o) {
+        : delivered.take(5).map((o) {
             final match = riders.where((r) => r.id == o.assignedRiderId);
             final rider = match.isEmpty ? null : match.first;
             final t = o.completedAt;
@@ -76,20 +77,6 @@ class TodayContent extends StatelessWidget {
             ('Delivered', '${counts[3]}', c.info),
           ],
         ),
-        FlatListRow(
-          title: 'Need Attention',
-          subtitle: counts[2] == 0
-              ? 'Nothing needs your attention'
-              : '${counts[2]} orders need your action',
-          leading: Icon(Icons.warning_rounded, color: c.attention, size: 28),
-          onTap: () {
-            if (issues.isNotEmpty) {
-              app.go(VRoute.orderDetail, entityId: issues.first.id);
-            } else {
-              app.switchTab(NavTab.orders);
-            }
-          },
-        ),
         SectionHeading(
           'Recent Delivery',
           trailing: GestureDetector(
@@ -109,18 +96,17 @@ class TodayContent extends StatelessWidget {
           for (var i = 0; i < rows.length; i++)
             FlatListRow(
               title: rows[i].$1,
-              dense: true,
               subtitle: [
                 if (rows[i].$2.isNotEmpty) rows[i].$2,
                 rows[i].$3,
               ].join(' · '),
               leading: CircleAvatar(
-                radius: 21,
+                radius: 28,
                 backgroundColor: const Color(0xFFE9EEF5),
                 child: Text(
                   rows[i].$1.split(' ').map((s) => s[0]).take(2).join(),
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 15,
                     color: CefColors.navy,
                     fontWeight: FontWeight.w600,
                   ),
@@ -148,6 +134,21 @@ class TodayContent extends StatelessWidget {
                 }
               },
             ),
+        const SizedBox(height: Gap.sm),
+        FlatListRow(
+          title: 'Need Attention',
+          subtitle: counts[2] == 0
+              ? 'Nothing needs your attention'
+              : '${counts[2]} orders need your action',
+          leading: Icon(Icons.warning_rounded, color: c.attention, size: 32),
+          onTap: () {
+            if (issues.isNotEmpty) {
+              app.go(VRoute.orderDetail, entityId: issues.first.id);
+            } else {
+              app.switchTab(NavTab.orders);
+            }
+          },
+        ),
       ],
     );
   }
@@ -204,9 +205,8 @@ class _OverviewStats extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: Gap.cardGap),
+        const SizedBox(height: Gap.lg),
         Divider(height: 1, color: c.border),
-        const SizedBox(height: Gap.cardGap),
       ],
     );
   }
