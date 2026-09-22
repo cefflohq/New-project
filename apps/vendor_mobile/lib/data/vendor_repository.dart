@@ -684,6 +684,8 @@ class _DemoData {
     Zone(id: 'zone-klang', name: 'Klang', status: 'inactive'),
   ];
 
+  // List order matches the locked Riders reference screen exactly: Ahmad,
+  // Jason, Siti, Daniel (not id/creation order).
   static const riders = [
     RiderRow(
       id: 'rider-ahmad',
@@ -697,6 +699,17 @@ class _DemoData {
       riderCode: 'RID-001',
     ),
     RiderRow(
+      id: 'rider-jason',
+      name: 'Jason Lim',
+      status: 'active',
+      phone: '+60 18 230 3302',
+      vehicleType: 'motorcycle',
+      plate: 'VDT 3302',
+      maxActiveOrders: 8,
+      joinedLabel: 'Jul 2024',
+      riderCode: 'RID-002',
+    ),
+    RiderRow(
       id: 'rider-siti',
       name: 'Siti Aminah',
       status: 'active',
@@ -707,17 +720,6 @@ class _DemoData {
       // Matches the locked Rider Detail reference screen exactly.
       joinedLabel: 'Jan 2025',
       riderCode: 'RID-004',
-    ),
-    RiderRow(
-      id: 'rider-jason',
-      name: 'Jason Lim',
-      status: 'active',
-      phone: '+60 18 230 3302',
-      vehicleType: 'motorcycle',
-      plate: 'VDT 3302',
-      maxActiveOrders: 8,
-      joinedLabel: 'Jul 2024',
-      riderCode: 'RID-002',
     ),
     RiderRow(
       id: 'rider-daniel',

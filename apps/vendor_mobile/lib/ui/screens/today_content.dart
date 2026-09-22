@@ -113,12 +113,22 @@ class TodayContent extends StatelessWidget {
                       'Recent Delivery',
                       trailing: GestureDetector(
                         onTap: () => app.switchTab(NavTab.orders),
-                        child: const Text(
-                          'View All',
-                          style: TextStyle(
-                            color: Color(0xFF1769D2),
-                            fontWeight: FontWeight.w600,
-                          ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'View All',
+                              style: TextStyle(
+                                color: Color(0xFF1769D2),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right,
+                              size: 18,
+                              color: Color(0xFF1769D2),
+                            ),
+                          ],
                         ),
                       ),
                     ),
