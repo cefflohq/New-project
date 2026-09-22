@@ -58,14 +58,22 @@ class VendorShell extends StatelessWidget {
     final c = context.c;
     final dark = Theme.of(context).brightness == Brightness.dark;
     final isOnboarding = _onboardingRoutes.contains(app.current.route);
+    final hasHeader = !_ownChromeRoutes.contains(app.current.route);
+    final hasGradientHeader =
+        hasHeader && !_reviewTitles.containsKey(app.current.route);
 
-    return CefSystemBars(
-      // The header and bottom nav paint their own `c.chrome` fill behind
-      // the status/navigation bars (see _Header/_BottomNav below); this
-      // only has to pick the matching transparent-bar icon treatment for
-      // whichever brightness that fill actually is.
-      background: dark ? Brightness.dark : Brightness.light,
-      browserChromeColor: c.chrome,
+    return CefSystemBars.split(
+      // The gradient header is always a dark-blue fill, so its status bar
+      // icons stay white regardless of light/dark theme; the bottom nav
+      // still paints `c.chrome`, so its icon treatment keeps following the
+      // theme brightness as before.
+      statusBarBackground: hasGradientHeader
+          ? Brightness.dark
+          : (dark ? Brightness.dark : Brightness.light),
+      navigationBarBackground: dark ? Brightness.dark : Brightness.light,
+      browserChromeColor: hasGradientHeader
+          ? const Color(0xFF1257C4)
+          : c.chrome,
       child: PopScope(
         canPop: !app.canGoBack,
         onPopInvokedWithResult: (didPop, _) {
@@ -162,58 +170,91 @@ class _Header extends StatelessWidget {
         ),
       );
     }
+    // Deep navy -> bright cyan-blue diagonal wash, brightening toward the
+    // top-right corner, per the locked reference screens (Today, Orders,
+    // Zones, Riders, Settings all share this exact header treatment).
     return Container(
-      decoration: BoxDecoration(
-        color: c.chrome,
-        border: Border(bottom: BorderSide(color: c.border)),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment(-1, 1),
+          end: Alignment(1, -1),
+          colors: [Color(0xFF0B1E4E), Color(0xFF1257C4), Color(0xFF1E9CF2)],
+          stops: [0, 0.55, 1],
+        ),
       ),
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: Sizes.chrome,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
-            child: Row(
-              children: [
-                if (app.canGoBack && !isTodayRoot)
-                  IconAction(
-                    icon: LucideIcons.arrowLeft,
-                    tooltip: 'Back',
-                    onTap: app.back,
-                  )
-                else
-                  const SizedBox(width: Gap.sm),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
-                    child: Text(
-                      isTodayRoot
-                          ? (app.business?.name ?? 'Cefflo Vendor')
-                          : spec.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: isTodayRoot
-                          ? const TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF091A3C),
-                            )
-                          : Theme.of(context).textTheme.titleLarge,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                Gap.gutter,
+                Gap.lg,
+                Gap.md,
+                Gap.lg,
+              ),
+              child: Row(
+                children: [
+                  if (app.canGoBack && !isTodayRoot)
+                    IconAction(
+                      icon: LucideIcons.arrowLeft,
+                      tooltip: 'Back',
+                      onTap: app.back,
+                      color: Colors.white,
+                    )
+                  else
+                    const SizedBox(width: Gap.xs),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
+                      child: Text(
+                        isTodayRoot
+                            ? (app.business?.name ?? 'Cefflo Vendor')
+                            : spec.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                if (isTodayRoot)
-                  IconAction(
-                    icon: LucideIcons.bell,
-                    tooltip: 'Notifications',
-                    showDot: true,
-                    onTap: () => app.go(VRoute.notificationInbox),
+                  if (isTodayRoot)
+                    IconAction(
+                      icon: LucideIcons.bell,
+                      tooltip: 'Notifications',
+                      showDot: true,
+                      onTap: () => app.go(VRoute.notificationInbox),
+                      color: Colors.white,
+                      dotRingColor: const Color(0xFF1257C4),
+                    ),
+                  ..._searchHeaderActions(
+                    context,
+                    app.current.route,
+                    iconColor: Colors.white,
                   ),
-                ..._searchHeaderActions(context, app.current.route),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
+          // Rounded white "lip" the body sheet appears to grow out of --
+          // painted here (rather than by the body) so it always sits flush
+          // against this header's own gradient with no seam.
+          Container(
+            height: 22,
+            decoration: BoxDecoration(
+              color: c.canvas,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -221,7 +262,11 @@ class _Header extends StatelessWidget {
 
 /// Locked list-screen header pattern: a compact search icon (and, on Orders,
 /// a filter icon) in the title bar, in place of an inline full-width field.
-List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
+List<Widget> _searchHeaderActions(
+  BuildContext context,
+  VRoute route, {
+  Color? iconColor,
+}) {
   final app = AppScope.of(context);
   final hint = switch (route) {
     VRoute.orders => 'Search order number or customer...',
@@ -242,6 +287,7 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
         IconAction(
           icon: LucideIcons.circleHelp,
           tooltip: 'Help',
+          color: iconColor,
           onTap: () => showDialog<void>(
             context: context,
             builder: (context) => AlertDialog(
@@ -268,6 +314,7 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
       IconAction(
         icon: LucideIcons.plus,
         tooltip: addAction.$1,
+        color: iconColor,
         onTap: () => app.go(addAction.$2),
       ),
     ];
@@ -276,18 +323,21 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
     IconAction(
       icon: LucideIcons.search,
       tooltip: 'Search',
+      color: iconColor,
       onTap: () => showSearchSheet(context, hint: hint),
     ),
     if (route == VRoute.orders)
       IconAction(
         icon: LucideIcons.slidersHorizontal,
         tooltip: 'Filter',
+        color: iconColor,
         onTap: () {},
       ),
     if (addAction != null)
       IconAction(
         icon: LucideIcons.plus,
         tooltip: addAction.$1,
+        color: iconColor,
         onTap: () => app.go(addAction.$2),
       ),
   ];
@@ -360,7 +410,16 @@ class _BottomNav extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 3),
-                          const SizedBox(height: 2),
+                          // Small underline dash beneath the active tab's
+                          // label, per the locked reference screens.
+                          Container(
+                            width: 18,
+                            height: 2.5,
+                            decoration: BoxDecoration(
+                              color: selected ? c.info : Colors.transparent,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
                         ],
                       ),
                     ),

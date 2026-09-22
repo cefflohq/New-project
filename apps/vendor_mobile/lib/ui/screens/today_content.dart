@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
 import '../../core/routes.dart';
@@ -9,9 +8,9 @@ import '../shell.dart';
 import '../widgets.dart';
 
 /// V-11 — Today. Uses the same shared building blocks (PageBody,
-/// NavySummaryPanel, SectionHeading, FlatListRow) as every other screen, so
-/// its type/spacing/card density matches V-01..V-60 rather than a
-/// screen-specific set of hand-picked sizes.
+/// SectionHeading, FlatListRow) as every other screen, so its type/spacing/
+/// card density matches V-01..V-60 rather than a screen-specific set of
+/// hand-picked sizes.
 class TodayContent extends StatelessWidget {
   const TodayContent({
     super.key,
@@ -69,72 +68,27 @@ class TodayContent extends StatelessWidget {
     return PageBody(
       onRefresh: reload,
       children: [
-        NavySummaryPanel(
-          title: "Today's Orders",
-          children: [
-            SummaryMetric(label: 'Total', value: '${counts[0]}'),
-            SummaryMetric(
-              label: 'Ready',
-              value: '${counts[1]}',
-              valueColor: const Color(0xFF42CE82),
-            ),
-            SummaryMetric(
-              label: 'Issue',
-              value: '${counts[2]}',
-              valueColor: const Color(0xFFFF3653),
-            ),
-            SummaryMetric(label: 'Delivered', value: '${counts[3]}'),
+        _OverviewStats(
+          stats: [
+            ('Total Orders', '${counts[0]}', c.textPrimary),
+            ('Ready', '${counts[1]}', const Color(0xFF42CE82)),
+            ('Issue', '${counts[2]}', const Color(0xFFFF3653)),
+            ('Delivered', '${counts[3]}', c.info),
           ],
         ),
-        const SizedBox(height: Gap.cardGap),
-        Material(
-          color: c.attention.withValues(alpha: .08),
-          borderRadius: BorderRadius.circular(Sizes.cardRadius),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-            onTap: () {
-              if (issues.isNotEmpty) {
-                app.go(VRoute.orderDetail, entityId: issues.first.id);
-              } else {
-                app.switchTab(NavTab.orders);
-              }
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Gap.cardPadding,
-                vertical: Gap.md,
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.warning_rounded, color: c.attention, size: 30),
-                  const SizedBox(width: Gap.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Need Attention',
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          counts[2] == 0
-                              ? 'Nothing needs your attention'
-                              : '${counts[2]} orders need your action',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    LucideIcons.chevronRight,
-                    size: 18,
-                    color: c.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-          ),
+        FlatListRow(
+          title: 'Need Attention',
+          subtitle: counts[2] == 0
+              ? 'Nothing needs your attention'
+              : '${counts[2]} orders need your action',
+          leading: Icon(Icons.warning_rounded, color: c.attention, size: 28),
+          onTap: () {
+            if (issues.isNotEmpty) {
+              app.go(VRoute.orderDetail, entityId: issues.first.id);
+            } else {
+              app.switchTab(NavTab.orders);
+            }
+          },
         ),
         SectionHeading(
           'Recent Delivery',
@@ -176,7 +130,7 @@ class TodayContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const StatusChip('Delivered', tinted: true),
+                  const StatusChip('Delivered', tinted: true, success: true),
                   if (rows[i].$4.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(
@@ -194,6 +148,65 @@ class TodayContent extends StatelessWidget {
                 }
               },
             ),
+      ],
+    );
+  }
+}
+
+/// Overview's 4-up stat row (Total Orders / Ready / Issue / Delivered),
+/// each column centred with a thin vertical divider between -- matches the
+/// locked reference screen (a plain white row, not a navy summary card).
+class _OverviewStats extends StatelessWidget {
+  const _OverviewStats({required this.stats});
+
+  /// (label, value, value colour) per column, left to right.
+  final List<(String, String, Color)> stats;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Column(
+      children: [
+        IntrinsicHeight(
+          child: Row(
+            children: [
+              for (var i = 0; i < stats.length; i++) ...[
+                if (i > 0)
+                  VerticalDivider(width: 1, thickness: 1, color: c.border),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        stats[i].$2,
+                        style: TextStyle(
+                          fontSize: 26,
+                          height: 1,
+                          fontWeight: FontWeight.w800,
+                          color: stats[i].$3,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        stats[i].$1,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                          color: c.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: Gap.cardGap),
+        Divider(height: 1, color: c.border),
+        const SizedBox(height: Gap.cardGap),
       ],
     );
   }

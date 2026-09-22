@@ -23,6 +23,8 @@ class IconAction extends StatelessWidget {
     required this.tooltip,
     required this.onTap,
     this.showDot = false,
+    this.color,
+    this.dotRingColor,
   });
   final IconData icon;
   final String tooltip;
@@ -30,6 +32,15 @@ class IconAction extends StatelessWidget {
 
   /// Small red unread indicator anchored to the icon's top-right corner.
   final bool showDot;
+
+  /// Overrides the icon colour -- used to render white on the gradient
+  /// header instead of the default dark `c.iconColor`.
+  final Color? color;
+
+  /// Overrides the dot's separating ring colour, which otherwise matches
+  /// `c.chrome` (correct on a flat white/dark header, wrong on the blue
+  /// gradient header where that would paint a visible white halo).
+  final Color? dotRingColor;
 
   @override
   Widget build(BuildContext context) => Tooltip(
@@ -44,7 +55,7 @@ class IconAction extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Icon(icon, size: Sizes.icon, color: context.c.iconColor),
+              Icon(icon, size: Sizes.icon, color: color ?? context.c.iconColor),
               if (showDot)
                 Positioned(
                   top: 11,
@@ -55,7 +66,10 @@ class IconAction extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: context.c.attention,
                       shape: BoxShape.circle,
-                      border: Border.all(color: context.c.chrome, width: 1.5),
+                      border: Border.all(
+                        color: dotRingColor ?? context.c.chrome,
+                        width: 1.5,
+                      ),
                     ),
                   ),
                 ),
@@ -65,6 +79,40 @@ class IconAction extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Circular badge behind a list-row leading icon -- the light-gray (or
+/// tinted) icon "chip" used by Settings/Orders/Zones rows per the locked
+/// reference screens. Reused wherever [CefListRow] renders a leading icon so
+/// every icon-badge row in the app matches without duplicating the style.
+class IconBadge extends StatelessWidget {
+  const IconBadge(
+    this.icon, {
+    super.key,
+    this.color,
+    this.background,
+    this.diameter = 44,
+    this.iconSize = 20,
+  });
+  final IconData icon;
+  final Color? color;
+  final Color? background;
+  final double diameter;
+  final double iconSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Container(
+      width: diameter,
+      height: diameter,
+      decoration: BoxDecoration(
+        color: background ?? const Color(0xFFEEF0F5),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(icon, size: iconSize, color: color ?? c.iconColor),
+    );
+  }
 }
 
 class CefCard extends StatelessWidget {
@@ -467,6 +515,7 @@ class StatusChip extends StatelessWidget {
     this.attention = false,
     this.success = false,
     this.tinted = false,
+    this.muted = false,
   });
   final String label;
   final bool attention;
@@ -476,14 +525,20 @@ class StatusChip extends StatelessWidget {
   final bool success;
   final bool tinted;
 
+  /// Dims a neutral tinted chip slightly further -- used for an "inactive"
+  /// pill sitting next to an "active" one of the same (neutral) colour, so
+  /// the two remain visually distinguishable per the reference screens.
+  final bool muted;
+
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    final color = attention
+    final baseColor = attention
         ? c.attention
         : success
         ? c.success
         : c.textSecondary;
+    final color = muted ? baseColor.withValues(alpha: .6) : baseColor;
     final labelWidget = Text(
       label,
       style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
@@ -492,7 +547,7 @@ class StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: .09),
+        color: color.withValues(alpha: muted ? .06 : .09),
         borderRadius: BorderRadius.circular(999),
       ),
       child: labelWidget,
@@ -701,10 +756,10 @@ class CefListRow extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 4),
                 child: icon == null
-                    ? const SizedBox(width: Sizes.icon)
-                    : Icon(icon, size: Sizes.icon, color: c.iconColor),
+                    ? const SizedBox(width: 44)
+                    : IconBadge(icon!),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

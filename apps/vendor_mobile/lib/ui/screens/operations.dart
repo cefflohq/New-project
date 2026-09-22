@@ -629,11 +629,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   title: o.reference,
                   subtitle: '${o.customerName} · ${o.deliveryAddress}',
                   dense: true,
-                  leading: _plainIcon(context, LucideIcons.package),
+                  leading: const IconBadge(LucideIcons.package),
                   trailing: StatusChip(
                     o.status.label,
                     attention: o.status == DeliveryStatus.issue,
-                    success: OrderTab.ongoing.accepts(o.status),
+                    // Only the terminal Delivered status renders green in
+                    // the reference; in-flight Ongoing statuses (Ready, On
+                    // the way) render as a neutral pill like Zones/Riders.
+                    success: o.status == DeliveryStatus.delivered,
                     tinted: true,
                   ),
                   onTap: () => app.go(VRoute.orderDetail, entityId: o.id),

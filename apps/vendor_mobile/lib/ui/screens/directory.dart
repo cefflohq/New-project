@@ -75,14 +75,15 @@ class _ZonesScreenState extends State<ZonesScreen> {
                     return FlatListRow(
                       title: z.name,
                       subtitle: '${inZone.length} orders',
-                      leading: Icon(
+                      leading: IconBadge(
                         LucideIcons.mapPin,
-                        size: Sizes.icon,
                         color: context.c.info,
+                        background: const Color(0xFFE3EEFF),
                       ),
                       trailing: StatusChip(
                         z.isActive ? 'Active' : 'Inactive',
-                        success: z.isActive,
+                        tinted: true,
+                        muted: !z.isActive,
                       ),
                       // Audit fix 2: bound to this zone's id.
                       onTap: () => app.go(VRoute.zoneDetail, entityId: z.id),
@@ -593,13 +594,27 @@ class _RidersScreenState extends State<RidersScreen> {
           'Pending' => riders.where((r) => r.status == 'pending').toList(),
           _ => riders,
         };
+        // Count suffixes per tab label, per the locked reference screen
+        // ("All (4) / Active (3) / Pending (1)").
+        const tabs = ['All', 'Active', 'Offline', 'Pending'];
+        final tabLabels = tabs
+            .map((t) {
+              final count = switch (t) {
+                'Active' => riders.where((r) => r.isActive).length,
+                'Offline' => riders.where((r) => !r.isActive).length,
+                'Pending' => riders.where((r) => r.status == 'pending').length,
+                _ => riders.length,
+              };
+              return '$t ($count)';
+            })
+            .toList();
         return PageBody(
           onRefresh: reload,
           children: [
             SegmentedTabs(
-              labels: const ['All', 'Active', 'Offline', 'Pending'],
-              active: tab,
-              onChange: (l) => setState(() => tab = l),
+              labels: tabLabels,
+              active: tabLabels[tabs.indexOf(tab)],
+              onChange: (l) => setState(() => tab = l.split(' (').first),
             ),
             const SizedBox(height: Gap.md),
             if (visible.isEmpty)
@@ -624,10 +639,10 @@ class _RidersScreenState extends State<RidersScreen> {
                       ),
                     ),
                   ),
-                  trailing: StatusChip(
-                    r.isActive ? 'Active' : 'Offline',
-                    success: r.status == 'active',
-                  ),
+                  // Neutral pill (not semantic-green) per the reference,
+                  // labelled with the rider's actual status so "Pending"
+                  // reads correctly instead of collapsing to "Offline".
+                  trailing: StatusChip(_titleCase(r.status), tinted: true),
                   // Audit fix 2: bound to this rider's id.
                   onTap: () => app.go(VRoute.riderDetail, entityId: r.id),
                 ),
@@ -1280,11 +1295,25 @@ class MenuScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
+    final c = context.c;
+    // Local, lighter-weight section label matching the reference Settings
+    // screen ("Business"/"Account") -- distinct from the bolder shared
+    // SectionHeading used for page-level headings elsewhere in the app.
     Widget group(String title, List<(String, IconData, VRoute)> items) =>
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SectionHeading(title),
+            Padding(
+              padding: const EdgeInsets.only(top: Gap.section, bottom: Gap.sm),
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: c.textSecondary,
+                ),
+              ),
+            ),
             for (final i in items)
               CefListRow(title: i.$1, icon: i.$2, onTap: () => app.go(i.$3)),
           ],

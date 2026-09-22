@@ -443,7 +443,9 @@ const routeSpecs = <VRoute, RouteSpec>{
   VRoute.settings: RouteSpec(
     route: VRoute.settings,
     id: 'V-46',
-    title: 'Menu',
+    // Header title reads "Settings" per the locked reference screen; the
+    // bottom-nav tab itself keeps its own "Menu" label (see _BottomNav).
+    title: 'Settings',
     tab: NavTab.menu,
   ),
   VRoute.notificationSettings: RouteSpec(
