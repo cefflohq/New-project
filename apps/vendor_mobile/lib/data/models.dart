@@ -197,11 +197,18 @@ class RiderRow {
     this.vehicleType,
     this.plate,
     this.maxActiveOrders,
+    this.joinedLabel,
   });
 
   final String id, name, status;
   final String? phone, vehicleType, plate;
   final int? maxActiveOrders;
+
+  /// Pre-formatted "Joined" display value (e.g. "Jan 2025") for Rider
+  /// Detail's profile-header stat row. Optional/display-only -- the
+  /// backend doesn't track a rider join date yet, so this stays null
+  /// outside the demo repository rather than inventing one.
+  final String? joinedLabel;
 
   factory RiderRow.fromRow(Map<String, dynamic> r) => RiderRow(
     id: r['id'] as String,

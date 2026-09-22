@@ -693,6 +693,7 @@ class _DemoData {
       vehicleType: 'motorcycle',
       plate: 'VFY 7281',
       maxActiveOrders: 8,
+      joinedLabel: 'Mar 2024',
     ),
     RiderRow(
       id: 'rider-siti',
@@ -702,6 +703,8 @@ class _DemoData {
       vehicleType: 'car',
       plate: 'BMD 4120',
       maxActiveOrders: 12,
+      // Matches the locked Rider Detail reference screen exactly.
+      joinedLabel: 'Jan 2025',
     ),
     RiderRow(
       id: 'rider-jason',
@@ -711,6 +714,7 @@ class _DemoData {
       vehicleType: 'motorcycle',
       plate: 'VDT 3302',
       maxActiveOrders: 8,
+      joinedLabel: 'Jul 2024',
     ),
     RiderRow(
       id: 'rider-daniel',
@@ -722,6 +726,7 @@ class _DemoData {
       vehicleType: 'van',
       plate: 'BPL 6683',
       maxActiveOrders: 20,
+      joinedLabel: 'Sep 2025',
     ),
   ];
 

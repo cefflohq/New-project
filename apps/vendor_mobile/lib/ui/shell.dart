@@ -21,10 +21,8 @@ const _onboardingRoutes = {
 const _reviewTitles = <VRoute, String>{
   VRoute.reviewDispatch: 'Review Delivery Plan',
   VRoute.runDetail: 'Active Run',
-  VRoute.riderDetail: 'Rider Detail',
   VRoute.riderRegistrationLink: 'Invite Rider',
   VRoute.team: 'Team',
-  VRoute.teamMemberDetail: 'Team Member',
   // Storefront preview renders an immersive customer-facing view -- the
   // vendor bottom nav would break that illusion.
   VRoute.storefrontPreview: 'Storefront Preview',
@@ -44,7 +42,23 @@ const _reviewSubtitles = <VRoute, String>{
 /// {Template Name}, which needs a Reset action wired to screen-local draft
 /// state that the shared header cannot reach. No default header or bottom
 /// nav is rendered for these.
-const _ownChromeRoutes = {VRoute.branding};
+///
+/// Rider Detail and Team Member Detail also render their own chrome: their
+/// locked reference screens need the gradient to extend down and contain
+/// the profile avatar/name/status block itself (not a flat back-arrow bar
+/// with a separate card below it), which only the screen -- not the shared
+/// shell -- has the loaded entity data to build. See
+/// `TallProfileHeader` in review_parts.dart.
+const _ownChromeRoutes = {
+  VRoute.branding,
+  VRoute.riderDetail,
+  VRoute.teamMemberDetail,
+};
+
+/// Subset of [_ownChromeRoutes] whose self-drawn chrome is still a dark
+/// gradient at the very top (unlike e.g. Branding) -- status bar icons need
+/// to stay light for these even though the shell itself renders no header.
+const _ownGradientChromeRoutes = {VRoute.riderDetail, VRoute.teamMemberDetail};
 
 /// Flat chrome: 60px header and 60px sticky bottom navigation, no
 /// floating glass bar, no FAB, no accent underline beneath the title.
@@ -61,17 +75,20 @@ class VendorShell extends StatelessWidget {
     final hasHeader = !_ownChromeRoutes.contains(app.current.route);
     final hasGradientHeader =
         hasHeader && !_reviewTitles.containsKey(app.current.route);
+    final forcesLightStatusIcons =
+        hasGradientHeader || _ownGradientChromeRoutes.contains(app.current.route);
 
     return CefSystemBars.split(
-      // The gradient header is always a dark-blue fill, so its status bar
-      // icons stay white regardless of light/dark theme; the bottom nav
-      // still paints `c.chrome`, so its icon treatment keeps following the
-      // theme brightness as before.
-      statusBarBackground: hasGradientHeader
+      // The gradient header (shell-drawn or screen-drawn, e.g. Rider
+      // Detail's TallProfileHeader) is always a dark-blue fill, so its
+      // status bar icons stay white regardless of light/dark theme; the
+      // bottom nav still paints `c.chrome`, so its icon treatment keeps
+      // following the theme brightness as before.
+      statusBarBackground: forcesLightStatusIcons
           ? Brightness.dark
           : (dark ? Brightness.dark : Brightness.light),
       navigationBarBackground: dark ? Brightness.dark : Brightness.light,
-      browserChromeColor: hasGradientHeader
+      browserChromeColor: forcesLightStatusIcons
           ? const Color(0xFF1257C4)
           : c.chrome,
       child: PopScope(
@@ -434,9 +451,21 @@ class _BottomNav extends StatelessWidget {
 
 /// Standard scrollable page body with the approved 12px gutter.
 class PageBody extends StatelessWidget {
-  const PageBody({super.key, required this.children, this.onRefresh});
+  const PageBody({
+    super.key,
+    required this.children,
+    this.onRefresh,
+    this.header,
+  });
   final List<Widget> children;
   final Future<void> Function()? onRefresh;
+
+  /// Optional full-bleed widget (no gutter, flush with the top) rendered
+  /// above the padded [children] but still inside the same scroll view --
+  /// e.g. [TallProfileHeader] on Rider Detail/Team Member Detail, which
+  /// owns its own chrome and needs a gradient block that starts flush at
+  /// the very top of the screen rather than inset by the normal gutter.
+  final Widget? header;
 
   /// Beyond normal phone widths, content gains a centered margin rather
   /// than stretching indefinitely -- a foldable/tablet-width safeguard.
@@ -455,13 +484,22 @@ class PageBody extends StatelessWidget {
     // always clears the nav with visible breathing room even then.
     final bottomSafeArea = MediaQuery.of(context).padding.bottom;
     final list = ListView(
-      padding: EdgeInsets.fromLTRB(
-        Gap.gutter,
-        Gap.md,
-        Gap.gutter,
-        Gap.section + Sizes.chrome + bottomSafeArea,
-      ),
-      children: children,
+      padding: EdgeInsets.zero,
+      children: [
+        ?header,
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            Gap.gutter,
+            Gap.md,
+            Gap.gutter,
+            Gap.section + Sizes.chrome + bottomSafeArea,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: children,
+          ),
+        ),
+      ],
     );
     final constrained = Center(
       child: ConstrainedBox(

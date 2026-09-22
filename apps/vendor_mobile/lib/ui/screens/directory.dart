@@ -659,10 +659,15 @@ class _RidersScreenState extends State<RidersScreen> {
 }
 
 /// V-21 — Rider detail. `RiderRow` only carries id/name/status/phone/
-/// vehicleType/plate/maxActiveOrders, so this shows what is real (no
-/// invented licence documents, date of birth, address or emergency
-/// contact -- unlike the reference board, which shows fields this backend
-/// does not track).
+/// vehicleType/plate/maxActiveOrders(/joinedLabel), so this shows what is
+/// real (no invented licence documents, date of birth, address or
+/// emergency contact -- unlike the reference board, which shows fields
+/// this backend does not track).
+///
+/// Owns its full chrome (see `_ownChromeRoutes` in shell.dart): the locked
+/// reference screen's gradient extends down to contain the avatar/name/
+/// status/stats block itself, which only this screen -- not the shared
+/// shell -- has the loaded rider to build. See `TallProfileHeader`.
 class RiderDetailScreen extends StatelessWidget {
   const RiderDetailScreen({super.key, required this.riderId});
   final String riderId;
@@ -670,6 +675,7 @@ class RiderDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
+    final c = context.c;
     return AsyncView<RiderRow>(
       key: ValueKey('rider-$riderId'),
       load: () async {
@@ -683,100 +689,68 @@ class RiderDetailScreen extends StatelessWidget {
         final pending = rider.status == 'pending';
         return PageBody(
           onRefresh: reload,
-          children: [
-            ReviewProfileHero(
-              name: rider.name,
-              role: pending ? 'Rider Applicant' : 'Rider',
-              status: pending
-                  ? 'Pending Review'
-                  : rider.isActive
-                  ? 'Active'
-                  : 'Offline',
-              pending: pending,
-            ),
-            const SectionHeading('Contact'),
-            CefCard(
-              child: Row(
-                children: [
-                  Icon(
-                    LucideIcons.phone,
-                    size: Sizes.icon,
-                    color: context.c.info,
-                  ),
-                  const SizedBox(width: Gap.md),
-                  Expanded(
-                    child: Text(
-                      rider.phone ?? 'Not provided',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                  ),
-                ],
+          header: TallProfileHeader(
+            title: 'Rider Detail',
+            name: rider.name,
+            status: pending
+                ? 'Pending Review'
+                : rider.isActive
+                ? 'Active'
+                : 'Offline',
+            // The reference shows a rider code ("Rider · RID-004") that
+            // isn't a real field on RiderRow -- rather than fabricate one,
+            // this shows just the role, same as Team Member Detail below.
+            subtitle: pending ? 'Rider Applicant' : 'Rider',
+            pending: pending,
+            onBack: app.back,
+            onMenu: () => _notWiredYet(context, 'Rider options'),
+            stats: [
+              (
+                LucideIcons.barChart2,
+                rider.maxActiveOrders == null ? '—' : '${rider.maxActiveOrders}',
+                'Max orders',
               ),
-            ),
-            const SectionHeading('Vehicle'),
-            CefCard(
-              child: Row(
-                children: [
-                  Icon(
-                    LucideIcons.bike,
-                    size: Sizes.icon,
-                    color: context.c.info,
-                  ),
-                  const SizedBox(width: Gap.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          rider.vehicleType == null
-                              ? 'Not provided'
-                              : _titleCase(rider.vehicleType!),
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        if (rider.plate != null)
-                          Text(
-                            rider.plate!,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
+              (
+                LucideIcons.car,
+                rider.vehicleType == null
+                    ? 'Not set'
+                    : _titleCase(rider.vehicleType!),
+                rider.plate ?? '—',
               ),
-            ),
-            const SectionHeading('Driving Licence'),
-            const CefCard(
-              child: Row(
-                children: [
-                  Icon(LucideIcons.fileText, size: 24),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      'No licence document available',
-                      style: TextStyle(fontSize: 13, color: Color(0xFF858BA3)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SectionHeading('Additional Information'),
-            const CefCard(
-              child: Text(
-                'No additional information available.',
-                style: TextStyle(fontSize: 13, color: Color(0xFF858BA3)),
-              ),
-            ),
-            if (rider.maxActiveOrders != null) ...[
-              const SectionHeading('Capacity'),
-              CefCard(
-                child: _row(
-                  context,
-                  'Max active orders',
-                  '${rider.maxActiveOrders}',
-                ),
-              ),
+              (LucideIcons.calendar, rider.joinedLabel ?? '—', 'Joined'),
             ],
-            const SizedBox(height: Gap.section),
+          ),
+          children: [
+            FlatListRow(
+              title: 'Contact',
+              subtitle: rider.phone ?? 'Not provided',
+              leading: Icon(LucideIcons.phone, size: 22, color: c.info),
+              onTap: () => _notWiredYet(context, 'Editing rider contact'),
+            ),
+            FlatListRow(
+              title: 'Vehicle',
+              subtitle: rider.vehicleType == null
+                  ? 'Not provided'
+                  : [
+                      _titleCase(rider.vehicleType!),
+                      if (rider.plate != null) rider.plate!,
+                    ].join(' · '),
+              leading: Icon(LucideIcons.car, size: 22, color: c.info),
+              onTap: () => _notWiredYet(context, 'Editing rider vehicle'),
+            ),
+            FlatListRow(
+              title: 'Driving Licence',
+              subtitle: 'No document',
+              leading: Icon(LucideIcons.fileText, size: 22, color: c.info),
+              onTap: () => _notWiredYet(context, 'Driving licence upload'),
+            ),
+            FlatListRow(
+              title: 'Additional Information',
+              subtitle: 'No additional information',
+              leading: Icon(LucideIcons.fileEdit, size: 22, color: c.info),
+              onTap: () => _notWiredYet(context, 'Additional information'),
+            ),
+            const SizedBox(height: Gap.sm),
             if (pending)
               Row(
                 children: [
@@ -807,6 +781,42 @@ class RiderDetailScreen extends StatelessWidget {
                     ),
                   ),
                 ],
+              )
+            else
+              Material(
+                color: const Color(0xFFE3EEFF),
+                borderRadius: BorderRadius.circular(Sizes.cardRadius),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(Sizes.cardRadius),
+                  onTap: () => _notWiredYet(context, 'Managing riders'),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Gap.cardPadding,
+                      vertical: 16,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(LucideIcons.settings, size: 20, color: c.info),
+                        const SizedBox(width: Gap.md),
+                        Expanded(
+                          child: Text(
+                            'Manage Rider',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: c.info,
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          LucideIcons.chevronRight,
+                          size: 18,
+                          color: c.info,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
           ],
         );
@@ -819,16 +829,6 @@ class RiderDetailScreen extends StatelessWidget {
       SnackBar(content: Text('$action is not wired to a backend action yet.')),
     );
   }
-
-  Widget _row(BuildContext context, String k, String v) => Row(
-    children: [
-      SizedBox(
-        width: 140,
-        child: Text(k, style: Theme.of(context).textTheme.bodySmall),
-      ),
-      Expanded(child: Text(v, style: Theme.of(context).textTheme.titleSmall)),
-    ],
-  );
 }
 
 String _initialsOf(String name) => name
@@ -960,96 +960,139 @@ class TeamMemberDetailScreen extends StatelessWidget {
           orElse: () => throw StateError('Team member not found'),
         );
       },
-      builder: (context, member, reload) => PageBody(
-        onRefresh: reload,
-        children: [
-          ReviewProfileHero(
+      builder: (context, member, reload) {
+        final c = context.c;
+        const badgeBg = Color(0xFFE3EEFF);
+        Widget contactRow({
+          required IconData icon,
+          required String label,
+          required String value,
+        }) => FlatListRow(
+          title: label,
+          subtitle: value,
+          leading: IconBadge(icon, color: c.info, background: badgeBg),
+          trailing: GestureDetector(
+            onTap: () => showNotWiredYetSnackBar(context, 'Adding $label'),
+            child: Text(
+              'Add',
+              style: TextStyle(color: c.info, fontWeight: FontWeight.w600),
+            ),
+          ),
+        );
+        Widget kvRow({
+          required IconData icon,
+          required Color iconBg,
+          required String label,
+          required String value,
+          required String description,
+        }) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  IconBadge(icon, color: c.info, background: iconBg),
+                  const SizedBox(width: 14),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: TextStyle(fontSize: 13, color: c.textSecondary),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        value,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(description, style: Theme.of(context).textTheme.bodySmall),
+            ],
+          ),
+        );
+
+        return PageBody(
+          onRefresh: reload,
+          header: TallProfileHeader(
+            title: 'Team Member',
             name: member.displayName ?? member.userId,
-            role: member.role,
             status: 'Active',
+            subtitle: member.role,
+            centered: true,
+            showAvatarStatusDot: true,
+            onBack: app.back,
+            onMenu: () =>
+                showNotWiredYetSnackBar(context, 'Team member options'),
           ),
-          const SectionHeading('Contact'),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              children: [
-                Icon(LucideIcons.phone, size: 20),
-                SizedBox(width: 18),
-                Text(
-                  'Phone not provided',
-                  style: TextStyle(fontSize: 13, color: Color(0xFF858BA3)),
+          children: [
+            SectionHeading(
+              'Contact',
+              trailing: GestureDetector(
+                onTap: () => showNotWiredYetSnackBar(context, 'Editing contact'),
+                child: Text(
+                  'Edit',
+                  style: TextStyle(color: c.info, fontWeight: FontWeight.w600),
                 ),
-              ],
+              ),
             ),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Row(
-              children: [
-                Icon(LucideIcons.mail, size: 20),
-                SizedBox(width: 18),
-                Text(
-                  'Email not provided',
-                  style: TextStyle(fontSize: 13, color: Color(0xFF858BA3)),
-                ),
-              ],
+            contactRow(
+              icon: LucideIcons.phone,
+              label: 'Phone',
+              value: 'Not provided',
             ),
-          ),
-          const Divider(height: 28),
-          const SectionHeading('Role & Access'),
-          CefCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _kv(context, 'Role', member.role),
-                const SizedBox(height: 6),
-                Text(
-                  _roleDescription(member.role),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
+            contactRow(
+              icon: LucideIcons.mail,
+              label: 'Email',
+              value: 'Not provided',
             ),
-          ),
-          const SectionHeading('Status'),
-          CefCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _kv(context, 'Account Status', 'Active'),
-                const SizedBox(height: 6),
-                Text(
+            const SectionHeading('Role & Access'),
+            kvRow(
+              icon: LucideIcons.shield,
+              iconBg: badgeBg,
+              label: 'Role',
+              value: member.role,
+              description: _roleDescription(member.role),
+            ),
+            const SectionHeading('Status'),
+            kvRow(
+              icon: LucideIcons.checkCircle2,
+              iconBg: const Color(0xFFDCF5E4),
+              label: 'Account Status',
+              value: 'Active',
+              description:
                   'This team member can currently access your business.',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
             ),
-          ),
-          const SizedBox(height: Gap.section),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: OutlinedButton.icon(
-              onPressed: () => _confirmRemove(context, member),
-              icon: Icon(
-                LucideIcons.trash2,
-                size: 18,
-                color: context.c.attention,
-              ),
-              label: const Text('Remove from Team'),
-              style: OutlinedButton.styleFrom(
-                backgroundColor: context.c.attention.withValues(alpha: .06),
-                foregroundColor: context.c.attention,
-                side: BorderSide(
-                  color: context.c.attention.withValues(alpha: .3),
+            const SizedBox(height: Gap.md),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: OutlinedButton.icon(
+                onPressed: () => _confirmRemove(context, member),
+                icon: Icon(
+                  LucideIcons.trash2,
+                  size: 18,
+                  color: context.c.attention,
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+                label: const Text('Remove from Team'),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: context.c.attention,
+                  side: BorderSide(color: context.c.attention),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 
@@ -1090,19 +1133,6 @@ class TeamMemberDetailScreen extends StatelessWidget {
     );
     if (confirmed == true && context.mounted) AppScope.read(context).back();
   }
-
-  Widget _kv(BuildContext context, String k, String v) => Padding(
-    padding: const EdgeInsets.only(bottom: 6),
-    child: Row(
-      children: [
-        SizedBox(
-          width: 120,
-          child: Text(k, style: Theme.of(context).textTheme.bodySmall),
-        ),
-        Expanded(child: Text(v, style: Theme.of(context).textTheme.titleSmall)),
-      ],
-    ),
-  );
 }
 
 class _CoverageMapPainter extends CustomPainter {

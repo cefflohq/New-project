@@ -1595,14 +1595,16 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
               CefField(
                 label: 'Customer name',
                 controller: name,
-                hint: 'Search customer by name, phone or email...',
+                hint: 'Search customer by name, phone...',
                 prefixIcon: LucideIcons.search,
                 errorText: errors['name'],
               ),
               CefField(
                 label: 'Phone number',
                 controller: phone,
+                hint: 'Enter phone number...',
                 keyboardType: TextInputType.phone,
+                prefixIcon: LucideIcons.phone,
                 errorText: errors['phone'],
               ),
             ],
@@ -1613,12 +1615,21 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           icon: LucideIcons.mapPin,
           title: 'Address',
           subtitle: 'Delivery address',
-          child: CefField(
-            label: 'Address',
-            controller: address,
-            hint: 'Enter delivery address...',
-            maxLines: 2,
-            errorText: errors['address'],
+          child: Column(
+            children: [
+              CefField(
+                label: 'Address',
+                controller: address,
+                hint: 'Enter delivery address...',
+                prefixIcon: LucideIcons.mapPin,
+                maxLines: 2,
+                errorText: errors['address'],
+              ),
+              _UseCurrentLocationButton(
+                onTap: () =>
+                    showNotWiredYetSnackBar(context, 'Using current location'),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 12),
@@ -1627,7 +1638,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           title: 'Items',
           subtitle: 'Add order items',
           child: _PickerField(
-            hint: 'Add items to this order...',
+            hint: 'Add items to this order',
             onTap: () => showNotWiredYetSnackBar(context, 'Adding order items'),
           ),
         ),
@@ -1781,33 +1792,59 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   @override
   Widget build(BuildContext context) {
     if (loading) return const StateBlock.loading();
+    final c = context.c;
     return PageBody(
       children: [
-        Container(
-          height: 120,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF0F3F8),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Product Photos',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            Text('0/5', style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
+        const SizedBox(height: Gap.sm),
+        _DashedBorder(
+          radius: Sizes.cardRadius,
+          color: c.border,
+          child: Material(
+            color: const Color(0xFFF7F8FA),
             borderRadius: BorderRadius.circular(Sizes.cardRadius),
-            border: Border.all(color: context.c.border),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                LucideIcons.imagePlus,
-                color: context.c.textSecondary,
-                size: 28,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(Sizes.cardRadius),
+              onTap: () =>
+                  showNotWiredYetSnackBar(context, 'Adding product photos'),
+              child: SizedBox(
+                height: 168,
+                width: double.infinity,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      LucideIcons.imagePlus,
+                      color: c.textSecondary,
+                      size: 30,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Add product photos',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Up to 5 photos',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                'Add product photo',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
+            ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: Gap.section),
         _FormSection(
           icon: LucideIcons.package,
           title: 'Product Details',
@@ -1816,16 +1853,20 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
               CefField(
                 label: 'Product name',
                 controller: name,
+                hint: 'Enter product name',
                 errorText: errors['name'],
               ),
               CefField(
                 label: 'Description',
                 controller: description,
-                maxLines: 2,
+                hint: 'Enter product description',
+                maxLines: 3,
+                maxLength: 500,
               ),
               CefField(
                 label: 'Price (RM)',
                 controller: price,
+                hint: 'RM 0.00',
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
@@ -1834,31 +1875,29 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 12),
-        CefCard(
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Available',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    Text(
-                      'Show this product in your storefront',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
+        const Divider(height: Gap.section),
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Available',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  Text(
+                    'Show this product in your storefront',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
               ),
-              CefSwitch(
-                value: active,
-                onChanged: (v) => setState(() => active = v),
-              ),
-            ],
-          ),
+            ),
+            CefSwitch(
+              value: active,
+              onChanged: (v) => setState(() => active = v),
+            ),
+          ],
         ),
         if (error != null)
           Padding(
@@ -1967,6 +2006,65 @@ class _OrderProgress extends StatelessWidget {
   }
 }
 
+/// Dashed rounded-rect outline -- Flutter has no built-in dashed
+/// `Border`/`BoxDecoration`, so this paints one directly. Used only for Add
+/// Product's photo-upload placeholder, per the locked reference screen.
+class _DashedBorder extends StatelessWidget {
+  const _DashedBorder({
+    required this.child,
+    required this.radius,
+    required this.color,
+  });
+  final Widget child;
+  final double radius;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => CustomPaint(
+    foregroundPainter: _DashedBorderPainter(radius: radius, color: color),
+    child: child,
+  );
+}
+
+class _DashedBorderPainter extends CustomPainter {
+  _DashedBorderPainter({required this.radius, required this.color});
+  final double radius;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rrect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(radius),
+    );
+    final outline = Path()..addRRect(rrect);
+    final dashed = Path();
+    const dashWidth = 6.0, dashGap = 4.0;
+    for (final metric in outline.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        final next = distance + dashWidth;
+        dashed.addPath(
+          metric.extractPath(distance, next.clamp(0, metric.length)),
+          Offset.zero,
+        );
+        distance = next + dashGap;
+      }
+    }
+    canvas.drawPath(
+      dashed,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.4,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) =>
+      oldDelegate.radius != radius || oldDelegate.color != color;
+}
+
 class _FormSection extends StatelessWidget {
   const _FormSection({
     required this.icon,
@@ -2012,8 +2110,54 @@ class _FormSection extends StatelessWidget {
   );
 }
 
-/// A field-shaped row that opens something instead of accepting typing --
-/// the reference draws Address and Items this way (placeholder + chevron).
+/// Light-blue "Use current location" row under the Address field -- locked
+/// New Order reference.
+class _UseCurrentLocationButton extends StatelessWidget {
+  const _UseCurrentLocationButton({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Padding(
+      padding: const EdgeInsets.only(top: Gap.sm),
+      child: Material(
+        color: const Color(0xFFE3EEFF),
+        borderRadius: BorderRadius.circular(Sizes.inputRadius),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(Sizes.inputRadius),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(LucideIcons.locateFixed, size: 18, color: c.info),
+                const SizedBox(width: 8),
+                Text(
+                  'Use current location',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: c.info,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A light-blue call-to-action row that opens something instead of
+/// accepting typing -- the locked New Order reference draws "Add items to
+/// this order" this way: tinted background, filled circular plus icon,
+/// bold blue label, chevron.
 class _PickerField extends StatelessWidget {
   const _PickerField({required this.hint, required this.onTap});
   final String hint;
@@ -2023,27 +2167,37 @@ class _PickerField extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.c;
     return Material(
-      color: Colors.transparent,
+      color: const Color(0xFFE3EEFF),
+      borderRadius: BorderRadius.circular(Sizes.inputRadius),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(Sizes.inputRadius),
-        child: Container(
-          height: 50,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(
-            color: c.card,
-            border: Border.all(color: c.border),
-            borderRadius: BorderRadius.circular(Sizes.inputRadius),
-          ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           child: Row(
             children: [
+              Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(color: c.info, shape: BoxShape.circle),
+                child: const Icon(
+                  LucideIcons.plus,
+                  size: 16,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   hint,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: c.info,
+                  ),
                 ),
               ),
-              Icon(LucideIcons.chevronRight, size: 18, color: c.textSecondary),
+              Icon(LucideIcons.chevronRight, size: 18, color: c.info),
             ],
           ),
         ),

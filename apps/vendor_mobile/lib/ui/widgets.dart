@@ -454,6 +454,7 @@ class CefField extends StatelessWidget {
     this.errorText,
     this.onChanged,
     this.prefixIcon,
+    this.maxLength,
   });
   final String label;
   final TextEditingController controller;
@@ -462,6 +463,10 @@ class CefField extends StatelessWidget {
   final int maxLines;
   final ValueChanged<String>? onChanged;
   final IconData? prefixIcon;
+
+  /// Shows a Flutter-native bottom-right "n/max" counter (e.g. Add
+  /// Product's Description field, per the locked reference screen).
+  final int? maxLength;
 
   @override
   Widget build(BuildContext context) {
@@ -477,6 +482,7 @@ class CefField extends StatelessWidget {
             controller: controller,
             keyboardType: keyboardType,
             maxLines: maxLines,
+            maxLength: maxLength,
             onChanged: onChanged,
             style: TextStyle(fontSize: 15, color: c.textPrimary),
             decoration: InputDecoration(
@@ -489,6 +495,7 @@ class CefField extends StatelessWidget {
                   ? null
                   : Icon(prefixIcon, size: 19, color: c.textSecondary),
               contentPadding: const EdgeInsets.all(Gap.md),
+              counterStyle: TextStyle(fontSize: 11.5, color: c.textSecondary),
               border: _border(c.border),
               enabledBorder: _border(c.border),
               focusedBorder: _border(CefColors.accent, width: 1.6),
