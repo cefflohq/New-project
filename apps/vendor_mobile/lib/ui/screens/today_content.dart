@@ -101,12 +101,12 @@ class TodayContent extends StatelessWidget {
                 rows[i].$3,
               ].join(' · '),
               leading: CircleAvatar(
-                radius: 28,
+                radius: 24,
                 backgroundColor: const Color(0xFFE9EEF5),
                 child: Text(
                   rows[i].$1.split(' ').map((s) => s[0]).take(2).join(),
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: 13,
                     color: CefColors.navy,
                     fontWeight: FontWeight.w600,
                   ),
@@ -140,7 +140,7 @@ class TodayContent extends StatelessWidget {
           subtitle: counts[2] == 0
               ? 'Nothing needs your attention'
               : '${counts[2]} orders need your action',
-          leading: Icon(Icons.warning_rounded, color: c.attention, size: 32),
+          leading: Icon(Icons.warning_rounded, color: c.attention, size: 26),
           onTap: () {
             if (issues.isNotEmpty) {
               app.go(VRoute.orderDetail, entityId: issues.first.id);
@@ -205,7 +205,7 @@ class _OverviewStats extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: Gap.lg),
+        const SizedBox(height: Gap.md),
         Divider(height: 1, color: c.border),
       ],
     );

@@ -633,14 +633,14 @@ class _RidersScreenState extends State<RidersScreen> {
                     if (r.plate != null) r.plate!,
                   ].join(' · '),
                   leading: CircleAvatar(
-                    radius: 28,
+                    radius: 24,
                     backgroundColor: CefColors.navy,
                     child: Text(
                       r.name.split(' ').take(2).map((part) => part[0]).join(),
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
-                        fontSize: 14,
+                        fontSize: 13,
                       ),
                     ),
                   ),
@@ -1317,7 +1317,7 @@ class MenuScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: Gap.section, bottom: Gap.sm),
+              padding: const EdgeInsets.only(top: Gap.md, bottom: Gap.sm),
               child: Text(
                 title,
                 style: TextStyle(

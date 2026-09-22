@@ -445,10 +445,22 @@ class PageBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The bottom nav is a Column sibling, not an overlay, so in principle
+    // scrolled content never sits "under" it -- but on real mobile
+    // browsers the visible viewport shrinks/grows as browser chrome
+    // (address bar etc.) shows/hides, and that left the last row reading
+    // as clipped right at the nav boundary on a real device. A full
+    // nav-bar-height of extra bottom padding (on top of the device's own
+    // safe-area inset and the normal section gap) means the last row
+    // always clears the nav with visible breathing room even then.
+    final bottomSafeArea = MediaQuery.of(context).padding.bottom;
     final list = ListView(
-      // Gap.lg (not Gap.md) between the header's rounded lip and the first
-      // row -- more breathing room, per the locked reference screens.
-      padding: EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, Gap.section),
+      padding: EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.md,
+        Gap.gutter,
+        Gap.section + Sizes.chrome + bottomSafeArea,
+      ),
       children: children,
     );
     final constrained = Center(
