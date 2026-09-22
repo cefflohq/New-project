@@ -697,10 +697,13 @@ class RiderDetailScreen extends StatelessWidget {
                 : rider.isActive
                 ? 'Active'
                 : 'Offline',
-            // The reference shows a rider code ("Rider · RID-004") that
-            // isn't a real field on RiderRow -- rather than fabricate one,
-            // this shows just the role, same as Team Member Detail below.
-            subtitle: pending ? 'Rider Applicant' : 'Rider',
+            // Per Founder direction: this whole app is demo/prototype data
+            // already, so the reference's rider code ("Rider · RID-004")
+            // is shown exactly rather than dropped.
+            subtitle: [
+              pending ? 'Rider Applicant' : 'Rider',
+              if (rider.riderCode != null) rider.riderCode!,
+            ].join(' · '),
             pending: pending,
             onBack: app.back,
             onMenu: () => _notWiredYet(context, 'Rider options'),

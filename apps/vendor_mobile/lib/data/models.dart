@@ -198,6 +198,7 @@ class RiderRow {
     this.plate,
     this.maxActiveOrders,
     this.joinedLabel,
+    this.riderCode,
   });
 
   final String id, name, status;
@@ -209,6 +210,12 @@ class RiderRow {
   /// backend doesn't track a rider join date yet, so this stays null
   /// outside the demo repository rather than inventing one.
   final String? joinedLabel;
+
+  /// Short display code (e.g. "RID-004") for Rider Detail's "Rider ·
+  /// {code}" subtitle. Optional/display-only, same reasoning as
+  /// [joinedLabel] -- the backend doesn't track one, so this stays null
+  /// outside the demo repository.
+  final String? riderCode;
 
   factory RiderRow.fromRow(Map<String, dynamic> r) => RiderRow(
     id: r['id'] as String,

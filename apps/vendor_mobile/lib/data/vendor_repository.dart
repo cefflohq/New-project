@@ -694,6 +694,7 @@ class _DemoData {
       plate: 'VFY 7281',
       maxActiveOrders: 8,
       joinedLabel: 'Mar 2024',
+      riderCode: 'RID-001',
     ),
     RiderRow(
       id: 'rider-siti',
@@ -705,6 +706,7 @@ class _DemoData {
       maxActiveOrders: 12,
       // Matches the locked Rider Detail reference screen exactly.
       joinedLabel: 'Jan 2025',
+      riderCode: 'RID-004',
     ),
     RiderRow(
       id: 'rider-jason',
@@ -715,6 +717,7 @@ class _DemoData {
       plate: 'VDT 3302',
       maxActiveOrders: 8,
       joinedLabel: 'Jul 2024',
+      riderCode: 'RID-002',
     ),
     RiderRow(
       id: 'rider-daniel',
@@ -727,6 +730,7 @@ class _DemoData {
       plate: 'BPL 6683',
       maxActiveOrders: 20,
       joinedLabel: 'Sep 2025',
+      riderCode: 'RID-003',
     ),
   ];
 
