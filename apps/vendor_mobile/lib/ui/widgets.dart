@@ -298,11 +298,7 @@ class NavySummaryPanel extends StatelessWidget {
     width: double.infinity,
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF102344), Color(0xFF1B3668), Color(0xFF27427E)],
-      ),
+      gradient: CeffloBrandGradient.heroCard,
       borderRadius: BorderRadius.circular(Sizes.cardRadius),
     ),
     child: Column(

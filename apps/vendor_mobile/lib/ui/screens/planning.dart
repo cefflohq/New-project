@@ -182,15 +182,7 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(Gap.cardPadding),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF0065E4),
-                    Color(0xFF003B91),
-                    Color(0xFF071C46),
-                  ],
-                ),
+                gradient: CeffloBrandGradient.heroCard,
                 borderRadius: BorderRadius.circular(Sizes.cardRadius),
               ),
               child: Row(

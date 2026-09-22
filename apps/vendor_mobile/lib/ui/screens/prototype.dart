@@ -62,11 +62,7 @@ class _HeroPanel extends StatelessWidget {
     width: double.infinity,
     padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF102344), Color(0xFF1453B7), Color(0xFF12213E)],
-      ),
+      gradient: CeffloBrandGradient.heroCard,
       borderRadius: BorderRadius.circular(Sizes.cardRadius),
     ),
     child: Column(
@@ -1655,21 +1651,10 @@ class _InviteLinkScreen extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(Gap.cardPadding),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: kind == 'Rider'
-                  ? const [
-                      Color(0xFF0065E4),
-                      Color(0xFF003B91),
-                      Color(0xFF071C46),
-                    ]
-                  : const [
-                      Color(0xFF102344),
-                      Color(0xFF1453B7),
-                      Color(0xFF12213E),
-                    ],
-            ),
+            // Was two different hand-picked gradients depending on `kind`
+            // (Rider vs Team) -- now the one canonical hero-card gradient
+            // regardless, per the brand-gradient convergence pass.
+            gradient: CeffloBrandGradient.heroCard,
             borderRadius: BorderRadius.circular(Sizes.cardRadius),
           ),
           child: Column(

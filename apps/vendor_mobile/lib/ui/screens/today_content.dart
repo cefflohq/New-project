@@ -4,13 +4,16 @@ import '../../core/app_state.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/models.dart';
-import '../shell.dart';
 import '../widgets.dart';
 
-/// V-11 — Today. Uses the same shared building blocks (PageBody,
-/// SectionHeading, FlatListRow) as every other screen, so its type/spacing/
-/// card density matches V-01..V-60 rather than a screen-specific set of
-/// hand-picked sizes.
+/// V-11 — Today. Uses the same shared building blocks (SectionHeading,
+/// FlatListRow) as every other screen, so its type/spacing/card density
+/// matches V-01..V-60 rather than a screen-specific set of hand-picked
+/// sizes. Unlike other screens it does NOT sit in a single-scroll
+/// `PageBody`: the stats row (top) and "Need Attention" (bottom) are fixed
+/// and always fully visible, with only the rider list in between scrolling
+/// internally -- so this screen never needs page-level scrolling to reach
+/// its last section, on any supported viewport height.
 class TodayContent extends StatelessWidget {
   const TodayContent({
     super.key,
@@ -66,90 +69,144 @@ class TodayContent extends StatelessWidget {
             );
           }).toList();
 
-    return PageBody(
-      onRefresh: reload,
-      children: [
-        _OverviewStats(
-          stats: [
-            ('Total Orders', '${counts[0]}', c.textPrimary),
-            ('Ready', '${counts[1]}', const Color(0xFF42CE82)),
-            ('Issue', '${counts[2]}', const Color(0xFFFF3653)),
-            ('Delivered', '${counts[3]}', c.info),
-          ],
-        ),
-        SectionHeading(
-          'Recent Delivery',
-          trailing: GestureDetector(
-            onTap: () => app.switchTab(NavTab.orders),
-            child: const Text(
-              'View All',
-              style: TextStyle(
-                color: Color(0xFF1769D2),
-                fontWeight: FontWeight.w600,
+    // Today must never require page-level scrolling to reach "Need
+    // Attention" -- the stats row and Need Attention are fixed (top/bottom)
+    // and only the rider list in between scrolls internally, and only if it
+    // doesn't fully fit. This replaces the single scrolling PageBody this
+    // screen used to sit in (which, on some real-device viewport heights,
+    // could leave the last row reading as clipped at the nav boundary).
+    final bottomSafeArea = MediaQuery.of(context).padding.bottom;
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                Gap.gutter,
+                Gap.md,
+                Gap.gutter,
+                0,
               ),
-            ),
-          ),
-        ),
-        if (rows.isEmpty)
-          const StateBlock.empty('No completed deliveries yet.')
-        else
-          for (var i = 0; i < rows.length; i++)
-            FlatListRow(
-              title: rows[i].$1,
-              subtitle: [
-                if (rows[i].$2.isNotEmpty) rows[i].$2,
-                rows[i].$3,
-              ].join(' · '),
-              leading: CircleAvatar(
-                radius: 24,
-                backgroundColor: const Color(0xFFE9EEF5),
-                child: Text(
-                  rows[i].$1.split(' ').map((s) => s[0]).take(2).join(),
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: CefColors.navy,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              trailing: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const StatusChip('Delivered', tinted: true, success: true),
-                  if (rows[i].$4.isNotEmpty) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      rows[i].$4,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
+              child: _OverviewStats(
+                stats: [
+                  ('Total Orders', '${counts[0]}', c.textPrimary),
+                  ('Ready', '${counts[1]}', const Color(0xFF42CE82)),
+                  ('Issue', '${counts[2]}', const Color(0xFFFF3653)),
+                  ('Delivered', '${counts[3]}', c.info),
                 ],
               ),
-              onTap: () {
-                if (!demo) {
-                  app.go(VRoute.orderDetail, entityId: delivered[i].id);
-                } else {
-                  app.switchTab(NavTab.riders);
-                }
-              },
             ),
-        const SizedBox(height: Gap.sm),
-        FlatListRow(
-          title: 'Need Attention',
-          subtitle: counts[2] == 0
-              ? 'Nothing needs your attention'
-              : '${counts[2]} orders need your action',
-          leading: Icon(Icons.warning_rounded, color: c.attention, size: 26),
-          onTap: () {
-            if (issues.isNotEmpty) {
-              app.go(VRoute.orderDetail, entityId: issues.first.id);
-            } else {
-              app.switchTab(NavTab.orders);
-            }
-          },
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: reload,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(
+                    Gap.gutter,
+                    0,
+                    Gap.gutter,
+                    Gap.sm,
+                  ),
+                  children: [
+                    SectionHeading(
+                      'Recent Delivery',
+                      trailing: GestureDetector(
+                        onTap: () => app.switchTab(NavTab.orders),
+                        child: const Text(
+                          'View All',
+                          style: TextStyle(
+                            color: Color(0xFF1769D2),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (rows.isEmpty)
+                      const StateBlock.empty('No completed deliveries yet.')
+                    else
+                      for (var i = 0; i < rows.length; i++)
+                        FlatListRow(
+                          title: rows[i].$1,
+                          subtitle: [
+                            if (rows[i].$2.isNotEmpty) rows[i].$2,
+                            rows[i].$3,
+                          ].join(' · '),
+                          leading: CircleAvatar(
+                            radius: 24,
+                            backgroundColor: const Color(0xFFE9EEF5),
+                            child: Text(
+                              rows[i].$1
+                                  .split(' ')
+                                  .map((s) => s[0])
+                                  .take(2)
+                                  .join(),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: CefColors.navy,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          trailing: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const StatusChip(
+                                'Delivered',
+                                tinted: true,
+                                success: true,
+                              ),
+                              if (rows[i].$4.isNotEmpty) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  rows[i].$4,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ],
+                          ),
+                          onTap: () {
+                            if (!demo) {
+                              app.go(VRoute.orderDetail, entityId: delivered[i].id);
+                            } else {
+                              app.switchTab(NavTab.riders);
+                            }
+                          },
+                        ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                Gap.gutter,
+                0,
+                Gap.gutter,
+                Gap.lg + bottomSafeArea,
+              ),
+              child: FlatListRow(
+                title: 'Need Attention',
+                subtitle: counts[2] == 0
+                    ? 'Nothing needs your attention'
+                    : '${counts[2]} orders need your action',
+                leading: Icon(
+                  Icons.warning_rounded,
+                  color: c.attention,
+                  size: 26,
+                ),
+                onTap: () {
+                  if (issues.isNotEmpty) {
+                    app.go(VRoute.orderDetail, entityId: issues.first.id);
+                  } else {
+                    app.switchTab(NavTab.orders);
+                  }
+                },
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

@@ -107,7 +107,32 @@ class VendorShell extends StatelessWidget {
               if (!_ownChromeRoutes.contains(app.current.route))
                 _Header(app: app),
               Expanded(
-                child: ColoredBox(color: c.canvas, child: child),
+                // A gradient header's content surface is one continuous
+                // rounded shape starting exactly where the header ends --
+                // not a separate rounded "lip" painted by the header
+                // abutting a separate flat fill painted here, which risked
+                // a hairline seam between the two on some renderers.
+                // Screens with their own gradient chrome (Rider/Team
+                // Member Detail) round their own content surface instead,
+                // inside PageBody, since only they know where their
+                // gradient ends.
+                child: hasGradientHeader
+                    ? Container(
+                        decoration: BoxDecoration(
+                          color: c.canvas,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(
+                              Sizes.contentSurfaceRadius,
+                            ),
+                            topRight: Radius.circular(
+                              Sizes.contentSurfaceRadius,
+                            ),
+                          ),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: child,
+                      )
+                    : ColoredBox(color: c.canvas, child: child),
               ),
               if (!isOnboarding &&
                   !_reviewTitles.containsKey(app.current.route) &&
@@ -187,18 +212,11 @@ class _Header extends StatelessWidget {
         ),
       );
     }
-    // Deep navy -> bright cyan-blue diagonal wash, brightening toward the
-    // top-right corner, per the locked reference screens (Today, Orders,
-    // Zones, Riders, Settings all share this exact header treatment).
+    // CeffloBrandGradient -- the one canonical branded-blue surface, per
+    // the locked reference screens (Today, Orders, Zones, Riders, Settings
+    // all share this exact header treatment).
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment(-1, 1),
-          end: Alignment(1, -1),
-          colors: [Color(0xFF0B1E4E), Color(0xFF1257C4), Color(0xFF1E9CF2)],
-          stops: [0, 0.55, 1],
-        ),
-      ),
+      decoration: const BoxDecoration(gradient: CeffloBrandGradient.header),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -257,19 +275,6 @@ class _Header extends StatelessWidget {
                     iconColor: Colors.white,
                   ),
                 ],
-              ),
-            ),
-          ),
-          // Rounded white "lip" the body sheet appears to grow out of --
-          // painted here (rather than by the body) so it always sits flush
-          // against this header's own gradient with no seam.
-          Container(
-            height: 22,
-            decoration: BoxDecoration(
-              color: c.canvas,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
               ),
             ),
           ),
@@ -483,22 +488,40 @@ class PageBody extends StatelessWidget {
     // safe-area inset and the normal section gap) means the last row
     // always clears the nav with visible breathing room even then.
     final bottomSafeArea = MediaQuery.of(context).padding.bottom;
+    final bodyPadding = Padding(
+      padding: EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.md,
+        Gap.gutter,
+        Gap.section + Sizes.chrome + bottomSafeArea,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
+      ),
+    );
     final list = ListView(
       padding: EdgeInsets.zero,
       children: [
         ?header,
-        Padding(
-          padding: EdgeInsets.fromLTRB(
-            Gap.gutter,
-            Gap.md,
-            Gap.gutter,
-            Gap.section + Sizes.chrome + bottomSafeArea,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: children,
-          ),
-        ),
+        // When a full-bleed [header] is present (its own gradient chrome,
+        // e.g. TallProfileHeader), this body needs its own rounded content
+        // surface starting exactly where that gradient ends -- one
+        // continuous shape, same token as the shared tab-root header, so
+        // there's no seam between two abutting white fills.
+        if (header != null)
+          Container(
+            decoration: BoxDecoration(
+              color: context.c.canvas,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(Sizes.contentSurfaceRadius),
+                topRight: Radius.circular(Sizes.contentSurfaceRadius),
+              ),
+            ),
+            child: bodyPadding,
+          )
+        else
+          bodyPadding,
       ],
     );
     final constrained = Center(

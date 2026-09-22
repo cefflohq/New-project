@@ -33,6 +33,44 @@ class Sizes {
   static const cardRadius = 18.0;
   static const buttonRadius = 999.0; // pill
   static const inputRadius = 18.0;
+
+  /// Canonical CeffloContentSurface radius -- the top-left/top-right radius
+  /// of the white sheet a gradient header (shared or screen-drawn) grows
+  /// out of. One token so every "gradient header -> rounded white content"
+  /// transition in the app uses the exact same curve, painted as a single
+  /// shape rather than a separate header "lip" abutting a separate body
+  /// fill (which risked a hairline seam between the two).
+  static const contentSurfaceRadius = 24.0;
+}
+
+/// CeffloBrandGradient -- the ONE canonical Cefflo Vendor branded-blue
+/// surface. Deep navy -> bright cyan-blue diagonal wash, brightening
+/// toward the top-right corner. Every gradient header in the app (the
+/// shared tab-root header in shell.dart, and screen-drawn "tall profile"
+/// headers like Rider Detail/Team Member Detail in review_parts.dart)
+/// must reuse this single definition rather than redefining its own
+/// LinearGradient literal, per the UI convergence pass's "brand blue
+/// lock": one concept, one token, one source of truth.
+class CeffloBrandGradient {
+  static const header = LinearGradient(
+    begin: Alignment(-1, 1),
+    end: Alignment(1, -1),
+    colors: [Color(0xFF0B1E4E), Color(0xFF1257C4), Color(0xFF1E9CF2)],
+    stops: [0, 0.55, 1],
+  );
+
+  /// Secondary "navy hero card" treatment used for in-body branded blue
+  /// surfaces that aren't the page header itself (e.g. NavySummaryPanel,
+  /// Welcome/Setup-complete hero cards, invite-link cards, planning's
+  /// dispatch-summary card). Before the convergence pass these were 3
+  /// independently hand-picked navy/blue triples across widgets.dart,
+  /// operations.dart, prototype.dart and planning.dart; this is the one
+  /// (already the majority value) they all now share.
+  static const heroCard = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF102344), Color(0xFF1B3668), Color(0xFF27427E)],
+  );
 }
 
 class CefColors extends ThemeExtension<CefColors> {

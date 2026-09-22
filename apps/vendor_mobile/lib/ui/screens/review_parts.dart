@@ -9,15 +9,17 @@ import '../widgets.dart';
 /// `_ownChromeRoutes` in shell.dart) instead of the default flat back-arrow
 /// header. The gradient extends down to contain the avatar/name/status
 /// block itself -- not a card floating on a white page -- per the locked
-/// reference screens, then rounds into the white sheet below exactly like
-/// the shared tab-root header's "lip" (shell.dart's `_Header`).
+/// reference screens. `PageBody`'s `header` slot rounds the white content
+/// surface below into one continuous shape starting exactly where this
+/// gradient ends (the same `Sizes.contentSurfaceRadius` token the shared
+/// tab-root header uses), so there's no seam between two abutting fills.
 ///
 /// Both reference screens share this gradient-profile-block pattern but
 /// differ in two ways: Team Member centers everything and has no stat row;
 /// Rider Detail left-aligns the avatar next to the name block and adds a
 /// 3-up stat row beneath it. Both are expressed here via [centered] and
 /// [stats] rather than as two separate widgets, since duplicating the
-/// gradient/lip/back-arrow plumbing for a one-parameter difference would be
+/// gradient/back-arrow plumbing for a one-parameter difference would be
 /// the kind of drift this shared-widget pass is meant to avoid.
 class TallProfileHeader extends StatelessWidget {
   const TallProfileHeader({
@@ -51,13 +53,6 @@ class TallProfileHeader extends StatelessWidget {
 
   final VoidCallback onBack;
   final VoidCallback? onMenu;
-
-  static const _gradient = LinearGradient(
-    begin: Alignment(-1, 1),
-    end: Alignment(1, -1),
-    colors: [Color(0xFF0B1E4E), Color(0xFF1257C4), Color(0xFF1E9CF2)],
-    stops: [0, 0.55, 1],
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -190,7 +185,7 @@ class TallProfileHeader extends StatelessWidget {
           );
 
     return Container(
-      decoration: const BoxDecoration(gradient: _gradient),
+      decoration: const BoxDecoration(gradient: CeffloBrandGradient.header),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -293,20 +288,10 @@ class TallProfileHeader extends StatelessWidget {
             ),
             const SizedBox(height: Gap.lg),
           ],
-          // Rounded white "lip" the body sheet grows out of -- same trick
-          // as the shared tab-root header (shell.dart's _Header).
-          Builder(
-            builder: (context) => Container(
-              height: 22,
-              decoration: BoxDecoration(
-                color: context.c.canvas,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
-                ),
-              ),
-            ),
-          ),
+          // No separate rounded "lip" here -- PageBody paints the rounded
+          // content surface as one continuous shape starting exactly where
+          // this gradient ends (see PageBody's `header` slot), so there is
+          // no seam between two abutting white fills.
         ],
       ),
     );

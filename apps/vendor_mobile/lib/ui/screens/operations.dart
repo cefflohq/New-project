@@ -43,11 +43,7 @@ class WelcomeSetupScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF102344), Color(0xFF1B3668), Color(0xFF27427E)],
-            ),
+            gradient: CeffloBrandGradient.heroCard,
             borderRadius: BorderRadius.circular(Sizes.cardRadius),
           ),
           child: Column(
@@ -489,11 +485,7 @@ class SetupCompleteScreen extends StatelessWidget {
           height: 256,
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF102344), Color(0xFF1B3668), Color(0xFF27427E)],
-            ),
+            gradient: CeffloBrandGradient.heroCard,
             borderRadius: BorderRadius.circular(Sizes.cardRadius),
           ),
           child: Column(
