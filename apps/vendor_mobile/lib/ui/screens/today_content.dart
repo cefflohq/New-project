@@ -138,12 +138,21 @@ class TodayContent extends StatelessWidget {
                       for (var i = 0; i < rows.length; i++)
                         FlatListRow(
                           title: rows[i].$1,
+                          // Real-device density fix: Today's own rows read
+                          // tighter than the shared FlatListRow default so
+                          // all 5 + Need Attention comfortably fit without
+                          // page scroll on shorter phone viewports -- this
+                          // is a per-call-site override (see FlatListRow's
+                          // minHeight/verticalPadding), Orders/Zones/Riders/
+                          // Rider Detail keep the shared default untouched.
+                          minHeight: 64,
+                          verticalPadding: 10,
                           subtitle: [
                             if (rows[i].$2.isNotEmpty) rows[i].$2,
                             rows[i].$3,
                           ].join(' · '),
                           leading: CircleAvatar(
-                            radius: 24,
+                            radius: 21,
                             backgroundColor: const Color(0xFFE9EEF5),
                             child: Text(
                               rows[i].$1
@@ -193,17 +202,19 @@ class TodayContent extends StatelessWidget {
                 Gap.gutter,
                 0,
                 Gap.gutter,
-                Gap.lg + bottomSafeArea,
+                Gap.md + bottomSafeArea,
               ),
               child: FlatListRow(
                 title: 'Need Attention',
+                minHeight: 64,
+                verticalPadding: 10,
                 subtitle: counts[2] == 0
                     ? 'Nothing needs your attention'
                     : '${counts[2]} orders need your action',
                 leading: Icon(
                   Icons.warning_rounded,
                   color: c.attention,
-                  size: 26,
+                  size: 24,
                 ),
                 onTap: () {
                   if (issues.isNotEmpty) {
@@ -248,19 +259,19 @@ class _OverviewStats extends StatelessWidget {
                       Text(
                         stats[i].$2,
                         style: TextStyle(
-                          fontSize: 26,
+                          fontSize: 24,
                           height: 1,
                           fontWeight: FontWeight.w800,
                           color: stats[i].$3,
                         ),
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 4),
                       Text(
                         stats[i].$1,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 11.5,
+                          fontSize: 11,
                           fontWeight: FontWeight.w500,
                           color: c.textSecondary,
                         ),
@@ -272,7 +283,7 @@ class _OverviewStats extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: Gap.md),
+        const SizedBox(height: Gap.sm),
         Divider(height: 1, color: c.border),
       ],
     );

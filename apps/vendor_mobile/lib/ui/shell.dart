@@ -77,6 +77,7 @@ class VendorShell extends StatelessWidget {
         hasHeader && !_reviewTitles.containsKey(app.current.route);
     final forcesLightStatusIcons =
         hasGradientHeader || _ownGradientChromeRoutes.contains(app.current.route);
+    final isToday = app.current.route == VRoute.today;
 
     return CefSystemBars.split(
       // The gradient header (shell-drawn or screen-drawn, e.g. Rider
@@ -88,11 +89,18 @@ class VendorShell extends StatelessWidget {
           ? Brightness.dark
           : (dark ? Brightness.dark : Brightness.light),
       navigationBarBackground: dark ? Brightness.dark : Brightness.light,
-      // Middle stop of CeffloBrandGradient.header -- kept as a literal
-      // (rather than reading the LinearGradient's colors list) since this
-      // is a single flat browser-chrome colour, not a paintable gradient.
       browserChromeColor: forcesLightStatusIcons
-          ? const Color(0xFF0B67E8)
+          // CeffloBrandGradient.header begins at `Alignment.topCenter`, so
+          // the colour actually visible at the very top edge of the header
+          // (y=0, where the real device's status bar sits) is the
+          // gradient's FIRST stop, not a middle/average one -- a flat
+          // meta-theme-color status bar can only ever match a gradient at
+          // one exact point, and that point has to be the seam itself for
+          // the two to read as one continuous surface. Scoped to Today only
+          // per this task's explicit scope lock; Orders/Zones/Riders/
+          // Settings/Rider Detail/Team Member Detail still use the middle
+          // stop they had before -- out of scope for this pass.
+          ? (isToday ? const Color(0xFF51BDF8) : const Color(0xFF0B67E8))
           : c.chrome,
       child: PopScope(
         canPop: !app.canGoBack,

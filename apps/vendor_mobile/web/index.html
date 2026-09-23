@@ -48,8 +48,15 @@
     so Flutter's fixed component sizes render at consistent density
     everywhere. Deliberately omits user-scalable=no / maximum-scale so
     legitimate pinch-zoom and OS accessibility text scaling still work.
+
+    `viewport-fit=cover` is required separately from the above: without it,
+    a notched/gesture-nav Android or iOS device constrains the page's own
+    layout viewport to the "safe" rectangle and paints its OWN default
+    chrome colour (observed as a black strip) in the status-bar/gesture-bar
+    regions outside it, instead of letting the app's background -- and
+    `theme-color` -- extend edge-to-edge behind them.
   -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">

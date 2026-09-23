@@ -812,6 +812,8 @@ class FlatListRow extends StatelessWidget {
     this.trailing,
     this.onTap,
     this.dense = false,
+    this.minHeight,
+    this.verticalPadding,
   });
 
   final String title;
@@ -821,6 +823,15 @@ class FlatListRow extends StatelessWidget {
   final VoidCallback? onTap;
   final bool dense;
 
+  /// Per-call-site density overrides -- default to the standard
+  /// dense/non-dense values below (every existing call site is
+  /// unaffected). Lets one screen with tighter vertical-rhythm needs (e.g.
+  /// Today/Overview's real-device density fix) ask for a shorter row
+  /// without changing the shared default everywhere else this widget is
+  /// used (Orders, Zones, Riders, Rider Detail, ...).
+  final double? minHeight;
+  final double? verticalPadding;
+
   @override
   Widget build(BuildContext context) {
     final c = context.c;
@@ -829,10 +840,12 @@ class FlatListRow extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          constraints: BoxConstraints(minHeight: dense ? 64 : 76),
+          constraints: BoxConstraints(
+            minHeight: minHeight ?? (dense ? 64 : 76),
+          ),
           padding: EdgeInsets.symmetric(
             horizontal: 4,
-            vertical: dense ? 10 : 14,
+            vertical: verticalPadding ?? (dense ? 10 : 14),
           ),
           decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: c.border)),
