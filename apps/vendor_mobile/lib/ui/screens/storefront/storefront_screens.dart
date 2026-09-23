@@ -220,47 +220,41 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
         : kStorefrontTemplateLibrary
               .where((t) => t.category == category)
               .toList();
+    final categories = ['All', ...kStorefrontTemplateCategories];
     return PageBody(
       children: [
         const SectionHeading('Current Storefront'),
         _CurrentStorefrontCard(def: active),
         const SectionHeading('Explore Templates'),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 14),
-          child: Text(
-            'Choose a template and see how your products look.',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+        Text(
+          'Choose a template and see how your products look.',
+          style: Theme.of(context).textTheme.bodySmall,
         ),
+        const SizedBox(height: Gap.md),
         SizedBox(
-          height: 40,
-          child: ListView(
+          height: Sizes.chipHeight,
+          child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            children: [
-              _CategoryChip(
-                label: 'All',
-                selected: category == 'All',
-                onTap: () => setState(() => category = 'All'),
-              ),
-              for (final cat in kStorefrontTemplateCategories)
-                _CategoryChip(
-                  label: cat,
-                  selected: category == cat,
-                  onTap: () => setState(() => category = cat),
-                ),
-            ],
+            itemCount: categories.length,
+            separatorBuilder: (_, _) => const SizedBox(width: Gap.sm),
+            itemBuilder: (context, i) => CefChoiceChip(
+              label: categories[i],
+              selected: category == categories[i],
+              onTap: () => setState(() => category = categories[i]),
+            ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: Gap.lg),
         GridView.builder(
           shrinkWrap: true,
+          padding: EdgeInsets.zero,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: visible.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            mainAxisSpacing: 14,
-            crossAxisSpacing: 14,
-            childAspectRatio: 0.82,
+            mainAxisSpacing: Gap.md,
+            crossAxisSpacing: Gap.md,
+            childAspectRatio: 0.8,
           ),
           itemBuilder: (context, i) => _TemplateGalleryCard(
             def: visible[i],
@@ -275,54 +269,10 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
         CefListRow(
           title: 'Products',
           subtitle: 'Manage catalog items',
-          leading: Icon(
-            LucideIcons.package,
-            size: Sizes.icon,
-            color: context.c.iconColor,
-          ),
+          icon: LucideIcons.package,
           onTap: () => app.go(VRoute.products),
         ),
       ],
-    );
-  }
-}
-
-class _CategoryChip extends StatelessWidget {
-  const _CategoryChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(999),
-        onTap: onTap,
-        child: Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: selected ? CefColors.accent : c.card,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: selected ? CefColors.accent : c.border),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: selected ? CefColors.onAccent : c.textPrimary,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -331,112 +281,94 @@ class _CurrentStorefrontCard extends StatelessWidget {
   const _CurrentStorefrontCard({required this.def});
   final StorefrontTemplateDef def;
 
+  static const _viewLabel = 'View Storefront';
+
+  /// Whether the two page buttons fit side by side at the current width and
+  /// text scale without truncating; otherwise they stack.
+  static bool _buttonsFitInRow(BuildContext context, double maxWidth) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: _viewLabel,
+        // CefButton's label metrics.
+        style: Theme.of(context).textTheme.labelLarge
+            ?.copyWith(fontSize: 15, fontWeight: FontWeight.w600),
+      ),
+      textScaler: MediaQuery.textScalerOf(context),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
+    // Label + the button's horizontal padding.
+    final needed = painter.width + Gap.lg * 2;
+    painter.dispose();
+    return needed <= (maxWidth - Gap.md) / 2;
+  }
+
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
+    final text = Theme.of(context).textTheme;
+    final view = CefButton(
+      _viewLabel,
+      secondary: true,
+      onTap: () => app.go(VRoute.storefrontPreview),
+    );
+    final customize = CefButton(
+      'Customize',
+      onTap: () => app.go(VRoute.branding),
+    );
     return CefCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                width: 60,
-                height: 60,
+                width: 56,
+                height: 56,
                 child: _TemplateArt(def: def, radius: 12, iconScale: .4),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: Gap.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            def.name,
-                            style: Theme.of(context).textTheme.titleSmall,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: context.c.success.withValues(alpha: .12),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            'Active',
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w800,
-                              color: context.c.success,
-                            ),
-                          ),
-                        ),
-                      ],
+                    Text(
+                      def.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: text.titleSmall,
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 2),
                     Text(
                       def.typeTag,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: text.bodySmall,
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: Gap.sm),
+              const StatusChip('Active', success: true),
             ],
           ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: 40,
-                  child: OutlinedButton.icon(
-                    onPressed: () => app.go(VRoute.storefrontPreview),
-                    icon: const Icon(LucideIcons.externalLink, size: 15),
-                    label: const Text(
-                      'View Storefront',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: context.c.border),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
+          const SizedBox(height: Gap.lg),
+          LayoutBuilder(
+            builder: (context, box) => _buttonsFitInRow(context, box.maxWidth)
+                ? Row(
+                    children: [
+                      Expanded(child: view),
+                      const SizedBox(width: Gap.md),
+                      Expanded(child: customize),
+                    ],
+                  )
+                : Column(
+                    children: [
+                      view,
+                      const SizedBox(height: Gap.sm),
+                      customize,
+                    ],
                   ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: SizedBox(
-                  height: 40,
-                  child: FilledButton(
-                    onPressed: () => app.go(VRoute.branding),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: CefColors.navy,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                    child: const Text(
-                      'Customize',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -455,120 +387,124 @@ class _TemplateGalleryCard extends StatelessWidget {
   final VoidCallback onOpen;
 
   @override
-  Widget build(BuildContext context) => Material(
-    color: Colors.transparent,
-    borderRadius: BorderRadius.circular(Sizes.cardRadius),
-    child: InkWell(
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final text = Theme.of(context).textTheme;
+    return Material(
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(Sizes.cardRadius),
-      onTap: onOpen,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(Sizes.cardRadius),
-          border: Border.all(
-            color: isActive ? CefColors.accent : context.c.border,
-            width: isActive ? 1.6 : 1,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+        onTap: onOpen,
+        child: Container(
+          decoration: BoxDecoration(
+            color: c.card,
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+            border: Border.all(
+              color: isActive ? CefColors.accent : c.border,
+              width: isActive ? 1.6 : 1,
+            ),
+            boxShadow: cefCardShadow(Theme.of(context).brightness),
           ),
-          boxShadow: cefCardShadow(Theme.of(context).brightness),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  _TemplateArt(def: def, radius: 0),
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withValues(alpha: .55),
-                        ],
-                        stops: const [0.4, 1],
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    _TemplateArt(def: def, radius: 0),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: .55),
+                          ],
+                          stops: const [0.4, 1],
+                        ),
                       ),
                     ),
-                  ),
-                  if (isActive)
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: CefColors.accent,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: const Text(
-                          'Active',
-                          style: TextStyle(
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w800,
-                            color: CefColors.onAccent,
+                    if (isActive)
+                      Positioned(
+                        top: Gap.sm,
+                        left: Gap.sm,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: Gap.sm,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: CefColors.accent,
+                            borderRadius: BorderRadius.circular(
+                              Sizes.buttonRadius,
+                            ),
+                          ),
+                          child: Text(
+                            'Active',
+                            style: text.bodySmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: CefColors.onAccent,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  Positioned(
-                    right: 8,
-                    bottom: 8,
-                    child: Container(
-                      width: 26,
-                      height: 26,
-                      alignment: Alignment.center,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        LucideIcons.arrowUpRight,
-                        size: 14,
-                        color: Color(0xFF14171C),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 10,
-                    bottom: 10,
-                    right: 40,
-                    child: Text(
-                      def.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
+                    Positioned(
+                      right: Gap.sm,
+                      bottom: Gap.sm,
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          LucideIcons.arrowUpRight,
+                          size: 14,
+                          color: CefColors.onAccent,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-              child: Text(
-                def.typeTag,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
-                  color: context.c.textSecondary,
+                    Positioned(
+                      left: Gap.md,
+                      bottom: Gap.md,
+                      right: 44,
+                      child: Text(
+                        def.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: text.titleSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Gap.md,
+                  vertical: Gap.sm,
+                ),
+                child: Text(
+                  def.typeTag,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: text.bodySmall,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 /// V-32 -- Storefront preview, bound to whichever template is currently
@@ -603,10 +539,10 @@ class StorefrontTemplatePreviewScreen extends StatelessWidget {
         ),
         Container(
           padding: EdgeInsets.fromLTRB(
-            16,
-            12,
-            16,
-            12 + MediaQuery.of(context).viewPadding.bottom,
+            Gap.gutter,
+            Gap.md,
+            Gap.gutter,
+            Gap.md + MediaQuery.of(context).viewPadding.bottom,
           ),
           decoration: BoxDecoration(
             color: context.c.chrome,
@@ -615,63 +551,30 @@ class StorefrontTemplatePreviewScreen extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: SizedBox(
-                  height: 48,
-                  child: OutlinedButton(
-                    onPressed: () => app.back(),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: context.c.border),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                    child: const Text(
-                      'Back',
-                      style: TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
+                child: CefButton(
+                  'Back',
+                  secondary: true,
+                  onTap: () => app.back(),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: Gap.md),
               Expanded(
-                child: SizedBox(
-                  height: 48,
-                  child: FilledButton(
-                    onPressed: isActive
-                        ? null
-                        : () {
-                            app.useStorefrontTemplate(def.id);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  '${def.name} is now your active storefront.',
-                                ),
+                flex: 2,
+                child: CefButton(
+                  isActive ? 'Currently Active' : 'Use This Template',
+                  onTap: isActive
+                      ? null
+                      : () {
+                          app.useStorefrontTemplate(def.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${def.name} is now your active storefront.',
                               ),
-                            );
-                            app.back();
-                          },
-                    style: FilledButton.styleFrom(
-                      backgroundColor: context.c.info,
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: context.c.info.withValues(
-                        alpha: .5,
-                      ),
-                      disabledForegroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                    child: Text(
-                      isActive ? 'Currently Active' : 'Use This Template',
-                      style: const TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
+                            ),
+                          );
+                          app.back();
+                        },
                 ),
               ),
             ],

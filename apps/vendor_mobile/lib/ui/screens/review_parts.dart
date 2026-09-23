@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 
-/// Shared presentation for the six Founder-reviewed operations screens only.
-///
-/// The avatar tile is always a rounded square -- both call sites (Rider
-/// Detail, Team Member Detail) represent the same "person profile" pattern
-/// and should render identically. This used to take a `square` flag that
-/// defaulted to false on one call site only, which combined a 94x108
-/// (non-square) box with a 54px corner radius into a lopsided oval instead
-/// of a clean shape. Removed rather than fixed-and-kept, since the two call
-/// sites never had a reason to look different.
+import '../../core/theme.dart';
+import '../widgets.dart';
+
+/// Person profile hero shared by Rider Detail and Team Member Detail: the
+/// canonical [HeroSurface] with a [CefAvatar], the person's name, a light
+/// status pill and their role.
 class ReviewProfileHero extends StatelessWidget {
   const ReviewProfileHero({
     super.key,
@@ -19,85 +16,126 @@ class ReviewProfileHero extends StatelessWidget {
   });
   final String name, role, status;
   final bool pending;
+
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(14),
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF0065E4), Color(0xFF003B91), Color(0xFF071C46)],
-      ),
-    ),
-    child: Row(
-      children: [
-        Container(
-          width: 94,
-          height: 108,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: const Color(0xFFDCE7F3),
-            border: Border.all(color: Colors.white, width: 2),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(
-            name
-                .split(' ')
-                .where((s) => s.isNotEmpty)
-                .take(2)
-                .map((s) => s[0])
-                .join(),
-            style: const TextStyle(
-              fontSize: 27,
-              color: Color(0xFF12213E),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        const SizedBox(width: 20),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return HeroSurface(
+      padding: const EdgeInsets.all(Gap.xl),
+      child: Row(
+        children: [
+          CefAvatar(name, size: 72),
+          const SizedBox(width: Gap.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: text.headlineSmall?.copyWith(color: Colors.white),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: pending
-                      ? const Color(0xFFFEC819)
-                      : const Color(0xFFDAF3E4),
-                  borderRadius: BorderRadius.circular(9),
-                ),
-                child: Text(
-                  status,
-                  style: const TextStyle(
-                    color: Color(0xFF102344),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                const SizedBox(height: 2),
+                Text(
+                  role,
+                  style: text.bodyMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: .78),
                   ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                role,
-                style: const TextStyle(color: Colors.white, fontSize: 13),
-              ),
-            ],
+                const SizedBox(height: Gap.sm),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: Gap.xs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: pending ? CefColors.accent : Colors.white,
+                    borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+                  ),
+                  child: Text(
+                    status,
+                    maxLines: 1,
+                    style: text.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: pending ? CefColors.onAccent : CefColors.navy,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
+}
+
+/// One labelled fact on a profile (phone, vehicle, role...). A missing
+/// [value] renders [emptyText] as muted supporting text instead.
+class ProfileDetailLine {
+  const ProfileDetailLine({
+    required this.icon,
+    required this.label,
+    this.value,
+    this.note,
+    this.emptyText = 'Not provided',
+  });
+  final IconData icon;
+  final String label;
+  final String? value;
+  final String? note;
+  final String emptyText;
+}
+
+/// The one information block for the person detail screens: a [CefCard] of
+/// icon + label + value lines, so Rider Detail and Team Member Detail read
+/// identically.
+class ProfileDetailCard extends StatelessWidget {
+  const ProfileDetailCard({super.key, required this.lines});
+  final List<ProfileDetailLine> lines;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final text = Theme.of(context).textTheme;
+    return CefCard(
+      child: Column(
+        children: [
+          for (final (i, line) in lines.indexed) ...[
+            if (i > 0) const SizedBox(height: Gap.lg),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(line.icon, size: Sizes.icon, color: c.iconColor),
+                const SizedBox(width: Gap.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(line.label, style: text.bodySmall),
+                      const SizedBox(height: 2),
+                      if (line.value == null)
+                        Text(
+                          line.emptyText,
+                          style: text.bodyMedium?.copyWith(
+                            color: c.textSecondary,
+                          ),
+                        )
+                      else
+                        Text(line.value!, style: text.titleSmall),
+                      if (line.note != null) ...[
+                        const SizedBox(height: Gap.xs),
+                        Text(line.note!, style: text.bodySmall),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 }

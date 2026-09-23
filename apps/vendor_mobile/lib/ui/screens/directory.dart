@@ -156,19 +156,10 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
               ),
             ),
             const SizedBox(height: Gap.md),
-            TextField(
+            CefSearchField(
+              hint: 'Search zones...',
               controller: _query,
               onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                hintText: 'Search zones...',
-                prefixIcon: const Icon(LucideIcons.search, size: 18),
-                filled: true,
-                fillColor: context.c.card,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(Sizes.inputRadius),
-                  borderSide: BorderSide(color: context.c.border),
-                ),
-              ),
             ),
             const SizedBox(height: Gap.md),
             if (visible.isEmpty)
@@ -177,18 +168,7 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
               for (final z in visible)
                 CefListRow(
                   title: z.name,
-                  leading: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: CefColors.navy,
-                    child: Text(
-                      z.name.isEmpty ? '?' : z.name[0].toUpperCase(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
+                  leading: CefAvatar(z.name),
                   trailing: StatusChip(
                     z.isActive ? 'Active' : 'Inactive',
                     success: z.isActive,
@@ -247,25 +227,25 @@ class ZoneDetailScreen extends StatelessWidget {
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                            horizontal: Gap.md,
+                            vertical: Gap.xs,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF075BC7),
-                            borderRadius: BorderRadius.circular(18),
+                            color: context.c.info,
+                            borderRadius: BorderRadius.circular(
+                              Sizes.buttonRadius,
+                            ),
                           ),
                           child: Text(
                             zone.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(color: Colors.white),
                           ),
                         ),
-                        const SizedBox(height: 5),
-                        const Icon(
+                        const SizedBox(height: Gap.xs),
+                        Icon(
                           LucideIcons.mapPin,
-                          color: Color(0xFF075BC7),
+                          color: context.c.info,
                           size: 34,
                         ),
                       ],
@@ -280,7 +260,7 @@ class ZoneDetailScreen extends StatelessWidget {
                 Expanded(
                   child: Text(
                     zone.name,
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
                 IconAction(
@@ -290,10 +270,13 @@ class ZoneDetailScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: Gap.sm),
-            StatusChip(
-              zone.isActive ? 'Active' : 'Inactive',
-              success: zone.isActive,
+            const SizedBox(height: Gap.xs),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: StatusChip(
+                zone.isActive ? 'Active' : 'Inactive',
+                success: zone.isActive,
+              ),
             ),
             const SectionHeading('Operational status'),
             NavySummaryPanel(
@@ -463,10 +446,10 @@ class _ZoneFormScreenState extends State<ZoneFormScreen> {
             borderRadius: BorderRadius.circular(Sizes.cardRadius),
             child: CustomPaint(
               painter: _CoverageMapPainter(),
-              child: const Center(
+              child: Center(
                 child: Icon(
                   LucideIcons.mapPin,
-                  color: Color(0xFF075BC7),
+                  color: context.c.info,
                   size: 32,
                 ),
               ),
@@ -529,7 +512,8 @@ class _ZoneFormScreenState extends State<ZoneFormScreen> {
             padding: const EdgeInsets.only(top: Gap.md),
             child: Text(
               error!,
-              style: TextStyle(color: context.c.attention, fontSize: 13),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: context.c.attention),
             ),
           ),
         const SizedBox(height: Gap.section),
@@ -539,19 +523,10 @@ class _ZoneFormScreenState extends State<ZoneFormScreen> {
           Row(
             children: [
               Expanded(
-                child: SizedBox(
-                  height: 52,
-                  child: OutlinedButton(
-                    onPressed: _delete,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: context.c.attention,
-                      side: BorderSide(color: context.c.attention),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-                      ),
-                    ),
-                    child: const Text('Delete Zone'),
-                  ),
+                child: CefButton(
+                  'Delete Zone',
+                  destructive: true,
+                  onTap: _delete,
                 ),
               ),
               const SizedBox(width: Gap.cardGap),
@@ -612,18 +587,7 @@ class _RidersScreenState extends State<RidersScreen> {
                     if (r.vehicleType != null) _titleCase(r.vehicleType!),
                     if (r.plate != null) r.plate!,
                   ].join(' · '),
-                  leading: CircleAvatar(
-                    radius: 22,
-                    backgroundColor: CefColors.navy,
-                    child: Text(
-                      r.name.split(' ').take(2).map((part) => part[0]).join(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
+                  leading: CefAvatar(r.name),
                   trailing: StatusChip(
                     r.isActive ? 'Active' : 'Offline',
                     success: r.status == 'active',
@@ -675,85 +639,63 @@ class RiderDetailScreen extends StatelessWidget {
               pending: pending,
             ),
             const SectionHeading('Contact'),
-            CefCard(
-              child: Row(
-                children: [
-                  Icon(
-                    LucideIcons.phone,
-                    size: Sizes.icon,
-                    color: context.c.info,
-                  ),
-                  const SizedBox(width: Gap.md),
-                  Expanded(
-                    child: Text(
-                      rider.phone ?? 'Not provided',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                  ),
-                ],
-              ),
+            ProfileDetailCard(
+              lines: [
+                ProfileDetailLine(
+                  icon: LucideIcons.phone,
+                  label: 'Phone',
+                  value: rider.phone,
+                ),
+              ],
             ),
             const SectionHeading('Vehicle'),
-            CefCard(
-              child: Row(
-                children: [
-                  Icon(
-                    LucideIcons.bike,
-                    size: Sizes.icon,
-                    color: context.c.info,
+            ProfileDetailCard(
+              lines: [
+                ProfileDetailLine(
+                  icon: LucideIcons.bike,
+                  label: 'Type',
+                  value: rider.vehicleType == null
+                      ? null
+                      : _titleCase(rider.vehicleType!),
+                ),
+                if (rider.plate != null)
+                  ProfileDetailLine(
+                    icon: LucideIcons.hash,
+                    label: 'Plate number',
+                    value: rider.plate,
                   ),
-                  const SizedBox(width: Gap.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          rider.vehicleType == null
-                              ? 'Not provided'
-                              : _titleCase(rider.vehicleType!),
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        if (rider.plate != null)
-                          Text(
-                            rider.plate!,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              ],
             ),
             const SectionHeading('Driving Licence'),
-            const CefCard(
-              child: Row(
-                children: [
-                  Icon(LucideIcons.fileText, size: 24),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      'No licence document available',
-                      style: TextStyle(fontSize: 13, color: Color(0xFF858BA3)),
-                    ),
-                  ),
-                ],
-              ),
+            const ProfileDetailCard(
+              lines: [
+                ProfileDetailLine(
+                  icon: LucideIcons.fileText,
+                  label: 'Document',
+                  emptyText: 'No licence document available',
+                ),
+              ],
             ),
             const SectionHeading('Additional Information'),
-            const CefCard(
-              child: Text(
-                'No additional information available.',
-                style: TextStyle(fontSize: 13, color: Color(0xFF858BA3)),
-              ),
+            const ProfileDetailCard(
+              lines: [
+                ProfileDetailLine(
+                  icon: LucideIcons.info,
+                  label: 'Notes',
+                  emptyText: 'No additional information available.',
+                ),
+              ],
             ),
             if (rider.maxActiveOrders != null) ...[
               const SectionHeading('Capacity'),
-              CefCard(
-                child: _row(
-                  context,
-                  'Max active orders',
-                  '${rider.maxActiveOrders}',
-                ),
+              ProfileDetailCard(
+                lines: [
+                  ProfileDetailLine(
+                    icon: LucideIcons.gauge,
+                    label: 'Max active orders',
+                    value: '${rider.maxActiveOrders}',
+                  ),
+                ],
               ),
             ],
             const SizedBox(height: Gap.section),
@@ -761,22 +703,10 @@ class RiderDetailScreen extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: SizedBox(
-                      height: 52,
-                      child: OutlinedButton(
-                        onPressed: () =>
-                            _notWiredYet(context, 'Rejecting riders'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: context.c.textPrimary,
-                          side: BorderSide(color: context.c.border),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              Sizes.buttonRadius,
-                            ),
-                          ),
-                        ),
-                        child: const Text('Reject'),
-                      ),
+                    child: CefButton(
+                      'Reject',
+                      secondary: true,
+                      onTap: () => _notWiredYet(context, 'Rejecting riders'),
                     ),
                   ),
                   const SizedBox(width: Gap.cardGap),
@@ -799,25 +729,7 @@ class RiderDetailScreen extends StatelessWidget {
       SnackBar(content: Text('$action is not wired to a backend action yet.')),
     );
   }
-
-  Widget _row(BuildContext context, String k, String v) => Row(
-    children: [
-      SizedBox(
-        width: 140,
-        child: Text(k, style: Theme.of(context).textTheme.bodySmall),
-      ),
-      Expanded(child: Text(v, style: Theme.of(context).textTheme.titleSmall)),
-    ],
-  );
 }
-
-String _initialsOf(String name) => name
-    .split(' ')
-    .where((p) => p.isNotEmpty)
-    .take(2)
-    .map((p) => p[0])
-    .join()
-    .toUpperCase();
 
 class TeamScreen extends StatefulWidget {
   const TeamScreen({super.key});
@@ -853,20 +765,10 @@ class _TeamScreenState extends State<TeamScreen> {
         return PageBody(
           onRefresh: reload,
           children: [
-            const Text(
-              'Team',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF091A3C),
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
+            Text(
               'Manage who can access your business.',
-              style: TextStyle(fontSize: 13, color: Color(0xFF858BA3)),
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
-            const SizedBox(height: 24),
             SectionHeading(
               '${members.length} Member${members.length == 1 ? '' : 's'}',
               trailing: IconAction(
@@ -875,19 +777,10 @@ class _TeamScreenState extends State<TeamScreen> {
                 onTap: () => app.go(VRoute.helperRegistrationLink),
               ),
             ),
-            TextField(
+            CefSearchField(
+              hint: 'Search team members...',
               controller: _query,
               onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                hintText: 'Search team members...',
-                prefixIcon: const Icon(LucideIcons.search, size: 18),
-                filled: true,
-                fillColor: context.c.card,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(Sizes.inputRadius),
-                  borderSide: BorderSide(color: context.c.border),
-                ),
-              ),
             ),
             const SizedBox(height: Gap.md),
             if (visible.isEmpty)
@@ -897,18 +790,7 @@ class _TeamScreenState extends State<TeamScreen> {
                 CefListRow(
                   title: m.displayName ?? m.userId,
                   subtitle: m.role,
-                  leading: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: CefColors.navy,
-                    child: Text(
-                      _initialsOf(m.displayName ?? m.userId),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
+                  leading: CefAvatar(m.displayName ?? m.userId),
                   trailing: const StatusChip('Active', success: true),
                   // Audit fix 2: bound to this member's id.
                   onTap: () =>
@@ -949,84 +831,40 @@ class TeamMemberDetailScreen extends StatelessWidget {
             status: 'Active',
           ),
           const SectionHeading('Contact'),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              children: [
-                Icon(LucideIcons.phone, size: 20),
-                SizedBox(width: 18),
-                Text(
-                  'Phone not provided',
-                  style: TextStyle(fontSize: 13, color: Color(0xFF858BA3)),
-                ),
-              ],
-            ),
+          const ProfileDetailCard(
+            lines: [
+              ProfileDetailLine(icon: LucideIcons.phone, label: 'Phone'),
+              ProfileDetailLine(icon: LucideIcons.mail, label: 'Email'),
+            ],
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Row(
-              children: [
-                Icon(LucideIcons.mail, size: 20),
-                SizedBox(width: 18),
-                Text(
-                  'Email not provided',
-                  style: TextStyle(fontSize: 13, color: Color(0xFF858BA3)),
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 28),
           const SectionHeading('Role & Access'),
-          CefCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _kv(context, 'Role', member.role),
-                const SizedBox(height: 6),
-                Text(
-                  _roleDescription(member.role),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
+          ProfileDetailCard(
+            lines: [
+              ProfileDetailLine(
+                icon: LucideIcons.shieldCheck,
+                label: 'Role',
+                value: member.role,
+                note: _roleDescription(member.role),
+              ),
+            ],
           ),
           const SectionHeading('Status'),
-          CefCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _kv(context, 'Account Status', 'Active'),
-                const SizedBox(height: 6),
-                Text(
-                  'This team member can currently access your business.',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
+          const ProfileDetailCard(
+            lines: [
+              ProfileDetailLine(
+                icon: LucideIcons.circleCheck,
+                label: 'Account Status',
+                value: 'Active',
+                note: 'This team member can currently access your business.',
+              ),
+            ],
           ),
           const SizedBox(height: Gap.section),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: OutlinedButton.icon(
-              onPressed: () => _confirmRemove(context, member),
-              icon: Icon(
-                LucideIcons.trash2,
-                size: 18,
-                color: context.c.attention,
-              ),
-              label: const Text('Remove from Team'),
-              style: OutlinedButton.styleFrom(
-                backgroundColor: context.c.attention.withValues(alpha: .06),
-                foregroundColor: context.c.attention,
-                side: BorderSide(
-                  color: context.c.attention.withValues(alpha: .3),
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-                ),
-              ),
-            ),
+          CefButton(
+            'Remove from Team',
+            destructive: true,
+            icon: LucideIcons.trash2,
+            onTap: () => _confirmRemove(context, member),
           ),
         ],
       ),
@@ -1070,19 +908,6 @@ class TeamMemberDetailScreen extends StatelessWidget {
     );
     if (confirmed == true && context.mounted) AppScope.read(context).back();
   }
-
-  Widget _kv(BuildContext context, String k, String v) => Padding(
-    padding: const EdgeInsets.only(bottom: 6),
-    child: Row(
-      children: [
-        SizedBox(
-          width: 120,
-          child: Text(k, style: Theme.of(context).textTheme.bodySmall),
-        ),
-        Expanded(child: Text(v, style: Theme.of(context).textTheme.titleSmall)),
-      ],
-    ),
-  );
 }
 
 class _CoverageMapPainter extends CustomPainter {
@@ -1184,22 +1009,7 @@ class CustomersScreen extends StatelessWidget {
               CefListRow(
                 title: entry.key,
                 subtitle: entry.value.customerPhone,
-                leading: CircleAvatar(
-                  radius: 20,
-                  backgroundColor: const Color(0xFFF0F3F8),
-                  child: Text(
-                    entry.key
-                        .split(' ')
-                        .where((part) => part.isNotEmpty)
-                        .take(2)
-                        .map((part) => part[0])
-                        .join(),
-                    style: const TextStyle(
-                      color: CefColors.navy,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+                leading: CefAvatar(entry.key),
                 onTap: () => app.go(VRoute.customerDetail, entityId: entry.key),
               ),
           ],
@@ -1227,27 +1037,16 @@ class CustomerDetailScreen extends StatelessWidget {
         return PageBody(
           onRefresh: reload,
           children: [
-            Center(
-              child: CircleAvatar(
-                radius: 42,
-                backgroundColor: CefColors.navy,
-                child: Text(
-                  customerName.substring(0, 1),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ),
+            Center(child: CefAvatar(customerName, size: 80)),
             const SizedBox(height: Gap.md),
             Center(
               child: Text(
                 customerName,
-                style: Theme.of(context).textTheme.titleLarge,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
             ),
+            const SizedBox(height: 2),
             Center(
               child: Text(
                 customer.customerPhone,
@@ -1309,28 +1108,14 @@ class MenuScreen extends StatelessWidget {
           ('Appearance', LucideIcons.contrast, VRoute.appearance),
         ]),
         const SizedBox(height: Gap.section),
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: OutlinedButton.icon(
-            onPressed: () async {
-              await app.repo.signOut();
-              app.clearSession();
-            },
-            icon: Icon(
-              LucideIcons.logOut,
-              size: 18,
-              color: context.c.attention,
-            ),
-            label: const Text('Sign out'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: context.c.attention,
-              side: BorderSide(color: context.c.attention),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-              ),
-            ),
-          ),
+        CefButton(
+          'Sign out',
+          destructive: true,
+          icon: LucideIcons.logOut,
+          onTap: () async {
+            await app.repo.signOut();
+            app.clearSession();
+          },
         ),
         const SizedBox(height: Gap.md),
         Row(
@@ -1344,7 +1129,7 @@ class MenuScreen extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+              padding: const EdgeInsets.symmetric(horizontal: Gap.sm),
               child: Text('|', style: Theme.of(context).textTheme.bodySmall),
             ),
             GestureDetector(
@@ -1356,7 +1141,7 @@ class MenuScreen extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: Gap.xs),
         Center(
           child: Text(
             'Version 1.0.0',
