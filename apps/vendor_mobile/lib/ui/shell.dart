@@ -24,6 +24,7 @@ const _headerTitles = <VRoute, String>{
   VRoute.reviewDispatch: 'Review delivery plan',
   VRoute.runDetail: 'Active run',
   VRoute.riderRegistrationLink: 'Invite rider',
+  VRoute.helperRegistrationLink: 'Invite team member',
 };
 
 /// Small subtitle shown under the page title, for routes where the spec

@@ -1097,7 +1097,7 @@ class MenuScreen extends StatelessWidget {
           ('Service area', LucideIcons.map, VRoute.serviceArea),
           ('Storefront', LucideIcons.store, VRoute.storefront),
           ('Products', LucideIcons.boxes, VRoute.products),
-          ('Customers', LucideIcons.users, VRoute.customers),
+          ('Customers', LucideIcons.contactRound, VRoute.customers),
         ]),
         group('App & Account', [
           ('Profile', LucideIcons.user, VRoute.profile),

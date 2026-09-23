@@ -387,13 +387,13 @@ class _ProfileScreen extends StatelessWidget {
         CefListRow(
           title: 'Security',
           subtitle: 'Password, biometric & 2FA',
-          icon: LucideIcons.lock,
+          icon: LucideIcons.shieldCheck,
           onTap: () => app.go(VRoute.security),
         ),
         CefListRow(
           title: 'Language',
           subtitle: 'English',
-          icon: LucideIcons.languages,
+          icon: LucideIcons.globe,
           onTap: () => app.go(VRoute.language),
         ),
         CefListRow(
