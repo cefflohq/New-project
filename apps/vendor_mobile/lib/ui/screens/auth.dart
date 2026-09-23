@@ -9,12 +9,10 @@
 ///     password mismatch, connection problem, rate limited, resend in
 ///     progress).
 ///
-/// Light Mode only. Every colour below is an explicit Experience System
-/// token, so these screens render identically whatever theme mode the app
-/// is in — Dark Mode is HOLD and is not implemented or expanded here.
+/// Light Mode only (the app pins ThemeMode.light; Dark Mode is HOLD). The
+/// sheets use the canonical controls and tokens from widgets.dart/theme.dart;
+/// only the auth backdrops and third-party marks carry their own colours.
 library;
-
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -28,21 +26,23 @@ import '../widgets.dart';
 
 // ---------------------------------------------------------------- palette
 //
-// Navy anchor is the canonical #12213E. The locked boards show it as a
-// diagonal gradient with a lighter blue lift toward the centre-right; the
-// two companion stops below are shades of that same anchor, not new brand
-// colours.
+// Splash keeps its locked navy sweep: the canonical anchor #12213E with two
+// companion shades of that same anchor (not new brand colours).
 const _navyDeep = Color(0xFF0A1730);
-const _navyBase = CefColors.navy; // #12213E
 const _navyLift = Color(0xFF1E4585);
 
-const _sheetRadius = 28.0;
-const _buttonRadius = 14.0;
-const _buttonHeight = 48.0;
-const _fieldRadius = 14.0;
+// The bright CEFFLO blue sweep shared by Sign In and every sheet screen
+// after it, so the journey reads as one continuous backdrop.
+const _skyTop = Color(0xFF51BDF8);
+const _skyMid = Color(0xFF0B67E8);
+const _skyDeep = Color(0xFF031A50);
 
-const _disabledFill = Color(0xFFE6E8EE);
-const _disabledInk = Color(0xFF9AA0B4);
+/// Error copy sitting directly on the blue backdrop (Sign In), where the
+/// canonical attention red would not be legible.
+const _onBackdropError = Color(0xFFFFC9C3);
+
+/// Top corner radius of the white auth sheet (and the language picker).
+const _sheetRadius = 28.0;
 
 // ------------------------------------------------------------ auth shell
 
@@ -247,13 +247,8 @@ class _AuthFlowState extends State<AuthFlow> {
 
 // ------------------------------------------------------- shared chrome
 
-/// The locked Navy backdrop: diagonal gradient plus the soft lighter-blue
-/// lift the boards show toward the centre-right.
-///
-/// The gradient always spans the whole box it is given. On the sheet screens
-/// that box is the header band alone, not the screen — otherwise only the
-/// darkest top slice of the sweep would show and the header read as flat
-/// near-black, instead of carrying the same blue as Splash.
+/// Splash's locked navy backdrop: diagonal gradient plus the soft lighter-blue
+/// lift toward the centre-right.
 class _NavyBackdrop extends StatelessWidget {
   const _NavyBackdrop({required this.child});
 
@@ -263,17 +258,14 @@ class _NavyBackdrop extends StatelessWidget {
   Widget build(BuildContext context) {
     // DecoratedBox sizes to its child, so on Splash — whose widest child is
     // the ~168px progress indicator — the gradient once shrink-wrapped to a
-    // narrow strip and left the rest of the screen flat navy. The other
-    // screens hid that behind full-width buttons. SizedBox.expand pins it to
-    // whatever box the caller gives: the screen on Splash and Sign In, the
-    // header band alone on the sheet screens.
+    // narrow strip. SizedBox.expand pins it to the whole screen.
     return SizedBox.expand(
       child: DecoratedBox(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [_navyDeep, _navyBase, _navyLift, _navyBase],
+            colors: [_navyDeep, CefColors.navy, _navyLift, CefColors.navy],
             stops: [0.0, 0.34, 0.66, 1.0],
           ),
         ),
@@ -292,11 +284,11 @@ class _NavyBackdrop extends StatelessWidget {
   }
 }
 
-/// Bright blue Sign In treatment from the current Founder reference. Kept
-/// local to V02 so the rest of the authentication family retains its
-/// existing navy chrome and behaviour.
-class _SignInBackdrop extends StatelessWidget {
-  const _SignInBackdrop({required this.child});
+/// The bright CEFFLO blue auth backdrop. Sign In paints it full screen; the
+/// sheet screens paint the same full-screen sweep behind their header band
+/// and sheet, so the top of every auth screen matches Sign In exactly.
+class _AuthBackdrop extends StatelessWidget {
+  const _AuthBackdrop({required this.child});
 
   final Widget child;
 
@@ -307,7 +299,7 @@ class _SignInBackdrop extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF51BDF8), Color(0xFF0B67E8), Color(0xFF031A50)],
+          colors: [_skyTop, _skyMid, _skyDeep],
           stops: [0, .44, 1],
         ),
       ),
@@ -328,29 +320,23 @@ class _SignInBackdrop extends StatelessWidget {
 /// Share of the canonical master's height that the lockup actually occupies.
 /// The D-35 file is a 4375x4375 canvas with the portrait lockup centred in
 /// it, so a plain `height:` renders a logo visibly ~28% smaller than the
-/// number implies — which is exactly why it read as too small on the boards.
+/// number implies.
 const _lockupInkRatio = 0.7225;
 
 /// D-35 canonical primary lockup (mark + wordmark), bundled from
-/// docs/cefflo/brand/assets/logo/ and never redrawn.
+/// docs/cefflo/brand/assets/logo/ and never redrawn. Always crisp.
 ///
 /// [height] is the height of the *visible* lockup, not of the asset's square
-/// canvas, so the numbers at each call site can be read straight off the
-/// locked boards.
+/// canvas.
 class _BrandLockup extends StatelessWidget {
-  const _BrandLockup({this.height = 150, this.blurSigma = 0, this.opacity = 1});
+  const _BrandLockup({this.height = 150});
 
   final double height;
-
-  /// Soft-focus pass. The locked sheet boards render the header lockup
-  /// defocused; Splash and Sign In keep it crisp, as board 1 shows.
-  final double blurSigma;
-  final double opacity;
 
   @override
   Widget build(BuildContext context) {
     final box = height / _lockupInkRatio;
-    Widget image = Image.asset(
+    return Image.asset(
       'assets/brand/cefflo-logo-primary.png',
       height: box,
       fit: BoxFit.contain,
@@ -360,20 +346,6 @@ class _BrandLockup extends StatelessWidget {
       // file itself is untouched, only how much of it we rasterize.
       cacheWidth: (box * 3).round(),
     );
-    if (opacity < 1) {
-      image = Opacity(opacity: opacity, child: image);
-    }
-    if (blurSigma > 0) {
-      image = ImageFiltered(
-        imageFilter: ui.ImageFilter.blur(
-          sigmaX: blurSigma,
-          sigmaY: blurSigma,
-          tileMode: TileMode.decal,
-        ),
-        child: image,
-      );
-    }
-    return image;
   }
 }
 
@@ -384,130 +356,97 @@ class _Tagline extends StatelessWidget {
   Widget build(BuildContext context) => Text(
     'Operate Today.\nGrow Tomorrow.',
     textAlign: TextAlign.center,
-    style: TextStyle(
-      color: Colors.white.withValues(alpha: .88),
-      fontSize: 14,
-      height: 1.45,
-      fontWeight: FontWeight.w500,
-    ),
+    style: Theme.of(context).textTheme.bodyMedium
+        ?.copyWith(color: Colors.white.withValues(alpha: .88), height: 1.45),
   );
 }
 
-/// Navy header (Back + lockup) above a white rounded sheet — the shared
-/// layout every locked form screen after Sign In uses.
+/// The one layout every auth screen after Sign In uses: the Sign In blue
+/// backdrop with a Back row and crisp lockup in the header band, and a white
+/// rounded sheet below it that fills the rest of the screen.
+///
+/// Header and sheet scroll together, so where the sheet begins is decided by
+/// the header's own content, never by a per-screen offset. While the
+/// keyboard is open the lockup folds away so the form and its primary action
+/// get the room.
 class _SheetScaffold extends StatelessWidget {
-  const _SheetScaffold({
-    required this.child,
-    this.onBack,
-    this.showHandle = false,
-  });
+  const _SheetScaffold({required this.child, this.onBack});
 
   final Widget child;
   final VoidCallback? onBack;
-  final bool showHandle;
 
-  /// Visible height of the header lockup on the locked sheet boards.
-  static const _headerLockup = 112.0;
-  static const _backRow = 44.0;
+  /// Visible height of the header lockup.
+  static const _headerLockup = 96.0;
 
   @override
   Widget build(BuildContext context) {
-    // Deterministic, so the backdrop behind the header can be sized to the
-    // same band. The gradient always spans its own box: give it the whole
-    // screen and the header shows only the dark top of the sweep, which is
-    // why it used to read as flat near-black instead of the locked blue.
-    final headerHeight =
-        MediaQuery.paddingOf(context).top +
-        _backRow +
-        _headerLockup / _lockupInkRatio +
-        Gap.lg;
-
-    // Navy header band at the top, white rounded sheet filling the rest of
-    // the screen down to the physical bottom edge -- so the status bar
-    // sits over navy (light icons) while the navigation bar sits over the
-    // white sheet (dark icons).
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     return CefSystemBars.split(
       statusBarBackground: Brightness.dark,
       navigationBarBackground: Brightness.light,
       child: Scaffold(
-        backgroundColor: _navyBase,
-        body: Stack(
-          children: [
-            // Runs _sheetRadius past the header so the sheet's rounded corners
-            // reveal gradient rather than flat navy, as the boards show.
-            SizedBox(
-              width: double.infinity,
-              height: headerHeight + _sheetRadius,
-              child: const _NavyBackdrop(child: SizedBox.expand()),
-            ),
-            Column(
-              children: [
-                SizedBox(
-                  height: headerHeight,
-                  child: SafeArea(
-                    bottom: false,
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: _backRow,
-                          child: Row(
-                            children: [
-                              if (onBack != null)
-                                _BackButton(onTap: onBack!)
-                              else
-                                const SizedBox(width: Gap.lg),
-                            ],
-                          ),
+        backgroundColor: context.c.card,
+        body: _AuthBackdrop(
+          child: CustomScrollView(
+            physics: const ClampingScrollPhysics(),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            slivers: [
+              SliverToBoxAdapter(
+                child: SafeArea(
+                  bottom: false,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: Sizes.tapTarget,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: onBack == null
+                              ? null
+                              : _BackButton(onTap: onBack!),
                         ),
-                        // Soft-focus, per the locked sheet boards.
-                        const _BrandLockup(
-                          height: _headerLockup,
-                          blurSigma: 5.2,
-                          opacity: .74,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(_sheetRadius),
                       ),
-                    ),
-                    child: SafeArea(
-                      top: false,
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            if (showHandle) ...[
-                              Center(
-                                child: Container(
-                                  width: 44,
-                                  height: 4,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFD7DAE2),
-                                    borderRadius: BorderRadius.circular(99),
-                                  ),
-                                ),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOut,
+                        child: keyboardOpen
+                            ? const SizedBox(
+                                width: double.infinity,
+                                height: Gap.lg,
+                              )
+                            : const Padding(
+                                padding: EdgeInsets.only(bottom: Gap.xxl),
+                                child: _BrandLockup(height: _headerLockup),
                               ),
-                              const SizedBox(height: Gap.lg),
-                            ],
-                            child,
-                          ],
-                        ),
                       ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: context.c.card,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(_sheetRadius),
+                    ),
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        Gap.gutter,
+                        Gap.xxl,
+                        Gap.gutter,
+                        Gap.xxl,
+                      ),
+                      child: child,
                     ),
                   ),
                 ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -519,170 +458,68 @@ class _BackButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    label: 'Back',
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: Gap.lg, vertical: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(LucideIcons.chevronLeft, color: Colors.white, size: 21),
-            SizedBox(width: 4),
-            Text(
-              'Back',
-              style: TextStyle(
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(left: Gap.sm),
+    child: Semantics(
+      button: true,
+      label: 'Back',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: Gap.md,
+            vertical: Gap.sm,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                LucideIcons.chevronLeft,
                 color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+                size: Sizes.icon,
               ),
-            ),
-          ],
+              const SizedBox(width: Gap.xs),
+              Text(
+                'Back',
+                style: Theme.of(context).textTheme.titleSmall
+                    ?.copyWith(color: Colors.white),
+              ),
+            ],
+          ),
         ),
       ),
     ),
   );
 }
 
-class _SheetTitle extends StatelessWidget {
-  const _SheetTitle(this.title, this.subtitle);
+/// The one sheet heading: optional status icon, centred title, centred
+/// supporting line. Screens follow it with [Gap.xxl] before their fields or
+/// primary action.
+class _SheetHeading extends StatelessWidget {
+  const _SheetHeading(this.title, this.subtitle, {this.status});
   final String title;
   final String subtitle;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Text(
-        title,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: _navyBase,
-          fontSize: 23,
-          fontWeight: FontWeight.w800,
-          letterSpacing: -0.3,
-        ),
-      ),
-      const SizedBox(height: 6),
-      Text(
-        subtitle,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Color(0xFF5C647A),
-          fontSize: 14,
-          height: 1.45,
-        ),
-      ),
-      const SizedBox(height: Gap.section),
-    ],
-  );
-}
-
-// -------------------------------------------------------------- controls
-
-/// Locked primary action: CEFFLO Yellow, near-black label, 14px radius.
-/// Busy renders the locked "Signing in…"/"Sending…" spinner state; disabled
-/// renders the locked grey state.
-class _PrimaryButton extends StatelessWidget {
-  const _PrimaryButton(
-    this.label, {
-    required this.onTap,
-    this.busy = false,
-    this.busyLabel,
-  });
-
-  final String label;
-  final VoidCallback? onTap;
-  final bool busy;
-  final String? busyLabel;
+  final _StatusIcon? status;
 
   @override
   Widget build(BuildContext context) {
-    final disabled = onTap == null && !busy;
-    return SizedBox(
-      height: _buttonHeight,
-      child: FilledButton(
-        onPressed: busy ? null : onTap,
-        style: FilledButton.styleFrom(
-          backgroundColor: CefColors.accent,
-          foregroundColor: CefColors.onAccent,
-          disabledBackgroundColor: busy ? CefColors.accent : _disabledFill,
-          disabledForegroundColor: busy ? CefColors.onAccent : _disabledInk,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(_buttonRadius),
-          ),
-        ),
-        child: busy
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(
-                    width: 17,
-                    height: 17,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.2,
-                      color: CefColors.onAccent,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    busyLabel ?? label,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              )
-            : Text(
-                label,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: disabled ? _disabledInk : CefColors.onAccent,
-                ),
-              ),
-      ),
+    final text = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (status != null) ...[status!, const SizedBox(height: Gap.xl)],
+        Text(title, textAlign: TextAlign.center, style: text.headlineSmall),
+        const SizedBox(height: Gap.sm),
+        _CenteredNote(subtitle),
+      ],
     );
   }
 }
 
-/// Locked secondary action: white fill, Navy outline, Navy label.
-class _OutlineButton extends StatelessWidget {
-  const _OutlineButton(this.label, {required this.onTap});
-  final String label;
-  final VoidCallback? onTap;
+// -------------------------------------------------------------- controls
 
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    height: _buttonHeight,
-    child: OutlinedButton(
-      onPressed: onTap,
-      style: OutlinedButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: _navyBase,
-        disabledForegroundColor: _disabledInk,
-        side: BorderSide(
-          color: onTap == null ? _disabledFill : _navyBase,
-          width: 1.4,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(_buttonRadius),
-        ),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-      ),
-    ),
-  );
-}
-
-/// Locked plain text link ("Back to sign in", "Forgot password?").
+/// Plain inline text link ("Back to sign in", "Forgot password?").
 class _TextLink extends StatelessWidget {
   const _TextLink(
     this.label, {
@@ -700,150 +537,33 @@ class _TextLink extends StatelessWidget {
     child: Text(
       label,
       textAlign: align,
-      style: const TextStyle(
-        color: _navyBase,
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
+      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+        color: CefColors.navy,
         decoration: TextDecoration.underline,
-        decorationColor: _navyBase,
+        decorationColor: CefColors.navy,
       ),
     ),
   );
 }
 
-/// Locked form field: optional label, leading icon, optional eye toggle,
-/// optional helper line, optional error line.
-class _AuthField extends StatefulWidget {
-  const _AuthField({
-    required this.controller,
-    required this.hint,
-    required this.icon,
-    this.label,
-    this.helper,
-    this.error,
-    this.obscure = false,
-    this.keyboardType,
-    this.enabled = true,
-    this.onChanged,
-  });
-
-  final TextEditingController controller;
-  final String hint;
-  final IconData icon;
-  final String? label;
-  final String? helper;
-  final String? error;
-  final bool obscure;
-  final TextInputType? keyboardType;
-  final bool enabled;
-  final ValueChanged<String>? onChanged;
+/// "Don't have an account? Sign up" style footer under a sheet's CTA.
+class _FooterPrompt extends StatelessWidget {
+  const _FooterPrompt(this.prompt, this.link);
+  final String prompt;
+  final _TextLink link;
 
   @override
-  State<_AuthField> createState() => _AuthFieldState();
+  Widget build(BuildContext context) => Wrap(
+    alignment: WrapAlignment.center,
+    crossAxisAlignment: WrapCrossAlignment.center,
+    children: [
+      Text(prompt, style: Theme.of(context).textTheme.bodyMedium),
+      link,
+    ],
+  );
 }
 
-class _AuthFieldState extends State<_AuthField> {
-  late bool _hidden = widget.obscure;
-
-  @override
-  Widget build(BuildContext context) {
-    final hasError = widget.error != null && widget.error!.isNotEmpty;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null) ...[
-          Text(
-            widget.label!,
-            style: const TextStyle(
-              color: _navyBase,
-              fontSize: 13.5,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 6),
-        ],
-        TextField(
-          controller: widget.controller,
-          obscureText: _hidden,
-          enabled: widget.enabled,
-          keyboardType: widget.keyboardType,
-          onChanged: widget.onChanged,
-          style: const TextStyle(
-            fontSize: 15,
-            color: Color(0xFF181818),
-            fontWeight: FontWeight.w500,
-          ),
-          decoration: InputDecoration(
-            hintText: widget.hint,
-            hintStyle: const TextStyle(
-              color: Color(0xFF9AA0B4),
-              fontSize: 15,
-              fontWeight: FontWeight.w400,
-            ),
-            prefixIcon: Padding(
-              padding: const EdgeInsets.only(left: 14, right: 10),
-              child: Icon(widget.icon, size: 19, color: _navyBase),
-            ),
-            prefixIconConstraints: const BoxConstraints(
-              minWidth: 0,
-              minHeight: 0,
-            ),
-            suffixIcon: widget.obscure
-                ? IconButton(
-                    onPressed: () => setState(() => _hidden = !_hidden),
-                    icon: Icon(
-                      _hidden ? LucideIcons.eye : LucideIcons.eyeOff,
-                      size: 19,
-                      color: const Color(0xFF6B7385),
-                    ),
-                    tooltip: _hidden ? 'Show password' : 'Hide password',
-                  )
-                : null,
-            isDense: true,
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(vertical: 17),
-            enabledBorder: _border(
-              hasError ? CefColors.light.attention : const Color(0xFFDDE1EA),
-            ),
-            focusedBorder: _border(
-              hasError ? CefColors.light.attention : _navyBase,
-              width: 1.5,
-            ),
-            disabledBorder: _border(const Color(0xFFEDEFF4)),
-            errorBorder: _border(CefColors.light.attention),
-            focusedErrorBorder: _border(CefColors.light.attention, width: 1.5),
-          ),
-        ),
-        if (hasError) ...[
-          const SizedBox(height: 6),
-          Text(
-            widget.error!,
-            style: TextStyle(
-              color: CefColors.light.attention,
-              fontSize: 12.5,
-              height: 1.35,
-            ),
-          ),
-        ] else if (widget.helper != null) ...[
-          const SizedBox(height: 6),
-          Text(
-            widget.helper!,
-            style: const TextStyle(color: Color(0xFF7A8194), fontSize: 12.5),
-          ),
-        ],
-      ],
-    );
-  }
-
-  OutlineInputBorder _border(Color color, {double width = 1.2}) =>
-      OutlineInputBorder(
-        borderRadius: BorderRadius.circular(_fieldRadius),
-        borderSide: BorderSide(color: color, width: width),
-      );
-}
-
-/// Locked status icon: Navy outline circle with a Navy glyph.
+/// Status icon: Navy outline circle with a Navy glyph.
 class _StatusIcon extends StatelessWidget {
   const _StatusIcon(this.icon, {this.circled = true});
 
@@ -863,30 +583,34 @@ class _StatusIcon extends StatelessWidget {
             height: 76,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: _navyBase, width: 2),
+              border: Border.all(color: CefColors.navy, width: 2),
             ),
-            child: Icon(icon, size: 34, color: _navyBase),
+            child: Icon(icon, size: 34, color: CefColors.navy),
           )
-        : Icon(icon, size: 62, color: _navyBase),
+        : Icon(icon, size: 62, color: CefColors.navy),
   );
 }
 
-/// One line of prose under a status icon.
+/// Centred supporting prose on a sheet.
 class _CenteredNote extends StatelessWidget {
-  const _CenteredNote(this.text, {this.muted = false});
+  const _CenteredNote(this.text, {this.muted = false, this.error = false});
   final String text;
   final bool muted;
+  final bool error;
 
   @override
-  Widget build(BuildContext context) => Text(
-    text,
-    textAlign: TextAlign.center,
-    style: TextStyle(
-      color: muted ? const Color(0xFF8A90A0) : const Color(0xFF5C647A),
-      fontSize: muted ? 13 : 14,
-      height: 1.45,
-    ),
-  );
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context).textTheme;
+    final base = muted || error ? theme.bodySmall : theme.bodyMedium;
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: base?.copyWith(
+        height: 1.45,
+        color: error ? context.c.attention : null,
+      ),
+    );
+  }
 }
 
 /// Turns a backend failure into the locked error copy.
@@ -989,7 +713,7 @@ class _SplashScreenState extends State<SplashScreen>
     background: Brightness.dark,
     browserChromeColor: _navyDeep,
     child: Scaffold(
-      backgroundColor: _navyBase,
+      backgroundColor: CefColors.navy,
       body: _NavyBackdrop(
         child: SafeArea(
           child: Column(
@@ -1084,7 +808,7 @@ class _SignInScreenState extends State<SignInScreen> {
   void _openLanguageSheet() {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: context.c.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(_sheetRadius)),
       ),
@@ -1093,120 +817,119 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => CefSystemBars(
-    background: Brightness.dark,
-    browserChromeColor: const Color(0xFF51BDF8),
-    child: Scaffold(
-      backgroundColor: _navyBase,
-      body: _SignInBackdrop(
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) => SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                // IntrinsicHeight gives the Column a bounded height inside the
-                // scroll view, so the Spacer below can actually pin the
-                // tagline to the bottom edge the locked board shows it at.
-                child: IntrinsicHeight(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const SizedBox(height: 12),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: _LanguagePill(onTap: _openLanguageSheet),
-                        ),
-                        const Spacer(flex: 5),
-                        const Center(child: _BrandLockup(height: 128)),
-                        const Text(
-                          'VENDOR',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 6,
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final ink = context.c.textPrimary;
+    return CefSystemBars(
+      background: Brightness.dark,
+      browserChromeColor: _skyTop,
+      child: Scaffold(
+        backgroundColor: CefColors.navy,
+        body: _AuthBackdrop(
+          child: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  // IntrinsicHeight gives the Column a bounded height inside
+                  // the scroll view, so the Spacers can pin the provider
+                  // stack toward the bottom edge as the locked board shows.
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: Gap.gutter,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: Gap.md),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: _LanguagePill(onTap: _openLanguageSheet),
                           ),
-                        ),
-                        const Spacer(flex: 4),
-                        _ProviderButton(
-                          label: 'Continue with Apple',
-                          background: Colors.white,
-                          foreground: const Color(0xFF181818),
-                          leading: const Icon(
-                            Icons.apple,
-                            color: Color(0xFF181818),
-                            size: 23,
-                          ),
-                          onTap: _busy
-                              ? null
-                              : () => _provider(OAuthProvider.apple),
-                        ),
-                        const SizedBox(height: 12),
-                        _ProviderButton(
-                          label: 'Continue with Google',
-                          background: Colors.white,
-                          foreground: const Color(0xFF181818),
-                          leading: const _GoogleGlyph(),
-                          onTap: _busy
-                              ? null
-                              : () => _provider(OAuthProvider.google),
-                        ),
-                        const SizedBox(height: 12),
-                        _ProviderButton(
-                          label: 'Continue with Email',
-                          background: Colors.white,
-                          foreground: _navyBase,
-                          leading: const Icon(
-                            LucideIcons.mail,
-                            size: 22,
-                            color: _navyBase,
-                          ),
-                          onTap: widget.onEmail,
-                        ),
-                        if (_providerError != null) ...[
-                          const SizedBox(height: 14),
+                          const Spacer(flex: 5),
+                          const Center(child: _BrandLockup(height: 128)),
                           Text(
-                            _providerError!,
+                            'VENDOR',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Color(0xFFFFC9C3),
-                              fontSize: 12.5,
-                              height: 1.4,
+                            style: text.titleSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 6,
                             ),
                           ),
-                        ],
-                        const SizedBox(height: 26),
-                        Wrap(
-                          alignment: WrapAlignment.center,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            Text(
-                              'Have an invite? ',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: .85),
-                                fontSize: 14,
-                              ),
+                          const Spacer(flex: 4),
+                          _ProviderButton(
+                            label: 'Continue with Apple',
+                            foreground: ink,
+                            leading: Icon(
+                              Icons.apple,
+                              color: ink,
+                              size: Sizes.icon,
                             ),
-                            GestureDetector(
-                              onTap: widget.onSignUp,
-                              child: const Text(
-                                'Get started',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: Colors.white,
-                                ),
+                            onTap: _busy
+                                ? null
+                                : () => _provider(OAuthProvider.apple),
+                          ),
+                          const SizedBox(height: Gap.md),
+                          _ProviderButton(
+                            label: 'Continue with Google',
+                            foreground: ink,
+                            leading: const _GoogleGlyph(),
+                            onTap: _busy
+                                ? null
+                                : () => _provider(OAuthProvider.google),
+                          ),
+                          const SizedBox(height: Gap.md),
+                          _ProviderButton(
+                            label: 'Continue with Email',
+                            foreground: CefColors.navy,
+                            leading: const Icon(
+                              LucideIcons.mail,
+                              size: Sizes.icon,
+                              color: CefColors.navy,
+                            ),
+                            onTap: widget.onEmail,
+                          ),
+                          if (_providerError != null) ...[
+                            const SizedBox(height: Gap.md),
+                            Text(
+                              _providerError!,
+                              textAlign: TextAlign.center,
+                              style: text.bodySmall?.copyWith(
+                                color: _onBackdropError,
+                                height: 1.4,
                               ),
                             ),
                           ],
-                        ),
-                        const SizedBox(height: 30),
-                      ],
+                          const SizedBox(height: Gap.xxl),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Text(
+                                'Have an invite? ',
+                                style: text.bodyMedium?.copyWith(
+                                  color: Colors.white.withValues(alpha: .85),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: widget.onSignUp,
+                                child: Text(
+                                  'Get started',
+                                  style: text.labelLarge?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: Gap.xxxl),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -1215,8 +938,8 @@ class _SignInScreenState extends State<SignInScreen> {
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _LanguagePill extends StatelessWidget {
@@ -1226,24 +949,21 @@ class _LanguagePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) => InkWell(
     onTap: onTap,
-    borderRadius: BorderRadius.circular(99),
-    child: const Padding(
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+    borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: Gap.sm, horizontal: 2),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(LucideIcons.globe, color: Colors.white, size: 19),
-          SizedBox(width: 8),
+          const Icon(LucideIcons.globe, color: Colors.white, size: 20),
+          const SizedBox(width: Gap.sm),
           Text(
             'English',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(context).textTheme.titleSmall
+                ?.copyWith(color: Colors.white),
           ),
-          SizedBox(width: 4),
-          Icon(LucideIcons.chevronDown, color: Colors.white, size: 18),
+          const SizedBox(width: Gap.xs),
+          const Icon(LucideIcons.chevronDown, color: Colors.white, size: 18),
         ],
       ),
     ),
@@ -1275,131 +995,118 @@ class _LanguageSheet extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) => SafeArea(
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: Container(
-              width: 44,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFFD7DAE2),
-                borderRadius: BorderRadius.circular(99),
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
-          const Text(
-            'Language',
-            style: TextStyle(
-              color: _navyBase,
-              fontSize: 19,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 14),
-          for (final (label, _, available) in _languages)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Opacity(
-                opacity: available ? 1 : .55,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: available ? _navyBase : const Color(0xFFDDE1EA),
-                      width: available ? 1.4 : 1.2,
-                    ),
-                    borderRadius: BorderRadius.circular(_fieldRadius),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          label,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF181818),
-                          ),
-                        ),
-                      ),
-                      if (available)
-                        const Icon(
-                          LucideIcons.check,
-                          size: 19,
-                          color: _navyBase,
-                        )
-                      else
-                        const Text(
-                          'Not in this build',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF8A90A0),
-                          ),
-                        ),
-                    ],
-                  ),
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final text = Theme.of(context).textTheme;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          Gap.gutter,
+          Gap.lg,
+          Gap.gutter,
+          Gap.xxl,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // This one is a real, draggable modal sheet, so it keeps a handle.
+            Center(
+              child: Container(
+                width: 44,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: c.border,
+                  borderRadius: BorderRadius.circular(Sizes.buttonRadius),
                 ),
               ),
             ),
-          const SizedBox(height: 6),
-          const Text(
-            'Only English is available in this build. The other languages are '
-            'part of the product but their Flutter translations are not wired '
-            'yet.',
-            style: TextStyle(
-              fontSize: 12.5,
-              color: Color(0xFF8A90A0),
-              height: 1.4,
+            const SizedBox(height: Gap.lg),
+            Text('Language', style: text.titleMedium),
+            const SizedBox(height: Gap.md),
+            for (final (label, _, available) in _languages)
+              Padding(
+                padding: const EdgeInsets.only(bottom: Gap.sm),
+                child: Opacity(
+                  opacity: available ? 1 : .55,
+                  child: Container(
+                    constraints: const BoxConstraints(
+                      minHeight: Sizes.controlHeight,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Gap.lg,
+                      vertical: Gap.md,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: available ? CefColors.navy : c.border,
+                        width: available ? 1.4 : 1,
+                      ),
+                      borderRadius: BorderRadius.circular(Sizes.inputRadius),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(child: Text(label, style: text.titleSmall)),
+                        if (available)
+                          const Icon(
+                            LucideIcons.check,
+                            size: 20,
+                            color: CefColors.navy,
+                          )
+                        else
+                          Text('Not in this build', style: text.bodySmall),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            const SizedBox(height: Gap.xs),
+            Text(
+              'Only English is available in this build. The other languages '
+              'are part of the product but their Flutter translations are not '
+              'wired yet.',
+              style: text.bodySmall?.copyWith(height: 1.4),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _ProviderButton extends StatelessWidget {
   const _ProviderButton({
     required this.label,
-    required this.background,
     required this.foreground,
     required this.leading,
     required this.onTap,
   });
 
   final String label;
-  final Color background;
   final Color foreground;
   final Widget leading;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: 54,
+    height: Sizes.buttonHeight,
     child: FilledButton(
       onPressed: onTap,
       style: FilledButton.styleFrom(
-        backgroundColor: background,
+        backgroundColor: Colors.white,
         foregroundColor: foreground,
-        disabledBackgroundColor: background.withValues(alpha: .6),
+        disabledBackgroundColor: Colors.white.withValues(alpha: .6),
         elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 18),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        padding: const EdgeInsets.symmetric(horizontal: Gap.lg),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           leading,
-          const SizedBox(width: 12),
+          const SizedBox(width: Gap.md),
           // Flexible so a longer localized label or a larger text scale
           // shortens the label instead of overflowing the button.
           Flexible(
@@ -1407,11 +1114,8 @@ class _ProviderButton extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: foreground,
-              ),
+              style: Theme.of(context).textTheme.titleSmall
+                  ?.copyWith(color: foreground),
             ),
           ),
         ],
@@ -1510,33 +1214,31 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     final limited = _error != null && _isRateLimited(_error!);
     return _SheetScaffold(
       onBack: widget.onBack,
-      showHandle: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _SheetTitle(
+          const _SheetHeading(
             'Sign in with Email',
             'Enter your email and password to continue.',
           ),
-          _AuthField(
+          const SizedBox(height: Gap.xxl),
+          CefField(
             controller: _email,
             label: 'Email',
             hint: 'you@yourbusiness.com',
-            icon: LucideIcons.mail,
+            prefixIcon: LucideIcons.mail,
             keyboardType: TextInputType.emailAddress,
             enabled: !_busy,
           ),
-          const SizedBox(height: 14),
-          _AuthField(
+          CefField(
             controller: _password,
             label: 'Password',
             hint: 'Enter your password',
-            icon: LucideIcons.lock,
-            obscure: true,
+            prefixIcon: LucideIcons.lock,
+            obscureText: true,
             enabled: !_busy,
-            error: _error,
+            errorText: _error,
           ),
-          const SizedBox(height: 10),
           Align(
             alignment: Alignment.centerRight,
             child: _TextLink(
@@ -1545,24 +1247,16 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
               align: TextAlign.right,
             ),
           ),
-          const SizedBox(height: 20),
-          _PrimaryButton(
+          const SizedBox(height: Gap.xxl),
+          CefButton(
             connection ? 'Try again' : 'Sign in',
-            busyLabel: 'Signing in…',
             busy: _busy,
             onTap: limited ? null : _signIn,
           ),
-          const SizedBox(height: 18),
-          Wrap(
-            alignment: WrapAlignment.center,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              const Text(
-                "Don't have an account? ",
-                style: TextStyle(fontSize: 14, color: Color(0xFF5C647A)),
-              ),
-              _TextLink('Sign up', onTap: _busy ? null : widget.onSignUp),
-            ],
+          const SizedBox(height: Gap.xl),
+          _FooterPrompt(
+            "Don't have an account? ",
+            _TextLink('Sign up', onTap: _busy ? null : widget.onSignUp),
           ),
         ],
       ),
@@ -1648,75 +1342,47 @@ class _SignUpScreenState extends State<SignUpScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
+        const _SheetHeading(
           'Create your account',
-          style: TextStyle(
-            color: _navyBase,
-            fontSize: 23,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.3,
-          ),
-        ),
-        const SizedBox(height: 6),
-        const Text(
           'Start managing your deliveries.',
-          style: TextStyle(
-            color: Color(0xFF5C647A),
-            fontSize: 14,
-            height: 1.45,
-          ),
         ),
-        const SizedBox(height: Gap.section),
-        _AuthField(
+        const SizedBox(height: Gap.xxl),
+        CefField(
           controller: _email,
           label: 'Email',
           hint: 'you@yourbusiness.com',
-          icon: LucideIcons.mail,
+          prefixIcon: LucideIcons.mail,
           keyboardType: TextInputType.emailAddress,
           enabled: !_busy,
-          error: _error,
+          errorText: _error,
         ),
-        const SizedBox(height: 14),
-        _AuthField(
+        CefField(
           controller: _password,
           label: 'Password',
           hint: 'Enter your password',
-          icon: LucideIcons.lock,
-          obscure: true,
-          helper: 'Use at least 8 characters.',
+          prefixIcon: LucideIcons.lock,
+          obscureText: true,
+          helperText: 'Use at least 8 characters.',
           enabled: !_busy,
         ),
-        const SizedBox(height: 14),
-        _AuthField(
+        CefField(
           controller: _confirm,
           label: 'Confirm password',
           hint: 'Confirm your password',
-          icon: LucideIcons.lock,
-          obscure: true,
+          prefixIcon: LucideIcons.lock,
+          obscureText: true,
           enabled: !_busy,
-          error: _confirmError,
+          errorText: _confirmError,
           onChanged: (_) {
             if (_confirmError != null) setState(() => _confirmError = null);
           },
         ),
-        const SizedBox(height: 22),
-        _PrimaryButton(
-          'Create account',
-          busyLabel: 'Creating account…',
-          busy: _busy,
-          onTap: _create,
-        ),
-        const SizedBox(height: 18),
-        Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            const Text(
-              'Already have an account? ',
-              style: TextStyle(fontSize: 14, color: Color(0xFF5C647A)),
-            ),
-            _TextLink('Sign in', onTap: _busy ? null : widget.onSignIn),
-          ],
+        const SizedBox(height: Gap.md),
+        CefButton('Create account', busy: _busy, onTap: _create),
+        const SizedBox(height: Gap.xl),
+        _FooterPrompt(
+          'Already have an account? ',
+          _TextLink('Sign in', onTap: _busy ? null : widget.onSignIn),
         ),
       ],
     ),
@@ -1771,29 +1437,29 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _SheetTitle(
+        const _SheetHeading(
           'Forgot password?',
           "Enter your email and we'll send you a reset link.",
         ),
-        _AuthField(
+        const SizedBox(height: Gap.xxl),
+        CefField(
           controller: _email,
           label: 'Email',
           hint: 'you@yourbusiness.com',
-          icon: LucideIcons.mail,
+          prefixIcon: LucideIcons.mail,
           keyboardType: TextInputType.emailAddress,
           enabled: !_busy,
-          error: _error,
+          errorText: _error,
         ),
-        const SizedBox(height: 22),
-        _PrimaryButton(
+        const SizedBox(height: Gap.md),
+        CefButton(
           _error != null && _isConnectionError(_error!)
               ? 'Try again'
               : 'Send reset link',
-          busyLabel: 'Sending…',
           busy: _busy,
           onTap: _error != null && _isRateLimited(_error!) ? null : _send,
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: Gap.xl),
         _TextLink('Back to sign in', onTap: _busy ? null : widget.onBack),
       ],
     ),
@@ -1820,30 +1486,22 @@ class CheckYourEmailScreen extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(height: 6),
-        const _StatusIcon(LucideIcons.mail, circled: false),
-        const SizedBox(height: 20),
-        const Text(
+        const _SheetHeading(
           'Check your email',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: _navyBase,
-            fontSize: 23,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.3,
-          ),
-        ),
-        const SizedBox(height: 8),
-        const _CenteredNote(
           "If an account exists for this email, you'll receive a password "
-          'reset link.',
+              'reset link.',
+          status: _StatusIcon(LucideIcons.mail, circled: false),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: Gap.md),
         const _CenteredNote('Check your spam folder too.', muted: true),
-        const SizedBox(height: 26),
-        _PrimaryButton('Back to sign in', onTap: onBackToSignIn),
-        const SizedBox(height: 12),
-        _OutlineButton('Try another email', onTap: onTryAnotherEmail),
+        const SizedBox(height: Gap.xxl),
+        CefButton('Back to sign in', onTap: onBackToSignIn),
+        const SizedBox(height: Gap.md),
+        CefButton(
+          'Try another email',
+          secondary: true,
+          onTap: onTryAnotherEmail,
+        ),
       ],
     ),
   );
@@ -1905,54 +1563,34 @@ class _VerifyYourEmailScreenState extends State<VerifyYourEmailScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(height: 6),
-        const _StatusIcon(LucideIcons.mail),
-        const SizedBox(height: 20),
-        const Text(
+        const _SheetHeading(
           'Verify your email',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: _navyBase,
-            fontSize: 23,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.3,
-          ),
-        ),
-        const SizedBox(height: 8),
-        const _CenteredNote(
           'Open the verification link in your email to confirm your account.',
+          status: _StatusIcon(LucideIcons.mail),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: Gap.md),
         const _CenteredNote('Check your spam folder too.', muted: true),
         if (_notice != null) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: Gap.md),
           _CenteredNote(_notice!),
         ],
         if (_error != null) ...[
-          const SizedBox(height: 12),
-          Text(
-            _error!,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: CefColors.light.attention,
-              fontSize: 12.5,
-              height: 1.4,
-            ),
-          ),
+          const SizedBox(height: Gap.md),
+          _CenteredNote(_error!, error: true),
         ],
-        const SizedBox(height: 26),
-        _PrimaryButton(
+        const SizedBox(height: Gap.xxl),
+        CefButton(
           'Resend verification email',
-          busyLabel: 'Sending…',
           busy: _busy,
           onTap: _error != null && _isRateLimited(_error!) ? null : _resend,
         ),
-        const SizedBox(height: 12),
-        _OutlineButton(
+        const SizedBox(height: Gap.md),
+        CefButton(
           'Use a different email',
+          secondary: true,
           onTap: _busy ? null : widget.onUseDifferentEmail,
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: Gap.xl),
         _TextLink(
           'Back to sign in',
           onTap: _busy ? null : widget.onBackToSignIn,
@@ -1973,23 +1611,13 @@ class EmailVerifiedScreen extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(height: 6),
-        const _StatusIcon(LucideIcons.check),
-        const SizedBox(height: 20),
-        const Text(
+        const _SheetHeading(
           'Email verified',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: _navyBase,
-            fontSize: 23,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.3,
-          ),
+          'Your email is confirmed.\nSign in to continue.',
+          status: _StatusIcon(LucideIcons.check),
         ),
-        const SizedBox(height: 8),
-        const _CenteredNote('Your email is confirmed.\nSign in to continue.'),
-        const SizedBox(height: 26),
-        _PrimaryButton('Continue to sign in', onTap: onContinue),
+        const SizedBox(height: Gap.xxl),
+        CefButton('Continue to sign in', onTap: onContinue),
       ],
     ),
   );
@@ -2055,45 +1683,32 @@ class _VerificationLinkExpiredScreenState
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(height: 6),
-        const _StatusIcon(LucideIcons.clock),
-        const SizedBox(height: 20),
-        const Text(
+        const _SheetHeading(
           'Verification link expired',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: _navyBase,
-            fontSize: 23,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.3,
-          ),
-        ),
-        const SizedBox(height: 8),
-        const _CenteredNote(
           'This link has expired or is invalid.\nRequest a new verification email.',
+          status: _StatusIcon(LucideIcons.clock),
         ),
         if (_notice != null) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: Gap.md),
           _CenteredNote(_notice!),
         ],
-        const SizedBox(height: 22),
-        _AuthField(
+        const SizedBox(height: Gap.xxl),
+        CefField(
           controller: _email,
           label: 'Email',
           hint: 'you@yourbusiness.com',
-          icon: LucideIcons.mail,
+          prefixIcon: LucideIcons.mail,
           keyboardType: TextInputType.emailAddress,
           enabled: !_busy,
-          error: _error,
+          errorText: _error,
         ),
-        const SizedBox(height: 22),
-        _PrimaryButton(
+        const SizedBox(height: Gap.md),
+        CefButton(
           'Send new verification email',
-          busyLabel: 'Sending…',
           busy: _busy,
           onTap: _error != null && _isRateLimited(_error!) ? null : _send,
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: Gap.xl),
         _TextLink(
           'Back to sign in',
           onTap: _busy ? null : widget.onBackToSignIn,
@@ -2179,39 +1794,38 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _SheetTitle(
+        const _SheetHeading(
           'Set a new password',
           'Choose a strong password for your account.',
         ),
-        _AuthField(
+        const SizedBox(height: Gap.xxl),
+        CefField(
           controller: _password,
           label: 'New password',
           hint: 'Enter a new password',
-          icon: LucideIcons.lock,
-          obscure: true,
+          prefixIcon: LucideIcons.lock,
+          obscureText: true,
           enabled: !_busy,
-          error: _error,
+          errorText: _error,
           onChanged: (_) => setState(() {}),
         ),
-        const SizedBox(height: 14),
-        _AuthField(
+        CefField(
           controller: _confirm,
           label: 'Confirm password',
           hint: 'Confirm your password',
-          icon: LucideIcons.lock,
-          obscure: true,
+          prefixIcon: LucideIcons.lock,
+          obscureText: true,
           enabled: !_busy,
-          error:
+          errorText:
               _confirmError ??
               (_confirm.text.isNotEmpty && _password.text != _confirm.text
                   ? 'Passwords do not match.'
                   : null),
           onChanged: (_) => setState(() => _confirmError = null),
         ),
-        const SizedBox(height: 22),
-        _PrimaryButton(
+        const SizedBox(height: Gap.md),
+        CefButton(
           'Update password',
-          busyLabel: 'Updating…',
           busy: _busy,
           onTap: _canSubmit ? _update : null,
         ),
