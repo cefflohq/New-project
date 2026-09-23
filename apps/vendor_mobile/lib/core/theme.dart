@@ -32,27 +32,45 @@ class Gap {
 /// D-33 through D-40). Button shape remains pill; exact card/input radius is
 /// baseline evidence pending FG-ENG-03 rather than a global visual lock.
 class Sizes {
-  static const chrome = 60.0; // header + bottom nav, excluding safe areas
+  static const header = 76.0; // gradient header content, top-level routes
+  static const subHeader = 64.0; // gradient header content, back-nav routes
+  static const nav = 64.0; // bottom navigation, excluding safe area
   static const icon = 22.0; // visual icon size
   static const tapTarget = 44.0; // minimum interactive target
   static const controlHeight = 48.0; // text inputs and search
   static const buttonHeight = 52.0; // primary / secondary / destructive
   static const chipHeight = 36.0; // selectable choice/filter chips
-  static const avatar = 40.0; // list-row initials avatar
+  static const avatar = 48.0; // list-row avatar / icon disc
+  static const listRow = 76.0; // list/settings row minimum height
   static const cardRadius = 18.0;
+  static const surfaceRadius = 24.0; // white surface entering the gradient
   static const buttonRadius = 999.0; // pill
   static const inputRadius = 18.0;
 }
 
-/// The one CEFFLO feature/hero gradient (navy -> CEFFLO blue -> navy). Every
-/// hero, summary and invitation surface paints this; screens never declare
-/// their own gradient stops.
+/// The one CEFFLO brand gradient: deep blue at the lower left rising to a
+/// bright sky blue at the upper right. It paints the app chrome (header
+/// band behind the status bar, detail heroes) and every in-body hero
+/// surface, so the product has exactly one gradient.
 class CefGradients {
-  static const hero = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF102344), Color(0xFF1453B7), Color(0xFF12213E)],
+  static const brand = LinearGradient(
+    begin: Alignment(-1, .6),
+    end: Alignment(1, -.6),
+    colors: [Color(0xFF0633A8), Color(0xFF0848CC), Color(0xFF0A6BE6)],
+    stops: [0, .5, 1],
   );
+
+  /// The cyan glow in the upper right of the brand backdrop, layered over
+  /// [brand] by [BrandBackdrop] (never used on its own).
+  static const glow = RadialGradient(
+    center: Alignment(.85, -1),
+    radius: 1.1,
+    colors: [Color(0xCC18A6FF), Color(0x0018A6FF)],
+  );
+
+  /// Opaque stand-in for the gradient where only one colour can be given
+  /// (the browser's theme-color meta).
+  static const brandChrome = Color(0xFF0848CC);
 }
 
 class CefColors extends ThemeExtension<CefColors> {
@@ -62,6 +80,7 @@ class CefColors extends ThemeExtension<CefColors> {
     required this.border,
     required this.chrome,
     required this.subtle,
+    required this.grouped,
     required this.textPrimary,
     required this.textLabel,
     required this.textSecondary,
@@ -74,6 +93,9 @@ class CefColors extends ThemeExtension<CefColors> {
 
   /// Quiet tinted fill for avatars, icon discs and placeholders.
   final Color canvas, card, border, chrome, subtle;
+
+  /// Cool-white page tone behind grouped settings cards (Menu archetype).
+  final Color grouped;
   final Color textPrimary, textLabel, textSecondary;
   final Color attention, success, warning, info, iconColor;
 
@@ -83,30 +105,34 @@ class CefColors extends ThemeExtension<CefColors> {
   static const accent = Color(0xFFFEC819);
   static const onAccent = Color(0xFF181818);
 
+  /// CEFFLO Blue -- the brand blue of the gradient. Active navigation,
+  /// active tab, section icons and inline links (D-45). Distinct from the
+  /// semantic Route/Info colour, which stays for route/map semantics.
+  static const brand = Color(0xFF0B5FE3);
+
+  /// Light tint of CEFFLO Blue: accent icon discs and tinted action rows.
+  static const brandTint = Color(0xFFEAF2FF);
+
   /// Navy -- selective raised surface (status/hero cards, auth screens) in
   /// Light, and the most-raised anchor tier of the 3-level Dark stack.
   /// Same value in both modes (SOT S3.2).
   static const navy = Color(0xFF12213E);
 
-  /// Semantic values drawn ON the navy hero gradient, where the Light
-  /// semantic colours lack contrast. Used only for hero KPI figures.
-  static const onHeroSuccess = Color(0xFF42CE82);
-  static const onHeroAttention = Color(0xFFFF3653);
-
   static const light = CefColors(
     canvas: Color(0xFFFFFFFF), // Mobile workspace
     card: Color(0xFFFFFFFF), // Surface
-    border: Color(0xFFE3E6EE),
+    border: Color(0xFFE6E9F0),
     chrome: Color(0xFFFFFFFF),
-    subtle: Color(0xFFEEF2F7),
-    textPrimary: Color(0xFF181818),
-    textLabel: Color(0xFF242424),
-    textSecondary: Color(0xFF666C80),
+    subtle: Color(0xFFF0F2F6),
+    grouped: Color(0xFFF4F6FA),
+    textPrimary: Color(0xFF0F1A36), // dark navy
+    textLabel: Color(0xFF1B2540),
+    textSecondary: Color(0xFF6B7489), // muted cool grey
     attention: Color(0xFFD73C2B),
     success: Color(0xFF248648),
     warning: Color(0xFF9A6700), // text-on-tint, D-34
     info: Color(0xFF2A6EEC),
-    iconColor: Color(0xFF242424),
+    iconColor: Color(0xFF1B2540),
   );
 
   /// Dark Canvas -> Dark/Tinted Surface -> Navy raised anchor (SOT S3.2).
@@ -121,6 +147,7 @@ class CefColors extends ThemeExtension<CefColors> {
     border: Color(0xFF2C2F3A),
     chrome: Color(0xFF1A2030),
     subtle: Color(0xFF242B3D),
+    grouped: Color(0xFF0A0B0D),
     textPrimary: Color(0xFFF4F6F8),
     textLabel: Color(0xFFE2E5E9),
     textSecondary: Color(0xFFAFB6BD),
@@ -220,18 +247,18 @@ ThemeData buildVendorTheme(Brightness brightness) {
     // One typographic hierarchy for every screen. Screens use these roles;
     // they do not declare their own sizes.
     textTheme: TextTheme(
-      // Page title (shell header).
-      titleLarge: t(22, FontWeight.w700, c.textPrimary, spacing: -0.5),
+      // Page title (white, in the gradient header).
+      titleLarge: t(28, FontWeight.w700, c.textPrimary, spacing: -0.7),
       // Primary content heading inside a page body.
       headlineSmall: t(20, FontWeight.w700, c.textPrimary, spacing: -0.4),
       // Section heading / card title.
-      titleMedium: t(17, FontWeight.w700, c.textPrimary, spacing: -0.2),
+      titleMedium: t(18, FontWeight.w700, c.textPrimary, spacing: -0.3),
       // List/settings row title.
-      titleSmall: t(15, FontWeight.w600, c.textPrimary, spacing: -0.1),
+      titleSmall: t(16, FontWeight.w600, c.textPrimary, spacing: -0.2),
       // Body / supporting text.
       bodyMedium: t(14, FontWeight.w500, c.textSecondary),
-      // Metadata / caption.
-      bodySmall: t(13, FontWeight.w500, c.textSecondary),
+      // Metadata / caption / row subtitle.
+      bodySmall: t(14, FontWeight.w500, c.textSecondary),
       // Field labels.
       labelLarge: t(14, FontWeight.w600, c.textLabel),
       // KPI 29. ExtraBold per the locked weight table (major KPI values

@@ -75,15 +75,10 @@ class _ZonesScreenState extends State<ZonesScreen> {
                     return CefListRow(
                       title: z.name,
                       subtitle: '${inZone.length} orders',
-                      leading: Icon(
-                        LucideIcons.mapPin,
-                        size: Sizes.icon,
-                        color: context.c.info,
-                      ),
-                      trailing: StatusChip(
-                        z.isActive ? 'Active' : 'Inactive',
-                        success: z.isActive,
-                      ),
+                      icon: LucideIcons.mapPin,
+                      accentIcon: true,
+                      trailing: StatusChip(z.isActive ? 'Active' : 'Inactive'),
+                      showChevron: false,
                       // Audit fix 2: bound to this zone's id.
                       onTap: () => app.go(VRoute.zoneDetail, entityId: z.id),
                     );
@@ -279,13 +274,12 @@ class ZoneDetailScreen extends StatelessWidget {
               ),
             ),
             const SectionHeading('Operational status'),
-            NavySummaryPanel(
-              title: 'Zone activity',
-              children: [
-                SummaryMetric(label: 'Total', value: '${orders.length}'),
-                SummaryMetric(label: 'Ready', value: '$ready'),
-                SummaryMetric(label: 'Active', value: '$active'),
-                SummaryMetric(label: 'Delivered', value: '$delivered'),
+            KpiStrip(
+              items: [
+                KpiItem('${orders.length}', 'Total'),
+                KpiItem('$ready', 'Ready', color: context.c.success),
+                KpiItem('$active', 'Active'),
+                KpiItem('$delivered', 'Delivered', color: CefColors.brand),
               ],
             ),
             const SectionHeading('Orders'),
@@ -587,11 +581,9 @@ class _RidersScreenState extends State<RidersScreen> {
                     if (r.vehicleType != null) _titleCase(r.vehicleType!),
                     if (r.plate != null) r.plate!,
                   ].join(' · '),
-                  leading: CefAvatar(r.name),
-                  trailing: StatusChip(
-                    r.isActive ? 'Active' : 'Offline',
-                    success: r.status == 'active',
-                  ),
+                  leading: CefAvatar(r.name, filled: true),
+                  trailing: StatusChip(r.isActive ? 'Active' : 'Offline'),
+                  showChevron: false,
                   // Audit fix 2: bound to this rider's id.
                   onTap: () => app.go(VRoute.riderDetail, entityId: r.id),
                 ),
@@ -625,79 +617,75 @@ class RiderDetailScreen extends StatelessWidget {
       },
       builder: (context, rider, reload) {
         final pending = rider.status == 'pending';
-        return PageBody(
+        final vehicle = [
+          if (rider.vehicleType != null) _titleCase(rider.vehicleType!),
+          if (rider.plate != null) rider.plate!,
+        ].join(' · ');
+        // Archetype E (detail hero): identity on the gradient, then stats
+        // and information rows on the white surface.
+        return HeroPage(
           onRefresh: reload,
-          children: [
-            ReviewProfileHero(
-              name: rider.name,
-              role: pending ? 'Rider Applicant' : 'Rider',
-              status: pending
+          hero: DetailHero(
+            leading: CefAvatar(rider.name, size: 96),
+            title: rider.name,
+            status: HeroStatusPill(
+              pending
                   ? 'Pending Review'
                   : rider.isActive
                   ? 'Active'
                   : 'Offline',
-              pending: pending,
+              color: pending
+                  ? context.c.warning
+                  : rider.isActive
+                  ? null
+                  : context.c.textSecondary,
             ),
-            const SectionHeading('Contact'),
-            ProfileDetailCard(
-              lines: [
-                ProfileDetailLine(
-                  icon: LucideIcons.phone,
-                  label: 'Phone',
-                  value: rider.phone,
-                ),
-              ],
-            ),
-            const SectionHeading('Vehicle'),
-            ProfileDetailCard(
-              lines: [
-                ProfileDetailLine(
-                  icon: LucideIcons.bike,
-                  label: 'Type',
-                  value: rider.vehicleType == null
-                      ? null
+            meta: pending ? 'Rider Applicant' : 'Rider',
+          ),
+          children: [
+            KpiStrip(
+              items: [
+                if (rider.maxActiveOrders != null)
+                  KpiItem(
+                    '${rider.maxActiveOrders}',
+                    'Max orders',
+                    icon: LucideIcons.chartColumn,
+                  ),
+                KpiItem(
+                  rider.vehicleType == null
+                      ? '—'
                       : _titleCase(rider.vehicleType!),
-                ),
-                if (rider.plate != null)
-                  ProfileDetailLine(
-                    icon: LucideIcons.hash,
-                    label: 'Plate number',
-                    value: rider.plate,
-                  ),
-              ],
-            ),
-            const SectionHeading('Driving Licence'),
-            const ProfileDetailCard(
-              lines: [
-                ProfileDetailLine(
-                  icon: LucideIcons.fileText,
-                  label: 'Document',
-                  emptyText: 'No licence document available',
+                  rider.plate ?? 'Vehicle',
+                  icon: LucideIcons.car,
                 ),
               ],
             ),
-            const SectionHeading('Additional Information'),
-            const ProfileDetailCard(
-              lines: [
-                ProfileDetailLine(
-                  icon: LucideIcons.info,
-                  label: 'Notes',
-                  emptyText: 'No additional information available.',
-                ),
-              ],
+            const SizedBox(height: Gap.md),
+            Divider(height: 1, color: context.c.border),
+            CefListRow(
+              title: 'Contact',
+              subtitle: rider.phone ?? 'Not provided',
+              icon: LucideIcons.phone,
+              plainIcon: true,
             ),
-            if (rider.maxActiveOrders != null) ...[
-              const SectionHeading('Capacity'),
-              ProfileDetailCard(
-                lines: [
-                  ProfileDetailLine(
-                    icon: LucideIcons.gauge,
-                    label: 'Max active orders',
-                    value: '${rider.maxActiveOrders}',
-                  ),
-                ],
-              ),
-            ],
+            CefListRow(
+              title: 'Vehicle',
+              subtitle: vehicle.isEmpty ? 'Not provided' : vehicle,
+              icon: LucideIcons.car,
+              plainIcon: true,
+            ),
+            const CefListRow(
+              title: 'Driving Licence',
+              subtitle: 'No licence document available',
+              icon: LucideIcons.fileText,
+              plainIcon: true,
+            ),
+            const CefListRow(
+              title: 'Additional Information',
+              subtitle: 'No additional information available.',
+              icon: LucideIcons.notepadText,
+              plainIcon: true,
+            ),
             const SizedBox(height: Gap.section),
             if (pending)
               Row(
@@ -1080,34 +1068,36 @@ class MenuScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     Widget group(String title, List<(String, IconData, VRoute)> items) =>
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        CefListGroup(
+          label: title,
           children: [
-            SectionHeading(title),
             for (final i in items)
               CefListRow(title: i.$1, icon: i.$2, onTap: () => app.go(i.$3)),
           ],
         );
 
+    // Archetype F (Menu / Settings): grouped white cards on the cool-white
+    // page.
     return PageBody(
+      grouped: true,
       children: [
         group('Business', [
           ('Business profile', LucideIcons.building2, VRoute.businessProfile),
-          ('Team', LucideIcons.users, VRoute.team),
-          ('Service area', LucideIcons.map, VRoute.serviceArea),
           ('Storefront', LucideIcons.store, VRoute.storefront),
-          ('Products', LucideIcons.boxes, VRoute.products),
+          ('Products', LucideIcons.package, VRoute.products),
+          ('Team', LucideIcons.users, VRoute.team),
           ('Customers', LucideIcons.contactRound, VRoute.customers),
+          ('Service area', LucideIcons.map, VRoute.serviceArea),
         ]),
-        group('App & Account', [
+        group('Account', [
           ('Profile', LucideIcons.user, VRoute.profile),
           ('Security', LucideIcons.shieldCheck, VRoute.security),
-          ('Privacy', LucideIcons.lock, VRoute.privacyPolicy),
           ('Notifications', LucideIcons.bell, VRoute.notificationSettings),
           ('Language', LucideIcons.globe, VRoute.language),
           ('Appearance', LucideIcons.contrast, VRoute.appearance),
+          ('Privacy', LucideIcons.lock, VRoute.privacyPolicy),
+          ('Help & Support', LucideIcons.circleHelp, VRoute.helpSupport),
         ]),
-        const SizedBox(height: Gap.section),
         CefButton(
           'Sign out',
           destructive: true,
@@ -1118,28 +1108,14 @@ class MenuScreen extends StatelessWidget {
           },
         ),
         const SizedBox(height: Gap.md),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: () => app.go(VRoute.helpSupport),
-              child: Text(
-                'Help & Support',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+        Center(
+          child: GestureDetector(
+            onTap: () => app.go(VRoute.about),
+            child: Text(
+              'About Cefflo',
+              style: Theme.of(context).textTheme.bodySmall,
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Gap.sm),
-              child: Text('|', style: Theme.of(context).textTheme.bodySmall),
-            ),
-            GestureDetector(
-              onTap: () => app.go(VRoute.about),
-              child: Text(
-                'About Cefflo',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
-          ],
+          ),
         ),
         const SizedBox(height: Gap.xs),
         Center(

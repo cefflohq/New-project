@@ -8,10 +8,8 @@ import '../../data/models.dart';
 import '../shell.dart';
 import '../widgets.dart';
 
-/// V-11 — Today. Uses the same shared building blocks (PageBody,
-/// NavySummaryPanel, SectionHeading, CefListRow) as every other screen, so
-/// its type/spacing/card density matches V-01..V-60 rather than a
-/// screen-specific set of hand-picked sizes.
+/// V-11 — Today (archetype A). Built only from shared blocks (PageBody,
+/// KpiStrip, SectionHeading, CefListRow) so it matches every other screen.
 class TodayContent extends StatelessWidget {
   const TodayContent({
     super.key,
@@ -66,84 +64,27 @@ class TodayContent extends StatelessWidget {
             );
           }).toList();
 
+    // Archetype A (Today / Overview): KPI strip directly on the white
+    // surface, recent operational rows, then the Need Attention row.
     return PageBody(
       onRefresh: reload,
       children: [
-        NavySummaryPanel(
-          title: "Today's Orders",
-          children: [
-            SummaryMetric(label: 'Total', value: '${counts[0]}'),
-            SummaryMetric(
-              label: 'Ready',
-              value: '${counts[1]}',
-              valueColor: CefColors.onHeroSuccess,
-            ),
-            SummaryMetric(
-              label: 'Issue',
-              value: '${counts[2]}',
-              valueColor: CefColors.onHeroAttention,
-            ),
-            SummaryMetric(label: 'Delivered', value: '${counts[3]}'),
+        const SizedBox(height: Gap.sm),
+        KpiStrip(
+          items: [
+            KpiItem('${counts[0]}', 'Total Orders'),
+            KpiItem('${counts[1]}', 'Ready', color: c.success),
+            KpiItem('${counts[2]}', 'Issue', color: c.attention),
+            KpiItem('${counts[3]}', 'Delivered', color: CefColors.brand),
           ],
         ),
-        const SizedBox(height: Gap.cardGap),
-        Material(
-          color: c.attention.withValues(alpha: .08),
-          borderRadius: BorderRadius.circular(Sizes.cardRadius),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-            onTap: () {
-              if (issues.isNotEmpty) {
-                app.go(VRoute.orderDetail, entityId: issues.first.id);
-              } else {
-                app.switchTab(NavTab.orders);
-              }
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Gap.cardPadding,
-                vertical: Gap.md,
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    LucideIcons.triangleAlert,
-                    color: c.attention,
-                    size: Sizes.icon,
-                  ),
-                  const SizedBox(width: Gap.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Need Attention',
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          counts[2] == 0
-                              ? 'Nothing needs your attention'
-                              : '${counts[2]} orders need your action',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    LucideIcons.chevronRight,
-                    size: 18,
-                    color: c.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+        const SizedBox(height: Gap.lg),
+        Divider(height: 1, color: c.border),
         SectionHeading(
           'Recent Delivery',
           trailing: CefLink(
             'View all',
+            chevron: true,
             onTap: () => app.switchTab(NavTab.orders),
           ),
         ),
@@ -159,12 +100,12 @@ class TodayContent extends StatelessWidget {
               ].join(' · '),
               leading: CefAvatar(rows[i].$1),
               trailing: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const StatusChip('Delivered'),
+                  const StatusChip('Delivered', success: true),
                   if (rows[i].$4.isNotEmpty) ...[
-                    const SizedBox(height: 2),
+                    const SizedBox(height: Gap.xs),
                     Text(
                       rows[i].$4,
                       style: Theme.of(context).textTheme.bodySmall,
@@ -180,6 +121,24 @@ class TodayContent extends StatelessWidget {
                 }
               },
             ),
+        CefListRow(
+          title: 'Need Attention',
+          subtitle: counts[2] == 0
+              ? 'Nothing needs your attention'
+              : '${counts[2]} orders need your action',
+          leading: Icon(
+            LucideIcons.triangleAlert,
+            size: 32,
+            color: c.attention,
+          ),
+          onTap: () {
+            if (issues.isNotEmpty) {
+              app.go(VRoute.orderDetail, entityId: issues.first.id);
+            } else {
+              app.switchTab(NavTab.orders);
+            }
+          },
+        ),
       ],
     );
   }

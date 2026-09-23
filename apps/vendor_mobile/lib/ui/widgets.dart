@@ -23,10 +23,15 @@ class IconAction extends StatelessWidget {
     required this.tooltip,
     required this.onTap,
     this.showDot = false,
+    this.color,
   });
   final IconData icon;
   final String tooltip;
   final VoidCallback onTap;
+
+  /// Icon colour; defaults to the theme icon colour. The gradient header
+  /// passes white.
+  final Color? color;
 
   /// Small red unread indicator anchored to the icon's top-right corner.
   final bool showDot;
@@ -44,7 +49,7 @@ class IconAction extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Icon(icon, size: Sizes.icon, color: context.c.iconColor),
+              Icon(icon, size: Sizes.icon, color: color ?? context.c.iconColor),
               if (showDot)
                 Positioned(
                   top: 11,
@@ -113,96 +118,85 @@ class CefCard extends StatelessWidget {
   }
 }
 
-/// Sub-section header within a page (e.g. "Items (3)", "Contact"). Deliberately
-/// one size step below the page-level titleLarge H1 so hierarchy stays
-/// readable: page title > section heading > card/row title > body.
+/// The one section heading. Plain ("Recent Delivery") or, for form
+/// sections, with a CEFFLO Blue [icon] and a supporting [subtitle]
+/// ("Customer / Select an existing customer or add a new one.").
 class SectionHeading extends StatelessWidget {
-  const SectionHeading(this.title, {super.key, this.trailing});
+  const SectionHeading(
+    this.title, {
+    super.key,
+    this.trailing,
+    this.icon,
+    this.subtitle,
+  });
   final String title;
   final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: Gap.section, bottom: Gap.sm),
-    child: Row(
-      children: [
-        Expanded(
-          child: Text(title, style: Theme.of(context).textTheme.titleMedium),
-        ),
-        ?trailing,
-      ],
-    ),
-  );
-}
-
-/// A compact icon + value + label stat, bordered, meant to sit three-across
-/// in a Row (e.g. distance/stops/orders, or zones/active orders/coverage).
-class MetricTile extends StatelessWidget {
-  const MetricTile({
-    super.key,
-    required this.icon,
-    required this.value,
-    required this.label,
-  });
-  final IconData icon;
-  final String value;
-  final String label;
+  final IconData? icon;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
-    final c = context.c;
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(Sizes.cardRadius),
-        border: Border.all(color: c.border),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+    final text = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: Gap.section, bottom: Gap.md),
+      child: Row(
+        crossAxisAlignment: subtitle == null
+            ? CrossAxisAlignment.center
+            : CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: c.info),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleSmall,
+          if (icon != null) ...[
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Icon(icon, size: 28, color: CefColors.brand),
+            ),
+            const SizedBox(width: Gap.lg),
+          ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: text.titleMedium),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(subtitle!, style: text.bodySmall),
+                ],
+              ],
+            ),
           ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodySmall
-                ?.copyWith(fontSize: 10.5),
-          ),
+          ?trailing,
         ],
       ),
     );
   }
 }
 
-/// A row of exactly three [MetricTile]s with the standard gutter between.
-class MetricTileRow extends StatelessWidget {
-  const MetricTileRow({super.key, required this.tiles});
-  final List<MetricTile> tiles;
+/// The one brand backdrop: [CefGradients.brand] with the [CefGradients.glow]
+/// layered over it. The shell's chrome and every [HeroSurface] paint through
+/// this, so the gradient is identical everywhere.
+class BrandBackdrop extends StatelessWidget {
+  const BrandBackdrop({super.key, required this.child, this.borderRadius});
+  final Widget child;
+  final BorderRadius? borderRadius;
 
   @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      for (final (index, tile) in tiles.indexed) ...[
-        if (index > 0) const SizedBox(width: Gap.sm),
-        Expanded(child: tile),
-      ],
-    ],
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      gradient: CefGradients.brand,
+      borderRadius: borderRadius,
+    ),
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: CefGradients.glow,
+        borderRadius: borderRadius,
+      ),
+      child: child,
+    ),
   );
 }
 
-/// The one feature/hero surface: [CefGradients.hero] on the card radius.
-/// Summary panels, hero cards, profile heroes and invitation cards all paint
-/// through this, so the product has exactly one gradient treatment.
+/// The one in-body hero surface: the [BrandBackdrop] on the card radius.
+/// Used for onboarding heroes and promotional/help panels; content on it is
+/// white.
 class HeroSurface extends StatelessWidget {
   const HeroSurface({
     super.key,
@@ -213,103 +207,94 @@ class HeroSurface extends StatelessWidget {
   final EdgeInsetsGeometry padding;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => SizedBox(
     width: double.infinity,
-    padding: padding,
-    decoration: BoxDecoration(
-      gradient: CefGradients.hero,
+    child: BrandBackdrop(
       borderRadius: BorderRadius.circular(Sizes.cardRadius),
-    ),
-    child: child,
-  );
-}
-
-class NavySummaryPanel extends StatelessWidget {
-  const NavySummaryPanel({
-    super.key,
-    required this.title,
-    required this.children,
-    this.subtitle,
-  });
-
-  final String title;
-  final String? subtitle;
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) => HeroSurface(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 2),
-          Text(
-            subtitle!,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: .72),
-              fontSize: 12.5,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-        const SizedBox(height: Gap.md),
-        Row(children: children),
-      ],
+      child: Padding(padding: padding, child: child),
     ),
   );
 }
 
-class SummaryMetric extends StatelessWidget {
-  const SummaryMetric({
-    super.key,
-    required this.label,
-    required this.value,
-    this.valueColor,
-  });
-
-  final String label;
+/// One figure in a [KpiStrip].
+class KpiItem {
+  const KpiItem(this.value, this.label, {this.color, this.icon});
   final String value;
+  final String label;
 
-  /// Overrides the value colour for a semantic count (e.g. a red "Issue"
-  /// tile) inside an otherwise all-white navy panel. Defaults to white.
-  final Color? valueColor;
+  /// Semantic colour for the value (and label) -- e.g. success for Ready,
+  /// attention for Issue. Defaults to the primary text colour.
+  final Color? color;
+
+  /// Optional CEFFLO Blue icon above the value (detail stat rows).
+  final IconData? icon;
+}
+
+/// The one KPI / stat row: equal columns of value + label separated by
+/// hairline dividers, drawn directly on the white surface (Today overview,
+/// zone activity, rider stats, dispatch totals).
+class KpiStrip extends StatelessWidget {
+  const KpiStrip({super.key, required this.items});
+  final List<KpiItem> items;
 
   @override
-  Widget build(BuildContext context) => Expanded(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            color: valueColor ?? Colors.white,
-            fontSize: 24,
-            height: 1,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: (valueColor ?? Colors.white).withValues(alpha: .72),
-            fontSize: 11.5,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final text = Theme.of(context).textTheme;
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final (i, item) in items.indexed) ...[
+            if (i > 0) VerticalDivider(width: 1, thickness: 1, color: c.border),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Gap.xs,
+                  vertical: Gap.sm,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (item.icon != null) ...[
+                      Icon(item.icon, size: 26, color: CefColors.brand),
+                      const SizedBox(height: Gap.sm),
+                    ],
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        item.value,
+                        maxLines: 1,
+                        style:
+                            (item.icon == null
+                                    ? text.displaySmall
+                                    : text.titleMedium)
+                                ?.copyWith(color: item.color),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    // Labels scale down rather than truncate in narrow
+                    // columns ("Total Orders" at 360 wide).
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        item.label,
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
+                        style: text.bodySmall?.copyWith(
+                          color: item.color == c.attention ? c.attention : null,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 }
 
 /// The one button. Primary is the yellow pill (one per screen); secondary is
@@ -521,46 +506,60 @@ class _CefFieldState extends State<CefField> {
   }
 }
 
-/// The one inline text link (e.g. a SectionHeading's "View all"): info-blue
-/// label with an optional leading icon, padded to a comfortable tap area.
+/// The one inline text link (e.g. a SectionHeading's "View all"): CEFFLO
+/// Blue label with an optional leading icon and trailing chevron, padded to
+/// a comfortable tap area.
 class CefLink extends StatelessWidget {
-  const CefLink(this.label, {super.key, required this.onTap, this.icon});
+  const CefLink(
+    this.label, {
+    super.key,
+    required this.onTap,
+    this.icon,
+    this.chevron = false,
+  });
   final String label;
   final VoidCallback onTap;
   final IconData? icon;
+  final bool chevron;
 
   @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(Gap.sm),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: Sizes.tapTarget),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (icon != null) ...[
-                Icon(icon, size: 16, color: c.info),
-                const SizedBox(width: Gap.xs),
-              ],
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelLarge
-                    ?.copyWith(color: c.info),
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(Gap.sm),
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: Sizes.tapTarget),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 16, color: CefColors.brand),
+              const SizedBox(width: Gap.xs),
+            ],
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelLarge
+                  ?.copyWith(color: CefColors.brand, fontSize: 15),
+            ),
+            if (chevron) ...[
+              const SizedBox(width: 2),
+              const Icon(
+                LucideIcons.chevronRight,
+                size: 18,
+                color: CefColors.brand,
               ),
             ],
-          ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
-/// The one status treatment (SOT 7.2): a small pill, semantic-coloured
-/// label on a light tint of the same colour. Neutral by default.
+/// The one status pill: a rounded pill with the label on a light fill.
+/// Neutral grey by default (list statuses); success / attention / warning
+/// tint it semantically where the state needs to stand out.
 class StatusChip extends StatelessWidget {
   const StatusChip(
     this.label, {
@@ -571,47 +570,51 @@ class StatusChip extends StatelessWidget {
   });
   final String label;
   final bool attention;
-
-  /// Ongoing/active states render in the semantic success green per the
-  /// locked V12 Orders spec (Ongoing green, Issue red, Delivered neutral).
   final bool success;
   final bool warning;
 
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    final color = attention
+    final semantic = attention
         ? c.attention
         : success
         ? c.success
         : warning
         ? c.warning
-        : c.textSecondary;
+        : null;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: Gap.xs),
+      padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: .1),
+        color: semantic?.withValues(alpha: .12) ?? c.subtle,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         label,
         maxLines: 1,
         style: TextStyle(
-          fontSize: 12,
+          fontSize: 13,
           height: 1.3,
           fontWeight: FontWeight.w600,
-          color: color,
+          color: semantic ?? c.textSecondary,
         ),
       ),
     );
   }
 }
 
-/// The one initials avatar used for people, customers and zones.
+/// The one initials avatar. Light (soft fill, navy initials) by default;
+/// [filled] gives the navy disc with white initials used for people lists.
 class CefAvatar extends StatelessWidget {
-  const CefAvatar(this.name, {super.key, this.size = Sizes.avatar});
+  const CefAvatar(
+    this.name, {
+    super.key,
+    this.size = Sizes.avatar,
+    this.filled = false,
+  });
   final String name;
   final double size;
+  final bool filled;
 
   static String initialsOf(String name) => name
       .split(' ')
@@ -626,14 +629,40 @@ class CefAvatar extends StatelessWidget {
     width: size,
     height: size,
     alignment: Alignment.center,
-    decoration: BoxDecoration(color: context.c.subtle, shape: BoxShape.circle),
+    decoration: BoxDecoration(
+      color: filled ? CefColors.navy : context.c.subtle,
+      shape: BoxShape.circle,
+    ),
     child: Text(
       initialsOf(name),
       style: TextStyle(
-        color: CefColors.navy,
-        fontSize: size * .34,
+        color: filled ? Colors.white : CefColors.navy,
+        fontSize: size * .36,
         fontWeight: FontWeight.w700,
       ),
+    ),
+  );
+}
+
+/// The one leading icon disc for list rows: a soft circle holding the row's
+/// icon. [accent] tints it CEFFLO Blue (location/zone rows).
+class IconDisc extends StatelessWidget {
+  const IconDisc(this.icon, {super.key, this.accent = false});
+  final IconData icon;
+  final bool accent;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: Sizes.avatar,
+    height: Sizes.avatar,
+    decoration: BoxDecoration(
+      color: accent ? CefColors.brandTint : context.c.subtle,
+      shape: BoxShape.circle,
+    ),
+    child: Icon(
+      icon,
+      size: Sizes.icon,
+      color: accent ? CefColors.brand : context.c.iconColor,
     ),
   );
 }
@@ -721,23 +750,23 @@ class SegmentedTabs extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(
-                    height: 42,
+                    height: 48,
                     child: Center(
                       child: Text(
                         l,
                         style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: sel ? FontWeight.w700 : FontWeight.w600,
-                          color: sel ? c.textPrimary : c.textSecondary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: sel ? CefColors.brand : c.textSecondary,
                         ),
                       ),
                     ),
                   ),
                   Container(
                     height: 3,
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
+                    margin: const EdgeInsets.symmetric(horizontal: Gap.lg),
                     decoration: BoxDecoration(
-                      color: sel ? c.info : Colors.transparent,
+                      color: sel ? CefColors.brand : Colors.transparent,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -860,57 +889,80 @@ class CefSwitch extends StatelessWidget {
   }
 }
 
-/// The one list / settings row: optional leading (an [icon] or any widget
-/// such as a [CefAvatar]), title, one-line subtitle, optional trailing
-/// widget, and a chevron whenever the row navigates. Rows are separated by
-/// a hairline divider.
+/// The one list / settings row: optional leading (an [icon], shown in an
+/// [IconDisc], or any widget such as a [CefAvatar]), title, subtitle,
+/// optional trailing widget, and a chevron whenever the row navigates.
+/// Rows are separated by a hairline divider; inside a [CefListGroup] the
+/// group draws inset dividers instead.
 class CefListRow extends StatelessWidget {
   const CefListRow({
     super.key,
     required this.title,
     this.subtitle,
     this.icon,
+    this.accentIcon = false,
+    this.plainIcon = false,
     this.leading,
     this.trailing,
     this.onTap,
     this.showChevron = true,
+    this.subtitleMaxLines = 1,
   }) : assert(icon == null || leading == null);
 
   final String title;
+
+  /// Subtitles are one ellipsized line; a settings row whose explanation
+  /// must be read in full (e.g. notification preferences) passes 2.
+  final int subtitleMaxLines;
   final String? subtitle;
   final IconData? icon;
+
+  /// Tints the icon disc CEFFLO Blue (location / zone rows).
+  final bool accentIcon;
+
+  /// Draws the icon bare in CEFFLO Blue, without a disc (detail-hero
+  /// information rows: Contact, Vehicle, Driving Licence...).
+  final bool plainIcon;
   final Widget? leading;
   final Widget? trailing;
   final VoidCallback? onTap;
 
-  /// Set false for rows whose tap selects in place (e.g. a radio choice)
-  /// rather than navigating.
+  /// Set false for rows whose tap selects in place (a radio choice) or for
+  /// operational lists whose reference shows no chevron.
   final bool showChevron;
 
   @override
   Widget build(BuildContext context) {
     final c = context.c;
+    final grouped = _ListGroupScope.of(context);
     final lead =
         leading ??
         (icon == null
             ? null
-            : Icon(icon, size: Sizes.icon, color: c.iconColor));
+            : plainIcon
+            ? SizedBox(
+                width: Sizes.avatar,
+                child: Icon(icon, size: 28, color: CefColors.brand),
+              )
+            : IconDisc(icon!, accent: accentIcon));
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         child: Container(
-          constraints: const BoxConstraints(minHeight: 60),
-          padding: const EdgeInsets.symmetric(
-            horizontal: Gap.xs,
-            vertical: Gap.sm,
+          constraints: BoxConstraints(minHeight: grouped ? 64 : Sizes.listRow),
+          padding: EdgeInsets.symmetric(
+            horizontal: grouped ? Gap.lg : 0,
+            vertical: Gap.md,
           ),
-          decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: c.border)),
-          ),
+          decoration: grouped
+              ? null
+              : BoxDecoration(
+                  border: Border(bottom: BorderSide(color: c.border)),
+                ),
           child: Row(
             children: [
-              if (lead != null) ...[lead, const SizedBox(width: Gap.md)],
+              if (lead != null) ...[lead, const SizedBox(width: Gap.lg)],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -923,10 +975,10 @@ class CefListRow extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     if (subtitle != null && subtitle!.isNotEmpty) ...[
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 3),
                       Text(
                         subtitle!,
-                        maxLines: 2,
+                        maxLines: subtitleMaxLines,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
@@ -942,13 +994,246 @@ class CefListRow extends StatelessWidget {
                 const SizedBox(width: Gap.sm),
                 Icon(
                   LucideIcons.chevronRight,
-                  size: 18,
+                  size: 20,
                   color: c.textSecondary,
                 ),
               ],
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ListGroupScope extends InheritedWidget {
+  const _ListGroupScope({required super.child});
+
+  static bool of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_ListGroupScope>() != null;
+
+  @override
+  bool updateShouldNotify(_ListGroupScope oldWidget) => false;
+}
+
+/// The one grouped settings block (Menu archetype): an optional muted group
+/// [label] above a white rounded card holding [CefListRow]s separated by
+/// dividers inset past the icon disc. Sits on a `PageBody(grouped: true)`.
+class CefListGroup extends StatelessWidget {
+  const CefListGroup({super.key, this.label, required this.children});
+  final String? label;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Gap.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (label != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(Gap.xs, Gap.xs, 0, Gap.sm),
+              child: Text(
+                label!,
+                style: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+          Container(
+            decoration: BoxDecoration(
+              color: c.card,
+              borderRadius: BorderRadius.circular(Sizes.cardRadius),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: _ListGroupScope(
+              child: Column(
+                children: [
+                  for (final (i, child) in children.indexed) ...[
+                    if (i > 0)
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        indent: Gap.lg + Sizes.avatar + Gap.lg,
+                        color: c.border,
+                      ),
+                    child,
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The one tinted action row: a CEFFLO Blue tinted, rounded, full-width
+/// row for a secondary in-form or on-page action ("Add items to this
+/// order"). [leadingDisc] renders the icon in a solid blue disc.
+class CefActionRow extends StatelessWidget {
+  const CefActionRow({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.leadingDisc = false,
+    this.chevron = true,
+  });
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool leadingDisc;
+  final bool chevron;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: CefColors.brandTint,
+    borderRadius: BorderRadius.circular(Sizes.inputRadius),
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(Sizes.inputRadius),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 56),
+        padding: const EdgeInsets.symmetric(
+          horizontal: Gap.lg,
+          vertical: Gap.sm,
+        ),
+        child: Row(
+          children: [
+            leadingDisc
+                ? Container(
+                    width: 36,
+                    height: 36,
+                    decoration: const BoxDecoration(
+                      color: CefColors.brand,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, size: 20, color: Colors.white),
+                  )
+                : Icon(icon, size: Sizes.icon, color: CefColors.brand),
+            const SizedBox(width: Gap.md),
+            Expanded(
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.titleSmall
+                    ?.copyWith(color: CefColors.brand),
+              ),
+            ),
+            if (chevron)
+              const Icon(
+                LucideIcons.chevronRight,
+                size: 20,
+                color: CefColors.brand,
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// White pill on the gradient hero carrying a semantic dot + label
+/// ("● Active"), for the detail-hero archetype.
+class HeroStatusPill extends StatelessWidget {
+  const HeroStatusPill(this.label, {super.key, this.color});
+  final String label;
+
+  /// Dot and label colour; defaults to success green.
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final tone = color ?? context.c.success;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: tone, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: tone,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Identity block drawn ON the gradient for the detail-hero archetype
+/// (rider / team member / customer / order): a large light [leading]
+/// (usually a [CefAvatar]) beside a white title, an optional status pill
+/// and a meta line.
+class DetailHero extends StatelessWidget {
+  const DetailHero({
+    super.key,
+    required this.leading,
+    required this.title,
+    this.status,
+    this.meta,
+  });
+  final Widget leading;
+  final String title;
+  final Widget? status;
+  final String? meta;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.sm,
+        Gap.gutter,
+        Gap.xxl,
+      ),
+      child: Row(
+        children: [
+          leading,
+          const SizedBox(width: Gap.xl),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: text.titleLarge?.copyWith(color: Colors.white),
+                ),
+                if (status != null) ...[
+                  const SizedBox(height: Gap.sm),
+                  status!,
+                ],
+                if (meta != null) ...[
+                  const SizedBox(height: Gap.sm),
+                  Text(
+                    meta!,
+                    style: text.bodyMedium?.copyWith(
+                      color: Colors.white.withValues(alpha: .88),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

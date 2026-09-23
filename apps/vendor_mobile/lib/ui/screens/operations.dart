@@ -537,11 +537,13 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   title: o.reference,
                   subtitle: '${o.customerName} · ${o.deliveryAddress}',
                   icon: LucideIcons.package,
+                  // Archetype B: neutral status pill (Issue stays red),
+                  // no chevron.
                   trailing: StatusChip(
                     o.status.label,
                     attention: o.status == DeliveryStatus.issue,
-                    success: OrderTab.ongoing.accepts(o.status),
                   ),
+                  showChevron: false,
                   onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
                 ),
           ],
@@ -1211,8 +1213,10 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
               : 'Update order details.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
-        const _FormSection(
-          title: 'Customer',
+        // Archetype G (multi-section operational form).
+        const SectionHeading(
+          'Customer',
+          icon: LucideIcons.user,
           subtitle: 'Select an existing customer or add a new one.',
         ),
         CefField(
@@ -1225,24 +1229,41 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
         CefField(
           label: 'Phone number',
           controller: phone,
+          hint: 'Enter phone number...',
+          prefixIcon: LucideIcons.phone,
           keyboardType: TextInputType.phone,
           errorText: errors['phone'],
         ),
-        const _FormSection(title: 'Address', subtitle: 'Delivery address'),
+        const _SectionDivider(),
+        const SectionHeading(
+          'Address',
+          icon: LucideIcons.mapPin,
+          subtitle: 'Delivery address',
+        ),
         CefField(
           label: 'Address',
           controller: address,
           hint: 'Enter delivery address...',
+          prefixIcon: LucideIcons.mapPin,
           maxLines: 2,
           errorText: errors['address'],
         ),
-        const _FormSection(title: 'Items', subtitle: 'Add order items'),
-        _PickerField(
-          hint: 'Add items to this order...',
+        const _SectionDivider(),
+        const SectionHeading(
+          'Items',
+          icon: LucideIcons.package,
+          subtitle: 'Add order items',
+        ),
+        CefActionRow(
+          icon: LucideIcons.plus,
+          label: 'Add items to this order',
+          leadingDisc: true,
           onTap: () => showNotWiredYetSnackBar(context, 'Adding order items'),
         ),
-        const _FormSection(
-          title: 'Instructions',
+        const _SectionDivider(),
+        const SectionHeading(
+          'Instructions',
+          icon: LucideIcons.clipboardList,
           subtitle: 'Special requests (optional)',
         ),
         CefField(
@@ -1392,40 +1413,28 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     if (loading) return const StateBlock.loading();
     return PageBody(
       children: [
-        Container(
-          height: 120,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: context.c.subtle,
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-            border: Border.all(color: context.c.border),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                LucideIcons.imagePlus,
-                color: context.c.textSecondary,
-                size: 28,
-              ),
-              const SizedBox(height: Gap.sm),
-              Text(
-                'Add product photo',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
-        ),
-        const _FormSection(title: 'Product Details'),
+        // Archetype H (product / content form).
+        Text('Product Photo', style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: Gap.md),
+        const _PhotoDropzone(),
+        const _SectionDivider(),
+        const SectionHeading('Product Details', icon: LucideIcons.package),
         CefField(
           label: 'Product name',
           controller: name,
+          hint: 'Enter product name',
           errorText: errors['name'],
         ),
-        CefField(label: 'Description', controller: description, maxLines: 2),
+        CefField(
+          label: 'Description',
+          controller: description,
+          hint: 'Enter product description',
+          maxLines: 3,
+        ),
         CefField(
           label: 'Price (RM)',
           controller: price,
+          hint: 'RM 0.00',
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           errorText: errors['price'],
         ),
@@ -1547,49 +1556,74 @@ class _OrderProgress extends StatelessWidget {
   }
 }
 
-/// A form group's heading: the canonical [SectionHeading] with an optional
-/// one-line description under it. The group's fields follow as siblings.
-class _FormSection extends StatelessWidget {
-  const _FormSection({required this.title, this.subtitle});
-  final String title;
-  final String? subtitle;
+/// Hairline divider between form sections (archetypes G and H).
+class _SectionDivider extends StatelessWidget {
+  const _SectionDivider();
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: Gap.md),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SectionHeading(title),
-        if (subtitle != null)
-          Text(subtitle!, style: Theme.of(context).textTheme.bodySmall),
-      ],
-    ),
+    padding: const EdgeInsets.only(top: Gap.sm),
+    child: Divider(height: Gap.lg, color: context.c.border),
   );
 }
 
-/// A field-shaped control that opens something instead of accepting typing
-/// (Items). Drawn through the theme's input decoration so it has exactly the
-/// [CefField] geometry, border and hint style.
-class _PickerField extends StatelessWidget {
-  const _PickerField({required this.hint, required this.onTap});
-  final String hint;
-  final VoidCallback onTap;
+/// Dashed photo drop area of the product form. Tapping it is not wired to a
+/// picker yet, exactly as before.
+class _PhotoDropzone extends StatelessWidget {
+  const _PhotoDropzone();
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: Gap.md),
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(Sizes.inputRadius),
-      child: InputDecorator(
-        isEmpty: true,
-        decoration: InputDecoration(
-          hintText: hint,
-          suffixIcon: const Icon(LucideIcons.chevronRight, size: 20),
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return CustomPaint(
+      painter: _DashedRectPainter(color: c.textSecondary.withValues(alpha: .45)),
+      child: Container(
+        height: 132,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: c.grouped,
+          borderRadius: BorderRadius.circular(Sizes.cardRadius),
         ),
-        child: const SizedBox.shrink(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(LucideIcons.imagePlus, size: 34, color: c.iconColor),
+            const SizedBox(height: Gap.sm),
+            Text(
+              'Add product photo',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
+}
+
+class _DashedRectPainter extends CustomPainter {
+  _DashedRectPainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Offset.zero & size,
+          const Radius.circular(Sizes.cardRadius),
+        ),
+      );
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    for (final metric in path.computeMetrics()) {
+      for (double d = 0; d < metric.length; d += 9) {
+        canvas.drawPath(metric.extractPath(d, d + 5), paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedRectPainter old) => old.color != color;
 }

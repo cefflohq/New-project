@@ -235,22 +235,22 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
               ),
             ),
             const SizedBox(height: Gap.md),
-            MetricTileRow(
-              tiles: [
-                MetricTile(
+            KpiStrip(
+              items: [
+                KpiItem(
+                  '${totalDistance.toStringAsFixed(1)} km',
+                  'Total distance',
                   icon: LucideIcons.route,
-                  value: '${totalDistance.toStringAsFixed(1)} km',
-                  label: 'Total distance',
                 ),
-                MetricTile(
+                KpiItem(
+                  '$totalStops',
+                  'Total stops',
                   icon: LucideIcons.mapPin,
-                  value: '$totalStops',
-                  label: 'Total stops',
                 ),
-                MetricTile(
+                KpiItem(
+                  '$totalOrders',
+                  'Total orders',
                   icon: LucideIcons.clipboardList,
-                  value: '$totalOrders',
-                  label: 'Total orders',
                 ),
               ],
             ),

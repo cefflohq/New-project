@@ -108,6 +108,6 @@ void main() {
     await tester.tap(find.text('Menu'));
     await tester.pumpAndSettle();
     expect(find.text('Business'), findsOneWidget);
-    expect(find.text('App & Account'), findsOneWidget);
+    expect(find.text('Account'), findsOneWidget);
   });
 }

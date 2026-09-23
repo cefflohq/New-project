@@ -35,10 +35,29 @@ const _headerSubtitles = <VRoute, String>{
       'See how your products look with this template',
 };
 
+/// Primary destinations (bottom-nav roots): large title, no back arrow.
+const _tabRoots = {
+  VRoute.today,
+  VRoute.orders,
+  VRoute.zones,
+  VRoute.riders,
+  VRoute.settings,
+};
+
+/// Detail-hero archetype: the screen renders its identity hero on the
+/// gradient through [HeroPage] and owns its white surface; the header shows
+/// a centred title. These are focused detail views without bottom nav.
+const _heroRoutes = {
+  VRoute.orderDetail,
+  VRoute.riderDetail,
+  VRoute.teamMemberDetail,
+  VRoute.customerDetail,
+};
+
 /// Focused flows that hide the primary bottom navigation: dispatch review
 /// and an active run carry their own bottom actions, and the storefront
 /// previews render an immersive customer-facing view the vendor nav would
-/// break. Every other signed-in route keeps the canonical bottom nav.
+/// break.
 const _focusedRoutes = {
   VRoute.reviewDispatch,
   VRoute.runDetail,
@@ -53,10 +72,12 @@ const _focusedRoutes = {
 /// nav is rendered for these.
 const _ownChromeRoutes = {VRoute.branding};
 
-/// Flat chrome: one 60px white header and one 60px bottom navigation for
-/// every signed-in route, no floating glass bar, no FAB, no accent underline
-/// beneath the title. The page body sits between them in a Column, so
-/// content can never scroll underneath the navigation.
+/// One edge-to-edge canvas: the CEFFLO brand gradient starts at the very
+/// top of the screen (behind the transparent status bar) and carries the
+/// header; the page's white surface enters below it with rounded top
+/// corners; the white bottom navigation (or, without it, the surface
+/// itself) continues behind the transparent gesture area. Content sits
+/// between header and nav in a Column, so it never scrolls under the nav.
 class VendorShell extends StatelessWidget {
   const VendorShell({super.key, required this.child});
   final Widget child;
@@ -65,51 +86,176 @@ class VendorShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     final c = context.c;
-    final dark = Theme.of(context).brightness == Brightness.dark;
     final route = app.current.route;
     final ownChrome = _ownChromeRoutes.contains(route);
+    final hero = _heroRoutes.contains(route);
     // While the keyboard is up the nav would ride above it and eat the
     // form's space; it returns as soon as the keyboard closes.
     final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     final showNav =
         !ownChrome &&
+        !hero &&
         !keyboardOpen &&
         !_onboardingRoutes.contains(route) &&
         !_focusedRoutes.contains(route);
 
-    return CefSystemBars(
-      // The header and bottom nav paint their own `c.chrome` fill behind
-      // the status/navigation bars (see _Header/_BottomNav below); this
-      // only has to pick the matching transparent-bar icon treatment for
-      // whichever brightness that fill actually is.
-      background: dark ? Brightness.dark : Brightness.light,
-      browserChromeColor: c.chrome,
+    final body = ownChrome
+        ? ColoredBox(color: c.card, child: child)
+        : Column(
+            children: [
+              _Header(app: app, hero: hero),
+              Expanded(
+                child: hero
+                    ? child
+                    : ContentSurface(bottomSafeArea: !showNav, child: child),
+              ),
+              if (showNav) const _BottomNav(),
+            ],
+          );
+
+    return CefSystemBars.split(
+      // Gradient behind the status bar; white nav or surface behind the
+      // gesture area.
+      statusBarBackground: ownChrome ? Brightness.light : Brightness.dark,
+      navigationBarBackground: Brightness.light,
+      browserChromeColor: ownChrome ? c.card : CefGradients.brandChrome,
       child: PopScope(
         canPop: !app.canGoBack,
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop && app.canGoBack) app.back();
         },
         child: Scaffold(
-          // Keep the native status/navigation-bar underlay in the same
-          // colour family as the app chrome. The page body paints its own
-          // canvas below, so an iPhone safe-area can never expose a detached
-          // strip beneath the bottom navigation.
-          backgroundColor: c.chrome,
-          body: Column(
+          backgroundColor: c.card,
+          body: ownChrome
+              ? body
+              : BrandBackdrop(child: body),
+        ),
+      ),
+    );
+  }
+}
+
+/// The white surface that enters the gradient with rounded top corners.
+/// Carries the bottom safe area when no bottom navigation sits below it, so
+/// the surface itself continues behind the system gesture area.
+class ContentSurface extends StatelessWidget {
+  const ContentSurface({
+    super.key,
+    required this.child,
+    this.bottomSafeArea = true,
+  });
+  final Widget child;
+  final bool bottomSafeArea;
+
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: const BorderRadius.vertical(
+      top: Radius.circular(Sizes.surfaceRadius),
+    ),
+    child: ColoredBox(
+      color: context.c.card,
+      child: SafeArea(top: false, bottom: bottomSafeArea, child: child),
+    ),
+  );
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.app, required this.hero});
+  final AppState app;
+  final bool hero;
+
+  @override
+  Widget build(BuildContext context) {
+    final route = app.current.route;
+    final isRoot = _tabRoots.contains(route);
+    final title = route == VRoute.today
+        ? (app.business?.name ?? 'Cefflo Vendor')
+        : _headerTitles[route] ?? app.current.spec.title;
+    final subtitle = _headerSubtitles[route];
+    final back = IconAction(
+      icon: LucideIcons.arrowLeft,
+      tooltip: 'Back',
+      color: Colors.white,
+      onTap: app.back,
+    );
+    final actions = [
+      if (route == VRoute.today)
+        IconAction(
+          icon: LucideIcons.bell,
+          tooltip: 'Notifications',
+          showDot: true,
+          color: Colors.white,
+          onTap: () => app.go(VRoute.notificationInbox),
+        ),
+      ..._searchHeaderActions(context, route),
+    ];
+
+    if (hero) {
+      return SafeArea(
+        bottom: false,
+        child: SizedBox(
+          height: 56,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
+            child: Row(
+              children: [
+                back,
+                Expanded(
+                  child: Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(color: Colors.white, fontSize: 20),
+                  ),
+                ),
+                const SizedBox(width: Sizes.tapTarget),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return SafeArea(
+      bottom: false,
+      child: SizedBox(
+        height: isRoot ? Sizes.header : Sizes.subHeader,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            isRoot ? Gap.gutter : Gap.xs,
+            0,
+            Gap.xs,
+            Gap.xs,
+          ),
+          child: Row(
             children: [
-              if (!ownChrome) _Header(app: app),
+              if (!isRoot && app.canGoBack) back,
               Expanded(
-                // Without the nav, the body owns the bottom safe area.
-                child: ColoredBox(
-                  color: c.canvas,
-                  child: SafeArea(
-                    top: false,
-                    bottom: !showNav,
-                    child: child,
+                child: Padding(
+                  padding: EdgeInsets.only(left: isRoot ? 0 : Gap.xs),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      PageTitle(title),
+                      if (subtitle != null)
+                        Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                fontSize: 12,
+                                color: Colors.white.withValues(alpha: .82),
+                              ),
+                        ),
+                    ],
                   ),
                 ),
               ),
-              if (showNav) const _BottomNav(),
+              ...actions,
             ],
           ),
         ),
@@ -118,90 +264,20 @@ class VendorShell extends StatelessWidget {
   }
 }
 
-class _Header extends StatelessWidget {
-  const _Header({required this.app});
-  final AppState app;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    final route = app.current.route;
-    final isTodayRoot = route == VRoute.today;
-    final title = isTodayRoot
-        ? (app.business?.name ?? 'Cefflo Vendor')
-        : _headerTitles[route] ?? app.current.spec.title;
-    final subtitle = _headerSubtitles[route];
-    return Container(
-      decoration: BoxDecoration(
-        color: c.chrome,
-        border: Border(bottom: BorderSide(color: c.border)),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: Sizes.chrome,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
-            child: Row(
-              children: [
-                if (app.canGoBack && !isTodayRoot)
-                  IconAction(
-                    icon: LucideIcons.arrowLeft,
-                    tooltip: 'Back',
-                    onTap: app.back,
-                  )
-                else
-                  const SizedBox(width: Gap.lg - Gap.xs),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        PageTitle(title),
-                        if (subtitle != null)
-                          Text(
-                            subtitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(fontSize: 12),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (isTodayRoot)
-                  IconAction(
-                    icon: LucideIcons.bell,
-                    tooltip: 'Notifications',
-                    showDot: true,
-                    onTap: () => app.go(VRoute.notificationInbox),
-                  ),
-                ..._searchHeaderActions(context, route),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// The page title. Measures the available width and steps the size down
-/// (22 -> 18) so a long title such as "Notification preferences" is shown
+/// (26 -> 20) so a long title such as "Notification preferences" is shown
 /// in full instead of ellipsized; only a title that cannot fit even at the
 /// floor size falls back to an ellipsis.
 class PageTitle extends StatelessWidget {
   const PageTitle(this.text, {super.key});
   final String text;
 
-  static const _minSize = 18.0;
+  static const _minSize = 20.0;
 
   @override
   Widget build(BuildContext context) {
-    final base = Theme.of(context).textTheme.titleLarge!;
+    final base = Theme.of(context).textTheme.titleLarge!
+        .copyWith(color: Colors.white);
     final scaler = MediaQuery.textScalerOf(context);
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -252,6 +328,7 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
         IconAction(
           icon: LucideIcons.circleHelp,
           tooltip: 'Help',
+          color: Colors.white,
           onTap: () => showDialog<void>(
             context: context,
             builder: (context) => AlertDialog(
@@ -278,6 +355,7 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
       IconAction(
         icon: LucideIcons.plus,
         tooltip: addAction.$1,
+        color: Colors.white,
         onTap: () => app.go(addAction.$2),
       ),
     ];
@@ -286,18 +364,21 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
     IconAction(
       icon: LucideIcons.search,
       tooltip: 'Search',
+      color: Colors.white,
       onTap: () => showSearchSheet(context, hint: hint),
     ),
     if (route == VRoute.orders)
       IconAction(
         icon: LucideIcons.slidersHorizontal,
         tooltip: 'Filter',
+        color: Colors.white,
         onTap: () {},
       ),
     if (addAction != null)
       IconAction(
         icon: LucideIcons.plus,
         tooltip: addAction.$1,
+        color: Colors.white,
         onTap: () => app.go(addAction.$2),
       ),
   ];
@@ -306,8 +387,8 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
 class _BottomNav extends StatelessWidget {
   const _BottomNav();
 
-  static const _iconSize = 24.0;
-  static const _labelSize = 11.0;
+  static const _iconSize = 26.0;
+  static const _labelSize = 12.0;
 
   static const _items = <(NavTab, String, IconData)>[
     (NavTab.today, 'Today', LucideIcons.house),
@@ -337,7 +418,7 @@ class _BottomNav extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: Sizes.chrome,
+          height: Sizes.nav,
           child: Row(
             children: _items.map((item) {
               final selected = app.activeTab == item.$1;
@@ -356,7 +437,7 @@ class _BottomNav extends StatelessWidget {
                           Icon(
                             selected ? _filledIcons[item.$1]! : item.$3,
                             size: _iconSize,
-                            color: selected ? c.info : c.textSecondary,
+                            color: selected ? CefColors.brand : c.textSecondary,
                           ),
                           const SizedBox(height: 3),
                           Text(
@@ -366,7 +447,22 @@ class _BottomNav extends StatelessWidget {
                               fontWeight: selected
                                   ? FontWeight.w600
                                   : FontWeight.w500,
-                              color: selected ? c.info : c.textSecondary,
+                              color: selected
+                                  ? CefColors.brand
+                                  : c.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          // Active indicator (D-45): a short CEFFLO Blue
+                          // bar under the active label.
+                          Container(
+                            width: 22,
+                            height: 3,
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? CefColors.brand
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(2),
                             ),
                           ),
                         ],
@@ -385,10 +481,18 @@ class _BottomNav extends StatelessWidget {
 
 /// The one scrollable page body: 20px gutters, compact top inset, and a
 /// bottom inset that clears the last row. Dragging dismisses the keyboard.
+/// [grouped] paints the cool-white page tone behind [CefListGroup] cards
+/// (Menu / settings archetype).
 class PageBody extends StatelessWidget {
-  const PageBody({super.key, required this.children, this.onRefresh});
+  const PageBody({
+    super.key,
+    required this.children,
+    this.onRefresh,
+    this.grouped = false,
+  });
   final List<Widget> children;
   final Future<void> Function()? onRefresh;
+  final bool grouped;
 
   /// Beyond normal phone widths, content gains a centered margin rather
   /// than stretching indefinitely -- a foldable/tablet-width safeguard.
@@ -399,9 +503,9 @@ class PageBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final list = ListView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
         Gap.gutter,
-        Gap.md,
+        grouped ? Gap.xl : Gap.md,
         Gap.gutter,
         Gap.xxl,
       ),
@@ -413,8 +517,56 @@ class PageBody extends StatelessWidget {
         child: list,
       ),
     );
-    return onRefresh == null
+    final body = onRefresh == null
         ? constrained
         : RefreshIndicator(onRefresh: onRefresh!, child: constrained);
+    return grouped ? ColoredBox(color: context.c.grouped, child: body) : body;
+  }
+}
+
+/// Detail-hero archetype body (rider / team member / customer / order
+/// detail): [hero] is drawn directly on the gradient, then the white
+/// surface enters with rounded top corners and holds [children] with the
+/// standard gutters. The whole page scrolls together; the surface always
+/// reaches the bottom edge, behind the gesture area.
+class HeroPage extends StatelessWidget {
+  const HeroPage({
+    super.key,
+    required this.hero,
+    required this.children,
+    this.onRefresh,
+  });
+  final Widget hero;
+  final List<Widget> children;
+  final Future<void> Function()? onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    final scroll = CustomScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      slivers: [
+        SliverToBoxAdapter(child: hero),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: ContentSurface(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                Gap.gutter,
+                Gap.md,
+                Gap.gutter,
+                Gap.xxl,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: children,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+    return onRefresh == null
+        ? scroll
+        : RefreshIndicator(onRefresh: onRefresh!, child: scroll);
   }
 }
