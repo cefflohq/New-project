@@ -6,14 +6,19 @@ import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../widgets.dart';
 
-/// V-11 — Today. Uses the same shared building blocks (SectionHeading,
-/// FlatListRow) as every other screen, so its type/spacing/card density
-/// matches V-01..V-60 rather than a screen-specific set of hand-picked
-/// sizes. Unlike other screens it does NOT sit in a single-scroll
-/// `PageBody`: the stats row (top) and "Need Attention" (bottom) are fixed
-/// and always fully visible, with only the rider list in between scrolling
-/// internally -- so this screen never needs page-level scrolling to reach
-/// its last section, on any supported viewport height.
+/// V-11 — Today. Unlike other screens it does NOT sit in a single-scroll
+/// `PageBody`: the stats row (top) and "Need Attention" (bottom) are fixed,
+/// with the 5-row Recent Delivery list in between sized and densified so
+/// that -- at the real, usable content height available after the header/
+/// bottom-nav/system-bar insets are subtracted (see [TodayContent.build])
+/// -- the ENTIRE composition (stats, all 5 rows, Need Attention) fits with
+/// no scrolling needed. The list is still technically inside a
+/// `RefreshIndicator`/`ListView` (pull-to-refresh needs a scrollable
+/// ancestor, and it's a defensive net against a device shorter than any
+/// supported target), but scrolling is not the mechanism this screen
+/// relies on to make its primary content reachable -- the dimensions below
+/// are chosen so that scroll position never has to move for all 5 rows +
+/// Need Attention to already be on screen.
 class TodayContent extends StatelessWidget {
   const TodayContent({
     super.key,
@@ -102,6 +107,14 @@ class TodayContent extends StatelessWidget {
               child: RefreshIndicator(
                 onRefresh: reload,
                 child: ListView(
+                  // Explicit (matches ListView's own default, but stated
+                  // here deliberately): on a viewport shorter than this
+                  // screen's verified-clean target (~620dp+ usable content
+                  // height), the list's own content can exceed the space
+                  // Expanded gives it -- clipping guarantees that shows as
+                  // a clean cut row rather than the last row's text
+                  // visually bleeding into Need Attention below it.
+                  clipBehavior: Clip.hardEdge,
                   padding: const EdgeInsets.fromLTRB(
                     Gap.gutter,
                     0,
@@ -109,27 +122,45 @@ class TodayContent extends StatelessWidget {
                     Gap.sm,
                   ),
                   children: [
-                    SectionHeading(
-                      'Recent Delivery',
-                      trailing: GestureDetector(
-                        onTap: () => app.switchTab(NavTab.orders),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'View All',
-                              style: TextStyle(
-                                color: Color(0xFF1769D2),
-                                fontWeight: FontWeight.w600,
-                              ),
+                    // Today-local heading, not the shared `SectionHeading`
+                    // -- that widget's fixed 22px top padding is tuned for
+                    // page-level sections and is more space than this
+                    // screen's density budget allows; kept local so no
+                    // other screen using `SectionHeading` is affected.
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: Gap.sm,
+                        bottom: Gap.xs,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Recent Delivery',
+                              style: Theme.of(context).textTheme.titleMedium,
                             ),
-                            Icon(
-                              Icons.chevron_right,
-                              size: 18,
-                              color: Color(0xFF1769D2),
+                          ),
+                          GestureDetector(
+                            onTap: () => app.switchTab(NavTab.orders),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'View All',
+                                  style: TextStyle(
+                                    color: Color(0xFF1769D2),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.chevron_right,
+                                  size: 18,
+                                  color: Color(0xFF1769D2),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                     if (rows.isEmpty)
@@ -145,14 +176,14 @@ class TodayContent extends StatelessWidget {
                           // is a per-call-site override (see FlatListRow's
                           // minHeight/verticalPadding), Orders/Zones/Riders/
                           // Rider Detail keep the shared default untouched.
-                          minHeight: 64,
-                          verticalPadding: 10,
+                          minHeight: 58,
+                          verticalPadding: 8,
                           subtitle: [
                             if (rows[i].$2.isNotEmpty) rows[i].$2,
                             rows[i].$3,
                           ].join(' · '),
                           leading: CircleAvatar(
-                            radius: 21,
+                            radius: 20,
                             backgroundColor: const Color(0xFFE9EEF5),
                             child: Text(
                               rows[i].$1
@@ -206,8 +237,8 @@ class TodayContent extends StatelessWidget {
               ),
               child: FlatListRow(
                 title: 'Need Attention',
-                minHeight: 64,
-                verticalPadding: 10,
+                minHeight: 60,
+                verticalPadding: 9,
                 subtitle: counts[2] == 0
                     ? 'Nothing needs your attention'
                     : '${counts[2]} orders need your action',
