@@ -154,6 +154,13 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
                 status: 'REMOVED / RESERVED',
               );
             }
+            if (widget.repo.isDemo && widget.auditId == 42) {
+              return const _ReservedAuditScreen(
+                id: 'V42',
+                title: 'Profile',
+                status: 'REMOVED — merged into Settings (D-46)',
+              );
+            }
             // Founder-locked Vendor Auth batch (2026-09-11): the auth family
             // owns its own stage flow, starting at the locked Splash.
             if ((widget.repo.isDemo && !_prototypeAuthenticated) ||
@@ -203,7 +210,7 @@ int? _auditIdFromUri(Uri uri) {
 }
 
 VendorLocation? _auditLocation(int id) {
-  if (id <= 8 || id == 41) return null;
+  if (id <= 8 || id == 41 || id == 42) return null;
   if (id == 9) return const VendorLocation(VRoute.welcomeSetup);
   if (id == 10) return const VendorLocation(VRoute.setupComplete);
 

@@ -171,6 +171,7 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
 
   @override
   Widget build(BuildContext context) => PageBody(
+    bottom: CefButton('Continue', onTap: _continue),
     children: [
       const _SetupStepHeader(
         step: 1,
@@ -219,8 +220,6 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
         keyboardType: TextInputType.phone,
         errorText: errors['phone'],
       ),
-      const SizedBox(height: Gap.sm),
-      CefButton('Continue', onTap: _continue),
     ],
   );
 }
@@ -258,6 +257,7 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
 
   @override
   Widget build(BuildContext context) => PageBody(
+    bottom: CefButton('Continue', onTap: _continue),
     children: [
       const _SetupStepHeader(
         step: 2,
@@ -323,8 +323,6 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
           ),
         ],
       ),
-      const SizedBox(height: Gap.sm),
-      CefButton('Continue', onTap: _continue),
     ],
   );
 }
@@ -543,13 +541,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   title: o.reference,
                   subtitle: '${o.customerName} · ${o.deliveryAddress}',
                   icon: LucideIcons.package,
-                  // Archetype B: neutral status pill (Issue stays red),
-                  // no chevron.
-                  trailing: StatusChip(
-                    o.status.label,
-                    attention: o.status == DeliveryStatus.issue,
-                  ),
-                  showChevron: false,
+                  trailing: DeliveryStatusChip(o.status),
                   onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
                 ),
           ],
@@ -561,10 +553,15 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
 /// V-13 — bound to the selected order id, with status-appropriate actions.
 /// Archetype E (detail hero): reference, status, meta and the tracker on the
-/// gradient; customer / delivery / items on the white surface.
+/// gradient; customer / delivery / items on the white surface. Items show a
+/// compact preview (the full list opens in a sheet) and the primary action
+/// is pinned, so a large order never pushes it off screen.
 class OrderDetailScreen extends StatelessWidget {
   const OrderDetailScreen({super.key, required this.orderId});
   final String orderId;
+
+  /// Item rows shown on the page; the rest open in the items sheet.
+  static const _previewItems = 3;
 
   static const _itemIcons = [
     LucideIcons.cakeSlice,
@@ -578,102 +575,52 @@ class OrderDetailScreen extends StatelessWidget {
     return AsyncView<VendorOrder>(
       key: ValueKey('order-$orderId'),
       load: () => app.repo.order(orderId),
-      builder: (context, order, reload) => HeroPage(
-        onRefresh: reload,
-        hero: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            DetailHero(
-              leading: const IconDisc(LucideIcons.package),
-              title: order.reference,
-              status: HeroStatusPill(
-                order.status.label,
-                color: switch (order.status) {
-                  DeliveryStatus.issue => context.c.attention,
-                  final s when OrderTab.ongoing.accepts(s) => null,
-                  _ => context.c.textSecondary,
-                },
-              ),
-              meta:
-                  'Today, ${_formatTime(order.createdAt)} · '
-                  '${order.items.length} items',
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                Gap.gutter,
-                0,
-                Gap.gutter,
-                Gap.xxl,
-              ),
-              child: _OrderProgress(status: order.status),
-            ),
-          ],
-        ),
-        children: [
-          CefListRow(
-            title: 'Customer',
-            subtitle: '${order.customerName}\n${order.customerPhone}',
-            subtitleMaxLines: 2,
-            icon: LucideIcons.user,
-            plainIcon: true,
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconAction(
-                  icon: LucideIcons.phone,
-                  tooltip: 'Call',
-                  onTap: () =>
-                      showNotWiredYetSnackBar(context, 'Calling the customer'),
+      builder: (context, order, reload) {
+        final items = order.items;
+        final phone = order.customerPhone.trim();
+        Widget itemRow((int, OrderItem) entry) => CefListRow(
+          title: entry.$2.name,
+          subtitle:
+              '${entry.$2.quantity} × '
+              'RM${(entry.$2.unitPrice ?? 0).toStringAsFixed(2)}',
+          icon: _itemIcons[entry.$1 % _itemIcons.length],
+        );
+        final hidden = items.length - _previewItems;
+        return HeroPage(
+          onRefresh: reload,
+          hero: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              DetailHero(
+                leading: const IconDisc(LucideIcons.package),
+                title: order.reference,
+                status: HeroStatusPill(
+                  order.status.label,
+                  color: switch (order.status) {
+                    DeliveryStatus.issue => context.c.attention,
+                    final s when OrderTab.ongoing.accepts(s) => null,
+                    _ => context.c.textSecondary,
+                  },
                 ),
-                IconAction(
-                  icon: LucideIcons.messageCircle,
-                  tooltip: 'Message',
-                  onTap: () => showNotWiredYetSnackBar(
-                    context,
-                    'Messaging the customer',
+                lines: [
+                  HeroLine(
+                    'Today, ${_formatTime(order.createdAt)} · '
+                    '${items.length} item${items.length == 1 ? '' : 's'}',
                   ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  Gap.gutter,
+                  0,
+                  Gap.gutter,
+                  Gap.xl,
                 ),
-              ],
-            ),
+                child: _OrderProgress(status: order.status),
+              ),
+            ],
           ),
-          CefListRow(
-            title: 'Deliver to',
-            subtitle: '${order.deliveryAddress}, 59100 Kuala Lumpur',
-            subtitleMaxLines: 2,
-            icon: LucideIcons.mapPin,
-            plainIcon: true,
-            trailing: IconAction(
-              icon: LucideIcons.navigation,
-              tooltip: 'Navigate',
-              onTap: () =>
-                  showNotWiredYetSnackBar(context, 'Navigating to the address'),
-            ),
-          ),
-          if ((order.notes ?? '').isNotEmpty)
-            CefListRow(
-              title: 'Delivery Instruction',
-              subtitle: order.notes,
-              subtitleMaxLines: 3,
-              icon: LucideIcons.fileText,
-              plainIcon: true,
-            ),
-          SectionHeading(
-            'Items (${order.items.length})',
-            trailing: CefLink(
-              'View receipt',
-              icon: LucideIcons.fileText,
-              onTap: () => showNotWiredYetSnackBar(context, 'The receipt view'),
-            ),
-          ),
-          for (final (index, item) in order.items.indexed)
-            CefListRow(
-              title: item.name,
-              subtitle:
-                  '${item.quantity} × RM${(item.unitPrice ?? 0).toStringAsFixed(2)}',
-              icon: _itemIcons[index % _itemIcons.length],
-            ),
-          const SizedBox(height: Gap.xxl),
-          CefButton(
+          bottomAction: CefButton(
             order.status == DeliveryStatus.readyForPickup
                 ? 'Mark as On the Way'
                 : 'Edit Order',
@@ -682,8 +629,68 @@ class OrderDetailScreen extends StatelessWidget {
                 : null,
             onTap: () => app.go(VRoute.editOrder, entityId: order.id),
           ),
-        ],
-      ),
+          children: [
+            CefListRow(
+              title: 'Customer',
+              subtitle: phone.isEmpty
+                  ? order.customerName
+                  : '${order.customerName}\n$phone',
+              subtitleMaxLines: 2,
+              icon: LucideIcons.user,
+              plainIcon: true,
+              trailing: phone.isEmpty ? null : ContactActions(phone: phone),
+            ),
+            CefListRow(
+              title: 'Deliver to',
+              subtitle: order.deliveryAddress,
+              subtitleMaxLines: 2,
+              icon: LucideIcons.mapPin,
+              plainIcon: true,
+              trailing: IconAction(
+                icon: LucideIcons.navigation,
+                tooltip: 'Directions',
+                onTap: () => launchDirections(context, order.deliveryAddress),
+              ),
+            ),
+            if ((order.notes ?? '').isNotEmpty)
+              CefListRow(
+                title: 'Delivery Instruction',
+                subtitle: order.notes,
+                subtitleMaxLines: 3,
+                icon: LucideIcons.fileText,
+                plainIcon: true,
+              ),
+            SectionHeading(
+              'Items (${items.length})',
+              trailing: CefLink(
+                'View receipt',
+                icon: LucideIcons.fileText,
+                onTap: () =>
+                    showNotWiredYetSnackBar(context, 'The receipt view'),
+              ),
+            ),
+            if (items.isEmpty)
+              const StateBlock.empty('No items on this order.')
+            else ...[
+              for (final entry in items.indexed.take(_previewItems))
+                itemRow(entry),
+              if (hidden > 0)
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: CefLink(
+                    'View all ${items.length} items',
+                    chevron: true,
+                    onTap: () => showListSheet(
+                      context,
+                      title: 'Items (${items.length})',
+                      children: [for (final e in items.indexed) itemRow(e)],
+                    ),
+                  ),
+                ),
+            ],
+          ],
+        );
+      },
     );
   }
 }
@@ -976,6 +983,10 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
   Widget build(BuildContext context) {
     if (loading) return const StateBlock.loading();
     return PageBody(
+      bottom: CefButton(
+        widget.isNew ? 'Review & Create' : 'Update Order',
+        onTap: _save,
+      ),
       children: [
         Text(
           widget.isNew
@@ -1051,11 +1062,6 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                   ?.copyWith(color: context.c.attention),
             ),
           ),
-        const SizedBox(height: Gap.md),
-        CefButton(
-          widget.isNew ? 'Review & Create' : 'Update Order',
-          onTap: _save,
-        ),
       ],
     );
   }
@@ -1182,6 +1188,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   Widget build(BuildContext context) {
     if (loading) return const StateBlock.loading();
     return PageBody(
+      bottom: CefButton(
+        widget.isNew ? 'Add Product' : 'Save Changes',
+        busy: busy,
+        onTap: _save,
+      ),
       children: [
         // Archetype H (product / content form).
         Text('Product Photo', style: Theme.of(context).textTheme.titleSmall),
@@ -1225,12 +1236,6 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   ?.copyWith(color: context.c.attention),
             ),
           ),
-        const SizedBox(height: Gap.xxl),
-        CefButton(
-          widget.isNew ? 'Add Product' : 'Save Changes',
-          busy: busy,
-          onTap: _save,
-        ),
       ],
     );
   }

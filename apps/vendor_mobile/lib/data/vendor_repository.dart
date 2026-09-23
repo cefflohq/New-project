@@ -223,7 +223,11 @@ class VendorRepository {
   Future<List<Zone>> zones(String businessId) async {
     if (_demo) return _DemoData.zones;
     final rows = await _run(
-      () => _db!.from('zones').select().eq('business_id', businessId).order('name'),
+      () => _db!
+          .from('zones')
+          .select()
+          .eq('business_id', businessId)
+          .order('name'),
     );
     return _rows(rows).map(Zone.fromRow).toList();
   }
@@ -253,7 +257,11 @@ class VendorRepository {
   Future<List<RiderRow>> riders(String businessId) async {
     if (_demo) return _DemoData.riders;
     final rows = await _run(
-      () => _db!.from('riders').select().eq('business_id', businessId).order('created_at'),
+      () => _db!
+          .from('riders')
+          .select()
+          .eq('business_id', businessId)
+          .order('created_at'),
     );
     return _rows(rows).map(RiderRow.fromRow).toList();
   }
@@ -283,7 +291,8 @@ class VendorRepository {
   Future<List<TeamMember>> team(String businessId) async {
     if (_demo) return _DemoData.team;
     final rows = await _run(
-      () => _db!.from('business_members').select().eq('business_id', businessId),
+      () =>
+          _db!.from('business_members').select().eq('business_id', businessId),
     );
     return _rows(rows).map(TeamMember.fromRow).toList();
   }
@@ -311,7 +320,11 @@ class VendorRepository {
   Future<List<Product>> products(String businessId) async {
     if (_demo) return _DemoData.products;
     final rows = await _run(
-      () => _db!.from('products').select().eq('business_id', businessId).order('name'),
+      () => _db!
+          .from('products')
+          .select()
+          .eq('business_id', businessId)
+          .order('name'),
     );
     return _rows(rows).map(Product.fromRow).toList();
   }
@@ -432,7 +445,10 @@ class VendorRepository {
   Future<List<PlannableOrder>> plannableOrders(String businessId) async {
     if (_demo) return _DemoData.plannableOrders;
     final rows = await _run(
-      () => _db!.rpc('list_plannable_orders', params: {'p_business_id': businessId}),
+      () => _db!.rpc(
+        'list_plannable_orders',
+        params: {'p_business_id': businessId},
+      ),
     );
     return _rows(rows).map(PlannableOrder.fromRow).toList();
   }
@@ -441,7 +457,10 @@ class VendorRepository {
   Future<PlanProposal> proposePlan(String businessId) async {
     if (_demo) return _DemoData.plan;
     final row = await _run(
-      () => _db!.rpc('propose_delivery_plan', params: {'p_business_id': businessId}),
+      () => _db!.rpc(
+        'propose_delivery_plan',
+        params: {'p_business_id': businessId},
+      ),
     );
     return PlanProposal.fromJson(_single(row));
   }
@@ -673,18 +692,110 @@ class _DemoData {
       completedAt: now.subtract(const Duration(hours: 1)),
       items: const [OrderItem(name: 'Coffee pack', quantity: 1)],
     ),
+    // A busier Bangsar zone and a large catering order, so zone detail and
+    // order detail are exercised with multiple orders and many items.
+    VendorOrder(
+      id: 'ord-1006',
+      publicRef: 'ORD-1006',
+      status: DeliveryStatus.outForDelivery,
+      customerName: 'Firdaus Cafe',
+      customerPhone: '+60 19 222 8811',
+      deliveryAddress: 'Jalan Maarof, Bangsar',
+      zoneId: 'zone-bangsar',
+      assignedRiderId: 'rider-jason',
+      createdAt: now.subtract(const Duration(minutes: 35)),
+      items: const [OrderItem(name: 'Lunch set', quantity: 3, unitPrice: 18)],
+    ),
+    VendorOrder(
+      id: 'ord-1007',
+      publicRef: 'ORD-1007',
+      status: DeliveryStatus.created,
+      customerName: 'The Daily Grind',
+      customerPhone: '+60 12 771 4410',
+      deliveryAddress: 'Lorong Kurau, Bangsar',
+      zoneId: 'zone-bangsar',
+      createdAt: now.subtract(const Duration(minutes: 12)),
+      items: const [
+        OrderItem(name: 'Coffee beans 1kg', quantity: 2, unitPrice: 68),
+      ],
+    ),
+    VendorOrder(
+      id: 'ord-1008',
+      publicRef: 'ORD-1008',
+      status: DeliveryStatus.readyForPickup,
+      customerName: 'Brew & Bites',
+      customerPhone: '+60 16 330 2291',
+      deliveryAddress: 'Jalan Bangkung, Bangsar',
+      zoneId: 'zone-bangsar',
+      createdAt: now.subtract(const Duration(minutes: 22)),
+      items: const [
+        OrderItem(name: 'Iced Americano', quantity: 6, unitPrice: 9),
+        OrderItem(name: 'Chocolate Cake', quantity: 6, unitPrice: 12),
+        OrderItem(name: 'Matcha Latte', quantity: 4, unitPrice: 9.5),
+        OrderItem(name: 'Croissant', quantity: 8, unitPrice: 7),
+        OrderItem(name: 'Kaya Toast', quantity: 6, unitPrice: 6.5),
+        OrderItem(name: 'Nasi Lemak', quantity: 10, unitPrice: 12),
+        OrderItem(name: 'Teh Tarik', quantity: 10, unitPrice: 4.5),
+        OrderItem(name: 'Cheesecake', quantity: 2, unitPrice: 14),
+        OrderItem(name: 'Mineral Water', quantity: 12, unitPrice: 2),
+      ],
+      notes: 'Office catering. Deliver to level 8 pantry.',
+    ),
+    VendorOrder(
+      id: 'ord-1009',
+      publicRef: 'ORD-1009',
+      status: DeliveryStatus.delivered,
+      customerName: 'Hana Florist',
+      customerPhone: '+60 13 902 5510',
+      deliveryAddress: 'Jalan Telawi 2, Bangsar',
+      zoneId: 'zone-bangsar',
+      assignedRiderId: 'rider-ahmad',
+      createdAt: now.subtract(const Duration(hours: 2)),
+      completedAt: now.subtract(const Duration(minutes: 50)),
+      items: const [OrderItem(name: 'Coffee pack', quantity: 2, unitPrice: 32)],
+    ),
   ];
 
   static const zones = [
-    Zone(id: 'zone-bangsar', name: 'Bangsar', status: 'active'),
-    Zone(id: 'zone-mont-kiara', name: 'Mont Kiara', status: 'active'),
-    Zone(id: 'zone-ttdi', name: 'TTDI', status: 'active'),
-    Zone(id: 'zone-damansara', name: 'Damansara', status: 'active'),
-    Zone(id: 'zone-pj', name: 'Petaling Jaya', status: 'active'),
-    Zone(id: 'zone-klang', name: 'Klang', status: 'inactive'),
+    Zone(
+      id: 'zone-bangsar',
+      name: 'Bangsar',
+      status: 'active',
+      locality: 'Bangsar, Kuala Lumpur',
+    ),
+    Zone(
+      id: 'zone-mont-kiara',
+      name: 'Mont Kiara',
+      status: 'active',
+      locality: 'Mont Kiara, Kuala Lumpur',
+    ),
+    Zone(
+      id: 'zone-ttdi',
+      name: 'TTDI',
+      status: 'active',
+      locality: 'Taman Tun Dr Ismail, Kuala Lumpur',
+    ),
+    Zone(
+      id: 'zone-damansara',
+      name: 'Damansara',
+      status: 'active',
+      locality: 'Damansara, Selangor',
+    ),
+    Zone(
+      id: 'zone-pj',
+      name: 'Petaling Jaya',
+      status: 'active',
+      locality: 'Petaling Jaya, Selangor',
+    ),
+    Zone(
+      id: 'zone-klang',
+      name: 'Klang',
+      status: 'inactive',
+      locality: 'Klang, Selangor',
+    ),
   ];
 
-  static const riders = [
+  static final riders = [
     RiderRow(
       id: 'rider-ahmad',
       name: 'Ahmad Razi',
@@ -693,6 +804,9 @@ class _DemoData {
       vehicleType: 'motorcycle',
       plate: 'VFY 7281',
       maxActiveOrders: 8,
+      totalOrders: 86,
+      rating: 4.8,
+      joinedAt: DateTime(2024, 1, 12),
     ),
     RiderRow(
       id: 'rider-siti',
@@ -702,6 +816,9 @@ class _DemoData {
       vehicleType: 'car',
       plate: 'BMD 4120',
       maxActiveOrders: 12,
+      totalOrders: 142,
+      rating: 4.9,
+      joinedAt: DateTime(2023, 8, 3),
     ),
     RiderRow(
       id: 'rider-jason',
@@ -711,6 +828,9 @@ class _DemoData {
       vehicleType: 'motorcycle',
       plate: 'VDT 3302',
       maxActiveOrders: 8,
+      totalOrders: 64,
+      rating: 4.7,
+      joinedAt: DateTime(2024, 3, 21),
     ),
     RiderRow(
       id: 'rider-daniel',
@@ -720,12 +840,27 @@ class _DemoData {
       vehicleType: 'van',
       plate: 'BPL 6683',
       maxActiveOrders: 20,
+      totalOrders: 23,
+      rating: 4.5,
+      joinedAt: DateTime(2024, 6, 2),
     ),
   ];
 
   static const team = [
-    TeamMember(userId: 'team-owner', role: 'Owner', displayName: 'Yusuf Sazali'),
-    TeamMember(userId: 'team-ops', role: 'Operator', displayName: 'Nur Iman'),
+    TeamMember(
+      userId: 'team-owner',
+      role: 'Owner',
+      displayName: 'Yusuf Sazali',
+      phone: '+60 12 345 6789',
+      email: 'yusuf@kopikita.my',
+    ),
+    TeamMember(
+      userId: 'team-ops',
+      role: 'Operator',
+      displayName: 'Nur Iman',
+      phone: '+60 17 555 0182',
+      email: 'nur@kopikita.my',
+    ),
     TeamMember(userId: 'team-helper', role: 'Helper', displayName: 'Farah Lee'),
   ];
 
@@ -775,9 +910,7 @@ class _DemoData {
         candidateRiderVehicleType: 'Motorbike',
         requiredVehicle: 'Motorbike',
         totalDistanceKm: 7.4,
-        stops: [
-          PlanStop(orderId: 'ord-1001', sequence: 1, distanceKm: 1.8),
-        ],
+        stops: [PlanStop(orderId: 'ord-1001', sequence: 1, distanceKm: 1.8)],
       ),
     ],
     unplannable: [

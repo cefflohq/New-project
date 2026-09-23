@@ -11,11 +11,14 @@ void main() {
             .map((s) => s.id)
             .where((id) => id.startsWith('V-'))
             .toList();
-        expect(ids.toSet(), hasLength(55));
+        expect(ids.toSet(), hasLength(54));
         for (var i = 1; i <= 60; i++) {
           final id = 'V-${i.toString().padLeft(2, '0')}';
           if (i >= 50 && i <= 54) {
             expect(ids, isNot(contains(id)), reason: '$id is on Founder HOLD');
+          } else if (i == 42) {
+            // V-42 Profile was merged into Settings (D-46).
+            expect(ids, isNot(contains(id)), reason: '$id was removed');
           } else {
             expect(ids, contains(id));
           }
@@ -39,9 +42,22 @@ void main() {
       }
     });
 
-    test('the fifth primary destination uses canonical Menu terminology', () {
-      expect(routeSpecs[VRoute.settings]!.title, 'Menu');
-      expect(routeSpecs[VRoute.settings]!.tab, NavTab.menu);
+    test('four primary destinations; Settings opens from Today (D-46)', () {
+      expect(NavTab.values, [
+        NavTab.today,
+        NavTab.orders,
+        NavTab.zones,
+        NavTab.riders,
+      ]);
+      expect(routeSpecs[VRoute.settings]!.title, 'Settings');
+      expect(routeSpecs[VRoute.settings]!.parent, VRoute.today);
+      expect(routeSpecs[VRoute.settings]!.tab, NavTab.today);
+    });
+
+    test('account settings have one canonical parent: Settings', () {
+      expect(routeSpecs[VRoute.editProfile]!.parent, VRoute.settings);
+      expect(routeSpecs[VRoute.security]!.parent, VRoute.settings);
+      expect(routeSpecs[VRoute.notificationSettings]!.parent, VRoute.settings);
     });
   });
 

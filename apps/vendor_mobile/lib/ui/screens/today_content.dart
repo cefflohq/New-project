@@ -10,6 +10,7 @@ import '../widgets.dart';
 
 /// V-11 — Today (archetype A). Built only from shared blocks (PageBody,
 /// KpiStrip, SectionHeading, CefListRow) so it matches every other screen.
+/// Recent Delivery is capped so Need Attention stays in the first viewport.
 class TodayContent extends StatelessWidget {
   const TodayContent({
     super.key,
@@ -20,6 +21,9 @@ class TodayContent extends StatelessWidget {
   final List<VendorOrder> orders;
   final List<RiderRow> riders;
   final Future<void> Function() reload;
+
+  /// Recent deliveries shown before "View all".
+  static const _recentLimit = 4;
 
   @override
   Widget build(BuildContext context) {
@@ -48,8 +52,8 @@ class TodayContent extends StatelessWidget {
       ('Hafiz Khan', 'BPQ 3091', 'Klang', '08:36 AM'),
     ];
     final rows = demo
-        ? samples
-        : delivered.take(7).map((o) {
+        ? samples.take(_recentLimit).toList()
+        : delivered.take(_recentLimit).map((o) {
             final match = riders.where((r) => r.id == o.assignedRiderId);
             final rider = match.isEmpty ? null : match.first;
             final t = o.completedAt;
@@ -69,7 +73,6 @@ class TodayContent extends StatelessWidget {
     return PageBody(
       onRefresh: reload,
       children: [
-        const SizedBox(height: Gap.sm),
         KpiStrip(
           items: [
             KpiItem('${counts[0]}', 'Total Orders'),
@@ -78,7 +81,7 @@ class TodayContent extends StatelessWidget {
             KpiItem('${counts[3]}', 'Delivered', color: CefColors.brand),
           ],
         ),
-        const SizedBox(height: Gap.lg),
+        const SizedBox(height: Gap.sm),
         Divider(height: 1, color: c.border),
         SectionHeading(
           'Recent Delivery',
@@ -121,15 +124,26 @@ class TodayContent extends StatelessWidget {
                 }
               },
             ),
+        const SectionHeading('Need Attention'),
         CefListRow(
-          title: 'Need Attention',
-          subtitle: counts[2] == 0
+          title: counts[2] == 0
               ? 'Nothing needs your attention'
               : '${counts[2]} orders need your action',
-          leading: Icon(
-            LucideIcons.triangleAlert,
-            size: 32,
-            color: c.attention,
+          subtitle: counts[2] == 0
+              ? 'All orders are moving normally'
+              : 'Review issues before they delay a run',
+          leading: Container(
+            width: Sizes.avatar,
+            height: Sizes.avatar,
+            decoration: BoxDecoration(
+              color: c.attention.withValues(alpha: .1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              LucideIcons.triangleAlert,
+              size: 20,
+              color: c.attention,
+            ),
           ),
           onTap: () {
             if (issues.isNotEmpty) {

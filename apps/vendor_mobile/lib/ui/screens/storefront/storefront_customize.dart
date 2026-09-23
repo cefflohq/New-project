@@ -149,13 +149,20 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
     final app = AppScope.of(context);
     return Column(
       children: [
-        SafeArea(
-          bottom: false,
-          child: _CustomizeHeader(
-            templateName: def.name,
-            onBack: app.back,
-            onReset: _resetToDefault,
-          ),
+        // Owned here only because Reset acts on screen-local draft state;
+        // it is the same AppHeader the shell renders everywhere else.
+        AppHeader(
+          title: 'Customize ${def.name}',
+          subtitle: 'Make it yours with your brand identity',
+          leading: [HeaderBackButton(onTap: app.back)],
+          trailing: [
+            IconAction(
+              icon: LucideIcons.rotateCcw,
+              tooltip: 'Reset to template defaults',
+              color: Colors.white,
+              onTap: _resetToDefault,
+            ),
+          ],
         ),
         Expanded(
           child: ContentSurface(
@@ -325,70 +332,6 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
       ],
     );
   }
-}
-
-/// Back-navigation header row drawn in white on the shell's brand
-/// backdrop. Owned by this screen only because Reset acts on screen-local
-/// draft state.
-class _CustomizeHeader extends StatelessWidget {
-  const _CustomizeHeader({
-    required this.templateName,
-    required this.onBack,
-    required this.onReset,
-  });
-  final String templateName;
-  final VoidCallback onBack;
-  final VoidCallback onReset;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    constraints: const BoxConstraints(minHeight: Sizes.subHeader),
-    alignment: Alignment.center,
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(Gap.xs, 0, Gap.sm, Gap.xs),
-      child: Row(
-        children: [
-          IconAction(
-            icon: LucideIcons.arrowLeft,
-            tooltip: 'Back',
-            color: Colors.white,
-            onTap: onBack,
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: Gap.xs),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  PageTitle('Customize $templateName'),
-                  Text(
-                    'Make it yours with your brand identity',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 12,
-                      color: Colors.white.withValues(alpha: .82),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          TextButton.icon(
-            onPressed: onReset,
-            style: TextButton.styleFrom(foregroundColor: Colors.white),
-            icon: const Icon(LucideIcons.rotateCcw, size: 16),
-            label: Text(
-              'Reset',
-              style: Theme.of(context).textTheme.labelLarge
-                  ?.copyWith(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
 }
 
 class _ComingSoonTab extends StatelessWidget {

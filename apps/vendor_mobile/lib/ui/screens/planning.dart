@@ -321,7 +321,6 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                       : '${stop.distanceKm} km from previous',
                   icon: LucideIcons.mapPin,
                   accentIcon: true,
-                  showChevron: false,
                   onTap: () =>
                       app.go(VRoute.orderDetail, entityId: stop.orderId),
                 ),

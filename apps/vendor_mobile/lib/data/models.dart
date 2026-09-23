@@ -28,8 +28,7 @@ enum DeliveryStatus {
 
   static DeliveryStatus parse(String? v) => _wire[v] ?? DeliveryStatus.created;
 
-  String get wire =>
-      _wire.entries.firstWhere((e) => e.value == this).key;
+  String get wire => _wire.entries.firstWhere((e) => e.value == this).key;
 
   /// Vendor-facing wording. The canonical value is still [wire].
   String get label => switch (this) {
@@ -127,8 +126,12 @@ class VendorOrder {
     assignedRiderId: r['assigned_rider_id'] as String?,
     origin: r['origin'] as String?,
     items: OrderItem.listFrom(r['items']),
-    approvedAt: r['approved_at'] == null ? null : DateTime.parse(r['approved_at'] as String).toLocal(),
-    completedAt: r['completed_at'] == null ? null : DateTime.parse(r['completed_at'] as String).toLocal(),
+    approvedAt: r['approved_at'] == null
+        ? null
+        : DateTime.parse(r['approved_at'] as String).toLocal(),
+    completedAt: r['completed_at'] == null
+        ? null
+        : DateTime.parse(r['completed_at'] as String).toLocal(),
   );
 
   /// Short human reference. Falls back to the id when the backend has not
@@ -176,13 +179,23 @@ class OrderItem {
 }
 
 class Zone {
-  const Zone({required this.id, required this.name, required this.status});
+  const Zone({
+    required this.id,
+    required this.name,
+    required this.status,
+    this.locality,
+  });
   final String id, name, status;
+
+  /// Human place label ("Mont Kiara, Kuala Lumpur") when the row carries
+  /// one; the UI omits the line otherwise rather than inventing it.
+  final String? locality;
 
   factory Zone.fromRow(Map<String, dynamic> r) => Zone(
     id: r['id'] as String,
     name: (r['name'] as String?) ?? 'Zone',
     status: (r['status'] as String?) ?? 'active',
+    locality: r['locality'] as String?,
   );
 
   bool get isActive => status == 'active';
@@ -197,11 +210,20 @@ class RiderRow {
     this.vehicleType,
     this.plate,
     this.maxActiveOrders,
+    this.totalOrders,
+    this.rating,
+    this.joinedAt,
   });
 
   final String id, name, status;
   final String? phone, vehicleType, plate;
   final int? maxActiveOrders;
+
+  /// Rider Detail stats. Nullable: a row without them shows "—" rather
+  /// than an invented figure.
+  final int? totalOrders;
+  final num? rating;
+  final DateTime? joinedAt;
 
   factory RiderRow.fromRow(Map<String, dynamic> r) => RiderRow(
     id: r['id'] as String,
@@ -211,21 +233,35 @@ class RiderRow {
     vehicleType: r['vehicle_type'] as String?,
     plate: r['vehicle_plate'] as String?,
     maxActiveOrders: r['max_active_orders'] as int?,
+    totalOrders: r['total_orders'] as int?,
+    rating: r['rating'] as num?,
+    joinedAt: DateTime.tryParse((r['created_at'] ?? '').toString()),
   );
 
   bool get isActive => status == 'active';
 }
 
 class TeamMember {
-  const TeamMember({required this.userId, required this.role, this.displayName});
+  const TeamMember({
+    required this.userId,
+    required this.role,
+    this.displayName,
+    this.phone,
+    this.email,
+  });
   final String userId, role;
-  final String? displayName;
+  final String? displayName, phone, email;
 
   factory TeamMember.fromRow(Map<String, dynamic> r) => TeamMember(
     userId: (r['user_id'] ?? r['id']).toString(),
     role: (r['role'] as String?) ?? 'operator',
     displayName: r['display_name'] as String?,
+    phone: r['phone'] as String?,
+    email: r['email'] as String?,
   );
+
+  /// The business owner cannot be removed from their own team.
+  bool get isOwner => role.toLowerCase() == 'owner';
 }
 
 class Product {
@@ -281,7 +317,8 @@ enum CoverageStatus {
   };
 
   bool get needsAttention =>
-      this == CoverageStatus.outOfCoverage || this == CoverageStatus.pendingLocation;
+      this == CoverageStatus.outOfCoverage ||
+      this == CoverageStatus.pendingLocation;
 }
 
 /// One row of `list_plannable_orders`.
@@ -376,7 +413,11 @@ class PlanGroup {
 }
 
 class PlanStop {
-  const PlanStop({required this.orderId, required this.sequence, this.distanceKm});
+  const PlanStop({
+    required this.orderId,
+    required this.sequence,
+    this.distanceKm,
+  });
   final String orderId;
   final int sequence;
   final num? distanceKm;
@@ -391,7 +432,12 @@ class PlanStop {
 /// Why the server could not plan something. Surfaced verbatim rather than
 /// hidden, so the vendor sees the real reason.
 class UnplannableEntry {
-  const UnplannableEntry({required this.reason, this.orderId, this.groupKey, this.groupSize});
+  const UnplannableEntry({
+    required this.reason,
+    this.orderId,
+    this.groupKey,
+    this.groupSize,
+  });
   final String reason;
   final String? orderId, groupKey;
   final int? groupSize;

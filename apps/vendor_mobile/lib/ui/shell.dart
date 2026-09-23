@@ -35,18 +35,12 @@ const _headerSubtitles = <VRoute, String>{
       'See how your products look with this template',
 };
 
-/// Primary destinations (bottom-nav roots): large title, no back arrow.
-const _tabRoots = {
-  VRoute.today,
-  VRoute.orders,
-  VRoute.zones,
-  VRoute.riders,
-  VRoute.settings,
-};
+/// Primary destinations (bottom-nav roots): no back arrow.
+const _tabRoots = {VRoute.today, VRoute.orders, VRoute.zones, VRoute.riders};
 
 /// Detail-hero archetype: the screen renders its identity hero on the
-/// gradient through [HeroPage] and owns its white surface; the header shows
-/// a centred title. These are focused detail views without bottom nav.
+/// gradient through [HeroPage] and owns its white surface. These are focused
+/// detail views without bottom nav.
 const _heroRoutes = {
   VRoute.orderDetail,
   VRoute.riderDetail,
@@ -65,12 +59,11 @@ const _focusedRoutes = {
   VRoute.storefrontTemplatePreview,
 };
 
-/// Routes that render their own header row (back arrow, dynamic title,
-/// trailing actions) -- in white on the shell's brand backdrop, above a
-/// [ContentSurface] -- instead of the shared header -- e.g. Screen 03, Customize
-/// {Template Name}, which needs a Reset action wired to screen-local draft
-/// state that the shared header cannot reach. No default header or bottom
-/// nav is rendered for these.
+/// Routes that render their own [AppHeader] (dynamic title, trailing
+/// actions wired to screen-local state) -- in white on the shell's brand
+/// backdrop, above a [ContentSurface] -- e.g. Screen 03, Customize
+/// {Template Name}, whose Reset action needs the screen's draft state. No
+/// default header or bottom nav is rendered for these.
 const _ownChromeRoutes = {VRoute.branding};
 
 /// One edge-to-edge canvas: the CEFFLO brand gradient starts at the very
@@ -100,13 +93,13 @@ class VendorShell extends StatelessWidget {
         !_onboardingRoutes.contains(route) &&
         !_focusedRoutes.contains(route);
 
-    // Own-chrome routes draw their own header row (white, on this same
+    // Own-chrome routes draw their own AppHeader (white, on this same
     // backdrop) above a ContentSurface.
     final body = ownChrome
         ? child
         : Column(
             children: [
-              _Header(app: app, hero: hero),
+              _Header(app: app),
               Expanded(
                 child: hero
                     ? child
@@ -160,108 +153,83 @@ class ContentSurface extends StatelessWidget {
   );
 }
 
-class _Header extends StatelessWidget {
-  const _Header({required this.app, required this.hero});
-  final AppState app;
-  final bool hero;
+/// The one header row (D-46): [leading] actions, a title centred on the
+/// SCREEN, [trailing] actions. Both side slots take the width of the wider
+/// side, so an extra icon on one side never pushes the title off centre.
+/// Same height, type and safe-area handling on every route; the shell and
+/// own-chrome screens both render through it.
+class AppHeader extends StatelessWidget {
+  const AppHeader({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.leading = const [],
+    this.trailing = const [],
+  });
+  final String title;
+  final String? subtitle;
+  final List<Widget> leading;
+  final List<Widget> trailing;
 
   @override
   Widget build(BuildContext context) {
-    final route = app.current.route;
-    final isRoot = _tabRoots.contains(route);
-    final title = route == VRoute.today
-        ? (app.business?.name ?? 'Cefflo Vendor')
-        : _headerTitles[route] ?? app.current.spec.title;
-    final subtitle = _headerSubtitles[route];
-    final back = IconAction(
-      icon: LucideIcons.arrowLeft,
-      tooltip: 'Back',
-      color: Colors.white,
-      onTap: app.back,
-    );
-    final actions = [
-      if (route == VRoute.today)
-        IconAction(
-          icon: LucideIcons.bell,
-          tooltip: 'Notifications',
-          showDot: true,
-          color: Colors.white,
-          onTap: () => app.go(VRoute.notificationInbox),
-        ),
-      ..._searchHeaderActions(context, route),
-    ];
-
-    if (hero) {
-      return SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: 56,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
-            child: Row(
-              children: [
-                back,
-                Expanded(
-                  child: Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium
-                        ?.copyWith(color: Colors.white, fontSize: 20),
-                  ),
-                ),
-                const SizedBox(width: Sizes.tapTarget),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
+    final text = Theme.of(context).textTheme;
+    final slots = leading.length > trailing.length
+        ? leading.length
+        : trailing.length;
+    // Keep a gutter-sized margin even when neither side has an action.
+    final side = slots == 0 ? Gap.lg : slots * Sizes.tapTarget;
     return SafeArea(
       bottom: false,
       // Minimum, not fixed: a title + subtitle grows with the OS text size
       // instead of overflowing.
-      child: Container(
-        constraints: BoxConstraints(
-          minHeight: isRoot ? Sizes.header : Sizes.subHeader,
-        ),
-        alignment: Alignment.center,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: Sizes.header),
         child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            isRoot ? Gap.gutter : Gap.xs,
-            0,
-            Gap.xs,
-            Gap.xs,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
           child: Row(
             children: [
-              if (!isRoot && app.canGoBack) back,
+              SizedBox(
+                width: side,
+                child: Row(children: leading),
+              ),
               Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(left: isRoot ? 0 : Gap.xs),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      PageTitle(title),
-                      if (subtitle != null)
-                        Text(
-                          subtitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                fontSize: 12,
-                                color: Colors.white.withValues(alpha: .82),
-                              ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Long titles shrink to fit rather than ellipsize.
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        title,
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
+                        style: text.headlineMedium?.copyWith(
+                          color: Colors.white,
                         ),
-                    ],
-                  ),
+                      ),
+                    ),
+                    if (subtitle != null)
+                      Text(
+                        subtitle!,
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        style: text.bodySmall?.copyWith(
+                          fontSize: 12,
+                          color: Colors.white.withValues(alpha: .82),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              ...actions,
+              SizedBox(
+                width: side,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: trailing,
+                ),
+              ),
             ],
           ),
         ),
@@ -270,43 +238,57 @@ class _Header extends StatelessWidget {
   }
 }
 
-/// The page title. Measures the available width and steps the size down
-/// (26 -> 20) so a long title such as "Notification preferences" is shown
-/// in full instead of ellipsized; only a title that cannot fit even at the
-/// floor size falls back to an ellipsis.
-class PageTitle extends StatelessWidget {
-  const PageTitle(this.text, {super.key});
-  final String text;
+/// White header back arrow, shared by the shell and own-chrome screens.
+class HeaderBackButton extends StatelessWidget {
+  const HeaderBackButton({super.key, required this.onTap});
+  final VoidCallback onTap;
 
-  static const _minSize = 20.0;
+  @override
+  Widget build(BuildContext context) => IconAction(
+    icon: LucideIcons.arrowLeft,
+    tooltip: 'Back',
+    color: Colors.white,
+    onTap: onTap,
+  );
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.app});
+  final AppState app;
 
   @override
   Widget build(BuildContext context) {
-    final base = Theme.of(context).textTheme.titleLarge!
-        .copyWith(color: Colors.white);
-    final scaler = MediaQuery.textScalerOf(context);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        var style = base;
-        for (var size = base.fontSize!; size >= _minSize; size -= 1) {
-          style = base.copyWith(fontSize: size);
-          final painter = TextPainter(
-            text: TextSpan(text: text, style: style),
-            textDirection: TextDirection.ltr,
-            textScaler: scaler,
-            maxLines: 1,
-          )..layout();
-          final fits = painter.width <= constraints.maxWidth;
-          painter.dispose();
-          if (fits) break;
-        }
-        return Text(
-          text,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: style,
-        );
-      },
+    final route = app.current.route;
+    final isRoot = _tabRoots.contains(route);
+    final title = route == VRoute.today
+        ? (app.business?.name ?? 'Cefflo Vendor')
+        : _headerTitles[route] ?? app.current.spec.title;
+    return AppHeader(
+      title: title,
+      subtitle: _headerSubtitles[route],
+      leading: [
+        // Settings lives in the Today header (D-46), not the bottom nav.
+        if (route == VRoute.today)
+          IconAction(
+            icon: LucideIcons.settings,
+            tooltip: 'Settings',
+            color: Colors.white,
+            onTap: () => app.go(VRoute.settings),
+          )
+        else if (!isRoot && app.canGoBack)
+          HeaderBackButton(onTap: app.back),
+      ],
+      trailing: [
+        if (route == VRoute.today)
+          IconAction(
+            icon: LucideIcons.bell,
+            tooltip: 'Notifications',
+            showDot: true,
+            color: Colors.white,
+            onTap: () => app.go(VRoute.notificationInbox),
+          ),
+        ..._searchHeaderActions(context, route),
+      ],
     );
   }
 }
@@ -325,6 +307,7 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
     VRoute.orders => ('Add order', VRoute.newOrder),
     VRoute.zones || VRoute.zoneConfiguration => ('Add zone', VRoute.createZone),
     VRoute.riders => ('Invite rider', VRoute.riderRegistrationLink),
+    VRoute.team => ('Invite team member', VRoute.helperRegistrationLink),
     VRoute.products => ('Add product', VRoute.addProduct),
     _ => null,
   };
@@ -401,7 +384,6 @@ class _BottomNav extends StatelessWidget {
     (NavTab.orders, 'Orders', LucideIcons.package),
     (NavTab.zones, 'Zones', LucideIcons.mapPin),
     (NavTab.riders, 'Riders', LucideIcons.users),
-    (NavTab.menu, 'Menu', LucideIcons.menu),
   ];
 
   static const _filledIcons = <NavTab, IconData>{
@@ -409,7 +391,6 @@ class _BottomNav extends StatelessWidget {
     NavTab.orders: Icons.inventory_2_rounded,
     NavTab.zones: Icons.location_on_rounded,
     NavTab.riders: Icons.people_alt_rounded,
-    NavTab.menu: Icons.menu_rounded,
   };
 
   @override
@@ -485,25 +466,59 @@ class _BottomNav extends StatelessWidget {
   }
 }
 
+/// The one fixed primary-action area: sits under the scrolling content and
+/// above the bottom navigation (or the gesture area), so a screen's primary
+/// CTA stays reachable however long the content above it grows. Pages opt in
+/// through [PageBody.bottom] / [HeroPage.bottomAction].
+class StickyActionBar extends StatelessWidget {
+  const StickyActionBar({super.key, required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      color: context.c.card,
+      border: Border(top: BorderSide(color: context.c.border)),
+    ),
+    child: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: PageBody.maxContentWidth),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            Gap.gutter,
+            Gap.md,
+            Gap.gutter,
+            Gap.md,
+          ),
+          child: child,
+        ),
+      ),
+    ),
+  );
+}
+
 /// The one scrollable page body: 20px gutters, compact top inset, and a
 /// bottom inset that clears the last row. Dragging dismisses the keyboard.
 /// [grouped] paints the cool-white page tone behind [CefListGroup] cards
-/// (Menu / settings archetype).
+/// (Settings archetype). [bottom] pins the page's primary action in a
+/// [StickyActionBar] below the scrolling content.
 class PageBody extends StatelessWidget {
   const PageBody({
     super.key,
     required this.children,
     this.onRefresh,
     this.grouped = false,
+    this.bottom,
   });
   final List<Widget> children;
   final Future<void> Function()? onRefresh;
   final bool grouped;
+  final Widget? bottom;
 
   /// Beyond normal phone widths, content gains a centered margin rather
   /// than stretching indefinitely -- a foldable/tablet-width safeguard.
   /// No-op at every tested phone width (largest is ~412dp).
-  static const _maxContentWidth = 480.0;
+  static const maxContentWidth = 480.0;
 
   @override
   Widget build(BuildContext context) {
@@ -511,22 +526,31 @@ class PageBody extends StatelessWidget {
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: EdgeInsets.fromLTRB(
         Gap.gutter,
-        grouped ? Gap.xl : Gap.md,
+        Gap.lg,
         Gap.gutter,
-        Gap.xxl,
+        bottom == null ? Gap.xxl : Gap.lg,
       ),
       children: children,
     );
     final constrained = Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+        constraints: const BoxConstraints(maxWidth: maxContentWidth),
         child: list,
       ),
     );
-    final body = onRefresh == null
+    final scroll = onRefresh == null
         ? constrained
         : RefreshIndicator(onRefresh: onRefresh!, child: constrained);
-    return grouped ? ColoredBox(color: context.c.grouped, child: body) : body;
+    final toned = grouped
+        ? ColoredBox(color: context.c.grouped, child: scroll)
+        : scroll;
+    if (bottom == null) return toned;
+    return Column(
+      children: [
+        Expanded(child: toned),
+        StickyActionBar(child: bottom!),
+      ],
+    );
   }
 }
 
@@ -534,17 +558,20 @@ class PageBody extends StatelessWidget {
 /// detail): [hero] is drawn directly on the gradient, then the white
 /// surface enters with rounded top corners and holds [children] with the
 /// standard gutters. The whole page scrolls together; the surface always
-/// reaches the bottom edge, behind the gesture area.
+/// reaches the bottom edge, behind the gesture area. [bottomAction] pins the
+/// primary action below the scroll, above the gesture area.
 class HeroPage extends StatelessWidget {
   const HeroPage({
     super.key,
     required this.hero,
     required this.children,
     this.onRefresh,
+    this.bottomAction,
   });
   final Widget hero;
   final List<Widget> children;
   final Future<void> Function()? onRefresh;
+  final Widget? bottomAction;
 
   @override
   Widget build(BuildContext context) {
@@ -555,12 +582,13 @@ class HeroPage extends StatelessWidget {
         SliverFillRemaining(
           hasScrollBody: false,
           child: ContentSurface(
+            bottomSafeArea: bottomAction == null,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(
+              padding: EdgeInsets.fromLTRB(
                 Gap.gutter,
-                Gap.md,
+                Gap.lg,
                 Gap.gutter,
-                Gap.xxl,
+                bottomAction == null ? Gap.xxl : Gap.lg,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -571,8 +599,21 @@ class HeroPage extends StatelessWidget {
         ),
       ],
     );
-    return onRefresh == null
+    final body = onRefresh == null
         ? scroll
         : RefreshIndicator(onRefresh: onRefresh!, child: scroll);
+    if (bottomAction == null) return body;
+    return Column(
+      children: [
+        Expanded(child: body),
+        ColoredBox(
+          color: context.c.card,
+          child: SafeArea(
+            top: false,
+            child: StickyActionBar(child: bottomAction!),
+          ),
+        ),
+      ],
+    );
   }
 }

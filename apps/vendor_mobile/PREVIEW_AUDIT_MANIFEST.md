@@ -48,11 +48,11 @@ They do not alter canonical product navigation or Production.
 | V39 | `/audit/V39` | Business Address |
 | V40 | `/audit/V40` | Business Hours |
 | V41 | `/audit/V41` | Removed / Reserved — audit marker only |
-| V42 | `/audit/V42` | Profile |
-| V43 | `/audit/V43` | Edit Profile |
+| V42 | `/audit/V42` | Removed — merged into Settings (D-46); audit marker only |
+| V43 | `/audit/V43` | Personal Information |
 | V44 | `/audit/V44` | Security |
 | V45 | `/audit/V45` | Change Password |
-| V46 | `/audit/V46` | Menu |
+| V46 | `/audit/V46` | Settings (opened from the Today header) |
 | V47 | `/audit/V47` | Notification Preferences |
 | V48 | `/audit/V48` | Language |
 | V49 | `/audit/V49` | Appearance — HOLD / inactive |

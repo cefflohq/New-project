@@ -32,16 +32,16 @@ class Gap {
 /// D-33 through D-40). Button shape remains pill; exact card/input radius is
 /// baseline evidence pending FG-ENG-03 rather than a global visual lock.
 class Sizes {
-  static const header = 76.0; // gradient header content, top-level routes
-  static const subHeader = 64.0; // gradient header content, back-nav routes
+  static const header = 56.0; // the one gradient header row, every route
   static const nav = 64.0; // bottom navigation, excluding safe area
   static const icon = 22.0; // visual icon size
   static const tapTarget = 44.0; // minimum interactive target
   static const controlHeight = 48.0; // text inputs and search
   static const buttonHeight = 52.0; // primary / secondary / destructive
   static const chipHeight = 36.0; // selectable choice/filter chips
-  static const avatar = 48.0; // list-row avatar / icon disc
-  static const listRow = 76.0; // list/settings row minimum height
+  static const avatar = 40.0; // list-row avatar / icon disc
+  static const listRow = 60.0; // list/settings row minimum height
+  static const contactAction = 44.0; // outlined Call / WhatsApp circle
   static const cardRadius = 18.0;
   static const surfaceRadius = 24.0; // white surface entering the gradient
   static const buttonRadius = 999.0; // pill
@@ -247,8 +247,10 @@ ThemeData buildVendorTheme(Brightness brightness) {
     // One typographic hierarchy for every screen. Screens use these roles;
     // they do not declare their own sizes.
     textTheme: TextTheme(
-      // Page title (white, in the gradient header).
+      // Detail-hero identity (white, on the gradient).
       titleLarge: t(28, FontWeight.w700, c.textPrimary, spacing: -0.7),
+      // Header title (white, centred in the gradient header row).
+      headlineMedium: t(20, FontWeight.w700, c.textPrimary, spacing: -0.3),
       // Primary content heading inside a page body.
       headlineSmall: t(20, FontWeight.w700, c.textPrimary, spacing: -0.4),
       // Section heading / card title.

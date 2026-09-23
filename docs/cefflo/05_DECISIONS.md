@@ -743,3 +743,47 @@ normalization pass (branch `claude/vendor-mobile-ui-normalization-3wvl4d`,
 `2e8cf63`) and replaces its visual layer at the source. Scope: Vendor Mobile
 only. It does not change routes, data contracts, backend behaviour, Driver,
 Vendor Web/Desktop, Customer Tracking or FOUNDR.
+
+## D-46 Vendor Mobile Normalization — Header, Navigation, Settings and Contact Standard (2026-09-23)
+
+Founder supplied a final normalization brief with new approved references
+(Rider Detail, Delivery Plan, Invite Rider). It amends D-45 where they
+differ; D-45's palette, gradient, content surface and archetypes stand.
+
+Changed:
+- **One header row everywhere.** `[leading] [title centred on the screen]
+  [trailing]`, 56px, 20/700 white; both side slots take the wider side's
+  width so an icon on one side never moves the title. Replaces D-45's large
+  left-aligned top-level title and the separate back-navigation variant.
+- **Four primary destinations**: Today · Orders · Zones · Riders. Menu is
+  no longer a tab. Settings opens from a gear at the left of the Today
+  header (business name centred, notifications right); Settings routes
+  belong to Today.
+- **One Settings directory** (Account: Personal information, Security,
+  Notifications, Language, Appearance, Privacy · Business: Business profile,
+  Storefront, Products, Team, Customers, Service area · Support: Help &
+  support, About Cefflo · Sign out). V-42 Profile, which duplicated the
+  Account destinations, is removed; its inventory position is an audit
+  marker only (like V-41).
+- **Contact standard**: any person/entity detail with a usable phone number
+  uses the one `ContactActions` pair: neutral outlined circular Call (opens
+  `tel:`) and WhatsApp (opens `wa.me`), labelled underneath. No number →
+  "Not provided", no actions. Applies to Rider, Customer, Team member and the
+  Order detail customer.
+- **Rider Detail**: hero shows name, status, role and the vehicle plate;
+  one stats card of Total orders · Customer rating · Joined (no "Max
+  orders"); then Contact; then licence / additional information.
+- **Primary actions stay reachable**: a screen's yellow CTA is pinned in a
+  shared sticky action bar above the nav / gesture area on detail screens,
+  operational screens and forms. Long content (order items, zone orders,
+  recent deliveries) shows a compact preview with "View all".
+- **Density**: list rows 60 (grouped 56), avatar / icon disc 40, compact
+  section spacing; cards are white with a hairline border and subtle shadow.
+- **Status pills are semantic by delivery state** everywhere: Ready /
+  Delivered green, in progress blue, awaiting approval amber, Issue red.
+  Replaces D-45's neutral-by-default list pills.
+
+Scope: Vendor Mobile only. No backend, data-contract, Driver, Vendor
+Web/Desktop, Customer Tracking or FOUNDR change. Recorded in
+`sot/12_EXPERIENCE_SYSTEM.md` §8/§8A.
+

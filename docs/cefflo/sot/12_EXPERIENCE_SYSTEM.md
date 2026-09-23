@@ -1,4 +1,4 @@
-**Status:** CANONICAL — v1.4, amended 2026-09-23 by Founder decision D-45 (Vendor Mobile gradient-header visual system; supersedes §8's flat-white header and Yellow active navigation, and the Yellow "active navigation state" use in §1.1). Previously v1.3, amended 2026-09-19 by Founder decision D-40. D-33/D-34/D-35 remain the palette, semantic-colour, surface-principle and production-logo authorities; D-40 supersedes D-33 only for app typography and the mandatory status of its historical exact compact-token values.
+**Status:** CANONICAL — v1.5, amended 2026-09-23 by Founder decision D-46 (Vendor Mobile normalization: one centred header row, four-tab navigation with Settings in the Today header, single Settings directory, contact-action standard, pinned primary actions, semantic delivery pills; amends D-45 where they differ). v1.4 amended 2026-09-23 by Founder decision D-45 (Vendor Mobile gradient-header visual system; supersedes §8's flat-white header and Yellow active navigation, and the Yellow "active navigation state" use in §1.1). Previously v1.3, amended 2026-09-19 by Founder decision D-40. D-33/D-34/D-35 remain the palette, semantic-colour, surface-principle and production-logo authorities; D-40 supersedes D-33 only for app typography and the mandatory status of its historical exact compact-token values.
 **Implementation boundary:** FG-ENG-02 authorizes the isolated DEV/STAGING baseline integration recorded by D-40. It does not authorize visual retuning, Driver build-out, Vendor V11 execution, production deployment, or any later Engineering gate.
 
 ---
@@ -138,7 +138,7 @@ Still genuinely missing from any audited implementation — not proposed here, r
 ### 7.6 KPI blocks — LOCKED (amended D-45)
 One `KpiStrip`: equal columns of value + label (optional CEFFLO Blue icon) separated by hairline dividers, drawn directly on the white surface. The former navy summary panel and `KpiTile` are retired.
 
-## 8. App chrome and navigation — LOCKED BY D-45 (Vendor Mobile)
+## 8. App chrome and navigation — LOCKED BY D-45, AMENDED BY D-46 (Vendor Mobile)
 
 ~~Bottom navigation … CEFFLO Yellow marks the active tab only. Header: flat white/chrome, no accent underline.~~ **RETIRED by D-45 (2026-09-23).** There is no longer a flat-white authenticated header and Yellow is no longer the active-navigation colour. The Founder's gradient-header reference set is the canonical visual source; this section is its written form.
 
@@ -157,16 +157,20 @@ One `KpiStrip`: equal columns of value + label (optional CEFFLO Blue icon) separ
 - At the bottom, whatever app surface is underneath continues behind the gesture area: the white bottom navigation, or (without nav) the white content surface.
 - Implemented once at the root (shell + `CefSystemBars`), never per screen.
 
-**Header system** (one shell implementation, three variants)
-1. Top-level (Today, Orders, Zones, Riders, Menu): large white title (28/700), white actions (search, filter, add, notifications), no back arrow.
-2. Back-navigation: white back arrow + white title (auto-fits long titles, 28→20, never ellipsized at normal sizes).
-3. Detail hero: white back arrow + centred white title; the identity (large avatar, name, status pill, meta) sits on the gradient.
+**Header system** (D-46: one `AppHeader`, every route)
+- `[leading] [title] [trailing]` in one 56px row. The title (20/700 white) is centred on the SCREEN: both side slots take the width of the wider side, so a back arrow or extra action never shifts it. Long titles scale down to fit rather than ellipsize.
+- Leading: back arrow on sub-pages; on Today, the Settings gear. Trailing: the route's actions (notifications on Today; search / filter / add on lists).
+- Today's title is the business name. Detail-hero screens use the same row; their identity (large avatar, name, status pill, meta lines) sits on the gradient below it.
 
 **Content surface**: white surface enters below the gradient with 24px rounded top corners and runs to the bottom edge. Prefer dividers and spacing over nested cards; cards only where a group genuinely needs a container (grouped settings, info panels).
 
-**Bottom navigation**: Today · Orders · Zones · Riders · Menu. White surface, hairline top border. Active = CEFFLO Blue filled icon + blue label + short blue indicator bar. Inactive = cool-grey outline icon + label. Page content never scrolls beneath it; it hides while the keyboard is open and on focused flows / detail heroes.
+**Bottom navigation** (D-46): Today · Orders · Zones · Riders. Menu is not a tab; Settings opens from the Today header and its routes belong to Today. White surface, hairline top border. Active = CEFFLO Blue filled icon + blue label + short blue indicator bar. Inactive = cool-grey outline icon + label. Page content never scrolls beneath it; it hides while the keyboard is open and on focused flows / detail heroes.
 
-**Status pills**: neutral grey pill (grey label on a light grey fill) for ordinary list statuses; semantic tint only where the state must stand out (Issue red, Delivered green on Today, success/warning where relevant). On a detail hero: white pill with a semantic dot.
+**Status pills** (D-46): one pill; delivery states are semantic everywhere through `DeliveryStatusChip` — Ready / Delivered green, picked up / on the way / arrived CEFFLO Blue, awaiting approval amber, Issue red, Cancelled neutral. Active entities (zones, riders, team) green; inactive neutral. On a detail hero: white pill with a semantic dot.
+
+**Primary actions and density** (D-46): a screen's yellow CTA is pinned in the shared `StickyActionBar` (via `PageBody.bottom` / `HeroPage.bottomAction`) above the nav or gesture area, so content length never pushes it off screen. Long collections show a compact preview (Today: 4 recent deliveries; order items: 3; zone orders: 4) with "View all". List rows 60 (grouped 56), avatar / icon disc 40. Cards: white, hairline border, subtle shadow, compact padding; no card-in-card.
+
+**Contact actions** (D-46): every person/entity detail with a usable phone number uses `ContactActions` — neutral outlined circular Call (`tel:`) and WhatsApp (`wa.me`) buttons with labels underneath (inside `ContactCard` on detail screens). No number → "Not provided" and no actions.
 
 ## 8A. Vendor Mobile screen archetypes — LOCKED BY D-45
 
@@ -174,18 +178,18 @@ Every Vendor Mobile screen is derived from one of these; no screen invents anoth
 
 | | Archetype | Canonical reference | Composition |
 |---|---|---|---|
-| A | Today / Overview | Overview | Top-level header + bell; KPI strip (value + label, hairline column dividers) on white; Recent Delivery rows (avatar, green Delivered pill + time, chevron); Need Attention row. |
+| A | Today / Overview | Overview | Header: Settings gear · business name · bell; KPI strip (value + label, hairline column dividers) on white; Recent Delivery rows (avatar, green Delivered pill + time, chevron); Need Attention row. |
 | B | Operational tabbed list | Orders | Top-level header with search/add; blue underline tabs; rows with grey icon disc, title, one-line subtitle, neutral pill, no chevron. |
 | C | Zones list | Zones | As B with a blue-tinted location disc. |
 | D | People list | Riders | As B with navy filled initials avatar. |
-| E | Detail hero | Rider Detail | Deep gradient hero with large avatar, name, status pill, meta; white surface with icon stat strip, then blue-icon information rows. No bottom nav. |
-| F | Menu / Settings | Settings | Grouped page tone; muted group labels; white rounded group cards; grey icon discs; inset dividers; chevrons. |
+| E | Detail hero | Rider Detail | Gradient hero: large avatar, name, status pill, meta lines (role; vehicle plate with icon). White surface: stats card (rider: Total orders · Customer rating · Joined), Contact card, information cards. Primary action pinned. No bottom nav. |
+| F | Settings | Settings | Opened from the Today header. Groups Account · Business · Support, then Sign out; grouped page tone; white bordered group cards; grey icon discs; inset dividers; chevrons. The only directory of these destinations. |
 | G | Multi-section operational form | New Order | Back-nav header; sections with a blue icon + title + subtitle, divided by hairlines; shared fields; tinted blue secondary action rows; one yellow CTA. |
 | H | Product / content form | Add Product | Back-nav header; dashed upload area; sectioned fields; availability switch row; yellow CTA; bottom nav. |
 
 Authentication keeps its full-screen blue Sign In composition (also in the reference set); secondary auth screens use the same backdrop with a white sheet.
 
-**Shared component rule**: one concept = one component (Flutter `lib/ui/widgets.dart` + `lib/ui/shell.dart`): `BrandBackdrop`, `ContentSurface`, `HeroPage`/`DetailHero`/`HeroStatusPill`, `KpiStrip`, `SegmentedTabs`, `CefListRow` (+`IconDisc`, `CefAvatar`), `CefListGroup`, `SectionHeading`, `CefField`, `CefSearchField`, `CefButton`, `CefActionRow`, `StatusChip`, `CefChoiceChip`, `CefSwitch`. Screens never declare their own gradients, headers, colours or type sizes.
+**Shared component rule**: one concept = one component (Flutter `lib/ui/widgets.dart` + `lib/ui/shell.dart`): `BrandBackdrop`, `ContentSurface`, `HeroPage`/`DetailHero`/`HeroStatusPill`, `KpiStrip`, `SegmentedTabs`, `CefListRow` (+`IconDisc`, `CefAvatar`), `CefListGroup`, `SectionHeading`, `CefField`, `CefSearchField`, `CefButton`, `CefActionRow`, `StatusChip`/`DeliveryStatusChip`, `CefChoiceChip`, `CefSwitch`, and (D-46) `AppHeader`, `StickyActionBar`, `StatsCard`, `ContactActions`/`ContactCard`, `showListSheet`. Screens never declare their own gradients, headers, colours or type sizes.
 
 ## 9. Brand mark and header text usage — LOCKED
 

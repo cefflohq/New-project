@@ -3,6 +3,7 @@ import 'package:cefflo_vendor_mobile/data/vendor_repository.dart';
 import 'package:cefflo_vendor_mobile/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:cefflo_vendor_mobile/core/theme.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -38,9 +39,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      if (route != VRoute.team && route != VRoute.setupComplete) {
-        expect(find.text('Menu'), findsWidgets);
-      }
+      // D-46: Menu is no longer a bottom-navigation destination.
+      expect(find.text('Menu'), findsNothing);
     });
   }
 
@@ -91,23 +91,128 @@ void main() {
     expect(find.text('Add product'), findsOneWidget);
   });
 
-  testWidgets('the fifth navigation item opens Menu', (tester) async {
+  Future<void> pumpAt(WidgetTester tester, VendorLocation location) async {
     tester.view.physicalSize = const Size(393, 852);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-
     await tester.pumpWidget(
-      VendorMobileApp(
-        repo: VendorRepository.demo(),
-        auditLocation: const VendorLocation(VRoute.products),
-      ),
+      VendorMobileApp(repo: VendorRepository.demo(), auditLocation: location),
     );
     await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  }
 
-    await tester.tap(find.text('Menu'));
+  testWidgets('Settings opens from the Today header, one directory', (
+    tester,
+  ) async {
+    await pumpAt(tester, const VendorLocation(VRoute.today));
+    // Four destinations only.
+    for (final label in ['Today', 'Orders', 'Zones', 'Riders']) {
+      expect(find.text(label), findsWidgets);
+    }
+    expect(find.text('Menu'), findsNothing);
+
+    await tester.tap(find.byTooltip('Settings'));
     await tester.pumpAndSettle();
-    expect(find.text('Business'), findsOneWidget);
     expect(find.text('Account'), findsOneWidget);
+    expect(find.text('Business'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Support'), 200);
+    expect(find.text('Support'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Personal information'), -200);
+    // Account destinations appear once, not via a second Profile page.
+    expect(find.text('Personal information'), findsOneWidget);
+    expect(find.text('Security'), findsOneWidget);
+    expect(find.text('Profile'), findsNothing);
+  });
+
+  testWidgets('header titles are centred on the screen', (tester) async {
+    // Today has an icon on both sides; Orders has three trailing actions
+    // and none leading -- both titles still sit on the screen centre line.
+    await pumpAt(tester, const VendorLocation(VRoute.orders));
+    expect(tester.getCenter(find.text('Orders').first).dx, closeTo(196.5, 1));
+  });
+
+  testWidgets('rider detail uses the canonical stats and contact actions', (
+    tester,
+  ) async {
+    await pumpAt(
+      tester,
+      const VendorLocation(VRoute.riderDetail, entityId: 'rider-ahmad'),
+    );
+    expect(find.text('Total orders'), findsOneWidget);
+    expect(find.text('Customer rating'), findsOneWidget);
+    expect(find.text('Joined'), findsOneWidget);
+    expect(find.text('12 Jan 2024'), findsOneWidget);
+    expect(find.text('VFY 7281'), findsOneWidget);
+    expect(find.text('Max orders'), findsNothing);
+    expect(find.bySemanticsLabel('Call +60 12 345 6789'), findsOneWidget);
+    expect(find.bySemanticsLabel('WhatsApp +60 12 345 6789'), findsOneWidget);
+  });
+
+  testWidgets('no contact actions without a phone number', (tester) async {
+    await pumpAt(
+      tester,
+      const VendorLocation(VRoute.teamMemberDetail, entityId: 'team-helper'),
+    );
+    expect(find.text('Not provided'), findsWidgets);
+    expect(find.text('WhatsApp'), findsNothing);
+    expect(find.text('Remove from Team'), findsOneWidget);
+  });
+
+  testWidgets('the owner cannot be removed from the team', (tester) async {
+    await pumpAt(
+      tester,
+      const VendorLocation(VRoute.teamMemberDetail, entityId: 'team-owner'),
+    );
+    expect(find.text('Remove from Team'), findsNothing);
+    expect(find.text('WhatsApp'), findsOneWidget);
+  });
+
+  testWidgets('a large order keeps its primary action on screen', (
+    tester,
+  ) async {
+    await pumpAt(
+      tester,
+      const VendorLocation(VRoute.orderDetail, entityId: 'ord-1008'),
+    );
+    final cta = find.text('Mark as On the Way');
+    expect(cta, findsOneWidget);
+    expect(tester.getBottomLeft(cta).dy, lessThan(852));
+    // Nine items: a compact preview plus the full list on demand.
+    expect(find.text('View all 9 items'), findsOneWidget);
+    expect(find.text('Kaya Toast'), findsNothing);
+    await tester.ensureVisible(find.text('View all 9 items'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('View all 9 items'));
+    await tester.pumpAndSettle();
+    expect(find.text('Items (9)'), findsWidgets);
+    expect(find.text('Kaya Toast'), findsOneWidget);
+  });
+
+  testWidgets('zone detail previews four orders and pins dispatch', (
+    tester,
+  ) async {
+    await pumpAt(
+      tester,
+      const VendorLocation(VRoute.zoneDetail, entityId: 'zone-bangsar'),
+    );
+    expect(find.text('Review & dispatch (5)'), findsOneWidget);
+    expect(
+      tester.getBottomLeft(find.text('Review & dispatch (5)')).dy,
+      lessThan(852),
+    );
+    expect(find.text('View all'), findsOneWidget);
+    expect(find.text('Edit zone'), findsOneWidget);
+  });
+
+  testWidgets('Today caps Recent Delivery at four rows', (tester) async {
+    await pumpAt(tester, const VendorLocation(VRoute.today));
+    expect(find.text('Delivered'), findsNWidgets(5)); // 4 pills + KPI label
+    expect(find.text('Need Attention'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('Need Attention')).dy,
+      lessThan(852 - Sizes.nav),
+    );
   });
 }

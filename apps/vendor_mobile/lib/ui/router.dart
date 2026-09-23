@@ -46,7 +46,7 @@ Widget buildScreen(BuildContext context, VendorLocation loc) {
     VRoute.addProduct => const ProductFormScreen(),
     VRoute.customers => const CustomersScreen(),
     VRoute.customerDetail => CustomerDetailScreen(customerName: id!),
-    VRoute.settings => const MenuScreen(),
+    VRoute.settings => const SettingsScreen(),
     VRoute.storefront => const StorefrontScreen(),
     VRoute.storefrontPreview => const StorefrontTemplatePreviewScreen(),
     VRoute.storefrontTemplatePreview => StorefrontTemplatePreviewScreen(
