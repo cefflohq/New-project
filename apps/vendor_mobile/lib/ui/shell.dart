@@ -65,8 +65,9 @@ const _focusedRoutes = {
   VRoute.storefrontTemplatePreview,
 };
 
-/// Routes that render their own full header (back arrow, dynamic title,
-/// trailing actions) and own chrome entirely -- e.g. Screen 03, Customize
+/// Routes that render their own header row (back arrow, dynamic title,
+/// trailing actions) -- in white on the shell's brand backdrop, above a
+/// [ContentSurface] -- instead of the shared header -- e.g. Screen 03, Customize
 /// {Template Name}, which needs a Reset action wired to screen-local draft
 /// state that the shared header cannot reach. No default header or bottom
 /// nav is rendered for these.
@@ -99,8 +100,10 @@ class VendorShell extends StatelessWidget {
         !_onboardingRoutes.contains(route) &&
         !_focusedRoutes.contains(route);
 
+    // Own-chrome routes draw their own header row (white, on this same
+    // backdrop) above a ContentSurface.
     final body = ownChrome
-        ? ColoredBox(color: c.card, child: child)
+        ? child
         : Column(
             children: [
               _Header(app: app, hero: hero),
@@ -116,9 +119,9 @@ class VendorShell extends StatelessWidget {
     return CefSystemBars.split(
       // Gradient behind the status bar; white nav or surface behind the
       // gesture area.
-      statusBarBackground: ownChrome ? Brightness.light : Brightness.dark,
+      statusBarBackground: Brightness.dark,
       navigationBarBackground: Brightness.light,
-      browserChromeColor: ownChrome ? c.card : CefGradients.brandChrome,
+      browserChromeColor: CefGradients.brandChrome,
       child: PopScope(
         canPop: !app.canGoBack,
         onPopInvokedWithResult: (didPop, _) {
@@ -126,9 +129,7 @@ class VendorShell extends StatelessWidget {
         },
         child: Scaffold(
           backgroundColor: c.card,
-          body: ownChrome
-              ? body
-              : BrandBackdrop(child: body),
+          body: BrandBackdrop(child: body),
         ),
       ),
     );

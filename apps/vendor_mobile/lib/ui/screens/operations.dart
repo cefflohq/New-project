@@ -1004,7 +1004,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           keyboardType: TextInputType.phone,
           errorText: errors['phone'],
         ),
-        const _SectionDivider(),
+        const SectionDivider(),
         const SectionHeading(
           'Address',
           icon: LucideIcons.mapPin,
@@ -1018,7 +1018,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           maxLines: 2,
           errorText: errors['address'],
         ),
-        const _SectionDivider(),
+        const SectionDivider(),
         const SectionHeading(
           'Items',
           icon: LucideIcons.package,
@@ -1030,7 +1030,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           leadingDisc: true,
           onTap: () => showNotWiredYetSnackBar(context, 'Adding order items'),
         ),
-        const _SectionDivider(),
+        const SectionDivider(),
         const SectionHeading(
           'Instructions',
           icon: LucideIcons.clipboardList,
@@ -1187,7 +1187,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         Text('Product Photo', style: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: Gap.md),
         const _PhotoDropzone(),
-        const _SectionDivider(),
+        const SectionDivider(),
         const SectionHeading('Product Details', icon: LucideIcons.package),
         CefField(
           label: 'Product name',
@@ -1324,17 +1324,6 @@ class _OrderProgress extends StatelessWidget {
       }),
     );
   }
-}
-
-/// Hairline divider between form sections (archetypes G and H).
-class _SectionDivider extends StatelessWidget {
-  const _SectionDivider();
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: Gap.sm),
-    child: Divider(height: Gap.lg, color: context.c.border),
-  );
 }
 
 /// Dashed photo drop area of the product form. Tapping it is not wired to a

@@ -267,7 +267,17 @@ class StorefrontImagePlaceholder extends StatelessWidget {
       color: (tint ?? StorefrontThemeTokens.textSecondary).withValues(alpha: .1),
       borderRadius: BorderRadius.circular(radius),
     ),
-    child: Icon(icon, size: size * 0.42, color: tint ?? StorefrontThemeTokens.textSecondary),
+    // `size` may be double.infinity ("fill the slot"); size the icon from
+    // the laid-out box so it is always finite.
+    child: LayoutBuilder(
+      builder: (context, box) {
+        final side = [
+          box.maxWidth,
+          box.maxHeight,
+        ].where((v) => v.isFinite).fold<double>(size.isFinite ? size : 56, (a, b) => a < b ? a : b);
+        return Icon(icon, size: side * 0.42, color: tint ?? StorefrontThemeTokens.textSecondary);
+      },
+    ),
   );
 }
 

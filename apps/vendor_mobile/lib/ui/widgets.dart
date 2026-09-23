@@ -170,6 +170,17 @@ class SectionHeading extends StatelessWidget {
   }
 }
 
+/// Hairline divider between form sections (archetypes G and H).
+class SectionDivider extends StatelessWidget {
+  const SectionDivider({super.key});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: Gap.sm),
+    child: Divider(height: Gap.lg, color: context.c.border),
+  );
+}
+
 /// The one brand backdrop: [CefGradients.brand] with the [CefGradients.glow]
 /// layered over it. The shell's chrome and every [HeroSurface] paint through
 /// this, so the gradient is identical everywhere.

@@ -23,6 +23,7 @@ import '../../../core/routes.dart';
 import '../../../core/theme.dart';
 import '../../../data/storefront_config.dart';
 import '../../../data/storefront_templates.dart';
+import '../../shell.dart';
 import '../../widgets.dart';
 
 class CustomizeStorefrontScreen extends StatefulWidget {
@@ -46,7 +47,8 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
   @override
   void initState() {
     super.initState();
-    final app = AppScope.of(context);
+    // initState may not subscribe to inherited widgets; read the state once.
+    final app = AppScope.read(context);
     def = app.activeStorefrontTemplate;
     draft = app.brandingFor(def.id);
     _syncControllers();
@@ -145,28 +147,36 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    return SafeArea(
-      bottom: false,
-      child: Column(
-        children: [
-          _CustomizeHeader(
+    return Column(
+      children: [
+        SafeArea(
+          bottom: false,
+          child: _CustomizeHeader(
             templateName: def.name,
             onBack: app.back,
             onReset: _resetToDefault,
           ),
-          SegmentedTabs(
-            labels: const ['Branding', 'Banner', 'Layout', 'Advanced'],
-            active: tab,
-            onChange: (v) => setState(() => tab = v),
+        ),
+        Expanded(
+          child: ContentSurface(
+            child: Column(
+              children: [
+                SegmentedTabs(
+                  labels: const ['Branding', 'Banner', 'Layout', 'Advanced'],
+                  active: tab,
+                  onChange: (v) => setState(() => tab = v),
+                ),
+                Expanded(
+                  child: tab == 'Branding'
+                      ? _buildBrandingTab(context)
+                      : _ComingSoonTab(label: tab),
+                ),
+                _SaveBar(onSave: _save),
+              ],
+            ),
           ),
-          Expanded(
-            child: tab == 'Branding'
-                ? _buildBrandingTab(context)
-                : _ComingSoonTab(label: tab),
-          ),
-          _SaveBar(onSave: _save),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -317,6 +327,9 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
   }
 }
 
+/// Back-navigation header row drawn in white on the shell's brand
+/// backdrop. Owned by this screen only because Reset acts on screen-local
+/// draft state.
 class _CustomizeHeader extends StatelessWidget {
   const _CustomizeHeader({
     required this.templateName,
@@ -328,49 +341,49 @@ class _CustomizeHeader extends StatelessWidget {
   final VoidCallback onReset;
 
   @override
-  Widget build(BuildContext context) => Container(
-    color: context.c.chrome,
-    child: SizedBox(
-      height: 60,
+  Widget build(BuildContext context) => SizedBox(
+    height: Sizes.subHeader,
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(Gap.xs, 0, Gap.sm, Gap.xs),
       child: Row(
         children: [
           IconAction(
             icon: LucideIcons.arrowLeft,
             tooltip: 'Back',
+            color: Colors.white,
             onTap: onBack,
           ),
           Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Customize $templateName',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                Text(
-                  'Make it yours with your brand identity',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: context.c.textSecondary,
+            child: Padding(
+              padding: const EdgeInsets.only(left: Gap.xs),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  PageTitle('Customize $templateName'),
+                  Text(
+                    'Make it yours with your brand identity',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: 12,
+                      color: Colors.white.withValues(alpha: .82),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           TextButton.icon(
             onPressed: onReset,
-            icon: const Icon(LucideIcons.rotateCcw, size: 14),
-            label: const Text(
+            style: TextButton.styleFrom(foregroundColor: Colors.white),
+            icon: const Icon(LucideIcons.rotateCcw, size: 16),
+            label: Text(
               'Reset',
-              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+              style: Theme.of(context).textTheme.labelLarge
+                  ?.copyWith(color: Colors.white),
             ),
           ),
-          const SizedBox(width: 6),
         ],
       ),
     ),
@@ -411,34 +424,12 @@ class _SaveBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: EdgeInsets.fromLTRB(
-      16,
-      12,
-      16,
-      12 + MediaQuery.of(context).viewPadding.bottom,
-    ),
+    padding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.md, Gap.gutter, Gap.md),
     decoration: BoxDecoration(
-      color: context.c.chrome,
+      color: context.c.card,
       border: Border(top: BorderSide(color: context.c.border)),
     ),
-    child: SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: FilledButton(
-        onPressed: onSave,
-        style: FilledButton.styleFrom(
-          backgroundColor: context.c.info,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(999),
-          ),
-        ),
-        child: const Text(
-          'Save Changes',
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-        ),
-      ),
-    ),
+    child: CefButton('Save Changes', onTap: onSave),
   );
 }
 

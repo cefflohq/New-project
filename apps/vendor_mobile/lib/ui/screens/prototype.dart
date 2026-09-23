@@ -128,17 +128,6 @@ class _GroupedIntro extends StatelessWidget {
   }
 }
 
-/// Hairline divider between form sections (archetype G).
-class _SectionDivider extends StatelessWidget {
-  const _SectionDivider();
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: Gap.sm),
-    child: Divider(height: Gap.lg, color: context.c.border),
-  );
-}
-
 // ---------------------------------------------------------------------------
 // Business
 // ---------------------------------------------------------------------------
@@ -265,7 +254,7 @@ class _BusinessInformationScreen extends StatelessWidget {
         maxLines: 3,
         maxLength: 160,
       ),
-      const _SectionDivider(),
+      const SectionDivider(),
       const SectionHeading(
         'Contact',
         icon: LucideIcons.phone,
@@ -338,7 +327,7 @@ class _BusinessAddressScreen extends StatelessWidget {
             ],
           ),
         ),
-        const _SectionDivider(),
+        const SectionDivider(),
         const SectionHeading(
           'Address details',
           icon: LucideIcons.mapPin,
@@ -528,7 +517,7 @@ class _EditProfileScreen extends StatelessWidget {
         right: '12 345 6789',
         keyboardType: TextInputType.phone,
       ),
-      const _SectionDivider(),
+      const SectionDivider(),
       const SectionHeading(
         'Account',
         icon: LucideIcons.briefcase,
@@ -1218,7 +1207,7 @@ class _ContactSupportScreen extends StatelessWidget {
           maxLines: 4,
           maxLength: 500,
         ),
-        const _SectionDivider(),
+        const SectionDivider(),
         const SectionHeading(
           'Add Screenshots (Optional)',
           icon: LucideIcons.image,
@@ -1241,7 +1230,7 @@ class _ContactSupportScreen extends StatelessWidget {
             ],
           ),
         ),
-        const _SectionDivider(),
+        const SectionDivider(),
         const SectionHeading(
           'Contact',
           icon: LucideIcons.mail,
@@ -1586,7 +1575,7 @@ class _InviteLinkScreen extends StatelessWidget {
           padding: const EdgeInsets.only(left: Gap.xs),
           child: Text(_scanLabel, style: text.bodySmall),
         ),
-        const _SectionDivider(),
+        const SectionDivider(),
         const SectionHeading(
           'Share via',
           icon: LucideIcons.share2,

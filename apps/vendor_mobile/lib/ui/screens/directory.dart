@@ -474,7 +474,7 @@ class _ZoneFormScreenState extends State<ZoneFormScreen> {
           errorText: errors['name'],
         ),
         if (!widget.isNew) ...[
-          Divider(height: Gap.lg, color: context.c.border),
+          const SectionDivider(),
           const SectionHeading('Status', icon: LucideIcons.circleCheck),
           CefListRow(
             title: 'Active',
