@@ -612,9 +612,9 @@ class OrderDetailScreen extends StatelessWidget {
             ),
           SectionHeading(
             'Items (${order.items.length})',
-            trailing: _TintedLink(
+            trailing: CefLink(
+              'View receipt',
               icon: LucideIcons.fileText,
-              label: 'View receipt',
               onTap: () => showNotWiredYetSnackBar(context, 'The receipt view'),
             ),
           ),
@@ -752,42 +752,6 @@ class _OrderInfoRow extends StatelessWidget {
   }
 }
 
-/// Inline text link with a leading icon (View receipt / View all).
-class _TintedLink extends StatelessWidget {
-  const _TintedLink({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(Gap.sm),
-      child: Padding(
-        padding: const EdgeInsets.all(Gap.xs),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: c.info),
-            const SizedBox(width: Gap.xs),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelLarge
-                  ?.copyWith(color: c.info),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 /// Item thumbnail placeholder used as the leading of an item [CefListRow].
 class _ItemThumb extends StatelessWidget {
   const _ItemThumb({required this.index});
@@ -836,9 +800,9 @@ class NewOrderEntryScreen extends StatelessWidget {
         ),
         SectionHeading(
           'Recent Imports',
-          trailing: _TintedLink(
+          trailing: CefLink(
+            'View all',
             icon: LucideIcons.list,
-            label: 'View all',
             onTap: () => showNotWiredYetSnackBar(context, 'The import history'),
           ),
         ),

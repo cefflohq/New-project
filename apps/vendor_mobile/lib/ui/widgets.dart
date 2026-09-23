@@ -441,8 +441,12 @@ class CefField extends StatefulWidget {
     this.suffixIcon,
     this.enabled = true,
     this.obscureText = false,
+    this.maxLength,
   }) : assert(controller == null || initialValue == null);
   final String? label;
+
+  /// Caps the input and shows the live "n/max" counter under the field.
+  final int? maxLength;
   final TextEditingController? controller;
   final String? initialValue, hint, errorText, helperText;
   final TextInputType? keyboardType;
@@ -492,6 +496,7 @@ class _CefFieldState extends State<CefField> {
             onChanged: w.onChanged,
             enabled: w.enabled,
             obscureText: _hidden,
+            maxLength: w.maxLength,
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w500,
@@ -511,6 +516,44 @@ class _CefFieldState extends State<CefField> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// The one inline text link (e.g. a SectionHeading's "View all"): info-blue
+/// label with an optional leading icon, padded to a comfortable tap area.
+class CefLink extends StatelessWidget {
+  const CefLink(this.label, {super.key, required this.onTap, this.icon});
+  final String label;
+  final VoidCallback onTap;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(Gap.sm),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: Sizes.tapTarget),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 16, color: c.info),
+                const SizedBox(width: Gap.xs),
+              ],
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(color: c.info),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -624,17 +667,21 @@ class CefChoiceChip extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
+          // Shrink-wraps its label: a chip is only as wide as its text,
+          // whether it sits in a Wrap or a horizontal list.
           child: Container(
             height: Sizes.chipHeight,
             padding: const EdgeInsets.symmetric(horizontal: 14),
-            alignment: Alignment.center,
-            child: Text(
-              label,
-              maxLines: 1,
-              style: TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w600,
-                color: selected ? CefColors.onAccent : c.textPrimary,
+            child: Center(
+              widthFactor: 1,
+              child: Text(
+                label,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: selected ? CefColors.onAccent : c.textPrimary,
+                ),
               ),
             ),
           ),

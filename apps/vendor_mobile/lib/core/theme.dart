@@ -88,6 +88,11 @@ class CefColors extends ThemeExtension<CefColors> {
   /// Same value in both modes (SOT S3.2).
   static const navy = Color(0xFF12213E);
 
+  /// Semantic values drawn ON the navy hero gradient, where the Light
+  /// semantic colours lack contrast. Used only for hero KPI figures.
+  static const onHeroSuccess = Color(0xFF42CE82);
+  static const onHeroAttention = Color(0xFFFF3653);
+
   static const light = CefColors(
     canvas: Color(0xFFFFFFFF), // Mobile workspace
     card: Color(0xFFFFFFFF), // Surface
@@ -199,6 +204,18 @@ ThemeData buildVendorTheme(Brightness brightness) {
       focusedBorder: _inputBorder(CefColors.accent, width: 1.6),
       errorBorder: _inputBorder(c.attention),
       focusedErrorBorder: _inputBorder(c.attention, width: 1.6),
+    ),
+    // The one slider treatment (service-area radius and any future slider).
+    sliderTheme: SliderThemeData(
+      trackHeight: 4,
+      activeTrackColor: CefColors.accent,
+      inactiveTrackColor: c.border,
+      thumbColor: CefColors.accent,
+      overlayColor: CefColors.accent.withValues(alpha: .16),
+      tickMarkShape: SliderTickMarkShape.noTickMark,
+      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+      trackShape: const RoundedRectSliderTrackShape(),
+      showValueIndicator: ShowValueIndicator.never,
     ),
     // One typographic hierarchy for every screen. Screens use these roles;
     // they do not declare their own sizes.

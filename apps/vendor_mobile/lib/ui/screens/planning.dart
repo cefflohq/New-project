@@ -861,7 +861,6 @@ class RadiusSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.c;
     final text = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -873,25 +872,12 @@ class RadiusSlider extends StatelessWidget {
             Text('${radiusKm.round()} km', style: text.titleSmall),
           ],
         ),
-        SliderTheme(
-          data: SliderTheme.of(context).copyWith(
-            trackHeight: 4,
-            activeTrackColor: CefColors.accent,
-            inactiveTrackColor: c.border,
-            thumbColor: CefColors.accent,
-            overlayColor: CefColors.accent.withValues(alpha: .16),
-            tickMarkShape: SliderTickMarkShape.noTickMark,
-            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-            trackShape: const RoundedRectSliderTrackShape(),
-            showValueIndicator: ShowValueIndicator.never,
-          ),
-          child: Slider(
-            value: radiusKm,
-            min: 2,
-            max: 20,
-            divisions: 18,
-            onChanged: onChanged,
-          ),
+        Slider(
+          value: radiusKm,
+          min: 2,
+          max: 20,
+          divisions: 18,
+          onChanged: onChanged,
         ),
       ],
     );

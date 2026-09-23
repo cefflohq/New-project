@@ -189,22 +189,6 @@ class _BusinessProfileScreen extends StatelessWidget {
   }
 }
 
-/// Right-aligned character count shown under a multi-line field.
-class _CharCount extends StatelessWidget {
-  const _CharCount(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: Gap.sm),
-    child: Text(
-      text,
-      textAlign: TextAlign.right,
-      style: Theme.of(context).textTheme.bodySmall,
-    ),
-  );
-}
-
 class _BusinessInformationScreen extends StatelessWidget {
   const _BusinessInformationScreen();
 
@@ -240,8 +224,8 @@ class _BusinessInformationScreen extends StatelessWidget {
         label: 'Short Description',
         initialValue: 'Handcrafted coffee and light bites, delivered fresh across Kuala Lumpur.',
         maxLines: 3,
+        maxLength: 160,
       ),
-      const _CharCount('72/160'),
       CefButton('Save Changes', secondary: true, onTap: () {}),
     ],
   );
@@ -1078,10 +1062,10 @@ class _FaqScreen extends StatelessWidget {
         ),
       SectionHeading(
         'Popular Questions',
-        trailing: TextButton(
-          onPressed: () =>
+        trailing: CefLink(
+          'View all',
+          onTap: () =>
               showNotWiredYetSnackBar(context, 'Viewing all questions'),
-          child: const Text('View All'),
         ),
       ),
       for (final question in const [
@@ -1121,8 +1105,8 @@ class _ContactSupportScreen extends StatelessWidget {
           label: 'Message',
           hint: 'Tell us more about your issue...',
           maxLines: 4,
+          maxLength: 500,
         ),
-        const _CharCount('0/500'),
         Text('Add Screenshots (Optional)', style: text.labelLarge),
         const SizedBox(height: Gap.sm),
         CefCard(

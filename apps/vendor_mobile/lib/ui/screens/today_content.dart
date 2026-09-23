@@ -76,12 +76,12 @@ class TodayContent extends StatelessWidget {
             SummaryMetric(
               label: 'Ready',
               value: '${counts[1]}',
-              valueColor: const Color(0xFF42CE82),
+              valueColor: CefColors.onHeroSuccess,
             ),
             SummaryMetric(
               label: 'Issue',
               value: '${counts[2]}',
-              valueColor: const Color(0xFFFF3653),
+              valueColor: CefColors.onHeroAttention,
             ),
             SummaryMetric(label: 'Delivered', value: '${counts[3]}'),
           ],
@@ -142,13 +142,9 @@ class TodayContent extends StatelessWidget {
         ),
         SectionHeading(
           'Recent Delivery',
-          trailing: GestureDetector(
+          trailing: CefLink(
+            'View all',
             onTap: () => app.switchTab(NavTab.orders),
-            child: Text(
-              'View All',
-              style: Theme.of(context).textTheme.labelLarge
-                  ?.copyWith(color: c.info),
-            ),
           ),
         ),
         if (rows.isEmpty)
