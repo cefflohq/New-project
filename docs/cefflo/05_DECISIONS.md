@@ -717,3 +717,29 @@ authorize M1–M6 runtime implementation, new or activated workflows, workflow
 JSON changes, database/schema/data changes, credentials, providers, paid API
 calls, publishing, scheduling, advertising, Control Layer runtime, Engineering
 changes, Engineering qualification or the V11 pilot.
+
+## D-45 Vendor Mobile Gradient-Header Visual SOT (2026-09-23)
+
+Founder supplied a new reference set for Vendor Mobile (Overview, Orders,
+Zones, Riders, Rider Detail, Settings, New Order, Add Product, Sign In) and
+declared it the canonical visual source of truth. Where it conflicts with the
+earlier written SOT, the references win.
+
+Retired: the flat-white authenticated header and CEFFLO Yellow as the active
+bottom-navigation colour (`sot/12_EXPERIENCE_SYSTEM.md` §8 and the "active
+navigation state" use in §1.1). There must not be two valid visual SOTs.
+
+Adopted (written into `sot/12_EXPERIENCE_SYSTEM.md` v1.4 §8/§8A): one brand
+gradient chrome running edge-to-edge behind a transparent status bar; white
+content surface entering with rounded top corners and continuing behind a
+transparent gesture area; three header variants (top-level, back-navigation,
+detail hero); CEFFLO Blue (`#0B5FE3`, distinct from semantic Route/Info) for
+active navigation, active tabs, section/detail icons and links; CEFFLO Yellow
+remains the primary CTA colour; neutral grey status pills with semantic tint
+only where a state must stand out; eight screen archetypes (A–H).
+
+Implementation keeps the component architecture of the Vendor Mobile
+normalization pass (branch `claude/vendor-mobile-ui-normalization-3wvl4d`,
+`2e8cf63`) and replaces its visual layer at the source. Scope: Vendor Mobile
+only. It does not change routes, data contracts, backend behaviour, Driver,
+Vendor Web/Desktop, Customer Tracking or FOUNDR.

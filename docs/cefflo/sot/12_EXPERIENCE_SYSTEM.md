@@ -1,4 +1,4 @@
-**Status:** CANONICAL — v1.3, amended 2026-09-19 by Founder decision D-40. D-33/D-34/D-35 remain the palette, semantic-colour, surface-principle and production-logo authorities; D-40 supersedes D-33 only for app typography and the mandatory status of its historical exact compact-token values.
+**Status:** CANONICAL — v1.4, amended 2026-09-23 by Founder decision D-45 (Vendor Mobile gradient-header visual system; supersedes §8's flat-white header and Yellow active navigation, and the Yellow "active navigation state" use in §1.1). Previously v1.3, amended 2026-09-19 by Founder decision D-40. D-33/D-34/D-35 remain the palette, semantic-colour, surface-principle and production-logo authorities; D-40 supersedes D-33 only for app typography and the mandatory status of its historical exact compact-token values.
 **Implementation boundary:** FG-ENG-02 authorizes the isolated DEV/STAGING baseline integration recorded by D-40. It does not authorize visual retuning, Driver build-out, Vendor V11 execution, production deployment, or any later Engineering gate.
 
 ---
@@ -23,7 +23,7 @@ Extends `05_BRAND_BRAIN.md` and `06_BRAND_ASSETS_GOVERNANCE.md` with implementat
 | ~~Signal Lime~~ | ~~`#C7F000`~~ | **RETIRED as current primary/signature colour** (superseded, D-33). Historical record preserved at D-30 and in `06_BRAND_ASSETS_GOVERNANCE.md`'s own annotated history — not deleted, no longer current authority. |
 
 ### 1.1 Usage principle
-CEFFLO Yellow is a controlled brand/action signal, never a surface colour. Used for: primary CTA, active navigation state, selected state, small brand accent, important action emphasis. Never: permanent background chrome, a card background, decorative scatter, or a semantic-status substitute.
+CEFFLO Yellow is a controlled brand/action signal, never a surface colour. Used for: primary CTA, selected state, small brand accent, important action emphasis. (Active navigation state is CEFFLO Blue since D-45 — see §8; Yellow is an ACTION colour, not a navigation colour.) Never: permanent background chrome, a card background, decorative scatter, or a semantic-status substitute.
 
 ### 1.2 Accessibility
 Near-black foreground text (`#181818` or `#000000`, both verified — §13) on CEFFLO Yellow controls. Never white text on the accent.
@@ -38,7 +38,7 @@ The Founder-confirmed candidates from the prior review round were contrast-check
 | **Success** | `#2FAE5E` (2.86:1 on white — real failure, below even the lenient UI/large-text threshold) | **`#248648`** | Deepened — 10% lightness reduction, same hue family (still unambiguously the same green). Now 4.59:1. This was the one candidate that genuinely needed a visible shift; bright mint-greens are a well-known contrast failure mode on white and a deeper green is the standard fix, not a novel choice. |
 | **Route / Info** | `#3D7BEE` (3.99:1 on white — under AA) | **`#2A6EEC`** | Moderate — 4% lightness reduction, same hue/saturation. Now 4.63:1. |
 
-**Constraint carried forward unchanged from the Founder's own instruction:** these are semantic operational colours only, never secondary CEFFLO brand colours. Route/Info in particular must never be used for emphasis, selection, or CTA purposes — those belong to CEFFLO Yellow alone.
+**Constraint carried forward unchanged from the Founder's own instruction:** these are semantic operational colours only, never secondary CEFFLO brand colours. Route/Info in particular must never be used for emphasis, selection, or CTA purposes. CTAs belong to CEFFLO Yellow; navigation/selection emphasis belongs to the separate **CEFFLO Blue** brand token (§8, D-45), never to Route/Info.
 
 **One narrow, disclosed residual gap:** on the low-opacity status-chip tint background (§7.2) these three land at 3.97–4.03:1 — short of the strict 4.5:1 normal-text threshold, though above the 3:1 UI-component/large-text threshold that applies to small bold chip labels under WCAG 1.4.11. Judged acceptable for chip use as-is; flagged rather than silently accepted. On dark surfaces specifically, all three land near 3.5:1 (§13) — acceptable for the UI-component threshold, not yet at full text-contrast — this is called out again in §3 as part of the still-open dark-mode fine-tuning, not blocking this light-mode-focused lock.
 
@@ -60,7 +60,7 @@ Closes the gap the implementation reconciliation audit found: no canonical Warni
 ### 3.1 Light Mode surface hierarchy (bottom → top) — LOCKED
 1. Workspace `#F7F8FA` — base canvas.
 2. Surface `#FFFFFF` (cards) — separated via a restrained hairline border + subtle two-layer soft shadow (§5A).
-3. Navy `#12213E` — selective raised surface (status/hero cards, auth screen).
+3. Navy `#12213E` — selective raised surface (filled people avatars, dark accents). The raised brand surface for chrome, heroes and in-body hero panels is the Brand gradient (§8, D-45).
 4. CEFFLO Yellow — top-layer accent only, never a surface.
 
 ### 3.2 Dark Mode — architecture APPROVED, exact values remain a follow-up pass
@@ -123,8 +123,8 @@ Lucide, outline style, 22px visual size in a 44px tap target. No icon containers
 White surface (dark: navy-tinted dark surface, §3.2), current implementation
 radius, lightened border + soft shadow (§5A), accent-colour border when selected.
 
-### 7.2 Status chips — LOCKED pattern
-Small pill, semantic-coloured text (§2 locked values) on a ~12% tint of the same colour, never solid fill. Semantic palette only, never the brand accent.
+### 7.2 Status chips — LOCKED pattern (amended D-45)
+Small pill, never solid fill. Default: neutral grey label on a light grey fill (ordinary list statuses). Semantic: semantic-coloured text (§2 locked values) on a ~12% tint where the state must stand out. Never the Yellow accent. See §8 for the hero variant.
 
 ### 7.3 Buttons — LOCKED pattern
 Pill radius. Primary: solid CEFFLO Yellow fill, near-black text. Secondary: outline/neutral fill, same pill radius. Only one Yellow-filled primary action per screen.
@@ -135,12 +135,57 @@ Rectangular and matching cards; exact radius pending FG-ENG-03.
 ### 7.5 Sheets/dialogs, list rows, loading/empty/error/blocked/retry/offline states
 Still genuinely missing from any audited implementation — not proposed here, real unfilled scope for the next execution stage.
 
-### 7.6 KPI blocks — LOCKED (unchanged)
-Existing `KpiTile` pattern; exact display sizing pending FG-ENG-03.
+### 7.6 KPI blocks — LOCKED (amended D-45)
+One `KpiStrip`: equal columns of value + label (optional CEFFLO Blue icon) separated by hairline dividers, drawn directly on the white surface. The former navy summary panel and `KpiTile` are retired.
 
-## 8. Navigation — LOCKED
+## 8. App chrome and navigation — LOCKED BY D-45 (Vendor Mobile)
 
-Bottom navigation: white background, neutral inactive icon/label, CEFFLO Yellow marks the active tab only. Header: flat white/chrome, no accent underline.
+~~Bottom navigation … CEFFLO Yellow marks the active tab only. Header: flat white/chrome, no accent underline.~~ **RETIRED by D-45 (2026-09-23).** There is no longer a flat-white authenticated header and Yellow is no longer the active-navigation colour. The Founder's gradient-header reference set is the canonical visual source; this section is its written form.
+
+**Brand tokens added by D-45**
+| Token | Value | Use |
+|---|---|---|
+| **CEFFLO Blue** | `#0B5FE3` | Active bottom-nav item + indicator, active tab label + underline, form-section icons, detail-row icons, inline links. Distinct from semantic Route/Info. |
+| CEFFLO Blue tint | `#EAF2FF` | Accent icon discs (zone/location rows), tinted secondary action rows. |
+| **Brand gradient** | linear `#0633A8 → #0848CC → #0A6BE6` (lower-left → upper-right) + radial cyan glow `#18A6FF` at the upper right | The ONE gradient: app chrome behind the header and status bar, detail heroes, in-body hero panels. Implemented once (`BrandBackdrop`). |
+| Grouped page tone | `#F4F6FA` | Page behind grouped settings cards. |
+| Text | primary `#0F1A36` (dark navy), secondary `#6B7489` (cool grey) | All app text on white. |
+
+**Edge-to-edge system UI (mandatory)**
+- Status bar and system navigation/gesture bar are always transparent; the app never paints its own status-bar or gesture-area strip.
+- On gradient-header screens the same gradient continues behind the clock/signal/battery area — no seam.
+- At the bottom, whatever app surface is underneath continues behind the gesture area: the white bottom navigation, or (without nav) the white content surface.
+- Implemented once at the root (shell + `CefSystemBars`), never per screen.
+
+**Header system** (one shell implementation, three variants)
+1. Top-level (Today, Orders, Zones, Riders, Menu): large white title (28/700), white actions (search, filter, add, notifications), no back arrow.
+2. Back-navigation: white back arrow + white title (auto-fits long titles, 28→20, never ellipsized at normal sizes).
+3. Detail hero: white back arrow + centred white title; the identity (large avatar, name, status pill, meta) sits on the gradient.
+
+**Content surface**: white surface enters below the gradient with 24px rounded top corners and runs to the bottom edge. Prefer dividers and spacing over nested cards; cards only where a group genuinely needs a container (grouped settings, info panels).
+
+**Bottom navigation**: Today · Orders · Zones · Riders · Menu. White surface, hairline top border. Active = CEFFLO Blue filled icon + blue label + short blue indicator bar. Inactive = cool-grey outline icon + label. Page content never scrolls beneath it; it hides while the keyboard is open and on focused flows / detail heroes.
+
+**Status pills**: neutral grey pill (grey label on a light grey fill) for ordinary list statuses; semantic tint only where the state must stand out (Issue red, Delivered green on Today, success/warning where relevant). On a detail hero: white pill with a semantic dot.
+
+## 8A. Vendor Mobile screen archetypes — LOCKED BY D-45
+
+Every Vendor Mobile screen is derived from one of these; no screen invents another visual system.
+
+| | Archetype | Canonical reference | Composition |
+|---|---|---|---|
+| A | Today / Overview | Overview | Top-level header + bell; KPI strip (value + label, hairline column dividers) on white; Recent Delivery rows (avatar, green Delivered pill + time, chevron); Need Attention row. |
+| B | Operational tabbed list | Orders | Top-level header with search/add; blue underline tabs; rows with grey icon disc, title, one-line subtitle, neutral pill, no chevron. |
+| C | Zones list | Zones | As B with a blue-tinted location disc. |
+| D | People list | Riders | As B with navy filled initials avatar. |
+| E | Detail hero | Rider Detail | Deep gradient hero with large avatar, name, status pill, meta; white surface with icon stat strip, then blue-icon information rows. No bottom nav. |
+| F | Menu / Settings | Settings | Grouped page tone; muted group labels; white rounded group cards; grey icon discs; inset dividers; chevrons. |
+| G | Multi-section operational form | New Order | Back-nav header; sections with a blue icon + title + subtitle, divided by hairlines; shared fields; tinted blue secondary action rows; one yellow CTA. |
+| H | Product / content form | Add Product | Back-nav header; dashed upload area; sectioned fields; availability switch row; yellow CTA; bottom nav. |
+
+Authentication keeps its full-screen blue Sign In composition (also in the reference set); secondary auth screens use the same backdrop with a white sheet.
+
+**Shared component rule**: one concept = one component (Flutter `lib/ui/widgets.dart` + `lib/ui/shell.dart`): `BrandBackdrop`, `ContentSurface`, `HeroPage`/`DetailHero`/`HeroStatusPill`, `KpiStrip`, `SegmentedTabs`, `CefListRow` (+`IconDisc`, `CefAvatar`), `CefListGroup`, `SectionHeading`, `CefField`, `CefSearchField`, `CefButton`, `CefActionRow`, `StatusChip`, `CefChoiceChip`, `CefSwitch`. Screens never declare their own gradients, headers, colours or type sizes.
 
 ## 9. Brand mark and header text usage — LOCKED
 
