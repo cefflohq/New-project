@@ -10,17 +10,22 @@ const kFontFamily = 'Inter';
 /// Malay/English text is Latin and is covered by Inter itself.
 const kFontFamilyFallback = ['Noto Sans SC', 'Noto Sans Tamil'];
 
-/// Current DEV/STAGING implementation values. D-40 preserves these safely for
-/// the baseline; exact visual values remain pending FG-ENG-03.
+/// Spacing scale: 4 / 8 / 12 / 16 / 20 / 24 / 32. Every gap in the app is one
+/// of these steps; the named roles below are aliases onto the scale, never
+/// independent values.
 class Gap {
-  static const gutter = 20.0;
-  static const cardPadding = 16.0;
-  static const cardGap = 12.0;
-  static const section = 22.0;
   static const xs = 4.0;
   static const sm = 8.0;
   static const md = 12.0;
   static const lg = 16.0;
+  static const xl = 20.0;
+  static const xxl = 24.0;
+  static const xxxl = 32.0;
+
+  static const gutter = xl;
+  static const cardPadding = lg;
+  static const cardGap = md;
+  static const section = xl;
 }
 
 /// CEFFLO Experience System v1.3 (docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md,
@@ -30,9 +35,24 @@ class Sizes {
   static const chrome = 60.0; // header + bottom nav, excluding safe areas
   static const icon = 22.0; // visual icon size
   static const tapTarget = 44.0; // minimum interactive target
+  static const controlHeight = 48.0; // text inputs and search
+  static const buttonHeight = 52.0; // primary / secondary / destructive
+  static const chipHeight = 36.0; // selectable choice/filter chips
+  static const avatar = 40.0; // list-row initials avatar
   static const cardRadius = 18.0;
   static const buttonRadius = 999.0; // pill
   static const inputRadius = 18.0;
+}
+
+/// The one CEFFLO feature/hero gradient (navy -> CEFFLO blue -> navy). Every
+/// hero, summary and invitation surface paints this; screens never declare
+/// their own gradient stops.
+class CefGradients {
+  static const hero = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF102344), Color(0xFF1453B7), Color(0xFF12213E)],
+  );
 }
 
 class CefColors extends ThemeExtension<CefColors> {
@@ -41,6 +61,7 @@ class CefColors extends ThemeExtension<CefColors> {
     required this.card,
     required this.border,
     required this.chrome,
+    required this.subtle,
     required this.textPrimary,
     required this.textLabel,
     required this.textSecondary,
@@ -51,7 +72,8 @@ class CefColors extends ThemeExtension<CefColors> {
     required this.iconColor,
   });
 
-  final Color canvas, card, border, chrome;
+  /// Quiet tinted fill for avatars, icon discs and placeholders.
+  final Color canvas, card, border, chrome, subtle;
   final Color textPrimary, textLabel, textSecondary;
   final Color attention, success, warning, info, iconColor;
 
@@ -71,6 +93,7 @@ class CefColors extends ThemeExtension<CefColors> {
     card: Color(0xFFFFFFFF), // Surface
     border: Color(0xFFE3E6EE),
     chrome: Color(0xFFFFFFFF),
+    subtle: Color(0xFFEEF2F7),
     textPrimary: Color(0xFF181818),
     textLabel: Color(0xFF242424),
     textSecondary: Color(0xFF666C80),
@@ -92,6 +115,7 @@ class CefColors extends ThemeExtension<CefColors> {
     card: Color(0xFF1A2030),
     border: Color(0xFF2C2F3A),
     chrome: Color(0xFF1A2030),
+    subtle: Color(0xFF242B3D),
     textPrimary: Color(0xFFF4F6F8),
     textLabel: Color(0xFFE2E5E9),
     textSecondary: Color(0xFFAFB6BD),
@@ -157,15 +181,41 @@ ThemeData buildVendorTheme(Brightness brightness) {
       surface: c.card,
     ),
     extensions: [c],
+    // The one text-input treatment. CefField / CefSearchField rely on it, and
+    // any bare TextField inherits the same geometry instead of Material's.
+    inputDecorationTheme: InputDecorationTheme(
+      isDense: true,
+      filled: true,
+      fillColor: c.card,
+      hintStyle: t(15, FontWeight.w500, c.textSecondary),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      prefixIconColor: c.textSecondary,
+      suffixIconColor: c.textSecondary,
+      prefixIconConstraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+      suffixIconConstraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+      border: _inputBorder(c.border),
+      enabledBorder: _inputBorder(c.border),
+      disabledBorder: _inputBorder(c.border),
+      focusedBorder: _inputBorder(CefColors.accent, width: 1.6),
+      errorBorder: _inputBorder(c.attention),
+      focusedErrorBorder: _inputBorder(c.attention, width: 1.6),
+    ),
+    // One typographic hierarchy for every screen. Screens use these roles;
+    // they do not declare their own sizes.
     textTheme: TextTheme(
-      // Page/section titles.
+      // Page title (shell header).
       titleLarge: t(22, FontWeight.w700, c.textPrimary, spacing: -0.5),
-      // Card primary 15-16/650.
+      // Primary content heading inside a page body.
+      headlineSmall: t(20, FontWeight.w700, c.textPrimary, spacing: -0.4),
+      // Section heading / card title.
       titleMedium: t(17, FontWeight.w700, c.textPrimary, spacing: -0.2),
-      titleSmall: t(16, FontWeight.w600, c.textPrimary, spacing: -0.1),
-      // Supporting 14/500.
+      // List/settings row title.
+      titleSmall: t(15, FontWeight.w600, c.textPrimary, spacing: -0.1),
+      // Body / supporting text.
       bodyMedium: t(14, FontWeight.w500, c.textSecondary),
+      // Metadata / caption.
       bodySmall: t(13, FontWeight.w500, c.textSecondary),
+      // Field labels.
       labelLarge: t(14, FontWeight.w600, c.textLabel),
       // KPI 29. ExtraBold per the locked weight table (major KPI values
       // only) -- matches SummaryMetric's already-w800 dashboard KPI style.
@@ -173,3 +223,9 @@ ThemeData buildVendorTheme(Brightness brightness) {
     ),
   );
 }
+
+OutlineInputBorder _inputBorder(Color color, {double width = 1}) =>
+    OutlineInputBorder(
+      borderRadius: BorderRadius.circular(Sizes.inputRadius),
+      borderSide: BorderSide(color: color, width: width),
+    );

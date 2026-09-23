@@ -532,10 +532,9 @@ class SetupCompleteScreen extends StatelessWidget {
         ),
         const SizedBox(height: Gap.md),
         for (final item in checks)
-          FlatListRow(
+          CefListRow(
             title: item.$1,
             subtitle: item.$2,
-            dense: true,
             leading: _plainIcon(context, item.$3),
             trailing: Icon(
               LucideIcons.circleCheck,
@@ -625,16 +624,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
               StateBlock.empty('No ${tab.label.toLowerCase()} orders.')
             else
               for (final o in visible)
-                FlatListRow(
+                CefListRow(
                   title: o.reference,
                   subtitle: '${o.customerName} · ${o.deliveryAddress}',
-                  dense: true,
                   leading: _plainIcon(context, LucideIcons.package),
                   trailing: StatusChip(
                     o.status.label,
                     attention: o.status == DeliveryStatus.issue,
                     success: OrderTab.ongoing.accepts(o.status),
-                    tinted: true,
                   ),
                   onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
                 ),

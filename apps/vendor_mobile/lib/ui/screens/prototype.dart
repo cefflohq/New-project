@@ -195,19 +195,19 @@ class _BusinessProfileScreen extends StatelessWidget {
           ),
         ),
         const SectionHeading('Business'),
-        FlatListRow(
+        CefListRow(
           title: 'Business Information',
           subtitle: 'Name, contact, description',
           leading: _icon(context, LucideIcons.fileText),
           onTap: () => app.go(VRoute.businessInformation),
         ),
-        FlatListRow(
+        CefListRow(
           title: 'Business Address',
           subtitle: 'Store address and service area',
           leading: _icon(context, LucideIcons.mapPin),
           onTap: () => app.go(VRoute.businessAddress),
         ),
-        FlatListRow(
+        CefListRow(
           title: 'Business Hours',
           subtitle: 'Set your operating hours',
           leading: _icon(context, LucideIcons.clock),
@@ -276,7 +276,7 @@ class _BusinessAddressScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PageBody(
     children: [
-      const SearchBarField(hint: 'Search or enter your address'),
+      const CefSearchField(hint: 'Search or enter your address'),
       const SizedBox(height: Gap.md),
       Container(
         height: 210,
@@ -398,37 +398,37 @@ class _ProfileScreen extends StatelessWidget {
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ),
-        FlatListRow(
+        CefListRow(
           title: app.business?.name ?? 'Kopi Kita',
           subtitle: 'Owner',
           leading: _icon(context, LucideIcons.store),
           onTap: () => app.go(VRoute.businessProfile),
         ),
-        FlatListRow(
+        CefListRow(
           title: 'Personal Information',
           subtitle: 'Name, phone, email',
           leading: _icon(context, LucideIcons.user),
           onTap: () => app.go(VRoute.editProfile),
         ),
-        FlatListRow(
+        CefListRow(
           title: 'Security',
           subtitle: 'Password, biometric & 2FA',
           leading: _icon(context, LucideIcons.lock),
           onTap: () => app.go(VRoute.security),
         ),
-        FlatListRow(
+        CefListRow(
           title: 'Language',
           subtitle: 'English',
           leading: _icon(context, LucideIcons.languages),
           onTap: () => app.go(VRoute.language),
         ),
-        FlatListRow(
+        CefListRow(
           title: 'Notifications',
           subtitle: 'Manage preferences',
           leading: _icon(context, LucideIcons.bell),
           onTap: () => app.go(VRoute.notificationSettings),
         ),
-        FlatListRow(
+        CefListRow(
           title: 'Help & Support',
           subtitle: 'Get help or contact support',
           leading: _icon(context, LucideIcons.circleHelp),
@@ -517,25 +517,25 @@ class _SecurityScreen extends StatelessWidget {
               'Manage your security settings and\nprotect your business data.',
         ),
         const SizedBox(height: 14),
-        FlatListRow(
+        CefListRow(
           title: 'Password',
           subtitle: 'Update your password regularly',
           leading: _icon(context, LucideIcons.lock),
           onTap: () => app.go(VRoute.changePassword),
         ),
-        FlatListRow(
+        CefListRow(
           title: 'Biometric Login',
           subtitle: 'Use Face ID or Touch ID',
           leading: _icon(context, LucideIcons.fingerprint),
           trailing: CefSwitch(value: true, onChanged: (_) {}),
         ),
-        FlatListRow(
+        CefListRow(
           title: 'Two-Factor Authentication',
           subtitle: 'Coming soon',
           leading: _icon(context, LucideIcons.smartphone),
           trailing: const StatusChip('Off'),
         ),
-        FlatListRow(
+        CefListRow(
           title: 'Active Sessions',
           subtitle: 'Manage your logged in devices',
           leading: _icon(context, LucideIcons.laptop),
@@ -625,7 +625,7 @@ class _NotificationPreferencesScreen extends StatelessWidget {
         ),
         const _PreferenceLabel('ORDERS'),
         for (final row in rows.take(2))
-          FlatListRow(
+          CefListRow(
             title: row.$1,
             subtitle: row.$2,
             leading: _icon(context, LucideIcons.bell),
@@ -636,7 +636,7 @@ class _NotificationPreferencesScreen extends StatelessWidget {
           ),
         const _PreferenceLabel('DELIVERY & RUNS'),
         for (final row in rows.skip(2).take(2))
-          FlatListRow(
+          CefListRow(
             title: row.$1,
             subtitle: row.$2,
             leading: _icon(
@@ -649,7 +649,7 @@ class _NotificationPreferencesScreen extends StatelessWidget {
           ),
         const _PreferenceLabel('RIDERS & TEAM'),
         for (final row in rows.skip(4).take(2))
-          FlatListRow(
+          CefListRow(
             title: row.$1,
             subtitle: row.$2,
             leading: _icon(
@@ -664,7 +664,7 @@ class _NotificationPreferencesScreen extends StatelessWidget {
             ),
           ),
         const _PreferenceLabel('ACCOUNT & SYSTEM'),
-        FlatListRow(
+        CefListRow(
           title: rows.last.$1,
           subtitle: rows.last.$2,
           leading: _icon(context, LucideIcons.settings),
@@ -704,7 +704,7 @@ class _LanguageScreen extends StatelessWidget {
               ),
               const SizedBox(height: Gap.sm),
               for (final lang in langs)
-                FlatListRow(
+                CefListRow(
                   title: lang.$1,
                   subtitle: lang.$2,
                   trailing: lang.$1 == 'English'
@@ -742,17 +742,17 @@ class _AppearanceScreen extends StatelessWidget {
         title: 'More ways\nto make it yours.',
       ),
       const SizedBox(height: 16),
-      FlatListRow(
+      CefListRow(
         title: 'Theme Options',
         subtitle: 'Light, dark and system theme.',
         leading: _icon(context, LucideIcons.sun),
       ),
-      FlatListRow(
+      CefListRow(
         title: 'App Appearance',
         subtitle: 'Customize colours and style.',
         leading: _icon(context, LucideIcons.palette),
       ),
-      FlatListRow(
+      CefListRow(
         title: 'Display Preferences',
         subtitle: 'Adjust display settings to your liking.',
         leading: _icon(context, LucideIcons.slidersHorizontal),
@@ -1097,7 +1097,7 @@ class _HelpSupportScreen extends StatelessWidget {
           title: 'How can we help?',
         ),
         const SizedBox(height: Gap.md),
-        SearchBarField(
+        CefSearchField(
           hint: 'Search for help, articles or topics...',
           onFilter: () {},
         ),
@@ -1147,7 +1147,7 @@ class _HelpSupportScreen extends StatelessWidget {
           ),
           ('App Guides', 'Step-by-step tutorials', LucideIcons.bookOpen),
         ])
-          FlatListRow(
+          CefListRow(
             title: row.$1,
             subtitle: row.$2,
             leading: _icon(context, row.$3),
@@ -1169,7 +1169,7 @@ class _FaqScreen extends StatelessWidget {
         subtitle: 'Search our help centre or browse topics below.',
       ),
       const SizedBox(height: Gap.md),
-      SearchBarField(
+      CefSearchField(
         hint: 'Search for help, e.g. zones, riders...',
         onFilter: () {},
       ),
@@ -1181,7 +1181,7 @@ class _FaqScreen extends StatelessWidget {
         ('Account', 'Profile, security and settings'),
         ('Subscription & Billing', 'Plans, payments and invoices'),
       ])
-        FlatListRow(
+        CefListRow(
           title: row.$1,
           subtitle: row.$2,
           leading: _icon(
@@ -1210,7 +1210,7 @@ class _FaqScreen extends StatelessWidget {
         'How does route optimization work?',
         'Where can my customers track their orders?',
       ])
-        FlatListRow(title: question),
+        CefListRow(title: question),
     ],
   );
 }
@@ -1531,17 +1531,17 @@ class _NotificationInboxScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PageBody(
     children: [
-      FlatListRow(
+      CefListRow(
         title: '3 orders need your action',
         subtitle: 'Review issues before dispatch.',
         leading: _icon(context, LucideIcons.bell),
       ),
-      FlatListRow(
+      CefListRow(
         title: 'Rider update',
         subtitle: 'Ahmad Razi is online.',
         leading: _icon(context, LucideIcons.users),
       ),
-      FlatListRow(
+      CefListRow(
         title: 'System update',
         subtitle: 'Everything is operating normally.',
         leading: _icon(context, LucideIcons.info),
@@ -1744,7 +1744,7 @@ class _InviteLinkScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: Gap.cardGap),
-        FlatListRow(
+        CefListRow(
           title: 'Show QR Code',
           subtitle: '$kind${kind.endsWith('s') ? '' : 's'} can scan this code',
           leading: Icon(

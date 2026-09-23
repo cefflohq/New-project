@@ -135,39 +135,6 @@ class SectionHeading extends StatelessWidget {
   );
 }
 
-class KpiTile extends StatelessWidget {
-  const KpiTile({
-    super.key,
-    required this.label,
-    required this.value,
-    this.selected = false,
-    this.onTap,
-  });
-  final String label, value;
-  final bool selected;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) => CefCard(
-    selected: selected,
-    onTap: onTap,
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(value, style: Theme.of(context).textTheme.displaySmall),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-      ],
-    ),
-  );
-}
-
 /// A compact icon + value + label stat, bordered, meant to sit three-across
 /// in a Row (e.g. distance/stops/orders, or zones/active orders/coverage).
 class MetricTile extends StatelessWidget {
@@ -233,6 +200,30 @@ class MetricTileRow extends StatelessWidget {
   );
 }
 
+/// The one feature/hero surface: [CefGradients.hero] on the card radius.
+/// Summary panels, hero cards, profile heroes and invitation cards all paint
+/// through this, so the product has exactly one gradient treatment.
+class HeroSurface extends StatelessWidget {
+  const HeroSurface({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(Gap.cardPadding),
+  });
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: padding,
+    decoration: BoxDecoration(
+      gradient: CefGradients.hero,
+      borderRadius: BorderRadius.circular(Sizes.cardRadius),
+    ),
+    child: child,
+  );
+}
+
 class NavySummaryPanel extends StatelessWidget {
   const NavySummaryPanel({
     super.key,
@@ -246,17 +237,7 @@ class NavySummaryPanel extends StatelessWidget {
   final List<Widget> children;
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: double.infinity,
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF102344), Color(0xFF1B3668), Color(0xFF27427E)],
-      ),
-      borderRadius: BorderRadius.circular(Sizes.cardRadius),
-    ),
+  Widget build(BuildContext context) => HeroSurface(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -279,7 +260,7 @@ class NavySummaryPanel extends StatelessWidget {
             ),
           ),
         ],
-        const SizedBox(height: 14),
+        const SizedBox(height: Gap.md),
         Row(children: children),
       ],
     ),
@@ -331,46 +312,64 @@ class SummaryMetric extends StatelessWidget {
   );
 }
 
+/// The one button. Primary is the yellow pill (one per screen); secondary is
+/// the neutral outlined pill; destructive is the red outlined pill used for
+/// sign out / remove / reject. All share one height, radius and label style.
 class CefButton extends StatelessWidget {
   const CefButton(
     this.label, {
     super.key,
     required this.onTap,
     this.secondary = false,
+    this.destructive = false,
     this.busy = false,
     this.icon,
   });
   final String label;
   final VoidCallback? onTap;
-  final bool secondary, busy;
+  final bool secondary, destructive, busy;
   final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
     final c = context.c;
+    final outlined = secondary || destructive;
+    final foreground = destructive
+        ? c.attention
+        : outlined
+        ? c.textPrimary
+        : CefColors.onAccent;
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: Sizes.buttonHeight,
       child: FilledButton(
         onPressed: busy ? null : onTap,
         style: FilledButton.styleFrom(
-          backgroundColor: secondary ? c.card : CefColors.accent,
-          foregroundColor: secondary ? c.textPrimary : CefColors.onAccent,
-          disabledBackgroundColor: secondary
+          backgroundColor: outlined ? c.card : CefColors.accent,
+          foregroundColor: foreground,
+          disabledBackgroundColor: outlined
               ? c.card
               : CefColors.accent.withValues(alpha: .5),
-          side: secondary ? BorderSide(color: c.border) : null,
+          disabledForegroundColor: foreground.withValues(alpha: .5),
+          side: outlined
+              ? BorderSide(
+                  color: destructive
+                      ? c.attention.withValues(alpha: .45)
+                      : c.border,
+                )
+              : null,
+          padding: const EdgeInsets.symmetric(horizontal: Gap.lg),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(Sizes.buttonRadius),
           ),
         ),
         child: busy
-            ? const SizedBox(
+            ? SizedBox(
                 width: 18,
                 height: 18,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: CefColors.onAccent,
+                  color: foreground,
                 ),
               )
             : Row(
@@ -378,14 +377,18 @@ class CefButton extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (icon != null) ...[
-                    Icon(icon, size: 17),
-                    const SizedBox(width: 8),
+                    Icon(icon, size: 18),
+                    const SizedBox(width: Gap.sm),
                   ],
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -395,25 +398,34 @@ class CefButton extends StatelessWidget {
   }
 }
 
+/// The one labelled text input. Geometry, border and focus colour come from
+/// the theme's inputDecorationTheme. Pass a [controller] for live forms, or
+/// an [initialValue] for a prefilled field that owns its own state.
 class CefField extends StatelessWidget {
   const CefField({
     super.key,
     required this.label,
-    required this.controller,
+    this.controller,
+    this.initialValue,
     this.hint,
     this.keyboardType,
     this.maxLines = 1,
     this.errorText,
+    this.helperText,
     this.onChanged,
     this.prefixIcon,
-  });
+    this.suffixIcon,
+    this.enabled = true,
+    this.obscureText = false,
+  }) : assert(controller == null || initialValue == null);
   final String label;
-  final TextEditingController controller;
-  final String? hint, errorText;
+  final TextEditingController? controller;
+  final String? initialValue, hint, errorText, helperText;
   final TextInputType? keyboardType;
   final int maxLines;
   final ValueChanged<String>? onChanged;
-  final IconData? prefixIcon;
+  final IconData? prefixIcon, suffixIcon;
+  final bool enabled, obscureText;
 
   @override
   Widget build(BuildContext context) {
@@ -424,49 +436,44 @@ class CefField extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: Gap.xs),
-          TextField(
+          const SizedBox(height: Gap.sm),
+          TextFormField(
             controller: controller,
+            initialValue: initialValue,
             keyboardType: keyboardType,
             maxLines: maxLines,
             onChanged: onChanged,
-            style: TextStyle(fontSize: 15, color: c.textPrimary),
+            enabled: enabled,
+            obscureText: obscureText,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: enabled ? c.textPrimary : c.textSecondary,
+            ),
             decoration: InputDecoration(
               hintText: hint,
               errorText: errorText,
-              isDense: true,
-              filled: true,
-              fillColor: c.card,
-              prefixIcon: prefixIcon == null
-                  ? null
-                  : Icon(prefixIcon, size: 19, color: c.textSecondary),
-              contentPadding: const EdgeInsets.all(Gap.md),
-              border: _border(c.border),
-              enabledBorder: _border(c.border),
-              focusedBorder: _border(CefColors.accent, width: 1.6),
-              errorBorder: _border(c.attention),
-              focusedErrorBorder: _border(c.attention, width: 1.6),
+              helperText: helperText,
+              fillColor: enabled ? c.card : c.subtle,
+              prefixIcon: prefixIcon == null ? null : Icon(prefixIcon, size: 20),
+              suffixIcon: suffixIcon == null ? null : Icon(suffixIcon, size: 20),
             ),
           ),
         ],
       ),
     );
   }
-
-  OutlineInputBorder _border(Color color, {double width = 1}) =>
-      OutlineInputBorder(
-        borderRadius: BorderRadius.circular(Sizes.inputRadius),
-        borderSide: BorderSide(color: color, width: width),
-      );
 }
 
+/// The one status treatment (SOT 7.2): a small pill, semantic-coloured
+/// label on a light tint of the same colour. Neutral by default.
 class StatusChip extends StatelessWidget {
   const StatusChip(
     this.label, {
     super.key,
     this.attention = false,
     this.success = false,
-    this.tinted = false,
+    this.warning = false,
   });
   final String label;
   final bool attention;
@@ -474,7 +481,7 @@ class StatusChip extends StatelessWidget {
   /// Ongoing/active states render in the semantic success green per the
   /// locked V12 Orders spec (Ongoing green, Issue red, Delivered neutral).
   final bool success;
-  final bool tinted;
+  final bool warning;
 
   @override
   Widget build(BuildContext context) {
@@ -483,19 +490,105 @@ class StatusChip extends StatelessWidget {
         ? c.attention
         : success
         ? c.success
+        : warning
+        ? c.warning
         : c.textSecondary;
-    final labelWidget = Text(
-      label,
-      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
-    );
-    if (!tinted) return labelWidget;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: Gap.xs),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: .09),
+        color: color.withValues(alpha: .1),
         borderRadius: BorderRadius.circular(999),
       ),
-      child: labelWidget,
+      child: Text(
+        label,
+        maxLines: 1,
+        style: TextStyle(
+          fontSize: 12,
+          height: 1.3,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+/// The one initials avatar used for people, customers and zones.
+class CefAvatar extends StatelessWidget {
+  const CefAvatar(this.name, {super.key, this.size = Sizes.avatar});
+  final String name;
+  final double size;
+
+  static String initialsOf(String name) => name
+      .split(' ')
+      .where((p) => p.isNotEmpty)
+      .take(2)
+      .map((p) => p[0])
+      .join()
+      .toUpperCase();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: size,
+    height: size,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(color: context.c.subtle, shape: BoxShape.circle),
+    child: Text(
+      initialsOf(name),
+      style: TextStyle(
+        color: CefColors.navy,
+        fontSize: size * .34,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+  );
+}
+
+/// The one selectable chip (business type, template category, filters).
+/// Selected = CEFFLO Yellow fill with near-black label; unselected = white
+/// with the standard hairline border. Lay out with Wrap(spacing: 8,
+/// runSpacing: 8) or a horizontal list with 8px gaps.
+class CefChoiceChip extends StatelessWidget {
+  const CefChoiceChip({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: Material(
+        color: selected ? CefColors.accent : c.card,
+        shape: StadiumBorder(
+          side: BorderSide(color: selected ? CefColors.accent : c.border),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            height: Sizes.chipHeight,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            alignment: Alignment.center,
+            child: Text(
+              label,
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
+                color: selected ? CefColors.onAccent : c.textPrimary,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -560,50 +653,51 @@ class SegmentedTabs extends StatelessWidget {
   }
 }
 
-class SearchBarField extends StatelessWidget {
-  const SearchBarField({super.key, required this.hint, this.onFilter});
+/// The one search input: a real text field with the standard input
+/// geometry and an optional filter action beside it.
+class CefSearchField extends StatelessWidget {
+  const CefSearchField({
+    super.key,
+    required this.hint,
+    this.controller,
+    this.onChanged,
+    this.onFilter,
+    this.autofocus = false,
+  });
 
   final String hint;
+  final TextEditingController? controller;
+  final ValueChanged<String>? onChanged;
   final VoidCallback? onFilter;
+  final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
-    final c = context.c;
+    final field = TextField(
+      controller: controller,
+      onChanged: onChanged,
+      autofocus: autofocus,
+      textInputAction: TextInputAction.search,
+      style: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+        color: context.c.textPrimary,
+      ),
+      decoration: InputDecoration(
+        hintText: hint,
+        prefixIcon: const Icon(LucideIcons.search, size: 20),
+      ),
+    );
+    if (onFilter == null) return field;
     return Row(
       children: [
-        Expanded(
-          child: Container(
-            height: 54,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: c.card,
-              borderRadius: BorderRadius.circular(Sizes.inputRadius),
-              border: Border.all(color: c.border),
-            ),
-            child: Row(
-              children: [
-                Icon(LucideIcons.search, size: 22, color: c.textSecondary),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    hint,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ),
-              ],
-            ),
-          ),
+        Expanded(child: field),
+        const SizedBox(width: Gap.xs),
+        IconAction(
+          icon: LucideIcons.slidersHorizontal,
+          tooltip: 'Filter',
+          onTap: onFilter!,
         ),
-        if (onFilter != null) ...[
-          const SizedBox(width: 6),
-          IconAction(
-            icon: LucideIcons.slidersHorizontal,
-            tooltip: 'Filter',
-            onTap: onFilter!,
-          ),
-        ],
       ],
     );
   }
@@ -616,16 +710,16 @@ Future<void> showSearchSheet(BuildContext context, {required String hint}) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.white,
+    backgroundColor: context.c.card,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(Sizes.cardRadius)),
     ),
     builder: (context) => Padding(
       padding: EdgeInsets.only(
         left: Gap.gutter,
         right: Gap.gutter,
-        top: Gap.lg,
-        bottom: MediaQuery.of(context).viewInsets.bottom + Gap.lg,
+        top: Gap.xl,
+        bottom: MediaQuery.viewInsetsOf(context).bottom + Gap.xl,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -633,19 +727,7 @@ Future<void> showSearchSheet(BuildContext context, {required String hint}) {
         children: [
           Text('Search', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: Gap.md),
-          TextField(
-            autofocus: true,
-            decoration: InputDecoration(
-              hintText: hint,
-              prefixIcon: const Icon(LucideIcons.search, size: 22),
-              filled: true,
-              fillColor: context.c.canvas,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(Sizes.inputRadius),
-                borderSide: BorderSide(color: context.c.border),
-              ),
-            ),
-          ),
+          CefSearchField(hint: hint, autofocus: true),
         ],
       ),
     ),
@@ -653,141 +735,85 @@ Future<void> showSearchSheet(BuildContext context, {required String hint}) {
 }
 
 /// Preference on/off toggle. Locked: the ON state is semantic green, never
-/// the yellow the app's Material seed color would otherwise apply.
+/// the yellow the app's Material seed color would otherwise apply. A null
+/// [onChanged] renders the disabled (unavailable) state.
 class CefSwitch extends StatelessWidget {
   const CefSwitch({super.key, required this.value, required this.onChanged});
   final bool value;
   final ValueChanged<bool>? onChanged;
 
   @override
-  Widget build(BuildContext context) => Switch(
-    value: value,
-    onChanged: onChanged,
-    activeThumbColor: Colors.white,
-    activeTrackColor: context.c.success,
-  );
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Switch(
+      value: value,
+      onChanged: onChanged,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      thumbColor: const WidgetStatePropertyAll(Colors.white),
+      trackColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected)
+            ? c.success
+            : c.border,
+      ),
+      trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+      thumbIcon: const WidgetStatePropertyAll(null),
+    );
+  }
 }
 
+/// The one list / settings row: optional leading (an [icon] or any widget
+/// such as a [CefAvatar]), title, one-line subtitle, optional trailing
+/// widget, and a chevron whenever the row navigates. Rows are separated by
+/// a hairline divider.
 class CefListRow extends StatelessWidget {
   const CefListRow({
     super.key,
     required this.title,
     this.subtitle,
     this.icon,
-    this.trailing,
-    this.onTap,
-  });
-  final String title;
-  final String? subtitle;
-  final IconData? icon;
-  final Widget? trailing;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 68),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: c.border)),
-          ),
-          child: Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 4),
-                child: icon == null
-                    ? const SizedBox(width: Sizes.icon)
-                    : Icon(icon, size: Sizes.icon, color: c.iconColor),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              if (trailing != null)
-                trailing!
-              else if (onTap != null)
-                Icon(
-                  LucideIcons.chevronRight,
-                  size: 18,
-                  color: c.textSecondary,
-                ),
-              const SizedBox(width: 4),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class FlatListRow extends StatelessWidget {
-  const FlatListRow({
-    super.key,
-    required this.title,
-    this.subtitle,
     this.leading,
     this.trailing,
     this.onTap,
-    this.dense = false,
-  });
+    this.showChevron = true,
+  }) : assert(icon == null || leading == null);
 
   final String title;
   final String? subtitle;
+  final IconData? icon;
   final Widget? leading;
   final Widget? trailing;
   final VoidCallback? onTap;
-  final bool dense;
+
+  /// Set false for rows whose tap selects in place (e.g. a radio choice)
+  /// rather than navigating.
+  final bool showChevron;
 
   @override
   Widget build(BuildContext context) {
     final c = context.c;
+    final lead =
+        leading ??
+        (icon == null ? null : Icon(icon, size: Sizes.icon, color: c.iconColor));
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         child: Container(
-          constraints: BoxConstraints(minHeight: dense ? 60 : 68),
-          padding: EdgeInsets.symmetric(
-            horizontal: 4,
-            vertical: dense ? 7 : 10,
+          constraints: const BoxConstraints(minHeight: 60),
+          padding: const EdgeInsets.symmetric(
+            horizontal: Gap.xs,
+            vertical: Gap.sm,
           ),
           decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: c.border)),
           ),
           child: Row(
             children: [
-              if (leading != null) ...[
-                leading!,
-                SizedBox(width: dense ? 12 : 14),
-              ],
+              if (lead != null) ...[lead, const SizedBox(width: Gap.md)],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       title,
@@ -795,11 +821,11 @@ class FlatListRow extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
-                    if (subtitle != null) ...[
-                      SizedBox(height: dense ? 2 : 3),
+                    if (subtitle != null && subtitle!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
                       Text(
                         subtitle!,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
@@ -807,9 +833,12 @@ class FlatListRow extends StatelessWidget {
                   ],
                 ),
               ),
-              ?trailing,
-              if (onTap != null) ...[
-                const SizedBox(width: 8),
+              if (trailing != null) ...[
+                const SizedBox(width: Gap.sm),
+                trailing!,
+              ],
+              if (onTap != null && showChevron) ...[
+                const SizedBox(width: Gap.sm),
                 Icon(
                   LucideIcons.chevronRight,
                   size: 18,
@@ -1047,10 +1076,10 @@ class _ProcessingBody extends StatelessWidget {
   final String subtitle;
 
   static const _dotColors = [
-    Color(0xFF12213E),
-    Color(0xFFFEC819),
-    Color(0xFF12213E),
-    Color(0xFFFEC819),
+    CefColors.navy,
+    CefColors.accent,
+    CefColors.navy,
+    CefColors.accent,
   ];
 
   @override
@@ -1164,13 +1193,13 @@ class _ErrorBody extends StatelessWidget {
       Container(
         width: 64,
         height: 64,
-        decoration: const BoxDecoration(
-          color: Color(0xFFE7F0FE),
+        decoration: BoxDecoration(
+          color: context.c.attention.withValues(alpha: .1),
           shape: BoxShape.circle,
         ),
-        child: const Icon(
+        child: Icon(
           LucideIcons.triangleAlert,
-          color: Color(0xFF1769D2),
+          color: context.c.attention,
           size: 28,
         ),
       ),
@@ -1190,17 +1219,17 @@ class _ErrorBody extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: const Color(0xFFF4F5F8),
+          color: context.c.subtle,
           borderRadius: BorderRadius.circular(Sizes.inputRadius),
         ),
         child: Row(
-          children: const [
-            Icon(LucideIcons.wifiOff, size: 18, color: Color(0xFF666C80)),
-            SizedBox(width: 10),
+          children: [
+            Icon(LucideIcons.wifiOff, size: 18, color: context.c.textSecondary),
+            const SizedBox(width: Gap.sm),
             Expanded(
               child: Text(
                 'Please check your internet connection and try again.',
-                style: TextStyle(fontSize: 12.5, color: Color(0xFF666C80)),
+                style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
           ],

@@ -661,7 +661,7 @@ class RunDetailScreen extends StatelessWidget {
         ),
       ),
       const SectionHeading('Next stop'),
-      FlatListRow(
+      CefListRow(
         title: 'Nadia Rahman',
         subtitle: 'Bangsar · 1.2 km · 8 min',
         leading: Icon(
@@ -677,7 +677,7 @@ class RunDetailScreen extends StatelessWidget {
         ('Amy Lee', 'Damansara · 3.4 km'),
         ('Restoran Ali', 'Petaling Jaya · 4.0 km'),
       ])
-        FlatListRow(title: i.$1, subtitle: i.$2),
+        CefListRow(title: i.$1, subtitle: i.$2),
       const SizedBox(height: Gap.md),
       const StateBlock.blocked(
         'Route sequencing and live ETA are backend-owned. This screen is presentation-only until Phase 3 wiring.',
@@ -951,7 +951,7 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
               onTap: () => _save(reload),
             ),
             const SizedBox(height: Gap.section),
-            FlatListRow(
+            CefListRow(
               title: 'Manage zones',
               subtitle: 'See and configure the zones you deliver to',
               leading: Icon(

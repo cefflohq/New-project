@@ -18,25 +18,31 @@ const _onboardingRoutes = {
   VRoute.setupComplete,
 };
 
-const _reviewTitles = <VRoute, String>{
-  VRoute.reviewDispatch: 'Review Delivery Plan',
-  VRoute.runDetail: 'Active Run',
-  VRoute.riderDetail: 'Rider Detail',
-  VRoute.riderRegistrationLink: 'Invite Rider',
-  VRoute.team: 'Team',
-  VRoute.teamMemberDetail: 'Team Member',
-  // Storefront preview renders an immersive customer-facing view -- the
-  // vendor bottom nav would break that illusion.
-  VRoute.storefrontPreview: 'Storefront Preview',
-  VRoute.storefrontTemplatePreview: 'Template Preview',
+/// Header copy that differs from the route inventory name. Every other route
+/// shows its `RouteSpec.title`. Sentence case like every other page title.
+const _headerTitles = <VRoute, String>{
+  VRoute.reviewDispatch: 'Review delivery plan',
+  VRoute.runDetail: 'Active run',
+  VRoute.riderRegistrationLink: 'Invite rider',
 };
 
-/// Small subtitle shown under a review-title header, for routes where the
-/// spec calls for one (Screen 02 -- Template Preview).
-const _reviewSubtitles = <VRoute, String>{
+/// Small subtitle shown under the page title, for routes where the spec
+/// calls for one (Screen 02 -- Template Preview).
+const _headerSubtitles = <VRoute, String>{
   VRoute.storefrontPreview: 'See how your products look with this template',
   VRoute.storefrontTemplatePreview:
       'See how your products look with this template',
+};
+
+/// Focused flows that hide the primary bottom navigation: dispatch review
+/// and an active run carry their own bottom actions, and the storefront
+/// previews render an immersive customer-facing view the vendor nav would
+/// break. Every other signed-in route keeps the canonical bottom nav.
+const _focusedRoutes = {
+  VRoute.reviewDispatch,
+  VRoute.runDetail,
+  VRoute.storefrontPreview,
+  VRoute.storefrontTemplatePreview,
 };
 
 /// Routes that render their own full header (back arrow, dynamic title,
@@ -46,8 +52,10 @@ const _reviewSubtitles = <VRoute, String>{
 /// nav is rendered for these.
 const _ownChromeRoutes = {VRoute.branding};
 
-/// Flat chrome: 60px header and 60px sticky bottom navigation, no
-/// floating glass bar, no FAB, no accent underline beneath the title.
+/// Flat chrome: one 60px white header and one 60px bottom navigation for
+/// every signed-in route, no floating glass bar, no FAB, no accent underline
+/// beneath the title. The page body sits between them in a Column, so
+/// content can never scroll underneath the navigation.
 class VendorShell extends StatelessWidget {
   const VendorShell({super.key, required this.child});
   final Widget child;
@@ -57,7 +65,16 @@ class VendorShell extends StatelessWidget {
     final app = AppScope.of(context);
     final c = context.c;
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final isOnboarding = _onboardingRoutes.contains(app.current.route);
+    final route = app.current.route;
+    final ownChrome = _ownChromeRoutes.contains(route);
+    // While the keyboard is up the nav would ride above it and eat the
+    // form's space; it returns as soon as the keyboard closes.
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final showNav =
+        !ownChrome &&
+        !keyboardOpen &&
+        !_onboardingRoutes.contains(route) &&
+        !_focusedRoutes.contains(route);
 
     return CefSystemBars(
       // The header and bottom nav paint their own `c.chrome` fill behind
@@ -79,15 +96,19 @@ class VendorShell extends StatelessWidget {
           backgroundColor: c.chrome,
           body: Column(
             children: [
-              if (!_ownChromeRoutes.contains(app.current.route))
-                _Header(app: app),
+              if (!ownChrome) _Header(app: app),
               Expanded(
-                child: ColoredBox(color: c.canvas, child: child),
+                // Without the nav, the body owns the bottom safe area.
+                child: ColoredBox(
+                  color: c.canvas,
+                  child: SafeArea(
+                    top: false,
+                    bottom: !showNav,
+                    child: child,
+                  ),
+                ),
               ),
-              if (!isOnboarding &&
-                  !_reviewTitles.containsKey(app.current.route) &&
-                  !_ownChromeRoutes.contains(app.current.route))
-                const _BottomNav(),
+              if (showNav) const _BottomNav(),
             ],
           ),
         ),
@@ -103,65 +124,12 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    final spec = app.current.spec;
-    final isTodayRoot = app.current.route == VRoute.today;
-    final reviewTitle = _reviewTitles[app.current.route];
-    if (reviewTitle != null) {
-      final subtitle = _reviewSubtitles[app.current.route];
-      return Container(
-        decoration: BoxDecoration(
-          color: c.chrome,
-          border: Border(bottom: BorderSide(color: c.border)),
-        ),
-        child: SafeArea(
-          bottom: false,
-          child: SizedBox(
-            height: subtitle == null ? 56 : 68,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                IconAction(
-                  icon: LucideIcons.arrowLeft,
-                  tooltip: 'Back',
-                  onTap: app.back,
-                ),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        reviewTitle,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF091A3C),
-                        ),
-                      ),
-                      if (subtitle != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2),
-                          child: Text(
-                            subtitle,
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              color: c.textSecondary,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 44),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
+    final route = app.current.route;
+    final isTodayRoot = route == VRoute.today;
+    final title = isTodayRoot
+        ? (app.business?.name ?? 'Cefflo Vendor')
+        : _headerTitles[route] ?? app.current.spec.title;
+    final subtitle = _headerSubtitles[route];
     return Container(
       decoration: BoxDecoration(
         color: c.chrome,
@@ -182,23 +150,24 @@ class _Header extends StatelessWidget {
                     onTap: app.back,
                   )
                 else
-                  const SizedBox(width: Gap.sm),
+                  const SizedBox(width: Gap.lg - Gap.xs),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
-                    child: Text(
-                      isTodayRoot
-                          ? (app.business?.name ?? 'Cefflo Vendor')
-                          : spec.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: isTodayRoot
-                          ? const TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF091A3C),
-                            )
-                          : Theme.of(context).textTheme.titleLarge,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        PageTitle(title),
+                        if (subtitle != null)
+                          Text(
+                            subtitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(fontSize: 12),
+                          ),
+                      ],
                     ),
                   ),
                 ),
@@ -209,12 +178,52 @@ class _Header extends StatelessWidget {
                     showDot: true,
                     onTap: () => app.go(VRoute.notificationInbox),
                   ),
-                ..._searchHeaderActions(context, app.current.route),
+                ..._searchHeaderActions(context, route),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The page title. Measures the available width and steps the size down
+/// (22 -> 18) so a long title such as "Notification preferences" is shown
+/// in full instead of ellipsized; only a title that cannot fit even at the
+/// floor size falls back to an ellipsis.
+class PageTitle extends StatelessWidget {
+  const PageTitle(this.text, {super.key});
+  final String text;
+
+  static const _minSize = 18.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final base = Theme.of(context).textTheme.titleLarge!;
+    final scaler = MediaQuery.textScalerOf(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        var style = base;
+        for (var size = base.fontSize!; size >= _minSize; size -= 1) {
+          style = base.copyWith(fontSize: size);
+          final painter = TextPainter(
+            text: TextSpan(text: text, style: style),
+            textDirection: TextDirection.ltr,
+            textScaler: scaler,
+            maxLines: 1,
+          )..layout();
+          final fits = painter.width <= constraints.maxWidth;
+          painter.dispose();
+          if (fits) break;
+        }
+        return Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: style,
+        );
+      },
     );
   }
 }
@@ -359,8 +368,6 @@ class _BottomNav extends StatelessWidget {
                               color: selected ? c.info : c.textSecondary,
                             ),
                           ),
-                          const SizedBox(height: 3),
-                          const SizedBox(height: 2),
                         ],
                       ),
                     ),
@@ -375,7 +382,8 @@ class _BottomNav extends StatelessWidget {
   }
 }
 
-/// Standard scrollable page body with the approved 12px gutter.
+/// The one scrollable page body: 20px gutters, compact top inset, and a
+/// bottom inset that clears the last row. Dragging dismisses the keyboard.
 class PageBody extends StatelessWidget {
   const PageBody({super.key, required this.children, this.onRefresh});
   final List<Widget> children;
@@ -389,7 +397,13 @@ class PageBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final list = ListView(
-      padding: EdgeInsets.fromLTRB(Gap.gutter, Gap.md, Gap.gutter, Gap.section),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      padding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.md,
+        Gap.gutter,
+        Gap.xxl,
+      ),
       children: children,
     );
     final constrained = Center(

@@ -153,9 +153,8 @@ class TodayContent extends StatelessWidget {
           const StateBlock.empty('No completed deliveries yet.')
         else
           for (var i = 0; i < rows.length; i++)
-            FlatListRow(
+            CefListRow(
               title: rows[i].$1,
-              dense: true,
               subtitle: [
                 if (rows[i].$2.isNotEmpty) rows[i].$2,
                 rows[i].$3,
@@ -176,7 +175,7 @@ class TodayContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const StatusChip('Delivered', tinted: true),
+                  const StatusChip('Delivered'),
                   if (rows[i].$4.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(

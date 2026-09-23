@@ -272,7 +272,7 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
           ),
         ),
         const SectionHeading('Manage'),
-        FlatListRow(
+        CefListRow(
           title: 'Products',
           subtitle: 'Manage catalog items',
           leading: Icon(

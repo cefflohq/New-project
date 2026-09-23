@@ -72,7 +72,7 @@ class _ZonesScreenState extends State<ZonesScreen> {
                     if (tab == 'Inactive' && z.isActive) {
                       return const SizedBox.shrink();
                     }
-                    return FlatListRow(
+                    return CefListRow(
                       title: z.name,
                       subtitle: '${inZone.length} orders',
                       leading: Icon(
@@ -175,7 +175,7 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
               const StateBlock.empty('No zones configured yet.')
             else
               for (final z in visible)
-                FlatListRow(
+                CefListRow(
                   title: z.name,
                   leading: CircleAvatar(
                     radius: 18,
@@ -310,7 +310,7 @@ class ZoneDetailScreen extends StatelessWidget {
               const StateBlock.empty('No orders are assigned to this zone.')
             else
               for (final o in orders)
-                FlatListRow(
+                CefListRow(
                   title: o.reference,
                   subtitle: '${o.customerName} · ${o.deliveryAddress}',
                   trailing: StatusChip(
@@ -606,7 +606,7 @@ class _RidersScreenState extends State<RidersScreen> {
               const StateBlock.empty('No riders yet.')
             else
               for (final r in visible)
-                FlatListRow(
+                CefListRow(
                   title: r.name,
                   subtitle: [
                     if (r.vehicleType != null) _titleCase(r.vehicleType!),
@@ -894,7 +894,7 @@ class _TeamScreenState extends State<TeamScreen> {
               const StateBlock.empty('No team members yet.')
             else
               for (final m in visible)
-                FlatListRow(
+                CefListRow(
                   title: m.displayName ?? m.userId,
                   subtitle: m.role,
                   leading: CircleAvatar(
@@ -1141,7 +1141,7 @@ class ProductsScreen extends StatelessWidget {
       builder: (context, products, reload) => PageBody(
         onRefresh: reload,
         children: [
-          const SearchBarField(hint: 'Search products...'),
+          const CefSearchField(hint: 'Search products...'),
           const SizedBox(height: Gap.md),
           if (products.isEmpty)
             const StateBlock.empty('No products in the catalogue yet.')
@@ -1178,10 +1178,10 @@ class CustomersScreen extends StatelessWidget {
         return PageBody(
           onRefresh: reload,
           children: [
-            const SearchBarField(hint: 'Search customers...'),
+            const CefSearchField(hint: 'Search customers...'),
             const SizedBox(height: Gap.md),
             for (final entry in customers.entries)
-              FlatListRow(
+              CefListRow(
                 title: entry.key,
                 subtitle: entry.value.customerPhone,
                 leading: CircleAvatar(
@@ -1256,7 +1256,7 @@ class CustomerDetailScreen extends StatelessWidget {
             ),
             const SectionHeading('Orders'),
             for (final order in customerOrders)
-              FlatListRow(
+              CefListRow(
                 title: order.reference,
                 subtitle: order.deliveryAddress,
                 trailing: StatusChip(
