@@ -398,13 +398,14 @@ class CefButton extends StatelessWidget {
   }
 }
 
-/// The one labelled text input. Geometry, border and focus colour come from
-/// the theme's inputDecorationTheme. Pass a [controller] for live forms, or
-/// an [initialValue] for a prefilled field that owns its own state.
-class CefField extends StatelessWidget {
+/// The one text input (forms, auth, settings). Geometry, border and focus
+/// colour come from the theme's inputDecorationTheme. Pass a [controller]
+/// for live forms, or an [initialValue] for a prefilled field that owns its
+/// own state. [obscureText] adds the standard show/hide password toggle.
+class CefField extends StatefulWidget {
   const CefField({
     super.key,
-    required this.label,
+    this.label,
     this.controller,
     this.initialValue,
     this.hint,
@@ -418,7 +419,7 @@ class CefField extends StatelessWidget {
     this.enabled = true,
     this.obscureText = false,
   }) : assert(controller == null || initialValue == null);
-  final String label;
+  final String? label;
   final TextEditingController? controller;
   final String? initialValue, hint, errorText, helperText;
   final TextInputType? keyboardType;
@@ -428,35 +429,59 @@ class CefField extends StatelessWidget {
   final bool enabled, obscureText;
 
   @override
+  State<CefField> createState() => _CefFieldState();
+}
+
+class _CefFieldState extends State<CefField> {
+  late bool _hidden = widget.obscureText;
+
+  @override
   Widget build(BuildContext context) {
     final c = context.c;
+    final w = widget;
+    final Widget? suffix = w.obscureText
+        ? IconButton(
+            onPressed: () => setState(() => _hidden = !_hidden),
+            icon: Icon(_hidden ? LucideIcons.eye : LucideIcons.eyeOff, size: 20),
+            tooltip: _hidden ? 'Show password' : 'Hide password',
+          )
+        : w.suffixIcon == null
+        ? null
+        : Icon(w.suffixIcon, size: 20);
+    final hasError = w.errorText != null && w.errorText!.isNotEmpty;
     return Padding(
       padding: const EdgeInsets.only(bottom: Gap.md),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(label, style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: Gap.sm),
+          if (w.label != null) ...[
+            Text(w.label!, style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: Gap.sm),
+          ],
           TextFormField(
-            controller: controller,
-            initialValue: initialValue,
-            keyboardType: keyboardType,
-            maxLines: maxLines,
-            onChanged: onChanged,
-            enabled: enabled,
-            obscureText: obscureText,
+            controller: w.controller,
+            initialValue: w.initialValue,
+            keyboardType: w.keyboardType,
+            maxLines: w.obscureText ? 1 : w.maxLines,
+            onChanged: w.onChanged,
+            enabled: w.enabled,
+            obscureText: _hidden,
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w500,
-              color: enabled ? c.textPrimary : c.textSecondary,
+              color: w.enabled ? c.textPrimary : c.textSecondary,
             ),
             decoration: InputDecoration(
-              hintText: hint,
-              errorText: errorText,
-              helperText: helperText,
-              fillColor: enabled ? c.card : c.subtle,
-              prefixIcon: prefixIcon == null ? null : Icon(prefixIcon, size: 20),
-              suffixIcon: suffixIcon == null ? null : Icon(suffixIcon, size: 20),
+              hintText: w.hint,
+              errorText: hasError ? w.errorText : null,
+              helperText: w.helperText,
+              helperMaxLines: 2,
+              errorMaxLines: 2,
+              fillColor: w.enabled ? c.card : c.subtle,
+              prefixIcon: w.prefixIcon == null
+                  ? null
+                  : Icon(w.prefixIcon, size: 20),
+              suffixIcon: suffix,
             ),
           ),
         ],
