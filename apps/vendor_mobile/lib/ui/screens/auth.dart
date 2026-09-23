@@ -1251,6 +1251,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           CefButton(
             connection ? 'Try again' : 'Sign in',
             busy: _busy,
+            busyLabel: 'Signing in…',
             onTap: limited ? null : _signIn,
           ),
           const SizedBox(height: Gap.xl),
@@ -1378,7 +1379,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
           },
         ),
         const SizedBox(height: Gap.md),
-        CefButton('Create account', busy: _busy, onTap: _create),
+        CefButton(
+          'Create account',
+          busy: _busy,
+          busyLabel: 'Creating account…',
+          onTap: _create,
+        ),
         const SizedBox(height: Gap.xl),
         _FooterPrompt(
           'Already have an account? ',
@@ -1457,6 +1463,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ? 'Try again'
               : 'Send reset link',
           busy: _busy,
+          busyLabel: 'Sending…',
           onTap: _error != null && _isRateLimited(_error!) ? null : _send,
         ),
         const SizedBox(height: Gap.xl),
@@ -1582,6 +1589,7 @@ class _VerifyYourEmailScreenState extends State<VerifyYourEmailScreen> {
         CefButton(
           'Resend verification email',
           busy: _busy,
+          busyLabel: 'Sending…',
           onTap: _error != null && _isRateLimited(_error!) ? null : _resend,
         ),
         const SizedBox(height: Gap.md),
@@ -1706,6 +1714,7 @@ class _VerificationLinkExpiredScreenState
         CefButton(
           'Send new verification email',
           busy: _busy,
+          busyLabel: 'Sending…',
           onTap: _error != null && _isRateLimited(_error!) ? null : _send,
         ),
         const SizedBox(height: Gap.xl),
@@ -1827,6 +1836,7 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
         CefButton(
           'Update password',
           busy: _busy,
+          busyLabel: 'Updating…',
           onTap: _canSubmit ? _update : null,
         ),
       ],

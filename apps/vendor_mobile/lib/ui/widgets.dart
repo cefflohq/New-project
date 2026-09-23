@@ -323,11 +323,15 @@ class CefButton extends StatelessWidget {
     this.secondary = false,
     this.destructive = false,
     this.busy = false,
+    this.busyLabel,
     this.icon,
   });
   final String label;
   final VoidCallback? onTap;
   final bool secondary, destructive, busy;
+
+  /// Progress copy shown beside the spinner while [busy] (e.g. "Signing in…").
+  final String? busyLabel;
   final IconData? icon;
 
   @override
@@ -364,13 +368,32 @@ class CefButton extends StatelessWidget {
           ),
         ),
         child: busy
-            ? SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: foreground,
-                ),
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: foreground,
+                    ),
+                  ),
+                  if (busyLabel != null) ...[
+                    const SizedBox(width: Gap.sm),
+                    Flexible(
+                      child: Text(
+                        busyLabel!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               )
             : Row(
                 mainAxisSize: MainAxisSize.min,
@@ -442,7 +465,10 @@ class _CefFieldState extends State<CefField> {
     final Widget? suffix = w.obscureText
         ? IconButton(
             onPressed: () => setState(() => _hidden = !_hidden),
-            icon: Icon(_hidden ? LucideIcons.eye : LucideIcons.eyeOff, size: 20),
+            icon: Icon(
+              _hidden ? LucideIcons.eye : LucideIcons.eyeOff,
+              size: 20,
+            ),
             tooltip: _hidden ? 'Show password' : 'Hide password',
           )
         : w.suffixIcon == null
@@ -737,7 +763,9 @@ Future<void> showSearchSheet(BuildContext context, {required String hint}) {
     isScrollControlled: true,
     backgroundColor: context.c.card,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(Sizes.cardRadius)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(Sizes.cardRadius),
+      ),
     ),
     builder: (context) => Padding(
       padding: EdgeInsets.only(
@@ -776,9 +804,8 @@ class CefSwitch extends StatelessWidget {
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       thumbColor: const WidgetStatePropertyAll(Colors.white),
       trackColor: WidgetStateProperty.resolveWith(
-        (states) => states.contains(WidgetState.selected)
-            ? c.success
-            : c.border,
+        (states) =>
+            states.contains(WidgetState.selected) ? c.success : c.border,
       ),
       trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
       thumbIcon: const WidgetStatePropertyAll(null),
@@ -818,7 +845,9 @@ class CefListRow extends StatelessWidget {
     final c = context.c;
     final lead =
         leading ??
-        (icon == null ? null : Icon(icon, size: Sizes.icon, color: c.iconColor));
+        (icon == null
+            ? null
+            : Icon(icon, size: Sizes.icon, color: c.iconColor));
     return Material(
       color: Colors.transparent,
       child: InkWell(
