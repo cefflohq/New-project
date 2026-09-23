@@ -82,7 +82,6 @@ class TodayContent extends StatelessWidget {
           ],
         ),
         const SizedBox(height: Gap.sm),
-        Divider(height: 1, color: c.border),
         SectionHeading(
           'Recent Delivery',
           trailing: CefLink(
@@ -124,6 +123,7 @@ class TodayContent extends StatelessWidget {
                 }
               },
             ),
+        const SizedBox(height: Gap.sm),
         const SectionHeading('Need Attention'),
         CefListRow(
           title: counts[2] == 0

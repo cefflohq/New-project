@@ -215,8 +215,7 @@ class AppHeader extends StatelessWidget {
                         maxLines: 1,
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.ellipsis,
-                        style: text.bodySmall?.copyWith(
-                          fontSize: 12,
+                        style: text.labelSmall?.copyWith(
                           color: Colors.white.withValues(alpha: .82),
                         ),
                       ),
@@ -283,7 +282,7 @@ class _Header extends StatelessWidget {
           IconAction(
             icon: LucideIcons.bell,
             tooltip: 'Notifications',
-            showDot: true,
+            showDot: app.unreadNotifications > 0,
             color: Colors.white,
             onTap: () => app.go(VRoute.notificationInbox),
           ),
@@ -293,8 +292,9 @@ class _Header extends StatelessWidget {
   }
 }
 
-/// Locked list-screen header pattern: a compact search icon (and, on Orders,
-/// a filter icon) in the title bar, in place of an inline full-width field.
+/// Locked list-screen header pattern: a compact search icon (and an add
+/// action where the list has one) in the title bar, in place of an inline
+/// full-width field.
 List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
   final app = AppScope.of(context);
   final hint = switch (route) {
@@ -311,6 +311,39 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
     VRoute.products => ('Add product', VRoute.addProduct),
     _ => null,
   };
+  if (route == VRoute.notificationInbox) {
+    return [
+      IconAction(
+        icon: LucideIcons.ellipsisVertical,
+        tooltip: 'Notification options',
+        color: Colors.white,
+        onTap: () => showListSheet(
+          context,
+          title: 'Notifications',
+          children: [
+            CefListRow(
+              title: 'Mark all as read',
+              icon: LucideIcons.checkCheck,
+              showChevron: false,
+              onTap: () {
+                Navigator.of(context).pop();
+                app.markAllNotificationsRead();
+              },
+            ),
+            CefListRow(
+              title: 'Clear all notifications',
+              icon: LucideIcons.trash2,
+              showChevron: false,
+              onTap: () {
+                Navigator.of(context).pop();
+                app.clearNotifications();
+              },
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
   if (hint == null) {
     if (route == VRoute.storefront) {
       return [
@@ -356,13 +389,6 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
       color: Colors.white,
       onTap: () => showSearchSheet(context, hint: hint),
     ),
-    if (route == VRoute.orders)
-      IconAction(
-        icon: LucideIcons.slidersHorizontal,
-        tooltip: 'Filter',
-        color: Colors.white,
-        onTap: () {},
-      ),
     if (addAction != null)
       IconAction(
         icon: LucideIcons.plus,
@@ -376,22 +402,12 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
 class _BottomNav extends StatelessWidget {
   const _BottomNav();
 
-  static const _iconSize = 26.0;
-  static const _labelSize = 12.0;
-
   static const _items = <(NavTab, String, IconData)>[
     (NavTab.today, 'Today', LucideIcons.house),
     (NavTab.orders, 'Orders', LucideIcons.package),
     (NavTab.zones, 'Zones', LucideIcons.mapPin),
     (NavTab.riders, 'Riders', LucideIcons.users),
   ];
-
-  static const _filledIcons = <NavTab, IconData>{
-    NavTab.today: Icons.home_rounded,
-    NavTab.orders: Icons.inventory_2_rounded,
-    NavTab.zones: Icons.location_on_rounded,
-    NavTab.riders: Icons.people_alt_rounded,
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -421,27 +437,29 @@ class _BottomNav extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          // One outline icon family; active is the same
+                          // icon in Anchor Blue, never a filled variant.
                           Icon(
-                            selected ? _filledIcons[item.$1]! : item.$3,
-                            size: _iconSize,
+                            item.$3,
+                            size: 24,
                             color: selected ? CefColors.brand : c.textSecondary,
                           ),
-                          const SizedBox(height: 3),
+                          const SizedBox(height: Gap.xs),
                           Text(
                             item.$2,
-                            style: TextStyle(
-                              fontSize: _labelSize,
-                              fontWeight: selected
-                                  ? FontWeight.w600
-                                  : FontWeight.w500,
-                              color: selected
-                                  ? CefColors.brand
-                                  : c.textSecondary,
-                            ),
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  fontWeight: selected
+                                      ? FontWeight.w600
+                                      : FontWeight.w500,
+                                  color: selected
+                                      ? CefColors.brand
+                                      : c.textSecondary,
+                                ),
                           ),
-                          const SizedBox(height: 4),
-                          // Active indicator (D-45): a short CEFFLO Blue
-                          // bar under the active label.
+                          const SizedBox(height: Gap.xs),
+                          // Active indicator: a short Anchor Blue bar under
+                          // the active label.
                           Container(
                             width: 22,
                             height: 3,

@@ -1,4 +1,4 @@
-**Status:** CANONICAL — v1.5, amended 2026-09-23 by Founder decision D-46 (Vendor Mobile normalization: one centred header row, four-tab navigation with Settings in the Today header, single Settings directory, contact-action standard, pinned primary actions, semantic delivery pills; amends D-45 where they differ). v1.4 amended 2026-09-23 by Founder decision D-45 (Vendor Mobile gradient-header visual system; supersedes §8's flat-white header and Yellow active navigation, and the Yellow "active navigation state" use in §1.1). Previously v1.3, amended 2026-09-19 by Founder decision D-40. D-33/D-34/D-35 remain the palette, semantic-colour, surface-principle and production-logo authorities; D-40 supersedes D-33 only for app typography and the mandatory status of its historical exact compact-token values.
+**Status:** CANONICAL — v1.6, amended 2026-09-23 by Founder decision D-47 (Splash navy is the one Anchor Blue; outline-only cards; spacing-first dividers; 24/28/20/16/15/14 Inter type scale; one outline icon family; notification centre; QR modal). v1.5 amended 2026-09-23 by Founder decision D-46 (Vendor Mobile normalization: one centred header row, four-tab navigation with Settings in the Today header, single Settings directory, contact-action standard, pinned primary actions, semantic delivery pills; amends D-45 where they differ). v1.4 amended 2026-09-23 by Founder decision D-45 (Vendor Mobile gradient-header visual system; supersedes §8's flat-white header and Yellow active navigation, and the Yellow "active navigation state" use in §1.1). Previously v1.3, amended 2026-09-19 by Founder decision D-40. D-33/D-34/D-35 remain the palette, semantic-colour, surface-principle and production-logo authorities; D-40 supersedes D-33 only for app typography and the mandatory status of its historical exact compact-token values.
 **Implementation boundary:** FG-ENG-02 authorizes the isolated DEV/STAGING baseline integration recorded by D-40. It does not authorize visual retuning, Driver build-out, Vendor V11 execution, production deployment, or any later Engineering gate.
 
 ---
@@ -145,9 +145,9 @@ One `KpiStrip`: equal columns of value + label (optional CEFFLO Blue icon) separ
 **Brand tokens added by D-45**
 | Token | Value | Use |
 |---|---|---|
-| **CEFFLO Blue** | `#0B5FE3` | Active bottom-nav item + indicator, active tab label + underline, form-section icons, detail-row icons, inline links. Distinct from semantic Route/Info. |
-| CEFFLO Blue tint | `#EAF2FF` | Accent icon discs (zone/location rows), tinted secondary action rows. |
-| **Brand gradient** | linear `#0633A8 → #0848CC → #0A6BE6` (lower-left → upper-right) + radial cyan glow `#18A6FF` at the upper right | The ONE gradient: app chrome behind the header and status bar, detail heroes, in-body hero panels. Implemented once (`BrandBackdrop`). |
+| **Anchor Blue (interactive)** — D-47 | `#1E4585` (Splash lift) | Active bottom-nav item + indicator, active tab, section icons, inline links, selected states, map accents, semantic info. Replaces `#0B5FE3` / `#2A6EEC`. |
+| Anchor Blue tint — D-47 | `#E8ECF3` | Accent icon discs, tinted secondary action rows, info notes. |
+| **Brand gradient** — D-47 | the locked Splash backdrop: linear top-left → bottom-right `#0A1730 · #12213E · #1E4585 · #12213E` (0/.34/.66/1) + radial lift `#2F6BD0` @ 20% | The ONE gradient: Splash, app chrome behind header and status bar (one surface), detail heroes, in-body hero panels. Implemented once (`BrandBackdrop`). Browser/PWA chrome `#0A1730`. |
 | Grouped page tone | `#F4F6FA` | Page behind grouped settings cards. |
 | Text | primary `#0F1A36` (dark navy), secondary `#6B7489` (cool grey) | All app text on white. |
 
@@ -162,7 +162,11 @@ One `KpiStrip`: equal columns of value + label (optional CEFFLO Blue icon) separ
 - Leading: back arrow on sub-pages; on Today, the Settings gear. Trailing: the route's actions (notifications on Today; search / filter / add on lists).
 - Today's title is the business name. Detail-hero screens use the same row; their identity (large avatar, name, status pill, meta lines) sits on the gradient below it.
 
-**Content surface**: white surface enters below the gradient with 24px rounded top corners and runs to the bottom edge. Prefer dividers and spacing over nested cards; cards only where a group genuinely needs a container (grouped settings, info panels).
+**Content surface**: white surface enters below the gradient with 24px rounded top corners and runs to the bottom edge. Spacing first, dividers second (D-47): no rules between page or form sections; list separators light and inset past the leading icon. Cards only where a group genuinely needs a container, and **outline-only** — white, 1px cool-grey border, 18px radius, no shadow (elevation is for dialogs and sheets).
+
+**Type scale (D-47, Inter, theme roles only)**: page title 24/600 · entity name 28/700 · section heading 20/600 · row title 16/600 · body 15/400 · secondary 14/400 · pill 13/600 · caption 12/500.
+
+**Icons (D-47)**: one outline family (Lucide). Active navigation is the same outline icon in Anchor Blue. Detail rows use the grey icon disc; Call / WhatsApp / Directions use one `OutlinedIconAction`.
 
 **Bottom navigation** (D-46): Today · Orders · Zones · Riders. Menu is not a tab; Settings opens from the Today header and its routes belong to Today. White surface, hairline top border. Active = CEFFLO Blue filled icon + blue label + short blue indicator bar. Inactive = cool-grey outline icon + label. Page content never scrolls beneath it; it hides while the keyboard is open and on focused flows / detail heroes.
 

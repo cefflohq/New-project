@@ -478,3 +478,31 @@ class CapacityCheck {
     }).toList(),
   );
 }
+
+/// What a notification is about; decides its icon.
+enum NotificationKind { attention, order, rider, system }
+
+/// One entry in the vendor's notification centre.
+class AppNotification {
+  const AppNotification({
+    required this.id,
+    required this.kind,
+    required this.title,
+    required this.body,
+    required this.timeLabel,
+    this.read = false,
+  });
+  final String id;
+  final NotificationKind kind;
+  final String title, body, timeLabel;
+  final bool read;
+
+  AppNotification copyWith({bool? read}) => AppNotification(
+    id: id,
+    kind: kind,
+    title: title,
+    body: body,
+    timeLabel: timeLabel,
+    read: read ?? this.read,
+  );
+}

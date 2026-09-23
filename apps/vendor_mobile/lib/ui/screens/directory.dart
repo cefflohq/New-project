@@ -252,7 +252,7 @@ class ZoneDetailScreen extends StatelessWidget {
                               zone.name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: text.headlineSmall,
+                              style: text.titleMedium,
                             ),
                           ),
                           const SizedBox(width: Gap.sm),
@@ -385,12 +385,12 @@ class _ZoneMap extends StatelessWidget {
                 ),
                 child: Text(
                   name,
-                  style: Theme.of(context).textTheme.titleSmall
-                      ?.copyWith(color: Colors.white, fontSize: 14),
+                  style: Theme.of(context).textTheme.labelLarge
+                      ?.copyWith(color: Colors.white),
                 ),
               ),
               const SizedBox(height: Gap.xs),
-              const Icon(Icons.location_on, color: CefColors.brand, size: 30),
+              const Icon(LucideIcons.mapPin, color: CefColors.brand, size: 28),
             ],
           ),
         ),
@@ -569,7 +569,6 @@ class _ZoneFormScreenState extends State<ZoneFormScreen> {
           errorText: errors['name'],
         ),
         if (!widget.isNew) ...[
-          const SectionDivider(),
           const SectionHeading('Status', icon: LucideIcons.circleCheck),
           CefListRow(
             title: 'Active',
@@ -774,7 +773,7 @@ class RiderDetailScreen extends StatelessWidget {
                 KpiItem(
                   rider.rating?.toStringAsFixed(1) ?? '—',
                   'Customer rating',
-                  icon: Icons.star_rounded,
+                  icon: LucideIcons.star,
                   iconColor: CefColors.accent,
                 ),
                 KpiItem(

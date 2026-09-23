@@ -69,6 +69,50 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ---- Notification centre (X-01). No notification backend exists yet, so
+  // this is session state seeded with the demo feed; every management action
+  // (read, unread, delete, clear) is real within the session.
+  late List<AppNotification> _notifications = repo.isDemo
+      ? List.of(_demoNotifications)
+      : [];
+
+  List<AppNotification> get notifications => List.unmodifiable(_notifications);
+  int get unreadNotifications => _notifications.where((n) => !n.read).length;
+
+  void setNotificationRead(String id, {required bool read}) {
+    _notifications = [
+      for (final n in _notifications) n.id == id ? n.copyWith(read: read) : n,
+    ];
+    notifyListeners();
+  }
+
+  void markAllNotificationsRead() {
+    _notifications = [for (final n in _notifications) n.copyWith(read: true)];
+    notifyListeners();
+  }
+
+  /// Removes [id] and returns what is needed to undo it.
+  (int, AppNotification)? deleteNotification(String id) {
+    final index = _notifications.indexWhere((n) => n.id == id);
+    if (index < 0) return null;
+    final removed = _notifications[index];
+    _notifications = List.of(_notifications)..removeAt(index);
+    notifyListeners();
+    return (index, removed);
+  }
+
+  void restoreNotification((int, AppNotification) entry) {
+    final (index, notification) = entry;
+    _notifications = List.of(_notifications)
+      ..insert(index.clamp(0, _notifications.length), notification);
+    notifyListeners();
+  }
+
+  void clearNotifications() {
+    _notifications = [];
+    notifyListeners();
+  }
+
   void go(VRoute route, {String? entityId}) {
     final spec = routeSpecs[route]!;
     assert(
@@ -169,3 +213,36 @@ class AppScope extends InheritedNotifier<AppState> {
               as AppScope)
           .notifier!;
 }
+
+const _demoNotifications = [
+  AppNotification(
+    id: 'n-attention',
+    kind: NotificationKind.attention,
+    title: '3 orders need your action',
+    body: 'Review issues before they delay a run.',
+    timeLabel: '2 min ago',
+  ),
+  AppNotification(
+    id: 'n-ready',
+    kind: NotificationKind.order,
+    title: 'ORD-1008 is ready for pickup',
+    body: 'Brew & Bites · 9 items',
+    timeLabel: '18 min ago',
+  ),
+  AppNotification(
+    id: 'n-rider',
+    kind: NotificationKind.rider,
+    title: 'Ahmad Razi is online',
+    body: 'Available for the next Bangsar run.',
+    timeLabel: '1 h ago',
+    read: true,
+  ),
+  AppNotification(
+    id: 'n-system',
+    kind: NotificationKind.system,
+    title: 'System update',
+    body: 'Everything is operating normally.',
+    timeLabel: 'Yesterday',
+    read: true,
+  ),
+];

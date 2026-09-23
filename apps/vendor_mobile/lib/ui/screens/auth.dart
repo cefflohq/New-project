@@ -26,10 +26,8 @@ import '../widgets.dart';
 
 // ---------------------------------------------------------------- palette
 //
-// Splash keeps its locked navy sweep: the canonical anchor #12213E with two
-// companion shades of that same anchor (not new brand colours).
-const _navyDeep = Color(0xFF0A1730);
-const _navyLift = Color(0xFF1E4585);
+// Splash's navy sweep is the app-wide Anchor Blue (CefGradients.brand,
+// D-47); it is no longer declared here.
 
 // The bright CEFFLO blue sweep shared by Sign In and every sheet screen
 // after it, so the journey reads as one continuous backdrop.
@@ -247,41 +245,19 @@ class _AuthFlowState extends State<AuthFlow> {
 
 // ------------------------------------------------------- shared chrome
 
-/// Splash's locked navy backdrop: diagonal gradient plus the soft lighter-blue
-/// lift toward the centre-right.
+/// Splash's locked navy backdrop -- the canonical Anchor Blue surface
+/// ([BrandBackdrop], D-47), pinned to the whole screen.
 class _NavyBackdrop extends StatelessWidget {
   const _NavyBackdrop({required this.child});
 
   final Widget child;
 
+  // DecoratedBox sizes to its child, so on Splash -- whose widest child is
+  // the ~168px progress indicator -- the gradient once shrink-wrapped to a
+  // narrow strip. SizedBox.expand pins it to the whole screen.
   @override
-  Widget build(BuildContext context) {
-    // DecoratedBox sizes to its child, so on Splash — whose widest child is
-    // the ~168px progress indicator — the gradient once shrink-wrapped to a
-    // narrow strip. SizedBox.expand pins it to the whole screen.
-    return SizedBox.expand(
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [_navyDeep, CefColors.navy, _navyLift, CefColors.navy],
-            stops: [0.0, 0.34, 0.66, 1.0],
-          ),
-        ),
-        child: DecoratedBox(
-          decoration: const BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(-0.05, -0.12),
-              radius: 0.95,
-              colors: [Color(0x332F6BD0), Color(0x00000000)],
-            ),
-          ),
-          child: child,
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      SizedBox.expand(child: BrandBackdrop(child: child));
 }
 
 /// The bright CEFFLO blue auth backdrop. Sign In paints it full screen; the
@@ -509,7 +485,7 @@ class _SheetHeading extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (status != null) ...[status!, const SizedBox(height: Gap.xl)],
-        Text(title, textAlign: TextAlign.center, style: text.headlineSmall),
+        Text(title, textAlign: TextAlign.center, style: text.titleMedium),
         const SizedBox(height: Gap.sm),
         _CenteredNote(subtitle),
       ],
@@ -711,7 +687,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) => CefSystemBars(
     background: Brightness.dark,
-    browserChromeColor: _navyDeep,
+    browserChromeColor: CefGradients.brandChrome,
     child: Scaffold(
       backgroundColor: CefColors.navy,
       body: _NavyBackdrop(

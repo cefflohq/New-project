@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:qr/qr.dart';
 
 import '../../core/app_state.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
+import '../../data/models.dart';
 import '../shell.dart';
 import '../widgets.dart';
 
@@ -185,7 +187,7 @@ class _BusinessProfileScreen extends StatelessWidget {
                   KpiItem(
                     '4.8',
                     'Rating',
-                    icon: Icons.star_rounded,
+                    icon: LucideIcons.star,
                     iconColor: CefColors.accent,
                   ),
                 ],
@@ -261,7 +263,6 @@ class _BusinessInformationScreen extends StatelessWidget {
         maxLines: 3,
         maxLength: 160,
       ),
-      const SectionDivider(),
       const SectionHeading(
         'Contact',
         icon: LucideIcons.phone,
@@ -333,7 +334,6 @@ class _BusinessAddressScreen extends StatelessWidget {
             ],
           ),
         ),
-        const SectionDivider(),
         const SectionHeading(
           'Address details',
           icon: LucideIcons.mapPin,
@@ -434,7 +434,6 @@ class _EditProfileScreen extends StatelessWidget {
         right: '12 345 6789',
         keyboardType: TextInputType.phone,
       ),
-      const SectionDivider(),
       const SectionHeading(
         'Account',
         icon: LucideIcons.briefcase,
@@ -1120,7 +1119,6 @@ class _ContactSupportScreen extends StatelessWidget {
           maxLines: 4,
           maxLength: 500,
         ),
-        const SectionDivider(),
         const SectionHeading(
           'Add Screenshots (Optional)',
           icon: LucideIcons.image,
@@ -1143,7 +1141,6 @@ class _ContactSupportScreen extends StatelessWidget {
             ],
           ),
         ),
-        const SectionDivider(),
         const SectionHeading(
           'Contact',
           icon: LucideIcons.mail,
@@ -1239,7 +1236,7 @@ class _AboutScreen extends StatelessWidget {
       children: [
         const Center(child: CefAvatar('Cefflo', size: 84)),
         const SizedBox(height: Gap.md),
-        Text('Cefflo', textAlign: TextAlign.center, style: text.headlineSmall),
+        Text('Cefflo', textAlign: TextAlign.center, style: text.titleMedium),
         const SizedBox(height: Gap.xs),
         Text(
           'More orders. Less work. A smoother delivery day.',
@@ -1325,33 +1322,142 @@ class _SupportTile extends StatelessWidget {
   );
 }
 
+/// X-01 — Notification centre. Unread entries carry a blue dot and a bold
+/// title; read ones step back. Tap opens (marks read); swipe left deletes
+/// (with Undo), swipe right toggles read; the row's overflow menu does the
+/// same. Mark all / Clear all live in the header menu.
 class _NotificationInboxScreen extends StatelessWidget {
   const _NotificationInboxScreen();
 
+  static IconData _icon(NotificationKind kind) => switch (kind) {
+    NotificationKind.attention => LucideIcons.triangleAlert,
+    NotificationKind.order => LucideIcons.package,
+    NotificationKind.rider => LucideIcons.users,
+    NotificationKind.system => LucideIcons.info,
+  };
+
+  static void _delete(BuildContext context, AppNotification n) {
+    final app = AppScope.read(context);
+    final undo = app.deleteNotification(n.id);
+    if (undo == null) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: const Text('Notification deleted'),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () => app.restoreNotification(undo),
+          ),
+        ),
+      );
+  }
+
+  static void _showRowOptions(BuildContext context, AppNotification n) {
+    final app = AppScope.read(context);
+    showListSheet(
+      context,
+      title: n.title,
+      children: [
+        CefListRow(
+          title: n.read ? 'Mark as unread' : 'Mark as read',
+          icon: n.read ? LucideIcons.mail : LucideIcons.mailOpen,
+          showChevron: false,
+          onTap: () {
+            Navigator.of(context).pop();
+            app.setNotificationRead(n.id, read: !n.read);
+          },
+        ),
+        CefListRow(
+          title: 'Delete',
+          icon: LucideIcons.trash2,
+          showChevron: false,
+          onTap: () {
+            Navigator.of(context).pop();
+            _delete(context, n);
+          },
+        ),
+      ],
+    );
+  }
+
   @override
-  Widget build(BuildContext context) => const PageBody(
-    // Archetype B list: icon disc rows, no chevron (rows do not navigate).
-    children: [
-      CefListRow(
-        title: '3 orders need your action',
-        subtitle: 'Review issues before dispatch.',
-        icon: LucideIcons.bell,
-        showChevron: false,
-      ),
-      CefListRow(
-        title: 'Rider update',
-        subtitle: 'Ahmad Razi is online.',
-        icon: LucideIcons.users,
-        showChevron: false,
-      ),
-      CefListRow(
-        title: 'System update',
-        subtitle: 'Everything is operating normally.',
-        icon: LucideIcons.info,
-        showChevron: false,
-      ),
-    ],
-  );
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final c = context.c;
+    final items = app.notifications;
+    if (items.isEmpty) {
+      return const PageBody(
+        children: [StateBlock.empty("You're all caught up.")],
+      );
+    }
+    Widget swipeBackground(Color color, IconData icon, Alignment align) =>
+        Container(
+          color: color,
+          alignment: align,
+          padding: const EdgeInsets.symmetric(horizontal: Gap.xl),
+          child: Icon(icon, color: Colors.white, size: Sizes.icon),
+        );
+    return PageBody(
+      children: [
+        for (final n in items)
+          Dismissible(
+            key: ValueKey(n.id),
+            background: swipeBackground(
+              CefColors.brand,
+              n.read ? LucideIcons.mail : LucideIcons.mailOpen,
+              Alignment.centerLeft,
+            ),
+            secondaryBackground: swipeBackground(
+              c.attention,
+              LucideIcons.trash2,
+              Alignment.centerRight,
+            ),
+            confirmDismiss: (direction) async {
+              if (direction == DismissDirection.startToEnd) {
+                app.setNotificationRead(n.id, read: !n.read);
+                return false;
+              }
+              return true;
+            },
+            onDismissed: (_) => _delete(context, n),
+            child: CefListRow(
+              title: n.title,
+              subtitle: '${n.body}\n${n.timeLabel}',
+              subtitleMaxLines: 2,
+              leading: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  IconDisc(_icon(n.kind)),
+                  if (!n.read)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: CefColors.brand,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: c.card, width: 2),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              emphasis: !n.read,
+              trailing: IconAction(
+                icon: LucideIcons.ellipsisVertical,
+                tooltip: 'Notification options',
+                onTap: () => _showRowOptions(context, n),
+              ),
+              showChevron: false,
+              onTap: () => app.setNotificationRead(n.id, read: true),
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 /// V-22 / V-25 — Rider/Team invitation link. Vendor shares a trusted-link
@@ -1369,38 +1475,47 @@ class _InviteLinkScreen extends StatelessWidget {
         .showSnackBar(const SnackBar(content: Text('Link copied')));
   }
 
-  void _showQrSheet(BuildContext context) {
-    showModalBottomSheet(
+  /// Compact, centred modal over a dimmed page: the real QR code for
+  /// [link], nothing expanded inline on the page itself.
+  void _showQrModal(BuildContext context, String link) {
+    final text = Theme.of(context).textTheme;
+    showDialog<void>(
       context: context,
-      backgroundColor: context.c.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(Sizes.cardRadius),
+      builder: (dialogContext) => Dialog(
+        backgroundColor: context.c.card,
+        insetPadding: const EdgeInsets.symmetric(horizontal: Gap.xxxl),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Sizes.cardRadius),
         ),
-      ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.all(Gap.section),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(_scanLabel, style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: Gap.section),
-            Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                color: context.c.card,
-                borderRadius: BorderRadius.circular(Sizes.cardRadius),
-                border: Border.all(color: context.c.border),
+        child: Padding(
+          padding: const EdgeInsets.all(Gap.xxl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Scan to join', style: text.titleMedium),
+              const SizedBox(height: Gap.xs),
+              Text(
+                _scanLabel,
+                textAlign: TextAlign.center,
+                style: text.bodySmall,
               ),
-              child: Icon(
-                LucideIcons.qrCode,
-                size: 140,
-                color: context.c.textPrimary,
+              const SizedBox(height: Gap.lg),
+              _QrCode(data: link, size: 200),
+              const SizedBox(height: Gap.md),
+              Text(
+                link,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: text.bodySmall,
               ),
-            ),
-            const SizedBox(height: Gap.section),
-          ],
+              const SizedBox(height: Gap.lg),
+              CefButton(
+                'Done',
+                secondary: true,
+                onTap: () => Navigator.of(dialogContext).pop(),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1499,7 +1614,7 @@ class _InviteLinkScreen extends StatelessWidget {
           icon: LucideIcons.qrCode,
           label: 'Show QR code',
           subtitle: _scanLabel,
-          onTap: () => _showQrSheet(context),
+          onTap: () => _showQrModal(context, link),
         ),
         const SizedBox(height: Gap.sm),
         CefCard(
@@ -1520,7 +1635,6 @@ class _InviteLinkScreen extends StatelessWidget {
               ),
               const SizedBox(height: Gap.md),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _ShareChannel(
                     icon: LucideIcons.messageCircle,
@@ -1582,6 +1696,60 @@ class _InviteLinkScreen extends StatelessWidget {
   }
 }
 
+/// A scannable QR code for [data], painted module by module in the text
+/// colour on white with the standard quiet zone.
+class _QrCode extends StatelessWidget {
+  const _QrCode({required this.data, required this.size});
+  final String data;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: size,
+    child: CustomPaint(
+      painter: _QrPainter(
+        QrImage(
+          QrCode.fromData(data: data, errorCorrectLevel: QrErrorCorrectLevel.M),
+        ),
+        context.c.textPrimary,
+      ),
+    ),
+  );
+}
+
+class _QrPainter extends CustomPainter {
+  _QrPainter(this.image, this.color);
+  final QrImage image;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const quiet = 2; // modules of white border
+    final count = image.moduleCount;
+    final cell = size.width / (count + quiet * 2);
+    canvas.drawRect(Offset.zero & size, Paint()..color = Colors.white);
+    final paint = Paint()..color = color;
+    for (var y = 0; y < count; y++) {
+      for (var x = 0; x < count; x++) {
+        if (!image.isDark(y, x)) continue;
+        canvas.drawRect(
+          Rect.fromLTWH(
+            (x + quiet) * cell,
+            (y + quiet) * cell,
+            cell + .5,
+            cell + .5,
+          ),
+          paint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_QrPainter old) =>
+      old.image != image || old.color != color;
+}
+
 /// Share target disc. Brand colours for WhatsApp / Telegram / SMS are
 /// third-party marks; the neutral "More" disc uses tokens.
 class _ShareChannel extends StatelessWidget {
@@ -1599,19 +1767,24 @@ class _ShareChannel extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Column(
-      children: [
-        Container(
-          width: Sizes.contactAction,
-          height: Sizes.contactAction,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          child: Icon(icon, size: 20, color: iconColor ?? Colors.white),
-        ),
-        const SizedBox(height: Gap.xs),
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
-      ],
+  Widget build(BuildContext context) => Expanded(
+    child: GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: Sizes.contactAction,
+            height: Sizes.contactAction,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            child: Icon(icon, size: 20, color: iconColor ?? Colors.white),
+          ),
+          const SizedBox(height: Gap.xs),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(label, style: Theme.of(context).textTheme.labelSmall),
+          ),
+        ],
+      ),
     ),
   );
 }

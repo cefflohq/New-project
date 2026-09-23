@@ -1,3 +1,4 @@
+import 'package:cefflo_vendor_mobile/core/app_state.dart';
 import 'package:cefflo_vendor_mobile/core/routes.dart';
 import 'package:cefflo_vendor_mobile/data/vendor_repository.dart';
 import 'package:cefflo_vendor_mobile/main.dart';
@@ -214,5 +215,66 @@ void main() {
       tester.getTopLeft(find.text('Need Attention')).dy,
       lessThan(852 - Sizes.nav),
     );
+  });
+
+  testWidgets('Orders header carries search and add only', (tester) async {
+    await pumpAt(tester, const VendorLocation(VRoute.orders));
+    expect(find.byTooltip('Search'), findsOneWidget);
+    expect(find.byTooltip('Add order'), findsOneWidget);
+    expect(find.byTooltip('Filter'), findsNothing);
+  });
+
+  testWidgets('notification centre manages read state and deletion', (
+    tester,
+  ) async {
+    await pumpAt(tester, const VendorLocation(VRoute.notificationInbox));
+    final app = AppScope.read(tester.element(find.byType(Scaffold).first));
+    expect(app.unreadNotifications, 2);
+
+    // Tap opens an unread entry and marks it read.
+    await tester.tap(find.text('3 orders need your action'));
+    await tester.pumpAndSettle();
+    expect(app.unreadNotifications, 1);
+
+    // Swipe left deletes, with Undo.
+    await tester.drag(find.text('System update'), const Offset(-500, 0));
+    await tester.pumpAndSettle();
+    expect(find.text('System update'), findsNothing);
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+    expect(find.text('System update'), findsOneWidget);
+
+    // Header menu: mark all as read, then clear.
+    await tester.tap(find.byTooltip('Notification options').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mark all as read'));
+    await tester.pumpAndSettle();
+    expect(app.unreadNotifications, 0);
+    await tester.tap(find.byTooltip('Notification options').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Clear all notifications'));
+    await tester.pumpAndSettle();
+    expect(find.text("You're all caught up."), findsOneWidget);
+  });
+
+  testWidgets('invite QR opens in a modal, not inline', (tester) async {
+    await pumpAt(tester, const VendorLocation(VRoute.riderRegistrationLink));
+    expect(find.text('Scan to join'), findsNothing);
+    await tester.tap(find.text('Show QR code'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Dialog), findsOneWidget);
+    expect(find.text('Scan to join'), findsOneWidget);
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Dialog), findsNothing);
+  });
+
+  testWidgets('order identity is centred on the hero', (tester) async {
+    await pumpAt(
+      tester,
+      const VendorLocation(VRoute.orderDetail, entityId: 'ord-1001'),
+    );
+    expect(tester.getCenter(find.text('ORD-1001')).dx, closeTo(196.5, 1));
+    expect(find.text('Directions'), findsOneWidget);
   });
 }

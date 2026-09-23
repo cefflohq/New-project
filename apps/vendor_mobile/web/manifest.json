@@ -4,7 +4,7 @@
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",
-    "theme_color": "#FFFFFF",
+    "theme_color": "#0A1730",
     "description": "Cefflo Vendor — manage your deliveries.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,

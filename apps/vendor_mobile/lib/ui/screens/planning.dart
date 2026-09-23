@@ -180,7 +180,7 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                       children: [
                         Text(
                           '$totalOrders Order${totalOrders == 1 ? '' : 's'}',
-                          style: text.headlineSmall?.copyWith(
+                          style: text.titleMedium?.copyWith(
                             color: Colors.white,
                           ),
                         ),
@@ -425,7 +425,7 @@ class RunDetailScreen extends StatelessWidget {
       children: [
         Row(
           children: [
-            Flexible(child: Text(runId, style: text.headlineSmall)),
+            Flexible(child: Text(runId, style: text.titleMedium)),
             const SizedBox(width: Gap.md),
             const StatusChip('Active', success: true),
           ],
@@ -574,10 +574,11 @@ class _RoutePreviewPainter extends CustomPainter {
     canvas.drawCircle(driver, 20, Paint()..color = CefColors.accent);
     final marker = TextPainter(
       text: TextSpan(
-        text: String.fromCharCode(Icons.two_wheeler.codePoint),
+        text: String.fromCharCode(LucideIcons.motorbike.codePoint),
         style: TextStyle(
-          fontFamily: Icons.two_wheeler.fontFamily,
-          fontSize: 23,
+          fontFamily: LucideIcons.motorbike.fontFamily,
+          package: LucideIcons.motorbike.fontPackage,
+          fontSize: 22,
           color: CefColors.navy,
         ),
       ),

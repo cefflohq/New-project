@@ -787,3 +787,39 @@ Scope: Vendor Mobile only. No backend, data-contract, Driver, Vendor
 Web/Desktop, Customer Tracking or FOUNDR change. Recorded in
 `sot/12_EXPERIENCE_SYSTEM.md` §8/§8A.
 
+## D-47 Vendor Mobile Global Polish — Splash Anchor Blue, Outline Cards, Type Scale (2026-09-23)
+
+Founder direction for a consistency pass over Vendor Mobile. Amends D-45/D-46
+where they differ.
+
+- **Anchor Blue = the Splash navy** (Founder chose V01 Splash over the Sign In
+  sky blue). `CefGradients.brand` is the locked Splash backdrop value for
+  value: linear top-left → bottom-right `#0A1730 · #12213E · #1E4585 · #12213E`
+  (stops 0 / .34 / .66 / 1) plus the radial lift `#2F6BD0` @ 20%. Splash and
+  the app shell render the same `BrandBackdrop`; the header, status bar and
+  in-body hero surfaces (e.g. the Invitation link card) are one surface.
+  The interactive blue (`CefColors.brand`: active nav/tabs, links, icons,
+  selected states, map accents) is the Splash lift `#1E4585`; its tint is
+  `#E8ECF3`. Retires `#0B5FE3`, the `#0633A8 → #0A6BE6` header gradient and the
+  `#2A6EEC` info blue. Browser/PWA chrome colour is `#0A1730`.
+- **Cards are outline-only**: white, 1px cool-grey border, 18px radius, no
+  shadow. Elevation only on genuinely floating surfaces (dialogs, sheets).
+- **Spacing first, dividers second**: no rules between page sections or form
+  sections; list separators are light and inset past the leading icon.
+- **Type scale (Inter)**: page title 24/600; entity name 28/700; section
+  heading 20/600; row title 16/600; body 15/400; secondary 14/400; pill 13/600;
+  caption 12/500. Screens use theme roles only.
+- **One outline icon family (Lucide)**: nav active state is the same outline
+  icon in Anchor Blue (no filled Material variants); detail rows use the grey
+  icon disc; Call / WhatsApp / Directions use one `OutlinedIconAction`.
+- **Orders header**: Search and Add only (filter removed).
+- **Order detail**: identity centred (reference, status, meta).
+- **Notification centre**: unread/read states, mark read/unread, mark all
+  read, swipe-to-delete with Undo, clear all; the Today bell dot reflects
+  unread count.
+- **Invite QR**: a real, scannable code in a compact dimmed modal.
+
+Open: the Sign In / auth-sheet sky sweep (`#51BDF8 → #0B67E8 → #031A50`) is a
+Founder-locked auth composition and was not changed in this pass; it is the
+one remaining non-Anchor blue in Vendor Mobile.
+

@@ -428,7 +428,7 @@ class SetupCompleteScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                style: text.headlineSmall?.copyWith(
+                style: text.titleMedium?.copyWith(
                   color: Colors.white,
                   height: 1.15,
                 ),
@@ -592,7 +592,6 @@ class OrderDetailScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               DetailHero(
-                leading: const IconDisc(LucideIcons.package),
                 title: order.reference,
                 status: HeroStatusPill(
                   order.status.label,
@@ -637,7 +636,6 @@ class OrderDetailScreen extends StatelessWidget {
                   : '${order.customerName}\n$phone',
               subtitleMaxLines: 2,
               icon: LucideIcons.user,
-              plainIcon: true,
               trailing: phone.isEmpty ? null : ContactActions(phone: phone),
             ),
             CefListRow(
@@ -645,10 +643,9 @@ class OrderDetailScreen extends StatelessWidget {
               subtitle: order.deliveryAddress,
               subtitleMaxLines: 2,
               icon: LucideIcons.mapPin,
-              plainIcon: true,
-              trailing: IconAction(
+              trailing: OutlinedIconAction(
+                label: 'Directions',
                 icon: LucideIcons.navigation,
-                tooltip: 'Directions',
                 onTap: () => launchDirections(context, order.deliveryAddress),
               ),
             ),
@@ -658,7 +655,6 @@ class OrderDetailScreen extends StatelessWidget {
                 subtitle: order.notes,
                 subtitleMaxLines: 3,
                 icon: LucideIcons.fileText,
-                plainIcon: true,
               ),
             SectionHeading(
               'Items (${items.length})',
@@ -1015,7 +1011,6 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           keyboardType: TextInputType.phone,
           errorText: errors['phone'],
         ),
-        const SectionDivider(),
         const SectionHeading(
           'Address',
           icon: LucideIcons.mapPin,
@@ -1029,7 +1024,6 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           maxLines: 2,
           errorText: errors['address'],
         ),
-        const SectionDivider(),
         const SectionHeading(
           'Items',
           icon: LucideIcons.package,
@@ -1041,7 +1035,6 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           leadingDisc: true,
           onTap: () => showNotWiredYetSnackBar(context, 'Adding order items'),
         ),
-        const SectionDivider(),
         const SectionHeading(
           'Instructions',
           icon: LucideIcons.clipboardList,
@@ -1198,7 +1191,6 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         Text('Product Photo', style: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: Gap.md),
         const _PhotoDropzone(),
-        const SectionDivider(),
         const SectionHeading('Product Details', icon: LucideIcons.package),
         CefField(
           label: 'Product name',
