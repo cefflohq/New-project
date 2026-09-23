@@ -145,6 +145,7 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
             .where((g) => g.candidateRiderId != null)
             .toList();
         final today = DateTime.now();
+        final text = Theme.of(context).textTheme;
 
         return PageBody(
           onRefresh: reload,
@@ -178,35 +179,16 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
               ],
             ),
             const SizedBox(height: Gap.md),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(Gap.cardPadding),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF0065E4),
-                    Color(0xFF003B91),
-                    Color(0xFF071C46),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(Sizes.cardRadius),
-              ),
+            HeroSurface(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: .16),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
+                  const Padding(
+                    padding: EdgeInsets.only(top: Gap.xs),
+                    child: Icon(
                       LucideIcons.package,
                       color: Colors.white,
-                      size: 20,
+                      size: Sizes.icon,
                     ),
                   ),
                   const SizedBox(width: Gap.md),
@@ -216,18 +198,15 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                       children: [
                         Text(
                           '$totalOrders Order${totalOrders == 1 ? '' : 's'}',
-                          style: const TextStyle(
+                          style: text.headlineSmall?.copyWith(
                             color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           '${groups.length} Run${groups.length == 1 ? '' : 's'} · $totalStops Stop${totalStops == 1 ? '' : 's'}',
-                          style: TextStyle(
+                          style: text.bodySmall?.copyWith(
                             color: Colors.white.withValues(alpha: .78),
-                            fontSize: 12.5,
                           ),
                         ),
                       ],
@@ -239,17 +218,15 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                       children: [
                         Icon(
                           LucideIcons.chartNoAxesColumnIncreasing,
-                          color: Colors.white.withValues(alpha: .7),
+                          color: Colors.white.withValues(alpha: .72),
                           size: 16,
                         ),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: Gap.xs),
                         Text(
                           'Optimized for\nefficiency',
                           textAlign: TextAlign.right,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: .7),
-                            fontSize: 10.5,
-                            height: 1.2,
+                          style: text.bodySmall?.copyWith(
+                            color: Colors.white.withValues(alpha: .72),
                           ),
                         ),
                       ],
@@ -290,7 +267,11 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                         ),
                   child: Row(
                     children: [
-                      const Icon(LucideIcons.circleCheck, size: Sizes.icon),
+                      Icon(
+                        LucideIcons.circleCheck,
+                        size: Sizes.icon,
+                        color: context.c.success,
+                      ),
                       const SizedBox(width: Gap.md),
                       Expanded(
                         child: Text(
@@ -347,65 +328,24 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                     children: [
                       Row(
                         children: [
-                          Container(
-                            width: 24,
-                            height: 24,
-                            alignment: Alignment.center,
-                            decoration: const BoxDecoration(
-                              color: CefColors.navy,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              '${index + 1}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: Gap.sm),
                           Expanded(
                             child: Text(
                               'Run ${index + 1}',
-                              style: Theme.of(context).textTheme.titleSmall,
+                              style: text.titleMedium,
                             ),
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE9F2FF),
-                              borderRadius: BorderRadius.circular(9),
-                            ),
-                            child: Text(
-                              '${group.stops.length} stops',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF0864E8),
-                              ),
-                            ),
-                          ),
+                          StatusChip('${group.stops.length} stops'),
                         ],
                       ),
-                      const SizedBox(height: Gap.sm),
+                      const SizedBox(height: Gap.md),
                       Row(
                         children: [
-                          CircleAvatar(
-                            radius: 16,
-                            backgroundColor: CefColors.navy,
-                            child: Text(
-                              _initialsOf(group.candidateRiderName),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 11,
-                              ),
-                            ),
+                          CefAvatar(
+                            (group.candidateRiderName ?? '').trim().isEmpty
+                                ? '?'
+                                : group.candidateRiderName!,
                           ),
-                          const SizedBox(width: Gap.sm),
+                          const SizedBox(width: Gap.md),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,7 +388,7 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                             size: 14,
                             color: context.c.textSecondary,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: Gap.xs),
                           Text(
                             '${group.orderIds.length} order${group.orderIds.length == 1 ? '' : 's'}',
                             style: Theme.of(context).textTheme.bodySmall,
@@ -459,7 +399,7 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                             size: 14,
                             color: context.c.textSecondary,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: Gap.xs),
                           Text(
                             group.totalDistanceKm == null
                                 ? '${group.stops.length} stop${group.stops.length == 1 ? '' : 's'}'
@@ -468,35 +408,17 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                           ),
                         ],
                       ),
-                      const Divider(height: Gap.section),
+                      const SizedBox(height: Gap.sm),
                       for (final stop in group.stops)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: Gap.sm),
-                          child: Row(
-                            children: [
-                              Icon(
-                                LucideIcons.mapPin,
-                                size: 16,
-                                color: context.c.info,
-                              ),
-                              const SizedBox(width: Gap.sm),
-                              Expanded(
-                                child: Text(
-                                  stop.distanceKm == null
-                                      ? 'Stop ${stop.sequence}'
-                                      : 'Stop ${stop.sequence} · ${stop.distanceKm} km from previous',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ),
-                              IconAction(
-                                icon: LucideIcons.chevronRight,
-                                tooltip: 'Open order',
-                                onTap: () => app.go(
-                                  VRoute.orderDetail,
-                                  entityId: stop.orderId,
-                                ),
-                              ),
-                            ],
+                        CefListRow(
+                          title: 'Stop ${stop.sequence}',
+                          subtitle: stop.distanceKm == null
+                              ? null
+                              : '${stop.distanceKm} km from previous',
+                          icon: LucideIcons.mapPin,
+                          onTap: () => app.go(
+                            VRoute.orderDetail,
+                            entityId: stop.orderId,
                           ),
                         ),
                     ],
@@ -507,47 +429,21 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
             if (unplannable.isNotEmpty) ...[
               const SectionHeading('Cannot be planned yet'),
               for (final u in unplannable)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: Gap.cardGap),
-                  child: CefCard(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          LucideIcons.triangleAlert,
-                          size: Sizes.icon,
-                          color: context.c.attention,
-                        ),
-                        const SizedBox(width: Gap.md),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                u.label,
-                                style: Theme.of(context).textTheme.titleSmall,
-                              ),
-                              if (u.groupSize != null)
-                                Text(
-                                  '${u.groupSize} order(s) affected',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                            ],
-                          ),
-                        ),
-                        if (u.orderId != null)
-                          IconAction(
-                            icon: LucideIcons.chevronRight,
-                            tooltip: 'Open order',
-                            onTap: () => app.go(
-                              VRoute.orderDetail,
-                              entityId: u.orderId!,
-                            ),
-                          ),
-                      ],
-                    ),
+                CefListRow(
+                  title: u.label,
+                  subtitle: u.groupSize == null
+                      ? null
+                      : '${u.groupSize} order(s) affected',
+                  leading: Icon(
+                    LucideIcons.triangleAlert,
+                    size: Sizes.icon,
+                    color: context.c.attention,
                   ),
+                  onTap: u.orderId == null
+                      ? null
+                      : () => app.go(VRoute.orderDetail, entityId: u.orderId!),
                 ),
+              const SizedBox(height: Gap.md),
             ],
 
             if (dispatchable.isNotEmpty) ...[
@@ -593,17 +489,6 @@ RiderRow? _riderFor(List<RiderRow> riders, String? riderId) {
   return null;
 }
 
-String _initialsOf(String? name) {
-  if (name == null || name.trim().isEmpty) return '?';
-  return name
-      .split(' ')
-      .where((part) => part.isNotEmpty)
-      .take(2)
-      .map((part) => part[0])
-      .join()
-      .toUpperCase();
-}
-
 /// V-19 — Active Run presentation. This is a preview/read model shell until
 /// the repo exposes a dedicated run read endpoint for the route id.
 class RunDetailScreen extends StatelessWidget {
@@ -612,92 +497,95 @@ class RunDetailScreen extends StatelessWidget {
   final String runId;
 
   @override
-  Widget build(BuildContext context) => PageBody(
-    children: [
-      Row(
-        children: [
-          Text(
-            runId,
-            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(width: 12),
-          const StatusChip('Active', success: true),
-        ],
-      ),
-      const SizedBox(height: 6),
-      Text(
-        'Bangsar · Ahmad Razi · VFY 7281',
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
-      const SizedBox(height: 10),
-      SizedBox(
-        height: 270,
-        width: double.infinity,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: CustomPaint(painter: _RoutePreviewPainter()),
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final text = Theme.of(context).textTheme;
+    return PageBody(
+      children: [
+        Row(
+          children: [
+            Flexible(child: Text(runId, style: text.headlineSmall)),
+            const SizedBox(width: Gap.md),
+            const StatusChip('Active', success: true),
+          ],
         ),
-      ),
-      const SizedBox(height: 12),
-      Row(
-        children: [
-          const Expanded(
-            child: Text(
-              '3 of 7 delivered',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+        const SizedBox(height: Gap.xs),
+        Text('Bangsar · Ahmad Razi · VFY 7281', style: text.bodySmall),
+        const SizedBox(height: Gap.md),
+        SizedBox(
+          height: 240,
+          width: double.infinity,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+            child: CustomPaint(
+              painter: _RoutePreviewPainter(
+                ground: c.subtle,
+                route: c.info,
+                road: c.card,
+              ),
             ),
           ),
-          Text('4 remaining', style: Theme.of(context).textTheme.bodySmall),
-        ],
-      ),
-      const SizedBox(height: 10),
-      ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: const LinearProgressIndicator(
-          value: 3 / 7,
-          minHeight: 10,
-          backgroundColor: Color(0xFFE3E7F0),
-          valueColor: AlwaysStoppedAnimation(Color(0xFF0864E8)),
         ),
-      ),
-      const SectionHeading('Next stop'),
-      CefListRow(
-        title: 'Nadia Rahman',
-        subtitle: 'Bangsar · 1.2 km · 8 min',
-        leading: Icon(
-          LucideIcons.mapPin,
-          size: Sizes.icon,
-          color: context.c.info,
+        const SizedBox(height: Gap.lg),
+        Row(
+          children: [
+            Expanded(child: Text('3 of 7 delivered', style: text.titleMedium)),
+            Text('4 remaining', style: text.bodySmall),
+          ],
         ),
-        trailing: const StatusChip('Next'),
-      ),
-      const SectionHeading('Upcoming stops'),
-      for (final i in const [
-        ('Firdaus Cafe', 'Mont Kiara · 2.1 km'),
-        ('Amy Lee', 'Damansara · 3.4 km'),
-        ('Restoran Ali', 'Petaling Jaya · 4.0 km'),
-      ])
-        CefListRow(title: i.$1, subtitle: i.$2),
-      const SizedBox(height: Gap.md),
-      const StateBlock.blocked(
-        'Route sequencing and live ETA are backend-owned. This screen is presentation-only until Phase 3 wiring.',
-      ),
-    ],
-  );
+        const SizedBox(height: Gap.sm),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+          child: LinearProgressIndicator(
+            value: 3 / 7,
+            minHeight: Gap.sm,
+            backgroundColor: c.subtle,
+            valueColor: AlwaysStoppedAnimation(c.info),
+          ),
+        ),
+        const SectionHeading('Next stop'),
+        CefListRow(
+          title: 'Nadia Rahman',
+          subtitle: 'Bangsar · 1.2 km · 8 min',
+          leading: Icon(
+            LucideIcons.mapPin,
+            size: Sizes.icon,
+            color: context.c.info,
+          ),
+          trailing: const StatusChip('Next'),
+        ),
+        const SectionHeading('Upcoming stops'),
+        for (final i in const [
+          ('Firdaus Cafe', 'Mont Kiara · 2.1 km'),
+          ('Amy Lee', 'Damansara · 3.4 km'),
+          ('Restoran Ali', 'Petaling Jaya · 4.0 km'),
+        ])
+          CefListRow(title: i.$1, subtitle: i.$2),
+        const SizedBox(height: Gap.md),
+        const StateBlock.blocked(
+          'Route sequencing and live ETA are backend-owned. This screen is presentation-only until Phase 3 wiring.',
+        ),
+      ],
+    );
+  }
 }
 
 /// Locked V-19 direction: a blue route with a Yellow driver marker, never a
 /// bare placeholder box. Illustrative only — real polylines/ETA are
 /// backend-owned and land in Phase 3.
 class _RoutePreviewPainter extends CustomPainter {
+  _RoutePreviewPainter({
+    required this.ground,
+    required this.route,
+    required this.road,
+  });
+  final Color ground, route, road;
+
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(
-      Offset.zero & size,
-      Paint()..color = const Color(0xFFF0F4F8),
-    );
+    canvas.drawRect(Offset.zero & size, Paint()..color = ground);
     final roads = Paint()
-      ..color = Colors.white
+      ..color = road
       ..strokeWidth = 5;
     for (var i = -2; i < 8; i++) {
       canvas.drawLine(
@@ -706,7 +594,7 @@ class _RoutePreviewPainter extends CustomPainter {
         roads,
       );
     }
-    final route = Path()
+    final path = Path()
       ..moveTo(size.width * .12, size.height * .82)
       ..quadraticBezierTo(
         size.width * .35,
@@ -721,9 +609,9 @@ class _RoutePreviewPainter extends CustomPainter {
         size.height * .18,
       );
     canvas.drawPath(
-      route,
+      path,
       Paint()
-        ..color = const Color(0xFF2A6EEC)
+        ..color = route
         ..style = PaintingStyle.stroke
         ..strokeWidth = 4
         ..strokeCap = StrokeCap.round,
@@ -732,7 +620,7 @@ class _RoutePreviewPainter extends CustomPainter {
       Offset(size.width * .12, size.height * .82),
       Offset(size.width * .58, size.height * .48),
     ]) {
-      canvas.drawCircle(stop, 5, Paint()..color = const Color(0xFF2A6EEC));
+      canvas.drawCircle(stop, 5, Paint()..color = route);
       canvas.drawCircle(
         stop,
         5,
@@ -751,7 +639,7 @@ class _RoutePreviewPainter extends CustomPainter {
         size.width * fraction.dx,
         size.height * fraction.dy,
       );
-      canvas.drawCircle(center, 12, Paint()..color = const Color(0xFF0864E8));
+      canvas.drawCircle(center, 12, Paint()..color = route);
       final check = Path()
         ..moveTo(center.dx - 4, center.dy)
         ..lineTo(center.dx - 1, center.dy + 3)
@@ -765,14 +653,14 @@ class _RoutePreviewPainter extends CustomPainter {
       );
     }
     final driver = Offset(size.width * .90, size.height * .18);
-    canvas.drawCircle(driver, 20, Paint()..color = const Color(0xFFFEC819));
+    canvas.drawCircle(driver, 20, Paint()..color = CefColors.accent);
     final marker = TextPainter(
       text: TextSpan(
         text: String.fromCharCode(Icons.two_wheeler.codePoint),
         style: TextStyle(
           fontFamily: Icons.two_wheeler.fontFamily,
           fontSize: 23,
-          color: const Color(0xFF12213E),
+          color: CefColors.navy,
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -789,7 +677,10 @@ class _RoutePreviewPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _RoutePreviewPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _RoutePreviewPainter oldDelegate) =>
+      oldDelegate.ground != ground ||
+      oldDelegate.route != route ||
+      oldDelegate.road != road;
 }
 
 /// V-26 / V-27 — Service area. Coverage is a server decision; this screen
@@ -879,9 +770,7 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
                         ? LucideIcons.circleCheck
                         : LucideIcons.circleAlert,
                     size: Sizes.icon,
-                    color: configured
-                        ? context.c.iconColor
-                        : context.c.attention,
+                    color: configured ? context.c.success : context.c.attention,
                   ),
                   const SizedBox(width: Gap.md),
                   Expanded(
@@ -898,42 +787,10 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
               ),
             ),
             const SectionHeading('How far do you deliver?'),
-            SizedBox(
-              height: 190,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(Sizes.cardRadius),
-                child: CustomPaint(
-                  painter: _CoveragePreviewPainter(radiusKm: radiusKm),
-                  child: const Center(
-                    child: Icon(
-                      LucideIcons.mapPin,
-                      color: CefColors.navy,
-                      size: 30,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            SizedBox(height: 190, child: CoveragePreview(radiusKm: radiusKm)),
             const SizedBox(height: Gap.md),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Delivery radius',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                Text(
-                  '${radiusKm.round()} km',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-              ],
-            ),
-            Slider(
-              value: radiusKm,
-              min: 2,
-              max: 20,
-              divisions: 18,
-              activeColor: CefColors.accent,
+            RadiusSlider(
+              radiusKm: radiusKm,
               onChanged: (v) => setState(() => radiusKm = v),
             ),
             if (error != null)
@@ -941,7 +798,8 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
                 padding: const EdgeInsets.only(bottom: Gap.sm),
                 child: Text(
                   error!,
-                  style: TextStyle(color: context.c.attention, fontSize: 13),
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: context.c.attention),
                 ),
               ),
             const SizedBox(height: Gap.sm),
@@ -954,11 +812,7 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
             CefListRow(
               title: 'Manage zones',
               subtitle: 'See and configure the zones you deliver to',
-              leading: Icon(
-                LucideIcons.mapPin,
-                size: Sizes.icon,
-                color: context.c.info,
-              ),
+              icon: LucideIcons.mapPin,
               onTap: () => app.go(VRoute.zoneConfiguration),
             ),
           ],
@@ -968,25 +822,107 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
   }
 }
 
-class _CoveragePreviewPainter extends CustomPainter {
-  _CoveragePreviewPainter({required this.radiusKm});
+/// Illustrative coverage circle around the pickup pin, shared by the setup
+/// wizard (V-09) and the Service Area screen (V-26) so both draw the same
+/// preview. Fills whatever box its parent gives it.
+class CoveragePreview extends StatelessWidget {
+  const CoveragePreview({super.key, required this.radiusKm});
   final double radiusKm;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawRect(
-      Offset.zero & size,
-      Paint()..color = const Color(0xFFF0F4F8),
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(Sizes.cardRadius),
+      child: CustomPaint(
+        painter: _CoveragePreviewPainter(
+          radiusKm: radiusKm,
+          ground: c.subtle,
+          coverage: c.info,
+        ),
+        child: const Center(
+          child: Icon(LucideIcons.mapPin, color: CefColors.navy, size: 30),
+        ),
+      ),
     );
+  }
+}
+
+/// "Delivery radius" label + value and the 2–20 km slider, shared by V-09
+/// and V-26 so the radius control has one treatment.
+class RadiusSlider extends StatelessWidget {
+  const RadiusSlider({
+    super.key,
+    required this.radiusKm,
+    required this.onChanged,
+  });
+  final double radiusKm;
+  final ValueChanged<double> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final text = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Delivery radius', style: text.titleSmall),
+            Text('${radiusKm.round()} km', style: text.titleSmall),
+          ],
+        ),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            trackHeight: 4,
+            activeTrackColor: CefColors.accent,
+            inactiveTrackColor: c.border,
+            thumbColor: CefColors.accent,
+            overlayColor: CefColors.accent.withValues(alpha: .16),
+            tickMarkShape: SliderTickMarkShape.noTickMark,
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+            trackShape: const RoundedRectSliderTrackShape(),
+            showValueIndicator: ShowValueIndicator.never,
+          ),
+          child: Slider(
+            value: radiusKm,
+            min: 2,
+            max: 20,
+            divisions: 18,
+            onChanged: onChanged,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CoveragePreviewPainter extends CustomPainter {
+  _CoveragePreviewPainter({
+    required this.radiusKm,
+    required this.ground,
+    required this.coverage,
+  });
+  final double radiusKm;
+  final Color ground, coverage;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(Offset.zero & size, Paint()..color = ground);
     final center = size.center(Offset.zero);
     final maxRadius = size.shortestSide * .42;
     final r = maxRadius * (radiusKm / 20).clamp(.25, 1.0);
-    canvas.drawCircle(center, r, Paint()..color = const Color(0x332A6EEC));
+    canvas.drawCircle(
+      center,
+      r,
+      Paint()..color = coverage.withValues(alpha: .2),
+    );
     canvas.drawCircle(
       center,
       r,
       Paint()
-        ..color = const Color(0xFF2A6EEC)
+        ..color = coverage
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2,
     );
@@ -994,5 +930,7 @@ class _CoveragePreviewPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _CoveragePreviewPainter oldDelegate) =>
-      oldDelegate.radiusKm != radiusKm;
+      oldDelegate.radiusKm != radiusKm ||
+      oldDelegate.ground != ground ||
+      oldDelegate.coverage != coverage;
 }

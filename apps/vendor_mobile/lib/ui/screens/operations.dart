@@ -5,10 +5,10 @@ import '../../core/app_state.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/models.dart';
-import '../../data/vendor_repository.dart';
 import '../async_view.dart';
 import '../shell.dart';
 import '../widgets.dart';
+import 'planning.dart' show CoveragePreview, RadiusSlider;
 import 'today_content.dart';
 
 String _formatTime(DateTime t) {
@@ -16,9 +16,6 @@ String _formatTime(DateTime t) {
   final m = t.minute.toString().padLeft(2, '0');
   return '$h:$m ${t.hour < 12 ? 'AM' : 'PM'}';
 }
-
-Widget _plainIcon(BuildContext context, IconData icon, {Color? color}) =>
-    Icon(icon, size: Sizes.icon, color: color ?? context.c.iconColor);
 
 /// V-06 — Welcome. Opens first-time business setup for a brand-new demo
 /// account; existing accounts skip straight to Today. Presentation only —
@@ -38,88 +35,42 @@ class WelcomeSetupScreen extends StatelessWidget {
       ('Pickup Location', 'Where deliveries start from', LucideIcons.mapPin),
       ('Service Area', 'How far you deliver', LucideIcons.map),
     ];
+    final text = Theme.of(context).textTheme;
     return PageBody(
       children: [
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF102344), Color(0xFF1B3668), Color(0xFF27427E)],
-            ),
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-          ),
+        HeroSurface(
+          padding: const EdgeInsets.all(Gap.xl),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Let’s set up your business',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 25,
-                  height: 1.14,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: text.headlineSmall?.copyWith(color: Colors.white),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: Gap.sm),
               Text(
                 'Just a few details before you start delivering with '
                 'Cefflo. Takes about 2 minutes.',
-                style: TextStyle(
+                style: text.bodyMedium?.copyWith(
                   color: Colors.white.withValues(alpha: .82),
-                  fontSize: 14.5,
-                  height: 1.4,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: Gap.section),
+        const SizedBox(height: Gap.md),
         for (final (index, step) in steps.indexed)
-          Padding(
-            padding: const EdgeInsets.only(bottom: Gap.cardGap),
-            child: Row(
-              children: [
-                Container(
-                  width: 34,
-                  height: 34,
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF0F3F8),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    '${index + 1}',
-                    style: const TextStyle(
-                      color: CefColors.navy,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: Gap.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        step.$1,
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        step.$2,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(step.$3, size: Sizes.icon, color: context.c.textSecondary),
-              ],
+          CefListRow(
+            title: step.$1,
+            subtitle: step.$2,
+            leading: CefAvatar('${index + 1}'),
+            trailing: Icon(
+              step.$3,
+              size: Sizes.icon,
+              color: context.c.textSecondary,
             ),
           ),
-        const SizedBox(height: Gap.section),
+        const SizedBox(height: Gap.xxl),
         CefButton('Get Started', onTap: () => app.go(VRoute.setupBusinessInfo)),
       ],
     );
@@ -138,39 +89,41 @@ class _SetupStepHeader extends StatelessWidget {
   final String title, subtitle;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Gap.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (var i = 0; i < totalSteps; i++)
-            Padding(
-              padding: const EdgeInsets.only(right: 6),
-              child: Container(
-                width: i == step - 1 ? 22 : 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: i <= step - 1
-                      ? CefColors.accent
-                      : const Color(0xFFE3E6EE),
-                  borderRadius: BorderRadius.circular(4),
+          Row(
+            children: [
+              for (var i = 0; i < totalSteps; i++)
+                Padding(
+                  padding: const EdgeInsets.only(right: Gap.xs),
+                  child: Container(
+                    width: i == step - 1 ? Gap.xl : Gap.sm,
+                    height: Gap.sm,
+                    decoration: BoxDecoration(
+                      color: i <= step - 1
+                          ? CefColors.accent
+                          : context.c.border,
+                      borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+                    ),
+                  ),
                 ),
-              ),
-            ),
+              const SizedBox(width: Gap.xs),
+              Text('Step $step of $totalSteps', style: text.bodySmall),
+            ],
+          ),
+          const SizedBox(height: Gap.md),
+          Text(title, style: text.headlineSmall),
+          const SizedBox(height: Gap.xs),
+          Text(subtitle, style: text.bodyMedium),
         ],
       ),
-      const SizedBox(height: 8),
-      Text(
-        'Step $step of $totalSteps',
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
-      const SizedBox(height: 10),
-      Text(title, style: Theme.of(context).textTheme.titleLarge),
-      const SizedBox(height: 4),
-      Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
-      const SizedBox(height: Gap.section),
-    ],
-  );
+    );
+  }
 }
 
 /// V-07 — First-time business information. Required fields only, per the
@@ -239,25 +192,16 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
               'Business Type',
               style: Theme.of(context).textTheme.labelLarge,
             ),
-            const SizedBox(height: Gap.xs),
+            const SizedBox(height: Gap.sm),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: Gap.sm,
+              runSpacing: Gap.sm,
               children: [
                 for (final t in _types)
-                  ChoiceChip(
-                    label: Text(t),
+                  CefChoiceChip(
+                    label: t,
                     selected: type == t,
-                    onSelected: (_) => setState(() => type = t),
-                    selectedColor: CefColors.accent,
-                    labelStyle: TextStyle(
-                      color: type == t
-                          ? CefColors.onAccent
-                          : context.c.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    backgroundColor: context.c.card,
-                    side: BorderSide(color: context.c.border),
+                    onTap: () => setState(() => type = t),
                   ),
               ],
             ),
@@ -320,7 +264,7 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
       Container(
         height: 180,
         decoration: BoxDecoration(
-          color: const Color(0xFFEAF0F4),
+          color: context.c.subtle,
           borderRadius: BorderRadius.circular(Sizes.cardRadius),
           border: Border.all(color: context.c.border),
         ),
@@ -330,12 +274,19 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
               child: Icon(LucideIcons.mapPin, size: 44, color: CefColors.navy),
             ),
             Positioned(
-              right: 12,
-              bottom: 12,
-              child: CircleAvatar(
-                backgroundColor: Colors.white,
+              right: Gap.md,
+              bottom: Gap.md,
+              child: Container(
+                width: Sizes.tapTarget,
+                height: Sizes.tapTarget,
+                decoration: BoxDecoration(
+                  color: context.c.card,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: context.c.border),
+                ),
                 child: Icon(
                   LucideIcons.locateFixed,
+                  size: Sizes.icon,
                   color: context.c.iconColor,
                 ),
               ),
@@ -343,7 +294,7 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
           ],
         ),
       ),
-      const SizedBox(height: Gap.md),
+      const SizedBox(height: Gap.lg),
       CefField(
         label: 'Pickup Address',
         controller: address,
@@ -387,86 +338,58 @@ class _SetupServiceAreaScreenState extends State<SetupServiceAreaScreen> {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    return PageBody(
-      children: [
-        const _SetupStepHeader(
-          step: 3,
-          totalSteps: 3,
-          title: 'How far do you deliver?',
-          subtitle: 'Cefflo uses this to decide which orders you can accept.',
-        ),
-        SizedBox(
-          height: 190,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-            child: CustomPaint(
-              painter: _CoveragePreviewPainter(radiusKm: radiusKm),
-              child: const Center(
-                child: Icon(
-                  LucideIcons.mapPin,
-                  color: CefColors.navy,
-                  size: 30,
+    // The coverage preview absorbs the spare height so "Finish Setup" sits
+    // at the bottom of the viewport on tall phones instead of leaving dead
+    // space below it; on short phones the preview keeps its minimum and the
+    // page scrolls.
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(
+                Gap.gutter,
+                Gap.md,
+                Gap.gutter,
+                Gap.xxl,
+              ),
+              sliver: SliverFillRemaining(
+                hasScrollBody: false,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const _SetupStepHeader(
+                      step: 3,
+                      totalSteps: 3,
+                      title: 'How far do you deliver?',
+                      subtitle: 'Cefflo uses this to decide which orders you can accept.',
+                    ),
+                    Expanded(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(minHeight: 190),
+                        child: CoveragePreview(radiusKm: radiusKm),
+                      ),
+                    ),
+                    const SizedBox(height: Gap.lg),
+                    RadiusSlider(
+                      radiusKm: radiusKm,
+                      onChanged: (v) => setState(() => radiusKm = v),
+                    ),
+                    const SizedBox(height: Gap.lg),
+                    CefButton(
+                      'Finish Setup',
+                      onTap: () => app.go(VRoute.setupComplete),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
-        ),
-        const SizedBox(height: Gap.md),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Delivery radius',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            Text(
-              '${radiusKm.round()} km',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
           ],
         ),
-        Slider(
-          value: radiusKm,
-          min: 2,
-          max: 20,
-          divisions: 18,
-          activeColor: CefColors.accent,
-          onChanged: (v) => setState(() => radiusKm = v),
-        ),
-        const SizedBox(height: Gap.sm),
-        CefButton('Finish Setup', onTap: () => app.go(VRoute.setupComplete)),
-      ],
+      ),
     );
   }
-}
-
-class _CoveragePreviewPainter extends CustomPainter {
-  _CoveragePreviewPainter({required this.radiusKm});
-  final double radiusKm;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawRect(
-      Offset.zero & size,
-      Paint()..color = const Color(0xFFF0F4F8),
-    );
-    final center = size.center(Offset.zero);
-    final maxRadius = size.shortestSide * .42;
-    final r = maxRadius * (radiusKm / 20).clamp(.25, 1.0);
-    canvas.drawCircle(center, r, Paint()..color = const Color(0x332A6EEC));
-    canvas.drawCircle(
-      center,
-      r,
-      Paint()
-        ..color = const Color(0xFF2A6EEC)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _CoveragePreviewPainter oldDelegate) =>
-      oldDelegate.radiusKm != radiusKm;
 }
 
 /// V-10 — Setup Complete presentation. It does not persist anything; real
@@ -483,31 +406,16 @@ class SetupCompleteScreen extends StatelessWidget {
       ('Team & Riders', 'Ready', LucideIcons.users),
       ('Preferences', 'Set', LucideIcons.settings),
     ];
+    final text = Theme.of(context).textTheme;
     return PageBody(
       children: [
-        Container(
-          height: 256,
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF102344), Color(0xFF1B3668), Color(0xFF27427E)],
-            ),
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-          ),
+        HeroSurface(
+          padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.xxxl, Gap.xl, Gap.xl),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Spacer(),
-              RichText(
-                text: const TextSpan(
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 32,
-                    height: 1.04,
-                    fontWeight: FontWeight.w800,
-                  ),
+              Text.rich(
+                const TextSpan(
                   children: [
                     TextSpan(text: 'Your Business\nis '),
                     TextSpan(
@@ -516,33 +424,34 @@ class SetupCompleteScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+                style: text.displaySmall?.copyWith(
+                  color: Colors.white,
+                  height: 1.1,
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: Gap.md),
               Text(
                 'Your delivery setup is complete.\nLet’s start delivering with Cefflo.',
-                style: TextStyle(
+                style: text.bodyMedium?.copyWith(
                   color: Colors.white.withValues(alpha: .82),
-                  fontSize: 14.5,
-                  height: 1.4,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: Gap.md),
+        const SizedBox(height: Gap.sm),
         for (final item in checks)
           CefListRow(
             title: item.$1,
             subtitle: item.$2,
-            leading: _plainIcon(context, item.$3),
+            icon: item.$3,
             trailing: Icon(
               LucideIcons.circleCheck,
               size: Sizes.icon,
               color: context.c.success,
             ),
           ),
-        const SizedBox(height: Gap.section),
+        const SizedBox(height: Gap.xxl),
         CefButton('Go to Today', onTap: () => app.switchTab(NavTab.today)),
       ],
     );
@@ -627,7 +536,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 CefListRow(
                   title: o.reference,
                   subtitle: '${o.customerName} · ${o.deliveryAddress}',
-                  leading: _plainIcon(context, LucideIcons.package),
+                  icon: LucideIcons.package,
                   trailing: StatusChip(
                     o.status.label,
                     attention: o.status == DeliveryStatus.issue,
@@ -657,24 +566,24 @@ class OrderDetailScreen extends StatelessWidget {
         onRefresh: reload,
         children: [
           _OrderHeroCard(order: order),
-          const SizedBox(height: Gap.section),
+          const SizedBox(height: Gap.sm),
           _OrderInfoRow(
             icon: LucideIcons.user,
             label: 'Customer',
             title: order.customerName,
             subtitle: order.customerPhone,
             trailing: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                _StackedAction(
+                IconAction(
                   icon: LucideIcons.phone,
-                  label: 'Call',
+                  tooltip: 'Call',
                   onTap: () =>
                       showNotWiredYetSnackBar(context, 'Calling the customer'),
                 ),
-                const SizedBox(width: Gap.sm),
-                _StackedAction(
+                IconAction(
                   icon: LucideIcons.messageCircle,
-                  label: 'Message',
+                  tooltip: 'Message',
                   onTap: () => showNotWiredYetSnackBar(
                     context,
                     'Messaging the customer',
@@ -683,29 +592,24 @@ class OrderDetailScreen extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: Gap.lg),
           _OrderInfoRow(
             icon: LucideIcons.mapPin,
             label: 'Deliver to',
             title: order.deliveryAddress,
             subtitle: '59100 Kuala Lumpur',
-            trailing: _TintedPillButton(
-              icon: LucideIcons.map,
-              label: 'Navigate',
+            trailing: IconAction(
+              icon: LucideIcons.navigation,
+              tooltip: 'Navigate',
               onTap: () =>
                   showNotWiredYetSnackBar(context, 'Navigating to the address'),
             ),
           ),
-          if ((order.notes ?? '').isNotEmpty) ...[
-            const SizedBox(height: Gap.lg),
+          if ((order.notes ?? '').isNotEmpty)
             _OrderInfoRow(
               icon: LucideIcons.fileText,
               label: 'Delivery Instruction',
               title: order.notes!,
             ),
-          ],
-          const SizedBox(height: Gap.section),
-          Divider(height: 1, color: context.c.border),
           SectionHeading(
             'Items (${order.items.length})',
             trailing: _TintedLink(
@@ -714,11 +618,14 @@ class OrderDetailScreen extends StatelessWidget {
               onTap: () => showNotWiredYetSnackBar(context, 'The receipt view'),
             ),
           ),
-          for (final (index, item) in order.items.indexed) ...[
-            if (index > 0) Divider(height: 1, color: context.c.border),
-            _OrderItemRow(item: item, index: index),
-          ],
-          const SizedBox(height: Gap.section),
+          for (final (index, item) in order.items.indexed)
+            CefListRow(
+              title: item.name,
+              subtitle:
+                  '${item.quantity} × RM${(item.unitPrice ?? 0).toStringAsFixed(2)}',
+              leading: _ItemThumb(index: index),
+            ),
+          const SizedBox(height: Gap.xxl),
           CefButton(
             order.status == DeliveryStatus.readyForPickup
                 ? 'Mark as On the Way'
@@ -734,26 +641,17 @@ class OrderDetailScreen extends StatelessWidget {
   }
 }
 
-/// Blue gradient summary card that opens V-13: reference, status pill, meta
-/// line and the three-step tracker all live inside it.
+/// Hero summary that opens V-13: reference, status, meta line and the
+/// three-step tracker all live inside the one shared hero surface.
 class _OrderHeroCard extends StatelessWidget {
   const _OrderHeroCard({required this.order});
   final VendorOrder order;
 
   @override
   Widget build(BuildContext context) {
-    final c = context.c;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [c.info, const Color(0xFF0B57C7)],
-        ),
-      ),
+    final text = Theme.of(context).textTheme;
+    return HeroSurface(
+      padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.lg, Gap.lg, Gap.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -763,27 +661,21 @@ class _OrderHeroCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   order.reference,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 27,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.6,
-                  ),
+                  style: text.headlineSmall?.copyWith(color: Colors.white),
                 ),
               ),
+              const SizedBox(width: Gap.sm),
               _HeroStatusPill(status: order.status),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: Gap.xs),
           Text(
             'Today, ${_formatTime(order.createdAt)}  ·  ${order.items.length} items',
-            style: TextStyle(
+            style: text.bodySmall?.copyWith(
               color: Colors.white.withValues(alpha: .78),
-              fontSize: 13.5,
-              fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: Gap.lg),
           _OrderProgress(status: order.status),
         ],
       ),
@@ -791,48 +683,29 @@ class _OrderHeroCard extends StatelessWidget {
   }
 }
 
+/// The canonical [StatusChip] on a solid card-coloured backing: the chip's
+/// light tint is only legible over a light surface, not over the hero.
 class _HeroStatusPill extends StatelessWidget {
   const _HeroStatusPill({required this.status});
   final DeliveryStatus status;
 
   @override
-  Widget build(BuildContext context) {
-    final attention = status == DeliveryStatus.issue;
-    final dot = attention ? context.c.attention : context.c.success;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: attention
-            ? context.c.attention.withValues(alpha: .16)
-            : const Color(0xFFDFF4E7),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 7,
-            height: 7,
-            decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            status.label,
-            style: TextStyle(
-              color: dot,
-              fontSize: 12.5,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: ShapeDecoration(
+      color: context.c.card,
+      shape: const StadiumBorder(),
+    ),
+    child: StatusChip(
+      status.label,
+      attention: status == DeliveryStatus.issue,
+      success: OrderTab.ongoing.accepts(status),
+    ),
+  );
 }
 
-/// A labelled row: tinted circular icon, label + value, optional trailing
-/// action. Replaces the bordered detail cards -- the reference draws these
-/// as plain rows on the page, not as cards.
+/// A labelled detail line (Customer / Deliver to / Delivery Instruction):
+/// the [CefListRow] geometry, plus a caption above the value and a value
+/// that wraps instead of truncating (instructions and addresses run long).
 class _OrderInfoRow extends StatelessWidget {
   const _OrderInfoRow({
     required this.icon,
@@ -850,129 +723,36 @@ class _OrderInfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: c.info.withValues(alpha: .1),
-            shape: BoxShape.circle,
+    final text = Theme.of(context).textTheme;
+    return Container(
+      constraints: const BoxConstraints(minHeight: 60),
+      padding: const EdgeInsets.symmetric(horizontal: Gap.xs, vertical: Gap.sm),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: c.border)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: Sizes.icon, color: c.iconColor),
+          const SizedBox(width: Gap.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: text.bodySmall),
+                const SizedBox(height: 2),
+                Text(title, style: text.titleSmall),
+                if (subtitle != null) Text(subtitle!, style: text.bodySmall),
+              ],
+            ),
           ),
-          child: Icon(icon, size: 20, color: c.info),
-        ),
-        const SizedBox(width: Gap.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: Theme.of(context).textTheme.bodySmall),
-              const SizedBox(height: 2),
-              Text(title, style: Theme.of(context).textTheme.titleSmall),
-              if (subtitle != null)
-                Text(subtitle!, style: Theme.of(context).textTheme.bodySmall),
-            ],
-          ),
-        ),
-        if (trailing != null) ...[const SizedBox(width: Gap.sm), trailing!],
-      ],
-    );
-  }
-}
-
-/// Circular tinted icon with its label underneath (Call / Message).
-class _StackedAction extends StatelessWidget {
-  const _StackedAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return Semantics(
-      button: true,
-      label: label,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: c.info.withValues(alpha: .1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, size: 20, color: c.info),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.bodySmall
-                    ?.copyWith(fontSize: 11.5),
-              ),
-            ],
-          ),
-        ),
+          if (trailing != null) ...[const SizedBox(width: Gap.sm), trailing!],
+        ],
       ),
     );
   }
 }
 
-/// Tinted pill button used for the inline Navigate action.
-class _TintedPillButton extends StatelessWidget {
-  const _TintedPillButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return Material(
-      color: c.info.withValues(alpha: .1),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 17, color: c.info),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  color: c.info,
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Inline text link with a leading icon (View receipt).
+/// Inline text link with a leading icon (View receipt / View all).
 class _TintedLink extends StatelessWidget {
   const _TintedLink({
     required this.icon,
@@ -988,21 +768,18 @@ class _TintedLink extends StatelessWidget {
     final c = context.c;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(Gap.sm),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        padding: const EdgeInsets.all(Gap.xs),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 17, color: c.info),
-            const SizedBox(width: 6),
+            Icon(icon, size: 16, color: c.info),
+            const SizedBox(width: Gap.xs),
             Text(
               label,
-              style: TextStyle(
-                color: c.info,
-                fontSize: 13.5,
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(context).textTheme.labelLarge
+                  ?.copyWith(color: c.info),
             ),
           ],
         ),
@@ -1011,56 +788,27 @@ class _TintedLink extends StatelessWidget {
   }
 }
 
-/// One item line: thumbnail, name, quantity x unit price, chevron.
-class _OrderItemRow extends StatelessWidget {
-  const _OrderItemRow({required this.item, required this.index});
-  final OrderItem item;
+/// Item thumbnail placeholder used as the leading of an item [CefListRow].
+class _ItemThumb extends StatelessWidget {
+  const _ItemThumb({required this.index});
   final int index;
 
+  static const _icons = [
+    LucideIcons.cakeSlice,
+    LucideIcons.coffee,
+    LucideIcons.cookie,
+  ];
+
   @override
-  Widget build(BuildContext context) {
-    const icons = [
-      LucideIcons.cakeSlice,
-      LucideIcons.coffee,
-      LucideIcons.cookie,
-    ];
-    final c = context.c;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F3F7),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              icons[index % icons.length],
-              color: CefColors.navy,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: Gap.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(item.name, style: Theme.of(context).textTheme.titleSmall),
-                const SizedBox(height: 2),
-                Text(
-                  '${item.quantity} × RM${(item.unitPrice ?? 0).toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ),
-          Icon(LucideIcons.chevronRight, size: 18, color: c.textSecondary),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Container(
+    width: Sizes.avatar,
+    height: Sizes.avatar,
+    decoration: BoxDecoration(
+      color: context.c.subtle,
+      borderRadius: BorderRadius.circular(Gap.md),
+    ),
+    child: Icon(_icons[index % _icons.length], color: CefColors.navy, size: 20),
+  );
 }
 
 /// V-14 — How the order gets created: one manual order, or a bulk import.
@@ -1070,14 +818,13 @@ class NewOrderEntryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    final c = context.c;
+    final text = Theme.of(context).textTheme;
     return PageBody(
       children: [
         _EntryModeCard(
           icon: LucideIcons.filePlus,
           title: 'Manual Entry',
           subtitle: 'Create a single order step by step',
-          primary: true,
           onTap: () => app.go(VRoute.newOrderManual),
         ),
         const SizedBox(height: Gap.cardGap),
@@ -1085,7 +832,6 @@ class NewOrderEntryScreen extends StatelessWidget {
           icon: LucideIcons.cloudUpload,
           title: 'Import Orders',
           subtitle: 'Import multiple orders from your files',
-          primary: false,
           onTap: () => app.go(VRoute.importOrders),
         ),
         SectionHeading(
@@ -1110,58 +856,22 @@ class NewOrderEntryScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          source.sampleBatch,
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
+                        Text(source.sampleBatch, style: text.titleSmall),
                         const SizedBox(height: 2),
                         Text(
                           '${source.label} · ${source.sampleCount} orders',
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: text.bodySmall,
                         ),
                       ],
                     ),
                   ),
+                  const SizedBox(width: Gap.sm),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(
-                        source.sampleDate,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 9,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: c.success.withValues(alpha: .12),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: c.success,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 5),
-                            Text(
-                              'Connected',
-                              style: TextStyle(
-                                color: c.success,
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      Text(source.sampleDate, style: text.bodySmall),
+                      const SizedBox(height: Gap.xs),
+                      const StatusChip('Connected', success: true),
                     ],
                   ),
                 ],
@@ -1173,85 +883,43 @@ class NewOrderEntryScreen extends StatelessWidget {
   }
 }
 
-/// The two big mode cards at the top of V-14. The selected/primary one is
-/// filled with the vendor blue, the other sits on the plain surface.
+/// One of the two mode cards at the top of V-14: a tappable [CefCard] with
+/// the mode's icon, title, description and a navigation chevron.
 class _EntryModeCard extends StatelessWidget {
   const _EntryModeCard({
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.primary,
     required this.onTap,
   });
   final IconData icon;
   final String title;
   final String subtitle;
-  final bool primary;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    final fg = primary ? Colors.white : c.textPrimary;
-    return Material(
-      color: primary ? c.info : c.card,
-      borderRadius: BorderRadius.circular(Sizes.cardRadius),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(Sizes.cardRadius),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-            border: primary ? null : Border.all(color: c.border),
+    final text = Theme.of(context).textTheme;
+    return CefCard(
+      onTap: onTap,
+      child: Row(
+        children: [
+          Icon(icon, size: Sizes.icon, color: c.info),
+          const SizedBox(width: Gap.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: text.titleMedium),
+                const SizedBox(height: 2),
+                Text(subtitle, style: text.bodySmall),
+              ],
+            ),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: primary
-                      ? Colors.white.withValues(alpha: .18)
-                      : c.info.withValues(alpha: .1),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(
-                  icon,
-                  size: 26,
-                  color: primary ? Colors.white : c.info,
-                ),
-              ),
-              const SizedBox(width: Gap.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleMedium
-                          ?.copyWith(color: fg),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: primary
-                            ? Colors.white.withValues(alpha: .85)
-                            : c.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                LucideIcons.chevronRight,
-                size: 20,
-                color: primary ? Colors.white : c.textSecondary,
-              ),
-            ],
-          ),
-        ),
+          const SizedBox(width: Gap.sm),
+          Icon(LucideIcons.chevronRight, size: 18, color: c.textSecondary),
+        ],
       ),
     );
   }
@@ -1307,8 +975,8 @@ class _ImportSourceMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    width: 42,
-    height: 42,
+    width: Sizes.avatar,
+    height: Sizes.avatar,
     child: Center(
       child: Image.asset(
         source.assetPath,
@@ -1341,12 +1009,11 @@ class ImportOrdersScreen extends StatelessWidget {
           'Choose a source to import multiple orders.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: Gap.lg),
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(Gap.cardPadding),
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F6F8),
-            border: Border.all(color: c.border),
+            color: c.subtle,
             borderRadius: BorderRadius.circular(Sizes.cardRadius),
           ),
           child: Column(
@@ -1372,20 +1039,20 @@ class ImportOrdersScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        width: 22,
-                        height: 22,
+                        width: Gap.xl,
+                        height: Gap.xl,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: c.info.withValues(alpha: .14),
+                          color: c.card,
                           shape: BoxShape.circle,
                         ),
                         child: Text(
                           '${index + 1}',
-                          style: TextStyle(
-                            color: c.info,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: CefColors.navy,
+                                fontWeight: FontWeight.w700,
+                              ),
                         ),
                       ),
                       const SizedBox(width: Gap.sm),
@@ -1430,9 +1097,10 @@ class ImportOrdersScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                  const SizedBox(width: Gap.sm),
                   Icon(
                     LucideIcons.chevronRight,
-                    size: 20,
+                    size: 18,
                     color: c.textSecondary,
                   ),
                 ],
@@ -1579,73 +1247,56 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
               : 'Update order details.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
-        const SizedBox(height: 16),
-        _FormSection(
-          icon: LucideIcons.user,
+        const _FormSection(
           title: 'Customer',
           subtitle: 'Select an existing customer or add a new one.',
-          child: Column(
-            children: [
-              CefField(
-                label: 'Customer name',
-                controller: name,
-                hint: 'Search customer by name, phone or email...',
-                prefixIcon: LucideIcons.search,
-                errorText: errors['name'],
-              ),
-              CefField(
-                label: 'Phone number',
-                controller: phone,
-                keyboardType: TextInputType.phone,
-                errorText: errors['phone'],
-              ),
-            ],
-          ),
         ),
-        const SizedBox(height: 12),
-        _FormSection(
-          icon: LucideIcons.mapPin,
-          title: 'Address',
-          subtitle: 'Delivery address',
-          child: CefField(
-            label: 'Address',
-            controller: address,
-            hint: 'Enter delivery address...',
-            maxLines: 2,
-            errorText: errors['address'],
-          ),
+        CefField(
+          label: 'Customer name',
+          controller: name,
+          hint: 'Search customer by name, phone or email...',
+          prefixIcon: LucideIcons.search,
+          errorText: errors['name'],
         ),
-        const SizedBox(height: 12),
-        _FormSection(
-          icon: LucideIcons.package,
-          title: 'Items',
-          subtitle: 'Add order items',
-          child: _PickerField(
-            hint: 'Add items to this order...',
-            onTap: () => showNotWiredYetSnackBar(context, 'Adding order items'),
-          ),
+        CefField(
+          label: 'Phone number',
+          controller: phone,
+          keyboardType: TextInputType.phone,
+          errorText: errors['phone'],
         ),
-        const SizedBox(height: 12),
-        _FormSection(
-          icon: LucideIcons.clipboardList,
+        const _FormSection(title: 'Address', subtitle: 'Delivery address'),
+        CefField(
+          label: 'Address',
+          controller: address,
+          hint: 'Enter delivery address...',
+          maxLines: 2,
+          errorText: errors['address'],
+        ),
+        const _FormSection(title: 'Items', subtitle: 'Add order items'),
+        _PickerField(
+          hint: 'Add items to this order...',
+          onTap: () => showNotWiredYetSnackBar(context, 'Adding order items'),
+        ),
+        const _FormSection(
           title: 'Instructions',
           subtitle: 'Special requests (optional)',
-          child: CefField(
-            label: 'Instruction',
-            controller: notes,
-            hint: 'Add delivery notes...',
-            maxLines: 2,
-          ),
+        ),
+        CefField(
+          label: 'Instruction',
+          controller: notes,
+          hint: 'Add delivery notes...',
+          maxLines: 2,
         ),
         if (error != null)
           Padding(
             padding: const EdgeInsets.only(bottom: Gap.md),
             child: Text(
               error!,
-              style: TextStyle(color: context.c.attention, fontSize: 13),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: context.c.attention),
             ),
           ),
-        const SizedBox(height: 16),
+        const SizedBox(height: Gap.md),
         CefButton(
           widget.isNew ? 'Review & Create' : 'Update Order',
           onTap: _save,
@@ -1781,7 +1432,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           height: 120,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: const Color(0xFFF0F3F8),
+            color: context.c.subtle,
             borderRadius: BorderRadius.circular(Sizes.cardRadius),
             border: Border.all(color: context.c.border),
           ),
@@ -1793,7 +1444,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 color: context.c.textSecondary,
                 size: 28,
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: Gap.sm),
               Text(
                 'Add product photo',
                 style: Theme.of(context).textTheme.bodySmall,
@@ -1801,57 +1452,25 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        _FormSection(
-          icon: LucideIcons.package,
-          title: 'Product Details',
-          child: Column(
-            children: [
-              CefField(
-                label: 'Product name',
-                controller: name,
-                errorText: errors['name'],
-              ),
-              CefField(
-                label: 'Description',
-                controller: description,
-                maxLines: 2,
-              ),
-              CefField(
-                label: 'Price (RM)',
-                controller: price,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                errorText: errors['price'],
-              ),
-            ],
-          ),
+        const _FormSection(title: 'Product Details'),
+        CefField(
+          label: 'Product name',
+          controller: name,
+          errorText: errors['name'],
         ),
-        const SizedBox(height: 12),
-        CefCard(
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Available',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    Text(
-                      'Show this product in your storefront',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-              CefSwitch(
-                value: active,
-                onChanged: (v) => setState(() => active = v),
-              ),
-            ],
+        CefField(label: 'Description', controller: description, maxLines: 2),
+        CefField(
+          label: 'Price (RM)',
+          controller: price,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          errorText: errors['price'],
+        ),
+        CefListRow(
+          title: 'Available',
+          subtitle: 'Show this product in your storefront',
+          trailing: CefSwitch(
+            value: active,
+            onChanged: (v) => setState(() => active = v),
           ),
         ),
         if (error != null)
@@ -1859,10 +1478,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             padding: const EdgeInsets.only(top: Gap.md),
             child: Text(
               error!,
-              style: TextStyle(color: context.c.attention, fontSize: 13),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: context.c.attention),
             ),
           ),
-        const SizedBox(height: 16),
+        const SizedBox(height: Gap.xxl),
         CefButton(
           widget.isNew ? 'Add Product' : 'Save Changes',
           busy: busy,
@@ -1873,6 +1493,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   }
 }
 
+/// The order-specific three-node delivery tracker drawn inside the order
+/// hero, so every colour is white-on-hero.
 class _OrderProgress extends StatelessWidget {
   const _OrderProgress({required this.status});
   final DeliveryStatus status;
@@ -1889,15 +1511,14 @@ class _OrderProgress extends StatelessWidget {
       DeliveryStatus.delivered => 2,
       _ => -1,
     };
-    // Rendered on the blue hero card, so every colour here is white-on-blue:
-    // reached nodes are solid white with a blue glyph, future nodes are a
+    // Reached nodes are solid white with a navy glyph, future nodes are a
     // translucent white wash.
     const icons = [
       LucideIcons.package,
       LucideIcons.truck,
       LucideIcons.circleCheck,
     ];
-    final blue = context.c.info;
+    final caption = Theme.of(context).textTheme.bodySmall;
     return Row(
       children: List.generate(labels.length, (index) {
         final reached = index <= active;
@@ -1916,8 +1537,8 @@ class _OrderProgress extends StatelessWidget {
                       ),
                     ),
                   Container(
-                    width: 34,
-                    height: 34,
+                    width: Gap.xxxl,
+                    height: Gap.xxxl,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: reached
@@ -1926,9 +1547,9 @@ class _OrderProgress extends StatelessWidget {
                     ),
                     child: Icon(
                       icons[index],
-                      size: 17,
+                      size: 16,
                       color: reached
-                          ? blue
+                          ? CefColors.navy
                           : Colors.white.withValues(alpha: .85),
                     ),
                   ),
@@ -1943,12 +1564,13 @@ class _OrderProgress extends StatelessWidget {
                     ),
                 ],
               ),
-              const SizedBox(height: 7),
+              const SizedBox(height: Gap.sm),
               Text(
                 labels[index],
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 11.5,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: caption?.copyWith(
                   fontWeight: reached ? FontWeight.w700 : FontWeight.w500,
                   color: Colors.white.withValues(alpha: reached ? 1 : .75),
                 ),
@@ -1961,140 +1583,49 @@ class _OrderProgress extends StatelessWidget {
   }
 }
 
+/// A form group's heading: the canonical [SectionHeading] with an optional
+/// one-line description under it. The group's fields follow as siblings.
 class _FormSection extends StatelessWidget {
-  const _FormSection({
-    required this.icon,
-    required this.title,
-    required this.child,
-    this.subtitle,
-  });
-  final IconData icon;
+  const _FormSection({required this.title, this.subtitle});
   final String title;
   final String? subtitle;
-  final Widget child;
+
   @override
-  Widget build(BuildContext context) => CefCard(
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: Gap.md),
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: context.c.info, size: 22),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: Theme.of(context).textTheme.titleMedium),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle!,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        child,
+        SectionHeading(title),
+        if (subtitle != null)
+          Text(subtitle!, style: Theme.of(context).textTheme.bodySmall),
       ],
     ),
   );
 }
 
-/// A field-shaped row that opens something instead of accepting typing --
-/// the reference draws Address and Items this way (placeholder + chevron).
+/// A field-shaped control that opens something instead of accepting typing
+/// (Items). Drawn through the theme's input decoration so it has exactly the
+/// [CefField] geometry, border and hint style.
 class _PickerField extends StatelessWidget {
   const _PickerField({required this.hint, required this.onTap});
   final String hint;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(Sizes.inputRadius),
-        child: Container(
-          height: 50,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(
-            color: c.card,
-            border: Border.all(color: c.border),
-            borderRadius: BorderRadius.circular(Sizes.inputRadius),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  hint,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ),
-              Icon(LucideIcons.chevronRight, size: 18, color: c.textSecondary),
-            ],
-          ),
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: Gap.md),
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(Sizes.inputRadius),
+      child: InputDecorator(
+        isEmpty: true,
+        decoration: InputDecoration(
+          hintText: hint,
+          suffixIcon: const Icon(LucideIcons.chevronRight, size: 20),
         ),
+        child: const SizedBox.shrink(),
       ),
-    );
-  }
-}
-
-/// Runs a backend action and only reports success when the call returns.
-class _ActionButton extends StatefulWidget {
-  const _ActionButton({
-    required this.label,
-    required this.action,
-    required this.onDone,
-  });
-  final String label;
-  final Future<void> Function() action;
-  final Future<void> Function() onDone;
-
-  @override
-  State<_ActionButton> createState() => _ActionButtonState();
-}
-
-class _ActionButtonState extends State<_ActionButton> {
-  bool busy = false;
-  String? error;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      CefButton(
-        widget.label,
-        busy: busy,
-        onTap: () async {
-          setState(() {
-            busy = true;
-            error = null;
-          });
-          try {
-            await widget.action();
-            await widget.onDone();
-          } on RepositoryError catch (e) {
-            if (mounted) setState(() => error = e.message);
-          } finally {
-            if (mounted) setState(() => busy = false);
-          }
-        },
-      ),
-      if (error != null)
-        Padding(
-          padding: const EdgeInsets.only(top: Gap.sm),
-          child: Text(
-            error!,
-            style: TextStyle(color: context.c.attention, fontSize: 13),
-          ),
-        ),
-    ],
+    ),
   );
 }

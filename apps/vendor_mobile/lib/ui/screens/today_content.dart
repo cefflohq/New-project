@@ -9,7 +9,7 @@ import '../shell.dart';
 import '../widgets.dart';
 
 /// V-11 — Today. Uses the same shared building blocks (PageBody,
-/// NavySummaryPanel, SectionHeading, FlatListRow) as every other screen, so
+/// NavySummaryPanel, SectionHeading, CefListRow) as every other screen, so
 /// its type/spacing/card density matches V-01..V-60 rather than a
 /// screen-specific set of hand-picked sizes.
 class TodayContent extends StatelessWidget {
@@ -106,7 +106,11 @@ class TodayContent extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.warning_rounded, color: c.attention, size: 30),
+                  Icon(
+                    LucideIcons.triangleAlert,
+                    color: c.attention,
+                    size: Sizes.icon,
+                  ),
                   const SizedBox(width: Gap.md),
                   Expanded(
                     child: Column(
@@ -140,12 +144,10 @@ class TodayContent extends StatelessWidget {
           'Recent Delivery',
           trailing: GestureDetector(
             onTap: () => app.switchTab(NavTab.orders),
-            child: const Text(
+            child: Text(
               'View All',
-              style: TextStyle(
-                color: Color(0xFF1769D2),
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(context).textTheme.labelLarge
+                  ?.copyWith(color: c.info),
             ),
           ),
         ),
@@ -159,18 +161,7 @@ class TodayContent extends StatelessWidget {
                 if (rows[i].$2.isNotEmpty) rows[i].$2,
                 rows[i].$3,
               ].join(' · '),
-              leading: CircleAvatar(
-                radius: 21,
-                backgroundColor: const Color(0xFFE9EEF5),
-                child: Text(
-                  rows[i].$1.split(' ').map((s) => s[0]).take(2).join(),
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: CefColors.navy,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+              leading: CefAvatar(rows[i].$1),
               trailing: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
