@@ -38,16 +38,17 @@ class WelcomeSetupScreen extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     return PageBody(
       children: [
+        // A compact brand panel under the shell header: titleMedium, not a
+        // second page title.
         HeroSurface(
-          padding: const EdgeInsets.all(Gap.xl),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Let’s set up your business',
-                style: text.headlineSmall?.copyWith(color: Colors.white),
+                style: text.titleMedium?.copyWith(color: Colors.white),
               ),
-              const SizedBox(height: Gap.sm),
+              const SizedBox(height: Gap.xs),
               Text(
                 'Just a few details before you start delivering with '
                 'Cefflo. Takes about 2 minutes.',
@@ -58,7 +59,7 @@ class WelcomeSetupScreen extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: Gap.md),
+        const SizedBox(height: Gap.sm),
         for (final (index, step) in steps.indexed)
           CefListRow(
             title: step.$1,
@@ -77,22 +78,25 @@ class WelcomeSetupScreen extends StatelessWidget {
   }
 }
 
-/// Shared step header for the V07–V09 setup wizard.
+/// Shared step header for the V07–V09 setup wizard: the compact progress
+/// line, then the archetype-G [SectionHeading] (icon + title + subtitle).
 class _SetupStepHeader extends StatelessWidget {
   const _SetupStepHeader({
     required this.step,
     required this.totalSteps,
+    required this.icon,
     required this.title,
     required this.subtitle,
   });
   final int step, totalSteps;
+  final IconData icon;
   final String title, subtitle;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: Gap.xl),
+      padding: const EdgeInsets.only(bottom: Gap.xs),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -116,10 +120,7 @@ class _SetupStepHeader extends StatelessWidget {
               Text('Step $step of $totalSteps', style: text.bodySmall),
             ],
           ),
-          const SizedBox(height: Gap.md),
-          Text(title, style: text.headlineSmall),
-          const SizedBox(height: Gap.xs),
-          Text(subtitle, style: text.bodyMedium),
+          SectionHeading(title, icon: icon, subtitle: subtitle),
         ],
       ),
     );
@@ -174,6 +175,7 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
       const _SetupStepHeader(
         step: 1,
         totalSteps: 3,
+        icon: LucideIcons.store,
         title: 'Tell us about your business',
         subtitle: 'This appears on your delivery orders and receipts.',
       ),
@@ -181,6 +183,7 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
         label: 'Business Name',
         controller: name,
         hint: 'e.g. Kopi Kita',
+        prefixIcon: LucideIcons.store,
         errorText: errors['name'],
       ),
       Padding(
@@ -212,6 +215,7 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
         label: 'Contact Phone',
         controller: phone,
         hint: '+60 12 345 6789',
+        prefixIcon: LucideIcons.phone,
         keyboardType: TextInputType.phone,
         errorText: errors['phone'],
       ),
@@ -258,6 +262,7 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
       const _SetupStepHeader(
         step: 2,
         totalSteps: 3,
+        icon: LucideIcons.mapPin,
         title: 'Where do deliveries start from?',
         subtitle: 'Riders pick up orders from this location.',
       ),
@@ -299,6 +304,7 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
         label: 'Pickup Address',
         controller: address,
         hint: 'Search or enter your address',
+        prefixIcon: LucideIcons.search,
         errorText: errors['address'],
       ),
       Row(
@@ -362,6 +368,7 @@ class _SetupServiceAreaScreenState extends State<SetupServiceAreaScreen> {
                     const _SetupStepHeader(
                       step: 3,
                       totalSteps: 3,
+                      icon: LucideIcons.map,
                       title: 'How far do you deliver?',
                       subtitle: 'Cefflo uses this to decide which orders you can accept.',
                     ),
@@ -410,7 +417,6 @@ class SetupCompleteScreen extends StatelessWidget {
     return PageBody(
       children: [
         HeroSurface(
-          padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.xxxl, Gap.xl, Gap.xl),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -424,12 +430,12 @@ class SetupCompleteScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                style: text.displaySmall?.copyWith(
+                style: text.headlineSmall?.copyWith(
                   color: Colors.white,
-                  height: 1.1,
+                  height: 1.15,
                 ),
               ),
-              const SizedBox(height: Gap.md),
+              const SizedBox(height: Gap.sm),
               Text(
                 'Your delivery setup is complete.\nLet’s start delivering with Cefflo.',
                 style: text.bodyMedium?.copyWith(
@@ -554,9 +560,17 @@ class _OrdersScreenState extends State<OrdersScreen> {
 }
 
 /// V-13 — bound to the selected order id, with status-appropriate actions.
+/// Archetype E (detail hero): reference, status, meta and the tracker on the
+/// gradient; customer / delivery / items on the white surface.
 class OrderDetailScreen extends StatelessWidget {
   const OrderDetailScreen({super.key, required this.orderId});
   final String orderId;
+
+  static const _itemIcons = [
+    LucideIcons.cakeSlice,
+    LucideIcons.coffee,
+    LucideIcons.cookie,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -564,16 +578,44 @@ class OrderDetailScreen extends StatelessWidget {
     return AsyncView<VendorOrder>(
       key: ValueKey('order-$orderId'),
       load: () => app.repo.order(orderId),
-      builder: (context, order, reload) => PageBody(
+      builder: (context, order, reload) => HeroPage(
         onRefresh: reload,
+        hero: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            DetailHero(
+              leading: const IconDisc(LucideIcons.package),
+              title: order.reference,
+              status: HeroStatusPill(
+                order.status.label,
+                color: switch (order.status) {
+                  DeliveryStatus.issue => context.c.attention,
+                  final s when OrderTab.ongoing.accepts(s) => null,
+                  _ => context.c.textSecondary,
+                },
+              ),
+              meta:
+                  'Today, ${_formatTime(order.createdAt)} · '
+                  '${order.items.length} items',
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                Gap.gutter,
+                0,
+                Gap.gutter,
+                Gap.xxl,
+              ),
+              child: _OrderProgress(status: order.status),
+            ),
+          ],
+        ),
         children: [
-          _OrderHeroCard(order: order),
-          const SizedBox(height: Gap.sm),
-          _OrderInfoRow(
+          CefListRow(
+            title: 'Customer',
+            subtitle: '${order.customerName}\n${order.customerPhone}',
+            subtitleMaxLines: 2,
             icon: LucideIcons.user,
-            label: 'Customer',
-            title: order.customerName,
-            subtitle: order.customerPhone,
+            plainIcon: true,
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -594,11 +636,12 @@ class OrderDetailScreen extends StatelessWidget {
               ],
             ),
           ),
-          _OrderInfoRow(
+          CefListRow(
+            title: 'Deliver to',
+            subtitle: '${order.deliveryAddress}, 59100 Kuala Lumpur',
+            subtitleMaxLines: 2,
             icon: LucideIcons.mapPin,
-            label: 'Deliver to',
-            title: order.deliveryAddress,
-            subtitle: '59100 Kuala Lumpur',
+            plainIcon: true,
             trailing: IconAction(
               icon: LucideIcons.navigation,
               tooltip: 'Navigate',
@@ -607,10 +650,12 @@ class OrderDetailScreen extends StatelessWidget {
             ),
           ),
           if ((order.notes ?? '').isNotEmpty)
-            _OrderInfoRow(
+            CefListRow(
+              title: 'Delivery Instruction',
+              subtitle: order.notes,
+              subtitleMaxLines: 3,
               icon: LucideIcons.fileText,
-              label: 'Delivery Instruction',
-              title: order.notes!,
+              plainIcon: true,
             ),
           SectionHeading(
             'Items (${order.items.length})',
@@ -625,7 +670,7 @@ class OrderDetailScreen extends StatelessWidget {
               title: item.name,
               subtitle:
                   '${item.quantity} × RM${(item.unitPrice ?? 0).toStringAsFixed(2)}',
-              leading: _ItemThumb(index: index),
+              icon: _itemIcons[index % _itemIcons.length],
             ),
           const SizedBox(height: Gap.xxl),
           CefButton(
@@ -643,250 +688,55 @@ class OrderDetailScreen extends StatelessWidget {
   }
 }
 
-/// Hero summary that opens V-13: reference, status, meta line and the
-/// three-step tracker all live inside the one shared hero surface.
-class _OrderHeroCard extends StatelessWidget {
-  const _OrderHeroCard({required this.order});
-  final VendorOrder order;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return HeroSurface(
-      padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.lg, Gap.lg, Gap.xl),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  order.reference,
-                  style: text.headlineSmall?.copyWith(color: Colors.white),
-                ),
-              ),
-              const SizedBox(width: Gap.sm),
-              _HeroStatusPill(status: order.status),
-            ],
-          ),
-          const SizedBox(height: Gap.xs),
-          Text(
-            'Today, ${_formatTime(order.createdAt)}  ·  ${order.items.length} items',
-            style: text.bodySmall?.copyWith(
-              color: Colors.white.withValues(alpha: .78),
-            ),
-          ),
-          const SizedBox(height: Gap.lg),
-          _OrderProgress(status: order.status),
-        ],
-      ),
-    );
-  }
-}
-
-/// The canonical [StatusChip] on a solid card-coloured backing: the chip's
-/// light tint is only legible over a light surface, not over the hero.
-class _HeroStatusPill extends StatelessWidget {
-  const _HeroStatusPill({required this.status});
-  final DeliveryStatus status;
-
-  @override
-  Widget build(BuildContext context) => DecoratedBox(
-    decoration: ShapeDecoration(
-      color: context.c.card,
-      shape: const StadiumBorder(),
-    ),
-    child: StatusChip(
-      status.label,
-      attention: status == DeliveryStatus.issue,
-      success: OrderTab.ongoing.accepts(status),
-    ),
-  );
-}
-
-/// A labelled detail line (Customer / Deliver to / Delivery Instruction):
-/// the [CefListRow] geometry, plus a caption above the value and a value
-/// that wraps instead of truncating (instructions and addresses run long).
-class _OrderInfoRow extends StatelessWidget {
-  const _OrderInfoRow({
-    required this.icon,
-    required this.label,
-    required this.title,
-    this.subtitle,
-    this.trailing,
-  });
-  final IconData icon;
-  final String label;
-  final String title;
-  final String? subtitle;
-  final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    final text = Theme.of(context).textTheme;
-    return Container(
-      constraints: const BoxConstraints(minHeight: 60),
-      padding: const EdgeInsets.symmetric(horizontal: Gap.xs, vertical: Gap.sm),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: c.border)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: Sizes.icon, color: c.iconColor),
-          const SizedBox(width: Gap.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: text.bodySmall),
-                const SizedBox(height: 2),
-                Text(title, style: text.titleSmall),
-                if (subtitle != null) Text(subtitle!, style: text.bodySmall),
-              ],
-            ),
-          ),
-          if (trailing != null) ...[const SizedBox(width: Gap.sm), trailing!],
-        ],
-      ),
-    );
-  }
-}
-
-/// Item thumbnail placeholder used as the leading of an item [CefListRow].
-class _ItemThumb extends StatelessWidget {
-  const _ItemThumb({required this.index});
-  final int index;
-
-  static const _icons = [
-    LucideIcons.cakeSlice,
-    LucideIcons.coffee,
-    LucideIcons.cookie,
-  ];
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: Sizes.avatar,
-    height: Sizes.avatar,
-    decoration: BoxDecoration(
-      color: context.c.subtle,
-      borderRadius: BorderRadius.circular(Gap.md),
-    ),
-    child: Icon(_icons[index % _icons.length], color: CefColors.navy, size: 20),
-  );
-}
-
 /// V-14 — How the order gets created: one manual order, or a bulk import.
+/// The two modes are navigation rows; Recent Imports is an entity list
+/// (archetype B: logo leading, pill trailing, no chevron).
 class NewOrderEntryScreen extends StatelessWidget {
   const NewOrderEntryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    final text = Theme.of(context).textTheme;
     return PageBody(
       children: [
-        _EntryModeCard(
+        CefListRow(
           icon: LucideIcons.filePlus,
+          accentIcon: true,
           title: 'Manual Entry',
           subtitle: 'Create a single order step by step',
+          subtitleMaxLines: 2,
           onTap: () => app.go(VRoute.newOrderManual),
         ),
-        const SizedBox(height: Gap.cardGap),
-        _EntryModeCard(
+        CefListRow(
           icon: LucideIcons.cloudUpload,
+          accentIcon: true,
           title: 'Import Orders',
           subtitle: 'Import multiple orders from your files',
+          subtitleMaxLines: 2,
           onTap: () => app.go(VRoute.importOrders),
         ),
         SectionHeading(
           'Recent Imports',
           trailing: CefLink(
             'View all',
-            icon: LucideIcons.list,
+            chevron: true,
             onTap: () => showNotWiredYetSnackBar(context, 'The import history'),
           ),
         ),
         for (final source in _ImportSource.values)
-          Padding(
-            padding: const EdgeInsets.only(bottom: Gap.cardGap),
-            child: CefCard(
-              onTap: () =>
-                  showNotWiredYetSnackBar(context, 'Opening this import'),
-              child: Row(
-                children: [
-                  _ImportSourceMark(source: source),
-                  const SizedBox(width: Gap.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(source.sampleBatch, style: text.titleSmall),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${source.label} · ${source.sampleCount} orders',
-                          style: text.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: Gap.sm),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(source.sampleDate, style: text.bodySmall),
-                      const SizedBox(height: Gap.xs),
-                      const StatusChip('Connected', success: true),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+          CefListRow(
+            leading: _ImportSourceMark(source: source),
+            title: source.sampleBatch,
+            subtitle:
+                '${source.label} · ${source.sampleCount} orders\n'
+                '${source.sampleDate}',
+            subtitleMaxLines: 2,
+            trailing: const StatusChip('Connected', success: true),
+            showChevron: false,
+            onTap: () =>
+                showNotWiredYetSnackBar(context, 'Opening this import'),
           ),
       ],
-    );
-  }
-}
-
-/// One of the two mode cards at the top of V-14: a tappable [CefCard] with
-/// the mode's icon, title, description and a navigation chevron.
-class _EntryModeCard extends StatelessWidget {
-  const _EntryModeCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    final text = Theme.of(context).textTheme;
-    return CefCard(
-      onTap: onTap,
-      child: Row(
-        children: [
-          Icon(icon, size: Sizes.icon, color: c.info),
-          const SizedBox(width: Gap.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: text.titleMedium),
-                const SizedBox(height: 2),
-                Text(subtitle, style: text.bodySmall),
-              ],
-            ),
-          ),
-          const SizedBox(width: Gap.sm),
-          Icon(LucideIcons.chevronRight, size: 18, color: c.textSecondary),
-        ],
-      ),
     );
   }
 }
@@ -955,127 +805,47 @@ class _ImportSourceMark extends StatelessWidget {
   );
 }
 
-/// X-04 — Pick where the bulk orders come from.
+/// X-04 — Pick where the bulk orders come from: the numbered guidance rows
+/// (same step-row language as Welcome), then one navigation row per source.
 class ImportOrdersScreen extends StatelessWidget {
   const ImportOrdersScreen({super.key});
 
   static const _steps = [
-    'Select your source (Google Sheets, Excel or Google Drive)',
-    'Choose a file or connected sheet',
-    'Map the columns and preview your orders',
-    'Import and review the orders',
+    ('Select your source', 'Google Sheets, Excel or Google Drive'),
+    ('Choose a file', 'Or pick a connected sheet'),
+    ('Map the columns', 'And preview your orders'),
+    ('Import', 'And review the orders'),
   ];
 
   @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return PageBody(
-      children: [
-        Text(
-          'Choose a source to import multiple orders.',
-          style: Theme.of(context).textTheme.bodyMedium,
+  Widget build(BuildContext context) => PageBody(
+    children: [
+      Text(
+        'Choose a source to import multiple orders.',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      const SectionHeading('How it works?', icon: LucideIcons.info),
+      for (final (index, step) in _steps.indexed)
+        CefListRow(
+          leading: CefAvatar('${index + 1}'),
+          title: step.$1,
+          subtitle: step.$2,
+          subtitleMaxLines: 2,
         ),
-        const SizedBox(height: Gap.lg),
-        Container(
-          padding: const EdgeInsets.all(Gap.cardPadding),
-          decoration: BoxDecoration(
-            color: c.subtle,
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(LucideIcons.info, size: 18, color: c.info),
-                  const SizedBox(width: Gap.sm),
-                  Text(
-                    'How it works?',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                ],
-              ),
-              const SizedBox(height: Gap.md),
-              for (final (index, step) in _steps.indexed)
-                Padding(
-                  padding: EdgeInsets.only(
-                    bottom: index == _steps.length - 1 ? 0 : Gap.md,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: Gap.xl,
-                        height: Gap.xl,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: c.card,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          '${index + 1}',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: CefColors.navy,
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                      ),
-                      const SizedBox(width: Gap.sm),
-                      Expanded(
-                        child: Text(
-                          step,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
+      const SectionHeading('Sources', icon: LucideIcons.cloudUpload),
+      for (final source in _ImportSource.values)
+        CefListRow(
+          leading: _ImportSourceMark(source: source),
+          title: source.label,
+          subtitle: source.description,
+          subtitleMaxLines: 2,
+          onTap: () => showNotWiredYetSnackBar(
+            context,
+            'Importing from ${source.label}',
           ),
         ),
-        const SizedBox(height: Gap.section),
-        for (final source in _ImportSource.values)
-          Padding(
-            padding: const EdgeInsets.only(bottom: Gap.cardGap),
-            child: CefCard(
-              onTap: () => showNotWiredYetSnackBar(
-                context,
-                'Importing from ${source.label}',
-              ),
-              child: Row(
-                children: [
-                  _ImportSourceMark(source: source),
-                  const SizedBox(width: Gap.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          source.label,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          source.description,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: Gap.sm),
-                  Icon(
-                    LucideIcons.chevronRight,
-                    size: 18,
-                    color: c.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
+    ],
+  );
 }
 
 /// X-03 / V-15 — Save validates and persists through the canonical RPC. The
@@ -1576,7 +1346,9 @@ class _PhotoDropzone extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.c;
     return CustomPaint(
-      painter: _DashedRectPainter(color: c.textSecondary.withValues(alpha: .45)),
+      painter: _DashedRectPainter(
+        color: c.textSecondary.withValues(alpha: .45),
+      ),
       child: Container(
         height: 132,
         width: double.infinity,

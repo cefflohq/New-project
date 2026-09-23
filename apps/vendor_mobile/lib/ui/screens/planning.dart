@@ -150,33 +150,15 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
         return PageBody(
           onRefresh: reload,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  LucideIcons.mapPin,
-                  size: Sizes.icon,
-                  color: context.c.info,
-                ),
-                const SizedBox(width: Gap.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        zone?.name ?? 'All zones',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      Text(
-                        'Today, ${_formatDate(today)}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                ),
-                if (groups.isNotEmpty)
-                  const StatusChip('Ready to dispatch', success: true),
-              ],
+            CefListRow(
+              icon: LucideIcons.mapPin,
+              accentIcon: true,
+              title: zone?.name ?? 'All zones',
+              subtitle: 'Today, ${_formatDate(today)}',
+              subtitleMaxLines: 2,
+              trailing: groups.isEmpty
+                  ? null
+                  : const StatusChip('Ready to dispatch', success: true),
             ),
             const SizedBox(height: Gap.md),
             HeroSurface(
@@ -242,11 +224,7 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                   'Total distance',
                   icon: LucideIcons.route,
                 ),
-                KpiItem(
-                  '$totalStops',
-                  'Total stops',
-                  icon: LucideIcons.mapPin,
-                ),
+                KpiItem('$totalStops', 'Total stops', icon: LucideIcons.mapPin),
                 KpiItem(
                   '$totalOrders',
                   'Total orders',
@@ -319,112 +297,35 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                 'approved, unassigned and have a resolved location.',
               ),
 
-            for (final (index, group) in groups.indexed)
-              Padding(
-                padding: const EdgeInsets.only(bottom: Gap.cardGap),
-                child: CefCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Run ${index + 1}',
-                              style: text.titleMedium,
-                            ),
-                          ),
-                          StatusChip('${group.stops.length} stops'),
-                        ],
-                      ),
-                      const SizedBox(height: Gap.md),
-                      Row(
-                        children: [
-                          CefAvatar(
-                            (group.candidateRiderName ?? '').trim().isEmpty
-                                ? '?'
-                                : group.candidateRiderName!,
-                          ),
-                          const SizedBox(width: Gap.md),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  group.candidateRiderName ??
-                                      'No candidate rider',
-                                  style: Theme.of(context).textTheme.titleSmall,
-                                ),
-                                Text(
-                                  () {
-                                    final rider = _riderFor(
-                                      riders,
-                                      group.candidateRiderId,
-                                    );
-                                    return [
-                                      if (group.candidateRiderVehicleType !=
-                                          null)
-                                        group.candidateRiderVehicleType!,
-                                      if (rider?.plate != null) rider!.plate!,
-                                      if (group.candidateRiderVehicleType ==
-                                              null &&
-                                          rider?.plate == null &&
-                                          group.requiredVehicle != null)
-                                        'requires ${group.requiredVehicle}',
-                                    ].join(' · ');
-                                  }(),
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: Gap.sm),
-                      Row(
-                        children: [
-                          Icon(
-                            LucideIcons.package,
-                            size: 14,
-                            color: context.c.textSecondary,
-                          ),
-                          const SizedBox(width: Gap.xs),
-                          Text(
-                            '${group.orderIds.length} order${group.orderIds.length == 1 ? '' : 's'}',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          const SizedBox(width: Gap.md),
-                          Icon(
-                            LucideIcons.route,
-                            size: 14,
-                            color: context.c.textSecondary,
-                          ),
-                          const SizedBox(width: Gap.xs),
-                          Text(
-                            group.totalDistanceKm == null
-                                ? '${group.stops.length} stop${group.stops.length == 1 ? '' : 's'}'
-                                : '~${group.totalDistanceKm} km',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: Gap.sm),
-                      for (final stop in group.stops)
-                        CefListRow(
-                          title: 'Stop ${stop.sequence}',
-                          subtitle: stop.distanceKm == null
-                              ? null
-                              : '${stop.distanceKm} km from previous',
-                          icon: LucideIcons.mapPin,
-                          onTap: () => app.go(
-                            VRoute.orderDetail,
-                            entityId: stop.orderId,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+            for (final (index, group) in groups.indexed) ...[
+              SectionHeading(
+                'Run ${index + 1}',
+                trailing: StatusChip('${group.stops.length} stops'),
               ),
+              CefListRow(
+                leading: CefAvatar(
+                  (group.candidateRiderName ?? '').trim().isEmpty
+                      ? '?'
+                      : group.candidateRiderName!,
+                  filled: true,
+                ),
+                title: group.candidateRiderName ?? 'No candidate rider',
+                subtitle: _runSummary(group, riders),
+                subtitleMaxLines: 2,
+              ),
+              for (final stop in group.stops)
+                CefListRow(
+                  title: 'Stop ${stop.sequence}',
+                  subtitle: stop.distanceKm == null
+                      ? null
+                      : '${stop.distanceKm} km from previous',
+                  icon: LucideIcons.mapPin,
+                  accentIcon: true,
+                  showChevron: false,
+                  onTap: () =>
+                      app.go(VRoute.orderDetail, entityId: stop.orderId),
+                ),
+            ],
 
             if (unplannable.isNotEmpty) ...[
               const SectionHeading('Cannot be planned yet'),
@@ -479,6 +380,27 @@ String _formatDate(DateTime d) {
     'Dec',
   ];
   return '${d.day} ${months[d.month - 1]} ${d.year}';
+}
+
+/// Rider vehicle, order count and distance of one proposed run, as the
+/// rider row's subtitle.
+String _runSummary(PlanGroup group, List<RiderRow> riders) {
+  final rider = _riderFor(riders, group.candidateRiderId);
+  final orders = group.orderIds.length;
+  final stops = group.stops.length;
+  return [
+    if (group.candidateRiderVehicleType != null)
+      group.candidateRiderVehicleType!,
+    if (rider?.plate != null) rider!.plate!,
+    if (group.candidateRiderVehicleType == null &&
+        rider?.plate == null &&
+        group.requiredVehicle != null)
+      'requires ${group.requiredVehicle}',
+    '$orders order${orders == 1 ? '' : 's'}',
+    group.totalDistanceKm == null
+        ? '$stops stop${stops == 1 ? '' : 's'}'
+        : '~${group.totalDistanceKm} km',
+  ].join(' · ');
 }
 
 RiderRow? _riderFor(List<RiderRow> riders, String? riderId) {
@@ -544,15 +466,12 @@ class RunDetailScreen extends StatelessWidget {
           ),
         ),
         const SectionHeading('Next stop'),
-        CefListRow(
+        const CefListRow(
           title: 'Nadia Rahman',
           subtitle: 'Bangsar · 1.2 km · 8 min',
-          leading: Icon(
-            LucideIcons.mapPin,
-            size: Sizes.icon,
-            color: context.c.info,
-          ),
-          trailing: const StatusChip('Next'),
+          icon: LucideIcons.mapPin,
+          accentIcon: true,
+          trailing: StatusChip('Next'),
         ),
         const SectionHeading('Upcoming stops'),
         for (final i in const [
@@ -560,7 +479,7 @@ class RunDetailScreen extends StatelessWidget {
           ('Amy Lee', 'Damansara · 3.4 km'),
           ('Restoran Ali', 'Petaling Jaya · 4.0 km'),
         ])
-          CefListRow(title: i.$1, subtitle: i.$2),
+          CefListRow(title: i.$1, subtitle: i.$2, icon: LucideIcons.mapPin),
         const SizedBox(height: Gap.md),
         const StateBlock.blocked(
           'Route sequencing and live ETA are backend-owned. This screen is presentation-only until Phase 3 wiring.',
@@ -762,28 +681,19 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
         final configured = b['service_coverage_radius_km'] != null;
         return PageBody(
           children: [
-            CefCard(
-              child: Row(
-                children: [
-                  Icon(
-                    configured
-                        ? LucideIcons.circleCheck
-                        : LucideIcons.circleAlert,
-                    size: Sizes.icon,
-                    color: configured ? context.c.success : context.c.attention,
-                  ),
-                  const SizedBox(width: Gap.md),
-                  Expanded(
-                    child: Text(
-                      configured
-                          ? 'Coverage is configured. Cefflo decides each '
-                                'order’s coverage from this.'
-                          : 'No service area configured yet. Orders will show '
-                                '“Not set” instead of a coverage verdict.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
-                ],
+            CefListRow(
+              icon: LucideIcons.map,
+              accentIcon: true,
+              title: 'Coverage',
+              subtitle: configured
+                  ? 'Coverage is configured. Cefflo decides each '
+                        'order’s coverage from this.'
+                  : 'No service area configured yet. Orders will show '
+                        '“Not set” instead of a coverage verdict.',
+              subtitleMaxLines: 5,
+              trailing: StatusChip(
+                configured ? 'Configured' : 'Not set',
+                attention: !configured,
               ),
             ),
             const SectionHeading('How far do you deliver?'),
