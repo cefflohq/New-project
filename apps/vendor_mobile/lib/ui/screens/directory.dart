@@ -8,7 +8,6 @@ import '../../data/models.dart';
 import '../async_view.dart';
 import '../shell.dart';
 import '../widgets.dart';
-import 'review_parts.dart';
 
 /// Presentation-only: canonical values stay lowercase ('active', 'van'); this
 /// only affects how they are displayed.
@@ -160,14 +159,15 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
             if (visible.isEmpty)
               const StateBlock.empty('No zones configured yet.')
             else
+              // Archetype C (zones list): accent map-pin disc, neutral
+              // pill, no chevron.
               for (final z in visible)
                 CefListRow(
                   title: z.name,
-                  leading: CefAvatar(z.name),
-                  trailing: StatusChip(
-                    z.isActive ? 'Active' : 'Inactive',
-                    success: z.isActive,
-                  ),
+                  icon: LucideIcons.mapPin,
+                  accentIcon: true,
+                  trailing: StatusChip(z.isActive ? 'Active' : 'Inactive'),
+                  showChevron: false,
                   onTap: () => app.go(VRoute.editZone, entityId: z.id),
                 ),
           ],
@@ -215,7 +215,7 @@ class ZoneDetailScreen extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(Sizes.cardRadius),
                 child: CustomPaint(
-                  painter: _CoverageMapPainter(),
+                  painter: _CoverageMapPainter.of(context),
                   child: Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -268,10 +268,7 @@ class ZoneDetailScreen extends StatelessWidget {
             const SizedBox(height: Gap.xs),
             Align(
               alignment: AlignmentDirectional.centerStart,
-              child: StatusChip(
-                zone.isActive ? 'Active' : 'Inactive',
-                success: zone.isActive,
-              ),
+              child: StatusChip(zone.isActive ? 'Active' : 'Inactive'),
             ),
             const SectionHeading('Operational status'),
             KpiStrip(
@@ -286,15 +283,18 @@ class ZoneDetailScreen extends StatelessWidget {
             if (orders.isEmpty)
               const StateBlock.empty('No orders are assigned to this zone.')
             else
+              // Archetype B order rows: package disc, neutral pill (Issue
+              // stays red), no chevron.
               for (final o in orders)
                 CefListRow(
                   title: o.reference,
                   subtitle: '${o.customerName} · ${o.deliveryAddress}',
+                  icon: LucideIcons.package,
                   trailing: StatusChip(
                     o.status.label,
                     attention: o.status == DeliveryStatus.issue,
-                    success: OrderTab.ongoing.accepts(o.status),
                   ),
+                  showChevron: false,
                   onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
                 ),
             const SizedBox(height: Gap.section),
@@ -432,6 +432,9 @@ class _ZoneFormScreenState extends State<ZoneFormScreen> {
   @override
   Widget build(BuildContext context) {
     if (loading) return const StateBlock.loading();
+    final text = Theme.of(context).textTheme;
+    // Archetype G (multi-section form): coverage preview, then one
+    // SectionHeading per section, CefFields and the CTA.
     return PageBody(
       children: [
         SizedBox(
@@ -439,7 +442,7 @@ class _ZoneFormScreenState extends State<ZoneFormScreen> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(Sizes.cardRadius),
             child: CustomPaint(
-              painter: _CoverageMapPainter(),
+              painter: _CoverageMapPainter.of(context),
               child: Center(
                 child: Icon(
                   LucideIcons.mapPin,
@@ -450,85 +453,62 @@ class _ZoneFormScreenState extends State<ZoneFormScreen> {
             ),
           ),
         ),
-        const SizedBox(height: Gap.md),
+        if (widget.isNew) ...[
+          const SizedBox(height: Gap.md),
+          Text(
+            'This zone will cover the highlighted area on the map. '
+            'You can always edit it later.',
+            style: text.bodySmall,
+          ),
+        ],
+        const SectionHeading(
+          'Zone details',
+          icon: LucideIcons.mapPin,
+          subtitle: 'Name the area you deliver to',
+        ),
         CefField(
           label: 'Zone name',
           controller: name,
+          hint: 'Enter zone name',
+          prefixIcon: LucideIcons.mapPin,
           errorText: errors['name'],
         ),
-        if (widget.isNew) ...[
-          const SizedBox(height: Gap.sm),
-          CefCard(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(LucideIcons.info, size: Sizes.icon, color: context.c.info),
-                const SizedBox(width: Gap.md),
-                Expanded(
-                  child: Text(
-                    'This zone will cover the highlighted area on the map. '
-                    'You can always edit it later.',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ),
-              ],
+        if (!widget.isNew) ...[
+          Divider(height: Gap.lg, color: context.c.border),
+          const SectionHeading('Status', icon: LucideIcons.circleCheck),
+          CefListRow(
+            title: 'Active',
+            subtitle: 'Orders can be assigned to this zone',
+            subtitleMaxLines: 2,
+            trailing: CefSwitch(
+              value: active,
+              onChanged: (v) => setState(() => active = v),
             ),
           ),
         ],
-        if (!widget.isNew)
-          CefCard(
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Active',
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                      Text(
-                        'Orders can be assigned to this zone',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                ),
-                CefSwitch(
-                  value: active,
-                  onChanged: (v) => setState(() => active = v),
-                ),
-              ],
-            ),
-          ),
         if (error != null)
           Padding(
             padding: const EdgeInsets.only(top: Gap.md),
             child: Text(
               error!,
-              style: Theme.of(context).textTheme.bodySmall
-                  ?.copyWith(color: context.c.attention),
+              style: text.bodySmall?.copyWith(color: context.c.attention),
             ),
           ),
-        const SizedBox(height: Gap.section),
-        if (widget.isNew)
-          CefButton('Create Zone', busy: busy, onTap: _save)
-        else
-          Row(
-            children: [
-              Expanded(
-                child: CefButton(
-                  'Delete Zone',
-                  destructive: true,
-                  onTap: _delete,
-                ),
-              ),
-              const SizedBox(width: Gap.cardGap),
-              Expanded(
-                child: CefButton('Save Changes', busy: busy, onTap: _save),
-              ),
-            ],
+        const SizedBox(height: Gap.xxl),
+        CefButton(
+          widget.isNew ? 'Create Zone' : 'Save Changes',
+          busy: busy,
+          onTap: _save,
+        ),
+        if (!widget.isNew) ...[
+          const SizedBox(height: Gap.md),
+          CefButton(
+            'Delete Zone',
+            destructive: true,
+            icon: LucideIcons.trash2,
+            onTap: _delete,
           ),
+        ],
       ],
     );
   }
@@ -774,12 +754,15 @@ class _TeamScreenState extends State<TeamScreen> {
             if (visible.isEmpty)
               const StateBlock.empty('No team members yet.')
             else
+              // Archetype D (people list): filled avatar, neutral pill,
+              // no chevron.
               for (final m in visible)
                 CefListRow(
                   title: m.displayName ?? m.userId,
                   subtitle: m.role,
-                  leading: CefAvatar(m.displayName ?? m.userId),
-                  trailing: const StatusChip('Active', success: true),
+                  leading: CefAvatar(m.displayName ?? m.userId, filled: true),
+                  trailing: const StatusChip('Active'),
+                  showChevron: false,
                   // Audit fix 2: bound to this member's id.
                   onTap: () =>
                       app.go(VRoute.teamMemberDetail, entityId: m.userId),
@@ -810,52 +793,57 @@ class TeamMemberDetailScreen extends StatelessWidget {
           orElse: () => throw StateError('Team member not found'),
         );
       },
-      builder: (context, member, reload) => PageBody(
-        onRefresh: reload,
-        children: [
-          ReviewProfileHero(
-            name: member.displayName ?? member.userId,
-            role: member.role,
-            status: 'Active',
+      builder: (context, member, reload) {
+        final name = member.displayName ?? member.userId;
+        // Archetype E (detail hero): identity on the gradient, information
+        // rows on the white surface.
+        return HeroPage(
+          onRefresh: reload,
+          hero: DetailHero(
+            leading: CefAvatar(name, size: 96),
+            title: name,
+            status: const HeroStatusPill('Active'),
+            meta: member.role,
           ),
-          const SectionHeading('Contact'),
-          const ProfileDetailCard(
-            lines: [
-              ProfileDetailLine(icon: LucideIcons.phone, label: 'Phone'),
-              ProfileDetailLine(icon: LucideIcons.mail, label: 'Email'),
-            ],
-          ),
-          const SectionHeading('Role & Access'),
-          ProfileDetailCard(
-            lines: [
-              ProfileDetailLine(
-                icon: LucideIcons.shieldCheck,
-                label: 'Role',
-                value: member.role,
-                note: _roleDescription(member.role),
-              ),
-            ],
-          ),
-          const SectionHeading('Status'),
-          const ProfileDetailCard(
-            lines: [
-              ProfileDetailLine(
-                icon: LucideIcons.circleCheck,
-                label: 'Account Status',
-                value: 'Active',
-                note: 'This team member can currently access your business.',
-              ),
-            ],
-          ),
-          const SizedBox(height: Gap.section),
-          CefButton(
-            'Remove from Team',
-            destructive: true,
-            icon: LucideIcons.trash2,
-            onTap: () => _confirmRemove(context, member),
-          ),
-        ],
-      ),
+          children: [
+            const CefListRow(
+              title: 'Phone',
+              subtitle: 'Not provided',
+              icon: LucideIcons.phone,
+              plainIcon: true,
+            ),
+            const CefListRow(
+              title: 'Email',
+              subtitle: 'Not provided',
+              icon: LucideIcons.mail,
+              plainIcon: true,
+            ),
+            CefListRow(
+              title: 'Role',
+              subtitle: '${member.role} · ${_roleDescription(member.role)}',
+              subtitleMaxLines: 3,
+              icon: LucideIcons.shieldCheck,
+              plainIcon: true,
+            ),
+            const CefListRow(
+              title: 'Account Status',
+              subtitle:
+                  'Active · This team member can currently access your '
+                  'business.',
+              subtitleMaxLines: 3,
+              icon: LucideIcons.circleCheck,
+              plainIcon: true,
+            ),
+            const SizedBox(height: Gap.section),
+            CefButton(
+              'Remove from Team',
+              destructive: true,
+              icon: LucideIcons.trash2,
+              onTap: () => _confirmRemove(context, member),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -898,15 +886,29 @@ class TeamMemberDetailScreen extends StatelessWidget {
   }
 }
 
+/// Illustrative coverage preview (Zone detail / Zone form). Coverage
+/// geometry stays server-owned; this never draws a real boundary. Colours
+/// come from the theme tokens (map/route semantics use `info`).
 class _CoverageMapPainter extends CustomPainter {
+  const _CoverageMapPainter({
+    required this.ground,
+    required this.road,
+    required this.area,
+  });
+
+  factory _CoverageMapPainter.of(BuildContext context) => _CoverageMapPainter(
+    ground: context.c.subtle,
+    road: context.c.card,
+    area: context.c.info,
+  );
+
+  final Color ground, road, area;
+
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(
-      Offset.zero & size,
-      Paint()..color = const Color(0xFFF0F4F8),
-    );
+    canvas.drawRect(Offset.zero & size, Paint()..color = ground);
     final roads = Paint()
-      ..color = Colors.white
+      ..color = road
       ..strokeWidth = 5;
     for (var i = -2; i < 8; i++) {
       canvas.drawLine(
@@ -920,7 +922,7 @@ class _CoverageMapPainter extends CustomPainter {
         roads,
       );
     }
-    final area = Path()
+    final coverage = Path()
       ..moveTo(size.width * .25, size.height * .35)
       ..lineTo(size.width * .48, size.height * .16)
       ..lineTo(size.width * .73, size.height * .32)
@@ -928,18 +930,21 @@ class _CoverageMapPainter extends CustomPainter {
       ..lineTo(size.width * .48, size.height * .82)
       ..lineTo(size.width * .22, size.height * .60)
       ..close();
-    canvas.drawPath(area, Paint()..color = const Color(0x332A6EEC));
+    canvas.drawPath(coverage, Paint()..color = area.withValues(alpha: .2));
     canvas.drawPath(
-      area,
+      coverage,
       Paint()
-        ..color = const Color(0xFF2A6EEC)
+        ..color = area
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2,
     );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(_CoverageMapPainter oldDelegate) =>
+      oldDelegate.ground != ground ||
+      oldDelegate.road != road ||
+      oldDelegate.area != area;
 }
 
 class ProductsScreen extends StatelessWidget {
@@ -954,6 +959,7 @@ class ProductsScreen extends StatelessWidget {
       builder: (context, products, reload) => PageBody(
         onRefresh: reload,
         children: [
+          // Archetype B list: package disc, price · status, no chevron.
           const CefSearchField(hint: 'Search products...'),
           const SizedBox(height: Gap.md),
           if (products.isEmpty)
@@ -966,6 +972,7 @@ class ProductsScreen extends StatelessWidget {
                     ? p.status
                     : 'RM ${p.displayPrice!.toStringAsFixed(2)} · ${p.status}',
                 icon: LucideIcons.package,
+                showChevron: false,
                 onTap: () => app.go(VRoute.productDetail, entityId: p.id),
               ),
         ],
@@ -991,13 +998,15 @@ class CustomersScreen extends StatelessWidget {
         return PageBody(
           onRefresh: reload,
           children: [
+            // Archetype D (people list).
             const CefSearchField(hint: 'Search customers...'),
             const SizedBox(height: Gap.md),
             for (final entry in customers.entries)
               CefListRow(
                 title: entry.key,
                 subtitle: entry.value.customerPhone,
-                leading: CefAvatar(entry.key),
+                leading: CefAvatar(entry.key, filled: true),
+                showChevron: false,
                 onTap: () => app.go(VRoute.customerDetail, entityId: entry.key),
               ),
           ],
@@ -1022,35 +1031,26 @@ class CustomerDetailScreen extends StatelessWidget {
             .where((order) => order.customerName == customerName)
             .toList();
         final customer = customerOrders.first;
-        return PageBody(
+        // Archetype E (detail hero) with archetype B order rows.
+        return HeroPage(
           onRefresh: reload,
+          hero: DetailHero(
+            leading: CefAvatar(customerName, size: 96),
+            title: customerName,
+            meta: customer.customerPhone,
+          ),
           children: [
-            Center(child: CefAvatar(customerName, size: 80)),
-            const SizedBox(height: Gap.md),
-            Center(
-              child: Text(
-                customerName,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Center(
-              child: Text(
-                customer.customerPhone,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ),
             const SectionHeading('Orders'),
             for (final order in customerOrders)
               CefListRow(
                 title: order.reference,
                 subtitle: order.deliveryAddress,
+                icon: LucideIcons.package,
                 trailing: StatusChip(
                   order.status.label,
                   attention: order.status == DeliveryStatus.issue,
-                  success: OrderTab.ongoing.accepts(order.status),
                 ),
+                showChevron: false,
                 onTap: () => app.go(VRoute.orderDetail, entityId: order.id),
               ),
           ],

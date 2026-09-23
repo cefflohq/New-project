@@ -223,14 +223,18 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
     final categories = ['All', ...kStorefrontTemplateCategories];
     return PageBody(
       children: [
-        const SectionHeading('Current Storefront'),
-        _CurrentStorefrontCard(def: active),
-        const SectionHeading('Explore Templates'),
+        // First block sits at the top of the white surface (a leading
+        // SectionHeading would add its section gap under the header).
         Text(
-          'Choose a template and see how your products look.',
-          style: Theme.of(context).textTheme.bodySmall,
+          'Current Storefront',
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: Gap.md),
+        _CurrentStorefrontCard(def: active),
+        const SectionHeading(
+          'Explore Templates',
+          subtitle: 'Choose a template and see how your products look.',
+        ),
         SizedBox(
           height: Sizes.chipHeight,
           child: ListView.separated(
@@ -349,7 +353,7 @@ class _CurrentStorefrontCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: Gap.sm),
-              const StatusChip('Active', success: true),
+              const StatusChip('Active'),
             ],
           ),
           const SizedBox(height: Gap.lg),
@@ -388,119 +392,108 @@ class _TemplateGalleryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.c;
     final text = Theme.of(context).textTheme;
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(Sizes.cardRadius),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(Sizes.cardRadius),
-        onTap: onOpen,
-        child: Container(
-          decoration: BoxDecoration(
-            color: c.card,
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-            border: Border.all(
-              color: isActive ? CefColors.accent : c.border,
-              width: isActive ? 1.6 : 1,
-            ),
-            boxShadow: cefCardShadow(Theme.of(context).brightness),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    _TemplateArt(def: def, radius: 0),
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withValues(alpha: .55),
-                          ],
-                          stops: const [0.4, 1],
-                        ),
+    // The one card: yellow selected outline marks the active template; the
+    // template art keeps its own identity inside it.
+    return CefCard(
+      padded: false,
+      selected: isActive,
+      onTap: onOpen,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(Sizes.cardRadius - 1),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _TemplateArt(def: def, radius: 0),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: .55),
+                        ],
+                        stops: const [0.4, 1],
                       ),
                     ),
-                    if (isActive)
-                      Positioned(
-                        top: Gap.sm,
-                        left: Gap.sm,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: Gap.sm,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: CefColors.accent,
-                            borderRadius: BorderRadius.circular(
-                              Sizes.buttonRadius,
-                            ),
-                          ),
-                          child: Text(
-                            'Active',
-                            style: text.bodySmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: CefColors.onAccent,
-                            ),
-                          ),
-                        ),
-                      ),
+                  ),
+                  if (isActive)
                     Positioned(
-                      right: Gap.sm,
-                      bottom: Gap.sm,
+                      top: Gap.sm,
+                      left: Gap.sm,
                       child: Container(
-                        width: 28,
-                        height: 28,
-                        alignment: Alignment.center,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: Gap.sm,
+                          vertical: 2,
                         ),
-                        child: const Icon(
-                          LucideIcons.arrowUpRight,
-                          size: 14,
-                          color: CefColors.onAccent,
+                        decoration: BoxDecoration(
+                          color: CefColors.accent,
+                          borderRadius: BorderRadius.circular(
+                            Sizes.buttonRadius,
+                          ),
                         ),
-                      ),
-                    ),
-                    Positioned(
-                      left: Gap.md,
-                      bottom: Gap.md,
-                      right: 44,
-                      child: Text(
-                        def.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: text.titleSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
+                        child: Text(
+                          'Active',
+                          style: text.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: CefColors.onAccent,
+                          ),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  Positioned(
+                    right: Gap.sm,
+                    bottom: Gap.sm,
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        LucideIcons.arrowUpRight,
+                        size: 14,
+                        color: CefColors.onAccent,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: Gap.md,
+                    bottom: Gap.md,
+                    right: 44,
+                    child: Text(
+                      def.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: text.titleSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Gap.md,
-                  vertical: Gap.sm,
-                ),
-                child: Text(
-                  def.typeTag,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: text.bodySmall,
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Gap.md,
+                vertical: Gap.sm,
               ),
-            ],
-          ),
+              child: Text(
+                def.typeTag,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: text.bodySmall,
+              ),
+            ),
+          ],
         ),
       ),
     );
