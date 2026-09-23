@@ -8,9 +8,6 @@ import '../../core/theme.dart';
 import '../shell.dart';
 import '../widgets.dart';
 
-Widget _icon(BuildContext context, IconData icon, {Color? color}) =>
-    Icon(icon, size: Sizes.icon, color: color ?? context.c.iconColor);
-
 class UiPrototypeScreen extends StatelessWidget {
   const UiPrototypeScreen({super.key, required this.spec});
 
@@ -51,6 +48,7 @@ class UiPrototypeScreen extends StatelessWidget {
   };
 }
 
+/// Kicker / title / subtitle composition on the one [HeroSurface].
 class _HeroPanel extends StatelessWidget {
   const _HeroPanel({required this.kicker, required this.title, this.subtitle});
   final String kicker;
@@ -58,63 +56,39 @@ class _HeroPanel extends StatelessWidget {
   final String? subtitle;
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: double.infinity,
-    padding: const EdgeInsets.all(18),
-    decoration: BoxDecoration(
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF102344), Color(0xFF1453B7), Color(0xFF12213E)],
-      ),
-      borderRadius: BorderRadius.circular(Sizes.cardRadius),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          kicker.toUpperCase(),
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: .6),
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            letterSpacing: .8,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 23,
-            height: 1.12,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 8),
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final muted = Colors.white.withValues(alpha: .72);
+    return HeroSurface(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Text(
-            subtitle!,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: .78),
-              fontSize: 13.5,
-              height: 1.35,
-              fontWeight: FontWeight.w500,
+            kicker,
+            style: text.bodySmall?.copyWith(
+              color: muted,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: Gap.xs),
+          Text(title, style: text.headlineSmall?.copyWith(color: Colors.white)),
+          if (subtitle != null) ...[
+            const SizedBox(height: Gap.xs),
+            Text(subtitle!, style: text.bodyMedium?.copyWith(color: muted)),
+          ],
+          const SizedBox(height: Gap.md),
+          Container(
+            width: 28,
+            height: 3,
+            decoration: BoxDecoration(
+              color: CefColors.accent,
+              borderRadius: BorderRadius.circular(Sizes.buttonRadius),
             ),
           ),
         ],
-        const SizedBox(height: 14),
-        Container(
-          width: 34,
-          height: 4,
-          decoration: BoxDecoration(
-            color: CefColors.accent,
-            borderRadius: BorderRadius.circular(99),
-          ),
-        ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 class _BusinessProfileScreen extends StatelessWidget {
@@ -123,6 +97,7 @@ class _BusinessProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
+    final name = app.business?.name ?? 'Kopi Kita';
     return PageBody(
       children: [
         CefCard(
@@ -130,24 +105,14 @@ class _BusinessProfileScreen extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const CircleAvatar(
-                    radius: 38,
-                    backgroundColor: Color(0xFF2D13A5),
-                    child: Text(
-                      'KK',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
+                  CefAvatar(name, size: 56),
                   const SizedBox(width: Gap.md),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          app.business?.name ?? 'Kopi Kita',
+                          name,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         Text(
@@ -167,9 +132,9 @@ class _BusinessProfileScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              const Divider(height: 1),
-              const SizedBox(height: 14),
+              const SizedBox(height: Gap.lg),
+              Divider(height: 1, color: context.c.border),
+              const SizedBox(height: Gap.md),
               const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -198,22 +163,22 @@ class _BusinessProfileScreen extends StatelessWidget {
         CefListRow(
           title: 'Business Information',
           subtitle: 'Name, contact, description',
-          leading: _icon(context, LucideIcons.fileText),
+          icon: LucideIcons.fileText,
           onTap: () => app.go(VRoute.businessInformation),
         ),
         CefListRow(
           title: 'Business Address',
           subtitle: 'Store address and service area',
-          leading: _icon(context, LucideIcons.mapPin),
+          icon: LucideIcons.mapPin,
           onTap: () => app.go(VRoute.businessAddress),
         ),
         CefListRow(
           title: 'Business Hours',
           subtitle: 'Set your operating hours',
-          leading: _icon(context, LucideIcons.clock),
+          icon: LucideIcons.clock,
           onTap: () => app.go(VRoute.businessHours),
         ),
-        const SizedBox(height: Gap.md),
+        const SizedBox(height: Gap.xl),
         const _HeroPanel(
           kicker: 'Your store is ready',
           title: 'Keep your business information up to date.',
@@ -224,47 +189,59 @@ class _BusinessProfileScreen extends StatelessWidget {
   }
 }
 
+/// Right-aligned character count shown under a multi-line field.
+class _CharCount extends StatelessWidget {
+  const _CharCount(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: Gap.sm),
+    child: Text(
+      text,
+      textAlign: TextAlign.right,
+      style: Theme.of(context).textTheme.bodySmall,
+    ),
+  );
+}
+
 class _BusinessInformationScreen extends StatelessWidget {
   const _BusinessInformationScreen();
 
   @override
   Widget build(BuildContext context) => PageBody(
     children: [
-      const _EditableAvatar(label: 'KOPI\nKITA'),
-      const SizedBox(height: 18),
-      const _PrototypeField(label: 'Business Name', value: 'Kopi Kita'),
-      const _PrototypeField(
+      const _EditableAvatar(name: 'Kopi Kita'),
+      const SizedBox(height: Gap.xl),
+      const CefField(label: 'Business Name', initialValue: 'Kopi Kita'),
+      const CefField(
         label: 'Tagline (Optional)',
-        value: 'A better delivery day. Today.',
+        initialValue: 'A better delivery day. Today.',
       ),
-      const _PrototypeField(
+      const CefField(
         label: 'Business Type',
-        value: 'Food & Beverage',
-        icon: LucideIcons.package,
-        trailing: LucideIcons.chevronDown,
+        initialValue: 'Food & Beverage',
+        prefixIcon: LucideIcons.package,
+        suffixIcon: LucideIcons.chevronDown,
       ),
       const _SplitFields(
+        leftLabel: 'Code',
         left: '+60',
+        rightLabel: 'Contact Phone',
         right: '12 345 6789',
-        label: 'Contact Phone',
+        keyboardType: TextInputType.phone,
       ),
-      const _PrototypeField(
+      const CefField(
         label: 'Business Email',
-        value: 'hello@kopikita.my',
+        initialValue: 'hello@kopikita.my',
+        keyboardType: TextInputType.emailAddress,
       ),
-      const _PrototypeField(
+      const CefField(
         label: 'Short Description',
-        value: 'Handcrafted coffee and light bites, delivered fresh across Kuala Lumpur.',
-        lines: 2,
+        initialValue: 'Handcrafted coffee and light bites, delivered fresh across Kuala Lumpur.',
+        maxLines: 3,
       ),
-      const Align(
-        alignment: Alignment.centerRight,
-        child: Text(
-          '72/160',
-          style: TextStyle(fontSize: 12, color: Color(0xFF666C80)),
-        ),
-      ),
-      const SizedBox(height: 12),
+      const _CharCount('72/160'),
       CefButton('Save Changes', secondary: true, onTap: () {}),
     ],
   );
@@ -274,18 +251,19 @@ class _BusinessAddressScreen extends StatelessWidget {
   const _BusinessAddressScreen();
 
   @override
-  Widget build(BuildContext context) => PageBody(
-    children: [
-      const CefSearchField(hint: 'Search or enter your address'),
-      const SizedBox(height: Gap.md),
-      Container(
-        height: 210,
-        decoration: BoxDecoration(
-          color: const Color(0xFFEAF0F4),
-          borderRadius: BorderRadius.circular(Sizes.cardRadius),
-          border: Border.all(color: context.c.border),
-        ),
-        child: Center(
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return PageBody(
+      children: [
+        const CefSearchField(hint: 'Search or enter your address'),
+        const SizedBox(height: Gap.md),
+        Container(
+          height: 210,
+          decoration: BoxDecoration(
+            color: c.subtle,
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+            border: Border.all(color: c.border),
+          ),
           child: Stack(
             children: [
               const Center(
@@ -296,42 +274,51 @@ class _BusinessAddressScreen extends StatelessWidget {
                 ),
               ),
               Positioned(
-                right: 12,
-                bottom: 12,
-                child: CircleAvatar(
-                  backgroundColor: Colors.white,
+                right: Gap.md,
+                bottom: Gap.md,
+                child: Container(
+                  width: Sizes.tapTarget,
+                  height: Sizes.tapTarget,
+                  decoration: BoxDecoration(
+                    color: c.card,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: c.border),
+                  ),
                   child: Icon(
                     LucideIcons.locateFixed,
-                    color: context.c.iconColor,
+                    size: 20,
+                    color: c.iconColor,
                   ),
                 ),
               ),
             ],
           ),
         ),
-      ),
-      const SizedBox(height: Gap.md),
-      const _PrototypeField(
-        label: 'Address Line 1',
-        value: 'No. 12, Jalan Damai 3',
-      ),
-      const _PrototypeField(
-        label: 'Address Line 2 (Optional)',
-        value: 'Taman Melati',
-      ),
-      const _SplitFields(
-        left: '53100',
-        right: 'Kuala Lumpur',
-        label: 'Postcode                              City',
-      ),
-      const _PrototypeField(
-        label: 'State',
-        value: 'Wilayah Persekutuan Kuala Lumpur',
-        trailing: LucideIcons.chevronDown,
-      ),
-      CefButton('Save Address', secondary: true, onTap: () {}),
-    ],
-  );
+        const SizedBox(height: Gap.lg),
+        const CefField(
+          label: 'Address Line 1',
+          initialValue: 'No. 12, Jalan Damai 3',
+        ),
+        const CefField(
+          label: 'Address Line 2 (Optional)',
+          initialValue: 'Taman Melati',
+        ),
+        const _SplitFields(
+          leftLabel: 'Postcode',
+          left: '53100',
+          rightLabel: 'City',
+          right: 'Kuala Lumpur',
+        ),
+        const CefField(
+          label: 'State',
+          initialValue: 'Wilayah Persekutuan Kuala Lumpur',
+          suffixIcon: LucideIcons.chevronDown,
+        ),
+        const SizedBox(height: Gap.sm),
+        CefButton('Save Address', secondary: true, onTap: () {}),
+      ],
+    );
+  }
 }
 
 class _BusinessHoursScreen extends StatelessWidget {
@@ -353,23 +340,26 @@ class _BusinessHoursScreen extends StatelessWidget {
         const _RoundIconHeader(
           icon: LucideIcons.clock3,
           title: 'Operating Hours',
-          subtitle: 'Let your customers know when\nyour business is open.',
+          subtitle: 'Let your customers know when your business is open.',
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: Gap.xl),
         for (final day in days)
           _BusinessHourRow(
             day: day,
             enabled: day != 'Sunday',
             close: day == 'Friday' || day == 'Saturday' ? '21:00' : '20:00',
           ),
-        const Divider(height: 28),
-        const _ActionRowPrototype(
-          icon: LucideIcons.copy,
+        const SizedBox(height: Gap.sm),
+        CefListRow(
           title: 'Apply to all days',
           subtitle: "Use Monday's hours for all days",
-          action: 'Apply',
+          icon: LucideIcons.copy,
+          trailing: SizedBox(
+            width: 96,
+            child: CefButton('Apply', secondary: true, onTap: () {}),
+          ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: Gap.xl),
         CefButton('Save Hours', onTap: () {}),
       ],
     );
@@ -384,73 +374,62 @@ class _ProfileScreen extends StatelessWidget {
     final app = AppScope.of(context);
     return PageBody(
       children: [
-        const _EditableAvatar(label: 'YS'),
+        const _EditableAvatar(name: 'Yusuf Sazali'),
         const SizedBox(height: Gap.md),
-        Center(
-          child: Text(
-            'Yusuf Sazali',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
+        Text(
+          'Yusuf Sazali',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.headlineSmall,
         ),
-        Center(
-          child: Text(
-            'yusuf@kopikita.my',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+        const SizedBox(height: 2),
+        Text(
+          'yusuf@kopikita.my',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
+        const SizedBox(height: Gap.md),
         CefListRow(
           title: app.business?.name ?? 'Kopi Kita',
           subtitle: 'Owner',
-          leading: _icon(context, LucideIcons.store),
+          icon: LucideIcons.store,
           onTap: () => app.go(VRoute.businessProfile),
         ),
         CefListRow(
           title: 'Personal Information',
           subtitle: 'Name, phone, email',
-          leading: _icon(context, LucideIcons.user),
+          icon: LucideIcons.user,
           onTap: () => app.go(VRoute.editProfile),
         ),
         CefListRow(
           title: 'Security',
           subtitle: 'Password, biometric & 2FA',
-          leading: _icon(context, LucideIcons.lock),
+          icon: LucideIcons.lock,
           onTap: () => app.go(VRoute.security),
         ),
         CefListRow(
           title: 'Language',
           subtitle: 'English',
-          leading: _icon(context, LucideIcons.languages),
+          icon: LucideIcons.languages,
           onTap: () => app.go(VRoute.language),
         ),
         CefListRow(
           title: 'Notifications',
           subtitle: 'Manage preferences',
-          leading: _icon(context, LucideIcons.bell),
+          icon: LucideIcons.bell,
           onTap: () => app.go(VRoute.notificationSettings),
         ),
         CefListRow(
           title: 'Help & Support',
           subtitle: 'Get help or contact support',
-          leading: _icon(context, LucideIcons.circleHelp),
+          icon: LucideIcons.circleHelp,
           onTap: () => app.go(VRoute.helpSupport),
         ),
-        const SizedBox(height: Gap.md),
-        Center(
-          child: SizedBox(
-            width: 132,
-            child: OutlinedButton.icon(
-              onPressed: () {},
-              icon: const Icon(LucideIcons.logOut, size: 18),
-              label: const Text('Log Out'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFFD73C2B),
-                side: const BorderSide(color: Color(0xFFD73C2B)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-            ),
-          ),
+        const SizedBox(height: Gap.xxl),
+        CefButton(
+          'Log Out',
+          destructive: true,
+          icon: LucideIcons.logOut,
+          onTap: () {},
         ),
       ],
     );
@@ -463,40 +442,36 @@ class _EditProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PageBody(
     children: [
-      const _EditableAvatar(label: 'YS'),
-      const SizedBox(height: 20),
-      const _PrototypeField(
+      const _EditableAvatar(name: 'Yusuf Sazali'),
+      const SizedBox(height: Gap.xl),
+      const CefField(
         label: 'Full Name',
-        value: 'Yusuf Sazali',
-        icon: LucideIcons.user,
+        initialValue: 'Yusuf Sazali',
+        prefixIcon: LucideIcons.user,
       ),
       const _SplitFields(
+        leftLabel: 'Code',
         left: '+60',
+        rightLabel: 'Phone Number',
         right: '12 345 6789',
-        label: 'Phone Number',
+        keyboardType: TextInputType.phone,
       ),
-      const _PrototypeField(
+      const CefField(
         label: 'Email Address',
-        value: 'yusuf@kopikita.my',
-        icon: LucideIcons.mail,
-        disabled: true,
+        initialValue: 'yusuf@kopikita.my',
+        prefixIcon: LucideIcons.mail,
+        enabled: false,
+        helperText:
+            'Email cannot be changed. Please contact support if needed.',
       ),
-      const Text(
-        'Email cannot be changed. Please contact support if needed.',
-        style: TextStyle(fontSize: 11.5, color: Color(0xFF7A8194)),
-      ),
-      const SizedBox(height: 14),
-      const _PrototypeField(
+      const CefField(
         label: 'Role',
-        value: 'Owner',
-        icon: LucideIcons.briefcase,
-        disabled: true,
+        initialValue: 'Owner',
+        prefixIcon: LucideIcons.briefcase,
+        enabled: false,
+        helperText: 'Managed by your business.',
       ),
-      const Text(
-        'Managed by your business.',
-        style: TextStyle(fontSize: 11.5, color: Color(0xFF7A8194)),
-      ),
-      const SizedBox(height: 24),
+      const SizedBox(height: Gap.md),
       CefButton('Save Changes', onTap: () {}),
     ],
   );
@@ -514,39 +489,41 @@ class _SecurityScreen extends StatelessWidget {
           icon: LucideIcons.shield,
           title: 'Keep your account safe',
           subtitle:
-              'Manage your security settings and\nprotect your business data.',
+              'Manage your security settings and protect your business data.',
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: Gap.lg),
         CefListRow(
           title: 'Password',
           subtitle: 'Update your password regularly',
-          leading: _icon(context, LucideIcons.lock),
+          icon: LucideIcons.lock,
           onTap: () => app.go(VRoute.changePassword),
         ),
         CefListRow(
           title: 'Biometric Login',
           subtitle: 'Use Face ID or Touch ID',
-          leading: _icon(context, LucideIcons.fingerprint),
+          icon: LucideIcons.fingerprint,
           trailing: CefSwitch(value: true, onChanged: (_) {}),
         ),
-        CefListRow(
+        // Unavailable feature: no switch or on/off state, just an honest
+        // "Coming soon" subtitle on a non-tappable row.
+        const CefListRow(
           title: 'Two-Factor Authentication',
           subtitle: 'Coming soon',
-          leading: _icon(context, LucideIcons.smartphone),
-          trailing: const StatusChip('Off'),
+          icon: LucideIcons.smartphone,
         ),
         CefListRow(
           title: 'Active Sessions',
           subtitle: 'Manage your logged in devices',
-          leading: _icon(context, LucideIcons.laptop),
+          icon: LucideIcons.laptop,
           onTap: () {},
         ),
-        const SizedBox(height: Gap.md),
+        const SizedBox(height: Gap.xl),
         const _HeroPanel(
           kicker: 'Your security is important',
           title:
               'These settings help keep your account and business data safe.',
         ),
+        const SizedBox(height: Gap.md),
       ],
     );
   }
@@ -561,32 +538,32 @@ class _ChangePasswordScreen extends StatelessWidget {
       const _RoundIconHeader(
         icon: LucideIcons.lock,
         title: 'Set a new password',
-        subtitle: 'Use a strong password to keep\nyour account secure.',
+        subtitle: 'Use a strong password to keep your account secure.',
       ),
-      const SizedBox(height: 18),
-      const _PrototypeField(
+      const SizedBox(height: Gap.xl),
+      const CefField(
         label: 'Current Password',
-        value: 'Enter current password',
-        icon: LucideIcons.lock,
-        trailing: LucideIcons.eyeOff,
+        hint: 'Enter current password',
+        prefixIcon: LucideIcons.lock,
+        obscureText: true,
       ),
-      const _PrototypeField(
+      const CefField(
         label: 'New Password',
-        value: 'Enter new password',
-        icon: LucideIcons.lock,
-        trailing: LucideIcons.eye,
+        hint: 'Enter new password',
+        prefixIcon: LucideIcons.lock,
+        obscureText: true,
       ),
       const _Requirement('Minimum 8 characters'),
       const _Requirement('Include at least one letter and one number'),
       const _Requirement(r'Include one special character (e.g. ! @ # $)'),
-      const SizedBox(height: 14),
-      const _PrototypeField(
+      const SizedBox(height: Gap.md),
+      const CefField(
         label: 'Confirm New Password',
-        value: 'Confirm new password',
-        icon: LucideIcons.lock,
-        trailing: LucideIcons.eyeOff,
+        hint: 'Confirm new password',
+        prefixIcon: LucideIcons.lock,
+        obscureText: true,
       ),
-      const SizedBox(height: 24),
+      const SizedBox(height: Gap.md),
       CefButton(
         'Update Password',
         onTap: () => runAsyncFeedback(
@@ -623,53 +600,48 @@ class _NotificationPreferencesScreen extends StatelessWidget {
           title: 'Stay in the loop',
           subtitle: 'Get notified about what matters to your business.',
         ),
-        const _PreferenceLabel('ORDERS'),
+        const SectionHeading('Orders'),
         for (final row in rows.take(2))
           CefListRow(
             title: row.$1,
             subtitle: row.$2,
-            leading: _icon(context, LucideIcons.bell),
+            icon: LucideIcons.bell,
             trailing: CefSwitch(
               value: row.$1 != 'Team Activity',
               onChanged: (_) {},
             ),
           ),
-        const _PreferenceLabel('DELIVERY & RUNS'),
+        const SectionHeading('Delivery & runs'),
         for (final row in rows.skip(2).take(2))
           CefListRow(
             title: row.$1,
             subtitle: row.$2,
-            leading: _icon(
-              context,
-              row.$1 == 'Run Updates'
-                  ? LucideIcons.truck
-                  : LucideIcons.triangleAlert,
-            ),
+            icon: row.$1 == 'Run Updates'
+                ? LucideIcons.truck
+                : LucideIcons.triangleAlert,
             trailing: CefSwitch(value: true, onChanged: (_) {}),
           ),
-        const _PreferenceLabel('RIDERS & TEAM'),
+        const SectionHeading('Riders & team'),
         for (final row in rows.skip(4).take(2))
           CefListRow(
             title: row.$1,
             subtitle: row.$2,
-            leading: _icon(
-              context,
-              row.$1 == 'Rider Updates'
-                  ? LucideIcons.users
-                  : LucideIcons.userPlus,
-            ),
+            icon: row.$1 == 'Rider Updates'
+                ? LucideIcons.users
+                : LucideIcons.userPlus,
             trailing: CefSwitch(
               value: row.$1 != 'Team Activity',
               onChanged: (_) {},
             ),
           ),
-        const _PreferenceLabel('ACCOUNT & SYSTEM'),
+        const SectionHeading('Account & system'),
         CefListRow(
           title: rows.last.$1,
           subtitle: rows.last.$2,
-          leading: _icon(context, LucideIcons.settings),
+          icon: LucideIcons.settings,
           trailing: CefSwitch(value: true, onChanged: (_) {}),
         ),
+        const SizedBox(height: Gap.md),
       ],
     );
   }
@@ -693,32 +665,26 @@ class _LanguageScreen extends StatelessWidget {
           'Choose the language used throughout the Vendor app.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
-        const SizedBox(height: Gap.md),
-        CefCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'App language',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: Gap.sm),
-              for (final lang in langs)
-                CefListRow(
-                  title: lang.$1,
-                  subtitle: lang.$2,
-                  trailing: lang.$1 == 'English'
-                      ? Icon(LucideIcons.circleDot, color: context.c.info)
-                      : Icon(
-                          LucideIcons.circle,
-                          color: context.c.textSecondary,
-                        ),
-                  onTap: () => app.setLocale(lang.$1),
-                ),
-            ],
+        const SectionHeading('App language'),
+        for (final lang in langs)
+          CefListRow(
+            title: lang.$1,
+            subtitle: lang.$2,
+            showChevron: false,
+            trailing: lang.$1 == 'English'
+                ? Icon(
+                    LucideIcons.circleDot,
+                    size: Sizes.icon,
+                    color: context.c.info,
+                  )
+                : Icon(
+                    LucideIcons.circle,
+                    size: Sizes.icon,
+                    color: context.c.textSecondary,
+                  ),
+            onTap: () => app.setLocale(lang.$1),
           ),
-        ),
-        const SizedBox(height: Gap.md),
+        const SizedBox(height: Gap.xxl),
         CefButton('Confirm', onTap: () {}),
       ],
     );
@@ -729,33 +695,33 @@ class _AppearanceScreen extends StatelessWidget {
   const _AppearanceScreen();
 
   @override
-  Widget build(BuildContext context) => PageBody(
+  Widget build(BuildContext context) => const PageBody(
     children: [
-      const _RoundIconHeader(
+      _RoundIconHeader(
         icon: LucideIcons.penLine,
         title: 'Coming Soon',
-        subtitle: 'Appearance settings will be available\nin a future update.',
+        subtitle: 'Appearance settings will be available in a future update.',
       ),
-      const SizedBox(height: 20),
-      const _HeroPanel(
+      SizedBox(height: Gap.xl),
+      _HeroPanel(
         kicker: 'Same operations. A brighter experience ahead.',
-        title: 'More ways\nto make it yours.',
+        title: 'More ways to make it yours.',
       ),
-      const SizedBox(height: 16),
+      SizedBox(height: Gap.md),
       CefListRow(
         title: 'Theme Options',
         subtitle: 'Light, dark and system theme.',
-        leading: _icon(context, LucideIcons.sun),
+        icon: LucideIcons.sun,
       ),
       CefListRow(
         title: 'App Appearance',
         subtitle: 'Customize colours and style.',
-        leading: _icon(context, LucideIcons.palette),
+        icon: LucideIcons.palette,
       ),
       CefListRow(
         title: 'Display Preferences',
         subtitle: 'Adjust display settings to your liking.',
-        leading: _icon(context, LucideIcons.slidersHorizontal),
+        icon: LucideIcons.slidersHorizontal,
       ),
     ],
   );
@@ -772,177 +738,96 @@ class _MiniStat extends StatelessWidget {
   final String value;
   final String label;
   final bool accent;
+
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      Icon(icon, size: 20, color: accent ? CefColors.accent : CefColors.navy),
-      const SizedBox(height: 4),
-      Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
-      Text(
-        label,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10.5),
+      Icon(
+        icon,
+        size: 20,
+        color: accent ? CefColors.accent : context.c.iconColor,
+      ),
+      const SizedBox(height: Gap.xs),
+      Text(value, style: Theme.of(context).textTheme.titleSmall),
+      Text(label, style: Theme.of(context).textTheme.bodySmall),
+    ],
+  );
+}
+
+/// Profile photo placeholder: the standard initials avatar with a camera
+/// badge signalling the photo can be changed.
+class _EditableAvatar extends StatelessWidget {
+  const _EditableAvatar({required this.name});
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Center(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          CefAvatar(name, size: 84),
+          Positioned(
+            right: -Gap.xs,
+            bottom: 0,
+            child: Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: c.card,
+                shape: BoxShape.circle,
+                border: Border.all(color: c.border),
+              ),
+              child: Icon(LucideIcons.camera, size: 16, color: c.iconColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Two labelled fields side by side (e.g. country code + number,
+/// postcode + city) at a 2:4 split.
+class _SplitFields extends StatelessWidget {
+  const _SplitFields({
+    required this.leftLabel,
+    required this.left,
+    required this.rightLabel,
+    required this.right,
+    this.keyboardType,
+  });
+  final String leftLabel, left, rightLabel, right;
+  final TextInputType? keyboardType;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Expanded(
+        flex: 2,
+        child: CefField(
+          label: leftLabel,
+          initialValue: left,
+          keyboardType: keyboardType,
+        ),
+      ),
+      const SizedBox(width: Gap.md),
+      Expanded(
+        flex: 4,
+        child: CefField(
+          label: rightLabel,
+          initialValue: right,
+          keyboardType: keyboardType,
+        ),
       ),
     ],
   );
 }
 
-class _EditableAvatar extends StatelessWidget {
-  const _EditableAvatar({required this.label});
-  final String label;
-  @override
-  Widget build(BuildContext context) => Center(
-    child: Stack(
-      clipBehavior: Clip.none,
-      children: [
-        CircleAvatar(
-          radius: 50,
-          backgroundColor: CefColors.navy,
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              height: 1,
-            ),
-          ),
-        ),
-        const Positioned(
-          right: -3,
-          bottom: 2,
-          child: CircleAvatar(
-            radius: 17,
-            backgroundColor: Colors.white,
-            child: Icon(LucideIcons.camera, size: 18, color: CefColors.navy),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _PrototypeField extends StatelessWidget {
-  const _PrototypeField({
-    required this.label,
-    required this.value,
-    this.icon,
-    this.trailing,
-    this.lines = 1,
-    this.disabled = false,
-  });
-  final String label;
-  final String value;
-  final IconData? icon;
-  final IconData? trailing;
-  final int lines;
-  final bool disabled;
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 13),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12.5,
-            color: CefColors.navy,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          constraints: BoxConstraints(minHeight: lines > 1 ? 62 : 48),
-          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
-          decoration: BoxDecoration(
-            color: disabled ? const Color(0xFFF0F1F5) : const Color(0xFFF8F9FB),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFDDE1EA)),
-          ),
-          child: Row(
-            children: [
-              if (icon != null) ...[
-                Icon(icon, size: 18, color: CefColors.navy),
-                const SizedBox(width: 10),
-              ],
-              Expanded(
-                child: Text(
-                  value,
-                  maxLines: lines,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 13.5,
-                    color: disabled ? const Color(0xFF8A90A0) : CefColors.navy,
-                  ),
-                ),
-              ),
-              if (trailing != null)
-                Icon(trailing, size: 18, color: CefColors.navy),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _SplitFields extends StatelessWidget {
-  const _SplitFields({
-    required this.left,
-    required this.right,
-    required this.label,
-  });
-  final String left;
-  final String right;
-  final String label;
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 13),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12.5,
-            color: CefColors.navy,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            Expanded(flex: 2, child: _FieldBox(left)),
-            const SizedBox(width: 10),
-            Expanded(flex: 4, child: _FieldBox(right)),
-          ],
-        ),
-      ],
-    ),
-  );
-}
-
-class _FieldBox extends StatelessWidget {
-  const _FieldBox(this.value);
-  final String value;
-  @override
-  Widget build(BuildContext context) => Container(
-    height: 48,
-    padding: const EdgeInsets.symmetric(horizontal: 13),
-    alignment: Alignment.centerLeft,
-    decoration: BoxDecoration(
-      color: const Color(0xFFF8F9FB),
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: const Color(0xFFDDE1EA)),
-    ),
-    child: Text(
-      value,
-      style: const TextStyle(fontSize: 13.5, color: CefColors.navy),
-    ),
-  );
-}
-
+/// Compact icon disc + heading + supporting line that introduces a list or
+/// form inside a page body.
 class _RoundIconHeader extends StatelessWidget {
   const _RoundIconHeader({
     required this.icon,
@@ -952,21 +837,26 @@ class _RoundIconHeader extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      CircleAvatar(
-        radius: 39,
-        backgroundColor: const Color(0xFFF1F3F7),
-        child: Icon(icon, size: 38, color: CefColors.navy),
+      Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          color: context.c.subtle,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 26, color: CefColors.navy),
       ),
-      const SizedBox(height: 12),
+      const SizedBox(height: Gap.sm),
       Text(
         title,
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.titleLarge,
+        style: Theme.of(context).textTheme.headlineSmall,
       ),
-      const SizedBox(height: 5),
+      const SizedBox(height: Gap.xs),
       Text(
         subtitle,
         textAlign: TextAlign.center,
@@ -985,101 +875,96 @@ class _BusinessHourRow extends StatelessWidget {
   final String day;
   final bool enabled;
   final String close;
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    height: 54,
-    child: Row(
-      children: [
-        SizedBox(
-          width: 78,
-          child: Text(
-            day,
-            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
-          ),
-        ),
-        Transform.scale(
-          scale: .8,
-          child: CefSwitch(value: enabled, onChanged: (_) {}),
-        ),
-        if (enabled) ...[
-          const Expanded(child: _FieldBox('08:00')),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 6),
-            child: Text('–'),
-          ),
-          Expanded(child: _FieldBox(close)),
-        ] else
-          const Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(left: 10),
-              child: Text('Closed', style: TextStyle(color: Color(0xFF7A8194))),
-            ),
-          ),
-      ],
-    ),
-  );
-}
 
-class _ActionRowPrototype extends StatelessWidget {
-  const _ActionRowPrototype({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.action,
-  });
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final String action;
   @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Icon(icon, color: CefColors.navy),
-      const SizedBox(width: 12),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: Theme.of(context).textTheme.titleSmall),
-            Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-          ],
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    // Day label, switch and separator share the field's control height so
+    // they line up with the CefFields (which carry their own bottom gap).
+    Widget control(Widget child, {double? width}) => SizedBox(
+      width: width,
+      height: Sizes.controlHeight,
+      child: Align(alignment: Alignment.centerLeft, child: child),
+    );
+    final dayLabel = Text(
+      day,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: text.titleSmall,
+    );
+    final toggle = CefSwitch(value: enabled, onChanged: (_) {});
+    final times = [
+      const Expanded(child: CefField(initialValue: '08:00')),
+      control(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
+          child: Text('–', style: text.bodyMedium),
         ),
       ),
-      OutlinedButton(onPressed: () {}, child: Text(action)),
-    ],
-  );
+      Expanded(child: CefField(initialValue: close)),
+    ];
+    final closed = Text('Closed', style: text.bodyMedium);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final scale = MediaQuery.textScalerOf(context).scale(1);
+        // One line needs the day label (~92 * scale), switch + separator
+        // (~77) and two time fields (28 padding + ~44 * scale text each);
+        // with less room (narrow phone, large text) the times drop below.
+        final inline = constraints.maxWidth >= 133 + 180 * scale;
+        if (inline) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              control(dayLabel, width: 92 * scale),
+              control(toggle),
+              const SizedBox(width: Gap.sm),
+              if (enabled)
+                ...times
+              else
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: Gap.md),
+                    child: control(closed),
+                  ),
+                ),
+            ],
+          );
+        }
+        return Column(
+          children: [
+            Row(
+              children: [
+                Expanded(child: control(dayLabel)),
+                if (!enabled) ...[closed, const SizedBox(width: Gap.md)],
+                toggle,
+              ],
+            ),
+            if (enabled)
+              Row(crossAxisAlignment: CrossAxisAlignment.start, children: times)
+            else
+              const SizedBox(height: Gap.sm),
+          ],
+        );
+      },
+    );
+  }
 }
 
 class _Requirement extends StatelessWidget {
   const _Requirement(this.text);
   final String text;
+
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 6),
+    padding: const EdgeInsets.only(bottom: Gap.xs),
     child: Row(
       children: [
-        const Icon(LucideIcons.circle, size: 14, color: Color(0xFFB1B7C5)),
-        const SizedBox(width: 8),
-        Text(text, style: Theme.of(context).textTheme.bodySmall),
+        Icon(LucideIcons.circle, size: 14, color: context.c.textSecondary),
+        const SizedBox(width: Gap.sm),
+        Expanded(
+          child: Text(text, style: Theme.of(context).textTheme.bodySmall),
+        ),
       ],
-    ),
-  );
-}
-
-class _PreferenceLabel extends StatelessWidget {
-  const _PreferenceLabel(this.text);
-  final String text;
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: 20, bottom: 4),
-    child: Text(
-      text,
-      style: const TextStyle(
-        color: Color(0xFF6D7890),
-        fontSize: 11,
-        fontWeight: FontWeight.w800,
-        letterSpacing: .4,
-      ),
     ),
   );
 }
@@ -1102,26 +987,29 @@ class _HelpSupportScreen extends StatelessWidget {
           onFilter: () {},
         ),
         const SizedBox(height: Gap.md),
-        Row(
-          children: [
-            Expanded(
-              child: _SupportTile(
-                icon: LucideIcons.bookOpen,
-                title: 'Help Centre',
-                subtitle: 'Browse articles, guides and FAQs',
-                onTap: () => app.go(VRoute.faq),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _SupportTile(
+                  icon: LucideIcons.bookOpen,
+                  title: 'Help Centre',
+                  subtitle: 'Browse articles, guides and FAQs',
+                  onTap: () => app.go(VRoute.faq),
+                ),
               ),
-            ),
-            const SizedBox(width: Gap.md),
-            Expanded(
-              child: _SupportTile(
-                icon: LucideIcons.messageCircle,
-                title: 'Contact Support',
-                subtitle: 'Chat or send a support request',
-                onTap: () => app.go(VRoute.contactSupport),
+              const SizedBox(width: Gap.md),
+              Expanded(
+                child: _SupportTile(
+                  icon: LucideIcons.messageCircle,
+                  title: 'Contact Support',
+                  subtitle: 'Chat or send a support request',
+                  onTap: () => app.go(VRoute.contactSupport),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SectionHeading('Popular Topics'),
         for (final row in const [
@@ -1147,11 +1035,7 @@ class _HelpSupportScreen extends StatelessWidget {
           ),
           ('App Guides', 'Step-by-step tutorials', LucideIcons.bookOpen),
         ])
-          CefListRow(
-            title: row.$1,
-            subtitle: row.$2,
-            leading: _icon(context, row.$3),
-          ),
+          CefListRow(title: row.$1, subtitle: row.$2, icon: row.$3),
       ],
     );
   }
@@ -1184,16 +1068,13 @@ class _FaqScreen extends StatelessWidget {
         CefListRow(
           title: row.$1,
           subtitle: row.$2,
-          leading: _icon(
-            context,
-            row.$1 == 'Orders & Delivery'
-                ? LucideIcons.truck
-                : row.$1 == 'Zones & Riders'
-                ? LucideIcons.users
-                : row.$1 == 'Subscription & Billing'
-                ? LucideIcons.calendarDays
-                : LucideIcons.bookOpen,
-          ),
+          icon: row.$1 == 'Orders & Delivery'
+              ? LucideIcons.truck
+              : row.$1 == 'Zones & Riders'
+              ? LucideIcons.users
+              : row.$1 == 'Subscription & Billing'
+              ? LucideIcons.calendarDays
+              : LucideIcons.bookOpen,
         ),
       SectionHeading(
         'Popular Questions',
@@ -1219,70 +1100,73 @@ class _ContactSupportScreen extends StatelessWidget {
   const _ContactSupportScreen();
 
   @override
-  Widget build(BuildContext context) => PageBody(
-    children: [
-      const _HeroPanel(
-        kicker: 'We’re here to help',
-        title: 'Get in touch',
-        subtitle: 'Tell us about your issue and our team will get back to you.',
-      ),
-      const SizedBox(height: Gap.md),
-      const _PrototypeField(
-        label: 'Issue Category',
-        value: 'Select a category',
-        trailing: LucideIcons.chevronDown,
-      ),
-      const _PrototypeField(
-        label: 'Subject',
-        value: 'Briefly describe your issue',
-      ),
-      const _MessageField(),
-      Text(
-        'Add Screenshots (Optional)',
-        style: Theme.of(context).textTheme.titleSmall,
-      ),
-      const SizedBox(height: 7),
-      Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          border: Border.all(color: context.c.border),
-          borderRadius: BorderRadius.circular(Sizes.inputRadius),
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return PageBody(
+      children: [
+        const _HeroPanel(
+          kicker: 'We’re here to help',
+          title: 'Get in touch',
+          subtitle:
+              'Tell us about your issue and our team will get back to you.',
         ),
-        child: const Column(
-          children: [
-            Icon(LucideIcons.image),
-            SizedBox(height: 6),
-            Text(
-              'Tap to attach images',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
-            Text('PNG, JPG up to 10MB each'),
-          ],
+        const SizedBox(height: Gap.xl),
+        const CefField(
+          label: 'Issue Category',
+          hint: 'Select a category',
+          suffixIcon: LucideIcons.chevronDown,
         ),
-      ),
-      const SizedBox(height: Gap.md),
-      const _PrototypeField(label: 'Contact Email', value: 'yusuf@kopikita.my'),
-      const SizedBox(height: Gap.md),
-      CefButton(
-        'Send Request',
-        onTap: () => runAsyncFeedback(
-          context,
-          action: () async {},
-          processingTitle: 'Processing...',
-          processingSubtitle: 'Sending your request',
-          successTitle: 'Successful',
-          successSubtitle: 'Your support request has been sent.',
+        const CefField(label: 'Subject', hint: 'Briefly describe your issue'),
+        const CefField(
+          label: 'Message',
+          hint: 'Tell us more about your issue...',
+          maxLines: 4,
         ),
-      ),
-      const SizedBox(height: Gap.sm),
-      Text(
-        'ⓘ Our support team will get back to you as soon as possible.',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
-    ],
-  );
+        const _CharCount('0/500'),
+        Text('Add Screenshots (Optional)', style: text.labelLarge),
+        const SizedBox(height: Gap.sm),
+        CefCard(
+          child: Column(
+            children: [
+              Icon(
+                LucideIcons.image,
+                size: Sizes.icon,
+                color: context.c.iconColor,
+              ),
+              const SizedBox(height: Gap.sm),
+              Text('Tap to attach images', style: text.titleSmall),
+              const SizedBox(height: 2),
+              Text('PNG, JPG up to 10MB each', style: text.bodySmall),
+            ],
+          ),
+        ),
+        const SizedBox(height: Gap.lg),
+        const CefField(
+          label: 'Contact Email',
+          initialValue: 'yusuf@kopikita.my',
+          keyboardType: TextInputType.emailAddress,
+        ),
+        const SizedBox(height: Gap.sm),
+        CefButton(
+          'Send Request',
+          onTap: () => runAsyncFeedback(
+            context,
+            action: () async {},
+            processingTitle: 'Processing...',
+            processingSubtitle: 'Sending your request',
+            successTitle: 'Successful',
+            successSubtitle: 'Your support request has been sent.',
+          ),
+        ),
+        const SizedBox(height: Gap.sm),
+        Text(
+          'ⓘ Our support team will get back to you as soon as possible.',
+          textAlign: TextAlign.center,
+          style: text.bodySmall,
+        ),
+      ],
+    );
+  }
 }
 
 class _PolicyScreen extends StatelessWidget {
@@ -1345,28 +1229,15 @@ class _AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PageBody(
     children: [
-      const SizedBox(height: 20),
-      const Center(
-        child: CircleAvatar(
-          radius: 42,
-          backgroundColor: Color(0xFF102344),
-          child: Text(
-            'C',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 38,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-      ),
-      const SizedBox(height: 15),
+      const SizedBox(height: Gap.md),
+      const Center(child: CefAvatar('Cefflo', size: 84)),
+      const SizedBox(height: Gap.md),
       Text(
         'Cefflo',
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.titleLarge,
+        style: Theme.of(context).textTheme.headlineSmall,
       ),
-      const SizedBox(height: 4),
+      const SizedBox(height: Gap.xs),
       Text(
         'More orders. Less work. A smoother delivery day.',
         textAlign: TextAlign.center,
@@ -1380,22 +1251,20 @@ class _AboutScreen extends StatelessWidget {
             'A local same-day delivery operating system built for businesses.',
       ),
       const SectionHeading('App information'),
-      const _InfoLine(
+      CefListRow(
+        title: 'Version',
         icon: LucideIcons.smartphone,
-        label: 'Version',
-        value: '1.0.0',
+        trailing: Text('1.0.0', style: Theme.of(context).textTheme.bodyMedium),
       ),
-      const _InfoLine(
+      const CefListRow(
+        title: 'Privacy Policy',
+        subtitle: 'Read policy',
         icon: LucideIcons.shieldCheck,
-        label: 'Privacy Policy',
-        value: 'Read policy',
-        chevron: true,
       ),
-      const _InfoLine(
+      const CefListRow(
+        title: 'Terms of Service',
+        subtitle: 'Read terms',
         icon: LucideIcons.fileText,
-        label: 'Terms of Service',
-        value: 'Read terms',
-        chevron: true,
       ),
       const SizedBox(height: Gap.section),
       Text(
@@ -1404,48 +1273,6 @@ class _AboutScreen extends StatelessWidget {
         style: Theme.of(context).textTheme.bodySmall,
       ),
     ],
-  );
-}
-
-class _InfoLine extends StatelessWidget {
-  const _InfoLine({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.chevron = false,
-  });
-  final IconData icon;
-  final String label, value;
-  final bool chevron;
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 13),
-    child: Row(
-      children: [
-        Icon(icon, size: Sizes.icon),
-        const SizedBox(width: Gap.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
-              if (chevron) ...[
-                const SizedBox(height: 3),
-                Text(value, style: Theme.of(context).textTheme.bodySmall),
-              ],
-            ],
-          ),
-        ),
-        if (chevron)
-          const Icon(LucideIcons.chevronRight)
-        else
-          Text(
-            value,
-            textAlign: TextAlign.right,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-      ],
-    ),
   );
 }
 
@@ -1459,66 +1286,27 @@ class _SupportTile extends StatelessWidget {
   final IconData icon;
   final String title, subtitle;
   final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) => CefCard(
     onTap: onTap,
-    child: SizedBox(
-      height: 112,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: const Color(0xFF086BE3)),
-          const Spacer(),
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _MessageField extends StatelessWidget {
-  const _MessageField();
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: Gap.md),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Message', style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: 7),
-        Container(
-          height: 108,
-          width: double.infinity,
-          padding: const EdgeInsets.all(13),
-          decoration: BoxDecoration(
-            color: context.c.card,
-            border: Border.all(color: context.c.border),
-            borderRadius: BorderRadius.circular(Sizes.inputRadius),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Tell us more about your issue...',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const Spacer(),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Text(
-                  '0/500',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
-            ],
-          ),
+        Icon(icon, size: Sizes.icon, color: context.c.info),
+        const SizedBox(height: Gap.sm),
+        Text(
+          title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          subtitle,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.bodySmall,
         ),
       ],
     ),
@@ -1529,22 +1317,22 @@ class _NotificationInboxScreen extends StatelessWidget {
   const _NotificationInboxScreen();
 
   @override
-  Widget build(BuildContext context) => PageBody(
+  Widget build(BuildContext context) => const PageBody(
     children: [
       CefListRow(
         title: '3 orders need your action',
         subtitle: 'Review issues before dispatch.',
-        leading: _icon(context, LucideIcons.bell),
+        icon: LucideIcons.bell,
       ),
       CefListRow(
         title: 'Rider update',
         subtitle: 'Ahmad Razi is online.',
-        leading: _icon(context, LucideIcons.users),
+        icon: LucideIcons.users,
       ),
       CefListRow(
         title: 'System update',
         subtitle: 'Everything is operating normally.',
-        leading: _icon(context, LucideIcons.info),
+        icon: LucideIcons.info,
       ),
     ],
   );
@@ -1565,7 +1353,7 @@ class _InviteLinkScreen extends StatelessWidget {
   void _showQrSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: context.c.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(Sizes.cardRadius),
@@ -1585,7 +1373,7 @@ class _InviteLinkScreen extends StatelessWidget {
               width: 200,
               height: 200,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.c.card,
                 borderRadius: BorderRadius.circular(Sizes.cardRadius),
                 border: Border.all(color: context.c.border),
               ),
@@ -1604,19 +1392,22 @@ class _InviteLinkScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.c;
+    final text = Theme.of(context).textTheme;
     final link =
         'https://cefflo.app/${kind == 'Rider' ? 'team' : 'join'}/AB3K9D';
     return PageBody(
       children: [
         Center(
           child: Container(
-            width: kind == 'Rider' ? 54 : 64,
-            height: kind == 'Rider' ? 54 : 64,
-            decoration: const BoxDecoration(
-              color: Color(0xFFE9EEF7),
-              shape: BoxShape.circle,
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(color: c.subtle, shape: BoxShape.circle),
+            child: const Icon(
+              LucideIcons.userPlus,
+              size: 26,
+              color: CefColors.navy,
             ),
-            child: Icon(LucideIcons.userPlus, size: 28, color: CefColors.navy),
           ),
         ),
         const SizedBox(height: Gap.md),
@@ -1625,13 +1416,7 @@ class _InviteLinkScreen extends StatelessWidget {
               ? 'Invite Riders to Your Business'
               : 'Invite a Team Member',
           textAlign: TextAlign.center,
-          style: kind == 'Rider'
-              ? const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF091A3C),
-                )
-              : Theme.of(context).textTheme.titleMedium,
+          style: text.headlineSmall,
         ),
         const SizedBox(height: Gap.xs),
         Text(
@@ -1642,61 +1427,30 @@ class _InviteLinkScreen extends StatelessWidget {
               : 'Give access to your team so they can help run your '
                     'deliveries, manage orders and more.',
           textAlign: TextAlign.center,
-          style: kind == 'Rider'
-              ? const TextStyle(
-                  fontSize: 13,
-                  height: 1.5,
-                  color: Color(0xFF858BA3),
-                )
-              : Theme.of(context).textTheme.bodyMedium,
+          style: text.bodyMedium,
         ),
         const SizedBox(height: Gap.section),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(Gap.cardPadding),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: kind == 'Rider'
-                  ? const [
-                      Color(0xFF0065E4),
-                      Color(0xFF003B91),
-                      Color(0xFF071C46),
-                    ]
-                  : const [
-                      Color(0xFF102344),
-                      Color(0xFF1453B7),
-                      Color(0xFF12213E),
-                    ],
-            ),
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-          ),
+        HeroSurface(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Icon(LucideIcons.link, size: 18, color: Colors.white),
+                  const Icon(LucideIcons.link, size: 18, color: Colors.white),
                   const SizedBox(width: Gap.sm),
-                  Text(
-                    'Your Invitation Link',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14.5,
+                  Expanded(
+                    child: Text(
+                      'Your Invitation Link',
+                      style: text.titleSmall?.copyWith(color: Colors.white),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: Gap.md),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
+                padding: const EdgeInsets.only(left: Gap.md),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: c.card,
                   borderRadius: BorderRadius.circular(Sizes.inputRadius),
                 ),
                 child: Row(
@@ -1706,39 +1460,22 @@ class _InviteLinkScreen extends StatelessWidget {
                         link,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: text.bodyMedium,
                       ),
                     ),
-                    const SizedBox(width: Gap.sm),
-                    GestureDetector(
+                    IconAction(
+                      icon: LucideIcons.copy,
+                      tooltip: 'Copy link',
                       onTap: () => _copyLink(context, link),
-                      child: Icon(
-                        LucideIcons.copy,
-                        size: 18,
-                        color: context.c.textSecondary,
-                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: Gap.sm),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => _copyLink(context, link),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: CefColors.navy,
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-                    ),
-                  ),
-                  child: const Text(
-                    'Copy Link',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
+              const SizedBox(height: Gap.md),
+              CefButton(
+                'Copy Link',
+                secondary: true,
+                onTap: () => _copyLink(context, link),
               ),
             ],
           ),
@@ -1747,14 +1484,9 @@ class _InviteLinkScreen extends StatelessWidget {
         CefListRow(
           title: 'Show QR Code',
           subtitle: '$kind${kind.endsWith('s') ? '' : 's'} can scan this code',
-          leading: Icon(
-            LucideIcons.qrCode,
-            size: Sizes.icon,
-            color: context.c.info,
-          ),
+          icon: LucideIcons.qrCode,
           onTap: () => _showQrSheet(context),
         ),
-        const SizedBox(height: Gap.section),
         const SectionHeading('Share via'),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1780,8 +1512,8 @@ class _InviteLinkScreen extends StatelessWidget {
             _ShareChannel(
               icon: LucideIcons.ellipsis,
               label: 'More',
-              color: const Color(0xFFE9ECF2),
-              iconColor: context.c.textSecondary,
+              color: c.subtle,
+              iconColor: c.textSecondary,
               onTap: () => _copyLink(context, link),
             ),
           ],
@@ -1791,7 +1523,7 @@ class _InviteLinkScreen extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(LucideIcons.info, size: 18, color: context.c.info),
+              Icon(LucideIcons.info, size: 18, color: c.info),
               const SizedBox(width: Gap.sm),
               Expanded(
                 child: Text(
@@ -1802,7 +1534,7 @@ class _InviteLinkScreen extends StatelessWidget {
                       : 'Invited team members will appear in your Team '
                             'list once they accept and complete their '
                             'registration.',
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: text.bodySmall,
                 ),
               ),
             ],
@@ -1815,6 +1547,8 @@ class _InviteLinkScreen extends StatelessWidget {
   }
 }
 
+/// Share target disc. Brand colours for WhatsApp / Telegram / SMS are
+/// third-party marks; the neutral "More" disc uses tokens.
 class _ShareChannel extends StatelessWidget {
   const _ShareChannel({
     required this.icon,
@@ -1838,9 +1572,9 @@ class _ShareChannel extends StatelessWidget {
           width: 52,
           height: 52,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          child: Icon(icon, size: 22, color: iconColor ?? Colors.white),
+          child: Icon(icon, size: Sizes.icon, color: iconColor ?? Colors.white),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: Gap.sm),
         Text(label, style: Theme.of(context).textTheme.bodySmall),
       ],
     ),
