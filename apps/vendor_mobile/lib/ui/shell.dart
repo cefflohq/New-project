@@ -221,8 +221,13 @@ class _Header extends StatelessWidget {
 
     return SafeArea(
       bottom: false,
-      child: SizedBox(
-        height: isRoot ? Sizes.header : Sizes.subHeader,
+      // Minimum, not fixed: a title + subtitle grows with the OS text size
+      // instead of overflowing.
+      child: Container(
+        constraints: BoxConstraints(
+          minHeight: isRoot ? Sizes.header : Sizes.subHeader,
+        ),
+        alignment: Alignment.center,
         child: Padding(
           padding: EdgeInsets.fromLTRB(
             isRoot ? Gap.gutter : Gap.xs,

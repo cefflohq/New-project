@@ -341,8 +341,9 @@ class _CustomizeHeader extends StatelessWidget {
   final VoidCallback onReset;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    height: Sizes.subHeader,
+  Widget build(BuildContext context) => Container(
+    constraints: const BoxConstraints(minHeight: Sizes.subHeader),
+    alignment: Alignment.center,
     child: Padding(
       padding: const EdgeInsets.fromLTRB(Gap.xs, 0, Gap.sm, Gap.xs),
       child: Row(
