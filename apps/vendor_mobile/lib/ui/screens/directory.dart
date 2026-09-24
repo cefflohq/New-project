@@ -1624,64 +1624,109 @@ class CustomerDetailScreen extends StatelessWidget {
   }
 }
 
-/// V-46 — Settings, opened from the Today header (D-46). The one directory
-/// of account, business and support destinations: nothing here is repeated
-/// on another page.
+/// Languages the app offers: code and native name.
+const vendorLanguages = [
+  ('ms', 'Bahasa Melayu'),
+  ('en', 'English'),
+  ('zh', '中文'),
+  ('ta', 'தமிழ்'),
+];
+
+String languageName(String code) => vendorLanguages
+    .firstWhere((l) => l.$1 == code, orElse: () => vendorLanguages[1])
+    .$2;
+
+/// Language picker: a small bottom sheet; choosing applies and closes.
+void showLanguageSheet(BuildContext context) {
+  final app = AppScope.read(context);
+  showListSheet(
+    context,
+    title: 'Language',
+    children: [
+      for (final (code, name) in vendorLanguages)
+        CefListRow(
+          title: name,
+          showChevron: false,
+          trailing: app.locale == code
+              ? const Icon(
+                  LucideIcons.check,
+                  size: Sizes.icon,
+                  color: CefColors.brand,
+                )
+              : null,
+          onTap: () {
+            app.setLocale(code);
+            Navigator.of(context).pop();
+          },
+        ),
+    ],
+  );
+}
+
+/// V-46 — More (D-54): the one settings hub, cardless on white. Account,
+/// Business, Support as flat rows with light dividers, then Sign out and
+/// the version.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    Widget group(String title, List<(String, IconData, VRoute)> items) =>
-        CefListGroup(
-          label: title,
-          children: [
-            for (final i in items)
-              CefListRow(title: i.$1, icon: i.$2, onTap: () => app.go(i.$3)),
-          ],
+    final c = context.c;
+    final text = Theme.of(context).textTheme;
+    Widget label(String title) => Padding(
+      padding: const EdgeInsets.only(top: Gap.lg, bottom: Gap.xs),
+      child: Text(title, style: text.labelMedium),
+    );
+    Widget row(String title, IconData icon, VRoute route, {Widget? trailing}) =>
+        CefListRow(
+          title: title,
+          icon: icon,
+          trailing: trailing,
+          onTap: () => app.go(route),
         );
-
-    // Archetype F (Settings): grouped white cards on the cool-white page.
     return PageBody(
-      grouped: true,
       children: [
-        group('Account', [
-          ('Personal information', LucideIcons.fileUser, VRoute.editProfile),
-          ('Security', LucideIcons.lock, VRoute.security),
-          ('Notifications', LucideIcons.bell, VRoute.notificationSettings),
-          ('Language', LucideIcons.globe, VRoute.language),
-          ('Appearance', LucideIcons.palette, VRoute.appearance),
-          ('Privacy', LucideIcons.shieldCheck, VRoute.privacyPolicy),
-        ]),
-        group('Business', [
-          ('Business profile', LucideIcons.building2, VRoute.businessProfile),
-          ('Storefront', LucideIcons.store, VRoute.storefront),
-          ('Products', LucideIcons.package, VRoute.products),
-          ('Team', LucideIcons.users, VRoute.team),
-          ('Customers', LucideIcons.contactRound, VRoute.customers),
-          ('Service area', LucideIcons.map, VRoute.serviceArea),
-        ]),
-        group('Support', [
-          ('Help & support', LucideIcons.circleHelp, VRoute.helpSupport),
-          ('About Cefflo', LucideIcons.info, VRoute.about),
-        ]),
-        CefButton(
-          'Sign out',
-          destructive: true,
-          icon: LucideIcons.logOut,
+        label('Account'),
+        row('Profile', LucideIcons.user, VRoute.editProfile),
+        row('Security', LucideIcons.lock, VRoute.security),
+        row('Notifications', LucideIcons.bell, VRoute.notificationSettings),
+        CefListRow(
+          title: 'Language',
+          icon: LucideIcons.globe,
+          trailing: Text(languageName(app.locale), style: text.bodySmall),
+          onTap: () => showLanguageSheet(context),
+        ),
+        row('Appearance', LucideIcons.palette, VRoute.appearance),
+        label('Business'),
+        row('Business Profile', LucideIcons.building2, VRoute.businessProfile),
+        row('Storefront', LucideIcons.store, VRoute.storefront),
+        row('Products', LucideIcons.package, VRoute.products),
+        row('Team', LucideIcons.users, VRoute.team),
+        row(
+          'Subscription',
+          LucideIcons.creditCard,
+          VRoute.subscription,
+          trailing: StatusChip(app.currentPlan.name, info: true),
+        ),
+        label('Support'),
+        row('Help & Support', LucideIcons.circleHelp, VRoute.helpSupport),
+        row('Privacy', LucideIcons.shieldCheck, VRoute.privacyPolicy),
+        row('About Cefflo', LucideIcons.info, VRoute.about),
+        const SizedBox(height: Gap.sm),
+        CefListRow(
+          title: 'Sign out',
+          leading: IconTile(LucideIcons.logOut, color: c.attention),
+          titleColor: c.attention,
+          showChevron: false,
+          showDivider: false,
           onTap: () async {
             await app.repo.signOut();
             app.clearSession();
           },
         ),
-        const SizedBox(height: Gap.md),
-        Center(
-          child: Text(
-            'Version 1.0.0',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ),
+        const SizedBox(height: Gap.sm),
+        Center(child: Text('Version 1.0.0', style: text.labelSmall)),
       ],
     );
   }

@@ -33,7 +33,6 @@ class UiPrototypeScreen extends StatelessWidget {
     VRoute.security => const _SecurityScreen(),
     VRoute.changePassword => const _ChangePasswordScreen(),
     VRoute.notificationSettings => const _NotificationPreferencesScreen(),
-    VRoute.language => const _LanguageScreen(),
     VRoute.appearance => const _AppearanceScreen(),
     VRoute.helpSupport => const _HelpSupportScreen(),
     VRoute.faq => const _FaqScreen(),
@@ -562,191 +561,298 @@ class _ChangePasswordScreen extends StatelessWidget {
   );
 }
 
-class _NotificationPreferencesScreen extends StatelessWidget {
+/// V-47 — Notifications (D-54): operational alerts are always on (no
+/// switch); only the genuinely optional categories can be turned off.
+class _NotificationPreferencesScreen extends StatefulWidget {
   const _NotificationPreferencesScreen();
 
   @override
+  State<_NotificationPreferencesScreen> createState() =>
+      _NotificationPreferencesScreenState();
+}
+
+class _NotificationPreferencesScreenState
+    extends State<_NotificationPreferencesScreen> {
+  bool _newOrders = true;
+  bool _riderStatus = true;
+  bool _productNews = false;
+
+  @override
   Widget build(BuildContext context) {
-    Widget toggle(String title, String subtitle, IconData icon, bool on) =>
-        CefListRow(
-          title: title,
-          subtitle: subtitle,
-          subtitleMaxLines: 2,
-          icon: icon,
-          trailing: CefSwitch(value: on, onChanged: (_) {}),
-        );
-    // Archetype F: one group per section, switches trailing.
+    final text = Theme.of(context).textTheme;
+    Widget optional(
+      String title,
+      String subtitle,
+      IconData icon,
+      bool value,
+      ValueChanged<bool> onChanged,
+    ) => CefListRow(
+      title: title,
+      subtitle: subtitle,
+      subtitleMaxLines: 2,
+      icon: icon,
+      showChevron: false,
+      trailing: CefSwitch(value: value, onChanged: onChanged),
+    );
     return PageBody(
-      grouped: true,
       children: [
-        const _GroupedIntro(
-          icon: LucideIcons.bell,
-          title: 'Stay in the loop',
-          subtitle: 'Get notified about what matters to your business.',
+        const SectionHeading('Always on'),
+        Text(
+          'Issues, delivery progress and account security alerts keep your '
+          'operation running, so they cannot be turned off.',
+          style: text.bodySmall,
         ),
-        CefListGroup(
-          label: 'Orders',
-          children: [
-            toggle(
-              'New Orders',
-              'Get notified about new orders.',
-              LucideIcons.bellRing,
-              true,
-            ),
-            toggle(
-              'Order Updates',
-              'Status and delivery updates.',
-              LucideIcons.packageCheck,
-              true,
-            ),
-          ],
+        const SizedBox(height: Gap.xs),
+        const CefListRow(
+          title: 'Order issues',
+          icon: LucideIcons.triangleAlert,
+          showChevron: false,
         ),
-        CefListGroup(
-          label: 'Delivery & runs',
-          children: [
-            toggle(
-              'Run Updates',
-              'When runs are dispatched or done.',
-              LucideIcons.truck,
-              true,
-            ),
-            toggle(
-              'Delivery Issues',
-              'Get notified about delivery issues.',
-              LucideIcons.triangleAlert,
-              true,
-            ),
-          ],
+        const CefListRow(
+          title: 'Delivery progress',
+          icon: LucideIcons.truck,
+          showChevron: false,
         ),
-        CefListGroup(
-          label: 'Riders & team',
-          children: [
-            toggle(
-              'Rider Updates',
-              'When riders go online/offline.',
-              LucideIcons.users,
-              true,
-            ),
-            toggle(
-              'Team Activity',
-              'New team members or role changes.',
-              LucideIcons.userPlus,
-              false,
-            ),
-          ],
+        const CefListRow(
+          title: 'Account & security',
+          icon: LucideIcons.lock,
+          showChevron: false,
         ),
-        CefListGroup(
-          label: 'Account & system',
-          children: [
-            toggle(
-              'Important Updates',
-              'Account, billing and system announcements.',
-              LucideIcons.settings,
-              true,
-            ),
-          ],
+        const SectionHeading('Optional'),
+        optional(
+          'New orders',
+          'When a new order comes in.',
+          LucideIcons.package,
+          _newOrders,
+          (v) => setState(() => _newOrders = v),
+        ),
+        optional(
+          'Rider status',
+          'When riders go online or offline.',
+          LucideIcons.users,
+          _riderStatus,
+          (v) => setState(() => _riderStatus = v),
+        ),
+        optional(
+          'Product news',
+          'Tips and new Cefflo features.',
+          LucideIcons.megaphone,
+          _productNews,
+          (v) => setState(() => _productNews = v),
         ),
       ],
     );
   }
 }
 
-class _LanguageScreen extends StatelessWidget {
-  const _LanguageScreen();
+/// V-49 — Appearance (D-54): the app accent colour only (no light/dark
+/// mode). Plain names, small swatches; Custom opens a colour picker sheet.
+/// The accent never recolours semantic colours, the Cefflo gradient or the
+/// mustard CTA.
+class _AppearanceScreen extends StatelessWidget {
+  const _AppearanceScreen();
+
+  static const accents = [
+    ('Blue', 0xFF0060FE),
+    ('Navy', 0xFF0B1220),
+    ('Red', 0xFFE5484D),
+    ('Green', 0xFF12A150),
+    ('Yellow', 0xFFFFC93C),
+    ('Orange', 0xFFF97316),
+    ('Purple', 0xFF7C3AED),
+    ('Black', 0xFF000000),
+    ('White', 0xFFFFFFFF),
+  ];
 
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    const langs = [
-      ('English', 'Default language'),
-      ('Bahasa Melayu', 'Bahasa utama anda'),
-      ('中文（简体）', '简体中文'),
-      ('தமிழ்', 'உங்கள் விருப்ப மொழி'),
-    ];
-    // Archetype F: radio rows in one group.
+    final text = Theme.of(context).textTheme;
+    final selected = app.accentColorValue ?? accents.first.$2;
+    final isCustom = !accents.any((a) => a.$2 == selected);
     return PageBody(
-      bottom: CefButton('Confirm', onTap: () {}),
-      grouped: true,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(Gap.xs, 0, 0, Gap.lg),
-          child: Text(
-            'Choose the language used throughout the Vendor app.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ),
-        CefListGroup(
-          label: 'App language',
+        const SectionHeading('Accent colour'),
+        Text('Choose the accent colour for the app.', style: text.bodySmall),
+        const SizedBox(height: Gap.lg),
+        Wrap(
+          spacing: Gap.lg,
+          runSpacing: Gap.lg,
           children: [
-            for (final lang in langs)
-              CefListRow(
-                title: lang.$1,
-                subtitle: lang.$2,
-                icon: LucideIcons.languages,
-                showChevron: false,
-                trailing: lang.$1 == 'English'
-                    ? Icon(
-                        LucideIcons.circleDot,
-                        size: Sizes.icon,
-                        color: context.c.info,
-                      )
-                    : Icon(
-                        LucideIcons.circle,
-                        size: Sizes.icon,
-                        color: context.c.textSecondary,
-                      ),
-                onTap: () => app.setLocale(lang.$1),
+            for (final (name, value) in accents)
+              _Swatch(
+                label: name,
+                color: Color(value),
+                selected: value == selected,
+                onTap: () => app.setAccent(value),
               ),
+            _Swatch(
+              label: 'Custom',
+              color: isCustom ? Color(selected) : null,
+              selected: isCustom,
+              onTap: () => _pickCustom(context, Color(selected)),
+            ),
           ],
         ),
       ],
     );
   }
+
+  Future<void> _pickCustom(BuildContext context, Color start) async {
+    final app = AppScope.read(context);
+    final picked = await showModalBottomSheet<Color>(
+      context: context,
+      backgroundColor: context.c.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(Sizes.cardRadius),
+        ),
+      ),
+      builder: (_) => _ColourPickerSheet(initial: start),
+    );
+    if (picked != null) app.setAccent(picked.toARGB32());
+  }
 }
 
-class _AppearanceScreen extends StatelessWidget {
-  const _AppearanceScreen();
+class _Swatch extends StatelessWidget {
+  const _Swatch({
+    required this.label,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final Color? color;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => PageBody(
-    // Archetype F: compact intro, the upcoming options as one group.
-    grouped: true,
-    children: [
-      const _GroupedIntro(
-        icon: LucideIcons.penLine,
-        title: 'Coming Soon',
-        subtitle: 'Appearance settings will be available in a future update.',
-      ),
-      const CefListGroup(
-        label: 'More ways to make it yours.',
-        children: [
-          CefListRow(
-            title: 'Theme Options',
-            subtitle: 'Light, dark and system theme.',
-            subtitleMaxLines: 2,
-            icon: LucideIcons.sun,
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: SizedBox(
+          width: 56,
+          child: Column(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: selected ? c.textPrimary : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: color,
+                    gradient: color == null
+                        ? const SweepGradient(
+                            colors: [
+                              Colors.red,
+                              Colors.yellow,
+                              Colors.green,
+                              Colors.cyan,
+                              Colors.blue,
+                              Colors.purple,
+                              Colors.red,
+                            ],
+                          )
+                        : null,
+                    border: Border.all(color: c.border),
+                  ),
+                  child: selected
+                      ? Icon(
+                          LucideIcons.check,
+                          size: 16,
+                          color: (color ?? Colors.white).computeLuminance() > .6
+                              ? Colors.black
+                              : Colors.white,
+                        )
+                      : null,
+                ),
+              ),
+              const SizedBox(height: Gap.xs),
+              Text(label, style: Theme.of(context).textTheme.labelSmall),
+            ],
           ),
-          CefListRow(
-            title: 'App Appearance',
-            subtitle: 'Customize colours and style.',
-            subtitleMaxLines: 2,
-            icon: LucideIcons.palette,
-          ),
-          CefListRow(
-            title: 'Display Preferences',
-            subtitle: 'Adjust display settings to your liking.',
-            subtitleMaxLines: 2,
-            icon: LucideIcons.slidersHorizontal,
-          ),
-        ],
+        ),
       ),
-      Text(
-        'Same operations. A brighter experience ahead.',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodySmall,
+    );
+  }
+}
+
+/// Small custom colour picker: hue and lightness sliders over a preview.
+class _ColourPickerSheet extends StatefulWidget {
+  const _ColourPickerSheet({required this.initial});
+  final Color initial;
+
+  @override
+  State<_ColourPickerSheet> createState() => _ColourPickerSheetState();
+}
+
+class _ColourPickerSheetState extends State<_ColourPickerSheet> {
+  late HSLColor _hsl = HSLColor.fromColor(widget.initial);
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final colour = _hsl.withSaturation(.85).toColor();
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          Gap.gutter,
+          Gap.xl,
+          Gap.gutter,
+          Gap.lg,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(child: Text('Custom colour', style: text.titleMedium)),
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: colour,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: context.c.border),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: Gap.md),
+            Text('Hue', style: text.labelLarge),
+            Slider(
+              value: _hsl.hue,
+              max: 360,
+              onChanged: (v) => setState(() => _hsl = _hsl.withHue(v)),
+            ),
+            Text('Lightness', style: text.labelLarge),
+            Slider(
+              value: _hsl.lightness.clamp(.15, .85),
+              min: .15,
+              max: .85,
+              onChanged: (v) => setState(() => _hsl = _hsl.withLightness(v)),
+            ),
+            const SizedBox(height: Gap.md),
+            CefButton('Apply', onTap: () => Navigator.of(context).pop(colour)),
+          ],
+        ),
       ),
-    ],
-  );
+    );
+  }
 }
 
 /// Profile photo placeholder on a form: the standard initials avatar with a

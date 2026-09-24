@@ -61,8 +61,11 @@ enum VRoute {
   changePassword,
   settings,
   notificationSettings,
-  language,
   appearance,
+  subscription,
+  choosePlan,
+  reviewPayment,
+  billingHistory,
   helpSupport,
   faq,
   contactSupport,
@@ -404,7 +407,7 @@ const routeSpecs = <VRoute, RouteSpec>{
   VRoute.editProfile: RouteSpec(
     route: VRoute.editProfile,
     id: 'V-43',
-    title: 'Personal information',
+    title: 'Profile',
     parent: VRoute.settings,
     tab: NavTab.more,
   ),
@@ -435,18 +438,43 @@ const routeSpecs = <VRoute, RouteSpec>{
     parent: VRoute.settings,
     tab: NavTab.more,
   ),
-  VRoute.language: RouteSpec(
-    route: VRoute.language,
-    id: 'V-48',
-    title: 'Language',
-    parent: VRoute.settings,
-    tab: NavTab.more,
-  ),
   VRoute.appearance: RouteSpec(
     route: VRoute.appearance,
     id: 'V-49',
     title: 'Appearance',
     parent: VRoute.settings,
+    tab: NavTab.more,
+  ),
+
+  // Subscription (D-54; previously on HOLD). V-53 Payment Success is the
+  // centred success modal, not a route.
+  VRoute.subscription: RouteSpec(
+    route: VRoute.subscription,
+    id: 'V-50',
+    title: 'Subscription',
+    parent: VRoute.settings,
+    tab: NavTab.more,
+  ),
+  VRoute.choosePlan: RouteSpec(
+    route: VRoute.choosePlan,
+    id: 'V-51',
+    title: 'Choose a plan',
+    parent: VRoute.subscription,
+    tab: NavTab.more,
+  ),
+  VRoute.reviewPayment: RouteSpec(
+    route: VRoute.reviewPayment,
+    id: 'V-52',
+    title: 'Review & Payment',
+    parent: VRoute.choosePlan,
+    tab: NavTab.more,
+    requiresEntityId: true,
+  ),
+  VRoute.billingHistory: RouteSpec(
+    route: VRoute.billingHistory,
+    id: 'V-54',
+    title: 'Billing History',
+    parent: VRoute.subscription,
     tab: NavTab.more,
   ),
 

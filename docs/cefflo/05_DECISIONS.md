@@ -967,3 +967,31 @@ Guarded by a widget test (one backdrop; same element across all tabs).
   Way" (or any rider-state action); On the Way / Delivered come from the
   Rider app and are only reflected. A Ready order has no bottom action.
 
+## D-54 Vendor Mobile — More, Subscription and the Centred Status Modal (2026-09-24)
+
+- **More** (V-46) is cardless on white: Account (Profile, Security,
+  Notifications, Language, Appearance) · Business (Business Profile,
+  Storefront, Products, Team, Subscription) · Support (Help & Support,
+  Privacy, About Cefflo) · Sign out row · version. No Customers, Service
+  Area or top-level Billing entry.
+- **Language** is a bottom sheet from More (Bahasa Melayu, English, 中文,
+  தமிழ்); V-48 is an audit marker only.
+- **Notifications** (V-47): issues, delivery progress and account security
+  are always on (no switch); three optional switches.
+- **Appearance** (V-49): accent colour swatches (Blue, Navy, Red, Green,
+  Yellow, Orange, Purple, Black, White, Custom picker). No light/dark mode.
+  Session preference; it must never recolour semantic colours, the Cefflo
+  gradient or the mustard CTA.
+- **Subscription** (previously HOLD): V-50 Subscription, V-51 Choose a plan,
+  V-52 Review & Payment, V-54 Billing History, under More › Business. Plans
+  are the pricing candidate in `sot/10_PRICING.md` (Free RM0 · Grow RM99 ·
+  Operate RM199 Most Popular · Scale RM499; yearly = 10 months), held in
+  `lib/data/plans.dart`. Selected plan = restrained Anchor Blue (tint, thin
+  outline, check); mustard only as the small Most Popular badge; no
+  decorative plan icons. CTA "Subscribe". Payments are demo-only.
+- **One centred status modal** (`runAsyncFeedback`) for every transactional
+  state: Processing (small spinner), Success (layered green mark, title +
+  Done only), Failure (small red mark, Try again + optional secondary).
+  Centred, dimmed/softened backdrop, fade + slight scale — never a page, a
+  bottom sheet or a slide-up. V-53 Payment Success is this modal.
+

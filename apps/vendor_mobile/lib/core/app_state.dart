@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/models.dart';
+import '../data/plans.dart';
 import '../data/storefront_config.dart';
 import '../data/storefront_templates.dart';
 import '../data/vendor_repository.dart';
@@ -80,6 +81,51 @@ class AppState extends ChangeNotifier {
     return user?.email?.split('@').first ?? '';
   }
 
+  // ---- Subscription (V-50..V-54). No billing backend exists yet: the demo
+  // session holds the current plan, cycle and invoices, and a payment only
+  // succeeds in the demo (see [subscribe]).
+  String currentPlanId = 'operate';
+  BillingCycle currentCycle = BillingCycle.monthly;
+  DateTime nextRenewal = DateTime(2026, 10, 24);
+
+  SubscriptionPlan get currentPlan => planById(currentPlanId);
+
+  late final List<Invoice> invoices = repo.isDemo
+      ? [
+          for (var m = 9; m >= 3; m--)
+            Invoice(
+              date: DateTime(2026, m, 24),
+              amount: 199,
+              planName: 'Operate',
+              cycle: BillingCycle.monthly,
+            ),
+        ]
+      : [];
+
+  /// Subscribes to [plan]. Demo only: with a live backend there is no
+  /// payment contract yet, so it fails and nothing is charged.
+  Future<void> subscribe(SubscriptionPlan plan, BillingCycle cycle) async {
+    if (!repo.isDemo) {
+      throw StateError('Payments are not available yet.');
+    }
+    currentPlanId = plan.id;
+    currentCycle = cycle;
+    nextRenewal = DateTime.now().add(
+      cycle == BillingCycle.yearly
+          ? const Duration(days: 365)
+          : const Duration(days: 30),
+    );
+    notifyListeners();
+  }
+
+  // ---- Accent colour (Appearance). Session preference only.
+  int? accentColorValue;
+
+  void setAccent(int? value) {
+    accentColorValue = value;
+    notifyListeners();
+  }
+
   // ---- Notification centre (X-01). No notification backend exists yet, so
   // this is session state seeded with the demo feed; every management action
   // (read, unread, delete, clear) is real within the session.
@@ -145,6 +191,18 @@ class AppState extends ChangeNotifier {
         ..clear()
         ..add(VendorLocation(parent ?? VRoute.today));
     }
+    notifyListeners();
+  }
+
+  /// Pops back to the nearest [route] in the history (e.g. Subscription
+  /// after a completed payment); resets to it if it is not in the stack.
+  void backTo(VRoute route) {
+    final i = _stack.lastIndexWhere((l) => l.route == route);
+    if (i < 0) {
+      resetTo(route);
+      return;
+    }
+    _stack.removeRange(i + 1, _stack.length);
     notifyListeners();
   }
 

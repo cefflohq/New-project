@@ -847,7 +847,9 @@ class CefChoiceChip extends StatelessWidget {
       child: Material(
         color: selected ? CefColors.ceffloMustard : c.card,
         shape: StadiumBorder(
-          side: BorderSide(color: selected ? CefColors.ceffloMustard : c.border),
+          side: BorderSide(
+            color: selected ? CefColors.ceffloMustard : c.border,
+          ),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -1991,21 +1993,31 @@ class StateBlock extends StatelessWidget {
 
 enum StateKind { loading, empty, error, blocked }
 
-/// Locked global async action feedback: Tap -> Processing -> Success/Error
-/// as one persistent sheet over a blurred, dimmed, non-interactive backdrop.
+/// The one centred status modal (D-54): Processing -> Success / Failure as a
+/// compact white card floating in the CENTRE of the screen over a dimmed,
+/// softened, non-interactive backdrop -- never a page, never a bottom sheet,
+/// never a slide-up. Every transactional flow uses it (payments, saves,
+/// password updates); only the content changes.
 ///
-/// [action] is demo-only here: it runs against local/static prototype state,
-/// never a real backend call, per the current UI-only scope. Returns whether
-/// the sheet ended on Success.
+/// [action] runs while "processing" is shown; it completing means success,
+/// throwing means failure. Returns whether the modal ended on success.
+/// [failureSecondaryLabel] adds a second failure action (e.g. "Change
+/// payment method"); tapping it closes the modal and calls
+/// [onFailureSecondary].
 Future<bool> runAsyncFeedback(
   BuildContext context, {
   required Future<void> Function() action,
   required String processingTitle,
   required String processingSubtitle,
   required String successTitle,
-  required String successSubtitle,
-  Widget? successDetail,
+  String? successSubtitle,
   String doneLabel = 'Done',
+  String failureTitle = 'Something went wrong',
+  String failureMessage =
+      "We couldn't complete this action right now. Please try again.",
+  String retryLabel = 'Try again',
+  String? failureSecondaryLabel,
+  VoidCallback? onFailureSecondary,
 }) {
   final completer = Completer<bool>();
   showGeneralDialog<void>(
@@ -2013,24 +2025,39 @@ Future<bool> runAsyncFeedback(
     barrierLabel: processingTitle,
     barrierDismissible: false,
     barrierColor: Colors.transparent,
-    transitionDuration: const Duration(milliseconds: 180),
+    transitionDuration: const Duration(milliseconds: 200),
+    // Fade + a slight scale from the centre -- never a slide from the bottom.
+    transitionBuilder: (context, animation, _, child) {
+      final curved = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+      return FadeTransition(
+        opacity: curved,
+        child: ScaleTransition(
+          scale: Tween(begin: .96, end: 1.0).animate(curved),
+          child: child,
+        ),
+      );
+    },
     pageBuilder: (context, _, _) => _AsyncFeedbackOverlay(
       action: action,
       processingTitle: processingTitle,
       processingSubtitle: processingSubtitle,
       successTitle: successTitle,
       successSubtitle: successSubtitle,
-      successDetail: successDetail,
       doneLabel: doneLabel,
-      onSettled: (success) {
+      failureTitle: failureTitle,
+      failureMessage: failureMessage,
+      retryLabel: retryLabel,
+      failureSecondaryLabel: failureSecondaryLabel,
+      onSettled: (success, {bool secondary = false}) {
         if (!completer.isCompleted) completer.complete(success);
+        if (secondary) onFailureSecondary?.call();
       },
     ),
   );
   return completer.future;
 }
 
-enum _FeedbackStage { processing, success, error }
+enum _FeedbackStage { processing, success, failure }
 
 class _AsyncFeedbackOverlay extends StatefulWidget {
   const _AsyncFeedbackOverlay({
@@ -2039,290 +2066,226 @@ class _AsyncFeedbackOverlay extends StatefulWidget {
     required this.processingSubtitle,
     required this.successTitle,
     required this.successSubtitle,
-    required this.successDetail,
     required this.doneLabel,
+    required this.failureTitle,
+    required this.failureMessage,
+    required this.retryLabel,
+    required this.failureSecondaryLabel,
     required this.onSettled,
   });
 
   final Future<void> Function() action;
-  final String processingTitle;
-  final String processingSubtitle;
-  final String successTitle;
-  final String successSubtitle;
-  final Widget? successDetail;
-  final String doneLabel;
-  final ValueChanged<bool> onSettled;
+  final String processingTitle, processingSubtitle, successTitle;
+  final String? successSubtitle;
+  final String doneLabel, failureTitle, failureMessage, retryLabel;
+  final String? failureSecondaryLabel;
+  final void Function(bool success, {bool secondary}) onSettled;
 
   @override
   State<_AsyncFeedbackOverlay> createState() => _AsyncFeedbackOverlayState();
 }
 
-class _AsyncFeedbackOverlayState extends State<_AsyncFeedbackOverlay>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _dots = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1100),
-  )..repeat();
+class _AsyncFeedbackOverlayState extends State<_AsyncFeedbackOverlay> {
   _FeedbackStage _stage = _FeedbackStage.processing;
 
   @override
   void initState() {
     super.initState();
-    _run();
+    // Start after the first frame: an action that notifies app state right
+    // away must not do so while this modal is still being built.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _run();
+    });
   }
 
   Future<void> _run() async {
     setState(() => _stage = _FeedbackStage.processing);
     try {
-      // Keeps the wave animation visible for a beat even on instant demo
-      // actions, so the state change never feels like a flicker.
+      // Keeps "processing" visible for a beat even on instant actions, so
+      // the state change never feels like a flicker.
       await Future.wait([
         widget.action(),
         Future.delayed(const Duration(milliseconds: 900)),
       ]);
       if (mounted) setState(() => _stage = _FeedbackStage.success);
     } catch (_) {
-      if (mounted) setState(() => _stage = _FeedbackStage.error);
+      if (mounted) setState(() => _stage = _FeedbackStage.failure);
     }
   }
 
-  void _finish(bool success) {
-    widget.onSettled(success);
+  void _finish(bool success, {bool secondary = false}) {
     Navigator.of(context).pop();
+    widget.onSettled(success, secondary: secondary);
   }
 
   @override
-  void dispose() {
-    _dots.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => Stack(
-    children: [
-      // Dim + blur the entire screen behind the card, not just a scrim --
-      // this is what makes the popup read as a focused, modal moment
-      // instead of a thin overlay on top of the still-legible page.
-      Positioned.fill(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-          child: Container(color: Colors.black.withValues(alpha: .45)),
-        ),
-      ),
-      Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Gap.xxl),
-          child: Material(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            child: Padding(
-              padding: const EdgeInsets.all(Gap.xxl),
-              child: switch (_stage) {
-                _FeedbackStage.processing => _ProcessingBody(
-                  dots: _dots,
-                  title: widget.processingTitle,
-                  subtitle: widget.processingSubtitle,
-                ),
-                _FeedbackStage.success => _SuccessBody(
-                  title: widget.successTitle,
-                  subtitle: widget.successSubtitle,
-                  detail: widget.successDetail,
-                  doneLabel: widget.doneLabel,
-                  onDone: () => _finish(true),
-                ),
-                _FeedbackStage.error => _ErrorBody(
-                  onCancel: () => _finish(false),
-                  onRetry: _run,
-                ),
-              },
-            ),
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final c = context.c;
+    // Processing cannot be dismissed (no duplicate submission); the result
+    // states can be closed.
+    final closable = _stage != _FeedbackStage.processing;
+    final body = switch (_stage) {
+      _FeedbackStage.processing => [
+        const SizedBox.square(
+          dimension: 36,
+          child: CircularProgressIndicator(
+            strokeWidth: 3,
+            color: CefColors.brand,
           ),
         ),
-      ),
-    ],
-  );
-}
-
-class _ProcessingBody extends StatelessWidget {
-  const _ProcessingBody({
-    required this.dots,
-    required this.title,
-    required this.subtitle,
-  });
-  final Animation<double> dots;
-  final String title;
-  final String subtitle;
-
-  static const _dotColors = [
-    CefColors.navy,
-    CefColors.ceffloMustard,
-    CefColors.navy,
-    CefColors.ceffloMustard,
-  ];
-
-  @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      SizedBox(
-        height: 22,
-        child: AnimatedBuilder(
-          animation: dots,
-          builder: (context, _) => Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(4, (i) {
-              final wave = Curves.easeInOut.transform(
-                (((dots.value - i * 0.16) % 1) + 1) % 1,
-              );
-              final scale =
-                  0.55 + 0.45 * (wave < 0.5 ? wave * 2 : (1 - wave) * 2);
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
-                child: Opacity(
-                  opacity: 0.45 + 0.55 * scale,
-                  child: Transform.scale(
-                    scale: 0.7 + 0.3 * scale,
-                    child: Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: _dotColors[i],
-                        shape: BoxShape.circle,
+        const SizedBox(height: Gap.lg),
+        Text(
+          widget.processingTitle,
+          textAlign: TextAlign.center,
+          style: text.titleMedium,
+        ),
+        const SizedBox(height: Gap.xs),
+        Text(
+          widget.processingSubtitle,
+          textAlign: TextAlign.center,
+          style: text.bodyMedium,
+        ),
+      ],
+      _FeedbackStage.success => [
+        _StatusMark(color: c.success, icon: LucideIcons.check),
+        const SizedBox(height: Gap.lg),
+        Text(
+          widget.successTitle,
+          textAlign: TextAlign.center,
+          style: text.titleMedium,
+        ),
+        if (widget.successSubtitle != null) ...[
+          const SizedBox(height: Gap.xs),
+          Text(
+            widget.successSubtitle!,
+            textAlign: TextAlign.center,
+            style: text.bodyMedium,
+          ),
+        ],
+        const SizedBox(height: Gap.xl),
+        CefButton(widget.doneLabel, onTap: () => _finish(true)),
+      ],
+      _FeedbackStage.failure => [
+        _StatusMark(color: c.attention, icon: LucideIcons.x, solid: false),
+        const SizedBox(height: Gap.lg),
+        Text(
+          widget.failureTitle,
+          textAlign: TextAlign.center,
+          style: text.titleMedium,
+        ),
+        const SizedBox(height: Gap.xs),
+        Text(
+          widget.failureMessage,
+          textAlign: TextAlign.center,
+          style: text.bodyMedium,
+        ),
+        const SizedBox(height: Gap.xl),
+        CefButton(widget.retryLabel, onTap: _run),
+        if (widget.failureSecondaryLabel != null) ...[
+          const SizedBox(height: Gap.sm),
+          CefButton(
+            widget.failureSecondaryLabel!,
+            secondary: true,
+            onTap: () => _finish(false, secondary: true),
+          ),
+        ],
+      ],
+    };
+    return Stack(
+      children: [
+        // Dim + soften the screen behind; it stays visible underneath.
+        Positioned.fill(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+            child: Container(color: Colors.black.withValues(alpha: .4)),
+          ),
+        ),
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 320),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: Gap.xxl),
+              child: Material(
+                color: c.card,
+                elevation: 12,
+                shadowColor: Colors.black.withValues(alpha: .25),
+                borderRadius: BorderRadius.circular(Sizes.surfaceRadius),
+                child: Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        Gap.xxl,
+                        Gap.xxxl,
+                        Gap.xxl,
+                        Gap.xxl,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Buttons and gaps span the card; everything
+                          // else (marks, spinner, text) is centred at its
+                          // own size.
+                          for (final w in body)
+                            w is CefButton || (w is SizedBox && w.child == null)
+                                ? w
+                                : Center(child: w),
+                        ],
                       ),
                     ),
-                  ),
+                    if (closable)
+                      Positioned(
+                        top: Gap.xs,
+                        right: Gap.xs,
+                        child: IconAction(
+                          icon: LucideIcons.x,
+                          tooltip: 'Close',
+                          onTap: () =>
+                              _finish(_stage == _FeedbackStage.success),
+                        ),
+                      ),
+                  ],
                 ),
-              );
-            }),
-          ),
-        ),
-      ),
-      const SizedBox(height: Gap.xxl),
-      Text(
-        title,
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      const SizedBox(height: Gap.sm),
-      Text(
-        subtitle,
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
-    ],
-  );
-}
-
-class _SuccessBody extends StatelessWidget {
-  const _SuccessBody({
-    required this.title,
-    required this.subtitle,
-    required this.detail,
-    required this.doneLabel,
-    required this.onDone,
-  });
-  final String title;
-  final String subtitle;
-  final Widget? detail;
-  final String doneLabel;
-  final VoidCallback onDone;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Container(
-        width: 64,
-        height: 64,
-        decoration: BoxDecoration(
-          color: context.c.success.withValues(alpha: .12),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(LucideIcons.check, color: context.c.success, size: 30),
-      ),
-      const SizedBox(height: Gap.lg),
-      Text(
-        title,
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      const SizedBox(height: Gap.sm),
-      Text(
-        subtitle,
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
-      if (detail != null) ...[const SizedBox(height: Gap.lg), detail!],
-      const SizedBox(height: Gap.xxl),
-      CefButton(doneLabel, onTap: onDone),
-    ],
-  );
-}
-
-class _ErrorBody extends StatelessWidget {
-  const _ErrorBody({required this.onCancel, required this.onRetry});
-  final VoidCallback onCancel;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Container(
-        width: 64,
-        height: 64,
-        decoration: BoxDecoration(
-          color: context.c.attention.withValues(alpha: .1),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          LucideIcons.triangleAlert,
-          color: context.c.attention,
-          size: 28,
-        ),
-      ),
-      const SizedBox(height: Gap.lg),
-      Text(
-        'Something went wrong',
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      const SizedBox(height: Gap.sm),
-      Text(
-        'We couldn\'t complete this action right now.\nPlease try again.',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
-      const SizedBox(height: Gap.lg),
-      Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(Gap.md),
-        decoration: BoxDecoration(
-          color: context.c.subtle,
-          borderRadius: BorderRadius.circular(Sizes.inputRadius),
-        ),
-        child: Row(
-          children: [
-            Icon(LucideIcons.wifiOff, size: 18, color: context.c.textSecondary),
-            const SizedBox(width: Gap.sm),
-            Expanded(
-              child: Text(
-                'Please check your internet connection and try again.',
-                style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
-          ],
-        ),
-      ),
-      const SizedBox(height: Gap.lg),
-      Row(
-        children: [
-          Expanded(
-            child: CefButton('Cancel', secondary: true, onTap: onCancel),
           ),
-          const SizedBox(width: Gap.md),
-          Expanded(child: CefButton('Try Again', onTap: onRetry)),
-        ],
+        ),
+      ],
+    );
+  }
+}
+
+/// The modal's status mark: a small solid circle with a white icon inside a
+/// soft ring of the same colour (success). [solid] false gives the quieter
+/// tinted variant (failure).
+class _StatusMark extends StatelessWidget {
+  const _StatusMark({
+    required this.color,
+    required this.icon,
+    this.solid = true,
+  });
+  final Color color;
+  final IconData icon;
+  final bool solid;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 64,
+    height: 64,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: .14),
+      shape: BoxShape.circle,
+    ),
+    child: Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: solid ? color : Colors.transparent,
+        shape: BoxShape.circle,
       ),
-    ],
+      child: Icon(icon, size: 22, color: solid ? Colors.white : color),
+    ),
   );
 }

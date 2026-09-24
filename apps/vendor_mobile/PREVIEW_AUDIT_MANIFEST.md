@@ -54,13 +54,13 @@ They do not alter canonical product navigation or Production.
 | V45 | `/audit/V45` | Change Password |
 | V46 | `/audit/V46` | Settings (opened from the Today header) |
 | V47 | `/audit/V47` | Notification Preferences |
-| V48 | `/audit/V48` | Language |
+| V48 | `/audit/V48` | Language — bottom sheet from More (D-54); audit marker only |
 | V49 | `/audit/V49` | Appearance — HOLD / inactive |
-| V50 | — | Subscription / Plan — HOLD, excluded from active baseline |
-| V51 | — | Choose / Change Plan — HOLD, excluded from active baseline |
-| V52 | — | Subscription Checkout / Payment — HOLD, excluded from active baseline |
-| V53 | — | Payment Success — HOLD, excluded from active baseline |
-| V54 | — | Subscription Details — HOLD, excluded from active baseline |
+| V50 | `/audit/V50` | Subscription (current plan, usage, actions) |
+| V51 | `/audit/V51` | Choose a plan |
+| V52 | `/audit/V52` | Review & Payment |
+| V53 | `/audit/V53` | Payment success — centred modal over Review & Payment (D-54); audit marker only |
+| V54 | `/audit/V54` | Billing History |
 | V55 | `/audit/V55` | Help & Support |
 | V56 | `/audit/V56` | FAQ / Help Centre |
 | V57 | `/audit/V57` | Contact Support |

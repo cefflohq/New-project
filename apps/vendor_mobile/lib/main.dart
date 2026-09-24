@@ -162,6 +162,20 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
                 status: 'REMOVED — merged into Settings (D-46)',
               );
             }
+            if (widget.repo.isDemo && widget.auditId == 48) {
+              return const _ReservedAuditScreen(
+                id: 'V48',
+                title: 'Language',
+                status: 'Bottom sheet from More (D-54)',
+              );
+            }
+            if (widget.repo.isDemo && widget.auditId == 53) {
+              return const _ReservedAuditScreen(
+                id: 'V53',
+                title: 'Payment Success',
+                status: 'Centred modal over Review & Payment (D-54)',
+              );
+            }
             if (widget.repo.isDemo && widget.auditId == 18) {
               return const _ReservedAuditScreen(
                 id: 'V18',
@@ -225,7 +239,7 @@ int? _auditIdFromUri(Uri uri) {
 }
 
 VendorLocation? _auditLocation(int id) {
-  if (id <= 8 || const {18, 30, 41, 42}.contains(id)) return null;
+  if (id <= 8 || const {18, 30, 41, 42, 48, 53}.contains(id)) return null;
   if (id == 9) return const VendorLocation(VRoute.welcomeSetup);
   if (id == 10) return const VendorLocation(VRoute.setupComplete);
 
@@ -243,6 +257,7 @@ VendorLocation? _auditLocation(int id) {
     VRoute.riderDetail => 'rider-ahmad',
     VRoute.teamMemberDetail => 'team-owner',
     VRoute.productDetail => 'prod-1',
+    VRoute.reviewPayment => 'operate:monthly',
     _ => null,
   };
   return VendorLocation(spec.route, entityId: entityId);

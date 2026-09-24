@@ -5,6 +5,7 @@ import 'screens/directory.dart';
 import 'screens/operations.dart';
 import 'screens/planning.dart';
 import 'screens/prototype.dart';
+import 'screens/subscription.dart';
 import 'screens/storefront/storefront_customize.dart';
 import 'screens/storefront/storefront_screens.dart';
 
@@ -45,6 +46,10 @@ Widget buildScreen(BuildContext context, VendorLocation loc) {
     VRoute.customers => const CustomersScreen(),
     VRoute.customerDetail => CustomerDetailScreen(customerName: id!),
     VRoute.settings => const SettingsScreen(),
+    VRoute.subscription => const SubscriptionScreen(),
+    VRoute.choosePlan => const ChoosePlanScreen(),
+    VRoute.reviewPayment => ReviewPaymentScreen(selection: id!),
+    VRoute.billingHistory => const BillingHistoryScreen(),
     VRoute.storefront => const StorefrontScreen(),
     VRoute.storefrontPreview => const StorefrontTemplatePreviewScreen(),
     VRoute.storefrontTemplatePreview => StorefrontTemplatePreviewScreen(

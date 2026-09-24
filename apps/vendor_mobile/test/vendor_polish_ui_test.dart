@@ -23,7 +23,6 @@ void main() {
     VRoute.team,
     VRoute.products,
     VRoute.settings,
-    VRoute.language,
   ];
 
   for (final route in routes) {
@@ -125,9 +124,12 @@ void main() {
     expect(find.text('Business'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Support'), 200);
     expect(find.text('Support'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Personal information'), -200);
-    expect(find.text('Personal information'), findsOneWidget);
-    expect(find.text('Profile'), findsNothing);
+    await tester.scrollUntilVisible(find.text('Profile'), -200);
+    expect(find.text('Profile'), findsOneWidget);
+    // D-54: no Customers / Service area / top-level Billing in More.
+    expect(find.text('Customers'), findsNothing);
+    expect(find.text('Service area'), findsNothing);
+    expect(find.text('Billing'), findsNothing);
   });
 
   testWidgets('header titles are centred on the screen', (tester) async {
@@ -373,5 +375,41 @@ void main() {
     expect(cefOrderRef('ORD-1008', 'ord-1008'), '#CF1008');
     expect(cefOrderRef('CF-2044', 'x'), '#CF2044');
     expect(cefOrderRef(null, '3f9a2c1e-0000-4000-8000-000000000000'), '#CF3F9A2C');
+  });
+
+  testWidgets('subscription: choose, review, subscribe via centred modal', (
+    tester,
+  ) async {
+    await pumpAt(tester, const VendorLocation(VRoute.subscription));
+    expect(find.text('Operate plan'), findsOneWidget);
+    await tester.tap(find.text('Change plan'));
+    await tester.pumpAndSettle();
+    expect(find.text('Choose a plan'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Scale'), 200);
+    await tester.tap(find.text('Scale'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.text('Review & Payment'), findsOneWidget);
+    expect(find.text('Subscribe'), findsOneWidget);
+    expect(find.text('Subscribe Now'), findsNothing);
+
+    await tester.tap(find.text('Subscribe'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Processing payment'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    expect(find.text('Subscription active'), findsOneWidget);
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+    // Back on Subscription, showing the new plan.
+    expect(find.text('Scale plan'), findsOneWidget);
+  });
+
+  testWidgets('billing history is titled and cardless', (tester) async {
+    await pumpAt(tester, const VendorLocation(VRoute.billingHistory));
+    expect(find.text('Billing History'), findsOneWidget);
+    expect(find.text('Paid'), findsWidgets);
+    expect(find.byTooltip('Download invoice'), findsWidgets);
   });
 }
