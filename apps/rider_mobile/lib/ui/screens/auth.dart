@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../core/app_state.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/demo_data.dart';
+import '../../data/rider_repository.dart';
 import '../brand.dart';
 import '../widgets.dart';
 
@@ -445,11 +447,12 @@ class CeffloInlinePrompt extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Row(
-    mainAxisAlignment: MainAxisAlignment.center,
+  Widget build(BuildContext context) => Wrap(
+    alignment: WrapAlignment.center,
+    crossAxisAlignment: WrapCrossAlignment.center,
+    spacing: 6,
     children: [
       Text(prompt, style: context.t.bodyMedium),
-      const SizedBox(width: 6),
       CeffloTextLink(action, onTap: onTap, fontSize: 14),
     ],
   );
@@ -844,12 +847,35 @@ class EmailSignInScreen extends StatefulWidget {
 class _EmailSignInScreenState extends State<EmailSignInScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
+  bool _busy = false;
+  String? _error;
 
   @override
   void dispose() {
     _email.dispose();
     _password.dispose();
     super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final app = AppScope.read(context);
+    if (app.repo.isDemo) {
+      widget.onSignIn();
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await app.repo.signInWithPassword(_email.text, _password.text);
+      await app.loadSession();
+      if (mounted) widget.onSignIn();
+    } on RepositoryError catch (error) {
+      if (mounted) setState(() => _error = driverAuthErrorText(error));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override
@@ -873,6 +899,22 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           controller: _password,
           hint: 'Enter your password',
         ),
+        if (_error != null) ...[
+          const SizedBox(height: Gap.sm),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              _error!,
+              key: const Key('driver-auth-error'),
+              style: const TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFFC83D4B),
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: Gap.md),
         Align(
           alignment: Alignment.centerRight,
@@ -884,7 +926,11 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           ),
         ),
         const SizedBox(height: Gap.lg),
-        CeffloPrimaryButton('Sign In', onTap: widget.onSignIn),
+        CeffloPrimaryButton(
+          _busy ? 'Signing In…' : 'Sign In',
+          busy: _busy,
+          onTap: _busy ? null : _submit,
+        ),
         const SizedBox(height: Gap.section),
         const CeffloOrDivider(),
         const SizedBox(height: Gap.lg),
@@ -945,6 +991,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _email = TextEditingController();
   final _phone = TextEditingController();
   final _password = TextEditingController();
+  bool _busy = false;
+  String? _error;
 
   @override
   void dispose() {
@@ -953,6 +1001,39 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     _phone.dispose();
     _password.dispose();
     super.dispose();
+  }
+
+  Future<void> _create() async {
+    final app = AppScope.read(context);
+    if (app.repo.isDemo) {
+      widget.onCreated();
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final needsVerification = await app.repo.signUpWithPassword(
+        email: _email.text,
+        password: _password.text,
+        fullName: _name.text,
+        phone: _phone.text,
+      );
+      if (!mounted) return;
+      if (needsVerification) {
+        setState(() {
+          _error = 'Check your email to verify this account, then sign in.';
+        });
+      } else {
+        await app.loadSession();
+        if (mounted) widget.onCreated();
+      }
+    } on RepositoryError catch (error) {
+      if (mounted) setState(() => _error = driverAuthErrorText(error));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override
@@ -994,8 +1075,25 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           icon: LucideIcons.info,
           body: 'Password must be at least 8 characters\nwith a number and a letter.',
         ),
+        if (_error != null) ...[
+          const SizedBox(height: Gap.sm),
+          Text(
+            _error!,
+            key: const Key('driver-auth-error'),
+            style: const TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFFC83D4B),
+            ),
+          ),
+        ],
         const SizedBox(height: Gap.lg),
-        CeffloPrimaryButton('Create Account', onTap: widget.onCreated),
+        CeffloPrimaryButton(
+          _busy ? 'Creating Account…' : 'Create Account',
+          busy: _busy,
+          onTap: _busy ? null : _create,
+        ),
         const SizedBox(height: Gap.lg),
         CeffloInlinePrompt(
           prompt: 'Already have an account?',
@@ -1029,11 +1127,33 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _email = TextEditingController();
+  bool _busy = false;
+  String? _error;
 
   @override
   void dispose() {
     _email.dispose();
     super.dispose();
+  }
+
+  Future<void> _send() async {
+    final app = AppScope.read(context);
+    if (app.repo.isDemo) {
+      widget.onSent();
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await app.repo.sendPasswordReset(_email.text);
+      if (mounted) widget.onSent();
+    } on RepositoryError catch (error) {
+      if (mounted) setState(() => _error = driverAuthErrorText(error));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override
@@ -1058,8 +1178,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           icon: LucideIcons.mail,
           keyboardType: TextInputType.emailAddress,
         ),
+        if (_error != null) ...[
+          const SizedBox(height: Gap.sm),
+          Text(
+            _error!,
+            key: const Key('driver-auth-error'),
+            style: const TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFFC83D4B),
+            ),
+          ),
+        ],
         const SizedBox(height: Gap.lg),
-        CeffloPrimaryButton('Send Reset Link', onTap: widget.onSent),
+        CeffloPrimaryButton(
+          _busy ? 'Sending…' : 'Send Reset Link',
+          busy: _busy,
+          onTap: _busy ? null : _send,
+        ),
         const SizedBox(height: Gap.lg),
         CeffloTextLink('Back to Sign In', onTap: widget.onBackToSignIn),
         const SizedBox(height: 44),
@@ -1304,12 +1441,38 @@ class SetNewPasswordScreen extends StatefulWidget {
 class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
   final _password = TextEditingController();
   final _confirm = TextEditingController();
+  bool _busy = false;
+  String? _error;
 
   @override
   void dispose() {
     _password.dispose();
     _confirm.dispose();
     super.dispose();
+  }
+
+  Future<void> _update() async {
+    if (_password.text != _confirm.text) {
+      setState(() => _error = 'Passwords do not match.');
+      return;
+    }
+    final app = AppScope.read(context);
+    if (app.repo.isDemo) {
+      widget.onUpdated();
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await app.repo.updatePassword(_password.text);
+      if (mounted) widget.onUpdated();
+    } on RepositoryError catch (error) {
+      if (mounted) setState(() => _error = driverAuthErrorText(error));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override
@@ -1336,11 +1499,50 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
           icon: LucideIcons.info,
           body: 'Password must be at least 8 characters\nwith a number and a letter.',
         ),
+        if (_error != null) ...[
+          const SizedBox(height: Gap.sm),
+          Text(
+            _error!,
+            key: const Key('driver-auth-error'),
+            style: const TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFFC83D4B),
+            ),
+          ),
+        ],
         const SizedBox(height: Gap.lg),
-        CeffloPrimaryButton('Update Password', onTap: widget.onUpdated),
+        CeffloPrimaryButton(
+          _busy ? 'Updating…' : 'Update Password',
+          busy: _busy,
+          onTap: _busy ? null : _update,
+        ),
       ],
     ),
   );
+}
+
+String driverAuthErrorText(RepositoryError error) {
+  const invalid = {'invalid_credentials', 'invalid_grant'};
+  const limited = {
+    'over_email_send_rate_limit',
+    'over_request_rate_limit',
+    'rate_limit_exceeded',
+  };
+  if (invalid.contains(error.code)) {
+    return 'Email or password is incorrect. Try again.';
+  }
+  if (limited.contains(error.code)) {
+    return 'Too many attempts. Please wait before trying again.';
+  }
+  final lower = error.message.toLowerCase();
+  if (lower.contains('clientexception') ||
+      lower.contains('failed to fetch') ||
+      lower.contains('socket')) {
+    return 'Unable to connect. Check your connection and try again.';
+  }
+  return error.message;
 }
 
 // ---------------------------------------------------------------------------

@@ -6,12 +6,13 @@ import 'models.dart';
 
 /// Thrown for any backend failure the UI is expected to surface truthfully.
 class RepositoryError implements Exception {
-  RepositoryError(this.message, {this.isMissingContract = false});
+  RepositoryError(this.message, {this.isMissingContract = false, this.code});
   final String message;
 
   /// True when the canonical RPC does not exist on the connected backend.
   /// The UI must show a blocked state instead of pretending the action worked.
   final bool isMissingContract;
+  final String? code;
 
   @override
   String toString() => message;
@@ -57,6 +58,32 @@ class RiderRepository {
       password: password,
     ),
   );
+
+  Future<bool> signUpWithPassword({
+    required String email,
+    required String password,
+    String? fullName,
+    String? phone,
+  }) async {
+    final response = await _run(
+      () => _db.auth.signUp(
+        email: email.trim(),
+        password: password,
+        data: {
+          if (fullName != null && fullName.trim().isNotEmpty)
+            'full_name': fullName.trim(),
+          if (phone != null && phone.trim().isNotEmpty) 'phone': phone.trim(),
+        },
+      ),
+    );
+    return response.session == null;
+  }
+
+  Future<void> sendPasswordReset(String email) =>
+      _run(() => _db.auth.resetPasswordForEmail(email.trim()));
+
+  Future<void> updatePassword(String password) =>
+      _run(() => _db.auth.updateUser(UserAttributes(password: password)));
 
   Future<void> signOut() => _run(() => _db.auth.signOut());
 
@@ -324,7 +351,7 @@ class RiderRepository {
         isMissingContract: missing,
       );
     } on AuthException catch (e) {
-      throw RepositoryError(e.message);
+      throw RepositoryError(e.message, code: e.code);
     } catch (e) {
       throw RepositoryError('$e');
     }
