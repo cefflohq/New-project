@@ -940,3 +940,15 @@ Today header: date on the left ("Wed / 24 Sep"), business name with a
 dropdown mark in the centre (business switcher), bell on the right; greeting
 below on the same blue surface.
 
+## D-52 Vendor Mobile — One Universal Background (2026-09-24)
+
+The canonical Vendor blue is the universal background of the authenticated
+app, not a screen decoration. `VendorShell` paints it once (`BrandBackdrop`)
+full screen — behind the transparent status bar, the transparent headers,
+the white content surface and the bottom navigation — and the element
+persists across Today / Orders / Zones / Riders / More, so it never restarts.
+Screens are foreground layers: no screen, header or app bar declares a blue
+or a gradient. Direction: TOP deep Anchor Blue `#01265E` → `#00378F` →
+`#005CC4` → BOTTOM bright `#0592EB`. Splash and auth use the same token.
+Guarded by a widget test (one backdrop; same element across all tabs).
+

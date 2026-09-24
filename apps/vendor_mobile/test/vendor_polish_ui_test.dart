@@ -342,4 +342,21 @@ void main() {
     expect(find.byIcon(LucideIcons.check), findsOneWidget);
     expect(find.text('Undo'), findsOneWidget);
   });
+
+  testWidgets('one universal background persists across tabs', (
+    tester,
+  ) async {
+    await pumpAt(tester, const VendorLocation(VRoute.today));
+    // Painted once, by the shell -- no screen paints its own gradient.
+    expect(find.byType(BrandBackdrop), findsOneWidget);
+    final before = tester.element(find.byType(BrandBackdrop));
+
+    for (final tab in ['Orders', 'Zones', 'Riders', 'More', 'Today']) {
+      await tester.tap(find.text(tab).last);
+      await tester.pumpAndSettle();
+      expect(find.byType(BrandBackdrop), findsOneWidget, reason: tab);
+      // Same element: the background is never recreated on navigation.
+      expect(tester.element(find.byType(BrandBackdrop)), same(before));
+    }
+  });
 }

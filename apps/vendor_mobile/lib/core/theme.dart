@@ -47,16 +47,18 @@ class Sizes {
   static const inputRadius = 18.0;
 }
 
-/// The one Vendor brand surface (D-51): the canonical Vendor blue gradient,
-/// sampled from the Founder's Today / Subscription reference -- deep Anchor
-/// Blue at the lower left through saturated operational blue to a bright blue
-/// at the upper right. Splash, authentication, the shell (status bar +
-/// header as one continuous surface) and every in-body hero surface paint it
-/// through `BrandBackdrop`; nothing else declares a gradient.
+/// The one Vendor brand surface (D-51/D-52): the canonical Vendor blue,
+/// sampled from the Founder reference -- deep Anchor Blue at the TOP
+/// transitioning to a brighter Vendor blue at the BOTTOM. It exists once as
+/// the universal background of the Vendor app: `VendorShell` paints it full
+/// screen behind the transparent status bar, the transparent headers, the
+/// white content surface and the bottom navigation, and it persists across
+/// tab changes. Screens never paint it themselves; Splash and the auth
+/// screens use the same token.
 class CefGradients {
   static const brand = LinearGradient(
-    begin: Alignment.bottomLeft,
-    end: Alignment.topRight,
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
     colors: [
       CefColors.anchorBlue,
       Color(0xFF00378F),
@@ -67,7 +69,7 @@ class CefGradients {
   );
 
   /// Opaque stand-in where only one colour can be given (the browser's
-  /// theme-color meta / status bar): the gradient's deep end.
+  /// theme-color meta / status bar): the gradient's top tone.
   static const brandChrome = CefColors.anchorBlue;
 }
 

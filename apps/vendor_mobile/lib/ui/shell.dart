@@ -134,6 +134,10 @@ class VendorShell extends StatelessWidget {
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop && app.canGoBack) app.back();
         },
+        // The universal Vendor background (D-52): painted once, here, under
+        // every authenticated route. This element is reused across route
+        // changes, so the gradient never restarts; headers and the status
+        // bar are transparent windows onto it.
         child: Scaffold(
           backgroundColor: c.card,
           body: ToastInset(
