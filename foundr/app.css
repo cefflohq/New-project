@@ -19,3 +19,14 @@
 .table td{white-space:nowrap}
 .table td{font-size:13px;padding:7px 8px}
 .table th{padding:12px 8px}
+@media(max-width:720px){
+.date-control{display:none}
+.admin-control{font-size:0;padding:4px}
+.admin-control .avatar{font-size:15px}
+.admin-control .ti{display:none}
+.global-search input{font-size:14px}
+.metrics:not(.metrics-cards),.metrics.metrics-cards{overflow-x:auto;scroll-snap-type:x mandatory}
+.metrics .metric{flex:0 0 46%;scroll-snap-align:start}
+.page-head{flex-direction:column;gap:12px}
+.drawer{padding:16px}
+}

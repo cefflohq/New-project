@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cefflo-foundr-prototype-v10';
+const CACHE_NAME = 'cefflo-foundr-prototype-v11';
 const ROOT = new URL('./', self.registration.scope).pathname;
 const SHELL = [ROOT, `${ROOT}app.css`, `${ROOT}mock-data.js`, `${ROOT}app.js`, `${ROOT}icons/icon-192.png`, `${ROOT}icons/icon-512.png`, `${ROOT}assets/product/vendor-web.jpg`, `${ROOT}assets/product/vendor-mobile.jpg`, `${ROOT}assets/product/driver-app.jpg`, `${ROOT}assets/product/customer-tracking.jpg`, `${ROOT}assets/product/website.jpg`];
 
