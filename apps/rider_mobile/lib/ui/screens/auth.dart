@@ -594,36 +594,9 @@ class _SplashScreenState extends State<SplashScreen> {
         onTap: _continue,
         child: NavyBackdrop(
           watermark: false,
-          child: SafeArea(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Spacer(flex: 3),
-                  const CeffloSplashLockup(),
-                  const SizedBox(height: 30),
-                  Column(
-                    children: [
-                      for (final line in ['DRIVE.', 'DELIVER.', 'TODAY.'])
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 3),
-                          child: Text(
-                            line,
-                            style: TextStyle(
-                              fontFamily: 'Manrope',
-                              fontSize: 19,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 5.5,
-                              color: CefColors.onNavy.withValues(alpha: 0.92),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const Spacer(flex: 5),
-                ],
-              ),
-            ),
+          // Logo mark and "Cefflo Driver" wordmark only, centred on screen.
+          child: const SafeArea(
+            child: Center(child: CeffloSplashLockup(width: 120)),
           ),
         ),
       ),
