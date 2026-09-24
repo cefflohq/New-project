@@ -1,33 +1,43 @@
-/// V-33 -- Screen 03, "Customize {Template Name}". Owns its own full header
-/// (back arrow, dynamic title, Reset) since the shared [VendorShell] header
-/// can't reach this screen's local draft state -- see the
-/// `_ownChromeRoutes` note in `shell.dart`.
-///
-/// Tabs: Branding (fully implemented, per the spec), Banner/Layout/Advanced
-/// (structurally present -- the reference shows all 4 -- but honestly
-/// scoped as "coming soon" since no real capability backs them yet; the
-/// spec explicitly says to "only expose what's genuinely supported").
-///
-/// Branding tab: Store Logo (text wordmark placeholder -- there is no image
-/// upload pipeline in this prototype), Store Name, Tagline, Primary/
-/// Secondary Colour (swatch + hex each), Font Style, and a compact live
-/// "Preview" strip that updates immediately as any field changes.
+/// V-33 -- Customize. The vendor customizes the chosen template -- never
+/// its layout. Controls are rendered from the template's declared
+/// capabilities (`StorefrontTemplateDef.capabilities`), so a template only
+/// ever shows the controls it really supports. Every change updates the
+/// live preview immediately but stays a DRAFT: nothing reaches the live
+/// storefront until Save, which applies template + customization together.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../core/app_state.dart';
 import '../../../core/routes.dart';
 import '../../../core/theme.dart';
 import '../../../data/storefront_config.dart';
-import '../../../data/storefront_templates.dart';
-import '../../shell.dart';
+import '../../system_bars.dart';
 import '../../widgets.dart';
+import 'shared/storefront_surface.dart';
+import 'shared/template_definition.dart';
+import 'storefront_screens.dart';
+import 'templates/template_registry.dart';
+
+/// Brand colour swatches offered after the template's own colour.
+const _brandSwatches = [
+  Color(0xFF17233D),
+  Color(0xFFC8303A),
+  Color(0xFF15A66E),
+  Color(0xFF2A6EEC),
+  Color(0xFF7A4A21),
+  Color(0xFF4C6B52),
+  Color(0xFF14171C),
+];
 
 class CustomizeStorefrontScreen extends StatefulWidget {
-  const CustomizeStorefrontScreen({super.key});
+  const CustomizeStorefrontScreen({super.key, this.templateId});
+
+  /// The template being customized; the live one when null.
+  final String? templateId;
 
   @override
   State<CustomizeStorefrontScreen> createState() =>
@@ -35,559 +45,516 @@ class CustomizeStorefrontScreen extends StatefulWidget {
 }
 
 class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
-  late StorefrontTemplateDef def;
+  late final StorefrontTemplateDef def;
+  late final StorefrontBranding saved;
   late StorefrontBranding draft;
-  String tab = 'Branding';
-
-  late final storeNameCtrl = TextEditingController();
-  late final taglineCtrl = TextEditingController();
-  late final primaryHexCtrl = TextEditingController();
-  late final secondaryHexCtrl = TextEditingController();
+  late final storeNameCtrl = TextEditingController(text: draft.storeName);
+  late final taglineCtrl = TextEditingController(text: draft.tagline);
 
   @override
   void initState() {
     super.initState();
-    // initState may not subscribe to inherited widgets; read the state once.
     final app = AppScope.read(context);
-    def = app.activeStorefrontTemplate;
-    draft = app.brandingFor(def.id);
-    _syncControllers();
-  }
-
-  void _syncControllers() {
-    storeNameCtrl.text = draft.storeName;
-    taglineCtrl.text = draft.tagline;
-    primaryHexCtrl.text = draft.primary.hex;
-    secondaryHexCtrl.text = draft.effectiveSecondary.hex;
+    def = storefrontTemplateById(
+      widget.templateId ?? app.activeStorefrontTemplateId,
+    );
+    saved = storefrontBrandingFor(app, def);
+    draft = saved;
   }
 
   @override
   void dispose() {
     storeNameCtrl.dispose();
     taglineCtrl.dispose();
-    primaryHexCtrl.dispose();
-    secondaryHexCtrl.dispose();
     super.dispose();
   }
 
-  void _apply(StorefrontBranding next) => setState(() => draft = next);
+  bool get _switching =>
+      def.id != AppScope.read(context).activeStorefrontTemplateId;
 
-  void _resetToDefault() {
+  /// Whether the vendor changed anything here (every edit replaces
+  /// [draft], so identity is enough).
+  bool get _edited => !identical(draft, saved);
+
+  /// Save is meaningful when switching template or after an edit.
+  bool get _canSave => _switching || _edited;
+
+  void _update(StorefrontBranding next) => setState(() => draft = next);
+
+  Future<void> _leave() async {
     final app = AppScope.of(context);
-    app.resetStorefrontBranding(def.id);
-    setState(() {
-      draft = def.defaultBranding;
-      _syncControllers();
-    });
+    if (!_edited) {
+      app.back();
+      return;
+    }
+    final discard = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Discard changes?'),
+        content: const Text(
+          'Your storefront stays as it is. Changes you made here are not saved.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Keep editing'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Discard'),
+          ),
+        ],
+      ),
+    );
+    if (discard == true) app.back();
   }
 
   Future<void> _save() async {
     final app = AppScope.of(context);
-    app.saveStorefrontBranding(def.id, draft);
-    await runAsyncFeedback(
+    final switching = _switching;
+    final ok = await runAsyncFeedback(
       context,
-      action: () async {},
+      action: () async => app.applyStorefront(def.id, draft),
       processingTitle: 'Saving...',
-      processingSubtitle: 'Updating your storefront branding',
-      successTitle: 'Saved',
-      successSubtitle: 'Your storefront branding has been updated.',
+      processingSubtitle: 'Updating your storefront',
+      successTitle: switching ? '${def.name} is live' : 'Storefront updated',
+      successSubtitle: switching
+          ? 'Your products now show in the ${def.name} layout.'
+          : 'Customers now see your changes.',
     );
+    if (ok && mounted) app.backTo(VRoute.storefront);
   }
 
-  Future<void> _changeLogo() async {
-    final ctrl = TextEditingController(text: draft.effectiveLogoText);
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Change Logo'),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          textCapitalization: TextCapitalization.characters,
-          decoration: const InputDecoration(
-            hintText: 'Wordmark text, e.g. LUMA',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(ctrl.text),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+  void _reset() {
+    final defaults = def.defaults.copyWith(
+      storeName: AppScope.read(context).business?.name ?? draft.storeName,
     );
-    if (result != null && result.trim().isNotEmpty) {
-      _apply(draft.copyWith(logoText: result.trim(), hasLogo: true));
+    storeNameCtrl.text = defaults.storeName;
+    taglineCtrl.text = defaults.tagline;
+    _update(defaults);
+  }
+
+  Future<void> _pickColour({
+    required Color initial,
+    required ValueChanged<Color> onPicked,
+  }) => showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (context) =>
+        _ColorPickerSheet(initial: initial, onPicked: onPicked),
+  );
+
+  Future<void> _pickHeroImage() async {
+    try {
+      final file = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1600,
+        imageQuality: 85,
+      );
+      if (file == null) return;
+      final bytes = await file.readAsBytes();
+      if (mounted) _update(draft.copyWith(heroImage: bytes));
+    } catch (_) {
+      if (mounted) {
+        showCefToast(context, "Couldn't open your photos. Please try again.");
+      }
     }
   }
 
-  Future<void> _pickColor({required bool primary}) =>
-      showModalBottomSheet<void>(
-        context: context,
-        backgroundColor: Colors.transparent,
-        isScrollControlled: true,
-        builder: (context) => _ColorPickerSheet(
-          initial: primary ? draft.primary : draft.effectiveSecondary,
-          onPicked: (c) {
-            if (primary) {
-              primaryHexCtrl.text = c.hex;
-              _apply(draft.copyWith(primary: c));
-            } else {
-              secondaryHexCtrl.text = c.hex;
-              _apply(draft.copyWith(secondary: c));
-            }
-          },
-        ),
-      );
-
   @override
   Widget build(BuildContext context) {
-    final app = AppScope.of(context);
-    return Column(
-      children: [
-        // Owned here only because Reset acts on screen-local draft state;
-        // it is the same AppHeader the shell renders everywhere else.
-        AppHeader(
-          title: 'Customize ${def.name}',
-          subtitle: 'Make it yours with your brand identity',
-          leading: [HeaderBackButton(onTap: app.back)],
-          trailing: [
-            IconAction(
-              icon: LucideIcons.rotateCcw,
-              tooltip: 'Reset to template defaults',
-              color: Colors.white,
-              onTap: _resetToDefault,
-            ),
-          ],
-        ),
-        Expanded(
-          child: ContentSurface(
-            child: Column(
-              children: [
-                SegmentedTabs(
-                  labels: const ['Branding', 'Banner', 'Layout', 'Advanced'],
-                  active: tab,
-                  onChange: (v) => setState(() => tab = v),
-                ),
-                Expanded(
-                  child: tab == 'Branding'
-                      ? _buildBrandingTab(context)
-                      : _ComingSoonTab(label: tab),
-                ),
-                _SaveBar(onSave: _save),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBrandingTab(BuildContext context) {
-    final app = AppScope.of(context);
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
-        Gap.md,
-        Gap.gutter,
-        Gap.section,
-      ),
-      children: [
-        const SectionHeading('Brand Identity'),
-        Text('Store Logo', style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: Gap.xs),
-        Row(
+    final media = MediaQuery.of(context);
+    final c = context.c;
+    final text = Theme.of(context).textTheme;
+    final stage = (media.size.height * .42).clamp(300.0, 420.0);
+    return CefSystemBars(
+      background: Brightness.light,
+      child: ColoredBox(
+        color: c.card,
+        child: Column(
           children: [
+            // Live preview of the draft, always in view while editing.
             Container(
-              width: 56,
-              height: 56,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: context.c.card,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: context.c.border),
-              ),
-              child: draft.hasLogo
-                  ? Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: FittedBox(
-                        child: Text(
-                          draft.font.transform(
-                            draft.effectiveLogoText.isEmpty
-                                ? 'BRAND'
-                                : draft.effectiveLogoText,
+              height: stage + media.padding.top,
+              color: c.subtle,
+              padding: EdgeInsets.only(top: media.padding.top),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    top: Sizes.header + Gap.xs,
+                    bottom: Gap.lg,
+                    child: Center(
+                      child: AspectRatio(
+                        aspectRatio:
+                            kStorefrontViewport.width /
+                            kStorefrontViewport.height,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: .14),
+                                blurRadius: 24,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
                           ),
-                          style: draft.font.apply(
-                            const TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF14171C),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(18),
+                            child: StorefrontCatalogueLoader(
+                              builder: (context, catalogue) =>
+                                  StorefrontMiniature(
+                                    def: def,
+                                    branding: draft,
+                                    catalogue: catalogue,
+                                  ),
                             ),
                           ),
                         ),
                       ),
-                    )
-                  : Icon(
-                      LucideIcons.image,
-                      color: context.c.textSecondary,
-                      size: 20,
-                    ),
-            ),
-            const SizedBox(width: 12),
-            OutlinedButton(
-              onPressed: _changeLogo,
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: context.c.border),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-              child: const Text(
-                'Change Logo',
-                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
-              ),
-            ),
-            const SizedBox(width: 8),
-            TextButton(
-              onPressed: () => _apply(draft.copyWith(hasLogo: false)),
-              child: Text(
-                'Remove',
-                style: TextStyle(
-                  color: context.c.attention,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 12.5,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: Gap.lg),
-        CefField(
-          label: 'Store Name',
-          controller: storeNameCtrl,
-          onChanged: (v) => _apply(draft.copyWith(storeName: v)),
-        ),
-        CefField(
-          label: 'Tagline (Optional)',
-          controller: taglineCtrl,
-          onChanged: (v) => _apply(draft.copyWith(tagline: v)),
-        ),
-        const SectionHeading('Brand Colours'),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: _ColorField(
-                label: 'Primary Colour',
-                color: draft.primary,
-                hexCtrl: primaryHexCtrl,
-                onColorTap: () => _pickColor(primary: true),
-                onHexSubmit: (raw) {
-                  final c = parseStorefrontHex(raw);
-                  if (c != null) _apply(draft.copyWith(primary: c));
-                },
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: _ColorField(
-                label: 'Secondary Colour',
-                color: draft.effectiveSecondary,
-                hexCtrl: secondaryHexCtrl,
-                onColorTap: () => _pickColor(primary: false),
-                onHexSubmit: (raw) {
-                  final c = parseStorefrontHex(raw);
-                  if (c != null) _apply(draft.copyWith(secondary: c));
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: Gap.lg),
-        Text('Font Style', style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: Gap.xs),
-        _FontDropdown(
-          value: draft.font,
-          onChanged: (f) => _apply(draft.copyWith(font: f)),
-        ),
-        SectionHeading(
-          'Preview',
-          trailing: TextButton.icon(
-            onPressed: () {
-              app.saveStorefrontBranding(def.id, draft);
-              app.go(VRoute.storefrontTemplatePreview, entityId: def.id);
-            },
-            style: TextButton.styleFrom(foregroundColor: context.c.info),
-            icon: const Icon(LucideIcons.externalLink, size: 13),
-            label: const Text(
-              'See Live Preview',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-            ),
-          ),
-        ),
-        _BrandingPreviewStrip(branding: draft),
-      ],
-    );
-  }
-}
-
-class _ComingSoonTab extends StatelessWidget {
-  const _ComingSoonTab({required this.label});
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            LucideIcons.construction,
-            size: 34,
-            color: context.c.textSecondary,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '$label controls aren\'t available for this template yet.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: context.c.textSecondary, fontSize: 13),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _SaveBar extends StatelessWidget {
-  const _SaveBar({required this.onSave});
-  final Future<void> Function() onSave;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.md, Gap.gutter, Gap.md),
-    decoration: BoxDecoration(
-      color: context.c.card,
-      border: Border(top: BorderSide(color: context.c.border)),
-    ),
-    child: CefButton('Save Changes', onTap: onSave),
-  );
-}
-
-class _ColorField extends StatelessWidget {
-  const _ColorField({
-    required this.label,
-    required this.color,
-    required this.hexCtrl,
-    required this.onColorTap,
-    required this.onHexSubmit,
-  });
-
-  final String label;
-  final Color color;
-  final TextEditingController hexCtrl;
-  final VoidCallback onColorTap;
-  final ValueChanged<String> onHexSubmit;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(label, style: Theme.of(context).textTheme.labelLarge),
-      const SizedBox(height: Gap.xs),
-      Row(
-        children: [
-          InkWell(
-            onTap: onColorTap,
-            borderRadius: BorderRadius.circular(999),
-            child: Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-                border: Border.all(color: context.c.border),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: TextField(
-              controller: hexCtrl,
-              textCapitalization: TextCapitalization.characters,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[#0-9A-Fa-f]')),
-                LengthLimitingTextInputFormatter(7),
-              ],
-              style: const TextStyle(fontSize: 13),
-              decoration: InputDecoration(
-                isDense: true,
-                filled: true,
-                fillColor: const Color(0xFFF8F9FB),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 11,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Color(0xFFDDE1EA)),
-                ),
-              ),
-              onSubmitted: onHexSubmit,
-            ),
-          ),
-        ],
-      ),
-    ],
-  );
-}
-
-class _FontDropdown extends StatelessWidget {
-  const _FontDropdown({required this.value, required this.onChanged});
-  final StorefrontFontTreatment value;
-  final ValueChanged<StorefrontFontTreatment> onChanged;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    height: 48,
-    padding: const EdgeInsets.symmetric(horizontal: 13),
-    decoration: BoxDecoration(
-      color: context.c.card,
-      borderRadius: BorderRadius.circular(Sizes.inputRadius),
-      border: Border.all(color: context.c.border),
-    ),
-    child: DropdownButtonHideUnderline(
-      child: DropdownButton<StorefrontFontTreatment>(
-        value: value,
-        isExpanded: true,
-        icon: Icon(
-          LucideIcons.chevronDown,
-          size: 18,
-          color: context.c.iconColor,
-        ),
-        items: [
-          for (final f in StorefrontFontTreatment.values)
-            DropdownMenuItem(
-              value: f,
-              child: Text(f.label, style: const TextStyle(fontSize: 14)),
-            ),
-        ],
-        onChanged: (f) {
-          if (f != null) onChanged(f);
-        },
-      ),
-    ),
-  );
-}
-
-class _BrandingPreviewStrip extends StatelessWidget {
-  const _BrandingPreviewStrip({required this.branding});
-  final StorefrontBranding branding;
-
-  @override
-  Widget build(BuildContext context) {
-    final fg = accessibleForeground(branding.primary);
-    final logo = branding.font.transform(
-      branding.effectiveLogoText.isEmpty ? 'BRAND' : branding.effectiveLogoText,
-    );
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: context.c.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      logo,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: branding.font.apply(
-                        const TextStyle(fontSize: 15, color: Color(0xFF14171C)),
-                      ),
                     ),
                   ),
-                  const Icon(
-                    LucideIcons.search,
-                    size: 16,
-                    color: Color(0xFF6C7280),
-                  ),
-                  const SizedBox(width: 12),
-                  const Icon(
-                    LucideIcons.shoppingCart,
-                    size: 16,
-                    color: Color(0xFF6C7280),
-                  ),
-                  const SizedBox(width: 12),
-                  const Icon(
-                    LucideIcons.menu,
-                    size: 16,
-                    color: Color(0xFF6C7280),
+                  Positioned(
+                    top: (Sizes.header - Sizes.tapTarget) / 2,
+                    left: Gap.lg,
+                    right: Gap.lg,
+                    child: Row(
+                      children: [
+                        StorefrontOverlayButton(
+                          icon: LucideIcons.arrowLeft,
+                          tooltip: 'Back',
+                          light: false,
+                          onTap: _leave,
+                        ),
+                        const Spacer(),
+                        SizedBox(
+                          width: 96,
+                          child: CefButton(
+                            'Save',
+                            compact: true,
+                            onTap: _canSave ? _save : null,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-            AspectRatio(
-              aspectRatio: 16 / 8,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [branding.primary, branding.effectiveSecondary],
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(
+                  Gap.gutter,
+                  Gap.xl,
+                  Gap.gutter,
+                  Gap.xl + media.padding.bottom,
+                ),
+                children: [
+                  Text('Customize ${def.name}', style: text.titleMedium),
+                  const SizedBox(height: Gap.xs),
+                  Text(
+                    'Adjust the colours and style to match your brand.',
+                    style: text.bodySmall,
                   ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      branding.tagline.isEmpty
-                          ? 'Your tagline here.'
-                          : branding.tagline,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: branding.font.apply(
-                        TextStyle(fontSize: 16, color: fg, height: 1.2),
+                  // One control per declared capability, in a fixed order.
+                  for (final cap in StorefrontCapability.values)
+                    if (def.supports(cap)) ..._controlFor(cap),
+                  const SizedBox(height: Gap.xl),
+                  const CefDivider(),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: _reset,
+                      style: TextButton.styleFrom(
+                        foregroundColor: c.textSecondary,
+                        padding: EdgeInsets.zero,
                       ),
+                      icon: const Icon(LucideIcons.rotateCcw, size: 16),
+                      label: const Text('Reset to template defaults'),
                     ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 7,
-                      ),
-                      decoration: BoxDecoration(
-                        color: fg,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        'Shop Now',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w800,
-                          color: branding.primary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _controlFor(StorefrontCapability cap) => switch (cap) {
+    StorefrontCapability.brandColour => _brandColour(),
+    StorefrontCapability.background => _background(),
+    StorefrontCapability.heroImage => _heroImage(),
+    StorefrontCapability.identity => _identity(),
+  };
+
+  Widget _label(String title, {String? hint}) => Padding(
+    padding: const EdgeInsets.only(top: Gap.xxl, bottom: Gap.md),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleSmall),
+        if (hint != null)
+          Text(hint, style: Theme.of(context).textTheme.bodySmall),
+      ],
+    ),
+  );
+
+  List<Widget> _brandColour() {
+    final swatches = <Color>[
+      def.defaults.primary,
+      for (final s in _brandSwatches)
+        if (s != def.defaults.primary) s,
+    ];
+    final custom = !swatches.contains(draft.primary);
+    return [
+      _label('Brand colour'),
+      Wrap(
+        spacing: Gap.md,
+        runSpacing: Gap.md,
+        children: [
+          for (final s in swatches)
+            _Swatch(
+              color: s,
+              selected: draft.primary == s,
+              onTap: () => _update(draft.copyWith(primary: s)),
+            ),
+          _Swatch(
+            color: custom ? draft.primary : null,
+            selected: custom,
+            tooltip: 'Custom colour',
+            onTap: () => _pickColour(
+              initial: draft.primary,
+              onPicked: (c) => _update(draft.copyWith(primary: c)),
+            ),
+          ),
+        ],
+      ),
+    ];
+  }
+
+  List<Widget> _background() {
+    final isCustom = draft.backgroundId == kCustomBackgroundId;
+    return [
+      _label('Background'),
+      Wrap(
+        spacing: Gap.md,
+        runSpacing: Gap.md,
+        children: [
+          for (final b in def.backgrounds)
+            _BackgroundTile(
+              label: b.label,
+              color: b.color,
+              selected: !isCustom && draft.backgroundId == b.id,
+              onTap: () => _update(draft.copyWith(backgroundId: b.id)),
+            ),
+          _BackgroundTile(
+            label: 'Custom',
+            color: isCustom ? draft.customBackground : null,
+            selected: isCustom,
+            onTap: () => _pickColour(
+              initial: draft.customBackground ?? def.backgroundFor(draft),
+              // A soft tint of the picked colour keeps the template's text
+              // legible on it.
+              onPicked: (c) => _update(
+                draft.copyWith(
+                  backgroundId: kCustomBackgroundId,
+                  customBackground: _softTint(c),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ];
+  }
+
+  List<Widget> _heroImage() {
+    final image = draft.heroImage;
+    final c = context.c;
+    return [
+      _label('Hero image', hint: 'Shown behind your storefront banner.'),
+      Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: 72,
+              height: 72,
+              color: c.subtle,
+              child: image == null
+                  ? Icon(LucideIcons.image, color: c.textSecondary)
+                  : Image.memory(image, fit: BoxFit.cover),
+            ),
+          ),
+          const SizedBox(width: Gap.lg),
+          Expanded(
+            child: Wrap(
+              spacing: Gap.sm,
+              runSpacing: Gap.sm,
+              children: [
+                SizedBox(
+                  width: 120,
+                  child: CefButton(
+                    image == null ? 'Upload' : 'Change',
+                    secondary: true,
+                    compact: true,
+                    onTap: _pickHeroImage,
+                  ),
+                ),
+                if (image != null)
+                  TextButton(
+                    onPressed: () =>
+                        _update(draft.copyWith(clearHeroImage: true)),
+                    style: TextButton.styleFrom(foregroundColor: c.attention),
+                    child: const Text('Remove'),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ];
+  }
+
+  List<Widget> _identity() => [
+    _label('Store name', hint: 'From your Business Profile.'),
+    CefField(
+      label: 'Store name',
+      controller: storeNameCtrl,
+      onChanged: (v) => _update(draft.copyWith(storeName: v.trim())),
+    ),
+    CefField(
+      label: 'Tagline (optional)',
+      controller: taglineCtrl,
+      onChanged: (v) => _update(draft.copyWith(tagline: v.trim())),
+    ),
+  ];
+}
+
+/// A picked colour softened into a legible page tint.
+Color _softTint(Color c) {
+  final hsl = HSLColor.fromColor(c);
+  return hsl
+      .withLightness(hsl.lightness < .92 ? .94 : hsl.lightness)
+      .withSaturation((hsl.saturation * .6).clamp(0, 1))
+      .toColor();
+}
+
+/// Round brand-colour swatch; [color] null draws the Custom "+" swatch.
+class _Swatch extends StatelessWidget {
+  const _Swatch({
+    required this.color,
+    required this.selected,
+    required this.onTap,
+    this.tooltip,
+  });
+  final Color? color;
+  final bool selected;
+  final VoidCallback onTap;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final fill = color;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: tooltip ?? 'Colour ${fill?.hex ?? ''}',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: Sizes.tapTarget,
+          height: Sizes.tapTarget,
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: selected ? CefColors.brand : Colors.transparent,
+              width: 2,
+            ),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: fill ?? c.card,
+              border: fill == null ? Border.all(color: c.border) : null,
+            ),
+            child: fill == null
+                ? Icon(LucideIcons.plus, size: 18, color: c.iconColor)
+                : selected
+                ? Icon(
+                    LucideIcons.check,
+                    size: 18,
+                    color: accessibleForeground(fill),
+                  )
+                : null,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Background treatment tile; [color] null draws the Custom tile.
+class _BackgroundTile extends StatelessWidget {
+  const _BackgroundTile({
+    required this.label,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final Color? color;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: '$label background',
+      child: GestureDetector(
+        onTap: onTap,
+        child: SizedBox(
+          width: 64,
+          child: Column(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: color ?? c.card,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: selected ? CefColors.brand : c.border,
+                    width: selected ? 2 : 1,
+                  ),
+                ),
+                child: color == null
+                    ? Icon(LucideIcons.palette, size: 20, color: c.iconColor)
+                    : selected
+                    ? const Icon(
+                        LucideIcons.check,
+                        size: 18,
+                        color: CefColors.brand,
+                      )
+                    : null,
+              ),
+              const SizedBox(height: Gap.xs),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -725,23 +692,7 @@ class _ColorPickerSheetState extends State<_ColorPickerSheet> {
               ],
             ),
             const SizedBox(height: 18),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: FilledButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: FilledButton.styleFrom(
-                  backgroundColor: CefColors.navy,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-                child: const Text(
-                  'Done',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-              ),
-            ),
+            CefButton('Done', onTap: () => Navigator.of(context).pop()),
           ],
         ),
       ),

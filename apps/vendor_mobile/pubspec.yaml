@@ -16,6 +16,7 @@ dependencies:
   url_launcher: ^6.3.0
   # Encodes the invitation link for the Invite QR modal (pure Dart).
   qr: ^3.0.2
+  image_picker: ^1.2.3
 
 dev_dependencies:
   flutter_test:

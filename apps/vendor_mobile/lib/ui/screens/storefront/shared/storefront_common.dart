@@ -13,7 +13,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../../data/storefront_catalog.dart';
+import '../../../../data/storefront_catalog.dart';
+import 'product_art.dart';
 import 'storefront_theme.dart';
 
 const double kStorefrontDeliveryFee = 6.00;
@@ -37,11 +38,7 @@ class StorefrontStep {
 }
 
 class StorefrontCartLine {
-  StorefrontCartLine({
-    required this.item,
-    this.qty = 1,
-    this.variantSummary,
-  });
+  StorefrontCartLine({required this.item, this.qty = 1, this.variantSummary});
 
   final StorefrontItem item;
   int qty;
@@ -177,10 +174,7 @@ class StorefrontBrandButton extends StatelessWidget {
         const SizedBox(width: 8),
       ],
       Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
-      if (trailing != null) ...[
-        const SizedBox(width: 8),
-        Text(trailing!),
-      ],
+      if (trailing != null) ...[const SizedBox(width: 8), Text(trailing!)],
     ],
   );
 }
@@ -217,7 +211,9 @@ class StorefrontQtyStepper extends StatelessWidget {
             child: Icon(
               icon,
               size: compact ? 13 : 15,
-              color: filled ? tokens.onPrimary : StorefrontThemeTokens.textPrimary,
+              color: filled
+                  ? tokens.onPrimary
+                  : StorefrontThemeTokens.textPrimary,
             ),
           ),
         );
@@ -242,19 +238,18 @@ class StorefrontQtyStepper extends StatelessWidget {
   }
 }
 
-/// Flat placeholder image tile (no network images in a mock/fixture data
-/// path) keyed off the item's icon, tinted by brand accent so it still reads
-/// as "on brand" without touching neutral surfaces.
-class StorefrontImagePlaceholder extends StatelessWidget {
-  const StorefrontImagePlaceholder({
+/// Product image tile: the product's neutral illustration (see
+/// `product_art.dart`) on a soft tint of the storefront accent.
+class StorefrontProductImage extends StatelessWidget {
+  const StorefrontProductImage({
     super.key,
-    required this.icon,
+    required this.item,
     this.size = 56,
     this.radius = 12,
     this.tint,
   });
 
-  final IconData icon;
+  final StorefrontItem item;
   final double size;
   final double radius;
   final Color? tint;
@@ -264,20 +259,15 @@ class StorefrontImagePlaceholder extends StatelessWidget {
     width: size,
     height: size,
     decoration: BoxDecoration(
-      color: (tint ?? StorefrontThemeTokens.textSecondary).withValues(alpha: .1),
+      color: Color.lerp(
+        StorefrontThemeTokens.muted,
+        tint ?? StorefrontThemeTokens.textSecondary,
+        .08,
+      ),
       borderRadius: BorderRadius.circular(radius),
     ),
-    // `size` may be double.infinity ("fill the slot"); size the icon from
-    // the laid-out box so it is always finite.
-    child: LayoutBuilder(
-      builder: (context, box) {
-        final side = [
-          box.maxWidth,
-          box.maxHeight,
-        ].where((v) => v.isFinite).fold<double>(size.isFinite ? size : 56, (a, b) => a < b ? a : b);
-        return Icon(icon, size: side * 0.42, color: tint ?? StorefrontThemeTokens.textSecondary);
-      },
-    ),
+    padding: const EdgeInsets.all(6),
+    child: ProductArtView(item.art, accent: tint),
   );
 }
 
@@ -352,7 +342,9 @@ class StorefrontCartView extends StatelessWidget {
               ? const Center(
                   child: Text(
                     'Your cart is empty.',
-                    style: TextStyle(color: StorefrontThemeTokens.textSecondary),
+                    style: TextStyle(
+                      color: StorefrontThemeTokens.textSecondary,
+                    ),
                   ),
                 )
               : ListView(
@@ -364,7 +356,10 @@ class StorefrontCartView extends StatelessWidget {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            StorefrontImagePlaceholder(icon: line.item.icon, tint: tokens.primary),
+                            StorefrontProductImage(
+                              item: line.item,
+                              tint: tokens.primary,
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
@@ -372,7 +367,10 @@ class StorefrontCartView extends StatelessWidget {
                                 children: [
                                   Text(
                                     line.item.name,
-                                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14,
+                                    ),
                                   ),
                                   if (line.variantSummary != null)
                                     Padding(
@@ -381,7 +379,8 @@ class StorefrontCartView extends StatelessWidget {
                                         line.variantSummary!,
                                         style: const TextStyle(
                                           fontSize: 12,
-                                          color: StorefrontThemeTokens.textSecondary,
+                                          color: StorefrontThemeTokens
+                                              .textSecondary,
                                         ),
                                       ),
                                     ),
@@ -423,19 +422,29 @@ class StorefrontCartView extends StatelessWidget {
                     if (showNote) ...[
                       const SizedBox(height: 4),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: StorefrontThemeTokens.muted,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Row(
                           children: [
-                            Icon(LucideIcons.package, size: 16, color: StorefrontThemeTokens.textSecondary),
+                            Icon(
+                              LucideIcons.package,
+                              size: 16,
+                              color: StorefrontThemeTokens.textSecondary,
+                            ),
                             SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'Add a note (optional)',
-                                style: TextStyle(fontSize: 13, color: StorefrontThemeTokens.textSecondary),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: StorefrontThemeTokens.textSecondary,
+                                ),
                               ),
                             ),
                           ],
@@ -450,7 +459,9 @@ class StorefrontCartView extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
             decoration: const BoxDecoration(
               color: StorefrontThemeTokens.card,
-              border: Border(top: BorderSide(color: StorefrontThemeTokens.border)),
+              border: Border(
+                top: BorderSide(color: StorefrontThemeTokens.border),
+              ),
             ),
             child: Column(
               children: [
@@ -472,30 +483,33 @@ class StorefrontCartView extends StatelessWidget {
     ),
   );
 
-  Widget _totalsRow(String label, num value, {bool emphasize = false}) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 3),
-    child: Row(
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: emphasize ? 15 : 13,
-            fontWeight: emphasize ? FontWeight.w800 : FontWeight.w500,
-            color: emphasize ? StorefrontThemeTokens.textPrimary : StorefrontThemeTokens.textSecondary,
-          ),
+  Widget _totalsRow(String label, num value, {bool emphasize = false}) =>
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3),
+        child: Row(
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: emphasize ? 15 : 13,
+                fontWeight: emphasize ? FontWeight.w800 : FontWeight.w500,
+                color: emphasize
+                    ? StorefrontThemeTokens.textPrimary
+                    : StorefrontThemeTokens.textSecondary,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              'RM ${value.toStringAsFixed(2)}',
+              style: TextStyle(
+                fontSize: emphasize ? 15 : 13,
+                fontWeight: emphasize ? FontWeight.w800 : FontWeight.w700,
+                color: StorefrontThemeTokens.textPrimary,
+              ),
+            ),
+          ],
         ),
-        const Spacer(),
-        Text(
-          'RM ${value.toStringAsFixed(2)}',
-          style: TextStyle(
-            fontSize: emphasize ? 15 : 13,
-            fontWeight: emphasize ? FontWeight.w800 : FontWeight.w700,
-            color: StorefrontThemeTokens.textPrimary,
-          ),
-        ),
-      ],
-    ),
-  );
+      );
 }
 
 enum _DeliveryOption { standard, express }
@@ -545,7 +559,8 @@ class _StorefrontCheckoutViewState extends State<StorefrontCheckoutView> {
                 'Standard delivery',
                 '30-45 min',
                 selected: delivery == _DeliveryOption.standard,
-                onTap: () => setState(() => delivery = _DeliveryOption.standard),
+                onTap: () =>
+                    setState(() => delivery = _DeliveryOption.standard),
               ),
               _optionTile(
                 'Express delivery',
@@ -570,7 +585,8 @@ class _StorefrontCheckoutViewState extends State<StorefrontCheckoutView> {
               _summaryRow('Subtotal', widget.cart.subtotal),
               _summaryRow(
                 'Delivery Fee',
-                widget.cart.deliveryFee + (delivery == _DeliveryOption.express ? 3 : 0),
+                widget.cart.deliveryFee +
+                    (delivery == _DeliveryOption.express ? 3 : 0),
               ),
               const Divider(height: 20, color: StorefrontThemeTokens.border),
               _summaryRow(
@@ -587,7 +603,9 @@ class _StorefrontCheckoutViewState extends State<StorefrontCheckoutView> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
           decoration: const BoxDecoration(
             color: StorefrontThemeTokens.card,
-            border: Border(top: BorderSide(color: StorefrontThemeTokens.border)),
+            border: Border(
+              top: BorderSide(color: StorefrontThemeTokens.border),
+            ),
           ),
           child: StorefrontBrandButton(
             label: 'Place Order',
@@ -603,7 +621,11 @@ class _StorefrontCheckoutViewState extends State<StorefrontCheckoutView> {
     padding: const EdgeInsets.only(top: 16, bottom: 8),
     child: Text(
       label,
-      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: StorefrontThemeTokens.textPrimary),
+      style: const TextStyle(
+        fontWeight: FontWeight.w800,
+        fontSize: 13,
+        color: StorefrontThemeTokens.textPrimary,
+      ),
     ),
   );
 
@@ -618,7 +640,13 @@ class _StorefrontCheckoutViewState extends State<StorefrontCheckoutView> {
       children: [
         Icon(icon, size: 16, color: StorefrontThemeTokens.textSecondary),
         const SizedBox(width: 10),
-        Text(hint, style: const TextStyle(fontSize: 13, color: StorefrontThemeTokens.textSecondary)),
+        Text(
+          hint,
+          style: const TextStyle(
+            fontSize: 13,
+            color: StorefrontThemeTokens.textSecondary,
+          ),
+        ),
       ],
     ),
   );
@@ -639,7 +667,9 @@ class _StorefrontCheckoutViewState extends State<StorefrontCheckoutView> {
           color: StorefrontThemeTokens.card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected ? widget.tokens.primary : StorefrontThemeTokens.border,
+            color: selected
+                ? widget.tokens.primary
+                : StorefrontThemeTokens.border,
             width: selected ? 1.6 : 1,
           ),
         ),
@@ -656,9 +686,21 @@ class _StorefrontCheckoutViewState extends State<StorefrontCheckoutView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13.5,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(subtitle, style: const TextStyle(fontSize: 11.5, color: StorefrontThemeTokens.textSecondary)),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: StorefrontThemeTokens.textSecondary,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -668,29 +710,32 @@ class _StorefrontCheckoutViewState extends State<StorefrontCheckoutView> {
     ),
   );
 
-  Widget _summaryRow(String label, num value, {bool emphasize = false}) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 3),
-    child: Row(
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: emphasize ? 15 : 13,
-            fontWeight: emphasize ? FontWeight.w800 : FontWeight.w500,
-            color: emphasize ? StorefrontThemeTokens.textPrimary : StorefrontThemeTokens.textSecondary,
-          ),
+  Widget _summaryRow(String label, num value, {bool emphasize = false}) =>
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3),
+        child: Row(
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: emphasize ? 15 : 13,
+                fontWeight: emphasize ? FontWeight.w800 : FontWeight.w500,
+                color: emphasize
+                    ? StorefrontThemeTokens.textPrimary
+                    : StorefrontThemeTokens.textSecondary,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              'RM ${value.toStringAsFixed(2)}',
+              style: TextStyle(
+                fontSize: emphasize ? 15 : 13,
+                fontWeight: emphasize ? FontWeight.w800 : FontWeight.w700,
+              ),
+            ),
+          ],
         ),
-        const Spacer(),
-        Text(
-          'RM ${value.toStringAsFixed(2)}',
-          style: TextStyle(
-            fontSize: emphasize ? 15 : 13,
-            fontWeight: emphasize ? FontWeight.w800 : FontWeight.w700,
-          ),
-        ),
-      ],
-    ),
-  );
+      );
 }
 
 class StorefrontOrderCreatedView extends StatelessWidget {
@@ -720,19 +765,30 @@ class StorefrontOrderCreatedView extends StatelessWidget {
         const SizedBox(height: 20),
         const Text(
           'Order placed!',
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: StorefrontThemeTokens.textPrimary),
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 20,
+            color: StorefrontThemeTokens.textPrimary,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
           'Order $orderRef has been created. This is a prototype flow -- '
           'no real order or payment was processed.',
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 13, color: StorefrontThemeTokens.textSecondary),
+          style: const TextStyle(
+            fontSize: 13,
+            color: StorefrontThemeTokens.textSecondary,
+          ),
         ),
         const SizedBox(height: 28),
         SizedBox(
           width: double.infinity,
-          child: StorefrontBrandButton(label: 'Continue Shopping', tokens: tokens, onTap: onDone),
+          child: StorefrontBrandButton(
+            label: 'Continue Shopping',
+            tokens: tokens,
+            onTap: onDone,
+          ),
         ),
       ],
     ),
@@ -771,7 +827,13 @@ class StorefrontCategoryChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 13, color: selected ? tokens.onPrimary : StorefrontThemeTokens.textSecondary),
+              Icon(
+                icon,
+                size: 13,
+                color: selected
+                    ? tokens.onPrimary
+                    : StorefrontThemeTokens.textSecondary,
+              ),
               const SizedBox(width: 6),
             ],
             Text(
@@ -779,7 +841,9 @@ class StorefrontCategoryChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w700,
-                color: selected ? tokens.onPrimary : StorefrontThemeTokens.textSecondary,
+                color: selected
+                    ? tokens.onPrimary
+                    : StorefrontThemeTokens.textSecondary,
               ),
             ),
           ],

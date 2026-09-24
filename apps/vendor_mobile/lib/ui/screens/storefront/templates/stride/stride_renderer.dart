@@ -8,9 +8,10 @@ library;
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../../data/storefront_catalog.dart';
-import 'storefront_common.dart';
-import 'storefront_theme.dart';
+import '../../../../../data/storefront_catalog.dart';
+import '../../shared/product_art.dart';
+import '../../shared/storefront_common.dart';
+import '../../shared/storefront_theme.dart';
 
 const _originSizes = ['8', '8.5', '9', '9.5', '10'];
 const _originSwatches = [
@@ -61,7 +62,7 @@ class _OriginRunPreviewState extends State<OriginRunPreview> {
         if (!didPop) _pop();
       },
       child: DecoratedBox(
-        decoration: const BoxDecoration(color: Colors.white),
+        decoration: BoxDecoration(color: widget.tokens.background),
         child: switch (_top.stage) {
           'detail' => _OriginDetailView(
             item: widget.items.firstWhere((i) => i.id == _top.itemId),
@@ -227,7 +228,7 @@ class _OriginHomeState extends State<_OriginHome> {
                 style: TextStyle(fontWeight: FontWeight.w900, fontSize: 22),
               ),
               Text(
-                '${widget.businessName} Original 2025',
+                widget.tokens.headline('Shop the latest.'),
                 style: const TextStyle(
                   fontSize: 12,
                   color: StorefrontThemeTokens.textSecondary,
@@ -260,9 +261,11 @@ class _OriginHomeState extends State<_OriginHome> {
                                 fontSize: 14,
                               ),
                             ),
-                            const Text(
-                              "Men's shoes",
-                              style: TextStyle(
+                            Text(
+                              hero.description ?? '',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
                                 fontSize: 10.5,
                                 color: StorefrontThemeTokens.textSecondary,
                               ),
@@ -295,10 +298,13 @@ class _OriginHomeState extends State<_OriginHome> {
                         bottom: 0,
                         child: Transform.rotate(
                           angle: -0.25,
-                          child: Icon(
-                            hero.icon,
-                            size: 118,
-                            color: widget.tokens.primary,
+                          child: SizedBox(
+                            width: 130,
+                            height: 130,
+                            child: ProductArtView(
+                              hero.art,
+                              accent: widget.tokens.primary,
+                            ),
                           ),
                         ),
                       ),
@@ -323,38 +329,42 @@ class _OriginHomeState extends State<_OriginHome> {
                 ),
               ),
               const SizedBox(height: 18),
-              Row(
-                children: [
-                  for (final t in tabs)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 22),
-                      child: InkWell(
-                        onTap: () => setState(() => active = t.id),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              t.label,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 14,
-                                color: active == t.id
-                                    ? Colors.black
-                                    : const Color(0xFFC7C7C7),
+              // Scrolls: a vendor may have any number of categories.
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (final t in tabs)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 22),
+                        child: InkWell(
+                          onTap: () => setState(() => active = t.id),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                t.label,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 14,
+                                  color: active == t.id
+                                      ? Colors.black
+                                      : const Color(0xFFC7C7C7),
+                                ),
                               ),
-                            ),
-                            Text(
-                              '${widget.items.where((i) => i.categoryId == t.id).length} items',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: StorefrontThemeTokens.textSecondary,
+                              Text(
+                                '${widget.items.where((i) => i.categoryId == t.id).length} items',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: StorefrontThemeTokens.textSecondary,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
               GridView.count(
@@ -385,10 +395,9 @@ class _OriginHomeState extends State<_OriginHome> {
                               ),
                             ),
                             Expanded(
-                              child: Icon(
-                                item.icon,
-                                size: 54,
-                                color: Colors.black87,
+                              child: ProductArtView(
+                                item.art,
+                                accent: widget.tokens.primary,
                               ),
                             ),
                             Row(
@@ -400,7 +409,7 @@ class _OriginHomeState extends State<_OriginHome> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        '\$${item.price.toStringAsFixed(0)}',
+                                        'RM ${item.price.toStringAsFixed(0)}',
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w800,
                                           fontSize: 15,
@@ -567,10 +576,13 @@ class _OriginDetailViewState extends State<_OriginDetailView> {
                       ),
                       Transform.rotate(
                         angle: -0.35,
-                        child: Icon(
-                          item.icon,
-                          size: 170,
-                          color: widget.tokens.primary,
+                        child: SizedBox(
+                          width: 200,
+                          height: 200,
+                          child: ProductArtView(
+                            item.art,
+                            accent: widget.tokens.primary,
+                          ),
                         ),
                       ),
                       Positioned(
@@ -614,7 +626,7 @@ class _OriginDetailViewState extends State<_OriginDetailView> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '\$${item.price.toStringAsFixed(0)}',
+                  'RM ${item.price.toStringAsFixed(0)}',
                   style: const TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 22,

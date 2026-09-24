@@ -26,14 +26,6 @@ const _headerTitles = <VRoute, String>{
   VRoute.helperRegistrationLink: 'Invite team member',
 };
 
-/// Small subtitle shown under the page title, for routes where the spec
-/// calls for one (Screen 02 -- Template Preview).
-const _headerSubtitles = <VRoute, String>{
-  VRoute.storefrontPreview: 'See how your products look with this template',
-  VRoute.storefrontTemplatePreview:
-      'See how your products look with this template',
-};
-
 /// Primary destinations (bottom-nav roots): no back arrow.
 const _tabRoots = {
   VRoute.today,
@@ -53,22 +45,19 @@ const _heroRoutes = {
   VRoute.customerDetail,
 };
 
-/// Focused flows that hide the primary bottom navigation: dispatch review
-/// and an active run carry their own bottom actions, and the storefront
-/// previews render an immersive customer-facing view the vendor nav would
-/// break.
-const _focusedRoutes = {
-  VRoute.runDetail,
+/// Focused flows that hide the primary bottom navigation: an active run
+/// carries its own bottom actions.
+const _focusedRoutes = {VRoute.runDetail};
+
+/// Visual storefront-management surfaces: the screen owns the whole canvas
+/// edge to edge (its storefront visual runs behind the transparent status
+/// bar, with its own overlay controls) -- no Vendor header, no bottom nav.
+const _immersiveRoutes = {
+  VRoute.storefront,
   VRoute.storefrontPreview,
   VRoute.storefrontTemplatePreview,
+  VRoute.branding,
 };
-
-/// Routes that render their own [AppHeader] (dynamic title, trailing
-/// actions wired to screen-local state) -- in white on the shell's brand
-/// backdrop, above a [ContentSurface] -- e.g. Screen 03, Customize
-/// {Template Name}, whose Reset action needs the screen's draft state. No
-/// default header or bottom nav is rendered for these.
-const _ownChromeRoutes = {VRoute.branding};
 
 /// Routes that render their own [AppHeader] (its title and ⋮ menu act on
 /// the record the screen loaded) above their own [ContentSurface], but keep
@@ -90,22 +79,20 @@ class VendorShell extends StatelessWidget {
     final app = AppScope.of(context);
     final c = context.c;
     final route = app.current.route;
-    final ownChrome = _ownChromeRoutes.contains(route);
+    final immersive = _immersiveRoutes.contains(route);
     final ownHeader = _ownHeaderRoutes.contains(route);
     final hero = _heroRoutes.contains(route);
     // While the keyboard is up the nav would ride above it and eat the
     // form's space; it returns as soon as the keyboard closes.
     final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     final showNav =
-        !ownChrome &&
+        !immersive &&
         !hero &&
         !keyboardOpen &&
         !_onboardingRoutes.contains(route) &&
         !_focusedRoutes.contains(route);
 
-    // Own-chrome routes draw their own AppHeader (white, on this same
-    // backdrop) above a ContentSurface.
-    final body = ownChrome
+    final body = immersive
         ? child
         : Column(
             children: [
@@ -353,7 +340,6 @@ class _Header extends StatelessWidget {
     final today = route == VRoute.today;
     final header = AppHeader(
       title: title,
-      subtitle: _headerSubtitles[route],
       sideWidth: today ? 100 : null,
       onTitleTap: today ? () => _showBusinessSwitcher(context, app) : null,
       leading: [
@@ -623,33 +609,6 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
     ];
   }
   if (hint == null) {
-    if (route == VRoute.storefront) {
-      return [
-        IconAction(
-          icon: LucideIcons.circleHelp,
-          tooltip: 'Help',
-          color: Colors.white,
-          onTap: () => showDialog<void>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('About the Template Library'),
-              content: const Text(
-                'Pick a template and preview it with your own products, '
-                'then tap "Use This Template" to make it your live '
-                'storefront. Switching templates never changes your '
-                'products, prices or stock.',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Got it'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ];
-    }
     if (addAction == null) return const [];
     return [
       IconAction(

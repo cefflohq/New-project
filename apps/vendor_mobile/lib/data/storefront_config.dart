@@ -1,4 +1,5 @@
-/// Storefront presentation configuration.
+/// Storefront presentation configuration (the vendor's customization of a
+/// template -- never the template's layout, never product data).
 ///
 /// This is deliberately separate from [Product]/catalogue data (see
 /// `storefront_catalog.dart`) and from order data: it only ever describes
@@ -10,132 +11,15 @@
 library;
 
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
-/// The rendering engines a Template Library entry can point at. Selecting a
-/// template changes layout and flow only -- it never touches
-/// product/catalogue or order data. This is intentionally NOT the same
-/// concept as "a template a vendor can pick" (see `StorefrontTemplateDef` in
-/// `storefront_templates.dart`) -- many library entries can share one
-/// renderer, which is exactly what lets the library grow without a new
-/// renderer per entry ("reuse business logic, not presentation").
-enum StorefrontTemplate {
-  browseShop(
-    key: 'browse_shop',
-    label: 'Browse & Shop',
-    tagline: 'Discovery first',
-    description:
-        'Conventional retail storefront: browse categories, search, and '
-        'shop. Best for pharmacy, beauty, groceries and general retail.',
-    defaultColor: Color(0xFF2A6EEC),
-  ),
-  quickOrder(
-    key: 'quick_order',
-    label: 'Quick Order',
-    tagline: 'Speed first',
-    description:
-        'Fast, compact ordering with minimal taps -- quantity steppers, '
-        'quick customization and an always-visible order summary. Best for '
-        'F&B, cafes and bakeries.',
-    defaultColor: Color(0xFF7A4A21),
-  ),
-  catalogue(
-    key: 'catalogue',
-    label: 'Catalogue',
-    tagline: 'Visual first',
-    description:
-        'Editorial, collection-led storefront built around large imagery. '
-        'Best for furniture, home, florist, gifts and fashion.',
-    defaultColor: Color(0xFF4C2A85),
-  ),
-  matchDay(
-    key: 'match_day',
-    label: 'Match Day',
-    tagline: 'Team-kit drop',
-    description:
-        'Bold, diagonal-split sports-kit storefront: club/team-style '
-        'category badges, a swipeable hero product card and a size-run '
-        'selector. Best for sportswear, team kits and athletic gear.',
-    defaultColor: Color(0xFF17233D),
-  ),
-  discoverMarket(
-    key: 'discover_market',
-    label: 'Discover Market',
-    tagline: 'Marketplace first',
-    description:
-        'Clean electronics-marketplace storefront: a promo clearance '
-        'banner, pill category filters and a persistent bottom tab bar '
-        'with Home, Search, Favorites and Profile. Best for electronics '
-        'and gadget retailers.',
-    defaultColor: Color(0xFF15A66E),
-  ),
-  ritualCare(
-    key: 'ritual_care',
-    label: 'Ritual Care',
-    tagline: 'Routine first',
-    description:
-        'Calm, sage-toned skincare storefront built around one hero '
-        'product at a time, with a frosted glass product-detail panel '
-        'over a full-bleed photo. Best for skincare and natural care.',
-    defaultColor: Color(0xFF4C6B52),
-  ),
-  bagDrop(
-    key: 'bag_drop',
-    label: 'Bag Drop',
-    tagline: 'Streetwear drop',
-    description:
-        'High-contrast streetwear storefront: a bold promo drop banner, '
-        'square quick-category tiles and a photo-gallery product detail '
-        'with an uppercase name and a full-width bag CTA. Best for '
-        'streetwear and apparel drops.',
-    defaultColor: Color(0xFFE2571C),
-  ),
-  originRun(
-    key: 'origin_run',
-    label: 'Origin Run',
-    tagline: 'Athletic editorial',
-    description:
-        'Stark black-and-white athletic-editorial storefront: an italic '
-        'wordmark, angled hero shots and a product detail with a '
-        'vertical size list, colour-swatch rail and a "Swipe" bag CTA. '
-        'Best for sneakers and performance footwear.',
-    defaultColor: Color(0xFF14171C),
-  ),
-  tideTable(
-    key: 'tide_table',
-    label: 'Tide Table',
-    tagline: 'Fresh catch',
-    description:
-        'Airy seafood/food-delivery storefront: dish photos that break '
-        'out of the top of their card, heart/quick-add actions and a '
-        'floating dark cart FAB on product detail. Best for seafood, '
-        'fresh-food and delivery-led menus.',
-    defaultColor: Color(0xFF1F2A24),
-  );
+/// The template's own default background treatment.
+const kTemplateBackgroundId = 'template';
 
-  const StorefrontTemplate({
-    required this.key,
-    required this.label,
-    required this.tagline,
-    required this.description,
-    required this.defaultColor,
-  });
-
-  /// Stable identifier, kept for persistence/debugging -- no longer used as
-  /// a route entity id (library entries have their own ids for that).
-  final String key;
-  final String label;
-  final String tagline;
-  final String description;
-
-  /// The brand colour a fresh (never-customized) storefront on this renderer
-  /// starts with, used only as a last-resort fallback.
-  final Color defaultColor;
-
-  static StorefrontTemplate fromKey(String? key) =>
-      values.firstWhere((t) => t.key == key, orElse: () => browseShop);
-}
+/// The vendor's own background colour ([StorefrontBranding.customBackground]).
+const kCustomBackgroundId = 'custom';
 
 /// Primary Brand Color mode: a flat colour, or a 2-colour gradient.
 enum BrandColorMode { solid, gradient }
@@ -195,7 +79,23 @@ class StorefrontBranding {
     this.logoText = '',
     this.hasLogo = true,
     this.font = StorefrontFontTreatment.modern,
+    this.backgroundId = kTemplateBackgroundId,
+    this.customBackground,
+    this.heroImage,
   });
+
+  /// Id of one of the template's own background treatments
+  /// (`StorefrontTemplateDef.backgrounds`), or [kCustomBackgroundId].
+  final String backgroundId;
+
+  /// The vendor's own background colour when [backgroundId] is
+  /// [kCustomBackgroundId].
+  final Color? customBackground;
+
+  /// Vendor-supplied hero/banner photo (templates with the hero-image
+  /// capability only). In-memory bytes until the storefront has a media
+  /// backend.
+  final Uint8List? heroImage;
 
   final Color primary;
 
@@ -236,7 +136,11 @@ class StorefrontBranding {
     String? logoText,
     bool? hasLogo,
     StorefrontFontTreatment? font,
+    String? backgroundId,
+    Color? customBackground,
+    Uint8List? heroImage,
     bool clearSecondary = false,
+    bool clearHeroImage = false,
   }) => StorefrontBranding(
     primary: primary ?? this.primary,
     secondary: clearSecondary ? null : (secondary ?? this.secondary),
@@ -246,6 +150,9 @@ class StorefrontBranding {
     logoText: logoText ?? this.logoText,
     hasLogo: hasLogo ?? this.hasLogo,
     font: font ?? this.font,
+    backgroundId: backgroundId ?? this.backgroundId,
+    customBackground: customBackground ?? this.customBackground,
+    heroImage: clearHeroImage ? null : (heroImage ?? this.heroImage),
   );
 }
 

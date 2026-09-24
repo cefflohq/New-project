@@ -308,7 +308,7 @@ const routeSpecs = <VRoute, RouteSpec>{
   VRoute.storefrontPreview: RouteSpec(
     route: VRoute.storefrontPreview,
     id: 'V-32',
-    title: 'Storefront preview',
+    title: 'View storefront',
     parent: VRoute.storefront,
     tab: NavTab.more,
   ),
@@ -323,7 +323,7 @@ const routeSpecs = <VRoute, RouteSpec>{
   VRoute.branding: RouteSpec(
     route: VRoute.branding,
     id: 'V-33',
-    title: 'Customize storefront',
+    title: 'Customize',
     parent: VRoute.storefront,
     tab: NavTab.more,
   ),

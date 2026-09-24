@@ -9,9 +9,10 @@ library;
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../../data/storefront_catalog.dart';
-import 'storefront_common.dart';
-import 'storefront_theme.dart';
+import '../../../../../data/storefront_catalog.dart';
+import '../../shared/product_art.dart';
+import '../../shared/storefront_common.dart';
+import '../../shared/storefront_theme.dart';
 
 enum _MarketTab { home, search, favorites, profile }
 
@@ -62,7 +63,7 @@ class _DiscoverMarketPreviewState extends State<DiscoverMarketPreview> {
         if (!didPop) _pop();
       },
       child: DecoratedBox(
-        decoration: const BoxDecoration(color: StorefrontThemeTokens.surface),
+        decoration: BoxDecoration(color: widget.tokens.background),
         child: switch (_top.stage) {
           'detail' => _MarketDetailView(
             item: widget.items.firstWhere((i) => i.id == _top.itemId),
@@ -273,7 +274,7 @@ class _MarketHome extends StatelessWidget {
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(18),
-          decoration: tokens.accentDecoration(radius: 18),
+          decoration: tokens.withHeroImage(tokens.accentDecoration(radius: 18)),
           child: Row(
             children: [
               Expanded(
@@ -281,7 +282,7 @@ class _MarketHome extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Clearance\nSales',
+                      'New\nArrivals',
                       style: TextStyle(
                         color: tokens.onPrimary,
                         fontSize: 20,
@@ -309,7 +310,7 @@ class _MarketHome extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Up to 50%',
+                            'Shop now',
                             style: TextStyle(
                               color: tokens.primary,
                               fontWeight: FontWeight.w800,
@@ -322,10 +323,13 @@ class _MarketHome extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                LucideIcons.smartphone,
-                size: 46,
-                color: tokens.onPrimary.withValues(alpha: .55),
+              SizedBox(
+                width: 92,
+                height: 92,
+                child: ProductArtView(
+                  items.first.art,
+                  accent: tokens.secondary,
+                ),
               ),
             ],
           ),
@@ -420,8 +424,8 @@ class _MarketProductCard extends StatelessWidget {
             children: [
               AspectRatio(
                 aspectRatio: 1.2,
-                child: StorefrontImagePlaceholder(
-                  icon: item.icon,
+                child: StorefrontProductImage(
+                  item: item,
                   size: double.infinity,
                   tint: tokens.primary,
                 ),
@@ -465,7 +469,7 @@ class _MarketProductCard extends StatelessWidget {
           ),
           const SizedBox(height: 3),
           Text(
-            '\$${item.price.toStringAsFixed(2)}',
+            'RM ${item.price.toStringAsFixed(2)}',
             style: TextStyle(
               fontWeight: FontWeight.w800,
               fontSize: 13,
@@ -559,8 +563,8 @@ class _MarketSearchState extends State<_MarketSearch> {
                 for (final item in results)
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    leading: StorefrontImagePlaceholder(
-                      icon: item.icon,
+                    leading: StorefrontProductImage(
+                      item: item,
                       tint: widget.tokens.primary,
                     ),
                     title: Text(
@@ -570,7 +574,7 @@ class _MarketSearchState extends State<_MarketSearch> {
                         fontSize: 13.5,
                       ),
                     ),
-                    subtitle: Text('\$${item.price.toStringAsFixed(2)}'),
+                    subtitle: Text('RM ${item.price.toStringAsFixed(2)}'),
                     onTap: () => widget.onOpenItem(item.id),
                   ),
               ],
@@ -791,8 +795,8 @@ class _MarketDetailViewState extends State<_MarketDetailView> {
             children: [
               AspectRatio(
                 aspectRatio: 1.2,
-                child: StorefrontImagePlaceholder(
-                  icon: item.icon,
+                child: StorefrontProductImage(
+                  item: item,
                   size: double.infinity,
                   radius: 18,
                   tint: tokens.primary,
@@ -824,7 +828,7 @@ class _MarketDetailViewState extends State<_MarketDetailView> {
                   ),
                   const Spacer(),
                   Text(
-                    '\$${item.price.toStringAsFixed(2)}',
+                    'RM ${item.price.toStringAsFixed(2)}',
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 18,

@@ -995,3 +995,28 @@ Guarded by a widget test (one backdrop; same element across all tabs).
   Centred, dimmed/softened backdrop, fade + slight scale — never a page, a
   bottom sheet or a slide-up. V-53 Payment Success is this modal.
 
+
+## D-55 Vendor Mobile — Storefront Redesign and Extensible Template System (2026-09-24)
+
+**Decision (Founder).** The Storefront screen is replaced by a visual-first, cardless storefront-management surface. Templates become a data-driven, extensible library.
+
+- **Model.** A template is a reusable layout: its renderer, default theme, background treatments and declared customization capabilities. Vendor data (business identity, products, prices, categories) is injected at render time and never stored per template. Tags are discovery filters only; any vendor may use any template.
+- **Registry.** There is one canonical registry (`apps/vendor_mobile/lib/ui/screens/storefront/templates/template_registry.dart`), and each template owns `templates/<id>/`. The gallery, its filter chips, Template Preview and Customize render from the registry and never branch on a template id. The process for adding a template is documented in `templates/STOREFRONT_TEMPLATE_GUIDE.md`.
+- **Initial set.** Exactly the five approved reference layouts, rebuilt to follow the Founder mockups with neutral content:
+  - Arena (Bold Showcase) — the default;
+  - Stride (Clean Minimal);
+  - Ritual (Premium Product);
+  - Market (Clean Commerce);
+  - Feast (Rich Visual).
+
+  The earlier renderers that were not in the reference set are removed.
+- **Screens.**
+  - Storefront (V-31): the active storefront's real miniature is the hero, running behind the transparent status bar with overlay Back, name, green Active, View storefront and Customize; Explore Templates follows below.
+  - Flow: Template Preview (X-02) → Use This Template → Customize (V-33) → Save.
+  - Nothing goes live until Save.
+- **Thumbnails.** Every thumbnail is a live miniature of the template rendering the vendor's own products. Product imagery uses neutral, brand-free illustrations until the catalogue has product photos. No third-party branding ships.
+- **Customize** renders only the controls the template declares: brand colour (swatches + custom), background (template treatments + custom tint), hero image (templates with a banner) and store name / tagline (defaulting to the Business Profile). Changes update the live preview immediately but stay a draft until saved.
+- **Colours.**
+  - Cefflo blue is used for selection and filters; mustard for primary actions; green for Active.
+  - Template colours belong to the template and the vendor, never to the Vendor app palette.
+- **Persistence.** Storefront configuration is in-memory session state behind `AppState.applyStorefront`, since there is no storefront backend yet.

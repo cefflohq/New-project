@@ -10,9 +10,10 @@ library;
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../../data/storefront_catalog.dart';
-import 'storefront_common.dart';
-import 'storefront_theme.dart';
+import '../../../../../data/storefront_catalog.dart';
+import '../../shared/storefront_common.dart';
+import 'arena_home.dart';
+import '../../shared/storefront_theme.dart';
 
 const _defaultSizeRun = ['S', 'M', 'L', 'XL', 'XXL'];
 
@@ -74,7 +75,7 @@ class _MatchDayPreviewState extends State<MatchDayPreview> {
         if (!didPop) _pop();
       },
       child: DecoratedBox(
-        decoration: const BoxDecoration(color: StorefrontThemeTokens.surface),
+        decoration: BoxDecoration(color: widget.tokens.background),
         child: switch (_top.stage) {
           'category' => _CategoryView(
             categoryId: _top.categoryId,
@@ -122,7 +123,7 @@ class _MatchDayPreviewState extends State<MatchDayPreview> {
               );
             },
           ),
-          _ => _KitHome(
+          _ => ArenaHome(
             businessName: widget.businessName,
             items: widget.items,
             categories: widget.categories,
@@ -216,158 +217,6 @@ class _MatchTopBar extends StatelessWidget {
   }
 }
 
-class _KitHome extends StatelessWidget {
-  const _KitHome({
-    required this.businessName,
-    required this.items,
-    required this.categories,
-    required this.tokens,
-    required this.cart,
-    required this.onOpenCategory,
-    required this.onOpenItem,
-    required this.onOpenCart,
-  });
-
-  final String businessName;
-  final List<StorefrontItem> items;
-  final List<StorefrontCategory> categories;
-  final StorefrontThemeTokens tokens;
-  final StorefrontCartController cart;
-  final ValueChanged<String> onOpenCategory;
-  final ValueChanged<String> onOpenItem;
-  final VoidCallback onOpenCart;
-
-  @override
-  Widget build(BuildContext context) {
-    final shopCategories = categories.where((c) => c.id != 'all').toList();
-    final popular = items.take(3).toList();
-    return Column(
-      children: [
-        _MatchTopBar(
-          businessName: businessName,
-          tokens: tokens,
-          cart: cart,
-          onOpenCart: onOpenCart,
-        ),
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
-            children: [
-              SizedBox(
-                height: 74,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    for (final c in shopCategories)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 14),
-                        child: InkWell(
-                          onTap: () => onOpenCategory(c.id),
-                          borderRadius: BorderRadius.circular(999),
-                          child: Column(
-                            children: [
-                              Container(
-                                width: 48,
-                                height: 48,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: StorefrontThemeTokens.border,
-                                    width: 1.4,
-                                  ),
-                                ),
-                                child: Icon(
-                                  LucideIcons.shield,
-                                  size: 20,
-                                  color: tokens.primary,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                c.label,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-              const Text(
-                'Popular',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  for (final item in popular)
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 10),
-                        child: _KitPopularCard(
-                          item: item,
-                          tokens: tokens,
-                          onTap: () => onOpenItem(item.id),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 22),
-              const Text(
-                'Categories',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
-              ),
-              const SizedBox(height: 12),
-              GridView.count(
-                crossAxisCount: 3,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: 0.95,
-                children: [
-                  for (final c in shopCategories)
-                    InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: () => onOpenCategory(c.id),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: StorefrontThemeTokens.muted,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(c.icon, size: 24, color: tokens.primary),
-                            const SizedBox(height: 8),
-                            Text(
-                              c.label,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _KitPopularCard extends StatelessWidget {
   const _KitPopularCard({
     required this.item,
@@ -396,8 +245,8 @@ class _KitPopularCard extends StatelessWidget {
             children: [
               AspectRatio(
                 aspectRatio: 1,
-                child: StorefrontImagePlaceholder(
-                  icon: item.icon,
+                child: StorefrontProductImage(
+                  item: item,
                   size: double.infinity,
                   tint: tokens.primary,
                 ),
@@ -635,8 +484,8 @@ class _KitDetailViewState extends State<_KitDetailView> {
                                   borderRadius: BorderRadius.circular(22),
                                 ),
                                 padding: const EdgeInsets.all(18),
-                                child: StorefrontImagePlaceholder(
-                                  icon: item.icon,
+                                child: StorefrontProductImage(
+                                  item: item,
                                   size: double.infinity,
                                   radius: 16,
                                   tint: Colors.white,

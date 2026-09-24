@@ -51,11 +51,14 @@ Widget buildScreen(BuildContext context, VendorLocation loc) {
     VRoute.reviewPayment => ReviewPaymentScreen(selection: id!),
     VRoute.billingHistory => const BillingHistoryScreen(),
     VRoute.storefront => const StorefrontScreen(),
-    VRoute.storefrontPreview => const StorefrontTemplatePreviewScreen(),
+    VRoute.storefrontPreview => const LiveStorefrontScreen(),
     VRoute.storefrontTemplatePreview => StorefrontTemplatePreviewScreen(
+      templateId: id!,
+    ),
+    VRoute.branding => CustomizeStorefrontScreen(
+      key: ValueKey('customize-$id'),
       templateId: id,
     ),
-    VRoute.branding => const CustomizeStorefrontScreen(),
     _ => UiPrototypeScreen(spec: loc.spec),
   };
 }
