@@ -154,6 +154,7 @@ class AppState extends ChangeNotifier {
       NavTab.orders => VRoute.orders,
       NavTab.zones => VRoute.zones,
       NavTab.riders => VRoute.riders,
+      NavTab.more => VRoute.settings,
     };
     _stack
       ..clear()

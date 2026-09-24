@@ -26,14 +26,8 @@ import '../widgets.dart';
 
 // ---------------------------------------------------------------- palette
 //
-// Splash's navy sweep is the app-wide Anchor Blue (CefGradients.brand,
-// D-47); it is no longer declared here.
-
-// The bright CEFFLO blue sweep shared by Sign In and every sheet screen
-// after it, so the journey reads as one continuous backdrop.
-const _skyTop = Color(0xFF51BDF8);
-const _skyMid = Color(0xFF0B67E8);
-const _skyDeep = Color(0xFF031A50);
+// Splash and every auth screen paint the canonical Vendor blue
+// (CefGradients.brand, D-51); no blue is declared here.
 
 /// Error copy sitting directly on the blue backdrop (Sign In), where the
 /// canonical attention red would not be legible.
@@ -260,37 +254,18 @@ class _NavyBackdrop extends StatelessWidget {
       SizedBox.expand(child: BrandBackdrop(child: child));
 }
 
-/// The bright CEFFLO blue auth backdrop. Sign In paints it full screen; the
-/// sheet screens paint the same full-screen sweep behind their header band
-/// and sheet, so the top of every auth screen matches Sign In exactly.
+/// The auth backdrop: the canonical Vendor blue ([BrandBackdrop], D-51),
+/// full screen. Sign In paints it edge to edge; the sheet screens paint it
+/// behind their header band and sheet, so every auth screen matches Splash
+/// and the app.
 class _AuthBackdrop extends StatelessWidget {
   const _AuthBackdrop({required this.child});
 
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => SizedBox.expand(
-    child: DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [_skyTop, _skyMid, _skyDeep],
-          stops: [0, .44, 1],
-        ),
-      ),
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment(.42, -.08),
-            radius: .82,
-            colors: [Color(0x663CA8FF), Color(0x00000000)],
-          ),
-        ),
-        child: child,
-      ),
-    ),
-  );
+  Widget build(BuildContext context) =>
+      SizedBox.expand(child: BrandBackdrop(child: child));
 }
 
 /// Share of the canonical master's height that the lockup actually occupies.
@@ -798,7 +773,7 @@ class _SignInScreenState extends State<SignInScreen> {
     final ink = context.c.textPrimary;
     return CefSystemBars(
       background: Brightness.dark,
-      browserChromeColor: _skyTop,
+      browserChromeColor: CefGradients.brandChrome,
       child: Scaffold(
         backgroundColor: CefColors.navy,
         body: _AuthBackdrop(

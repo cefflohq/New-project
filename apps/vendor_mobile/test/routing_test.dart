@@ -43,16 +43,18 @@ void main() {
       }
     });
 
-    test('four primary destinations; Settings opens from Today (D-46)', () {
+    test('five primary destinations; More hosts Settings (D-51)', () {
       expect(NavTab.values, [
         NavTab.today,
         NavTab.orders,
         NavTab.zones,
         NavTab.riders,
+        NavTab.more,
       ]);
-      expect(routeSpecs[VRoute.settings]!.title, 'Settings');
-      expect(routeSpecs[VRoute.settings]!.parent, VRoute.today);
-      expect(routeSpecs[VRoute.settings]!.tab, NavTab.today);
+      expect(routeSpecs[VRoute.settings]!.title, 'More');
+      expect(routeSpecs[VRoute.settings]!.parent, isNull);
+      expect(routeSpecs[VRoute.settings]!.tab, NavTab.more);
+      expect(routeSpecs[VRoute.security]!.tab, NavTab.more);
     });
 
     test('account settings have one canonical parent: Settings', () {

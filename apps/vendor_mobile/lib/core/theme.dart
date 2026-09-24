@@ -47,27 +47,28 @@ class Sizes {
   static const inputRadius = 18.0;
 }
 
-/// The one CEFFLO brand surface: the Anchor Blue gradient of the Founder
-/// Icon Family sheet (D-48) -- navy top, mid dark, Anchor Blue, dark bottom.
-/// The shell paints it full screen behind the status bar and header (one
-/// continuous surface), Splash paints it behind its lockup, and every
-/// in-body hero surface uses it, so the product has exactly one gradient.
+/// The one Vendor brand surface (D-51): the canonical Vendor blue gradient,
+/// sampled from the Founder's Today / Subscription reference -- deep Anchor
+/// Blue at the lower left through saturated operational blue to a bright blue
+/// at the upper right. Splash, authentication, the shell (status bar +
+/// header as one continuous surface) and every in-body hero surface paint it
+/// through `BrandBackdrop`; nothing else declares a gradient.
 class CefGradients {
   static const brand = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
+    begin: Alignment.bottomLeft,
+    end: Alignment.topRight,
     colors: [
-      CefColors.navy,
-      CefColors.navyMid,
-      CefColors.brand,
-      CefColors.navyBottom,
+      CefColors.anchorBlue,
+      Color(0xFF00378F),
+      Color(0xFF005CC4),
+      Color(0xFF0592EB),
     ],
-    stops: [0.0, 0.4, 0.75, 1.0],
+    stops: [0.0, 0.35, 0.7, 1.0],
   );
 
   /// Opaque stand-in where only one colour can be given (the browser's
-  /// theme-color meta / status bar): the gradient's top tone.
-  static const brandChrome = CefColors.navy;
+  /// theme-color meta / status bar): the gradient's deep end.
+  static const brandChrome = CefColors.anchorBlue;
 }
 
 class CefColors extends ThemeExtension<CefColors> {
@@ -102,19 +103,19 @@ class CefColors extends ThemeExtension<CefColors> {
   static const accent = Color(0xFFF5C400);
   static const onAccent = Color(0xFF181818);
 
-  /// Anchor Blue family (D-48, Icon Family sheet). [navy] is the top tone,
-  /// the raised-surface navy, and the default colour of every icon.
+  /// Neutral dark navy: default colour of every non-navigation icon, the
+  /// raised-surface navy, filled avatars.
   static const navy = Color(0xFF0B1220);
-  static const navyMid = Color(0xFF1C3F7A);
-  static const navyBottom = Color(0xFF0A1F44);
 
-  /// Anchor Blue (primary): the one interactive blue -- active navigation
-  /// (the only coloured icons), active tabs, links, selected states, map
-  /// accents.
-  static const brand = Color(0xFF2563B3);
+  /// Deep end of the canonical Vendor blue (D-51).
+  static const anchorBlue = Color(0xFF01265E);
+
+  /// The one interactive Vendor blue (D-51): active navigation, active
+  /// tabs, links, selected states, map boundaries and pins, progress.
+  static const brand = Color(0xFF0060FE);
 
   /// [brand] at 10% on white: tinted action rows and info notes.
-  static const brandTint = Color(0xFFE9EFF7);
+  static const brandTint = Color(0xFFE6EFFF);
 
   static const light = CefColors(
     canvas: Color(0xFFFFFFFF), // Mobile workspace

@@ -42,7 +42,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      // D-46: Menu is no longer a bottom-navigation destination.
+      // D-51: the fifth destination is More (never "Menu").
       expect(find.text('Menu'), findsNothing);
     });
   }
@@ -106,26 +106,25 @@ void main() {
     expect(tester.takeException(), isNull);
   }
 
-  testWidgets('Settings opens from the Today header, one directory', (
+  testWidgets('More is the fifth tab and the one settings directory', (
     tester,
   ) async {
     await pumpAt(tester, const VendorLocation(VRoute.today));
-    // Four destinations only.
-    for (final label in ['Today', 'Orders', 'Zones', 'Riders']) {
+    for (final label in ['Today', 'Orders', 'Zones', 'Riders', 'More']) {
       expect(find.text(label), findsWidgets);
     }
-    expect(find.text('Menu'), findsNothing);
+    // Today's header: date left, business selector centre, no hamburger.
+    expect(find.byTooltip('Settings'), findsNothing);
+    expect(find.byIcon(LucideIcons.chevronDown), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Settings'));
+    await tester.tap(find.text('More'));
     await tester.pumpAndSettle();
     expect(find.text('Account'), findsOneWidget);
     expect(find.text('Business'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Support'), 200);
     expect(find.text('Support'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Personal information'), -200);
-    // Account destinations appear once, not via a second Profile page.
     expect(find.text('Personal information'), findsOneWidget);
-    expect(find.text('Security'), findsOneWidget);
     expect(find.text('Profile'), findsNothing);
   });
 

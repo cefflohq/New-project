@@ -35,7 +35,13 @@ const _headerSubtitles = <VRoute, String>{
 };
 
 /// Primary destinations (bottom-nav roots): no back arrow.
-const _tabRoots = {VRoute.today, VRoute.orders, VRoute.zones, VRoute.riders};
+const _tabRoots = {
+  VRoute.today,
+  VRoute.orders,
+  VRoute.zones,
+  VRoute.riders,
+  VRoute.settings,
+};
 
 /// Detail-hero archetype: the screen renders its identity hero on the
 /// gradient through [HeroPage] and owns its white surface. These are focused
@@ -176,11 +182,21 @@ class AppHeader extends StatelessWidget {
     this.subtitle,
     this.leading = const [],
     this.trailing = const [],
+    this.sideWidth,
+    this.onTitleTap,
   });
   final String title;
   final String? subtitle;
   final List<Widget> leading;
   final List<Widget> trailing;
+
+  /// Fixed width for both side slots when a side holds more than an icon
+  /// (Today's date); defaults to the widest side's icon count.
+  final double? sideWidth;
+
+  /// Makes the title a selector with a small dropdown mark (Today's
+  /// business switcher).
+  final VoidCallback? onTitleTap;
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +205,7 @@ class AppHeader extends StatelessWidget {
         ? leading.length
         : trailing.length;
     // Keep a gutter-sized margin even when neither side has an action.
-    final side = slots == 0 ? Gap.lg : slots * Sizes.tapTarget;
+    final side = sideWidth ?? (slots == 0 ? Gap.lg : slots * Sizes.tapTarget);
     return SafeArea(
       bottom: false,
       // Minimum, not fixed: a title + subtitle grows with the OS text size
@@ -209,14 +225,31 @@ class AppHeader extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Long titles shrink to fit rather than ellipsize.
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        title,
-                        maxLines: 1,
-                        textAlign: TextAlign.center,
-                        style: text.headlineMedium?.copyWith(
-                          color: Colors.white,
+                    GestureDetector(
+                      onTap: onTitleTap,
+                      behavior: HitTestBehavior.opaque,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              title,
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              style: text.headlineMedium?.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                            if (onTitleTap != null) ...[
+                              const SizedBox(width: Gap.xs),
+                              const Icon(
+                                LucideIcons.chevronDown,
+                                size: 18,
+                                color: Colors.white,
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                     ),
@@ -273,18 +306,15 @@ class _Header extends StatelessWidget {
     final title = route == VRoute.today
         ? (app.business?.name ?? 'Cefflo Vendor')
         : _headerTitles[route] ?? app.current.spec.title;
+    final today = route == VRoute.today;
     final header = AppHeader(
       title: title,
       subtitle: _headerSubtitles[route],
+      sideWidth: today ? 64 : null,
+      onTitleTap: today ? () => _showBusinessSwitcher(context, app) : null,
       leading: [
-        // Settings (hamburger) opens from the Today and Zones headers.
-        if (route == VRoute.today || route == VRoute.zones)
-          IconAction(
-            icon: LucideIcons.menu,
-            tooltip: 'Settings',
-            color: Colors.white,
-            onTap: () => app.go(VRoute.settings),
-          )
+        if (today)
+          const _HeaderDate()
         else if (!isRoot && app.canGoBack)
           HeaderBackButton(onTap: app.back),
       ],
@@ -310,7 +340,89 @@ class _Header extends StatelessWidget {
   }
 }
 
-/// Today's greeting on the navy chrome, under the header: time-of-day
+/// Today's header date: weekday over day and month ("Wed / 24 Sep").
+class _HeaderDate extends StatelessWidget {
+  const _HeaderDate();
+
+  static const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  static const _months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final text = Theme.of(context).textTheme;
+    // Fits its header slot at any text size rather than overflowing.
+    return Flexible(
+      child: Padding(
+        padding: const EdgeInsets.only(left: Gap.md),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _days[now.weekday - 1],
+                style: text.labelMedium?.copyWith(
+                  color: Colors.white.withValues(alpha: .82),
+                ),
+              ),
+              Text(
+                '${now.day} ${_months[now.month - 1]}',
+                style: text.titleSmall?.copyWith(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The Today title's dropdown: the businesses this account can run, the
+/// current one checked.
+void _showBusinessSwitcher(BuildContext context, AppState app) {
+  showListSheet(
+    context,
+    title: 'Your businesses',
+    children: [
+      for (final b in app.businesses)
+        CefListRow(
+          title: b.name,
+          subtitle: b.role,
+          icon: LucideIcons.store,
+          showChevron: false,
+          trailing: b.id == app.business?.id
+              ? const Icon(
+                  LucideIcons.check,
+                  size: Sizes.icon,
+                  color: CefColors.brand,
+                )
+              : null,
+          onTap: () {
+            Navigator.of(context).pop();
+            app.selectBusiness(b);
+          },
+        ),
+    ],
+  );
+}
+
+/// Today's greeting on the canonical blue, under the header: time-of-day
 /// salutation, the person's name, and one line of context.
 class _TodayGreeting extends StatelessWidget {
   const _TodayGreeting({required this.name});
@@ -491,6 +603,7 @@ class _BottomNav extends StatelessWidget {
       LucideIcons.users,
       Icon(Icons.people_alt_rounded),
     ),
+    (NavTab.more, 'More', LucideIcons.menu, Icon(LucideIcons.menu)),
   ];
 
   @override

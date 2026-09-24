@@ -912,3 +912,31 @@ all"), Customer detail orders (bordered group → rows). Today also gains the
 greeting on the navy chrome ("Good Morning, {name}! / Here's what's happening
 today.") per the Founder reference.
 
+## D-51 Vendor Mobile — One Canonical Vendor Blue; More Tab; Today Header (2026-09-24)
+
+Founder reference (Today / Subscription board) supersedes the D-47/D-48 blue
+values. One source of truth in `lib/core/theme.dart`:
+
+- `CefGradients.brand`: bottom-left → top-right `#01265E · #00378F · #005CC4 ·
+  #0592EB` (stops 0 / .35 / .7 / 1), sampled from the reference. No overlays.
+  Painted only by `BrandBackdrop`: Splash, Sign In and every auth sheet, the
+  app shell (status bar + header as one transparent, continuous surface) and
+  in-body hero surfaces. Browser/PWA chrome `#01265E`.
+- `CefColors.anchorBlue` `#01265E` (deep end); `CefColors.brand` `#0060FE` —
+  the one interactive blue (active nav/tabs, links, selection, map boundaries
+  and pins, progress); tint `#E6EFFF`. `CefColors.navy` `#0B1220` stays the
+  neutral dark for icons and text.
+- Retired: `#1C3F7A` / `#0A1F44` / `#2563B3` (D-48) and the Sign In sky sweep
+  `#51BDF8 / #0B67E8 / #031A50` — the auth screens now share the canonical
+  gradient.
+- Semantic colours unchanged (success, issue, CTA yellow, neutral grey).
+
+Navigation: bottom navigation is Today · Orders · Zones · Riders · **More**
+(hamburger icon). More hosts the Settings hub (title "More"); every settings
+route belongs to the More tab. The hamburger is removed from the Today and
+Zones headers (supersedes D-46's header gear/hamburger).
+
+Today header: date on the left ("Wed / 24 Sep"), business name with a
+dropdown mark in the centre (business switcher), bell on the right; greeting
+below on the same blue surface.
+

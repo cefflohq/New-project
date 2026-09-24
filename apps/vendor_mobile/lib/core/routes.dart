@@ -7,9 +7,9 @@
 /// bound to the record that was actually selected.
 library;
 
-/// The four primary destinations (bottom navigation). Settings is not a tab:
-/// it opens from the Today header, so every Settings route belongs to Today.
-enum NavTab { today, orders, zones, riders }
+/// The five primary destinations (bottom navigation, D-51). More hosts the
+/// Settings hub, so every Settings route belongs to More.
+enum NavTab { today, orders, zones, riders, more }
 
 enum VRoute {
   splash,
@@ -248,14 +248,14 @@ const routeSpecs = <VRoute, RouteSpec>{
     id: 'V-23',
     title: 'Team',
     parent: VRoute.settings,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.teamMemberDetail: RouteSpec(
     route: VRoute.teamMemberDetail,
     id: 'V-24',
     title: 'Team member',
     parent: VRoute.team,
-    tab: NavTab.today,
+    tab: NavTab.more,
     requiresEntityId: true,
   ),
   VRoute.helperRegistrationLink: RouteSpec(
@@ -263,7 +263,7 @@ const routeSpecs = <VRoute, RouteSpec>{
     id: 'V-25',
     title: 'Team member registration link',
     parent: VRoute.team,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
 
   VRoute.serviceArea: RouteSpec(
@@ -271,28 +271,28 @@ const routeSpecs = <VRoute, RouteSpec>{
     id: 'V-26',
     title: 'Service area',
     parent: VRoute.settings,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.coverageEdit: RouteSpec(
     route: VRoute.coverageEdit,
     id: 'V-27',
     title: 'Coverage',
     parent: VRoute.serviceArea,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.zoneConfiguration: RouteSpec(
     route: VRoute.zoneConfiguration,
     id: 'V-28',
     title: 'Zone configuration',
     parent: VRoute.serviceArea,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.createZone: RouteSpec(
     route: VRoute.createZone,
     id: 'V-29',
     title: 'Create zone',
     parent: VRoute.zoneConfiguration,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
 
   VRoute.storefront: RouteSpec(
@@ -300,21 +300,21 @@ const routeSpecs = <VRoute, RouteSpec>{
     id: 'V-31',
     title: 'Storefront',
     parent: VRoute.settings,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.storefrontPreview: RouteSpec(
     route: VRoute.storefrontPreview,
     id: 'V-32',
     title: 'Storefront preview',
     parent: VRoute.storefront,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.storefrontTemplatePreview: RouteSpec(
     route: VRoute.storefrontTemplatePreview,
     id: 'X-02',
     title: 'Template preview',
     parent: VRoute.storefront,
-    tab: NavTab.today,
+    tab: NavTab.more,
     requiresEntityId: true,
   ),
   VRoute.branding: RouteSpec(
@@ -322,28 +322,28 @@ const routeSpecs = <VRoute, RouteSpec>{
     id: 'V-33',
     title: 'Customize storefront',
     parent: VRoute.storefront,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.products: RouteSpec(
     route: VRoute.products,
     id: 'V-34',
     title: 'Products',
     parent: VRoute.storefront,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.customers: RouteSpec(
     route: VRoute.customers,
     id: 'X-05',
     title: 'Customers',
     parent: VRoute.settings,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.customerDetail: RouteSpec(
     route: VRoute.customerDetail,
     id: 'X-06',
     title: 'Customer',
     parent: VRoute.customers,
-    tab: NavTab.today,
+    tab: NavTab.more,
     requiresEntityId: true,
   ),
   VRoute.productDetail: RouteSpec(
@@ -351,7 +351,7 @@ const routeSpecs = <VRoute, RouteSpec>{
     id: 'V-35',
     title: 'Edit product',
     parent: VRoute.products,
-    tab: NavTab.today,
+    tab: NavTab.more,
     requiresEntityId: true,
   ),
   VRoute.addProduct: RouteSpec(
@@ -359,7 +359,7 @@ const routeSpecs = <VRoute, RouteSpec>{
     id: 'V-36',
     title: 'Add product',
     parent: VRoute.products,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
 
   VRoute.businessProfile: RouteSpec(
@@ -367,35 +367,35 @@ const routeSpecs = <VRoute, RouteSpec>{
     id: 'V-37',
     title: 'Business profile',
     parent: VRoute.settings,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.businessInformation: RouteSpec(
     route: VRoute.businessInformation,
     id: 'V-38',
     title: 'Business information',
     parent: VRoute.businessProfile,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.businessAddress: RouteSpec(
     route: VRoute.businessAddress,
     id: 'V-39',
     title: 'Business address',
     parent: VRoute.businessProfile,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.businessHours: RouteSpec(
     route: VRoute.businessHours,
     id: 'V-40',
     title: 'Business hours',
     parent: VRoute.businessProfile,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.deliverySettings: RouteSpec(
     route: VRoute.deliverySettings,
     id: 'V-41',
     title: 'Delivery settings',
     parent: VRoute.businessProfile,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
 
   // V-42 Profile was a second directory of the Account settings (D-46): its
@@ -406,49 +406,48 @@ const routeSpecs = <VRoute, RouteSpec>{
     id: 'V-43',
     title: 'Personal information',
     parent: VRoute.settings,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.security: RouteSpec(
     route: VRoute.security,
     id: 'V-44',
     title: 'Security',
     parent: VRoute.settings,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.changePassword: RouteSpec(
     route: VRoute.changePassword,
     id: 'V-45',
     title: 'Change password',
     parent: VRoute.security,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.settings: RouteSpec(
     route: VRoute.settings,
     id: 'V-46',
-    title: 'Settings',
-    parent: VRoute.today,
-    tab: NavTab.today,
+    title: 'More',
+    tab: NavTab.more,
   ),
   VRoute.notificationSettings: RouteSpec(
     route: VRoute.notificationSettings,
     id: 'V-47',
     title: 'Notification preferences',
     parent: VRoute.settings,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.language: RouteSpec(
     route: VRoute.language,
     id: 'V-48',
     title: 'Language',
     parent: VRoute.settings,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.appearance: RouteSpec(
     route: VRoute.appearance,
     id: 'V-49',
     title: 'Appearance',
     parent: VRoute.settings,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
 
   VRoute.helpSupport: RouteSpec(
@@ -456,42 +455,42 @@ const routeSpecs = <VRoute, RouteSpec>{
     id: 'V-55',
     title: 'Help & support',
     parent: VRoute.settings,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.faq: RouteSpec(
     route: VRoute.faq,
     id: 'V-56',
     title: 'Help centre',
     parent: VRoute.helpSupport,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.contactSupport: RouteSpec(
     route: VRoute.contactSupport,
     id: 'V-57',
     title: 'Contact support',
     parent: VRoute.helpSupport,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.privacyPolicy: RouteSpec(
     route: VRoute.privacyPolicy,
     id: 'V-58',
     title: 'Privacy policy',
     parent: VRoute.about,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.termsOfService: RouteSpec(
     route: VRoute.termsOfService,
     id: 'V-59',
     title: 'Terms of service',
     parent: VRoute.about,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
   VRoute.about: RouteSpec(
     route: VRoute.about,
     id: 'V-60',
     title: 'About Cefflo',
     parent: VRoute.settings,
-    tab: NavTab.today,
+    tab: NavTab.more,
   ),
 
   VRoute.notificationInbox: RouteSpec(
