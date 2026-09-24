@@ -1,3 +1,5 @@
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:cefflo_vendor_mobile/ui/widgets.dart';
 import 'package:cefflo_vendor_mobile/core/app_state.dart';
 import 'package:cefflo_vendor_mobile/core/routes.dart';
 import 'package:cefflo_vendor_mobile/data/vendor_repository.dart';
@@ -310,5 +312,35 @@ void main() {
     );
     expect(tester.getCenter(find.text('ORD-1001')).dx, closeTo(196.5, 1));
     expect(find.text('Directions'), findsOneWidget);
+  });
+
+  testWidgets('screens show a skeleton, not a spinner, while loading', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      VendorMobileApp(
+        repo: VendorRepository.demo(),
+        auditLocation: const VendorLocation(VRoute.orders),
+      ),
+    );
+    await tester.pump();
+    expect(find.byType(SkeletonPulse), findsWidgets);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    await tester.pumpAndSettle();
+    expect(find.byType(SkeletonPulse), findsNothing);
+  });
+
+  testWidgets('toasts float with a status mark and an action', (tester) async {
+    await pumpAt(tester, const VendorLocation(VRoute.notificationInbox));
+    await tester.drag(find.text('System update'), const Offset(-500, 0));
+    await tester.pumpAndSettle();
+    final bar = tester.widget<SnackBar>(find.byType(SnackBar));
+    expect(bar.behavior, SnackBarBehavior.floating);
+    expect(find.byIcon(LucideIcons.check), findsOneWidget);
+    expect(find.text('Undo'), findsOneWidget);
   });
 }

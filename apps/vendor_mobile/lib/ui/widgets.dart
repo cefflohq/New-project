@@ -8,13 +8,75 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/theme.dart';
 import '../data/models.dart';
 
+/// How far above the screen bottom floating toasts sit: the shell provides
+/// the bottom navigation height (plus safe area) where the nav is shown.
+class ToastInset extends InheritedWidget {
+  const ToastInset({super.key, required this.bottom, required super.child});
+  final double bottom;
+
+  static double of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<ToastInset>()?.bottom ?? 0;
+
+  @override
+  bool updateShouldNotify(ToastInset old) => old.bottom != bottom;
+}
+
+/// The one toast: a white rounded card floating above the bottom nav with a
+/// status mark (navy check, or red alert when [error]), the message, and an
+/// optional action such as Undo. Every confirmation and error in the app
+/// uses it.
+void showCefToast(
+  BuildContext context,
+  String message, {
+  bool error = false,
+  String? actionLabel,
+  VoidCallback? onAction,
+}) {
+  final c = context.c;
+  final inset = ToastInset.of(context);
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, inset + Gap.md),
+        content: Row(
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: error ? c.attention : CefColors.navy,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                error ? LucideIcons.x : LucideIcons.check,
+                size: 14,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: Gap.md),
+            Expanded(
+              child: Text(
+                message,
+                style: Theme.of(context).textTheme.bodyLarge
+                    ?.copyWith(color: c.textPrimary),
+              ),
+            ),
+          ],
+        ),
+        action: actionLabel == null
+            ? null
+            : SnackBarAction(label: actionLabel, onPressed: onAction ?? () {}),
+      ),
+    );
+}
+
 /// Shared feedback for controls that must visibly react to a tap even though
 /// no backend action exists for them yet -- keeps affordances honest instead
 /// of silently doing nothing.
-void showNotWiredYetSnackBar(BuildContext context, String action) {
-  ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(content: Text('$action is not wired up yet.')));
-}
+void showNotWiredYetSnackBar(BuildContext context, String action) =>
+    showCefToast(context, '$action is not wired up yet.', error: true);
 
 /// Standalone outline icon at the approved 22px visual size inside a 44px
 /// minimum interactive target. No icon tile, badge or decorative background.
@@ -1407,8 +1469,7 @@ Future<void> _launch(BuildContext context, Uri uri, String target) async {
     opened = false;
   }
   if (!opened && context.mounted) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('Could not open $target.')));
+    showCefToast(context, 'Could not open $target.', error: true);
   }
 }
 
@@ -1601,6 +1662,202 @@ Future<void> showListSheet(
           ],
         ),
       ),
+    ),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Skeleton loading: page-shaped placeholders instead of a spinner.
+// ---------------------------------------------------------------------------
+
+/// Softly pulses its [child] while content loads. One animation drives
+/// every placeholder inside it.
+class SkeletonPulse extends StatefulWidget {
+  const SkeletonPulse({super.key, required this.child});
+  final Widget child;
+
+  @override
+  State<SkeletonPulse> createState() => _SkeletonPulseState();
+}
+
+class _SkeletonPulseState extends State<SkeletonPulse>
+    with SingleTickerProviderStateMixin {
+  late final _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1100),
+    lowerBound: .55,
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: 'Loading',
+    child: FadeTransition(opacity: _controller, child: widget.child),
+  );
+}
+
+/// One placeholder shape: a rounded cool-grey bar, or a circle.
+class SkeletonBox extends StatelessWidget {
+  const SkeletonBox({
+    super.key,
+    this.width,
+    required this.height,
+    this.circle = false,
+  });
+  final double? width;
+  final double height;
+  final bool circle;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: circle ? height : width,
+    height: height,
+    decoration: BoxDecoration(
+      color: context.c.border,
+      shape: circle ? BoxShape.circle : BoxShape.rectangle,
+      borderRadius: circle ? null : BorderRadius.circular(Gap.sm),
+    ),
+  );
+}
+
+/// Placeholder for one [CefListRow]: leading circle, title and subtitle
+/// bars, a trailing pill + caption, the inset hairline.
+class SkeletonRow extends StatelessWidget {
+  const SkeletonRow({super.key});
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      SizedBox(
+        height: Sizes.listRow,
+        child: Row(
+          children: [
+            const SkeletonBox(height: Sizes.avatar, circle: true),
+            const SizedBox(width: Gap.md),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FractionallySizedBox(
+                    widthFactor: .7,
+                    child: const SkeletonBox(height: 14),
+                  ),
+                  const SizedBox(height: Gap.sm),
+                  FractionallySizedBox(
+                    widthFactor: .45,
+                    child: const SkeletonBox(height: 12),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: Gap.lg),
+            const Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SkeletonBox(width: 72, height: 22),
+                SizedBox(height: Gap.sm),
+                SkeletonBox(width: 48, height: 12),
+              ],
+            ),
+          ],
+        ),
+      ),
+      Divider(
+        height: 1,
+        thickness: 1,
+        indent: Sizes.avatar + Gap.md,
+        color: context.c.border.withValues(alpha: .6),
+      ),
+    ],
+  );
+}
+
+/// Placeholder for a [KpiStrip] of [count] columns.
+class SkeletonKpis extends StatelessWidget {
+  const SkeletonKpis({super.key, this.count = 4});
+  final int count;
+
+  @override
+  Widget build(BuildContext context) => IntrinsicHeight(
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var i = 0; i < count; i++) ...[
+          if (i > 0)
+            VerticalDivider(width: 1, thickness: 1, color: context.c.border),
+          const Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: Gap.md,
+                vertical: Gap.sm,
+              ),
+              child: Column(
+                children: [
+                  SkeletonBox(height: 28),
+                  SizedBox(height: Gap.sm),
+                  SkeletonBox(height: 12),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ],
+    ),
+  );
+}
+
+/// Placeholder for a [SectionHeading], optionally with a trailing link.
+class SkeletonHeading extends StatelessWidget {
+  const SkeletonHeading({super.key, this.link = true});
+  final bool link;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: Gap.lg, bottom: Gap.sm),
+    child: Row(
+      children: [
+        const SkeletonBox(width: 150, height: 20),
+        const Spacer(),
+        if (link) const SkeletonBox(width: 64, height: 16),
+      ],
+    ),
+  );
+}
+
+/// The default loading state for a page: a heading and rows in the page
+/// gutters. [top] adds page-specific shapes above (KPIs, a map...).
+class SkeletonPage extends StatelessWidget {
+  const SkeletonPage({super.key, this.top = const [], this.rows = 5});
+  final List<Widget> top;
+  final int rows;
+
+  /// Today: overview figures, recent deliveries, need attention.
+  const SkeletonPage.today({super.key})
+    : top = const [SkeletonKpis(), SizedBox(height: Gap.sm), SkeletonHeading()],
+      rows = 4;
+
+  @override
+  Widget build(BuildContext context) => SkeletonPulse(
+    child: ListView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.lg,
+        Gap.gutter,
+        Gap.lg,
+      ),
+      children: [
+        ...top,
+        if (top.isEmpty) const SkeletonHeading(link: false),
+        for (var i = 0; i < rows; i++) const SkeletonRow(),
+      ],
     ),
   );
 }

@@ -34,6 +34,12 @@ class ZonesScreen extends StatelessWidget {
       );
     }
     return AsyncView<(List<Zone>, List<VendorOrder>)>(
+      loading: const SkeletonPage(
+        top: [
+          SkeletonBox(height: 240),
+          SizedBox(height: Gap.sm),
+        ],
+      ),
       key: ValueKey('zones-${business.id}'),
       load: () async => (
         await app.repo.zones(business.id),
@@ -407,6 +413,15 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
           child: ContentSurface(
             bottomSafeArea: false,
             child: AsyncView<_ZoneData>(
+              loading: const SkeletonPage(
+                top: [
+                  SkeletonBox(height: 200),
+                  SizedBox(height: Gap.md),
+                  SkeletonKpis(count: 3),
+                  SkeletonHeading(link: false),
+                ],
+                rows: 3,
+              ),
               key: _view,
               load: _load,
               builder: (context, data, reload) =>
@@ -495,13 +510,10 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
       setState(() => _zone = updated);
       await _view.currentState?.reload();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Zone renamed to ${updated.name}')),
-      );
+      showCefToast(context, 'Zone renamed to ${updated.name}');
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Could not rename: $e')));
+        showCefToast(context, 'Could not rename: $e', error: true);
       }
     }
   }
@@ -566,13 +578,11 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
     try {
       await app.repo.deleteZone(zone.id);
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('${zone.name} deleted')));
+      showCefToast(context, '${zone.name} deleted');
       app.back();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Could not delete: $e')));
+        showCefToast(context, 'Could not delete: $e', error: true);
       }
     }
   }
@@ -844,19 +854,15 @@ class _DeliveryStopRow extends StatelessWidget {
           return true;
         } catch (e) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text('$e')));
+            showCefToast(context, '$e', error: true);
           }
           return false;
         }
       },
       onDismissed: (_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${order?.customerName ?? 'Delivery'} removed from today',
-            ),
-          ),
+        showCefToast(
+          context,
+          '${order?.customerName ?? 'Delivery'} removed from today',
         );
         onRemoved();
       },
@@ -1154,6 +1160,7 @@ class RiderDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     return AsyncView<RiderRow>(
+      loading: const SkeletonHeroPage(),
       key: ValueKey('rider-$riderId'),
       load: () async {
         final riders = await app.repo.riders(app.business!.id);
@@ -1329,6 +1336,7 @@ class TeamMemberDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     return AsyncView<TeamMember>(
+      loading: const SkeletonHeroPage(),
       key: ValueKey('team-member-$memberId'),
       load: () async {
         final members = await app.repo.team(app.business!.id);
@@ -1575,6 +1583,7 @@ class CustomerDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     return AsyncView<List<VendorOrder>>(
+      loading: const SkeletonHeroPage(),
       key: ValueKey('customer-$customerName'),
       load: () => app.repo.orders(app.business!.id),
       builder: (context, orders, reload) {

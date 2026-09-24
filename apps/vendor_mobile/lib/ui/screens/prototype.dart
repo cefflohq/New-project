@@ -1335,17 +1335,12 @@ class _NotificationInboxScreen extends StatelessWidget {
     final app = AppScope.read(context);
     final undo = app.deleteNotification(n.id);
     if (undo == null) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: const Text('Notification deleted'),
-          action: SnackBarAction(
-            label: 'Undo',
-            onPressed: () => app.restoreNotification(undo),
-          ),
-        ),
-      );
+    showCefToast(
+      context,
+      'Notification deleted',
+      actionLabel: 'Undo',
+      onAction: () => app.restoreNotification(undo),
+    );
   }
 
   static void _showRowOptions(BuildContext context, AppNotification n) {
@@ -1466,8 +1461,7 @@ class _InviteLinkScreen extends StatelessWidget {
 
   void _copyLink(BuildContext context, String link) {
     Clipboard.setData(ClipboardData(text: link));
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Link copied')));
+    showCefToast(context, 'Link copied');
   }
 
   /// Compact, centred modal over a dimmed page: the real QR code for

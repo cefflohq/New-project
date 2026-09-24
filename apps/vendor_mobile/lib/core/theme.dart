@@ -215,6 +215,18 @@ ThemeData buildVendorTheme(Brightness brightness) {
       errorBorder: _inputBorder(c.attention),
       focusedErrorBorder: _inputBorder(c.attention, width: 1.6),
     ),
+    // The one toast (showCefToast): a white rounded card floating above the
+    // bottom navigation, soft shadow, Anchor Blue action.
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: c.card,
+      elevation: 6,
+      actionTextColor: CefColors.brand,
+      contentTextStyle: t(15, FontWeight.w400, c.textPrimary),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+      ),
+    ),
     // The one slider treatment (service-area radius and any future slider).
     sliderTheme: SliderThemeData(
       trackHeight: 4,

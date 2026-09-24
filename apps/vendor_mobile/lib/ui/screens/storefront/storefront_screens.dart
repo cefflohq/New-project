@@ -559,12 +559,9 @@ class StorefrontTemplatePreviewScreen extends StatelessWidget {
                       ? null
                       : () {
                           app.useStorefrontTemplate(def.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                '${def.name} is now your active storefront.',
-                              ),
-                            ),
+                          showCefToast(
+                            context,
+                            '${def.name} is now your active storefront.',
                           );
                           app.back();
                         },

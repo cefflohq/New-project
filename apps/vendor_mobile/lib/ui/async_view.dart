@@ -12,10 +12,20 @@ class AsyncView<T> extends StatefulWidget {
     required this.builder,
     this.emptyMessage,
     this.isEmpty,
+    this.loading,
   });
 
+  /// Page-shaped placeholder shown while loading; a heading and rows by
+  /// default.
+  final Widget? loading;
+
   final Future<T> Function() load;
-  final Widget Function(BuildContext context, T data, Future<void> Function() reload) builder;
+  final Widget Function(
+    BuildContext context,
+    T data,
+    Future<void> Function() reload,
+  )
+  builder;
   final String? emptyMessage;
   final bool Function(T data)? isEmpty;
 
@@ -59,7 +69,9 @@ class AsyncViewState<T> extends State<AsyncView<T>> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading && _data == null) return const StateBlock.loading();
+    if (_loading && _data == null) {
+      return widget.loading ?? const SkeletonPage();
+    }
     if (_error != null && _data == null) {
       final err = _error;
       if (err is RepositoryError && err.isMissingContract) {

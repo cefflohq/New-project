@@ -479,6 +479,7 @@ class TodayScreen extends StatelessWidget {
       );
     }
     return AsyncView<(List<VendorOrder>, List<RiderRow>)>(
+      loading: const SkeletonPage.today(),
       key: ValueKey('today-${business.id}'),
       load: () async => (
         await app.repo.orders(business.id),
@@ -573,6 +574,7 @@ class OrderDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     return AsyncView<VendorOrder>(
+      loading: const SkeletonHeroPage(),
       key: ValueKey('order-$orderId'),
       load: () => app.repo.order(orderId),
       builder: (context, order, reload) {
@@ -975,7 +977,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (loading) return const StateBlock.loading();
+    if (loading) return const SkeletonPage(rows: 6);
     return PageBody(
       bottom: CefButton(
         widget.isNew ? 'Review & Create' : 'Update Order',
@@ -1176,7 +1178,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (loading) return const StateBlock.loading();
+    if (loading) return const SkeletonPage(rows: 6);
     return PageBody(
       bottom: CefButton(
         widget.isNew ? 'Add Product' : 'Save Changes',
