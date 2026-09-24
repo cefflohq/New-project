@@ -30,3 +30,9 @@
 .page-head{flex-direction:column;gap:12px}
 .drawer{padding:16px}
 }
+@media(max-width:720px){
+.mobile-menu{display:grid;place-items:center;width:40px;height:40px;border:0;border-radius:10px;background:#f4f6f9;color:var(--ink);padding:0}
+.mobile-menu .ti{width:22px;height:22px;stroke-width:2.2}
+.nav-scrim{position:fixed;inset:0;background:#0b122080;z-index:35;opacity:0;pointer-events:none;transition:opacity .2s}
+.nav-scrim.show{opacity:1;pointer-events:auto}
+}
