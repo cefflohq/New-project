@@ -729,6 +729,22 @@ class CefAvatar extends StatelessWidget {
   );
 }
 
+/// The one divider for cardless content (D-50): 1px, very light cool grey,
+/// usually inset past a row's leading icon so it organises rows without
+/// reading as a table.
+class CefDivider extends StatelessWidget {
+  const CefDivider({super.key, this.indent = 0});
+  final double indent;
+
+  @override
+  Widget build(BuildContext context) => Divider(
+    height: 1,
+    thickness: 1,
+    indent: indent,
+    color: context.c.border.withValues(alpha: .6),
+  );
+}
+
 /// The one icon treatment (D-48): a 24px navy outline icon, bare -- no
 /// container -- centred in a fixed 44px slot so rows, detail rows, settings
 /// and actions all line up. [circle] draws the round 1px outline used only
@@ -742,6 +758,7 @@ class IconTile extends StatelessWidget {
     this.color,
     this.onTap,
     this.circle = false,
+    this.tinted = false,
   }) : glyph = null;
 
   /// A composed outline mark (e.g. WhatsApp) in place of an icon.
@@ -751,12 +768,17 @@ class IconTile extends StatelessWidget {
     this.onTap,
     this.circle = false,
   }) : icon = null,
-       color = null;
+       color = null,
+       tinted = false;
 
   final IconData? icon;
   final Widget? glyph;
   final Color? color;
   final bool circle;
+
+  /// Status indicators only (Need Attention): a light rounded square in
+  /// [color] behind the icon.
+  final bool tinted;
 
   /// Makes the slot itself the tap target (actions).
   final VoidCallback? onTap;
@@ -764,11 +786,18 @@ class IconTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.c;
+    final tone = color ?? c.iconColor;
     return Material(
-      color: circle ? c.card : Colors.transparent,
-      shape: CircleBorder(
-        side: circle ? BorderSide(color: c.border) : BorderSide.none,
-      ),
+      color: tinted
+          ? tone.withValues(alpha: .1)
+          : circle
+          ? c.card
+          : Colors.transparent,
+      shape: tinted
+          ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(Gap.md))
+          : CircleBorder(
+              side: circle ? BorderSide(color: c.border) : BorderSide.none,
+            ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -1144,12 +1173,7 @@ class CefListRow extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         row,
-        Divider(
-          height: 1,
-          thickness: 1,
-          indent: lead == null ? 0 : Sizes.avatar + Gap.md,
-          color: c.border.withValues(alpha: .6),
-        ),
+        CefDivider(indent: lead == null ? 0 : Sizes.avatar + Gap.md),
       ],
     );
   }
@@ -1203,12 +1227,7 @@ class CefListGroup extends StatelessWidget {
                 children: [
                   for (final (i, child) in children.indexed) ...[
                     if (i > 0)
-                      Divider(
-                        height: 1,
-                        thickness: 1,
-                        indent: Gap.lg + Sizes.avatar + Gap.md,
-                        color: c.border.withValues(alpha: .6),
-                      ),
+                      const CefDivider(indent: Gap.lg + Sizes.avatar + Gap.md),
                     child,
                   ],
                 ],
@@ -1769,12 +1788,7 @@ class SkeletonRow extends StatelessWidget {
           ],
         ),
       ),
-      Divider(
-        height: 1,
-        thickness: 1,
-        indent: Sizes.avatar + Gap.md,
-        color: context.c.border.withValues(alpha: .6),
-      ),
+      const CefDivider(indent: Sizes.avatar + Gap.md),
     ],
   );
 }

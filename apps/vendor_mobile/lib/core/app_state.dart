@@ -69,6 +69,17 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The signed-in person's name for the Today greeting: profile metadata,
+  /// else the email's local part. The demo session is the demo owner.
+  String get userDisplayName {
+    if (repo.isDemo) return 'Yusuf Sazali';
+    final user = repo.currentUser;
+    final meta = user?.userMetadata ?? const {};
+    final name = (meta['full_name'] ?? meta['name'] ?? '').toString().trim();
+    if (name.isNotEmpty) return name;
+    return user?.email?.split('@').first ?? '';
+  }
+
   // ---- Notification centre (X-01). No notification backend exists yet, so
   // this is session state seeded with the demo feed; every management action
   // (read, unread, delete, clear) is real within the session.

@@ -25,7 +25,7 @@ class TodayContent extends StatelessWidget {
   /// Recent deliveries shown before "View all".
   static const _recentLimit = 4;
 
-  /// Need Attention cards shown before "View all".
+  /// Need Attention rows shown on Today (the rest via "View all").
   static const _attentionLimit = 3;
 
   @override
@@ -132,40 +132,32 @@ class TodayContent extends StatelessWidget {
           issues.isEmpty
               ? 'Need Attention'
               : 'Need Attention (${issues.length})',
-          trailing: issues.length > _attentionLimit
-              ? CefLink(
+          trailing: issues.isEmpty
+              ? null
+              : CefLink(
                   'View all',
                   chevron: true,
                   onTap: () => app.switchTab(NavTab.orders),
-                )
-              : null,
+                ),
         ),
         if (issues.isEmpty)
           const StateBlock.empty('Nothing needs your attention.')
         else
-          // One card per active issue, each opening its order.
-          for (final issue in issues.take(_attentionLimit)) ...[
-            CefCard(
-              padded: false,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Gap.md),
-                child: CefListRow(
-                  title: '${issue.reference} · ${issue.customerName}',
-                  subtitle: (issue.notes ?? '').isEmpty
-                      ? 'Needs your action'
-                      : issue.notes,
-                  // Status indicator: the issue colour.
-                  leading: IconTile(
-                    LucideIcons.triangleAlert,
-                    color: c.attention,
-                  ),
-                  showDivider: false,
-                  onTap: () => app.go(VRoute.orderDetail, entityId: issue.id),
-                ),
+          // Cardless rows (D-50), one per active issue, each opening its
+          // order. The tinted red mark is the status indicator.
+          for (final issue in issues.take(_attentionLimit))
+            CefListRow(
+              title: '${issue.reference} · ${issue.customerName}',
+              subtitle: (issue.notes ?? '').isEmpty
+                  ? 'Needs your action'
+                  : issue.notes,
+              leading: IconTile(
+                LucideIcons.triangleAlert,
+                color: c.attention,
+                tinted: true,
               ),
+              onTap: () => app.go(VRoute.orderDetail, entityId: issue.id),
             ),
-            const SizedBox(height: Gap.sm),
-          ],
       ],
     );
   }

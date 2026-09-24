@@ -273,7 +273,7 @@ class _Header extends StatelessWidget {
     final title = route == VRoute.today
         ? (app.business?.name ?? 'Cefflo Vendor')
         : _headerTitles[route] ?? app.current.spec.title;
-    return AppHeader(
+    final header = AppHeader(
       title: title,
       subtitle: _headerSubtitles[route],
       leading: [
@@ -299,6 +299,67 @@ class _Header extends StatelessWidget {
           ),
         ..._searchHeaderActions(context, route),
       ],
+    );
+    if (route != VRoute.today) return header;
+    return Column(
+      children: [
+        header,
+        _TodayGreeting(name: app.userDisplayName),
+      ],
+    );
+  }
+}
+
+/// Today's greeting on the navy chrome, under the header: time-of-day
+/// salutation, the person's name, and one line of context.
+class _TodayGreeting extends StatelessWidget {
+  const _TodayGreeting({required this.name});
+  final String name;
+
+  static String _salutation(DateTime now) => now.hour < 12
+      ? 'Good Morning,'
+      : now.hour < 18
+      ? 'Good Afternoon,'
+      : 'Good Evening,';
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final muted = Colors.white.withValues(alpha: .82);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.xs,
+        Gap.gutter,
+        Gap.xl,
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _salutation(DateTime.now()),
+              style: text.bodyLarge?.copyWith(
+                color: Colors.white,
+                fontSize: 18,
+              ),
+            ),
+            if (name.isNotEmpty)
+              Text(
+                '$name!',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: text.titleLarge?.copyWith(color: Colors.white),
+              ),
+            const SizedBox(height: Gap.xs),
+            Text(
+              "Here's what's happening today.",
+              style: text.bodyMedium?.copyWith(color: muted),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

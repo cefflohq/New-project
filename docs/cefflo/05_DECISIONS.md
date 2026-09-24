@@ -895,3 +895,20 @@ dispatch-confirmation screens.
   table writes under RLS; removal works in the demo and reports "not
   available yet" against a live backend.
 
+## D-50 Vendor Mobile Cardless Content Rule (2026-09-24)
+
+CONTENT IS CARDLESS; controls and true structural surfaces may keep
+containers. Repeated content rows (orders, deliveries, riders, zones,
+notifications, issues, history) sit directly on the page, separated by
+spacing and the one `CefDivider` (1px, light cool grey, inset past the
+leading icon). Kept as containers by function: buttons, fields, pills,
+sheets, dialogs, toasts, maps, media, summary surfaces (Business profile
+summary, Rider stats), grouped settings on the grey Settings page, the
+Share-via control group, the Contact / information cards on approved detail
+screens.
+
+Applied: Today Need Attention (cards → rows; tinted red status mark; "View
+all"), Customer detail orders (bordered group → rows). Today also gains the
+greeting on the navy chrome ("Good Morning, {name}! / Here's what's happening
+today.") per the Founder reference.
+

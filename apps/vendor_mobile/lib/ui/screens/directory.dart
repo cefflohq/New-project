@@ -1608,18 +1608,15 @@ class CustomerDetailScreen extends StatelessWidget {
           children: [
             ContactCard(phone: customer.customerPhone),
             SectionHeading('Orders ($count)'),
-            CefListGroup(
-              children: [
-                for (final order in customerOrders)
-                  CefListRow(
-                    title: order.reference,
-                    subtitle: order.deliveryAddress,
-                    icon: LucideIcons.package,
-                    trailing: DeliveryStatusChip(order.status),
-                    onTap: () => app.go(VRoute.orderDetail, entityId: order.id),
-                  ),
-              ],
-            ),
+            // Cardless order rows (D-50).
+            for (final order in customerOrders)
+              CefListRow(
+                title: order.reference,
+                subtitle: order.deliveryAddress,
+                icon: LucideIcons.package,
+                trailing: DeliveryStatusChip(order.status),
+                onTap: () => app.go(VRoute.orderDetail, entityId: order.id),
+              ),
           ],
         );
       },
