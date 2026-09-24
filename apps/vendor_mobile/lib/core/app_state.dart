@@ -118,6 +118,15 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ---- Vendor availability (Today header toggle). Session state only: no
+  // availability contract exists on the backend yet.
+  bool vendorOnline = true;
+
+  void setVendorOnline(bool value) {
+    vendorOnline = value;
+    notifyListeners();
+  }
+
   // ---- Accent colour (Appearance). Session preference only.
   int? accentColorValue;
 

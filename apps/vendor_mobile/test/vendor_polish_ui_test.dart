@@ -412,4 +412,20 @@ void main() {
     expect(find.text('Paid'), findsWidgets);
     expect(find.byTooltip('Download invoice'), findsWidgets);
   });
+
+  testWidgets('online toggle greys operational screens when offline', (
+    tester,
+  ) async {
+    await pumpAt(tester, const VendorLocation(VRoute.today));
+    expect(find.text('Online'), findsOneWidget);
+    expect(find.byType(ColorFiltered), findsNothing);
+    await tester.tap(find.text('Online'));
+    await tester.pumpAndSettle();
+    expect(find.text('Offline'), findsOneWidget);
+    expect(find.byType(ColorFiltered), findsOneWidget);
+    // More stays in colour.
+    await tester.tap(find.text('More'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ColorFiltered), findsNothing);
+  });
 }

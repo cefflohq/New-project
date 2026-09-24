@@ -111,9 +111,14 @@ class VendorShell extends StatelessWidget {
             children: [
               if (!ownHeader) _Header(app: app),
               Expanded(
-                child: hero || ownHeader
-                    ? child
-                    : ContentSurface(bottomSafeArea: !showNav, child: child),
+                child: _OfflineTint(
+                  // Offline greys the operational screens (Today, Orders,
+                  // Zones, Riders and their details); More stays in colour.
+                  active: !app.vendorOnline && app.activeTab != NavTab.more,
+                  child: hero || ownHeader
+                      ? child
+                      : ContentSurface(bottomSafeArea: !showNav, child: child),
+                ),
               ),
               if (showNav) const _BottomNav(),
             ],
@@ -148,6 +153,41 @@ class VendorShell extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Greys out [child] (full desaturation) while the vendor
+/// is offline; colour returns as soon as they are back online.
+class _OfflineTint extends StatelessWidget {
+  const _OfflineTint({required this.active, required this.child});
+  final bool active;
+  final Widget child;
+
+  static const _greyscale = ColorFilter.matrix([
+    0.2126,
+    0.7152,
+    0.0722,
+    0,
+    0,
+    0.2126,
+    0.7152,
+    0.0722,
+    0,
+    0,
+    0.2126,
+    0.7152,
+    0.0722,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+  ]);
+
+  @override
+  Widget build(BuildContext context) =>
+      active ? ColorFiltered(colorFilter: _greyscale, child: child) : child;
 }
 
 /// The white surface that enters the gradient with rounded top corners.
@@ -318,7 +358,7 @@ class _Header extends StatelessWidget {
       onTitleTap: today ? () => _showBusinessSwitcher(context, app) : null,
       leading: [
         if (today)
-          const _HeaderDate()
+          const _OnlineToggle()
         else if (!isRoot && app.canGoBack)
           HeaderBackButton(onTap: app.back),
       ],
@@ -344,57 +384,100 @@ class _Header extends StatelessWidget {
   }
 }
 
-/// Today's header date: weekday over day and month ("Wed / 24 Sep").
-class _HeaderDate extends StatelessWidget {
-  const _HeaderDate();
-
-  static const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  static const _months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
+/// Today's availability switch: the Founder-referenced toggle (blue track,
+/// white knob) with "Online" / "Offline" under it. Offline greys the
+/// operational screens (see [VendorShell]).
+class _OnlineToggle extends StatelessWidget {
+  const _OnlineToggle();
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    final app = AppScope.of(context);
+    final on = app.vendorOnline;
     final text = Theme.of(context).textTheme;
-    // Fits its header slot at any text size rather than overflowing.
     return Flexible(
       child: Padding(
         padding: const EdgeInsets.only(left: Gap.md),
         child: FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _days[now.weekday - 1],
-                style: text.labelMedium?.copyWith(
-                  color: Colors.white.withValues(alpha: .82),
-                ),
+          child: Semantics(
+            toggled: on,
+            label: on ? 'Online' : 'Offline',
+            button: true,
+            child: GestureDetector(
+              onTap: () {
+                app.setVendorOnline(!on);
+                showCefToast(
+                  context,
+                  on
+                      ? "You're offline. New orders are paused."
+                      : "You're online.",
+                );
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _ToggleTrack(on: on),
+                  const SizedBox(height: 2),
+                  Text(
+                    on ? 'Online' : 'Offline',
+                    style: text.labelSmall?.copyWith(
+                      color: Colors.white.withValues(alpha: on ? 1 : .7),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-              Text(
-                '${now.day} ${_months[now.month - 1]}',
-                style: text.titleSmall?.copyWith(color: Colors.white),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+/// The toggle itself: a pill track (Vendor blue when on, muted when off)
+/// with a white round knob that slides across.
+class _ToggleTrack extends StatelessWidget {
+  const _ToggleTrack({required this.on});
+  final bool on;
+
+  static const _w = 46.0, _h = 26.0, _knob = 22.0;
+
+  @override
+  Widget build(BuildContext context) => AnimatedContainer(
+    duration: const Duration(milliseconds: 200),
+    width: _w,
+    height: _h,
+    padding: const EdgeInsets.all(2),
+    decoration: BoxDecoration(
+      color: on ? CefColors.brand : Colors.white.withValues(alpha: .28),
+      borderRadius: BorderRadius.circular(_h),
+      border: Border.all(color: Colors.white.withValues(alpha: .55)),
+    ),
+    child: AnimatedAlign(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+      alignment: on ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        width: _knob - 2,
+        height: _knob - 2,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x40000000),
+              blurRadius: 4,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 /// The Today title's dropdown: the businesses this account can run, the
