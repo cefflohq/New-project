@@ -1434,45 +1434,10 @@ class InvitationLandingScreen extends StatelessWidget {
           ),
         ),
       ),
-      headerChild: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 30,
-            height: 5,
-            decoration: BoxDecoration(
-              color: CefColors.accent,
-              borderRadius: BorderRadius.circular(999),
-            ),
-          ),
-          const SizedBox(height: Gap.md),
-          Text(
-            'You’re Invited!',
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: CefColors.onNavy.withValues(alpha: 0.92),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Join ${business.name}\non Cefflo.',
-            style: context.t.displayLarge?.copyWith(fontSize: 30),
-          ),
-          const SizedBox(height: Gap.md),
-          const Text(
-            'Be part of their delivery team and\nstart making deliveries.',
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 15,
-              height: 1.4,
-              fontWeight: FontWeight.w500,
-              color: CefColors.onNavyMuted,
-            ),
-          ),
-        ],
-      ),
+      title: 'You’re Invited!',
+      subtitle:
+          'Join ${business.name} on Cefflo. Be part of their delivery team '
+          'and start making deliveries.',
       sheetPadding: const EdgeInsets.fromLTRB(
         Gap.gutter,
         Gap.lg,

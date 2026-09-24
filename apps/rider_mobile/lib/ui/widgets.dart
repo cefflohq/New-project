@@ -277,13 +277,7 @@ class CeffloScreenHeader extends StatelessWidget {
                   child: Text(
                     title,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 19,
-                      fontWeight: FontWeight.w700,
-                      color: CefColors.onNavy,
-                      letterSpacing: -0.2,
-                    ),
+                    style: cefHeaderTitleStyle,
                   ),
                 ),
                 SizedBox(
@@ -377,6 +371,16 @@ class CeffloBrandHeader extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
+/// The one header title: centred in the header row on every screen (inner
+/// screens and the auth family alike).
+const cefHeaderTitleStyle = TextStyle(
+  fontFamily: 'Manrope',
+  fontSize: 19,
+  fontWeight: FontWeight.w700,
+  color: CefColors.onNavy,
+  letterSpacing: -0.2,
+);
+
 // Auth layout
 // ---------------------------------------------------------------------------
 
@@ -423,51 +427,39 @@ class CeffloAuthScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The title sits in the header row (below); this block carries the
+    // centred supporting line, or a screen's own custom header content.
     final header =
         headerChild ??
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (title != null)
-                        Text(title!, style: context.t.displayLarge),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: Gap.sm),
-                        Text(
-                          subtitle!,
-                          style: const TextStyle(
-                            fontFamily: 'Manrope',
-                            fontSize: 15,
-                            height: 1.4,
-                            fontWeight: FontWeight.w500,
-                            color: CefColors.onNavyMuted,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                if (headerTrailing != null) ...[
-                  const SizedBox(width: Gap.md),
-                  headerTrailing!,
+        (subtitle == null && headerTrailing == null
+            ? const SizedBox.shrink()
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (headerTrailing != null) ...[
+                    headerTrailing!,
+                    const SizedBox(height: Gap.md),
+                  ],
+                  if (subtitle != null)
+                    Text(
+                      subtitle!.replaceAll('\n', ' '),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 15,
+                        height: 1.4,
+                        fontWeight: FontWeight.w500,
+                        color: CefColors.onNavyMuted,
+                      ),
+                    ),
                 ],
-              ],
-            ),
-          ],
-        );
+              ));
 
     // No lift shadow: this surface is attached to the header, not floating
     // over it, and an upward shadow only draws a dark line along the join.
-    final sheetSurface = Container(
+    Widget sheetSurface({double minHeight = 0}) => Container(
       width: double.infinity,
+      constraints: BoxConstraints(minHeight: minHeight),
       decoration: BoxDecoration(
         color: context.c.card,
         borderRadius: const BorderRadius.vertical(
@@ -500,14 +492,36 @@ class CeffloAuthScaffold extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Header row: back, title centred on the screen, action.
                       SizedBox(
                         height: Sizes.tapTarget,
-                        child: Row(
+                        child: Stack(
                           children: [
+                            if (title != null)
+                              Center(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: headerAction == null ? 48 : 104,
+                                  ),
+                                  child: Text(
+                                    title!.replaceAll('\n', ' '),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: cefHeaderTitleStyle,
+                                  ),
+                                ),
+                              ),
                             if (onBack != null)
-                              CeffloBackButton(onTap: onBack!),
-                            const Spacer(),
-                            ?headerAction,
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: CeffloBackButton(onTap: onBack!),
+                              ),
+                            if (headerAction != null)
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: headerAction,
+                              ),
                           ],
                         ),
                       ),
@@ -536,21 +550,19 @@ class CeffloAuthScaffold extends StatelessWidget {
                             padding: EdgeInsets.only(
                               bottom: MediaQuery.of(context).viewInsets.bottom,
                             ),
+                            // The sheet starts right under the header and
+                            // always reaches the bottom edge.
                             child: ConstrainedBox(
                               constraints: BoxConstraints(
                                 minHeight: viewport.maxHeight,
                               ),
-                              child: Align(
-                                alignment: Alignment.bottomCenter,
-                                child: sheetSurface,
+                              child: sheetSurface(
+                                minHeight: viewport.maxHeight,
                               ),
                             ),
                           ),
                         )
-                      : Align(
-                          alignment: Alignment.bottomCenter,
-                          child: sheetSurface,
-                        ),
+                      : sheetSurface(),
                 ),
               ],
             ),
