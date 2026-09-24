@@ -99,10 +99,10 @@ class CefColors extends ThemeExtension<CefColors> {
   final Color textPrimary, textLabel, textSecondary;
   final Color attention, success, warning, info, iconColor;
 
-  /// CEFFLO Yellow -- the Action CTA (D-48): primary controls, active
-  /// selection and selected outline only. Never body text, never a generic
-  /// filled content card.
-  static const accent = Color(0xFFF5C400);
+  /// Cefflo mustard (D-53) -- the ONE Cefflo yellow: a clear, warm premium
+  /// mustard (not gold, orange or lemon). Primary CTAs, Most Popular,
+  /// intentional highlights and brand accents; always with dark text.
+  static const ceffloMustard = Color(0xFFFFC93C);
   static const onAccent = Color(0xFF181818);
 
   /// Neutral dark navy: default colour of every non-navigation icon, the
@@ -194,7 +194,7 @@ ThemeData buildVendorTheme(Brightness brightness) {
     fontFamily: kFontFamily,
     fontFamilyFallback: kFontFamilyFallback,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: CefColors.accent,
+      seedColor: CefColors.ceffloMustard,
       brightness: brightness,
       surface: c.card,
     ),
@@ -214,7 +214,7 @@ ThemeData buildVendorTheme(Brightness brightness) {
       border: _inputBorder(c.border),
       enabledBorder: _inputBorder(c.border),
       disabledBorder: _inputBorder(c.border),
-      focusedBorder: _inputBorder(CefColors.accent, width: 1.6),
+      focusedBorder: _inputBorder(CefColors.ceffloMustard, width: 1.6),
       errorBorder: _inputBorder(c.attention),
       focusedErrorBorder: _inputBorder(c.attention, width: 1.6),
     ),
@@ -233,10 +233,10 @@ ThemeData buildVendorTheme(Brightness brightness) {
     // The one slider treatment (service-area radius and any future slider).
     sliderTheme: SliderThemeData(
       trackHeight: 4,
-      activeTrackColor: CefColors.accent,
+      activeTrackColor: CefColors.ceffloMustard,
       inactiveTrackColor: c.border,
-      thumbColor: CefColors.accent,
-      overlayColor: CefColors.accent.withValues(alpha: .16),
+      thumbColor: CefColors.ceffloMustard,
+      overlayColor: CefColors.ceffloMustard.withValues(alpha: .16),
       tickMarkShape: SliderTickMarkShape.noTickMark,
       thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
       trackShape: const RoundedRectSliderTrackShape(),

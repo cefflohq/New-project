@@ -7,6 +7,7 @@ import 'core/env.dart';
 import 'core/preview_path.dart';
 import 'core/responsive.dart';
 import 'core/routes.dart';
+import 'core/safe_area.dart';
 import 'core/theme.dart';
 import 'data/vendor_repository.dart';
 import 'ui/router.dart';
@@ -139,7 +140,7 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
         builder: (context, child) => CefSystemBars(
           background: Brightness.light,
           browserChromeColor: CefColors.light.chrome,
-          child: ResponsiveDensity(child: child!),
+          child: _EdgeToEdgeInsets(child: ResponsiveDensity(child: child!)),
         ),
         home: Builder(
           builder: (context) {
@@ -327,4 +328,28 @@ class ConfigurationErrorApp extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Edge-to-edge on the web (D-53): the page draws behind the Android gesture
+/// bar, so the bottom system inset the engine does not report is added to
+/// MediaQuery here, once -- every SafeArea (bottom navigation, sheets,
+/// surfaces) then clears the gesture pill while its own background continues
+/// behind it. No-op on native builds.
+class _EdgeToEdgeInsets extends StatelessWidget {
+  const _EdgeToEdgeInsets({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final bottom = webSafeAreaBottom();
+    if (bottom <= media.padding.bottom) return child;
+    return MediaQuery(
+      data: media.copyWith(
+        padding: media.padding.copyWith(bottom: bottom),
+        viewPadding: media.viewPadding.copyWith(bottom: bottom),
+      ),
+      child: child,
+    );
+  }
 }

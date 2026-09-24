@@ -169,7 +169,7 @@ class _RoutePreviewPainter extends CustomPainter {
       );
     }
     final driver = Offset(size.width * .90, size.height * .18);
-    canvas.drawCircle(driver, 20, Paint()..color = CefColors.accent);
+    canvas.drawCircle(driver, 20, Paint()..color = CefColors.ceffloMustard);
     final marker = TextPainter(
       text: TextSpan(
         text: String.fromCharCode(LucideIcons.motorbike.codePoint),

@@ -5,6 +5,21 @@
 library;
 
 /// public.delivery_status
+/// The one user-facing order number format (D-53): "#CF" (Cefflo) plus the
+/// order's number -- `ORD-1008` shows as `#CF1008`. Display only: stored
+/// references and ids are unchanged. Without a public reference, the first
+/// characters of the id stand in.
+String cefOrderRef(String? publicRef, String id) {
+  final raw = (publicRef == null || publicRef.isEmpty) ? id : publicRef;
+  final number = raw
+      .replaceFirst(RegExp(r'^(ORD|CF)[-_ ]?', caseSensitive: false), '')
+      .replaceFirst('#', '');
+  final compact = publicRef == null || publicRef.isEmpty
+      ? number.replaceAll('-', '').substring(0, 6).toUpperCase()
+      : number.toUpperCase();
+  return '#CF$compact';
+}
+
 enum DeliveryStatus {
   created,
   readyForPickup,
@@ -136,7 +151,8 @@ class VendorOrder {
 
   /// Short human reference. Falls back to the id when the backend has not
   /// issued a public_ref (vendor-created orders).
-  String get reference => publicRef ?? id.substring(0, 8).toUpperCase();
+  /// User-facing order number, e.g. #CF1008 (D-53).
+  String get reference => cefOrderRef(publicRef, id);
 
   bool get isTerminal =>
       status == DeliveryStatus.delivered || status == DeliveryStatus.cancelled;
@@ -352,7 +368,8 @@ class PlannableOrder {
     longitude: (r['longitude'] as num?)?.toDouble(),
   );
 
-  String get reference => publicRef ?? orderId.substring(0, 8).toUpperCase();
+  /// User-facing order number, e.g. #CF1008 (D-53).
+  String get reference => cefOrderRef(publicRef, orderId);
   bool get locationResolved => locationStatus == 'resolved';
 }
 

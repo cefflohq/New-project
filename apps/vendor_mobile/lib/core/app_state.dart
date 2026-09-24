@@ -237,7 +237,7 @@ const _demoNotifications = [
   AppNotification(
     id: 'n-ready',
     kind: NotificationKind.order,
-    title: 'ORD-1008 is ready for pickup',
+    title: '#CF1008 is ready for pickup',
     body: 'Brew & Bites · 9 items',
     timeLabel: '18 min ago',
   ),

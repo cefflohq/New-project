@@ -704,7 +704,7 @@ class _SplashProgress extends StatelessWidget {
                 height: 4,
                 decoration: BoxDecoration(
                   color: i == active
-                      ? CefColors.accent
+                      ? CefColors.ceffloMustard
                       : Colors.white.withValues(alpha: .28),
                   borderRadius: BorderRadius.circular(99),
                 ),

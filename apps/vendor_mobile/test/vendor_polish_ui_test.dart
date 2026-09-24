@@ -1,3 +1,5 @@
+import 'package:cefflo_vendor_mobile/data/models.dart';
+import 'package:cefflo_vendor_mobile/ui/shell.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cefflo_vendor_mobile/ui/widgets.dart';
 import 'package:cefflo_vendor_mobile/core/app_state.dart';
@@ -171,16 +173,18 @@ void main() {
     expect(find.text('WhatsApp'), findsOneWidget);
   });
 
-  testWidgets('a large order keeps its primary action on screen', (
+  testWidgets('a large order stays compact; no vendor delivery action', (
     tester,
   ) async {
     await pumpAt(
       tester,
       const VendorLocation(VRoute.orderDetail, entityId: 'ord-1008'),
     );
-    final cta = find.text('Mark as On the Way');
-    expect(cta, findsOneWidget);
-    expect(tester.getBottomLeft(cta).dy, lessThan(852));
+    // Vendors never progress delivery (D-53): no rider-status action, and
+    // no empty action bar left behind on a Ready order.
+    expect(find.text('Mark as On the Way'), findsNothing);
+    expect(find.byType(StickyActionBar), findsNothing);
+    expect(find.text('#CF1008'), findsOneWidget);
     // Nine items: a compact preview plus the full list on demand.
     expect(find.text('View all 9 items'), findsOneWidget);
     expect(find.text('Kaya Toast'), findsNothing);
@@ -246,10 +250,10 @@ void main() {
       lessThan(852 - Sizes.nav),
     );
     // One card per active issue.
-    await tester.scrollUntilVisible(find.textContaining('ORD-1011'), 200);
-    expect(find.textContaining('ORD-1003'), findsOneWidget);
-    expect(find.textContaining('ORD-1010'), findsOneWidget);
-    expect(find.textContaining('ORD-1011'), findsOneWidget);
+    await tester.scrollUntilVisible(find.textContaining('#CF1011'), 200);
+    expect(find.textContaining('#CF1003'), findsOneWidget);
+    expect(find.textContaining('#CF1010'), findsOneWidget);
+    expect(find.textContaining('#CF1011'), findsOneWidget);
   });
 
   testWidgets('Orders header carries search and add only', (tester) async {
@@ -309,7 +313,7 @@ void main() {
       tester,
       const VendorLocation(VRoute.orderDetail, entityId: 'ord-1001'),
     );
-    expect(tester.getCenter(find.text('ORD-1001')).dx, closeTo(196.5, 1));
+    expect(tester.getCenter(find.text('#CF1001')).dx, closeTo(196.5, 1));
     expect(find.text('Directions'), findsOneWidget);
   });
 
@@ -363,5 +367,11 @@ void main() {
       // Same element: the background is never recreated on navigation.
       expect(tester.element(find.byType(BrandBackdrop)), same(before));
     }
+  });
+
+  test('order numbers display as #CF (D-53)', () {
+    expect(cefOrderRef('ORD-1008', 'ord-1008'), '#CF1008');
+    expect(cefOrderRef('CF-2044', 'x'), '#CF2044');
+    expect(cefOrderRef(null, '3f9a2c1e-0000-4000-8000-000000000000'), '#CF3F9A2C');
   });
 }

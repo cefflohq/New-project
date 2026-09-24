@@ -170,7 +170,7 @@ class CefCard extends StatelessWidget {
         color: c.card,
         borderRadius: BorderRadius.circular(Sizes.cardRadius),
         border: Border.all(
-          color: selected ? CefColors.accent : c.border,
+          color: selected ? CefColors.ceffloMustard : c.border,
           width: selected ? 1.6 : 1,
         ),
       ),
@@ -407,11 +407,11 @@ class CefButton extends StatelessWidget {
       child: FilledButton(
         onPressed: busy ? null : onTap,
         style: FilledButton.styleFrom(
-          backgroundColor: outlined ? c.card : CefColors.accent,
+          backgroundColor: outlined ? c.card : CefColors.ceffloMustard,
           foregroundColor: foreground,
           disabledBackgroundColor: outlined
               ? c.card
-              : CefColors.accent.withValues(alpha: .5),
+              : CefColors.ceffloMustard.withValues(alpha: .5),
           disabledForegroundColor: foreground.withValues(alpha: .5),
           side: outlined
               ? BorderSide(
@@ -845,9 +845,9 @@ class CefChoiceChip extends StatelessWidget {
       button: true,
       selected: selected,
       child: Material(
-        color: selected ? CefColors.accent : c.card,
+        color: selected ? CefColors.ceffloMustard : c.card,
         shape: StadiumBorder(
-          side: BorderSide(color: selected ? CefColors.accent : c.border),
+          side: BorderSide(color: selected ? CefColors.ceffloMustard : c.border),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -2155,9 +2155,9 @@ class _ProcessingBody extends StatelessWidget {
 
   static const _dotColors = [
     CefColors.navy,
-    CefColors.accent,
+    CefColors.ceffloMustard,
     CefColors.navy,
-    CefColors.accent,
+    CefColors.ceffloMustard,
   ];
 
   @override

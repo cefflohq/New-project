@@ -952,3 +952,18 @@ or a gradient. Direction: TOP deep Anchor Blue `#01265E` → `#00378F` →
 `#005CC4` → BOTTOM bright `#0592EB`. Splash and auth use the same token.
 Guarded by a widget test (one backdrop; same element across all tabs).
 
+## D-53 Vendor Mobile Correction Pass — Edge-to-Edge, Mustard, #CF Numbers, Vendor Permissions (2026-09-24)
+
+- **Edge-to-edge**: status bar and system navigation / gesture area are
+  transparent on every screen; the screen underneath continues to both
+  physical edges. Native: `CefSystemBars` (unchanged). Web/PWA on Android:
+  `viewport-fit=cover` plus an `env(safe-area-inset-bottom)` probe fed into
+  MediaQuery at the app root, removing the standalone black strip.
+- **`CefColors.ceffloMustard` `#FFC93C`**: the one Cefflo yellow (clear warm
+  mustard, not gold/orange/lemon), replacing `#F5C400`; always dark text.
+- **Order numbers** display as `#CF` + number (`ORD-1008` → `#CF1008`) through
+  one formatter, `cefOrderRef`; stored references are unchanged.
+- **Vendor does not progress delivery**: Order detail has no "Mark as On the
+  Way" (or any rider-state action); On the Way / Delivered come from the
+  Rider app and are only reflected. A Ready order has no bottom action.
+

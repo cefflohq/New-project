@@ -432,7 +432,7 @@ class _TemplateGalleryCard extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: CefColors.accent,
+                          color: CefColors.ceffloMustard,
                           borderRadius: BorderRadius.circular(
                             Sizes.buttonRadius,
                           ),

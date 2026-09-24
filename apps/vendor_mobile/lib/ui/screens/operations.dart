@@ -110,7 +110,7 @@ class _SetupStepHeader extends StatelessWidget {
                     height: Gap.sm,
                     decoration: BoxDecoration(
                       color: i <= step - 1
-                          ? CefColors.accent
+                          ? CefColors.ceffloMustard
                           : context.c.border,
                       borderRadius: BorderRadius.circular(Sizes.buttonRadius),
                     ),
@@ -424,7 +424,7 @@ class SetupCompleteScreen extends StatelessWidget {
                     TextSpan(text: 'Your Business\nis '),
                     TextSpan(
                       text: 'Ready!',
-                      style: TextStyle(color: CefColors.accent),
+                      style: TextStyle(color: CefColors.ceffloMustard),
                     ),
                   ],
                 ),
@@ -621,15 +621,16 @@ class OrderDetailScreen extends StatelessWidget {
               ),
             ],
           ),
-          bottomAction: CefButton(
-            order.status == DeliveryStatus.readyForPickup
-                ? 'Mark as On the Way'
-                : 'Edit Order',
-            icon: order.status == DeliveryStatus.readyForPickup
-                ? LucideIcons.truck
-                : null,
-            onTap: () => app.go(VRoute.editOrder, entityId: order.id),
-          ),
+          // Delivery progression (On the Way, Delivered) is driven by the
+          // Rider app and only reflected here (D-53): the vendor gets no
+          // delivery-status action. The existing Edit Order action is kept
+          // where it was shown before; a Ready order has no bottom action.
+          bottomAction: order.status == DeliveryStatus.readyForPickup
+              ? null
+              : CefButton(
+                  'Edit Order',
+                  onTap: () => app.go(VRoute.editOrder, entityId: order.id),
+                ),
           children: [
             CefListRow(
               title: 'Customer',

@@ -82,7 +82,7 @@ class _HeroPanel extends StatelessWidget {
             width: 28,
             height: 3,
             decoration: BoxDecoration(
-              color: CefColors.accent,
+              color: CefColors.ceffloMustard,
               borderRadius: BorderRadius.circular(Sizes.buttonRadius),
             ),
           ),
