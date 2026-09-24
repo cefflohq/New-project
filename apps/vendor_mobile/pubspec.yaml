@@ -28,6 +28,8 @@ flutter:
     # D-35 canonical logo assets, byte-identical to
     # docs/cefflo/brand/assets/logo/ (SHA-256 verified on copy).
     - assets/brand/
+    # Founder-supplied contact action artwork, used as delivered.
+    - assets/icons/
   fonts:
     # Primary Latin typeface (Inter, OFL-1.1, bundled locally -- no runtime
     # font downloading). Weights match the locked hierarchy: Regular for

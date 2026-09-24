@@ -753,35 +753,27 @@ class CefDivider extends StatelessWidget {
 
 /// The one icon treatment (D-48): a 24px navy outline icon, bare -- no
 /// container -- centred in a fixed 44px slot so rows, detail rows, settings
-/// and actions all line up. [circle] draws the round 1px outline used only
-/// by the Call and chat contact actions: a light-grey filled circle, no
-/// outline. Only bottom navigation icons
-/// are coloured; [color] is for status indicators alone (e.g. Need
-/// Attention in red).
+/// and actions all line up. (Call and chat use the supplied artwork, see
+/// [ContactActions].) Only bottom navigation icons are coloured; [color] is
+/// for status indicators alone (e.g. Need Attention in red).
 class IconTile extends StatelessWidget {
   const IconTile(
     IconData this.icon, {
     super.key,
     this.color,
     this.onTap,
-    this.circle = false,
     this.tinted = false,
   }) : glyph = null;
 
   /// A composed outline mark (e.g. WhatsApp) in place of an icon.
-  const IconTile.glyph(
-    Widget this.glyph, {
-    super.key,
-    this.onTap,
-    this.circle = false,
-  }) : icon = null,
-       color = null,
-       tinted = false;
+  const IconTile.glyph(Widget this.glyph, {super.key, this.onTap})
+    : icon = null,
+      color = null,
+      tinted = false;
 
   final IconData? icon;
   final Widget? glyph;
   final Color? color;
-  final bool circle;
 
   /// Status indicators only (Need Attention): a light rounded square in
   /// [color] behind the icon.
@@ -795,11 +787,7 @@ class IconTile extends StatelessWidget {
     final c = context.c;
     final tone = color ?? c.iconColor;
     return Material(
-      color: tinted
-          ? tone.withValues(alpha: .1)
-          : circle
-          ? c.subtle
-          : Colors.transparent,
+      color: tinted ? tone.withValues(alpha: .1) : Colors.transparent,
       shape: tinted
           ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(Gap.md))
           : const CircleBorder(),
@@ -1510,22 +1498,73 @@ class ContactActions extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      OutlinedIconAction(
+      _ContactImageAction(
+        asset: 'assets/icons/contact-call.png',
         label: 'Call',
         semanticLabel: 'Call $phone',
-        icon: Icons.call_rounded,
-        circle: true,
         onTap: () => launchPhoneCall(context, phone),
       ),
       const SizedBox(width: Gap.xs),
-      OutlinedIconAction(
+      _ContactImageAction(
+        asset: 'assets/icons/contact-chat.png',
         label: 'WhatsApp',
         semanticLabel: 'WhatsApp $phone',
-        glyph: const ChatBubbleGlyph(),
-        circle: true,
         onTap: () => launchWhatsApp(context, phone),
       ),
     ],
+  );
+}
+
+/// One contact action: the Founder-supplied icon artwork (the grey circle
+/// and its icon, used exactly as delivered -- assets/icons/contact-*.png)
+/// as a round tap target, with a caption underneath.
+class _ContactImageAction extends StatelessWidget {
+  const _ContactImageAction({
+    required this.asset,
+    required this.label,
+    required this.semanticLabel,
+    required this.onTap,
+  });
+  final String asset, label, semanticLabel;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: semanticLabel,
+    excludeSemantics: true,
+    child: SizedBox(
+      width: 56,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onTap,
+              child: Image.asset(
+                asset,
+                width: Sizes.avatar,
+                height: Sizes.avatar,
+                filterQuality: FilterQuality.high,
+              ),
+            ),
+          ),
+          const SizedBox(height: Gap.xs),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              maxLines: 1,
+              style: Theme.of(context).textTheme.labelSmall
+                  ?.copyWith(color: context.c.textPrimary),
+            ),
+          ),
+        ],
+      ),
+    ),
   );
 }
 
@@ -1540,11 +1579,7 @@ class OutlinedIconAction extends StatelessWidget {
     this.icon,
     this.glyph,
     this.semanticLabel,
-    this.circle = false,
   }) : assert((icon == null) != (glyph == null));
-
-  /// Round outline -- Call and WhatsApp only.
-  final bool circle;
   final String label;
   final VoidCallback onTap;
   final IconData? icon;
@@ -1564,8 +1599,8 @@ class OutlinedIconAction extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           glyph == null
-              ? IconTile(icon!, onTap: onTap, circle: circle)
-              : IconTile.glyph(glyph!, onTap: onTap, circle: circle),
+              ? IconTile(icon!, onTap: onTap)
+              : IconTile.glyph(glyph!, onTap: onTap),
           const SizedBox(height: Gap.xs),
           FittedBox(
             fit: BoxFit.scaleDown,
@@ -1580,56 +1615,6 @@ class OutlinedIconAction extends StatelessWidget {
       ),
     ),
   );
-}
-
-/// The contact chat mark (Founder reference): a solid round speech bubble
-/// with its tail at the lower left and three light dots. Size and colour
-/// come from the surrounding [IconTheme].
-class ChatBubbleGlyph extends StatelessWidget {
-  const ChatBubbleGlyph({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = IconTheme.of(context);
-    final size = theme.size ?? Sizes.icon;
-    return CustomPaint(
-      size: Size.square(size),
-      painter: _ChatBubblePainter(
-        theme.color ?? context.c.iconColor,
-        context.c.subtle,
-      ),
-    );
-  }
-}
-
-class _ChatBubblePainter extends CustomPainter {
-  const _ChatBubblePainter(this.color, this.dots);
-  final Color color, dots;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final fill = Paint()..color = color;
-    // Bubble body.
-    canvas.drawOval(Rect.fromLTWH(w * .02, h * .06, w * .96, h * .8), fill);
-    // Tail, lower left.
-    final tail = Path()
-      ..moveTo(w * .12, h * .58)
-      ..lineTo(w * .02, h * .98)
-      ..lineTo(w * .38, h * .82)
-      ..close();
-    canvas.drawPath(tail, fill);
-    // Three dots.
-    final dot = Paint()..color = dots;
-    for (final x in [.3, .5, .7]) {
-      canvas.drawCircle(Offset(w * x, h * .46), w * .07, dot);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_ChatBubblePainter old) =>
-      old.color != color || old.dots != dots;
 }
 
 /// Outline WhatsApp mark: the round speech bubble with a handset inside,
