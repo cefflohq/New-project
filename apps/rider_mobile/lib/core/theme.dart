@@ -33,6 +33,10 @@ class Sizes {
   // Canonical interactive card shape, matched to the D02 Sign In options.
   static const actionRadius = 16.0;
   static const actionHorizontalPadding = 22.0;
+
+  /// Every button is a full pill (Founder, 2026-09-24): fully rounded ends,
+  /// never a rounded rectangle -- Splash/Sign In through every screen.
+  static const buttonRadius = 999.0;
   static const inputRadius = 12.0;
   static const inputHeight = 52.0;
   static const buttonHeight = 56.0;

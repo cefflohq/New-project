@@ -63,9 +63,9 @@ class CeffloPrimaryButton extends StatelessWidget {
       color: onTap == null && !busy
           ? CefColors.accent.withValues(alpha: 0.45)
           : CefColors.accent,
-      borderRadius: BorderRadius.circular(Sizes.actionRadius),
+      borderRadius: BorderRadius.circular(Sizes.buttonRadius),
       child: InkWell(
-        borderRadius: BorderRadius.circular(Sizes.actionRadius),
+        borderRadius: BorderRadius.circular(Sizes.buttonRadius),
         onTap: busy ? null : onTap,
         child: Center(
           child: busy
@@ -113,7 +113,7 @@ class CeffloSecondaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    final radius = BorderRadius.circular(Sizes.actionRadius);
+    final radius = BorderRadius.circular(Sizes.buttonRadius);
     return SizedBox(
       width: double.infinity,
       height: Sizes.buttonHeight,

@@ -126,9 +126,9 @@ class CeffloAuthOption extends StatelessWidget {
     final c = context.c;
     return Material(
       color: c.card,
-      borderRadius: BorderRadius.circular(Sizes.actionRadius),
+      borderRadius: BorderRadius.circular(Sizes.buttonRadius),
       child: InkWell(
-        borderRadius: BorderRadius.circular(Sizes.actionRadius),
+        borderRadius: BorderRadius.circular(Sizes.buttonRadius),
         onTap: onTap,
         child: Container(
           // Full width explicitly: the row is centred in a Column, so
@@ -137,7 +137,7 @@ class CeffloAuthOption extends StatelessWidget {
           width: double.infinity,
           height: 56,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Sizes.actionRadius),
+            borderRadius: BorderRadius.circular(Sizes.buttonRadius),
             border: Border.all(color: c.border),
           ),
           child: Row(
@@ -183,14 +183,14 @@ class CeffloAuthChip extends StatelessWidget {
     final c = context.c;
     return Material(
       color: c.card,
-      borderRadius: BorderRadius.circular(Sizes.actionRadius),
+      borderRadius: BorderRadius.circular(Sizes.buttonRadius),
       child: InkWell(
-        borderRadius: BorderRadius.circular(Sizes.actionRadius),
+        borderRadius: BorderRadius.circular(Sizes.buttonRadius),
         onTap: onTap,
         child: Container(
           height: 54,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Sizes.actionRadius),
+            borderRadius: BorderRadius.circular(Sizes.buttonRadius),
             border: Border.all(color: c.border),
           ),
           child: Row(
@@ -1268,7 +1268,7 @@ class CheckEmailScreen extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: CefColors.tintNeutral,
-              borderRadius: BorderRadius.circular(Sizes.actionRadius),
+              borderRadius: BorderRadius.circular(Sizes.buttonRadius),
             ),
             child: Text(
               'Resend Email (58s)',

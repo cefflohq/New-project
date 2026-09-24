@@ -209,7 +209,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   InkWell(
                     onTap: () => app.go(DRoute.editProfile),
-                    borderRadius: BorderRadius.circular(Sizes.actionRadius),
+                    borderRadius: BorderRadius.circular(Sizes.buttonRadius),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 4,
@@ -280,7 +280,7 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: Gap.md),
           InkWell(
             onTap: () => showLogOutConfirm(context, app),
-            borderRadius: BorderRadius.circular(Sizes.actionRadius),
+            borderRadius: BorderRadius.circular(Sizes.buttonRadius),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: Row(
@@ -729,13 +729,13 @@ class SettingsScreen extends StatelessWidget {
             height: Sizes.buttonHeight,
             child: Material(
               color: c.card,
-              borderRadius: BorderRadius.circular(Sizes.actionRadius),
+              borderRadius: BorderRadius.circular(Sizes.buttonRadius),
               child: InkWell(
-                borderRadius: BorderRadius.circular(Sizes.actionRadius),
+                borderRadius: BorderRadius.circular(Sizes.buttonRadius),
                 onTap: () => showLogOutConfirm(context, app),
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(Sizes.actionRadius),
+                    borderRadius: BorderRadius.circular(Sizes.buttonRadius),
                     border: Border.all(
                       color: c.attention.withValues(alpha: 0.45),
                     ),
