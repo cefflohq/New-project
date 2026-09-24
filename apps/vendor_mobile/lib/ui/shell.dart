@@ -354,7 +354,7 @@ class _Header extends StatelessWidget {
     final header = AppHeader(
       title: title,
       subtitle: _headerSubtitles[route],
-      sideWidth: today ? 64 : null,
+      sideWidth: today ? 100 : null,
       onTitleTap: today ? () => _showBusinessSwitcher(context, app) : null,
       leading: [
         if (today)
@@ -385,7 +385,7 @@ class _Header extends StatelessWidget {
 }
 
 /// Today's availability switch: the Founder-referenced toggle (blue track,
-/// white knob) with "Online" / "Offline" under it. Offline greys the
+/// white knob) with "Online" / "Offline" inside the track. Offline greys the
 /// operational screens (see [VendorShell]).
 class _OnlineToggle extends StatelessWidget {
   const _OnlineToggle();
@@ -394,7 +394,6 @@ class _OnlineToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     final on = app.vendorOnline;
-    final text = Theme.of(context).textTheme;
     return Flexible(
       child: Padding(
         padding: const EdgeInsets.only(left: Gap.md),
@@ -415,21 +414,7 @@ class _OnlineToggle extends StatelessWidget {
                       : "You're online.",
                 );
               },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _ToggleTrack(on: on),
-                  const SizedBox(height: 2),
-                  Text(
-                    on ? 'Online' : 'Offline',
-                    style: text.labelSmall?.copyWith(
-                      color: Colors.white.withValues(alpha: on ? 1 : .7),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+              child: _ToggleTrack(on: on),
             ),
           ),
         ),
@@ -439,45 +424,68 @@ class _OnlineToggle extends StatelessWidget {
 }
 
 /// The toggle itself: a pill track (Vendor blue when on, muted when off)
-/// with a white round knob that slides across.
+/// with a white round knob; the state label sits in the track's free space
+/// -- "Online" left of the knob, "Offline" right of it.
 class _ToggleTrack extends StatelessWidget {
   const _ToggleTrack({required this.on});
   final bool on;
 
-  static const _w = 46.0, _h = 26.0, _knob = 22.0;
+  static const _w = 88.0, _h = 30.0, _knob = 24.0;
 
   @override
-  Widget build(BuildContext context) => AnimatedContainer(
-    duration: const Duration(milliseconds: 200),
-    width: _w,
-    height: _h,
-    padding: const EdgeInsets.all(2),
-    decoration: BoxDecoration(
-      color: on ? CefColors.brand : Colors.white.withValues(alpha: .28),
-      borderRadius: BorderRadius.circular(_h),
-      border: Border.all(color: Colors.white.withValues(alpha: .55)),
-    ),
-    child: AnimatedAlign(
+  Widget build(BuildContext context) {
+    final label = Text(
+      on ? 'Online' : 'Offline',
+      maxLines: 1,
+      style: Theme.of(context).textTheme.labelSmall
+          ?.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+    );
+    return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOut,
-      alignment: on ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        width: _knob - 2,
-        height: _knob - 2,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x40000000),
-              blurRadius: 4,
-              offset: Offset(0, 1),
-            ),
-          ],
-        ),
+      width: _w,
+      height: _h,
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: on ? CefColors.brand : Colors.white.withValues(alpha: .28),
+        borderRadius: BorderRadius.circular(_h),
+        border: Border.all(color: Colors.white.withValues(alpha: .55)),
       ),
-    ),
-  );
+      child: Stack(
+        children: [
+          // Label in the space the knob is not using.
+          Positioned.fill(
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: on ? Gap.sm : _knob + Gap.xs,
+                right: on ? _knob + Gap.xs : Gap.sm,
+              ),
+              child: Center(child: FittedBox(child: label)),
+            ),
+          ),
+          AnimatedAlign(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            alignment: on ? Alignment.centerRight : Alignment.centerLeft,
+            child: Container(
+              width: _knob,
+              height: _knob,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x40000000),
+                    blurRadius: 4,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// The Today title's dropdown: the businesses this account can run, the
