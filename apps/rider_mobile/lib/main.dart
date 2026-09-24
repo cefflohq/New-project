@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/app_state.dart';
 import 'core/env.dart';
 import 'core/responsive.dart';
 import 'core/routes.dart';
+import 'core/safe_area.dart';
 import 'core/theme.dart';
 import 'data/rider_repository.dart';
 import 'ui/router.dart';
@@ -14,6 +16,8 @@ import 'ui/widgets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Edge-to-edge: the app draws behind transparent status and gesture bars.
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
   // UI prototype / preview boot mode. No Supabase credentials, no network:
   // every screen reads `demo_data.dart` fixtures through
@@ -173,7 +177,8 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
         theme: buildRiderTheme(),
         // Applied above the Navigator so every route, dialog and bottom
         // sheet lays out against the same normalized canvas.
-        builder: (context, child) => ResponsiveDensity(child: child!),
+        builder: (context, child) =>
+            _EdgeToEdgeInsets(child: ResponsiveDensity(child: child!)),
         home: Builder(
           builder: (context) {
             if (!_signedIn) {
@@ -245,4 +250,28 @@ class ConfigurationErrorApp extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Edge-to-edge on the web: the page draws behind the Android gesture bar,
+/// so the bottom system inset the engine does not report is added to
+/// MediaQuery here, once -- every SafeArea (bottom navigation, sheets) then
+/// clears the gesture pill while its own background continues behind it.
+/// No-op on native builds.
+class _EdgeToEdgeInsets extends StatelessWidget {
+  const _EdgeToEdgeInsets({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final bottom = webSafeAreaBottom();
+    if (bottom <= media.padding.bottom) return child;
+    return MediaQuery(
+      data: media.copyWith(
+        padding: media.padding.copyWith(bottom: bottom),
+        viewPadding: media.viewPadding.copyWith(bottom: bottom),
+      ),
+      child: child,
+    );
+  }
 }

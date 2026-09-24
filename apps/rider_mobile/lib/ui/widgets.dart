@@ -10,19 +10,19 @@ import '../core/routes.dart';
 import '../core/theme.dart';
 import 'brand.dart';
 
+/// Edge-to-edge system bars: both transparent, so the navy gradient runs
+/// behind the status bar and the white surface behind the gesture area.
 SystemUiOverlayStyle _surfaceSystemUi({
-  required Color top,
-  required Color bottom,
   Brightness topIcons = Brightness.light,
   Brightness bottomIcons = Brightness.dark,
 }) => SystemUiOverlayStyle(
-  statusBarColor: top,
+  statusBarColor: Colors.transparent,
   statusBarIconBrightness: topIcons,
   statusBarBrightness: topIcons == Brightness.light
       ? Brightness.dark
       : Brightness.light,
-  systemNavigationBarColor: bottom,
-  systemNavigationBarDividerColor: bottom,
+  systemNavigationBarColor: Colors.transparent,
+  systemNavigationBarDividerColor: Colors.transparent,
   systemNavigationBarIconBrightness: bottomIcons,
   systemNavigationBarContrastEnforced: false,
 );
@@ -481,10 +481,7 @@ class CeffloAuthScaffold extends StatelessWidget {
     );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: _surfaceSystemUi(
-        top: CefColors.gradientBright,
-        bottom: context.c.card,
-      ),
+      value: _surfaceSystemUi(),
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         body: NavyBackdrop(
@@ -603,57 +600,53 @@ class CeffloNavySheetScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final sheetChild = Padding(padding: bodyPadding, child: body);
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: _surfaceSystemUi(
-        top: CefColors.gradientBright,
-        bottom: context.c.card,
-      ),
-      child: DecoratedBox(
-        decoration: const BoxDecoration(gradient: cefHeaderGradient),
-        child: Stack(
-          children: [
-            const ChevronWatermark(),
-            Column(
-              children: [
-                header,
-                // No lift shadow: the surface is attached to the header rather
-                // than floating over it, and an upward shadow only paints a
-                // dark seam line (and a dark arc in the corner notches) along
-                // the join.
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: context.c.card,
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(sheetRadius),
-                      ),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: scrollable
-                              ? SingleChildScrollView(child: sheetChild)
-                              : sheetChild,
-                        ),
-                        if (footer != null)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(
-                              Gap.gutter,
-                              Gap.sm,
-                              Gap.gutter,
-                              Gap.lg,
-                            ),
-                            child: footer!,
-                          ),
-                      ],
+      value: _surfaceSystemUi(),
+      // Transparent: the shell paints the one navy gradient behind every
+      // signed-in screen, so it never restarts between tabs.
+      child: Stack(
+        children: [
+          const ChevronWatermark(),
+          Column(
+            children: [
+              header,
+              // No lift shadow: the surface is attached to the header rather
+              // than floating over it, and an upward shadow only paints a
+              // dark seam line (and a dark arc in the corner notches) along
+              // the join.
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: context.c.card,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(sheetRadius),
                     ),
                   ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: scrollable
+                            ? SingleChildScrollView(child: sheetChild)
+                            : sheetChild,
+                      ),
+                      if (footer != null)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            Gap.gutter,
+                            Gap.sm,
+                            Gap.gutter,
+                            Gap.lg,
+                          ),
+                          child: footer!,
+                        ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
