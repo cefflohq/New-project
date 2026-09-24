@@ -1020,3 +1020,55 @@ Guarded by a widget test (one backdrop; same element across all tabs).
   - Cefflo blue is used for selection and filters; mustard for primary actions; green for Active.
   - Template colours belong to the template and the vendor, never to the Vendor app palette.
 - **Persistence.** Storefront configuration is in-memory session state behind `AppState.applyStorefront`, since there is no storefront backend yet.
+
+## D-56 Backend Wiring Sequence and Truth Boundary (2026-09-24)
+
+**Decision (Founder).** Backend wiring for the current Flutter Vendor, Flutter
+Driver and Customer Tracking PWA proceeds only after a read-only audit and a
+separate Founder gate.
+
+- Shared Auth, roles and active business/rider context are wired and verified
+  first because all three product surfaces depend on them.
+- Implementation order is Vendor Mobile → Driver Mobile → Customer Tracking.
+  Each surface consumes the authoritative data produced by the previous one.
+- Wiring belongs in repository/adapter layers; the approved UI remains locked
+  except for the smallest state/error integration required for truthful wiring.
+- `VendorRepository.demo()`, `RiderRepository.demo()`/`DemoData`, and
+  `CEFFLO_UI_PROTOTYPE=true` remain supported as explicit preview-only paths.
+  Demo state must never be represented as persisted backend truth.
+- Missing capabilities stay behind a clear adapter boundary and are reported as
+  unavailable. Schema changes require new migrations; existing migrations are
+  immutable.
+- Every app must pass repository tests, Flutter analysis/tests, web build,
+  staging real-data flows and 393×852 visual evidence before its branch may be
+  pushed.
+
+Phase 1 evidence and the implementation gate are recorded in
+`docs/cefflo/engineering/BACKEND_WIRING_AUDIT.md`.
+
+## D-57 Phase 2A Driver Auth and Active Relationship Boundary (2026-09-25)
+
+**Decision (Founder).** Phase 2A is authorized as the foundation step only.
+Driver authentication uses the same Supabase Auth identity boundary as Vendor,
+while operational authorization continues to come from canonical `riders`
+relationships and RLS.
+
+- Password sign-in, account creation, reset and recovery-password update go
+  through `RiderRepository`; the real build may not enter the signed-in shell
+  through a local-only callback.
+- Creating an Auth user does not create, approve or fabricate a Driver
+  relationship. A user without a canonical relationship remains in the
+  no-business state until the invitation/approval contract is wired.
+- One Auth identity may own multiple Driver relationships across businesses.
+  The app hydrates all relationships, chooses an active relationship explicitly
+  for scoped reads, and passes that rider id to later operational mutations.
+- `CEFFLO_UI_PROTOTYPE=true` keeps the existing local demo journey. Demo state
+  remains preview-only and cannot be used as evidence of persistence.
+- Repository migrations, RLS, invitation, multi-business context and location
+  contracts are qualified first on the disposable local Supabase target.
+  Staging parity and real-data qualification remain blocked until the staging
+  publishable configuration and authorized test identities are available.
+
+This decision does not authorize Vendor operational wiring, Driver delivery
+actions, Customer Tracking changes, production access, migration deployment or
+branch push.
