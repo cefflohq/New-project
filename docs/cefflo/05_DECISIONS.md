@@ -806,7 +806,7 @@ where they differ.
   shadow. Elevation only on genuinely floating surfaces (dialogs, sheets).
 - **Spacing first, dividers second**: no rules between page sections or form
   sections; list separators are light and inset past the leading icon.
-- **Type scale (Inter)**: page title 24/600; entity name 28/700; section
+- **Type scale (Inter)**: page title 22/600 (matches the 22px header icons); entity name 28/700; section
   heading 20/600; row title 16/600; body 15/400; secondary 14/400; pill 13/600;
   caption 12/500. Screens use theme roles only.
 - **One outline icon family (Lucide)**: nav active state is the same outline

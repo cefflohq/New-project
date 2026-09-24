@@ -241,8 +241,9 @@ ThemeData buildVendorTheme(Brightness brightness) {
     textTheme: TextTheme(
       // Large entity / person / order name (white, on the detail hero).
       titleLarge: t(28, FontWeight.w700, c.textPrimary, spacing: -0.7),
-      // Page title (white, centred in the header row).
-      headlineMedium: t(24, FontWeight.w600, c.textPrimary, spacing: -0.4),
+      // Page title (white, centred in the header row); matches the 22px
+      // header icons.
+      headlineMedium: t(22, FontWeight.w600, c.textPrimary, spacing: -0.4),
       // Section heading, and the primary heading inside a page body.
       titleMedium: t(20, FontWeight.w600, c.textPrimary, spacing: -0.3),
       // Card / list-row title, button label.
