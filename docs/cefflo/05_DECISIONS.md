@@ -843,16 +843,18 @@ cards, spacing-first dividers, type roles) stand.
 **Icon rules**
 - One outline family (Lucide), **24px** everywhere: top app bar, bottom
   navigation, actions, rows.
-- Every non-navigation icon is **navy `#0B1220`** in the **one container**:
-  `IconTile` — white rounded square (12px radius), 1px cool-grey outline. No
-  circles, no tinted discs, no brand-coloured share buttons.
+- Every non-navigation icon is **navy `#0B1220`** and **bare** — no container,
+  no tinted disc, no brand-coloured share buttons — centred in a 44px slot
+  (`IconTile`) so rows align. Founder amendment 2026-09-24: the **round 1px
+  outline is reserved for the Call and WhatsApp contact actions only**.
 - **Only bottom-navigation icons are coloured**: active = filled icon in Anchor
   Blue with label and indicator; default = navy outline.
 - Exception: status indicators on specific screens (e.g. Need Attention red,
   completion checks, selected radio). Map markers use Anchor Blue.
 - Settings is the **hamburger** (≡) at the left of the Today header; "More"
   is the horizontal ellipsis.
-- Call / WhatsApp / Directions / share channels are `IconTile`s with a caption.
+- Call and WhatsApp: round outlined icons with a caption. Directions and share
+  channels: bare icons with a caption.
 
 **Header title**: 20px SemiBold (header icons 24px).
 

@@ -667,37 +667,45 @@ class CefAvatar extends StatelessWidget {
   );
 }
 
-/// The one icon container (D-48, Icon Family sheet): a white rounded square
-/// with the 1px cool-grey outline, holding a 24px outline icon in navy. List
-/// rows, detail rows, settings rows and outlined actions all use it, so every
-/// icon shares one container, outline thickness and colour. Only bottom
-/// navigation icons are coloured; [color] is for status indicators alone
-/// (e.g. Need Attention in red).
+/// The one icon treatment (D-48): a 24px navy outline icon, bare -- no
+/// container -- centred in a fixed 44px slot so rows, detail rows, settings
+/// and actions all line up. [circle] draws the round 1px outline used only
+/// by the Call and WhatsApp contact actions. Only bottom navigation icons
+/// are coloured; [color] is for status indicators alone (e.g. Need
+/// Attention in red).
 class IconTile extends StatelessWidget {
-  const IconTile(IconData this.icon, {super.key, this.color, this.onTap})
-    : glyph = null;
+  const IconTile(
+    IconData this.icon, {
+    super.key,
+    this.color,
+    this.onTap,
+    this.circle = false,
+  }) : glyph = null;
 
   /// A composed outline mark (e.g. WhatsApp) in place of an icon.
-  const IconTile.glyph(Widget this.glyph, {super.key, this.onTap})
-    : icon = null,
-      color = null;
+  const IconTile.glyph(
+    Widget this.glyph, {
+    super.key,
+    this.onTap,
+    this.circle = false,
+  }) : icon = null,
+       color = null;
 
   final IconData? icon;
   final Widget? glyph;
   final Color? color;
+  final bool circle;
 
-  /// Makes the tile itself the tap target (outlined actions).
+  /// Makes the slot itself the tap target (actions).
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    final radius = BorderRadius.circular(Sizes.iconTileRadius);
     return Material(
-      color: c.card,
-      shape: RoundedRectangleBorder(
-        borderRadius: radius,
-        side: BorderSide(color: c.border),
+      color: circle ? c.card : Colors.transparent,
+      shape: CircleBorder(
+        side: circle ? BorderSide(color: c.border) : BorderSide.none,
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -1401,6 +1409,7 @@ class ContactActions extends StatelessWidget {
         label: 'Call',
         semanticLabel: 'Call $phone',
         icon: LucideIcons.phone,
+        circle: true,
         onTap: () => launchPhoneCall(context, phone),
       ),
       const SizedBox(width: Gap.xs),
@@ -1408,15 +1417,16 @@ class ContactActions extends StatelessWidget {
         label: 'WhatsApp',
         semanticLabel: 'WhatsApp $phone',
         glyph: const WhatsAppGlyph(),
+        circle: true,
         onTap: () => launchWhatsApp(context, phone),
       ),
     ],
   );
 }
 
-/// The one outlined utility action on detail rows (Call, WhatsApp,
-/// Directions): the standard [IconTile] as the tap target, with a caption
-/// underneath -- the same container as the row's own leading icon.
+/// The one utility action on detail rows (Call, WhatsApp, Directions): an
+/// [IconTile] as the tap target with a caption underneath. Call and
+/// WhatsApp pass [circle] for the round outline; others stay bare.
 class OutlinedIconAction extends StatelessWidget {
   const OutlinedIconAction({
     super.key,
@@ -1425,7 +1435,11 @@ class OutlinedIconAction extends StatelessWidget {
     this.icon,
     this.glyph,
     this.semanticLabel,
+    this.circle = false,
   }) : assert((icon == null) != (glyph == null));
+
+  /// Round outline -- Call and WhatsApp only.
+  final bool circle;
   final String label;
   final VoidCallback onTap;
   final IconData? icon;
@@ -1445,8 +1459,8 @@ class OutlinedIconAction extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           glyph == null
-              ? IconTile(icon!, onTap: onTap)
-              : IconTile.glyph(glyph!, onTap: onTap),
+              ? IconTile(icon!, onTap: onTap, circle: circle)
+              : IconTile.glyph(glyph!, onTap: onTap, circle: circle),
           const SizedBox(height: Gap.xs),
           FittedBox(
             fit: BoxFit.scaleDown,
