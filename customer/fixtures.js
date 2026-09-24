@@ -16,10 +16,12 @@
  * different vendor can ship a different palette without any UI change.
  */
 export const VENDOR_THEME_BREW_AND_BITE = Object.freeze({
-  primary: '#0B6BF0',
-  primaryStrong: '#0A5FD0',
-  primaryDeep: '#0857BC',
-  primarySoft: '#E8F1FE',
+  primary: '#06317F',
+  primaryStrong: '#06317F',
+  primaryDeep: '#002560',
+  headerTop: '#03265E',
+  headerBottom: '#0788E4',
+  primarySoft: '#E8EEF7',
   onPrimary: '#FFFFFF'
 });
 

@@ -84,10 +84,12 @@ function applyVendorTheme(theme) {
   style.setProperty('--vendor-primary', theme.primary);
   style.setProperty('--vendor-primary-strong', theme.primaryStrong);
   style.setProperty('--vendor-primary-deep', theme.primaryDeep);
+  if (theme.headerTop) style.setProperty('--vendor-header-top', theme.headerTop);
+  if (theme.headerBottom) style.setProperty('--vendor-header-bottom', theme.headerBottom);
   style.setProperty('--vendor-primary-soft', theme.primarySoft);
   style.setProperty('--vendor-on-primary', theme.onPrimary);
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', theme.primaryStrong);
+  if (meta) meta.setAttribute('content', theme.headerTop || theme.primaryStrong);
 }
 
 /* --------------------------------------------------------------- components */
@@ -100,7 +102,6 @@ function vendorHeader(vendor) {
         <p class="vendor-header__name">${esc(vendor.name)}</p>
         <p class="vendor-header__tagline">${esc(vendor.tagline)}</p>
       </div>
-      <span class="vendor-header__bell" aria-hidden="true">${icon('bell', { size: 24 })}</span>
     </div>`;
 }
 

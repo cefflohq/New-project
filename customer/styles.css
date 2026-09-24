@@ -7,10 +7,12 @@
 
 :root {
   /* Vendor theme tokens (defaults = reference vendor "Brew & Bite"). */
-  --vendor-primary: #0B6BF0;
-  --vendor-primary-strong: #0A5FD0;
-  --vendor-primary-deep: #0857BC;
-  --vendor-primary-soft: #E8F1FE;
+  --vendor-primary: #06317F;
+  --vendor-primary-strong: #06317F;
+  --vendor-primary-deep: #002560;
+  --vendor-header-top: #03265E;
+  --vendor-header-bottom: #0788E4;
+  --vendor-primary-soft: #E8EEF7;
   --vendor-on-primary: #FFFFFF;
 
   /* Neutral + semantic system tokens (not vendor-owned). */
@@ -85,7 +87,11 @@ img { display: block; max-width: 100%; }
   max-width: 480px;
   height: 100vh;
   margin: 0 auto;
-  background: var(--surface);
+  background: linear-gradient(
+    180deg,
+    var(--vendor-header-top) 0%,
+    var(--vendor-header-bottom) 100%
+  );
   position: relative;
   overflow: hidden;
 }
@@ -95,11 +101,7 @@ img { display: block; max-width: 100%; }
 }
 
 .vendor-header {
-  /* Flat, not a top-to-bottom gradient: the .sheet's rounded top corners
-     overlap up into the bottom of this element (margin-top: -18px), so a
-     gradient made the corner notch read as a visibly different, darker
-     blue than the rest of the header bar. One flat colour removes that. */
-  background: var(--vendor-primary-strong);
+  background: transparent;
   color: var(--vendor-on-primary);
   padding: max(12px, env(safe-area-inset-top)) 18px 30px;
   flex: 0 0 auto;
@@ -136,8 +138,6 @@ img { display: block; max-width: 100%; }
   font-weight: 400;
   color: rgba(255, 255, 255, 0.82);
 }
-
-.vendor-header__bell { color: rgba(255, 255, 255, 0.92); flex: 0 0 auto; }
 
 .sheet {
   flex: 1 1 auto;

@@ -7,7 +7,6 @@
 const STROKE = 'fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';
 
 const PATHS = {
-  bell: `<g ${STROKE}><path d="M12 3.4a5.4 5.4 0 0 0-5.4 5.4v3.05L5.3 15.1h13.4l-1.3-3.25V8.8A5.4 5.4 0 0 0 12 3.4Z"/><path d="M10.1 18a2 2 0 0 0 3.8 0"/></g>`,
   check: `<path ${STROKE} stroke-width="2.6" d="m5.4 12.4 4.3 4.3 8.9-9"/>`,
   chevronRight: `<path ${STROKE} d="m9.5 5.5 6.5 6.5-6.5 6.5"/>`,
   chevronLeft: `<path ${STROKE} stroke-width="2.1" d="m14.5 5.5-6.5 6.5 6.5 6.5"/>`,
