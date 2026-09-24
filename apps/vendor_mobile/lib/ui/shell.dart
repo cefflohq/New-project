@@ -590,8 +590,8 @@ class _BottomNav extends StatelessWidget {
   const _BottomNav();
 
   /// (tab, label, default outline icon, active filled icon). The only
-  /// coloured icons in the app (D-48): active = filled Anchor Blue,
-  /// default = navy outline.
+  /// coloured icons in the app: active = filled, in the Anchor Blue of the
+  /// top background (#01265E); default = navy outline.
   static const _items = <(NavTab, String, IconData, Widget)>[
     (NavTab.today, 'Today', LucideIcons.house, Icon(Icons.home_rounded)),
     (NavTab.orders, 'Orders', LucideIcons.package, _FilledCube()),
@@ -626,7 +626,9 @@ class _BottomNav extends StatelessWidget {
           child: Row(
             children: _items.map((item) {
               final selected = app.activeTab == item.$1;
-              final tone = selected ? CefColors.brand : c.iconColor;
+              // Active = the Anchor Blue of the top background (Founder,
+              // 2026-09-24); inactive = neutral.
+              final tone = selected ? CefColors.anchorBlue : c.iconColor;
               return Expanded(
                 child: Material(
                   color: Colors.transparent,
@@ -662,7 +664,7 @@ class _BottomNav extends StatelessWidget {
                             height: 3,
                             decoration: BoxDecoration(
                               color: selected
-                                  ? CefColors.brand
+                                  ? CefColors.anchorBlue
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(2),
                             ),
@@ -693,7 +695,7 @@ class _FilledCube extends StatelessWidget {
     final size = theme.size ?? Sizes.icon;
     return CustomPaint(
       size: Size.square(size),
-      painter: _FilledCubePainter(theme.color ?? CefColors.brand),
+      painter: _FilledCubePainter(theme.color ?? CefColors.anchorBlue),
     );
   }
 }
