@@ -191,20 +191,49 @@ void main() {
     expect(find.text('Kaya Toast'), findsOneWidget);
   });
 
-  testWidgets('zone detail previews four orders and pins dispatch', (
+  testWidgets('zone detail: three figures, today\'s deliveries, options', (
     tester,
   ) async {
     await pumpAt(
       tester,
       const VendorLocation(VRoute.zoneDetail, entityId: 'zone-bangsar'),
     );
-    expect(find.text('Review & dispatch (5)'), findsOneWidget);
-    expect(
-      tester.getBottomLeft(find.text('Review & dispatch (5)')).dy,
-      lessThan(852),
-    );
-    expect(find.text('View all'), findsOneWidget);
-    expect(find.text('Edit zone'), findsOneWidget);
+    // Header is the zone's own name; the old KPI block and dispatch flow
+    // are gone.
+    expect(find.text('Bangsar'), findsWidgets);
+    expect(find.text('Delivery plan'), findsNothing);
+    expect(find.text('Ready'), findsNothing);
+    expect(find.textContaining('Review & dispatch'), findsNothing);
+    expect(find.text('Total distance'), findsOneWidget);
+    expect(find.text('Total orders'), findsOneWidget);
+    expect(find.text('Delivered'), findsOneWidget);
+    expect(find.text('7.4 km'), findsOneWidget);
+    expect(find.text("Today's deliveries"), findsOneWidget);
+    expect(find.textContaining('run'), findsNothing);
+    expect(find.text('2 orders'), findsOneWidget);
+    expect(find.text('Nadia Rahman'), findsOneWidget);
+
+    // Swipe a stop away (full, deliberate swipe).
+    await tester.drag(find.text('Nadia Rahman'), const Offset(-600, 0));
+    await tester.pumpAndSettle();
+    expect(find.text('Nadia Rahman'), findsNothing);
+    expect(find.text('1 order'), findsOneWidget);
+
+    // Zone options: exactly two actions.
+    await tester.tap(find.byTooltip('Zone options'));
+    await tester.pumpAndSettle();
+    expect(find.text('Edit zone name'), findsOneWidget);
+    expect(find.text('Delete zone'), findsOneWidget);
+    expect(find.textContaining('boundary'), findsNothing);
+    expect(find.textContaining('Deactivate'), findsNothing);
+
+    // Rename through the lightweight editor.
+    await tester.tap(find.text('Edit zone name'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField), 'Bangsar South');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bangsar South'), findsWidgets);
   });
 
   testWidgets('Today caps Recent Delivery at four rows, one card per issue', (tester) async {

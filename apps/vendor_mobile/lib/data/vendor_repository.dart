@@ -32,6 +32,12 @@ class VendorRepository {
   final SupabaseClient? _db;
   final bool _demo;
 
+  /// Demo-session state the demo actions may change (rename / delete a
+  /// zone, take a delivery off today's plan). Per repository instance, so
+  /// one session never leaks into another.
+  late final List<Zone> _demoZones = List.of(_DemoData.zones);
+  late PlanProposal _demoPlan = _DemoData.plan;
+
   bool get isDemo => _demo;
   User? get currentUser => _db?.auth.currentUser;
   Stream<AuthState> get authChanges =>
@@ -221,7 +227,7 @@ class VendorRepository {
   // ----------------------------------------------------------------- zones
 
   Future<List<Zone>> zones(String businessId) async {
-    if (_demo) return _DemoData.zones;
+    if (_demo) return List.of(_demoZones);
     final rows = await _run(
       () => _db!
           .from('zones')
@@ -250,6 +256,70 @@ class VendorRepository {
       ),
     );
     return Zone.fromRow(_single(row));
+  }
+
+  /// Renames a zone (Zone options → Edit zone name).
+  Future<Zone> renameZone(String zoneId, String name) async {
+    if (_demo) {
+      final i = _demoZones.indexWhere((z) => z.id == zoneId);
+      final z = _demoZones[i];
+      return _demoZones[i] = Zone(
+        id: z.id,
+        name: name,
+        status: z.status,
+        locality: z.locality,
+      );
+    }
+    final row = await _run(
+      () => _db!
+          .from('zones')
+          .update({'name': name})
+          .eq('id', zoneId)
+          .select()
+          .single(),
+    );
+    return Zone.fromRow(row);
+  }
+
+  /// Removes a zone from the business's delivery setup (Zone options →
+  /// Delete zone). Row-level security decides whether the caller may.
+  Future<void> deleteZone(String zoneId) async {
+    if (_demo) {
+      _demoZones.removeWhere((z) => z.id == zoneId);
+      return;
+    }
+    await _run(() => _db!.from('zones').delete().eq('id', zoneId));
+  }
+
+  /// Takes one delivery off today's plan (swipe to delete on Zone detail).
+  /// There is no server contract for this yet, so outside the demo it
+  /// fails loudly instead of pretending to succeed.
+  Future<void> removeFromTodaysDeliveries(String orderId) async {
+    if (!_demo) {
+      throw RepositoryError(
+        'Removing a delivery from today\'s plan is not available yet.',
+        isMissingContract: true,
+      );
+    }
+    _demoPlan = PlanProposal(
+      groups: [
+        for (final g in _demoPlan.groups)
+          PlanGroup(
+            groupKey: g.groupKey,
+            zoneId: g.zoneId,
+            candidateRiderId: g.candidateRiderId,
+            candidateRiderName: g.candidateRiderName,
+            candidateRiderVehicleType: g.candidateRiderVehicleType,
+            requiredVehicle: g.requiredVehicle,
+            totalDistanceKm: g.totalDistanceKm,
+            stops: [
+              for (final stop in g.stops)
+                if (stop.orderId != orderId) stop,
+            ],
+          ),
+      ],
+      unplannable: _demoPlan.unplannable,
+    );
   }
 
   // ---------------------------------------------------------------- riders
@@ -455,7 +525,7 @@ class VendorRepository {
 
   /// Server-computed grouping, rider candidate and stop sequence.
   Future<PlanProposal> proposePlan(String businessId) async {
-    if (_demo) return _DemoData.plan;
+    if (_demo) return _demoPlan;
     final row = await _run(
       () => _db!.rpc(
         'propose_delivery_plan',
@@ -703,7 +773,9 @@ class _DemoData {
       zoneId: 'zone-pj',
       assignedRiderId: 'rider-siti',
       createdAt: now.subtract(const Duration(minutes: 70)),
-      items: const [OrderItem(name: 'Iced Americano', quantity: 4, unitPrice: 9)],
+      items: const [
+        OrderItem(name: 'Iced Americano', quantity: 4, unitPrice: 9),
+      ],
       notes: 'Rider could not reach the customer.',
     ),
     VendorOrder(
@@ -782,7 +854,7 @@ class _DemoData {
     ),
   ];
 
-  static const zones = [
+  static const zones = <Zone>[
     Zone(
       id: 'zone-bangsar',
       name: 'Bangsar',
@@ -926,7 +998,7 @@ class _DemoData {
     ),
   ];
 
-  static const plan = PlanProposal(
+  static final plan = PlanProposal(
     groups: [
       PlanGroup(
         groupKey: 'bangsar-ready',
@@ -936,7 +1008,22 @@ class _DemoData {
         candidateRiderVehicleType: 'Motorbike',
         requiredVehicle: 'Motorbike',
         totalDistanceKm: 7.4,
-        stops: [PlanStop(orderId: 'ord-1001', sequence: 1, distanceKm: 1.8)],
+        stops: [
+          PlanStop(
+            orderId: 'ord-1001',
+            sequence: 1,
+            distanceKm: 1.8,
+            travelMinutes: 8,
+            etaAt: DateTime(2026, 9, 13, 10, 15),
+          ),
+          PlanStop(
+            orderId: 'ord-1006',
+            sequence: 2,
+            distanceKm: 2.6,
+            travelMinutes: 12,
+            etaAt: DateTime(2026, 9, 13, 10, 32),
+          ),
+        ],
       ),
     ],
     unplannable: [

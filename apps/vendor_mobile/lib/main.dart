@@ -161,6 +161,20 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
                 status: 'REMOVED — merged into Settings (D-46)',
               );
             }
+            if (widget.repo.isDemo && widget.auditId == 18) {
+              return const _ReservedAuditScreen(
+                id: 'V18',
+                title: 'Review Delivery Plan',
+                status: 'REMOVED — consolidated into Zone detail (D-49)',
+              );
+            }
+            if (widget.repo.isDemo && widget.auditId == 30) {
+              return const _ReservedAuditScreen(
+                id: 'V30',
+                title: 'Edit Zone',
+                status: 'REMOVED — Zone detail ⋮ Zone options (D-49)',
+              );
+            }
             // Founder-locked Vendor Auth batch (2026-09-11): the auth family
             // owns its own stage flow, starting at the locked Splash.
             if ((widget.repo.isDemo && !_prototypeAuthenticated) ||
@@ -210,7 +224,7 @@ int? _auditIdFromUri(Uri uri) {
 }
 
 VendorLocation? _auditLocation(int id) {
-  if (id <= 8 || id == 41 || id == 42) return null;
+  if (id <= 8 || const {18, 30, 41, 42}.contains(id)) return null;
   if (id == 9) return const VendorLocation(VRoute.welcomeSetup);
   if (id == 10) return const VendorLocation(VRoute.setupComplete);
 
@@ -223,11 +237,10 @@ VendorLocation? _auditLocation(int id) {
 
   final entityId = switch (spec.route) {
     VRoute.orderDetail || VRoute.editOrder => 'ord-1001',
-    VRoute.zoneDetail || VRoute.reviewDispatch => 'zone-bangsar',
+    VRoute.zoneDetail => 'zone-bangsar',
     VRoute.runDetail => 'RUN-0182',
     VRoute.riderDetail => 'rider-ahmad',
     VRoute.teamMemberDetail => 'team-owner',
-    VRoute.editZone => 'zone-bangsar',
     VRoute.productDetail => 'prod-1',
     _ => null,
   };

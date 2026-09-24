@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -17,14 +19,10 @@ String _titleCase(String value) => value
     .map((w) => w[0].toUpperCase() + w.substring(1))
     .join(' ');
 
-class ZonesScreen extends StatefulWidget {
+/// V-16 — Zones overview: every zone on one map, then the zone list (name,
+/// status, today's orders and riders). Tapping a zone opens its Zone detail.
+class ZonesScreen extends StatelessWidget {
   const ZonesScreen({super.key});
-  @override
-  State<ZonesScreen> createState() => _ZonesScreenState();
-}
-
-class _ZonesScreenState extends State<ZonesScreen> {
-  String tab = 'All';
 
   @override
   Widget build(BuildContext context) {
@@ -43,38 +41,31 @@ class _ZonesScreenState extends State<ZonesScreen> {
       ),
       builder: (context, data, reload) {
         final (zones, orders) = data;
-        final tabLabels = const ['All', 'Active', 'Inactive'];
+        String plural(int n, String word) => '$n $word${n == 1 ? '' : 's'}';
         return PageBody(
           onRefresh: reload,
           children: [
-            SegmentedTabs(
-              labels: tabLabels,
-              active: tab,
-              onChange: (l) => setState(() => tab = l),
-            ),
-            const SizedBox(height: Gap.md),
+            _ZonesOverviewMap(zones: zones),
+            SectionHeading('Zones (${zones.length})'),
             if (zones.isEmpty)
               const StateBlock.empty(
-                'No zones configured yet. Create one under Settings → Service area.',
+                'No zones yet. Tap + to create your first zone.',
               )
             else
               for (final z in zones)
                 Builder(
                   builder: (context) {
                     // Counts derive from the same scoped orders read.
-                    final inZone = orders
-                        .where((o) => o.zoneId == z.id)
-                        .toList();
-                    if (tab == 'Active' && !z.isActive) {
-                      return const SizedBox.shrink();
-                    }
-                    if (tab == 'Inactive' && z.isActive) {
-                      return const SizedBox.shrink();
-                    }
+                    final inZone = orders.where((o) => o.zoneId == z.id);
+                    final riders = {
+                      for (final o in inZone)
+                        if (o.assignedRiderId != null) o.assignedRiderId,
+                    };
                     return CefListRow(
                       title: z.name,
                       subtitle:
-                          '${inZone.length} order${inZone.length == 1 ? '' : 's'}',
+                          '${plural(inZone.length, 'order')} · '
+                          '${plural(riders.length, 'rider')}',
                       icon: LucideIcons.mapPin,
                       trailing: StatusChip(
                         z.isActive ? 'Active' : 'Inactive',
@@ -88,6 +79,181 @@ class _ZonesScreenState extends State<ZonesScreen> {
           ],
         );
       },
+    );
+  }
+}
+
+/// All zones on one illustrative map: each zone is a polygon with a pin and
+/// its name, the first active zone emphasised in Anchor Blue. Geometry stays
+/// server-owned; this is a preview layout, not real boundaries.
+class _ZonesOverviewMap extends StatelessWidget {
+  const _ZonesOverviewMap({required this.zones});
+  final List<Zone> zones;
+
+  /// Fractional centres for up to eight zones, the emphasised one first.
+  static const _slots = [
+    (.50, .52),
+    (.26, .20),
+    (.80, .22),
+    (.20, .62),
+    (.76, .70),
+    (.44, .86),
+    (.88, .46),
+    (.10, .40),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = zones.take(_slots.length).toList();
+    final focus = shown.indexWhere((z) => z.isActive);
+    return SizedBox(
+      height: 240,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+        child: LayoutBuilder(
+          builder: (context, box) => CustomPaint(
+            painter: _ZonesOverviewPainter(
+              count: shown.length,
+              focus: focus,
+              slots: _slots,
+              ground: context.c.subtle,
+              road: context.c.card,
+            ),
+            child: Stack(
+              children: [
+                for (final (i, z) in shown.indexed)
+                  Positioned(
+                    left: box.maxWidth * _slots[i].$1 - 55,
+                    top: box.maxHeight * _slots[i].$2 - 22,
+                    width: 110,
+                    child: _ZonePinLabel(name: z.name, focused: i == focus),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ZonePinLabel extends StatelessWidget {
+  const _ZonePinLabel({required this.name, required this.focused});
+  final String name;
+  final bool focused;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          LucideIcons.mapPin,
+          size: Sizes.icon,
+          color: focused ? CefColors.brand : context.c.iconColor,
+        ),
+        const SizedBox(height: 2),
+        if (focused)
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Gap.sm,
+              vertical: 2,
+            ),
+            decoration: BoxDecoration(
+              color: CefColors.brand,
+              borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+            ),
+            child: Text(
+              name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: text.labelMedium?.copyWith(color: Colors.white),
+            ),
+          )
+        else
+          Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: text.labelMedium?.copyWith(color: context.c.textPrimary),
+          ),
+      ],
+    );
+  }
+}
+
+class _ZonesOverviewPainter extends CustomPainter {
+  const _ZonesOverviewPainter({
+    required this.count,
+    required this.focus,
+    required this.slots,
+    required this.ground,
+    required this.road,
+  });
+  final int count, focus;
+  final List<(double, double)> slots;
+  final Color ground, road;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    _paintStreets(canvas, size, ground, road);
+    for (var i = 0; i < count; i++) {
+      final centre = Offset(
+        size.width * slots[i].$1,
+        size.height * slots[i].$2,
+      );
+      final r = i == focus ? size.height * .24 : size.height * .15;
+      final hex = Path();
+      for (var k = 0; k < 6; k++) {
+        final angle = (k * 60 - 30) * 3.1415926535 / 180;
+        final point = centre + Offset(r * 1.1 * _cos(angle), r * _sin(angle));
+        k == 0
+            ? hex.moveTo(point.dx, point.dy)
+            : hex.lineTo(point.dx, point.dy);
+      }
+      hex.close();
+      final emphasis = i == focus;
+      canvas.drawPath(
+        hex,
+        Paint()
+          ..color = CefColors.brand.withValues(alpha: emphasis ? .22 : .08),
+      );
+      canvas.drawPath(
+        hex,
+        Paint()
+          ..color = CefColors.brand.withValues(alpha: emphasis ? 1 : .35)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = emphasis ? 2 : 1.2,
+      );
+    }
+  }
+
+  static double _cos(double a) => math.cos(a);
+  static double _sin(double a) => math.sin(a);
+
+  @override
+  bool shouldRepaint(_ZonesOverviewPainter old) =>
+      old.count != count || old.focus != focus || old.ground != ground;
+}
+
+/// Light street grid shared by the zone map painters.
+void _paintStreets(Canvas canvas, Size size, Color ground, Color road) {
+  canvas.drawRect(Offset.zero & size, Paint()..color = ground);
+  final roads = Paint()
+    ..color = road
+    ..strokeWidth = 5;
+  for (var i = -2; i < 10; i++) {
+    canvas.drawLine(
+      Offset(0, i * 48.0),
+      Offset(size.width, i * 48.0 + 110),
+      roads,
+    );
+    canvas.drawLine(
+      Offset(i * 58.0, 0),
+      Offset(i * 58.0 - 70, size.height),
+      roads,
     );
   }
 }
@@ -170,7 +336,7 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
                     z.isActive ? 'Active' : 'Inactive',
                     success: z.isActive,
                   ),
-                  onTap: () => app.go(VRoute.editZone, entityId: z.id),
+                  onTap: () => app.go(VRoute.zoneDetail, entityId: z.id),
                 ),
           ],
         );
@@ -179,191 +345,570 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
   }
 }
 
-/// V-17 — Delivery plan. An operational screen, not a map screen: what zone
-/// this is, where, what is happening in it today, which orders belong to it,
-/// and the dispatch action (pinned so it never falls below the fold).
-class ZoneDetailScreen extends StatelessWidget {
+/// V-17 — Zone detail: the one operational screen for a zone (D-49). Map,
+/// identity, three figures (total distance, total orders, delivered), then
+/// today's deliveries -- each rider with their stops. Its header is the
+/// zone's own name, with a ⋮ menu for Edit zone name / Delete zone. Review,
+/// dispatch and edit-zone screens are consolidated here.
+class ZoneDetailScreen extends StatefulWidget {
   const ZoneDetailScreen({super.key, required this.zoneId});
   final String zoneId;
 
-  /// Rows shown before "View all"; the rest open in a sheet.
-  static const _previewRows = 4;
+  @override
+  State<ZoneDetailScreen> createState() => _ZoneDetailScreenState();
+}
+
+typedef _ZoneData = (Zone, List<VendorOrder>, PlanProposal, List<RiderRow>);
+
+class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
+  final _view = GlobalKey<AsyncViewState<_ZoneData>>();
+
+  /// The loaded zone; drives the header title and the ⋮ menu.
+  Zone? _zone;
+
+  Future<_ZoneData> _load() async {
+    final app = AppScope.read(context);
+    final businessId = app.business!.id;
+    final zones = await app.repo.zones(businessId);
+    final zone = zones.firstWhere(
+      (z) => z.id == widget.zoneId,
+      orElse: () => throw StateError('Zone not found'),
+    );
+    final orders = await app.repo.orders(businessId);
+    final plan = await app.repo.proposePlan(businessId);
+    final riders = await app.repo.riders(businessId);
+    if (mounted) setState(() => _zone = zone);
+    return (
+      zone,
+      orders.where((o) => o.zoneId == widget.zoneId).toList(),
+      plan,
+      riders,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final zone = _zone;
+    return Column(
+      children: [
+        AppHeader(
+          title: zone?.name ?? '',
+          leading: [HeaderBackButton(onTap: AppScope.read(context).back)],
+          trailing: [
+            IconAction(
+              icon: LucideIcons.ellipsis,
+              tooltip: 'Zone options',
+              color: Colors.white,
+              onTap: zone == null ? () {} : () => _showZoneOptions(zone),
+            ),
+          ],
+        ),
+        Expanded(
+          child: ContentSurface(
+            bottomSafeArea: false,
+            child: AsyncView<_ZoneData>(
+              key: _view,
+              load: _load,
+              builder: (context, data, reload) =>
+                  _ZoneDetailBody(data: data, reload: reload),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Zone options: exactly Edit zone name and Delete zone.
+  void _showZoneOptions(Zone zone) {
+    final c = context.c;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: c.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(Sizes.cardRadius),
+        ),
+      ),
+      builder: (sheet) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            Gap.gutter,
+            Gap.xl,
+            Gap.gutter,
+            Gap.lg,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Zone options',
+                style: Theme.of(sheet).textTheme.titleMedium,
+              ),
+              const SizedBox(height: Gap.sm),
+              CefListRow(
+                title: 'Edit zone name',
+                icon: LucideIcons.pencil,
+                showChevron: false,
+                onTap: () {
+                  Navigator.of(sheet).pop();
+                  _editName(zone);
+                },
+              ),
+              _DestructiveRow(
+                label: 'Delete zone',
+                onTap: () {
+                  Navigator.of(sheet).pop();
+                  _confirmDelete(zone);
+                },
+              ),
+              const SizedBox(height: Gap.lg),
+              CefButton(
+                'Cancel',
+                secondary: true,
+                onTap: () => Navigator.of(sheet).pop(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _editName(Zone zone) async {
+    final app = AppScope.read(context);
+    final name = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.c.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(Sizes.cardRadius),
+        ),
+      ),
+      builder: (sheet) => _EditZoneNameSheet(initialName: zone.name),
+    );
+    if (name == null || name == zone.name || !mounted) return;
+    try {
+      final updated = await app.repo.renameZone(zone.id, name);
+      if (!mounted) return;
+      setState(() => _zone = updated);
+      await _view.currentState?.reload();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Zone renamed to ${updated.name}')),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Could not rename: $e')));
+      }
+    }
+  }
+
+  Future<void> _confirmDelete(Zone zone) async {
+    final app = AppScope.read(context);
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: context.c.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(Sizes.cardRadius),
+        ),
+      ),
+      builder: (sheet) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            Gap.gutter,
+            Gap.xl,
+            Gap.gutter,
+            Gap.lg,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Delete ${zone.name}?',
+                style: Theme.of(sheet).textTheme.titleMedium,
+              ),
+              const SizedBox(height: Gap.xs),
+              Text(
+                'This will remove the zone from your delivery setup.',
+                style: Theme.of(sheet).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: Gap.xl),
+              Row(
+                children: [
+                  Expanded(
+                    child: CefButton(
+                      'Cancel',
+                      secondary: true,
+                      onTap: () => Navigator.of(sheet).pop(false),
+                    ),
+                  ),
+                  const SizedBox(width: Gap.md),
+                  Expanded(
+                    child: CefButton(
+                      'Delete',
+                      destructive: true,
+                      onTap: () => Navigator.of(sheet).pop(true),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await app.repo.deleteZone(zone.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('${zone.name} deleted')));
+      app.back();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Could not delete: $e')));
+      }
+    }
+  }
+}
+
+/// A red, destructive action row for option sheets (Delete zone).
+class _DestructiveRow extends StatelessWidget {
+  const _DestructiveRow({required this.label, required this.onTap});
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final red = context.c.attention;
+    return CefListRow(
+      title: label,
+      leading: IconTile(LucideIcons.trash2, color: red),
+      titleColor: red,
+      showChevron: false,
+      showDivider: false,
+      onTap: onTap,
+    );
+  }
+}
+
+/// Lightweight editor for the zone name: one field, Cancel / Save.
+class _EditZoneNameSheet extends StatefulWidget {
+  const _EditZoneNameSheet({required this.initialName});
+  final String initialName;
+
+  @override
+  State<_EditZoneNameSheet> createState() => _EditZoneNameSheetState();
+}
+
+class _EditZoneNameSheetState extends State<_EditZoneNameSheet> {
+  // Owned by the sheet, so it outlives the closing animation.
+  late final _controller = TextEditingController(text: widget.initialName);
+  String? _error;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final name = _controller.text.trim();
+    if (name.isEmpty) {
+      setState(() => _error = 'Zone name is required.');
+      return;
+    }
+    Navigator.of(context).pop(name);
+  }
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: EdgeInsets.fromLTRB(
+      Gap.gutter,
+      Gap.xl,
+      Gap.gutter,
+      MediaQuery.viewInsetsOf(context).bottom + Gap.lg,
+    ),
+    child: SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Edit zone name',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: Gap.md),
+          CefField(
+            controller: _controller,
+            hint: 'Zone name',
+            prefixIcon: LucideIcons.mapPin,
+            errorText: _error,
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: CefButton(
+                  'Cancel',
+                  secondary: true,
+                  onTap: () => Navigator.of(context).pop(),
+                ),
+              ),
+              const SizedBox(width: Gap.md),
+              Expanded(child: CefButton('Save', onTap: _save)),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _ZoneDetailBody extends StatelessWidget {
+  const _ZoneDetailBody({required this.data, required this.reload});
+  final _ZoneData data;
+  final Future<void> Function() reload;
 
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    final business = app.business!;
-    return AsyncView<(Zone, List<VendorOrder>)>(
-      key: ValueKey('zone-$zoneId'),
-      load: () async {
-        final zones = await app.repo.zones(business.id);
-        final zone = zones.firstWhere(
-          (z) => z.id == zoneId,
-          orElse: () => throw StateError('Zone not found'),
-        );
-        final orders = await app.repo.orders(business.id);
-        return (zone, orders.where((o) => o.zoneId == zoneId).toList());
-      },
-      builder: (context, data, reload) {
-        final (zone, orders) = data;
-        final c = context.c;
-        final text = Theme.of(context).textTheme;
-        final ready = orders
-            .where((o) => o.status == DeliveryStatus.readyForPickup)
-            .length;
-        final active = orders
-            .where((o) => OrderTab.ongoing.accepts(o.status))
-            .length;
-        final delivered = orders
-            .where((o) => o.status == DeliveryStatus.delivered)
-            .length;
-        Widget orderRow(VendorOrder o, {VoidCallback? before}) => CefListRow(
-          title: o.reference,
-          subtitle: o.customerName,
-          icon: LucideIcons.package,
-          trailing: DeliveryStatusChip(o.status),
-          onTap: () {
-            before?.call();
-            app.go(VRoute.orderDetail, entityId: o.id);
-          },
-        );
-        return PageBody(
-          onRefresh: reload,
-          bottom: CefButton(
-            'Review & dispatch (${orders.length})',
-            icon: LucideIcons.send,
-            onTap: () => app.go(VRoute.reviewDispatch, entityId: zoneId),
+    final text = Theme.of(context).textTheme;
+    final (zone, orders, plan, riders) = data;
+    final groups = plan.groups
+        .where((g) => g.zoneId == zone.id && g.stops.isNotEmpty)
+        .toList();
+    final distance = groups.fold<num>(
+      0,
+      (sum, g) => sum + (g.totalDistanceKm ?? 0),
+    );
+    // Delivered is what has actually been delivered -- 0 until it happens.
+    final delivered = orders
+        .where((o) => o.status == DeliveryStatus.delivered)
+        .length;
+    final byId = {for (final o in orders) o.id: o};
+    return RefreshIndicator(
+      onRefresh: reload,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(
+          Gap.gutter,
+          Gap.lg,
+          Gap.gutter,
+          Gap.xxl,
+        ),
+        children: [
+          _ZoneMap(name: zone.name),
+          const SizedBox(height: Gap.md),
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  zone.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: text.titleMedium,
+                ),
+              ),
+              const SizedBox(width: Gap.sm),
+              StatusChip(
+                zone.isActive ? 'Active' : 'Inactive',
+                success: zone.isActive,
+              ),
+            ],
           ),
-          children: [
-            _ZoneMap(name: zone.name),
-            const SizedBox(height: Gap.md),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              zone.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: text.titleMedium,
-                            ),
-                          ),
-                          const SizedBox(width: Gap.sm),
-                          StatusChip(
-                            zone.isActive ? 'Active' : 'Inactive',
-                            success: zone.isActive,
-                          ),
-                        ],
-                      ),
-                      if (zone.locality != null) ...[
-                        const SizedBox(height: 2),
-                        Text(zone.locality!, style: text.bodySmall),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(width: Gap.sm),
-                CefButton(
-                  'Edit zone',
-                  secondary: true,
-                  compact: true,
-                  icon: LucideIcons.squarePen,
-                  onTap: () => app.go(VRoute.editZone, entityId: zone.id),
-                ),
-              ],
-            ),
-            const SizedBox(height: Gap.md),
-            // Operational status: one tinted panel, today's figures only.
-            Container(
-              padding: const EdgeInsets.fromLTRB(
-                Gap.lg,
-                Gap.md,
-                Gap.lg,
-                Gap.xs,
-              ),
-              decoration: BoxDecoration(
-                color: c.grouped,
-                borderRadius: BorderRadius.circular(Sizes.cardRadius),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Operational status',
-                          style: text.titleSmall,
-                        ),
-                      ),
-                      Text('Today', style: text.bodySmall),
-                    ],
-                  ),
-                  KpiStrip(
-                    items: [
-                      KpiItem('${orders.length}', 'Total'),
-                      KpiItem('$ready', 'Ready', color: c.success),
-                      KpiItem('$active', 'Active', color: CefColors.brand),
-                      KpiItem(
-                        '$delivered',
-                        'Delivered',
-                        color: c.textSecondary,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            SectionHeading(
-              'Orders (${orders.length})',
-              trailing: orders.length > _previewRows
-                  ? CefLink(
-                      'View all',
-                      chevron: true,
-                      onTap: () => showListSheet(
-                        context,
-                        title: '${zone.name} orders (${orders.length})',
-                        children: [
-                          for (final o in orders)
-                            orderRow(
-                              o,
-                              before: () => Navigator.of(context).pop(),
-                            ),
-                        ],
-                      ),
-                    )
-                  : null,
-            ),
-            if (orders.isEmpty)
-              const StateBlock.empty('No orders are assigned to this zone.')
-            else
-              CefListGroup(
-                children: [
-                  for (final o in orders.take(_previewRows)) orderRow(o),
-                ],
-              ),
+          if (zone.locality != null) ...[
+            const SizedBox(height: 2),
+            Text(zone.locality!, style: text.bodySmall),
           ],
-        );
-      },
+          const SizedBox(height: Gap.md),
+          // Three operational figures, no enclosing card.
+          KpiStrip(
+            items: [
+              KpiItem(
+                groups.isEmpty ? '0 km' : '${distance.toStringAsFixed(1)} km',
+                'Total distance',
+                icon: LucideIcons.route,
+              ),
+              KpiItem(
+                '${orders.length}',
+                'Total orders',
+                icon: LucideIcons.clipboardList,
+              ),
+              KpiItem('$delivered', 'Delivered', icon: LucideIcons.circleCheck),
+            ],
+          ),
+          const SectionHeading("Today's deliveries"),
+          if (groups.isEmpty)
+            const StateBlock.empty('No deliveries planned in this zone today.')
+          else
+            for (final g in groups) ...[
+              _RiderHeader(
+                group: g,
+                rider: riders
+                    .where((r) => r.id == g.candidateRiderId)
+                    .firstOrNull,
+              ),
+              for (final stop in g.stops)
+                _DeliveryStopRow(
+                  stop: stop,
+                  order: byId[stop.orderId],
+                  isLast: stop == g.stops.last,
+                  onRemoved: reload,
+                  onTap: () =>
+                      app.go(VRoute.orderDetail, entityId: stop.orderId),
+                ),
+            ],
+        ],
+      ),
     );
   }
 }
 
-/// Compact zone map preview: the illustrative coverage polygon with the
-/// zone's name pill and pin. Kept short so the operational content below
-/// stays in view.
+/// The rider leading a group of today's deliveries: avatar, name, vehicle ·
+/// plate, and a neutral "n orders" count (metadata, never yellow).
+class _RiderHeader extends StatelessWidget {
+  const _RiderHeader({required this.group, required this.rider});
+  final PlanGroup group;
+  final RiderRow? rider;
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final name = group.candidateRiderName ?? rider?.name ?? 'Unassigned rider';
+    final count = group.stops.length;
+    return CefListRow(
+      title: name,
+      subtitle: [
+        if (group.candidateRiderVehicleType != null)
+          _titleCase(group.candidateRiderVehicleType!),
+        if (rider?.plate != null) rider!.plate!,
+      ].join(' · '),
+      leading: CefAvatar(name, filled: true),
+      trailing: StatusChip('$count order${count == 1 ? '' : 's'}'),
+      onTap: group.candidateRiderId == null
+          ? null
+          : () => app.go(VRoute.riderDetail, entityId: group.candidateRiderId),
+    );
+  }
+}
+
+/// One stop in today's deliveries: sequence, customer, distance · time and
+/// the planned arrival. Cardless, divided by a hairline; swipe to delete.
+class _DeliveryStopRow extends StatelessWidget {
+  const _DeliveryStopRow({
+    required this.stop,
+    required this.order,
+    required this.isLast,
+    required this.onRemoved,
+    required this.onTap,
+  });
+  final PlanStop stop;
+  final VendorOrder? order;
+  final bool isLast;
+  final Future<void> Function() onRemoved;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final text = Theme.of(context).textTheme;
+    final meta = [
+      if (stop.distanceKm != null) '${stop.distanceKm} km',
+      if (stop.travelMinutes != null) '${stop.travelMinutes} min',
+    ].join(' · ');
+    final eta = stop.etaAt == null ? null : _formatTime(stop.etaAt!);
+    return Dismissible(
+      key: ValueKey('stop-${stop.orderId}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        color: c.attention,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: Gap.xl),
+        child: const Icon(
+          LucideIcons.trash2,
+          color: Colors.white,
+          size: Sizes.icon,
+        ),
+      ),
+      // A deliberate, full swipe: a partial drag snaps back.
+      dismissThresholds: const {DismissDirection.endToStart: .5},
+      confirmDismiss: (_) async {
+        final app = AppScope.read(context);
+        try {
+          await app.repo.removeFromTodaysDeliveries(stop.orderId);
+          return true;
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text('$e')));
+          }
+          return false;
+        }
+      },
+      onDismissed: (_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${order?.customerName ?? 'Delivery'} removed from today',
+            ),
+          ),
+        );
+        onRemoved();
+      },
+      child: CefListRow(
+        title: order?.customerName ?? stop.orderId,
+        subtitle: meta.isEmpty ? null : meta,
+        leading: SizedBox(
+          width: Sizes.avatar,
+          child: Center(child: _SequenceBadge(stop.sequence)),
+        ),
+        trailing: eta == null ? null : Text(eta, style: text.bodySmall),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  static String _formatTime(DateTime t) =>
+      '${t.hour % 12 == 0 ? 12 : t.hour % 12}:'
+      '${t.minute.toString().padLeft(2, '0')} ${t.hour < 12 ? 'AM' : 'PM'}';
+}
+
+/// Stop order indicator: the sequence number in an Anchor Blue dot.
+class _SequenceBadge extends StatelessWidget {
+  const _SequenceBadge(this.sequence);
+  final int sequence;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 28,
+    height: 28,
+    alignment: Alignment.center,
+    decoration: const BoxDecoration(
+      color: CefColors.brand,
+      shape: BoxShape.circle,
+    ),
+    child: Text(
+      '$sequence',
+      style: Theme.of(context).textTheme.labelMedium
+          ?.copyWith(color: Colors.white),
+    ),
+  );
+}
+
+/// Zone detail map: the zone's polygon with its name pill and pin. The
+/// strongest visual element of the screen.
 class _ZoneMap extends StatelessWidget {
   const _ZoneMap({required this.name});
   final String name;
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: 180,
+    height: 200,
     child: ClipRRect(
       borderRadius: BorderRadius.circular(Sizes.cardRadius),
       child: CustomPaint(
@@ -397,53 +942,29 @@ class _ZoneMap extends StatelessWidget {
   );
 }
 
-/// V-29 / V-30 — Create/Edit zone, bound to a real zone name and the
-/// canonical create/status contracts instead of a generic Name/Phone/Email
-/// stand-in. Coverage geometry itself stays server-owned: this only names
-/// the zone and previews it, it never draws or computes a boundary.
-class ZoneFormScreen extends StatefulWidget {
-  const ZoneFormScreen({super.key, this.zoneId});
-  final String? zoneId;
-  bool get isNew => zoneId == null;
+/// V-29 — Create zone, bound to the canonical `create_zone` contract.
+/// Coverage geometry stays server-owned: this only names the zone and
+/// previews it. Editing and deleting a zone live in Zone detail's ⋮ menu.
+class CreateZoneScreen extends StatefulWidget {
+  const CreateZoneScreen({super.key});
 
   @override
-  State<ZoneFormScreen> createState() => _ZoneFormScreenState();
+  State<CreateZoneScreen> createState() => _CreateZoneScreenState();
 }
 
-class _ZoneFormScreenState extends State<ZoneFormScreen> {
+class _CreateZoneScreenState extends State<CreateZoneScreen> {
   final name = TextEditingController();
-  bool active = true;
-  bool loading = false;
   bool busy = false;
   String? error;
-  final errors = <String, String>{};
-
-  @override
-  void initState() {
-    super.initState();
-    if (!widget.isNew) _prefill();
-  }
-
-  Future<void> _prefill() async {
-    setState(() => loading = true);
-    try {
-      final app = AppScope.read(context);
-      final zones = await app.repo.zones(app.business!.id);
-      final z = zones.firstWhere((z) => z.id == widget.zoneId);
-      name.text = z.name;
-      active = z.isActive;
-    } catch (e) {
-      error = '$e';
-    } finally {
-      if (mounted) setState(() => loading = false);
-    }
-  }
+  String? nameError;
 
   Future<void> _save() async {
-    errors.clear();
-    if (name.text.trim().isEmpty) errors['name'] = 'Zone name is required.';
-    setState(() {});
-    if (errors.isNotEmpty) return;
+    setState(
+      () => nameError = name.text.trim().isEmpty
+          ? 'Zone name is required.'
+          : null,
+    );
+    if (nameError != null) return;
 
     final app = AppScope.read(context);
     if (app.repo.isDemo) {
@@ -451,13 +972,9 @@ class _ZoneFormScreenState extends State<ZoneFormScreen> {
         context,
         action: () async {},
         processingTitle: 'Processing...',
-        processingSubtitle: widget.isNew
-            ? 'Creating your zone'
-            : 'Saving your changes',
+        processingSubtitle: 'Creating your zone',
         successTitle: 'Successful',
-        successSubtitle: widget.isNew
-            ? 'Your new zone has been created successfully.'
-            : 'Your zone has been updated successfully.',
+        successSubtitle: 'Your new zone has been created successfully.',
       );
       if (!mounted || !ok) return;
       app.back();
@@ -468,14 +985,7 @@ class _ZoneFormScreenState extends State<ZoneFormScreen> {
       error = null;
     });
     try {
-      if (widget.isNew) {
-        await app.repo.createZone(app.business!.id, name.text.trim());
-      } else {
-        await app.repo.setZoneStatus(
-          widget.zoneId!,
-          active ? 'active' : 'inactive',
-        );
-      }
+      await app.repo.createZone(app.business!.id, name.text.trim());
       if (!mounted) return;
       app.back();
     } catch (e) {
@@ -483,32 +993,6 @@ class _ZoneFormScreenState extends State<ZoneFormScreen> {
     } finally {
       if (mounted) setState(() => busy = false);
     }
-  }
-
-  Future<void> _delete() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete this zone?'),
-        content: const Text(
-          'Orders already assigned to this zone are not affected.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'Delete',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true && mounted) AppScope.read(context).back();
   }
 
   @override
@@ -519,16 +1003,9 @@ class _ZoneFormScreenState extends State<ZoneFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (loading) return const StateBlock.loading();
     final text = Theme.of(context).textTheme;
-    // Archetype G (multi-section form): coverage preview, then one
-    // SectionHeading per section, CefFields and the CTA.
     return PageBody(
-      bottom: CefButton(
-        widget.isNew ? 'Create Zone' : 'Save Changes',
-        busy: busy,
-        onTap: _save,
-      ),
+      bottom: CefButton('Create Zone', busy: busy, onTap: _save),
       children: [
         SizedBox(
           height: 170,
@@ -536,24 +1013,22 @@ class _ZoneFormScreenState extends State<ZoneFormScreen> {
             borderRadius: BorderRadius.circular(Sizes.cardRadius),
             child: CustomPaint(
               painter: _CoverageMapPainter.of(context),
-              child: Center(
+              child: const Center(
                 child: Icon(
                   LucideIcons.mapPin,
-                  color: context.c.info,
-                  size: 32,
+                  color: CefColors.brand,
+                  size: 28,
                 ),
               ),
             ),
           ),
         ),
-        if (widget.isNew) ...[
-          const SizedBox(height: Gap.md),
-          Text(
-            'This zone will cover the highlighted area on the map. '
-            'You can always edit it later.',
-            style: text.bodySmall,
-          ),
-        ],
+        const SizedBox(height: Gap.md),
+        Text(
+          'This zone will cover the highlighted area on the map. '
+          'You can always edit it later.',
+          style: text.bodySmall,
+        ),
         const SectionHeading(
           'Zone details',
           icon: LucideIcons.mapPin,
@@ -564,20 +1039,8 @@ class _ZoneFormScreenState extends State<ZoneFormScreen> {
           controller: name,
           hint: 'Enter zone name',
           prefixIcon: LucideIcons.mapPin,
-          errorText: errors['name'],
+          errorText: nameError,
         ),
-        if (!widget.isNew) ...[
-          const SectionHeading('Status', icon: LucideIcons.circleCheck),
-          CefListRow(
-            title: 'Active',
-            subtitle: 'Orders can be assigned to this zone',
-            subtitleMaxLines: 2,
-            trailing: CefSwitch(
-              value: active,
-              onChanged: (v) => setState(() => active = v),
-            ),
-          ),
-        ],
         if (error != null)
           Padding(
             padding: const EdgeInsets.only(top: Gap.md),
@@ -586,15 +1049,6 @@ class _ZoneFormScreenState extends State<ZoneFormScreen> {
               style: text.bodySmall?.copyWith(color: context.c.attention),
             ),
           ),
-        if (!widget.isNew) ...[
-          const SizedBox(height: Gap.md),
-          CefButton(
-            'Delete Zone',
-            destructive: true,
-            icon: LucideIcons.trash2,
-            onTap: _delete,
-          ),
-        ],
       ],
     );
   }
@@ -997,22 +1451,7 @@ class _CoverageMapPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(Offset.zero & size, Paint()..color = ground);
-    final roads = Paint()
-      ..color = road
-      ..strokeWidth = 5;
-    for (var i = -2; i < 8; i++) {
-      canvas.drawLine(
-        Offset(0, i * 48.0),
-        Offset(size.width, i * 48.0 + 110),
-        roads,
-      );
-      canvas.drawLine(
-        Offset(i * 58.0, 0),
-        Offset(i * 58.0 - 70, size.height),
-        roads,
-      );
-    }
+    _paintStreets(canvas, size, ground, road);
     final coverage = Path()
       ..moveTo(size.width * .25, size.height * .35)
       ..lineTo(size.width * .48, size.height * .16)

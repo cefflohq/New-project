@@ -184,7 +184,7 @@ Every Vendor Mobile screen is derived from one of these; no screen invents anoth
 |---|---|---|---|
 | A | Today / Overview | Overview | Header: Settings gear · business name · bell; KPI strip (value + label, hairline column dividers) on white; Recent Delivery rows (avatar, green Delivered pill + time, chevron); Need Attention row. |
 | B | Operational tabbed list | Orders | Top-level header with search/add; blue underline tabs; rows with grey icon disc, title, one-line subtitle, neutral pill, no chevron. |
-| C | Zones list | Zones | As B with a blue-tinted location disc. |
+| C | Zones overview + Zone detail (D-49) | Zones flow | Overview: all-zones map, then zone rows (name, status, orders · riders). Zone detail: zone-name header with ⋮ (Edit zone name / Delete zone); map; three uncarded figures (Total distance · Total orders · Delivered); Today's deliveries — rider header with neutral count pill, cardless numbered stops, swipe to delete. |
 | D | People list | Riders | As B with navy filled initials avatar. |
 | E | Detail hero | Rider Detail | Gradient hero: large avatar, name, status pill, meta lines (role; vehicle plate with icon). White surface: stats card (rider: Total orders · Customer rating · Joined), Contact card, information cards. Primary action pinned. No bottom nav. |
 | F | Settings | Settings | Opened from the Today header. Groups Account · Business · Support, then Sign out; grouped page tone; white bordered group cards; grey icon discs; inset dividers; chevrons. The only directory of these destinations. |

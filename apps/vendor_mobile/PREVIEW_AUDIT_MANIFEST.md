@@ -23,8 +23,8 @@ They do not alter canonical product navigation or Production.
 | V14 | `/audit/V14` | New Order |
 | V15 | `/audit/V15` | Edit Order |
 | V16 | `/audit/V16` | Zones |
-| V17 | `/audit/V17` | Zone Detail / Plan |
-| V18 | `/audit/V18` | Review Delivery Plan |
+| V17 | `/audit/V17` | Zone Detail (title = zone name; today's deliveries; ⋮ Edit zone name / Delete zone) |
+| V18 | `/audit/V18` | Removed — consolidated into Zone Detail (D-49); audit marker only |
 | V19 | `/audit/V19` | Active / Completed Run |
 | V20 | `/audit/V20` | Riders |
 | V21 | `/audit/V21` | Rider Detail / Review |
@@ -36,7 +36,7 @@ They do not alter canonical product navigation or Production.
 | V27 | `/audit/V27` | Edit Service Area |
 | V28 | `/audit/V28` | Service Area / Zone Configuration |
 | V29 | `/audit/V29` | Create Zone |
-| V30 | `/audit/V30` | Edit Zone |
+| V30 | `/audit/V30` | Removed — Zone Detail ⋮ Zone options (D-49); audit marker only |
 | V31 | `/audit/V31` | Storefront / Appearance |
 | V32 | `/audit/V32` | Storefront Preview |
 | V33 | `/audit/V33` | Appearance / Branding |

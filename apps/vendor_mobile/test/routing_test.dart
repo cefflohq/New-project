@@ -11,13 +11,14 @@ void main() {
             .map((s) => s.id)
             .where((id) => id.startsWith('V-'))
             .toList();
-        expect(ids.toSet(), hasLength(54));
+        expect(ids.toSet(), hasLength(52));
         for (var i = 1; i <= 60; i++) {
           final id = 'V-${i.toString().padLeft(2, '0')}';
           if (i >= 50 && i <= 54) {
             expect(ids, isNot(contains(id)), reason: '$id is on Founder HOLD');
-          } else if (i == 42) {
-            // V-42 Profile was merged into Settings (D-46).
+          } else if (const {18, 30, 42}.contains(i)) {
+            // V-42 merged into Settings (D-46); V-18 / V-30 consolidated
+            // into Zone detail (D-49).
             expect(ids, isNot(contains(id)), reason: '$id was removed');
           } else {
             expect(ids, contains(id));
@@ -74,7 +75,7 @@ void main() {
 
     test('subpages keep the owning tab active', () {
       expect(routeSpecs[VRoute.orderDetail]!.tab, NavTab.orders);
-      expect(routeSpecs[VRoute.reviewDispatch]!.tab, NavTab.zones);
+      expect(routeSpecs[VRoute.zoneDetail]!.tab, NavTab.zones);
       expect(routeSpecs[VRoute.riderDetail]!.tab, NavTab.riders);
     });
   });

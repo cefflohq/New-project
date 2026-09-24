@@ -417,15 +417,25 @@ class PlanStop {
     required this.orderId,
     required this.sequence,
     this.distanceKm,
+    this.travelMinutes,
+    this.etaAt,
   });
   final String orderId;
   final int sequence;
   final num? distanceKm;
 
+  /// Travel time from the previous stop and the planned arrival, when the
+  /// server supplies them. Never estimated client-side: the UI omits them
+  /// when absent.
+  final int? travelMinutes;
+  final DateTime? etaAt;
+
   factory PlanStop.fromJson(Map<String, dynamic> j) => PlanStop(
     orderId: j['order_id'] as String,
     sequence: (j['sequence'] as num?)?.toInt() ?? 0,
     distanceKm: j['distance_from_previous_km'] as num?,
+    travelMinutes: (j['travel_minutes'] as num?)?.toInt(),
+    etaAt: DateTime.tryParse((j['eta_at'] ?? '').toString()),
   );
 }
 

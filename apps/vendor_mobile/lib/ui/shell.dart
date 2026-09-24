@@ -21,7 +21,6 @@ const _onboardingRoutes = {
 /// Header copy that differs from the route inventory name. Every other route
 /// shows its `RouteSpec.title`. Sentence case like every other page title.
 const _headerTitles = <VRoute, String>{
-  VRoute.reviewDispatch: 'Review delivery plan',
   VRoute.runDetail: 'Active run',
   VRoute.riderRegistrationLink: 'Invite rider',
   VRoute.helperRegistrationLink: 'Invite team member',
@@ -53,7 +52,6 @@ const _heroRoutes = {
 /// previews render an immersive customer-facing view the vendor nav would
 /// break.
 const _focusedRoutes = {
-  VRoute.reviewDispatch,
   VRoute.runDetail,
   VRoute.storefrontPreview,
   VRoute.storefrontTemplatePreview,
@@ -65,6 +63,11 @@ const _focusedRoutes = {
 /// {Template Name}, whose Reset action needs the screen's draft state. No
 /// default header or bottom nav is rendered for these.
 const _ownChromeRoutes = {VRoute.branding};
+
+/// Routes that render their own [AppHeader] (its title and ⋮ menu act on
+/// the record the screen loaded) above their own [ContentSurface], but keep
+/// the bottom navigation -- Zone detail, whose header is the zone's name.
+const _ownHeaderRoutes = {VRoute.zoneDetail};
 
 /// One edge-to-edge canvas: the CEFFLO brand gradient starts at the very
 /// top of the screen (behind the transparent status bar) and carries the
@@ -82,6 +85,7 @@ class VendorShell extends StatelessWidget {
     final c = context.c;
     final route = app.current.route;
     final ownChrome = _ownChromeRoutes.contains(route);
+    final ownHeader = _ownHeaderRoutes.contains(route);
     final hero = _heroRoutes.contains(route);
     // While the keyboard is up the nav would ride above it and eat the
     // form's space; it returns as soon as the keyboard closes.
@@ -99,9 +103,9 @@ class VendorShell extends StatelessWidget {
         ? child
         : Column(
             children: [
-              _Header(app: app),
+              if (!ownHeader) _Header(app: app),
               Expanded(
-                child: hero
+                child: hero || ownHeader
                     ? child
                     : ContentSurface(bottomSafeArea: !showNav, child: child),
               ),
@@ -266,8 +270,8 @@ class _Header extends StatelessWidget {
       title: title,
       subtitle: _headerSubtitles[route],
       leading: [
-        // Settings lives in the Today header (D-46), not the bottom nav.
-        if (route == VRoute.today)
+        // Settings (hamburger) opens from the Today and Zones headers.
+        if (route == VRoute.today || route == VRoute.zones)
           IconAction(
             icon: LucideIcons.menu,
             tooltip: 'Settings',
@@ -299,7 +303,6 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
   final app = AppScope.of(context);
   final hint = switch (route) {
     VRoute.orders => 'Search order number or customer...',
-    VRoute.zones => 'Search zones...',
     VRoute.riders => 'Search riders...',
     _ => null,
   };

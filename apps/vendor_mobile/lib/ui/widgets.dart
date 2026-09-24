@@ -960,7 +960,11 @@ class CefListRow extends StatelessWidget {
     this.emphasis,
     this.dense = false,
     this.showDivider = true,
+    this.titleColor,
   }) : assert(icon == null || leading == null);
+
+  /// Destructive option rows (e.g. Delete zone) pass the attention colour.
+  final Color? titleColor;
 
   /// False when the row sits alone inside its own card.
   final bool showDivider;
@@ -1016,17 +1020,21 @@ class CefListRow extends StatelessWidget {
                       title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: switch (emphasis) {
-                        true =>
-                          Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                        false =>
-                          Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: c.textSecondary,
+                      style:
+                          switch (emphasis) {
+                            true =>
+                              Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            false =>
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: c.textSecondary,
+                              ),
+                            null => Theme.of(context).textTheme.titleSmall,
+                          }?.copyWith(
+                            fontSize: dense ? 15 : null,
+                            color: titleColor,
                           ),
-                        null => Theme.of(context).textTheme.titleSmall,
-                      }?.copyWith(fontSize: dense ? 15 : null),
                     ),
                     if (subtitle != null && subtitle!.isNotEmpty) ...[
                       const SizedBox(height: 2),

@@ -31,7 +31,6 @@ enum VRoute {
   editOrder,
   zones,
   zoneDetail,
-  reviewDispatch,
   runDetail,
   riders,
   riderDetail,
@@ -43,7 +42,6 @@ enum VRoute {
   coverageEdit,
   zoneConfiguration,
   createZone,
-  editZone,
   storefront,
   storefrontPreview,
   storefrontTemplatePreview,
@@ -203,19 +201,14 @@ const routeSpecs = <VRoute, RouteSpec>{
     title: 'Zones',
     tab: NavTab.zones,
   ),
+  // V-17 is the one operational screen for a zone (D-49): its header shows
+  // the zone's own name; review, dispatch and edit-zone screens were
+  // consolidated into it (V-18 / V-30 are audit markers only).
   VRoute.zoneDetail: RouteSpec(
     route: VRoute.zoneDetail,
     id: 'V-17',
-    title: 'Delivery plan',
+    title: 'Zone',
     parent: VRoute.zones,
-    tab: NavTab.zones,
-    requiresEntityId: true,
-  ),
-  VRoute.reviewDispatch: RouteSpec(
-    route: VRoute.reviewDispatch,
-    id: 'V-18',
-    title: 'Review & dispatch',
-    parent: VRoute.zoneDetail,
     tab: NavTab.zones,
     requiresEntityId: true,
   ),
@@ -300,14 +293,6 @@ const routeSpecs = <VRoute, RouteSpec>{
     title: 'Create zone',
     parent: VRoute.zoneConfiguration,
     tab: NavTab.today,
-  ),
-  VRoute.editZone: RouteSpec(
-    route: VRoute.editZone,
-    id: 'V-30',
-    title: 'Edit zone',
-    parent: VRoute.zoneConfiguration,
-    tab: NavTab.today,
-    requiresEntityId: true,
   ),
 
   VRoute.storefront: RouteSpec(

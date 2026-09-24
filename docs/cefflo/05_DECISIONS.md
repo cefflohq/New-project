@@ -863,3 +863,35 @@ Note: `#10B981` / `#F59E0B` as text on white are below WCAG AA contrast
 KPI figures. Sign In / auth sheets keep their locked sky sweep (open item from
 D-47).
 
+## D-49 Vendor Mobile Zones Flow — Zone Detail Is the Operational Screen (2026-09-24)
+
+Founder-approved final Zones flow: Zones overview → Zone detail → (swipe a
+delivery → Delete) / (⋮ Zone options → Edit zone name / Delete zone). No
+separate Delivery Plan, Review Delivery Plan, Proposed Run, Edit Zone or
+dispatch-confirmation screens.
+
+- **Zones overview (V-16)**: hamburger · "Zones" · +; one map with every
+  zone (first active zone emphasised); "Zones (n)" list — name, status,
+  today's orders · riders, chevron.
+- **Zone detail (V-17)**: header is the zone's name with ⋮; large map; name +
+  status + locality; exactly three figures without a card — Total distance
+  (server plan distance), Total orders, Delivered (actual delivered count, 0
+  until something is delivered); "Today's deliveries" (no run wording) — rider
+  header with a neutral grey "n orders" pill, then cardless numbered stops
+  (distance · travel time, planned arrival when the server supplies them),
+  divided by hairlines. Swipe a stop fully left to remove it (red trash,
+  Undo-free confirmation via a deliberate full swipe).
+- **Zone options**: exactly Edit zone name (lightweight sheet, Cancel/Save)
+  and Delete zone (red; confirmation sheet "Delete {zone}?"). No boundary or
+  status options.
+- **Removed**: V-18 Review Delivery Plan (`ReviewDispatchScreen`) and V-30 Edit
+  Zone (edit mode of the zone form); both are audit markers only. V-29 Create
+  Zone keeps a create-only form. Dispatch RPC methods remain in the repository
+  as backend contracts.
+- **Open**: V-19 Active run is no longer linked from any screen (it was only
+  reached after dispatch); kept, reachable by audit URL, pending a Founder
+  decision. Removing a delivery from today's plan and renaming / deleting a
+  zone have no dedicated server contracts: rename / delete use direct `zones`
+  table writes under RLS; removal works in the demo and reports "not
+  available yet" against a live backend.
+
