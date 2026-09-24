@@ -218,11 +218,11 @@ ThemeData buildVendorTheme(Brightness brightness) {
       errorBorder: _inputBorder(c.attention),
       focusedErrorBorder: _inputBorder(c.attention, width: 1.6),
     ),
-    // The one toast (showCefToast): a white rounded card floating above the
-    // bottom navigation, soft shadow, Anchor Blue action.
+    // The one toast (showCefToast): a light-grey rounded card floating above
+    // the bottom navigation, soft shadow, blue action.
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
-      backgroundColor: c.card,
+      backgroundColor: c.subtle,
       elevation: 6,
       actionTextColor: CefColors.brand,
       contentTextStyle: t(15, FontWeight.w400, c.textPrimary),

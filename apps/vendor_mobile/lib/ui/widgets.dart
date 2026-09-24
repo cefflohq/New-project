@@ -21,7 +21,8 @@ class ToastInset extends InheritedWidget {
   bool updateShouldNotify(ToastInset old) => old.bottom != bottom;
 }
 
-/// The one toast: a white rounded card floating above the bottom nav with a
+/// The one toast: a light-grey rounded card floating above the bottom nav,
+/// shown for 3 seconds, with a
 /// status mark (navy check, or red alert when [error]), the message, and an
 /// optional action such as Undo. Every confirmation and error in the app
 /// uses it.
@@ -39,6 +40,11 @@ void showCefToast(
     ..showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
+        // Pops up for 3 seconds, then dismisses itself -- also when it
+        // carries an action such as Undo (Flutter keeps action snackbars
+        // until dismissed unless told otherwise).
+        duration: const Duration(seconds: 3),
+        persist: false,
         margin: EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, inset + Gap.md),
         content: Row(
           children: [

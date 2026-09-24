@@ -341,6 +341,11 @@ void main() {
     expect(bar.behavior, SnackBarBehavior.floating);
     expect(find.byIcon(LucideIcons.check), findsOneWidget);
     expect(find.text('Undo'), findsOneWidget);
+    expect(bar.duration, const Duration(seconds: 3));
+    // Gone on its own after 3 seconds, even with an action.
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
   });
 
   testWidgets('one universal background persists across tabs', (
