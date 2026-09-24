@@ -207,14 +207,19 @@ void main() {
     expect(find.text('Edit zone'), findsOneWidget);
   });
 
-  testWidgets('Today caps Recent Delivery at four rows', (tester) async {
+  testWidgets('Today caps Recent Delivery at four rows, one card per issue', (tester) async {
     await pumpAt(tester, const VendorLocation(VRoute.today));
     expect(find.text('Delivered'), findsNWidgets(5)); // 4 pills + KPI label
-    expect(find.text('Need Attention'), findsOneWidget);
+    expect(find.text('Need Attention (3)'), findsOneWidget);
     expect(
-      tester.getTopLeft(find.text('Need Attention')).dy,
+      tester.getTopLeft(find.text('Need Attention (3)')).dy,
       lessThan(852 - Sizes.nav),
     );
+    // One card per active issue.
+    await tester.scrollUntilVisible(find.textContaining('ORD-1011'), 200);
+    expect(find.textContaining('ORD-1003'), findsOneWidget);
+    expect(find.textContaining('ORD-1010'), findsOneWidget);
+    expect(find.textContaining('ORD-1011'), findsOneWidget);
   });
 
   testWidgets('Orders header carries search and add only', (tester) async {

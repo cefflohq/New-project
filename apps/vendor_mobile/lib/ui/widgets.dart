@@ -958,7 +958,16 @@ class CefListRow extends StatelessWidget {
     this.showChevron = true,
     this.subtitleMaxLines = 1,
     this.emphasis,
+    this.dense = false,
+    this.showDivider = true,
   }) : assert(icon == null || leading == null);
+
+  /// False when the row sits alone inside its own card.
+  final bool showDivider;
+
+  /// One step smaller type (title 15, subtitle 13) for rows carrying a
+  /// two-line trailing block, e.g. Today's Recent Delivery.
+  final bool dense;
 
   /// Unread / read treatment (notifications): true = bold title, false =
   /// muted title. Null = the standard row.
@@ -993,7 +1002,7 @@ class CefListRow extends StatelessWidget {
           constraints: BoxConstraints(minHeight: grouped ? 56 : Sizes.listRow),
           padding: EdgeInsets.symmetric(
             horizontal: grouped ? Gap.lg : 0,
-            vertical: Gap.sm,
+            vertical: grouped ? Gap.sm : Gap.md,
           ),
           child: Row(
             children: [
@@ -1017,7 +1026,7 @@ class CefListRow extends StatelessWidget {
                             color: c.textSecondary,
                           ),
                         null => Theme.of(context).textTheme.titleSmall,
-                      },
+                      }?.copyWith(fontSize: dense ? 15 : null),
                     ),
                     if (subtitle != null && subtitle!.isNotEmpty) ...[
                       const SizedBox(height: 2),
@@ -1025,7 +1034,8 @@ class CefListRow extends StatelessWidget {
                         subtitle!,
                         maxLines: subtitleMaxLines,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: Theme.of(context).textTheme.bodySmall
+                            ?.copyWith(fontSize: dense ? 13 : null),
                       ),
                     ],
                   ],
@@ -1059,7 +1069,7 @@ class CefListRow extends StatelessWidget {
     // Inside a group the group draws the separators. A free-standing row
     // gets a light hairline inset past its leading icon -- never a
     // full-width rule.
-    if (grouped) return row;
+    if (grouped || !showDivider) return row;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

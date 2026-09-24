@@ -25,6 +25,9 @@ class TodayContent extends StatelessWidget {
   /// Recent deliveries shown before "View all".
   static const _recentLimit = 4;
 
+  /// Need Attention cards shown before "View all".
+  static const _attentionLimit = 3;
+
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
@@ -101,6 +104,7 @@ class TodayContent extends StatelessWidget {
                 rows[i].$3,
               ].join(' · '),
               leading: CefAvatar(rows[i].$1),
+              dense: true,
               trailing: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
@@ -110,7 +114,7 @@ class TodayContent extends StatelessWidget {
                     const SizedBox(height: Gap.xs),
                     Text(
                       rows[i].$4,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.labelSmall,
                     ),
                   ],
                 ],
@@ -124,24 +128,44 @@ class TodayContent extends StatelessWidget {
               },
             ),
         const SizedBox(height: Gap.sm),
-        const SectionHeading('Need Attention'),
-        CefListRow(
-          title: counts[2] == 0
-              ? 'Nothing needs your attention'
-              : '${counts[2]} orders need your action',
-          subtitle: counts[2] == 0
-              ? 'All orders are moving normally'
-              : 'Review issues before they delay a run',
-          // Status indicator: the one tile, in the issue colour.
-          leading: IconTile(LucideIcons.triangleAlert, color: c.attention),
-          onTap: () {
-            if (issues.isNotEmpty) {
-              app.go(VRoute.orderDetail, entityId: issues.first.id);
-            } else {
-              app.switchTab(NavTab.orders);
-            }
-          },
+        SectionHeading(
+          issues.isEmpty
+              ? 'Need Attention'
+              : 'Need Attention (${issues.length})',
+          trailing: issues.length > _attentionLimit
+              ? CefLink(
+                  'View all',
+                  chevron: true,
+                  onTap: () => app.switchTab(NavTab.orders),
+                )
+              : null,
         ),
+        if (issues.isEmpty)
+          const StateBlock.empty('Nothing needs your attention.')
+        else
+          // One card per active issue, each opening its order.
+          for (final issue in issues.take(_attentionLimit)) ...[
+            CefCard(
+              padded: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Gap.md),
+                child: CefListRow(
+                  title: '${issue.reference} · ${issue.customerName}',
+                  subtitle: (issue.notes ?? '').isEmpty
+                      ? 'Needs your action'
+                      : issue.notes,
+                  // Status indicator: the issue colour.
+                  leading: IconTile(
+                    LucideIcons.triangleAlert,
+                    color: c.attention,
+                  ),
+                  showDivider: false,
+                  onTap: () => app.go(VRoute.orderDetail, entityId: issue.id),
+                ),
+              ),
+            ),
+            const SizedBox(height: Gap.sm),
+          ],
       ],
     );
   }

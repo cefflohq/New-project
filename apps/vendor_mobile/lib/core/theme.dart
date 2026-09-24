@@ -40,7 +40,7 @@ class Sizes {
   static const buttonHeight = 52.0; // primary / secondary / destructive
   static const chipHeight = 36.0; // selectable choice/filter chips
   static const avatar = 44.0; // list-row avatar / icon tile
-  static const listRow = 60.0; // list/settings row minimum height
+  static const listRow = 70.0; // list row height (Founder, 2026-09-24)
   static const cardRadius = 18.0;
   static const surfaceRadius = 24.0; // white surface entering the gradient
   static const buttonRadius = 999.0; // pill

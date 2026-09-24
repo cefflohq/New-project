@@ -692,6 +692,32 @@ class _DemoData {
       completedAt: now.subtract(const Duration(hours: 1)),
       items: const [OrderItem(name: 'Coffee pack', quantity: 1)],
     ),
+    // Two more active issues, so the demo matches its "3 Issue" KPI.
+    VendorOrder(
+      id: 'ord-1010',
+      publicRef: 'ORD-1010',
+      status: DeliveryStatus.issue,
+      customerName: 'Kedai Bunga Mawar',
+      customerPhone: '+60 12 908 4471',
+      deliveryAddress: 'Jalan SS2/24, Petaling Jaya',
+      zoneId: 'zone-pj',
+      assignedRiderId: 'rider-siti',
+      createdAt: now.subtract(const Duration(minutes: 70)),
+      items: const [OrderItem(name: 'Iced Americano', quantity: 4, unitPrice: 9)],
+      notes: 'Rider could not reach the customer.',
+    ),
+    VendorOrder(
+      id: 'ord-1011',
+      publicRef: 'ORD-1011',
+      status: DeliveryStatus.issue,
+      customerName: 'Studio Lima',
+      customerPhone: '+60 17 443 2280',
+      deliveryAddress: 'Jalan Kiara 3, Mont Kiara',
+      zoneId: 'zone-mont-kiara',
+      createdAt: now.subtract(const Duration(minutes: 95)),
+      items: const [OrderItem(name: 'Croissant', quantity: 6, unitPrice: 7)],
+      notes: 'Address not found at the building.',
+    ),
     // A busier Bangsar zone and a large catering order, so zone detail and
     // order detail are exercised with multiple orders and many items.
     VendorOrder(
