@@ -432,7 +432,7 @@ class _ToggleTrack extends StatelessWidget {
       height: _h,
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        color: on ? CefColors.brand : Colors.white.withValues(alpha: .28),
+        color: on ? context.c.success : Colors.white.withValues(alpha: .28),
         borderRadius: BorderRadius.circular(_h),
         border: Border.all(color: Colors.white.withValues(alpha: .55)),
       ),
