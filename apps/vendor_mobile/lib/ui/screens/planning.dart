@@ -152,7 +152,6 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
           children: [
             CefListRow(
               icon: LucideIcons.mapPin,
-              accentIcon: true,
               title: zone?.name ?? 'All zones',
               subtitle: 'Today, ${_formatDate(today)}',
               subtitleMaxLines: 2,
@@ -320,7 +319,6 @@ class _ReviewDispatchScreenState extends State<ReviewDispatchScreen> {
                       ? null
                       : '${stop.distanceKm} km from previous',
                   icon: LucideIcons.mapPin,
-                  accentIcon: true,
                   onTap: () =>
                       app.go(VRoute.orderDetail, entityId: stop.orderId),
                 ),
@@ -469,7 +467,6 @@ class RunDetailScreen extends StatelessWidget {
           title: 'Nadia Rahman',
           subtitle: 'Bangsar · 1.2 km · 8 min',
           icon: LucideIcons.mapPin,
-          accentIcon: true,
           trailing: StatusChip('Next'),
         ),
         const SectionHeading('Upcoming stops'),
@@ -683,7 +680,6 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
           children: [
             CefListRow(
               icon: LucideIcons.map,
-              accentIcon: true,
               title: 'Coverage',
               subtitle: configured
                   ? 'Coverage is configured. Cefflo decides each '

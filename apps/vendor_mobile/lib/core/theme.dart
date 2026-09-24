@@ -34,49 +34,41 @@ class Gap {
 class Sizes {
   static const header = 56.0; // the one gradient header row, every route
   static const nav = 64.0; // bottom navigation, excluding safe area
-  static const icon = 22.0; // visual icon size
+  static const icon = 24.0; // every icon: top bar, bottom nav, actions (D-48)
   static const tapTarget = 44.0; // minimum interactive target
   static const controlHeight = 48.0; // text inputs and search
   static const buttonHeight = 52.0; // primary / secondary / destructive
   static const chipHeight = 36.0; // selectable choice/filter chips
-  static const avatar = 40.0; // list-row avatar / icon disc
+  static const avatar = 44.0; // list-row avatar / icon tile
   static const listRow = 60.0; // list/settings row minimum height
-  static const contactAction = 44.0; // outlined Call / WhatsApp circle
+  static const iconTileRadius = 12.0; // the one icon container (D-48)
   static const cardRadius = 18.0;
   static const surfaceRadius = 24.0; // white surface entering the gradient
   static const buttonRadius = 999.0; // pill
   static const inputRadius = 18.0;
 }
 
-/// The one CEFFLO brand surface: the Splash Anchor Blue (D-47), taken
-/// value-for-value from the locked Splash backdrop -- a diagonal navy sweep
-/// with a lighter-blue lift, plus a soft radial glow. The shell paints it
-/// full screen behind the status bar and header (one continuous surface),
-/// Splash paints it behind its lockup, and every in-body hero surface uses
-/// it, so the product has exactly one gradient.
+/// The one CEFFLO brand surface: the Anchor Blue gradient of the Founder
+/// Icon Family sheet (D-48) -- navy top, mid dark, Anchor Blue, dark bottom.
+/// The shell paints it full screen behind the status bar and header (one
+/// continuous surface), Splash paints it behind its lockup, and every
+/// in-body hero surface uses it, so the product has exactly one gradient.
 class CefGradients {
   static const brand = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      CefColors.navyDeep,
       CefColors.navy,
-      CefColors.navyLift,
-      CefColors.navy,
+      CefColors.navyMid,
+      CefColors.brand,
+      CefColors.navyBottom,
     ],
-    stops: [0.0, 0.34, 0.66, 1.0],
-  );
-
-  /// The soft lift layered over [brand] by [BrandBackdrop] (never alone).
-  static const glow = RadialGradient(
-    center: Alignment(-0.05, -0.12),
-    radius: 0.95,
-    colors: [Color(0x332F6BD0), Color(0x00000000)],
+    stops: [0.0, 0.4, 0.75, 1.0],
   );
 
   /// Opaque stand-in where only one colour can be given (the browser's
-  /// theme-color meta / status bar): the gradient's top-left tone.
-  static const brandChrome = CefColors.navyDeep;
+  /// theme-color meta / status bar): the gradient's top tone.
+  static const brandChrome = CefColors.navy;
 }
 
 class CefColors extends ThemeExtension<CefColors> {
@@ -105,24 +97,25 @@ class CefColors extends ThemeExtension<CefColors> {
   final Color textPrimary, textLabel, textSecondary;
   final Color attention, success, warning, info, iconColor;
 
-  /// CEFFLO Yellow -- active selection, primary controls and selected
-  /// outline only. Never body text, never a generic filled content card.
-  /// Formerly Signal Lime (0xFFC7F000), retired per D-33.
-  static const accent = Color(0xFFFEC819);
+  /// CEFFLO Yellow -- the Action CTA (D-48): primary controls, active
+  /// selection and selected outline only. Never body text, never a generic
+  /// filled content card.
+  static const accent = Color(0xFFF5C400);
   static const onAccent = Color(0xFF181818);
 
-  /// Splash Anchor Blue family (D-47): the three stops of the locked Splash
-  /// backdrop. [navy] is also the raised-surface navy of SOT S3.2.
-  static const navyDeep = Color(0xFF0A1730);
-  static const navy = Color(0xFF12213E);
-  static const navyLift = Color(0xFF1E4585);
+  /// Anchor Blue family (D-48, Icon Family sheet). [navy] is the top tone,
+  /// the raised-surface navy, and the default colour of every icon.
+  static const navy = Color(0xFF0B1220);
+  static const navyMid = Color(0xFF1C3F7A);
+  static const navyBottom = Color(0xFF0A1F44);
 
-  /// The one interactive blue, from the same family: active navigation and
-  /// tabs, links, section/detail icons, selected states, map accents.
-  static const brand = navyLift;
+  /// Anchor Blue (primary): the one interactive blue -- active navigation
+  /// (the only coloured icons), active tabs, links, selected states, map
+  /// accents.
+  static const brand = Color(0xFF2563B3);
 
-  /// [brand] at 10% on white: accent icon discs, tinted action rows.
-  static const brandTint = Color(0xFFE8ECF3);
+  /// [brand] at 10% on white: tinted action rows and info notes.
+  static const brandTint = Color(0xFFE9EFF7);
 
   static const light = CefColors(
     canvas: Color(0xFFFFFFFF), // Mobile workspace
@@ -134,11 +127,12 @@ class CefColors extends ThemeExtension<CefColors> {
     textPrimary: Color(0xFF0F1A36), // dark navy
     textLabel: Color(0xFF1B2540),
     textSecondary: Color(0xFF6B7489), // muted cool grey
-    attention: Color(0xFFD73C2B),
-    success: Color(0xFF248648),
-    warning: Color(0xFF9A6700), // text-on-tint, D-34
-    info: navyLift, // D-47: no second blue
-    iconColor: Color(0xFF1B2540),
+    // D-48 status colours (Icon Family sheet).
+    attention: Color(0xFFEF4444),
+    success: Color(0xFF10B981),
+    warning: Color(0xFFF59E0B),
+    info: brand, // no second blue
+    iconColor: navy, // every non-navigation icon
   );
 
   /// Dark Canvas -> Dark/Tinted Surface -> Navy raised anchor (SOT S3.2).
@@ -241,9 +235,8 @@ ThemeData buildVendorTheme(Brightness brightness) {
     textTheme: TextTheme(
       // Large entity / person / order name (white, on the detail hero).
       titleLarge: t(28, FontWeight.w700, c.textPrimary, spacing: -0.7),
-      // Page title (white, centred in the header row); matches the 22px
-      // header icons.
-      headlineMedium: t(22, FontWeight.w600, c.textPrimary, spacing: -0.4),
+      // Page title (white, centred in the header row).
+      headlineMedium: t(20, FontWeight.w600, c.textPrimary, spacing: -0.3),
       // Section heading, and the primary heading inside a page body.
       titleMedium: t(20, FontWeight.w600, c.textPrimary, spacing: -0.3),
       // Card / list-row title, button label.

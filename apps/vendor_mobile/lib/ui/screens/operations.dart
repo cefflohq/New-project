@@ -704,7 +704,6 @@ class NewOrderEntryScreen extends StatelessWidget {
       children: [
         CefListRow(
           icon: LucideIcons.filePlus,
-          accentIcon: true,
           title: 'Manual Entry',
           subtitle: 'Create a single order step by step',
           subtitleMaxLines: 2,
@@ -712,7 +711,6 @@ class NewOrderEntryScreen extends StatelessWidget {
         ),
         CefListRow(
           icon: LucideIcons.cloudUpload,
-          accentIcon: true,
           title: 'Import Orders',
           subtitle: 'Import multiple orders from your files',
           subtitleMaxLines: 2,
@@ -1032,7 +1030,6 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
         CefActionRow(
           icon: LucideIcons.plus,
           label: 'Add items to this order',
-          leadingDisc: true,
           onTap: () => showNotWiredYetSnackBar(context, 'Adding order items'),
         ),
         const SectionHeading(

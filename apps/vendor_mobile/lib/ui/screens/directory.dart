@@ -76,7 +76,6 @@ class _ZonesScreenState extends State<ZonesScreen> {
                       subtitle:
                           '${inZone.length} order${inZone.length == 1 ? '' : 's'}',
                       icon: LucideIcons.mapPin,
-                      accentIcon: true,
                       trailing: StatusChip(
                         z.isActive ? 'Active' : 'Inactive',
                         success: z.isActive,
@@ -139,7 +138,7 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
                   Icon(
                     LucideIcons.info,
                     size: Sizes.icon,
-                    color: context.c.info,
+                    color: context.c.iconColor,
                   ),
                   const SizedBox(width: Gap.md),
                   Expanded(
@@ -167,7 +166,6 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
                 CefListRow(
                   title: z.name,
                   icon: LucideIcons.mapPin,
-                  accentIcon: true,
                   trailing: StatusChip(
                     z.isActive ? 'Active' : 'Inactive',
                     success: z.isActive,
@@ -274,7 +272,7 @@ class ZoneDetailScreen extends StatelessWidget {
                   'Edit zone',
                   secondary: true,
                   compact: true,
-                  icon: LucideIcons.pencil,
+                  icon: LucideIcons.squarePen,
                   onTap: () => app.go(VRoute.editZone, entityId: zone.id),
                 ),
               ],
@@ -774,7 +772,6 @@ class RiderDetailScreen extends StatelessWidget {
                   rider.rating?.toStringAsFixed(1) ?? '—',
                   'Customer rating',
                   icon: LucideIcons.star,
-                  iconColor: CefColors.accent,
                 ),
                 KpiItem(
                   rider.joinedAt == null ? '—' : _shortDate(rider.joinedAt!),
@@ -1205,12 +1202,12 @@ class SettingsScreen extends StatelessWidget {
       grouped: true,
       children: [
         group('Account', [
-          ('Personal information', LucideIcons.user, VRoute.editProfile),
-          ('Security', LucideIcons.shieldCheck, VRoute.security),
+          ('Personal information', LucideIcons.fileUser, VRoute.editProfile),
+          ('Security', LucideIcons.lock, VRoute.security),
           ('Notifications', LucideIcons.bell, VRoute.notificationSettings),
           ('Language', LucideIcons.globe, VRoute.language),
-          ('Appearance', LucideIcons.contrast, VRoute.appearance),
-          ('Privacy', LucideIcons.lock, VRoute.privacyPolicy),
+          ('Appearance', LucideIcons.palette, VRoute.appearance),
+          ('Privacy', LucideIcons.shieldCheck, VRoute.privacyPolicy),
         ]),
         group('Business', [
           ('Business profile', LucideIcons.building2, VRoute.businessProfile),

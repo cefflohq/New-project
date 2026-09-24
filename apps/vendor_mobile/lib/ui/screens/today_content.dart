@@ -132,19 +132,8 @@ class TodayContent extends StatelessWidget {
           subtitle: counts[2] == 0
               ? 'All orders are moving normally'
               : 'Review issues before they delay a run',
-          leading: Container(
-            width: Sizes.avatar,
-            height: Sizes.avatar,
-            decoration: BoxDecoration(
-              color: c.attention.withValues(alpha: .1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              LucideIcons.triangleAlert,
-              size: 20,
-              color: c.attention,
-            ),
-          ),
+          // Status indicator: the one tile, in the issue colour.
+          leading: IconTile(LucideIcons.triangleAlert, color: c.attention),
           onTap: () {
             if (issues.isNotEmpty) {
               app.go(VRoute.orderDetail, entityId: issues.first.id);

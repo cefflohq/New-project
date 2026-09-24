@@ -806,7 +806,7 @@ where they differ.
   shadow. Elevation only on genuinely floating surfaces (dialogs, sheets).
 - **Spacing first, dividers second**: no rules between page sections or form
   sections; list separators are light and inset past the leading icon.
-- **Type scale (Inter)**: page title 22/600 (matches the 22px header icons); entity name 28/700; section
+- **Type scale (Inter)**: page title 20/600 (D-48); entity name 28/700; section
   heading 20/600; row title 16/600; body 15/400; secondary 14/400; pill 13/600;
   caption 12/500. Screens use theme roles only.
 - **One outline icon family (Lucide)**: nav active state is the same outline
@@ -822,4 +822,42 @@ where they differ.
 Open: the Sign In / auth-sheet sky sweep (`#51BDF8 → #0B67E8 → #031A50`) is a
 Founder-locked auth composition and was not changed in this pass; it is the
 one remaining non-Anchor blue in Vendor Mobile.
+
+## D-48 Cefflo Icon Family — Canonical Icon Design and Palette (2026-09-24)
+
+Founder supplied the **Cefflo Icon Family** sheet
+(`docs/cefflo/brand/icon-family/cefflo-vendor-icon-family.png`) and declared it
+the canonical icon design for Cefflo apps, applied first to Vendor Mobile. Its
+palette replaces the D-47 Splash-extracted values; D-47's other rules (outline
+cards, spacing-first dividers, type roles) stand.
+
+**Palette**
+- Anchor Blue gradient (top-left → bottom-right): `#0B1220` top (navy) ·
+  `#1C3F7A` mid dark · `#2563B3` Anchor Blue (primary) · `#0A1F44` bottom.
+  One `CefGradients.brand`, painted by `BrandBackdrop` (Splash, header +
+  status bar as one surface, hero cards). Browser/PWA chrome `#0B1220`.
+- Anchor Blue `#2563B3`: active navigation, active tabs, links, selected
+  states, map accents. Tint `#E9EFF7`.
+- Action CTA `#F5C400` · Success `#10B981` · Warning `#F59E0B` · Error `#EF4444`.
+
+**Icon rules**
+- One outline family (Lucide), **24px** everywhere: top app bar, bottom
+  navigation, actions, rows.
+- Every non-navigation icon is **navy `#0B1220`** in the **one container**:
+  `IconTile` — white rounded square (12px radius), 1px cool-grey outline. No
+  circles, no tinted discs, no brand-coloured share buttons.
+- **Only bottom-navigation icons are coloured**: active = filled icon in Anchor
+  Blue with label and indicator; default = navy outline.
+- Exception: status indicators on specific screens (e.g. Need Attention red,
+  completion checks, selected radio). Map markers use Anchor Blue.
+- Settings is the **hamburger** (≡) at the left of the Today header; "More"
+  is the horizontal ellipsis.
+- Call / WhatsApp / Directions / share channels are `IconTile`s with a caption.
+
+**Header title**: 20px SemiBold (header icons 24px).
+
+Note: `#10B981` / `#F59E0B` as text on white are below WCAG AA contrast
+(about 2.5:1 and 2.1:1); they are applied as specified on status pills and
+KPI figures. Sign In / auth sheets keep their locked sky sweep (open item from
+D-47).
 

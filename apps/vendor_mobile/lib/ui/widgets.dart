@@ -155,7 +155,7 @@ class SectionHeading extends StatelessWidget {
           if (icon != null) ...[
             Padding(
               padding: const EdgeInsets.only(top: 2),
-              child: Icon(icon, size: 24, color: CefColors.brand),
+              child: Icon(icon, size: Sizes.icon, color: context.c.iconColor),
             ),
             const SizedBox(width: Gap.md),
           ],
@@ -178,9 +178,9 @@ class SectionHeading extends StatelessWidget {
   }
 }
 
-/// The one brand backdrop: [CefGradients.brand] with the [CefGradients.glow]
-/// layered over it. The shell's chrome and every [HeroSurface] paint through
-/// this, so the gradient is identical everywhere.
+/// The one brand backdrop: [CefGradients.brand]. The shell's chrome, Splash
+/// and every [HeroSurface] paint through this, so the gradient is identical
+/// everywhere.
 class BrandBackdrop extends StatelessWidget {
   const BrandBackdrop({super.key, required this.child, this.borderRadius});
   final Widget child;
@@ -192,13 +192,7 @@ class BrandBackdrop extends StatelessWidget {
       gradient: CefGradients.brand,
       borderRadius: borderRadius,
     ),
-    child: DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: CefGradients.glow,
-        borderRadius: borderRadius,
-      ),
-      child: child,
-    ),
+    child: child,
   );
 }
 
@@ -226,24 +220,15 @@ class HeroSurface extends StatelessWidget {
 
 /// One figure in a [KpiStrip].
 class KpiItem {
-  const KpiItem(
-    this.value,
-    this.label, {
-    this.color,
-    this.icon,
-    this.iconColor,
-  });
+  const KpiItem(this.value, this.label, {this.color, this.icon});
   final String value;
   final String label;
-
-  /// Icon tint; CEFFLO Blue by default (a rating star passes the accent).
-  final Color? iconColor;
 
   /// Semantic colour for the value (and label) -- e.g. success for Ready,
   /// attention for Issue. Defaults to the primary text colour.
   final Color? color;
 
-  /// Optional CEFFLO Blue icon above the value (detail stat rows).
+  /// Optional navy outline icon above the value (detail stat rows).
   final IconData? icon;
 }
 
@@ -274,11 +259,7 @@ class KpiStrip extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (item.icon != null) ...[
-                      Icon(
-                        item.icon,
-                        size: Sizes.icon,
-                        color: item.iconColor ?? CefColors.brand,
-                      ),
+                      Icon(item.icon, size: Sizes.icon, color: c.iconColor),
                       const SizedBox(height: Gap.xs),
                     ],
                     FittedBox(
@@ -686,27 +667,56 @@ class CefAvatar extends StatelessWidget {
   );
 }
 
-/// The one leading icon disc for list rows: a soft circle holding the row's
-/// icon. [accent] tints it CEFFLO Blue (location/zone rows).
-class IconDisc extends StatelessWidget {
-  const IconDisc(this.icon, {super.key, this.accent = false});
-  final IconData icon;
-  final bool accent;
+/// The one icon container (D-48, Icon Family sheet): a white rounded square
+/// with the 1px cool-grey outline, holding a 24px outline icon in navy. List
+/// rows, detail rows, settings rows and outlined actions all use it, so every
+/// icon shares one container, outline thickness and colour. Only bottom
+/// navigation icons are coloured; [color] is for status indicators alone
+/// (e.g. Need Attention in red).
+class IconTile extends StatelessWidget {
+  const IconTile(IconData this.icon, {super.key, this.color, this.onTap})
+    : glyph = null;
+
+  /// A composed outline mark (e.g. WhatsApp) in place of an icon.
+  const IconTile.glyph(Widget this.glyph, {super.key, this.onTap})
+    : icon = null,
+      color = null;
+
+  final IconData? icon;
+  final Widget? glyph;
+  final Color? color;
+
+  /// Makes the tile itself the tap target (outlined actions).
+  final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: Sizes.avatar,
-    height: Sizes.avatar,
-    decoration: BoxDecoration(
-      color: accent ? CefColors.brandTint : context.c.subtle,
-      shape: BoxShape.circle,
-    ),
-    child: Icon(
-      icon,
-      size: 20,
-      color: accent ? CefColors.brand : context.c.iconColor,
-    ),
-  );
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final radius = BorderRadius.circular(Sizes.iconTileRadius);
+    return Material(
+      color: c.card,
+      shape: RoundedRectangleBorder(
+        borderRadius: radius,
+        side: BorderSide(color: c.border),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox.square(
+          dimension: Sizes.avatar,
+          child: Center(
+            child: IconTheme(
+              data: IconThemeData(
+                size: Sizes.icon,
+                color: color ?? c.iconColor,
+              ),
+              child: glyph ?? Icon(icon),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// The one selectable chip (business type, template category, filters).
@@ -924,7 +934,7 @@ class CefSwitch extends StatelessWidget {
 }
 
 /// The one list / settings row: optional leading (an [icon], shown in an
-/// [IconDisc], or any widget such as a [CefAvatar]), title, subtitle,
+/// [IconTile], or any widget such as a [CefAvatar]), title, subtitle,
 /// optional trailing widget, and a chevron whenever the row navigates.
 /// Rows are separated by a hairline divider; inside a [CefListGroup] the
 /// group draws inset dividers instead.
@@ -934,7 +944,6 @@ class CefListRow extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.icon,
-    this.accentIcon = false,
     this.leading,
     this.trailing,
     this.onTap,
@@ -955,9 +964,6 @@ class CefListRow extends StatelessWidget {
   final String? subtitle;
   final IconData? icon;
 
-  /// Tints the icon disc CEFFLO Blue (location / zone rows).
-  final bool accentIcon;
-
   final Widget? leading;
   final Widget? trailing;
   final VoidCallback? onTap;
@@ -970,8 +976,7 @@ class CefListRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.c;
     final grouped = _ListGroupScope.of(context);
-    final lead =
-        leading ?? (icon == null ? null : IconDisc(icon!, accent: accentIcon));
+    final lead = leading ?? (icon == null ? null : IconTile(icon!));
     final row = Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1130,21 +1135,19 @@ class CefListGroup extends StatelessWidget {
 
 /// The one tinted action row: a CEFFLO Blue tinted, rounded, full-width
 /// row for a secondary in-form or on-page action ("Add items to this
-/// order"). [leadingDisc] renders the icon in a solid blue disc.
+/// order"). Its icon sits in the standard [IconTile].
 class CefActionRow extends StatelessWidget {
   const CefActionRow({
     super.key,
     required this.icon,
     required this.label,
     required this.onTap,
-    this.leadingDisc = false,
     this.chevron = true,
     this.subtitle,
   });
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final bool leadingDisc;
   final bool chevron;
 
   /// Optional supporting line under the label ("Riders can scan this code").
@@ -1165,17 +1168,7 @@ class CefActionRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            leadingDisc
-                ? Container(
-                    width: 36,
-                    height: 36,
-                    decoration: const BoxDecoration(
-                      color: CefColors.brand,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(icon, size: 20, color: Colors.white),
-                  )
-                : Icon(icon, size: Sizes.icon, color: CefColors.brand),
+            IconTile(icon),
             const SizedBox(width: Gap.md),
             Expanded(
               child: Column(
@@ -1199,10 +1192,10 @@ class CefActionRow extends StatelessWidget {
               ),
             ),
             if (chevron)
-              const Icon(
+              Icon(
                 LucideIcons.chevronRight,
                 size: 20,
-                color: CefColors.brand,
+                color: context.c.textSecondary,
               ),
           ],
         ),
@@ -1414,7 +1407,7 @@ class ContactActions extends StatelessWidget {
       OutlinedIconAction(
         label: 'WhatsApp',
         semanticLabel: 'WhatsApp $phone',
-        glyph: const _WhatsAppGlyph(),
+        glyph: const WhatsAppGlyph(),
         onTap: () => launchWhatsApp(context, phone),
       ),
     ],
@@ -1422,9 +1415,8 @@ class ContactActions extends StatelessWidget {
 }
 
 /// The one outlined utility action on detail rows (Call, WhatsApp,
-/// Directions): a neutral 1px-outlined circle holding a 20px outline icon,
-/// with a caption underneath. Same icon family and weight as the row's own
-/// [IconDisc], so a row reads as one set.
+/// Directions): the standard [IconTile] as the tap target, with a caption
+/// underneath -- the same container as the row's own leading icon.
 class OutlinedIconAction extends StatelessWidget {
   const OutlinedIconAction({
     super.key,
@@ -1443,56 +1435,39 @@ class OutlinedIconAction extends StatelessWidget {
   final String? semanticLabel;
 
   @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return Semantics(
-      button: true,
-      label: semanticLabel ?? label,
-      excludeSemantics: true,
-      child: SizedBox(
-        width: 56,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Material(
-              color: c.card,
-              shape: CircleBorder(side: BorderSide(color: c.border)),
-              clipBehavior: Clip.antiAlias,
-              child: InkWell(
-                onTap: onTap,
-                child: SizedBox.square(
-                  dimension: Sizes.contactAction,
-                  child: Center(
-                    child: IconTheme(
-                      data: IconThemeData(size: 20, color: c.iconColor),
-                      child: glyph ?? Icon(icon),
-                    ),
-                  ),
-                ),
-              ),
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: semanticLabel ?? label,
+    excludeSemantics: true,
+    child: SizedBox(
+      width: 56,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          glyph == null
+              ? IconTile(icon!, onTap: onTap)
+              : IconTile.glyph(glyph!, onTap: onTap),
+          const SizedBox(height: Gap.xs),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              maxLines: 1,
+              style: Theme.of(context).textTheme.labelSmall
+                  ?.copyWith(color: context.c.textPrimary),
             ),
-            const SizedBox(height: Gap.xs),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                label,
-                maxLines: 1,
-                style: Theme.of(context).textTheme.labelSmall
-                    ?.copyWith(color: c.textPrimary),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }
 
 /// Outline WhatsApp mark: the round speech bubble with a handset inside,
 /// composed from the Lucide set so it matches every other outline icon.
 /// Takes its size and colour from the surrounding [IconTheme].
-class _WhatsAppGlyph extends StatelessWidget {
-  const _WhatsAppGlyph();
+class WhatsAppGlyph extends StatelessWidget {
+  const WhatsAppGlyph({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -93,7 +93,7 @@ class _HeroPanel extends StatelessWidget {
 }
 
 /// Compact intro at the top of a grouped settings page: a CEFFLO Blue
-/// [IconDisc] beside a section title and its supporting line.
+/// [IconTile] beside a section title and its supporting line.
 class _GroupedIntro extends StatelessWidget {
   const _GroupedIntro({
     required this.icon,
@@ -111,7 +111,7 @@ class _GroupedIntro extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(Gap.xs, 0, 0, Gap.xl),
       child: Row(
         children: [
-          IconDisc(icon, accent: true),
+          IconTile(icon),
           const SizedBox(width: Gap.lg),
           Expanded(
             child: Column(
@@ -184,12 +184,7 @@ class _BusinessProfileScreen extends StatelessWidget {
                 items: [
                   KpiItem('24', 'Products', icon: LucideIcons.package),
                   KpiItem('128', 'Orders', icon: LucideIcons.shoppingCart),
-                  KpiItem(
-                    '4.8',
-                    'Rating',
-                    icon: LucideIcons.star,
-                    iconColor: CefColors.accent,
-                  ),
+                  KpiItem('4.8', 'Rating', icon: LucideIcons.star),
                 ],
               ),
             ],
@@ -326,7 +321,7 @@ class _BusinessAddressScreen extends StatelessWidget {
                   ),
                   child: Icon(
                     LucideIcons.locateFixed,
-                    size: 20,
+                    size: Sizes.icon,
                     color: c.iconColor,
                   ),
                 ),
@@ -1302,7 +1297,7 @@ class _SupportTile extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        IconDisc(icon, accent: true),
+        IconTile(icon),
         const SizedBox(height: Gap.md),
         Text(
           title,
@@ -1428,7 +1423,7 @@ class _NotificationInboxScreen extends StatelessWidget {
               leading: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  IconDisc(_icon(n.kind)),
+                  IconTile(_icon(n.kind)),
                   if (!n.read)
                     Positioned(
                       top: 0,
@@ -1447,7 +1442,7 @@ class _NotificationInboxScreen extends StatelessWidget {
               ),
               emphasis: !n.read,
               trailing: IconAction(
-                icon: LucideIcons.ellipsisVertical,
+                icon: LucideIcons.ellipsis,
                 tooltip: 'Notification options',
                 onTap: () => _showRowOptions(context, n),
               ),
@@ -1539,7 +1534,7 @@ class _InviteLinkScreen extends StatelessWidget {
       children: [
         Row(
           children: [
-            const IconDisc(LucideIcons.userPlus, accent: true),
+            const IconTile(LucideIcons.userPlus),
             const SizedBox(width: Gap.md),
             Expanded(
               child: Column(
@@ -1573,7 +1568,11 @@ class _InviteLinkScreen extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(LucideIcons.link, size: 18, color: Colors.white),
+                  const Icon(
+                    LucideIcons.link,
+                    size: Sizes.icon,
+                    color: Colors.white,
+                  ),
                   const SizedBox(width: Gap.sm),
                   Text(
                     'Invitation link',
@@ -1624,10 +1623,10 @@ class _InviteLinkScreen extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     LucideIcons.share2,
-                    size: 18,
-                    color: CefColors.brand,
+                    size: Sizes.icon,
+                    color: c.iconColor,
                   ),
                   const SizedBox(width: Gap.sm),
                   Text('Share via', style: text.titleSmall),
@@ -1636,29 +1635,24 @@ class _InviteLinkScreen extends StatelessWidget {
               const SizedBox(height: Gap.md),
               Row(
                 children: [
-                  _ShareChannel(
-                    icon: LucideIcons.messageCircle,
+                  _ShareChannel.glyph(
+                    glyph: const WhatsAppGlyph(),
                     label: 'WhatsApp',
-                    color: const Color(0xFF25D366),
                     onTap: () => _copyLink(context, link),
                   ),
                   _ShareChannel(
                     icon: LucideIcons.send,
                     label: 'Telegram',
-                    color: const Color(0xFF29A9EA),
                     onTap: () => _copyLink(context, link),
                   ),
                   _ShareChannel(
                     icon: LucideIcons.messageSquare,
                     label: 'SMS',
-                    color: const Color(0xFF34C759),
                     onTap: () => _copyLink(context, link),
                   ),
                   _ShareChannel(
                     icon: LucideIcons.ellipsis,
                     label: 'More',
-                    color: c.subtle,
-                    iconColor: c.textSecondary,
                     onTap: () => _copyLink(context, link),
                   ),
                 ],
@@ -1676,7 +1670,7 @@ class _InviteLinkScreen extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(LucideIcons.info, size: 18, color: CefColors.brand),
+              Icon(LucideIcons.info, size: Sizes.icon, color: c.iconColor),
               const SizedBox(width: Gap.sm),
               Expanded(
                 child: Text(
@@ -1750,41 +1744,34 @@ class _QrPainter extends CustomPainter {
       old.image != image || old.color != color;
 }
 
-/// Share target disc. Brand colours for WhatsApp / Telegram / SMS are
-/// third-party marks; the neutral "More" disc uses tokens.
+/// Share target: the standard neutral [IconTile] with a caption -- no
+/// third-party brand colours (D-48: only navigation icons are coloured).
 class _ShareChannel extends StatelessWidget {
-  const _ShareChannel({
-    required this.icon,
+  const _ShareChannel({required this.label, required this.onTap, this.icon})
+    : glyph = null;
+  const _ShareChannel.glyph({
     required this.label,
-    required this.color,
     required this.onTap,
-    this.iconColor,
-  });
-  final IconData icon;
+    required Widget this.glyph,
+  }) : icon = null;
+  final IconData? icon;
+  final Widget? glyph;
   final String label;
-  final Color color;
-  final Color? iconColor;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) => Expanded(
-    child: GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            width: Sizes.contactAction,
-            height: Sizes.contactAction,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-            child: Icon(icon, size: 20, color: iconColor ?? Colors.white),
-          ),
-          const SizedBox(height: Gap.xs),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(label, style: Theme.of(context).textTheme.labelSmall),
-          ),
-        ],
-      ),
+    child: Column(
+      children: [
+        glyph == null
+            ? IconTile(icon!, onTap: onTap)
+            : IconTile.glyph(glyph!, onTap: onTap),
+        const SizedBox(height: Gap.xs),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(label, style: Theme.of(context).textTheme.labelSmall),
+        ),
+      ],
     ),
   );
 }

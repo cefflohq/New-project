@@ -269,7 +269,7 @@ class _Header extends StatelessWidget {
         // Settings lives in the Today header (D-46), not the bottom nav.
         if (route == VRoute.today)
           IconAction(
-            icon: LucideIcons.settings,
+            icon: LucideIcons.menu,
             tooltip: 'Settings',
             color: Colors.white,
             onTap: () => app.go(VRoute.settings),
@@ -314,7 +314,7 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
   if (route == VRoute.notificationInbox) {
     return [
       IconAction(
-        icon: LucideIcons.ellipsisVertical,
+        icon: LucideIcons.ellipsis,
         tooltip: 'Notification options',
         color: Colors.white,
         onTap: () => showListSheet(
@@ -402,11 +402,24 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
 class _BottomNav extends StatelessWidget {
   const _BottomNav();
 
-  static const _items = <(NavTab, String, IconData)>[
-    (NavTab.today, 'Today', LucideIcons.house),
-    (NavTab.orders, 'Orders', LucideIcons.package),
-    (NavTab.zones, 'Zones', LucideIcons.mapPin),
-    (NavTab.riders, 'Riders', LucideIcons.users),
+  /// (tab, label, default outline icon, active filled icon). The only
+  /// coloured icons in the app (D-48): active = filled Anchor Blue,
+  /// default = navy outline.
+  static const _items = <(NavTab, String, IconData, Widget)>[
+    (NavTab.today, 'Today', LucideIcons.house, Icon(Icons.home_rounded)),
+    (NavTab.orders, 'Orders', LucideIcons.package, _FilledCube()),
+    (
+      NavTab.zones,
+      'Zones',
+      LucideIcons.mapPin,
+      Icon(Icons.location_on_rounded),
+    ),
+    (
+      NavTab.riders,
+      'Riders',
+      LucideIcons.users,
+      Icon(Icons.people_alt_rounded),
+    ),
   ];
 
   @override
@@ -425,6 +438,7 @@ class _BottomNav extends StatelessWidget {
           child: Row(
             children: _items.map((item) {
               final selected = app.activeTab == item.$1;
+              final tone = selected ? CefColors.brand : c.iconColor;
               return Expanded(
                 child: Material(
                   color: Colors.transparent,
@@ -437,12 +451,9 @@ class _BottomNav extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // One outline icon family; active is the same
-                          // icon in Anchor Blue, never a filled variant.
-                          Icon(
-                            item.$3,
-                            size: 24,
-                            color: selected ? CefColors.brand : c.textSecondary,
+                          IconTheme(
+                            data: IconThemeData(size: Sizes.icon, color: tone),
+                            child: selected ? item.$4 : Icon(item.$3),
                           ),
                           const SizedBox(height: Gap.xs),
                           Text(
@@ -452,9 +463,7 @@ class _BottomNav extends StatelessWidget {
                                   fontWeight: selected
                                       ? FontWeight.w600
                                       : FontWeight.w500,
-                                  color: selected
-                                      ? CefColors.brand
-                                      : c.textSecondary,
+                                  color: tone,
                                 ),
                           ),
                           const SizedBox(height: Gap.xs),
@@ -482,6 +491,67 @@ class _BottomNav extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The active Orders icon: a solid isometric cube with light edge lines,
+/// matching the Icon Family sheet. Material has no filled cube, so it is
+/// drawn; size and colour come from the surrounding [IconTheme].
+class _FilledCube extends StatelessWidget {
+  const _FilledCube();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = IconTheme.of(context);
+    final size = theme.size ?? Sizes.icon;
+    return CustomPaint(
+      size: Size.square(size),
+      painter: _FilledCubePainter(theme.color ?? CefColors.brand),
+    );
+  }
+}
+
+class _FilledCubePainter extends CustomPainter {
+  const _FilledCubePainter(this.color);
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final top = Offset(w * .5, h * .08);
+    final upperLeft = Offset(w * .12, h * .29);
+    final upperRight = Offset(w * .88, h * .29);
+    final centre = Offset(w * .5, h * .5);
+    final lowerLeft = Offset(w * .12, h * .71);
+    final lowerRight = Offset(w * .88, h * .71);
+    final bottom = Offset(w * .5, h * .92);
+    final hexagon = Path()
+      ..moveTo(top.dx, top.dy)
+      ..lineTo(upperRight.dx, upperRight.dy)
+      ..lineTo(lowerRight.dx, lowerRight.dy)
+      ..lineTo(bottom.dx, bottom.dy)
+      ..lineTo(lowerLeft.dx, lowerLeft.dy)
+      ..lineTo(upperLeft.dx, upperLeft.dy)
+      ..close();
+    canvas.drawPath(
+      hexagon,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.fill
+        ..strokeJoin = StrokeJoin.round,
+    );
+    final edges = Paint()
+      ..color = Colors.white.withValues(alpha: .85)
+      ..strokeWidth = w * .06
+      ..strokeCap = StrokeCap.round;
+    canvas
+      ..drawLine(upperLeft, centre, edges)
+      ..drawLine(upperRight, centre, edges)
+      ..drawLine(centre, bottom, edges);
+  }
+
+  @override
+  bool shouldRepaint(_FilledCubePainter old) => old.color != color;
 }
 
 /// The one fixed primary-action area: sits under the scrolling content and
