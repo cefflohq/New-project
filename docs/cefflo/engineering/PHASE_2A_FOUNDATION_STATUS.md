@@ -56,6 +56,32 @@ authenticated staging journeys blocked on dedicated test identities
 - Customer invalid-token `public_tracking` contract: PASS as part of the
   staging backend validation.
 
+## Continuation run — 2026-09-25
+
+Staging test identities were still absent from the local environment file
+(`STAGING_VENDOR_*` and `STAGING_DRIVER_*` keys not present), so every
+authenticated journey remains blocked. Verification that does not need them:
+
+- Driver `flutter analyze`: PASS; local tests 2/2 PASS; anonymous live staging
+  contracts 11/11 PASS.
+- Vendor `flutter analyze`: PASS; local tests 99 PASS; anonymous live staging
+  contracts 11/11 PASS.
+- Prototype (`CEFFLO_UI_PROTOTYPE=true`) release web builds: PASS for both.
+- Staging-configured **release** web builds: PASS for both. Each bundle embeds
+  the staging ref only; the Production ref, any Postgres/pooler URL and
+  `DATABASE_URL` are absent. Build input carried only the environment name, URL
+  and publishable key. Build output was deleted afterwards.
+- Real staging browser check at 393×852 (both release builds): entry screen and
+  Continue with Email render with no console errors. A sign-in with a
+  non-existent `example.invalid` address called staging `POST /auth/v1/token`,
+  got HTTP 400, and showed the mapped copy "Email or password is incorrect. Try
+  again." No overflow or clipping. A failed sign-in creates no identity or row.
+- Customer `tests/s4_04_batch_5_customer_ondemand_refresh.py`: 15/15 PASS on
+  `claude/customer-tracking-pwa`. The four UI assertions for the retired inline
+  refresh button and freshness chrome now assert the approved C1-C4 state
+  (`tracking-adapter.js` keeps `setFreshness` as a documented no-op). Backend
+  refresh, guard and freshness-call assertions are unchanged. No UI was changed.
+
 ## Remaining Phase 2A gate
 
 The staging project and public/runtime configuration are now available through
@@ -84,10 +110,5 @@ evidence in this partial Phase 2A implementation.
 
 ## Known validation debt
 
-`tests/s4_04_batch_5_customer_ondemand_refresh.py` has 4 obsolete assertions
-that still look for the retired inline Customer markup in `customer/index.html`
-(`refreshButton` and freshness elements). The canonical Customer UI now renders
-from `customer/app.js`. Eleven other assertions in that file pass, including
-the no-polling and guarded refresh behavior. The obsolete test was not weakened
-or reported as passing; updating its UI contract belongs in a separately scoped
-Customer change because the current task locks visual design.
+Resolved in the continuation run above: the Customer on-demand-refresh suite
+now reflects the approved C1-C4 UI and passes 15/15.
