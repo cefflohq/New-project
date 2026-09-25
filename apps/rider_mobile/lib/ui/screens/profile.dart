@@ -309,7 +309,8 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-/// Prototype log-out: returns the app to the locked D02 Sign In surface.
+/// Log-out: prototype returns to the locked D02 Sign In surface; the real
+/// build revokes the Supabase session through [AppState.signOut].
 Future<void> showLogOutConfirm(BuildContext context, AppState app) =>
     showCeffloModal<void>(
       context,
@@ -340,7 +341,11 @@ Future<void> showLogOutConfirm(BuildContext context, AppState app) =>
                 pill: false,
                 onTap: () {
                   Navigator.of(modalContext).pop();
-                  app.signOutPrototype();
+                  if (app.repo.isDemo) {
+                    app.signOutPrototype();
+                  } else {
+                    app.signOut();
+                  }
                 },
               ),
               const SizedBox(height: Gap.sm),

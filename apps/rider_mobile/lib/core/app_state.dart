@@ -257,6 +257,11 @@ class AppState extends ChangeNotifier {
           : relationships.any((r) => r.isPending)
           ? DriverStage.pendingReview
           : DriverStage.noBusiness;
+      // Land on the screen the hydrated relationship stage owns; the default
+      // stack root (Today) is only correct for an active relationship.
+      _stack
+        ..clear()
+        ..add(RiderLocation(homeRoute));
       if (active != null) await _loadOrders();
     } on RepositoryError catch (e) {
       sessionError = e.message;

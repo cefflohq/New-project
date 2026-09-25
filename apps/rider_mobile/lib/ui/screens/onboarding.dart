@@ -864,19 +864,21 @@ class PendingReviewScreen extends StatelessWidget {
           // Prototype scaffolding, labelled as such. In the product this
           // screen advances when the *business* approves the Driver, and no
           // reference draws a CTA out of it — so the preview needs a way to
-          // reach D14.2 without inventing a product control.
-          Center(
-            child: CeffloTextLink(
-              'Preview: simulate approval',
-              fontSize: 13,
-              weight: FontWeight.w600,
-              color: context.c.textSecondary,
-              onTap: () {
-                app.setStage(DriverStage.approved);
-                app.resetTo(DRoute.approved);
-              },
+          // reach D14.2 without inventing a product control. The real build
+          // never shows it: approval only comes from the business.
+          if (app.repo.isDemo)
+            Center(
+              child: CeffloTextLink(
+                'Preview: simulate approval',
+                fontSize: 13,
+                weight: FontWeight.w600,
+                color: context.c.textSecondary,
+                onTap: () {
+                  app.setStage(DriverStage.approved);
+                  app.resetTo(DRoute.approved);
+                },
+              ),
             ),
-          ),
         ],
       ),
     );
