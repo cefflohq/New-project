@@ -51,6 +51,8 @@ Engineering must:
 8.  Detect stale/conflicting context before shipping.
 9.  Keep production-impacting decisions under Founder control.
 10. Work across CEFFLO surfaces using one shared product/domain truth.
+11. Detect material platform, framework, store, SDK, and dependency
+    changes early enough to prevent avoidable production disruption.
 
 ------------------------------------------------------------------------
 
@@ -92,6 +94,52 @@ written in prompts.
 Ambiguity, canonical changes, destructive actions, and production
 release escalate to the Founder.
 
+### 2.9 Proactive platform and dependency maintenance
+
+Engineering permanently monitors relevant changes to Flutter, Dart,
+Android SDK/target API, Android OS APIs and permissions, Google Play
+requirements, iOS, Xcode, Apple APIs and App Store requirements. The same
+responsibility covers CEFFLO's Flutter plugins; Supabase SDK/client and
+authentication dependencies; maps, location/GPS, notification,
+camera/media/file dependencies; deprecated APIs; breaking changes; and
+relevant security advisories.
+
+Detection does not authorize automatic upgrading. Stability is preferred.
+An update is justified by platform compatibility, security, store or
+supported-version requirements, a relevant bug fix, or a meaningful
+engineering benefit with acceptable risk. A newer version alone is not a
+reason to change CEFFLO.
+
+The maintenance lifecycle is:
+
+**DETECT → ASSESS IMPACT → CLASSIFY → PREPARE → TEST → STAGE → APPROVE →
+CONTROLLED RELEASE**
+
+E1 classifies each relevant finding as **NO ACTION**, **WATCH**, **ROUTINE
+MAINTENANCE**, **COMPATIBILITY REQUIRED**, **SECURITY REQUIRED**, or
+**BREAKING / URGENT**. The assessment records the affected CEFFLO
+surface, dependency/platform/API, current version, required or safe target
+version, deprecated or breaking behavior, required code/configuration
+change, applicable platform/store deadline, security impact, regression
+scope, and recommended timing.
+
+Compatibility work normally proceeds without disturbing the live
+application: prepare it in an isolated branch/environment, build every
+affected product, run relevant tests, qualify on staging, preserve evidence,
+and release only through the normal controlled release process. Production
+remains unchanged until the update is proven safe. Engineering may prepare
+and qualify a required Apple/Google mobile binary in advance, but release
+still requires the normal release gate.
+
+For announced future requirements, Engineering detects, assesses, prepares,
+and tests before enforcement so a qualified update is ready before the
+deadline where practical. Routine safe maintenance stays within existing
+Engineering authority. Escalation is reserved for a product/business
+decision, meaningful user-facing change, significant migration or release
+risk, external provider/account action, Production release approval,
+material new cost, or work that cannot be handled safely under existing
+authority.
+
 ------------------------------------------------------------------------
 
 # 3. ENGINEERING SQUAD
@@ -118,6 +166,12 @@ context, branch, reference, constraints, and acceptance criteria.
 -   Resolve the canonical approved UI reference.
 -   Detect conflicting/stale requirements.
 -   Identify dependencies and affected surfaces.
+-   Monitor relevant platform, store, framework, SDK, plugin, dependency,
+    deprecation, and security-advisory changes.
+-   Assess and classify maintenance findings under Section 2.9, including
+    deadlines, affected surfaces, regression scope, timing, and escalation.
+-   Open a versioned maintenance Task Pack when action is justified; retain
+    WATCH/NO ACTION evidence without creating upgrade churn.
 -   Build a versioned Task Pack.
 -   Decide whether E2, E3, or both are required.
 -   Route work and maintain task state.
@@ -154,6 +208,10 @@ Turn the Task Pack into functional, production-quality implementation.
     handling, and application behavior.
 -   Run approved development commands.
 -   Build, lint, analyze, test, and debug.
+-   Implement justified compatibility, dependency, SDK, configuration, and
+    security maintenance in the assigned isolated workspace.
+-   Preserve current production behavior unless the Task Pack explicitly
+    authorizes a user-facing or canonical change.
 -   Repair implementation failures.
 -   Produce changed-file and command evidence.
 
@@ -223,7 +281,9 @@ Independently prove that implementation satisfies the exact Task Pack.
 
 **Engineering** - Build success. - Runtime behavior. -
 Tests/analyzers/linters. - Navigation/interactions. - Console/runtime
-errors. - Regression risk. - Required states.
+errors. - Regression risk. - Required states. - Platform/dependency target
+compatibility. - Deprecated/breaking API removal where required. - Affected
+product build and staging evidence.
 
 **Product** - Requirement completeness. - Correct terminology. - Correct
 lifecycle and actions. - No unauthorized product changes.
@@ -275,6 +335,8 @@ Founder-review preview.
 -   Create/update PR when required.
 -   Build preview artifact.
 -   Deploy to approved preview environment.
+-   Promote qualified maintenance through approved staging/release channels
+    without changing Production before the applicable gate.
 -   Perform URL/health verification.
 -   Return commit SHA, branch, build result, preview URL, and release
     evidence.
@@ -665,6 +727,13 @@ Every handoff must contain evidence.
 -   Task Pack version
 -   E4 PASS reference
 
+For a relevant platform/dependency maintenance task, the persisted evidence
+also records: detected change; impact assessment and classification; affected
+surfaces; current and target versions; action taken; tests/builds/staging
+evidence; deadline and release requirement; and remaining risk. WATCH and NO
+ACTION findings retain their assessment without creating an implementation or
+release task.
+
 ------------------------------------------------------------------------
 
 # 15. RETRY & ESCALATION
@@ -710,7 +779,11 @@ deletion, major irreversible action.
 Production deployment/main merge when not explicitly pre-authorized.
 
 Founder approval is not required for every normal repair or preview
-build.
+build. Routine safe dependency and compatibility preparation also remains an
+Engineering responsibility. Escalate maintenance only when it requires a
+product/business decision, meaningful user-facing change, significant
+migration/release risk, external provider/account action, Production release,
+material new cost, or authority beyond the existing Engineering boundary.
 
 ------------------------------------------------------------------------
 
@@ -749,6 +822,15 @@ An AI recommendation never overrides a deterministic gate.
 ------------------------------------------------------------------------
 
 # 19. DEFAULT EXECUTION STATE MACHINE
+
+Platform/dependency maintenance enters the same state machine through this
+intake path:
+
+**DETECT → ASSESS IMPACT → CLASSIFY → NO ACTION / WATCH / TASK PACK**
+
+Only an actionable, justified classification becomes implementation work. It
+then follows the normal Build → Verify → Stage/Ship gates below; there is no
+maintenance bypass around E4 or Founder-controlled Production release.
 
 ``` text
 NEW
@@ -820,6 +902,9 @@ Engineering should improve:
 -   regression rate
 -   stale-context incidents
 -   unauthorized-change incidents
+-   material platform/store/dependency changes detected before enforcement
+-   qualified compatibility updates ready before applicable deadlines
+-   unnecessary dependency-upgrade churn
 
 The target is not maximum autonomy.
 
@@ -1107,4 +1192,3 @@ For a superseded implementation:
 Done means:
 
 > **Canonical replacement works, obsolete implementation is safely removed, dependencies are verified, and the active code/context contains only what future agents need.**
-
