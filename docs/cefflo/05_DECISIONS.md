@@ -1097,3 +1097,25 @@ cannot be mistaken for authenticated end-to-end proof.
 Current evidence: backend contract PASS; Vendor anonymous live contracts
 11/11 PASS; Driver anonymous live contracts 11/11 PASS; Customer staging build
 and invalid-token contract PASS. No staging mutation occurred.
+
+## D-59 Phase 2A Staging Test Fixtures and Driver Session Truth (2026-09-25)
+
+**Decision (Founder).** Authenticated Phase 2A qualification may use dedicated,
+TEST-ONLY staging fixtures on `tomvvmwktehexwhktenw` only.
+
+- Test Auth identities are created through the Supabase Auth admin API with the
+  staging secret key held outside Git on the VPS. The secret key is used only
+  by local qualification scripts and must never enter a frontend bundle.
+- Because no product flow creates a business yet, Business A and Business B
+  (`TEST-ONLY Phase2A …`) and their owner memberships may be created directly
+  as staging fixtures. This is not a product path and grants no precedent for
+  Production.
+- Driver relationships are never written directly. They are produced only by
+  the canonical Vendor invitation → Driver acceptance → Vendor approval RPCs,
+  called as the signed-in test identities.
+- In the real build, the Driver lands on the screen owned by the hydrated
+  relationship stage, Log Out revokes the Supabase session, and the
+  prototype "simulate approval" control is shown only in prototype mode.
+- The Driver Today surface's DemoData counters, current run, greeting and
+  business row are operational wiring and remain outside Phase 2A; they block
+  a truthful active-Driver real-data qualification until separately approved.

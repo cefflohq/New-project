@@ -2,8 +2,9 @@
 
 **Date:** 2026-09-25
 
-**Status:** PARTIAL — local and anonymous staging qualification complete;
-authenticated staging journeys blocked on dedicated test identities
+**Status:** PARTIAL — authenticated staging qualification run; Vendor
+foundation flows pass; Driver active-state real-data surface and two
+email-dependent UI journeys remain open (see "Authenticated qualification")
 
 ## Implemented
 
@@ -81,6 +82,68 @@ authenticated journey remains blocked. Verification that does not need them:
   refresh button and freshness chrome now assert the approved C1-C4 state
   (`tracking-adapter.js` keeps `setFreshness` as a documented no-op). Backend
   refresh, guard and freshness-call assertions are unchanged. No UI was changed.
+
+## Authenticated qualification — 2026-09-25 (D-59)
+
+### Fixtures (staging `tomvvmwktehexwhktenw` only)
+
+- 6 confirmed TEST-ONLY Auth identities created with the Auth admin API
+  (Vendor A, Vendor B, Driver none, Driver pending, Driver one-active, Driver
+  multi-active). Credentials were generated locally into the mode-600 env file
+  and never printed.
+- Business A and Business B (`TEST-ONLY Phase2A Business A/B`) plus one owner
+  membership each, created as approved fixtures (no product flow creates a
+  business).
+- Driver relationships created only through the canonical RPCs, signed in as
+  the test users: `create_rider_invitation` → `accept_rider_invitation` →
+  `approve_pending_rider`. Result: pending (A), active (A), active (A + B).
+- One real Vendor sign-up identity created through the Vendor app (unconfirmed,
+  awaiting email verification).
+- The legacy web `vendor/` and `invite/` pages build and serve locally against
+  staging from an isolated copy (public config only).
+
+### Authenticated API contract: 53/53 PASS
+
+Refresh-token session restore; `get_my_businesses` returns exactly the own
+business for each Vendor; own business readable; cross-business reads of
+`businesses`, `business_members`, `riders`, `orders`, `zones`, `products`,
+`delivery_sessions`, `rider_invitations` return empty for both Vendors;
+cross-business invitation rejected; Vendor A sees exactly its 3 test riders;
+each Driver identity sees exactly its expected relationships and no other
+rider rows; Driver cross-business reads empty; multi-active Driver resolves
+both businesses; tampered JWT rejected; recovery request accepted (2); sign-out
+revokes the refresh token.
+
+### Browser flows at 393×852 on staging release builds
+
+| Flow | Vendor | Driver |
+|---|---|---|
+| Sign-in (real `/auth/v1/token`) | PASS — Business A / B from real data | PASS |
+| Stage landing | n/a | PASS after fix — none → No Business Connected; pending → Pending Review |
+| Active business context | PASS — switcher lists only own business (owner) | Active state shows DemoData Today surface (open) |
+| Session restore on reload | PASS | PASS |
+| Sign-out | PASS — `logout` 204, session cleared, stays signed out | PASS after fix |
+| Expired / corrupted session | PASS — refresh 400, returns to entry, session cleared | PASS |
+| Real sign-up | PASS — `signup` 200 → "Verify your email" | Blocked — staging email rate limit (429), truthful error shown |
+| Recovery request | API PASS; in-app request hit rate limit (429), truthful error shown | API PASS |
+| Invalid credentials | PASS | PASS |
+
+### Defects found and status
+
+- FIXED (Driver `feedff9`): real sessions ignored the hydrated stage and
+  landed on the demo Today stack; Log Out never revoked the Supabase session;
+  the prototype "simulate approval" link rendered in the real build.
+- OPEN (Driver, outside Phase 2A per D-59): the active Today surface renders
+  DemoData greeting, business row, date, counters and current run.
+- OPEN (Driver): multiple active relationships default to the first returned
+  row; `selectRelationship` exists but no screen exposes explicit selection,
+  and the relationship query has no stable order.
+- OPEN (Driver, minor): Pending Review shows static "Submitted" ticks.
+- OPEN (Vendor, minor): Riders list chip shows "Offline" for a pending rider,
+  and the Offline filter includes pending riders (detail screen is correct).
+- OPEN (backend/product): no business-creation flow exists.
+- ENV: staging uses the built-in Supabase mailer; its hourly email limit
+  blocks repeated sign-up/recovery UI runs.
 
 ## Remaining Phase 2A gate
 
