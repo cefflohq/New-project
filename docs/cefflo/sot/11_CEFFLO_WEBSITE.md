@@ -60,7 +60,7 @@ The Website must never independently own or calculate canonical:
 All of the above remain backend-owned per `docs/cefflo/sot/02_ARCHITECTURE.md` §2. The Website may display marketing/product information and handle acquisition/commercial flows only.
 
 ## 5. Current Implementation State
-`marketing/index.html` is the current built public site (pre-existing, outside the `docs/cefflo/sot/marketing/` knowledge-domain scope, which governs the AI Content Engine, not this surface). No dedicated Phase 03 pre-launch landing page has been built. No Phase 06 commercial website has been built. This document does not authorize building either.
+**NOT IMPLEMENTED (D-62, 2026-09-25).** The previous built site (`marketing/index.html`, including `marketing/prelaunch/`) was not an approved Website UI and was removed from the active baseline, build and routing; `www.cefflo.com` serves no product UI. No dedicated Phase 03 pre-launch landing page has been built. No Phase 06 commercial website has been built. This document does not authorize building either.
 
 ## 6. Relationship to the Marketing Knowledge Pack
 This document is the **product-surface** doctrine (what the Website is, its boundaries). `docs/cefflo/sot/marketing/00_MARKETING_KNOWLEDGE_PACK_INDEX.md` and its pack govern the **content/creative** doctrine that will eventually populate this surface. Neither replaces the other.

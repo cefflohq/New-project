@@ -1,6 +1,17 @@
 # CEFFLO --- RIDER PWA
 
-Current section describes the LIVE Rider PWA. Future target direction
+> **Superseded (D-62, 2026-09-25).** The static Rider PWA (`rider/`) was
+> removed from the active baseline. Canonical Driver UI is Flutter only:
+> `apps/rider_mobile`. The sections below are historical behaviour notes. The
+> backend contracts the static client called remain canonical for Driver
+> execution (Phase 2B.2): `accept_assignment`, `decline_assignment`,
+> `accept_run`, `decline_run`, `start_pickup_run`, `start_run_delivery`,
+> `save_run_sequence`, `rider_transition`, `complete_delivery`,
+> `rider_report_delivery_issue`, plus RLS-scoped reads of `riders`,
+> `businesses`, `orders` and `delivery_sessions`, and POD upload through
+> `shared/client.js` `uploadPod(riderId, orderId, file)`.
+
+Historically this section described the LIVE Rider PWA. Future target direction
 (NOT YET implemented, Founder review pending):
 `docs/cefflo/sot/13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` (active master as of
 2026-09-14, D-37; supersedes `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md`,

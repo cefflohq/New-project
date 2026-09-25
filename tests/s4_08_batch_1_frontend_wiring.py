@@ -16,8 +16,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 VENDOR_HTML = (ROOT / "vendor" / "index.html").read_text(encoding="utf-8")
 VENDOR_JS = (ROOT / "vendor" / "backend.js").read_text(encoding="utf-8")
-RIDER_HTML = (ROOT / "rider" / "index.html").read_text(encoding="utf-8")
-RIDER_JS = (ROOT / "rider" / "backend.js").read_text(encoding="utf-8")
 CUSTOMER_JS = (ROOT / "customer" / "backend.js").read_text(encoding="utf-8")
 
 
@@ -85,104 +83,19 @@ class VendorIssueWiringTests(unittest.TestCase):
         self.assertIn("Unable to report delivery issue", catch_body)
 
 
-class RiderIssueWiringTests(unittest.TestCase):
-    def test_real_rpc_is_called(self):
-        self.assertIn("api.rpc('rider_report_delivery_issue'", RIDER_JS)
-
-    def test_typed_reason_mapping_matches_canonical_backend_enum(self):
-        fn = next(line for line in RIDER_JS.splitlines() if "const RIDER_ISSUE_REASON_MAP" in line)
-        for label, canonical in (
-            ("Customer not reachable", "customer_unreachable"),
-            ("Wrong address", "address_problem"),
-            ("Vendor issue / late", "vendor_not_ready"),
-            ("Rider vehicle breakdown", "rider_unable_to_proceed"),
-        ):
-            self.assertIn(f"'{label}': '{canonical}'", fn)
-        # 'Customer changed time' (redelivery) has no backend contract and
-        # must never be force-mapped.
-        self.assertNotIn("Customer changed time", fn)
-
-    def test_false_vendor_admin_notified_claim_removed(self):
-        self.assertNotIn("Vendor/admin has been notified", RIDER_HTML)
-        self.assertNotIn("Vendor/admin has been notified", RIDER_JS)
-        # the dead i18n key is allowed to remain unreachable, but must have
-        # zero live call-sites.
-        self.assertNotIn("t('issue_sent')", RIDER_HTML)
-
-    def test_address_update_no_longer_falsely_claims_persistence(self):
-        self.assertNotIn("Address updated", RIDER_HTML)
-        self.assertNotIn("Vendor contacted for address approval", RIDER_HTML)
-        fn = block(RIDER_HTML, r"function applyUpdatedAddress\(\)\{")
-        self.assertIn("submitIssue(", fn)
-
-    def test_redelivery_no_longer_falsely_claims_request_sent(self):
-        self.assertNotIn("Re-delivery request sent for vendor approval", RIDER_HTML)
-
-    def test_recovery_is_vendor_only_not_wired_from_rider(self):
-        # Flow 2 Founder closure decision (supersedes A6's earlier Rider-
-        # initiated recovery wiring, asserted by this same test file until
-        # Grow V1 Flow 2's later narrowing): "reassignment/recovery
-        # ownership changes are Vendor-authorized only; Rider may report an
-        # issue/request assistance but must not independently release/
-        # reassign the order." initiate_delivery_recovery's signature no
-        # longer even accepts a Rider identity (p_rider_id was dropped
-        # entirely, not merely ignored) -- the Rider app must carry no call
-        # to it at all, and no createRedelivery/"Return to Planning"
-        # affordance implying the Rider can trigger it.
-        self.assertNotIn("api.rpc('initiate_delivery_recovery'", RIDER_JS)
-        self.assertNotIn("createRedelivery", RIDER_HTML)
-        self.assertNotIn("createRedelivery", RIDER_JS)
-        self.assertNotIn("Return to Planning", RIDER_HTML)
-        # 'Customer changed time' remains a selectable Rider issue reason
-        # (the Rider's legitimate "report an issue / request assistance"
-        # channel), but with no canonical backend action for it, it falls
-        # through to the same honest generic-reason handling as any other
-        # unmapped reason -- never a fabricated recovery affordance.
-        self.assertIn("selectIssue('Customer changed time')", RIDER_HTML)
-        self.assertNotIn("recov-reason", RIDER_HTML)
-        self.assertNotIn("recov-note", RIDER_HTML)
-
-    def test_breakdown_no_longer_falsely_claims_assignment_paused(self):
-        self.assertNotIn("Assignment paused. Waiting for vendor", RIDER_HTML)
-        fn = block(RIDER_HTML, r"function pauseForBreakdown\(\)\{")
-        self.assertIn("submitIssue('Rider vehicle breakdown')", fn)
-        self.assertNotIn("sessionPaused", fn)
-
-    def test_fake_call_attempt_and_wait_simulation_removed(self):
-        self.assertNotIn("recordIssueCall", RIDER_HTML)
-        self.assertNotIn("startIssueWait", RIDER_HTML)
-        self.assertNotIn("updateIssueGate", RIDER_HTML)
-        self.assertNotIn("Wait requirement", RIDER_HTML)
-
-    def test_success_only_after_await(self):
-        fn = block(RIDER_JS, r"submitIssue = async function \(reason, note\) \{")
-        rpc_index = fn.index("await reportDeliveryIssue(")
-        toast_index = fn.index("showToast('Issue reported.'")
-        self.assertLess(rpc_index, toast_index)
-
-    def test_rpc_failure_cannot_produce_success_ui(self):
-        fn = block(RIDER_JS, r"submitIssue = async function \(reason, note\) \{")
-        self.assertIn("catch (error)", fn)
-        catch_body = fn[fn.index("catch (error)"):]
-        self.assertNotIn("showToast('Issue reported.'", catch_body)
-
-
 class CrossAppAndOfflineTests(unittest.TestCase):
     def test_customer_issue_and_cancelled_mapping_unchanged(self):
         self.assertIn("issue: 'issue'", CUSTOMER_JS)
         self.assertIn("cancelled: 'cancelled'", CUSTOMER_JS)
 
     def test_no_new_direct_table_mutation_introduced(self):
-        # Both new wrappers must call the RPC, never a direct PostgREST
+        # The Vendor wrapper must call the RPC, never a direct PostgREST
         # table write for the order/delivery_events tables -- bounded to the
         # single declaration line itself, not a fixed-width slice that could
         # bleed into an unrelated neighboring function.
         vendor_line = next(line for line in VENDOR_JS.splitlines() if "const reportDeliveryIssue =" in line)
-        rider_line = next(line for line in RIDER_JS.splitlines() if "const reportDeliveryIssue =" in line)
         self.assertIn("api.rpc(", vendor_line)
         self.assertNotIn("/rest/v1/orders", vendor_line)
-        self.assertIn("api.rpc(", rider_line)
-        self.assertNotIn("/rest/v1/orders", rider_line)
 
     def test_offline_failure_cannot_enter_false_success_state(self):
         # Both handlers' only success paths are strictly downstream of the

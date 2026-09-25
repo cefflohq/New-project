@@ -14,6 +14,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND_JS = (ROOT / "customer" / "backend.js").read_text(encoding="utf-8")
 INDEX_HTML = (ROOT / "customer" / "index.html").read_text(encoding="utf-8")
+APP_JS = (ROOT / "customer" / "app.js").read_text(encoding="utf-8")
+ADAPTER_JS = (ROOT / "customer" / "tracking-adapter.js").read_text(encoding="utf-8")
+# The approved C1-C4 Customer screens (rendered by app.js) retired the inline
+# refresh button and freshness chrome. The backend refresh/freshness contract
+# is still asserted; the UI side asserts the superseded state.
+CUSTOMER_UI = INDEX_HTML + APP_JS
 
 
 class NoContinuousPollingTests(unittest.TestCase):
@@ -42,8 +48,8 @@ class RefreshTriggerTests(unittest.TestCase):
 
     def test_manual_refresh_exposed_and_wired(self):
         self.assertIn("window.CEFFLO_CUSTOMER = Object.freeze({ refresh: guardedRefresh", BACKEND_JS)
-        self.assertIn("window.CEFFLO_CUSTOMER.refresh()", INDEX_HTML)
-        self.assertIn('id="refreshButton"', INDEX_HTML)
+        # Superseded: the approved UI has no inline manual refresh button.
+        self.assertNotIn('id="refreshButton"', CUSTOMER_UI)
 
     def test_all_triggers_share_the_same_guarded_path(self):
         # load, visibilitychange, and pageshow must all call guardedRefresh --
@@ -68,24 +74,19 @@ class DuplicateEventProtectionTests(unittest.TestCase):
 
 class FreshnessIndicatorTests(unittest.TestCase):
     def test_freshness_text_element_present(self):
-        self.assertIn('id="freshnessText"', INDEX_HTML)
+        # Superseded: the approved UI has no freshness text element.
+        self.assertNotIn('id="freshnessText"', CUSTOMER_UI)
 
     def test_freshness_setter_wired_from_refresh(self):
         self.assertIn("window.CEFFLOTracking.setFreshness", BACKEND_JS)
-        self.assertIn("setFreshness(timestamp)", INDEX_HTML)
+        # The adapter keeps the contract callable as a UI-free no-op.
+        self.assertRegex(ADAPTER_JS, r"setFreshness\(\)\s*{\s*/\*[^*]*\*/\s*}")
 
     def test_freshness_ticker_never_calls_network(self):
-        # The only setInterval in this codebase's customer surface (the
-        # freshness-text re-render) must not itself trigger any RPC/fetch.
-        match = re.search(r"setInterval\(([^,]+),\s*20000\)", INDEX_HTML)
-        self.assertIsNotNone(match, "expected a UI-only setInterval for freshness text")
-        callback_name = match.group(1).strip()
-        self.assertEqual(callback_name, "renderFreshnessText")
-        fn_match = re.search(r"function renderFreshnessText\(\)\s*{([^}]*)}", INDEX_HTML)
-        self.assertIsNotNone(fn_match)
-        body = fn_match.group(1)
-        for forbidden in ("fetch(", ".rpc(", "CEFFLO_CUSTOMER"):
-            self.assertNotIn(forbidden, body)
+        # With the freshness chrome retired, no customer-surface timer may
+        # exist that could re-trigger an RPC/fetch.
+        for source in (INDEX_HTML, APP_JS, ADAPTER_JS):
+            self.assertNotIn("setInterval", source)
 
     def test_no_countdown_to_next_poll_shown(self):
         self.assertNotIn("next update in", INDEX_HTML.lower())

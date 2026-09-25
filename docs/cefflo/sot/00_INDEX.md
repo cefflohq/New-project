@@ -53,7 +53,7 @@ Primary:
 - `docs/cefflo/sot/13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` — status: **ACTIVE MASTER** (2026-09-14, D-37), 42 screens (D01–D42), "WORKING MASTER BASELINE," NOT YET Founder-locked, NOT YET IMPLEMENTED. The sole active Driver/Rider Flutter UI/UX screen-inventory authority.
 - `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md` — **SUPERSEDED / HISTORICAL** (2026-09-14, D-37). 33 screens, `R-01`–`R-33`. Retained for traceability only; do not implement against it.
 - `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — **CANONICAL as of 2026-09-11 (D-33)**, the same shared Visual DNA authority as Vendor Flutter. No Driver Flutter implementation exists in the repository yet — this is the visual authority it will build against once authorized.
-- Rider execution behavior — see `docs/cefflo/07_RIDER.md` for the current LIVE Rider PWA (the actual live client today).
+- Rider execution behavior — the static Rider PWA was retired (D-62); canonical Driver UI is Flutter (`apps/rider_mobile`). `docs/cefflo/07_RIDER.md` keeps the historical behaviour and the Driver execution contracts.
 - shared canonical backend contracts — see `docs/cefflo/sot/02_ARCHITECTURE.md` and `docs/cefflo/11_SUPABASE.md`.
 
 ## 3. Customer

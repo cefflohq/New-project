@@ -12,9 +12,12 @@ One secure backend supports multiple Cefflo clients.
 
 ## AR-01 Client Surfaces
 
--   `cefflo.com` --- marketing/acquisition.
--   `vendor.cefflo.com` --- Vendor PWA.
--   `rider.cefflo.com` --- Rider PWA.
+-   `cefflo.com` / `www.cefflo.com` --- Public Website: NOT IMPLEMENTED
+    (no product UI is served; D-62).
+-   `vendor.cefflo.com` --- Vendor Web/Desktop (Vendor Mobile is Flutter).
+-   `rider.cefflo.com` --- retired static Rider PWA host; serves only a
+    service-worker retirement page (D-62). Driver is Flutter Mobile.
+-   `invite.cefflo.com` --- temporary invitation acceptance route (D-62).
 -   `tracking.cefflo.com` --- tokenized Customer Tracking.
 -   `foundr.cefflo.com` --- FOUNDR Command Center.
 -   `api.cefflo.com` --- only if the canonical production architecture
