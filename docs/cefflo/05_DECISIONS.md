@@ -1119,3 +1119,21 @@ TEST-ONLY staging fixtures on `tomvvmwktehexwhktenw` only.
 - The Driver Today surface's DemoData counters, current run, greeting and
   business row are operational wiring and remain outside Phase 2A; they block
   a truthful active-Driver real-data qualification until separately approved.
+
+## D-60 Phase 2A Close-Out and Phase 2B Backlog (2026-09-25)
+
+**Decision (Founder).** Phase 2A is COMPLETE WITH EXTERNAL STAGING LIMITATION.
+
+- The only unpassed checks are the Driver sign-up and in-app recovery request
+  screens, blocked by the staging Supabase built-in email rate limit (429).
+  They carry into the next staging regression run. No SMTP or infrastructure
+  change is authorized for this.
+- Moved to the Phase 2B backlog, not implemented in Phase 2A: active Driver
+  Today real-data wiring; explicit multi-business Driver selection; real data
+  behind the Pending Review "Submitted" ticks (static display, no backend
+  success asserted).
+- The Vendor Riders semantic defect is fixed within Phase 2A: a pending rider
+  is never displayed or filtered as Offline.
+- All `TEST-ONLY Phase2A` staging fixtures are retained for Phase 2B and
+  regression testing.
+- Phase 2B does not start until separately approved by the Founder.

@@ -34,6 +34,18 @@ Phase 2–7 sections below remain domain and release views; they must not
 override the approved sprint dependencies, security gates, test gates or
 protected-action approvals.
 
+## Backend Wiring Track (D-56)
+
+-   Phase 1 --- Backend wiring audit: complete
+    (`engineering/BACKEND_WIRING_AUDIT.md`).
+-   Phase 2A --- Foundation (Auth, business/relationship context, staging
+    qualification): COMPLETE WITH EXTERNAL STAGING LIMITATION (D-60). Evidence:
+    `engineering/PHASE_2A_FOUNDATION_STATUS.md`. Carried: Driver sign-up and
+    in-app recovery screens (staging email rate limit).
+-   Phase 2B --- NOT STARTED; requires Founder approval. Backlog so far:
+    active Driver Today real-data wiring; explicit multi-business Driver
+    selection; Pending Review submission data; the carried email checks.
+
 ## Phase 2 --- Backend & Security Foundation
 
 -   R2.1 Schema/migration audit

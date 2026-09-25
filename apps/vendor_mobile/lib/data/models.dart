@@ -255,6 +255,11 @@ class RiderRow {
   );
 
   bool get isActive => status == 'active';
+  bool get isPending => status == 'pending';
+
+  /// Offline means an approved relationship that is not active; a pending
+  /// rider has not been approved yet and is never Offline.
+  bool get isOffline => !isActive && !isPending;
 }
 
 class TeamMember {

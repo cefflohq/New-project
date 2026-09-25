@@ -1084,7 +1084,7 @@ class _RidersScreenState extends State<RidersScreen> {
       builder: (context, riders, reload) {
         final visible = switch (tab) {
           'Active' => riders.where((r) => r.isActive).toList(),
-          'Offline' => riders.where((r) => !r.isActive).toList(),
+          'Offline' => riders.where((r) => r.isOffline).toList(),
           'Pending' => riders.where((r) => r.status == 'pending').toList(),
           _ => riders,
         };
@@ -1109,8 +1109,13 @@ class _RidersScreenState extends State<RidersScreen> {
                   ].join(' · '),
                   leading: CefAvatar(r.name, filled: true),
                   trailing: StatusChip(
-                    r.isActive ? 'Active' : 'Offline',
+                    r.isActive
+                        ? 'Active'
+                        : r.isPending
+                        ? 'Pending'
+                        : 'Offline',
                     success: r.isActive,
+                    warning: r.isPending,
                   ),
                   // Audit fix 2: bound to this rider's id.
                   onTap: () => app.go(VRoute.riderDetail, entityId: r.id),

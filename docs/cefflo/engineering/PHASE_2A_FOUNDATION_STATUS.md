@@ -2,9 +2,10 @@
 
 **Date:** 2026-09-25
 
-**Status:** PARTIAL — authenticated staging qualification run; Vendor
-foundation flows pass; Driver active-state real-data surface and two
-email-dependent UI journeys remain open (see "Authenticated qualification")
+**Status:** COMPLETE WITH EXTERNAL STAGING LIMITATION (D-60). All Phase 2A
+foundation checks pass except the Driver sign-up and in-app recovery request
+screens, which are blocked only by the staging Supabase built-in email rate
+limit (HTTP 429, mapped truthfully in both apps).
 
 ## Implemented
 
@@ -133,19 +134,42 @@ revokes the refresh token.
 - FIXED (Driver `feedff9`): real sessions ignored the hydrated stage and
   landed on the demo Today stack; Log Out never revoked the Supabase session;
   the prototype "simulate approval" link rendered in the real build.
-- OPEN (Driver, outside Phase 2A per D-59): the active Today surface renders
-  DemoData greeting, business row, date, counters and current run.
-- OPEN (Driver): multiple active relationships default to the first returned
-  row; `selectRelationship` exists but no screen exposes explicit selection,
-  and the relationship query has no stable order.
-- OPEN (Driver, minor): Pending Review shows static "Submitted" ticks.
-- OPEN (Vendor, minor): Riders list chip shows "Offline" for a pending rider,
-  and the Offline filter includes pending riders (detail screen is correct).
+- FIXED (Vendor): Riders list showed a pending rider as "Offline" and the
+  Offline filter included pending riders. Pending riders now show "Pending"
+  (existing warning chip) and appear only under All and Pending. Verified on
+  staging at 393×852 with the TEST-ONLY riders.
+- PHASE 2B BACKLOG (D-60): active Driver Today real-data wiring (DemoData
+  greeting, business row, date, counters, current run).
+- PHASE 2B BACKLOG (D-60): explicit multi-business Driver selection; today the
+  first returned active relationship is used, `selectRelationship` has no
+  screen, and the relationship query has no stable order.
+- PHASE 2B BACKLOG (D-60): Pending Review "Submitted" ticks are static display
+  only; they write nothing and assert no backend success.
 - OPEN (backend/product): no business-creation flow exists.
 - ENV: staging uses the built-in Supabase mailer; its hourly email limit
   blocks repeated sign-up/recovery UI runs.
 
-## Remaining Phase 2A gate
+## Final Phase 2A result (D-60)
+
+- Driver: analyze PASS; tests 7/7 PASS; anonymous live staging 11/11 PASS.
+- Vendor: analyze PASS; tests 102 PASS (adds rider-status regression);
+  anonymous live staging 11/11 PASS.
+- Authenticated staging API contract: 53/53 PASS.
+- Prototype and staging release web builds: PASS for both apps; bundles carry
+  the staging ref only, with no secret key, database URL or test credential.
+- Real-data browser flows at 393×852: PASS except the carried email checks.
+- TEST-ONLY Phase2A staging fixtures are retained for Phase 2B and regression.
+
+### Carried into the next staging regression run
+
+1. Driver real sign-up through the app (last result: `signup` 429).
+2. Vendor in-app recovery request (last result: `recover` 429).
+3. Driver in-app recovery request.
+
+Re-run them only after the built-in mailer limit has reset; no SMTP or
+infrastructure change is authorized.
+
+## Historical gate (superseded by the result above)
 
 The staging project and public/runtime configuration are now available through
 a local mode-600 environment file outside Git. No authorized Vendor or Driver
