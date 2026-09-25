@@ -33,7 +33,7 @@ Widget buildScreen(BuildContext context, VendorLocation loc) {
     VRoute.zoneDetail => ZoneDetailScreen(zoneId: id!),
     VRoute.zoneConfiguration => const ZoneConfigurationScreen(),
     VRoute.createZone => const CreateZoneScreen(),
-    VRoute.runDetail => RunDetailScreen(runId: id ?? 'RUN-0182'),
+    VRoute.runDetail => RunDetailScreen(runId: id!),
     VRoute.serviceArea => const ServiceAreaScreen(),
     VRoute.coverageEdit => const ServiceAreaScreen(),
     VRoute.riders => const RidersScreen(),

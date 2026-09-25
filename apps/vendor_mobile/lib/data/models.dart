@@ -48,7 +48,7 @@ enum DeliveryStatus {
   /// Vendor-facing wording. The canonical value is still [wire].
   String get label => switch (this) {
     DeliveryStatus.created => 'Pending approval',
-    DeliveryStatus.readyForPickup => 'Ready',
+    DeliveryStatus.readyForPickup => 'Pickup',
     DeliveryStatus.pickedUp => 'Picked up',
     DeliveryStatus.outForDelivery => 'On the way',
     DeliveryStatus.arrived => 'Arrived',
@@ -127,6 +127,14 @@ class VendorOrder {
   final String? notes, publicRef, zoneId, assignedRiderId, origin;
   final List<OrderItem> items;
   final DateTime? approvedAt, completedAt;
+
+  /// Approval is recorded in `approved_at`, not in `delivery_status`
+  /// (still `created` until pickup), so an approved order must not read as
+  /// awaiting approval.
+  bool get isApproved => approvedAt != null;
+  String get statusLabel => status == DeliveryStatus.created && isApproved
+      ? 'Approved'
+      : status.label;
 
   factory VendorOrder.fromRow(Map<String, dynamic> r) => VendorOrder(
     id: r['id'] as String,
@@ -489,6 +497,83 @@ class UnplannableEntry {
       'No rider with a compatible vehicle and enough spare capacity',
     _ => reason,
   };
+}
+
+/// One persisted run: a `rider_assignments` row (one rider inside one
+/// delivery session) with its `delivery_stops`. Read-only projection of
+/// canonical backend state -- the same rows Vendor Web and the Driver read.
+class VendorRun {
+  const VendorRun({
+    required this.id,
+    required this.riderId,
+    required this.sessionId,
+    required this.status,
+    required this.stops,
+    this.sessionName,
+    this.assignedAt,
+  });
+
+  final String id, riderId, sessionId, status;
+  final String? sessionName;
+  final DateTime? assignedAt;
+  final List<RunStop> stops;
+
+  factory VendorRun.fromRow(Map<String, dynamic> r) {
+    final session = r['delivery_sessions'];
+    final stops =
+        (r['delivery_stops'] as List? ?? [])
+            .whereType<Map>()
+            .map((s) => RunStop.fromRow(Map<String, dynamic>.from(s)))
+            .toList()
+          ..sort((a, b) => a.sequence.compareTo(b.sequence));
+    return VendorRun(
+      id: r['id'] as String,
+      riderId: r['rider_id'] as String,
+      sessionId: r['delivery_session_id'] as String,
+      status: (r['status'] as String?) ?? 'assigned',
+      sessionName: session is Map ? session['name'] as String? : null,
+      assignedAt: DateTime.tryParse((r['assigned_at'] ?? '').toString()),
+      stops: stops,
+    );
+  }
+
+  List<String> get orderIds => stops.map((s) => s.orderId).toList();
+  int get delivered =>
+      stops.where((s) => s.status == DeliveryStatus.delivered).length;
+
+  /// A run stays on today's plan until it is completed or cancelled.
+  bool get isOpen =>
+      !const {'completed', 'cancelled', 'declined'}.contains(status);
+
+  /// Vendor-facing wording for the canonical assignment status.
+  String get statusLabel => switch (status) {
+    'assigned' => 'Dispatched',
+    'accepted' => 'Accepted',
+    'picking_up' => 'Picking up',
+    'delivering' => 'On the way',
+    'completed' => 'Completed',
+    'issue' => 'Issue',
+    'declined' => 'Declined',
+    'cancelled' => 'Cancelled',
+    _ => status,
+  };
+}
+
+class RunStop {
+  const RunStop({
+    required this.orderId,
+    required this.sequence,
+    required this.status,
+  });
+  final String orderId;
+  final int sequence;
+  final DeliveryStatus status;
+
+  factory RunStop.fromRow(Map<String, dynamic> r) => RunStop(
+    orderId: r['order_id'] as String,
+    sequence: (r['sequence'] as num?)?.toInt() ?? 0,
+    status: DeliveryStatus.parse(r['status'] as String?),
+  );
 }
 
 /// `check_run_vehicle_capacity` result.

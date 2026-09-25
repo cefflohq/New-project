@@ -145,7 +145,9 @@ revokes the refresh token.
   screen, and the relationship query has no stable order.
 - PHASE 2B BACKLOG (D-60): Pending Review "Submitted" ticks are static display
   only; they write nothing and assert no backend success.
-- OPEN (backend/product): no business-creation flow exists.
+- OPEN (product/UI): the backend contains `bootstrap_business`, but no
+  completed product/UI business-creation flow calls it yet. (Wording
+  corrected 2026-09-25 per D-61; Phase 2A result unchanged.)
 - ENV: staging uses the built-in Supabase mailer; its hourly email limit
   blocks repeated sign-up/recovery UI runs.
 

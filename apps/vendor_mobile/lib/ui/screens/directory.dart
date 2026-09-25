@@ -10,6 +10,7 @@ import '../../data/models.dart';
 import '../async_view.dart';
 import '../shell.dart';
 import '../widgets.dart';
+import 'planning.dart' show showDispatchSheet;
 
 /// Presentation-only: canonical values stay lowercase ('active', 'van'); this
 /// only affects how they are displayed.
@@ -364,7 +365,13 @@ class ZoneDetailScreen extends StatefulWidget {
   State<ZoneDetailScreen> createState() => _ZoneDetailScreenState();
 }
 
-typedef _ZoneData = (Zone, List<VendorOrder>, PlanProposal, List<RiderRow>);
+typedef _ZoneData = (
+  Zone,
+  List<VendorOrder>,
+  PlanProposal,
+  List<RiderRow>,
+  List<VendorRun>,
+);
 
 class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
   final _view = GlobalKey<AsyncViewState<_ZoneData>>();
@@ -383,12 +390,14 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
     final orders = await app.repo.orders(businessId);
     final plan = await app.repo.proposePlan(businessId);
     final riders = await app.repo.riders(businessId);
+    final runs = await app.repo.runs(businessId);
     if (mounted) setState(() => _zone = zone);
     return (
       zone,
       orders.where((o) => o.zoneId == widget.zoneId).toList(),
       plan,
       riders,
+      runs,
     );
   }
 
@@ -576,9 +585,10 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
     );
     if (confirmed != true || !mounted) return;
     try {
-      await app.repo.deleteZone(zone.id);
+      // Archived as inactive (D-61): never a hard delete.
+      await app.repo.deactivateZone(zone.id);
       if (!mounted) return;
-      showCefToast(context, '${zone.name} deleted');
+      showCefToast(context, '${zone.name} removed from your delivery setup');
       app.back();
     } catch (e) {
       if (mounted) {
@@ -689,7 +699,13 @@ class _ZoneDetailBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     final text = Theme.of(context).textTheme;
-    final (zone, orders, plan, riders) = data;
+    final (zone, orders, plan, riders, allRuns) = data;
+    final byId = {for (final o in orders) o.id: o};
+    // Dispatched work is canonical persisted runs; the proposal only covers
+    // what is still waiting to be dispatched.
+    final runs = allRuns
+        .where((r) => r.isOpen && r.orderIds.any(byId.containsKey))
+        .toList();
     final groups = plan.groups
         .where((g) => g.zoneId == zone.id && g.stops.isNotEmpty)
         .toList();
@@ -701,7 +717,6 @@ class _ZoneDetailBody extends StatelessWidget {
     final delivered = orders
         .where((o) => o.status == DeliveryStatus.delivered)
         .length;
-    final byId = {for (final o in orders) o.id: o};
     return RefreshIndicator(
       onRefresh: reload,
       child: ListView(
@@ -753,9 +768,28 @@ class _ZoneDetailBody extends StatelessWidget {
             ],
           ),
           const SectionHeading("Today's deliveries"),
-          if (groups.isEmpty)
+          if (groups.isEmpty && runs.isEmpty)
             const StateBlock.empty('No deliveries planned in this zone today.')
-          else
+          else ...[
+            for (final r in runs) ...[
+              _DispatchedRiderHeader(
+                run: r,
+                rider: riders.where((x) => x.id == r.riderId).firstOrNull,
+              ),
+              for (final stop in r.stops.where(
+                (s) => byId.containsKey(s.orderId),
+              ))
+                CefListRow(
+                  title: byId[stop.orderId]?.customerName ?? stop.orderId,
+                  subtitle: byId[stop.orderId]?.statusLabel,
+                  leading: SizedBox(
+                    width: Sizes.avatar,
+                    child: Center(child: _SequenceBadge(stop.sequence)),
+                  ),
+                  onTap: () =>
+                      app.go(VRoute.orderDetail, entityId: stop.orderId),
+                ),
+            ],
             for (final g in groups) ...[
               _RiderHeader(
                 group: g,
@@ -772,9 +806,47 @@ class _ZoneDetailBody extends StatelessWidget {
                   onTap: () =>
                       app.go(VRoute.orderDetail, entityId: stop.orderId),
                 ),
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: CefLink(
+                  'Dispatch',
+                  chevron: true,
+                  onTap: () => showDispatchSheet(
+                    context,
+                    zone: zone,
+                    group: g,
+                    riders: riders,
+                    onDispatched: reload,
+                  ),
+                ),
+              ),
             ],
+          ],
         ],
       ),
+    );
+  }
+}
+
+/// A rider with dispatched (persisted) work in this zone. Opens V-19.
+class _DispatchedRiderHeader extends StatelessWidget {
+  const _DispatchedRiderHeader({required this.run, required this.rider});
+  final VendorRun run;
+  final RiderRow? rider;
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final name = rider?.name ?? 'Rider';
+    return CefListRow(
+      title: name,
+      subtitle: [
+        if (rider?.vehicleType != null) _titleCase(rider!.vehicleType!),
+        if (rider?.plate != null) rider!.plate!,
+      ].join(' · '),
+      leading: CefAvatar(name, filled: true),
+      trailing: StatusChip(run.statusLabel, info: true),
+      onTap: () => app.go(VRoute.runDetail, entityId: run.id),
     );
   }
 }
@@ -832,6 +904,19 @@ class _DeliveryStopRow extends StatelessWidget {
       if (stop.travelMinutes != null) '${stop.travelMinutes} min',
     ].join(' · ');
     final eta = stop.etaAt == null ? null : _formatTime(stop.etaAt!);
+    final row = CefListRow(
+      title: order?.customerName ?? stop.orderId,
+      subtitle: meta.isEmpty ? null : meta,
+      leading: SizedBox(
+        width: Sizes.avatar,
+        child: Center(child: _SequenceBadge(stop.sequence)),
+      ),
+      trailing: eta == null ? null : Text(eta, style: text.bodySmall),
+      onTap: onTap,
+    );
+    // Removing a delivery from today's plan has no canonical contract yet
+    // (D-61), so the real build offers no swipe at all.
+    if (!AppScope.of(context).repo.isDemo) return row;
     return Dismissible(
       key: ValueKey('stop-${stop.orderId}'),
       direction: DismissDirection.endToStart,
@@ -866,16 +951,7 @@ class _DeliveryStopRow extends StatelessWidget {
         );
         onRemoved();
       },
-      child: CefListRow(
-        title: order?.customerName ?? stop.orderId,
-        subtitle: meta.isEmpty ? null : meta,
-        leading: SizedBox(
-          width: Sizes.avatar,
-          child: Center(child: _SequenceBadge(stop.sequence)),
-        ),
-        trailing: eta == null ? null : Text(eta, style: text.bodySmall),
-        onTap: onTap,
-      ),
+      child: row,
     );
   }
 
@@ -1619,7 +1695,10 @@ class CustomerDetailScreen extends StatelessWidget {
                 title: order.reference,
                 subtitle: order.deliveryAddress,
                 icon: LucideIcons.package,
-                trailing: DeliveryStatusChip(order.status),
+                trailing: DeliveryStatusChip(
+                  order.status,
+                  approved: order.isApproved,
+                ),
                 onTap: () => app.go(VRoute.orderDetail, entityId: order.id),
               ),
           ],

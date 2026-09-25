@@ -4,13 +4,15 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/app_state.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
+import '../../data/models.dart';
 import '../../data/vendor_repository.dart';
 import '../async_view.dart';
 import '../shell.dart';
 import '../widgets.dart';
 
-/// V-19 — Active Run presentation. This is a preview/read model shell until
-/// the repo exposes a dedicated run read endpoint for the route id.
+/// V-19 — Run detail: one persisted run (a `rider_assignments` row and its
+/// `delivery_stops`), read from the same canonical rows Vendor Web and the
+/// Driver use. Reached from a dispatched rider on Zone detail.
 class RunDetailScreen extends StatelessWidget {
   const RunDetailScreen({super.key, required this.runId});
 
@@ -18,19 +20,92 @@ class RunDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    return AsyncView<(VendorRun, List<VendorOrder>, List<RiderRow>)>(
+      key: ValueKey('run-$runId'),
+      load: () async {
+        final businessId = app.business!.id;
+        final run = await app.repo.run(runId);
+        return (
+          run,
+          await app.repo.orders(businessId),
+          await app.repo.riders(businessId),
+        );
+      },
+      builder: (context, data, reload) {
+        final (run, orders, riders) = data;
+        return _RunDetailBody(
+          run: run,
+          orders: {for (final o in orders) o.id: o},
+          rider: riders.where((r) => r.id == run.riderId).firstOrNull,
+          reload: reload,
+        );
+      },
+    );
+  }
+}
+
+class _RunDetailBody extends StatelessWidget {
+  const _RunDetailBody({
+    required this.run,
+    required this.orders,
+    required this.rider,
+    required this.reload,
+  });
+  final VendorRun run;
+  final Map<String, VendorOrder> orders;
+  final RiderRow? rider;
+  final Future<void> Function() reload;
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
     final c = context.c;
     final text = Theme.of(context).textTheme;
+    final total = run.stops.length;
+    final done = run.delivered;
+    final open = run.stops
+        .where(
+          (s) => !const {
+            DeliveryStatus.delivered,
+            DeliveryStatus.cancelled,
+          }.contains(s.status),
+        )
+        .toList();
+    Widget stopRow(RunStop s, {Widget? trailing}) {
+      final o = orders[s.orderId];
+      return CefListRow(
+        title: o?.customerName ?? s.orderId,
+        subtitle: o?.deliveryAddress,
+        icon: LucideIcons.mapPin,
+        trailing: trailing ?? StatusChip(s.status.label),
+        onTap: () => app.go(VRoute.orderDetail, entityId: s.orderId),
+      );
+    }
+
     return PageBody(
+      onRefresh: reload,
       children: [
         Row(
           children: [
-            Flexible(child: Text(runId, style: text.titleMedium)),
+            Flexible(
+              child: Text(
+                run.sessionName ?? 'Delivery run',
+                style: text.titleMedium,
+              ),
+            ),
             const SizedBox(width: Gap.md),
-            const StatusChip('Active', success: true),
+            StatusChip(run.statusLabel, info: true),
           ],
         ),
         const SizedBox(height: Gap.xs),
-        Text('Bangsar · Ahmad Razi · VFY 7281', style: text.bodySmall),
+        Text(
+          [
+            rider?.name ?? 'Rider',
+            if (rider?.plate != null) rider!.plate!,
+          ].join(' · '),
+          style: text.bodySmall,
+        ),
         const SizedBox(height: Gap.md),
         SizedBox(
           height: 240,
@@ -49,39 +124,229 @@ class RunDetailScreen extends StatelessWidget {
         const SizedBox(height: Gap.lg),
         Row(
           children: [
-            Expanded(child: Text('3 of 7 delivered', style: text.titleMedium)),
-            Text('4 remaining', style: text.bodySmall),
+            Expanded(
+              child: Text('$done of $total delivered', style: text.titleMedium),
+            ),
+            Text('${total - done} remaining', style: text.bodySmall),
           ],
         ),
         const SizedBox(height: Gap.sm),
         ClipRRect(
           borderRadius: BorderRadius.circular(Sizes.buttonRadius),
           child: LinearProgressIndicator(
-            value: 3 / 7,
+            value: total == 0 ? 0 : done / total,
             minHeight: Gap.sm,
             backgroundColor: c.subtle,
             valueColor: AlwaysStoppedAnimation(c.info),
           ),
         ),
-        const SectionHeading('Next stop'),
-        const CefListRow(
-          title: 'Nadia Rahman',
-          subtitle: 'Bangsar · 1.2 km · 8 min',
-          icon: LucideIcons.mapPin,
-          trailing: StatusChip('Next'),
-        ),
-        const SectionHeading('Upcoming stops'),
-        for (final i in const [
-          ('Firdaus Cafe', 'Mont Kiara · 2.1 km'),
-          ('Amy Lee', 'Damansara · 3.4 km'),
-          ('Restoran Ali', 'Petaling Jaya · 4.0 km'),
-        ])
-          CefListRow(title: i.$1, subtitle: i.$2, icon: LucideIcons.mapPin),
-        const SizedBox(height: Gap.md),
-        const StateBlock.blocked(
-          'Route sequencing and live ETA are backend-owned. This screen is presentation-only until Phase 3 wiring.',
-        ),
+        if (open.isNotEmpty) ...[
+          const SectionHeading('Next stop'),
+          stopRow(open.first, trailing: const StatusChip('Next')),
+        ],
+        if (open.length > 1) ...[
+          const SectionHeading('Upcoming stops'),
+          for (final s in open.skip(1)) stopRow(s),
+        ],
+        if (open.isEmpty)
+          const StateBlock.empty('Every stop on this run is finished.'),
       ],
+    );
+  }
+}
+
+/// Zone detail → Dispatch: select rider → server capacity check →
+/// confirm → `build_rider_run` (D-61). A bottom-sheet overlay on the
+/// approved Zone detail; no separate Review & Dispatch screen.
+Future<void> showDispatchSheet(
+  BuildContext context, {
+  required Zone zone,
+  required PlanGroup group,
+  required List<RiderRow> riders,
+  required Future<void> Function() onDispatched,
+}) => showModalBottomSheet<void>(
+  context: context,
+  isScrollControlled: true,
+  backgroundColor: context.c.card,
+  shape: const RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(top: Radius.circular(Sizes.cardRadius)),
+  ),
+  builder: (_) => _DispatchSheet(
+    zone: zone,
+    group: group,
+    riders: riders.where((r) => r.isActive).toList(),
+    onDispatched: onDispatched,
+  ),
+);
+
+class _DispatchSheet extends StatefulWidget {
+  const _DispatchSheet({
+    required this.zone,
+    required this.group,
+    required this.riders,
+    required this.onDispatched,
+  });
+  final Zone zone;
+  final PlanGroup group;
+  final List<RiderRow> riders;
+  final Future<void> Function() onDispatched;
+
+  @override
+  State<_DispatchSheet> createState() => _DispatchSheetState();
+}
+
+class _DispatchSheetState extends State<_DispatchSheet> {
+  String? _riderId;
+  CapacityCheck? _check;
+  String? _error;
+  bool _checking = false, _sending = false;
+
+  /// One key per rider choice, reused if the same dispatch is retried.
+  String _key = VendorRepository.newIdempotencyKey();
+
+  @override
+  void initState() {
+    super.initState();
+    final candidate = widget.group.candidateRiderId;
+    if (widget.riders.any((r) => r.id == candidate)) _select(candidate!);
+  }
+
+  Future<void> _select(String riderId) async {
+    setState(() {
+      _riderId = riderId;
+      _check = null;
+      _error = null;
+      _checking = true;
+      _key = VendorRepository.newIdempotencyKey();
+    });
+    try {
+      final check = await AppScope.read(context).repo
+          .checkRunCapacity(riderId: riderId, orderIds: widget.group.orderIds);
+      if (mounted && _riderId == riderId) setState(() => _check = check);
+    } catch (e) {
+      if (mounted) setState(() => _error = '$e');
+    } finally {
+      if (mounted) setState(() => _checking = false);
+    }
+  }
+
+  Future<void> _dispatch() async {
+    final app = AppScope.read(context);
+    final rider = widget.riders.firstWhere((r) => r.id == _riderId);
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    try {
+      await app.repo.dispatchRun(
+        businessId: app.business!.id,
+        sessionName: '${widget.zone.name} Run',
+        riderId: rider.id,
+        orderIds: widget.group.orderIds,
+        idempotencyKey: _key,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      showCefToast(context, 'Dispatched to ${rider.name}');
+      await widget.onDispatched();
+    } catch (e) {
+      if (mounted) setState(() => _error = '$e');
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final text = Theme.of(context).textTheme;
+    final count = widget.group.stops.length;
+    final ready = _check?.compatible == true && !_checking;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          Gap.gutter,
+          Gap.xl,
+          Gap.gutter,
+          Gap.lg,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Dispatch $count order${count == 1 ? '' : 's'}',
+              style: text.titleMedium,
+            ),
+            const SizedBox(height: Gap.xs),
+            Text(
+              'Choose the rider for ${widget.zone.name}.',
+              style: text.bodyMedium,
+            ),
+            const SizedBox(height: Gap.md),
+            if (widget.riders.isEmpty)
+              const StateBlock.empty('No active riders yet.')
+            else
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    for (final r in widget.riders)
+                      CefListRow(
+                        title: r.name,
+                        subtitle: [
+                          if (r.vehicleType != null) r.vehicleType!,
+                          if (r.plate != null) r.plate!,
+                        ].join(' · '),
+                        leading: CefAvatar(r.name, filled: true),
+                        trailing: r.id == _riderId
+                            ? Icon(LucideIcons.circleCheck, color: c.info)
+                            : null,
+                        showChevron: false,
+                        onTap: _sending ? null : () => _select(r.id),
+                      ),
+                  ],
+                ),
+              ),
+            if (_checking) ...[
+              const SizedBox(height: Gap.sm),
+              Text('Checking vehicle and capacity…', style: text.bodySmall),
+            ],
+            for (final v in _check?.violations ?? const <String>[]) ...[
+              const SizedBox(height: Gap.sm),
+              Text(v, style: text.bodySmall?.copyWith(color: c.attention)),
+            ],
+            if (_error != null) ...[
+              const SizedBox(height: Gap.sm),
+              Text(
+                _error!,
+                style: text.bodySmall?.copyWith(color: c.attention),
+              ),
+            ],
+            const SizedBox(height: Gap.xl),
+            Row(
+              children: [
+                Expanded(
+                  child: CefButton(
+                    'Cancel',
+                    secondary: true,
+                    onTap: _sending ? null : () => Navigator.of(context).pop(),
+                  ),
+                ),
+                const SizedBox(width: Gap.md),
+                Expanded(
+                  child: CefButton(
+                    'Dispatch',
+                    busy: _sending,
+                    busyLabel: 'Dispatching…',
+                    onTap: ready && !_sending ? _dispatch : null,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

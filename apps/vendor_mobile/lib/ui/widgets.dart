@@ -678,11 +678,18 @@ class StatusChip extends StatelessWidget {
 /// screen: Ready / Delivered green, in-progress blue, awaiting approval
 /// amber, Issue red, Cancelled neutral.
 class DeliveryStatusChip extends StatelessWidget {
-  const DeliveryStatusChip(this.status, {super.key});
+  const DeliveryStatusChip(this.status, {super.key, this.approved = false});
   final DeliveryStatus status;
+
+  /// An approved order that is still `created` reads "Approved", green.
+  final bool approved;
 
   @override
   Widget build(BuildContext context) => switch (status) {
+    DeliveryStatus.created when approved => const StatusChip(
+      'Approved',
+      success: true,
+    ),
     DeliveryStatus.readyForPickup ||
     DeliveryStatus.delivered => StatusChip(status.label, success: true),
     DeliveryStatus.pickedUp ||

@@ -1137,3 +1137,31 @@ TEST-ONLY staging fixtures on `tomvvmwktehexwhktenw` only.
 - All `TEST-ONLY Phase2A` staging fixtures are retained for Phase 2B and
   regression testing.
 - Phase 2B does not start until separately approved by the Founder.
+
+## D-61 Phase 2B.1 Vendor Operational Core (2026-09-25)
+
+**Decision (Founder).** Vendor Mobile uses the same canonical contracts as
+Vendor Web/Desktop for Orders → Zones → Runs → Rider Assignment. No migration
+and no new RPC.
+
+- **Dispatch** stays inside Zone detail (D-49 information architecture kept):
+  rider selection → `check_run_vehicle_capacity` → confirmation →
+  `build_rider_run`, as bottom-sheet overlays; no V-18 screen. The open
+  session is chosen with Vendor Web's rule (first planned/active session,
+  else `create_delivery_session`).
+- **Canonical assignment path** is run-based `build_rider_run`;
+  `reassign_rider` is for correction only. Mobile adds no per-order
+  assignment flow.
+- **V-19 Run detail** is re-linked from a dispatched rider on Zone detail and
+  reads the persisted `rider_assignments` + `delivery_stops` rows.
+- **Zones:** rename through `rename_zone`; Delete zone archives through
+  `set_zone_status('inactive')` -- no hard delete.
+- **Orders:** Order detail offers Approve (`approve_order`) and Zone
+  selection (`update_order_details`) before dispatch; an approved order that is
+  still `created` reads "Approved".
+- **Remove from today's deliveries** stays unavailable in the real build until
+  a canonical planning contract exists; zone membership is not today's plan.
+- Rider approve/deactivate UI stays out of this phase.
+- Correction: the backend contains `bootstrap_business`; the Phase 2A gap is
+  that no completed product/UI business-creation flow calls it. Phase 2A stays
+  COMPLETE WITH EXTERNAL STAGING LIMITATION.

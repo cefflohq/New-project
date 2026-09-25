@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'models.dart';
@@ -164,10 +167,23 @@ class VendorRepository {
       ),
     );
     final map = result is Map ? Map<String, dynamic>.from(result) : const {};
-    final id = (map['order_id'] ?? map['id'])?.toString();
+    // create_delivery returns {order: {...}, tracking_token}, the shape
+    // Vendor Web reads as `created.order.id`.
+    final order = map['order'];
+    final id =
+        ((order is Map ? order['id'] : null) ?? map['order_id'] ?? map['id'])
+            ?.toString();
     if (id == null) {
       throw RepositoryError('Order was not created: backend returned no id.');
     }
+    // Same fire-and-forget step Vendor Web takes after creation: ask the
+    // canonical geocode-order function to resolve the location planning
+    // needs. The order exists either way; failure leaves it 'unresolved'.
+    unawaited(
+      _db!.functions
+          .invoke('geocode-order', body: {'order_id': id})
+          .then((_) {}, onError: (_) {}),
+    );
     return id;
   }
 
@@ -271,24 +287,29 @@ class VendorRepository {
       );
     }
     final row = await _run(
-      () => _db!
-          .from('zones')
-          .update({'name': name})
-          .eq('id', zoneId)
-          .select()
-          .single(),
+      () => _db!.rpc(
+        'rename_zone',
+        params: {'p_zone_id': zoneId, 'p_name': name},
+      ),
     );
-    return Zone.fromRow(row);
+    return Zone.fromRow(_single(row));
   }
 
-  /// Removes a zone from the business's delivery setup (Zone options →
-  /// Delete zone). Row-level security decides whether the caller may.
-  Future<void> deleteZone(String zoneId) async {
+  /// Takes a zone out of the business's delivery setup (Zone options →
+  /// Delete zone). Zones are never hard-deleted: the canonical contract
+  /// archives them as inactive, keeping order history intact.
+  Future<Zone> deactivateZone(String zoneId) async {
     if (_demo) {
-      _demoZones.removeWhere((z) => z.id == zoneId);
-      return;
+      final i = _demoZones.indexWhere((z) => z.id == zoneId);
+      final z = _demoZones[i];
+      return _demoZones[i] = Zone(
+        id: z.id,
+        name: z.name,
+        status: 'inactive',
+        locality: z.locality,
+      );
     }
-    await _run(() => _db!.from('zones').delete().eq('id', zoneId));
+    return setZoneStatus(zoneId, 'inactive');
   }
 
   /// Takes one delivery off today's plan (swipe to delete on Zone detail).
@@ -565,6 +586,92 @@ class VendorRepository {
     return CapacityCheck.fromJson(_single(row));
   }
 
+  // ------------------------------------------------------------------ runs
+
+  static const _runSelect =
+      'id,rider_id,delivery_session_id,status,assigned_at,'
+      'delivery_sessions(id,name,status),'
+      'delivery_stops(id,order_id,status,sequence)';
+
+  /// Persisted runs for the business, oldest first -- the same
+  /// `rider_assignments` + `delivery_stops` rows Vendor Web hydrates.
+  Future<List<VendorRun>> runs(String businessId) async {
+    if (_demo) return _DemoData.runs;
+    final rows = await _run(
+      () => _db!
+          .from('rider_assignments')
+          .select(_runSelect)
+          .eq('business_id', businessId)
+          .order('assigned_at'),
+    );
+    return _rows(rows).map(VendorRun.fromRow).toList();
+  }
+
+  Future<VendorRun> run(String runId) async {
+    if (_demo) {
+      return _DemoData.runs.firstWhere(
+        (r) => r.id == runId,
+        orElse: () => throw RepositoryError('Run not found.'),
+      );
+    }
+    final row = await _run(
+      () => _db!
+          .from('rider_assignments')
+          .select(_runSelect)
+          .eq('id', runId)
+          .maybeSingle(),
+    );
+    if (row == null) throw RepositoryError('Run not found.');
+    return VendorRun.fromRow(Map<String, dynamic>.from(row));
+  }
+
+  /// Canonical run-based dispatch (D-61): joins the business's open delivery
+  /// session -- the same "first planned/active session" rule Vendor Web
+  /// applies -- or opens one, then commits the run through
+  /// `build_rider_run`. Reuse the same [idempotencyKey] when retrying.
+  Future<Map<String, dynamic>> dispatchRun({
+    required String businessId,
+    required String sessionName,
+    required String riderId,
+    required List<String> orderIds,
+    required String idempotencyKey,
+  }) async {
+    final open = await _run(
+      () => _db!
+          .from('delivery_sessions')
+          .select('id')
+          .eq('business_id', businessId)
+          .inFilter('status', ['planned', 'active'])
+          .order('created_at', ascending: false)
+          .limit(1),
+    );
+    final openRows = _rows(open);
+    final sessionId = openRows.isNotEmpty
+        ? openRows.first['id'] as String
+        : (await createDeliverySession(
+                businessId: businessId,
+                name: sessionName,
+              ))['id']
+              as String;
+    return buildRiderRun(
+      sessionId: sessionId,
+      riderId: riderId,
+      orderIds: orderIds,
+      idempotencyKey: idempotencyKey,
+    );
+  }
+
+  /// A fresh RFC 4122 v4 id for one dispatch attempt.
+  static String newIdempotencyKey() {
+    final rnd = Random.secure();
+    final b = List<int>.generate(16, (_) => rnd.nextInt(256));
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    final h = b.map((x) => x.toRadixString(16).padLeft(2, '0')).join();
+    return '${h.substring(0, 8)}-${h.substring(8, 12)}-${h.substring(12, 16)}-'
+        '${h.substring(16, 20)}-${h.substring(20)}';
+  }
+
   /// Dispatch. [idempotencyKey] must be stable for a retry of the same run.
   Future<Map<String, dynamic>> buildRiderRun({
     required String sessionId,
@@ -573,9 +680,6 @@ class VendorRepository {
     required String idempotencyKey,
     bool overrideCapacity = false,
   }) async {
-    if (_demo) {
-      return {'id': 'RUN-0182', 'order_count': orderIds.length};
-    }
     final row = await _run(
       () => _db!.rpc(
         'build_rider_run',
@@ -807,12 +911,13 @@ class _DemoData {
     VendorOrder(
       id: 'ord-1007',
       publicRef: 'ORD-1007',
-      status: DeliveryStatus.created,
+      status: DeliveryStatus.delivered,
       customerName: 'The Daily Grind',
       customerPhone: '+60 12 771 4410',
       deliveryAddress: 'Lorong Kurau, Bangsar',
       zoneId: 'zone-bangsar',
       createdAt: now.subtract(const Duration(minutes: 12)),
+      completedAt: now.subtract(const Duration(minutes: 4)),
       items: const [
         OrderItem(name: 'Coffee beans 1kg', quantity: 2, unitPrice: 68),
       ],
@@ -995,6 +1100,34 @@ class _DemoData {
       locationStatus: 'resolved',
       coverage: CoverageStatus.covered,
       zoneId: 'zone-bangsar',
+    ),
+  ];
+
+  /// One prototype run so the V-19 audit URL (RUN-0182) renders.
+  static final runs = [
+    VendorRun(
+      id: 'RUN-0182',
+      riderId: 'rider-ahmad',
+      sessionId: 'session-demo',
+      sessionName: 'Bangsar Run',
+      status: 'delivering',
+      stops: const [
+        RunStop(
+          orderId: 'ord-1002',
+          sequence: 1,
+          status: DeliveryStatus.delivered,
+        ),
+        RunStop(
+          orderId: 'ord-1004',
+          sequence: 2,
+          status: DeliveryStatus.outForDelivery,
+        ),
+        RunStop(
+          orderId: 'ord-1005',
+          sequence: 3,
+          status: DeliveryStatus.created,
+        ),
+      ],
     ),
   ];
 

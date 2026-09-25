@@ -542,7 +542,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   title: o.reference,
                   subtitle: '${o.customerName} · ${o.deliveryAddress}',
                   icon: LucideIcons.package,
-                  trailing: DeliveryStatusChip(o.status),
+                  trailing: DeliveryStatusChip(
+                    o.status,
+                    approved: o.isApproved,
+                  ),
                   onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
                 ),
           ],
@@ -573,12 +576,22 @@ class OrderDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    return AsyncView<VendorOrder>(
+    return AsyncView<(VendorOrder, List<Zone>)>(
       loading: const SkeletonHeroPage(),
       key: ValueKey('order-$orderId'),
-      load: () => app.repo.order(orderId),
-      builder: (context, order, reload) {
+      load: () async => (
+        await app.repo.order(orderId),
+        await app.repo.zones(app.business!.id),
+      ),
+      builder: (context, data, reload) {
+        final (order, zones) = data;
         final items = order.items;
+        // Pre-dispatch only: approval and zone are planning inputs the
+        // server rejects once a rider holds the order.
+        final planning =
+            order.status == DeliveryStatus.created &&
+            order.assignedRiderId == null;
+        final zone = zones.where((z) => z.id == order.zoneId).firstOrNull;
         final phone = order.customerPhone.trim();
         Widget itemRow((int, OrderItem) entry) => CefListRow(
           title: entry.$2.name,
@@ -596,7 +609,7 @@ class OrderDetailScreen extends StatelessWidget {
               DetailHero(
                 title: order.reference,
                 status: HeroStatusPill(
-                  order.status.label,
+                  order.statusLabel,
                   color: switch (order.status) {
                     DeliveryStatus.issue => context.c.attention,
                     final s when OrderTab.ongoing.accepts(s) => null,
@@ -627,6 +640,26 @@ class OrderDetailScreen extends StatelessWidget {
           // where it was shown before; a Ready order has no bottom action.
           bottomAction: order.status == DeliveryStatus.readyForPickup
               ? null
+              : planning && order.approvedAt == null
+              ? Row(
+                  children: [
+                    Expanded(
+                      child: CefButton(
+                        'Edit Order',
+                        secondary: true,
+                        onTap: () =>
+                            app.go(VRoute.editOrder, entityId: order.id),
+                      ),
+                    ),
+                    const SizedBox(width: Gap.md),
+                    Expanded(
+                      child: _ApproveOrderButton(
+                        orderId: order.id,
+                        onApproved: reload,
+                      ),
+                    ),
+                  ],
+                )
               : CefButton(
                   'Edit Order',
                   onTap: () => app.go(VRoute.editOrder, entityId: order.id),
@@ -651,6 +684,15 @@ class OrderDetailScreen extends StatelessWidget {
                 icon: LucideIcons.navigation,
                 onTap: () => launchDirections(context, order.deliveryAddress),
               ),
+            ),
+            CefListRow(
+              title: 'Zone',
+              subtitle: zone?.name ?? 'Not set',
+              icon: LucideIcons.map,
+              showChevron: planning,
+              onTap: planning
+                  ? () => _pickZone(context, order, zones, reload)
+                  : null,
             ),
             if ((order.notes ?? '').isNotEmpty)
               CefListRow(
@@ -692,6 +734,82 @@ class OrderDetailScreen extends StatelessWidget {
       },
     );
   }
+}
+
+/// Order → Zone through the canonical `update_order_details` contract.
+Future<void> _pickZone(
+  BuildContext context,
+  VendorOrder order,
+  List<Zone> zones,
+  Future<void> Function() reload,
+) => showListSheet(
+  context,
+  title: 'Zone',
+  children: [
+    for (final z in zones.where((z) => z.isActive))
+      Builder(
+        builder: (sheet) => CefListRow(
+          title: z.name,
+          subtitle: z.locality,
+          icon: LucideIcons.map,
+          showChevron: false,
+          trailing: z.id == order.zoneId
+              ? Icon(LucideIcons.circleCheck, color: sheet.c.info)
+              : null,
+          onTap: () async {
+            Navigator.of(sheet).pop();
+            if (z.id == order.zoneId) return;
+            try {
+              await AppScope.read(context).repo
+                  .updateOrder(orderId: order.id, zoneId: z.id);
+              if (context.mounted) {
+                showCefToast(context, 'Zone set to ${z.name}');
+              }
+              await reload();
+            } catch (e) {
+              if (context.mounted) {
+                showCefToast(context, 'Could not set zone: $e', error: true);
+              }
+            }
+          },
+        ),
+      ),
+  ],
+);
+
+/// Vendor approval (D-17) through the canonical `approve_order` contract.
+class _ApproveOrderButton extends StatefulWidget {
+  const _ApproveOrderButton({required this.orderId, required this.onApproved});
+  final String orderId;
+  final Future<void> Function() onApproved;
+
+  @override
+  State<_ApproveOrderButton> createState() => _ApproveOrderButtonState();
+}
+
+class _ApproveOrderButtonState extends State<_ApproveOrderButton> {
+  bool _busy = false;
+
+  Future<void> _approve() async {
+    setState(() => _busy = true);
+    try {
+      await AppScope.read(context).repo.approveOrder(widget.orderId);
+      if (mounted) showCefToast(context, 'Order approved');
+      await widget.onApproved();
+    } catch (e) {
+      if (mounted) showCefToast(context, 'Could not approve: $e', error: true);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => CefButton(
+    'Approve Order',
+    busy: _busy,
+    busyLabel: 'Approving…',
+    onTap: _busy ? null : _approve,
+  );
 }
 
 /// V-14 — How the order gets created: one manual order, or a bulk import.

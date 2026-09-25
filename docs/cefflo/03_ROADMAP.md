@@ -42,9 +42,17 @@ protected-action approvals.
     qualification): COMPLETE WITH EXTERNAL STAGING LIMITATION (D-60). Evidence:
     `engineering/PHASE_2A_FOUNDATION_STATUS.md`. Carried: Driver sign-up and
     in-app recovery screens (staging email rate limit).
--   Phase 2B --- NOT STARTED; requires Founder approval. Backlog so far:
-    active Driver Today real-data wiring; explicit multi-business Driver
-    selection; Pending Review submission data; the carried email checks.
+-   Phase 2B.1 --- Vendor Operational Core (Orders → Zones → Runs → Rider
+    Assignment): COMPLETE (D-61), Vendor Mobile on the same canonical
+    contracts as Vendor Web/Desktop. Evidence:
+    `engineering/PHASE_2B1_VENDOR_OPERATIONAL_CORE.md`.
+-   Phase 2B.2 --- Driver Execution: NOT STARTED; requires Founder approval.
+    Backlog: active Driver Today real-data wiring; explicit multi-business
+    Driver selection; Pending Review submission data; the carried email
+    checks; Driver run execution on the contracts listed in `07_RIDER.md`.
+-   Phase 2B backlog (Vendor): stop sequencing (`save_run_sequence`) UI;
+    remove-from-today's-plan contract; Rider approve/deactivate wiring;
+    Mobile manual location correction.
 
 ## Phase 2 --- Backend & Security Foundation
 
