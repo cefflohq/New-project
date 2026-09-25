@@ -265,10 +265,6 @@ class ScopeBoundaryTests(unittest.TestCase):
         for table in ("/rest/v1/orders", "/rest/v1/rider_assignments", "/rest/v1/delivery_stops"):
             self.assertNotIn(table, run_builder_source)
 
-    def test_no_s4_06_6_or_rider_ui_files_touched(self):
-        self.assertFalse((ROOT / "rider" / "index.html").read_text(encoding="utf-8").find("runBuilderState") != -1)
-        self.assertFalse((ROOT / "rider" / "backend.js").read_text(encoding="utf-8").find("build_rider_run") != -1)
-
     def test_no_customer_ui_touched(self):
         self.assertFalse((ROOT / "customer" / "index.html").read_text(encoding="utf-8").find("runBuilderState") != -1)
 

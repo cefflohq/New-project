@@ -6,7 +6,6 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 VENDOR = (ROOT / "vendor/index.html").read_text()
 BACKEND = (ROOT / "vendor/backend.js").read_text()
-RIDER = (ROOT / "rider/index.html").read_text()
 
 
 class GrowWt1ReconcileTests(unittest.TestCase):
@@ -35,11 +34,6 @@ class GrowWt1ReconcileTests(unittest.TestCase):
         self.assertIn("delivery.issue_reported", BACKEND)
         self.assertNotRegex(BACKEND, r"state\.issues\s*=\s*\[\]\s*;")
         self.assertNotRegex(BACKEND, r"state\.orderStatusHistory\s*=\s*\[\]\s*;")
-
-    def test_random_proximity_claim_is_removed(self):
-        self.assertNotIn("Math.random()<0.18", RIDER)
-        arrive = RIDER.split("function arriveAtStop()", 1)[1].split("function renderArrivedPod", 1)[0]
-        self.assertNotIn("far_location", arrive)
 
     def test_no_direct_table_mutation_was_added(self):
         self.assertNotRegex(BACKEND, r"/rest/v1/(zones|orders|rider_assignments).*method\s*:\s*['\"](?:POST|PATCH|DELETE)")

@@ -34,6 +34,18 @@ Phase 2–7 sections below remain domain and release views; they must not
 override the approved sprint dependencies, security gates, test gates or
 protected-action approvals.
 
+## Canonical UI Baseline (D-62)
+
+-   Vendor --- Mobile (`apps/vendor_mobile`) + Web/Desktop (`vendor/`).
+-   Driver --- Flutter Mobile (`apps/rider_mobile`).
+-   Customer Tracking --- PWA (`customer/`).
+-   Founder --- Web/PWA (`foundr/`).
+-   Supporting route --- Invitation (`invite/`), temporary until absorbed
+    into Driver onboarding.
+-   Public Website --- NOT IMPLEMENTED.
+-   No other active CEFFLO product UI exists; the static build publishes only
+    `scripts/canonical-surfaces.mjs`.
+
 ## Backend Wiring Track (D-56)
 
 -   Phase 1 --- Backend wiring audit: complete

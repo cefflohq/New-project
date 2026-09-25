@@ -1165,3 +1165,32 @@ and no new RPC.
 - Correction: the backend contains `bootstrap_business`; the Phase 2A gap is
   that no completed product/UI business-creation flow calls it. Phase 2A stays
   COMPLETE WITH EXTERNAL STAGING LIMITATION.
+
+## D-62 Canonical UI Clean Replacement (2026-09-25)
+
+**Decision (Founder).** The active repository baseline carries exactly the
+canonical CEFFLO UI products; obsolete UI is removed from the active tree,
+build, routing and tests (Git history keeps it).
+
+- **Vendor:** Mobile `apps/vendor_mobile` (Flutter) and Web/Desktop `vendor/`.
+  The Web/Desktop welcome presentation (hero photo, welcome copy/CSS, yellow
+  Get Started CTA, `showAuthWelcome`) is removed. Unauthenticated startup is
+  the existing login screen (`emailLogin`), the entry the Flow 3 Contract
+  Pack names; its existing language control moved there from the welcome.
+- **Driver:** Flutter Mobile `apps/rider_mobile` only. The static Rider PWA
+  (`rider/`) is removed; its backend contracts stay canonical and are listed
+  in `07_RIDER.md`. `rider.cefflo.com` serves only a retirement worker.
+- **Customer Tracking:** `customer/` from `claude/customer-tracking-pwa`.
+- **Founder:** `foundr/` from `codex/foundr-pwa-interactive-prototype`.
+- **Public Website: NOT IMPLEMENTED.** `marketing/` (and `prelaunch/`) is
+  removed; `www.cefflo.com` has no product rewrite.
+- **Invitation:** `invite/` is a temporary supporting Vendor → Driver route,
+  not a product, pending migration into Driver onboarding. `invite.cefflo.com`
+  is routed to it (Vendor Web already issues links to that host).
+- Prototype previews `previews/s4-10a…d` are removed with their preview-only
+  tests.
+- The static build publishes only `scripts/canonical-surfaces.mjs` and fails
+  if a removed surface or the welcome markers reappear.
+- Removed PWAs are retired explicitly: `retired/sw.js` clears caches and
+  unregisters; the Vendor shell cache is rotated.
+- Backend contracts, migrations, RLS and shared client/config are unchanged.

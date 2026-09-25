@@ -12,11 +12,12 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-RIDER_HTML = (ROOT / "rider" / "index.html").read_text(encoding="utf-8")
 VENDOR_HTML = (ROOT / "vendor" / "index.html").read_text(encoding="utf-8")
 VENDOR_JS = (ROOT / "vendor" / "backend.js").read_text(encoding="utf-8")
 CUSTOMER_HTML = (ROOT / "customer" / "index.html").read_text(encoding="utf-8")
 CUSTOMER_JS = (ROOT / "customer" / "backend.js").read_text(encoding="utf-8")
+# The approved C1-C4 Customer UI renders through tracking-adapter.js (D-62).
+CUSTOMER_ADAPTER = (ROOT / "customer" / "tracking-adapter.js").read_text(encoding="utf-8")
 
 
 def block(source, start_pattern, end_marker="\n}"):
@@ -34,17 +35,6 @@ def between(source, start_pattern, end_pattern, from_last_start=False):
     end = source.index(end_pattern, start)
     assert end > start, f"end pattern not found after start: {end_pattern}"
     return source[start:end]
-
-
-class RiderRouteOverviewWaveIsolationTests(unittest.TestCase):
-    """Item 1: the LIVE (last-defined, per this codebase's own
-    later-reassignment-wins convention) renderRouteOverview must read the
-    Wave-scoped Run list, never the flat cross-Wave appState.orders."""
-
-    def test_live_definition_is_wave_scoped(self):
-        live = between(RIDER_HTML, r"renderRouteOverview=function\(\)\{", "renderMapStopDetail=function(){", from_last_start=True)
-        self.assertIn("activeRunOrders()", live)
-        self.assertNotIn("const orders=appState.orders", live)
 
 
 class CustomerTrackingStatusMappingTests(unittest.TestCase):
@@ -66,16 +56,15 @@ class CustomerTrackingStatusMappingTests(unittest.TestCase):
         self.assertNotIn("'picked_up'", fallback)
 
     def test_issue_and_cancelled_are_real_tracking_states(self):
-        self.assertIn("ISSUE: 'issue'", CUSTOMER_HTML)
-        self.assertIn("CANCELLED: 'cancelled'", CUSTOMER_HTML)
-        self.assertIn("issue: 'Delivery Issue'", CUSTOMER_HTML)
-        self.assertIn("cancelled: 'Cancelled'", CUSTOMER_HTML)
+        # Issue and cancelled resolve to their own honest customer copy.
+        self.assertRegex(CUSTOMER_ADAPTER, r"issue: \{ title: 'Delivery on hold'")
+        self.assertRegex(CUSTOMER_ADAPTER, r"cancelled: \{ title: 'Order cancelled'")
 
     def test_render_tracking_never_hardcodes_picked_up_as_a_label_fallback(self):
-        fn = between(CUSTOMER_HTML, r"function renderTracking\(status\) \{", "function restoreRating")
-        self.assertIn("TRACKING_STATUS_LABEL[status]", fn)
-        self.assertNotIn("heroStatus.textContent = 'Picked Up'", fn)
-
+        # Unmapped lifecycle values fall to the unavailable template, never
+        # to a Picked Up milestone.
+        self.assertIn("unavailableCopy", CUSTOMER_ADAPTER)
+        self.assertNotRegex(CUSTOMER_ADAPTER, r"(\?\?|\|\|)\s*CUSTOMER_STATUS\.PICKED_UP")
 
 class CustomerZeroFabricatedEtaTests(unittest.TestCase):
     """Item 3: the hardcoded 18-minute ETA must be completely gone from
@@ -87,9 +76,8 @@ class CustomerZeroFabricatedEtaTests(unittest.TestCase):
             self.assertNotIn(forbidden, CUSTOMER_JS)
 
     def test_estimated_arrival_stays_the_only_arrival_signal_and_is_null_safe(self):
-        fn = block(CUSTOMER_JS, r"async function refresh\(\) \{")
-        self.assertIn("snapshot.eta ? new Date(snapshot.eta)", fn)
-
+        # public_tracking's eta is formatted only when present (Grow A5).
+        self.assertIn("if (!eta || !eta.state) return null;", CUSTOMER_JS)
 
 class VendorMultiWaveGroupingTests(unittest.TestCase):
     """Item 4: same Rider + same Zone in two different Waves must never

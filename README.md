@@ -1,11 +1,17 @@
 # CEFFLO
 
-Canonical CEFFLO source for Vendor, Rider, Customer Tracking and the shared Supabase backend.
+Canonical CEFFLO source (D-62). The UI products are exactly:
 
-- `vendor/` Vendor workspace
-- `rider/` Rider operations
-- `customer/` token-based customer tracking
+- Vendor — Mobile `apps/vendor_mobile` (Flutter) and Web/Desktop `vendor/`
+- Driver — Flutter Mobile `apps/rider_mobile`
+- Customer Tracking — PWA `customer/`
+- Founder — Web/PWA `foundr/`
+
+Public Website: NOT IMPLEMENTED. `invite/` is a temporary supporting
+invitation-acceptance route, not a product.
+
 - `shared/` public runtime configuration and client
+- `scripts/canonical-surfaces.mjs` the only static surfaces the build publishes
 - `supabase/migrations/` reproducible schema, RLS, RPC and Storage
 - `tests/` contract and security validation
 
@@ -170,14 +176,17 @@ Production beta access is a beta/test entitlement only. It is not a paid subscri
 python -m http.server 4173
 ```
 
-Then open `/vendor/`, `/rider/`, and `/customer/?token=<tracking-token>` from the same origin. Runtime configuration is shared by all three apps through `shared/config.js`.
+Then open `/vendor/`, `/foundr/`, `/invite/?type=rider&token=<invite-token>` and `/customer/?token=<tracking-token>` from the same origin. Runtime configuration is shared through `shared/config.js`. The Flutter apps build from `apps/vendor_mobile` and `apps/rider_mobile`.
 
 Production custom-domain mapping uses one Vercel project and the hostname rewrites in `vercel.json`:
 
-- `vendor.cefflo.com` → Vendor
-- `rider.cefflo.com` → Rider
+- `vendor.cefflo.com` → Vendor Web/Desktop
 - `tracking.cefflo.com/?token=<tracking-token>` → Customer Tracking
+- `foundr.cefflo.com` → Founder
+- `invite.cefflo.com` → invitation acceptance (temporary supporting route)
+- `rider.cefflo.com` → retirement worker only (the static Rider PWA was removed; Driver is Flutter)
+- `www.cefflo.com` → no product UI (Public Website: NOT IMPLEMENTED)
 
-Attach all three domains to the same Vercel project, then configure their DNS records exactly as Vercel reports. Vendor and Rider are installable PWAs. Their service workers cache only the static application shell; navigation is network-first and Supabase/API traffic is never cached.
+Attach these domains to the same Vercel project and configure DNS exactly as Vercel reports. Vendor Web, Customer Tracking and Founder are installable PWAs; each service worker is served from its host root and deletes caches from older versions on activation.
 
 The retired project `hjrurccjfxtmyftibtgw` is historical evidence only and has no runtime role.

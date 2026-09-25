@@ -119,7 +119,11 @@ class SharedInvitePageTests(unittest.TestCase):
 
 class BuildScriptTests(unittest.TestCase):
     def test_invite_surface_included_in_static_build(self):
-        self.assertIn("'invite'", BUILD_SCRIPT)
+        # The build publishes the explicit canonical list (D-62); invitation
+        # stays in it as a temporary supporting route.
+        self.assertIn("Object.keys(CANONICAL_SURFACES)", BUILD_SCRIPT)
+        surfaces = (ROOT / "scripts" / "canonical-surfaces.mjs").read_text(encoding="utf-8")
+        self.assertIn("  invite: ", surfaces)
 
 
 if __name__ == "__main__":

@@ -42,7 +42,8 @@ rollback.
 
 ## PW-08 Rider Device Capabilities
 
-Current Rider PWA may have limits for background
+The static Rider PWA was retired (D-62); Driver is Flutter Mobile.
+The retired PWA had limits for background
 GPS/camera/push/offline. Do not expand Stage 4 into native Flutter
 unless approved.
 
