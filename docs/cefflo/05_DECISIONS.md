@@ -1072,3 +1072,28 @@ relationships and RLS.
 This decision does not authorize Vendor operational wiring, Driver delivery
 actions, Customer Tracking changes, production access, migration deployment or
 branch push.
+
+## D-58 Phase 2A Staging Qualification Boundary (2026-09-25)
+
+**Decision (Founder authorization carried forward from Phase 2A).** Staging
+qualification is split into two evidence levels so anonymous contract probes
+cannot be mistaken for authenticated end-to-end proof.
+
+- The only permitted hosted target is staging project
+  `tomvvmwktehexwhktenw`. Environment identity must pass before any API or
+  database probe; the known Production project remains prohibited.
+- Anonymous live suites may prove RLS denial, RPC deployment, invalid tracking
+  token behavior and frontend build configuration. They must not create users,
+  upload POD, or leave test data.
+- Authenticated Vendor/Driver session, role, relationship, tenant-isolation and
+  real-data UI journeys require dedicated staging test identities. They remain
+  unqualified until those identities are supplied out of band.
+- A staging publishable key may be embedded only in an isolated staging build.
+  Database connection material must never enter a frontend bundle. Temporary
+  staging build output is deleted after validation.
+- Passing anonymous contracts does not authorize migration deployment,
+  Production access, workflow activation or branch push.
+
+Current evidence: backend contract PASS; Vendor anonymous live contracts
+11/11 PASS; Driver anonymous live contracts 11/11 PASS; Customer staging build
+and invalid-token contract PASS. No staging mutation occurred.
