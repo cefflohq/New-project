@@ -29,6 +29,30 @@ for Codex's full operating rules.
 -   If code and docs materially conflict, report the conflict before
     changing architecture or locked behaviour.
 
+## A-01a Canonical UI Baseline and Retired UI (D-62, Founder-approved 2026-09-26)
+
+-   Until the canonical release reaches `main`, the ONLY UI reference
+    baseline is branch `claude/canonical-integration`. `main` currently
+    carries only the `retired/` cache-cleanup page for production hosts.
+-   Canonical UI products: Vendor Mobile `apps/vendor_mobile`, Vendor
+    Web/Desktop `vendor/`, Driver Flutter `apps/rider_mobile`, Customer
+    Tracking `customer/`, Founder `foundr/`. Invitation `invite/` is a
+    temporary supporting route. Public Website: NOT IMPLEMENTED.
+-   RETIRED — never use as reference, design input, copy source or
+    evidence, even though copies still exist in older branches, local
+    worktrees, `/tmp` snapshots, screenshots or Git history:
+    -   the purple UI (e.g. `#7C6CF0`, `#6047D7`, `#5A40CD`, `#7861FF`)
+        and its "Welcome to CEFFLO / Delivery better for your home food
+        business" welcome;
+    -   the static Rider PWA (`rider/`);
+    -   the Vendor Web woman/product welcome presentation;
+    -   the old `marketing/` site, `marketing/prelaunch/` and
+        `previews/s4-10a…d`.
+-   Before using any UI file, confirm it comes from
+    `claude/canonical-integration`. If a task points at another branch's
+    UI, stop and report it. `tests/test_canonical_ui_baseline.py` fails if
+    retired UI returns to the canonical baseline.
+
 ## A-02 Mandatory Start
 
 Before implementation: 1. confirm repository/branch; 2. inspect working
