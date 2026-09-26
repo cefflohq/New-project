@@ -186,7 +186,7 @@ void main() {
     // no empty action bar left behind on a Ready order.
     expect(find.text('Mark as On the Way'), findsNothing);
     expect(find.byType(StickyActionBar), findsNothing);
-    expect(find.text('#CF1008'), findsOneWidget);
+    expect(find.text('#CF-1008'), findsOneWidget);
     // Nine items: a compact preview plus the full list on demand.
     expect(find.text('View all 9 items'), findsOneWidget);
     expect(find.text('Kaya Toast'), findsNothing);
@@ -243,7 +243,9 @@ void main() {
     expect(find.text('Bangsar South'), findsWidgets);
   });
 
-  testWidgets('Today caps Recent Delivery at four rows, one card per issue', (tester) async {
+  testWidgets('Today caps Recent Delivery at four rows, one card per issue', (
+    tester,
+  ) async {
     await pumpAt(tester, const VendorLocation(VRoute.today));
     expect(find.text('Delivered'), findsNWidgets(5)); // 4 pills + KPI label
     expect(find.text('Need Attention (3)'), findsOneWidget);
@@ -252,10 +254,10 @@ void main() {
       lessThan(852 - Sizes.nav),
     );
     // One card per active issue.
-    await tester.scrollUntilVisible(find.textContaining('#CF1011'), 200);
-    expect(find.textContaining('#CF1003'), findsOneWidget);
-    expect(find.textContaining('#CF1010'), findsOneWidget);
-    expect(find.textContaining('#CF1011'), findsOneWidget);
+    await tester.scrollUntilVisible(find.textContaining('#CF-1011'), 200);
+    expect(find.textContaining('#CF-1003'), findsOneWidget);
+    expect(find.textContaining('#CF-1010'), findsOneWidget);
+    expect(find.textContaining('#CF-1011'), findsOneWidget);
   });
 
   testWidgets('Orders header carries search and add only', (tester) async {
@@ -315,7 +317,7 @@ void main() {
       tester,
       const VendorLocation(VRoute.orderDetail, entityId: 'ord-1001'),
     );
-    expect(tester.getCenter(find.text('#CF1001')).dx, closeTo(196.5, 1));
+    expect(tester.getCenter(find.text('#CF-1001')).dx, closeTo(196.5, 1));
     expect(find.text('Directions'), findsOneWidget);
   });
 
@@ -354,9 +356,7 @@ void main() {
     expect(find.byType(SnackBar), findsNothing);
   });
 
-  testWidgets('one universal background persists across tabs', (
-    tester,
-  ) async {
+  testWidgets('one universal background persists across tabs', (tester) async {
     await pumpAt(tester, const VendorLocation(VRoute.today));
     // Painted once, by the shell -- no screen paints its own gradient.
     expect(find.byType(BrandBackdrop), findsOneWidget);
@@ -371,10 +371,21 @@ void main() {
     }
   });
 
-  test('order numbers display as #CF (D-53)', () {
-    expect(cefOrderRef('ORD-1008', 'ord-1008'), '#CF1008');
-    expect(cefOrderRef('CF-2044', 'x'), '#CF2044');
-    expect(cefOrderRef(null, '3f9a2c1e-0000-4000-8000-000000000000'), '#CF3F9A2C');
+  test('order numbers display as #CF-001 (D-64)', () {
+    expect(cefOrderRef('#CF-007', 'CF-5EA13EA1', 'x'), '#CF-007');
+    expect(cefOrderRef(null, 'ORD-1008', 'ord-1008'), '#CF-1008');
+    expect(cefOrderRef(null, 'CF-42', 'x'), '#CF-042');
+    for (final (n, s) in [
+      (1, '#CF-001'),
+      (2, '#CF-002'),
+      (9, '#CF-009'),
+      (99, '#CF-099'),
+      (100, '#CF-100'),
+      (999, '#CF-999'),
+      (1000, '#CF-1000'),
+    ]) {
+      expect(cefOrderNumber(n), s);
+    }
   });
 
   testWidgets('subscription: choose, review, subscribe via centred modal', (

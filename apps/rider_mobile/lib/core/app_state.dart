@@ -11,6 +11,10 @@ import 'routes.dart';
 /// the business's review (D14.1), approved (D14.2), operating (D14.3/D19).
 enum DriverStage { noBusiness, pendingReview, approved, active }
 
+/// Where the current run is in the canonical execution lifecycle, derived
+/// only from persisted assignment and order states (real build).
+enum RunPhase { accept, pickup, route, delivering, done }
+
 /// Navigation + session state.
 ///
 /// The navigation stack is a real history of typed [RiderLocation]s. Back
@@ -263,6 +267,7 @@ class AppState extends ChangeNotifier {
         ..clear()
         ..add(RiderLocation(homeRoute));
       if (active != null) await _loadOrders();
+      _project();
     } on RepositoryError catch (e) {
       sessionError = e.message;
     } finally {
@@ -288,8 +293,326 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // --- real build: canonical rows projected onto the Driver UI ------------
+
+  /// Null when the real build has no run to show.
+  RunPhase? runPhase;
+  bool get hasRun => repo.isDemo || runPhase != null;
+
+  String get todayDateLabel =>
+      repo.isDemo ? DemoData.todayDateLabel : _dateLabel(DateTime.now());
+  int get todayAssigned => repo.isDemo
+      ? DemoData.todayAssigned
+      : orders
+            .where(
+              (o) =>
+                  o.status == DeliveryStatus.created ||
+                  o.status == DeliveryStatus.readyForPickup,
+            )
+            .length;
+  int get todayOngoing => repo.isDemo
+      ? DemoData.todayOngoing
+      : orders
+            .where(
+              (o) =>
+                  o.status == DeliveryStatus.pickedUp ||
+                  o.status == DeliveryStatus.outForDelivery ||
+                  o.status == DeliveryStatus.arrived,
+            )
+            .length;
+  int get todayIssues => repo.isDemo
+      ? DemoData.todayIssues
+      : orders.where((o) => o.status == DeliveryStatus.issue).length;
+  int get todayCompleted => repo.isDemo
+      ? DemoData.todayCompleted
+      : orders.where((o) => o.status == DeliveryStatus.delivered).length;
+
+  static bool _terminal(DeliveryStatus s) =>
+      s == DeliveryStatus.delivered ||
+      s == DeliveryStatus.issue ||
+      s == DeliveryStatus.cancelled;
+
+  void _project() {
+    final rel = active ?? (relationships.isEmpty ? null : relationships.first);
+    if (rel != null) {
+      business = DriverBusiness(
+        name: rel.businessName ?? 'Business',
+        category: '',
+        location: rel.businessAddress ?? '',
+      );
+      profile = DriverProfile(
+        fullName: rel.name,
+        phone: rel.phone ?? '',
+        email: repo.currentUser?.email ?? '',
+        dateOfBirth: '',
+        address: '',
+        vehicleType: rel.vehicleType ?? '',
+        vehicleModel: '',
+        plateNumber: rel.plate ?? '',
+        statusLabel: rel.isActive ? 'Active Driver' : 'Pending review',
+      );
+    }
+    // No notification feed or document store exists on the backend yet:
+    // show none rather than demo entries.
+    notifications = const [];
+    documents = const [];
+    final all = runs;
+    bool open(RiderRun r) => r.orders.any((o) => !_terminal(o.status));
+    RiderRun? current;
+    for (final r in all) {
+      if (open(r)) {
+        current = r;
+        break;
+      }
+    }
+    current ??= all.isEmpty ? null : all.last;
+    history = [
+      for (final r in all)
+        if (!open(r)) _toDriverRun(r),
+    ];
+    if (current == null) {
+      runPhase = null;
+      routeConfirmed = false;
+      currentRun = DriverRun(
+        id: 'none',
+        reference: '',
+        dateLabel: todayDateLabel,
+        zone: '',
+        pickupBusinessName: business?.name ?? '',
+        pickupAddress: business?.location ?? '',
+        distanceKm: null,
+        state: RunState.assigned,
+        stops: const [],
+      );
+      return;
+    }
+    currentRun = _toDriverRun(current);
+    runPhase = _phaseOf(current);
+    routeConfirmed =
+        runPhase == RunPhase.delivering || runPhase == RunPhase.done;
+  }
+
+  RunPhase _phaseOf(RiderRun r) {
+    if (r.orders.any((o) => o.assignmentStatus == 'assigned')) {
+      return RunPhase.accept;
+    }
+    if (r.orders.any(
+      (o) =>
+          o.status == DeliveryStatus.created ||
+          o.status == DeliveryStatus.readyForPickup,
+    )) {
+      return RunPhase.pickup;
+    }
+    final live = r.orders.where((o) => !_terminal(o.status));
+    if (live.isEmpty) return RunPhase.done;
+    // Route is confirmed once start_run_delivery has locked the sequence.
+    if (live.every((o) => o.status == DeliveryStatus.pickedUp) &&
+        !live.any((o) => o.sequenceLocked)) {
+      return RunPhase.route;
+    }
+    return RunPhase.delivering;
+  }
+
+  DriverRun _toDriverRun(RiderRun r) {
+    final ordered = [
+      ...r.orders,
+    ]..sort((a, b) => (a.sequence ?? 1 << 30).compareTo(b.sequence ?? 1 << 30));
+    final phase = _phaseOf(r);
+    final biz = active?.businessName ?? business?.name ?? 'Business';
+    return DriverRun(
+      id: r.sessionId ?? 'run',
+      reference: r.waveName ?? 'Delivery run',
+      dateLabel: todayDateLabel,
+      zone: biz,
+      pickupBusinessName: biz,
+      pickupAddress: active?.businessAddress ?? '',
+      distanceKm: null,
+      state: phase == RunPhase.done
+          ? RunState.completed
+          : (phase == RunPhase.delivering
+                ? RunState.onTheWay
+                : RunState.assigned),
+      stops: [for (final o in ordered) _toStop(o)],
+    );
+  }
+
+  DriverStop _toStop(RiderOrder o) => DriverStop(
+    id: o.id,
+    reference: o.orderNumber ?? o.publicRef,
+    customerName: o.customerName,
+    addressLine1: o.address,
+    phone: o.customerPhone.isEmpty ? null : o.customerPhone,
+    status: o.status == DeliveryStatus.delivered
+        ? StopStatus.delivered
+        : (o.status == DeliveryStatus.issue ||
+                  o.status == DeliveryStatus.cancelled
+              ? StopStatus.issue
+              : StopStatus.pending),
+    items: [
+      for (final i in o.items)
+        DriverOrderItem(quantity: i.quantity, name: i.name),
+    ],
+    deliveredAt: o.completedAt == null ? null : _timeLabel(o.completedAt!),
+    deliveryStatus: o.status.name,
+  );
+
+  static const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  static const _months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  static String _dateLabel(DateTime d) =>
+      '${_days[d.weekday - 1]}, ${d.day} ${_months[d.month - 1]} ${d.year}';
+  static String _timeLabel(DateTime t) =>
+      '${(t.hour % 12 == 0 ? 12 : t.hour % 12).toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')} ${t.hour < 12 ? 'AM' : 'PM'}';
+
+  // --- real build: canonical Driver execution actions --------------------
+  // Each calls the existing canonical contract, then re-reads backend state;
+  // nothing is marked locally. Failures surface as RepositoryError.
+
+  RiderOrder? _order(String id) {
+    for (final o in orders) {
+      if (o.id == id) return o;
+    }
+    return null;
+  }
+
+  String get _riderId => active!.id;
+
+  Future<void> _thenRefresh(Future<void> Function() action) async {
+    try {
+      await action();
+    } finally {
+      await refreshOrders();
+    }
+  }
+
+  /// accept_run for the whole run.
+  Future<void> acceptCurrentRun() => _thenRefresh(
+    () => repo.acceptRun(riderId: _riderId, sessionId: currentRun.id),
+  );
+
+  /// start_pickup_run, then each order created -> ready_for_pickup ->
+  /// picked_up through rider_transition (the canonical two-hop pickup).
+  Future<void> confirmPickup() => _thenRefresh(() async {
+    await repo.startPickupRun(riderId: _riderId, sessionId: currentRun.id);
+    for (final s in currentRun.stops) {
+      final o = _order(s.id);
+      if (o == null) continue;
+      if (o.status == DeliveryStatus.created) {
+        await repo.transition(
+          riderId: _riderId,
+          orderId: o.id,
+          next: 'ready_for_pickup',
+        );
+      }
+      if (o.status == DeliveryStatus.created ||
+          o.status == DeliveryStatus.readyForPickup) {
+        await repo.transition(
+          riderId: _riderId,
+          orderId: o.id,
+          next: 'picked_up',
+        );
+      }
+    }
+  });
+
+  /// Slide to Confirm Route: save_run_sequence with the stop order on screen,
+  /// then start_run_delivery (locks the sequence, orders go out for delivery).
+  Future<void> confirmRouteAndStart() async {
+    if (repo.isDemo) {
+      confirmRoute();
+      return;
+    }
+    await _thenRefresh(() async {
+      final ids = [
+        for (final s in currentRun.stops)
+          if (s.status == StopStatus.pending) s.id,
+      ];
+      await repo.saveRunSequence(
+        riderId: _riderId,
+        sessionId: currentRun.id,
+        orderedOrderIds: ids,
+      );
+      await repo.startRunDelivery(riderId: _riderId, sessionId: currentRun.id);
+    });
+  }
+
+  /// rider_transition -> out_for_delivery (if still picked up) -> arrived.
+  Future<void> arriveAt(String stopId) async {
+    if (repo.isDemo) return;
+    final o = _order(stopId);
+    if (o == null || o.status == DeliveryStatus.arrived) return;
+    await _thenRefresh(() async {
+      if (o.status == DeliveryStatus.pickedUp) {
+        await repo.transition(
+          riderId: _riderId,
+          orderId: stopId,
+          next: 'out_for_delivery',
+        );
+      }
+      await repo.transition(
+        riderId: _riderId,
+        orderId: stopId,
+        next: 'arrived',
+      );
+    });
+  }
+
+  /// complete_delivery with a real proof-of-delivery photo.
+  Future<void> completeStop(
+    String stopId,
+    List<int> photoBytes,
+    String extension, {
+    String note = '',
+  }) => _thenRefresh(
+    () => repo.completeDelivery(
+      riderId: _riderId,
+      orderId: stopId,
+      photoBytes: photoBytes,
+      photoExtension: extension,
+      note: note,
+    ),
+  );
+
+  /// rider_report_delivery_issue with a canonical reason. Reasons with no
+  /// canonical equivalent are refused honestly rather than forced.
+  Future<void> reportIssue(String stopId, IssueReason reason, String note) {
+    final type = switch (reason) {
+      IssueReason.customerNotAvailable => 'customer_unreachable',
+      IssueReason.wrongAddress => 'address_problem',
+      IssueReason.itemsNotAvailable => 'vendor_not_ready',
+      IssueReason.safetyConcern => 'rider_unable_to_proceed',
+      IssueReason.customerRequestedReschedule || IssueReason.other => null,
+    };
+    if (type == null) {
+      throw RepositoryError(
+        'This reason can\'t be recorded yet. Choose another reason or contact the business.',
+      );
+    }
+    return _thenRefresh(
+      () => repo.reportDeliveryIssue(
+        riderId: _riderId,
+        orderId: stopId,
+        reasonType: type,
+        note: note,
+      ),
+    );
+  }
+
   Future<void> refreshOrders() async {
     await _loadOrders();
+    if (!repo.isDemo) _project();
     notifyListeners();
   }
 
@@ -314,7 +637,10 @@ class AppState extends ChangeNotifier {
   void selectRelationship(RiderRelationship r) {
     active = r;
     notifyListeners();
-    _loadOrders().then((_) => notifyListeners());
+    _loadOrders().then((_) {
+      if (!repo.isDemo) _project();
+      notifyListeners();
+    });
   }
 
   /// Set by `main.dart` in prototype boot mode so D34/D38's Log Out can hand

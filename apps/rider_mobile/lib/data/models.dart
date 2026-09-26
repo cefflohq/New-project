@@ -56,8 +56,10 @@ class RiderRelationship {
     required this.status,
     required this.name,
     this.businessName,
+    this.businessAddress,
     this.phone,
     this.vehicleType,
+    this.plate,
   });
 
   final String id;
@@ -65,8 +67,10 @@ class RiderRelationship {
   final String status; // 'active' | 'pending' | other canonical values
   final String name;
   final String? businessName;
+  final String? businessAddress;
   final String? phone;
   final String? vehicleType;
+  final String? plate;
 
   bool get isActive => status == 'active';
   bool get isPending => status == 'pending';
@@ -74,14 +78,17 @@ class RiderRelationship {
   static RiderRelationship fromRow(
     Map<String, dynamic> row, {
     String? businessName,
+    String? businessAddress,
   }) => RiderRelationship(
     id: row['id'].toString(),
     businessId: row['business_id'].toString(),
     status: (row['status'] ?? '').toString(),
     name: (row['name'] ?? '').toString(),
     businessName: businessName,
+    businessAddress: businessAddress,
     phone: row['phone']?.toString(),
     vehicleType: row['vehicle_type']?.toString(),
+    plate: row['vehicle_plate']?.toString(),
   );
 }
 
@@ -106,6 +113,7 @@ class RiderOrder {
   const RiderOrder({
     required this.id,
     required this.publicRef,
+    this.orderNumber,
     required this.customerName,
     required this.customerPhone,
     required this.address,
@@ -116,10 +124,16 @@ class RiderOrder {
     this.stopId,
     this.sequence,
     this.assignmentStatus,
+    this.items = const [],
+    this.completedAt,
+    this.sequenceLocked = false,
   });
 
   final String id;
   final String publicRef;
+
+  /// Human-facing `#CF-001` (D-64); display only, never an identifier.
+  final String? orderNumber;
   final String customerName;
   final String customerPhone;
   final String address;
@@ -130,6 +144,12 @@ class RiderOrder {
   final String? stopId;
   final int? sequence;
   final String? assignmentStatus;
+  final List<RiderOrderItem> items;
+  final DateTime? completedAt;
+
+  /// start_run_delivery locks the stop sequence; each stop then moves
+  /// picked_up -> out_for_delivery -> arrived through rider_transition.
+  final bool sequenceLocked;
 
   bool get isDelivered => status == DeliveryStatus.delivered;
   bool get hasIssue => status == DeliveryStatus.issue;
@@ -149,18 +169,42 @@ class RiderOrder {
     return RiderOrder(
       id: row['id'].toString(),
       publicRef: (row['public_ref'] ?? row['id']).toString(),
+      orderNumber: row['order_number'] as String?,
       customerName: (row['customer_name'] ?? '').toString(),
       customerPhone: (row['customer_phone'] ?? '').toString(),
       address: (row['delivery_address'] ?? '').toString(),
       itemCount: items is List ? items.length : 0,
+      items: items is List
+          ? items
+                .whereType<Map>()
+                .map(
+                  (i) => RiderOrderItem.fromJson(Map<String, dynamic>.from(i)),
+                )
+                .toList()
+          : const [],
+      completedAt: DateTime.tryParse((row['completed_at'] ?? '').toString())
+          ?.toLocal(),
       note: (row['notes'] ?? '').toString(),
       status: DeliveryStatus.parse(row['delivery_status']?.toString()),
       deliverySessionId: row['delivery_session_id']?.toString(),
       stopId: stop?['id']?.toString(),
       sequence: stop?['sequence'] is int ? stop!['sequence'] as int : null,
+      sequenceLocked: stop?['sequence_locked_at'] != null,
       assignmentStatus: assignment?['status']?.toString(),
     );
   }
+}
+
+/// One line of an order's `items` jsonb (name + quantity), read as-is.
+class RiderOrderItem {
+  const RiderOrderItem({required this.name, required this.quantity});
+  final String name;
+  final int quantity;
+
+  static RiderOrderItem fromJson(Map<String, dynamic> j) => RiderOrderItem(
+    name: (j['name'] ?? j['product_name'] ?? 'Item').toString(),
+    quantity: int.tryParse('${j['quantity'] ?? j['qty'] ?? 1}') ?? 1,
+  );
 }
 
 /// One assigned run: a delivery_session plus the Rider's orders within it,

@@ -1194,3 +1194,66 @@ build, routing and tests (Git history keeps it).
 - Removed PWAs are retired explicitly: `retired/sw.js` clears caches and
   unregisters; the Vendor shell cache is rotated.
 - Backend contracts, migrations, RLS and shared client/config are unchanged.
+
+## D-63 Phase 2B.2 Driver Execution (2026-09-26)
+
+**Decision.** The approved Driver Flutter UI (`apps/rider_mobile`) executes a
+dispatched run on the existing canonical contracts only. No new RPC, table or
+migration.
+
+- Accept → `accept_run`; Confirm Pickup → `start_pickup_run` then
+  `rider_transition` to `picked_up`; route confirm → `save_run_sequence` then
+  `start_run_delivery` (locks the sequence only); arrive →
+  `rider_transition` `out_for_delivery` → `arrived`; deliver → POD upload to
+  `cefflo-pod/<riderId>/<orderId>/…` then `complete_delivery`; issue →
+  `rider_report_delivery_issue`.
+- Issue reasons map to canonical values only (customer_unreachable,
+  address_problem, vendor_not_ready, rider_unable_to_proceed). "Reschedule" and
+  "Other" are refused with a visible error until a canonical reason exists.
+- The authenticated build projects Today, Run Details, stops, History and
+  Profile from backend rows. Demo data is used only by the prototype build; no
+  fabricated distance, ETA, map labels, notifications or documents.
+- A Driver linked to several businesses resolves the oldest active
+  relationship (`created_at` ascending) until explicit selection UI exists.
+
+## D-64 Human-Facing Order Number `#CF-001` (2026-09-26)
+
+**Decision (Founder, locked).** Every product surface shows one order number
+format: `#CF-` plus a per-business daily sequence, at least three digits and
+never capped (`#CF-001` … `#CF-999`, `#CF-1000`). Supersedes the `#CF1008`
+display rule of D-53.
+
+- Per business, reset each **business-local** calendar day
+  (`businesses.timezone`, default `Asia/Kuala_Lumpur`). Business A and B may
+  both show `#CF-027`; uniqueness is `(business_id, order_date, order_seq)`.
+- Assigned by the backend on insert (`orders.order_date`, `orders.order_seq`,
+  generated `orders.order_number`) under a per-business-day transaction lock;
+  immutable afterwards. Migration `202609260001_order_number_daily_sequence`.
+- Display/operational only. `orders.id` stays the identity for joins, RPCs,
+  RLS, storage paths and events; `public_ref` is unchanged. Customer Tracking
+  access stays token-only; the number is never a lookup key.
+- `public_tracking` and `list_plannable_orders` additively return
+  `order_number`.
+
+## D-65 Phase 2B.3 Customer Tracking on Real Data (2026-09-26)
+
+**Decision.** Customer Tracking (link/token only) renders exclusively the
+existing `public_tracking` snapshot. No new RPC, table, policy or migration.
+
+- Activation: tracking opens at `picked_up` (Driver collects). `created` /
+  `ready_for_pickup` show the neutral "No order yet" state; `out_for_delivery`
+  and `arrived` → On the Way; `delivered` → Delivered; `issue` / `cancelled`
+  → their existing truthful templates; invalid/expired token → generic
+  "Tracking unavailable" (no internals).
+- Token mode never merges prototype fixtures. Fields the contract does not
+  carry (items, note, pickup time, addresses, recipient, rider vehicle/plate/
+  photo/contact, rider note) render "—"; no map/route and no ETA unless the
+  backend returns a truthful ETA. Fixtures remain prototype-only.
+- Order identity shown is the D-64 `#CF-001`; the token stays the only
+  credential.
+- Reached progress milestones use the semantic success green (`--success`)
+  instead of the vendor primary (Founder request), in every state.
+- The status head stacks the icon centred above a centred title and body
+  (Founder request). Each milestone dot carries a visible label (Pickup /
+  On the Way / Delivered); the content group is centred vertically in the
+  sheet; "Powered by Cefflo" stays on every screen with a larger bottom inset.

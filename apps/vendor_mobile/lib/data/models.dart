@@ -5,20 +5,22 @@
 library;
 
 /// public.delivery_status
-/// The one user-facing order number format (D-53): "#CF" (Cefflo) plus the
-/// order's number -- `ORD-1008` shows as `#CF1008`. Display only: stored
-/// references and ids are unchanged. Without a public reference, the first
-/// characters of the id stand in.
-String cefOrderRef(String? publicRef, String id) {
-  final raw = (publicRef == null || publicRef.isEmpty) ? id : publicRef;
-  final number = raw
-      .replaceFirst(RegExp(r'^(ORD|CF)[-_ ]?', caseSensitive: false), '')
-      .replaceFirst('#', '');
-  final compact = publicRef == null || publicRef.isEmpty
-      ? number.replaceAll('-', '').substring(0, 6).toUpperCase()
-      : number.toUpperCase();
-  return '#CF$compact';
+/// The one user-facing order number format (D-64): `#CF-001`, per business
+/// and business-local day, issued by the backend as `order_number`. Display
+/// only: ids and `public_ref` are unchanged. Rows without it (demo data)
+/// derive the same format from their numeric reference.
+String cefOrderRef(String? orderNumber, String? publicRef, String id) {
+  if (orderNumber != null && orderNumber.isNotEmpty) return orderNumber;
+  final digits = RegExp(
+    r'^(?:ORD|CF)?[-_ #]*(\d+)$',
+    caseSensitive: false,
+  ).firstMatch(publicRef ?? '')?.group(1);
+  if (digits != null) return cefOrderNumber(int.parse(digits));
+  return '#CF-${id.replaceAll('-', '').substring(0, 6).toUpperCase()}';
 }
+
+/// `#CF-` plus the daily sequence, at least three digits, never capped.
+String cefOrderNumber(int seq) => '#CF-${seq.toString().padLeft(3, '0')}';
 
 enum DeliveryStatus {
   created,
@@ -112,6 +114,7 @@ class VendorOrder {
     required this.createdAt,
     this.notes,
     this.publicRef,
+    this.orderNumber,
     this.zoneId,
     this.assignedRiderId,
     this.items = const [],
@@ -124,7 +127,7 @@ class VendorOrder {
   final DeliveryStatus status;
   final String customerName, customerPhone, deliveryAddress;
   final DateTime createdAt;
-  final String? notes, publicRef, zoneId, assignedRiderId, origin;
+  final String? notes, publicRef, orderNumber, zoneId, assignedRiderId, origin;
   final List<OrderItem> items;
   final DateTime? approvedAt, completedAt;
 
@@ -145,6 +148,7 @@ class VendorOrder {
     createdAt: DateTime.parse(r['created_at'] as String).toLocal(),
     notes: r['notes'] as String?,
     publicRef: r['public_ref'] as String?,
+    orderNumber: r['order_number'] as String?,
     zoneId: r['zone_id'] as String?,
     assignedRiderId: r['assigned_rider_id'] as String?,
     origin: r['origin'] as String?,
@@ -159,8 +163,8 @@ class VendorOrder {
 
   /// Short human reference. Falls back to the id when the backend has not
   /// issued a public_ref (vendor-created orders).
-  /// User-facing order number, e.g. #CF1008 (D-53).
-  String get reference => cefOrderRef(publicRef, id);
+  /// User-facing order number, e.g. #CF-001 (D-64).
+  String get reference => cefOrderRef(orderNumber, publicRef, id);
 
   bool get isTerminal =>
       status == DeliveryStatus.delivered || status == DeliveryStatus.cancelled;
@@ -359,6 +363,7 @@ class PlannableOrder {
     required this.locationStatus,
     required this.coverage,
     this.publicRef,
+    this.orderNumber,
     this.zoneId,
     this.latitude,
     this.longitude,
@@ -366,7 +371,7 @@ class PlannableOrder {
 
   final String orderId, customerName, deliveryAddress, locationStatus;
   final CoverageStatus coverage;
-  final String? publicRef, zoneId;
+  final String? publicRef, orderNumber, zoneId;
   final double? latitude, longitude;
 
   factory PlannableOrder.fromRow(Map<String, dynamic> r) => PlannableOrder(
@@ -376,13 +381,14 @@ class PlannableOrder {
     locationStatus: (r['location_status'] as String?) ?? 'unresolved',
     coverage: CoverageStatus.parse(r['coverage_status'] as String?),
     publicRef: r['public_ref'] as String?,
+    orderNumber: r['order_number'] as String?,
     zoneId: r['zone_id'] as String?,
     latitude: (r['latitude'] as num?)?.toDouble(),
     longitude: (r['longitude'] as num?)?.toDouble(),
   );
 
-  /// User-facing order number, e.g. #CF1008 (D-53).
-  String get reference => cefOrderRef(publicRef, orderId);
+  /// User-facing order number, e.g. #CF-001 (D-64).
+  String get reference => cefOrderRef(orderNumber, publicRef, orderId);
   bool get locationResolved => locationStatus == 'resolved';
 }
 

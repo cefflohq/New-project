@@ -40,7 +40,7 @@
       issue: 'issue', cancelled: 'cancelled'
     };
     window.CEFFLOTracking.setStatus(statusMap[snapshot.status] || 'order_confirmed', {
-      orderId: snapshot.order_id,
+      orderId: snapshot.order_number ?? snapshot.order_id,
       storeName: snapshot.store_name,
       riderName: snapshot.rider_name || 'Your rider',
       estimatedArrival: formatEta(snapshot.eta) || '—',
@@ -72,7 +72,10 @@
     try {
       await refresh();
     } catch (error) {
-      document.getElementById('heroStatus').textContent = error.message;
+      // Invalid/expired token, or no snapshot yet: the generic customer-safe
+      // template (no internals). A failed re-check keeps the last real state.
+      const phase = window.CEFFLOTracking.getSnapshot?.()?.phase;
+      if (error.message === 'Invalid tracking reference' || phase === 'loading') window.CEFFLOTracking.fail();
     } finally {
       isRefreshing = false;
     }

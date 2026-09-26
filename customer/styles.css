@@ -162,13 +162,19 @@ img { display: block; max-width: 100%; }
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
-  padding: 20px 18px calc(12px + env(safe-area-inset-bottom));
+  padding: 20px 18px calc(28px + env(safe-area-inset-bottom));
   transition: opacity var(--screen) var(--ease), transform var(--screen) var(--ease);
 }
 
 .screen.is-entering { opacity: 0; transform: translateY(8px); }
 
-.screen__body { flex: 1 1 auto; margin-bottom: 22px; }
+.screen__body { flex: 0 0 auto; margin-bottom: 22px; }
+
+/* The head + progress + body group sits centred between the card top and
+   the footer; tall content (e.g. Delivered + rating) simply fills. */
+.screen--picked_up .status-head,
+.screen--on_the_way .status-head,
+.screen--delivered .status-head { margin-top: auto; }
 
 .powered {
   margin-top: auto;
@@ -185,9 +191,11 @@ img { display: block; max-width: 100%; }
 
 .status-head {
   display: flex;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
   gap: 14px;
-  padding: 2px 2px 0;
+  padding: 6px 2px 0;
 }
 
 .status-head__glyph {
@@ -220,10 +228,23 @@ img { display: block; max-width: 100%; }
   display: flex;
   align-items: center;
   gap: 0;
-  margin: 22px 8px 20px;
+  margin: 22px 8px 44px;
 }
 
-.progress__step { flex: 0 0 auto; line-height: 0; }
+.progress__step { position: relative; flex: 0 0 auto; line-height: 0; }
+
+.progress__label {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 12.5px;
+  line-height: 1.2;
+  color: var(--ink-soft);
+}
+
+.progress__step.is-reached .progress__label { color: var(--ink); font-weight: 600; }
 
 .progress__dot {
   display: grid;
@@ -236,7 +257,7 @@ img { display: block; max-width: 100%; }
 }
 
 .progress__step.is-reached .progress__dot {
-  background: var(--vendor-primary);
+  background: var(--success);
   color: #FFFFFF;
 }
 
@@ -248,7 +269,7 @@ img { display: block; max-width: 100%; }
   transition: background var(--fill) var(--ease);
 }
 
-.progress__bar.is-reached { background: var(--vendor-primary); }
+.progress__bar.is-reached { background: var(--success); }
 
 /* ----------------------------------------------------------------- card */
 
@@ -555,6 +576,8 @@ img { display: block; max-width: 100%; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+.unavailable--quiet .status-head__title { color: var(--ink-faint); }
+
 .unavailable__glyph {
   display: grid;
   place-items: center;
@@ -570,7 +593,8 @@ img { display: block; max-width: 100%; }
 /* ------------------------------------------------------- C4 proof of delivery */
 
 .pod-head {
-  display: flex;
+  display: grid;
+  grid-template-columns: 38px 1fr 38px;
   align-items: center;
   gap: 8px;
   padding: 0 0 14px;
@@ -587,9 +611,11 @@ img { display: block; max-width: 100%; }
   transition: transform var(--press) var(--ease), background var(--press) var(--ease);
 }
 
+.icon-btn:focus, .icon-btn:focus-visible { outline: none; }
+
 .icon-btn:active { transform: scale(0.92); background: var(--surface-neutral); }
 
-.pod-head__title { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -0.02em; }
+.pod-head__title { margin: 0; text-align: center; font-size: 21px; font-weight: 700; letter-spacing: -0.02em; }
 
 .pod-figure {
   display: block;
@@ -845,7 +871,7 @@ img { display: block; max-width: 100%; }
 
 /* Narrow phones: keep the same information architecture, tighten spacing. */
 @media (max-width: 360px) {
-  .screen { padding: 18px 14px calc(10px + env(safe-area-inset-bottom)); }
+  .screen { padding: 18px 14px calc(24px + env(safe-area-inset-bottom)); }
   .status-head__glyph { width: 58px; height: 58px; }
   .status-head__title { font-size: 23px; }
   .contact-action__btn { width: 46px; height: 46px; }

@@ -70,12 +70,14 @@ export function buildTrackingViewModel(source, status) {
 }
 
 /** Reusable customer-safe unavailable view model (no stack traces, no ids). */
-export function buildUnavailableViewModel(vendor, { title, body } = {}) {
+export function buildUnavailableViewModel(vendor, { title, body, quiet = false } = {}) {
   return Object.freeze({
     phase: TRACKING_PHASE.UNAVAILABLE,
     vendor: vendor ?? TRACKING_FIXTURE.vendor,
     statusTitle: title || 'Tracking unavailable',
-    statusBody: body || 'We could not load this delivery right now. Please check your link and try again.'
+    statusBody: body || 'We could not load this delivery right now. Please check your link and try again.',
+    // Neutral pre-pickup state: no warning glyph, light grey title.
+    quiet
   });
 }
 
@@ -160,28 +162,32 @@ function statusIndexIsValid(status) {
  * state that is not customer-visible resolves to the safe unavailable template
  * instead of being misrepresented as a delivery milestone.
  */
-export function installBackendBridge(provider, { source = TRACKING_FIXTURE } = {}) {
+export function installBackendBridge(provider, { source = TRACKING_FIXTURE, live = false } = {}) {
   const map = {
     picked_up: CUSTOMER_STATUS.PICKED_UP,
     on_the_way: CUSTOMER_STATUS.ON_THE_WAY,
     delivered: CUSTOMER_STATUS.DELIVERED
   };
   const unavailableCopy = {
-    order_confirmed: { title: 'Tracking not ready yet', body: 'Live tracking opens as soon as your rider collects this order.' },
-    preparing: { title: 'Tracking not ready yet', body: 'Live tracking opens as soon as your rider collects this order.' },
+    order_confirmed: { title: 'No order yet', body: 'Tracking starts when your rider collects the order.', quiet: true },
+    preparing: { title: 'No order yet', body: 'Tracking starts when your rider collects the order.', quiet: true },
     issue: { title: 'Delivery on hold', body: 'There is an issue with this delivery. The store or rider will be in touch shortly.' },
     cancelled: { title: 'Order cancelled', body: 'This order has been cancelled.' }
   };
   const bridge = Object.freeze({
     STATUS: CUSTOMER_STATUS,
     setStatus(rawStatus, payload = {}) {
-      const merged = mergeBackendPayload(source, payload);
+      const merged = live ? buildLiveSource(payload) : mergeBackendPayload(source, payload);
       const status = map[rawStatus];
       if (!status) {
         provider.store.set(buildUnavailableViewModel(merged.vendor, unavailableCopy[rawStatus]));
         return;
       }
       provider.store.set(buildTrackingViewModel(merged, status));
+    },
+    /** Invalid/expired link or a failed first load: the safe generic template. */
+    fail() {
+      provider.store.set(buildUnavailableViewModel(live ? LIVE_VENDOR : source.vendor));
     },
     setFreshness() {
       /* The approved reference has no freshness chrome; the contract stays callable. */
@@ -190,6 +196,33 @@ export function installBackendBridge(provider, { source = TRACKING_FIXTURE } = {
   });
   window.CEFFLOTracking = bridge;
   return bridge;
+}
+
+/**
+ * Token (live) mode, Phase 2B.3 / D-65: the view model is projected ONLY from
+ * the public_tracking snapshot. No fixture value (tagline, photos, rider
+ * vehicle/plate/contact, addresses, times, recipient, route, POD image) may
+ * appear for a real order; fields the contract does not carry render as the
+ * neutral "—". The vendor theme is presentation only, not order data.
+ */
+const DASH = '\u2014';
+const LIVE_VENDOR = Object.freeze({ name: 'Delivery tracking', tagline: '', theme: TRACKING_FIXTURE.vendor.theme });
+
+export function buildLiveSource(payload = {}) {
+  const known = (value) => (value && value !== DASH ? value : null);
+  return {
+    reference: payload.orderId ?? DASH,
+    vendor: { ...LIVE_VENDOR, name: payload.storeName || LIVE_VENDOR.name, storefrontPhoto: null, address: DASH },
+    order: { itemsLabel: DASH, note: DASH },
+    pickup: { atLabel: DASH },
+    eta: known(payload.estimatedArrival) ? { label: 'Estimated Arrival', valueLabel: payload.estimatedArrival } : null,
+    // No customer-visible rider location exists in the contract, so no map.
+    route: null,
+    rider: { name: payload.riderName || 'Your rider', photo: null, vehicle: DASH, plate: DASH, contact: {} },
+    delivery: { address: DASH, atLabel: known(payload.deliveredAt) ?? DASH, receivedBy: DASH },
+    pod: payload.podPhoto ? { available: true, url: payload.podPhoto, alt: 'Proof of delivery photo', riderNote: DASH } : null,
+    rating: { eligible: true }
+  };
 }
 
 /** Projects a backend snapshot payload onto the customer-safe source shape. */

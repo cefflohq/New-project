@@ -4272,7 +4272,7 @@ function pageRunDetail(params){
     </div>
     <div class="section-title workforce-section-title">Stops</div>
     ${stopOrders.length?stopOrders.map(({assignment,order},index)=>`<button class="card bordered" style="width:100%;text-align:left;margin-bottom:8px;padding:12px 14px;" data-nav="orderDetail" data-navparams='{"id":"${order.id}"}'>
-      <div class="row-between"><span class="order-id">${index+1}. ${order.id}</span>${statusChip(assignment.stopStatus||order.status)}</div>
+      <div class="row-between"><span class="order-id">${index+1}. ${orderNo(order)}</span>${statusChip(assignment.stopStatus||order.status)}</div>
       <div class="order-meta">${order.customer}</div>
       <div class="order-meta">${order.address}</div>
     </button>`).join(''):`<div class="t-caption" style="color:var(--text-secondary);">No stops in this run.</div>`}
@@ -4306,7 +4306,7 @@ function pageNeedAttention(){
       const ids=u.order_ids||(u.order_id?[u.order_id]:[]);
       ids.forEach(orderId=>{
         const order=state.orders.find(o=>o.backendId===orderId);
-        rows.push({icon:'alert',title:locationLabels[u.reason]||u.reason,detail:order?order.id:orderId,nav:order?{name:'orderDetail',params:{id:order.id}}:null});
+        rows.push({icon:'alert',title:locationLabels[u.reason]||u.reason,detail:order?orderNo(order):orderId,nav:order?{name:'orderDetail',params:{id:order.id}}:null});
       });
     }else{
       rows.push({icon:'alert',title:'No compatible/sufficient Rider available',detail:`${(u.order_ids||[]).length} order(s)${u.group_key?` · ${u.group_key}`:''}`,nav:null});
@@ -4314,7 +4314,7 @@ function pageNeedAttention(){
   });
   state.issues.filter(i=>i.status!=='resolved').forEach(i=>{
     const order=state.orders.find(o=>o.id===i.orderId);
-    rows.push({icon:'issue',title:'Delivery issue reported',detail:order?`${order.id} · ${i.type}`:i.type,nav:order?{name:'orderDetail',params:{id:order.id}}:null});
+    rows.push({icon:'issue',title:'Delivery issue reported',detail:order?`${orderNo(order)} · ${i.type}`:i.type,nav:order?{name:'orderDetail',params:{id:order.id}}:null});
   });
   state.riders.filter(r=>r.status==='offline').forEach(r=>{
     rows.push({icon:'riders',title:'Rider offline',detail:r.name,nav:{name:'riders',params:{}}});
@@ -4683,6 +4683,13 @@ function innerHeader(title, opts){
     ${action}
   </div>`;
 }
+// D-64: human-facing order number "#CF-001" (backend order_number). Display
+// only -- o.id / backendId stay the identifiers. Demo rows derive it.
+function orderNo(o){
+  if(o && o.number) return o.number;
+  const m=/^(?:ORD|CF)?[-_ #]*(\d+)$/i.exec(String(o&&o.id||''));
+  return m ? `#CF-${m[1].padStart(3,'0')}` : String(o&&o.id||'');
+}
 function statusChip(status){
   const map = {
     onTheWay:['chip-ontheway', t('onTheWay')||'On the way'],
@@ -4828,7 +4835,7 @@ function pageOrders(params){
   let list = state.orders.filter(o=>orderMatchesTab(o, tab));
   if(ordersUiState.search.trim()){
     const q = ordersUiState.search.trim().toLowerCase();
-    list = list.filter(o=> o.id.toLowerCase().includes(q) || o.customer.toLowerCase().includes(q) || o.phone.includes(q));
+    list = list.filter(o=> (o.id.toLowerCase().includes(q) || orderNo(o).toLowerCase().includes(q)) || o.customer.toLowerCase().includes(q) || o.phone.includes(q));
   }
 
   return `
@@ -4867,7 +4874,7 @@ function renderOrdersList(list){
     return eligible.map(o=>`
       <div class="opt-row" data-action="toggleOrdersSelection" data-id="${o.backendId}">
         <div class="opt-left">
-          <div><div class="opt-title">${o.id}</div><div class="opt-sub">${o.customer} • ${state.zones.find(z=>z.id===o.zoneId)?.name || 'Unzoned'}</div></div>
+          <div><div class="opt-title">${orderNo(o)}</div><div class="opt-sub">${o.customer} • ${state.zones.find(z=>z.id===o.zoneId)?.name || 'Unzoned'}</div></div>
         </div>
         <div class="rb-checkbox ${ordersUiState.selectedIds.has(o.backendId)?'checked':''}"></div>
       </div>
@@ -4888,7 +4895,7 @@ function renderOrdersList(list){
   return list.map(o=>`
     <div class="card bordered" data-nav="orderDetail" data-navparams='{"id":"${o.id}"}'>
       <div class="row-between">
-        <span class="order-id">${o.id}</span>
+        <span class="order-id">${orderNo(o)}</span>
         ${statusChip(o.status==='issue'?'issue':(o.status==='completed'?'completed':'ongoing'))}
       </div>
       <div class="order-name">${o.customer}</div>
@@ -4902,7 +4909,7 @@ function rerenderOrdersList(){
   let list = state.orders.filter(o=>orderMatchesTab(o, tab));
   if(ordersUiState.search.trim()){
     const q = ordersUiState.search.trim().toLowerCase();
-    list = list.filter(o=> o.id.toLowerCase().includes(q) || o.customer.toLowerCase().includes(q) || o.phone.includes(q));
+    list = list.filter(o=> (o.id.toLowerCase().includes(q) || orderNo(o).toLowerCase().includes(q)) || o.customer.toLowerCase().includes(q) || o.phone.includes(q));
   }
   const wrap = document.getElementById('ordersListWrap');
   if(wrap) wrap.innerHTML = renderOrdersList(list);
@@ -4966,7 +4973,7 @@ function pageOrderDetail(params){
   if(isVendorProposed()) return pageOrderDetailProposed(o, steps, stepIndex, showProgress);
 
   return `
-  ${innerHeader(o.id, {action:'openOrderMenu', actionIcon:'menu'})}
+  ${innerHeader(orderNo(o), {action:'openOrderMenu', actionIcon:'menu'})}
   <div class="content">
     ${showProgress?`
     <div class="section">
@@ -5624,7 +5631,7 @@ function pageRiderProfile(params){
       <div class="section-title">${t('historyDelivered')}</div>
       ${deliveredOrders.length? deliveredOrders.map(o=>`
         <div class="card bordered" data-nav="orderDetail" data-navparams='{"id":"${o.id}"}'>
-          <div class="row-between"><span class="order-id">${o.id}</span>${statusChip('completed')}</div>
+          <div class="row-between"><span class="order-id">${orderNo(o)}</span>${statusChip('completed')}</div>
           <div class="order-meta">${o.customer} • ${o.time}</div>
         </div>`).join('') : `<div class="t-caption">${t('noDelivered')}</div>`}
       <button class="text-action danger" style="margin-top:10px" data-action="openDeactivateRider" data-id="${r.id}">${t('deactivateRider')}</button>
@@ -5893,7 +5900,7 @@ function renderRunBuilderBody(){
     </div>
     ${filtered.length===0 ? `<p class="t-caption" style="padding:8px 0">No eligible orders in the selected zone(s).</p>` : filtered.map(o=>`
       <div class="opt-row" data-action="runBuilderToggleOrder" data-orderid="${o.backendId}">
-        <div class="opt-left"><div><div class="opt-title">${o.id}</div><div class="opt-sub">${o.customer} • ${state.zones.find(z=>z.id===o.zoneId)?.name || 'Unzoned'}</div></div></div>
+        <div class="opt-left"><div><div class="opt-title">${orderNo(o)}</div><div class="opt-sub">${o.customer} • ${state.zones.find(z=>z.id===o.zoneId)?.name || 'Unzoned'}</div></div></div>
         <div class="rb-checkbox ${runBuilderState.selectedOrderIds.has(o.backendId)?'checked':''}"></div>
       </div>
     `).join('')}
@@ -6086,7 +6093,7 @@ function pagePickupSession(params){
         return `<div class="pk-row ${isVerified?'done':(isCurrent?'current':'locked')}" ${isCurrent?`data-action="openVerifySheet" data-id="${o.id}"`:''}>
           <div class="pk-num">${isVerified? ic('check') : (i+1)}</div>
           <div class="pk-body">
-            <div class="pk-id">${o.id}</div>
+            <div class="pk-id">${orderNo(o)}</div>
             <div class="pk-name">${o.customer}</div>
           </div>
           <div class="pk-status">${isVerified? t('verified') : (isCurrent? '' : t('locked'))}</div>
@@ -6119,7 +6126,7 @@ function pagePickupSession(params){
 function openVerifySheet(el){
   const o = state.orders.find(x=>x.id===el.dataset.id);
   openSheet(`
-    <div class="sheet-title">${o.id}</div>
+    <div class="sheet-title">${orderNo(o)}</div>
     <div class="card bordered" style="margin-bottom:6px">
       <div class="order-name" style="font-weight:600">${o.customer}</div>
       <div class="order-meta">${o.zone}</div>
@@ -6277,7 +6284,7 @@ function downloadBlob(filename,blob){
 function exportRows(){
   const report=getReportsSnapshot();
   if(!report) throw new Error('Canonical Vendor workspace is not connected.');
-  return report.orders.map(o=>({OrderID:o.id,Customer:o.customer,Phone:o.phone,Address:o.address,Zone:o.zone,Rider:o.riderName||'',Status:o.status,CreatedAt:o.createdAt||'',CompletedAt:o.completedAt||''}));
+  return report.orders.map(o=>({OrderID:orderNo(o),Customer:o.customer,Phone:o.phone,Address:o.address,Zone:o.zone,Rider:o.riderName||'',Status:o.status,CreatedAt:o.createdAt||'',CompletedAt:o.completedAt||''}));
 }
 async function simulateExport(el){
   const fmt=(el.dataset.fmt||'CSV').toUpperCase(); closeSheet();
@@ -6546,7 +6553,7 @@ function renderHelperPoolContent(){
       ${rows.length?`<div class="settings-group">${rows.map(o=>`
         <div class="card bordered" style="margin-bottom:8px;padding:12px 14px;">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-            <div style="min-width:0;"><div class="t-body" style="font-weight:600;overflow:hidden;text-overflow:ellipsis;">${o.id} &middot; ${o.customerName}</div><div class="t-caption" style="overflow:hidden;text-overflow:ellipsis;">${o.address}</div></div>
+            <div style="min-width:0;"><div class="t-body" style="font-weight:600;overflow:hidden;text-overflow:ellipsis;">${orderNo(o)} &middot; ${o.customerName}</div><div class="t-caption" style="overflow:hidden;text-overflow:ellipsis;">${o.address}</div></div>
             ${stage.next?`<button class="btn btn-secondary" style="flex:0 0 auto;" data-action="advancePreparationAction" data-orderid="${o.backendId}" data-next="${stage.next}">${stage.nextLabel}</button>`:`<span class="status-chip chip-active">Ready</span>`}
           </div>
         </div>`).join('')}</div>`:`<div class="t-caption" style="color:var(--text-secondary);margin-bottom:4px;">None</div>`}
@@ -7174,7 +7181,7 @@ function pageDashboardProposed(){
       <section class="vd2-section">
         <div class="vd2-section-head"><h2>${t('recentOrders')||'Recent Orders'}</h2><button data-nav="orders">${t('seeAll')}</button></div>
         ${recentOrders.length?recentOrders.map(o=>`<button class="vd2-order-row" data-nav="orderDetail" data-navparams='{"id":"${o.id}"}'>
-          <span class="vd2-order-main"><b>${o.id}</b><span>${o.customer}${Array.isArray(o.items)&&o.items.length?` · ${o.items.length} item${o.items.length===1?'':'s'}`:''}</span></span>
+          <span class="vd2-order-main"><b>${orderNo(o)}</b><span>${o.customer}${Array.isArray(o.items)&&o.items.length?` · ${o.items.length} item${o.items.length===1?'':'s'}`:''}</span></span>
           ${statusChip(o.status==='issue'?'issue':(o.status==='completed'?'completed':'ongoing'))}
           ${ic('chev')}
         </button>`).join(''):`<div class="t-caption" style="padding:12px 0;color:var(--text-secondary);">No orders yet.</div>`}
@@ -7244,7 +7251,7 @@ function renderDashboardWorkloadCard(card){
 
 function pageOrderDetailProposed(o, steps, stepIndex, showProgress){
   return `
-  ${innerHeader(o.id, {action:'openOrderMenu', actionIcon:'menu'})}
+  ${innerHeader(orderNo(o), {action:'openOrderMenu', actionIcon:'menu'})}
   <div class="content">
     ${showProgress?`
     <div class="section">

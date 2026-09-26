@@ -177,7 +177,7 @@
 
   function mapOrder(row) {
     return {
-      id: row.public_ref, backendId: row.id, publicRef: row.public_ref, customer: row.customer_name, customerName: row.customer_name,
+      id: row.public_ref, backendId: row.id, publicRef: row.public_ref, number: row.order_number, customer: row.customer_name, customerName: row.customer_name,
       phone: row.customer_phone, customerPhone: row.customer_phone, address: row.delivery_address,
       note: row.notes || '', notes: row.notes || '', items: row.items || [], riderId: row.assigned_rider_id,
       zoneId: row.zone_id, deliverySessionId: row.delivery_session_id,
@@ -410,7 +410,7 @@
         vehicleRequirement: wizardState.data.vehicleRequirement || 'any' });
       localStorage.setItem(`cefflo_tracking_token_${created.order.id}`, created.tracking_token);
       await hydrateCanonicalWorkspace();
-      toast(tf('orderCreatedSuccess', { id: created.order.public_ref }), 'success');
+      toast(tf('orderCreatedSuccess', { id: created.order.order_number || created.order.public_ref }), 'success');
       navigate('orders', { tab: 'ongoing' }, false);
       // Fire-and-forget: geocoding failure/slowness must never block or
       // undo a successful order creation -- the order exists either way,

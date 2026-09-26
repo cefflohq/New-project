@@ -120,7 +120,7 @@ class _HistoryRow extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '${run.orderCount} stops  •  ${run.distanceKm} km  •  ${run.durationLabel ?? '—'}',
+                      '${run.orderCount} stops  •  ${run.distanceText}  •  ${run.durationLabel ?? '—'}',
                       style: context.t.bodySmall,
                     ),
                   ],
@@ -208,7 +208,7 @@ class HistoryDetailScreen extends StatelessWidget {
                   label: '${run.orderCount} stops',
                 ),
                 _divider(c),
-                _Stat(icon: LucideIcons.route, label: '${run.distanceKm} km'),
+                _Stat(icon: LucideIcons.route, label: run.distanceText),
                 _divider(c),
                 _Stat(icon: LucideIcons.clock, label: run.durationLabel ?? '—'),
               ],

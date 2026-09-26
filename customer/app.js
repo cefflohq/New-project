@@ -42,7 +42,7 @@ const provider = createMockTrackingProvider({
 // through the window.CEFFLOTracking contract it already speaks. Until it
 // answers, the screen holds a neutral loading state — never mock fixture data.
 if (hasBackendToken) {
-  installBackendBridge(provider, { source: TRACKING_FIXTURE });
+  installBackendBridge(provider, { source: TRACKING_FIXTURE, live: true });
   provider.store.set(buildLoadingViewModel());
 }
 
@@ -123,7 +123,7 @@ function statusHead(vm) {
 
 /**
  * Exactly three milestones. Every dot carries a tick: reached dots use the
- * vendor primary token, future dots are light grey with a darker-grey tick.
+ * semantic success green (--success), future dots are light grey with a darker-grey tick.
  * State is also exposed as text so nothing depends on colour alone.
  */
 function deliveryProgress(vm) {
@@ -135,6 +135,7 @@ function deliveryProgress(vm) {
     parts.push(`
       <span class="progress__step${milestone.reached ? ' is-reached' : ''}">
         <span class="progress__dot">${icon('check', { size: 18 })}</span>
+        <span class="progress__label" aria-hidden="true">${esc(milestone.label)}</span>
         <span class="sr-only">${esc(milestone.label)}: ${milestone.reached ? 'completed' : 'not reached yet'}</span>
       </span>`);
   });
@@ -154,7 +155,7 @@ function pickupScreen(vm) {
     <section class="card">
       <h2 class="card__title">Pickup Details</h2>
       <div class="pickup">
-        <img class="pickup__thumb" src="${esc(vm.vendor.storefrontPhoto)}" alt="${esc(vm.vendor.storefrontAlt)}" loading="lazy">
+        ${vm.vendor.storefrontPhoto ? `<img class="pickup__thumb" src="${esc(vm.vendor.storefrontPhoto)}" alt="${esc(vm.vendor.storefrontAlt)}" loading="lazy">` : ''}
         <div class="pickup__text">
           <p class="pickup__name">${esc(vm.vendor.name)}</p>
           <p class="pickup__address">${esc(vm.vendor.address)}</p>
@@ -191,7 +192,7 @@ function onTheWayScreen(vm) {
     ? `<section class="rider">
          <h2 class="card__title">Rider Information</h2>
          <div class="rider__row">
-           <img class="rider__photo" src="${esc(vm.rider.photo)}" alt="${esc(vm.rider.photoAlt)}" loading="lazy">
+           ${vm.rider.photo ? `<img class="rider__photo" src="${esc(vm.rider.photo)}" alt="${esc(vm.rider.photoAlt)}" loading="lazy">` : ''}
            <div class="rider__text">
              <p class="rider__name">${esc(vm.rider.name)}</p>
              <p class="rider__meta">${esc(vm.rider.vehicle)}</p>
@@ -281,8 +282,8 @@ function ratingBlock(vm, ratingState) {
 
 function unavailableScreen(vm) {
   return `
-    <section class="unavailable">
-      <span class="unavailable__glyph" aria-hidden="true">!</span>
+    <section class="unavailable${vm.quiet ? ' unavailable--quiet' : ''}">
+      ${vm.quiet ? '' : '<span class="unavailable__glyph" aria-hidden="true">!</span>'}
       <h1 class="status-head__title" id="heroStatus">${esc(vm.statusTitle)}</h1>
       <p class="status-head__body">${esc(vm.statusBody)}</p>
     </section>`;

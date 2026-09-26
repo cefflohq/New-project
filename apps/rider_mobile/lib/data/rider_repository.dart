@@ -97,7 +97,13 @@ class RiderRepository {
     final user = currentUser;
     if (user == null) throw RepositoryError('Not signed in.');
     final rows = await _run(
-      () => _db.from('riders').select().eq('auth_user_id', user.id),
+      // Ordered, so a multi-business Driver always resolves the same first
+      // active relationship until explicit selection exists (D-63).
+      () => _db
+          .from('riders')
+          .select()
+          .eq('auth_user_id', user.id)
+          .order('created_at', ascending: true),
     );
     final relationships = _rows(rows).map(RiderRelationship.fromRow).toList();
     final businessIds = relationships.map((r) => r.businessId).toSet();
@@ -105,23 +111,32 @@ class RiderRepository {
     final businessRows = await _run(
       () => _db
           .from('businesses')
-          .select('id,name')
+          .select('id,name,address')
           .inFilter('id', businessIds.toList()),
     );
     final nameById = {
       for (final b in _rows(businessRows))
         b['id'].toString(): (b['name'] ?? '').toString(),
     };
+    final addressById = {
+      for (final b in _rows(businessRows))
+        b['id'].toString(): b['address']?.toString(),
+    };
     return relationships
         .map(
-          (r) => RiderRelationship.fromRow({
-            'id': r.id,
-            'business_id': r.businessId,
-            'status': r.status,
-            'name': r.name,
-            'phone': r.phone,
-            'vehicle_type': r.vehicleType,
-          }, businessName: nameById[r.businessId]),
+          (r) => RiderRelationship.fromRow(
+            {
+              'id': r.id,
+              'business_id': r.businessId,
+              'status': r.status,
+              'name': r.name,
+              'phone': r.phone,
+              'vehicle_type': r.vehicleType,
+              'vehicle_plate': r.plate,
+            },
+            businessName: nameById[r.businessId],
+            businessAddress: addressById[r.businessId],
+          ),
         )
         .toList();
   }
