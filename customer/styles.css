@@ -162,13 +162,20 @@ img { display: block; max-width: 100%; }
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
-  padding: 20px 18px calc(12px + env(safe-area-inset-bottom));
+  padding: 20px 18px calc(28px + env(safe-area-inset-bottom));
   transition: opacity var(--screen) var(--ease), transform var(--screen) var(--ease);
 }
 
 .screen.is-entering { opacity: 0; transform: translateY(8px); }
 
-.screen__body { flex: 1 1 auto; margin-bottom: 22px; }
+.screen__body { flex: 0 0 auto; margin-bottom: 22px; }
+
+/* The head + progress + body group sits centred between the card top and
+   the footer; tall content (e.g. Delivered + rating) simply fills. */
+.screen--picked_up .status-head,
+.screen--on_the_way .status-head,
+.screen--delivered .status-head,
+.screen--pod .pod-head { margin-top: auto; }
 
 .powered {
   margin-top: auto;
@@ -222,10 +229,23 @@ img { display: block; max-width: 100%; }
   display: flex;
   align-items: center;
   gap: 0;
-  margin: 22px 8px 20px;
+  margin: 22px 8px 44px;
 }
 
-.progress__step { flex: 0 0 auto; line-height: 0; }
+.progress__step { position: relative; flex: 0 0 auto; line-height: 0; }
+
+.progress__label {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 12.5px;
+  line-height: 1.2;
+  color: var(--ink-soft);
+}
+
+.progress__step.is-reached .progress__label { color: var(--ink); font-weight: 600; }
 
 .progress__dot {
   display: grid;
@@ -849,7 +869,7 @@ img { display: block; max-width: 100%; }
 
 /* Narrow phones: keep the same information architecture, tighten spacing. */
 @media (max-width: 360px) {
-  .screen { padding: 18px 14px calc(10px + env(safe-area-inset-bottom)); }
+  .screen { padding: 18px 14px calc(24px + env(safe-area-inset-bottom)); }
   .status-head__glyph { width: 58px; height: 58px; }
   .status-head__title { font-size: 23px; }
   .contact-action__btn { width: 46px; height: 46px; }

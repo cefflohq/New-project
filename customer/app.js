@@ -135,6 +135,7 @@ function deliveryProgress(vm) {
     parts.push(`
       <span class="progress__step${milestone.reached ? ' is-reached' : ''}">
         <span class="progress__dot">${icon('check', { size: 18 })}</span>
+        <span class="progress__label" aria-hidden="true">${esc(milestone.label)}</span>
         <span class="sr-only">${esc(milestone.label)}: ${milestone.reached ? 'completed' : 'not reached yet'}</span>
       </span>`);
   });

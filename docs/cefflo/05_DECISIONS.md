@@ -1254,4 +1254,6 @@ existing `public_tracking` snapshot. No new RPC, table, policy or migration.
 - Reached progress milestones use the semantic success green (`--success`)
   instead of the vendor primary (Founder request), in every state.
 - The status head stacks the icon centred above a centred title and body
-  (Founder request).
+  (Founder request). Each milestone dot carries a visible label (Pickup /
+  On the Way / Delivered); the content group is centred vertically in the
+  sheet; "Powered by Cefflo" stays on every screen with a larger bottom inset.
