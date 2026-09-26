@@ -1257,3 +1257,37 @@ existing `public_tracking` snapshot. No new RPC, table, policy or migration.
   (Founder request). Each milestone dot carries a visible label (Pickup /
   On the Way / Delivered); the content group is centred vertically in the
   sheet; "Powered by Cefflo" stays on every screen with a larger bottom inset.
+
+## D-66 Phase 2B.4 Rider Live Location — Demand-Aware Adaptive Tracking (2026-09-26)
+
+**Decision (Founder).** Phase 2B.4 is RIDER LIVE LOCATION, built as
+DEMAND-AWARE ADAPTIVE TRACKING. Status: architecture proposed, pending Founder
+review. No runtime work until approved. Design and load model:
+`engineering/PHASE_2B4_RIDER_LIVE_LOCATION.md`.
+
+- There is no universal fixed short-interval upload. A timer is only a
+  staleness fallback.
+- Local GPS sampling is separate from backend writes. The Driver app uploads
+  through a gate driven by meaningful movement (25 m noise floor), per-level
+  staleness, and lifecycle events.
+- Demand levels are LOW / MEDIUM / HIGH, computed on the Driver phone from
+  Realtime Presence of visible customer viewers plus stop-sequence relevance
+  (`stops_ahead`).
+- Customer pages join Presence only while visible and leave when hidden or
+  closed. On return they fetch once, then resume.
+- One rider coordinate serves all authorized viewers. The Realtime broadcast
+  is a nudge that carries no coordinates, and coordinates are served only by
+  the token-checked `public_tracking`.
+- Customers get the latest point and `recorded_at` only: no history, and only
+  while the order is `picked_up` / `out_for_delivery` / `arrived` and the
+  point is ≤ 15 min old. Tracking ends at delivered, cancelled or issue.
+- ETA and distance stay truthful (`—` fallback). No fabricated movement.
+- Cost awareness is an architectural requirement. The model shows about 79%
+  fewer writes and about 89% fewer customer reads than fixed 15-second
+  tracking.
+- Proposed backend change (one new migration):
+  - `rider_assignments.live_topic`;
+  - additive `public_tracking` fields `rider_location`, `live` and
+    `stops_ahead`;
+  - a rider-scoped `rider_live_keys`.
+- Open, non-blocking: a `rider_locations` retention window (proposal 30 days).
