@@ -74,6 +74,17 @@ protected-action approvals.
     DESIGN APPROVED IN PRINCIPLE, corrections applied, ready for
     implementation review; no implementation yet.
     Design: `engineering/PHASE_2B4_RIDER_LIVE_LOCATION.md`.
+-   Product capability direction (D-69, `sot/01_PRODUCT_TRUTH.md` §18):
+    classified priorities for **after production qualification**; this does
+    not change the Phase 2B sequence or current scope.
+    -   Post-production high: Smart Zone Clustering, Smart Run Builder,
+        target run size, Corridor Fill, manual run editing, simple stop
+        sequencing, Auto Assign Rider, CSV import hardening, QR/barcode
+        verification, better ETA, customer notifications.
+    -   Next / growth: analytics, reports, Public Order API, webhooks,
+        multi-location, native integrations.
+    -   Optional: Signature POD.
+    -   Future strategy: Rider Hub / capacity network.
 -   Phase 2B backlog (Vendor): stop sequencing (`save_run_sequence`) UI;
     remove-from-today's-plan contract; Rider approve/deactivate wiring;
     Mobile manual location correction.

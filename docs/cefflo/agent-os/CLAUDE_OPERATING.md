@@ -1,7 +1,7 @@
 # CEFFLO --- CLAUDE OPERATING MD
 
 **Role:** PRIMARY HEAVY IMPLEMENTER / AUDITOR\
-**Required:** `CEFFLO_BRAND_BRAIN.md` + `CEFFLO_AGENT_OS_CORE.md`\
+**Required:** `docs/cefflo/sot/05_BRAND_BRAIN.md` (D-68) + `CEFFLO_AGENT_OS_CORE.md`\
 **Version:** 2026-09-03
 
 ------------------------------------------------------------------------
@@ -21,7 +21,7 @@ Primary loop:
 
 For every substantial assigned task:
 
-1.  `CEFFLO_BRAND_BRAIN.md`
+1.  `docs/cefflo/sot/05_BRAND_BRAIN.md`
 2.  `CEFFLO_AGENT_OS_CORE.md`
 3.  `CLAUDE_OPERATING.md`
 4.  current Task Master MD
