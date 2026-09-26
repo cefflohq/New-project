@@ -1215,3 +1215,22 @@ migration.
   fabricated distance, ETA, map labels, notifications or documents.
 - A Driver linked to several businesses resolves the oldest active
   relationship (`created_at` ascending) until explicit selection UI exists.
+
+## D-64 Human-Facing Order Number `#CF-001` (2026-09-26)
+
+**Decision (Founder, locked).** Every product surface shows one order number
+format: `#CF-` plus a per-business daily sequence, at least three digits and
+never capped (`#CF-001` … `#CF-999`, `#CF-1000`). Supersedes the `#CF1008`
+display rule of D-53.
+
+- Per business, reset each **business-local** calendar day
+  (`businesses.timezone`, default `Asia/Kuala_Lumpur`). Business A and B may
+  both show `#CF-027`; uniqueness is `(business_id, order_date, order_seq)`.
+- Assigned by the backend on insert (`orders.order_date`, `orders.order_seq`,
+  generated `orders.order_number`) under a per-business-day transaction lock;
+  immutable afterwards. Migration `202609260001_order_number_daily_sequence`.
+- Display/operational only. `orders.id` stays the identity for joins, RPCs,
+  RLS, storage paths and events; `public_ref` is unchanged. Customer Tracking
+  access stays token-only; the number is never a lookup key.
+- `public_tracking` and `list_plannable_orders` additively return
+  `order_number`.

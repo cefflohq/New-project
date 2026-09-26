@@ -64,6 +64,8 @@ protected-action approvals.
     multi-business Driver selection; assignment completion after the last
     stop; Pending Review submission data; Reschedule/Other issue reasons;
     the carried email checks.
+-   Order number format `#CF-001` (D-64): COMPLETE, per business, daily
+    reset on business-local day. Evidence: `engineering/ORDER_NUMBER_D64.md`.
 -   Phase 2B.3 --- Customer Tracking: NOT STARTED; requires Founder approval.
 -   Phase 2B backlog (Vendor): stop sequencing (`save_run_sequence`) UI;
     remove-from-today's-plan contract; Rider approve/deactivate wiring;

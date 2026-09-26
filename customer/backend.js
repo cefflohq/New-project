@@ -40,7 +40,7 @@
       issue: 'issue', cancelled: 'cancelled'
     };
     window.CEFFLOTracking.setStatus(statusMap[snapshot.status] || 'order_confirmed', {
-      orderId: snapshot.order_id,
+      orderId: snapshot.order_number ?? snapshot.order_id,
       storeName: snapshot.store_name,
       riderName: snapshot.rider_name || 'Your rider',
       estimatedArrival: formatEta(snapshot.eta) || '—',

@@ -113,6 +113,7 @@ class RiderOrder {
   const RiderOrder({
     required this.id,
     required this.publicRef,
+    this.orderNumber,
     required this.customerName,
     required this.customerPhone,
     required this.address,
@@ -130,6 +131,9 @@ class RiderOrder {
 
   final String id;
   final String publicRef;
+
+  /// Human-facing `#CF-001` (D-64); display only, never an identifier.
+  final String? orderNumber;
   final String customerName;
   final String customerPhone;
   final String address;
@@ -165,6 +169,7 @@ class RiderOrder {
     return RiderOrder(
       id: row['id'].toString(),
       publicRef: (row['public_ref'] ?? row['id']).toString(),
+      orderNumber: row['order_number'] as String?,
       customerName: (row['customer_name'] ?? '').toString(),
       customerPhone: (row['customer_phone'] ?? '').toString(),
       address: (row['delivery_address'] ?? '').toString(),

@@ -262,7 +262,7 @@ class DemoData {
     stops: const [
       DriverStop(
         id: 'c1001',
-        reference: '#C1001',
+        reference: '#CF-1001',
         customerName: 'Farah Ibrahim',
         addressLine1: 'Jalan SS2/1, PJ',
         status: StopStatus.delivered,
@@ -270,7 +270,7 @@ class DemoData {
       ),
       DriverStop(
         id: 'c1002',
-        reference: '#C1002',
+        reference: '#CF-1002',
         customerName: 'Lee Chin Wei',
         addressLine1: 'Jalan SS2/3, PJ',
         status: StopStatus.delivered,
@@ -278,7 +278,7 @@ class DemoData {
       ),
       DriverStop(
         id: 'c1003',
-        reference: '#C1003',
+        reference: '#CF-1003',
         customerName: 'Aisyah Rahman',
         addressLine1: 'Jalan SS2/5, PJ',
         status: StopStatus.delivered,
@@ -286,7 +286,7 @@ class DemoData {
       ),
       DriverStop(
         id: 'c1004',
-        reference: '#C1004',
+        reference: '#CF-1004',
         customerName: 'Kumaravelu',
         addressLine1: 'Jalan SS2/8, PJ',
         status: StopStatus.delivered,
@@ -294,7 +294,7 @@ class DemoData {
       ),
       DriverStop(
         id: 'c1005',
-        reference: '#C1005',
+        reference: '#CF-1005',
         customerName: 'Siti Norazimah',
         addressLine1: 'Jalan SS2/10, PJ',
         status: StopStatus.delivered,
@@ -302,7 +302,7 @@ class DemoData {
       ),
       DriverStop(
         id: 'c1006',
-        reference: '#C1006',
+        reference: '#CF-1006',
         customerName: 'Daniel Tan',
         addressLine1: 'Jalan SS2/12, PJ',
         status: StopStatus.delivered,
@@ -310,7 +310,7 @@ class DemoData {
       ),
       DriverStop(
         id: 'c1007',
-        reference: '#C1007',
+        reference: '#CF-1007',
         customerName: 'Nurul Huda',
         addressLine1: 'Jalan SS2/14, PJ',
         status: StopStatus.delivered,
@@ -318,7 +318,7 @@ class DemoData {
       ),
       DriverStop(
         id: 'c1008',
-        reference: '#C1008',
+        reference: '#CF-1008',
         customerName: 'Rajesh Kumar',
         addressLine1: 'Jalan SS2/17, PJ',
         status: StopStatus.delivered,
@@ -326,7 +326,7 @@ class DemoData {
       ),
       DriverStop(
         id: 'c1009',
-        reference: '#C1009',
+        reference: '#CF-1009',
         customerName: 'Wong Mei Ling',
         addressLine1: 'Jalan SS2/19, PJ',
         status: StopStatus.delivered,
@@ -334,7 +334,7 @@ class DemoData {
       ),
       DriverStop(
         id: 'c1010',
-        reference: '#C1010',
+        reference: '#CF-1010',
         customerName: 'Hafiz Zulkifli',
         addressLine1: 'Jalan SS2/22, PJ',
         status: StopStatus.delivered,
@@ -342,7 +342,7 @@ class DemoData {
       ),
       DriverStop(
         id: 'c1011',
-        reference: '#C1011',
+        reference: '#CF-1011',
         customerName: 'Chong Wei Han',
         addressLine1: 'Jalan SS2/24, PJ',
         status: StopStatus.delivered,
@@ -350,7 +350,7 @@ class DemoData {
       ),
       DriverStop(
         id: 'c1012',
-        reference: '#C1012',
+        reference: '#CF-1012',
         customerName: 'Amirah Yusof',
         addressLine1: 'Jalan SS2/26, PJ',
         status: StopStatus.delivered,

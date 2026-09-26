@@ -86,6 +86,7 @@ RiderOrder _order(
 }) => RiderOrder(
   id: id,
   publicRef: 'CF-$id',
+  orderNumber: '#CF-00$id',
   customerName: 'Customer $id',
   customerPhone: '+6010000$id',
   address: 'Seksyen 7, Shah Alam',
@@ -119,7 +120,7 @@ void main() {
       expect(app.currentRun.id, 's-1');
       expect(app.currentRun.reference, 'Shah Alam Run');
       expect(app.currentRun.stops.map((s) => s.id), ['1', '2']);
-      expect(app.currentRun.stops.first.reference, '#CF1');
+      expect(app.currentRun.stops.first.reference, '#CF-001');
       expect(app.currentRun.stops.first.items.single.name, 'Brownie Box');
       expect(app.currentRun.distanceKm, isNull);
       expect(app.profile.fullName, 'Aiman');

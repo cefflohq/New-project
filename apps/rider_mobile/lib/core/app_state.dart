@@ -438,7 +438,7 @@ class AppState extends ChangeNotifier {
 
   DriverStop _toStop(RiderOrder o) => DriverStop(
     id: o.id,
-    reference: '#${o.publicRef.replaceAll('-', '')}',
+    reference: o.orderNumber ?? o.publicRef,
     customerName: o.customerName,
     addressLine1: o.address,
     phone: o.customerPhone.isEmpty ? null : o.customerPhone,
