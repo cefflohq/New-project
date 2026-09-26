@@ -1320,3 +1320,34 @@ scope or visual direction is introduced.
   - Website Master §40 colour lock (`#0B5FE3` gradient family) versus
     `12_EXPERIENCE_SYSTEM.md` D-47/D-48 Anchor Blue (`#2563B3`, which
     replaces `#0B5FE3`).
+
+## D-69 Product Capability Direction — Smart Run Builder, POD Policy, Integration Ladder (2026-09-27)
+
+**Decision (Founder).** Records Founder-approved product capability direction
+in `docs/cefflo/sot/01_PRODUCT_TRUTH.md` §18 (classification table and rules)
+and in the roadmap priority block. Documentation only.
+
+- **This does NOT expand current production scope.** Production qualification
+  and the Phase 2B sequence are unchanged. Nothing is promoted to LIVE.
+- Cefflo remains the Local Same-Day Delivery Operating System.
+- **Advanced route optimisation is NOT a current strategic requirement.**
+  - Preferred direction: Smart Run Builder, Smart Zone Clustering, zone
+    density and Corridor Fill (run economics and operational density).
+  - Zones are primary clusters, not absolute prisons.
+  - Target run size is configurable. Numbers such as 10–15 drops are examples
+    only.
+  - Stop sequencing is suggested guidance, with human and rider override
+    preserved.
+  - This refines, and does not unfreeze, the deterministic optimisation
+    architecture in Scope Lock §12.
+- **POD:** Signature POD is optional, never universally mandatory. Photo POD
+  is sufficient where Vendor policy allows. QR/barcode order verification is
+  a separate operational control.
+- **Integrations** follow CSV import → Public Order API + Webhooks → native
+  connectors. No endpoint, payload or event names are frozen.
+- **Multi-location** (Business → Fulfilment Point(s)) must remain
+  architecturally possible. Today a business has a single service origin.
+  Cefflo does not become a courier hub network.
+- **Rider Hub / Capacity Network remain FUTURE** (Rider Network Strategy).
+- Notifications are event-based (out for delivery, approaching, delivered,
+  issue). No unlimited WhatsApp/SMS, and paid channels are subject to COGS.
