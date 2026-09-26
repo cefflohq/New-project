@@ -4,8 +4,9 @@ Fuller canonical product doctrine: `docs/cefflo/sot/01_PRODUCT_TRUTH.md`
 (2026-09-04). Where they differ, the sot/ file wins; this file remains
 valid current Stage-4 routing detail.
 
-Brand/product doctrine authority: `docs/cefflo/CEFFLO_BRAND_BRAIN.md`.
-Where this file and the Brand Brain differ, the Brand Brain wins.
+Brand doctrine authority: `docs/cefflo/sot/05_BRAND_BRAIN.md` (D-68).
+Where this file and the Brand Brain differ on brand, the Brand Brain wins;
+for capability, `sot/01_PRODUCT_TRUTH.md` wins.
 
 ## P-00 Identity
 

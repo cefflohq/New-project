@@ -23,7 +23,7 @@ from silently becoming current truth.
 
 This document defines **HOW WE WORK**.
 
-`CEFFLO_BRAND_BRAIN.md` defines **WHAT CEFFLO IS**.
+`docs/cefflo/sot/05_BRAND_BRAIN.md` (D-68) defines **WHAT CEFFLO IS**.
 
 ------------------------------------------------------------------------
 
@@ -99,7 +99,7 @@ Do not load every Cefflo document for every task.
 
 ### Layer A --- Persistent mandatory context
 
-Every working agent reads: 1. `CEFFLO_BRAND_BRAIN.md` 2.
+Every working agent reads: 1. `docs/cefflo/sot/05_BRAND_BRAIN.md` 2.
 `CEFFLO_AGENT_OS_CORE.md` 3. its own role MD
 
 ### Layer B --- Current task context

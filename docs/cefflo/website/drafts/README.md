@@ -5,9 +5,9 @@ Public Website remains **NOT IMPLEMENTED** (D-62). Nothing in this folder is
 built, routed or served; `scripts/canonical-surfaces.mjs` does not include it.
 
 - `cefflo-homepage-v2.html` — current single-file homepage draft (self-contained).
-- `CEFFLO_BRAND_BRAIN-website-input.md` — the Founder-supplied Brand Brain
-  revision this draft follows (newer than `docs/cefflo/CEFFLO_BRAND_BRAIN.md`;
-  not yet reconciled into canonical docs).
+- Brand input: the Founder-supplied Brand Brain revision this draft followed
+  has been reconciled into `docs/cefflo/sot/05_BRAND_BRAIN.md` (D-68) and
+  removed from this folder (preserved in Git history).
 
 ## What v2 contains
 Hero ("Run local delivery. Without the chaos."), Run Shah Alam A1 card,

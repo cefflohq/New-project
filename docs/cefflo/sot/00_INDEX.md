@@ -105,6 +105,7 @@ reports are migration evidence only until reconciled. Do not invent performance,
 winner or learning data.
 
 ## 8. Brand Assets
+**Brand Brain (D-68):** `docs/cefflo/sot/05_BRAND_BRAIN.md` is the single current canonical Brand Brain (positioning, story, voice, marketing doctrine). `docs/cefflo/CEFFLO_BRAND_BRAIN.md` is historical only.
 **Updated 2026-09-12 (Founder baseline closeout, D-30):** logo and Signal Lime are now Founder-locked.
 **Updated 2026-09-11 (Experience System canonicalization, D-33):** Signal Lime's primary/signature-colour status is **superseded** — see below. Logo lock from D-30 is unaffected.
 Primary:

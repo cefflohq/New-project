@@ -1285,3 +1285,38 @@ changes no product scope.
     and needs reconciliation.
   - The held homepage draft uses Anchor Blue `#2563B3`, not the Master §40
     canonical colours. That is a future website polish task.
+
+## D-68 Brand Brain Authority Reconciliation (2026-09-26)
+
+**Decision (Founder).** Brand Brain authority only. No new product feature,
+scope or visual direction is introduced.
+
+- **One canonical Brand Brain:** `docs/cefflo/sot/05_BRAND_BRAIN.md` (v2.0).
+  - Part A is the Founder-supplied revision.
+  - Part B keeps the still-current v1.0 marketing doctrine (voice, tone,
+    proof, vocabulary, governance), with the original section numbers
+    prefixed B.
+- Where later Founder decisions or Product Truth override Part A, inline
+  reconciliation notes record it:
+  - no customer rider location or live GPS until Phase 2B.4 ships (D-65, D-66);
+  - pricing direction is not canonical pricing (`10_PRICING.md`);
+  - exact colours belong to `12_EXPERIENCE_SYSTEM.md`;
+  - "Cefflo Driver" naming (D-38) and the retired Rider PWA (D-62).
+- `docs/cefflo/CEFFLO_BRAND_BRAIN.md` is historical and superseded, with a
+  banner pointing to the canonical path.
+- `docs/cefflo/website/drafts/CEFFLO_BRAND_BRAIN-website-input.md` is
+  reconciled and removed (kept in Git history).
+- Legacy brand truth is no longer authoritative:
+  - Signal Lime foundation (v1.0 §8 and §9), retired by D-33;
+  - "Draft B"/Design Lab UI references (v1.0 §10);
+  - the Rider PWA and legacy Vendor PWA as current surfaces.
+- Agent-routing references now point to the canonical path:
+  - `01_PRODUCT.md`;
+  - the four `agent-os/` files;
+  - `sot/00_INDEX.md` §8.
+- **Open Founder decisions, not resolved here:**
+  - Scale plan price: RM299 in the Brand Brain direction versus RM499 in
+    `10_PRICING.md` (CANDIDATE).
+  - Website Master §40 colour lock (`#0B5FE3` gradient family) versus
+    `12_EXPERIENCE_SYSTEM.md` D-47/D-48 Anchor Blue (`#2563B3`, which
+    replaces `#0B5FE3`).

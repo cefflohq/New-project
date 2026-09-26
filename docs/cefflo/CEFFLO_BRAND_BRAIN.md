@@ -1,3 +1,7 @@
+> **HISTORICAL — SUPERSEDED (D-68).** The single current Brand Brain is
+> `docs/cefflo/sot/05_BRAND_BRAIN.md`. This file is retained for history only
+> and is not authoritative (including its Signal Lime / legacy visual notes).
+
 # CEFFLO BRAND BRAIN
 
 **Status:** CANONICAL SOURCE OF TRUTH\
