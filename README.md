@@ -1,11 +1,9 @@
 # CEFFLO
 
-Canonical CEFFLO source for Vendor, Rider, Customer Tracking and the shared Supabase backend.
-
-- `vendor/` Vendor workspace
-- `rider/` Rider operations
-- `customer/` token-based customer tracking
-- `shared/` public runtime configuration and client
+The legacy purple Vendor, Rider and Customer web apps were removed from this
+branch. Every host serves only `retired/`, which clears the caches and service
+workers they left on devices. The canonical products ship through the
+controlled release of `claude/canonical-integration`.
 - `supabase/migrations/` reproducible schema, RLS, RPC and Storage
 - `tests/` contract and security validation
 
