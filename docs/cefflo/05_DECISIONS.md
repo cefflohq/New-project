@@ -1261,8 +1261,9 @@ existing `public_tracking` snapshot. No new RPC, table, policy or migration.
 ## D-66 Phase 2B.4 Rider Live Location — Demand-Aware Adaptive Tracking (2026-09-26)
 
 **Decision (Founder).** Phase 2B.4 is RIDER LIVE LOCATION, built as
-DEMAND-AWARE ADAPTIVE TRACKING. Status: architecture proposed, pending Founder
-review. No runtime work until approved. Design and load model:
+DEMAND-AWARE ADAPTIVE TRACKING. Status: approved in principle, with Founder
+corrections applied; ready for implementation review. No runtime work until
+implementation is approved. Design and load model:
 `engineering/PHASE_2B4_RIDER_LIVE_LOCATION.md`.
 
 - There is no universal fixed short-interval upload. A timer is only a
@@ -1273,21 +1274,37 @@ review. No runtime work until approved. Design and load model:
 - Demand levels are LOW / MEDIUM / HIGH, computed on the Driver phone from
   Realtime Presence of visible customer viewers plus stop-sequence relevance
   (`stops_ahead`).
+- Only legitimate viewers count. A Presence key must match a key the rider
+  fetched for its own active orders (`rider_live_keys`). HIGH needs a valid key
+  **and** that key's stop to be current or next. Invalid Presence is ignored.
+- Hard write floor: **never less than 10 s between two rider-location
+  writes**, whatever happens. HIGH is at most one write per 10 s.
 - Customer pages join Presence only while visible and leave when hidden or
   closed. On return they fetch once, then resume.
-- One rider coordinate serves all authorized viewers. The Realtime broadcast
-  is a nudge that carries no coordinates, and coordinates are served only by
-  the token-checked `public_tracking`.
+- One rider coordinate serves all authorized viewers.
+- The Realtime channel is routing, **not** a security boundary. Knowing its
+  name grants nothing. Broadcast is only a "location changed" hint, and
+  Presence carries only an opaque key. Coordinates come only from the
+  token-checked `public_tracking`.
+- Customer fetches go through one coalescing gate: in-flight protection, one
+  pending follow-up, and at least 10 s between fetch starts.
+- Realtime failure degrades to the last truthful snapshot, backoff
+  reconnects, and at most one fetch per staleness limit while visible. There
+  is never short-interval polling.
+- Before any Realtime code, a staging preflight verifies Broadcast, Presence
+  and anonymous participation. Any contradiction stops work and is reported.
 - Customers get the latest point and `recorded_at` only: no history, and only
   while the order is `picked_up` / `out_for_delivery` / `arrived` and the
   point is ≤ 15 min old. Tracking ends at delivered, cancelled or issue.
 - ETA and distance stay truthful (`—` fallback). No fabricated movement.
-- Cost awareness is an architectural requirement. The model shows about 79%
-  fewer writes and about 89% fewer customer reads than fixed 15-second
-  tracking.
+- Cost awareness is an architectural requirement. The load model is a
+  capacity comparison, not a bill prediction. It estimates about 79% fewer
+  writes and about 89% fewer customer reads than fixed 15-second tracking.
+  "~255 writes/rider-day" is an estimate, never a quota or target.
 - Proposed backend change (one new migration):
   - `rider_assignments.live_topic`;
   - additive `public_tracking` fields `rider_location`, `live` and
     `stops_ahead`;
   - a rider-scoped `rider_live_keys`.
-- Open, non-blocking: a `rider_locations` retention window (proposal 30 days).
+- `rider_locations` retention: OPEN / FUTURE DATA-LIFECYCLE DECISION. It is
+  not part of 2B.4, and no retention or deletion infrastructure is added.

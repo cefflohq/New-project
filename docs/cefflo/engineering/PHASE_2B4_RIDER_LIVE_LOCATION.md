@@ -1,6 +1,7 @@
 # Phase 2B.4 — Rider Live Location (Demand-Aware Adaptive Tracking)
 
-Status: DESIGN — awaiting Founder approval (D-66). No runtime code in this
+Status: DESIGN — approved in principle; corrections applied; ready for
+implementation review (D-66). No runtime code in this
 change. Staging-only when implemented. Production untouched.
 
 ## 1. What exists today (inspected on canonical `dfbe070` and staging)
@@ -44,15 +45,28 @@ Upload gate  ── meaningful? ──► record_rider_location()  ── one ro
   automatically on disconnect. Nothing is stored in the database, and no
   presence infrastructure is built.
 - Customers get coordinates **only through the token-checked
-  `public_tracking`**. A broadcast is only a "something changed" nudge. It never
-  carries coordinates, so a spoofed broadcast can at most trigger a
-  rate-limited fetch.
+  `public_tracking`**. A broadcast is only a "location changed" hint.
+
+### Channel is routing, not security
+
+The random `live_topic` keeps one run's traffic separate from another's. Its
+secrecy is **not** authorization, and knowing or guessing a channel name must
+not grant anything:
+
+- Broadcast and Presence never carry coordinates, addresses, names, order
+  numbers or tokens.
+- Presence carries only an opaque viewer key (§3). Broadcast carries only the
+  event name `loc`.
+- Coordinates and customer data come **only** from `public_tracking(p_token)`,
+  which checks the token, the order and the trackable window.
+- Anyone on the channel can therefore learn nothing beyond "this run's
+  location changed" and cannot read any coordinate.
 
 ## 3. Demand levels (computed on the Driver phone, per run)
 
-Each visible viewer announces Presence with an opaque key `k`. The key is
-issued by `public_tracking` and maps to its stop. The Driver app maps `k` to
-its own stop list and computes
+Each visible viewer announces Presence with an opaque key `k`, issued by
+`public_tracking` for that order only. The Driver app maps `k` to its own stop
+list and computes
 
 `stops_ahead = number of undelivered stops sequenced before that stop`.
 
@@ -64,6 +78,33 @@ its own stop list and computes
 
 Before the sequence is locked (`start_run_delivery`), a viewer counts at most
 as MEDIUM.
+
+### Legitimate viewers only (Presence validation)
+
+"Someone joined the channel" never counts as demand. The Driver app counts a
+Presence entry only if **all** of these hold:
+
+1. Its key `k` matches one of the keys the Driver fetched from
+   `rider_live_keys` for **its own active, trackable orders** on this run. The
+   key is `left(sha256(token_hash || live_topic), 16 hex)`. Only a holder of
+   that order's tracking token (via `public_tracking`) or the assigned rider
+   can know it. A random participant who knows only the topic cannot produce
+   a valid key.
+2. That order is still `picked_up` / `out_for_delivery` / `arrived`.
+3. Each key counts once, however many connections present it.
+
+HIGH needs a valid key **and** HIGH relevance for that key's own stop
+(`stops_ahead = 0` or `arrived`). A valid key for a far stop gives MEDIUM at
+most. Invalid, unknown or finished-order keys are ignored and count as no
+viewer.
+
+**Abuse bounds:**
+- Invalid Presence cannot raise the level at all.
+- A real token holder can at most keep **their own stop's** relevance level,
+  which ends when that order is delivered, cancelled or issue.
+- Whatever happens, the upload gate's hard floor applies: **never less than
+  10 s between two backend location writes**. The worst case is therefore 6
+  writes per minute for one run while it is genuinely HIGH.
 
 The five customer behaviours:
 
@@ -89,8 +130,12 @@ The five customer behaviours:
 | MEDIUM | ≥ **150 m** and ≥ **30 s** | **3 min** |
 | HIGH | ≥ **50 m** and ≥ **10 s** | **60 s** |
 
-- **Events force one upload** (with the next good fix, respecting a 10 s
-  minimum gap):
+- **Hard floor:** there must **never be less than 10 s** between two backend
+  location writes from one rider, whatever the level, event or demand. HIGH is
+  therefore at most one write per 10 s. MEDIUM and LOW are further limited by
+  their own, longer thresholds.
+- **Events force one upload** (with the next good fix, still subject to the
+  10 s floor):
   - `start_pickup_run` / pickup confirmed;
   - `start_run_delivery`;
   - each `out_for_delivery` / `arrived` transition;
@@ -121,14 +166,34 @@ The five customer behaviours:
 - **Open or visible:** one `public_tracking` fetch. If the order is trackable
   (`picked_up` / `out_for_delivery` / `arrived`) and the response carries
   `live`, join `trk:<topic>`, track Presence `{k}`, and listen for `loc`.
-- **On `loc`:** fetch `public_tracking` once, debounced so fetches are at
-  least 10 s apart.
+- **On `loc`:** fetch `public_tracking` through one coalescing gate:
+  - **In flight:** if a fetch is already running, set a single `pending` flag
+    instead of starting another. When the running fetch finishes and `pending`
+    is set, run exactly one follow-up fetch.
+  - **Spacing:** at least 10 s between fetch starts. Hints that arrive sooner
+    collapse into one fetch at the 10 s mark.
+  - **One path:** open, visible-again, hint and the safety fallback all use the
+    same gate, so there are never parallel duplicate `public_tracking` reads.
+  - **Rate limit:** this stays within the existing 10 req / 60 s per-token
+    limit.
 - **Safety fallback while visible:** if no nudge arrives within the level's
   staleness limit (HIGH 60 s / MEDIUM 3 min), fetch once. That is the only
   timer, and it only runs while visible.
 - **Hidden:** untrack Presence and unsubscribe. No reads.
 - **Delivered, cancelled or issue:** leave the channel. The response no longer
   contains `rider_location` or `live`.
+- **Realtime failure degrades gracefully.** If the channel fails to connect,
+  Presence cannot join, Broadcast disconnects, or connectivity changes, the
+  page keeps the last truthful snapshot on screen with its real `recorded_at`.
+  It then:
+  - retries the channel with backoff (5 s, 15 s, 60 s, then every 5 min);
+  - while the channel is down, fetches at most once per the current level's
+    staleness limit (MEDIUM 3 min / HIGH 60 s), and only while visible;
+  - fetches once on focus, `online` and return, as today.
+
+  There is no short-interval polling. Reopening or refreshing the page always
+  returns the latest snapshot through `public_tracking`. Without Presence the
+  rider falls back to LOW, which only reduces write cost.
 - ETA and distance stay as today: shown only when `compute_order_eta` returns
   a truthful range, otherwise "—". No interpolated movement.
 
@@ -142,10 +207,11 @@ while the page is visible and the order is trackable.
   pickup, and only if it is ≤ 15 min old. Nothing older is returned, and no
   breadcrumbs.
 - `rider_locations` keeps its append-only rows because Vendor operations and
-  audit use them. The demand-aware gate keeps growth to about 255 rows per
-  rider-day instead of 1,200.
-- **Open Founder decision (not blocking):** a retention window (proposal:
-  delete rows older than 30 days). No new latest-location table is needed,
+  audit use them. The demand-aware gate keeps growth far below a fixed timer
+  (see §9 estimate).
+- **Retention: OPEN / FUTURE DATA-LIFECYCLE DECISION.** It is not part of
+  2B.4. Phase 2B.4 adds no retention job and no deletion infrastructure. No
+  new latest-location table is needed,
   because the existing `(rider_id, recorded_at desc)` index makes the latest
   lookup a single index probe.
 
@@ -195,6 +261,16 @@ active orders. It is the smallest safe addition.
 
 ## 9. Load model
 
+This is an **engineering capacity comparison** based on the assumptions
+below. It is **not a prediction of the Supabase bill**. The metric that matters
+is the reduction in unnecessary database writes, customer snapshot reads,
+retained location rows and Realtime traffic.
+
+The ~255 adaptive writes per rider-day is an **estimate** from these
+assumptions. It is not a quota, minimum, target or required daily count. A
+stationary rider, or a run nobody watches, writes far fewer. The gate is
+designed to write as little as the product needs.
+
 **Assumptions** (per rider per day):
 - 30 orders, one 5-hour active delivery window, urban 20 km/h when moving.
 - The rider is moving 60% of the active window and stationary 40% (handovers,
@@ -243,7 +319,22 @@ active orders. It is the smallest safe addition.
     never writes.
 - These are planning estimates, not a bill.
 
-## 10. Acceptance criteria (for implementation, staging only)
+## 10. Implementation preflight (staging, before any Realtime code)
+
+At implementation start, verify on staging (`tomvvmwktehexwhktenw`):
+- Broadcast send and receive between an authenticated rider and an anonymous
+  (publishable-key) client;
+- Presence track, untrack and sync for anonymous clients, including auto-clear
+  on disconnect;
+- whether public channels are allowed, or whether "private channels only" /
+  Realtime Authorization is enforced;
+- any channel or rate restriction.
+
+If staging contradicts this design, **STOP and report the exact
+discrepancy**. Do not weaken RLS or security, and do not invent a workaround
+without Founder approval.
+
+## 11. Acceptance criteria (for implementation, staging only)
 
 1. The Driver app uploads only through the gate. Unit tests show that
    stationary, noise, LOW, MEDIUM, HIGH and event cases produce the expected
@@ -256,7 +347,11 @@ active orders. It is the smallest safe addition.
 4. Three simultaneous viewers of one rider produce the same number of rider
    writes as one viewer.
 5. Stop #2 and stop #14 viewers produce HIGH vs MEDIUM behaviour on the Driver
-   phone.
+   phone. A Presence entry with an invalid or foreign key changes nothing.
+   Writes are never less than 10 s apart.
+6a. Bursts of `loc` hints never produce parallel `public_tracking` fetches.
+    With Realtime blocked, the page still shows the truthful snapshot and
+    fetches no more than the fallback allows.
 6. Negative tests:
    - `#CF-xxx`, `public_ref` and UUID return nothing;
    - another order's token gets only its own order;
