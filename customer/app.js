@@ -281,8 +281,8 @@ function ratingBlock(vm, ratingState) {
 
 function unavailableScreen(vm) {
   return `
-    <section class="unavailable">
-      <span class="unavailable__glyph" aria-hidden="true">!</span>
+    <section class="unavailable${vm.quiet ? ' unavailable--quiet' : ''}">
+      ${vm.quiet ? '' : '<span class="unavailable__glyph" aria-hidden="true">!</span>'}
       <h1 class="status-head__title" id="heroStatus">${esc(vm.statusTitle)}</h1>
       <p class="status-head__body">${esc(vm.statusBody)}</p>
     </section>`;

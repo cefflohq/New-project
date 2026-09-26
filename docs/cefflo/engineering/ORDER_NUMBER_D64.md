@@ -1,6 +1,6 @@
 # D-64 — Human-facing order number `#CF-001`
 
-Status: COMPLETE on staging (`tomvvmwktehexwhktenw`). Production untouched.
+Status: COMPLETE — verified on staging (`tomvvmwktehexwhktenw`). Production untouched.
 
 ## Backend
 Migration `202609260001_order_number_daily_sequence.sql`:
@@ -32,7 +32,14 @@ Tracking (`orderId` = `order_number`).
 
 ## Tests
 Vendor Flutter 107 pass (format cases 001…1000), Driver 12 pass, static 49 pass.
-`tests/d64_order_number.py` (sequence, per-business, daily reset at MYT
-midnight, 1000 cap, immutability, concurrency 12 parallel inserts) is written
-but NOT run: the environment guard refuses mutating tests on staging unless it
-is marked disposable; needs a local/disposable DB or Founder approval.
+`tests/d64_order_number.py` — PASS on staging (single approved run,
+2026-09-26): first daily #CF-001, increment, per-business independence,
+MYT-midnight reset, #CF-999 → #CF-1000, immutability, and 12 simultaneous
+committed inserts for one business/day received unique seq 1–12. Afterwards:
+no D64 test businesses/orders remain, no duplicate
+`(business_id, order_date, order_seq)`, existing 4 staging orders unchanged.
+
+## Customer Tracking pre-pickup copy (micro-polish)
+Pre-pickup state (`order_confirmed` / `preparing`) now shows "No order yet"
+(light grey, `--ink-faint`) and "Tracking starts when your rider collects the
+order.", with no warning glyph. Issue / cancelled / error states unchanged.

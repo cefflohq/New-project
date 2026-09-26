@@ -555,6 +555,8 @@ img { display: block; max-width: 100%; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+.unavailable--quiet .status-head__title { color: var(--ink-faint); }
+
 .unavailable__glyph {
   display: grid;
   place-items: center;

@@ -70,12 +70,14 @@ export function buildTrackingViewModel(source, status) {
 }
 
 /** Reusable customer-safe unavailable view model (no stack traces, no ids). */
-export function buildUnavailableViewModel(vendor, { title, body } = {}) {
+export function buildUnavailableViewModel(vendor, { title, body, quiet = false } = {}) {
   return Object.freeze({
     phase: TRACKING_PHASE.UNAVAILABLE,
     vendor: vendor ?? TRACKING_FIXTURE.vendor,
     statusTitle: title || 'Tracking unavailable',
-    statusBody: body || 'We could not load this delivery right now. Please check your link and try again.'
+    statusBody: body || 'We could not load this delivery right now. Please check your link and try again.',
+    // Neutral pre-pickup state: no warning glyph, light grey title.
+    quiet
   });
 }
 
@@ -167,8 +169,8 @@ export function installBackendBridge(provider, { source = TRACKING_FIXTURE } = {
     delivered: CUSTOMER_STATUS.DELIVERED
   };
   const unavailableCopy = {
-    order_confirmed: { title: 'Tracking not ready yet', body: 'Live tracking opens as soon as your rider collects this order.' },
-    preparing: { title: 'Tracking not ready yet', body: 'Live tracking opens as soon as your rider collects this order.' },
+    order_confirmed: { title: 'No order yet', body: 'Tracking starts when your rider collects the order.', quiet: true },
+    preparing: { title: 'No order yet', body: 'Tracking starts when your rider collects the order.', quiet: true },
     issue: { title: 'Delivery on hold', body: 'There is an issue with this delivery. The store or rider will be in touch shortly.' },
     cancelled: { title: 'Order cancelled', body: 'This order has been cancelled.' }
   };
