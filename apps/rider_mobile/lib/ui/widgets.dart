@@ -1976,7 +1976,7 @@ class CeffloSubmittedModal extends StatelessWidget {
 ///
 /// Prototype only: the delay stands in for a network round trip. Nothing is
 /// sent anywhere.
-Future<void> showCeffloSubmitFlow(
+Future<bool> showCeffloSubmitFlow(
   BuildContext context, {
   String submittingTitle = 'Submitting…',
   String submittingBody = 'Please wait a moment.',
@@ -1985,17 +1985,36 @@ Future<void> showCeffloSubmitFlow(
   String doneLabel = 'Done',
   Duration delay = const Duration(milliseconds: 1300),
   VoidCallback? onDone,
+  Future<void> Function()? action,
 }) async {
   final navigator = Navigator.of(context, rootNavigator: true);
+  final messenger = ScaffoldMessenger.maybeOf(context);
   unawaited(
     showCeffloModal<void>(
       context,
       CeffloSubmittingModal(title: submittingTitle, body: submittingBody),
     ),
   );
-  await Future<void>.delayed(delay);
-  if (!navigator.mounted) return;
+  // With a real [action] the Submitting modal stays up exactly as long as
+  // the backend call; success is shown only if it succeeds.
+  Object? failure;
+  if (action != null) {
+    try {
+      await action();
+    } catch (e) {
+      failure = e;
+    }
+  } else {
+    await Future<void>.delayed(delay);
+  }
+  if (!navigator.mounted) return false;
   navigator.pop();
+  if (failure != null) {
+    messenger?.showSnackBar(
+      SnackBar(content: Text('$failure'), behavior: SnackBarBehavior.floating),
+    );
+    return false;
+  }
   await showCeffloModal<void>(
     navigator.context,
     Builder(
@@ -2008,6 +2027,7 @@ Future<void> showCeffloSubmitFlow(
     ),
   );
   onDone?.call();
+  return true;
 }
 
 /// Reference bottom sheet geometry: white, 24px top radius, grabber, and

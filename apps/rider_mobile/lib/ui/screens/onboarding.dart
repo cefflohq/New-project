@@ -260,8 +260,14 @@ class DriverDetailsScreen extends StatefulWidget {
 }
 
 class _DriverDetailsScreenState extends State<DriverDetailsScreen> {
-  final _name = TextEditingController(text: DemoData.profile.fullName);
-  final _phone = TextEditingController(text: '12 345 6789');
+  late final _app = AppScope.read(context);
+  // The real build seeds from the Driver's own relationship, never demo data.
+  late final _name = TextEditingController(
+    text: _app.repo.isDemo ? DemoData.profile.fullName : _app.profile.fullName,
+  );
+  late final _phone = TextEditingController(
+    text: _app.repo.isDemo ? '12 345 6789' : _app.profile.phone,
+  );
   final _plate = TextEditingController();
   String _vehicle = 'Motorbike';
 
@@ -443,11 +449,24 @@ class PersonalDetailsScreen extends StatefulWidget {
 }
 
 class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
-  final _name = TextEditingController(text: DemoData.profile.fullName);
-  final _phone = TextEditingController(text: '12 345 6789');
-  final _dob = TextEditingController(text: DemoData.profile.dateOfBirth);
-  final _email = TextEditingController(text: DemoData.profile.email);
-  final _address = TextEditingController(text: DemoData.profile.address);
+  late final _app = AppScope.read(context);
+  late final _demo = _app.repo.isDemo;
+  // The real build seeds from the Driver's own relationship, never demo data.
+  late final _name = TextEditingController(
+    text: _demo ? DemoData.profile.fullName : _app.profile.fullName,
+  );
+  late final _phone = TextEditingController(
+    text: _demo ? '12 345 6789' : _app.profile.phone,
+  );
+  late final _dob = TextEditingController(
+    text: _demo ? DemoData.profile.dateOfBirth : '',
+  );
+  late final _email = TextEditingController(
+    text: _demo ? DemoData.profile.email : _app.profile.email,
+  );
+  late final _address = TextEditingController(
+    text: _demo ? DemoData.profile.address : '',
+  );
   final _emergency = TextEditingController();
 
   @override

@@ -58,10 +58,13 @@ protected-action approvals.
     Assignment): COMPLETE (D-61), Vendor Mobile on the same canonical
     contracts as Vendor Web/Desktop. Evidence:
     `engineering/PHASE_2B1_VENDOR_OPERATIONAL_CORE.md`.
--   Phase 2B.2 --- Driver Execution: NOT STARTED; requires Founder approval.
-    Backlog: active Driver Today real-data wiring; explicit multi-business
-    Driver selection; Pending Review submission data; the carried email
-    checks; Driver run execution on the contracts listed in `07_RIDER.md`.
+-   Phase 2B.2 --- Driver Execution: COMPLETE (D-63), Driver Flutter on the
+    same persisted run/order state Vendor dispatches. Evidence:
+    `engineering/PHASE_2B2_DRIVER_EXECUTION.md`. Backlog: explicit
+    multi-business Driver selection; assignment completion after the last
+    stop; Pending Review submission data; Reschedule/Other issue reasons;
+    the carried email checks.
+-   Phase 2B.3 --- Customer Tracking: NOT STARTED; requires Founder approval.
 -   Phase 2B backlog (Vendor): stop sequencing (`save_run_sequence`) UI;
     remove-from-today's-plan contract; Rider approve/deactivate wiring;
     Mobile manual location correction.

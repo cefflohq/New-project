@@ -25,6 +25,7 @@ class DriverStop {
     this.deliveredAt,
     this.etaMinutes,
     this.distanceMetres,
+    this.deliveryStatus,
   });
 
   final String id;
@@ -39,6 +40,10 @@ class DriverStop {
   final int? etaMinutes;
   final int? distanceMetres;
 
+  /// Canonical `delivery_status` of the backing order in the real build
+  /// (null in the prototype). Drives which execution step is next.
+  final String? deliveryStatus;
+
   DriverStop copyWith({StopStatus? status, String? deliveredAt}) => DriverStop(
     id: id,
     reference: reference,
@@ -51,6 +56,7 @@ class DriverStop {
     deliveredAt: deliveredAt ?? this.deliveredAt,
     etaMinutes: etaMinutes,
     distanceMetres: distanceMetres,
+    deliveryStatus: deliveryStatus,
   );
 }
 
@@ -88,7 +94,9 @@ class DriverRun {
   final String zone; // "Setapak"
   final String pickupBusinessName;
   final String pickupAddress;
-  final double distanceKm;
+
+  /// Null in the real build: no backend route distance exists yet.
+  final double? distanceKm;
   final RunState state;
   final List<DriverStop> stops;
   final String? startedAtLabel;
@@ -98,6 +106,7 @@ class DriverRun {
   final String? vehicleLabel; // "Motorbike (WYX 1234)"
 
   int get orderCount => stops.length;
+  String get distanceText => distanceKm == null ? '—' : '$distanceKm km';
   int get deliveredCount =>
       stops.where((s) => s.status == StopStatus.delivered).length;
   int get pendingCount =>

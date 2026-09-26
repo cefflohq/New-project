@@ -1194,3 +1194,24 @@ build, routing and tests (Git history keeps it).
 - Removed PWAs are retired explicitly: `retired/sw.js` clears caches and
   unregisters; the Vendor shell cache is rotated.
 - Backend contracts, migrations, RLS and shared client/config are unchanged.
+
+## D-63 Phase 2B.2 Driver Execution (2026-09-26)
+
+**Decision.** The approved Driver Flutter UI (`apps/rider_mobile`) executes a
+dispatched run on the existing canonical contracts only. No new RPC, table or
+migration.
+
+- Accept → `accept_run`; Confirm Pickup → `start_pickup_run` then
+  `rider_transition` to `picked_up`; route confirm → `save_run_sequence` then
+  `start_run_delivery` (locks the sequence only); arrive →
+  `rider_transition` `out_for_delivery` → `arrived`; deliver → POD upload to
+  `cefflo-pod/<riderId>/<orderId>/…` then `complete_delivery`; issue →
+  `rider_report_delivery_issue`.
+- Issue reasons map to canonical values only (customer_unreachable,
+  address_problem, vendor_not_ready, rider_unable_to_proceed). "Reschedule" and
+  "Other" are refused with a visible error until a canonical reason exists.
+- The authenticated build projects Today, Run Details, stops, History and
+  Profile from backend rows. Demo data is used only by the prototype build; no
+  fabricated distance, ETA, map labels, notifications or documents.
+- A Driver linked to several businesses resolves the oldest active
+  relationship (`created_at` ascending) until explicit selection UI exists.
