@@ -1234,3 +1234,22 @@ display rule of D-53.
   access stays token-only; the number is never a lookup key.
 - `public_tracking` and `list_plannable_orders` additively return
   `order_number`.
+
+## D-65 Phase 2B.3 Customer Tracking on Real Data (2026-09-26)
+
+**Decision.** Customer Tracking (link/token only) renders exclusively the
+existing `public_tracking` snapshot. No new RPC, table, policy or migration.
+
+- Activation: tracking opens at `picked_up` (Driver collects). `created` /
+  `ready_for_pickup` show the neutral "No order yet" state; `out_for_delivery`
+  and `arrived` → On the Way; `delivered` → Delivered; `issue` / `cancelled`
+  → their existing truthful templates; invalid/expired token → generic
+  "Tracking unavailable" (no internals).
+- Token mode never merges prototype fixtures. Fields the contract does not
+  carry (items, note, pickup time, addresses, recipient, rider vehicle/plate/
+  photo/contact, rider note) render "—"; no map/route and no ETA unless the
+  backend returns a truthful ETA. Fixtures remain prototype-only.
+- Order identity shown is the D-64 `#CF-001`; the token stays the only
+  credential.
+- Reached progress milestones use the semantic success green (`--success`)
+  instead of the vendor primary (Founder request).

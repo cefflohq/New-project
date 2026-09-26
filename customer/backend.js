@@ -72,7 +72,10 @@
     try {
       await refresh();
     } catch (error) {
-      document.getElementById('heroStatus').textContent = error.message;
+      // Invalid/expired token, or no snapshot yet: the generic customer-safe
+      // template (no internals). A failed re-check keeps the last real state.
+      const phase = window.CEFFLOTracking.getSnapshot?.()?.phase;
+      if (error.message === 'Invalid tracking reference' || phase === 'loading') window.CEFFLOTracking.fail();
     } finally {
       isRefreshing = false;
     }

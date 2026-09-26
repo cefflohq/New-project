@@ -66,7 +66,10 @@ protected-action approvals.
     the carried email checks.
 -   Order number format `#CF-001` (D-64): COMPLETE, per business, daily
     reset on business-local day. Evidence: `engineering/ORDER_NUMBER_D64.md`.
--   Phase 2B.3 --- Customer Tracking: NOT STARTED; requires Founder approval.
+-   Phase 2B.3 --- Customer Tracking: COMPLETE (D-65), link-based tracking on the
+    real `public_tracking` snapshot, proven end-to-end on staging. Evidence:
+    `engineering/PHASE_2B3_CUSTOMER_TRACKING.md`. Backlog: customer-visible
+    rider location; ETA/geocoding; POD CORS origin for a staging customer host.
 -   Phase 2B backlog (Vendor): stop sequencing (`save_run_sequence`) UI;
     remove-from-today's-plan contract; Rider approve/deactivate wiring;
     Mobile manual location correction.

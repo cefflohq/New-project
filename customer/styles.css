@@ -236,7 +236,7 @@ img { display: block; max-width: 100%; }
 }
 
 .progress__step.is-reached .progress__dot {
-  background: var(--vendor-primary);
+  background: var(--success);
   color: #FFFFFF;
 }
 
@@ -248,7 +248,7 @@ img { display: block; max-width: 100%; }
   transition: background var(--fill) var(--ease);
 }
 
-.progress__bar.is-reached { background: var(--vendor-primary); }
+.progress__bar.is-reached { background: var(--success); }
 
 /* ----------------------------------------------------------------- card */
 
