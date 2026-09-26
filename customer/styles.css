@@ -594,7 +594,8 @@ img { display: block; max-width: 100%; }
 /* ------------------------------------------------------- C4 proof of delivery */
 
 .pod-head {
-  display: flex;
+  display: grid;
+  grid-template-columns: 38px 1fr 38px;
   align-items: center;
   gap: 8px;
   padding: 0 0 14px;
@@ -611,9 +612,11 @@ img { display: block; max-width: 100%; }
   transition: transform var(--press) var(--ease), background var(--press) var(--ease);
 }
 
+.icon-btn:focus, .icon-btn:focus-visible { outline: none; }
+
 .icon-btn:active { transform: scale(0.92); background: var(--surface-neutral); }
 
-.pod-head__title { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -0.02em; }
+.pod-head__title { margin: 0; text-align: center; font-size: 21px; font-weight: 700; letter-spacing: -0.02em; }
 
 .pod-figure {
   display: block;
