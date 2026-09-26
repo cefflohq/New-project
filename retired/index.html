@@ -1,0 +1,13 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>CEFFLO</title>
+<p>No CEFFLO product is served at this address.</p>
+<script>
+  // Remove any worker a retired CEFFLO web app installed, then its caches.
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+  }
+  if ('caches' in window) caches.keys().then(ks => ks.forEach(k => caches.delete(k)));
+</script>
