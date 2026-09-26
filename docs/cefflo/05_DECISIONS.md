@@ -1257,3 +1257,31 @@ existing `public_tracking` snapshot. No new RPC, table, policy or migration.
   (Founder request). Each milestone dot carries a visible label (Pickup /
   On the Way / Delivered); the content group is centred vertically in the
   sheet; "Powered by Cefflo" stays on every screen with a larger bottom inset.
+
+## D-67 Document Authority — Website Master, AI Operating Principles, Rider Network Strategy (2026-09-26)
+
+**Decision (Founder).** Classifies four Founder-supplied documents. This
+records document authority only. It approves no unfinished product feature and
+changes no product scope.
+
+- `docs/cefflo/website/CEFFLO_PUBLIC_WEBSITE_MASTER.md`: ACTIVE MASTER, and the
+  single maintained Public Website master. It contains the Final Visual Spec
+  V2 (§1–§37, verified content-identical) plus §38–§42. The V2 file is not
+  added separately, to prevent drift. Open website decisions (launch
+  posture/CTA, Storefront, hero Vendor surface, etc.) remain open. Public
+  Website remains NOT IMPLEMENTED (D-62) until publication is approved.
+- `docs/cefflo/website/reports/CEFFLO_PUBLIC_WEBSITE_POLISH_REPORT.md`:
+  HISTORICAL report and input to the Master. Its implementation-state findings
+  are point-in-time (2026-09-26) and not Product Truth.
+- `docs/cefflo/control/CEFFLO_AI_COMPANY_OPERATING_PRINCIPLES.md`: CANONICAL
+  internal operating principles. They complement the Control Layer Master and
+  do not replace it. Cefflo is not repositioned as a generic Agentic OS.
+- `docs/cefflo/strategy/CEFFLO_RIDER_NETWORK_STRATEGY.md`: FUTURE strategy.
+  Design now, build only after the production baseline is stable. It is not on
+  the current roadmap.
+- Follow-ups, not resolved here:
+  - The Brand Brain exists in three versions (`CEFFLO_BRAND_BRAIN.md`,
+    `sot/05_BRAND_BRAIN.md`, `website/drafts/CEFFLO_BRAND_BRAIN-website-input.md`)
+    and needs reconciliation.
+  - The held homepage draft uses Anchor Blue `#2563B3`, not the Master §40
+    canonical colours. That is a future website polish task.

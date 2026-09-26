@@ -133,6 +133,9 @@ Primary:
 ## 11. AI Governance and Development Agent Rules
 Company governance authority:
 - `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`
+- `docs/cefflo/control/CEFFLO_AI_COMPANY_OPERATING_PRINCIPLES.md` (CANONICAL
+  operating principles — complements the Control Layer Master, does not
+  replace it; D-67)
 
 Development collaboration rules:
 Primary:
@@ -195,6 +198,11 @@ See `docs/cefflo/05_DECISIONS.md` D-23 and D-24 for the full reconciliation reco
 ## 17. CEFFLO Website (added 2026-09-12, Founder baseline closeout — D-30)
 Primary:
 - `docs/cefflo/sot/11_CEFFLO_WEBSITE.md` — the fifth canonical product surface (§0 above / `02_ARCHITECTURE.md` §0). Public Web, acquisition/commercial surface only, not operational.
-- current implementation: `marketing/index.html` (built public site) — Phase 03 pre-launch landing and Phase 06 full commercial site are both not yet built.
+- `docs/cefflo/website/CEFFLO_PUBLIC_WEBSITE_MASTER.md` — ACTIVE MASTER, the single maintained Public Website master (visual direction + commercial/product-truth rules; incorporates Visual Spec V2 Final; D-67). Does not by itself approve publication.
+- `docs/cefflo/website/reports/CEFFLO_PUBLIC_WEBSITE_POLISH_REPORT.md` — HISTORICAL report / input to the Master; not Product Truth.
+- current implementation: none published (D-62, Public Website NOT IMPLEMENTED); held draft in `docs/cefflo/website/drafts/` (NOT APPROVED).
 
 This closes the gap originally flagged when the five-canonical-product-surface architecture was frozen (2026-09-12, D-29).
+
+## 18. Strategy (FUTURE — added 2026-09-26, D-67)
+- `docs/cefflo/strategy/CEFFLO_RIDER_NETWORK_STRATEGY.md` — FUTURE: Founder-approved direction (Rider Hub, portable rider identity, capacity network). Not current scope; design-now/build-later, gated by production stability and real usage.
