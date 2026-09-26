@@ -659,7 +659,6 @@ class _AppearanceScreen extends StatelessWidget {
     ('Green', 0xFF12A150),
     ('Yellow', 0xFFFFC93C),
     ('Orange', 0xFFF97316),
-    ('Purple', 0xFF7C3AED),
     ('Black', 0xFF000000),
     ('White', 0xFFFFFFFF),
   ];

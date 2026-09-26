@@ -106,6 +106,22 @@ class VendorWebAuthEntryTests(unittest.TestCase):
         self.assertNotIn("cefflo-vendor-shell-v1'", read("vendor/sw.js"))
 
 
+class LegacyPurpleUiTests(unittest.TestCase):
+    # The retired purple Vendor/Rider/Customer UI (main @ 15a551b) must not
+    # return to any canonical surface: its primary colours or welcome copy.
+    LEGACY = re.compile(r"#7c6cf0|#6047d7|#5a40cd|home food business|Delivery Tanpa Drama", re.I)
+
+    def test_no_legacy_purple_ui_in_canonical_surfaces(self):
+        roots = ("vendor", "customer", "foundr", "invite", "shared", "apps/vendor_mobile/lib", "apps/rider_mobile/lib")
+        hits = []
+        for root in roots:
+            for path in (ROOT / root).rglob("*"):
+                if path.suffix in {".html", ".js", ".css", ".dart", ".webmanifest", ".json"} and path.is_file():
+                    if self.LEGACY.search(path.read_text(encoding="utf-8", errors="ignore")):
+                        hits.append(str(path.relative_to(ROOT)))
+        self.assertEqual(hits, [])
+
+
 class ServiceWorkerRetirementTests(unittest.TestCase):
     def test_retirement_worker_clears_caches_and_unregisters(self):
         sw = read("retired/sw.js")
