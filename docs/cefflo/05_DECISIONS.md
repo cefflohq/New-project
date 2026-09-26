@@ -1351,3 +1351,42 @@ and in the roadmap priority block. Documentation only.
 - **Rider Hub / Capacity Network remain FUTURE** (Rider Network Strategy).
 - Notifications are event-based (out for delivery, approaching, delivered,
   issue). No unlimited WhatsApp/SMS, and paid channels are subject to COGS.
+
+## D-70 Run Editing Boundary + Brand Color Authority (2026-09-27)
+
+**Decision (Founder).** Documentation and authority only. No runtime,
+database or visual implementation is approved.
+
+**Run editing** (`sot/01_PRODUCT_TRUTH.md` §7, §18.2):
+- Vendor/Dispatcher manual run editing is **FUTURE**, primarily
+  **pre-dispatch**. It covers reordering stops, adding/removing eligible
+  orders, moving orders between proposed runs, changing the intended rider,
+  and overriding the suggested sequence. System suggestions must allow human
+  review and override before dispatch.
+- Dispatched or active runs are operationally stable. **Unrestricted Vendor
+  editing of active runs is not approved.** Future active-run interventions
+  need explicit controlled contracts, which are not designed here.
+- Rider-owned resequencing is unchanged.
+
+**Brand colour authority:**
+- The Vendor Mobile D-51/D-53 palette is promoted to the canonical
+  cross-product **Cefflo Flow Palette**:
+  - Brand Blue `#0060FE`;
+  - Gradient `#01265E → #00378F → #005CC4 → #0592EB`;
+  - Deep/Chrome `#01265E`;
+  - Mustard `#FFC93C`;
+  - Navy `#0B1220`;
+  - Cool White canvas;
+  - Inter.
+- `sot/12_EXPERIENCE_SYSTEM.md` §0A is the **single exact-token authority**.
+  The Website Master §40 inherits from it. The Brand Brain owns broad visual
+  direction only.
+- Superseded as current values (history kept): `#2563B3`, `#1C3F7A`,
+  `#0A1F44`, `#0B5FE3`, the `#0633A8` Website gradient, `#F5C400`, and
+  `#FEC819` / `#12213E` as locked brand values.
+- Signal Lime and the purple-era identity remain retired.
+- Driver Mobile, Vendor Web, the Public Website and Founder Admin (where the
+  brand applies) are **not yet aligned**. Converging them is future
+  implementation work.
+- Customer Tracking stays vendor-configurable (white-label) and is exempt.
+- Pricing is untouched.

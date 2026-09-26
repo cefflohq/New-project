@@ -150,7 +150,7 @@ The Public Website must inherit its color identity from the actual canonical CEF
 
 The CEFFLO blue gradient is **not** a generic SaaS blue gradient. Its visual direction is the same family used by the canonical Vendor product: deep CEFFLO navy / royal blue → CEFFLO primary blue → brighter blue / cyan-blue.
 
-**Implementation rule:** if exact color tokens, gradient stops, CSS variables, Flutter theme values or other canonical color definitions exist in the repository, use those exact values. The supplied real Vendor screens are visual acceptance references for verifying that the website remains in the same CEFFLO family.
+**Implementation rule (D-70):** exact colour values come only from `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` §0A (Cefflo Flow Palette). This Master does not define competing exact values. The supplied real Vendor screens are visual acceptance references for verifying that the website remains in the same CEFFLO family.
 
 Do **not**:
 - approximate the gradient by eye
@@ -1478,18 +1478,19 @@ Do not imply self-serve production access if it does not exist.
 
 Do not use a random blue.
 
-Use the canonical values already present in CEFFLO product code:
+**Exact values are inherited from `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md`
+§0A (Cefflo Flow Palette, D-70), the single exact-token authority.** At the time
+of D-70 those values are:
+- Brand Blue `#0060FE`
+- Gradient `#01265E → #00378F → #005CC4 → #0592EB`
+- Deep/Chrome `#01265E`
+- Mustard `#FFC93C`
+- Navy `#0B1220`
 
-- Brand Blue: `#0B5FE3`
-- Gradient Start: `#0633A8`
-- Gradient Mid: `#0848CC`
-- Gradient End: `#0A6BE6`
-- Mustard Yellow: `#FEC819`
-- Dark Navy: `#12213E`
+If §0A changes, §0A wins.
 
-Canonical gradient direction:
-
-> **#0633A8 → #0848CC → #0A6BE6**
+*Historical (superseded by D-70):* this section previously listed `#0B5FE3`,
+the `#0633A8 → #0848CC → #0A6BE6` gradient, `#FEC819` and `#12213E`.
 
 The supplied CEFFLO product screenshots are the visual acceptance reference.
 
@@ -1599,7 +1600,8 @@ Finish the website.
    - Arewno legal/static presentation
    - CEFFLO identity above all references
 
-4. Apply the exact canonical CEFFLO colors from §40.
+4. Apply the exact canonical CEFFLO colors from §40 (inherited from
+   `sot/12_EXPERIENCE_SYSTEM.md` §0A).
 
 5. Replace any recreated/fake CEFFLO product UI currently used in the
    website with real rendered captures as required by §41.

@@ -935,12 +935,12 @@ products.
 Do not create a separate visual universe for the marketing site.
 
 
-> **Reconciliation note (D-68):** exact colour values, gradients and tokens
-> are owned by `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` (canonical palette
-> authority), not by this section. Signal Lime is retired (D-33) and must not
-> be used. The Public Website colour lock (`website/CEFFLO_PUBLIC_WEBSITE_MASTER.md`
-> §40) and the Experience System's current Anchor Blue values are not yet
-> reconciled; that is an open Founder decision, not settled here.
+> **Reconciliation note (D-68, updated D-70):** this section is broad visual
+> direction only (the Flow Palette: blue family anchor, mustard action accent,
+> cool white canvas, Inter). Exact colour values, gradients and tokens are owned
+> solely by `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` §0A. "Anchor blue" above
+> means the canonical Cefflo blue family defined there. Signal Lime and the
+> purple-era identity are retired.
 
 ------------------------------------------------------------------------
 

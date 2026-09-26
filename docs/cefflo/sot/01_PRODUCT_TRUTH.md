@@ -86,6 +86,18 @@ Canonical multi-stop concept:
 
 Rider may use local knowledge to reorder stops where the canonical backend authorizes Rider resequencing. Do not widen this permission to Vendor merely for UI convenience.
 
+**Run editing boundary (D-70):**
+- **Before dispatch:** Vendor/Dispatcher run editing is approved **FUTURE**
+  direction (not LIVE). It may eventually support reordering stops,
+  adding/removing eligible orders, moving orders between proposed runs,
+  changing the intended rider, and overriding the suggested sequence
+  (system suggests → vendor reviews → vendor overrides if needed → dispatch).
+- **After dispatch:** run integrity takes priority. No unrestricted Vendor
+  editing of an active run. Any active-run intervention (e.g. reassignment,
+  recovery, issue handling, cancellation) requires an explicit controlled
+  contract.
+- The Rider-owned resequencing above is unchanged.
+
 Critical Rider actions use deliberate slide interactions where applicable, including Start Pickup, Start Delivery, Arrive, Next Stop and Complete Order.
 
 Never claim active GPS/live tracking unless real location data is being collected and surfaced through the canonical implementation.
@@ -239,7 +251,7 @@ Rules:
 | Smart Run Builder | FUTURE | post-production high | Algorithm not specified |
 | Target Run Size / run profiles | FUTURE | post-production high | Configurable, no universal default |
 | Corridor Fill | FUTURE | post-production high | No hard-coded geography |
-| Manual Run Editing (reorder, add, remove, move orders between runs, reassign run) before dispatch | FUTURE (partial LIVE: Run Builder, reassignment, rider resequencing) | post-production high | Vendor pre-dispatch stop reordering needs a backend contract change (see §7) |
+| Manual Run Editing (reorder, add, remove, move orders between proposed runs, change intended rider, override suggested sequence) | FUTURE, pre-dispatch only (partial LIVE today: Run Builder, reassignment, rider resequencing) | post-production high | Active runs: no unrestricted Vendor editing, interventions only through explicit controlled contracts (§7, D-70) |
 | Simple suggested stop sequencing | FUTURE | post-production high | Guidance only |
 | Auto Assign Rider (which eligible rider runs this run) | FUTURE | post-production high | Not route optimisation. Manual assignment remains. |
 | QR / barcode order verification (pack → run prep → rider pickup scan → mismatch detection) | FUTURE | post-production high | Distinct from POD. Vendor Web's manual pickup-verification tick is not scanning. |
