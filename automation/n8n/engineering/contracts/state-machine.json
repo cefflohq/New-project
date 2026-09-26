@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "initial": "NEW",
+  "terminal": ["ACCEPTED", "CANCELLED", "FAILED"],
+  "states": [
+    "NEW",
+    "CONTEXT_BUILD",
+    "GATE_PENDING",
+    "READY",
+    "LEAD",
+    "BUILD",
+    "PIXEL_REVIEW",
+    "VERIFY",
+    "SHIP_READY",
+    "PREVIEW_READY",
+    "FOUNDER_REVIEW",
+    "ACCEPTED",
+    "BLOCKED",
+    "ESCALATED",
+    "PAUSED_SECURITY_GUARD",
+    "CANCELLED",
+    "FAILED"
+  ],
+  "transitions": [
+    {"from": "NEW", "to": "CONTEXT_BUILD", "actor": "control_plane"},
+    {"from": "CONTEXT_BUILD", "to": "GATE_PENDING", "actor": "control_plane", "when": "founder_gate_required"},
+    {"from": "CONTEXT_BUILD", "to": "READY", "actor": "control_plane", "when": "task_pack_valid"},
+    {"from": "GATE_PENDING", "to": "READY", "actor": "control_plane", "when": "gate_approved_for_exact_scope"},
+    {"from": "READY", "to": "LEAD", "actor": "control_plane"},
+    {"from": "LEAD", "to": "BUILD", "actor": "control_plane", "when": "e1_pass"},
+    {"from": "BUILD", "to": "PIXEL_REVIEW", "actor": "control_plane", "when": "build_and_render_pass"},
+    {"from": "PIXEL_REVIEW", "to": "BUILD", "actor": "control_plane", "when": "repair_required_and_attempt_remaining"},
+    {"from": "PIXEL_REVIEW", "to": "VERIFY", "actor": "control_plane", "when": "e3_pass"},
+    {"from": "VERIFY", "to": "BUILD", "actor": "control_plane", "when": "e4_fail_and_attempt_remaining"},
+    {"from": "VERIFY", "to": "SHIP_READY", "actor": "control_plane", "when": "e4_pass_exact_tree"},
+    {"from": "SHIP_READY", "to": "PREVIEW_READY", "actor": "control_plane", "when": "e5_preview_verified"},
+    {"from": "PREVIEW_READY", "to": "FOUNDER_REVIEW", "actor": "control_plane"},
+    {"from": "FOUNDER_REVIEW", "to": "ACCEPTED", "actor": "founder_gate", "when": "fg_eng_08_approved"}
+  ],
+  "globalTransitions": [
+    {"to": "PAUSED_SECURITY_GUARD", "actor": "security_control"},
+    {"to": "BLOCKED", "actor": "control_plane"},
+    {"to": "ESCALATED", "actor": "control_plane"},
+    {"to": "CANCELLED", "actor": "authorized_human"},
+    {"to": "FAILED", "actor": "control_plane", "when": "attempt_budget_exhausted"}
+  ],
+  "guards": {
+    "maxImplementationAttempts": 3,
+    "e3RequiresTwoImages": true,
+    "e4MustBeIndependent": true,
+    "sourceMutationInvalidatesE4Pass": true,
+    "e5TreeMustEqualVerifiedTree": true,
+    "productionEnvironment": "deny"
+  }
+}

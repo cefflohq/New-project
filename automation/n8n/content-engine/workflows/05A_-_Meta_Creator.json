@@ -1,0 +1,60 @@
+{
+  "id": "10000000-0000-4000-8000-000000000005",
+  "name": "CEFFLO - 05A - Meta Creator",
+  "description": "Adapts the real shared content package into the Meta lane, reused for Instagram and Facebook; no media provider is called.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "64dae665-0000-4000-8000-bc785ad36d04",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nif (!input.content_package) throw new Error('ERROR_VALIDATION: content_package required from Creative Router');\nconst lanePkg = input.content_package.platform_packages.find((p) => p.lane === 'meta');\nif (!lanePkg) throw new Error('ERROR_VALIDATION: meta lane package missing from content_package');\nconst payload = { ...lanePkg, status: 'QA_PENDING' };\nreturn [{ json: { ...input, creative_packages: [...(input.creative_packages || []).filter((p) => p.lane !== 'meta'), payload], stage: 'META_CREATOR', status: 'QA_PENDING', updated_at: new Date().toISOString() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "661ad6e7-0000-4000-8000-fa3f1b268a56",
+      "name": "Create Meta Stub Package"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Create Meta Stub Package",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloRoi": true,
+    "providerMode": "stub",
+    "activationProhibited": true
+  },
+  "pinData": {},
+  "tags": []
+}

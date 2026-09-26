@@ -1,0 +1,1505 @@
+import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+
+import '../../core/app_state.dart';
+import '../../core/routes.dart';
+import '../../core/theme.dart';
+import '../../data/models.dart';
+import '../async_view.dart';
+import '../shell.dart';
+import '../widgets.dart';
+import 'planning.dart' show CoveragePreview, RadiusSlider;
+import 'today_content.dart';
+
+String _formatTime(DateTime t) {
+  final h = t.hour % 12 == 0 ? 12 : t.hour % 12;
+  final m = t.minute.toString().padLeft(2, '0');
+  return '$h:$m ${t.hour < 12 ? 'AM' : 'PM'}';
+}
+
+/// V-06 — Welcome. Opens first-time business setup for a brand-new demo
+/// account; existing accounts skip straight to Today. Presentation only —
+/// nothing here persists, real setup truth is Phase 3.
+class WelcomeSetupScreen extends StatelessWidget {
+  const WelcomeSetupScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    const steps = [
+      (
+        'Business Information',
+        'Name, type and contact details',
+        LucideIcons.store,
+      ),
+      ('Pickup Location', 'Where deliveries start from', LucideIcons.mapPin),
+      ('Service Area', 'How far you deliver', LucideIcons.map),
+    ];
+    final text = Theme.of(context).textTheme;
+    return PageBody(
+      children: [
+        // A compact brand panel under the shell header: titleMedium, not a
+        // second page title.
+        HeroSurface(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Let’s set up your business',
+                style: text.titleMedium?.copyWith(color: Colors.white),
+              ),
+              const SizedBox(height: Gap.xs),
+              Text(
+                'Just a few details before you start delivering with '
+                'Cefflo. Takes about 2 minutes.',
+                style: text.bodyMedium?.copyWith(
+                  color: Colors.white.withValues(alpha: .82),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: Gap.sm),
+        for (final (index, step) in steps.indexed)
+          CefListRow(
+            title: step.$1,
+            subtitle: step.$2,
+            leading: CefAvatar('${index + 1}'),
+            trailing: Icon(
+              step.$3,
+              size: Sizes.icon,
+              color: context.c.textSecondary,
+            ),
+          ),
+        const SizedBox(height: Gap.xxl),
+        CefButton('Get Started', onTap: () => app.go(VRoute.setupBusinessInfo)),
+      ],
+    );
+  }
+}
+
+/// Shared step header for the V07–V09 setup wizard: the compact progress
+/// line, then the archetype-G [SectionHeading] (icon + title + subtitle).
+class _SetupStepHeader extends StatelessWidget {
+  const _SetupStepHeader({
+    required this.step,
+    required this.totalSteps,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+  final int step, totalSteps;
+  final IconData icon;
+  final String title, subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Gap.xs),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              for (var i = 0; i < totalSteps; i++)
+                Padding(
+                  padding: const EdgeInsets.only(right: Gap.xs),
+                  child: Container(
+                    width: i == step - 1 ? Gap.xl : Gap.sm,
+                    height: Gap.sm,
+                    decoration: BoxDecoration(
+                      color: i <= step - 1
+                          ? CefColors.ceffloMustard
+                          : context.c.border,
+                      borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+                    ),
+                  ),
+                ),
+              const SizedBox(width: Gap.xs),
+              Text('Step $step of $totalSteps', style: text.bodySmall),
+            ],
+          ),
+          SectionHeading(title, icon: icon, subtitle: subtitle),
+        ],
+      ),
+    );
+  }
+}
+
+/// V-07 — First-time business information. Required fields only, per the
+/// locked "do not create a long enterprise wizard" guidance.
+class SetupBusinessInfoScreen extends StatefulWidget {
+  const SetupBusinessInfoScreen({super.key});
+  @override
+  State<SetupBusinessInfoScreen> createState() =>
+      _SetupBusinessInfoScreenState();
+}
+
+class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
+  final name = TextEditingController();
+  final phone = TextEditingController();
+  String type = _types.first;
+  final errors = <String, String>{};
+
+  static const _types = [
+    'Food & Beverage',
+    'Home & Living',
+    'Retail',
+    'Groceries',
+    'Other',
+  ];
+
+  @override
+  void dispose() {
+    name.dispose();
+    phone.dispose();
+    super.dispose();
+  }
+
+  void _continue() {
+    errors.clear();
+    if (name.text.trim().isEmpty) {
+      errors['name'] = 'Business name is required.';
+    }
+    if (phone.text.trim().length < 7) {
+      errors['phone'] = 'Enter a valid phone number.';
+    }
+    setState(() {});
+    if (errors.isEmpty) AppScope.read(context).go(VRoute.setupAddress);
+  }
+
+  @override
+  Widget build(BuildContext context) => PageBody(
+    bottom: CefButton('Continue', onTap: _continue),
+    children: [
+      const _SetupStepHeader(
+        step: 1,
+        totalSteps: 3,
+        icon: LucideIcons.store,
+        title: 'Tell us about your business',
+        subtitle: 'This appears on your delivery orders and receipts.',
+      ),
+      CefField(
+        label: 'Business Name',
+        controller: name,
+        hint: 'e.g. Kopi Kita',
+        prefixIcon: LucideIcons.store,
+        errorText: errors['name'],
+      ),
+      Padding(
+        padding: const EdgeInsets.only(bottom: Gap.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Business Type',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+            const SizedBox(height: Gap.sm),
+            Wrap(
+              spacing: Gap.sm,
+              runSpacing: Gap.sm,
+              children: [
+                for (final t in _types)
+                  CefChoiceChip(
+                    label: t,
+                    selected: type == t,
+                    onTap: () => setState(() => type = t),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      CefField(
+        label: 'Contact Phone',
+        controller: phone,
+        hint: '+60 12 345 6789',
+        prefixIcon: LucideIcons.phone,
+        keyboardType: TextInputType.phone,
+        errorText: errors['phone'],
+      ),
+    ],
+  );
+}
+
+/// V-08 — Pickup location. Keeps the same map-box + address field language
+/// as Business Address (V39) so the two never feel like different products.
+class SetupAddressScreen extends StatefulWidget {
+  const SetupAddressScreen({super.key});
+  @override
+  State<SetupAddressScreen> createState() => _SetupAddressScreenState();
+}
+
+class _SetupAddressScreenState extends State<SetupAddressScreen> {
+  final address = TextEditingController();
+  final postcode = TextEditingController();
+  final city = TextEditingController();
+  final errors = <String, String>{};
+
+  @override
+  void dispose() {
+    address.dispose();
+    postcode.dispose();
+    city.dispose();
+    super.dispose();
+  }
+
+  void _continue() {
+    errors.clear();
+    if (address.text.trim().isEmpty) {
+      errors['address'] = 'Pickup address is required.';
+    }
+    setState(() {});
+    if (errors.isEmpty) AppScope.read(context).go(VRoute.setupServiceArea);
+  }
+
+  @override
+  Widget build(BuildContext context) => PageBody(
+    bottom: CefButton('Continue', onTap: _continue),
+    children: [
+      const _SetupStepHeader(
+        step: 2,
+        totalSteps: 3,
+        icon: LucideIcons.mapPin,
+        title: 'Where do deliveries start from?',
+        subtitle: 'Riders pick up orders from this location.',
+      ),
+      Container(
+        height: 180,
+        decoration: BoxDecoration(
+          color: context.c.subtle,
+          borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          border: Border.all(color: context.c.border),
+        ),
+        child: Stack(
+          children: [
+            const Center(
+              child: Icon(LucideIcons.mapPin, size: 44, color: CefColors.navy),
+            ),
+            Positioned(
+              right: Gap.md,
+              bottom: Gap.md,
+              child: Container(
+                width: Sizes.tapTarget,
+                height: Sizes.tapTarget,
+                decoration: BoxDecoration(
+                  color: context.c.card,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: context.c.border),
+                ),
+                child: Icon(
+                  LucideIcons.locateFixed,
+                  size: Sizes.icon,
+                  color: context.c.iconColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: Gap.lg),
+      CefField(
+        label: 'Pickup Address',
+        controller: address,
+        hint: 'Search or enter your address',
+        prefixIcon: LucideIcons.search,
+        errorText: errors['address'],
+      ),
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: CefField(
+              label: 'Postcode',
+              controller: postcode,
+              keyboardType: TextInputType.number,
+            ),
+          ),
+          const SizedBox(width: Gap.md),
+          Expanded(
+            child: CefField(label: 'City', controller: city),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+/// V-09 — Service area. A friendly radius picker rather than raw
+/// latitude/longitude fields, per the locked "avoid technical geometry
+/// terminology" guidance.
+class SetupServiceAreaScreen extends StatefulWidget {
+  const SetupServiceAreaScreen({super.key});
+  @override
+  State<SetupServiceAreaScreen> createState() => _SetupServiceAreaScreenState();
+}
+
+class _SetupServiceAreaScreenState extends State<SetupServiceAreaScreen> {
+  double radiusKm = 5;
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    // The coverage preview absorbs the spare height so "Finish Setup" sits
+    // at the bottom of the viewport on tall phones instead of leaving dead
+    // space below it; on short phones the preview keeps its minimum and the
+    // page scrolls.
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(
+                Gap.gutter,
+                Gap.md,
+                Gap.gutter,
+                Gap.xxl,
+              ),
+              sliver: SliverFillRemaining(
+                hasScrollBody: false,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const _SetupStepHeader(
+                      step: 3,
+                      totalSteps: 3,
+                      icon: LucideIcons.map,
+                      title: 'How far do you deliver?',
+                      subtitle: 'Cefflo uses this to decide which orders you can accept.',
+                    ),
+                    Expanded(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(minHeight: 190),
+                        child: CoveragePreview(radiusKm: radiusKm),
+                      ),
+                    ),
+                    const SizedBox(height: Gap.lg),
+                    RadiusSlider(
+                      radiusKm: radiusKm,
+                      onChanged: (v) => setState(() => radiusKm = v),
+                    ),
+                    const SizedBox(height: Gap.lg),
+                    CefButton(
+                      'Finish Setup',
+                      onTap: () => app.go(VRoute.setupComplete),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// V-10 — Setup Complete presentation. It does not persist anything; real
+/// setup truth is Phase 3.
+class SetupCompleteScreen extends StatelessWidget {
+  const SetupCompleteScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final checks = const [
+      ('Business Profile', 'Completed', LucideIcons.store),
+      ('Service Area', 'Configured', LucideIcons.mapPin),
+      ('Team & Riders', 'Ready', LucideIcons.users),
+      ('Preferences', 'Set', LucideIcons.settings),
+    ];
+    final text = Theme.of(context).textTheme;
+    return PageBody(
+      children: [
+        HeroSurface(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text.rich(
+                const TextSpan(
+                  children: [
+                    TextSpan(text: 'Your Business\nis '),
+                    TextSpan(
+                      text: 'Ready!',
+                      style: TextStyle(color: CefColors.ceffloMustard),
+                    ),
+                  ],
+                ),
+                style: text.titleMedium?.copyWith(
+                  color: Colors.white,
+                  height: 1.15,
+                ),
+              ),
+              const SizedBox(height: Gap.sm),
+              Text(
+                'Your delivery setup is complete.\nLet’s start delivering with Cefflo.',
+                style: text.bodyMedium?.copyWith(
+                  color: Colors.white.withValues(alpha: .82),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: Gap.sm),
+        for (final item in checks)
+          CefListRow(
+            title: item.$1,
+            subtitle: item.$2,
+            icon: item.$3,
+            trailing: Icon(
+              LucideIcons.circleCheck,
+              size: Sizes.icon,
+              color: context.c.success,
+            ),
+          ),
+        const SizedBox(height: Gap.xxl),
+        CefButton('Go to Today', onTap: () => app.switchTab(NavTab.today)),
+      ],
+    );
+  }
+}
+
+/// V-11 — KPIs, attention and delivery planning all derive from one scoped
+/// orders read, so a KPI can never disagree with the list behind it.
+class TodayScreen extends StatelessWidget {
+  const TodayScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final business = app.business;
+    if (business == null) {
+      return const PageBody(
+        children: [
+          StateBlock.empty('No business is linked to this account yet.'),
+        ],
+      );
+    }
+    return AsyncView<(List<VendorOrder>, List<RiderRow>)>(
+      loading: const SkeletonPage.today(),
+      key: ValueKey('today-${business.id}'),
+      load: () async => (
+        await app.repo.orders(business.id),
+        await app.repo.riders(business.id),
+      ),
+      builder: (context, data, reload) {
+        return TodayContent(orders: data.$1, riders: data.$2, reload: reload);
+      },
+    );
+  }
+}
+
+/// V-12 — Ongoing / Issue / Delivered tabs over canonical statuses.
+class OrdersScreen extends StatefulWidget {
+  const OrdersScreen({super.key});
+  @override
+  State<OrdersScreen> createState() => _OrdersScreenState();
+}
+
+class _OrdersScreenState extends State<OrdersScreen> {
+  OrderTab tab = OrderTab.ongoing;
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final business = app.business;
+    if (business == null) {
+      return const PageBody(
+        children: [StateBlock.empty('No business linked.')],
+      );
+    }
+    return AsyncView<List<VendorOrder>>(
+      key: ValueKey('orders-${business.id}'),
+      load: () => app.repo.orders(business.id),
+      builder: (context, orders, reload) {
+        final visible = orders.where((o) => tab.accepts(o.status)).toList();
+        final tabLabels = OrderTab.values
+            .map(
+              (t) =>
+                  '${t.label} (${orders.where((o) => t.accepts(o.status)).length})',
+            )
+            .toList();
+        return PageBody(
+          onRefresh: reload,
+          children: [
+            SegmentedTabs(
+              labels: tabLabels,
+              active: tabLabels[OrderTab.values.indexOf(tab)],
+              onChange: (l) => setState(() {
+                final label = l.split(' ').first;
+                tab = OrderTab.values.firstWhere((t) => t.label == label);
+              }),
+            ),
+            const SizedBox(height: Gap.md),
+            if (visible.isEmpty)
+              StateBlock.empty('No ${tab.label.toLowerCase()} orders.')
+            else
+              for (final o in visible)
+                CefListRow(
+                  title: o.reference,
+                  subtitle: '${o.customerName} · ${o.deliveryAddress}',
+                  icon: LucideIcons.package,
+                  trailing: DeliveryStatusChip(
+                    o.status,
+                    approved: o.isApproved,
+                  ),
+                  onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
+                ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// V-13 — bound to the selected order id, with status-appropriate actions.
+/// Archetype E (detail hero): reference, status, meta and the tracker on the
+/// gradient; customer / delivery / items on the white surface. Items show a
+/// compact preview (the full list opens in a sheet) and the primary action
+/// is pinned, so a large order never pushes it off screen.
+class OrderDetailScreen extends StatelessWidget {
+  const OrderDetailScreen({super.key, required this.orderId});
+  final String orderId;
+
+  /// Item rows shown on the page; the rest open in the items sheet.
+  static const _previewItems = 3;
+
+  static const _itemIcons = [
+    LucideIcons.cakeSlice,
+    LucideIcons.coffee,
+    LucideIcons.cookie,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    return AsyncView<(VendorOrder, List<Zone>)>(
+      loading: const SkeletonHeroPage(),
+      key: ValueKey('order-$orderId'),
+      load: () async => (
+        await app.repo.order(orderId),
+        await app.repo.zones(app.business!.id),
+      ),
+      builder: (context, data, reload) {
+        final (order, zones) = data;
+        final items = order.items;
+        // Pre-dispatch only: approval and zone are planning inputs the
+        // server rejects once a rider holds the order.
+        final planning =
+            order.status == DeliveryStatus.created &&
+            order.assignedRiderId == null;
+        final zone = zones.where((z) => z.id == order.zoneId).firstOrNull;
+        final phone = order.customerPhone.trim();
+        Widget itemRow((int, OrderItem) entry) => CefListRow(
+          title: entry.$2.name,
+          subtitle:
+              '${entry.$2.quantity} × '
+              'RM${(entry.$2.unitPrice ?? 0).toStringAsFixed(2)}',
+          icon: _itemIcons[entry.$1 % _itemIcons.length],
+        );
+        final hidden = items.length - _previewItems;
+        return HeroPage(
+          onRefresh: reload,
+          hero: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              DetailHero(
+                title: order.reference,
+                status: HeroStatusPill(
+                  order.statusLabel,
+                  color: switch (order.status) {
+                    DeliveryStatus.issue => context.c.attention,
+                    final s when OrderTab.ongoing.accepts(s) => null,
+                    _ => context.c.textSecondary,
+                  },
+                ),
+                lines: [
+                  HeroLine(
+                    'Today, ${_formatTime(order.createdAt)} · '
+                    '${items.length} item${items.length == 1 ? '' : 's'}',
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  Gap.gutter,
+                  0,
+                  Gap.gutter,
+                  Gap.xl,
+                ),
+                child: _OrderProgress(status: order.status),
+              ),
+            ],
+          ),
+          // Delivery progression (On the Way, Delivered) is driven by the
+          // Rider app and only reflected here (D-53): the vendor gets no
+          // delivery-status action. The existing Edit Order action is kept
+          // where it was shown before; a Ready order has no bottom action.
+          bottomAction: order.status == DeliveryStatus.readyForPickup
+              ? null
+              : planning && order.approvedAt == null
+              ? Row(
+                  children: [
+                    Expanded(
+                      child: CefButton(
+                        'Edit Order',
+                        secondary: true,
+                        onTap: () =>
+                            app.go(VRoute.editOrder, entityId: order.id),
+                      ),
+                    ),
+                    const SizedBox(width: Gap.md),
+                    Expanded(
+                      child: _ApproveOrderButton(
+                        orderId: order.id,
+                        onApproved: reload,
+                      ),
+                    ),
+                  ],
+                )
+              : CefButton(
+                  'Edit Order',
+                  onTap: () => app.go(VRoute.editOrder, entityId: order.id),
+                ),
+          children: [
+            CefListRow(
+              title: 'Customer',
+              subtitle: phone.isEmpty
+                  ? order.customerName
+                  : '${order.customerName}\n$phone',
+              subtitleMaxLines: 2,
+              icon: LucideIcons.user,
+              trailing: phone.isEmpty ? null : ContactActions(phone: phone),
+            ),
+            CefListRow(
+              title: 'Deliver to',
+              subtitle: order.deliveryAddress,
+              subtitleMaxLines: 2,
+              icon: LucideIcons.mapPin,
+              trailing: OutlinedIconAction(
+                label: 'Directions',
+                icon: LucideIcons.navigation,
+                onTap: () => launchDirections(context, order.deliveryAddress),
+              ),
+            ),
+            CefListRow(
+              title: 'Zone',
+              subtitle: zone?.name ?? 'Not set',
+              icon: LucideIcons.map,
+              showChevron: planning,
+              onTap: planning
+                  ? () => _pickZone(context, order, zones, reload)
+                  : null,
+            ),
+            if ((order.notes ?? '').isNotEmpty)
+              CefListRow(
+                title: 'Delivery Instruction',
+                subtitle: order.notes,
+                subtitleMaxLines: 3,
+                icon: LucideIcons.fileText,
+              ),
+            SectionHeading(
+              'Items (${items.length})',
+              trailing: CefLink(
+                'View receipt',
+                icon: LucideIcons.fileText,
+                onTap: () =>
+                    showNotWiredYetSnackBar(context, 'The receipt view'),
+              ),
+            ),
+            if (items.isEmpty)
+              const StateBlock.empty('No items on this order.')
+            else ...[
+              for (final entry in items.indexed.take(_previewItems))
+                itemRow(entry),
+              if (hidden > 0)
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: CefLink(
+                    'View all ${items.length} items',
+                    chevron: true,
+                    onTap: () => showListSheet(
+                      context,
+                      title: 'Items (${items.length})',
+                      children: [for (final e in items.indexed) itemRow(e)],
+                    ),
+                  ),
+                ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Order → Zone through the canonical `update_order_details` contract.
+Future<void> _pickZone(
+  BuildContext context,
+  VendorOrder order,
+  List<Zone> zones,
+  Future<void> Function() reload,
+) => showListSheet(
+  context,
+  title: 'Zone',
+  children: [
+    for (final z in zones.where((z) => z.isActive))
+      Builder(
+        builder: (sheet) => CefListRow(
+          title: z.name,
+          subtitle: z.locality,
+          icon: LucideIcons.map,
+          showChevron: false,
+          trailing: z.id == order.zoneId
+              ? Icon(LucideIcons.circleCheck, color: sheet.c.info)
+              : null,
+          onTap: () async {
+            Navigator.of(sheet).pop();
+            if (z.id == order.zoneId) return;
+            try {
+              await AppScope.read(context).repo
+                  .updateOrder(orderId: order.id, zoneId: z.id);
+              if (context.mounted) {
+                showCefToast(context, 'Zone set to ${z.name}');
+              }
+              await reload();
+            } catch (e) {
+              if (context.mounted) {
+                showCefToast(context, 'Could not set zone: $e', error: true);
+              }
+            }
+          },
+        ),
+      ),
+  ],
+);
+
+/// Vendor approval (D-17) through the canonical `approve_order` contract.
+class _ApproveOrderButton extends StatefulWidget {
+  const _ApproveOrderButton({required this.orderId, required this.onApproved});
+  final String orderId;
+  final Future<void> Function() onApproved;
+
+  @override
+  State<_ApproveOrderButton> createState() => _ApproveOrderButtonState();
+}
+
+class _ApproveOrderButtonState extends State<_ApproveOrderButton> {
+  bool _busy = false;
+
+  Future<void> _approve() async {
+    setState(() => _busy = true);
+    try {
+      await AppScope.read(context).repo.approveOrder(widget.orderId);
+      if (mounted) showCefToast(context, 'Order approved');
+      await widget.onApproved();
+    } catch (e) {
+      if (mounted) showCefToast(context, 'Could not approve: $e', error: true);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => CefButton(
+    'Approve Order',
+    busy: _busy,
+    busyLabel: 'Approving…',
+    onTap: _busy ? null : _approve,
+  );
+}
+
+/// V-14 — How the order gets created: one manual order, or a bulk import.
+/// The two modes are navigation rows; Recent Imports is an entity list
+/// (archetype B: logo leading, pill trailing, no chevron).
+class NewOrderEntryScreen extends StatelessWidget {
+  const NewOrderEntryScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    return PageBody(
+      children: [
+        CefListRow(
+          icon: LucideIcons.filePlus,
+          title: 'Manual Entry',
+          subtitle: 'Create a single order step by step',
+          subtitleMaxLines: 2,
+          onTap: () => app.go(VRoute.newOrderManual),
+        ),
+        CefListRow(
+          icon: LucideIcons.cloudUpload,
+          title: 'Import Orders',
+          subtitle: 'Import multiple orders from your files',
+          subtitleMaxLines: 2,
+          onTap: () => app.go(VRoute.importOrders),
+        ),
+        SectionHeading(
+          'Recent Imports',
+          trailing: CefLink(
+            'View all',
+            chevron: true,
+            onTap: () => showNotWiredYetSnackBar(context, 'The import history'),
+          ),
+        ),
+        for (final source in _ImportSource.values)
+          CefListRow(
+            leading: _ImportSourceMark(source: source),
+            title: source.sampleBatch,
+            subtitle:
+                '${source.label} · ${source.sampleCount} orders\n'
+                '${source.sampleDate}',
+            subtitleMaxLines: 2,
+            trailing: const StatusChip('Connected', success: true),
+            showChevron: false,
+            onTap: () =>
+                showNotWiredYetSnackBar(context, 'Opening this import'),
+          ),
+      ],
+    );
+  }
+}
+
+/// The three file sources the import flow accepts. Each source uses the
+/// provider's official product mark bundled locally for deterministic render.
+enum _ImportSource {
+  googleSheets(
+    'Google Sheets',
+    'Import from your Google Sheets',
+    'assets/brand/google-sheets-logo.png',
+    'Meal Prep Orders',
+    32,
+    '16 Sep 2026',
+  ),
+  excel(
+    'Excel',
+    'Upload an Excel file (.xlsx, .xls)',
+    'assets/brand/microsoft-excel-logo.png',
+    'Catering Sept',
+    24,
+    '14 Sep 2026',
+  ),
+  googleDrive(
+    'Google Drive',
+    'Import from files in your Google Drive',
+    'assets/brand/google-drive-logo.png',
+    'Hamper Orders',
+    18,
+    '12 Sep 2026',
+  );
+
+  const _ImportSource(
+    this.label,
+    this.description,
+    this.assetPath,
+    this.sampleBatch,
+    this.sampleCount,
+    this.sampleDate,
+  );
+  final String label;
+  final String description;
+  final String assetPath;
+  final String sampleBatch;
+  final int sampleCount;
+  final String sampleDate;
+}
+
+class _ImportSourceMark extends StatelessWidget {
+  const _ImportSourceMark({required this.source});
+  final _ImportSource source;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: Sizes.avatar,
+    height: Sizes.avatar,
+    child: Center(
+      child: Image.asset(
+        source.assetPath,
+        width: 32,
+        height: 32,
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.high,
+      ),
+    ),
+  );
+}
+
+/// X-04 — Pick where the bulk orders come from: the numbered guidance rows
+/// (same step-row language as Welcome), then one navigation row per source.
+class ImportOrdersScreen extends StatelessWidget {
+  const ImportOrdersScreen({super.key});
+
+  static const _steps = [
+    ('Select your source', 'Google Sheets, Excel or Google Drive'),
+    ('Choose a file', 'Or pick a connected sheet'),
+    ('Map the columns', 'And preview your orders'),
+    ('Import', 'And review the orders'),
+  ];
+
+  @override
+  Widget build(BuildContext context) => PageBody(
+    children: [
+      Text(
+        'Choose a source to import multiple orders.',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      const SectionHeading('How it works?', icon: LucideIcons.info),
+      for (final (index, step) in _steps.indexed)
+        CefListRow(
+          leading: CefAvatar('${index + 1}'),
+          title: step.$1,
+          subtitle: step.$2,
+          subtitleMaxLines: 2,
+        ),
+      const SectionHeading('Sources', icon: LucideIcons.cloudUpload),
+      for (final source in _ImportSource.values)
+        CefListRow(
+          leading: _ImportSourceMark(source: source),
+          title: source.label,
+          subtitle: source.description,
+          subtitleMaxLines: 2,
+          onTap: () => showNotWiredYetSnackBar(
+            context,
+            'Importing from ${source.label}',
+          ),
+        ),
+    ],
+  );
+}
+
+/// X-03 / V-15 — Save validates and persists through the canonical RPC. The
+/// screen only navigates after the backend confirms the write.
+class OrderFormScreen extends StatefulWidget {
+  const OrderFormScreen({super.key, this.orderId});
+  final String? orderId;
+  bool get isNew => orderId == null;
+
+  @override
+  State<OrderFormScreen> createState() => _OrderFormScreenState();
+}
+
+class _OrderFormScreenState extends State<OrderFormScreen> {
+  final name = TextEditingController();
+  final phone = TextEditingController();
+  final address = TextEditingController();
+  final notes = TextEditingController();
+  bool loading = false;
+  bool busy = false;
+  String? error;
+  final errors = <String, String>{};
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.isNew) _prefill();
+  }
+
+  Future<void> _prefill() async {
+    setState(() => loading = true);
+    try {
+      final app = AppScope.read(context);
+      final o = await app.repo.order(widget.orderId!);
+      name.text = o.customerName;
+      phone.text = o.customerPhone;
+      address.text = o.deliveryAddress;
+      notes.text = o.notes ?? '';
+    } catch (e) {
+      error = '$e';
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  bool _validate() {
+    errors.clear();
+    if (name.text.trim().isEmpty) {
+      errors['name'] = 'Customer name is required.';
+    }
+    if (phone.text.trim().length < 7) {
+      errors['phone'] = 'Enter a valid phone number.';
+    }
+    if (address.text.trim().isEmpty) {
+      errors['address'] = 'Delivery address is required.';
+    }
+    setState(() {});
+    return errors.isEmpty;
+  }
+
+  Future<void> _save() async {
+    if (!_validate()) return;
+    final app = AppScope.read(context);
+    if (app.repo.isDemo) {
+      final ok = await runAsyncFeedback(
+        context,
+        action: () async {},
+        processingTitle: 'Processing...',
+        processingSubtitle: widget.isNew
+            ? 'Creating your order'
+            : 'Updating your order',
+        successTitle: 'Successful',
+        successSubtitle: widget.isNew
+            ? 'Your new order has been created successfully.'
+            : 'Your order has been updated successfully.',
+      );
+      if (!mounted || !ok) return;
+      if (widget.isNew) {
+        app.go(VRoute.orderDetail, entityId: 'ord-1001');
+      } else {
+        app.back();
+      }
+      return;
+    }
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      if (widget.isNew) {
+        final id = await app.repo.createOrder(
+          businessId: app.business!.id,
+          customerName: name.text.trim(),
+          customerPhone: phone.text.trim(),
+          deliveryAddress: address.text.trim(),
+          notes: notes.text.trim(),
+        );
+        if (!mounted) return;
+        app.go(VRoute.orderDetail, entityId: id);
+      } else {
+        await app.repo.updateOrder(
+          orderId: widget.orderId!,
+          customerName: name.text.trim(),
+          customerPhone: phone.text.trim(),
+          deliveryAddress: address.text.trim(),
+          notes: notes.text.trim(),
+        );
+        if (!mounted) return;
+        app.back();
+      }
+    } catch (e) {
+      if (mounted) setState(() => error = '$e');
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    name.dispose();
+    phone.dispose();
+    address.dispose();
+    notes.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) return const SkeletonPage(rows: 6);
+    return PageBody(
+      bottom: CefButton(
+        widget.isNew ? 'Review & Create' : 'Update Order',
+        onTap: _save,
+      ),
+      children: [
+        Text(
+          widget.isNew
+              ? 'Create a new order step by step.'
+              : 'Update order details.',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        // Archetype G (multi-section operational form).
+        const SectionHeading(
+          'Customer',
+          icon: LucideIcons.user,
+          subtitle: 'Select an existing customer or add a new one.',
+        ),
+        CefField(
+          label: 'Customer name',
+          controller: name,
+          hint: 'Search customer by name, phone or email...',
+          prefixIcon: LucideIcons.search,
+          errorText: errors['name'],
+        ),
+        CefField(
+          label: 'Phone number',
+          controller: phone,
+          hint: 'Enter phone number...',
+          prefixIcon: LucideIcons.phone,
+          keyboardType: TextInputType.phone,
+          errorText: errors['phone'],
+        ),
+        const SectionHeading(
+          'Address',
+          icon: LucideIcons.mapPin,
+          subtitle: 'Delivery address',
+        ),
+        CefField(
+          label: 'Address',
+          controller: address,
+          hint: 'Enter delivery address...',
+          prefixIcon: LucideIcons.mapPin,
+          maxLines: 2,
+          errorText: errors['address'],
+        ),
+        const SectionHeading(
+          'Items',
+          icon: LucideIcons.package,
+          subtitle: 'Add order items',
+        ),
+        CefActionRow(
+          icon: LucideIcons.plus,
+          label: 'Add items to this order',
+          onTap: () => showNotWiredYetSnackBar(context, 'Adding order items'),
+        ),
+        const SectionHeading(
+          'Instructions',
+          icon: LucideIcons.clipboardList,
+          subtitle: 'Special requests (optional)',
+        ),
+        CefField(
+          label: 'Instruction',
+          controller: notes,
+          hint: 'Add delivery notes...',
+          maxLines: 2,
+        ),
+        if (error != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: Gap.md),
+            child: Text(
+              error!,
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: context.c.attention),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// V-35 / V-36 — Edit/Add product, bound to the canonical Product fields
+/// instead of a generic Name/Phone/Email stand-in.
+class ProductFormScreen extends StatefulWidget {
+  const ProductFormScreen({super.key, this.productId});
+  final String? productId;
+  bool get isNew => productId == null;
+
+  @override
+  State<ProductFormScreen> createState() => _ProductFormScreenState();
+}
+
+class _ProductFormScreenState extends State<ProductFormScreen> {
+  final name = TextEditingController();
+  final description = TextEditingController();
+  final price = TextEditingController();
+  bool active = true;
+  bool loading = false;
+  bool busy = false;
+  String? error;
+  final errors = <String, String>{};
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.isNew) _prefill();
+  }
+
+  Future<void> _prefill() async {
+    setState(() => loading = true);
+    try {
+      final app = AppScope.read(context);
+      final products = await app.repo.products(app.business!.id);
+      final p = products.firstWhere((p) => p.id == widget.productId);
+      name.text = p.name;
+      description.text = p.description ?? '';
+      price.text = p.displayPrice?.toStringAsFixed(2) ?? '';
+      active = p.status == 'active';
+    } catch (e) {
+      error = '$e';
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  bool _validate() {
+    errors.clear();
+    if (name.text.trim().isEmpty) {
+      errors['name'] = 'Product name is required.';
+    }
+    final parsed = num.tryParse(price.text.trim());
+    if (parsed == null || parsed < 0) {
+      errors['price'] = 'Enter a valid price.';
+    }
+    setState(() {});
+    return errors.isEmpty;
+  }
+
+  Future<void> _save() async {
+    if (!_validate()) return;
+    final app = AppScope.read(context);
+    if (app.repo.isDemo) {
+      final ok = await runAsyncFeedback(
+        context,
+        action: () async {},
+        processingTitle: 'Processing...',
+        processingSubtitle: widget.isNew
+            ? 'Adding your product'
+            : 'Updating your product',
+        successTitle: 'Successful',
+        successSubtitle: widget.isNew
+            ? 'Your new product has been added successfully.'
+            : 'Your product has been updated successfully.',
+      );
+      if (!mounted || !ok) return;
+      app.back();
+      return;
+    }
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      final priceValue = num.parse(price.text.trim());
+      if (widget.isNew) {
+        await app.repo.createProduct(
+          businessId: app.business!.id,
+          name: name.text.trim(),
+          description: description.text.trim(),
+          displayPrice: priceValue,
+          status: active ? 'active' : 'inactive',
+        );
+      } else {
+        await app.repo.updateProduct(
+          productId: widget.productId!,
+          name: name.text.trim(),
+          description: description.text.trim(),
+          displayPrice: priceValue,
+          status: active ? 'active' : 'inactive',
+        );
+      }
+      if (!mounted) return;
+      app.back();
+    } catch (e) {
+      if (mounted) setState(() => error = '$e');
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    name.dispose();
+    description.dispose();
+    price.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) return const SkeletonPage(rows: 6);
+    return PageBody(
+      bottom: CefButton(
+        widget.isNew ? 'Add Product' : 'Save Changes',
+        busy: busy,
+        onTap: _save,
+      ),
+      children: [
+        // Archetype H (product / content form).
+        Text('Product Photo', style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: Gap.md),
+        const _PhotoDropzone(),
+        const SectionHeading('Product Details', icon: LucideIcons.package),
+        CefField(
+          label: 'Product name',
+          controller: name,
+          hint: 'Enter product name',
+          errorText: errors['name'],
+        ),
+        CefField(
+          label: 'Description',
+          controller: description,
+          hint: 'Enter product description',
+          maxLines: 3,
+        ),
+        CefField(
+          label: 'Price (RM)',
+          controller: price,
+          hint: 'RM 0.00',
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          errorText: errors['price'],
+        ),
+        CefListRow(
+          title: 'Available',
+          subtitle: 'Show this product in your storefront',
+          trailing: CefSwitch(
+            value: active,
+            onChanged: (v) => setState(() => active = v),
+          ),
+        ),
+        if (error != null)
+          Padding(
+            padding: const EdgeInsets.only(top: Gap.md),
+            child: Text(
+              error!,
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: context.c.attention),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// The order-specific three-node delivery tracker drawn inside the order
+/// hero, so every colour is white-on-hero.
+class _OrderProgress extends StatelessWidget {
+  const _OrderProgress({required this.status});
+  final DeliveryStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    // Three visible steps. The V-13 reference draws a "Ready" order with the
+    // Pickup node already highlighted, so readyForPickup lights node 0 rather
+    // than leaving the whole tracker dim.
+    const labels = ['Pickup', 'On the Way', 'Delivered'];
+    final active = switch (status) {
+      DeliveryStatus.readyForPickup || DeliveryStatus.pickedUp => 0,
+      DeliveryStatus.outForDelivery || DeliveryStatus.arrived => 1,
+      DeliveryStatus.delivered => 2,
+      _ => -1,
+    };
+    // Reached nodes are solid white with a navy glyph, future nodes are a
+    // translucent white wash.
+    const icons = [
+      LucideIcons.package,
+      LucideIcons.truck,
+      LucideIcons.circleCheck,
+    ];
+    final caption = Theme.of(context).textTheme.bodySmall;
+    return Row(
+      children: List.generate(labels.length, (index) {
+        final reached = index <= active;
+        return Expanded(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  if (index > 0)
+                    Expanded(
+                      child: Container(
+                        height: 2,
+                        color: Colors.white.withValues(
+                          alpha: index <= active ? 1 : .3,
+                        ),
+                      ),
+                    ),
+                  Container(
+                    width: Gap.xxxl,
+                    height: Gap.xxxl,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: reached
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: .22),
+                    ),
+                    child: Icon(
+                      icons[index],
+                      size: 16,
+                      color: reached
+                          ? CefColors.navy
+                          : Colors.white.withValues(alpha: .85),
+                    ),
+                  ),
+                  if (index < labels.length - 1)
+                    Expanded(
+                      child: Container(
+                        height: 2,
+                        color: Colors.white.withValues(
+                          alpha: index < active ? 1 : .3,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: Gap.sm),
+              Text(
+                labels[index],
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: caption?.copyWith(
+                  fontWeight: reached ? FontWeight.w700 : FontWeight.w500,
+                  color: Colors.white.withValues(alpha: reached ? 1 : .75),
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+}
+
+/// Dashed photo drop area of the product form. Tapping it is not wired to a
+/// picker yet, exactly as before.
+class _PhotoDropzone extends StatelessWidget {
+  const _PhotoDropzone();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return CustomPaint(
+      painter: _DashedRectPainter(
+        color: c.textSecondary.withValues(alpha: .45),
+      ),
+      child: Container(
+        height: 132,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: c.grouped,
+          borderRadius: BorderRadius.circular(Sizes.cardRadius),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(LucideIcons.imagePlus, size: 34, color: c.iconColor),
+            const SizedBox(height: Gap.sm),
+            Text(
+              'Add product photo',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DashedRectPainter extends CustomPainter {
+  _DashedRectPainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Offset.zero & size,
+          const Radius.circular(Sizes.cardRadius),
+        ),
+      );
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    for (final metric in path.computeMetrics()) {
+      for (double d = 0; d < metric.length; d += 9) {
+        canvas.drawPath(metric.extractPath(d, d + 5), paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedRectPainter old) => old.color != color;
+}

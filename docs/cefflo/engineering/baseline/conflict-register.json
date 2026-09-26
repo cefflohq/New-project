@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "evidenceDate": "2026-09-19",
+  "conflicts": [
+    {
+      "id": "BASE-001",
+      "severity": "resolved",
+      "type": "authority",
+      "summary": "Experience branch lacks D-37/D-38 and contains a scaffold based on the superseded 33-screen Rider master",
+      "evidence": ["2e02edc4d6e0eabdc15d4e9c028e9bce37a87ae1", "21f002c38c60d0fe5141b1c879e969407c3f4097"],
+      "resolution": "Keep D-37/D-38; exclude apps/rider_mobile from the active baseline and port only validated backend-layer ideas under a future Driver gate"
+    },
+    {
+      "id": "BASE-002",
+      "severity": "blocking",
+      "type": "design_system",
+      "summary": "Vendor Mobile used Inter while D-33 previously named Manrope",
+      "evidence": ["5ac0594532fc46a439d0db123bb10c10f0835bf2", "docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md §4"],
+      "resolution": "Founder D-40 makes Inter active app UI truth; keep bundled Inter and validated multilingual fallbacks"
+    },
+    {
+      "id": "BASE-003",
+      "severity": "deferred_to_fg_eng_03",
+      "type": "design_system",
+      "summary": "Vendor Mobile theme values drift from locked compact tokens",
+      "evidence": [
+        "Experience System: 12px gutter, 13px card padding, 11px card gap, 20px section, 60px chrome, 14px card/input radius",
+        "Experience branch theme: 20px gutter, 16px card padding, 12px card gap, 22px section, 64px chrome, 18px card/input radius"
+      ],
+      "resolution": "D-40 removes the historical values as mandatory truth. Preserve the safest current implementation and validate exact values against a Founder-approved reference at FG-ENG-03"
+    },
+    {
+      "id": "BASE-004",
+      "severity": "resolved",
+      "type": "product_hold",
+      "summary": "V-50–V-54 subscription/payment UI is implemented and navigable although canonical scope keeps it on HOLD",
+      "evidence": ["ee114a962f33827cd10864579131940f5f34612e", "17e4121f41d57bc8f707f042f4748f038facd61b", "docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md §O"],
+      "resolution": "Remove/disable active routes, navigation and implementation for V-50–V-54 in the baseline; retain HOLD markers in the canonical manifest"
+    },
+    {
+      "id": "BASE-005",
+      "severity": "resolved",
+      "type": "truth_status",
+      "summary": "Canonical docs previously said Vendor Flutter was not implemented while the Experience branch contained a substantial implementation",
+      "evidence": ["apps/vendor_mobile/**", "docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md"],
+      "resolution": "If selected, update implementation-status documentation from evidence without promoting unapproved HOLD scope"
+    },
+    {
+      "id": "BASE-006",
+      "severity": "medium",
+      "type": "superseded_artifact",
+      "summary": "Standalone Vendor Auth prototype is superseded by the real Flutter implementation",
+      "evidence": ["previews/vendor-auth-prototype/index.html", "No tracked consumers found"],
+      "resolution": "Exclude it from the resulting active tree; preserve its source commit in Git history"
+    },
+    {
+      "id": "BASE-007",
+      "severity": "medium",
+      "type": "context_hygiene",
+      "summary": "CLAUDE_UI_HANDOFF.md references external masters/images and an old UI-only polish session",
+      "evidence": ["apps/vendor_mobile/CLAUDE_UI_HANDOFF.md"],
+      "resolution": "Exclude it from normal active context; the canonical masters and Task Packs replace it"
+    },
+    {
+      "id": "BASE-008",
+      "severity": "medium",
+      "type": "legacy_runtime",
+      "summary": "vendor/index.html retains unreachable rollback page bodies",
+      "evidence": ["Dashboard", "Order Detail", "Rider Profile", "Settings rollback bodies"],
+      "resolution": "Keep temporarily; perform dependency and rollback verification before later removal"
+    },
+    {
+      "id": "BASE-009",
+      "severity": "medium",
+      "type": "evidence_gap",
+      "summary": "Founder reference images used by prior visual-polish commits are not in a canonical versioned reference registry",
+      "evidence": ["Commit messages claim visual matches; repository contains no approved source-image registry"],
+      "resolution": "Treat visual-match claims as historical evidence only until FG-ENG-03 supplies an approved reference"
+    },
+    {
+      "id": "BASE-010",
+      "severity": "low",
+      "type": "worktree_hygiene",
+      "summary": "Both worktrees contain unrelated untracked files",
+      "evidence": ["Current: .claude and FINOS audit files", "Experience: .wrangler, vendor_auth_prototype, Android-generated directories"],
+      "resolution": "Exclude all untracked files from reconciliation and preserve them untouched"
+    }
+  ]
+}

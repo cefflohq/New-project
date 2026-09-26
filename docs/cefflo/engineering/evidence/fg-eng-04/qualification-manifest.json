@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "gate": "FG-ENG-04",
+  "task_id": "ENG-TASK-V11-ACCEPTANCE-PILOT",
+  "baseline_branch": "claude/engineering-baseline-phase-01",
+  "render_source_commit": "d5b44c8974cc84b509b00fef9b99dbdba48a2d5a",
+  "render_source_tree": "7472273e17ca5462ca5741178027b02f085617cf",
+  "reference": {
+    "id": "UI-VENDOR-V11-TODAY-v1",
+    "path": "docs/cefflo/engineering/references/vendor-mobile/UI-VENDOR-V11-TODAY-v1/reference.jpg",
+    "sha256": "0940081867837b1a51c18d7917cfba4cbff493f130cce9e0de730cedfea86bcb",
+    "dimensions": "1280x960"
+  },
+  "current_render": {
+    "path": "artifacts/engineering/qualification/v11-current-render.png",
+    "sha256": "8b9b4d2cf74491201793d5a268265444dbb6944978a29c5eb292b1708d4ea5e4",
+    "dimensions": "390x844",
+    "route": "/audit/V11",
+    "environment": "DEV",
+    "modified_v11": false
+  },
+  "qualification": {
+    "deepseek_flash": {
+      "request_contained_both_images": true,
+      "http_status": 401,
+      "result": "NOT_QUALIFIED_INVALID_AUTHENTICATION",
+      "model_inference_occurred": false,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0
+    },
+    "openai_gpt_5_4_mini": {
+      "request_contained_both_images": true,
+      "http_status": 429,
+      "result": "NOT_QUALIFIED_INSUFFICIENT_QUOTA",
+      "model_inference_occurred": false,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0
+    },
+    "cli_routes": {
+      "result": "NOT_QUALIFIED",
+      "reason": "interactive subscription routes have no deterministic per-request cost accounting and are not an unattended API credential path"
+    }
+  },
+  "budget": {
+    "hard_ceiling_usd": 3,
+    "actual_qualification_spend_usd": 0,
+    "remaining_usd": 3,
+    "resets": false
+  },
+  "contains_credentials": false
+}

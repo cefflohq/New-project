@@ -1,18 +1,28 @@
-# CEFFLO --- AGENTS ROUTER
+# CEFFLO --- AGENTS ROUTER (Codex context map)
 
-Status: Canonical Primary executor: Codex Final authority: Founder
+Status: Canonical routing map for the `docs/cefflo/` context documents,
+scoped to Codex tasks. Final authority: Founder.
+
+Company AI governance and cross-department orchestration are defined by
+`docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`. Human-led development
+collaboration is defined by `docs/cefflo/agent-os/CEFFLO_AGENT_OS_CORE.md`.
+Brand and product authority is routed through `docs/cefflo/sot/00_INDEX.md`.
+This file does not create a company super-agent or assign runtime authority;
+it routes Codex to the smallest relevant canonical context set.
 
 ## A-00 Purpose
 
-This file is the mandatory router for every Cefflo engineering task. It
+This file is a router for Cefflo engineering tasks worked by Codex. It
 tells Codex which small canonical documents to load, how to scope work,
-and which actions require approval.
+and which actions require approval. See `docs/cefflo/agent-os/CODEX_OPERATING.md`
+for Codex's full operating rules.
 
 ## A-01 Source of Truth
 
 -   GitHub `main` is canonical code SOT unless Founder explicitly
     approves another baseline.
 -   Canonical docs live in `docs/cefflo/`.
+-   The current canonical Founder-approved SOT root is `docs/cefflo/sot/00_INDEX.md` (2026-09-04); it supersedes `docs/cefflo/CEFFLO_BRAND_BRAIN.md` for brand/product/architecture doctrine per the same layering this file already describes above.
 -   Do not treat old exports, prototypes, screenshots, duplicate HTML
     files, historical deployments, or local snapshots as SOT without
     verification.
@@ -45,6 +55,32 @@ acceptance criteria.
 -   PWA/cache/version/offline → `15_PWA.md`
 -   QA/release/go-live → `16_QA_RELEASE.md`
 -   Codex/Claude/VPS/Remote workflow → `17_AI_WORKFLOW.md`
+-   Full canonical knowledge index → `docs/cefflo/sot/00_INDEX.md`
+-   CEFFLO Marketing Department architecture and M1–M6 doctrine →
+    `docs/cefflo/marketing/CEFFLO_MARKETING_MASTER.md`
+-   Engineering Department architecture and E1–E5 doctrine →
+    `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md`
+-   Cross-company security architecture and AI/tool boundaries →
+    `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md`
+-   Company AI governance, cross-department routing and n8n control-plane
+    contracts → `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`
+
+For Control Layer work, load the Control Layer Master first, then only the
+relevant department master and the Cyber Security Master. The Control Layer
+governs between departments; n8n is its primary technical execution/control-
+plane engine; departments retain their internal reasoning and ownership.
+
+For Marketing Department work, load the Marketing Master and Control Layer
+Master. Load Product Truth, Brand Truth or other company truth only as scoped by
+the task. Do not load `docs/cefflo/sot/marketing/**`, Marketing reconciliation
+reports, or `automation/n8n/content-engine/**` into normal context; those paths
+are legacy migration evidence unless a historical or replacement-analysis task
+explicitly requires them.
+
+For Engineering Department bootstrap work, load both masters above. The
+Engineering Master defines the department; the Cyber Security Master constrains
+the relevant attack surface. The security master is not authority to build the
+full company Cyber Security system unless the Founder grants that scope.
 
 Load multiple domain docs only when the task genuinely crosses those
 contracts.

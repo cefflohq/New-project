@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "currency": "USD",
+  "hardBudget": 3.0,
+  "budgetScope": "ENG-TASK-V11-ACCEPTANCE-PILOT",
+  "approvedBy": "FG-ENG-04",
+  "budgetResets": false,
+  "qualificationIncluded": true,
+  "spendGate": "FG-ENG-04",
+  "maxImplementationAttempts": 3,
+  "initialAttemptCounts": true,
+  "maxTargetedRepairReturns": 2,
+  "transportRetries": {
+    "max": 2,
+    "countAsImplementationAttempt": false,
+    "mayRepeatConsequentialActionWithoutIdempotency": false
+  },
+  "limits": {
+    "maxConcurrentMutatingPilotTasks": 1,
+    "unpricedPaidRouteAllowed": false,
+    "missingUsageRecordedAsZero": false,
+    "fallbackRequiresRemainingBudget": true,
+    "reserveWorstCaseBeforeDispatch": true,
+    "unknownCostFailsClosed": true,
+    "failedRequestsRetainReservationUntilUsageReconciled": true
+  },
+  "requiredTelemetry": [
+    "task_id",
+    "role",
+    "attempt",
+    "provider_ref",
+    "model_ref",
+    "input_tokens",
+    "cached_tokens",
+    "output_tokens",
+    "duration_ms",
+    "retry_count",
+    "cost_status",
+    "cost_amount",
+    "result"
+  ]
+}

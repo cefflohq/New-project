@@ -1,5 +1,7 @@
 # CEFFLO --- STAGE 4 ROADMAP
 
+**Reconciliation note (2026-09-12 — `docs/cefflo/05_DECISIONS.md` D-29):** this document's "Phase 0–7" is a narrower, already-partially-executed framework, distinct from the new parent "PHASE 01–07 Execution Roadmap" in `docs/cefflo/sot/00_INDEX.md` §0 — same "Phase N" numbering convention, different scope (no Marketing phase here). Do not confuse the two. Mapping: this doc's Phase 1 (Baseline & SOT Lock) → new Phase 01; Phase 2 (Backend & Security) + Phase 3 (Vendor PWA) → new Phase 02/04; Phase 4 (Rider + Customer) → new Phase 05 (Delivery Experience); Phase 5 (FOUNDR) → new Phase 06 (Platform + Commercial); Phase 6–7 (Integration/RC, Production/Go-Live) → new Phase 07. This document's sprint-level detail (S4-01 etc.) remains valid execution evidence, unchanged.
+
 ## R-00 Goal
 
 Move Cefflo from current verified baseline to Stage 4 production-ready
@@ -31,6 +33,38 @@ sequence in `PHASE_1_STAGE4_GAP_REPORT.md`, beginning with S4-01. The
 Phase 2–7 sections below remain domain and release views; they must not
 override the approved sprint dependencies, security gates, test gates or
 protected-action approvals.
+
+## Canonical UI Baseline (D-62)
+
+-   Vendor --- Mobile (`apps/vendor_mobile`) + Web/Desktop (`vendor/`).
+-   Driver --- Flutter Mobile (`apps/rider_mobile`).
+-   Customer Tracking --- PWA (`customer/`).
+-   Founder --- Web/PWA (`foundr/`).
+-   Supporting route --- Invitation (`invite/`), temporary until absorbed
+    into Driver onboarding.
+-   Public Website --- NOT IMPLEMENTED.
+-   No other active CEFFLO product UI exists; the static build publishes only
+    `scripts/canonical-surfaces.mjs`.
+
+## Backend Wiring Track (D-56)
+
+-   Phase 1 --- Backend wiring audit: complete
+    (`engineering/BACKEND_WIRING_AUDIT.md`).
+-   Phase 2A --- Foundation (Auth, business/relationship context, staging
+    qualification): COMPLETE WITH EXTERNAL STAGING LIMITATION (D-60). Evidence:
+    `engineering/PHASE_2A_FOUNDATION_STATUS.md`. Carried: Driver sign-up and
+    in-app recovery screens (staging email rate limit).
+-   Phase 2B.1 --- Vendor Operational Core (Orders → Zones → Runs → Rider
+    Assignment): COMPLETE (D-61), Vendor Mobile on the same canonical
+    contracts as Vendor Web/Desktop. Evidence:
+    `engineering/PHASE_2B1_VENDOR_OPERATIONAL_CORE.md`.
+-   Phase 2B.2 --- Driver Execution: NOT STARTED; requires Founder approval.
+    Backlog: active Driver Today real-data wiring; explicit multi-business
+    Driver selection; Pending Review submission data; the carried email
+    checks; Driver run execution on the contracts listed in `07_RIDER.md`.
+-   Phase 2B backlog (Vendor): stop sequencing (`save_run_sequence`) UI;
+    remove-from-today's-plan contract; Rider approve/deactivate wiring;
+    Mobile manual location correction.
 
 ## Phase 2 --- Backend & Security Foundation
 

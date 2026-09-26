@@ -1,0 +1,39 @@
+{
+  "taxonomy_version": "1.0",
+  "_cross_reference": "Aligns to docs/cefflo/sot/marketing/09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md §3 Content Worlds (CW-01..06) and docs/cefflo/sot/marketing/01_AUDIENCE_ICP.md §5 Segment Families -- this taxonomy is the CIL-level operational detail beneath both, not a competing category system.",
+  "categories": [
+    {
+      "category": "food_and_meal_operations",
+      "content_world_ref": "CW-01",
+      "archetypes": ["meal_prep", "bakery", "catering", "cloud_kitchen", "restaurant_delivery_operation", "frozen_food", "home_food_business", "lunch_delivery", "corporate_meals"]
+    },
+    {
+      "category": "retail_and_online_commerce",
+      "content_world_ref": "CW-02",
+      "archetypes": ["online_seller", "local_ecommerce", "boutique", "gifts", "hampers", "beauty", "skincare", "cosmetics", "local_retailer"]
+    },
+    {
+      "category": "special_handling",
+      "content_world_ref": "CW-03",
+      "archetypes": ["florist", "cakes", "fragile_goods", "event_supplies", "chilled_products_where_appropriate"]
+    },
+    {
+      "category": "business_and_industrial",
+      "content_world_ref": "CW-05_CW-06",
+      "archetypes": ["factory", "distributor", "supplier", "local_wholesaler", "spare_parts", "office_supplies", "b2b_local_distribution"]
+    }
+  ],
+  "archetype_fields_schema": {
+    "business_type": "string, one of the archetypes above",
+    "business_size": "string, e.g. small_team | mid_size | larger_operation",
+    "daily_order_volume": "integer, believable for the archetype -- do not inflate for drama",
+    "delivery_frequency": "string, e.g. daily | multiple_daily | scheduled",
+    "delivery_window": "string, e.g. lunch | morning | afternoon | event_specific",
+    "service_area_type": "string, e.g. urban_multi_zone | single_zone | mixed",
+    "typical_products": "array of strings",
+    "typical_vehicle_mix": "array of vehicle_types ids (see vehicle_types.json)",
+    "delivery_team_size": "integer",
+    "operational_maturity": "string, e.g. manual | manual_to_semi_structured | semi_structured | structured"
+  },
+  "note": "Do NOT claim CEFFLO-specific capabilities merely because a business archetype appears here. The archetype describes the operational world; docs/cefflo/sot/01_PRODUCT_TRUTH.md Capability Truth States determine what CEFFLO can actually do."
+}

@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "generated": false,
+  "source": "docs/cefflo/05_DECISIONS.md",
+  "activeEngineeringDecisions": [
+    {
+      "id": "D-39",
+      "status": "ACTIVE",
+      "summary": "Engineering Bootstrap Phase 01 approved"
+    },
+    {
+      "id": "D-40",
+      "status": "ACTIVE",
+      "summary": "FG-ENG-02 curated baseline approved with Inter and token amendments"
+    },
+    {
+      "id": "D-41",
+      "status": "ACTIVE",
+      "summary": "FG-ENG-03 registers UI-VENDOR-V11-TODAY-v1 as the active canonical V11 visual reference"
+    },
+    {
+      "id": "D-42",
+      "status": "ACTIVE",
+      "summary": "REF-CONFLICT-V11-NAV-001 resolved: Menu; Product Truth prevails. FG-ENG-04 preparation only."
+    },
+    {
+      "id": "D-43",
+      "status": "ACTIVE",
+      "summary": "FG-ENG-04 approves a cumulative USD 3.00 qualification and V11 pilot envelope; pilot activation remains pending"
+    },
+    {
+      "id": "D-44",
+      "status": "ACTIVE",
+      "summary": "Canonical Engineering DEV OpenAI project is proj_mQtcb9RRJj5euIafLwn8GICr; the prior shared credential/project is prohibited for Engineering"
+    }
+  ],
+  "gates": {
+    "FG-ENG-01": "APPROVED",
+    "FG-ENG-02": "APPROVED_WITH_AMENDMENTS",
+    "FG-ENG-03": "APPROVED_REFERENCE_REGISTERED",
+    "FG-ENG-04": "APPROVED_WITH_AMENDMENTS",
+    "FG-ENG-05": "PENDING",
+    "FG-ENG-06": "PENDING",
+    "FG-ENG-07": "PENDING",
+    "FG-ENG-08": "PENDING"
+  },
+  "currentStop": "FG-ENG-07"
+}

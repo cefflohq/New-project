@@ -1,0 +1,87 @@
+{
+  "id": "20000000-0000-4000-8000-000000000001",
+  "name": "CEFFLO ENG - 01 - Context Builder",
+  "description": "Validates a pre-hashed, git-pinned task pack and removes non-scoped context before model execution.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "20000000-0000-4000-8000-000000000110",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const i=$input.first().json;\nconst required=['product_truth','engineering_master','cyber_security_master','founder_decisions','repo_truth'];\nif(!Array.isArray(i.context_manifest)||required.some(id=>!i.context_manifest.some(s=>s.source_id===id&&s.sha256&&s.git_sha_or_version))) throw new Error('CONTEXT_MANIFEST_INVALID');\nif(i.context_manifest.some(s=>['superseded','deprecated','quarantined'].includes(s.status))) throw new Error('OBSOLETE_CONTEXT_DENIED');\nreturn [{json:{...i,context_status:'SCOPED_AND_PINNED'}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "20000000-0000-4000-8000-000000000111",
+      "name": "Validate Canonical Sources"
+    },
+    {
+      "parameters": {
+        "jsCode": "const i=$input.first().json;\nif(['E3','E4'].includes(i.role)){const a=i.visual_artifacts||[]; if(a.length!==2||!a.some(x=>x.kind==='founder_reference')||!a.some(x=>x.kind==='current_render')||a.some(x=>!x.sha256)) throw new Error('TWO_IMAGE_CONTRACT_REQUIRED');}\nreturn [{json:i}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        0
+      ],
+      "id": "20000000-0000-4000-8000-000000000112",
+      "name": "Enforce Reference Contract"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Canonical Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Canonical Sources": {
+      "main": [
+        [
+          {
+            "node": "Enforce Reference Contract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloEngineering": true,
+    "environment": "DEV_STAGING",
+    "activationProhibitedUntil": "FG-ENG-07",
+    "pilotEnabled": false
+  },
+  "pinData": {},
+  "tags": []
+}

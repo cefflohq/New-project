@@ -1,0 +1,63 @@
+{
+  "id": "20000000-0000-4000-8000-000000000099",
+  "name": "CEFFLO ENG - 99 - Failure & Escalation",
+  "description": "Classifies failure without resetting spend or retries. Uncertain provider usage retains the reservation.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "20000000-0000-4000-8000-000000000190",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const i=$input.first().json;\nconst retry=Number(i.retry_count||0); const repair=Number(i.repair_attempt||0);\nconst classified=['capability','transport','implementation','visual','verification','security','budget'].includes(i.failure_class)?i.failure_class:'unknown';\nconst retryAllowed=['capability','transport'].includes(classified)&&retry<2&&i.remaining_budget_usd>0;\nconst repairAllowed=['implementation','visual'].includes(classified)&&repair<3;\nreturn [{json:{...i,failure_class:classified,retry_allowed:retryAllowed,repair_allowed:repairAllowed,budget_reset:false,reservation_disposition:i.usage_known?'settle':'uncertain',founder_escalation:!retryAllowed&&!repairAllowed}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "20000000-0000-4000-8000-000000000191",
+      "name": "Classify And Escalate"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Classify And Escalate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloEngineering": true,
+    "environment": "DEV_STAGING",
+    "activationProhibitedUntil": "FG-ENG-07",
+    "pilotEnabled": false
+  },
+  "pinData": {},
+  "tags": []
+}

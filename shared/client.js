@@ -4,15 +4,23 @@
   const sessionKey = window.CEFFLO_SESSION_KEY || 'cefflo.auth.session.v1';
   let session = JSON.parse(localStorage.getItem(sessionKey) || 'null');
 
-  async function request(path, { method = 'GET', body, token = session?.access_token } = {}) {
+  async function request(path, { method = 'GET', body, token = session?.access_token, profile } = {}) {
+    const headers = {
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${token || config.supabaseAnonKey}`,
+      'Content-Type': 'application/json'
+    };
+    // PostgREST only routes to a non-default schema when the caller names it
+    // explicitly (Accept-Profile for reads, Content-Profile for writes) --
+    // config.schema ('public') stays the default for every existing caller.
+    if (profile && profile !== config.schema) {
+      headers['Accept-Profile'] = profile;
+      headers['Content-Profile'] = profile;
+    }
     const response = await fetch(`${config.supabaseUrl}${path}`, {
       method,
       cache: 'no-store',
-      headers: {
-        apikey: config.supabaseAnonKey,
-        Authorization: `Bearer ${token || config.supabaseAnonKey}`,
-        'Content-Type': 'application/json'
-      },
+      headers,
       body: body === undefined ? undefined : JSON.stringify(body)
     });
     const text = await response.text();
@@ -38,8 +46,12 @@
     else localStorage.removeItem(sessionKey);
     return session;
   }
-  async function uploadPod(orderId, file) {
-    const path = `orders/${orderId}/${crypto.randomUUID()}.${(file.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg')}`;
+  async function uploadPod(riderId, orderId, file) {
+    // S4-07.3a: the path itself carries the explicit, independently-
+    // verified active-Rider-relationship selector -- Storage RLS has no
+    // other way to receive one. Both segments are re-checked server-side
+    // (pod_rider_upload) before the object is ever accepted.
+    const path = `${riderId}/${orderId}/${crypto.randomUUID()}.${(file.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg')}`;
     const response = await fetch(`${config.supabaseUrl}/storage/v1/object/${config.storageBucket}/${path}`, {
       method: 'POST',
       headers: { apikey: config.supabaseAnonKey, Authorization: `Bearer ${session.access_token}`, 'Content-Type': file.type, 'x-upsert': 'false' },

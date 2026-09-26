@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "engineeringEnabled": true,
+  "qualificationEnabled": true,
+  "pilotEnabled": false,
+  "outboundModelCallsEnabled": true,
+  "gitPushEnabled": false,
+  "previewPublishEnabled": false,
+  "roles": {"E1": true, "E2": true, "E3": true, "E4": true, "E5": true},
+  "providers": {"openai": false, "deepseek": true, "cli": false},
+  "reason": "Dedicated Engineering DEV OpenAI credential pending for project proj_mQtcb9RRJj5euIafLwn8GICr; qualification and FG-ENG-07 remain closed"
+}

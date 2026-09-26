@@ -1,0 +1,1166 @@
+import 'dart:async';
+import 'dart:math';
+
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'models.dart';
+
+/// Thrown for any backend failure the UI is expected to surface truthfully.
+class RepositoryError implements Exception {
+  RepositoryError(this.message, {this.isMissingContract = false, this.code});
+  final String message;
+
+  /// True when the canonical RPC does not exist on the connected backend.
+  /// The UI must show a blocked state instead of pretending the action worked.
+  final bool isMissingContract;
+
+  /// The backend's own error code where it supplies one (GoTrue's
+  /// `error_code`, e.g. invalid_credentials / over_email_send_rate_limit /
+  /// email_not_confirmed). The locked auth states branch on this rather
+  /// than on English message text, so a backend copy change can't silently
+  /// reroute the UI.
+  final String? code;
+
+  @override
+  String toString() => message;
+}
+
+/// All vendor reads/writes go through the canonical backend. Nothing in this
+/// class computes eligibility, planning or capacity locally — the server owns
+/// those decisions.
+class VendorRepository {
+  VendorRepository(SupabaseClient db) : _db = db, _demo = false;
+  VendorRepository.demo() : _db = null, _demo = true;
+
+  final SupabaseClient? _db;
+  final bool _demo;
+
+  /// Demo-session state the demo actions may change (rename / delete a
+  /// zone, take a delivery off today's plan). Per repository instance, so
+  /// one session never leaks into another.
+  late final List<Zone> _demoZones = List.of(_DemoData.zones);
+  late PlanProposal _demoPlan = _DemoData.plan;
+
+  bool get isDemo => _demo;
+  User? get currentUser => _db?.auth.currentUser;
+  Stream<AuthState> get authChanges =>
+      _db?.auth.onAuthStateChange ?? const Stream<AuthState>.empty();
+
+  Future<void> sendEmailOtp(String email) =>
+      _run(() => _db!.auth.signInWithOtp(email: email.trim()));
+
+  Future<void> verifyEmailOtp(String email, String token) => _run(
+    () => _db!.auth.verifyOTP(
+      email: email.trim(),
+      token: token.trim(),
+      type: OtpType.email,
+    ),
+  );
+
+  /// Email + password sign-in, as locked in the Vendor Auth UI batch
+  /// (2026-09-11). Canonical Supabase GoTrue password grant -- the same
+  /// grant the live Rider PWA already uses, so no new backend capability
+  /// is introduced by this screen.
+  Future<void> signInWithPassword({
+    required String email,
+    required String password,
+  }) => _run(
+    () => _db!.auth.signInWithPassword(email: email.trim(), password: password),
+  );
+
+  /// Account creation for the locked Create Account screen. Whether the
+  /// returned session is null (email confirmation required) or non-null
+  /// (confirmation disabled on this project) is backend truth the UI reads
+  /// rather than assumes -- it drives Verify-your-email vs straight-in.
+  Future<bool> signUpWithPassword({
+    required String email,
+    required String password,
+  }) async {
+    final res = await _run(
+      () => _db!.auth.signUp(email: email.trim(), password: password),
+    );
+    return res.session == null; // true => verification step is required
+  }
+
+  /// Locked Forgot Password screen. Supabase deliberately does not reveal
+  /// whether the address exists; the locked "Check your email" copy matches
+  /// that ("If an account exists for this email...").
+  Future<void> sendPasswordReset(String email) =>
+      _run(() => _db!.auth.resetPasswordForEmail(email.trim()));
+
+  /// Locked Verify-your-email / Verification-link-expired screens.
+  Future<void> resendSignUpVerification(String email) =>
+      _run(() => _db!.auth.resend(type: OtpType.signup, email: email.trim()));
+
+  /// Locked Set-a-new-password screen. Requires an active recovery session,
+  /// which only exists after the emailed link has been opened -- this method
+  /// never invents one.
+  Future<void> updatePassword(String newPassword) =>
+      _run(() => _db!.auth.updateUser(UserAttributes(password: newPassword)));
+
+  /// Locked Continue-with-Apple / Continue-with-Google buttons. No OAuth
+  /// provider is configured for this environment, so this call surfaces the
+  /// provider's real error rather than a fabricated success -- see the
+  /// batch report's disclosed gap.
+  Future<void> signInWithProvider(OAuthProvider provider) =>
+      _run(() => _db!.auth.signInWithOAuth(provider));
+
+  Future<void> signOut() {
+    if (_demo) return Future.value();
+    return _run(() => _db!.auth.signOut());
+  }
+
+  Future<List<Business>> myBusinesses() async {
+    if (_demo) return _DemoData.businesses;
+    final rows = await _run(() => _db!.rpc('get_my_businesses'));
+    return _rows(rows).map(Business.fromRow).toList();
+  }
+
+  // ---------------------------------------------------------------- orders
+
+  Future<List<VendorOrder>> orders(String businessId) async {
+    if (_demo) return _DemoData.orders;
+    final rows = await _run(
+      () => _db!
+          .from('orders')
+          .select()
+          .eq('business_id', businessId)
+          .order('created_at', ascending: false),
+    );
+    return _rows(rows).map(VendorOrder.fromRow).toList();
+  }
+
+  Future<VendorOrder> order(String orderId) async {
+    if (_demo) {
+      return _DemoData.orders.firstWhere(
+        (o) => o.id == orderId || o.reference == orderId,
+        orElse: () => _DemoData.orders.first,
+      );
+    }
+    final row = await _run(
+      () => _db!.from('orders').select().eq('id', orderId).single(),
+    );
+    return VendorOrder.fromRow(Map<String, dynamic>.from(row as Map));
+  }
+
+  Future<String> createOrder({
+    required String businessId,
+    required String customerName,
+    required String customerPhone,
+    required String deliveryAddress,
+    String notes = '',
+    List<OrderItem> items = const [],
+    String? zoneId,
+  }) async {
+    final result = await _run(
+      () => _db!.rpc(
+        'create_delivery',
+        params: {
+          'p_business_id': businessId,
+          'p_customer_name': customerName,
+          'p_customer_phone': customerPhone,
+          'p_delivery_address': deliveryAddress,
+          'p_notes': notes,
+          'p_items': items.map((i) => i.toJson()).toList(),
+          'p_zone_id': ?zoneId,
+        },
+      ),
+    );
+    final map = result is Map ? Map<String, dynamic>.from(result) : const {};
+    // create_delivery returns {order: {...}, tracking_token}, the shape
+    // Vendor Web reads as `created.order.id`.
+    final order = map['order'];
+    final id =
+        ((order is Map ? order['id'] : null) ?? map['order_id'] ?? map['id'])
+            ?.toString();
+    if (id == null) {
+      throw RepositoryError('Order was not created: backend returned no id.');
+    }
+    // Same fire-and-forget step Vendor Web takes after creation: ask the
+    // canonical geocode-order function to resolve the location planning
+    // needs. The order exists either way; failure leaves it 'unresolved'.
+    unawaited(
+      _db!.functions
+          .invoke('geocode-order', body: {'order_id': id})
+          .then((_) {}, onError: (_) {}),
+    );
+    return id;
+  }
+
+  Future<VendorOrder> updateOrder({
+    required String orderId,
+    String? customerName,
+    String? customerPhone,
+    String? deliveryAddress,
+    String? notes,
+    List<OrderItem>? items,
+    String? zoneId,
+    bool clearZone = false,
+  }) async {
+    final row = await _run(
+      () => _db!.rpc(
+        'update_order_details',
+        params: {
+          'p_order_id': orderId,
+          'p_customer_name': ?customerName,
+          'p_customer_phone': ?customerPhone,
+          'p_delivery_address': ?deliveryAddress,
+          'p_notes': ?notes,
+          if (items != null) 'p_items': items.map((i) => i.toJson()).toList(),
+          'p_zone_id': ?zoneId,
+          if (clearZone) 'p_clear_zone': true,
+        },
+      ),
+    );
+    return VendorOrder.fromRow(_single(row));
+  }
+
+  Future<VendorOrder> approveOrder(String orderId) async {
+    final row = await _run(
+      () => _db!.rpc('approve_order', params: {'p_order_id': orderId}),
+    );
+    return VendorOrder.fromRow(_single(row));
+  }
+
+  Future<VendorOrder> reportIssue({
+    required String orderId,
+    required String reasonType,
+    String? note,
+  }) async {
+    final row = await _run(
+      () => _db!.rpc(
+        'vendor_report_delivery_issue',
+        params: {
+          'p_order_id': orderId,
+          'p_reason_type': reasonType,
+          if (note != null && note.isNotEmpty) 'p_note': note,
+        },
+      ),
+    );
+    return VendorOrder.fromRow(_single(row));
+  }
+
+  // ----------------------------------------------------------------- zones
+
+  Future<List<Zone>> zones(String businessId) async {
+    if (_demo) return List.of(_demoZones);
+    final rows = await _run(
+      () => _db!
+          .from('zones')
+          .select()
+          .eq('business_id', businessId)
+          .order('name'),
+    );
+    return _rows(rows).map(Zone.fromRow).toList();
+  }
+
+  Future<Zone> createZone(String businessId, String name) async {
+    final row = await _run(
+      () => _db!.rpc(
+        'create_zone',
+        params: {'p_business_id': businessId, 'p_name': name},
+      ),
+    );
+    return Zone.fromRow(_single(row));
+  }
+
+  Future<Zone> setZoneStatus(String zoneId, String status) async {
+    final row = await _run(
+      () => _db!.rpc(
+        'set_zone_status',
+        params: {'p_zone_id': zoneId, 'p_status': status},
+      ),
+    );
+    return Zone.fromRow(_single(row));
+  }
+
+  /// Renames a zone (Zone options → Edit zone name).
+  Future<Zone> renameZone(String zoneId, String name) async {
+    if (_demo) {
+      final i = _demoZones.indexWhere((z) => z.id == zoneId);
+      final z = _demoZones[i];
+      return _demoZones[i] = Zone(
+        id: z.id,
+        name: name,
+        status: z.status,
+        locality: z.locality,
+      );
+    }
+    final row = await _run(
+      () => _db!.rpc(
+        'rename_zone',
+        params: {'p_zone_id': zoneId, 'p_name': name},
+      ),
+    );
+    return Zone.fromRow(_single(row));
+  }
+
+  /// Takes a zone out of the business's delivery setup (Zone options →
+  /// Delete zone). Zones are never hard-deleted: the canonical contract
+  /// archives them as inactive, keeping order history intact.
+  Future<Zone> deactivateZone(String zoneId) async {
+    if (_demo) {
+      final i = _demoZones.indexWhere((z) => z.id == zoneId);
+      final z = _demoZones[i];
+      return _demoZones[i] = Zone(
+        id: z.id,
+        name: z.name,
+        status: 'inactive',
+        locality: z.locality,
+      );
+    }
+    return setZoneStatus(zoneId, 'inactive');
+  }
+
+  /// Takes one delivery off today's plan (swipe to delete on Zone detail).
+  /// There is no server contract for this yet, so outside the demo it
+  /// fails loudly instead of pretending to succeed.
+  Future<void> removeFromTodaysDeliveries(String orderId) async {
+    if (!_demo) {
+      throw RepositoryError(
+        'Removing a delivery from today\'s plan is not available yet.',
+        isMissingContract: true,
+      );
+    }
+    _demoPlan = PlanProposal(
+      groups: [
+        for (final g in _demoPlan.groups)
+          PlanGroup(
+            groupKey: g.groupKey,
+            zoneId: g.zoneId,
+            candidateRiderId: g.candidateRiderId,
+            candidateRiderName: g.candidateRiderName,
+            candidateRiderVehicleType: g.candidateRiderVehicleType,
+            requiredVehicle: g.requiredVehicle,
+            totalDistanceKm: g.totalDistanceKm,
+            stops: [
+              for (final stop in g.stops)
+                if (stop.orderId != orderId) stop,
+            ],
+          ),
+      ],
+      unplannable: _demoPlan.unplannable,
+    );
+  }
+
+  // ---------------------------------------------------------------- riders
+
+  Future<List<RiderRow>> riders(String businessId) async {
+    if (_demo) return _DemoData.riders;
+    final rows = await _run(
+      () => _db!
+          .from('riders')
+          .select()
+          .eq('business_id', businessId)
+          .order('created_at'),
+    );
+    return _rows(rows).map(RiderRow.fromRow).toList();
+  }
+
+  Future<Map<String, dynamic>> createRiderInvitation({
+    required String businessId,
+    required String email,
+    required String name,
+    required String phone,
+  }) async {
+    final row = await _run(
+      () => _db!.rpc(
+        'create_rider_invitation',
+        params: {
+          'p_business_id': businessId,
+          'p_invited_email': email,
+          'p_invited_name': name,
+          'p_invited_phone': phone,
+        },
+      ),
+    );
+    return _single(row);
+  }
+
+  // ------------------------------------------------------------------ team
+
+  Future<List<TeamMember>> team(String businessId) async {
+    if (_demo) return _DemoData.team;
+    final rows = await _run(
+      () =>
+          _db!.from('business_members').select().eq('business_id', businessId),
+    );
+    return _rows(rows).map(TeamMember.fromRow).toList();
+  }
+
+  Future<Map<String, dynamic>> createTeamInvitation({
+    required String businessId,
+    required String email,
+    required String role,
+  }) async {
+    final row = await _run(
+      () => _db!.rpc(
+        'create_team_invitation',
+        params: {
+          'p_business_id': businessId,
+          'p_role': role,
+          'p_invited_email': email,
+        },
+      ),
+    );
+    return _single(row);
+  }
+
+  // -------------------------------------------------------------- products
+
+  Future<List<Product>> products(String businessId) async {
+    if (_demo) return _DemoData.products;
+    final rows = await _run(
+      () => _db!
+          .from('products')
+          .select()
+          .eq('business_id', businessId)
+          .order('name'),
+    );
+    return _rows(rows).map(Product.fromRow).toList();
+  }
+
+  Future<Product> createProduct({
+    required String businessId,
+    required String name,
+    required String description,
+    required num displayPrice,
+    String? categoryId,
+    String status = 'active',
+  }) async {
+    final row = await _run(
+      () => _db!.rpc(
+        'create_product',
+        params: {
+          'p_business_id': businessId,
+          'p_category_id': categoryId,
+          'p_name': name,
+          'p_description': description,
+          'p_display_price': displayPrice,
+          'p_status': status,
+        },
+      ),
+    );
+    return Product.fromRow(_single(row));
+  }
+
+  Future<Product> updateProduct({
+    required String productId,
+    required String name,
+    required String description,
+    required num displayPrice,
+    required String status,
+    String? categoryId,
+  }) async {
+    final row = await _run(
+      () => _db!.rpc(
+        'update_product',
+        params: {
+          'p_product_id': productId,
+          'p_category_id': categoryId,
+          'p_name': name,
+          'p_description': description,
+          'p_display_price': displayPrice,
+          'p_status': status,
+        },
+      ),
+    );
+    return Product.fromRow(_single(row));
+  }
+
+  // ------------------------------------------- coverage / planning / dispatch
+  //
+  // Every decision below is the server's. This client never computes
+  // coverage, grouping, sequencing, capacity or ETA locally; it renders what
+  // the canonical RPCs return.
+
+  /// Service-area configuration (origin + radius) for one business.
+  Future<Map<String, dynamic>> setServiceArea({
+    required String businessId,
+    required double latitude,
+    required double longitude,
+    required num radiusKm,
+  }) async {
+    if (_demo) {
+      return {
+        'service_origin_latitude': latitude,
+        'service_origin_longitude': longitude,
+        'service_coverage_radius_km': radiusKm,
+      };
+    }
+    final row = await _run(
+      () => _db!.rpc(
+        'set_business_service_area',
+        params: {
+          'p_business_id': businessId,
+          'p_origin_latitude': latitude,
+          'p_origin_longitude': longitude,
+          'p_radius_km': radiusKm,
+        },
+      ),
+    );
+    return _single(row);
+  }
+
+  /// Server verdict for one order: unconfigured | pending_location |
+  /// covered | out_of_coverage.
+  Future<String> orderCoverageStatus(String orderId) async {
+    final value = await _run(
+      () => _db!.rpc('order_coverage_status', params: {'p_order_id': orderId}),
+    );
+    return value?.toString() ?? 'unknown';
+  }
+
+  /// Returns null when the business has no service area configured — that is
+  /// "not decidable", not "outside coverage".
+  Future<bool?> isWithinCoverage({
+    required String businessId,
+    required double latitude,
+    required double longitude,
+  }) async {
+    final value = await _run(
+      () => _db!.rpc(
+        'is_within_coverage',
+        params: {
+          'p_business_id': businessId,
+          'p_latitude': latitude,
+          'p_longitude': longitude,
+        },
+      ),
+    );
+    return value as bool?;
+  }
+
+  /// The shared definition of "what is plannable right now", used by both the
+  /// planning screen and the optimizer, so the two can never disagree.
+  Future<List<PlannableOrder>> plannableOrders(String businessId) async {
+    if (_demo) return _DemoData.plannableOrders;
+    final rows = await _run(
+      () => _db!.rpc(
+        'list_plannable_orders',
+        params: {'p_business_id': businessId},
+      ),
+    );
+    return _rows(rows).map(PlannableOrder.fromRow).toList();
+  }
+
+  /// Server-computed grouping, rider candidate and stop sequence.
+  Future<PlanProposal> proposePlan(String businessId) async {
+    if (_demo) return _demoPlan;
+    final row = await _run(
+      () => _db!.rpc(
+        'propose_delivery_plan',
+        params: {'p_business_id': businessId},
+      ),
+    );
+    return PlanProposal.fromJson(_single(row));
+  }
+
+  Future<Map<String, dynamic>> createDeliverySession({
+    required String businessId,
+    String? name,
+  }) async {
+    if (_demo) return {'id': 'session-demo'};
+    final row = await _run(
+      () => _db!.rpc(
+        'create_delivery_session',
+        params: {'p_business_id': businessId, 'p_name': ?name},
+      ),
+    );
+    return _single(row);
+  }
+
+  /// Server-side pre-check so a vehicle/capacity conflict is shown before
+  /// dispatch is attempted, rather than surfacing as a raised exception.
+  Future<CapacityCheck> checkRunCapacity({
+    required String riderId,
+    required List<String> orderIds,
+  }) async {
+    if (_demo) return const CapacityCheck(compatible: true, violations: []);
+    final row = await _run(
+      () => _db!.rpc(
+        'check_run_vehicle_capacity',
+        params: {'p_rider_id': riderId, 'p_order_ids': orderIds},
+      ),
+    );
+    return CapacityCheck.fromJson(_single(row));
+  }
+
+  // ------------------------------------------------------------------ runs
+
+  static const _runSelect =
+      'id,rider_id,delivery_session_id,status,assigned_at,'
+      'delivery_sessions(id,name,status),'
+      'delivery_stops(id,order_id,status,sequence)';
+
+  /// Persisted runs for the business, oldest first -- the same
+  /// `rider_assignments` + `delivery_stops` rows Vendor Web hydrates.
+  Future<List<VendorRun>> runs(String businessId) async {
+    if (_demo) return _DemoData.runs;
+    final rows = await _run(
+      () => _db!
+          .from('rider_assignments')
+          .select(_runSelect)
+          .eq('business_id', businessId)
+          .order('assigned_at'),
+    );
+    return _rows(rows).map(VendorRun.fromRow).toList();
+  }
+
+  Future<VendorRun> run(String runId) async {
+    if (_demo) {
+      return _DemoData.runs.firstWhere(
+        (r) => r.id == runId,
+        orElse: () => throw RepositoryError('Run not found.'),
+      );
+    }
+    final row = await _run(
+      () => _db!
+          .from('rider_assignments')
+          .select(_runSelect)
+          .eq('id', runId)
+          .maybeSingle(),
+    );
+    if (row == null) throw RepositoryError('Run not found.');
+    return VendorRun.fromRow(Map<String, dynamic>.from(row));
+  }
+
+  /// Canonical run-based dispatch (D-61): joins the business's open delivery
+  /// session -- the same "first planned/active session" rule Vendor Web
+  /// applies -- or opens one, then commits the run through
+  /// `build_rider_run`. Reuse the same [idempotencyKey] when retrying.
+  Future<Map<String, dynamic>> dispatchRun({
+    required String businessId,
+    required String sessionName,
+    required String riderId,
+    required List<String> orderIds,
+    required String idempotencyKey,
+  }) async {
+    final open = await _run(
+      () => _db!
+          .from('delivery_sessions')
+          .select('id')
+          .eq('business_id', businessId)
+          .inFilter('status', ['planned', 'active'])
+          .order('created_at', ascending: false)
+          .limit(1),
+    );
+    final openRows = _rows(open);
+    final sessionId = openRows.isNotEmpty
+        ? openRows.first['id'] as String
+        : (await createDeliverySession(
+                businessId: businessId,
+                name: sessionName,
+              ))['id']
+              as String;
+    return buildRiderRun(
+      sessionId: sessionId,
+      riderId: riderId,
+      orderIds: orderIds,
+      idempotencyKey: idempotencyKey,
+    );
+  }
+
+  /// A fresh RFC 4122 v4 id for one dispatch attempt.
+  static String newIdempotencyKey() {
+    final rnd = Random.secure();
+    final b = List<int>.generate(16, (_) => rnd.nextInt(256));
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    final h = b.map((x) => x.toRadixString(16).padLeft(2, '0')).join();
+    return '${h.substring(0, 8)}-${h.substring(8, 12)}-${h.substring(12, 16)}-'
+        '${h.substring(16, 20)}-${h.substring(20)}';
+  }
+
+  /// Dispatch. [idempotencyKey] must be stable for a retry of the same run.
+  Future<Map<String, dynamic>> buildRiderRun({
+    required String sessionId,
+    required String riderId,
+    required List<String> orderIds,
+    required String idempotencyKey,
+    bool overrideCapacity = false,
+  }) async {
+    final row = await _run(
+      () => _db!.rpc(
+        'build_rider_run',
+        params: {
+          'p_delivery_session_id': sessionId,
+          'p_rider_id': riderId,
+          'p_order_ids': orderIds,
+          'p_idempotency_key': idempotencyKey,
+          'p_override_capacity': overrideCapacity,
+        },
+      ),
+    );
+    return _single(row);
+  }
+
+  // ------------------------------------------------------------- business
+
+  Future<Map<String, dynamic>> business(String businessId) async {
+    if (_demo) {
+      return const {
+        'id': 'business-demo',
+        'name': 'Kopi Kita',
+        'phone': '+60 12 345 6789',
+        'email': 'hello@kopikita.my',
+        'address': 'No. 12, Jalan Damai 3, Kuala Lumpur',
+        'operating_area': 'Bangsar, Mont Kiara, TTDI',
+      };
+    }
+    final row = await _run(
+      () => _db!.from('businesses').select().eq('id', businessId).single(),
+    );
+    return Map<String, dynamic>.from(row as Map);
+  }
+
+  Future<Map<String, dynamic>> updateBusinessProfile({
+    required String businessId,
+    String? name,
+    String? phone,
+    String? email,
+    String? address,
+    String? operatingArea,
+  }) async {
+    final row = await _run(
+      () => _db!.rpc(
+        'update_business_profile',
+        params: {
+          'p_business_id': businessId,
+          'p_name': ?name,
+          'p_phone': ?phone,
+          'p_email': ?email,
+          'p_address': ?address,
+          'p_operating_area': ?operatingArea,
+        },
+      ),
+    );
+    return _single(row);
+  }
+
+  /// PostgREST reports a missing routine as PGRST202 (not in the schema cache)
+  /// and Postgres reports it as 42883 (undefined_function).
+  static bool _isMissingFunction(PostgrestException e) =>
+      e.code == '42883' ||
+      e.code == 'PGRST202' ||
+      e.message.contains('does not exist') ||
+      e.message.contains('Could not find the function');
+
+  Future<T> _run<T>(Future<T> Function() action) async {
+    if (_db == null) {
+      throw RepositoryError('UI prototype mode has no backend connection.');
+    }
+    try {
+      return await action();
+    } on PostgrestException catch (e) {
+      final missing = _isMissingFunction(e);
+      throw RepositoryError(
+        missing
+            ? 'This action needs a backend contract that is not deployed here (${e.message}).'
+            : e.message,
+        isMissingContract: missing,
+      );
+    } on AuthException catch (e) {
+      throw RepositoryError(e.message, code: e.code);
+    } catch (e) {
+      throw RepositoryError('$e');
+    }
+  }
+
+  List<Map<String, dynamic>> _rows(dynamic raw) => raw is List
+      ? raw.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList()
+      : const [];
+
+  Map<String, dynamic> _single(dynamic raw) {
+    if (raw is Map) return Map<String, dynamic>.from(raw);
+    if (raw is List && raw.isNotEmpty && raw.first is Map) {
+      return Map<String, dynamic>.from(raw.first as Map);
+    }
+    throw RepositoryError('Unexpected backend response shape.');
+  }
+}
+
+/// UI-only prototype fixtures.
+///
+/// These exist solely to shape the Founder review experience before backend
+/// integration is resumed. Production/staging paths use [VendorRepository]'s
+/// real Supabase client and never read these fixtures unless
+/// `CEFFLO_UI_PROTOTYPE=true` is explicitly supplied at runtime.
+class _DemoData {
+  static final now = DateTime(2026, 9, 13, 9, 41);
+
+  static const businesses = [
+    Business(
+      id: 'business-demo',
+      name: 'Kopi Kita',
+      role: 'owner',
+      timezone: 'Asia/Kuala_Lumpur',
+      currency: 'MYR',
+    ),
+  ];
+
+  static final orders = [
+    VendorOrder(
+      id: 'ord-1001',
+      publicRef: 'ORD-1001',
+      status: DeliveryStatus.readyForPickup,
+      customerName: 'Nadia Rahman',
+      customerPhone: '+60 12 345 6789',
+      deliveryAddress: 'Jalan Telawi 3, Bangsar',
+      zoneId: 'zone-bangsar',
+      createdAt: now.subtract(const Duration(minutes: 18)),
+      items: const [
+        OrderItem(name: 'Chocolate Cake', quantity: 1, unitPrice: 12),
+        OrderItem(name: 'Matcha Latte', quantity: 1, unitPrice: 9.5),
+        OrderItem(name: 'Croissant', quantity: 1, unitPrice: 7),
+      ],
+      notes: 'Leave at reception. Call upon arrival.',
+    ),
+    VendorOrder(
+      id: 'ord-1002',
+      publicRef: 'ORD-1002',
+      status: DeliveryStatus.outForDelivery,
+      customerName: 'Firdaus Cafe',
+      customerPhone: '+60 19 222 8811',
+      deliveryAddress: 'Mont Kiara',
+      zoneId: 'zone-mont-kiara',
+      assignedRiderId: 'rider-ahmad',
+      approvedAt: now.subtract(const Duration(minutes: 38)),
+      createdAt: now.subtract(const Duration(minutes: 42)),
+      items: const [OrderItem(name: 'Lunch set', quantity: 5)],
+    ),
+    VendorOrder(
+      id: 'ord-1003',
+      publicRef: 'ORD-1003',
+      status: DeliveryStatus.issue,
+      customerName: 'Amy Lee',
+      customerPhone: '+60 17 880 1190',
+      deliveryAddress: 'Damansara',
+      zoneId: 'zone-damansara',
+      createdAt: now.subtract(const Duration(minutes: 55)),
+      notes: 'Missing phone number.',
+    ),
+    VendorOrder(
+      id: 'ord-1004',
+      publicRef: 'ORD-1004',
+      status: DeliveryStatus.delivered,
+      customerName: 'Restoran Ali',
+      customerPhone: '+60 11 2222 3333',
+      deliveryAddress: 'Petaling Jaya',
+      zoneId: 'zone-pj',
+      assignedRiderId: 'rider-siti',
+      createdAt: now.subtract(const Duration(hours: 2)),
+      completedAt: now.subtract(const Duration(minutes: 24)),
+      items: const [OrderItem(name: 'Dessert box', quantity: 4)],
+    ),
+    VendorOrder(
+      id: 'ord-1005',
+      publicRef: 'ORD-1005',
+      status: DeliveryStatus.delivered,
+      customerName: 'Siti Khalijah',
+      customerPhone: '+60 13 111 9090',
+      deliveryAddress: 'TTDI',
+      zoneId: 'zone-ttdi',
+      assignedRiderId: 'rider-jason',
+      createdAt: now.subtract(const Duration(hours: 3)),
+      completedAt: now.subtract(const Duration(hours: 1)),
+      items: const [OrderItem(name: 'Coffee pack', quantity: 1)],
+    ),
+    // Two more active issues, so the demo matches its "3 Issue" KPI.
+    VendorOrder(
+      id: 'ord-1010',
+      publicRef: 'ORD-1010',
+      status: DeliveryStatus.issue,
+      customerName: 'Kedai Bunga Mawar',
+      customerPhone: '+60 12 908 4471',
+      deliveryAddress: 'Jalan SS2/24, Petaling Jaya',
+      zoneId: 'zone-pj',
+      assignedRiderId: 'rider-siti',
+      createdAt: now.subtract(const Duration(minutes: 70)),
+      items: const [
+        OrderItem(name: 'Iced Americano', quantity: 4, unitPrice: 9),
+      ],
+      notes: 'Rider could not reach the customer.',
+    ),
+    VendorOrder(
+      id: 'ord-1011',
+      publicRef: 'ORD-1011',
+      status: DeliveryStatus.issue,
+      customerName: 'Studio Lima',
+      customerPhone: '+60 17 443 2280',
+      deliveryAddress: 'Jalan Kiara 3, Mont Kiara',
+      zoneId: 'zone-mont-kiara',
+      createdAt: now.subtract(const Duration(minutes: 95)),
+      items: const [OrderItem(name: 'Croissant', quantity: 6, unitPrice: 7)],
+      notes: 'Address not found at the building.',
+    ),
+    // A busier Bangsar zone and a large catering order, so zone detail and
+    // order detail are exercised with multiple orders and many items.
+    VendorOrder(
+      id: 'ord-1006',
+      publicRef: 'ORD-1006',
+      status: DeliveryStatus.outForDelivery,
+      customerName: 'Firdaus Cafe',
+      customerPhone: '+60 19 222 8811',
+      deliveryAddress: 'Jalan Maarof, Bangsar',
+      zoneId: 'zone-bangsar',
+      assignedRiderId: 'rider-jason',
+      createdAt: now.subtract(const Duration(minutes: 35)),
+      items: const [OrderItem(name: 'Lunch set', quantity: 3, unitPrice: 18)],
+    ),
+    VendorOrder(
+      id: 'ord-1007',
+      publicRef: 'ORD-1007',
+      status: DeliveryStatus.delivered,
+      customerName: 'The Daily Grind',
+      customerPhone: '+60 12 771 4410',
+      deliveryAddress: 'Lorong Kurau, Bangsar',
+      zoneId: 'zone-bangsar',
+      createdAt: now.subtract(const Duration(minutes: 12)),
+      completedAt: now.subtract(const Duration(minutes: 4)),
+      items: const [
+        OrderItem(name: 'Coffee beans 1kg', quantity: 2, unitPrice: 68),
+      ],
+    ),
+    VendorOrder(
+      id: 'ord-1008',
+      publicRef: 'ORD-1008',
+      status: DeliveryStatus.readyForPickup,
+      customerName: 'Brew & Bites',
+      customerPhone: '+60 16 330 2291',
+      deliveryAddress: 'Jalan Bangkung, Bangsar',
+      zoneId: 'zone-bangsar',
+      createdAt: now.subtract(const Duration(minutes: 22)),
+      items: const [
+        OrderItem(name: 'Iced Americano', quantity: 6, unitPrice: 9),
+        OrderItem(name: 'Chocolate Cake', quantity: 6, unitPrice: 12),
+        OrderItem(name: 'Matcha Latte', quantity: 4, unitPrice: 9.5),
+        OrderItem(name: 'Croissant', quantity: 8, unitPrice: 7),
+        OrderItem(name: 'Kaya Toast', quantity: 6, unitPrice: 6.5),
+        OrderItem(name: 'Nasi Lemak', quantity: 10, unitPrice: 12),
+        OrderItem(name: 'Teh Tarik', quantity: 10, unitPrice: 4.5),
+        OrderItem(name: 'Cheesecake', quantity: 2, unitPrice: 14),
+        OrderItem(name: 'Mineral Water', quantity: 12, unitPrice: 2),
+      ],
+      notes: 'Office catering. Deliver to level 8 pantry.',
+    ),
+    VendorOrder(
+      id: 'ord-1009',
+      publicRef: 'ORD-1009',
+      status: DeliveryStatus.delivered,
+      customerName: 'Hana Florist',
+      customerPhone: '+60 13 902 5510',
+      deliveryAddress: 'Jalan Telawi 2, Bangsar',
+      zoneId: 'zone-bangsar',
+      assignedRiderId: 'rider-ahmad',
+      createdAt: now.subtract(const Duration(hours: 2)),
+      completedAt: now.subtract(const Duration(minutes: 50)),
+      items: const [OrderItem(name: 'Coffee pack', quantity: 2, unitPrice: 32)],
+    ),
+  ];
+
+  static const zones = <Zone>[
+    Zone(
+      id: 'zone-bangsar',
+      name: 'Bangsar',
+      status: 'active',
+      locality: 'Bangsar, Kuala Lumpur',
+    ),
+    Zone(
+      id: 'zone-mont-kiara',
+      name: 'Mont Kiara',
+      status: 'active',
+      locality: 'Mont Kiara, Kuala Lumpur',
+    ),
+    Zone(
+      id: 'zone-ttdi',
+      name: 'TTDI',
+      status: 'active',
+      locality: 'Taman Tun Dr Ismail, Kuala Lumpur',
+    ),
+    Zone(
+      id: 'zone-damansara',
+      name: 'Damansara',
+      status: 'active',
+      locality: 'Damansara, Selangor',
+    ),
+    Zone(
+      id: 'zone-pj',
+      name: 'Petaling Jaya',
+      status: 'active',
+      locality: 'Petaling Jaya, Selangor',
+    ),
+    Zone(
+      id: 'zone-klang',
+      name: 'Klang',
+      status: 'inactive',
+      locality: 'Klang, Selangor',
+    ),
+  ];
+
+  static final riders = [
+    RiderRow(
+      id: 'rider-ahmad',
+      name: 'Ahmad Razi',
+      status: 'active',
+      phone: '+60 12 345 6789',
+      vehicleType: 'motorcycle',
+      plate: 'VFY 7281',
+      maxActiveOrders: 8,
+      totalOrders: 86,
+      rating: 4.8,
+      joinedAt: DateTime(2024, 1, 12),
+    ),
+    RiderRow(
+      id: 'rider-siti',
+      name: 'Siti Aminah',
+      status: 'active',
+      phone: '+60 16 882 1042',
+      vehicleType: 'car',
+      plate: 'BMD 4120',
+      maxActiveOrders: 12,
+      totalOrders: 142,
+      rating: 4.9,
+      joinedAt: DateTime(2023, 8, 3),
+    ),
+    RiderRow(
+      id: 'rider-jason',
+      name: 'Jason Lim',
+      status: 'active',
+      phone: '+60 18 230 3302',
+      vehicleType: 'motorcycle',
+      plate: 'VDT 3302',
+      maxActiveOrders: 8,
+      totalOrders: 64,
+      rating: 4.7,
+      joinedAt: DateTime(2024, 3, 21),
+    ),
+    RiderRow(
+      id: 'rider-daniel',
+      name: 'Daniel Tan',
+      status: 'inactive',
+      phone: '+60 14 888 6683',
+      vehicleType: 'van',
+      plate: 'BPL 6683',
+      maxActiveOrders: 20,
+      totalOrders: 23,
+      rating: 4.5,
+      joinedAt: DateTime(2024, 6, 2),
+    ),
+  ];
+
+  static const team = [
+    TeamMember(
+      userId: 'team-owner',
+      role: 'Owner',
+      displayName: 'Yusuf Sazali',
+      phone: '+60 12 345 6789',
+      email: 'yusuf@kopikita.my',
+    ),
+    TeamMember(
+      userId: 'team-ops',
+      role: 'Operator',
+      displayName: 'Nur Iman',
+      phone: '+60 17 555 0182',
+      email: 'nur@kopikita.my',
+    ),
+    TeamMember(userId: 'team-helper', role: 'Helper', displayName: 'Farah Lee'),
+  ];
+
+  static const products = [
+    Product(
+      id: 'prod-1',
+      name: 'Chocolate Cake',
+      status: 'active',
+      description: 'Signature slice',
+      displayPrice: 12,
+    ),
+    Product(
+      id: 'prod-2',
+      name: 'Matcha Latte',
+      status: 'active',
+      description: 'Cold matcha',
+      displayPrice: 9.5,
+    ),
+    Product(
+      id: 'prod-3',
+      name: 'Croissant',
+      status: 'draft',
+      description: 'Butter pastry',
+      displayPrice: 7,
+    ),
+  ];
+
+  static const plannableOrders = [
+    PlannableOrder(
+      orderId: 'ord-1001',
+      publicRef: 'ORD-1001',
+      customerName: 'Nadia Rahman',
+      deliveryAddress: 'Jalan Telawi 3, Bangsar',
+      locationStatus: 'resolved',
+      coverage: CoverageStatus.covered,
+      zoneId: 'zone-bangsar',
+    ),
+  ];
+
+  /// One prototype run so the V-19 audit URL (RUN-0182) renders.
+  static final runs = [
+    VendorRun(
+      id: 'RUN-0182',
+      riderId: 'rider-ahmad',
+      sessionId: 'session-demo',
+      sessionName: 'Bangsar Run',
+      status: 'delivering',
+      stops: const [
+        RunStop(
+          orderId: 'ord-1002',
+          sequence: 1,
+          status: DeliveryStatus.delivered,
+        ),
+        RunStop(
+          orderId: 'ord-1004',
+          sequence: 2,
+          status: DeliveryStatus.outForDelivery,
+        ),
+        RunStop(
+          orderId: 'ord-1005',
+          sequence: 3,
+          status: DeliveryStatus.created,
+        ),
+      ],
+    ),
+  ];
+
+  static final plan = PlanProposal(
+    groups: [
+      PlanGroup(
+        groupKey: 'bangsar-ready',
+        zoneId: 'zone-bangsar',
+        candidateRiderId: 'rider-ahmad',
+        candidateRiderName: 'Ahmad Razi',
+        candidateRiderVehicleType: 'Motorbike',
+        requiredVehicle: 'Motorbike',
+        totalDistanceKm: 7.4,
+        stops: [
+          PlanStop(
+            orderId: 'ord-1001',
+            sequence: 1,
+            distanceKm: 1.8,
+            travelMinutes: 8,
+            etaAt: DateTime(2026, 9, 13, 10, 15),
+          ),
+          PlanStop(
+            orderId: 'ord-1006',
+            sequence: 2,
+            distanceKm: 2.6,
+            travelMinutes: 12,
+            etaAt: DateTime(2026, 9, 13, 10, 32),
+          ),
+        ],
+      ),
+    ],
+    unplannable: [
+      UnplannableEntry(orderId: 'ord-1003', reason: 'location_unresolved'),
+    ],
+  );
+}
