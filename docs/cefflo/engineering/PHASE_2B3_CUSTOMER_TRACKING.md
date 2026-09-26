@@ -1,6 +1,6 @@
 # Phase 2B.3 — Customer Tracking
 
-Status: COMPLETE (D-65). Staging only (`tomvvmwktehexwhktenw`). Production untouched.
+Status: COMPLETE — CLOSED (D-65). Founder approved the final UI on 2026-09-26. Staging only (`tomvvmwktehexwhktenw`). Production untouched.
 No schema, RPC, policy or migration change.
 
 ## Contract
@@ -48,3 +48,10 @@ issue/cancelled/invalid, token-only access. Static suite 56/56 OK.
   verified by relaying the real function response in the local harness.
 - Rating "already rated" state is per-browser (existing adapter), not read from
   `rating_submitted`.
+
+## Founder UI approval (close-out)
+Approved on staging order #CF-005: green reached milestones with visible labels
+(Pickup / On the Way / Delivered), status icon centred above a centred title,
+content group centred in the sheet, "Powered by Cefflo" on every screen with a
+larger bottom inset, Proof of Delivery head at the top of the sheet with a
+centred title and a bare back icon.
