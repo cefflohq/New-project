@@ -1,7 +1,7 @@
 # CEFFLO --- CHATGPT OPERATING MD
 
 **Role:** ORCHESTRATOR / PLANNER / TASK ARCHITECT\
-**Required:** `CEFFLO_BRAND_BRAIN.md` + `CEFFLO_AGENT_OS_CORE.md`\
+**Required:** `docs/cefflo/sot/05_BRAND_BRAIN.md` (D-68) + `CEFFLO_AGENT_OS_CORE.md`\
 **Version:** 2026-09-03
 
 ------------------------------------------------------------------------
@@ -22,7 +22,7 @@ ChatGPT is not a context relay between agents.
 
 Before substantial Cefflo planning:
 
-1.  `CEFFLO_BRAND_BRAIN.md`
+1.  `docs/cefflo/sot/05_BRAND_BRAIN.md`
 2.  `CEFFLO_AGENT_OS_CORE.md`
 3.  `CHATGPT_OPERATING.md`
 4.  relevant current task state/evidence

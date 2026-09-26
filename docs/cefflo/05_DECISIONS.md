@@ -1257,3 +1257,136 @@ existing `public_tracking` snapshot. No new RPC, table, policy or migration.
   (Founder request). Each milestone dot carries a visible label (Pickup /
   On the Way / Delivered); the content group is centred vertically in the
   sheet; "Powered by Cefflo" stays on every screen with a larger bottom inset.
+
+## D-67 Document Authority — Website Master, AI Operating Principles, Rider Network Strategy (2026-09-26)
+
+**Decision (Founder).** Classifies four Founder-supplied documents. This
+records document authority only. It approves no unfinished product feature and
+changes no product scope.
+
+- `docs/cefflo/website/CEFFLO_PUBLIC_WEBSITE_MASTER.md`: ACTIVE MASTER, and the
+  single maintained Public Website master. It contains the Final Visual Spec
+  V2 (§1–§37, verified content-identical) plus §38–§42. The V2 file is not
+  added separately, to prevent drift. Open website decisions (launch
+  posture/CTA, Storefront, hero Vendor surface, etc.) remain open. Public
+  Website remains NOT IMPLEMENTED (D-62) until publication is approved.
+- `docs/cefflo/website/reports/CEFFLO_PUBLIC_WEBSITE_POLISH_REPORT.md`:
+  HISTORICAL report and input to the Master. Its implementation-state findings
+  are point-in-time (2026-09-26) and not Product Truth.
+- `docs/cefflo/control/CEFFLO_AI_COMPANY_OPERATING_PRINCIPLES.md`: CANONICAL
+  internal operating principles. They complement the Control Layer Master and
+  do not replace it. Cefflo is not repositioned as a generic Agentic OS.
+- `docs/cefflo/strategy/CEFFLO_RIDER_NETWORK_STRATEGY.md`: FUTURE strategy.
+  Design now, build only after the production baseline is stable. It is not on
+  the current roadmap.
+- Follow-ups, not resolved here:
+  - The Brand Brain exists in three versions (`CEFFLO_BRAND_BRAIN.md`,
+    `sot/05_BRAND_BRAIN.md`, `website/drafts/CEFFLO_BRAND_BRAIN-website-input.md`)
+    and needs reconciliation.
+  - The held homepage draft uses Anchor Blue `#2563B3`, not the Master §40
+    canonical colours. That is a future website polish task.
+
+## D-68 Brand Brain Authority Reconciliation (2026-09-26)
+
+**Decision (Founder).** Brand Brain authority only. No new product feature,
+scope or visual direction is introduced.
+
+- **One canonical Brand Brain:** `docs/cefflo/sot/05_BRAND_BRAIN.md` (v2.0).
+  - Part A is the Founder-supplied revision.
+  - Part B keeps the still-current v1.0 marketing doctrine (voice, tone,
+    proof, vocabulary, governance), with the original section numbers
+    prefixed B.
+- Where later Founder decisions or Product Truth override Part A, inline
+  reconciliation notes record it:
+  - no customer rider location or live GPS until Phase 2B.4 ships (D-65, D-66);
+  - pricing direction is not canonical pricing (`10_PRICING.md`);
+  - exact colours belong to `12_EXPERIENCE_SYSTEM.md`;
+  - "Cefflo Driver" naming (D-38) and the retired Rider PWA (D-62).
+- `docs/cefflo/CEFFLO_BRAND_BRAIN.md` is historical and superseded, with a
+  banner pointing to the canonical path.
+- `docs/cefflo/website/drafts/CEFFLO_BRAND_BRAIN-website-input.md` is
+  reconciled and removed (kept in Git history).
+- Legacy brand truth is no longer authoritative:
+  - Signal Lime foundation (v1.0 §8 and §9), retired by D-33;
+  - "Draft B"/Design Lab UI references (v1.0 §10);
+  - the Rider PWA and legacy Vendor PWA as current surfaces.
+- Agent-routing references now point to the canonical path:
+  - `01_PRODUCT.md`;
+  - the four `agent-os/` files;
+  - `sot/00_INDEX.md` §8.
+- **Open Founder decisions, not resolved here:**
+  - Scale plan price: RM299 in the Brand Brain direction versus RM499 in
+    `10_PRICING.md` (CANDIDATE).
+  - Website Master §40 colour lock (`#0B5FE3` gradient family) versus
+    `12_EXPERIENCE_SYSTEM.md` D-47/D-48 Anchor Blue (`#2563B3`, which
+    replaces `#0B5FE3`).
+
+## D-69 Product Capability Direction — Smart Run Builder, POD Policy, Integration Ladder (2026-09-27)
+
+**Decision (Founder).** Records Founder-approved product capability direction
+in `docs/cefflo/sot/01_PRODUCT_TRUTH.md` §18 (classification table and rules)
+and in the roadmap priority block. Documentation only.
+
+- **This does NOT expand current production scope.** Production qualification
+  and the Phase 2B sequence are unchanged. Nothing is promoted to LIVE.
+- Cefflo remains the Local Same-Day Delivery Operating System.
+- **Advanced route optimisation is NOT a current strategic requirement.**
+  - Preferred direction: Smart Run Builder, Smart Zone Clustering, zone
+    density and Corridor Fill (run economics and operational density).
+  - Zones are primary clusters, not absolute prisons.
+  - Target run size is configurable. Numbers such as 10–15 drops are examples
+    only.
+  - Stop sequencing is suggested guidance, with human and rider override
+    preserved.
+  - This refines, and does not unfreeze, the deterministic optimisation
+    architecture in Scope Lock §12.
+- **POD:** Signature POD is optional, never universally mandatory. Photo POD
+  is sufficient where Vendor policy allows. QR/barcode order verification is
+  a separate operational control.
+- **Integrations** follow CSV import → Public Order API + Webhooks → native
+  connectors. No endpoint, payload or event names are frozen.
+- **Multi-location** (Business → Fulfilment Point(s)) must remain
+  architecturally possible. Today a business has a single service origin.
+  Cefflo does not become a courier hub network.
+- **Rider Hub / Capacity Network remain FUTURE** (Rider Network Strategy).
+- Notifications are event-based (out for delivery, approaching, delivered,
+  issue). No unlimited WhatsApp/SMS, and paid channels are subject to COGS.
+
+## D-70 Run Editing Boundary + Brand Color Authority (2026-09-27)
+
+**Decision (Founder).** Documentation and authority only. No runtime,
+database or visual implementation is approved.
+
+**Run editing** (`sot/01_PRODUCT_TRUTH.md` §7, §18.2):
+- Vendor/Dispatcher manual run editing is **FUTURE**, primarily
+  **pre-dispatch**. It covers reordering stops, adding/removing eligible
+  orders, moving orders between proposed runs, changing the intended rider,
+  and overriding the suggested sequence. System suggestions must allow human
+  review and override before dispatch.
+- Dispatched or active runs are operationally stable. **Unrestricted Vendor
+  editing of active runs is not approved.** Future active-run interventions
+  need explicit controlled contracts, which are not designed here.
+- Rider-owned resequencing is unchanged.
+
+**Brand colour authority:**
+- The Vendor Mobile D-51/D-53 palette is promoted to the canonical
+  cross-product **Cefflo Flow Palette**:
+  - Brand Blue `#0060FE`;
+  - Gradient `#01265E → #00378F → #005CC4 → #0592EB`;
+  - Deep/Chrome `#01265E`;
+  - Mustard `#FFC93C`;
+  - Navy `#0B1220`;
+  - Cool White canvas;
+  - Inter.
+- `sot/12_EXPERIENCE_SYSTEM.md` §0A is the **single exact-token authority**.
+  The Website Master §40 inherits from it. The Brand Brain owns broad visual
+  direction only.
+- Superseded as current values (history kept): `#2563B3`, `#1C3F7A`,
+  `#0A1F44`, `#0B5FE3`, the `#0633A8` Website gradient, `#F5C400`, and
+  `#FEC819` / `#12213E` as locked brand values.
+- Signal Lime and the purple-era identity remain retired.
+- Driver Mobile, Vendor Web, the Public Website and Founder Admin (where the
+  brand applies) are **not yet aligned**. Converging them is future
+  implementation work.
+- Customer Tracking stays vendor-configurable (white-label) and is exempt.
+- Pricing is untouched.

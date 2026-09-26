@@ -1,3 +1,4 @@
+**Status:** CANONICAL — v1.8, amended 2026-09-27 by Founder decision D-70. This file is the **single canonical authority for exact Cefflo implementation tokens**. The Cefflo Flow Palette in §0A overrides every conflicting value elsewhere in this file, in the Website Master, in the Brand Brain, and in older decisions.
 **Status:** CANONICAL — v1.7, amended 2026-09-24 by Founder decision D-48 (Cefflo Icon Family sheet is the canonical icon design and palette: Anchor Blue #2563B3 gradient family, CTA #F5C400, status colours, 24px bare navy outline icons (round outline only on Call/WhatsApp), only bottom-nav icons coloured, hamburger Settings, 20px header title). v1.6 amended 2026-09-23 by Founder decision D-47 (Splash navy is the one Anchor Blue; outline-only cards; spacing-first dividers; 22/28/20/16/15/14 Inter type scale; one outline icon family; notification centre; QR modal). v1.5 amended 2026-09-23 by Founder decision D-46 (Vendor Mobile normalization: one centred header row, four-tab navigation with Settings in the Today header, single Settings directory, contact-action standard, pinned primary actions, semantic delivery pills; amends D-45 where they differ). v1.4 amended 2026-09-23 by Founder decision D-45 (Vendor Mobile gradient-header visual system; supersedes §8's flat-white header and Yellow active navigation, and the Yellow "active navigation state" use in §1.1). Previously v1.3, amended 2026-09-19 by Founder decision D-40. D-33/D-34/D-35 remain the palette, semantic-colour, surface-principle and production-logo authorities; D-40 supersedes D-33 only for app typography and the mandatory status of its historical exact compact-token values.
 **Implementation boundary:** FG-ENG-02 authorizes the isolated DEV/STAGING baseline integration recorded by D-40. It does not authorize visual retuning, Driver build-out, Vendor V11 execution, production deployment, or any later Engineering gate.
 
@@ -8,11 +9,58 @@
 **Owner:** Founder
 **Scope:** How CEFFLO products look. Product/behaviour truth remains governed separately by `01_PRODUCT_TRUTH.md`, `02_ARCHITECTURE.md`, and the relevant product SOT.
 
+## 0A. Cefflo Flow Palette — CANONICAL CROSS-PRODUCT TOKENS (D-70)
+
+D-70 promotes the Vendor Mobile palette of D-51/D-53 (source:
+`apps/vendor_mobile/lib/core/theme.dart`) from Vendor-Mobile-specific scope
+to the **cross-product Cefflo standard**.
+
+| Token | Exact value | Use |
+|---|---|---|
+| **Brand Blue (interactive)** | `#0060FE` | Active navigation/tabs, links, selection, map boundaries/pins, progress |
+| Brand Blue tint | `#E6EFFF` | Tinted action rows, info notes (D-51) |
+| **Brand Gradient** | `#01265E → #00378F → #005CC4 → #0592EB` (stops 0 / .35 / .7 / 1) | Splash, auth, app chrome/header, hero surfaces |
+| **Deep / Chrome** | `#01265E` | Browser/PWA chrome, status bar, single-colour stand-in for the gradient |
+| **Mustard / Action Accent** | `#FFC93C` | Primary CTA and intentional highlights. Always with dark text (`#181818`). Never a surface. |
+| **Navy / Dark Neutral** | `#0B1220` | Icons, dark text/neutral, raised dark surfaces |
+| Primary canvas | Cool White | App/page canvas, with white surfaces |
+| Typography | Inter | All Cefflo-owned surfaces (§4) |
+
+**Superseded, historical only (not current authority):**
+- Anchor Blue `#2563B3`, `#1C3F7A`, `#0A1F44` (D-48);
+- the D-47 Splash gradient and `#1E4585`;
+- CTA `#F5C400` (D-48);
+- Yellow `#FEC819` and Navy `#12213E` as locked brand values (§1, D-33);
+- Website Master `#0B5FE3` and the `#0633A8 → #0848CC → #0A6BE6` gradient.
+
+Values of these kinds that remain further down in this file are historical
+records. Where they differ from this table, this table wins. Signal Lime and
+the purple-era identity remain **RETIRED**.
+
+**Scope:**
+- **Applies to** every Cefflo-owned surface: Vendor Mobile, Driver Mobile,
+  Vendor Web/Desktop, Public Website, and Founder Admin where the Cefflo brand
+  system applies.
+- **Implemented today** on Vendor Mobile only.
+- **Not yet aligned:** Driver Mobile, Vendor Web, the Public Website draft and
+  Founder Admin still use older values. That is implementation alignment debt,
+  not an alternative authority. Converging them is separate future work; D-70
+  changes no runtime.
+- **Customer Tracking exception:** its accent and header colours are
+  vendor-configurable white-label theme tokens by design
+  (`customer/fixtures.js` vendor theme). The Cefflo palette is not forced onto
+  vendor-branded tracking surfaces.
+
+**Other documents:** `05_BRAND_BRAIN.md` owns positioning, meaning, voice and
+the broad Flow Palette direction (blue family anchor, mustard action accent,
+cool white canvas, Inter). `website/CEFFLO_PUBLIC_WEBSITE_MASTER.md` inherits
+exact values from this section. Neither is an exact-token authority.
+
 ## 0. Relationship to prior brand doctrine
 
 Extends `05_BRAND_BRAIN.md` and `06_BRAND_ASSETS_GOVERNANCE.md` with implementation-level detail. Supersedes `06_BRAND_ASSETS_GOVERNANCE.md` §2's Signal Lime lock specifically — see that file's own in-place annotation. Brand character, voice, logo geometry, and the "near-black text on bright accent" accessibility principle from those documents remain in force, carried forward here.
 
-## 1. Brand palette — LOCKED
+## 1. Brand palette — HISTORICAL (exact values superseded by §0A, D-70)
 
 | Token | Hex | Status |
 |---|---|---|
@@ -142,7 +190,7 @@ One `KpiStrip`: equal columns of value + label (optional CEFFLO Blue icon) separ
 
 ~~Bottom navigation … CEFFLO Yellow marks the active tab only. Header: flat white/chrome, no accent underline.~~ **RETIRED by D-45 (2026-09-23).** There is no longer a flat-white authenticated header and Yellow is no longer the active-navigation colour. The Founder's gradient-header reference set is the canonical visual source; this section is its written form.
 
-**Brand tokens added by D-45**
+**Brand tokens added by D-45** — *historical; exact values superseded by §0A (D-70)*
 | Token | Value | Use |
 |---|---|---|
 | **Anchor Blue (interactive)** — D-47 | `#1E4585` (Splash lift) | Active bottom-nav item + indicator, active tab, section icons, inline links, selected states, map accents, semantic info. Replaces `#0B5FE3` / `#2A6EEC`. |

@@ -70,6 +70,17 @@ protected-action approvals.
     real `public_tracking` snapshot, proven end-to-end on staging. Evidence:
     `engineering/PHASE_2B3_CUSTOMER_TRACKING.md`. Backlog: customer-visible
     rider location; ETA/geocoding; POD CORS origin for a staging customer host.
+-   Product capability direction (D-69, `sot/01_PRODUCT_TRUTH.md` §18):
+    classified priorities for **after production qualification**; this does
+    not change the Phase 2B sequence or current scope.
+    -   Post-production high: Smart Zone Clustering, Smart Run Builder,
+        target run size, Corridor Fill, manual run editing, simple stop
+        sequencing, Auto Assign Rider, CSV import hardening, QR/barcode
+        verification, better ETA, customer notifications.
+    -   Next / growth: analytics, reports, Public Order API, webhooks,
+        multi-location, native integrations.
+    -   Optional: Signature POD.
+    -   Future strategy: Rider Hub / capacity network.
 -   Phase 2B backlog (Vendor): stop sequencing (`save_run_sequence`) UI;
     remove-from-today's-plan contract; Rider approve/deactivate wiring;
     Mobile manual location correction.
