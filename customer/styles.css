@@ -174,8 +174,7 @@ img { display: block; max-width: 100%; }
    the footer; tall content (e.g. Delivered + rating) simply fills. */
 .screen--picked_up .status-head,
 .screen--on_the_way .status-head,
-.screen--delivered .status-head,
-.screen--pod .pod-head { margin-top: auto; }
+.screen--delivered .status-head { margin-top: auto; }
 
 .powered {
   margin-top: auto;
