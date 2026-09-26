@@ -1252,4 +1252,6 @@ existing `public_tracking` snapshot. No new RPC, table, policy or migration.
 - Order identity shown is the D-64 `#CF-001`; the token stays the only
   credential.
 - Reached progress milestones use the semantic success green (`--success`)
-  instead of the vendor primary (Founder request).
+  instead of the vendor primary (Founder request), in every state.
+- The status head stacks the icon centred above a centred title and body
+  (Founder request).
