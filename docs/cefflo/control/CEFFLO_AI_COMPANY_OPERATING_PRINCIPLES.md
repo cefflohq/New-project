@@ -1,11 +1,5 @@
 # CEFFLO AI COMPANY OPERATING PRINCIPLES
 
-> **Classification (D-67): CANONICAL internal operating principles.** They
-> complement — and do not replace — `CEFFLO_CONTROL_LAYER_MASTER.md`, which
-> remains the company AI governance/orchestration authority. They govern how
-> the company behind Cefflo operates; they do not reposition the Cefflo product
-> (a Local Same-Day Delivery Operating System) as a generic Agentic OS.
-
 **Status:** Canonical Operating Principles\
 **Scope:** Internal Cefflo AI Company Architecture\
 **Purpose:** Define how Cefflo's AI departments operate autonomously,

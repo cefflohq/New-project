@@ -1,13 +1,5 @@
 # CEFFLO PUBLIC WEBSITE — COMMERCIAL + PRODUCT STORY POLISH REPORT
 
-> **HISTORICAL REPORT / INPUT TO MASTER (D-67). Not authoritative.**
-> Implementation-state observations here are point-in-time findings from
-> 2026-09-26 and may be superseded by later engineering decisions and state
-> (e.g. D-62 removed the Rider PWA; D-63 made Driver Flutter the live Driver
-> client on staging; D-65 Customer Tracking). It must **not** be treated as
-> current Product Truth. Current website authority:
-> `../CEFFLO_PUBLIC_WEBSITE_MASTER.md`; product truth: `docs/cefflo/sot/`.
-
 **Status:** Polish Report for Founder Review — no implementation performed
 **Date:** 2026-09-26
 **Input:** `CEFFLO_PUBLIC_WEBSITE_VISUAL_SPEC_V2_FINAL.md` (visual direction — LOCKED, untouched)

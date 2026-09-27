@@ -1,13 +1,5 @@
 # CEFFLO RIDER NETWORK STRATEGY
 
-> **Classification (D-67): FUTURE STRATEGY — Founder-approved direction, not
-> current scope.** Rider Hub, portable rider identity, availability/commitment,
-> open runs and the Capacity Network are **not** on the current roadmap and
-> must not be implemented or marketed as current capability. Doctrine: design
-> now (architecture optionality, §24), build only after the production
-> baseline is stable and the gates in §26 are met. Consistent with the stale
-> doctrine rule: Cefflo does not own a rider fleet (`sot/00_INDEX.md` §13).
-
 **Status:** Founder-approved future product direction  
 **Implementation doctrine:** Design now, build after the current production baseline is stable  
 **Core product remains:** **Cefflo — Local Same-Day Delivery Operating System**  
