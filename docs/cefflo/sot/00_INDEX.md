@@ -133,7 +133,14 @@ Primary:
 
 ## 11. AI Governance and Development Agent Rules
 Company governance authority:
-- `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`
+- `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md` (§2A: department register and activation state)
+- Department Masters (MASTER BASELINE; a Master's presence does not activate a department, D-71):
+  - `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md`
+  - `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md`
+  - `docs/cefflo/marketing/CEFFLO_MARKETING_MASTER.md`
+  - `docs/cefflo/customer-service/CEFFLO_CUSTOMER_SERVICE_MASTER.md`
+  - `docs/cefflo/sales-crm/CEFFLO_SALES_CRM_MASTER.md`
+  - `docs/cefflo/product-intelligence/CEFFLO_PRODUCT_INTELLIGENCE_MASTER.md`
 - `docs/cefflo/control/CEFFLO_AI_COMPANY_OPERATING_PRINCIPLES.md` (CANONICAL
   operating principles — complements the Control Layer Master, does not
   replace it; D-67)

@@ -1474,10 +1474,16 @@ unchanged.
     - Marketing, Customer Service, Sales & CRM and Product Intelligence: not
       active.
   - The Customer Service, Sales & CRM and Product Intelligence Masters were
-    searched for across all branches, the full git history and the uploaded
-    files, and were never supplied. The departments are DEFINED (registered)
-    but have no canonical Master. The Founder must supply the Masters; they
-    are not reconstructed.
+    absent from all branches and history. The Founder supplied them on
+    2026-09-27 (MASTER BASELINE, dated 2026-09-19), and they were added
+    byte-exact at:
+    - `customer-service/CEFFLO_CUSTOMER_SERVICE_MASTER.md`
+    - `sales-crm/CEFFLO_SALES_CRM_MASTER.md`
+    - `product-intelligence/CEFFLO_PRODUCT_INTELLIGENCE_MASTER.md`
+
+    All seven Department Masters are now canonical. Customer Service, Sales &
+    CRM and Product Intelligence remain NOT ACTIVATED. Their implementation
+    phases (schemas, n8n workflows, pilots) need separate approval.
   - The principles' approval levels L0–L4 are mapped onto permission classes
     P0–P4, which gives one scale.
 - **Not approved here:**

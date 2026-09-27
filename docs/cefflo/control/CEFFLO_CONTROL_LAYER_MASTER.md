@@ -129,21 +129,19 @@ is product / production readiness.
 | Engineering | YES (E1–E5) | `engineering/CEFFLO_ENGINEERING_MASTER.md` | Human-led development; FG-ENG-04 autonomous pilot NOT ACTIVATED (`automation/n8n/engineering`, pilot prohibited) |
 | Cyber Security (cross-company guardrail) | guardrail | `security/CEFFLO_CYBER_SECURITY_MASTER.md` | Guardrail rules applied; no autonomous agent |
 | Marketing | YES (M1–M6) | `marketing/CEFFLO_MARKETING_MASTER.md` | NOT ACTIVATED (`automation/n8n/content-engine`: all workflows inactive) |
-| Customer Service | YES (CS1–CS6) | **NOT FOUND** | NOT ACTIVATED |
-| Sales & CRM | YES (S1–S6) | **NOT FOUND** | NOT ACTIVATED |
-| Product Intelligence | YES (PI1–PI6) | **NOT FOUND** | NOT ACTIVATED |
+| Customer Service | YES (CS1–CS6) | `customer-service/CEFFLO_CUSTOMER_SERVICE_MASTER.md` (MASTER BASELINE 2026-09-19; supplied 2026-09-27) | NOT ACTIVATED (no schema, workflow or agent exists) |
+| Sales & CRM | YES (S1–S6) | `sales-crm/CEFFLO_SALES_CRM_MASTER.md` (MASTER BASELINE 2026-09-19; supplied 2026-09-27) | NOT ACTIVATED (no schema, workflow or agent exists) |
+| Product Intelligence | YES (PI1–PI6) | `product-intelligence/CEFFLO_PRODUCT_INTELLIGENCE_MASTER.md` (MASTER BASELINE 2026-09-19; supplied 2026-09-27) | NOT ACTIVATED (no schema, workflow or agent exists) |
 
-**NOT FOUND evidence (2026-09-27).** Searches covered:
+**Master set complete (2026-09-27, D-71).** All seven Masters are now in
+the repo. The Customer Service, Sales & CRM and Product Intelligence Masters
+were absent from all branches and history, and were supplied by the Founder
+on 2026-09-27. They were added byte-exact, and their agent prefixes and
+counts match the registry above.
 
-- **Filenames:** every file ever committed on every branch.
-- **Content:** `git log --all -S` for `CUSTOMER_SERVICE_MASTER`,
-  `SALES_CRM_MASTER` and `PRODUCT_INTELLIGENCE_MASTER`.
-- **Headings:** Master headings in all repository worktrees and the
-  uploaded-file store.
-
-None of these Masters has ever been committed or supplied. They must be
-supplied by the Founder; they are not reconstructed from memory. Until then,
-these departments are DEFINED here only.
+Each Master's "Implementation Phases" section describes future activation
+work: schemas (`cs_*`, `crm_*`, `pi_*` tables), n8n workflows and pilots.
+None of it is built or authorised by adding the document.
 
 Operating model per department (from `CEFFLO_AI_COMPANY_OPERATING_PRINCIPLES.md`):
 
