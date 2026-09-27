@@ -55,7 +55,7 @@ Future<void> main() async {
     return;
   }
 
-  if (!Env.isConfigured || !Env.isNonProduction) {
+  if (!Env.isConfigured || !Env.isValidTarget) {
     runApp(ConfigurationErrorApp(message: Env.configurationProblem));
     return;
   }

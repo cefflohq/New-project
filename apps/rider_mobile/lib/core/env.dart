@@ -18,19 +18,28 @@ class Env {
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabasePublishableKey.isNotEmpty;
 
-  /// The app refuses to run against anything that is not explicitly a
-  /// non-production environment. Production wiring is out of scope for this
-  /// client and must never be enabled by accident.
-  static bool get isNonProduction =>
-      environment == 'staging' || environment == 'local';
+  /// Production Supabase project. A build must name its environment
+  /// explicitly, and the URL must agree with it, so a staging build can
+  /// never point at Production (or the reverse) by accident.
+  static const productionProjectRef = 'lmaxtrubwdniovxyuqdy';
+
+  static bool get _urlIsProduction =>
+      Uri.tryParse(supabaseUrl)?.host == '$productionProjectRef.supabase.co';
+
+  static bool get isValidTarget => switch (environment) {
+    'production' => _urlIsProduction,
+    'staging' || 'local' => !_urlIsProduction,
+    _ => false,
+  };
 
   static String get configurationProblem {
     if (!isConfigured) {
       return 'SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY were not provided at build time.';
     }
-    if (!isNonProduction) {
-      return 'CEFFLO_ENVIRONMENT must be "staging" or "local" for this build. '
-          'Got "$environment".';
+    if (!isValidTarget) {
+      return 'CEFFLO_ENVIRONMENT "$environment" does not match SUPABASE_URL. '
+          'Use "production" only with the Production project, and '
+          '"staging" or "local" with anything else.';
     }
     return '';
   }
