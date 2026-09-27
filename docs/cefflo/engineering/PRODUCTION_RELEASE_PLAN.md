@@ -101,6 +101,19 @@ RLS checks in G5:
 - `public_tracking` returns null for `#CF-xxx`, `public_ref` and the order
   UUID used as a token.
 
+Extra G2 preflight checks (from the migration contents):
+
+- **`pg_cron`.** Migration 202608270007 runs `create extension pg_cron` and
+  schedules `cefflo_rate_limit_cleanup` every 10 minutes. Confirm the
+  extension is available on Production before G4, or that migration stops
+  the run.
+- **`pgcrypto`.** Present from the foundation migration.
+- **Storage buckets.** `cefflo-pod` (foundation / 202608290004) and product
+  media (202608310003) are created by migrations. Confirm no out-of-band
+  bucket with the same id exists.
+- **D-64 backfill.** 202609260001 rewrites existing orders' date and
+  sequence. Record the Production order count at G2 and re-check it at G5.
+
 Credentials the operator needs for G1–G6 (never committed or printed): the
 Production DB connection string, a Supabase access token for the CLI, and
 Dashboard access for backups and Auth settings.
@@ -108,9 +121,12 @@ Dashboard access for backups and Auth settings.
 ## 4. Auth email (custom SMTP): prepared, not configured
 
 - **Decided identity:**
-  - display name **"Cefflo"**;
-  - sender **`no-reply@cefflo.com`**;
+  - sender **`Cefflo <no-reply@cefflo.com>`**;
+  - support contact **`support@cefflo.com`** (reply-to / support links);
   - never a personal mailbox.
+- **Provider-neutral.** The apps never talk to an email provider; every
+  email is sent by Supabase Auth through whatever SMTP is configured. The
+  chosen provider is connected in the Dashboard only, with no code change.
 - **Provider:** not chosen (Founder). Whatever provider is chosen, the settings
   are Supabase Auth → SMTP:
   - `SMTP_HOST`
@@ -174,8 +190,19 @@ Dashboard access for backups and Auth settings.
   - a token with geocoding scope only;
   - `supabase secrets set CEFFLO_MAPBOX_ACCESS_TOKEN=… --project-ref lmaxtrubwdniovxyuqdy`;
   - `supabase functions deploy geocode-order --project-ref lmaxtrubwdniovxyuqdy`.
-- **Verification:** a G7 test order resolves (`location_status=resolved`), and
-  coverage, suggested runs and ETA render.
+- **Business pickup origin.** `geocode-order` also has a `{ business_id }`
+  mode:
+  - It geocodes the caller's own business address (RLS-scoped read, rate
+    limit 5/min) and **stores nothing**.
+  - The Vendor app saves the result through `set_business_service_area`.
+  - There is **no default coordinate**. Before 2026-09-27 Vendor Mobile
+    saved Kuala Lumpur city centre for every business.
+  - Without a located address, the Service Area screen shows "pickup
+    location required" and blocks Save.
+- **Verification:**
+  - a G7 test order resolves (`location_status=resolved`), and coverage,
+    suggested runs and ETA render;
+  - the test business's Service Area locates its real address.
 
 ## 6. DNS / hosting: prepared, not changed
 
@@ -260,3 +287,51 @@ Cut-over, after G7 only:
 | 5 | Deploy `geocode-order` plus `CEFFLO_MAPBOX_ACCESS_TOKEN` (required) | Coordinates for coverage, planning and ETA | Prod functions | Low | New order resolves location | Undeploy / unset |
 | 6 | Production smoke test (G7, on `*.pages.dev` hosts) with TEST-ONLY accounts | Release proof | Prod | Low (test rows) | Full lifecycle passes | Clean TEST-ONLY rows |
 | 7 | Cloudflare Pages project; DNS `vendor`, `tracking`, `invite`, `foundr` → Pages (G8, after GO) | Serve canonical web surfaces | Cloudflare | Medium (reversible) | HTTPS 200 and smoke test | Restore recorded records |
+
+## 10. Malaysia production gate classification (2026-09-27)
+
+Classes:
+
+- **P0**: blocks the Malaysia Production release.
+- **P1**: needed soon after launch.
+- **P2**: global-expansion foundation.
+- **FUTURE**.
+
+| Item | Class | State |
+|---|---|---|
+| Production migrations (53 pending, foundation only) | P0 | Plan ready (§1, §3); **not applied** |
+| Backup / PITR confirmed | P0 | Founder/operator Dashboard check |
+| Privileged schema/RLS inspection (G2) | P0 | Needs Production DB credentials |
+| SMTP provider + sender `Cefflo <no-reply@cefflo.com>` + SPF/DKIM/DMARC | P0 | Signup confirmation, reset and OTP need it. Provider is a Founder choice |
+| Auth URL config (Site URL, redirect allowlist) | P0 | Prepared (§4), not applied |
+| Mapbox token + `geocode-order` deploy | P0 | Launch-required (§5); function never deployed on Production |
+| `tracking-pod` CORS secret | P0 | Prepared, not applied |
+| DNS `vendor` / `tracking` / `invite` (+ `foundr`) → Pages | P0 | `invite.cefflo.com` required for Driver onboarding; plan in §6 |
+| Vendor real pickup origin | P0 | **Fixed in code** (no KL default); live only after `geocode-order` deploy |
+| Vendor invitations (rider/team) | P0 | Fixed in code: real RPC and one-time link |
+| Driver invitation acceptance | P0 | Fixed in code: `accept_rider_invitation` |
+| Password reset / change | P0 | Fixed in code; the reset email depends on SMTP |
+| Customer Tracking (states, invalid/expired, POD, live privacy) | P0 | Verified in code and tests (`test_customer_live_gate`, `test_customer_tracking_live`); needs G7 smoke |
+| Live rider location | P0 | D-66 implemented; migrations 52–53 pending |
+| Store signing (Android keystore, Apple account and profiles) | P0 for store release | Founder accounts and credentials |
+| BM / EN | done | Both apps, per-user, device-first |
+| iOS / Android IDs | done | `com.cefflo.vendor` / `com.cefflo.driver`; Android `com.cefflo.cefflo_vendor_mobile` / `…_rider_mobile` |
+| Retention: rider locations, POD photos | P1 | Founder decision (§11); storage grows until decided |
+| Stale static tests (`f3_02_recent_orders_dashboard`, `s4_04_batch_5_customer_ondemand_refresh`) | P1 | Fail identically on canonical `99a6ff8`; they assert superseded literals (D-64/D-66) |
+| Vendor Mobile business-detail editing, notification prefs, support tickets | P1 | Honest "not connected yet" states |
+| Map-based pickup pin adjustment (when geocoding is imprecise) | P1 | UX decision; today the origin is the geocoded address only |
+| Business country, E.164 phone, currency from `businesses.currency` (UI prints "RM"), timezone at creation, country-biased geocoding | P2 | Correct for Malaysia today |
+| Regional price books, global payments, Country Packs, second-country enablement | P2 / FUTURE | Study `commercial/…_STUDY.md` |
+| Rider Hub, Capacity Network, departments beyond Engineering | FUTURE | Not built, not activated |
+
+## 11. Retention (current behaviour; policy = Founder decision)
+
+| Data | What the system does today | Policy |
+|---|---|---|
+| Rider location history (`rider_locations`) | Append-only; never deleted. Customers see only the latest point, ≤ 15 min old, while `picked_up`/`out_for_delivery`/`arrived` | **FOUNDER DECISION REQUIRED** (open since D-66) |
+| POD photos (`cefflo-pod` bucket) | Kept indefinitely; customers get a 300 s signed URL through `tracking-pod` while the token is valid | **FOUNDER DECISION REQUIRED** |
+| Tracking tokens | Valid for the active delivery; expire **48 h after delivered**; revoked by Vendor or on cancel/reassign. Rows kept (hash only) | Access policy locked (S4-04); row retention: FOUNDER DECISION REQUIRED |
+| Orders / completed deliveries / delivery events | Kept; removed only by business deletion cascade | **FOUNDER DECISION REQUIRED** (legal / tax needs) |
+| Rate-limit counters / invalid-lookup telemetry | `pg_cron` deletes after 1 h / 24 h | Defined (202608270007) |
+
+No record is deleted or shortened by this plan.

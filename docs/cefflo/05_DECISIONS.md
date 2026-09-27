@@ -1473,8 +1473,11 @@ unchanged.
     - Cyber Security: guardrail rules active.
     - Marketing, Customer Service, Sales & CRM and Product Intelligence: not
       active.
-  - The Customer Service, Sales & CRM and Product Intelligence Masters do not
-    exist yet.
+  - The Customer Service, Sales & CRM and Product Intelligence Masters were
+    searched for across all branches, the full git history and the uploaded
+    files, and were never supplied. The departments are DEFINED (registered)
+    but have no canonical Master. The Founder must supply the Masters; they
+    are not reconstructed.
   - The principles' approval levels L0–L4 are mapped onto permission classes
     P0–P4, which gives one scale.
 - **Not approved here:**

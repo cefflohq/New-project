@@ -112,19 +112,38 @@ No unregistered department or agent may execute privileged company actions.
 
 ## 2A. Department Activation Register (2026-09-27, D-71)
 
-A registered department is **defined**, not **activated**. Activation
-(autonomous runtime, agents, schedules or external actions) needs its own
+The states are kept separate:
+
+- **DEFINED**: registered in this Master.
+- **CANONICAL**: its Master SOT is in the repo.
+- **ACTIVE / NOT ACTIVATED**: autonomous runtime, agents, schedules or
+  external actions.
+
+A Master existing never activates a department. Activation needs its own
 approved implementation plan and Founder Gate. The current company priority
 is product / production readiness.
 
-| Department | Master SOT in repo | Runtime state (repo evidence) | Activation |
+| Department | Defined | Canonical Master SOT | Activation |
 |---|---|---|---|
-| Engineering | `engineering/CEFFLO_ENGINEERING_MASTER.md` | `automation/n8n/engineering` FG-ENG-04 runtime; pilot activation prohibited; Phase 01 rejects production actions | Human-led development active; autonomous pilot NOT ACTIVE |
-| Cyber Security (cross-company guardrail) | `security/CEFFLO_CYBER_SECURITY_MASTER.md` | guardrail rules applied in review/release | Guardrail ACTIVE (rules); no autonomous agent |
-| Marketing | `marketing/CEFFLO_MARKETING_MASTER.md` | `automation/n8n/content-engine`: every workflow inactive; no paid AI, publishing, ads or schedule | NOT ACTIVE |
-| Customer Service | registered here (CS1–CS6); no Master SOT in repo | none | NOT ACTIVE (Master not yet authored) |
-| Sales & CRM | registered here (S1–S6); no Master SOT in repo | none | NOT ACTIVE (Master not yet authored) |
-| Product Intelligence | registered here (PI1–PI6); no Master SOT in repo | none | NOT ACTIVE (Master not yet authored) |
+| Control Layer (company control plane, not a department) | this document | `control/CEFFLO_CONTROL_LAYER_MASTER.md` + `control/CEFFLO_AI_COMPANY_OPERATING_PRINCIPLES.md` | Governance ACTIVE (rules); no autonomous runtime |
+| Engineering | YES (E1–E5) | `engineering/CEFFLO_ENGINEERING_MASTER.md` | Human-led development; FG-ENG-04 autonomous pilot NOT ACTIVATED (`automation/n8n/engineering`, pilot prohibited) |
+| Cyber Security (cross-company guardrail) | guardrail | `security/CEFFLO_CYBER_SECURITY_MASTER.md` | Guardrail rules applied; no autonomous agent |
+| Marketing | YES (M1–M6) | `marketing/CEFFLO_MARKETING_MASTER.md` | NOT ACTIVATED (`automation/n8n/content-engine`: all workflows inactive) |
+| Customer Service | YES (CS1–CS6) | **NOT FOUND** | NOT ACTIVATED |
+| Sales & CRM | YES (S1–S6) | **NOT FOUND** | NOT ACTIVATED |
+| Product Intelligence | YES (PI1–PI6) | **NOT FOUND** | NOT ACTIVATED |
+
+**NOT FOUND evidence (2026-09-27).** Searches covered:
+
+- **Filenames:** every file ever committed on every branch.
+- **Content:** `git log --all -S` for `CUSTOMER_SERVICE_MASTER`,
+  `SALES_CRM_MASTER` and `PRODUCT_INTELLIGENCE_MASTER`.
+- **Headings:** Master headings in all repository worktrees and the
+  uploaded-file store.
+
+None of these Masters has ever been committed or supplied. They must be
+supplied by the Founder; they are not reconstructed from memory. Until then,
+these departments are DEFINED here only.
 
 Operating model per department (from `CEFFLO_AI_COMPANY_OPERATING_PRINCIPLES.md`):
 
