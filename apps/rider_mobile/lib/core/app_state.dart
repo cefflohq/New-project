@@ -382,7 +382,17 @@ class AppState extends ChangeNotifier {
         break;
       }
     }
-    current ??= all.isEmpty ? null : all.last;
+    // No open run: show the most recently finished one (independent of
+    // row order).
+    DateTime finishedAt(RiderRun r) => r.orders
+        .map((o) => o.completedAt ?? DateTime.fromMillisecondsSinceEpoch(0))
+        .fold(
+          DateTime.fromMillisecondsSinceEpoch(0),
+          (a, b) => b.isAfter(a) ? b : a,
+        );
+    current ??= all.isEmpty
+        ? null
+        : all.reduce((a, b) => finishedAt(b).isAfter(finishedAt(a)) ? b : a);
     history = [
       for (final r in all)
         if (!open(r)) _toDriverRun(r),

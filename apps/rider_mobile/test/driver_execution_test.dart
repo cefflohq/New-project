@@ -223,6 +223,38 @@ void main() {
     );
   });
 
+  test('with no open run, the most recently finished run is shown', () async {
+    final repo = _FakeRepo([
+      RiderOrder(
+        id: 'old',
+        publicRef: 'CF-old',
+        customerName: 'A',
+        customerPhone: '',
+        address: '',
+        itemCount: 1,
+        note: '',
+        status: DeliveryStatus.delivered,
+        deliverySessionId: 's-old',
+        completedAt: DateTime(2026, 9, 25),
+      ),
+      RiderOrder(
+        id: 'new',
+        publicRef: 'CF-new',
+        customerName: 'B',
+        customerPhone: '',
+        address: '',
+        itemCount: 1,
+        note: '',
+        status: DeliveryStatus.delivered,
+        deliverySessionId: 's-new',
+        completedAt: DateTime(2026, 9, 27),
+      ),
+    ]);
+    final app = AppState(repo);
+    await app.loadSession();
+    expect(app.currentRun.id, 's-new');
+  });
+
   test('the current stop becomes out_for_delivery when it is next', () async {
     final (app, repo) = await _hydrate([
       _order('1', DeliveryStatus.pickedUp, seq: 1, locked: true),
