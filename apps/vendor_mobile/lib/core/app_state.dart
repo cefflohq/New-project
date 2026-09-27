@@ -52,15 +52,14 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// The signed-in person's name for the Today greeting: profile metadata,
-  /// else the email's local part. The demo session is the demo owner.
+  /// The signed-in person's name for the Today greeting, from profile
+  /// metadata only. Without a name the greeting shows no name line; the
+  /// account email is never displayed as a name. The demo session is the
+  /// demo owner.
   String get userDisplayName {
     if (repo.isDemo) return 'Yusuf Sazali';
-    final user = repo.currentUser;
-    final meta = user?.userMetadata ?? const {};
-    final name = (meta['full_name'] ?? meta['name'] ?? '').toString().trim();
-    if (name.isNotEmpty) return name;
-    return user?.email?.split('@').first ?? '';
+    final meta = repo.currentUser?.userMetadata ?? const {};
+    return (meta['full_name'] ?? meta['name'] ?? '').toString().trim();
   }
 
   // ---- Subscription (V-50..V-54). No billing backend exists yet: the demo
