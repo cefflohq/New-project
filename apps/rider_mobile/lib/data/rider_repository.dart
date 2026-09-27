@@ -76,6 +76,7 @@ class RiderRepository {
       () => _db.auth.signUp(
         email: email.trim(),
         password: password,
+        emailRedirectTo: authRedirectUrl,
         data: {
           if (fullName != null && fullName.trim().isNotEmpty)
             'full_name': fullName.trim(),

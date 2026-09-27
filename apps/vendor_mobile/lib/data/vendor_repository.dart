@@ -84,7 +84,11 @@ class VendorRepository {
     required String password,
   }) async {
     final res = await _run(
-      () => _db!.auth.signUp(email: email.trim(), password: password),
+      () => _db!.auth.signUp(
+        email: email.trim(),
+        password: password,
+        emailRedirectTo: authRedirectUrl,
+      ),
     );
     return res.session == null; // true => verification step is required
   }
@@ -100,8 +104,13 @@ class VendorRepository {
   );
 
   /// Locked Verify-your-email / Verification-link-expired screens.
-  Future<void> resendSignUpVerification(String email) =>
-      _run(() => _db!.auth.resend(type: OtpType.signup, email: email.trim()));
+  Future<void> resendSignUpVerification(String email) => _run(
+    () => _db!.auth.resend(
+      type: OtpType.signup,
+      email: email.trim(),
+      emailRedirectTo: authRedirectUrl,
+    ),
+  );
 
   /// Locked Set-a-new-password screen. Requires an active recovery session,
   /// which only exists after the emailed link has been opened -- this method
