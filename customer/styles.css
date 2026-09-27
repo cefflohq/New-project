@@ -409,6 +409,7 @@ img { display: block; max-width: 100%; }
 .rider__text { flex: 1 1 auto; min-width: 0; }
 .rider__name { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
 .rider__meta { margin: 1px 0 0; color: var(--ink-soft); font-size: 13.5px; }
+.rider__loc { color: var(--vendor-primary); text-decoration: underline; }
 
 .contact-actions { display: flex; gap: 12px; flex: 0 0 auto; }
 

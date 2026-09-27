@@ -242,6 +242,48 @@ class RiderRepository {
     ),
   );
 
+  /// Phase 2B.4: the only rider-location write path (F2-08, unchanged).
+  Future<void> recordLocation({
+    required String riderId,
+    required double latitude,
+    required double longitude,
+    double? accuracy,
+    double? heading,
+    double? speed,
+  }) => _run(
+    () => _db.rpc(
+      'record_rider_location',
+      params: {
+        'p_rider_id': riderId,
+        'p_latitude': latitude,
+        'p_longitude': longitude,
+        'p_accuracy': accuracy,
+        'p_heading': heading,
+        'p_speed': speed,
+      },
+    ),
+  );
+
+  /// Phase 2B.4: presence keys for this rider's own trackable orders.
+  Future<List<({String orderId, String topic, String key})>> liveKeys(
+    String riderId,
+  ) async {
+    final rows = await _run(
+      () => _db.rpc('rider_live_keys', params: {'p_rider_id': riderId}),
+    );
+    return [
+      for (final r in (rows as List).cast<Map>())
+        (
+          orderId: r['order_id'].toString(),
+          topic: 'trk:${r['live_topic']}',
+          key: r['live_key'].toString(),
+        ),
+    ];
+  }
+
+  /// Realtime client for the live-location channel (routing only).
+  SupabaseClient get realtimeClient => _db;
+
   /// SLIDE Start Delivery (R-12).
   Future<void> startRunDelivery({
     required String riderId,

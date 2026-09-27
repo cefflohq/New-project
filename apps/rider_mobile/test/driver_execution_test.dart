@@ -222,4 +222,14 @@ void main() {
       throwsA(isA<RepositoryError>()),
     );
   });
+
+  test('the current stop becomes out_for_delivery when it is next', () async {
+    final (app, repo) = await _hydrate([
+      _order('1', DeliveryStatus.pickedUp, seq: 1, locked: true),
+      _order('2', DeliveryStatus.pickedUp, seq: 2, locked: true),
+    ]);
+    await app.confirmRouteAndStart();
+    expect(repo.calls, contains('rider_transition 1 out_for_delivery'));
+    expect(repo.calls, isNot(contains('rider_transition 2 out_for_delivery')));
+  });
 }

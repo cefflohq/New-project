@@ -1,7 +1,6 @@
 # Phase 2B.4 — Rider Live Location (Demand-Aware Adaptive Tracking)
 
-Status: DESIGN — approved in principle; corrections applied; ready for
-implementation review (D-66). No runtime code in this
+Status: IMPLEMENTED ON STAGING (D-66). Design below; implementation evidence in §12. No runtime code in this
 change. Staging-only when implemented. Production untouched.
 
 ## 1. What exists today (inspected on canonical `dfbe070` and staging)
@@ -361,3 +360,69 @@ without Founder approval.
    No fabricated ETA, distance or movement.
 8. Production is untouched. The migration goes to Production only in a
    separate approved release.
+
+## 12. Implementation evidence (staging `tomvvmwktehexwhktenw`, 2026-09-27)
+
+**Preflight (§10), PASS:**
+- An authenticated rider and an anonymous client joined the same public
+  channel.
+- The anonymous client received the rider's Broadcast.
+- Presence track, untrack and auto-clear on disconnect all worked.
+
+**Backend:**
+- `202609270001_rider_live_location.sql` adds:
+  - `rider_assignments.live_topic`;
+  - `tracking_live_key()`;
+  - `rider_live_keys()`, rider-only (anon is refused);
+  - `public_tracking` gains `rider_location`, `live` and `stops_ahead`, only
+    while the order is picked up, out for delivery or arrived, and only for a
+    point that is at most 15 min old and recorded after pickup.
+- `202609270002` fixes `stops_ahead`. `build_rider_run` creates one assignment
+  per order, so the count is now by same session and same rider.
+
+**Driver (`apps/rider_mobile`):**
+- `core/live_location.dart`: `UploadGate`, `demandLevel`, `LiveLocationService`.
+- `data/live_adapters.dart`: geolocator source that restarts after browser
+  TIMEOUT, and a Supabase channel adapter.
+- Lifecycle events force one fresh fix.
+- The current stop becomes `out_for_delivery` when it is next, so customers see
+  On the Way while the rider is heading there.
+
+**Customer (`customer/`):**
+- `live.js`: minimal Realtime client (Presence `{k}`, `loc` hint only).
+- `backend.js`: one coalescing fetch gate (in-flight, one pending follow-up,
+  at least 10 s apart); visibility and pagehide leave the channel; safety
+  fallback only while visible (60 s / 3 min); transient load errors retried
+  twice.
+- The Pickup and On the Way screens show "N stops before yours" / "Your
+  delivery is next" and "Location updated X min ago" (a map link), using
+  snapshot data only.
+
+**Measured live run** (2 orders, one rider, simulated 60 m steps every 12 s):
+
+| Phase | Location writes | Design |
+|---|---|---|
+| No viewer (LOW) | 1 (route-start event) | ≈0 plus events |
+| Later-stop viewer (MEDIUM) | 2 over 4 steps | 150 m / 30 s |
+| Next-stop viewer (HIGH) | 4 over 4 steps | 50 m / 10 s |
+| Three viewers of the same rider | 4 over 4 steps | same as one viewer |
+| All tabs hidden | 0 | 0 |
+| Stationary, viewer visible | 0 over 45 s | 0 |
+| After every order delivered | 0; `public_tracking` returns no location or live block | stops |
+
+Negative checks:
+- `#CF-xxx` as a token returns null.
+- Anon cannot call `rider_live_keys` or read `rider_locations`.
+- Broadcasts carry no coordinates.
+
+**Tests:**
+- Driver: 26 pass (gate, demand level, service, stop advance).
+- Static: `test_customer_live_gate.py` (no parallel reads, burst collapse,
+  10 s spacing, hidden = zero reads, leave on delivered) and
+  `test_customer_tracking_live.py` (location only from the snapshot).
+
+**Limitations:**
+- Foreground only: no background location while the Driver app is closed.
+- Web geolocation needs browser permission.
+- The `tracking-pod` CORS origin for a hosted staging customer page is still
+  open (see 2B.3).

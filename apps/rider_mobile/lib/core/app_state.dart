@@ -4,6 +4,7 @@ import '../data/demo_data.dart';
 import '../data/driver_models.dart';
 import '../data/models.dart';
 import '../data/rider_repository.dart';
+import 'live_location.dart';
 import 'routes.dart';
 
 /// Where the signed-in Driver sits in the account lifecycle the references
@@ -22,9 +23,24 @@ enum RunPhase { accept, pickup, route, delivering, done }
 /// pattern as Vendor Mobile's AppState. Identifiers stay "Rider" internally
 /// per D-38; only rendered copy says "Driver".
 class AppState extends ChangeNotifier {
-  AppState(this.repo);
+  AppState(this.repo, {this.live});
 
   final RiderRepository repo;
+
+  /// Phase 2B.4 rider live location (real build only; null in demo/tests).
+  final LiveLocationService? live;
+
+  void _syncLive() {
+    final l = live;
+    final rider = active;
+    if (l == null || repo.isDemo || rider == null) return;
+    l.sync(orders, rider.id).catchError((_) {});
+  }
+
+  /// A lifecycle event wants one fresh coordinate (still gated, D-66).
+  void _liveEvent() {
+    live?.event().catchError((_) {});
+  }
 
   final List<RiderLocation> _stack = [const RiderLocation(DRoute.today)];
   List<RiderLocation> get stack => List.unmodifiable(_stack);
@@ -283,6 +299,7 @@ class AppState extends ChangeNotifier {
       return;
     }
     orders = await repo.myOrders(rider.id);
+    _syncLive();
     try {
       final rows = await repo.sessions(rider.businessId);
       sessionNames = {for (final s in rows) s.id: s.name};
@@ -489,11 +506,48 @@ class AppState extends ChangeNotifier {
 
   String get _riderId => active!.id;
 
-  Future<void> _thenRefresh(Future<void> Function() action) async {
+  Future<void> _thenRefresh(
+    Future<void> Function() action, {
+    bool locationEvent = false,
+  }) async {
     try {
       await action();
     } finally {
       await refreshOrders();
+    }
+    if (locationEvent) _liveEvent();
+  }
+
+  /// The next stop in the locked sequence becomes out_for_delivery as soon
+  /// as it is current (route start, or the previous stop finished), so the
+  /// customer sees On the Way while the rider is actually heading there.
+  /// The backend enforces the sequence; a refusal is ignored.
+  Future<void> _advanceCurrentStop({String? finishedId}) async {
+    final session = currentRun.id;
+    final pending =
+        orders
+            .where(
+              (o) =>
+                  o.deliverySessionId == session &&
+                  o.id != finishedId &&
+                  o.sequence != null &&
+                  (o.status == DeliveryStatus.pickedUp ||
+                      o.status == DeliveryStatus.outForDelivery ||
+                      o.status == DeliveryStatus.arrived),
+            )
+            .toList()
+          ..sort((a, b) => a.sequence!.compareTo(b.sequence!));
+    if (pending.isEmpty || pending.first.status != DeliveryStatus.pickedUp) {
+      return;
+    }
+    try {
+      await repo.transition(
+        riderId: _riderId,
+        orderId: pending.first.id,
+        next: 'out_for_delivery',
+      );
+    } on RepositoryError {
+      // Not current yet per the backend; the next refresh stays truthful.
     }
   }
 
@@ -525,7 +579,7 @@ class AppState extends ChangeNotifier {
         );
       }
     }
-  });
+  }, locationEvent: true);
 
   /// Slide to Confirm Route: save_run_sequence with the stop order on screen,
   /// then start_run_delivery (locks the sequence, orders go out for delivery).
@@ -545,7 +599,9 @@ class AppState extends ChangeNotifier {
         orderedOrderIds: ids,
       );
       await repo.startRunDelivery(riderId: _riderId, sessionId: currentRun.id);
-    });
+      await _loadOrders();
+      await _advanceCurrentStop();
+    }, locationEvent: true);
   }
 
   /// rider_transition -> out_for_delivery (if still picked up) -> arrived.
@@ -566,7 +622,7 @@ class AppState extends ChangeNotifier {
         orderId: stopId,
         next: 'arrived',
       );
-    });
+    }, locationEvent: true);
   }
 
   /// complete_delivery with a real proof-of-delivery photo.
@@ -575,15 +631,16 @@ class AppState extends ChangeNotifier {
     List<int> photoBytes,
     String extension, {
     String note = '',
-  }) => _thenRefresh(
-    () => repo.completeDelivery(
+  }) => _thenRefresh(() async {
+    await repo.completeDelivery(
       riderId: _riderId,
       orderId: stopId,
       photoBytes: photoBytes,
       photoExtension: extension,
       note: note,
-    ),
-  );
+    );
+    await _advanceCurrentStop(finishedId: stopId);
+  }, locationEvent: true);
 
   /// rider_report_delivery_issue with a canonical reason. Reasons with no
   /// canonical equivalent are refused honestly rather than forced.
@@ -600,14 +657,15 @@ class AppState extends ChangeNotifier {
         'This reason can\'t be recorded yet. Choose another reason or contact the business.',
       );
     }
-    return _thenRefresh(
-      () => repo.reportDeliveryIssue(
+    return _thenRefresh(() async {
+      await repo.reportDeliveryIssue(
         riderId: _riderId,
         orderId: stopId,
         reasonType: type,
         note: note,
-      ),
-    );
+      );
+      await _advanceCurrentStop(finishedId: stopId);
+    }, locationEvent: true);
   }
 
   Future<void> refreshOrders() async {
@@ -664,6 +722,7 @@ class AppState extends ChangeNotifier {
   }
 
   void clearSession() {
+    live?.stop().catchError((_) {});
     relationships = const [];
     active = null;
     orders = const [];

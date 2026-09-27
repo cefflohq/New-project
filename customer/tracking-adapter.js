@@ -63,6 +63,8 @@ export function buildTrackingViewModel(source, status) {
     route: onTheWay ? source.route ?? null : null,
     eta: onTheWay ? source.eta ?? null : null,
     rider: onTheWay ? source.rider ?? null : null,
+    // D-66: live rider context also while the order is picked up.
+    liveRider: (onTheWay || status === CUSTOMER_STATUS.PICKED_UP) ? source.rider ?? null : null,
     delivery: delivered ? source.delivery : null,
     pod: delivered && source.pod?.available ? source.pod : null,
     ratingEligible: Boolean(delivered && source.rating?.eligible)
@@ -216,9 +218,16 @@ export function buildLiveSource(payload = {}) {
     order: { itemsLabel: DASH, note: DASH },
     pickup: { atLabel: DASH },
     eta: known(payload.estimatedArrival) ? { label: 'Estimated Arrival', valueLabel: payload.estimatedArrival } : null,
-    // No customer-visible rider location exists in the contract, so no map.
+    // No map illustration: a real location is shown as text + map link only.
     route: null,
-    rider: { name: payload.riderName || 'Your rider', photo: null, vehicle: DASH, plate: DASH, contact: {} },
+    rider: {
+      name: payload.riderName || 'Your rider', photo: null, vehicle: DASH, plate: DASH, contact: {},
+      // D-66: latest authorized point only (never history), from public_tracking.
+      location: payload.riderLocation && Number.isFinite(payload.riderLocation.lat)
+        ? { lat: payload.riderLocation.lat, lng: payload.riderLocation.lng, recordedAt: payload.riderLocation.recorded_at }
+        : null,
+      stopsAhead: Number.isInteger(payload.stopsAhead) ? payload.stopsAhead : null
+    },
     delivery: { address: DASH, atLabel: known(payload.deliveredAt) ?? DASH, receivedBy: DASH },
     pod: payload.podPhoto ? { available: true, url: payload.podPhoto, alt: 'Proof of delivery photo', riderNote: DASH } : null,
     rating: { eligible: true }

@@ -71,8 +71,8 @@ protected-action approvals.
     `engineering/PHASE_2B3_CUSTOMER_TRACKING.md`. Backlog: customer-visible
     rider location; ETA/geocoding; POD CORS origin for a staging customer host.
 -   Phase 2B.4 --- Rider Live Location (Demand-Aware Adaptive Tracking, D-66):
-    DESIGN APPROVED IN PRINCIPLE, corrections applied, ready for
-    implementation review; no implementation yet.
+    IMPLEMENTED on staging with measured evidence (2026-09-27); foreground
+    location only.
     Design: `engineering/PHASE_2B4_RIDER_LIVE_LOCATION.md`.
 -   Product capability direction (D-69, `sot/01_PRODUCT_TRUTH.md` §18):
     classified priorities for **after production qualification**; this does

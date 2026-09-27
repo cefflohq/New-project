@@ -23,6 +23,7 @@ const snap = (status, extra = {}) => {
 };
 const out = {};
 for (const s of ['order_confirmed', 'preparing', 'picked_up', 'on_the_way', 'delivered', 'issue', 'cancelled']) out[s] = snap(s);
+out.live = snap('on_the_way', { riderLocation: { lat: 3.1234, lng: 101.5678, recorded_at: '2026-09-27T10:00:00Z' }, stopsAhead: 0 });
 out.delivered_pod = snap('delivered', { deliveredAt: '09:15 PM', podPhoto: 'https://signed.example/pod' });
 bridge.fail(); out.fail = provider.store.getState();
 out.fixtureStrings = [f.TRACKING_FIXTURE.vendor.tagline, f.TRACKING_FIXTURE.vendor.address, f.TRACKING_FIXTURE.rider.name,
@@ -85,6 +86,13 @@ class CustomerTrackingLiveTests(unittest.TestCase):
         self.assertEqual(self.out["cancelled"]["statusTitle"], "Order cancelled")
         self.assertEqual(self.out["fail"]["statusTitle"], "Tracking unavailable")
         self.assertNotIn("Brew", json.dumps(self.out["fail"]))
+
+    def test_live_location_only_from_snapshot(self):
+        rider = self.out["live"]["rider"]
+        self.assertEqual(rider["location"], {"lat": 3.1234, "lng": 101.5678, "recordedAt": "2026-09-27T10:00:00Z"})
+        self.assertEqual(rider["stopsAhead"], 0)
+        self.assertIsNone(self.out["on_the_way"]["rider"]["location"])
+        self.assertIsNone(self.out["live"]["route"])
 
     def test_customer_backend_uses_token_only(self):
         backend = (ROOT / "customer/backend.js").read_text()
