@@ -46,20 +46,28 @@ void main() {
         ),
       );
 
-  test('get_my_businesses is deployed and denied to anonymous callers', () async {
-    if (!configured) return markTestSkipped('staging config not provided');
-    // f2_11_rpc_grant_hardening revoked this from anon. An anonymous caller
-    // must be refused outright rather than receiving an empty list, which
-    // would be indistinguishable from "you have no businesses".
-    await expectLater(
-      () => repo.myBusinesses(),
-      throwsA(
-        isA<RepositoryError>()
-            .having((e) => e.isMissingContract, 'isMissingContract', isFalse)
-            .having((e) => e.message, 'message', contains('permission denied')),
-      ),
-    );
-  }, timeout: const Timeout(Duration(seconds: 30)));
+  test(
+    'get_my_businesses is deployed and denied to anonymous callers',
+    () async {
+      if (!configured) return markTestSkipped('staging config not provided');
+      // f2_11_rpc_grant_hardening revoked this from anon. An anonymous caller
+      // must be refused outright rather than receiving an empty list, which
+      // would be indistinguishable from "you have no businesses".
+      await expectLater(
+        () => repo.myBusinesses(),
+        throwsA(
+          isA<RepositoryError>()
+              .having((e) => e.isMissingContract, 'isMissingContract', isFalse)
+              .having(
+                (e) => e.message,
+                'message',
+                contains('permission denied'),
+              ),
+        ),
+      );
+    },
+    timeout: const Timeout(Duration(seconds: 30)),
+  );
 
   test('orders are not readable without a session (RLS holds)', () async {
     if (!configured) return markTestSkipped('staging config not provided');
@@ -88,7 +96,11 @@ void main() {
     test('is_within_coverage', () async {
       if (!configured) return markTestSkipped('staging config not provided');
       await expectDeployedButRefused(
-        () => repo.isWithinCoverage(businessId: anyUuid, latitude: 3.07, longitude: 101.5),
+        () => repo.isWithinCoverage(
+          businessId: anyUuid,
+          latitude: 3.07,
+          longitude: 101.5,
+        ),
       );
     }, timeout: const Timeout(Duration(seconds: 30)));
 
@@ -107,7 +119,8 @@ void main() {
     test('check_run_vehicle_capacity', () async {
       if (!configured) return markTestSkipped('staging config not provided');
       await expectDeployedButRefused(
-        () => repo.checkRunCapacity(riderId: anyUuid, orderIds: const [anyUuid]),
+        () =>
+            repo.checkRunCapacity(riderId: anyUuid, orderIds: const [anyUuid]),
       );
     }, timeout: const Timeout(Duration(seconds: 30)));
 

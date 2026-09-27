@@ -16,14 +16,17 @@ void main() {
   late AppState app;
 
   setUp(() {
-    app = AppState(VendorRepository(SupabaseClient('http://127.0.0.1:1', 'test-anon-key')));
+    app = AppState(
+      VendorRepository(SupabaseClient('http://127.0.0.1:1', 'test-anon-key')),
+    );
   });
 
   // A phone-sized surface, so a control that is reachable on a real device
   // is reachable here too. The default 800x600 test window is shorter than
   // any phone and would put the primary action below the fold.
   setUp(() {
-    final view = TestWidgetsFlutterBinding.instance.platformDispatcher.views.first;
+    final view =
+        TestWidgetsFlutterBinding.instance.platformDispatcher.views.first;
     view.physicalSize = const Size(390 * 3, 844 * 3);
     view.devicePixelRatio = 3.0;
     addTearDown(() {
@@ -37,8 +40,12 @@ void main() {
     child: MaterialApp(theme: buildVendorTheme(Brightness.light), home: child),
   );
 
-  testWidgets('a password-recovery link opens Set a new password', (tester) async {
-    await tester.pumpWidget(host(AuthFlow(recovery: true, onRecoveryDone: () {})));
+  testWidgets('a password-recovery link opens Set a new password', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(AuthFlow(recovery: true, onRecoveryDone: () {})),
+    );
     await tester.pump();
     expect(find.byType(SetNewPasswordScreen), findsOneWidget);
   });
@@ -48,8 +55,12 @@ void main() {
   });
 
   group('locked copy is present', () {
-    testWidgets('02 Sign In offers all three locked entry points', (tester) async {
-      await tester.pumpWidget(host(SignInScreen(onEmail: () {}, onSignUp: () {})));
+    testWidgets('02 Sign In offers all three locked entry points', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(SignInScreen(onEmail: () {}, onSignUp: () {})),
+      );
       await tester.pump();
 
       expect(find.text('VENDOR'), findsOneWidget);
@@ -62,28 +73,41 @@ void main() {
     });
 
     testWidgets('03 Email Sign In shows the locked form', (tester) async {
-      await tester.pumpWidget(host(EmailSignInScreen(
-        onBack: () {},
-        onForgotPassword: () {},
-        onSignUp: () {},
-        onNeedsVerification: (_) {},
-      )));
+      await tester.pumpWidget(
+        host(
+          EmailSignInScreen(
+            onBack: () {},
+            onForgotPassword: () {},
+            onSignUp: () {},
+            onNeedsVerification: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Sign in with Email'), findsOneWidget);
-      expect(find.text('Enter your email and password to continue.'), findsOneWidget);
+      expect(
+        find.text('Enter your email and password to continue.'),
+        findsOneWidget,
+      );
       expect(find.text('Email'), findsOneWidget);
       expect(find.text('Password'), findsOneWidget);
       expect(find.text('Forgot password?'), findsOneWidget);
       expect(find.text('Sign in'), findsOneWidget);
     });
 
-    testWidgets('04 Create Account shows the locked fields and helper', (tester) async {
-      await tester.pumpWidget(host(SignUpScreen(
-        onBack: () {},
-        onSignIn: () {},
-        onNeedsVerification: (_) {},
-      )));
+    testWidgets('04 Create Account shows the locked fields and helper', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          SignUpScreen(
+            onBack: () {},
+            onSignIn: () {},
+            onNeedsVerification: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Create your account'), findsOneWidget);
@@ -93,22 +117,35 @@ void main() {
       expect(find.text('Create account'), findsOneWidget);
     });
 
-    testWidgets('05 Forgot Password shows the locked request form', (tester) async {
-      await tester.pumpWidget(host(ForgotPasswordScreen(onBack: () {}, onSent: (_) {})));
+    testWidgets('05 Forgot Password shows the locked request form', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(ForgotPasswordScreen(onBack: () {}, onSent: (_) {})),
+      );
       await tester.pump();
 
       expect(find.text('Forgot password?'), findsOneWidget);
-      expect(find.text("Enter your email and we'll send you a reset link."), findsOneWidget);
+      expect(
+        find.text("Enter your email and we'll send you a reset link."),
+        findsOneWidget,
+      );
       expect(find.text('Send reset link'), findsOneWidget);
       expect(find.text('Back to sign in'), findsOneWidget);
     });
 
-    testWidgets('06 Check Your Email shows the locked non-committal copy', (tester) async {
-      await tester.pumpWidget(host(CheckYourEmailScreen(
-        onBack: () {},
-        onBackToSignIn: () {},
-        onTryAnotherEmail: () {},
-      )));
+    testWidgets('06 Check Your Email shows the locked non-committal copy', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          CheckYourEmailScreen(
+            onBack: () {},
+            onBackToSignIn: () {},
+            onTryAnotherEmail: () {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Check your email'), findsOneWidget);
@@ -122,14 +159,20 @@ void main() {
       expect(find.text('Try another email'), findsOneWidget);
     });
 
-    testWidgets('10 Verify Your Email shows resend and alternatives', (tester) async {
-      await tester.pumpWidget(host(VerifyYourEmailScreen(
-        email: 'you@yourbusiness.com',
-        onBack: () {},
-        onBackToSignIn: () {},
-        onUseDifferentEmail: () {},
-        onExpired: () {},
-      )));
+    testWidgets('10 Verify Your Email shows resend and alternatives', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          VerifyYourEmailScreen(
+            email: 'you@yourbusiness.com',
+            onBack: () {},
+            onBackToSignIn: () {},
+            onUseDifferentEmail: () {},
+            onExpired: () {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Verify your email'), findsOneWidget);
@@ -143,16 +186,25 @@ void main() {
       await tester.pump();
 
       expect(find.text('Email verified'), findsOneWidget);
-      expect(find.text('Your email is confirmed.\nSign in to continue.'), findsOneWidget);
+      expect(
+        find.text('Your email is confirmed.\nSign in to continue.'),
+        findsOneWidget,
+      );
       expect(find.text('Continue to sign in'), findsOneWidget);
     });
 
-    testWidgets('12 Verification Link Expired asks for a fresh address', (tester) async {
-      await tester.pumpWidget(host(VerificationLinkExpiredScreen(
-        email: 'you@yourbusiness.com',
-        onBack: () {},
-        onBackToSignIn: () {},
-      )));
+    testWidgets('12 Verification Link Expired asks for a fresh address', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          VerificationLinkExpiredScreen(
+            email: 'you@yourbusiness.com',
+            onBack: () {},
+            onBackToSignIn: () {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Verification link expired'), findsOneWidget);
@@ -166,15 +218,24 @@ void main() {
   });
 
   group('locked authentication states', () {
-    testWidgets('password mismatch is caught locally, no backend call', (tester) async {
-      await tester.pumpWidget(host(SignUpScreen(
-        onBack: () {},
-        onSignIn: () {},
-        onNeedsVerification: (_) {},
-      )));
+    testWidgets('password mismatch is caught locally, no backend call', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          SignUpScreen(
+            onBack: () {},
+            onSignIn: () {},
+            onNeedsVerification: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
-      await tester.enterText(find.byType(TextField).at(0), 'you@yourbusiness.com');
+      await tester.enterText(
+        find.byType(TextField).at(0),
+        'you@yourbusiness.com',
+      );
       await tester.enterText(find.byType(TextField).at(1), 'supersecret123');
       await tester.enterText(find.byType(TextField).at(2), 'different456');
       await tester.tap(find.text('Create account'));
@@ -183,14 +244,17 @@ void main() {
       expect(find.text('Passwords do not match.'), findsOneWidget);
     });
 
-    testWidgets('set-a-new-password keeps Update disabled until they match',
-        (tester) async {
-      await tester.pumpWidget(host(SetNewPasswordScreen(onBack: () {}, onUpdated: () {})));
+    testWidgets('set-a-new-password keeps Update disabled until they match', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(SetNewPasswordScreen(onBack: () {}, onUpdated: () {})),
+      );
       await tester.pump();
 
       FilledButton updateButton() => tester.widget<FilledButton>(
-            find.widgetWithText(FilledButton, 'Update password'),
-          );
+        find.widgetWithText(FilledButton, 'Update password'),
+      );
 
       expect(updateButton().onPressed, isNull);
 
@@ -206,17 +270,25 @@ void main() {
       expect(updateButton().onPressed, isNotNull);
     });
 
-    testWidgets('a failed sign-in surfaces an error instead of throwing',
-        (tester) async {
-      await tester.pumpWidget(host(EmailSignInScreen(
-        onBack: () {},
-        onForgotPassword: () {},
-        onSignUp: () {},
-        onNeedsVerification: (_) {},
-      )));
+    testWidgets('a failed sign-in surfaces an error instead of throwing', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          EmailSignInScreen(
+            onBack: () {},
+            onForgotPassword: () {},
+            onSignUp: () {},
+            onNeedsVerification: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
-      await tester.enterText(find.byType(TextField).at(0), 'you@yourbusiness.com');
+      await tester.enterText(
+        find.byType(TextField).at(0),
+        'you@yourbusiness.com',
+      );
       await tester.enterText(find.byType(TextField).at(1), 'supersecret123');
       await tester.tap(find.text('Sign in'));
       await tester.pumpAndSettle(const Duration(seconds: 5));
@@ -234,23 +306,33 @@ void main() {
   group('locked error copy maps from the backend error code', () {
     test('invalid credentials', () {
       expect(
-        authErrorText(RepositoryError('Invalid login credentials',
-            code: 'invalid_credentials')),
+        authErrorText(
+          RepositoryError(
+            'Invalid login credentials',
+            code: 'invalid_credentials',
+          ),
+        ),
         'Email or password is incorrect. Try again.',
       );
     });
 
     test('rate limits, whatever the backend prose says', () {
       expect(
-        authErrorText(RepositoryError(
-          'For security purposes, you can only request this after 47 seconds.',
-          code: 'over_email_send_rate_limit',
-        )),
+        authErrorText(
+          RepositoryError(
+            'For security purposes, you can only request this after 47 seconds.',
+            code: 'over_email_send_rate_limit',
+          ),
+        ),
         'Too many attempts. Please wait before trying again.',
       );
       expect(
-        authErrorText(RepositoryError('Request rate limit reached',
-            code: 'over_request_rate_limit')),
+        authErrorText(
+          RepositoryError(
+            'Request rate limit reached',
+            code: 'over_request_rate_limit',
+          ),
+        ),
         'Too many attempts. Please wait before trying again.',
       );
     });
@@ -265,20 +347,29 @@ void main() {
     test('an unconfirmed account routes to the verification screen', () {
       expect(
         needsEmailVerification(
-            RepositoryError('Email not confirmed', code: 'email_not_confirmed')),
+          RepositoryError('Email not confirmed', code: 'email_not_confirmed'),
+        ),
         isTrue,
       );
       expect(
-        needsEmailVerification(RepositoryError('Invalid login credentials',
-            code: 'invalid_credentials')),
+        needsEmailVerification(
+          RepositoryError(
+            'Invalid login credentials',
+            code: 'invalid_credentials',
+          ),
+        ),
         isFalse,
       );
     });
 
     test('anything the board does not define keeps the backend wording', () {
       expect(
-        authErrorText(RepositoryError('Signups not allowed for this instance',
-            code: 'signup_disabled')),
+        authErrorText(
+          RepositoryError(
+            'Signups not allowed for this instance',
+            code: 'signup_disabled',
+          ),
+        ),
         'Signups not allowed for this instance',
       );
     });

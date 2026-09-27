@@ -5,6 +5,9 @@ import '../data/plans.dart';
 import '../data/storefront_config.dart';
 import '../data/vendor_repository.dart';
 import 'routes.dart';
+import 'ui_locale.dart';
+
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
 
 /// Navigation + session state.
 ///
@@ -24,7 +27,12 @@ class AppState extends ChangeNotifier {
 
   List<Business> businesses = const [];
   Business? business;
-  String locale = 'en';
+
+  /// UI language (en / ms). Independent of country/market (Founder,
+  /// 2026-09-27). Starts from the device language; an explicit choice
+  /// persists on this device and follows the signed-in user.
+  Locale uiLocale = resolveDeviceLocale();
+  final UiLocaleStore _localeStore = UiLocaleStore();
 
   bool loadingSession = true;
   String? sessionError;
@@ -87,7 +95,7 @@ class AppState extends ChangeNotifier {
   /// payment contract yet, so it fails and nothing is charged.
   Future<void> subscribe(SubscriptionPlan plan, BillingCycle cycle) async {
     if (!repo.isDemo) {
-      throw StateError('Payments are not available yet.');
+      throw StateError(L.paymentsNotAvailableYet);
     }
     currentPlanId = plan.id;
     currentCycle = cycle;
@@ -217,8 +225,25 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setLocale(String value) {
-    locale = value;
+  /// Applies a stored explicit choice (device), if any. Called at startup.
+  Future<void> restoreUiLocale() async {
+    final stored = await _localeStore.read();
+    if (stored != null) _applyUiLocale(stored);
+  }
+
+  /// Explicit user choice: applied now, persisted on this device and saved
+  /// to the user's profile when signed in. Operational state is untouched.
+  Future<void> setUiLocale(Locale next) async {
+    _applyUiLocale(next);
+    await _localeStore.write(next);
+    if (!repo.isDemo && repo.currentUser != null) {
+      await repo.saveUiLocale(next.languageCode);
+    }
+  }
+
+  void _applyUiLocale(Locale next) {
+    uiLocale = next;
+    applyUiLocale(next);
     notifyListeners();
   }
 
@@ -227,6 +252,12 @@ class AppState extends ChangeNotifier {
     sessionError = null;
     notifyListeners();
     try {
+      // The signed-in user's own language follows them across devices.
+      final own = parseUiLocale(repo.currentUser?.userMetadata?['ui_locale']);
+      if (own != null && own != uiLocale) {
+        _applyUiLocale(own);
+        await _localeStore.write(own);
+      }
       businesses = await repo.myBusinesses();
       business = businesses.isEmpty ? null : businesses.first;
     } on RepositoryError catch (e) {

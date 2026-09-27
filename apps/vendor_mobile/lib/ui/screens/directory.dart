@@ -12,6 +12,10 @@ import '../shell.dart';
 import '../widgets.dart';
 import 'planning.dart' show showDispatchSheet;
 
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+
+import '../../core/ui_locale.dart';
+
 /// Presentation-only: canonical values stay lowercase ('active', 'van'); this
 /// only affects how they are displayed.
 String _titleCase(String value) => value
@@ -30,9 +34,7 @@ class ZonesScreen extends StatelessWidget {
     final app = AppScope.of(context);
     final business = app.business;
     if (business == null) {
-      return const PageBody(
-        children: [StateBlock.empty('No business linked.')],
-      );
+      return PageBody(children: [StateBlock.empty(L.noBusinessLinked)]);
     }
     return AsyncView<(List<Zone>, List<VendorOrder>)>(
       loading: const SkeletonPage(
@@ -53,11 +55,9 @@ class ZonesScreen extends StatelessWidget {
           onRefresh: reload,
           children: [
             _ZonesOverviewMap(zones: zones),
-            SectionHeading('Zones (${zones.length})'),
+            SectionHeading(L.zones2(zones.length)),
             if (zones.isEmpty)
-              const StateBlock.empty(
-                'No zones yet. Tap + to create your first zone.',
-              )
+              StateBlock.empty(L.noZonesYetTapCreateFirst)
             else
               for (final z in zones)
                 Builder(
@@ -75,7 +75,7 @@ class ZonesScreen extends StatelessWidget {
                           '${plural(riders.length, 'rider')}',
                       icon: LucideIcons.mapPin,
                       trailing: StatusChip(
-                        z.isActive ? 'Active' : 'Inactive',
+                        z.isActive ? L.active : L.inactive,
                         success: z.isActive,
                       ),
                       // Audit fix 2: bound to this zone's id.
@@ -289,9 +289,7 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
     final app = AppScope.of(context);
     final business = app.business;
     if (business == null) {
-      return const PageBody(
-        children: [StateBlock.empty('No business linked.')],
-      );
+      return PageBody(children: [StateBlock.empty(L.noBusinessLinked)]);
     }
     return AsyncView<List<Zone>>(
       key: ValueKey('zone-configuration-${business.id}'),
@@ -316,8 +314,7 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
                   const SizedBox(width: Gap.md),
                   Expanded(
                     child: Text(
-                      'These zones define where you deliver. Add, edit or '
-                      'deactivate zones anytime.',
+                      L.theseZonesDefineWhereDeliverAdd,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
@@ -326,13 +323,13 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
             ),
             const SizedBox(height: Gap.md),
             CefSearchField(
-              hint: 'Search zones...',
+              hint: L.searchZones,
               controller: _query,
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: Gap.md),
             if (visible.isEmpty)
-              const StateBlock.empty('No zones configured yet.')
+              StateBlock.empty(L.noZonesConfiguredYet)
             else
               // Archetype C (zones list): accent map-pin disc, status pill.
               for (final z in visible)
@@ -340,7 +337,7 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
                   title: z.name,
                   icon: LucideIcons.mapPin,
                   trailing: StatusChip(
-                    z.isActive ? 'Active' : 'Inactive',
+                    z.isActive ? L.active : L.inactive,
                     success: z.isActive,
                   ),
                   onTap: () => app.go(VRoute.zoneDetail, entityId: z.id),
@@ -385,7 +382,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
     final zones = await app.repo.zones(businessId);
     final zone = zones.firstWhere(
       (z) => z.id == widget.zoneId,
-      orElse: () => throw StateError('Zone not found'),
+      orElse: () => throw StateError(L.zoneNotFound),
     );
     final orders = await app.repo.orders(businessId);
     final plan = await app.repo.proposePlan(businessId);
@@ -412,7 +409,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
           trailing: [
             IconAction(
               icon: LucideIcons.ellipsis,
-              tooltip: 'Zone options',
+              tooltip: L.zoneOptions,
               color: Colors.white,
               onTap: zone == null ? () {} : () => _showZoneOptions(zone),
             ),
@@ -465,13 +462,10 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                'Zone options',
-                style: Theme.of(sheet).textTheme.titleMedium,
-              ),
+              Text(L.zoneOptions, style: Theme.of(sheet).textTheme.titleMedium),
               const SizedBox(height: Gap.sm),
               CefListRow(
-                title: 'Edit zone name',
+                title: L.editZoneName,
                 icon: LucideIcons.pencil,
                 showChevron: false,
                 onTap: () {
@@ -480,7 +474,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                 },
               ),
               _DestructiveRow(
-                label: 'Delete zone',
+                label: L.deleteZone,
                 onTap: () {
                   Navigator.of(sheet).pop();
                   _confirmDelete(zone);
@@ -488,7 +482,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
               ),
               const SizedBox(height: Gap.lg),
               CefButton(
-                'Cancel',
+                L.cancel,
                 secondary: true,
                 onTap: () => Navigator.of(sheet).pop(),
               ),
@@ -519,10 +513,10 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
       setState(() => _zone = updated);
       await _view.currentState?.reload();
       if (!mounted) return;
-      showCefToast(context, 'Zone renamed to ${updated.name}');
+      showCefToast(context, L.zoneRenamed(updated.name));
     } catch (e) {
       if (mounted) {
-        showCefToast(context, 'Could not rename: $e', error: true);
+        showCefToast(context, L.couldNotRename(e), error: true);
       }
     }
   }
@@ -550,12 +544,12 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Delete ${zone.name}?',
+                L.delete(zone.name),
                 style: Theme.of(sheet).textTheme.titleMedium,
               ),
               const SizedBox(height: Gap.xs),
               Text(
-                'This will remove the zone from your delivery setup.',
+                L.willRemoveZoneFromDeliverySetup,
                 style: Theme.of(sheet).textTheme.bodyMedium,
               ),
               const SizedBox(height: Gap.xl),
@@ -563,7 +557,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                 children: [
                   Expanded(
                     child: CefButton(
-                      'Cancel',
+                      L.cancel,
                       secondary: true,
                       onTap: () => Navigator.of(sheet).pop(false),
                     ),
@@ -571,7 +565,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                   const SizedBox(width: Gap.md),
                   Expanded(
                     child: CefButton(
-                      'Delete',
+                      L.delete2,
                       destructive: true,
                       onTap: () => Navigator.of(sheet).pop(true),
                     ),
@@ -588,11 +582,11 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
       // Archived as inactive (D-61): never a hard delete.
       await app.repo.deactivateZone(zone.id);
       if (!mounted) return;
-      showCefToast(context, '${zone.name} removed from your delivery setup');
+      showCefToast(context, L.removedFromDeliverySetup(zone.name));
       app.back();
     } catch (e) {
       if (mounted) {
-        showCefToast(context, 'Could not delete: $e', error: true);
+        showCefToast(context, L.couldNotDelete(e), error: true);
       }
     }
   }
@@ -641,7 +635,7 @@ class _EditZoneNameSheetState extends State<_EditZoneNameSheet> {
   void _save() {
     final name = _controller.text.trim();
     if (name.isEmpty) {
-      setState(() => _error = 'Zone name is required.');
+      setState(() => _error = L.zoneNameRequired);
       return;
     }
     Navigator.of(context).pop(name);
@@ -660,14 +654,11 @@ class _EditZoneNameSheetState extends State<_EditZoneNameSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Edit zone name',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text(L.editZoneName, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: Gap.md),
           CefField(
             controller: _controller,
-            hint: 'Zone name',
+            hint: L.zoneName,
             prefixIcon: LucideIcons.mapPin,
             errorText: _error,
           ),
@@ -675,13 +666,13 @@ class _EditZoneNameSheetState extends State<_EditZoneNameSheet> {
             children: [
               Expanded(
                 child: CefButton(
-                  'Cancel',
+                  L.cancel,
                   secondary: true,
                   onTap: () => Navigator.of(context).pop(),
                 ),
               ),
               const SizedBox(width: Gap.md),
-              Expanded(child: CefButton('Save', onTap: _save)),
+              Expanded(child: CefButton(L.save, onTap: _save)),
             ],
           ),
         ],
@@ -741,7 +732,7 @@ class _ZoneDetailBody extends StatelessWidget {
               ),
               const SizedBox(width: Gap.sm),
               StatusChip(
-                zone.isActive ? 'Active' : 'Inactive',
+                zone.isActive ? L.active : L.inactive,
                 success: zone.isActive,
               ),
             ],
@@ -755,21 +746,21 @@ class _ZoneDetailBody extends StatelessWidget {
           KpiStrip(
             items: [
               KpiItem(
-                groups.isEmpty ? '0 km' : '${distance.toStringAsFixed(1)} km',
-                'Total distance',
+                groups.isEmpty ? L.t0Km : L.km(distance.toStringAsFixed(1)),
+                L.totalDistance,
                 icon: LucideIcons.route,
               ),
               KpiItem(
                 '${orders.length}',
-                'Total orders',
+                L.totalOrders,
                 icon: LucideIcons.clipboardList,
               ),
-              KpiItem('$delivered', 'Delivered', icon: LucideIcons.circleCheck),
+              KpiItem('$delivered', L.delivered, icon: LucideIcons.circleCheck),
             ],
           ),
-          const SectionHeading("Today's deliveries"),
+          SectionHeading(L.todaysDeliveries),
           if (groups.isEmpty && runs.isEmpty)
-            const StateBlock.empty('No deliveries planned in this zone today.')
+            StateBlock.empty(L.noDeliveriesPlannedZoneToday)
           else ...[
             for (final r in runs) ...[
               _DispatchedRiderHeader(
@@ -809,7 +800,7 @@ class _ZoneDetailBody extends StatelessWidget {
               Align(
                 alignment: AlignmentDirectional.centerEnd,
                 child: CefLink(
-                  'Dispatch',
+                  L.dispatch,
                   chevron: true,
                   onTap: () => showDispatchSheet(
                     context,
@@ -837,7 +828,7 @@ class _DispatchedRiderHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    final name = rider?.name ?? 'Rider';
+    final name = rider?.name ?? L.rider;
     return CefListRow(
       title: name,
       subtitle: [
@@ -861,7 +852,7 @@ class _RiderHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    final name = group.candidateRiderName ?? rider?.name ?? 'Unassigned rider';
+    final name = group.candidateRiderName ?? rider?.name ?? L.unassignedRider;
     final count = group.stops.length;
     return CefListRow(
       title: name,
@@ -871,7 +862,7 @@ class _RiderHeader extends StatelessWidget {
         if (rider?.plate != null) rider!.plate!,
       ].join(' · '),
       leading: CefAvatar(name, filled: true),
-      trailing: StatusChip('$count order${count == 1 ? '' : 's'}'),
+      trailing: StatusChip(L.order(count, count == 1 ? '' : 's')),
       onTap: group.candidateRiderId == null
           ? null
           : () => app.go(VRoute.riderDetail, entityId: group.candidateRiderId),
@@ -900,8 +891,8 @@ class _DeliveryStopRow extends StatelessWidget {
     final c = context.c;
     final text = Theme.of(context).textTheme;
     final meta = [
-      if (stop.distanceKm != null) '${stop.distanceKm} km',
-      if (stop.travelMinutes != null) '${stop.travelMinutes} min',
+      if (stop.distanceKm != null) L.km2(stop.distanceKm!),
+      if (stop.travelMinutes != null) L.min(stop.travelMinutes!),
     ].join(' · ');
     final eta = stop.etaAt == null ? null : _formatTime(stop.etaAt!);
     final row = CefListRow(
@@ -947,7 +938,7 @@ class _DeliveryStopRow extends StatelessWidget {
       onDismissed: (_) {
         showCefToast(
           context,
-          '${order?.customerName ?? 'Delivery'} removed from today',
+          L.removedFromToday(order?.customerName ?? L.delivery),
         );
         onRemoved();
       },
@@ -1042,9 +1033,7 @@ class _CreateZoneScreenState extends State<CreateZoneScreen> {
 
   Future<void> _save() async {
     setState(
-      () => nameError = name.text.trim().isEmpty
-          ? 'Zone name is required.'
-          : null,
+      () => nameError = name.text.trim().isEmpty ? L.zoneNameRequired : null,
     );
     if (nameError != null) return;
 
@@ -1053,10 +1042,10 @@ class _CreateZoneScreenState extends State<CreateZoneScreen> {
       final ok = await runAsyncFeedback(
         context,
         action: () async {},
-        processingTitle: 'Processing...',
-        processingSubtitle: 'Creating your zone',
-        successTitle: 'Successful',
-        successSubtitle: 'Your new zone has been created successfully.',
+        processingTitle: L.processing,
+        processingSubtitle: L.creatingZone,
+        successTitle: L.successful,
+        successSubtitle: L.newZoneHasBeenCreatedSuccessfully,
       );
       if (!mounted || !ok) return;
       app.back();
@@ -1087,7 +1076,7 @@ class _CreateZoneScreenState extends State<CreateZoneScreen> {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return PageBody(
-      bottom: CefButton('Create Zone', busy: busy, onTap: _save),
+      bottom: CefButton(L.createZone2, busy: busy, onTap: _save),
       children: [
         SizedBox(
           height: 170,
@@ -1106,20 +1095,16 @@ class _CreateZoneScreenState extends State<CreateZoneScreen> {
           ),
         ),
         const SizedBox(height: Gap.md),
-        Text(
-          'This zone will cover the highlighted area on the map. '
-          'You can always edit it later.',
-          style: text.bodySmall,
-        ),
-        const SectionHeading(
-          'Zone details',
+        Text(L.zoneWillCoverHighlightedAreaMap, style: text.bodySmall),
+        SectionHeading(
+          L.zoneDetails,
           icon: LucideIcons.mapPin,
-          subtitle: 'Name the area you deliver to',
+          subtitle: L.nameAreaDeliver,
         ),
         CefField(
-          label: 'Zone name',
+          label: L.zoneName,
           controller: name,
-          hint: 'Enter zone name',
+          hint: L.enterZoneName,
           prefixIcon: LucideIcons.mapPin,
           errorText: nameError,
         ),
@@ -1143,38 +1128,39 @@ class RidersScreen extends StatefulWidget {
 }
 
 class _RidersScreenState extends State<RidersScreen> {
-  String tab = 'All';
+  /// Selected filter: 0 All, 1 Active, 2 Offline, 3 Pending (index, never
+  /// display text, so filtering works in every language).
+  int tab = 0;
 
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     final business = app.business;
     if (business == null) {
-      return const PageBody(
-        children: [StateBlock.empty('No business linked.')],
-      );
+      return PageBody(children: [StateBlock.empty(L.noBusinessLinked)]);
     }
     return AsyncView<List<RiderRow>>(
       key: ValueKey('riders-${business.id}'),
       load: () => app.repo.riders(business.id),
       builder: (context, riders, reload) {
         final visible = switch (tab) {
-          'Active' => riders.where((r) => r.isActive).toList(),
-          'Offline' => riders.where((r) => r.isOffline).toList(),
-          'Pending' => riders.where((r) => r.status == 'pending').toList(),
+          1 => riders.where((r) => r.isActive).toList(),
+          2 => riders.where((r) => r.isOffline).toList(),
+          3 => riders.where((r) => r.status == 'pending').toList(),
           _ => riders,
         };
+        final tabLabels = [L.all, L.active, L.offline, L.pending];
         return PageBody(
           onRefresh: reload,
           children: [
             SegmentedTabs(
-              labels: const ['All', 'Active', 'Offline', 'Pending'],
-              active: tab,
-              onChange: (l) => setState(() => tab = l),
+              labels: tabLabels,
+              active: tabLabels[tab],
+              onChange: (l) => setState(() => tab = tabLabels.indexOf(l)),
             ),
             const SizedBox(height: Gap.md),
             if (visible.isEmpty)
-              const StateBlock.empty('No riders yet.')
+              StateBlock.empty(L.noRidersYet)
             else
               for (final r in visible)
                 CefListRow(
@@ -1186,10 +1172,10 @@ class _RidersScreenState extends State<RidersScreen> {
                   leading: CefAvatar(r.name, filled: true),
                   trailing: StatusChip(
                     r.isActive
-                        ? 'Active'
+                        ? L.active
                         : r.isPending
-                        ? 'Pending'
-                        : 'Offline',
+                        ? L.pending
+                        : L.offline,
                     success: r.isActive,
                     warning: r.isPending,
                   ),
@@ -1205,19 +1191,19 @@ class _RidersScreenState extends State<RidersScreen> {
 
 /// "12 Jan 2024" -- the one short date format on detail stats.
 String _shortDate(DateTime d) {
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
+  final months = [
+    L.jan,
+    L.feb,
+    L.mar,
+    L.apr,
+    L.may,
+    L.jun,
+    L.jul,
+    L.aug,
+    L.sep,
+    L.oct,
+    L.nov,
+    L.dec,
   ];
   return '${d.day} ${months[d.month - 1]} ${d.year}';
 }
@@ -1247,7 +1233,7 @@ class RiderDetailScreen extends StatelessWidget {
         final riders = await app.repo.riders(app.business!.id);
         return riders.firstWhere(
           (r) => r.id == riderId,
-          orElse: () => throw StateError('Rider not found'),
+          orElse: () => throw StateError(L.riderNotFound),
         );
       },
       builder: (context, rider, reload) {
@@ -1260,10 +1246,10 @@ class RiderDetailScreen extends StatelessWidget {
             title: rider.name,
             status: HeroStatusPill(
               pending
-                  ? 'Pending Review'
+                  ? L.pendingReview
                   : rider.isActive
-                  ? 'Active'
-                  : 'Offline',
+                  ? L.active
+                  : L.offline,
               color: pending
                   ? context.c.warning
                   : rider.isActive
@@ -1271,7 +1257,7 @@ class RiderDetailScreen extends StatelessWidget {
                   : context.c.textSecondary,
             ),
             lines: [
-              HeroLine(pending ? 'Rider applicant' : 'Rider'),
+              HeroLine(pending ? L.riderApplicant : L.rider),
               if (plate.isNotEmpty)
                 HeroLine(plate, icon: _vehicleIcon(rider.vehicleType)),
             ],
@@ -1281,22 +1267,18 @@ class RiderDetailScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: CefButton(
-                        'Reject',
+                        L.reject,
                         secondary: true,
-                        onTap: () => showNotWiredYetSnackBar(
-                          context,
-                          'Rejecting riders',
-                        ),
+                        onTap: () =>
+                            showNotWiredYetSnackBar(context, L.rejectingRiders),
                       ),
                     ),
                     const SizedBox(width: Gap.cardGap),
                     Expanded(
                       child: CefButton(
-                        'Approve Rider',
-                        onTap: () => showNotWiredYetSnackBar(
-                          context,
-                          'Approving riders',
-                        ),
+                        L.approveRider,
+                        onTap: () =>
+                            showNotWiredYetSnackBar(context, L.approvingRiders),
                       ),
                     ),
                   ],
@@ -1307,33 +1289,33 @@ class RiderDetailScreen extends StatelessWidget {
               items: [
                 KpiItem(
                   rider.totalOrders?.toString() ?? '—',
-                  'Total orders',
+                  L.totalOrders,
                   icon: LucideIcons.package,
                 ),
                 KpiItem(
                   rider.rating?.toStringAsFixed(1) ?? '—',
-                  'Customer rating',
+                  L.customerRating,
                   icon: LucideIcons.star,
                 ),
                 KpiItem(
                   rider.joinedAt == null ? '—' : _shortDate(rider.joinedAt!),
-                  'Joined',
+                  L.joined,
                   icon: LucideIcons.calendarDays,
                 ),
               ],
             ),
             const SizedBox(height: Gap.md),
             ContactCard(phone: rider.phone),
-            const CefListGroup(
+            CefListGroup(
               children: [
                 CefListRow(
-                  title: 'Driving Licence',
-                  subtitle: 'No licence document available',
+                  title: L.drivingLicence,
+                  subtitle: L.noLicenceDocumentAvailable,
                   icon: LucideIcons.fileText,
                 ),
                 CefListRow(
-                  title: 'Additional Information',
-                  subtitle: 'No additional information available.',
+                  title: L.additionalInformation,
+                  subtitle: L.noAdditionalInformationAvailable,
                   icon: LucideIcons.clipboardList,
                 ),
               ],
@@ -1380,13 +1362,13 @@ class _TeamScreenState extends State<TeamScreen> {
           onRefresh: reload,
           children: [
             CefSearchField(
-              hint: 'Search team members...',
+              hint: L.searchTeamMembers,
               controller: _query,
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: Gap.md),
             if (visible.isEmpty)
-              const StateBlock.empty('No team members yet.')
+              StateBlock.empty(L.noTeamMembersYet)
             else
               // Archetype D (people list): filled avatar, status pill.
               for (final m in visible)
@@ -1394,7 +1376,7 @@ class _TeamScreenState extends State<TeamScreen> {
                   title: m.displayName ?? m.userId,
                   subtitle: m.role,
                   leading: CefAvatar(m.displayName ?? m.userId, filled: true),
-                  trailing: const StatusChip('Active', success: true),
+                  trailing: StatusChip(L.active, success: true),
                   // Audit fix 2: bound to this member's id.
                   onTap: () =>
                       app.go(VRoute.teamMemberDetail, entityId: m.userId),
@@ -1423,7 +1405,7 @@ class TeamMemberDetailScreen extends StatelessWidget {
         final members = await app.repo.team(app.business!.id);
         return members.firstWhere(
           (m) => m.userId == memberId,
-          orElse: () => throw StateError('Team member not found'),
+          orElse: () => throw StateError(L.teamMemberNotFound),
         );
       },
       builder: (context, member, reload) {
@@ -1433,7 +1415,7 @@ class TeamMemberDetailScreen extends StatelessWidget {
           hero: DetailHero(
             leading: CefAvatar(name, size: 88),
             title: name,
-            status: const HeroStatusPill('Active'),
+            status: HeroStatusPill(L.active),
             lines: [HeroLine(member.role)],
           ),
           children: [
@@ -1441,21 +1423,19 @@ class TeamMemberDetailScreen extends StatelessWidget {
             CefListGroup(
               children: [
                 CefListRow(
-                  title: 'Email',
-                  subtitle: member.email ?? 'Not provided',
+                  title: L.email,
+                  subtitle: member.email ?? L.notProvided,
                   icon: LucideIcons.mail,
                 ),
                 CefListRow(
-                  title: 'Role & access',
+                  title: L.roleAccess,
                   subtitle: '${member.role} · ${_roleDescription(member.role)}',
                   subtitleMaxLines: 3,
                   icon: LucideIcons.shieldCheck,
                 ),
-                const CefListRow(
-                  title: 'Account status',
-                  subtitle:
-                      'Active · This team member can currently access your '
-                      'business.',
+                CefListRow(
+                  title: L.accountStatus,
+                  subtitle: L.activeTeamMemberCanAccessBusiness,
                   subtitleMaxLines: 2,
                   icon: LucideIcons.circleCheck,
                 ),
@@ -1463,14 +1443,13 @@ class TeamMemberDetailScreen extends StatelessWidget {
             ),
             if (member.isOwner)
               Text(
-                'The business owner always keeps full access and cannot be '
-                'removed from the team.',
+                L.businessOwnerAlwaysKeepsFullAccess,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall,
               )
             else
               CefButton(
-                'Remove from Team',
+                L.removeFromTeam,
                 destructive: true,
                 icon: LucideIcons.trash2,
                 onTap: () => _confirmRemove(context, member),
@@ -1482,34 +1461,26 @@ class TeamMemberDetailScreen extends StatelessWidget {
   }
 
   String _roleDescription(String role) => switch (role.toLowerCase()) {
-    'owner' =>
-      'Full access to every part of the business, including billing and '
-          'subscription.',
-    'admin' =>
-      'Can manage daily operations, orders, riders and team members. '
-          'Cannot manage billing or subscription.',
-    _ =>
-      'Can access daily operations, orders and riders. Cannot manage '
-          'billing or subscription.',
+    'owner' => L.fullAccessIncludingBillingSubscription,
+    'admin' => L.canManageDailyOperationsOrdersRiders,
+    _ => L.canAccessDailyOperationsOrdersRiders,
   };
 
   Future<void> _confirmRemove(BuildContext context, TeamMember member) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Remove ${member.displayName ?? member.userId}?'),
-        content: const Text(
-          'They will lose access to this business immediately.',
-        ),
+        title: Text(L.remove(member.displayName ?? member.userId)),
+        content: Text(L.theyWillLoseAccessBusinessImmediately),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(L.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(
-              'Remove',
+              L.remove2,
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
@@ -1599,17 +1570,17 @@ class ProductsScreen extends StatelessWidget {
         onRefresh: reload,
         children: [
           // Archetype B list: package disc, price · status.
-          const CefSearchField(hint: 'Search products...'),
+          CefSearchField(hint: L.searchProducts),
           const SizedBox(height: Gap.md),
           if (products.isEmpty)
-            const StateBlock.empty('No products in the catalogue yet.')
+            StateBlock.empty(L.noProductsCatalogueYet)
           else
             for (final p in products)
               CefListRow(
                 title: p.name,
                 subtitle: p.displayPrice == null
                     ? p.status
-                    : 'RM ${p.displayPrice!.toStringAsFixed(2)} · ${p.status}',
+                    : L.rm(p.displayPrice!.toStringAsFixed(2), p.status),
                 icon: LucideIcons.package,
                 onTap: () => app.go(VRoute.productDetail, entityId: p.id),
               ),
@@ -1637,7 +1608,7 @@ class CustomersScreen extends StatelessWidget {
           onRefresh: reload,
           children: [
             // Archetype D (people list).
-            const CefSearchField(hint: 'Search customers...'),
+            CefSearchField(hint: L.searchCustomers),
             const SizedBox(height: Gap.md),
             for (final entry in customers.entries)
               CefListRow(
@@ -1679,16 +1650,16 @@ class CustomerDetailScreen extends StatelessWidget {
             leading: CefAvatar(customerName, size: 88),
             title: customerName,
             lines: [
-              const HeroLine('Customer'),
+              HeroLine(L.customer),
               HeroLine(
-                '$count order${count == 1 ? '' : 's'}',
+                L.order(count, count == 1 ? '' : 's'),
                 icon: LucideIcons.package,
               ),
             ],
           ),
           children: [
             ContactCard(phone: customer.customerPhone),
-            SectionHeading('Orders ($count)'),
+            SectionHeading(L.orders2(count)),
             // Cardless order rows (D-50).
             for (final order in customerOrders)
               CefListRow(
@@ -1708,30 +1679,21 @@ class CustomerDetailScreen extends StatelessWidget {
   }
 }
 
-/// Languages the app offers: code and native name.
-const vendorLanguages = [
-  ('ms', 'Bahasa Melayu'),
-  ('en', 'English'),
-  ('zh', '中文'),
-  ('ta', 'தமிழ்'),
-];
+/// Native name of a supported UI language (never translated).
+String languageName(Locale locale) => uiLanguageNames[locale.languageCode]!;
 
-String languageName(String code) => vendorLanguages
-    .firstWhere((l) => l.$1 == code, orElse: () => vendorLanguages[1])
-    .$2;
-
-/// Language picker: a small bottom sheet; choosing applies and closes.
+/// Language picker (English / Bahasa Melayu): choosing applies and closes.
 void showLanguageSheet(BuildContext context) {
   final app = AppScope.read(context);
   showListSheet(
     context,
-    title: 'Language',
+    title: L.language,
     children: [
-      for (final (code, name) in vendorLanguages)
+      for (final locale in supportedUiLocales)
         CefListRow(
-          title: name,
+          title: languageName(locale),
           showChevron: false,
-          trailing: app.locale == code
+          trailing: app.uiLocale == locale
               ? const Icon(
                   LucideIcons.check,
                   size: Sizes.icon,
@@ -1739,7 +1701,7 @@ void showLanguageSheet(BuildContext context) {
                 )
               : null,
           onTap: () {
-            app.setLocale(code);
+            app.setUiLocale(locale);
             Navigator.of(context).pop();
           },
         ),
@@ -1771,35 +1733,35 @@ class SettingsScreen extends StatelessWidget {
         );
     return PageBody(
       children: [
-        label('Account'),
-        row('Profile', LucideIcons.user, VRoute.editProfile),
-        row('Security', LucideIcons.lock, VRoute.security),
-        row('Notifications', LucideIcons.bell, VRoute.notificationSettings),
+        label(L.account),
+        row(L.profile, LucideIcons.user, VRoute.editProfile),
+        row(L.security, LucideIcons.lock, VRoute.security),
+        row(L.notifications, LucideIcons.bell, VRoute.notificationSettings),
         CefListRow(
-          title: 'Language',
+          title: L.language,
           icon: LucideIcons.globe,
-          trailing: Text(languageName(app.locale), style: text.bodySmall),
+          trailing: Text(languageName(app.uiLocale), style: text.bodySmall),
           onTap: () => showLanguageSheet(context),
         ),
-        row('Appearance', LucideIcons.palette, VRoute.appearance),
-        label('Business'),
-        row('Business Profile', LucideIcons.building2, VRoute.businessProfile),
-        row('Storefront', LucideIcons.store, VRoute.storefront),
-        row('Products', LucideIcons.package, VRoute.products),
-        row('Team', LucideIcons.users, VRoute.team),
+        row(L.appearance, LucideIcons.palette, VRoute.appearance),
+        label(L.business),
+        row(L.businessProfile2, LucideIcons.building2, VRoute.businessProfile),
+        row(L.storefront, LucideIcons.store, VRoute.storefront),
+        row(L.products, LucideIcons.package, VRoute.products),
+        row(L.team, LucideIcons.users, VRoute.team),
         row(
-          'Subscription',
+          L.subscription,
           LucideIcons.creditCard,
           VRoute.subscription,
           trailing: StatusChip(app.currentPlan.name, info: true),
         ),
-        label('Support'),
-        row('Help & Support', LucideIcons.circleHelp, VRoute.helpSupport),
-        row('Privacy', LucideIcons.shieldCheck, VRoute.privacyPolicy),
-        row('About Cefflo', LucideIcons.info, VRoute.about),
+        label(L.support),
+        row(L.helpSupport2, LucideIcons.circleHelp, VRoute.helpSupport),
+        row(L.privacy, LucideIcons.shieldCheck, VRoute.privacyPolicy),
+        row(L.aboutCefflo, LucideIcons.info, VRoute.about),
         const SizedBox(height: Gap.sm),
         CefListRow(
-          title: 'Sign out',
+          title: L.signOut,
           leading: IconTile(LucideIcons.logOut, color: c.attention),
           titleColor: c.attention,
           showChevron: false,
@@ -1810,7 +1772,7 @@ class SettingsScreen extends StatelessWidget {
           },
         ),
         const SizedBox(height: Gap.sm),
-        Center(child: Text('Version 1.0.0', style: text.labelSmall)),
+        Center(child: Text(L.version100, style: text.labelSmall)),
       ],
     );
   }

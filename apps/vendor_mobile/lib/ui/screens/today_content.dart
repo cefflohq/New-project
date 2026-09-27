@@ -8,6 +8,8 @@ import '../../data/models.dart';
 import '../shell.dart';
 import '../widgets.dart';
 
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+
 /// V-11 — Today (archetype A). Built only from shared blocks (PageBody,
 /// KpiStrip, SectionHeading, CefListRow) so it matches every other screen.
 /// Recent Delivery is capped so Need Attention stays in the first viewport.
@@ -45,14 +47,14 @@ class TodayContent extends StatelessWidget {
     final counts = demo
         ? [48, 12, 3, 33]
         : [orders.length, ready, issues.length, delivered.length];
-    const samples = [
-      ('Ahmad Razi', 'VFY 7281', 'Bangsar', '2:24 PM'),
-      ('Siti Aminah', 'BMD 4120', 'Sentul', '1:56 PM'),
-      ('Jason Lim', 'VDT 3302', 'Setapak', '12:41 PM'),
-      ('Nur Iman', 'VFE 9812', 'Shah Alam', '11:28 AM'),
-      ('Daniel Tan', 'BPL 6683', 'Petaling Jaya', '10:54 AM'),
-      ('Farah Lee', 'VDS 7721', 'Putrajaya', '09:17 AM'),
-      ('Hafiz Khan', 'BPQ 3091', 'Klang', '08:36 AM'),
+    final samples = [
+      (L.ahmadRazi, L.vfy7281, L.bangsar, L.t224Pm),
+      (L.sitiAminah, L.bmd4120, L.sentul, L.t156Pm),
+      (L.jasonLim, L.vdt3302, L.setapak, L.t1241Pm),
+      (L.nurIman, L.vfe9812, L.shahAlam, L.t1128Am),
+      (L.danielTan, L.bpl6683, L.petalingJaya, L.t1054Am),
+      (L.farahLee, L.vds7721, L.putrajaya, L.t0917Am),
+      (L.hafizKhan, L.bpq3091, L.klang, L.t0836Am),
     ];
     final rows = demo
         ? samples.take(_recentLimit).toList()
@@ -64,7 +66,7 @@ class TodayContent extends StatelessWidget {
                 ? ''
                 : '${t.hour % 12 == 0 ? 12 : t.hour % 12}:${t.minute.toString().padLeft(2, '0')} ${t.hour < 12 ? 'AM' : 'PM'}';
             return (
-              rider?.name ?? 'Unassigned rider',
+              rider?.name ?? L.unassignedRider,
               rider?.plate ?? '',
               o.deliveryAddress,
               time,
@@ -78,23 +80,23 @@ class TodayContent extends StatelessWidget {
       children: [
         KpiStrip(
           items: [
-            KpiItem('${counts[0]}', 'Total Orders'),
-            KpiItem('${counts[1]}', 'Ready', color: c.success),
-            KpiItem('${counts[2]}', 'Issue', color: c.attention),
-            KpiItem('${counts[3]}', 'Delivered', color: CefColors.brand),
+            KpiItem('${counts[0]}', L.totalOrders2),
+            KpiItem('${counts[1]}', L.ready, color: c.success),
+            KpiItem('${counts[2]}', L.issue, color: c.attention),
+            KpiItem('${counts[3]}', L.delivered, color: CefColors.brand),
           ],
         ),
         const SizedBox(height: Gap.sm),
         SectionHeading(
-          'Recent Delivery',
+          L.recentDelivery,
           trailing: CefLink(
-            'View all',
+            L.viewAll,
             chevron: true,
             onTap: () => app.switchTab(NavTab.orders),
           ),
         ),
         if (rows.isEmpty)
-          const StateBlock.empty('No completed deliveries yet.')
+          StateBlock.empty(L.noCompletedDeliveriesYet)
         else
           for (var i = 0; i < rows.length; i++)
             CefListRow(
@@ -109,7 +111,7 @@ class TodayContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const StatusChip('Delivered', success: true),
+                  StatusChip(L.delivered, success: true),
                   if (rows[i].$4.isNotEmpty) ...[
                     const SizedBox(height: Gap.xs),
                     Text(
@@ -129,19 +131,17 @@ class TodayContent extends StatelessWidget {
             ),
         const SizedBox(height: Gap.sm),
         SectionHeading(
-          issues.isEmpty
-              ? 'Need Attention'
-              : 'Need Attention (${issues.length})',
+          issues.isEmpty ? L.needAttention : L.needAttention2(issues.length),
           trailing: issues.isEmpty
               ? null
               : CefLink(
-                  'View all',
+                  L.viewAll,
                   chevron: true,
                   onTap: () => app.switchTab(NavTab.orders),
                 ),
         ),
         if (issues.isEmpty)
-          const StateBlock.empty('Nothing needs your attention.')
+          StateBlock.empty(L.nothingNeedsAttention)
         else
           // Cardless rows (D-50), one per active issue, each opening its
           // order. The tinted red mark is the status indicator.
@@ -149,7 +149,7 @@ class TodayContent extends StatelessWidget {
             CefListRow(
               title: '${issue.reference} · ${issue.customerName}',
               subtitle: (issue.notes ?? '').isEmpty
-                  ? 'Needs your action'
+                  ? L.needsAction
                   : issue.notes,
               leading: IconTile(
                 LucideIcons.triangleAlert,

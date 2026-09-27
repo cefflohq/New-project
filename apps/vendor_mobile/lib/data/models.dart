@@ -4,6 +4,8 @@
 /// expressed separately (see [OrderTab]) so backend status names stay intact.
 library;
 
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+
 /// public.delivery_status
 /// The one user-facing order number format (D-64): `#CF-001`, per business
 /// and business-local day, issued by the backend as `order_number`. Display
@@ -49,14 +51,14 @@ enum DeliveryStatus {
 
   /// Vendor-facing wording. The canonical value is still [wire].
   String get label => switch (this) {
-    DeliveryStatus.created => 'Pending approval',
-    DeliveryStatus.readyForPickup => 'Pickup',
-    DeliveryStatus.pickedUp => 'Picked up',
-    DeliveryStatus.outForDelivery => 'On the way',
-    DeliveryStatus.arrived => 'Arrived',
-    DeliveryStatus.delivered => 'Delivered',
-    DeliveryStatus.issue => 'Issue',
-    DeliveryStatus.cancelled => 'Cancelled',
+    DeliveryStatus.created => L.pendingApproval,
+    DeliveryStatus.readyForPickup => L.pickup,
+    DeliveryStatus.pickedUp => L.pickedUp,
+    DeliveryStatus.outForDelivery => L.way,
+    DeliveryStatus.arrived => L.arrived,
+    DeliveryStatus.delivered => L.delivered,
+    DeliveryStatus.issue => L.issue,
+    DeliveryStatus.cancelled => L.cancelled,
   };
 }
 
@@ -64,19 +66,24 @@ enum DeliveryStatus {
 /// presentation only. Counts and lists derive from this same mapping so a KPI
 /// can never disagree with the list it links to.
 enum OrderTab {
-  ongoing('Ongoing', {
+  ongoing({
     DeliveryStatus.created,
     DeliveryStatus.readyForPickup,
     DeliveryStatus.pickedUp,
     DeliveryStatus.outForDelivery,
     DeliveryStatus.arrived,
   }),
-  issue('Issue', {DeliveryStatus.issue}),
-  delivered('Delivered', {DeliveryStatus.delivered});
+  issue({DeliveryStatus.issue}),
+  delivered({DeliveryStatus.delivered});
 
-  const OrderTab(this.label, this.statuses);
-  final String label;
+  const OrderTab(this.statuses);
   final Set<DeliveryStatus> statuses;
+
+  String get label => switch (this) {
+    OrderTab.ongoing => L.ongoing,
+    OrderTab.issue => L.issue,
+    OrderTab.delivered => L.delivered,
+  };
 
   bool accepts(DeliveryStatus s) => statuses.contains(s);
 }
@@ -95,7 +102,7 @@ class Business {
 
   factory Business.fromRow(Map<String, dynamic> r) => Business(
     id: r['business_id'] as String,
-    name: (r['business_name'] as String?) ?? 'Business',
+    name: (r['business_name'] as String?) ?? L.business,
     role: (r['member_role'] as String?) ?? 'operator',
     timezone: r['timezone'] as String?,
     currency: r['currency'] as String?,
@@ -136,7 +143,7 @@ class VendorOrder {
   /// awaiting approval.
   bool get isApproved => approvedAt != null;
   String get statusLabel => status == DeliveryStatus.created && isApproved
-      ? 'Approved'
+      ? L.approved
       : status.label;
 
   factory VendorOrder.fromRow(Map<String, dynamic> r) => VendorOrder(
@@ -184,7 +191,7 @@ class OrderItem {
   final num? unitPrice;
 
   factory OrderItem.fromJson(Map<String, dynamic> j) => OrderItem(
-    name: (j['name'] ?? j['product_name'] ?? 'Item').toString(),
+    name: (j['name'] ?? j['product_name'] ?? L.item).toString(),
     quantity: int.tryParse('${j['quantity'] ?? j['qty'] ?? 1}') ?? 1,
     unitPrice: j['unit_price'] is num
         ? j['unit_price'] as num
@@ -221,7 +228,7 @@ class Zone {
 
   factory Zone.fromRow(Map<String, dynamic> r) => Zone(
     id: r['id'] as String,
-    name: (r['name'] as String?) ?? 'Zone',
+    name: (r['name'] as String?) ?? L.zone,
     status: (r['status'] as String?) ?? 'active',
     locality: r['locality'] as String?,
   );
@@ -255,7 +262,7 @@ class RiderRow {
 
   factory RiderRow.fromRow(Map<String, dynamic> r) => RiderRow(
     id: r['id'] as String,
-    name: (r['full_name'] ?? r['name'] ?? 'Rider').toString(),
+    name: (r['full_name'] ?? r['name'] ?? L.rider).toString(),
     status: (r['status'] as String?) ?? 'pending',
     phone: r['phone'] as String?,
     vehicleType: r['vehicle_type'] as String?,
@@ -313,7 +320,7 @@ class Product {
 
   factory Product.fromRow(Map<String, dynamic> r) => Product(
     id: r['id'] as String,
-    name: (r['name'] as String?) ?? 'Product',
+    name: (r['name'] as String?) ?? L.product,
     status: (r['status'] as String?) ?? 'active',
     description: r['description'] as String?,
     displayPrice: r['display_price'] as num?,
@@ -342,11 +349,11 @@ enum CoverageStatus {
   };
 
   String get label => switch (this) {
-    CoverageStatus.unconfigured => 'Service area not set',
-    CoverageStatus.pendingLocation => 'Awaiting location',
-    CoverageStatus.covered => 'In coverage',
-    CoverageStatus.outOfCoverage => 'Outside coverage',
-    CoverageStatus.unknown => 'Unknown',
+    CoverageStatus.unconfigured => L.serviceAreaNotSet,
+    CoverageStatus.pendingLocation => L.awaitingLocation,
+    CoverageStatus.covered => L.coverage2,
+    CoverageStatus.outOfCoverage => L.outsideCoverage,
+    CoverageStatus.unknown => L.unknown,
   };
 
   bool get needsAttention =>
@@ -496,11 +503,11 @@ class UnplannableEntry {
   );
 
   String get label => switch (reason) {
-    'location_unresolved' => 'Address not yet located',
-    'location_ambiguous' => 'Address is ambiguous',
-    'location_failed' => 'Address could not be located',
+    'location_unresolved' => L.addressNotYetLocated,
+    'location_ambiguous' => L.addressAmbiguous,
+    'location_failed' => L.addressCouldNotLocated,
     'no_compatible_capacity_sufficient_rider' =>
-      'No rider with a compatible vehicle and enough spare capacity',
+      L.noRiderCompatibleVehicleEnoughSpare,
     _ => reason,
   };
 }
@@ -553,14 +560,14 @@ class VendorRun {
 
   /// Vendor-facing wording for the canonical assignment status.
   String get statusLabel => switch (status) {
-    'assigned' => 'Dispatched',
-    'accepted' => 'Accepted',
-    'picking_up' => 'Picking up',
-    'delivering' => 'On the way',
-    'completed' => 'Completed',
-    'issue' => 'Issue',
-    'declined' => 'Declined',
-    'cancelled' => 'Cancelled',
+    'assigned' => L.dispatched,
+    'accepted' => L.accepted,
+    'picking_up' => L.pickingUp,
+    'delivering' => L.way,
+    'completed' => L.completed,
+    'issue' => L.issue,
+    'declined' => L.declined,
+    'cancelled' => L.cancelled,
     _ => status,
   };
 }
@@ -593,11 +600,16 @@ class CapacityCheck {
     violations: (j['violations'] as List? ?? []).whereType<Map>().map((v) {
       final reason = (v['reason'] ?? '').toString();
       if (reason == 'capacity_exceeded') {
-        return 'Capacity exceeded: ${v['current_load']} active + '
-            '${v['requested']} requested exceeds ${v['effective_capacity']}.';
+        return L.capacityExceededActiveRequestedExceeds(
+          v['current_load'],
+          v['requested'],
+          v['effective_capacity'],
+        );
       }
-      return 'Vehicle incompatible: needs ${v['vehicle_requirement']}, '
-          'rider has ${v['rider_vehicle_type']}.';
+      return L.vehicleIncompatibleNeedsRiderHas(
+        v['vehicle_requirement'],
+        v['rider_vehicle_type'],
+      );
     }).toList(),
   );
 }

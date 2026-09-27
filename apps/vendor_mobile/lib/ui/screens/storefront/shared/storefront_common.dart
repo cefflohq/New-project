@@ -17,13 +17,15 @@ import '../../../../data/storefront_catalog.dart';
 import 'product_art.dart';
 import 'storefront_theme.dart';
 
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+
 const double kStorefrontDeliveryFee = 6.00;
 
 /// Client-side mock order reference -- there is no order backend behind
 /// this preview, so nothing here is a real order id.
 String generateStorefrontOrderRef() {
   final n = DateTime.now().millisecondsSinceEpoch % 1000000;
-  return 'SF-${n.toString().padLeft(6, '0')}';
+  return L.sf(n.toString().padLeft(6, '0'));
 }
 
 /// A single step in a template's local, in-preview navigation stack. Kept
@@ -314,15 +316,15 @@ class StorefrontBackBar extends StatelessWidget {
 // --------------------------------------------------------- shared cart / checkout / confirmation
 
 class StorefrontCartView extends StatelessWidget {
-  const StorefrontCartView({
+  StorefrontCartView({
     super.key,
     required this.cart,
     required this.tokens,
     required this.onBack,
     required this.onCheckout,
-    this.title = 'Your Cart',
+    String? title,
     this.showNote = false,
-  });
+  }) : title = title ?? L.cart;
 
   final StorefrontCartController cart;
   final StorefrontThemeTokens tokens;
@@ -339,9 +341,9 @@ class StorefrontCartView extends StatelessWidget {
         StorefrontBackBar(title: '$title (${cart.itemCount})', onBack: onBack),
         Expanded(
           child: cart.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
-                    'Your cart is empty.',
+                    L.cartEmpty,
                     style: TextStyle(
                       color: StorefrontThemeTokens.textSecondary,
                     ),
@@ -386,7 +388,7 @@ class StorefrontCartView extends StatelessWidget {
                                     ),
                                   const SizedBox(height: 6),
                                   Text(
-                                    'RM ${line.item.price.toStringAsFixed(2)}',
+                                    L.rm2(line.item.price.toStringAsFixed(2)),
                                     style: TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 13,
@@ -430,7 +432,7 @@ class StorefrontCartView extends StatelessWidget {
                           color: StorefrontThemeTokens.muted,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
                             Icon(
                               LucideIcons.package,
@@ -440,7 +442,7 @@ class StorefrontCartView extends StatelessWidget {
                             SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Add a note (optional)',
+                                L.addNoteOptional,
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: StorefrontThemeTokens.textSecondary,
@@ -465,13 +467,13 @@ class StorefrontCartView extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _totalsRow('Subtotal', cart.subtotal),
-                _totalsRow('Delivery Fee', cart.deliveryFee),
+                _totalsRow(L.subtotal, cart.subtotal),
+                _totalsRow(L.deliveryFee, cart.deliveryFee),
                 const Divider(height: 18, color: StorefrontThemeTokens.border),
-                _totalsRow('Total', cart.total, emphasize: true),
+                _totalsRow(L.total, cart.total, emphasize: true),
                 const SizedBox(height: 12),
                 StorefrontBrandButton(
-                  label: 'Proceed to Checkout',
+                  label: L.proceedCheckout,
                   icon: LucideIcons.chevronRight,
                   tokens: tokens,
                   onTap: onCheckout,
@@ -500,7 +502,7 @@ class StorefrontCartView extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              'RM ${value.toStringAsFixed(2)}',
+              L.rm3(value.toStringAsFixed(2)),
               style: TextStyle(
                 fontSize: emphasize ? 15 : 13,
                 fontWeight: emphasize ? FontWeight.w800 : FontWeight.w700,
@@ -543,54 +545,54 @@ class _StorefrontCheckoutViewState extends State<StorefrontCheckoutView> {
     final tokens = widget.tokens;
     return Column(
       children: [
-        StorefrontBackBar(title: 'Checkout', onBack: widget.onBack),
+        StorefrontBackBar(title: L.checkout, onBack: widget.onBack),
         Expanded(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
             children: [
-              _section('Customer Info'),
-              _mockField('Full name', LucideIcons.package),
+              _section(L.customerInfo),
+              _mockField(L.fullName, LucideIcons.package),
               const SizedBox(height: 10),
-              _mockField('Phone number', LucideIcons.package),
-              _section('Delivery Address'),
-              _mockField('Delivery address', LucideIcons.mapPin),
-              _section('Delivery Option'),
+              _mockField(L.phoneNumber, LucideIcons.package),
+              _section(L.deliveryAddress2),
+              _mockField(L.deliveryAddress, LucideIcons.mapPin),
+              _section(L.deliveryOption),
               _optionTile(
-                'Standard delivery',
-                '30-45 min',
+                L.standardDelivery,
+                L.t3045Min,
                 selected: delivery == _DeliveryOption.standard,
                 onTap: () =>
                     setState(() => delivery = _DeliveryOption.standard),
               ),
               _optionTile(
-                'Express delivery',
-                '15-20 min · +RM 3.00',
+                L.expressDelivery,
+                L.t1520MinRm300,
                 selected: delivery == _DeliveryOption.express,
                 onTap: () => setState(() => delivery = _DeliveryOption.express),
               ),
-              _section('Payment Method'),
+              _section(L.paymentMethod),
               _optionTile(
-                'Cash on Delivery',
-                'Pay when your order arrives',
+                L.cashDelivery,
+                L.payWhenOrderArrives,
                 selected: payment == _PaymentOption.cod,
                 onTap: () => setState(() => payment = _PaymentOption.cod),
               ),
               _optionTile(
-                'Card',
-                'Prototype only -- no real payment is processed',
+                L.card,
+                L.prototypeOnlyNoRealPaymentProcessed,
                 selected: payment == _PaymentOption.card,
                 onTap: () => setState(() => payment = _PaymentOption.card),
               ),
-              _section('Order Summary'),
-              _summaryRow('Subtotal', widget.cart.subtotal),
+              _section(L.orderSummary),
+              _summaryRow(L.subtotal, widget.cart.subtotal),
               _summaryRow(
-                'Delivery Fee',
+                L.deliveryFee,
                 widget.cart.deliveryFee +
                     (delivery == _DeliveryOption.express ? 3 : 0),
               ),
               const Divider(height: 20, color: StorefrontThemeTokens.border),
               _summaryRow(
-                'Total',
+                L.total,
                 widget.cart.subtotal +
                     widget.cart.deliveryFee +
                     (delivery == _DeliveryOption.express ? 3 : 0),
@@ -608,7 +610,7 @@ class _StorefrontCheckoutViewState extends State<StorefrontCheckoutView> {
             ),
           ),
           child: StorefrontBrandButton(
-            label: 'Place Order',
+            label: L.placeOrder,
             tokens: tokens,
             onTap: widget.onPlaceOrder,
           ),
@@ -727,7 +729,7 @@ class _StorefrontCheckoutViewState extends State<StorefrontCheckoutView> {
             ),
             const Spacer(),
             Text(
-              'RM ${value.toStringAsFixed(2)}',
+              L.rm3(value.toStringAsFixed(2)),
               style: TextStyle(
                 fontSize: emphasize ? 15 : 13,
                 fontWeight: emphasize ? FontWeight.w800 : FontWeight.w700,
@@ -763,8 +765,8 @@ class StorefrontOrderCreatedView extends StatelessWidget {
           child: Icon(LucideIcons.check, color: tokens.onPrimary, size: 34),
         ),
         const SizedBox(height: 20),
-        const Text(
-          'Order placed!',
+        Text(
+          L.orderPlaced,
           style: TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: 20,
@@ -773,8 +775,7 @@ class StorefrontOrderCreatedView extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Order $orderRef has been created. This is a prototype flow -- '
-          'no real order or payment was processed.',
+          L.orderHasBeenCreatedPrototypeFlow(orderRef),
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 13,
@@ -785,7 +786,7 @@ class StorefrontOrderCreatedView extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: StorefrontBrandButton(
-            label: 'Continue Shopping',
+            label: L.continueShopping,
             tokens: tokens,
             onTap: onDone,
           ),

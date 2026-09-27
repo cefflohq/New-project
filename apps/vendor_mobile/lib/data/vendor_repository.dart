@@ -5,6 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'models.dart';
 
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+
 /// Thrown for any backend failure the UI is expected to surface truthfully.
 /// Native auth callback (password recovery link). Registered in the
 /// Android manifest and iOS Info.plist, and must be in the Supabase Auth
@@ -114,6 +116,15 @@ class VendorRepository {
   Future<void> signInWithProvider(OAuthProvider provider) =>
       _run(() => _db!.auth.signInWithOAuth(provider));
 
+  /// Per-user UI language (en / ms), kept in the user's own auth metadata.
+  /// Best-effort: the device choice still applies if this fails.
+  Future<void> saveUiLocale(String code) async {
+    if (_demo) return;
+    try {
+      await _db!.auth.updateUser(UserAttributes(data: {'ui_locale': code}));
+    } catch (_) {}
+  }
+
   Future<void> signOut() {
     if (_demo) return Future.value();
     return _run(() => _db!.auth.signOut());
@@ -183,7 +194,7 @@ class VendorRepository {
         ((order is Map ? order['id'] : null) ?? map['order_id'] ?? map['id'])
             ?.toString();
     if (id == null) {
-      throw RepositoryError('Order was not created: backend returned no id.');
+      throw RepositoryError(L.orderWasNotCreatedBackendReturned);
     }
     // Same fire-and-forget step Vendor Web takes after creation: ask the
     // canonical geocode-order function to resolve the location planning
@@ -327,7 +338,7 @@ class VendorRepository {
   Future<void> removeFromTodaysDeliveries(String orderId) async {
     if (!_demo) {
       throw RepositoryError(
-        'Removing a delivery from today\'s plan is not available yet.',
+        L.removingDeliveryFromTodaysPlanNot,
         isMissingContract: true,
       );
     }
@@ -620,7 +631,7 @@ class VendorRepository {
     if (_demo) {
       return _DemoData.runs.firstWhere(
         (r) => r.id == runId,
-        orElse: () => throw RepositoryError('Run not found.'),
+        orElse: () => throw RepositoryError(L.runNotFound),
       );
     }
     final row = await _run(
@@ -630,7 +641,7 @@ class VendorRepository {
           .eq('id', runId)
           .maybeSingle(),
     );
-    if (row == null) throw RepositoryError('Run not found.');
+    if (row == null) throw RepositoryError(L.runNotFound);
     return VendorRun.fromRow(Map<String, dynamic>.from(row));
   }
 
@@ -757,16 +768,14 @@ class VendorRepository {
 
   Future<T> _run<T>(Future<T> Function() action) async {
     if (_db == null) {
-      throw RepositoryError('UI prototype mode has no backend connection.');
+      throw RepositoryError(L.uiPrototypeModeHasNoBackend);
     }
     try {
       return await action();
     } on PostgrestException catch (e) {
       final missing = _isMissingFunction(e);
       throw RepositoryError(
-        missing
-            ? 'This action needs a backend contract that is not deployed here (${e.message}).'
-            : e.message,
+        missing ? L.actionNeedsBackendContractThatNot(e.message) : e.message,
         isMissingContract: missing,
       );
     } on AuthException catch (e) {
@@ -785,7 +794,7 @@ class VendorRepository {
     if (raw is List && raw.isNotEmpty && raw.first is Map) {
       return Map<String, dynamic>.from(raw.first as Map);
     }
-    throw RepositoryError('Unexpected backend response shape.');
+    throw RepositoryError(L.unexpectedBackendResponseShape);
   }
 }
 

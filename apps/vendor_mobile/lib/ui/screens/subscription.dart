@@ -8,12 +8,14 @@ import '../../data/plans.dart';
 import '../shell.dart';
 import '../widgets.dart';
 
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+
 // Subscription flow (V-50, V-51, V-52, V-54; D-54). Plans come from
 // data/plans.dart (the pricing candidate); payments are demo-only and use
 // the one centred status modal (runAsyncFeedback) for processing, success
 // and failure.
 
-String _rm(int amount) => 'RM${_thousands(amount)}';
+String _rm(int amount) => L.rm4(_thousands(amount));
 
 String _thousands(int n) =>
     n.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => ',');
@@ -22,19 +24,19 @@ String _per(BillingCycle cycle) =>
     cycle == BillingCycle.yearly ? '/ year' : '/ month';
 
 String _date(DateTime d) {
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
+  final months = [
+    L.jan,
+    L.feb,
+    L.mar,
+    L.apr,
+    L.may,
+    L.jun,
+    L.jul,
+    L.aug,
+    L.sep,
+    L.oct,
+    L.nov,
+    L.dec,
   ];
   return '${d.day} ${months[d.month - 1]} ${d.year}';
 }
@@ -101,10 +103,10 @@ class SubscriptionScreen extends StatelessWidget {
     final plan = app.currentPlan;
     // Demo usage for this cycle; riders / zones / team mirror the demo data.
     final usage = [
-      (LucideIcons.package, 'Deliveries', 620, plan.deliveries),
-      (LucideIcons.users, 'Riders', 4, plan.riders),
-      (LucideIcons.mapPin, 'Zones', 6, plan.zones),
-      (LucideIcons.userCog, 'Team members', 3, plan.teamUsers),
+      (LucideIcons.package, L.deliveries, 620, plan.deliveries),
+      (LucideIcons.users, L.riders, 4, plan.riders),
+      (LucideIcons.mapPin, L.zones, 6, plan.zones),
+      (LucideIcons.userCog, L.teamMembers, 3, plan.teamUsers),
     ];
     return PageBody(
       children: [
@@ -121,9 +123,9 @@ class SubscriptionScreen extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text('${plan.name} plan', style: text.titleMedium),
+                    child: Text(L.plan(plan.name), style: text.titleMedium),
                   ),
-                  const StatusChip('Active', success: true),
+                  StatusChip(L.active, success: true),
                 ],
               ),
               const SizedBox(height: Gap.xs),
@@ -137,7 +139,7 @@ class SubscriptionScreen extends StatelessWidget {
               if (!plan.isFree) ...[
                 const SizedBox(height: Gap.md),
                 Text(
-                  'Next renewal on ${_date(app.nextRenewal)}',
+                  L.nextRenewal(_date(app.nextRenewal)),
                   style: text.bodySmall?.copyWith(color: context.c.textPrimary),
                 ),
               ],
@@ -145,24 +147,24 @@ class SubscriptionScreen extends StatelessWidget {
           ),
         ),
         SectionHeading(
-          'Current usage',
-          trailing: Text('This cycle', style: text.bodySmall),
+          L.currentUsage,
+          trailing: Text(L.cycle, style: text.bodySmall),
         ),
         for (final (icon, label, used, cap) in usage)
           _UsageRow(icon: icon, label: label, used: used, cap: cap),
         const SizedBox(height: Gap.lg),
         CefListRow(
-          title: 'Change plan',
+          title: L.changePlan,
           icon: LucideIcons.arrowLeftRight,
           onTap: () => app.go(VRoute.choosePlan),
         ),
         CefListRow(
-          title: 'Payment method',
+          title: L.paymentMethod2,
           icon: LucideIcons.creditCard,
-          onTap: () => showNotWiredYetSnackBar(context, 'Payment methods'),
+          onTap: () => showNotWiredYetSnackBar(context, L.paymentMethods),
         ),
         CefListRow(
-          title: 'Billing history',
+          title: L.billingHistory2,
           icon: LucideIcons.receipt,
           onTap: () => app.go(VRoute.billingHistory),
         ),
@@ -190,7 +192,7 @@ class _UsageRow extends StatelessWidget {
     final c = context.c;
     final text = Theme.of(context).textTheme;
     final value = cap == null
-        ? '${_thousands(used)} · Unlimited'
+        ? L.unlimited(_thousands(used))
         : '${_thousands(used)} / ${_thousands(cap!)}';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Gap.sm),
@@ -260,7 +262,7 @@ class _ChoosePlanScreenState extends State<ChoosePlanScreen> {
         _selected == app.currentPlanId && _cycle == app.currentCycle;
     return PageBody(
       bottom: CefButton(
-        unchanged ? 'Current plan' : 'Continue',
+        unchanged ? L.currentPlan : L.continueText,
         onTap: unchanged
             ? null
             : () => app.go(
@@ -269,10 +271,7 @@ class _ChoosePlanScreenState extends State<ChoosePlanScreen> {
               ),
       ),
       children: [
-        Text(
-          'Select the plan that fits your business.',
-          style: text.bodyMedium,
-        ),
+        Text(L.selectPlanThatFitsBusiness, style: text.bodyMedium),
         const SizedBox(height: Gap.md),
         _CycleToggle(
           cycle: _cycle,
@@ -290,7 +289,7 @@ class _ChoosePlanScreenState extends State<ChoosePlanScreen> {
           const SizedBox(height: Gap.md),
         ],
         Text(
-          'Plans and prices are the current pricing candidate.',
+          L.plansPricesCurrentPricingCandidate,
           textAlign: TextAlign.center,
           style: text.labelSmall,
         ),
@@ -364,8 +363,8 @@ class _CycleToggle extends StatelessWidget {
       ),
       child: Row(
         children: [
-          option(BillingCycle.monthly, 'Monthly'),
-          option(BillingCycle.yearly, 'Yearly', note: '2 months free'),
+          option(BillingCycle.monthly, L.monthly),
+          option(BillingCycle.yearly, L.yearly, note: L.t2MonthsFree),
         ],
       ),
     );
@@ -439,7 +438,7 @@ class _PlanOption extends StatelessWidget {
                                 ),
                               ),
                               child: Text(
-                                'Most Popular',
+                                L.mostPopular,
                                 style: text.labelSmall?.copyWith(
                                   color: CefColors.onAccent,
                                   fontWeight: FontWeight.w600,
@@ -448,7 +447,7 @@ class _PlanOption extends StatelessWidget {
                             ),
                           ],
                           if (current) ...[
-                            Text('Current', style: text.labelSmall),
+                            Text(L.current, style: text.labelSmall),
                           ],
                         ],
                       ),
@@ -510,12 +509,12 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
     final ok = await runAsyncFeedback(
       context,
       action: () => app.subscribe(_plan, _cycle),
-      processingTitle: 'Processing payment',
-      processingSubtitle: 'Please wait while we confirm your payment.',
-      successTitle: 'Subscription active',
-      failureTitle: 'Payment unsuccessful',
-      failureMessage: "We couldn't process your payment.\nNo charge was made.",
-      failureSecondaryLabel: 'Change payment method',
+      processingTitle: L.processingPayment,
+      processingSubtitle: L.pleaseWaitWhileWeConfirmPayment,
+      successTitle: L.subscriptionActive,
+      failureTitle: L.paymentUnsuccessful,
+      failureMessage: L.weCouldntProcessPaymentNoCharge,
+      failureSecondaryLabel: L.changePaymentMethod,
       onFailureSecondary: () {},
     );
     if (!mounted) return;
@@ -532,7 +531,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
     return PageBody(
       // Disabled while the payment modal runs (no duplicate submission);
       // the modal itself shows progress.
-      bottom: CefButton('Subscribe', onTap: _busy ? null : _subscribe),
+      bottom: CefButton(L.subscribe, onTap: _busy ? null : _subscribe),
       children: [
         Row(
           children: [
@@ -540,12 +539,12 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${_plan.name} plan', style: text.titleMedium),
+                  Text(L.plan(_plan.name), style: text.titleMedium),
                   _Price(total, _cycle),
                 ],
               ),
             ),
-            CefLink('Change', onTap: app.back),
+            CefLink(L.change, onTap: app.back),
           ],
         ),
         const SizedBox(height: Gap.xs),
@@ -553,9 +552,9 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
         const SizedBox(height: Gap.lg),
         const CefDivider(),
         CefListRow(
-          title: 'Billing cycle',
+          title: L.billingCycle,
           trailing: Text(
-            _cycle == BillingCycle.yearly ? 'Yearly' : 'Monthly',
+            _cycle == BillingCycle.yearly ? L.yearly : L.monthly,
             style: text.bodyMedium?.copyWith(color: c.textPrimary),
           ),
         ),
@@ -563,21 +562,16 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
           padding: const EdgeInsets.symmetric(vertical: Gap.md),
           child: Row(
             children: [
-              Expanded(child: Text('Total', style: text.titleMedium)),
+              Expanded(child: Text(L.total, style: text.titleMedium)),
               Text(_rm(total), style: text.titleMedium),
             ],
           ),
         ),
         if (!_plan.isFree) ...[
-          const SectionHeading('Payment method'),
-          for (final (id, title, subtitle, icon) in const [
-            (
-              'card',
-              'Credit / Debit card',
-              '•••• 4242',
-              LucideIcons.creditCard,
-            ),
-            ('fpx', 'FPX online banking', null, LucideIcons.landmark),
+          SectionHeading(L.paymentMethod2),
+          for (final (id, title, subtitle, icon) in [
+            ('card', L.creditDebitCard, '•••• 4242', LucideIcons.creditCard),
+            ('fpx', L.fpxOnlineBanking, null, LucideIcons.landmark),
           ])
             CefListRow(
               title: title,
@@ -597,7 +591,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
         if (app.repo.isDemo) ...[
           const SizedBox(height: Gap.md),
           Text(
-            'Demo — no real payment is processed.',
+            L.demoNoRealPaymentProcessed,
             textAlign: TextAlign.center,
             style: text.labelSmall,
           ),
@@ -622,7 +616,7 @@ class BillingHistoryScreen extends StatelessWidget {
     return PageBody(
       children: [
         if (invoices.isEmpty)
-          const StateBlock.empty('No invoices yet.')
+          StateBlock.empty(L.noInvoicesYet)
         else
           for (final inv in invoices)
             CefListRow(
@@ -634,13 +628,13 @@ class BillingHistoryScreen extends StatelessWidget {
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  StatusChip(inv.paid ? 'Paid' : 'Due', success: inv.paid),
+                  StatusChip(inv.paid ? L.paid : L.due, success: inv.paid),
                   IconAction(
                     icon: LucideIcons.download,
-                    tooltip: 'Download invoice',
+                    tooltip: L.downloadInvoice,
                     color: c.iconColor,
                     onTap: () =>
-                        showNotWiredYetSnackBar(context, 'Invoice download'),
+                        showNotWiredYetSnackBar(context, L.invoiceDownload),
                   ),
                 ],
               ),

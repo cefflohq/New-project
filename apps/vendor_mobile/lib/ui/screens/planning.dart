@@ -10,6 +10,8 @@ import '../async_view.dart';
 import '../shell.dart';
 import '../widgets.dart';
 
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+
 /// V-19 — Run detail: one persisted run (a `rider_assignments` row and its
 /// `delivery_stops`), read from the same canonical rows Vendor Web and the
 /// Driver use. Reached from a dispatched rider on Zone detail.
@@ -90,7 +92,7 @@ class _RunDetailBody extends StatelessWidget {
           children: [
             Flexible(
               child: Text(
-                run.sessionName ?? 'Delivery run',
+                run.sessionName ?? L.deliveryRun,
                 style: text.titleMedium,
               ),
             ),
@@ -101,7 +103,7 @@ class _RunDetailBody extends StatelessWidget {
         const SizedBox(height: Gap.xs),
         Text(
           [
-            rider?.name ?? 'Rider',
+            rider?.name ?? L.rider,
             if (rider?.plate != null) rider!.plate!,
           ].join(' · '),
           style: text.bodySmall,
@@ -125,9 +127,9 @@ class _RunDetailBody extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Text('$done of $total delivered', style: text.titleMedium),
+              child: Text(L.delivered2(done, total), style: text.titleMedium),
             ),
-            Text('${total - done} remaining', style: text.bodySmall),
+            Text(L.remaining(total - done), style: text.bodySmall),
           ],
         ),
         const SizedBox(height: Gap.sm),
@@ -141,15 +143,14 @@ class _RunDetailBody extends StatelessWidget {
           ),
         ),
         if (open.isNotEmpty) ...[
-          const SectionHeading('Next stop'),
-          stopRow(open.first, trailing: const StatusChip('Next')),
+          SectionHeading(L.nextStop),
+          stopRow(open.first, trailing: StatusChip(L.next)),
         ],
         if (open.length > 1) ...[
-          const SectionHeading('Upcoming stops'),
+          SectionHeading(L.upcomingStops),
           for (final s in open.skip(1)) stopRow(s),
         ],
-        if (open.isEmpty)
-          const StateBlock.empty('Every stop on this run is finished.'),
+        if (open.isEmpty) StateBlock.empty(L.everyStopRunFinished),
       ],
     );
   }
@@ -240,14 +241,14 @@ class _DispatchSheetState extends State<_DispatchSheet> {
     try {
       await app.repo.dispatchRun(
         businessId: app.business!.id,
-        sessionName: '${widget.zone.name} Run',
+        sessionName: L.run(widget.zone.name),
         riderId: rider.id,
         orderIds: widget.group.orderIds,
         idempotencyKey: _key,
       );
       if (!mounted) return;
       Navigator.of(context).pop();
-      showCefToast(context, 'Dispatched to ${rider.name}');
+      showCefToast(context, L.dispatched2(rider.name));
       await widget.onDispatched();
     } catch (e) {
       if (mounted) setState(() => _error = '$e');
@@ -275,17 +276,14 @@ class _DispatchSheetState extends State<_DispatchSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Dispatch $count order${count == 1 ? '' : 's'}',
+              L.dispatchOrder(count, count == 1 ? '' : 's'),
               style: text.titleMedium,
             ),
             const SizedBox(height: Gap.xs),
-            Text(
-              'Choose the rider for ${widget.zone.name}.',
-              style: text.bodyMedium,
-            ),
+            Text(L.chooseRider(widget.zone.name), style: text.bodyMedium),
             const SizedBox(height: Gap.md),
             if (widget.riders.isEmpty)
-              const StateBlock.empty('No active riders yet.')
+              StateBlock.empty(L.noActiveRidersYet)
             else
               Flexible(
                 child: ListView(
@@ -310,7 +308,7 @@ class _DispatchSheetState extends State<_DispatchSheet> {
               ),
             if (_checking) ...[
               const SizedBox(height: Gap.sm),
-              Text('Checking vehicle and capacity…', style: text.bodySmall),
+              Text(L.checkingVehicleCapacity, style: text.bodySmall),
             ],
             for (final v in _check?.violations ?? const <String>[]) ...[
               const SizedBox(height: Gap.sm),
@@ -328,7 +326,7 @@ class _DispatchSheetState extends State<_DispatchSheet> {
               children: [
                 Expanded(
                   child: CefButton(
-                    'Cancel',
+                    L.cancel,
                     secondary: true,
                     onTap: _sending ? null : () => Navigator.of(context).pop(),
                   ),
@@ -336,9 +334,9 @@ class _DispatchSheetState extends State<_DispatchSheet> {
                 const SizedBox(width: Gap.md),
                 Expanded(
                   child: CefButton(
-                    'Dispatch',
+                    L.dispatch,
                     busy: _sending,
-                    busyLabel: 'Dispatching…',
+                    busyLabel: L.dispatching,
                     onTap: ready && !_sending ? _dispatch : null,
                   ),
                 ),
@@ -513,10 +511,10 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
       await runAsyncFeedback(
         context,
         action: () async {},
-        processingTitle: 'Processing...',
-        processingSubtitle: 'Saving your service area',
-        successTitle: 'Successful',
-        successSubtitle: 'Your service area has been saved.',
+        processingTitle: L.processing,
+        processingSubtitle: L.savingServiceArea,
+        successTitle: L.successful,
+        successSubtitle: L.serviceAreaHasBeenSaved,
       );
       if (!mounted) return;
       await reload();
@@ -532,9 +530,7 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
     final app = AppScope.of(context);
     final business = app.business;
     if (business == null) {
-      return const PageBody(
-        children: [StateBlock.empty('No business linked.')],
-      );
+      return PageBody(children: [StateBlock.empty(L.noBusinessLinked)]);
     }
     return AsyncView<Map<String, dynamic>>(
       key: ValueKey('service-area-${business.id}'),
@@ -546,19 +542,17 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
           children: [
             CefListRow(
               icon: LucideIcons.map,
-              title: 'Coverage',
+              title: L.coverage,
               subtitle: configured
-                  ? 'Coverage is configured. Cefflo decides each '
-                        'order’s coverage from this.'
-                  : 'No service area configured yet. Orders will show '
-                        '“Not set” instead of a coverage verdict.',
+                  ? L.coverageConfiguredCeffloDecidesEachOrders
+                  : L.noServiceAreaConfiguredYetOrders,
               subtitleMaxLines: 5,
               trailing: StatusChip(
-                configured ? 'Configured' : 'Not set',
+                configured ? L.configured : L.notSet,
                 attention: !configured,
               ),
             ),
-            const SectionHeading('How far do you deliver?'),
+            SectionHeading(L.howFarDoDeliver),
             SizedBox(height: 190, child: CoveragePreview(radiusKm: radiusKm)),
             const SizedBox(height: Gap.md),
             RadiusSlider(
@@ -576,14 +570,14 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
               ),
             const SizedBox(height: Gap.sm),
             CefButton(
-              'Save service area',
+              L.saveServiceArea,
               busy: busy,
               onTap: () => _save(reload),
             ),
             const SizedBox(height: Gap.section),
             CefListRow(
-              title: 'Manage zones',
-              subtitle: 'See and configure the zones you deliver to',
+              title: L.manageZones,
+              subtitle: L.seeConfigureZonesDeliver,
               icon: LucideIcons.mapPin,
               onTap: () => app.go(VRoute.zoneConfiguration),
             ),
@@ -640,8 +634,8 @@ class RadiusSlider extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Delivery radius', style: text.titleSmall),
-            Text('${radiusKm.round()} km', style: text.titleSmall),
+            Text(L.deliveryRadius, style: text.titleSmall),
+            Text(L.km3(radiusKm.round()), style: text.titleSmall),
           ],
         ),
         Slider(

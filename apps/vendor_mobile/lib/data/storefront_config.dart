@@ -14,6 +14,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
 
 /// The template's own default background treatment.
 const kTemplateBackgroundId = 'template';
@@ -31,20 +32,24 @@ enum BrandColorMode { solid, gradient }
 /// in new font families. This is a deliberate, disclosed constraint (see the
 /// implementation report), not a silent simplification of the reference.
 enum StorefrontFontTreatment {
-  modern('Modern (Inter)', FontWeight.w600, false, -0.2, false),
-  bold('Bold (Inter)', FontWeight.w800, false, -0.4, false),
-  elegant('Elegant (Inter Italic)', FontWeight.w500, true, 0.1, false),
-  classic('Classic (Inter Caps)', FontWeight.w700, false, 1.1, true);
+  modern(FontWeight.w600, false, -0.2, false),
+  bold(FontWeight.w800, false, -0.4, false),
+  elegant(FontWeight.w500, true, 0.1, false),
+  classic(FontWeight.w700, false, 1.1, true);
 
   const StorefrontFontTreatment(
-    this.label,
     this.weight,
     this.italic,
     this.letterSpacing,
     this.upperCase,
   );
 
-  final String label;
+  String get label => switch (this) {
+    StorefrontFontTreatment.modern => L.modernInter,
+    StorefrontFontTreatment.bold => L.boldInter,
+    StorefrontFontTreatment.elegant => L.elegantInterItalic,
+    StorefrontFontTreatment.classic => L.classicInterCaps,
+  };
   final FontWeight weight;
   final bool italic;
   final double letterSpacing;

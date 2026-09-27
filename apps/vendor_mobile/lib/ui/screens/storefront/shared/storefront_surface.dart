@@ -14,6 +14,8 @@ import '../../../../data/storefront_config.dart';
 import 'storefront_theme.dart';
 import 'template_definition.dart';
 
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+
 /// The logical phone viewport every template is laid out in before a
 /// miniature scales it down.
 const kStorefrontViewport = Size(390, 800);
@@ -27,7 +29,7 @@ StorefrontBranding storefrontBrandingFor(
 ) {
   final branding = app.savedStorefrontBranding(def.id) ?? def.defaults;
   if (branding.storeName.isNotEmpty) return branding;
-  return branding.copyWith(storeName: app.business?.name ?? 'Your store');
+  return branding.copyWith(storeName: app.business?.name ?? L.store);
 }
 
 /// The vendor's catalogue in storefront shape. Loaded once per screen and

@@ -7,6 +7,8 @@ import '../core/theme.dart';
 import 'system_bars.dart';
 import 'widgets.dart';
 
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+
 /// First-time business setup (V06-V10). Before the business exists there is
 /// nothing for Orders/Products/Customers/More to show, so the wizard hides
 /// the primary bottom navigation instead of exposing a shell it can't serve.
@@ -20,10 +22,10 @@ const _onboardingRoutes = {
 
 /// Header copy that differs from the route inventory name. Every other route
 /// shows its `RouteSpec.title`. Sentence case like every other page title.
-const _headerTitles = <VRoute, String>{
-  VRoute.runDetail: 'Active run',
-  VRoute.riderRegistrationLink: 'Invite rider',
-  VRoute.helperRegistrationLink: 'Invite team member',
+Map<VRoute, String> get _headerTitles => <VRoute, String>{
+  VRoute.runDetail: L.activeRun,
+  VRoute.riderRegistrationLink: L.inviteRider,
+  VRoute.helperRegistrationLink: L.inviteTeamMember,
 };
 
 /// Primary destinations (bottom-nav roots): no back arrow.
@@ -320,7 +322,7 @@ class HeaderBackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => IconAction(
     icon: LucideIcons.arrowLeft,
-    tooltip: 'Back',
+    tooltip: L.back,
     color: Colors.white,
     onTap: onTap,
   );
@@ -352,7 +354,7 @@ class _Header extends StatelessWidget {
         if (route == VRoute.today)
           IconAction(
             icon: LucideIcons.bell,
-            tooltip: 'Notifications',
+            tooltip: L.notifications,
             showDot: app.unreadNotifications > 0,
             color: Colors.white,
             onTap: () => app.go(VRoute.notificationInbox),
@@ -388,16 +390,14 @@ class _OnlineToggle extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: Semantics(
             toggled: on,
-            label: on ? 'Online' : 'Offline',
+            label: on ? L.online : L.offline,
             button: true,
             child: GestureDetector(
               onTap: () {
                 app.setVendorOnline(!on);
                 showCefToast(
                   context,
-                  on
-                      ? "You're offline. New orders are paused."
-                      : "You're online.",
+                  on ? L.youreOfflineNewOrdersPaused : L.youreOnline,
                 );
               },
               child: _ToggleTrack(on: on),
@@ -421,7 +421,7 @@ class _ToggleTrack extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = Text(
-      on ? 'Online' : 'Offline',
+      on ? L.online : L.offline,
       maxLines: 1,
       style: Theme.of(context).textTheme.labelSmall
           ?.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
@@ -479,7 +479,7 @@ class _ToggleTrack extends StatelessWidget {
 void _showBusinessSwitcher(BuildContext context, AppState app) {
   showListSheet(
     context,
-    title: 'Your businesses',
+    title: L.businesses,
     children: [
       for (final b in app.businesses)
         CefListRow(
@@ -510,10 +510,10 @@ class _TodayGreeting extends StatelessWidget {
   final String name;
 
   static String _salutation(DateTime now) => now.hour < 12
-      ? 'Good Morning,'
+      ? L.goodMorning
       : now.hour < 18
-      ? 'Good Afternoon,'
-      : 'Good Evening,';
+      ? L.goodAfternoon
+      : L.goodEvening;
 
   @override
   Widget build(BuildContext context) {
@@ -547,7 +547,7 @@ class _TodayGreeting extends StatelessWidget {
               ),
             const SizedBox(height: Gap.xs),
             Text(
-              "Here's what's happening today.",
+              L.heresWhatsHappeningToday,
               style: text.bodyMedium?.copyWith(color: muted),
             ),
           ],
@@ -563,30 +563,30 @@ class _TodayGreeting extends StatelessWidget {
 List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
   final app = AppScope.of(context);
   final hint = switch (route) {
-    VRoute.orders => 'Search order number or customer...',
-    VRoute.riders => 'Search riders...',
+    VRoute.orders => L.searchOrderNumberCustomer,
+    VRoute.riders => L.searchRiders,
     _ => null,
   };
   final addAction = switch (route) {
-    VRoute.orders => ('Add order', VRoute.newOrder),
-    VRoute.zones || VRoute.zoneConfiguration => ('Add zone', VRoute.createZone),
-    VRoute.riders => ('Invite rider', VRoute.riderRegistrationLink),
-    VRoute.team => ('Invite team member', VRoute.helperRegistrationLink),
-    VRoute.products => ('Add product', VRoute.addProduct),
+    VRoute.orders => (L.addOrder, VRoute.newOrder),
+    VRoute.zones || VRoute.zoneConfiguration => (L.addZone, VRoute.createZone),
+    VRoute.riders => (L.inviteRider, VRoute.riderRegistrationLink),
+    VRoute.team => (L.inviteTeamMember, VRoute.helperRegistrationLink),
+    VRoute.products => (L.addProduct, VRoute.addProduct),
     _ => null,
   };
   if (route == VRoute.notificationInbox) {
     return [
       IconAction(
         icon: LucideIcons.ellipsis,
-        tooltip: 'Notification options',
+        tooltip: L.notificationOptions,
         color: Colors.white,
         onTap: () => showListSheet(
           context,
-          title: 'Notifications',
+          title: L.notifications,
           children: [
             CefListRow(
-              title: 'Mark all as read',
+              title: L.markAllRead,
               icon: LucideIcons.checkCheck,
               showChevron: false,
               onTap: () {
@@ -595,7 +595,7 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
               },
             ),
             CefListRow(
-              title: 'Clear all notifications',
+              title: L.clearAllNotifications,
               icon: LucideIcons.trash2,
               showChevron: false,
               onTap: () {
@@ -622,7 +622,7 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
   return [
     IconAction(
       icon: LucideIcons.search,
-      tooltip: 'Search',
+      tooltip: L.search,
       color: Colors.white,
       onTap: () => showSearchSheet(context, hint: hint),
     ),
@@ -642,22 +642,22 @@ class _BottomNav extends StatelessWidget {
   /// (tab, label, default outline icon, active filled icon). The only
   /// coloured icons in the app: active = filled, in the Anchor Blue of the
   /// top background (#01265E); default = navy outline.
-  static const _items = <(NavTab, String, IconData, Widget)>[
-    (NavTab.today, 'Today', LucideIcons.house, Icon(Icons.home_rounded)),
-    (NavTab.orders, 'Orders', LucideIcons.package, _FilledCube()),
+  static List<(NavTab, String, IconData, Widget)> get _items => [
+    (NavTab.today, L.today, LucideIcons.house, Icon(Icons.home_rounded)),
+    (NavTab.orders, L.orders, LucideIcons.package, _FilledCube()),
     (
       NavTab.zones,
-      'Zones',
+      L.zones,
       LucideIcons.mapPin,
       Icon(Icons.location_on_rounded),
     ),
     (
       NavTab.riders,
-      'Riders',
+      L.riders,
       LucideIcons.users,
       Icon(Icons.people_alt_rounded),
     ),
-    (NavTab.more, 'More', LucideIcons.menu, Icon(LucideIcons.menu)),
+    (NavTab.more, L.more, LucideIcons.menu, Icon(LucideIcons.menu)),
   ];
 
   @override

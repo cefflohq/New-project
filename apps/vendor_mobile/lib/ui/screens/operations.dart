@@ -11,6 +11,8 @@ import '../widgets.dart';
 import 'planning.dart' show CoveragePreview, RadiusSlider;
 import 'today_content.dart';
 
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+
 String _formatTime(DateTime t) {
   final h = t.hour % 12 == 0 ? 12 : t.hour % 12;
   final m = t.minute.toString().padLeft(2, '0');
@@ -26,14 +28,10 @@ class WelcomeSetupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    const steps = [
-      (
-        'Business Information',
-        'Name, type and contact details',
-        LucideIcons.store,
-      ),
-      ('Pickup Location', 'Where deliveries start from', LucideIcons.mapPin),
-      ('Service Area', 'How far you deliver', LucideIcons.map),
+    final steps = [
+      (L.businessInformation2, L.nameTypeContactDetails, LucideIcons.store),
+      (L.pickupLocation2, L.whereDeliveriesStartFrom, LucideIcons.mapPin),
+      (L.serviceArea2, L.howFarDeliver, LucideIcons.map),
     ];
     final text = Theme.of(context).textTheme;
     return PageBody(
@@ -45,13 +43,12 @@ class WelcomeSetupScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Let’s set up your business',
+                L.letsSetUpBusiness,
                 style: text.titleMedium?.copyWith(color: Colors.white),
               ),
               const SizedBox(height: Gap.xs),
               Text(
-                'Just a few details before you start delivering with '
-                'Cefflo. Takes about 2 minutes.',
+                L.justFewDetailsBeforeStartDelivering,
                 style: text.bodyMedium?.copyWith(
                   color: Colors.white.withValues(alpha: .82),
                 ),
@@ -72,7 +69,7 @@ class WelcomeSetupScreen extends StatelessWidget {
             ),
           ),
         const SizedBox(height: Gap.xxl),
-        CefButton('Get Started', onTap: () => app.go(VRoute.setupBusinessInfo)),
+        CefButton(L.getStarted2, onTap: () => app.go(VRoute.setupBusinessInfo)),
       ],
     );
   }
@@ -117,7 +114,7 @@ class _SetupStepHeader extends StatelessWidget {
                   ),
                 ),
               const SizedBox(width: Gap.xs),
-              Text('Step $step of $totalSteps', style: text.bodySmall),
+              Text(L.step(step, totalSteps), style: text.bodySmall),
             ],
           ),
           SectionHeading(title, icon: icon, subtitle: subtitle),
@@ -142,12 +139,12 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
   String type = _types.first;
   final errors = <String, String>{};
 
-  static const _types = [
-    'Food & Beverage',
-    'Home & Living',
-    'Retail',
-    'Groceries',
-    'Other',
+  static List<String> get _types => [
+    L.foodBeverage,
+    L.homeLiving,
+    L.retail,
+    L.groceries,
+    L.other,
   ];
 
   @override
@@ -160,10 +157,10 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
   void _continue() {
     errors.clear();
     if (name.text.trim().isEmpty) {
-      errors['name'] = 'Business name is required.';
+      errors['name'] = L.businessNameRequired;
     }
     if (phone.text.trim().length < 7) {
-      errors['phone'] = 'Enter a valid phone number.';
+      errors['phone'] = L.enterValidPhoneNumber;
     }
     setState(() {});
     if (errors.isEmpty) AppScope.read(context).go(VRoute.setupAddress);
@@ -171,19 +168,19 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
 
   @override
   Widget build(BuildContext context) => PageBody(
-    bottom: CefButton('Continue', onTap: _continue),
+    bottom: CefButton(L.continueText, onTap: _continue),
     children: [
-      const _SetupStepHeader(
+      _SetupStepHeader(
         step: 1,
         totalSteps: 3,
         icon: LucideIcons.store,
-        title: 'Tell us about your business',
-        subtitle: 'This appears on your delivery orders and receipts.',
+        title: L.tellUsAboutBusiness,
+        subtitle: L.appearsDeliveryOrdersReceipts,
       ),
       CefField(
-        label: 'Business Name',
+        label: L.businessName,
         controller: name,
-        hint: 'e.g. Kopi Kita',
+        hint: L.eGKopiKita,
         prefixIcon: LucideIcons.store,
         errorText: errors['name'],
       ),
@@ -192,10 +189,7 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Business Type',
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
+            Text(L.businessType, style: Theme.of(context).textTheme.labelLarge),
             const SizedBox(height: Gap.sm),
             Wrap(
               spacing: Gap.sm,
@@ -213,7 +207,7 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
         ),
       ),
       CefField(
-        label: 'Contact Phone',
+        label: L.contactPhone,
         controller: phone,
         hint: '+60 12 345 6789',
         prefixIcon: LucideIcons.phone,
@@ -249,7 +243,7 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
   void _continue() {
     errors.clear();
     if (address.text.trim().isEmpty) {
-      errors['address'] = 'Pickup address is required.';
+      errors['address'] = L.pickupAddressRequired;
     }
     setState(() {});
     if (errors.isEmpty) AppScope.read(context).go(VRoute.setupServiceArea);
@@ -257,14 +251,14 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
 
   @override
   Widget build(BuildContext context) => PageBody(
-    bottom: CefButton('Continue', onTap: _continue),
+    bottom: CefButton(L.continueText, onTap: _continue),
     children: [
-      const _SetupStepHeader(
+      _SetupStepHeader(
         step: 2,
         totalSteps: 3,
         icon: LucideIcons.mapPin,
-        title: 'Where do deliveries start from?',
-        subtitle: 'Riders pick up orders from this location.',
+        title: L.whereDoDeliveriesStartFrom,
+        subtitle: L.ridersPickUpOrdersFromLocation,
       ),
       Container(
         height: 180,
@@ -301,9 +295,9 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
       ),
       const SizedBox(height: Gap.lg),
       CefField(
-        label: 'Pickup Address',
+        label: L.pickupAddress,
         controller: address,
-        hint: 'Search or enter your address',
+        hint: L.searchEnterAddress,
         prefixIcon: LucideIcons.search,
         errorText: errors['address'],
       ),
@@ -312,14 +306,14 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
         children: [
           Expanded(
             child: CefField(
-              label: 'Postcode',
+              label: L.postcode,
               controller: postcode,
               keyboardType: TextInputType.number,
             ),
           ),
           const SizedBox(width: Gap.md),
           Expanded(
-            child: CefField(label: 'City', controller: city),
+            child: CefField(label: L.city, controller: city),
           ),
         ],
       ),
@@ -363,12 +357,12 @@ class _SetupServiceAreaScreenState extends State<SetupServiceAreaScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const _SetupStepHeader(
+                    _SetupStepHeader(
                       step: 3,
                       totalSteps: 3,
                       icon: LucideIcons.map,
-                      title: 'How far do you deliver?',
-                      subtitle: 'Cefflo uses this to decide which orders you can accept.',
+                      title: L.howFarDoDeliver,
+                      subtitle: L.ceffloUsesDecideWhichOrdersCan,
                     ),
                     Expanded(
                       child: ConstrainedBox(
@@ -383,7 +377,7 @@ class _SetupServiceAreaScreenState extends State<SetupServiceAreaScreen> {
                     ),
                     const SizedBox(height: Gap.lg),
                     CefButton(
-                      'Finish Setup',
+                      L.finishSetup,
                       onTap: () => app.go(VRoute.setupComplete),
                     ),
                   ],
@@ -405,11 +399,11 @@ class SetupCompleteScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    final checks = const [
-      ('Business Profile', 'Completed', LucideIcons.store),
-      ('Service Area', 'Configured', LucideIcons.mapPin),
-      ('Team & Riders', 'Ready', LucideIcons.users),
-      ('Preferences', 'Set', LucideIcons.settings),
+    final checks = [
+      (L.businessProfile2, L.completed, LucideIcons.store),
+      (L.serviceArea2, L.configured, LucideIcons.mapPin),
+      (L.teamRiders, L.ready, LucideIcons.users),
+      (L.preferences, L.setText, LucideIcons.settings),
     ];
     final text = Theme.of(context).textTheme;
     return PageBody(
@@ -419,11 +413,11 @@ class SetupCompleteScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text.rich(
-                const TextSpan(
+                TextSpan(
                   children: [
-                    TextSpan(text: 'Your Business\nis '),
+                    TextSpan(text: L.business2),
                     TextSpan(
-                      text: 'Ready!',
+                      text: L.ready2,
                       style: TextStyle(color: CefColors.ceffloMustard),
                     ),
                   ],
@@ -435,7 +429,7 @@ class SetupCompleteScreen extends StatelessWidget {
               ),
               const SizedBox(height: Gap.sm),
               Text(
-                'Your delivery setup is complete.\nLet’s start delivering with Cefflo.',
+                L.deliverySetupCompleteLetsStartDelivering,
                 style: text.bodyMedium?.copyWith(
                   color: Colors.white.withValues(alpha: .82),
                 ),
@@ -456,7 +450,7 @@ class SetupCompleteScreen extends StatelessWidget {
             ),
           ),
         const SizedBox(height: Gap.xxl),
-        CefButton('Go to Today', onTap: () => app.switchTab(NavTab.today)),
+        CefButton(L.goToday, onTap: () => app.switchTab(NavTab.today)),
       ],
     );
   }
@@ -472,10 +466,8 @@ class TodayScreen extends StatelessWidget {
     final app = AppScope.of(context);
     final business = app.business;
     if (business == null) {
-      return const PageBody(
-        children: [
-          StateBlock.empty('No business is linked to this account yet.'),
-        ],
+      return PageBody(
+        children: [StateBlock.empty(L.noBusinessLinkedAccountYet)],
       );
     }
     return AsyncView<(List<VendorOrder>, List<RiderRow>)>(
@@ -507,9 +499,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     final app = AppScope.of(context);
     final business = app.business;
     if (business == null) {
-      return const PageBody(
-        children: [StateBlock.empty('No business linked.')],
-      );
+      return PageBody(children: [StateBlock.empty(L.noBusinessLinked)]);
     }
     return AsyncView<List<VendorOrder>>(
       key: ValueKey('orders-${business.id}'),
@@ -535,7 +525,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
             ),
             const SizedBox(height: Gap.md),
             if (visible.isEmpty)
-              StateBlock.empty('No ${tab.label.toLowerCase()} orders.')
+              StateBlock.empty(L.noOrders(tab.label.toLowerCase()))
             else
               for (final o in visible)
                 CefListRow(
@@ -618,8 +608,11 @@ class OrderDetailScreen extends StatelessWidget {
                 ),
                 lines: [
                   HeroLine(
-                    'Today, ${_formatTime(order.createdAt)} · '
-                    '${items.length} item${items.length == 1 ? '' : 's'}',
+                    L.todayItem(
+                      _formatTime(order.createdAt),
+                      items.length,
+                      items.length == 1 ? '' : 's',
+                    ),
                   ),
                 ],
               ),
@@ -645,7 +638,7 @@ class OrderDetailScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: CefButton(
-                        'Edit Order',
+                        L.editOrder2,
                         secondary: true,
                         onTap: () =>
                             app.go(VRoute.editOrder, entityId: order.id),
@@ -661,12 +654,12 @@ class OrderDetailScreen extends StatelessWidget {
                   ],
                 )
               : CefButton(
-                  'Edit Order',
+                  L.editOrder2,
                   onTap: () => app.go(VRoute.editOrder, entityId: order.id),
                 ),
           children: [
             CefListRow(
-              title: 'Customer',
+              title: L.customer,
               subtitle: phone.isEmpty
                   ? order.customerName
                   : '${order.customerName}\n$phone',
@@ -675,19 +668,19 @@ class OrderDetailScreen extends StatelessWidget {
               trailing: phone.isEmpty ? null : ContactActions(phone: phone),
             ),
             CefListRow(
-              title: 'Deliver to',
+              title: L.deliver,
               subtitle: order.deliveryAddress,
               subtitleMaxLines: 2,
               icon: LucideIcons.mapPin,
               trailing: OutlinedIconAction(
-                label: 'Directions',
+                label: L.directions,
                 icon: LucideIcons.navigation,
                 onTap: () => launchDirections(context, order.deliveryAddress),
               ),
             ),
             CefListRow(
-              title: 'Zone',
-              subtitle: zone?.name ?? 'Not set',
+              title: L.zone,
+              subtitle: zone?.name ?? L.notSet,
               icon: LucideIcons.map,
               showChevron: planning,
               onTap: planning
@@ -696,22 +689,21 @@ class OrderDetailScreen extends StatelessWidget {
             ),
             if ((order.notes ?? '').isNotEmpty)
               CefListRow(
-                title: 'Delivery Instruction',
+                title: L.deliveryInstruction,
                 subtitle: order.notes,
                 subtitleMaxLines: 3,
                 icon: LucideIcons.fileText,
               ),
             SectionHeading(
-              'Items (${items.length})',
+              L.items(items.length),
               trailing: CefLink(
-                'View receipt',
+                L.viewReceipt,
                 icon: LucideIcons.fileText,
-                onTap: () =>
-                    showNotWiredYetSnackBar(context, 'The receipt view'),
+                onTap: () => showNotWiredYetSnackBar(context, L.receiptView),
               ),
             ),
             if (items.isEmpty)
-              const StateBlock.empty('No items on this order.')
+              StateBlock.empty(L.noItemsOrder)
             else ...[
               for (final entry in items.indexed.take(_previewItems))
                 itemRow(entry),
@@ -719,11 +711,11 @@ class OrderDetailScreen extends StatelessWidget {
                 Align(
                   alignment: AlignmentDirectional.centerStart,
                   child: CefLink(
-                    'View all ${items.length} items',
+                    L.viewAllItems(items.length),
                     chevron: true,
                     onTap: () => showListSheet(
                       context,
-                      title: 'Items (${items.length})',
+                      title: L.items(items.length),
                       children: [for (final e in items.indexed) itemRow(e)],
                     ),
                   ),
@@ -744,7 +736,7 @@ Future<void> _pickZone(
   Future<void> Function() reload,
 ) => showListSheet(
   context,
-  title: 'Zone',
+  title: L.zone,
   children: [
     for (final z in zones.where((z) => z.isActive))
       Builder(
@@ -763,12 +755,12 @@ Future<void> _pickZone(
               await AppScope.read(context).repo
                   .updateOrder(orderId: order.id, zoneId: z.id);
               if (context.mounted) {
-                showCefToast(context, 'Zone set to ${z.name}');
+                showCefToast(context, L.zoneSet(z.name));
               }
               await reload();
             } catch (e) {
               if (context.mounted) {
-                showCefToast(context, 'Could not set zone: $e', error: true);
+                showCefToast(context, L.couldNotSetZone(e), error: true);
               }
             }
           },
@@ -794,10 +786,10 @@ class _ApproveOrderButtonState extends State<_ApproveOrderButton> {
     setState(() => _busy = true);
     try {
       await AppScope.read(context).repo.approveOrder(widget.orderId);
-      if (mounted) showCefToast(context, 'Order approved');
+      if (mounted) showCefToast(context, L.orderApproved);
       await widget.onApproved();
     } catch (e) {
-      if (mounted) showCefToast(context, 'Could not approve: $e', error: true);
+      if (mounted) showCefToast(context, L.couldNotApprove(e), error: true);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -805,9 +797,9 @@ class _ApproveOrderButtonState extends State<_ApproveOrderButton> {
 
   @override
   Widget build(BuildContext context) => CefButton(
-    'Approve Order',
+    L.approveOrder,
     busy: _busy,
-    busyLabel: 'Approving…',
+    busyLabel: L.approving,
     onTap: _busy ? null : _approve,
   );
 }
@@ -825,24 +817,24 @@ class NewOrderEntryScreen extends StatelessWidget {
       children: [
         CefListRow(
           icon: LucideIcons.filePlus,
-          title: 'Manual Entry',
-          subtitle: 'Create a single order step by step',
+          title: L.manualEntry,
+          subtitle: L.createSingleOrderStepByStep,
           subtitleMaxLines: 2,
           onTap: () => app.go(VRoute.newOrderManual),
         ),
         CefListRow(
           icon: LucideIcons.cloudUpload,
-          title: 'Import Orders',
-          subtitle: 'Import multiple orders from your files',
+          title: L.importOrders2,
+          subtitle: L.importMultipleOrdersFromFiles,
           subtitleMaxLines: 2,
           onTap: () => app.go(VRoute.importOrders),
         ),
         SectionHeading(
-          'Recent Imports',
+          L.recentImports,
           trailing: CefLink(
-            'View all',
+            L.viewAll,
             chevron: true,
-            onTap: () => showNotWiredYetSnackBar(context, 'The import history'),
+            onTap: () => showNotWiredYetSnackBar(context, L.importHistory),
           ),
         ),
         for (final source in _ImportSource.values)
@@ -850,13 +842,15 @@ class NewOrderEntryScreen extends StatelessWidget {
             leading: _ImportSourceMark(source: source),
             title: source.sampleBatch,
             subtitle:
-                '${source.label} · ${source.sampleCount} orders\n'
-                '${source.sampleDate}',
+                L.importSampleSubtitle(
+                  source.label,
+                  source.sampleCount,
+                  source.sampleDate,
+                ),
             subtitleMaxLines: 2,
-            trailing: const StatusChip('Connected', success: true),
+            trailing: StatusChip(L.connected, success: true),
             showChevron: false,
-            onTap: () =>
-                showNotWiredYetSnackBar(context, 'Opening this import'),
+            onTap: () => showNotWiredYetSnackBar(context, L.openingImport),
           ),
       ],
     );
@@ -866,45 +860,38 @@ class NewOrderEntryScreen extends StatelessWidget {
 /// The three file sources the import flow accepts. Each source uses the
 /// provider's official product mark bundled locally for deterministic render.
 enum _ImportSource {
-  googleSheets(
-    'Google Sheets',
-    'Import from your Google Sheets',
-    'assets/brand/google-sheets-logo.png',
-    'Meal Prep Orders',
-    32,
-    '16 Sep 2026',
-  ),
-  excel(
-    'Excel',
-    'Upload an Excel file (.xlsx, .xls)',
-    'assets/brand/microsoft-excel-logo.png',
-    'Catering Sept',
-    24,
-    '14 Sep 2026',
-  ),
-  googleDrive(
-    'Google Drive',
-    'Import from files in your Google Drive',
-    'assets/brand/google-drive-logo.png',
-    'Hamper Orders',
-    18,
-    '12 Sep 2026',
-  );
+  googleSheets('assets/brand/google-sheets-logo.png', 32),
+  excel('assets/brand/microsoft-excel-logo.png', 24),
+  googleDrive('assets/brand/google-drive-logo.png', 18);
 
-  const _ImportSource(
-    this.label,
-    this.description,
-    this.assetPath,
-    this.sampleBatch,
-    this.sampleCount,
-    this.sampleDate,
-  );
-  final String label;
-  final String description;
+  const _ImportSource(this.assetPath, this.sampleCount);
+
   final String assetPath;
-  final String sampleBatch;
   final int sampleCount;
-  final String sampleDate;
+
+  String get label => switch (this) {
+    _ImportSource.googleSheets => L.googleSheets,
+    _ImportSource.excel => L.excel,
+    _ImportSource.googleDrive => L.googleDrive,
+  };
+
+  String get description => switch (this) {
+    _ImportSource.googleSheets => L.importFromGoogleSheets,
+    _ImportSource.excel => L.uploadExcelFileXlsxXls,
+    _ImportSource.googleDrive => L.importFromFilesGoogleDrive,
+  };
+
+  String get sampleBatch => switch (this) {
+    _ImportSource.googleSheets => L.mealPrepOrders,
+    _ImportSource.excel => L.cateringSept,
+    _ImportSource.googleDrive => L.hamperOrders,
+  };
+
+  String get sampleDate => switch (this) {
+    _ImportSource.googleSheets => L.t16Sep2026,
+    _ImportSource.excel => L.t14Sep2026,
+    _ImportSource.googleDrive => L.t12Sep2026,
+  };
 }
 
 class _ImportSourceMark extends StatelessWidget {
@@ -932,21 +919,21 @@ class _ImportSourceMark extends StatelessWidget {
 class ImportOrdersScreen extends StatelessWidget {
   const ImportOrdersScreen({super.key});
 
-  static const _steps = [
-    ('Select your source', 'Google Sheets, Excel or Google Drive'),
-    ('Choose a file', 'Or pick a connected sheet'),
-    ('Map the columns', 'And preview your orders'),
-    ('Import', 'And review the orders'),
+  static List<(String, String)> get _steps => [
+    (L.selectSource, L.googleSheetsExcelGoogleDrive),
+    (L.chooseFile, L.pickConnectedSheet),
+    (L.mapColumns, L.previewOrders),
+    (L.importText, L.reviewOrders),
   ];
 
   @override
   Widget build(BuildContext context) => PageBody(
     children: [
       Text(
-        'Choose a source to import multiple orders.',
+        L.chooseSourceImportMultipleOrders,
         style: Theme.of(context).textTheme.bodyMedium,
       ),
-      const SectionHeading('How it works?', icon: LucideIcons.info),
+      SectionHeading(L.howWorks, icon: LucideIcons.info),
       for (final (index, step) in _steps.indexed)
         CefListRow(
           leading: CefAvatar('${index + 1}'),
@@ -954,17 +941,15 @@ class ImportOrdersScreen extends StatelessWidget {
           subtitle: step.$2,
           subtitleMaxLines: 2,
         ),
-      const SectionHeading('Sources', icon: LucideIcons.cloudUpload),
+      SectionHeading(L.sources, icon: LucideIcons.cloudUpload),
       for (final source in _ImportSource.values)
         CefListRow(
           leading: _ImportSourceMark(source: source),
           title: source.label,
           subtitle: source.description,
           subtitleMaxLines: 2,
-          onTap: () => showNotWiredYetSnackBar(
-            context,
-            'Importing from ${source.label}',
-          ),
+          onTap: () =>
+              showNotWiredYetSnackBar(context, L.importingFrom(source.label)),
         ),
     ],
   );
@@ -1016,13 +1001,13 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
   bool _validate() {
     errors.clear();
     if (name.text.trim().isEmpty) {
-      errors['name'] = 'Customer name is required.';
+      errors['name'] = L.customerNameRequired;
     }
     if (phone.text.trim().length < 7) {
-      errors['phone'] = 'Enter a valid phone number.';
+      errors['phone'] = L.enterValidPhoneNumber;
     }
     if (address.text.trim().isEmpty) {
-      errors['address'] = 'Delivery address is required.';
+      errors['address'] = L.deliveryAddressRequired;
     }
     setState(() {});
     return errors.isEmpty;
@@ -1035,14 +1020,12 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       final ok = await runAsyncFeedback(
         context,
         action: () async {},
-        processingTitle: 'Processing...',
-        processingSubtitle: widget.isNew
-            ? 'Creating your order'
-            : 'Updating your order',
-        successTitle: 'Successful',
+        processingTitle: L.processing,
+        processingSubtitle: widget.isNew ? L.creatingOrder : L.updatingOrder,
+        successTitle: L.successful,
         successSubtitle: widget.isNew
-            ? 'Your new order has been created successfully.'
-            : 'Your order has been updated successfully.',
+            ? L.newOrderHasBeenCreatedSuccessfully
+            : L.orderHasBeenUpdatedSuccessfully,
       );
       if (!mounted || !ok) return;
       if (widget.isNew) {
@@ -1099,69 +1082,67 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     if (loading) return const SkeletonPage(rows: 6);
     return PageBody(
       bottom: CefButton(
-        widget.isNew ? 'Review & Create' : 'Update Order',
+        widget.isNew ? L.reviewCreate : L.updateOrder,
         onTap: _save,
       ),
       children: [
         Text(
-          widget.isNew
-              ? 'Create a new order step by step.'
-              : 'Update order details.',
+          widget.isNew ? L.createNewOrderStepByStep : L.updateOrderDetails,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         // Archetype G (multi-section operational form).
-        const SectionHeading(
-          'Customer',
+        SectionHeading(
+          L.customer,
           icon: LucideIcons.user,
-          subtitle: 'Select an existing customer or add a new one.',
+          subtitle: L.selectExistingCustomerAddNewOne,
         ),
         CefField(
-          label: 'Customer name',
+          label: L.customerName,
           controller: name,
-          hint: 'Search customer by name, phone or email...',
+          hint: L.searchCustomerByNamePhoneEmail,
           prefixIcon: LucideIcons.search,
           errorText: errors['name'],
         ),
         CefField(
-          label: 'Phone number',
+          label: L.phoneNumber,
           controller: phone,
-          hint: 'Enter phone number...',
+          hint: L.enterPhoneNumber,
           prefixIcon: LucideIcons.phone,
           keyboardType: TextInputType.phone,
           errorText: errors['phone'],
         ),
-        const SectionHeading(
-          'Address',
+        SectionHeading(
+          L.address,
           icon: LucideIcons.mapPin,
-          subtitle: 'Delivery address',
+          subtitle: L.deliveryAddress,
         ),
         CefField(
-          label: 'Address',
+          label: L.address,
           controller: address,
-          hint: 'Enter delivery address...',
+          hint: L.enterDeliveryAddress,
           prefixIcon: LucideIcons.mapPin,
           maxLines: 2,
           errorText: errors['address'],
         ),
-        const SectionHeading(
-          'Items',
+        SectionHeading(
+          L.items2,
           icon: LucideIcons.package,
-          subtitle: 'Add order items',
+          subtitle: L.addOrderItems,
         ),
         CefActionRow(
           icon: LucideIcons.plus,
-          label: 'Add items to this order',
-          onTap: () => showNotWiredYetSnackBar(context, 'Adding order items'),
+          label: L.addItemsOrder,
+          onTap: () => showNotWiredYetSnackBar(context, L.addingOrderItems),
         ),
-        const SectionHeading(
-          'Instructions',
+        SectionHeading(
+          L.instructions,
           icon: LucideIcons.clipboardList,
-          subtitle: 'Special requests (optional)',
+          subtitle: L.specialRequestsOptional,
         ),
         CefField(
-          label: 'Instruction',
+          label: L.instruction,
           controller: notes,
-          hint: 'Add delivery notes...',
+          hint: L.addDeliveryNotes,
           maxLines: 2,
         ),
         if (error != null)
@@ -1225,11 +1206,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   bool _validate() {
     errors.clear();
     if (name.text.trim().isEmpty) {
-      errors['name'] = 'Product name is required.';
+      errors['name'] = L.productNameRequired;
     }
     final parsed = num.tryParse(price.text.trim());
     if (parsed == null || parsed < 0) {
-      errors['price'] = 'Enter a valid price.';
+      errors['price'] = L.enterValidPrice;
     }
     setState(() {});
     return errors.isEmpty;
@@ -1242,14 +1223,12 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       final ok = await runAsyncFeedback(
         context,
         action: () async {},
-        processingTitle: 'Processing...',
-        processingSubtitle: widget.isNew
-            ? 'Adding your product'
-            : 'Updating your product',
-        successTitle: 'Successful',
+        processingTitle: L.processing,
+        processingSubtitle: widget.isNew ? L.addingProduct : L.updatingProduct,
+        successTitle: L.successful,
         successSubtitle: widget.isNew
-            ? 'Your new product has been added successfully.'
-            : 'Your product has been updated successfully.',
+            ? L.newProductHasBeenAddedSuccessfully
+            : L.productHasBeenUpdatedSuccessfully,
       );
       if (!mounted || !ok) return;
       app.back();
@@ -1300,38 +1279,38 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     if (loading) return const SkeletonPage(rows: 6);
     return PageBody(
       bottom: CefButton(
-        widget.isNew ? 'Add Product' : 'Save Changes',
+        widget.isNew ? L.addProduct2 : L.saveChanges,
         busy: busy,
         onTap: _save,
       ),
       children: [
         // Archetype H (product / content form).
-        Text('Product Photo', style: Theme.of(context).textTheme.titleSmall),
+        Text(L.productPhoto, style: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: Gap.md),
         const _PhotoDropzone(),
-        const SectionHeading('Product Details', icon: LucideIcons.package),
+        SectionHeading(L.productDetails, icon: LucideIcons.package),
         CefField(
-          label: 'Product name',
+          label: L.productName,
           controller: name,
-          hint: 'Enter product name',
+          hint: L.enterProductName,
           errorText: errors['name'],
         ),
         CefField(
-          label: 'Description',
+          label: L.description,
           controller: description,
-          hint: 'Enter product description',
+          hint: L.enterProductDescription,
           maxLines: 3,
         ),
         CefField(
-          label: 'Price (RM)',
+          label: L.priceRm,
           controller: price,
-          hint: 'RM 0.00',
+          hint: L.rm000,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           errorText: errors['price'],
         ),
         CefListRow(
-          title: 'Available',
-          subtitle: 'Show this product in your storefront',
+          title: L.available,
+          subtitle: L.showProductStorefront,
           trailing: CefSwitch(
             value: active,
             onChanged: (v) => setState(() => active = v),
@@ -1362,7 +1341,7 @@ class _OrderProgress extends StatelessWidget {
     // Three visible steps. The V-13 reference draws a "Ready" order with the
     // Pickup node already highlighted, so readyForPickup lights node 0 rather
     // than leaving the whole tracker dim.
-    const labels = ['Pickup', 'On the Way', 'Delivered'];
+    final labels = [L.pickup, L.way2, L.delivered];
     final active = switch (status) {
       DeliveryStatus.readyForPickup || DeliveryStatus.pickedUp => 0,
       DeliveryStatus.outForDelivery || DeliveryStatus.arrived => 1,
@@ -1466,7 +1445,7 @@ class _PhotoDropzone extends StatelessWidget {
             Icon(LucideIcons.imagePlus, size: 34, color: c.iconColor),
             const SizedBox(height: Gap.sm),
             Text(
-              'Add product photo',
+              L.addProductPhoto,
               style: Theme.of(context).textTheme.titleSmall,
             ),
           ],

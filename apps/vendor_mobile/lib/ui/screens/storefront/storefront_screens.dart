@@ -20,12 +20,14 @@ import 'shared/storefront_surface.dart';
 import 'shared/template_definition.dart';
 import 'templates/template_registry.dart';
 
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+
 /// Capability names as shown to vendors.
-const _capabilityLabels = {
-  StorefrontCapability.brandColour: 'Brand colour',
-  StorefrontCapability.background: 'Background',
-  StorefrontCapability.heroImage: 'Hero image',
-  StorefrontCapability.identity: 'Store name',
+Map<StorefrontCapability, String> get _capabilityLabels => {
+  StorefrontCapability.brandColour: L.brandColour,
+  StorefrontCapability.background: L.background,
+  StorefrontCapability.heroImage: L.heroImage,
+  StorefrontCapability.identity: L.storeName,
 };
 
 /// The template's own colour field behind its miniature: the storefront's
@@ -98,7 +100,7 @@ class _ActiveMark extends StatelessWidget {
         ),
         const SizedBox(width: 6),
         Text(
-          'Active',
+          L.active,
           style: Theme.of(context).textTheme.labelMedium
               ?.copyWith(color: onDark ? Colors.white : green),
         ),
@@ -191,7 +193,8 @@ class StorefrontScreen extends StatefulWidget {
 }
 
 class _StorefrontScreenState extends State<StorefrontScreen> {
-  static const _all = 'All';
+  /// Filter sentinel (not display text); shown as L.all.
+  static const _all = '__all__';
   String _filter = _all;
 
   @override
@@ -224,12 +227,9 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Explore Templates', style: text.titleMedium),
+                    Text(L.exploreTemplates, style: text.titleMedium),
                     const SizedBox(height: Gap.xs),
-                    Text(
-                      'Preview any layout with your own products.',
-                      style: text.bodySmall,
-                    ),
+                    Text(L.previewAnyLayoutOwnProducts, style: text.bodySmall),
                   ],
                 ),
               ),
@@ -242,7 +242,7 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
                   itemCount: filters.length,
                   separatorBuilder: (_, _) => const SizedBox(width: Gap.sm),
                   itemBuilder: (context, i) => _FilterChip(
-                    label: filters[i],
+                    label: filters[i] == _all ? L.all : filters[i],
                     selected: _filter == filters[i],
                     onTap: () => setState(() => _filter = filters[i]),
                   ),
@@ -252,7 +252,7 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: Gap.gutter),
                 child: visible.isEmpty
-                    ? const StateBlock.empty('No templates here yet.')
+                    ? StateBlock.empty(L.noTemplatesHereYet)
                     : _TemplateGrid(
                         templates: visible,
                         activeId: active.id,
@@ -266,8 +266,8 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
                   children: [
                     const CefDivider(),
                     CefListRow(
-                      title: 'Products',
-                      subtitle: 'Every template shows these products',
+                      title: L.products,
+                      subtitle: L.everyTemplateShowsTheseProducts,
                       icon: LucideIcons.package,
                       showDivider: false,
                       onTap: () => app.go(VRoute.products),
@@ -356,12 +356,12 @@ class _CurrentStorefrontHero extends StatelessWidget {
                 children: [
                   StorefrontOverlayButton(
                     icon: LucideIcons.arrowLeft,
-                    tooltip: 'Back',
+                    tooltip: L.back,
                     onTap: app.back,
                   ),
                   Expanded(
                     child: Text(
-                      'Storefront',
+                      L.storefront,
                       textAlign: TextAlign.center,
                       style: text.headlineMedium?.copyWith(color: Colors.white),
                     ),
@@ -402,14 +402,14 @@ class _CurrentStorefrontHero extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _GlassButton(
-                          label: 'View storefront',
+                          label: L.viewStorefront,
                           onTap: () => app.go(VRoute.storefrontPreview),
                         ),
                       ),
                       const SizedBox(width: Gap.md),
                       Expanded(
                         child: CefButton(
-                          'Customize',
+                          L.customize,
                           onTap: () =>
                               app.go(VRoute.branding, entityId: def.id),
                         ),
@@ -595,7 +595,7 @@ class _TemplateTile extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(
-              available ? def.style : 'Coming soon',
+              available ? def.style : L.comingSoon,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: text.bodySmall,
@@ -671,7 +671,7 @@ class StorefrontTemplatePreviewScreen extends StatelessWidget {
                               left: Gap.lg,
                               child: StorefrontOverlayButton(
                                 icon: LucideIcons.arrowLeft,
-                                tooltip: 'Back',
+                                tooltip: L.back,
                                 onTap: app.back,
                               ),
                             ),
@@ -731,7 +731,7 @@ class StorefrontTemplatePreviewScreen extends StatelessWidget {
                           if (capabilities.isNotEmpty) ...[
                             const SizedBox(height: Gap.sm),
                             Text(
-                              'Customize: ${capabilities.join(' · ')}',
+                              L.customize3(capabilities.join(' · ')),
                               style: text.bodySmall,
                             ),
                           ],
@@ -743,7 +743,7 @@ class StorefrontTemplatePreviewScreen extends StatelessWidget {
               ),
               StickyActionBar(
                 child: CefButton(
-                  isActive ? 'Customize' : 'Use This Template',
+                  isActive ? L.customize : L.useTemplate,
                   onTap: () => app.go(VRoute.branding, entityId: def.id),
                 ),
               ),
@@ -784,7 +784,7 @@ class LiveStorefrontScreen extends StatelessWidget {
                   children: [
                     StorefrontOverlayButton(
                       icon: LucideIcons.x,
-                      tooltip: 'Close',
+                      tooltip: L.close,
                       light: false,
                       onTap: app.back,
                     ),
@@ -792,7 +792,7 @@ class LiveStorefrontScreen extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('Your storefront', style: text.titleSmall),
+                          Text(L.storefront2, style: text.titleSmall),
                           Text(
                             '${def.name} · ${def.style}',
                             maxLines: 1,

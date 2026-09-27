@@ -19,6 +19,8 @@ import '../../../../data/storefront_catalog.dart';
 import '../../../../data/storefront_config.dart';
 import 'storefront_theme.dart';
 
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+
 /// What a vendor may customize on a template. The Customize screen renders
 /// exactly the controls a template declares -- nothing disabled, nothing
 /// shown "just in case".
@@ -151,13 +153,13 @@ class StorefrontTemplateDef {
 
 /// Background treatments shared by the light templates. A template may
 /// declare its own list instead.
-const kLightBackgrounds = [
+List<StorefrontBackgroundOption> get kLightBackgrounds => [
   StorefrontBackgroundOption(
     kTemplateBackgroundId,
-    'Default',
+    L.defaultText,
     Color(0xFFF5F6F8),
   ),
-  StorefrontBackgroundOption('white', 'White', Color(0xFFFFFFFF)),
-  StorefrontBackgroundOption('warm', 'Warm', Color(0xFFF7F2EA)),
-  StorefrontBackgroundOption('cool', 'Cool', Color(0xFFEEF3F9)),
+  StorefrontBackgroundOption('white', L.white, Color(0xFFFFFFFF)),
+  StorefrontBackgroundOption('warm', L.warm, Color(0xFFF7F2EA)),
+  StorefrontBackgroundOption('cool', L.cool, Color(0xFFEEF3F9)),
 ];

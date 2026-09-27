@@ -4,6 +4,8 @@
 /// here only. Yearly billing follows §Annual: pay ~10 months, get 12.
 library;
 
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+
 enum BillingCycle { monthly, yearly }
 
 class SubscriptionPlan {
@@ -39,71 +41,71 @@ class SubscriptionPlan {
       cycle == BillingCycle.yearly ? monthlyPrice * 10 : monthlyPrice;
 }
 
-const subscriptionPlans = [
+List<SubscriptionPlan> get subscriptionPlans => [
   SubscriptionPlan(
     id: 'free',
     name: 'Free',
     monthlyPrice: 0,
-    tagline: 'Experience Cefflo.',
+    tagline: L.experienceCefflo,
     deliveries: 100,
     riders: 3,
     zones: 2,
     teamUsers: 1,
     features: [
-      '100 deliveries a month',
-      'Up to 3 riders · 2 zones',
-      'Customer tracking and proof of delivery',
+      L.t100DeliveriesMonth,
+      L.up3Riders2Zones,
+      L.customerTrackingProofDelivery,
     ],
   ),
   SubscriptionPlan(
     id: 'grow',
     name: 'Grow',
     monthlyPrice: 99,
-    tagline: 'For businesses running local deliveries regularly.',
+    tagline: L.businessesRunningLocalDeliveriesRegularly,
     deliveries: 500,
     riders: 10,
     zones: 5,
     teamUsers: 3,
     features: [
-      '500 deliveries a month',
-      'Up to 10 riders · 5 zones',
-      'Up to 3 team members',
-      'Standard reporting and support',
+      L.t500DeliveriesMonth,
+      L.up10Riders5Zones,
+      L.up3TeamMembers,
+      L.standardReportingSupport,
     ],
   ),
   SubscriptionPlan(
     id: 'operate',
     name: 'Operate',
     monthlyPrice: 199,
-    tagline: 'Run your local delivery operation in one place.',
+    tagline: L.runLocalDeliveryOperationOnePlace,
     deliveries: 1500,
     riders: null,
     zones: null,
     teamUsers: 10,
     mostPopular: true,
     features: [
-      '1,500 deliveries a month',
-      'Unlimited riders and zones',
-      'Up to 10 team members',
-      'Advanced operational reporting',
-      'Priority support',
+      L.t1500DeliveriesMonth,
+      L.unlimitedRidersZones,
+      L.up10TeamMembers,
+      L.advancedOperationalReporting,
+      L.prioritySupport,
     ],
   ),
   SubscriptionPlan(
     id: 'scale',
     name: 'Scale',
     monthlyPrice: 499,
-    tagline: 'For high-volume, complex operations.',
+    tagline: L.highVolumeComplexOperations,
     deliveries: 5000,
     riders: null,
     zones: null,
     teamUsers: 25,
     features: [
-      '5,000 deliveries a month',
-      'Unlimited riders and zones',
-      'Up to 25 team members',
-      'Advanced controls and integrations',
-      'Priority support',
+      L.t5000DeliveriesMonth,
+      L.unlimitedRidersZones,
+      L.up25TeamMembers,
+      L.advancedControlsIntegrations,
+      L.prioritySupport,
     ],
   ),
 ];

@@ -22,6 +22,8 @@ import 'shared/template_definition.dart';
 import 'storefront_screens.dart';
 import 'templates/template_registry.dart';
 
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+
 /// Brand colour swatches offered after the template's own colour.
 const _brandSwatches = [
   Color(0xFF17233D),
@@ -90,18 +92,16 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
     final discard = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Discard changes?'),
-        content: const Text(
-          'Your storefront stays as it is. Changes you made here are not saved.',
-        ),
+        title: Text(L.discardChanges),
+        content: Text(L.storefrontStaysChangesMadeHereNot),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Keep editing'),
+            child: Text(L.keepEditing),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Discard'),
+            child: Text(L.discard),
           ),
         ],
       ),
@@ -115,12 +115,12 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
     final ok = await runAsyncFeedback(
       context,
       action: () async => app.applyStorefront(def.id, draft),
-      processingTitle: 'Saving...',
-      processingSubtitle: 'Updating your storefront',
-      successTitle: switching ? '${def.name} is live' : 'Storefront updated',
+      processingTitle: L.saving,
+      processingSubtitle: L.updatingStorefront,
+      successTitle: switching ? L.live(def.name) : L.storefrontUpdated,
       successSubtitle: switching
-          ? 'Your products now show in the ${def.name} layout.'
-          : 'Customers now see your changes.',
+          ? L.productsNowShowLayout(def.name)
+          : L.customersNowSeeChanges,
     );
     if (ok && mounted) app.backTo(VRoute.storefront);
   }
@@ -157,7 +157,7 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
       if (mounted) _update(draft.copyWith(heroImage: bytes));
     } catch (_) {
       if (mounted) {
-        showCefToast(context, "Couldn't open your photos. Please try again.");
+        showCefToast(context, L.couldntOpenPhotosPleaseTryAgain);
       }
     }
   }
@@ -223,7 +223,7 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
                       children: [
                         StorefrontOverlayButton(
                           icon: LucideIcons.arrowLeft,
-                          tooltip: 'Back',
+                          tooltip: L.back,
                           light: false,
                           onTap: _leave,
                         ),
@@ -231,7 +231,7 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
                         SizedBox(
                           width: 96,
                           child: CefButton(
-                            'Save',
+                            L.save,
                             compact: true,
                             onTap: _canSave ? _save : null,
                           ),
@@ -251,12 +251,9 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
                   Gap.xl + media.padding.bottom,
                 ),
                 children: [
-                  Text('Customize ${def.name}', style: text.titleMedium),
+                  Text(L.customize2(def.name), style: text.titleMedium),
                   const SizedBox(height: Gap.xs),
-                  Text(
-                    'Adjust the colours and style to match your brand.',
-                    style: text.bodySmall,
-                  ),
+                  Text(L.adjustColoursStyleMatchBrand, style: text.bodySmall),
                   // One control per declared capability, in a fixed order.
                   for (final cap in StorefrontCapability.values)
                     if (def.supports(cap)) ..._controlFor(cap),
@@ -271,7 +268,7 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
                         padding: EdgeInsets.zero,
                       ),
                       icon: const Icon(LucideIcons.rotateCcw, size: 16),
-                      label: const Text('Reset to template defaults'),
+                      label: Text(L.resetTemplateDefaults),
                     ),
                   ),
                 ],
@@ -310,7 +307,7 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
     ];
     final custom = !swatches.contains(draft.primary);
     return [
-      _label('Brand colour'),
+      _label(L.brandColour),
       Wrap(
         spacing: Gap.md,
         runSpacing: Gap.md,
@@ -324,7 +321,7 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
           _Swatch(
             color: custom ? draft.primary : null,
             selected: custom,
-            tooltip: 'Custom colour',
+            tooltip: L.customColour,
             onTap: () => _pickColour(
               initial: draft.primary,
               onPicked: (c) => _update(draft.copyWith(primary: c)),
@@ -338,7 +335,7 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
   List<Widget> _background() {
     final isCustom = draft.backgroundId == kCustomBackgroundId;
     return [
-      _label('Background'),
+      _label(L.background),
       Wrap(
         spacing: Gap.md,
         runSpacing: Gap.md,
@@ -351,7 +348,7 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
               onTap: () => _update(draft.copyWith(backgroundId: b.id)),
             ),
           _BackgroundTile(
-            label: 'Custom',
+            label: L.custom,
             color: isCustom ? draft.customBackground : null,
             selected: isCustom,
             onTap: () => _pickColour(
@@ -375,7 +372,7 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
     final image = draft.heroImage;
     final c = context.c;
     return [
-      _label('Hero image', hint: 'Shown behind your storefront banner.'),
+      _label(L.heroImage, hint: L.shownBehindStorefrontBanner),
       Row(
         children: [
           ClipRRect(
@@ -398,7 +395,7 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
                 SizedBox(
                   width: 120,
                   child: CefButton(
-                    image == null ? 'Upload' : 'Change',
+                    image == null ? L.upload : L.change,
                     secondary: true,
                     compact: true,
                     onTap: _pickHeroImage,
@@ -409,7 +406,7 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
                     onPressed: () =>
                         _update(draft.copyWith(clearHeroImage: true)),
                     style: TextButton.styleFrom(foregroundColor: c.attention),
-                    child: const Text('Remove'),
+                    child: Text(L.remove2),
                   ),
               ],
             ),
@@ -420,14 +417,14 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
   }
 
   List<Widget> _identity() => [
-    _label('Store name', hint: 'From your Business Profile.'),
+    _label(L.storeName, hint: L.fromBusinessProfile),
     CefField(
-      label: 'Store name',
+      label: L.storeName,
       controller: storeNameCtrl,
       onChanged: (v) => _update(draft.copyWith(storeName: v.trim())),
     ),
     CefField(
-      label: 'Tagline (optional)',
+      label: L.taglineOptional,
       controller: taglineCtrl,
       onChanged: (v) => _update(draft.copyWith(tagline: v.trim())),
     ),
@@ -463,7 +460,7 @@ class _Swatch extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: tooltip ?? 'Colour ${fill?.hex ?? ''}',
+      label: tooltip ?? L.colour(fill?.hex ?? ''),
       child: GestureDetector(
         onTap: onTap,
         child: Container(
@@ -518,7 +515,7 @@ class _BackgroundTile extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: '$label background',
+      label: L.background2(label),
       child: GestureDetector(
         onTap: onTap,
         child: SizedBox(
@@ -620,9 +617,9 @@ class _ColorPickerSheetState extends State<_ColorPickerSheet> {
             ),
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Pick a Colour',
+                    L.pickColour,
                     style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
                   ),
                 ),
@@ -692,7 +689,7 @@ class _ColorPickerSheetState extends State<_ColorPickerSheet> {
               ],
             ),
             const SizedBox(height: 18),
-            CefButton('Done', onTap: () => Navigator.of(context).pop()),
+            CefButton(L.done, onTap: () => Navigator.of(context).pop()),
           ],
         ),
       ),

@@ -8,6 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/theme.dart';
 import '../data/models.dart';
 
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+
 /// How far above the screen bottom floating toasts sit: the shell provides
 /// the bottom navigation height (plus safe area) where the nav is shown.
 class ToastInset extends InheritedWidget {
@@ -82,7 +84,7 @@ void showCefToast(
 /// no backend action exists for them yet -- keeps affordances honest instead
 /// of silently doing nothing.
 void showNotWiredYetSnackBar(BuildContext context, String action) =>
-    showCefToast(context, '$action is not wired up yet.', error: true);
+    showCefToast(context, L.notWiredUpYet(action), error: true);
 
 /// Standalone outline icon at the approved 22px visual size inside a 44px
 /// minimum interactive target. No icon tile, badge or decorative background.
@@ -529,7 +531,7 @@ class _CefFieldState extends State<CefField> {
               _hidden ? LucideIcons.eye : LucideIcons.eyeOff,
               size: 20,
             ),
-            tooltip: _hidden ? 'Show password' : 'Hide password',
+            tooltip: _hidden ? L.showPassword : L.hidePassword,
           )
         : w.suffixIcon == null
         ? null
@@ -686,8 +688,8 @@ class DeliveryStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => switch (status) {
-    DeliveryStatus.created when approved => const StatusChip(
-      'Approved',
+    DeliveryStatus.created when approved => StatusChip(
+      L.approved,
       success: true,
     ),
     DeliveryStatus.readyForPickup ||
@@ -967,7 +969,7 @@ class CefSearchField extends StatelessWidget {
         const SizedBox(width: Gap.xs),
         IconAction(
           icon: LucideIcons.slidersHorizontal,
-          tooltip: 'Filter',
+          tooltip: L.filter,
           onTap: onFilter!,
         ),
       ],
@@ -999,7 +1001,7 @@ Future<void> showSearchSheet(BuildContext context, {required String hint}) {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Search', style: Theme.of(context).textTheme.titleMedium),
+          Text(L.search, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: Gap.md),
           CefSearchField(hint: hint, autofocus: true),
         ],
@@ -1462,14 +1464,14 @@ class StatsCard extends StatelessWidget {
 Future<void> launchPhoneCall(BuildContext context, String phone) => _launch(
   context,
   Uri(scheme: 'tel', path: phone.replaceAll(RegExp(r'[^\d+]'), '')),
-  'the phone app',
+  L.phoneApp,
 );
 
 /// Opens a WhatsApp conversation with [phone] (international number).
 Future<void> launchWhatsApp(BuildContext context, String phone) => _launch(
   context,
   Uri.https('wa.me', '/${phone.replaceAll(RegExp(r'\D'), '')}'),
-  'WhatsApp',
+  L.whatsapp,
 );
 
 /// Opens turn-by-turn directions to [address] in the maps app / Google Maps.
@@ -1490,7 +1492,7 @@ Future<void> _launch(BuildContext context, Uri uri, String target) async {
     opened = false;
   }
   if (!opened && context.mounted) {
-    showCefToast(context, 'Could not open $target.', error: true);
+    showCefToast(context, L.couldNotOpen(target), error: true);
   }
 }
 
@@ -1507,15 +1509,15 @@ class ContactActions extends StatelessWidget {
     children: [
       _ContactImageAction(
         asset: 'assets/icons/contact-call.png',
-        label: 'Call',
-        semanticLabel: 'Call $phone',
+        label: L.call,
+        semanticLabel: L.call2(phone),
         onTap: () => launchPhoneCall(context, phone),
       ),
       const SizedBox(width: Gap.xs),
       _ContactImageAction(
         asset: 'assets/icons/contact-chat.png',
-        label: 'WhatsApp',
-        semanticLabel: 'WhatsApp $phone',
+        label: L.whatsapp,
+        semanticLabel: L.whatsapp2(phone),
         onTap: () => launchWhatsApp(context, phone),
       ),
     ],
@@ -1658,7 +1660,8 @@ class WhatsAppGlyph extends StatelessWidget {
 /// number, and [ContactActions]. Without a number it reads "Not provided"
 /// and offers no actions.
 class ContactCard extends StatelessWidget {
-  const ContactCard({super.key, required this.phone, this.title = 'Contact'});
+  ContactCard({super.key, required this.phone, String? title})
+    : title = title ?? L.contact;
   final String? phone;
   final String title;
 
@@ -1669,7 +1672,7 @@ class ContactCard extends StatelessWidget {
       children: [
         CefListRow(
           title: title,
-          subtitle: number.isEmpty ? 'Not provided' : number,
+          subtitle: number.isEmpty ? L.notProvided : number,
           icon: LucideIcons.phone,
           trailing: number.isEmpty ? null : ContactActions(phone: number),
         ),
@@ -1764,7 +1767,7 @@ class _SkeletonPulseState extends State<SkeletonPulse>
 
   @override
   Widget build(BuildContext context) => Semantics(
-    label: 'Loading',
+    label: L.loading,
     child: FadeTransition(opacity: _controller, child: widget.child),
   );
 }
@@ -1974,7 +1977,7 @@ class StateBlock extends StatelessWidget {
             const SizedBox(height: Gap.md),
             SizedBox(
               width: 160,
-              child: CefButton('Try again', secondary: true, onTap: onRetry),
+              child: CefButton(L.tryAgain, secondary: true, onTap: onRetry),
             ),
           ],
         ],
@@ -2003,14 +2006,17 @@ Future<bool> runAsyncFeedback(
   required String processingSubtitle,
   required String successTitle,
   String? successSubtitle,
-  String doneLabel = 'Done',
-  String failureTitle = 'Something went wrong',
-  String failureMessage =
-      "We couldn't complete this action right now. Please try again.",
-  String retryLabel = 'Try again',
+  String? doneLabel,
+  String? failureTitle,
+  String? failureMessage,
+  String? retryLabel,
   String? failureSecondaryLabel,
   VoidCallback? onFailureSecondary,
 }) {
+  final done = doneLabel ?? L.done;
+  final failTitle = failureTitle ?? L.somethingWentWrong;
+  final failMessage = failureMessage ?? L.weCouldntCompleteActionRightNow;
+  final retry = retryLabel ?? L.tryAgain;
   final completer = Completer<bool>();
   showGeneralDialog<void>(
     context: context,
@@ -2035,10 +2041,10 @@ Future<bool> runAsyncFeedback(
       processingSubtitle: processingSubtitle,
       successTitle: successTitle,
       successSubtitle: successSubtitle,
-      doneLabel: doneLabel,
-      failureTitle: failureTitle,
-      failureMessage: failureMessage,
-      retryLabel: retryLabel,
+      doneLabel: done,
+      failureTitle: failTitle,
+      failureMessage: failMessage,
+      retryLabel: retry,
       failureSecondaryLabel: failureSecondaryLabel,
       onSettled: (success, {bool secondary = false}) {
         if (!completer.isCompleted) completer.complete(success);
@@ -2232,7 +2238,7 @@ class _AsyncFeedbackOverlayState extends State<_AsyncFeedbackOverlay> {
                         right: Gap.xs,
                         child: IconAction(
                           icon: LucideIcons.x,
-                          tooltip: 'Close',
+                          tooltip: L.close,
                           onTap: () =>
                               _finish(_stage == _FeedbackStage.success),
                         ),

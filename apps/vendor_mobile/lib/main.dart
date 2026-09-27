@@ -9,6 +9,8 @@ import 'core/responsive.dart';
 import 'core/routes.dart';
 import 'core/safe_area.dart';
 import 'core/theme.dart';
+import 'l10n/l10n.dart';
+import 'core/ui_locale.dart';
 import 'data/vendor_repository.dart';
 import 'ui/router.dart';
 import 'ui/screens/auth.dart';
@@ -91,6 +93,8 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
   @override
   void initState() {
     super.initState();
+    applyUiLocale(app.uiLocale);
+    app.restoreUiLocale();
     // Sign Out calls app.clearSession(), which lives in AppState -- but the
     // "is a prototype session authenticated" flag below has to live here
     // instead, since it gates which widget MaterialApp.home builds, before
@@ -132,6 +136,10 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
       builder: (context, _) => MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Cefflo Vendor',
+        // BM + EN (Founder 2026-09-27). Country never selects language.
+        locale: app.uiLocale,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
         // Locked: Light Mode only for the current release. No system/dark
         // theme switch is exposed (Appearance is a "Coming Soon" surface).
         themeMode: ThemeMode.light,
@@ -143,10 +151,13 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
         // default. Screens with a dark background (Splash, Sign In, the
         // Auth sheet family) nest their own CefSystemBars deeper in the
         // tree, which takes precedence for that route.
-        builder: (context, child) => CefSystemBars(
-          background: Brightness.light,
-          browserChromeColor: CefColors.light.chrome,
-          child: _EdgeToEdgeInsets(child: ResponsiveDensity(child: child!)),
+        builder: (context, child) => LocaleRefresh(
+          locale: app.uiLocale,
+          child: CefSystemBars(
+            background: Brightness.light,
+            browserChromeColor: CefColors.light.chrome,
+            child: _EdgeToEdgeInsets(child: ResponsiveDensity(child: child!)),
+          ),
         ),
         home: Builder(
           builder: (context) {
