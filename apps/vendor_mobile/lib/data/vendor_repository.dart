@@ -139,6 +139,28 @@ class VendorRepository {
     return _run(() => _db!.auth.signOut());
   }
 
+  /// Creates the signed-in user's business with them as owner (the same
+  /// bootstrap_business contract Vendor Web uses). Returns the business id.
+  Future<String> bootstrapBusiness({
+    required String name,
+    required String phone,
+    required String address,
+  }) async {
+    final id = await _run(
+      () => _db!.rpc(
+        'bootstrap_business',
+        params: {
+          'p_name': name,
+          'p_phone': phone,
+          'p_email': currentUser?.email,
+          'p_address': address,
+        },
+      ),
+    );
+    if (id is! String) throw RepositoryError(L.unexpectedBackendResponseShape);
+    return id;
+  }
+
   Future<List<Business>> myBusinesses() async {
     if (_demo) return _DemoData.businesses;
     final rows = await _run(() => _db!.rpc('get_my_businesses'));
@@ -392,6 +414,8 @@ class VendorRepository {
     required String name,
     required String phone,
   }) async {
+    // Demo token: the prototype shows the link UI without a backend.
+    if (_demo) return {'token': 'demo-invite-token'};
     final row = await _run(
       () => _db!.rpc(
         'create_rider_invitation',
@@ -422,6 +446,8 @@ class VendorRepository {
     required String email,
     required String role,
   }) async {
+    // Demo token: the prototype shows the link UI without a backend.
+    if (_demo) return {'token': 'demo-invite-token'};
     final row = await _run(
       () => _db!.rpc(
         'create_team_invitation',
@@ -1079,19 +1105,23 @@ class _DemoData {
   static const team = [
     TeamMember(
       userId: 'team-owner',
-      role: 'Owner',
+      role: 'owner',
       displayName: 'Yusuf Sazali',
       phone: '+60 12 345 6789',
       email: 'yusuf@kopikita.my',
     ),
     TeamMember(
       userId: 'team-ops',
-      role: 'Operator',
+      role: 'operator',
       displayName: 'Nur Iman',
       phone: '+60 17 555 0182',
       email: 'nur@kopikita.my',
     ),
-    TeamMember(userId: 'team-helper', role: 'Helper', displayName: 'Farah Lee'),
+    TeamMember(
+      userId: 'team-helper',
+      role: 'operator',
+      displayName: 'Farah Lee',
+    ),
   ];
 
   static const products = [

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/app_state.dart';
+import '../data/models.dart';
 import '../core/routes.dart';
 import '../core/theme.dart';
 import 'system_bars.dart';
@@ -484,7 +485,7 @@ void _showBusinessSwitcher(BuildContext context, AppState app) {
       for (final b in app.businesses)
         CefListRow(
           title: b.name,
-          subtitle: b.role,
+          subtitle: roleLabel(b.role),
           icon: LucideIcons.store,
           showChevron: false,
           trailing: b.id == app.business?.id

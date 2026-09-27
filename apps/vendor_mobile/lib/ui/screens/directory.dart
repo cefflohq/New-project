@@ -50,7 +50,6 @@ class ZonesScreen extends StatelessWidget {
       ),
       builder: (context, data, reload) {
         final (zones, orders) = data;
-        String plural(int n, String word) => '$n $word${n == 1 ? '' : 's'}';
         return PageBody(
           onRefresh: reload,
           children: [
@@ -70,9 +69,10 @@ class ZonesScreen extends StatelessWidget {
                     };
                     return CefListRow(
                       title: z.name,
-                      subtitle:
-                          '${plural(inZone.length, 'order')} · '
-                          '${plural(riders.length, 'rider')}',
+                      subtitle: L.zoneOrdersRiders(
+                        inZone.length,
+                        riders.length,
+                      ),
                       icon: LucideIcons.mapPin,
                       trailing: StatusChip(
                         z.isActive ? L.active : L.inactive,
@@ -1374,7 +1374,7 @@ class _TeamScreenState extends State<TeamScreen> {
               for (final m in visible)
                 CefListRow(
                   title: m.displayName ?? m.userId,
-                  subtitle: m.role,
+                  subtitle: roleLabel(m.role),
                   leading: CefAvatar(m.displayName ?? m.userId, filled: true),
                   trailing: StatusChip(L.active, success: true),
                   // Audit fix 2: bound to this member's id.
@@ -1416,7 +1416,7 @@ class TeamMemberDetailScreen extends StatelessWidget {
             leading: CefAvatar(name, size: 88),
             title: name,
             status: HeroStatusPill(L.active),
-            lines: [HeroLine(member.role)],
+            lines: [HeroLine(roleLabel(member.role))],
           ),
           children: [
             ContactCard(phone: member.phone),
@@ -1429,7 +1429,8 @@ class TeamMemberDetailScreen extends StatelessWidget {
                 ),
                 CefListRow(
                   title: L.roleAccess,
-                  subtitle: '${member.role} · ${_roleDescription(member.role)}',
+                  subtitle:
+                      '${roleLabel(member.role)} · ${_roleDescription(member.role)}',
                   subtitleMaxLines: 3,
                   icon: LucideIcons.shieldCheck,
                 ),
@@ -1462,7 +1463,6 @@ class TeamMemberDetailScreen extends StatelessWidget {
 
   String _roleDescription(String role) => switch (role.toLowerCase()) {
     'owner' => L.fullAccessIncludingBillingSubscription,
-    'admin' => L.canManageDailyOperationsOrdersRiders,
     _ => L.canAccessDailyOperationsOrdersRiders,
   };
 

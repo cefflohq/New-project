@@ -302,6 +302,18 @@ void main() {
 
   testWidgets('invite QR opens in a modal, not inline', (tester) async {
     await pumpAt(tester, const VendorLocation(VRoute.riderRegistrationLink));
+    // No link exists until the invitation is created.
+    expect(find.text('Show QR code'), findsNothing);
+    final fields = find.byType(TextField);
+    await tester.enterText(fields.at(0), 'Zahid Iskandar');
+    await tester.enterText(fields.at(1), '+60123456789');
+    await tester.enterText(fields.at(2), 'zahid@example.com');
+    await tester.tap(find.text('Generate invite link'));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('invite.cefflo.com/?type=rider&token='),
+      findsOneWidget,
+    );
     expect(find.text('Scan to join'), findsNothing);
     await tester.tap(find.text('Show QR code'));
     await tester.pumpAndSettle();

@@ -31,7 +31,9 @@ class WelcomeSetupScreen extends StatelessWidget {
     final steps = [
       (L.businessInformation2, L.nameTypeContactDetails, LucideIcons.store),
       (L.pickupLocation2, L.whereDeliveriesStartFrom, LucideIcons.mapPin),
-      (L.serviceArea2, L.howFarDeliver, LucideIcons.map),
+      // The live service area is set after the business exists (Settings →
+      // Service area); only the demo walks the radius step here.
+      if (app.repo.isDemo) (L.serviceArea2, L.howFarDeliver, LucideIcons.map),
     ];
     final text = Theme.of(context).textTheme;
     return PageBody(
@@ -136,7 +138,7 @@ class SetupBusinessInfoScreen extends StatefulWidget {
 class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
   final name = TextEditingController();
   final phone = TextEditingController();
-  String type = _types.first;
+  int typeIndex = 0;
   final errors = <String, String>{};
 
   static List<String> get _types => [
@@ -163,7 +165,10 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
       errors['phone'] = L.enterValidPhoneNumber;
     }
     setState(() {});
-    if (errors.isEmpty) AppScope.read(context).go(VRoute.setupAddress);
+    if (errors.isNotEmpty) return;
+    final app = AppScope.read(context);
+    app.setupDraft = (name: name.text.trim(), phone: phone.text.trim());
+    app.go(VRoute.setupAddress);
   }
 
   @override
@@ -172,7 +177,7 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
     children: [
       _SetupStepHeader(
         step: 1,
-        totalSteps: 3,
+        totalSteps: AppScope.read(context).repo.isDemo ? 3 : 2,
         icon: LucideIcons.store,
         title: L.tellUsAboutBusiness,
         subtitle: L.appearsDeliveryOrdersReceipts,
@@ -195,11 +200,11 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
               spacing: Gap.sm,
               runSpacing: Gap.sm,
               children: [
-                for (final t in _types)
+                for (final (i, t) in _types.indexed)
                   CefChoiceChip(
                     label: t,
-                    selected: type == t,
-                    onTap: () => setState(() => type = t),
+                    selected: typeIndex == i,
+                    onTap: () => setState(() => typeIndex = i),
                   ),
               ],
             ),
@@ -231,6 +236,10 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
   final postcode = TextEditingController();
   final city = TextEditingController();
   final errors = <String, String>{};
+  bool busy = false;
+  String? error;
+
+  bool get _live => !AppScope.read(context).repo.isDemo;
 
   @override
   void dispose() {
@@ -246,16 +255,62 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
       errors['address'] = L.pickupAddressRequired;
     }
     setState(() {});
-    if (errors.isEmpty) AppScope.read(context).go(VRoute.setupServiceArea);
+    if (errors.isNotEmpty) return;
+    if (!_live) {
+      AppScope.read(context).go(VRoute.setupServiceArea);
+      return;
+    }
+    _createBusiness();
+  }
+
+  /// Live setup: creates the business, then reloads the session so the new
+  /// business (with this user as owner) is the active one.
+  Future<void> _createBusiness() async {
+    final app = AppScope.read(context);
+    final draft = app.setupDraft;
+    if (draft == null) {
+      app.resetTo(VRoute.setupBusinessInfo);
+      return;
+    }
+    final parts = [
+      address.text.trim(),
+      [
+        postcode.text.trim(),
+        city.text.trim(),
+      ].where((p) => p.isNotEmpty).join(' '),
+    ].where((p) => p.isNotEmpty);
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      await app.repo.bootstrapBusiness(
+        name: draft.name,
+        phone: draft.phone,
+        address: parts.join(', '),
+      );
+      app.setupDraft = null;
+      await app.loadSession();
+      if (!mounted) return;
+      app.resetTo(VRoute.setupComplete);
+    } catch (e) {
+      if (mounted) setState(() => error = '$e');
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) => PageBody(
-    bottom: CefButton(L.continueText, onTap: _continue),
+    bottom: CefButton(
+      _live ? L.finishSetup : L.continueText,
+      busy: busy,
+      onTap: _continue,
+    ),
     children: [
       _SetupStepHeader(
         step: 2,
-        totalSteps: 3,
+        totalSteps: _live ? 2 : 3,
         icon: LucideIcons.mapPin,
         title: L.whereDoDeliveriesStartFrom,
         subtitle: L.ridersPickUpOrdersFromLocation,
@@ -317,6 +372,15 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
           ),
         ],
       ),
+      if (error != null)
+        Padding(
+          padding: const EdgeInsets.only(top: Gap.md),
+          child: Text(
+            error!,
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: context.c.attention),
+          ),
+        ),
     ],
   );
 }
@@ -391,19 +455,24 @@ class _SetupServiceAreaScreenState extends State<SetupServiceAreaScreen> {
   }
 }
 
-/// V-10 — Setup Complete presentation. It does not persist anything; real
-/// setup truth is Phase 3.
+/// V-10 — Setup Complete. Live: the business was created by the previous
+/// step (bootstrap_business); only that is shown as done.
 class SetupCompleteScreen extends StatelessWidget {
   const SetupCompleteScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
+    // Live: only what setup actually stored is shown as done; the service
+    // area is the next step. The demo keeps the designed checklist.
+    final demo = app.repo.isDemo;
     final checks = [
       (L.businessProfile2, L.completed, LucideIcons.store),
-      (L.serviceArea2, L.configured, LucideIcons.mapPin),
-      (L.teamRiders, L.ready, LucideIcons.users),
-      (L.preferences, L.setText, LucideIcons.settings),
+      if (demo) ...[
+        (L.serviceArea2, L.configured, LucideIcons.mapPin),
+        (L.teamRiders, L.ready, LucideIcons.users),
+        (L.preferences, L.setText, LucideIcons.settings),
+      ],
     ];
     final text = Theme.of(context).textTheme;
     return PageBody(
@@ -448,6 +517,13 @@ class SetupCompleteScreen extends StatelessWidget {
               size: Sizes.icon,
               color: context.c.success,
             ),
+          ),
+        if (!demo)
+          CefListRow(
+            title: L.serviceArea2,
+            subtitle: L.nextSetHowFarDeliver,
+            icon: LucideIcons.mapPin,
+            onTap: () => app.go(VRoute.serviceArea),
           ),
         const SizedBox(height: Gap.xxl),
         CefButton(L.goToday, onTap: () => app.switchTab(NavTab.today)),
@@ -841,12 +917,11 @@ class NewOrderEntryScreen extends StatelessWidget {
           CefListRow(
             leading: _ImportSourceMark(source: source),
             title: source.sampleBatch,
-            subtitle:
-                L.importSampleSubtitle(
-                  source.label,
-                  source.sampleCount,
-                  source.sampleDate,
-                ),
+            subtitle: L.importSampleSubtitle(
+              source.label,
+              source.sampleCount,
+              source.sampleDate,
+            ),
             subtitleMaxLines: 2,
             trailing: StatusChip(L.connected, success: true),
             showChevron: false,

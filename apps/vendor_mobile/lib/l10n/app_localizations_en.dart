@@ -2056,4 +2056,668 @@ class AppLocalizationsEn extends AppLocalizations {
   String importSampleSubtitle(Object label, Object count, Object date) {
     return '$label · $count orders\n$date';
   }
+
+  @override
+  String get nextSetHowFarDeliver => 'Next: set how far you deliver';
+
+  @override
+  String get reservedLaterApprovedDeliverySettingsPass =>
+      'Reserved for a later approved delivery settings pass.';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get rating => 'Rating';
+
+  @override
+  String get nameContactDescription => 'Name, contact, description';
+
+  @override
+  String get businessAddress2 => 'Business Address';
+
+  @override
+  String get storeAddressServiceArea => 'Store address and service area';
+
+  @override
+  String get businessHours2 => 'Business Hours';
+
+  @override
+  String get setOperatingHours => 'Set your operating hours';
+
+  @override
+  String get storeReady => 'Your store is ready';
+
+  @override
+  String get keepBusinessInformationUpDate =>
+      'Keep your business information up to date.';
+
+  @override
+  String get editingBusinessDetailsAppNotConnected =>
+      'Editing business details in the app is not connected yet.';
+
+  @override
+  String get businessDetails => 'Business details';
+
+  @override
+  String get howCustomersRidersSeeBusiness =>
+      'How customers and riders see your business.';
+
+  @override
+  String get taglineOptional2 => 'Tagline (Optional)';
+
+  @override
+  String get shortDescription => 'Short Description';
+
+  @override
+  String get whereCustomersRidersCanReach =>
+      'Where customers and riders can reach you.';
+
+  @override
+  String get code => 'Code';
+
+  @override
+  String get businessEmail => 'Business Email';
+
+  @override
+  String get editingBusinessAddressAppNotConnected =>
+      'Editing the business address in the app is not connected yet.';
+
+  @override
+  String get saveAddress => 'Save Address';
+
+  @override
+  String get addressDetails => 'Address details';
+
+  @override
+  String get addressLine1 => 'Address Line 1';
+
+  @override
+  String get addressLine2Optional => 'Address Line 2 (Optional)';
+
+  @override
+  String get state => 'State';
+
+  @override
+  String get businessHoursNotConnectedYet =>
+      'Business hours are not connected yet.';
+
+  @override
+  String get monday => 'Monday';
+
+  @override
+  String get tuesday => 'Tuesday';
+
+  @override
+  String get wednesday => 'Wednesday';
+
+  @override
+  String get thursday => 'Thursday';
+
+  @override
+  String get friday => 'Friday';
+
+  @override
+  String get saturday => 'Saturday';
+
+  @override
+  String get sunday => 'Sunday';
+
+  @override
+  String get saveHours => 'Save Hours';
+
+  @override
+  String get operatingHours => 'Operating Hours';
+
+  @override
+  String get letCustomersKnowWhenBusinessOpen =>
+      'Let your customers know when your business is open.';
+
+  @override
+  String get applyMondaysHoursAllDays => 'Apply Monday\'s hours to all days';
+
+  @override
+  String get personalDetails => 'Personal details';
+
+  @override
+  String get nameShownTeam => 'Your name as shown to your team.';
+
+  @override
+  String get fullName2 => 'Full Name';
+
+  @override
+  String get signEmailRole => 'Sign-in email and role.';
+
+  @override
+  String get emailAddress => 'Email Address';
+
+  @override
+  String get emailCannotChangedApp => 'Email cannot be changed in the app.';
+
+  @override
+  String get role => 'Role';
+
+  @override
+  String get managedByBusiness => 'Managed by your business.';
+
+  @override
+  String get keepAccountSafe => 'Keep your account safe';
+
+  @override
+  String get manageHowSignBusinessAccount =>
+      'Manage how you sign in to your business account.';
+
+  @override
+  String get signAccess => 'Sign-in & access';
+
+  @override
+  String get changePassword2 => 'Change your password';
+
+  @override
+  String get twoFactorAuthentication => 'Two-Factor Authentication';
+
+  @override
+  String get useLeast8CharactersLetterNumber =>
+      'Use at least 8 characters with a letter and a number.';
+
+  @override
+  String get updatingPassword2 => 'Updating your password';
+
+  @override
+  String get passwordHasBeenUpdatedSuccessfully =>
+      'Your password has been updated successfully.';
+
+  @override
+  String get updatePassword2 => 'Update Password';
+
+  @override
+  String get useStrongPasswordKeepAccountSecure =>
+      'Use a strong password to keep your account secure.';
+
+  @override
+  String get newPassword2 => 'New Password';
+
+  @override
+  String get enterNewPassword2 => 'Enter new password';
+
+  @override
+  String get minimum8Characters => 'Minimum 8 characters';
+
+  @override
+  String get includeLeastOneLetterOneNumber =>
+      'Include at least one letter and one number';
+
+  @override
+  String get confirmNewPassword => 'Confirm New Password';
+
+  @override
+  String get confirmNewPassword2 => 'Confirm new password';
+
+  @override
+  String get notificationSettingsNotConnectedYet =>
+      'Notification settings are not connected yet.';
+
+  @override
+  String get always => 'Always on';
+
+  @override
+  String get issuesDeliveryProgressAccountSecurityAlerts =>
+      'Issues, delivery progress and account security alerts keep your operation running, so they cannot be turned off.';
+
+  @override
+  String get orderIssues => 'Order issues';
+
+  @override
+  String get accountSecurity => 'Account & security';
+
+  @override
+  String get optional => 'Optional';
+
+  @override
+  String get newOrders => 'New orders';
+
+  @override
+  String get whenNewOrderComes => 'When a new order comes in.';
+
+  @override
+  String get riderStatus => 'Rider status';
+
+  @override
+  String get whenRidersGoOnlineOffline => 'When riders go online or offline.';
+
+  @override
+  String get productNews => 'Product news';
+
+  @override
+  String get tipsNewCeffloFeatures => 'Tips and new Cefflo features.';
+
+  @override
+  String get blue => 'Blue';
+
+  @override
+  String get navy => 'Navy';
+
+  @override
+  String get red => 'Red';
+
+  @override
+  String get green => 'Green';
+
+  @override
+  String get yellow => 'Yellow';
+
+  @override
+  String get orange => 'Orange';
+
+  @override
+  String get black => 'Black';
+
+  @override
+  String get accentColour => 'Accent colour';
+
+  @override
+  String get chooseAccentColourApp => 'Choose the accent colour for the app.';
+
+  @override
+  String get hue => 'Hue';
+
+  @override
+  String get lightness => 'Lightness';
+
+  @override
+  String get apply => 'Apply';
+
+  @override
+  String get closed => 'Closed';
+
+  @override
+  String get wereHereHelp => 'We’re here to help';
+
+  @override
+  String get howCanWeHelp => 'How can we help?';
+
+  @override
+  String get searchHelpArticlesTopics =>
+      'Search for help, articles or topics...';
+
+  @override
+  String get helpCentre2 => 'Help Centre';
+
+  @override
+  String get browseArticlesGuidesFaqs => 'Browse articles, guides and FAQs';
+
+  @override
+  String get contactSupport2 => 'Contact Support';
+
+  @override
+  String get chatSendSupportRequest => 'Chat or send a support request';
+
+  @override
+  String get popularTopics => 'Popular Topics';
+
+  @override
+  String get accountSecurity2 => 'Account & Security';
+
+  @override
+  String get loginProfileSecuritySettings =>
+      'Login, profile, security settings';
+
+  @override
+  String get ordersDelivery => 'Orders & Delivery';
+
+  @override
+  String get orderManagementDeliveryIssues =>
+      'Order management, delivery issues';
+
+  @override
+  String get ridersTeam => 'Riders & Team';
+
+  @override
+  String get riderInvitesApprovalsTeamAccess =>
+      'Rider invites, approvals, team access';
+
+  @override
+  String get subscriptionBilling => 'Subscription & Billing';
+
+  @override
+  String get plansPaymentsInvoices => 'Plans, payments, invoices';
+
+  @override
+  String get appGuides => 'App Guides';
+
+  @override
+  String get stepByStepTutorials => 'Step-by-step tutorials';
+
+  @override
+  String get findAnswers => 'Find answers';
+
+  @override
+  String get searchOurHelpCentreBrowseTopics =>
+      'Search our help centre or browse topics below.';
+
+  @override
+  String get searchHelpEGZonesRiders =>
+      'Search for help, e.g. zones, riders...';
+
+  @override
+  String get browseTopics => 'Browse topics';
+
+  @override
+  String get gettingStarted => 'Getting Started';
+
+  @override
+  String get setUpAccountBusiness => 'Set up your account and business';
+
+  @override
+  String get manageOrdersRunsZones => 'Manage orders, runs and zones';
+
+  @override
+  String get zonesRiders => 'Zones & Riders';
+
+  @override
+  String get coverageRidersDispatch => 'Coverage, riders and dispatch';
+
+  @override
+  String get profileSecuritySettings => 'Profile, security and settings';
+
+  @override
+  String get plansPaymentsInvoices2 => 'Plans, payments and invoices';
+
+  @override
+  String get popularQuestions => 'Popular Questions';
+
+  @override
+  String get howDoICreateDeliveryZone => 'How do I create a delivery zone?';
+
+  @override
+  String get howDoIAddRider => 'How do I add a rider?';
+
+  @override
+  String get canIChangeMyPlanLater => 'Can I change my plan later?';
+
+  @override
+  String get howDoesRouteOptimizationWork =>
+      'How does route optimization work?';
+
+  @override
+  String get whereCanMyCustomersTrackTheir =>
+      'Where can my customers track their orders?';
+
+  @override
+  String get viewingAllQuestions => 'Viewing all questions';
+
+  @override
+  String get sendingSupportRequestsFromAppNot =>
+      'Sending support requests from the app is not connected yet.';
+
+  @override
+  String get wereHereHelp2 => 'We’re here to help.';
+
+  @override
+  String get getTouch => 'Get in touch';
+
+  @override
+  String get tellUsAboutIssueOurTeam =>
+      'Tell us about your issue and our team will get back to you.';
+
+  @override
+  String get issueCategory => 'Issue Category';
+
+  @override
+  String get selectCategory => 'Select a category';
+
+  @override
+  String get subject => 'Subject';
+
+  @override
+  String get brieflyDescribeIssue => 'Briefly describe your issue';
+
+  @override
+  String get message => 'Message';
+
+  @override
+  String get tellUsMoreAboutIssue => 'Tell us more about your issue...';
+
+  @override
+  String get addScreenshotsOptional => 'Add Screenshots (Optional)';
+
+  @override
+  String get pngJpgUp10mbEach => 'PNG, JPG up to 10MB each';
+
+  @override
+  String get tapAttachImages => 'Tap to attach images';
+
+  @override
+  String get whereWeWillReply => 'Where we will reply to you.';
+
+  @override
+  String get contactEmail => 'Contact Email';
+
+  @override
+  String get sendRequest => 'Send Request';
+
+  @override
+  String get sendingRequest => 'Sending your request';
+
+  @override
+  String get supportRequestHasBeenSent => 'Your support request has been sent.';
+
+  @override
+  String get ourSupportTeamWillGetBack =>
+      'ⓘ Our support team will get back to you as soon as possible.';
+
+  @override
+  String get trustTransparency => 'Trust & Transparency';
+
+  @override
+  String get wereCommittedProtectingDataPrivacy =>
+      'We’re committed to protecting your data and your privacy.';
+
+  @override
+  String get termsThatGuideUseCefflo =>
+      'The terms that guide your use of Cefflo.';
+
+  @override
+  String get lastUpdated12Sep2026 => 'Last updated: 12 Sep 2026';
+
+  @override
+  String get page => 'On this page';
+
+  @override
+  String get t1Introduction2InformationWeCollect =>
+      '1.  Introduction\n2.  Information We Collect\n3.  How We Use Your Information\n4.  Data Sharing\n5.  Data Security\n6.  Your Rights\n7.  Cookies and Tracking Technologies\n8.  Changes to This Policy\n9.  Contact Us';
+
+  @override
+  String get t1AcceptanceTerms2AccountResponsibilities =>
+      '1.  Acceptance of Terms\n2.  Account Responsibilities\n3.  Acceptable Use\n4.  Subscription and Billing\n5.  Intellectual Property\n6.  Service Availability\n7.  Limitation of Liability\n8.  Changes to These Terms\n9.  Contact Us';
+
+  @override
+  String get t1Introduction => '1. Introduction';
+
+  @override
+  String get t1AcceptanceTerms => '1. Acceptance of Terms';
+
+  @override
+  String get ceffloWeUsOurValuesPrivacy =>
+      'Cefflo (“we”, “us” or “our”) values your privacy. This policy explains how we collect, use, disclose and safeguard your information when you use our services.';
+
+  @override
+  String get byAccessingUsingCeffloAgreeThese =>
+      'By accessing or using Cefflo, you agree to these terms and to use the service responsibly in accordance with applicable laws.';
+
+  @override
+  String get t2InformationWeCollect => '2. Information We Collect';
+
+  @override
+  String get t2AccountResponsibilities => '2. Account Responsibilities';
+
+  @override
+  String get weCollectInformationThatProvideDirectly =>
+      'We collect information that you provide directly to us, together with limited operational data needed to deliver and improve the service.';
+
+  @override
+  String get responsibleMaintainingAccurateAccountInformationProtecting =>
+      'You are responsible for maintaining accurate account information and protecting access to your account.';
+
+  @override
+  String get moreOrdersLessWorkSmootherDelivery =>
+      'More orders. Less work. A smoother delivery day.';
+
+  @override
+  String get ourPurpose => 'Our purpose';
+
+  @override
+  String get operateTodayGrowTomorrow2 => 'Operate Today. Grow Tomorrow.';
+
+  @override
+  String get localSameDayDeliveryOperatingSystem =>
+      'A local same-day delivery operating system built for businesses.';
+
+  @override
+  String get appInformation => 'App information';
+
+  @override
+  String get version => 'Version';
+
+  @override
+  String get privacyPolicy2 => 'Privacy Policy';
+
+  @override
+  String get readPolicy => 'Read policy';
+
+  @override
+  String get termsService2 => 'Terms of Service';
+
+  @override
+  String get readTerms => 'Read terms';
+
+  @override
+  String get notificationDeleted => 'Notification deleted';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get markUnread => 'Mark as unread';
+
+  @override
+  String get markRead => 'Mark as read';
+
+  @override
+  String get youreAllCaughtUp => 'You\'re all caught up.';
+
+  @override
+  String get enterValidEmailAddress => 'Enter a valid email address.';
+
+  @override
+  String get nameRequired => 'Name is required.';
+
+  @override
+  String get linkCopied => 'Link copied';
+
+  @override
+  String get scanJoin => 'Scan to join';
+
+  @override
+  String get invitedPersonCanScanCodeOpen =>
+      'The invited person can scan this code to open the invitation.';
+
+  @override
+  String get generateInviteLink => 'Generate invite link';
+
+  @override
+  String get copyLink => 'Copy link';
+
+  @override
+  String get inviteRidersBusiness => 'Invite riders to your business';
+
+  @override
+  String get inviteTeamMember2 => 'Invite a team member';
+
+  @override
+  String get theyOpenLinkJoinTeamComplete =>
+      'They open the link to join your team and complete their profile, vehicle and documents.';
+
+  @override
+  String get theyOpenLinkHelpRunDeliveries =>
+      'They open the link to help run deliveries and manage orders.';
+
+  @override
+  String get riderName => 'Rider name';
+
+  @override
+  String get operatorText => 'Operator';
+
+  @override
+  String get owner => 'Owner';
+
+  @override
+  String get ownerAccessFullBusinessOwnershipIncluding =>
+      'Owner access is full business ownership, including billing and team management.';
+
+  @override
+  String get invitationLink => 'Invitation link';
+
+  @override
+  String get showQrCode => 'Show QR code';
+
+  @override
+  String get scanOpenInvitation => 'Scan to open the invitation';
+
+  @override
+  String get linkShownOnlyOnceExpires7 =>
+      'This link is shown only once and expires in 7 days. Invited riders appear in your Riders list as Pending Review once they complete registration.';
+
+  @override
+  String get linkShownOnlyOnceExpires72 =>
+      'This link is shown only once and expires in 7 days. Invited team members appear in your Team list once they accept.';
+
+  @override
+  String get backSettings => 'Back to Settings';
+
+  @override
+  String active2(Object def, Object style) {
+    return '$def, $style, active';
+  }
+
+  @override
+  String zoneOrdersRiders(int orders, int riders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      orders,
+      locale: localeName,
+      other: '$orders orders',
+      one: '1 order',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      riders,
+      locale: localeName,
+      other: '$riders riders',
+      one: '1 rider',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get perMonth => '/ month';
+
+  @override
+  String get perYear => '/ year';
+
+  @override
+  String get roleOwner => 'Owner';
+
+  @override
+  String get roleOperator => 'Operator';
+
+  @override
+  String get tagFood => 'Food';
+
+  @override
+  String get tagFashion => 'Fashion';
+
+  @override
+  String get tagBeauty => 'Beauty';
+
+  @override
+  String get tagGifts => 'Gifts';
 }

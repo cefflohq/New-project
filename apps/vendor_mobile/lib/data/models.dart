@@ -641,3 +641,11 @@ class AppNotification {
     read: read ?? this.read,
   );
 }
+
+/// Display label for a business member role. The stored value ('owner' /
+/// 'operator') is never shown or compared in translated form.
+String roleLabel(String role) => switch (role.toLowerCase()) {
+  'owner' => L.roleOwner,
+  'operator' => L.roleOperator,
+  _ => role,
+};

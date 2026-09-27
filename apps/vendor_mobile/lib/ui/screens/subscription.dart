@@ -21,7 +21,7 @@ String _thousands(int n) =>
     n.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => ',');
 
 String _per(BillingCycle cycle) =>
-    cycle == BillingCycle.yearly ? '/ year' : '/ month';
+    cycle == BillingCycle.yearly ? L.perYear : L.perMonth;
 
 String _date(DateTime d) {
   final months = [

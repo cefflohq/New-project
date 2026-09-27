@@ -2063,4 +2063,664 @@ class AppLocalizationsMs extends AppLocalizations {
   String importSampleSubtitle(Object label, Object count, Object date) {
     return '$label · $count pesanan\n$date';
   }
+
+  @override
+  String get nextSetHowFarDeliver =>
+      'Seterusnya: tetapkan sejauh mana anda menghantar';
+
+  @override
+  String get reservedLaterApprovedDeliverySettingsPass =>
+      'Dikhaskan untuk fasa tetapan penghantaran yang diluluskan kemudian.';
+
+  @override
+  String get edit => 'Sunting';
+
+  @override
+  String get rating => 'Penilaian';
+
+  @override
+  String get nameContactDescription => 'Nama, hubungan, penerangan';
+
+  @override
+  String get businessAddress2 => 'Alamat Perniagaan';
+
+  @override
+  String get storeAddressServiceArea => 'Alamat kedai dan kawasan servis';
+
+  @override
+  String get businessHours2 => 'Waktu Perniagaan';
+
+  @override
+  String get setOperatingHours => 'Tetapkan waktu operasi anda';
+
+  @override
+  String get storeReady => 'Kedai anda sudah sedia';
+
+  @override
+  String get keepBusinessInformationUpDate =>
+      'Pastikan maklumat perniagaan anda sentiasa terkini.';
+
+  @override
+  String get editingBusinessDetailsAppNotConnected =>
+      'Menyunting butiran perniagaan dalam aplikasi belum disambungkan.';
+
+  @override
+  String get businessDetails => 'Butiran perniagaan';
+
+  @override
+  String get howCustomersRidersSeeBusiness =>
+      'Cara pelanggan dan rider melihat perniagaan anda.';
+
+  @override
+  String get taglineOptional2 => 'Slogan (Pilihan)';
+
+  @override
+  String get shortDescription => 'Penerangan Ringkas';
+
+  @override
+  String get whereCustomersRidersCanReach =>
+      'Tempat pelanggan dan rider boleh menghubungi anda.';
+
+  @override
+  String get code => 'Kod';
+
+  @override
+  String get businessEmail => 'E-mel Perniagaan';
+
+  @override
+  String get editingBusinessAddressAppNotConnected =>
+      'Menyunting alamat perniagaan dalam aplikasi belum disambungkan.';
+
+  @override
+  String get saveAddress => 'Simpan Alamat';
+
+  @override
+  String get addressDetails => 'Butiran alamat';
+
+  @override
+  String get addressLine1 => 'Alamat Baris 1';
+
+  @override
+  String get addressLine2Optional => 'Alamat Baris 2 (Pilihan)';
+
+  @override
+  String get state => 'Negeri';
+
+  @override
+  String get businessHoursNotConnectedYet =>
+      'Waktu perniagaan belum disambungkan.';
+
+  @override
+  String get monday => 'Isnin';
+
+  @override
+  String get tuesday => 'Selasa';
+
+  @override
+  String get wednesday => 'Rabu';
+
+  @override
+  String get thursday => 'Khamis';
+
+  @override
+  String get friday => 'Jumaat';
+
+  @override
+  String get saturday => 'Sabtu';
+
+  @override
+  String get sunday => 'Ahad';
+
+  @override
+  String get saveHours => 'Simpan Waktu';
+
+  @override
+  String get operatingHours => 'Waktu Operasi';
+
+  @override
+  String get letCustomersKnowWhenBusinessOpen =>
+      'Beritahu pelanggan bila perniagaan anda dibuka.';
+
+  @override
+  String get applyMondaysHoursAllDays => 'Guna waktu Isnin untuk semua hari';
+
+  @override
+  String get personalDetails => 'Butiran peribadi';
+
+  @override
+  String get nameShownTeam =>
+      'Nama anda seperti yang dipaparkan kepada pasukan anda.';
+
+  @override
+  String get fullName2 => 'Nama Penuh';
+
+  @override
+  String get signEmailRole => 'E-mel log masuk dan peranan.';
+
+  @override
+  String get emailAddress => 'Alamat E-mel';
+
+  @override
+  String get emailCannotChangedApp =>
+      'E-mel tidak boleh ditukar dalam aplikasi.';
+
+  @override
+  String get role => 'Peranan';
+
+  @override
+  String get managedByBusiness => 'Diurus oleh perniagaan anda.';
+
+  @override
+  String get keepAccountSafe => 'Pastikan akaun anda selamat';
+
+  @override
+  String get manageHowSignBusinessAccount =>
+      'Urus cara anda log masuk ke akaun perniagaan anda.';
+
+  @override
+  String get signAccess => 'Log masuk & akses';
+
+  @override
+  String get changePassword2 => 'Tukar kata laluan anda';
+
+  @override
+  String get twoFactorAuthentication => 'Pengesahan Dua Faktor';
+
+  @override
+  String get useLeast8CharactersLetterNumber =>
+      'Gunakan sekurang-kurangnya 8 aksara dengan huruf dan nombor.';
+
+  @override
+  String get updatingPassword2 => 'Mengemas kini kata laluan anda';
+
+  @override
+  String get passwordHasBeenUpdatedSuccessfully =>
+      'Kata laluan anda telah berjaya dikemas kini.';
+
+  @override
+  String get updatePassword2 => 'Kemas Kini Kata Laluan';
+
+  @override
+  String get useStrongPasswordKeepAccountSecure =>
+      'Gunakan kata laluan yang kukuh untuk memastikan akaun anda selamat.';
+
+  @override
+  String get newPassword2 => 'Kata Laluan Baharu';
+
+  @override
+  String get enterNewPassword2 => 'Masukkan kata laluan baharu';
+
+  @override
+  String get minimum8Characters => 'Sekurang-kurangnya 8 aksara';
+
+  @override
+  String get includeLeastOneLetterOneNumber =>
+      'Sertakan sekurang-kurangnya satu huruf dan satu nombor';
+
+  @override
+  String get confirmNewPassword => 'Sahkan Kata Laluan Baharu';
+
+  @override
+  String get confirmNewPassword2 => 'Sahkan kata laluan baharu';
+
+  @override
+  String get notificationSettingsNotConnectedYet =>
+      'Tetapan pemberitahuan belum disambungkan.';
+
+  @override
+  String get always => 'Sentiasa aktif';
+
+  @override
+  String get issuesDeliveryProgressAccountSecurityAlerts =>
+      'Amaran isu, kemajuan penghantaran dan keselamatan akaun memastikan operasi anda berjalan, jadi ia tidak boleh dimatikan.';
+
+  @override
+  String get orderIssues => 'Isu pesanan';
+
+  @override
+  String get accountSecurity => 'Akaun & keselamatan';
+
+  @override
+  String get optional => 'Pilihan';
+
+  @override
+  String get newOrders => 'Pesanan baharu';
+
+  @override
+  String get whenNewOrderComes => 'Apabila pesanan baharu masuk.';
+
+  @override
+  String get riderStatus => 'Status rider';
+
+  @override
+  String get whenRidersGoOnlineOffline =>
+      'Apabila rider dalam talian atau luar talian.';
+
+  @override
+  String get productNews => 'Berita produk';
+
+  @override
+  String get tipsNewCeffloFeatures => 'Tip dan ciri baharu Cefflo.';
+
+  @override
+  String get blue => 'Biru';
+
+  @override
+  String get navy => 'Biru Laut';
+
+  @override
+  String get red => 'Merah';
+
+  @override
+  String get green => 'Hijau';
+
+  @override
+  String get yellow => 'Kuning';
+
+  @override
+  String get orange => 'Oren';
+
+  @override
+  String get black => 'Hitam';
+
+  @override
+  String get accentColour => 'Warna aksen';
+
+  @override
+  String get chooseAccentColourApp => 'Pilih warna aksen untuk aplikasi.';
+
+  @override
+  String get hue => 'Rona';
+
+  @override
+  String get lightness => 'Kecerahan';
+
+  @override
+  String get apply => 'Guna';
+
+  @override
+  String get closed => 'Tutup';
+
+  @override
+  String get wereHereHelp => 'Kami sedia membantu';
+
+  @override
+  String get howCanWeHelp => 'Bagaimana kami boleh membantu?';
+
+  @override
+  String get searchHelpArticlesTopics => 'Cari bantuan, artikel atau topik...';
+
+  @override
+  String get helpCentre2 => 'Pusat Bantuan';
+
+  @override
+  String get browseArticlesGuidesFaqs =>
+      'Layari artikel, panduan dan Soalan Lazim';
+
+  @override
+  String get contactSupport2 => 'Hubungi Sokongan';
+
+  @override
+  String get chatSendSupportRequest =>
+      'Sembang atau hantar permintaan sokongan';
+
+  @override
+  String get popularTopics => 'Topik Popular';
+
+  @override
+  String get accountSecurity2 => 'Akaun & Keselamatan';
+
+  @override
+  String get loginProfileSecuritySettings =>
+      'Log masuk, profil, tetapan keselamatan';
+
+  @override
+  String get ordersDelivery => 'Pesanan & Penghantaran';
+
+  @override
+  String get orderManagementDeliveryIssues =>
+      'Pengurusan pesanan, isu penghantaran';
+
+  @override
+  String get ridersTeam => 'Rider & Pasukan';
+
+  @override
+  String get riderInvitesApprovalsTeamAccess =>
+      'Jemputan rider, kelulusan, akses pasukan';
+
+  @override
+  String get subscriptionBilling => 'Langganan & Pengebilan';
+
+  @override
+  String get plansPaymentsInvoices => 'Pelan, pembayaran, invois';
+
+  @override
+  String get appGuides => 'Panduan Aplikasi';
+
+  @override
+  String get stepByStepTutorials => 'Tutorial langkah demi langkah';
+
+  @override
+  String get findAnswers => 'Cari jawapan';
+
+  @override
+  String get searchOurHelpCentreBrowseTopics =>
+      'Cari di pusat bantuan kami atau layari topik di bawah.';
+
+  @override
+  String get searchHelpEGZonesRiders => 'Cari bantuan, cth. zon, rider...';
+
+  @override
+  String get browseTopics => 'Layari topik';
+
+  @override
+  String get gettingStarted => 'Bermula';
+
+  @override
+  String get setUpAccountBusiness => 'Sediakan akaun dan perniagaan anda';
+
+  @override
+  String get manageOrdersRunsZones => 'Urus pesanan, larian dan zon';
+
+  @override
+  String get zonesRiders => 'Zon & Rider';
+
+  @override
+  String get coverageRidersDispatch => 'Liputan, rider dan penghantaran keluar';
+
+  @override
+  String get profileSecuritySettings => 'Profil, keselamatan dan tetapan';
+
+  @override
+  String get plansPaymentsInvoices2 => 'Pelan, pembayaran dan invois';
+
+  @override
+  String get popularQuestions => 'Soalan Popular';
+
+  @override
+  String get howDoICreateDeliveryZone =>
+      'Bagaimana saya mencipta zon penghantaran?';
+
+  @override
+  String get howDoIAddRider => 'Bagaimana saya menambah rider?';
+
+  @override
+  String get canIChangeMyPlanLater => 'Bolehkah saya menukar pelan kemudian?';
+
+  @override
+  String get howDoesRouteOptimizationWork =>
+      'Bagaimana pengoptimuman laluan berfungsi?';
+
+  @override
+  String get whereCanMyCustomersTrackTheir =>
+      'Di mana pelanggan saya boleh menjejak pesanan mereka?';
+
+  @override
+  String get viewingAllQuestions => 'Memaparkan semua soalan';
+
+  @override
+  String get sendingSupportRequestsFromAppNot =>
+      'Menghantar permintaan sokongan dari aplikasi belum disambungkan.';
+
+  @override
+  String get wereHereHelp2 => 'Kami sedia membantu.';
+
+  @override
+  String get getTouch => 'Hubungi kami';
+
+  @override
+  String get tellUsAboutIssueOurTeam =>
+      'Beritahu kami tentang isu anda dan pasukan kami akan menghubungi anda.';
+
+  @override
+  String get issueCategory => 'Kategori Isu';
+
+  @override
+  String get selectCategory => 'Pilih kategori';
+
+  @override
+  String get subject => 'Subjek';
+
+  @override
+  String get brieflyDescribeIssue => 'Terangkan isu anda secara ringkas';
+
+  @override
+  String get message => 'Mesej';
+
+  @override
+  String get tellUsMoreAboutIssue =>
+      'Beritahu kami lebih lanjut tentang isu anda...';
+
+  @override
+  String get addScreenshotsOptional => 'Tambah Tangkapan Skrin (Pilihan)';
+
+  @override
+  String get pngJpgUp10mbEach => 'PNG, JPG sehingga 10MB setiap satu';
+
+  @override
+  String get tapAttachImages => 'Ketik untuk melampirkan imej';
+
+  @override
+  String get whereWeWillReply => 'Tempat kami akan membalas anda.';
+
+  @override
+  String get contactEmail => 'E-mel Hubungan';
+
+  @override
+  String get sendRequest => 'Hantar Permintaan';
+
+  @override
+  String get sendingRequest => 'Menghantar permintaan anda';
+
+  @override
+  String get supportRequestHasBeenSent =>
+      'Permintaan sokongan anda telah dihantar.';
+
+  @override
+  String get ourSupportTeamWillGetBack =>
+      'ⓘ Pasukan sokongan kami akan menghubungi anda secepat mungkin.';
+
+  @override
+  String get trustTransparency => 'Amanah & Ketelusan';
+
+  @override
+  String get wereCommittedProtectingDataPrivacy =>
+      'Kami komited melindungi data dan privasi anda.';
+
+  @override
+  String get termsThatGuideUseCefflo =>
+      'Terma yang mengawal penggunaan Cefflo oleh anda.';
+
+  @override
+  String get lastUpdated12Sep2026 => 'Kemas kini terakhir: 12 Sep 2026';
+
+  @override
+  String get page => 'Dalam halaman ini';
+
+  @override
+  String get t1Introduction2InformationWeCollect =>
+      '1.  Pengenalan\n2.  Maklumat Yang Kami Kumpul\n3.  Cara Kami Menggunakan Maklumat Anda\n4.  Perkongsian Data\n5.  Keselamatan Data\n6.  Hak Anda\n7.  Kuki dan Teknologi Penjejakan\n8.  Perubahan pada Dasar Ini\n9.  Hubungi Kami';
+
+  @override
+  String get t1AcceptanceTerms2AccountResponsibilities =>
+      '1.  Penerimaan Terma\n2.  Tanggungjawab Akaun\n3.  Penggunaan Yang Dibenarkan\n4.  Langganan dan Pengebilan\n5.  Harta Intelek\n6.  Ketersediaan Perkhidmatan\n7.  Had Liabiliti\n8.  Perubahan pada Terma Ini\n9.  Hubungi Kami';
+
+  @override
+  String get t1Introduction => '1. Pengenalan';
+
+  @override
+  String get t1AcceptanceTerms => '1. Penerimaan Terma';
+
+  @override
+  String get ceffloWeUsOurValuesPrivacy =>
+      'Cefflo (“kami”) menghargai privasi anda. Dasar ini menerangkan cara kami mengumpul, menggunakan, mendedahkan dan melindungi maklumat anda apabila anda menggunakan perkhidmatan kami.';
+
+  @override
+  String get byAccessingUsingCeffloAgreeThese =>
+      'Dengan mengakses atau menggunakan Cefflo, anda bersetuju dengan terma ini dan akan menggunakan perkhidmatan secara bertanggungjawab mengikut undang-undang yang terpakai.';
+
+  @override
+  String get t2InformationWeCollect => '2. Maklumat Yang Kami Kumpul';
+
+  @override
+  String get t2AccountResponsibilities => '2. Tanggungjawab Akaun';
+
+  @override
+  String get weCollectInformationThatProvideDirectly =>
+      'Kami mengumpul maklumat yang anda berikan terus kepada kami, bersama data operasi terhad yang diperlukan untuk menyampaikan dan menambah baik perkhidmatan.';
+
+  @override
+  String get responsibleMaintainingAccurateAccountInformationProtecting =>
+      'Anda bertanggungjawab memastikan maklumat akaun anda tepat dan melindungi akses ke akaun anda.';
+
+  @override
+  String get moreOrdersLessWorkSmootherDelivery =>
+      'Lebih banyak pesanan. Kurang kerja. Hari penghantaran yang lebih lancar.';
+
+  @override
+  String get ourPurpose => 'Tujuan kami';
+
+  @override
+  String get operateTodayGrowTomorrow2 =>
+      'Beroperasi Hari Ini. Berkembang Esok.';
+
+  @override
+  String get localSameDayDeliveryOperatingSystem =>
+      'Sistem operasi penghantaran tempatan pada hari yang sama, dibina untuk perniagaan.';
+
+  @override
+  String get appInformation => 'Maklumat aplikasi';
+
+  @override
+  String get version => 'Versi';
+
+  @override
+  String get privacyPolicy2 => 'Dasar Privasi';
+
+  @override
+  String get readPolicy => 'Baca dasar';
+
+  @override
+  String get termsService2 => 'Terma Perkhidmatan';
+
+  @override
+  String get readTerms => 'Baca terma';
+
+  @override
+  String get notificationDeleted => 'Pemberitahuan dipadam';
+
+  @override
+  String get undo => 'Buat asal';
+
+  @override
+  String get markUnread => 'Tandakan belum dibaca';
+
+  @override
+  String get markRead => 'Tandakan sudah dibaca';
+
+  @override
+  String get youreAllCaughtUp => 'Tiada pemberitahuan baharu.';
+
+  @override
+  String get enterValidEmailAddress => 'Masukkan alamat e-mel yang sah.';
+
+  @override
+  String get nameRequired => 'Nama diperlukan.';
+
+  @override
+  String get linkCopied => 'Pautan disalin';
+
+  @override
+  String get scanJoin => 'Imbas untuk menyertai';
+
+  @override
+  String get invitedPersonCanScanCodeOpen =>
+      'Orang yang dijemput boleh mengimbas kod ini untuk membuka jemputan.';
+
+  @override
+  String get generateInviteLink => 'Jana pautan jemputan';
+
+  @override
+  String get copyLink => 'Salin pautan';
+
+  @override
+  String get inviteRidersBusiness => 'Jemput rider ke perniagaan anda';
+
+  @override
+  String get inviteTeamMember2 => 'Jemput ahli pasukan';
+
+  @override
+  String get theyOpenLinkJoinTeamComplete =>
+      'Mereka membuka pautan untuk menyertai pasukan anda dan melengkapkan profil, kenderaan dan dokumen mereka.';
+
+  @override
+  String get theyOpenLinkHelpRunDeliveries =>
+      'Mereka membuka pautan untuk membantu menjalankan penghantaran dan mengurus pesanan.';
+
+  @override
+  String get riderName => 'Nama rider';
+
+  @override
+  String get operatorText => 'Operator';
+
+  @override
+  String get owner => 'Pemilik';
+
+  @override
+  String get ownerAccessFullBusinessOwnershipIncluding =>
+      'Akses Pemilik ialah pemilikan penuh perniagaan, termasuk pengebilan dan pengurusan pasukan.';
+
+  @override
+  String get invitationLink => 'Pautan jemputan';
+
+  @override
+  String get showQrCode => 'Tunjukkan kod QR';
+
+  @override
+  String get scanOpenInvitation => 'Imbas untuk membuka jemputan';
+
+  @override
+  String get linkShownOnlyOnceExpires7 =>
+      'Pautan ini dipaparkan sekali sahaja dan tamat tempoh dalam 7 hari. Rider yang dijemput akan muncul dalam senarai Rider anda sebagai Menunggu Semakan setelah mereka melengkapkan pendaftaran.';
+
+  @override
+  String get linkShownOnlyOnceExpires72 =>
+      'Pautan ini dipaparkan sekali sahaja dan tamat tempoh dalam 7 hari. Ahli pasukan yang dijemput akan muncul dalam senarai Pasukan anda setelah mereka menerima jemputan.';
+
+  @override
+  String get backSettings => 'Kembali ke Tetapan';
+
+  @override
+  String active2(Object def, Object style) {
+    return '$def, $style, aktif';
+  }
+
+  @override
+  String zoneOrdersRiders(int orders, int riders) {
+    return '$orders pesanan · $riders rider';
+  }
+
+  @override
+  String get perMonth => '/ bulan';
+
+  @override
+  String get perYear => '/ tahun';
+
+  @override
+  String get roleOwner => 'Pemilik';
+
+  @override
+  String get roleOperator => 'Operator';
+
+  @override
+  String get tagFood => 'Makanan';
+
+  @override
+  String get tagFashion => 'Fesyen';
+
+  @override
+  String get tagBeauty => 'Kecantikan';
+
+  @override
+  String get tagGifts => 'Hadiah';
 }

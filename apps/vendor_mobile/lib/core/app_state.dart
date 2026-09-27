@@ -260,6 +260,12 @@ class AppState extends ChangeNotifier {
       }
       businesses = await repo.myBusinesses();
       business = businesses.isEmpty ? null : businesses.first;
+      // A signed-in account without a business starts in business setup.
+      if (!repo.isDemo && business == null) {
+        _stack
+          ..clear()
+          ..add(const VendorLocation(VRoute.welcomeSetup));
+      }
     } on RepositoryError catch (e) {
       sessionError = e.message;
     } finally {
@@ -267,6 +273,10 @@ class AppState extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  /// Business setup answers carried from step 1 to the step that creates
+  /// the business. Session-only; never persisted on the device.
+  ({String name, String phone})? setupDraft;
 
   void selectBusiness(Business b) {
     business = b;

@@ -197,6 +197,15 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
   static const _all = '__all__';
   String _filter = _all;
 
+  /// Display label for a registry tag; the tag itself stays the filter key.
+  static String _tagLabel(String tag) => switch (tag) {
+    'Food' => L.tagFood,
+    'Fashion' => L.tagFashion,
+    'Beauty' => L.tagBeauty,
+    'Gifts' => L.tagGifts,
+    _ => tag,
+  };
+
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
@@ -242,7 +251,7 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
                   itemCount: filters.length,
                   separatorBuilder: (_, _) => const SizedBox(width: Gap.sm),
                   itemBuilder: (context, i) => _FilterChip(
-                    label: filters[i] == _all ? L.all : filters[i],
+                    label: filters[i] == _all ? L.all : _tagLabel(filters[i]),
                     selected: _filter == filters[i],
                     onTap: () => setState(() => _filter = filters[i]),
                   ),
@@ -520,7 +529,9 @@ class _TemplateTile extends StatelessWidget {
     return Semantics(
       button: available,
       selected: active,
-      label: '${def.name}, ${def.style}${active ? ', active' : ''}',
+      label: active
+          ? L.active2(def.name, def.style)
+          : '${def.name}, ${def.style}',
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: available

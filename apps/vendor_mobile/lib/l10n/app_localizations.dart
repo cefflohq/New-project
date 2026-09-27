@@ -3830,6 +3830,1218 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{label} · {count} orders\n{date}'**
   String importSampleSubtitle(Object label, Object count, Object date);
+
+  /// No description provided for @nextSetHowFarDeliver.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: set how far you deliver'**
+  String get nextSetHowFarDeliver;
+
+  /// No description provided for @reservedLaterApprovedDeliverySettingsPass.
+  ///
+  /// In en, this message translates to:
+  /// **'Reserved for a later approved delivery settings pass.'**
+  String get reservedLaterApprovedDeliverySettingsPass;
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @rating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get rating;
+
+  /// No description provided for @nameContactDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Name, contact, description'**
+  String get nameContactDescription;
+
+  /// No description provided for @businessAddress2.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Address'**
+  String get businessAddress2;
+
+  /// No description provided for @storeAddressServiceArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Store address and service area'**
+  String get storeAddressServiceArea;
+
+  /// No description provided for @businessHours2.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Hours'**
+  String get businessHours2;
+
+  /// No description provided for @setOperatingHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your operating hours'**
+  String get setOperatingHours;
+
+  /// No description provided for @storeReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Your store is ready'**
+  String get storeReady;
+
+  /// No description provided for @keepBusinessInformationUpDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your business information up to date.'**
+  String get keepBusinessInformationUpDate;
+
+  /// No description provided for @editingBusinessDetailsAppNotConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Editing business details in the app is not connected yet.'**
+  String get editingBusinessDetailsAppNotConnected;
+
+  /// No description provided for @businessDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Business details'**
+  String get businessDetails;
+
+  /// No description provided for @howCustomersRidersSeeBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'How customers and riders see your business.'**
+  String get howCustomersRidersSeeBusiness;
+
+  /// No description provided for @taglineOptional2.
+  ///
+  /// In en, this message translates to:
+  /// **'Tagline (Optional)'**
+  String get taglineOptional2;
+
+  /// No description provided for @shortDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Short Description'**
+  String get shortDescription;
+
+  /// No description provided for @whereCustomersRidersCanReach.
+  ///
+  /// In en, this message translates to:
+  /// **'Where customers and riders can reach you.'**
+  String get whereCustomersRidersCanReach;
+
+  /// No description provided for @code.
+  ///
+  /// In en, this message translates to:
+  /// **'Code'**
+  String get code;
+
+  /// No description provided for @businessEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Email'**
+  String get businessEmail;
+
+  /// No description provided for @editingBusinessAddressAppNotConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Editing the business address in the app is not connected yet.'**
+  String get editingBusinessAddressAppNotConnected;
+
+  /// No description provided for @saveAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Address'**
+  String get saveAddress;
+
+  /// No description provided for @addressDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Address details'**
+  String get addressDetails;
+
+  /// No description provided for @addressLine1.
+  ///
+  /// In en, this message translates to:
+  /// **'Address Line 1'**
+  String get addressLine1;
+
+  /// No description provided for @addressLine2Optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Address Line 2 (Optional)'**
+  String get addressLine2Optional;
+
+  /// No description provided for @state.
+  ///
+  /// In en, this message translates to:
+  /// **'State'**
+  String get state;
+
+  /// No description provided for @businessHoursNotConnectedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Business hours are not connected yet.'**
+  String get businessHoursNotConnectedYet;
+
+  /// No description provided for @monday.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday'**
+  String get monday;
+
+  /// No description provided for @tuesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Tuesday'**
+  String get tuesday;
+
+  /// No description provided for @wednesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Wednesday'**
+  String get wednesday;
+
+  /// No description provided for @thursday.
+  ///
+  /// In en, this message translates to:
+  /// **'Thursday'**
+  String get thursday;
+
+  /// No description provided for @friday.
+  ///
+  /// In en, this message translates to:
+  /// **'Friday'**
+  String get friday;
+
+  /// No description provided for @saturday.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturday'**
+  String get saturday;
+
+  /// No description provided for @sunday.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday'**
+  String get sunday;
+
+  /// No description provided for @saveHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Hours'**
+  String get saveHours;
+
+  /// No description provided for @operatingHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Operating Hours'**
+  String get operatingHours;
+
+  /// No description provided for @letCustomersKnowWhenBusinessOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Let your customers know when your business is open.'**
+  String get letCustomersKnowWhenBusinessOpen;
+
+  /// No description provided for @applyMondaysHoursAllDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Monday\'s hours to all days'**
+  String get applyMondaysHoursAllDays;
+
+  /// No description provided for @personalDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal details'**
+  String get personalDetails;
+
+  /// No description provided for @nameShownTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'Your name as shown to your team.'**
+  String get nameShownTeam;
+
+  /// No description provided for @fullName2.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get fullName2;
+
+  /// No description provided for @signEmailRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in email and role.'**
+  String get signEmailRole;
+
+  /// No description provided for @emailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Address'**
+  String get emailAddress;
+
+  /// No description provided for @emailCannotChangedApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Email cannot be changed in the app.'**
+  String get emailCannotChangedApp;
+
+  /// No description provided for @role.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get role;
+
+  /// No description provided for @managedByBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Managed by your business.'**
+  String get managedByBusiness;
+
+  /// No description provided for @keepAccountSafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your account safe'**
+  String get keepAccountSafe;
+
+  /// No description provided for @manageHowSignBusinessAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage how you sign in to your business account.'**
+  String get manageHowSignBusinessAccount;
+
+  /// No description provided for @signAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in & access'**
+  String get signAccess;
+
+  /// No description provided for @changePassword2.
+  ///
+  /// In en, this message translates to:
+  /// **'Change your password'**
+  String get changePassword2;
+
+  /// No description provided for @twoFactorAuthentication.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-Factor Authentication'**
+  String get twoFactorAuthentication;
+
+  /// No description provided for @useLeast8CharactersLetterNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Use at least 8 characters with a letter and a number.'**
+  String get useLeast8CharactersLetterNumber;
+
+  /// No description provided for @updatingPassword2.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating your password'**
+  String get updatingPassword2;
+
+  /// No description provided for @passwordHasBeenUpdatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Your password has been updated successfully.'**
+  String get passwordHasBeenUpdatedSuccessfully;
+
+  /// No description provided for @updatePassword2.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Password'**
+  String get updatePassword2;
+
+  /// No description provided for @useStrongPasswordKeepAccountSecure.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a strong password to keep your account secure.'**
+  String get useStrongPasswordKeepAccountSecure;
+
+  /// No description provided for @newPassword2.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get newPassword2;
+
+  /// No description provided for @enterNewPassword2.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter new password'**
+  String get enterNewPassword2;
+
+  /// No description provided for @minimum8Characters.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum 8 characters'**
+  String get minimum8Characters;
+
+  /// No description provided for @includeLeastOneLetterOneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Include at least one letter and one number'**
+  String get includeLeastOneLetterOneNumber;
+
+  /// No description provided for @confirmNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm New Password'**
+  String get confirmNewPassword;
+
+  /// No description provided for @confirmNewPassword2.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm new password'**
+  String get confirmNewPassword2;
+
+  /// No description provided for @notificationSettingsNotConnectedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification settings are not connected yet.'**
+  String get notificationSettingsNotConnectedYet;
+
+  /// No description provided for @always.
+  ///
+  /// In en, this message translates to:
+  /// **'Always on'**
+  String get always;
+
+  /// No description provided for @issuesDeliveryProgressAccountSecurityAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Issues, delivery progress and account security alerts keep your operation running, so they cannot be turned off.'**
+  String get issuesDeliveryProgressAccountSecurityAlerts;
+
+  /// No description provided for @orderIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'Order issues'**
+  String get orderIssues;
+
+  /// No description provided for @accountSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Account & security'**
+  String get accountSecurity;
+
+  /// No description provided for @optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get optional;
+
+  /// No description provided for @newOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'New orders'**
+  String get newOrders;
+
+  /// No description provided for @whenNewOrderComes.
+  ///
+  /// In en, this message translates to:
+  /// **'When a new order comes in.'**
+  String get whenNewOrderComes;
+
+  /// No description provided for @riderStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Rider status'**
+  String get riderStatus;
+
+  /// No description provided for @whenRidersGoOnlineOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'When riders go online or offline.'**
+  String get whenRidersGoOnlineOffline;
+
+  /// No description provided for @productNews.
+  ///
+  /// In en, this message translates to:
+  /// **'Product news'**
+  String get productNews;
+
+  /// No description provided for @tipsNewCeffloFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'Tips and new Cefflo features.'**
+  String get tipsNewCeffloFeatures;
+
+  /// No description provided for @blue.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get blue;
+
+  /// No description provided for @navy.
+  ///
+  /// In en, this message translates to:
+  /// **'Navy'**
+  String get navy;
+
+  /// No description provided for @red.
+  ///
+  /// In en, this message translates to:
+  /// **'Red'**
+  String get red;
+
+  /// No description provided for @green.
+  ///
+  /// In en, this message translates to:
+  /// **'Green'**
+  String get green;
+
+  /// No description provided for @yellow.
+  ///
+  /// In en, this message translates to:
+  /// **'Yellow'**
+  String get yellow;
+
+  /// No description provided for @orange.
+  ///
+  /// In en, this message translates to:
+  /// **'Orange'**
+  String get orange;
+
+  /// No description provided for @black.
+  ///
+  /// In en, this message translates to:
+  /// **'Black'**
+  String get black;
+
+  /// No description provided for @accentColour.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent colour'**
+  String get accentColour;
+
+  /// No description provided for @chooseAccentColourApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the accent colour for the app.'**
+  String get chooseAccentColourApp;
+
+  /// No description provided for @hue.
+  ///
+  /// In en, this message translates to:
+  /// **'Hue'**
+  String get hue;
+
+  /// No description provided for @lightness.
+  ///
+  /// In en, this message translates to:
+  /// **'Lightness'**
+  String get lightness;
+
+  /// No description provided for @apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
+  /// No description provided for @closed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get closed;
+
+  /// No description provided for @wereHereHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'We’re here to help'**
+  String get wereHereHelp;
+
+  /// No description provided for @howCanWeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'How can we help?'**
+  String get howCanWeHelp;
+
+  /// No description provided for @searchHelpArticlesTopics.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for help, articles or topics...'**
+  String get searchHelpArticlesTopics;
+
+  /// No description provided for @helpCentre2.
+  ///
+  /// In en, this message translates to:
+  /// **'Help Centre'**
+  String get helpCentre2;
+
+  /// No description provided for @browseArticlesGuidesFaqs.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse articles, guides and FAQs'**
+  String get browseArticlesGuidesFaqs;
+
+  /// No description provided for @contactSupport2.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Support'**
+  String get contactSupport2;
+
+  /// No description provided for @chatSendSupportRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat or send a support request'**
+  String get chatSendSupportRequest;
+
+  /// No description provided for @popularTopics.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular Topics'**
+  String get popularTopics;
+
+  /// No description provided for @accountSecurity2.
+  ///
+  /// In en, this message translates to:
+  /// **'Account & Security'**
+  String get accountSecurity2;
+
+  /// No description provided for @loginProfileSecuritySettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Login, profile, security settings'**
+  String get loginProfileSecuritySettings;
+
+  /// No description provided for @ordersDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders & Delivery'**
+  String get ordersDelivery;
+
+  /// No description provided for @orderManagementDeliveryIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'Order management, delivery issues'**
+  String get orderManagementDeliveryIssues;
+
+  /// No description provided for @ridersTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'Riders & Team'**
+  String get ridersTeam;
+
+  /// No description provided for @riderInvitesApprovalsTeamAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Rider invites, approvals, team access'**
+  String get riderInvitesApprovalsTeamAccess;
+
+  /// No description provided for @subscriptionBilling.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription & Billing'**
+  String get subscriptionBilling;
+
+  /// No description provided for @plansPaymentsInvoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Plans, payments, invoices'**
+  String get plansPaymentsInvoices;
+
+  /// No description provided for @appGuides.
+  ///
+  /// In en, this message translates to:
+  /// **'App Guides'**
+  String get appGuides;
+
+  /// No description provided for @stepByStepTutorials.
+  ///
+  /// In en, this message translates to:
+  /// **'Step-by-step tutorials'**
+  String get stepByStepTutorials;
+
+  /// No description provided for @findAnswers.
+  ///
+  /// In en, this message translates to:
+  /// **'Find answers'**
+  String get findAnswers;
+
+  /// No description provided for @searchOurHelpCentreBrowseTopics.
+  ///
+  /// In en, this message translates to:
+  /// **'Search our help centre or browse topics below.'**
+  String get searchOurHelpCentreBrowseTopics;
+
+  /// No description provided for @searchHelpEGZonesRiders.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for help, e.g. zones, riders...'**
+  String get searchHelpEGZonesRiders;
+
+  /// No description provided for @browseTopics.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse topics'**
+  String get browseTopics;
+
+  /// No description provided for @gettingStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting Started'**
+  String get gettingStarted;
+
+  /// No description provided for @setUpAccountBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up your account and business'**
+  String get setUpAccountBusiness;
+
+  /// No description provided for @manageOrdersRunsZones.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage orders, runs and zones'**
+  String get manageOrdersRunsZones;
+
+  /// No description provided for @zonesRiders.
+  ///
+  /// In en, this message translates to:
+  /// **'Zones & Riders'**
+  String get zonesRiders;
+
+  /// No description provided for @coverageRidersDispatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Coverage, riders and dispatch'**
+  String get coverageRidersDispatch;
+
+  /// No description provided for @profileSecuritySettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile, security and settings'**
+  String get profileSecuritySettings;
+
+  /// No description provided for @plansPaymentsInvoices2.
+  ///
+  /// In en, this message translates to:
+  /// **'Plans, payments and invoices'**
+  String get plansPaymentsInvoices2;
+
+  /// No description provided for @popularQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular Questions'**
+  String get popularQuestions;
+
+  /// No description provided for @howDoICreateDeliveryZone.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I create a delivery zone?'**
+  String get howDoICreateDeliveryZone;
+
+  /// No description provided for @howDoIAddRider.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I add a rider?'**
+  String get howDoIAddRider;
+
+  /// No description provided for @canIChangeMyPlanLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Can I change my plan later?'**
+  String get canIChangeMyPlanLater;
+
+  /// No description provided for @howDoesRouteOptimizationWork.
+  ///
+  /// In en, this message translates to:
+  /// **'How does route optimization work?'**
+  String get howDoesRouteOptimizationWork;
+
+  /// No description provided for @whereCanMyCustomersTrackTheir.
+  ///
+  /// In en, this message translates to:
+  /// **'Where can my customers track their orders?'**
+  String get whereCanMyCustomersTrackTheir;
+
+  /// No description provided for @viewingAllQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Viewing all questions'**
+  String get viewingAllQuestions;
+
+  /// No description provided for @sendingSupportRequestsFromAppNot.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending support requests from the app is not connected yet.'**
+  String get sendingSupportRequestsFromAppNot;
+
+  /// No description provided for @wereHereHelp2.
+  ///
+  /// In en, this message translates to:
+  /// **'We’re here to help.'**
+  String get wereHereHelp2;
+
+  /// No description provided for @getTouch.
+  ///
+  /// In en, this message translates to:
+  /// **'Get in touch'**
+  String get getTouch;
+
+  /// No description provided for @tellUsAboutIssueOurTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about your issue and our team will get back to you.'**
+  String get tellUsAboutIssueOurTeam;
+
+  /// No description provided for @issueCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue Category'**
+  String get issueCategory;
+
+  /// No description provided for @selectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a category'**
+  String get selectCategory;
+
+  /// No description provided for @subject.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get subject;
+
+  /// No description provided for @brieflyDescribeIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Briefly describe your issue'**
+  String get brieflyDescribeIssue;
+
+  /// No description provided for @message.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get message;
+
+  /// No description provided for @tellUsMoreAboutIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us more about your issue...'**
+  String get tellUsMoreAboutIssue;
+
+  /// No description provided for @addScreenshotsOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Screenshots (Optional)'**
+  String get addScreenshotsOptional;
+
+  /// No description provided for @pngJpgUp10mbEach.
+  ///
+  /// In en, this message translates to:
+  /// **'PNG, JPG up to 10MB each'**
+  String get pngJpgUp10mbEach;
+
+  /// No description provided for @tapAttachImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to attach images'**
+  String get tapAttachImages;
+
+  /// No description provided for @whereWeWillReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Where we will reply to you.'**
+  String get whereWeWillReply;
+
+  /// No description provided for @contactEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Email'**
+  String get contactEmail;
+
+  /// No description provided for @sendRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Request'**
+  String get sendRequest;
+
+  /// No description provided for @sendingRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending your request'**
+  String get sendingRequest;
+
+  /// No description provided for @supportRequestHasBeenSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Your support request has been sent.'**
+  String get supportRequestHasBeenSent;
+
+  /// No description provided for @ourSupportTeamWillGetBack.
+  ///
+  /// In en, this message translates to:
+  /// **'ⓘ Our support team will get back to you as soon as possible.'**
+  String get ourSupportTeamWillGetBack;
+
+  /// No description provided for @trustTransparency.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust & Transparency'**
+  String get trustTransparency;
+
+  /// No description provided for @wereCommittedProtectingDataPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'We’re committed to protecting your data and your privacy.'**
+  String get wereCommittedProtectingDataPrivacy;
+
+  /// No description provided for @termsThatGuideUseCefflo.
+  ///
+  /// In en, this message translates to:
+  /// **'The terms that guide your use of Cefflo.'**
+  String get termsThatGuideUseCefflo;
+
+  /// No description provided for @lastUpdated12Sep2026.
+  ///
+  /// In en, this message translates to:
+  /// **'Last updated: 12 Sep 2026'**
+  String get lastUpdated12Sep2026;
+
+  /// No description provided for @page.
+  ///
+  /// In en, this message translates to:
+  /// **'On this page'**
+  String get page;
+
+  /// No description provided for @t1Introduction2InformationWeCollect.
+  ///
+  /// In en, this message translates to:
+  /// **'1.  Introduction\n2.  Information We Collect\n3.  How We Use Your Information\n4.  Data Sharing\n5.  Data Security\n6.  Your Rights\n7.  Cookies and Tracking Technologies\n8.  Changes to This Policy\n9.  Contact Us'**
+  String get t1Introduction2InformationWeCollect;
+
+  /// No description provided for @t1AcceptanceTerms2AccountResponsibilities.
+  ///
+  /// In en, this message translates to:
+  /// **'1.  Acceptance of Terms\n2.  Account Responsibilities\n3.  Acceptable Use\n4.  Subscription and Billing\n5.  Intellectual Property\n6.  Service Availability\n7.  Limitation of Liability\n8.  Changes to These Terms\n9.  Contact Us'**
+  String get t1AcceptanceTerms2AccountResponsibilities;
+
+  /// No description provided for @t1Introduction.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Introduction'**
+  String get t1Introduction;
+
+  /// No description provided for @t1AcceptanceTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Acceptance of Terms'**
+  String get t1AcceptanceTerms;
+
+  /// No description provided for @ceffloWeUsOurValuesPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Cefflo (“we”, “us” or “our”) values your privacy. This policy explains how we collect, use, disclose and safeguard your information when you use our services.'**
+  String get ceffloWeUsOurValuesPrivacy;
+
+  /// No description provided for @byAccessingUsingCeffloAgreeThese.
+  ///
+  /// In en, this message translates to:
+  /// **'By accessing or using Cefflo, you agree to these terms and to use the service responsibly in accordance with applicable laws.'**
+  String get byAccessingUsingCeffloAgreeThese;
+
+  /// No description provided for @t2InformationWeCollect.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Information We Collect'**
+  String get t2InformationWeCollect;
+
+  /// No description provided for @t2AccountResponsibilities.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Account Responsibilities'**
+  String get t2AccountResponsibilities;
+
+  /// No description provided for @weCollectInformationThatProvideDirectly.
+  ///
+  /// In en, this message translates to:
+  /// **'We collect information that you provide directly to us, together with limited operational data needed to deliver and improve the service.'**
+  String get weCollectInformationThatProvideDirectly;
+
+  /// No description provided for @responsibleMaintainingAccurateAccountInformationProtecting.
+  ///
+  /// In en, this message translates to:
+  /// **'You are responsible for maintaining accurate account information and protecting access to your account.'**
+  String get responsibleMaintainingAccurateAccountInformationProtecting;
+
+  /// No description provided for @moreOrdersLessWorkSmootherDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'More orders. Less work. A smoother delivery day.'**
+  String get moreOrdersLessWorkSmootherDelivery;
+
+  /// No description provided for @ourPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Our purpose'**
+  String get ourPurpose;
+
+  /// No description provided for @operateTodayGrowTomorrow2.
+  ///
+  /// In en, this message translates to:
+  /// **'Operate Today. Grow Tomorrow.'**
+  String get operateTodayGrowTomorrow2;
+
+  /// No description provided for @localSameDayDeliveryOperatingSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'A local same-day delivery operating system built for businesses.'**
+  String get localSameDayDeliveryOperatingSystem;
+
+  /// No description provided for @appInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'App information'**
+  String get appInformation;
+
+  /// No description provided for @version.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get version;
+
+  /// No description provided for @privacyPolicy2.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy2;
+
+  /// No description provided for @readPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Read policy'**
+  String get readPolicy;
+
+  /// No description provided for @termsService2.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get termsService2;
+
+  /// No description provided for @readTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Read terms'**
+  String get readTerms;
+
+  /// No description provided for @notificationDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification deleted'**
+  String get notificationDeleted;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @markUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as unread'**
+  String get markUnread;
+
+  /// No description provided for @markRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as read'**
+  String get markRead;
+
+  /// No description provided for @youreAllCaughtUp.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re all caught up.'**
+  String get youreAllCaughtUp;
+
+  /// No description provided for @enterValidEmailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address.'**
+  String get enterValidEmailAddress;
+
+  /// No description provided for @nameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Name is required.'**
+  String get nameRequired;
+
+  /// No description provided for @linkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied'**
+  String get linkCopied;
+
+  /// No description provided for @scanJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to join'**
+  String get scanJoin;
+
+  /// No description provided for @invitedPersonCanScanCodeOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'The invited person can scan this code to open the invitation.'**
+  String get invitedPersonCanScanCodeOpen;
+
+  /// No description provided for @generateInviteLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate invite link'**
+  String get generateInviteLink;
+
+  /// No description provided for @copyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy link'**
+  String get copyLink;
+
+  /// No description provided for @inviteRidersBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite riders to your business'**
+  String get inviteRidersBusiness;
+
+  /// No description provided for @inviteTeamMember2.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite a team member'**
+  String get inviteTeamMember2;
+
+  /// No description provided for @theyOpenLinkJoinTeamComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'They open the link to join your team and complete their profile, vehicle and documents.'**
+  String get theyOpenLinkJoinTeamComplete;
+
+  /// No description provided for @theyOpenLinkHelpRunDeliveries.
+  ///
+  /// In en, this message translates to:
+  /// **'They open the link to help run deliveries and manage orders.'**
+  String get theyOpenLinkHelpRunDeliveries;
+
+  /// No description provided for @riderName.
+  ///
+  /// In en, this message translates to:
+  /// **'Rider name'**
+  String get riderName;
+
+  /// No description provided for @operatorText.
+  ///
+  /// In en, this message translates to:
+  /// **'Operator'**
+  String get operatorText;
+
+  /// No description provided for @owner.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner'**
+  String get owner;
+
+  /// No description provided for @ownerAccessFullBusinessOwnershipIncluding.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner access is full business ownership, including billing and team management.'**
+  String get ownerAccessFullBusinessOwnershipIncluding;
+
+  /// No description provided for @invitationLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation link'**
+  String get invitationLink;
+
+  /// No description provided for @showQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Show QR code'**
+  String get showQrCode;
+
+  /// No description provided for @scanOpenInvitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to open the invitation'**
+  String get scanOpenInvitation;
+
+  /// No description provided for @linkShownOnlyOnceExpires7.
+  ///
+  /// In en, this message translates to:
+  /// **'This link is shown only once and expires in 7 days. Invited riders appear in your Riders list as Pending Review once they complete registration.'**
+  String get linkShownOnlyOnceExpires7;
+
+  /// No description provided for @linkShownOnlyOnceExpires72.
+  ///
+  /// In en, this message translates to:
+  /// **'This link is shown only once and expires in 7 days. Invited team members appear in your Team list once they accept.'**
+  String get linkShownOnlyOnceExpires72;
+
+  /// No description provided for @backSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Settings'**
+  String get backSettings;
+
+  /// No description provided for @active2.
+  ///
+  /// In en, this message translates to:
+  /// **'{def}, {style}, active'**
+  String active2(Object def, Object style);
+
+  /// No description provided for @zoneOrdersRiders.
+  ///
+  /// In en, this message translates to:
+  /// **'{orders, plural, =1{1 order} other{{orders} orders}} · {riders, plural, =1{1 rider} other{{riders} riders}}'**
+  String zoneOrdersRiders(int orders, int riders);
+
+  /// No description provided for @perMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'/ month'**
+  String get perMonth;
+
+  /// No description provided for @perYear.
+  ///
+  /// In en, this message translates to:
+  /// **'/ year'**
+  String get perYear;
+
+  /// No description provided for @roleOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner'**
+  String get roleOwner;
+
+  /// No description provided for @roleOperator.
+  ///
+  /// In en, this message translates to:
+  /// **'Operator'**
+  String get roleOperator;
+
+  /// No description provided for @tagFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Food'**
+  String get tagFood;
+
+  /// No description provided for @tagFashion.
+  ///
+  /// In en, this message translates to:
+  /// **'Fashion'**
+  String get tagFashion;
+
+  /// No description provided for @tagBeauty.
+  ///
+  /// In en, this message translates to:
+  /// **'Beauty'**
+  String get tagBeauty;
+
+  /// No description provided for @tagGifts.
+  ///
+  /// In en, this message translates to:
+  /// **'Gifts'**
+  String get tagGifts;
 }
 
 class _AppLocalizationsDelegate

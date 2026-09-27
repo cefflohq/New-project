@@ -4,11 +4,15 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:qr/qr.dart';
 
 import '../../core/app_state.dart';
+import '../../core/env.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/models.dart';
+import '../../data/vendor_repository.dart';
 import '../shell.dart';
 import '../widgets.dart';
+
+import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
 
 class UiPrototypeScreen extends StatelessWidget {
   const UiPrototypeScreen({super.key, required this.spec});
@@ -17,17 +21,15 @@ class UiPrototypeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => switch (spec.route) {
-    VRoute.riderRegistrationLink => const _InviteLinkScreen(kind: 'Rider'),
-    VRoute.helperRegistrationLink => const _InviteLinkScreen(
-      kind: 'Team member',
-    ),
+    VRoute.riderRegistrationLink => const _InviteLinkScreen(rider: true),
+    VRoute.helperRegistrationLink => const _InviteLinkScreen(rider: false),
     VRoute.businessProfile => const _BusinessProfileScreen(),
     VRoute.businessInformation => const _BusinessInformationScreen(),
     VRoute.businessAddress => const _BusinessAddressScreen(),
     VRoute.businessHours => const _BusinessHoursScreen(),
-    VRoute.deliverySettings => const _ComingSoonScreen(
-      title: 'Delivery settings',
-      message: 'Reserved for a later approved delivery settings pass.',
+    VRoute.deliverySettings => _ComingSoonScreen(
+      title: L.deliverySettings,
+      message: L.reservedLaterApprovedDeliverySettingsPass,
     ),
     VRoute.editProfile => const _EditProfileScreen(),
     VRoute.security => const _SecurityScreen(),
@@ -37,8 +39,8 @@ class UiPrototypeScreen extends StatelessWidget {
     VRoute.helpSupport => const _HelpSupportScreen(),
     VRoute.faq => const _FaqScreen(),
     VRoute.contactSupport => const _ContactSupportScreen(),
-    VRoute.privacyPolicy => const _PolicyScreen(title: 'Privacy Policy'),
-    VRoute.termsOfService => const _PolicyScreen(title: 'Terms of Service'),
+    VRoute.privacyPolicy => const _PolicyScreen(privacy: true),
+    VRoute.termsOfService => const _PolicyScreen(privacy: false),
     VRoute.about => const _AboutScreen(),
     VRoute.notificationInbox => const _NotificationInboxScreen(),
     _ => _ComingSoonScreen(
@@ -139,7 +141,8 @@ class _BusinessProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     final text = Theme.of(context).textTheme;
-    final name = app.business?.name ?? 'Kopi Kita';
+    final demo = app.repo.isDemo;
+    final name = app.business?.name ?? (demo ? 'Kopi Kita' : '');
     // Archetype F: compact identity + stats card, grouped rows, then the
     // store panel -- all inside the first viewport.
     return PageBody(
@@ -159,7 +162,9 @@ class _BusinessProfileScreen extends StatelessWidget {
                       children: [
                         Text(name, style: text.titleMedium),
                         Text(
-                          'A better delivery day. Today.',
+                          demo
+                              ? 'A better delivery day. Today.'
+                              : roleLabel(app.business?.role ?? ''),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: text.bodySmall,
@@ -169,7 +174,7 @@ class _BusinessProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: Gap.sm),
                   CefButton(
-                    'Edit',
+                    L.edit,
                     secondary: true,
                     compact: true,
                     icon: LucideIcons.pencil,
@@ -177,45 +182,48 @@ class _BusinessProfileScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: Gap.md),
-              Divider(height: 1, color: context.c.border),
-              const KpiStrip(
-                items: [
-                  KpiItem('24', 'Products', icon: LucideIcons.package),
-                  KpiItem('128', 'Orders', icon: LucideIcons.shoppingCart),
-                  KpiItem('4.8', 'Rating', icon: LucideIcons.star),
-                ],
-              ),
+              // Business stats have no backend yet; only the demo shows them.
+              if (demo) ...[
+                const SizedBox(height: Gap.md),
+                Divider(height: 1, color: context.c.border),
+                KpiStrip(
+                  items: [
+                    KpiItem('24', L.products, icon: LucideIcons.package),
+                    KpiItem('128', L.orders, icon: LucideIcons.shoppingCart),
+                    KpiItem('4.8', L.rating, icon: LucideIcons.star),
+                  ],
+                ),
+              ],
             ],
           ),
         ),
         const SizedBox(height: Gap.lg),
         CefListGroup(
-          label: 'Business',
+          label: L.business,
           children: [
             CefListRow(
-              title: 'Business Information',
-              subtitle: 'Name, contact, description',
+              title: L.businessInformation2,
+              subtitle: L.nameContactDescription,
               icon: LucideIcons.fileText,
               onTap: () => app.go(VRoute.businessInformation),
             ),
             CefListRow(
-              title: 'Business Address',
-              subtitle: 'Store address and service area',
+              title: L.businessAddress2,
+              subtitle: L.storeAddressServiceArea,
               icon: LucideIcons.mapPin,
               onTap: () => app.go(VRoute.businessAddress),
             ),
             CefListRow(
-              title: 'Business Hours',
-              subtitle: 'Set your operating hours',
+              title: L.businessHours2,
+              subtitle: L.setOperatingHours,
               icon: LucideIcons.clock,
               onTap: () => app.go(VRoute.businessHours),
             ),
           ],
         ),
-        const _HeroPanel(
-          kicker: 'Your store is ready',
-          title: 'Keep your business information up to date.',
+        _HeroPanel(
+          kicker: L.storeReady,
+          title: L.keepBusinessInformationUpDate,
         ),
       ],
     );
@@ -226,57 +234,65 @@ class _BusinessInformationScreen extends StatelessWidget {
   const _BusinessInformationScreen();
 
   @override
-  Widget build(BuildContext context) => PageBody(
-    bottom: CefButton('Save Changes', onTap: () {}),
-    // Archetype G (multi-section form).
-    children: [
-      const _EditableAvatar(name: 'Kopi Kita'),
-      const SectionHeading(
-        'Business details',
-        icon: LucideIcons.store,
-        subtitle: 'How customers and riders see your business.',
-      ),
-      const CefField(
-        label: 'Business Name',
-        initialValue: 'Kopi Kita',
-        prefixIcon: LucideIcons.store,
-      ),
-      const CefField(
-        label: 'Tagline (Optional)',
-        initialValue: 'A better delivery day. Today.',
-      ),
-      const CefField(
-        label: 'Business Type',
-        initialValue: 'Food & Beverage',
-        prefixIcon: LucideIcons.package,
-        suffixIcon: LucideIcons.chevronDown,
-      ),
-      const CefField(
-        label: 'Short Description',
-        initialValue: 'Handcrafted coffee and light bites, delivered fresh across Kuala Lumpur.',
-        maxLines: 3,
-        maxLength: 160,
-      ),
-      const SectionHeading(
-        'Contact',
-        icon: LucideIcons.phone,
-        subtitle: 'Where customers and riders can reach you.',
-      ),
-      const _SplitFields(
-        leftLabel: 'Code',
-        left: '+60',
-        rightLabel: 'Contact Phone',
-        right: '12 345 6789',
-        keyboardType: TextInputType.phone,
-      ),
-      const CefField(
-        label: 'Business Email',
-        initialValue: 'hello@kopikita.my',
-        prefixIcon: LucideIcons.mail,
-        keyboardType: TextInputType.emailAddress,
-      ),
-    ],
-  );
+  Widget build(BuildContext context) {
+    if (!AppScope.read(context).repo.isDemo) {
+      return _ComingSoonScreen(
+        title: '',
+        message: L.editingBusinessDetailsAppNotConnected,
+      );
+    }
+    return PageBody(
+      bottom: CefButton(L.saveChanges, onTap: () {}),
+      // Archetype G (multi-section form).
+      children: [
+        const _EditableAvatar(name: 'Kopi Kita'),
+        SectionHeading(
+          L.businessDetails,
+          icon: LucideIcons.store,
+          subtitle: L.howCustomersRidersSeeBusiness,
+        ),
+        CefField(
+          label: L.businessName,
+          initialValue: 'Kopi Kita',
+          prefixIcon: LucideIcons.store,
+        ),
+        CefField(
+          label: L.taglineOptional2,
+          initialValue: 'A better delivery day. Today.',
+        ),
+        CefField(
+          label: L.businessType,
+          initialValue: 'Food & Beverage',
+          prefixIcon: LucideIcons.package,
+          suffixIcon: LucideIcons.chevronDown,
+        ),
+        CefField(
+          label: L.shortDescription,
+          initialValue: 'Handcrafted coffee and light bites, delivered fresh across Kuala Lumpur.',
+          maxLines: 3,
+          maxLength: 160,
+        ),
+        SectionHeading(
+          L.contact,
+          icon: LucideIcons.phone,
+          subtitle: L.whereCustomersRidersCanReach,
+        ),
+        _SplitFields(
+          leftLabel: L.code,
+          left: '+60',
+          rightLabel: L.contactPhone,
+          right: '12 345 6789',
+          keyboardType: TextInputType.phone,
+        ),
+        CefField(
+          label: L.businessEmail,
+          initialValue: 'hello@kopikita.my',
+          prefixIcon: LucideIcons.mail,
+          keyboardType: TextInputType.emailAddress,
+        ),
+      ],
+    );
+  }
 }
 
 class _BusinessAddressScreen extends StatelessWidget {
@@ -284,12 +300,18 @@ class _BusinessAddressScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!AppScope.read(context).repo.isDemo) {
+      return _ComingSoonScreen(
+        title: '',
+        message: L.editingBusinessAddressAppNotConnected,
+      );
+    }
     final c = context.c;
     // Archetype G (multi-section form).
     return PageBody(
-      bottom: CefButton('Save Address', onTap: () {}),
+      bottom: CefButton(L.saveAddress, onTap: () {}),
       children: [
-        const CefSearchField(hint: 'Search or enter your address'),
+        CefSearchField(hint: L.searchEnterAddress),
         const SizedBox(height: Gap.md),
         Container(
           height: 210,
@@ -328,27 +350,21 @@ class _BusinessAddressScreen extends StatelessWidget {
             ],
           ),
         ),
-        const SectionHeading(
-          'Address details',
+        SectionHeading(
+          L.addressDetails,
           icon: LucideIcons.mapPin,
-          subtitle: 'Store address and service area',
+          subtitle: L.storeAddressServiceArea,
         ),
-        const CefField(
-          label: 'Address Line 1',
-          initialValue: 'No. 12, Jalan Damai 3',
-        ),
-        const CefField(
-          label: 'Address Line 2 (Optional)',
-          initialValue: 'Taman Melati',
-        ),
-        const _SplitFields(
-          leftLabel: 'Postcode',
+        CefField(label: L.addressLine1, initialValue: 'No. 12, Jalan Damai 3'),
+        CefField(label: L.addressLine2Optional, initialValue: 'Taman Melati'),
+        _SplitFields(
+          leftLabel: L.postcode,
           left: '53100',
-          rightLabel: 'City',
+          rightLabel: L.city,
           right: 'Kuala Lumpur',
         ),
-        const CefField(
-          label: 'State',
+        CefField(
+          label: L.state,
           initialValue: 'Wilayah Persekutuan Kuala Lumpur',
           suffixIcon: LucideIcons.chevronDown,
         ),
@@ -362,34 +378,42 @@ class _BusinessHoursScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const days = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
+    if (!AppScope.read(context).repo.isDemo) {
+      return _ComingSoonScreen(
+        title: '',
+        message: L.businessHoursNotConnectedYet,
+      );
+    }
+    final days = [
+      L.monday,
+      L.tuesday,
+      L.wednesday,
+      L.thursday,
+      L.friday,
+      L.saturday,
+      L.sunday,
     ];
     // Archetype G (form).
     return PageBody(
-      bottom: CefButton('Save Hours', onTap: () {}),
+      bottom: CefButton(L.saveHours, onTap: () {}),
       children: [
-        const SectionHeading(
-          'Operating Hours',
+        SectionHeading(
+          L.operatingHours,
           icon: LucideIcons.clock3,
-          subtitle: 'Let your customers know when your business is open.',
+          subtitle: L.letCustomersKnowWhenBusinessOpen,
         ),
-        for (final day in days)
+        // Demo schedule by weekday index (0 = Monday): Sunday closed,
+        // Friday/Saturday open late.
+        for (final (i, day) in days.indexed)
           _BusinessHourRow(
             day: day,
-            enabled: day != 'Sunday',
-            close: day == 'Friday' || day == 'Saturday' ? '21:00' : '20:00',
+            enabled: i != 6,
+            close: i == 4 || i == 5 ? '21:00' : '20:00',
           ),
         const SizedBox(height: Gap.sm),
         CefActionRow(
           icon: LucideIcons.copy,
-          label: "Apply Monday's hours to all days",
+          label: L.applyMondaysHoursAllDays,
           chevron: false,
           onTap: () {},
         ),
@@ -406,50 +430,51 @@ class _EditProfileScreen extends StatelessWidget {
   const _EditProfileScreen();
 
   @override
-  Widget build(BuildContext context) => PageBody(
-    bottom: CefButton('Save Changes', onTap: () {}),
-    // Archetype G (multi-section form).
-    children: [
-      const _EditableAvatar(name: 'Yusuf Sazali'),
-      const SectionHeading(
-        'Personal details',
-        icon: LucideIcons.user,
-        subtitle: 'Your name and phone number.',
-      ),
-      const CefField(
-        label: 'Full Name',
-        initialValue: 'Yusuf Sazali',
-        prefixIcon: LucideIcons.user,
-      ),
-      const _SplitFields(
-        leftLabel: 'Code',
-        left: '+60',
-        rightLabel: 'Phone Number',
-        right: '12 345 6789',
-        keyboardType: TextInputType.phone,
-      ),
-      const SectionHeading(
-        'Account',
-        icon: LucideIcons.briefcase,
-        subtitle: 'Sign-in email and role.',
-      ),
-      const CefField(
-        label: 'Email Address',
-        initialValue: 'yusuf@kopikita.my',
-        prefixIcon: LucideIcons.mail,
-        enabled: false,
-        helperText:
-            'Email cannot be changed. Please contact support if needed.',
-      ),
-      const CefField(
-        label: 'Role',
-        initialValue: 'Owner',
-        prefixIcon: LucideIcons.briefcase,
-        enabled: false,
-        helperText: 'Managed by your business.',
-      ),
-    ],
-  );
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final demo = app.repo.isDemo;
+    final name = app.userDisplayName;
+    final email = demo
+        ? 'yusuf@kopikita.my'
+        : (app.repo.currentUser?.email ?? '');
+    // Read-only: profile editing has no backend contract yet, so there is no
+    // Save action that would pretend to store changes.
+    return PageBody(
+      children: [
+        if (name.isNotEmpty) _EditableAvatar(name: name),
+        SectionHeading(
+          L.personalDetails,
+          icon: LucideIcons.user,
+          subtitle: L.nameShownTeam,
+        ),
+        CefField(
+          label: L.fullName2,
+          initialValue: name.isEmpty ? '—' : name,
+          prefixIcon: LucideIcons.user,
+          enabled: false,
+        ),
+        SectionHeading(
+          L.account,
+          icon: LucideIcons.briefcase,
+          subtitle: L.signEmailRole,
+        ),
+        CefField(
+          label: L.emailAddress,
+          initialValue: email,
+          prefixIcon: LucideIcons.mail,
+          enabled: false,
+          helperText: L.emailCannotChangedApp,
+        ),
+        CefField(
+          label: L.role,
+          initialValue: roleLabel(app.business?.role ?? ''),
+          prefixIcon: LucideIcons.briefcase,
+          enabled: false,
+          helperText: L.managedByBusiness,
+        ),
+      ],
+    );
+  }
 }
 
 class _SecurityScreen extends StatelessWidget {
@@ -458,107 +483,128 @@ class _SecurityScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    // Archetype F: compact intro, one group, then the security panel.
     return PageBody(
       grouped: true,
       children: [
-        const _GroupedIntro(
+        _GroupedIntro(
           icon: LucideIcons.shield,
-          title: 'Keep your account safe',
-          subtitle:
-              'Manage your security settings and protect your business data.',
+          title: L.keepAccountSafe,
+          subtitle: L.manageHowSignBusinessAccount,
         ),
         CefListGroup(
-          label: 'Sign-in & access',
+          label: L.signAccess,
           children: [
             CefListRow(
-              title: 'Password',
-              subtitle: 'Update your password regularly',
+              title: L.password,
+              subtitle: L.changePassword2,
               subtitleMaxLines: 2,
               icon: LucideIcons.lock,
               onTap: () => app.go(VRoute.changePassword),
             ),
-            CefListRow(
-              title: 'Biometric Login',
-              subtitle: 'Use Face ID or Touch ID',
-              subtitleMaxLines: 2,
-              icon: LucideIcons.fingerprint,
-              trailing: CefSwitch(value: true, onChanged: (_) {}),
-            ),
             // Unavailable feature: no switch or on/off state, just an honest
             // "Coming soon" subtitle on a non-tappable row.
-            const CefListRow(
-              title: 'Two-Factor Authentication',
-              subtitle: 'Coming soon',
+            CefListRow(
+              title: L.twoFactorAuthentication,
+              subtitle: L.comingSoon,
               subtitleMaxLines: 2,
               icon: LucideIcons.smartphone,
             ),
-            CefListRow(
-              title: 'Active Sessions',
-              subtitle: 'Manage your logged in devices',
-              subtitleMaxLines: 2,
-              icon: LucideIcons.laptop,
-              onTap: () {},
-            ),
           ],
-        ),
-        const _HeroPanel(
-          kicker: 'Your security is important',
-          title:
-              'These settings help keep your account and business data safe.',
         ),
       ],
     );
   }
 }
 
-class _ChangePasswordScreen extends StatelessWidget {
+class _ChangePasswordScreen extends StatefulWidget {
   const _ChangePasswordScreen();
 
   @override
-  Widget build(BuildContext context) => PageBody(
-    bottom: CefButton(
-      'Update Password',
-      onTap: () => runAsyncFeedback(
-        context,
-        action: () async {},
-        processingTitle: 'Processing...',
-        processingSubtitle: 'Updating your password',
-        successTitle: 'Successful',
-        successSubtitle: 'Your password has been updated successfully.',
-      ),
-    ),
-    // Archetype G (form).
-    children: [
-      const SectionHeading(
-        'Set a new password',
-        icon: LucideIcons.lock,
-        subtitle: 'Use a strong password to keep your account secure.',
-      ),
-      const CefField(
-        label: 'Current Password',
-        hint: 'Enter current password',
-        prefixIcon: LucideIcons.lock,
-        obscureText: true,
-      ),
-      const CefField(
-        label: 'New Password',
-        hint: 'Enter new password',
-        prefixIcon: LucideIcons.keyRound,
-        obscureText: true,
-      ),
-      const _Requirement('Minimum 8 characters'),
-      const _Requirement('Include at least one letter and one number'),
-      const _Requirement(r'Include one special character (e.g. ! @ # $)'),
-      const SizedBox(height: Gap.md),
-      const CefField(
-        label: 'Confirm New Password',
-        hint: 'Confirm new password',
-        prefixIcon: LucideIcons.keyRound,
-        obscureText: true,
-      ),
-    ],
-  );
+  State<_ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+}
+
+class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
+  final password = TextEditingController();
+  final confirm = TextEditingController();
+  String? error;
+
+  @override
+  void dispose() {
+    password.dispose();
+    confirm.dispose();
+    super.dispose();
+  }
+
+  bool get _longEnough => password.text.length >= 8;
+  bool get _letterAndNumber =>
+      RegExp(r'[A-Za-z]').hasMatch(password.text) &&
+      RegExp(r'\d').hasMatch(password.text);
+
+  Future<void> _submit() async {
+    if (!_longEnough || !_letterAndNumber) {
+      setState(() => error = L.useLeast8CharactersLetterNumber);
+      return;
+    }
+    if (password.text != confirm.text) {
+      setState(() => error = L.passwordsDoNotMatch);
+      return;
+    }
+    setState(() => error = null);
+    final app = AppScope.read(context);
+    final value = password.text;
+    final ok = await runAsyncFeedback(
+      context,
+      action: app.repo.isDemo
+          ? () async {}
+          : () => app.repo.updatePassword(value),
+      processingTitle: L.processing,
+      processingSubtitle: L.updatingPassword2,
+      successTitle: L.successful,
+      successSubtitle: L.passwordHasBeenUpdatedSuccessfully,
+    );
+    if (ok && mounted) app.back();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return PageBody(
+      bottom: CefButton(L.updatePassword2, onTap: _submit),
+      children: [
+        SectionHeading(
+          L.setNewPassword,
+          icon: LucideIcons.lock,
+          subtitle: L.useStrongPasswordKeepAccountSecure,
+        ),
+        CefField(
+          label: L.newPassword2,
+          hint: L.enterNewPassword2,
+          controller: password,
+          prefixIcon: LucideIcons.keyRound,
+          obscureText: true,
+          onChanged: (_) => setState(() {}),
+        ),
+        _Requirement(L.minimum8Characters, met: _longEnough),
+        _Requirement(L.includeLeastOneLetterOneNumber, met: _letterAndNumber),
+        const SizedBox(height: Gap.md),
+        CefField(
+          label: L.confirmNewPassword,
+          hint: L.confirmNewPassword2,
+          controller: confirm,
+          prefixIcon: LucideIcons.keyRound,
+          obscureText: true,
+        ),
+        if (error != null)
+          Padding(
+            padding: const EdgeInsets.only(top: Gap.md),
+            child: Text(
+              error!,
+              style: text.bodySmall?.copyWith(color: context.c.attention),
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 /// V-47 — Notifications (D-54): operational alerts are always on (no
@@ -579,6 +625,14 @@ class _NotificationPreferencesScreenState
 
   @override
   Widget build(BuildContext context) {
+    // No notification backend exists yet, so the live app has no settings
+    // to store; only the demo shows the designed preferences.
+    if (!AppScope.read(context).repo.isDemo) {
+      return _ComingSoonScreen(
+        title: '',
+        message: L.notificationSettingsNotConnectedYet,
+      );
+    }
     final text = Theme.of(context).textTheme;
     Widget optional(
       String title,
@@ -596,46 +650,45 @@ class _NotificationPreferencesScreenState
     );
     return PageBody(
       children: [
-        const SectionHeading('Always on'),
+        SectionHeading(L.always),
         Text(
-          'Issues, delivery progress and account security alerts keep your '
-          'operation running, so they cannot be turned off.',
+          L.issuesDeliveryProgressAccountSecurityAlerts,
           style: text.bodySmall,
         ),
         const SizedBox(height: Gap.xs),
-        const CefListRow(
-          title: 'Order issues',
+        CefListRow(
+          title: L.orderIssues,
           icon: LucideIcons.triangleAlert,
           showChevron: false,
         ),
-        const CefListRow(
-          title: 'Delivery progress',
+        CefListRow(
+          title: L.deliveryProgress,
           icon: LucideIcons.truck,
           showChevron: false,
         ),
-        const CefListRow(
-          title: 'Account & security',
+        CefListRow(
+          title: L.accountSecurity,
           icon: LucideIcons.lock,
           showChevron: false,
         ),
-        const SectionHeading('Optional'),
+        SectionHeading(L.optional),
         optional(
-          'New orders',
-          'When a new order comes in.',
+          L.newOrders,
+          L.whenNewOrderComes,
           LucideIcons.package,
           _newOrders,
           (v) => setState(() => _newOrders = v),
         ),
         optional(
-          'Rider status',
-          'When riders go online or offline.',
+          L.riderStatus,
+          L.whenRidersGoOnlineOffline,
           LucideIcons.users,
           _riderStatus,
           (v) => setState(() => _riderStatus = v),
         ),
         optional(
-          'Product news',
-          'Tips and new Cefflo features.',
+          L.productNews,
+          L.tipsNewCeffloFeatures,
           LucideIcons.megaphone,
           _productNews,
           (v) => setState(() => _productNews = v),
@@ -652,15 +705,15 @@ class _NotificationPreferencesScreenState
 class _AppearanceScreen extends StatelessWidget {
   const _AppearanceScreen();
 
-  static const accents = [
-    ('Blue', 0xFF0060FE),
-    ('Navy', 0xFF0B1220),
-    ('Red', 0xFFE5484D),
-    ('Green', 0xFF12A150),
-    ('Yellow', 0xFFFFC93C),
-    ('Orange', 0xFFF97316),
-    ('Black', 0xFF000000),
-    ('White', 0xFFFFFFFF),
+  static List<(String, int)> get accents => [
+    (L.blue, 0xFF0060FE),
+    (L.navy, 0xFF0B1220),
+    (L.red, 0xFFE5484D),
+    (L.green, 0xFF12A150),
+    (L.yellow, 0xFFFFC93C),
+    (L.orange, 0xFFF97316),
+    (L.black, 0xFF000000),
+    (L.white, 0xFFFFFFFF),
   ];
 
   @override
@@ -671,8 +724,8 @@ class _AppearanceScreen extends StatelessWidget {
     final isCustom = !accents.any((a) => a.$2 == selected);
     return PageBody(
       children: [
-        const SectionHeading('Accent colour'),
-        Text('Choose the accent colour for the app.', style: text.bodySmall),
+        SectionHeading(L.accentColour),
+        Text(L.chooseAccentColourApp, style: text.bodySmall),
         const SizedBox(height: Gap.lg),
         Wrap(
           spacing: Gap.lg,
@@ -686,7 +739,7 @@ class _AppearanceScreen extends StatelessWidget {
                 onTap: () => app.setAccent(value),
               ),
             _Swatch(
-              label: 'Custom',
+              label: L.custom,
               color: isCustom ? Color(selected) : null,
               selected: isCustom,
               onTap: () => _pickCustom(context, Color(selected)),
@@ -819,7 +872,7 @@ class _ColourPickerSheetState extends State<_ColourPickerSheet> {
           children: [
             Row(
               children: [
-                Expanded(child: Text('Custom colour', style: text.titleMedium)),
+                Expanded(child: Text(L.customColour, style: text.titleMedium)),
                 Container(
                   width: 32,
                   height: 32,
@@ -832,13 +885,13 @@ class _ColourPickerSheetState extends State<_ColourPickerSheet> {
               ],
             ),
             const SizedBox(height: Gap.md),
-            Text('Hue', style: text.labelLarge),
+            Text(L.hue, style: text.labelLarge),
             Slider(
               value: _hsl.hue,
               max: 360,
               onChanged: (v) => setState(() => _hsl = _hsl.withHue(v)),
             ),
-            Text('Lightness', style: text.labelLarge),
+            Text(L.lightness, style: text.labelLarge),
             Slider(
               value: _hsl.lightness.clamp(.15, .85),
               min: .15,
@@ -846,7 +899,7 @@ class _ColourPickerSheetState extends State<_ColourPickerSheet> {
               onChanged: (v) => setState(() => _hsl = _hsl.withLightness(v)),
             ),
             const SizedBox(height: Gap.md),
-            CefButton('Apply', onTap: () => Navigator.of(context).pop(colour)),
+            CefButton(L.apply, onTap: () => Navigator.of(context).pop(colour)),
           ],
         ),
       ),
@@ -963,7 +1016,7 @@ class _BusinessHourRow extends StatelessWidget {
       ),
       Expanded(child: CefField(initialValue: close)),
     ];
-    final closed = Text('Closed', style: text.bodyMedium);
+    final closed = Text(L.closed, style: text.bodyMedium);
     return LayoutBuilder(
       builder: (context, constraints) {
         final scale = MediaQuery.textScalerOf(context).scale(1);
@@ -1011,15 +1064,20 @@ class _BusinessHourRow extends StatelessWidget {
 }
 
 class _Requirement extends StatelessWidget {
-  const _Requirement(this.text);
+  const _Requirement(this.text, {this.met = false});
   final String text;
+  final bool met;
 
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(bottom: Gap.xs),
     child: Row(
       children: [
-        Icon(LucideIcons.circle, size: 14, color: context.c.textSecondary),
+        Icon(
+          met ? LucideIcons.circleCheck : LucideIcons.circle,
+          size: 14,
+          color: met ? context.c.success : context.c.textSecondary,
+        ),
         const SizedBox(width: Gap.sm),
         Expanded(
           child: Text(text, style: Theme.of(context).textTheme.bodySmall),
@@ -1043,15 +1101,9 @@ class _HelpSupportScreen extends StatelessWidget {
     return PageBody(
       grouped: true,
       children: [
-        const _HeroPanel(
-          kicker: 'We’re here to help',
-          title: 'How can we help?',
-        ),
+        _HeroPanel(kicker: L.wereHereHelp, title: L.howCanWeHelp),
         const SizedBox(height: Gap.md),
-        CefSearchField(
-          hint: 'Search for help, articles or topics...',
-          onFilter: () {},
-        ),
+        CefSearchField(hint: L.searchHelpArticlesTopics, onFilter: () {}),
         const SizedBox(height: Gap.md),
         IntrinsicHeight(
           child: Row(
@@ -1060,8 +1112,8 @@ class _HelpSupportScreen extends StatelessWidget {
               Expanded(
                 child: _SupportTile(
                   icon: LucideIcons.bookOpen,
-                  title: 'Help Centre',
-                  subtitle: 'Browse articles, guides and FAQs',
+                  title: L.helpCentre2,
+                  subtitle: L.browseArticlesGuidesFaqs,
                   onTap: () => app.go(VRoute.faq),
                 ),
               ),
@@ -1069,8 +1121,8 @@ class _HelpSupportScreen extends StatelessWidget {
               Expanded(
                 child: _SupportTile(
                   icon: LucideIcons.messageCircle,
-                  title: 'Contact Support',
-                  subtitle: 'Chat or send a support request',
+                  title: L.contactSupport2,
+                  subtitle: L.chatSendSupportRequest,
                   onTap: () => app.go(VRoute.contactSupport),
                 ),
               ),
@@ -1078,36 +1130,36 @@ class _HelpSupportScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: Gap.xl),
-        const CefListGroup(
-          label: 'Popular Topics',
+        CefListGroup(
+          label: L.popularTopics,
           children: [
             CefListRow(
-              title: 'Account & Security',
-              subtitle: 'Login, profile, security settings',
+              title: L.accountSecurity2,
+              subtitle: L.loginProfileSecuritySettings,
               subtitleMaxLines: 2,
               icon: LucideIcons.circleUserRound,
             ),
             CefListRow(
-              title: 'Orders & Delivery',
-              subtitle: 'Order management, delivery issues',
+              title: L.ordersDelivery,
+              subtitle: L.orderManagementDeliveryIssues,
               subtitleMaxLines: 2,
               icon: LucideIcons.truck,
             ),
             CefListRow(
-              title: 'Riders & Team',
-              subtitle: 'Rider invites, approvals, team access',
+              title: L.ridersTeam,
+              subtitle: L.riderInvitesApprovalsTeamAccess,
               subtitleMaxLines: 2,
               icon: LucideIcons.users,
             ),
             CefListRow(
-              title: 'Subscription & Billing',
-              subtitle: 'Plans, payments, invoices',
+              title: L.subscriptionBilling,
+              subtitle: L.plansPaymentsInvoices,
               subtitleMaxLines: 2,
               icon: LucideIcons.calendarDays,
             ),
             CefListRow(
-              title: 'App Guides',
-              subtitle: 'Step-by-step tutorials',
+              title: L.appGuides,
+              subtitle: L.stepByStepTutorials,
               subtitleMaxLines: 2,
               icon: LucideIcons.bookOpen,
             ),
@@ -1126,63 +1178,60 @@ class _FaqScreen extends StatelessWidget {
     // Archetype F, same language as Help & Support.
     grouped: true,
     children: [
-      const _HeroPanel(
-        kicker: 'How can we help?',
-        title: 'Find answers',
-        subtitle: 'Search our help centre or browse topics below.',
+      _HeroPanel(
+        kicker: L.howCanWeHelp,
+        title: L.findAnswers,
+        subtitle: L.searchOurHelpCentreBrowseTopics,
       ),
       const SizedBox(height: Gap.md),
-      CefSearchField(
-        hint: 'Search for help, e.g. zones, riders...',
-        onFilter: () {},
-      ),
+      CefSearchField(hint: L.searchHelpEGZonesRiders, onFilter: () {}),
       const SizedBox(height: Gap.xl),
-      const CefListGroup(
-        label: 'Browse topics',
+      CefListGroup(
+        label: L.browseTopics,
         children: [
           CefListRow(
-            title: 'Getting Started',
-            subtitle: 'Set up your account and business',
+            title: L.gettingStarted,
+            subtitle: L.setUpAccountBusiness,
             icon: LucideIcons.bookOpen,
           ),
           CefListRow(
-            title: 'Orders & Delivery',
-            subtitle: 'Manage orders, runs and zones',
+            title: L.ordersDelivery,
+            subtitle: L.manageOrdersRunsZones,
             icon: LucideIcons.truck,
           ),
           CefListRow(
-            title: 'Zones & Riders',
-            subtitle: 'Coverage, riders and dispatch',
+            title: L.zonesRiders,
+            subtitle: L.coverageRidersDispatch,
             icon: LucideIcons.users,
           ),
           CefListRow(
-            title: 'Account',
-            subtitle: 'Profile, security and settings',
+            title: L.account,
+            subtitle: L.profileSecuritySettings,
             icon: LucideIcons.bookOpen,
           ),
           CefListRow(
-            title: 'Subscription & Billing',
-            subtitle: 'Plans, payments and invoices',
+            title: L.subscriptionBilling,
+            subtitle: L.plansPaymentsInvoices2,
             icon: LucideIcons.calendarDays,
           ),
         ],
       ),
       CefListGroup(
-        label: 'Popular Questions',
+        label: L.popularQuestions,
         children: [
-          for (final question in const [
-            'How do I create a delivery zone?',
-            'How do I add a rider?',
-            'Can I change my plan later?',
-            'How does route optimization work?',
-            'Where can my customers track their orders?',
+          for (final question in [
+            L.howDoICreateDeliveryZone,
+            L.howDoIAddRider,
+            L.canIChangeMyPlanLater,
+            L.howDoesRouteOptimizationWork,
+            L.whereCanMyCustomersTrackTheir,
           ])
             CefListRow(title: question, icon: LucideIcons.circleHelp),
           CefListRow(
-            title: 'View all',
+            title: L.viewAll,
             icon: LucideIcons.list,
             onTap: () =>
-                showNotWiredYetSnackBar(context, 'Viewing all questions'),
+                showNotWiredYetSnackBar(context, L.viewingAllQuestions),
           ),
         ],
       ),
@@ -1195,34 +1244,40 @@ class _ContactSupportScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Support requests have no backend yet: never claim one was sent.
+    if (!AppScope.read(context).repo.isDemo) {
+      return _ComingSoonScreen(
+        title: '',
+        message: L.sendingSupportRequestsFromAppNot,
+      );
+    }
     final text = Theme.of(context).textTheme;
     final c = context.c;
     // Archetype G (multi-section form).
     return PageBody(
       children: [
-        Text('We’re here to help.', style: text.bodyMedium),
-        const SectionHeading(
-          'Get in touch',
+        Text(L.wereHereHelp2, style: text.bodyMedium),
+        SectionHeading(
+          L.getTouch,
           icon: LucideIcons.messageCircle,
-          subtitle:
-              'Tell us about your issue and our team will get back to you.',
+          subtitle: L.tellUsAboutIssueOurTeam,
         ),
-        const CefField(
-          label: 'Issue Category',
-          hint: 'Select a category',
+        CefField(
+          label: L.issueCategory,
+          hint: L.selectCategory,
           suffixIcon: LucideIcons.chevronDown,
         ),
-        const CefField(label: 'Subject', hint: 'Briefly describe your issue'),
-        const CefField(
-          label: 'Message',
-          hint: 'Tell us more about your issue...',
+        CefField(label: L.subject, hint: L.brieflyDescribeIssue),
+        CefField(
+          label: L.message,
+          hint: L.tellUsMoreAboutIssue,
           maxLines: 4,
           maxLength: 500,
         ),
-        const SectionHeading(
-          'Add Screenshots (Optional)',
+        SectionHeading(
+          L.addScreenshotsOptional,
           icon: LucideIcons.image,
-          subtitle: 'PNG, JPG up to 10MB each',
+          subtitle: L.pngJpgUp10mbEach,
         ),
         Container(
           height: 104,
@@ -1237,36 +1292,36 @@ class _ContactSupportScreen extends StatelessWidget {
             children: [
               Icon(LucideIcons.imagePlus, size: 28, color: c.iconColor),
               const SizedBox(height: Gap.sm),
-              Text('Tap to attach images', style: text.titleSmall),
+              Text(L.tapAttachImages, style: text.titleSmall),
             ],
           ),
         ),
-        const SectionHeading(
-          'Contact',
+        SectionHeading(
+          L.contact,
           icon: LucideIcons.mail,
-          subtitle: 'Where we will reply to you.',
+          subtitle: L.whereWeWillReply,
         ),
-        const CefField(
-          label: 'Contact Email',
+        CefField(
+          label: L.contactEmail,
           initialValue: 'yusuf@kopikita.my',
           prefixIcon: LucideIcons.mail,
           keyboardType: TextInputType.emailAddress,
         ),
         const SizedBox(height: Gap.md),
         CefButton(
-          'Send Request',
+          L.sendRequest,
           onTap: () => runAsyncFeedback(
             context,
             action: () async {},
-            processingTitle: 'Processing...',
-            processingSubtitle: 'Sending your request',
-            successTitle: 'Successful',
-            successSubtitle: 'Your support request has been sent.',
+            processingTitle: L.processing,
+            processingSubtitle: L.sendingRequest,
+            successTitle: L.successful,
+            successSubtitle: L.supportRequestHasBeenSent,
           ),
         ),
         const SizedBox(height: Gap.sm),
         Text(
-          'ⓘ Our support team will get back to you as soon as possible.',
+          L.ourSupportTeamWillGetBack,
           textAlign: TextAlign.center,
           style: text.bodySmall,
         ),
@@ -1276,47 +1331,46 @@ class _ContactSupportScreen extends StatelessWidget {
 }
 
 class _PolicyScreen extends StatelessWidget {
-  const _PolicyScreen({required this.title});
-  final String title;
+  const _PolicyScreen({required this.privacy});
+  final bool privacy;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final privacy = title == 'Privacy Policy';
     // Document on the white surface.
     return PageBody(
       children: [
         SectionHeading(
-          'Trust & Transparency',
+          L.trustTransparency,
           icon: privacy ? LucideIcons.shieldCheck : LucideIcons.fileText,
           subtitle: privacy
-              ? 'We’re committed to protecting your data and your privacy.'
-              : 'The terms that guide your use of Cefflo.',
+              ? L.wereCommittedProtectingDataPrivacy
+              : L.termsThatGuideUseCefflo,
         ),
-        Text('Last updated: 12 Sep 2026', style: text.bodySmall),
+        Text(L.lastUpdated12Sep2026, style: text.bodySmall),
         const SizedBox(height: Gap.lg),
         Divider(height: 1, color: context.c.border),
-        const SectionHeading('On this page'),
+        SectionHeading(L.page),
         Text(
           privacy
-              ? '1.  Introduction\n2.  Information We Collect\n3.  How We Use Your Information\n4.  Data Sharing\n5.  Data Security\n6.  Your Rights\n7.  Cookies and Tracking Technologies\n8.  Changes to This Policy\n9.  Contact Us'
-              : '1.  Acceptance of Terms\n2.  Account Responsibilities\n3.  Acceptable Use\n4.  Subscription and Billing\n5.  Intellectual Property\n6.  Service Availability\n7.  Limitation of Liability\n8.  Changes to These Terms\n9.  Contact Us',
+              ? L.t1Introduction2InformationWeCollect
+              : L.t1AcceptanceTerms2AccountResponsibilities,
           style: text.bodyMedium?.copyWith(height: 1.6),
         ),
-        SectionHeading(privacy ? '1. Introduction' : '1. Acceptance of Terms'),
+        SectionHeading(privacy ? L.t1Introduction : L.t1AcceptanceTerms),
         Text(
           privacy
-              ? 'Cefflo (“we”, “us” or “our”) values your privacy. This policy explains how we collect, use, disclose and safeguard your information when you use our services.'
-              : 'By accessing or using Cefflo, you agree to these terms and to use the service responsibly in accordance with applicable laws.',
+              ? L.ceffloWeUsOurValuesPrivacy
+              : L.byAccessingUsingCeffloAgreeThese,
           style: text.bodyMedium,
         ),
         SectionHeading(
-          privacy ? '2. Information We Collect' : '2. Account Responsibilities',
+          privacy ? L.t2InformationWeCollect : L.t2AccountResponsibilities,
         ),
         Text(
           privacy
-              ? 'We collect information that you provide directly to us, together with limited operational data needed to deliver and improve the service.'
-              : 'You are responsible for maintaining accurate account information and protecting access to your account.',
+              ? L.weCollectInformationThatProvideDirectly
+              : L.responsibleMaintainingAccurateAccountInformationProtecting,
           style: text.bodyMedium,
         ),
       ],
@@ -1339,38 +1393,38 @@ class _AboutScreen extends StatelessWidget {
         Text('Cefflo', textAlign: TextAlign.center, style: text.titleMedium),
         const SizedBox(height: Gap.xs),
         Text(
-          'More orders. Less work. A smoother delivery day.',
+          L.moreOrdersLessWorkSmootherDelivery,
           textAlign: TextAlign.center,
           style: text.bodyMedium,
         ),
         const SizedBox(height: Gap.xxl),
-        const CefListGroup(
-          label: 'Our purpose',
+        CefListGroup(
+          label: L.ourPurpose,
           children: [
             CefListRow(
-              title: 'Operate Today. Grow Tomorrow.',
-              subtitle: 'A local same-day delivery operating system built for businesses.',
+              title: L.operateTodayGrowTomorrow2,
+              subtitle: L.localSameDayDeliveryOperatingSystem,
               subtitleMaxLines: 2,
               icon: LucideIcons.target,
             ),
           ],
         ),
         CefListGroup(
-          label: 'App information',
+          label: L.appInformation,
           children: [
             CefListRow(
-              title: 'Version',
+              title: L.version,
               icon: LucideIcons.smartphone,
               trailing: Text('1.0.0', style: text.bodyMedium),
             ),
-            const CefListRow(
-              title: 'Privacy Policy',
-              subtitle: 'Read policy',
+            CefListRow(
+              title: L.privacyPolicy2,
+              subtitle: L.readPolicy,
               icon: LucideIcons.shieldCheck,
             ),
-            const CefListRow(
-              title: 'Terms of Service',
-              subtitle: 'Read terms',
+            CefListRow(
+              title: L.termsService2,
+              subtitle: L.readTerms,
               icon: LucideIcons.fileText,
             ),
           ],
@@ -1442,8 +1496,8 @@ class _NotificationInboxScreen extends StatelessWidget {
     if (undo == null) return;
     showCefToast(
       context,
-      'Notification deleted',
-      actionLabel: 'Undo',
+      L.notificationDeleted,
+      actionLabel: L.undo,
       onAction: () => app.restoreNotification(undo),
     );
   }
@@ -1455,7 +1509,7 @@ class _NotificationInboxScreen extends StatelessWidget {
       title: n.title,
       children: [
         CefListRow(
-          title: n.read ? 'Mark as unread' : 'Mark as read',
+          title: n.read ? L.markUnread : L.markRead,
           icon: n.read ? LucideIcons.mail : LucideIcons.mailOpen,
           showChevron: false,
           onTap: () {
@@ -1464,7 +1518,7 @@ class _NotificationInboxScreen extends StatelessWidget {
           },
         ),
         CefListRow(
-          title: 'Delete',
+          title: L.delete2,
           icon: LucideIcons.trash2,
           showChevron: false,
           onTap: () {
@@ -1482,9 +1536,7 @@ class _NotificationInboxScreen extends StatelessWidget {
     final c = context.c;
     final items = app.notifications;
     if (items.isEmpty) {
-      return const PageBody(
-        children: [StateBlock.empty("You're all caught up.")],
-      );
+      return PageBody(children: [StateBlock.empty(L.youreAllCaughtUp)]);
     }
     Widget swipeBackground(Color color, IconData icon, Alignment align) =>
         Container(
@@ -1543,7 +1595,7 @@ class _NotificationInboxScreen extends StatelessWidget {
               emphasis: !n.read,
               trailing: IconAction(
                 icon: LucideIcons.ellipsis,
-                tooltip: 'Notification options',
+                tooltip: L.notificationOptions,
                 onTap: () => _showRowOptions(context, n),
               ),
               showChevron: false,
@@ -1555,23 +1607,106 @@ class _NotificationInboxScreen extends StatelessWidget {
   }
 }
 
-/// V-22 / V-25 — Rider/Team invitation link. Vendor shares a trusted-link
-/// invitation; it never collects the invitee's profile directly.
-class _InviteLinkScreen extends StatelessWidget {
-  const _InviteLinkScreen({required this.kind});
-  final String kind;
+/// V-22 / V-25 — Rider/Team invitation. The Vendor names who is invited;
+/// the backend (create_rider_invitation / create_team_invitation) returns a
+/// one-time token, which becomes the invite.cefflo.com link. The raw token is
+/// shown only here, never stored on the device.
+class _InviteLinkScreen extends StatefulWidget {
+  const _InviteLinkScreen({required this.rider});
+  final bool rider;
 
-  String get _scanLabel =>
-      '$kind${kind.endsWith('s') ? '' : 's'} can scan this code';
+  @override
+  State<_InviteLinkScreen> createState() => _InviteLinkScreenState();
+}
 
-  void _copyLink(BuildContext context, String link) {
-    Clipboard.setData(ClipboardData(text: link));
-    showCefToast(context, 'Link copied');
+class _InviteLinkScreenState extends State<_InviteLinkScreen> {
+  final name = TextEditingController();
+  final phone = TextEditingController();
+  final email = TextEditingController();
+  String role = 'operator'; // team role value sent to the backend
+  bool busy = false;
+  String? error;
+  String? link;
+
+  bool get rider => widget.rider;
+
+  @override
+  void dispose() {
+    name.dispose();
+    phone.dispose();
+    email.dispose();
+    super.dispose();
   }
 
-  /// Compact, centred modal over a dimmed page: the real QR code for
-  /// [link], nothing expanded inline on the page itself.
-  void _showQrModal(BuildContext context, String link) {
+  String? _validate() {
+    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email.text.trim())) {
+      return L.enterValidEmailAddress;
+    }
+    if (rider && name.text.trim().isEmpty) return L.nameRequired;
+    if (rider && phone.text.trim().length < 7) {
+      return L.enterValidPhoneNumber;
+    }
+    return null;
+  }
+
+  Future<void> _generate() async {
+    final problem = _validate();
+    if (problem != null) {
+      setState(() => error = problem);
+      return;
+    }
+    final app = AppScope.read(context);
+    final businessId = app.business?.id;
+    if (businessId == null) {
+      setState(() => error = L.noBusinessLinked);
+      return;
+    }
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      final result = rider
+          ? await app.repo.createRiderInvitation(
+              businessId: businessId,
+              email: email.text.trim(),
+              name: name.text.trim(),
+              phone: phone.text.trim(),
+            )
+          : await app.repo.createTeamInvitation(
+              businessId: businessId,
+              email: email.text.trim(),
+              role: role,
+            );
+      final token = result['token'];
+      if (token is! String || token.isEmpty) {
+        throw RepositoryError(L.unexpectedBackendResponseShape);
+      }
+      if (!mounted) return;
+      setState(
+        () => link = Uri.parse(Env.inviteBaseUrl)
+            .replace(
+              queryParameters: {
+                'type': rider ? 'rider' : 'team',
+                'token': token,
+              },
+            )
+            .toString(),
+      );
+    } catch (e) {
+      if (mounted) setState(() => error = '$e');
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  void _copyLink(String link) {
+    Clipboard.setData(ClipboardData(text: link));
+    showCefToast(context, L.linkCopied);
+  }
+
+  /// Compact, centred modal over a dimmed page: the real QR code for [link].
+  void _showQrModal(String link) {
     final text = Theme.of(context).textTheme;
     showDialog<void>(
       context: context,
@@ -1586,25 +1721,18 @@ class _InviteLinkScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Scan to join', style: text.titleMedium),
+              Text(L.scanJoin, style: text.titleMedium),
               const SizedBox(height: Gap.xs),
               Text(
-                _scanLabel,
+                L.invitedPersonCanScanCodeOpen,
                 textAlign: TextAlign.center,
                 style: text.bodySmall,
               ),
               const SizedBox(height: Gap.lg),
               _QrCode(data: link, size: 200),
-              const SizedBox(height: Gap.md),
-              Text(
-                link,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: text.bodySmall,
-              ),
               const SizedBox(height: Gap.lg),
               CefButton(
-                'Done',
+                L.done,
                 secondary: true,
                 onTap: () => Navigator.of(dialogContext).pop(),
               ),
@@ -1617,19 +1745,16 @@ class _InviteLinkScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.c;
     final text = Theme.of(context).textTheme;
-    final rider = kind == 'Rider';
-    final link = 'https://cefflo.app/${rider ? 'team' : 'join'}/AB3K9D';
-    // Compact archetype G: intro, the link on the hero surface, QR, share
-    // channels and the pending-review note all fit the first viewport; Share
-    // Invite is pinned.
+    final link = this.link;
     return PageBody(
-      bottom: CefButton(
-        'Share Invite',
-        icon: LucideIcons.share,
-        onTap: () => _copyLink(context, link),
-      ),
+      bottom: link == null
+          ? CefButton(L.generateInviteLink, busy: busy, onTap: _generate)
+          : CefButton(
+              L.copyLink,
+              icon: LucideIcons.copy,
+              onTap: () => _copyLink(link),
+            ),
       children: [
         Row(
           children: [
@@ -1640,18 +1765,14 @@ class _InviteLinkScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    rider
-                        ? 'Invite riders to your business'
-                        : 'Invite a team member',
+                    rider ? L.inviteRidersBusiness : L.inviteTeamMember2,
                     style: text.titleSmall,
                   ),
                   const SizedBox(height: 2),
                   Text(
                     rider
-                        ? 'Share this link so they can join your team and '
-                              'complete their profile, vehicle and documents.'
-                        : 'Share this link so they can help run deliveries '
-                              'and manage orders.',
+                        ? L.theyOpenLinkJoinTeamComplete
+                        : L.theyOpenLinkHelpRunDeliveries,
                     style: text.bodySmall,
                   ),
                 ],
@@ -1660,133 +1781,149 @@ class _InviteLinkScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: Gap.md),
-        HeroSurface(
-          padding: const EdgeInsets.all(Gap.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    LucideIcons.link,
-                    size: Sizes.icon,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: Gap.sm),
-                  Text(
-                    'Invitation link',
-                    style: text.titleSmall?.copyWith(color: Colors.white),
-                  ),
-                ],
-              ),
-              const SizedBox(height: Gap.sm),
-              Container(
-                padding: const EdgeInsets.only(left: Gap.md),
-                decoration: BoxDecoration(
-                  color: c.card,
-                  borderRadius: BorderRadius.circular(Sizes.inputRadius),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        link,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: text.bodyMedium,
-                      ),
-                    ),
-                    IconAction(
-                      icon: LucideIcons.copy,
-                      tooltip: 'Copy link',
-                      onTap: () => _copyLink(context, link),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+        if (link == null) ..._form(text) else ..._result(text, link),
+        if (error != null)
+          Padding(
+            padding: const EdgeInsets.only(top: Gap.md),
+            child: Text(
+              error!,
+              style: text.bodySmall?.copyWith(color: context.c.attention),
+            ),
           ),
-        ),
-        const SizedBox(height: Gap.sm),
-        CefActionRow(
-          icon: LucideIcons.qrCode,
-          label: 'Show QR code',
-          subtitle: _scanLabel,
-          onTap: () => _showQrModal(context, link),
-        ),
-        const SizedBox(height: Gap.sm),
-        CefCard(
-          padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.md, Gap.lg, Gap.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    LucideIcons.share2,
-                    size: Sizes.icon,
-                    color: c.iconColor,
-                  ),
-                  const SizedBox(width: Gap.sm),
-                  Text('Share via', style: text.titleSmall),
-                ],
-              ),
-              const SizedBox(height: Gap.md),
-              Row(
-                children: [
-                  _ShareChannel.glyph(
-                    glyph: const WhatsAppGlyph(),
-                    label: 'WhatsApp',
-                    onTap: () => _copyLink(context, link),
-                  ),
-                  _ShareChannel(
-                    icon: LucideIcons.send,
-                    label: 'Telegram',
-                    onTap: () => _copyLink(context, link),
-                  ),
-                  _ShareChannel(
-                    icon: LucideIcons.messageSquare,
-                    label: 'SMS',
-                    onTap: () => _copyLink(context, link),
-                  ),
-                  _ShareChannel(
-                    icon: LucideIcons.ellipsis,
-                    label: 'More',
-                    onTap: () => _copyLink(context, link),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: Gap.sm),
-        Container(
-          padding: const EdgeInsets.all(Gap.md),
-          decoration: BoxDecoration(
-            color: CefColors.brandTint,
-            borderRadius: BorderRadius.circular(Sizes.inputRadius),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(LucideIcons.info, size: Sizes.icon, color: c.iconColor),
-              const SizedBox(width: Gap.sm),
-              Expanded(
-                child: Text(
-                  rider
-                      ? 'Invited riders appear in your Riders list as '
-                            'Pending Review once they complete registration.'
-                      : 'Invited team members appear in your Team list once '
-                            'they accept and complete registration.',
-                  style: text.bodySmall,
-                ),
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }
+
+  List<Widget> _form(TextTheme text) => [
+    if (rider) ...[
+      CefField(
+        label: L.riderName,
+        controller: name,
+        prefixIcon: LucideIcons.user,
+      ),
+      const SizedBox(height: Gap.md),
+      CefField(
+        label: L.phoneNumber,
+        controller: phone,
+        keyboardType: TextInputType.phone,
+        prefixIcon: LucideIcons.phone,
+      ),
+      const SizedBox(height: Gap.md),
+    ],
+    CefField(
+      label: L.email,
+      controller: email,
+      keyboardType: TextInputType.emailAddress,
+      prefixIcon: LucideIcons.mail,
+    ),
+    if (!rider) ...[
+      const SizedBox(height: Gap.md),
+      Text(L.role, style: text.labelLarge),
+      const SizedBox(height: Gap.sm),
+      Wrap(
+        spacing: Gap.sm,
+        children: [
+          CefChoiceChip(
+            label: L.operatorText,
+            selected: role == 'operator',
+            onTap: () => setState(() => role = 'operator'),
+          ),
+          CefChoiceChip(
+            label: L.owner,
+            selected: role == 'owner',
+            onTap: () => setState(() => role = 'owner'),
+          ),
+        ],
+      ),
+      const SizedBox(height: Gap.sm),
+      Text(
+        role == 'owner'
+            ? L.ownerAccessFullBusinessOwnershipIncluding
+            : L.canManageDailyOperationsOrdersRiders,
+        style: text.bodySmall,
+      ),
+    ],
+  ];
+
+  List<Widget> _result(TextTheme text, String link) => [
+    HeroSurface(
+      padding: const EdgeInsets.all(Gap.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                LucideIcons.link,
+                size: Sizes.icon,
+                color: Colors.white,
+              ),
+              const SizedBox(width: Gap.sm),
+              Text(
+                L.invitationLink,
+                style: text.titleSmall?.copyWith(color: Colors.white),
+              ),
+            ],
+          ),
+          const SizedBox(height: Gap.sm),
+          Container(
+            padding: const EdgeInsets.only(left: Gap.md),
+            decoration: BoxDecoration(
+              color: context.c.card,
+              borderRadius: BorderRadius.circular(Sizes.inputRadius),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    link,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: text.bodyMedium,
+                  ),
+                ),
+                IconAction(
+                  icon: LucideIcons.copy,
+                  tooltip: L.copyLink,
+                  onTap: () => _copyLink(link),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+    const SizedBox(height: Gap.sm),
+    CefActionRow(
+      icon: LucideIcons.qrCode,
+      label: L.showQrCode,
+      subtitle: L.scanOpenInvitation,
+      onTap: () => _showQrModal(link),
+    ),
+    const SizedBox(height: Gap.sm),
+    Container(
+      padding: const EdgeInsets.all(Gap.md),
+      decoration: BoxDecoration(
+        color: CefColors.brandTint,
+        borderRadius: BorderRadius.circular(Sizes.inputRadius),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(LucideIcons.info, size: Sizes.icon, color: context.c.iconColor),
+          const SizedBox(width: Gap.sm),
+          Expanded(
+            child: Text(
+              rider
+                  ? L.linkShownOnlyOnceExpires7
+                  : L.linkShownOnlyOnceExpires72,
+              style: text.bodySmall,
+            ),
+          ),
+        ],
+      ),
+    ),
+  ];
 }
 
 /// A scannable QR code for [data], painted module by module in the text
@@ -1843,38 +1980,6 @@ class _QrPainter extends CustomPainter {
       old.image != image || old.color != color;
 }
 
-/// Share target: the standard neutral [IconTile] with a caption -- no
-/// third-party brand colours (D-48: only navigation icons are coloured).
-class _ShareChannel extends StatelessWidget {
-  const _ShareChannel({required this.label, required this.onTap, this.icon})
-    : glyph = null;
-  const _ShareChannel.glyph({
-    required this.label,
-    required this.onTap,
-    required Widget this.glyph,
-  }) : icon = null;
-  final IconData? icon;
-  final Widget? glyph;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => Expanded(
-    child: Column(
-      children: [
-        glyph == null
-            ? IconTile(icon!, onTap: onTap)
-            : IconTile.glyph(glyph!, onTap: onTap),
-        const SizedBox(height: Gap.xs),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(label, style: Theme.of(context).textTheme.labelSmall),
-        ),
-      ],
-    ),
-  );
-}
-
 class _ComingSoonScreen extends StatelessWidget {
   const _ComingSoonScreen({required this.title, required this.message});
   final String title;
@@ -1886,7 +1991,7 @@ class _ComingSoonScreen extends StatelessWidget {
       StateBlock.blocked(message),
       const SizedBox(height: Gap.md),
       CefButton(
-        'Back to Settings',
+        L.backSettings,
         secondary: true,
         onTap: () => AppScope.read(context).resetTo(VRoute.settings),
       ),
