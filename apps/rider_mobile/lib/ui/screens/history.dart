@@ -8,6 +8,8 @@ import '../../data/driver_models.dart';
 import '../widgets.dart';
 import 'operations.dart' show KeyValueRow;
 
+import 'package:cefflo_rider_mobile/l10n/l10n.dart';
+
 // ---------------------------------------------------------------------------
 // D31 — Delivery History
 // ---------------------------------------------------------------------------
@@ -35,7 +37,7 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> {
     };
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
-        title: 'Delivery History',
+        title: L.deliveryHistory,
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
@@ -50,16 +52,16 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> {
         children: [
           CeffloSegmentedTabs(
             labels: [
-              'All (${all.length})',
-              'Pending (${pending.length})',
-              'Delivered (${delivered.length})',
+              L.all(all.length),
+              L.pending(pending.length),
+              L.delivered2(delivered.length),
             ],
             index: _tab,
             onChanged: (i) => setState(() => _tab = i),
           ),
           const SizedBox(height: Gap.sm),
           if (shown.isEmpty)
-            StateBlock.empty('No runs in this view yet.')
+            StateBlock.empty(L.noRunsViewYet)
           else
             for (final run in shown) ...[
               _HistoryRow(
@@ -120,7 +122,11 @@ class _HistoryRow extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '${run.orderCount} stops  •  ${run.distanceText}  •  ${run.durationLabel ?? '—'}',
+                      L.stops(
+                        run.orderCount,
+                        run.distanceText,
+                        run.durationLabel ?? '—',
+                      ),
                       style: context.t.bodySmall,
                     ),
                   ],
@@ -154,7 +160,7 @@ class HistoryDetailScreen extends StatelessWidget {
     final c = context.c;
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
-        title: 'History Detail',
+        title: L.historyDetail,
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
@@ -205,7 +211,7 @@ class HistoryDetailScreen extends StatelessWidget {
               children: [
                 _Stat(
                   icon: LucideIcons.mapPin,
-                  label: '${run.orderCount} stops',
+                  label: L.stops2(run.orderCount),
                 ),
                 _divider(c),
                 _Stat(icon: LucideIcons.route, label: run.distanceText),
@@ -215,15 +221,12 @@ class HistoryDetailScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Gap.md),
-          KeyValueRow(label: 'Zone', value: run.zone),
-          KeyValueRow(label: 'Vehicle', value: run.vehicleLabel ?? '—'),
-          KeyValueRow(label: 'Started', value: run.startedAtLabel ?? '—'),
-          KeyValueRow(label: 'Completed', value: run.completedAtLabel ?? '—'),
+          KeyValueRow(label: L.zone, value: run.zone),
+          KeyValueRow(label: L.vehicle, value: run.vehicleLabel ?? '—'),
+          KeyValueRow(label: L.started, value: run.startedAtLabel ?? '—'),
+          KeyValueRow(label: L.completed, value: run.completedAtLabel ?? '—'),
           const SizedBox(height: Gap.md),
-          Text(
-            'Delivery Stops (${run.orderCount})',
-            style: context.t.titleMedium,
-          ),
+          Text(L.deliveryStops(run.orderCount), style: context.t.titleMedium),
           const SizedBox(height: Gap.sm),
           for (var i = 0; i < run.stops.length; i++) ...[
             _DeliveredStopRow(index: i + 1, stop: run.stops[i]),
@@ -304,7 +307,7 @@ class _DeliveredStopRow extends StatelessWidget {
                   Icon(LucideIcons.circleCheck, size: 15, color: c.success),
                   const SizedBox(width: 4),
                   Text(
-                    'Delivered',
+                    L.delivered,
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 12.5,
@@ -349,7 +352,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     };
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
-        title: 'Notifications',
+        title: L.notifications,
         onBack: app.back,
         // D33's reference carries the same bell as every other inner header;
         // it is inert here because this *is* the notifications screen.
@@ -366,16 +369,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         children: [
           CeffloSegmentedTabs(
             labels: [
-              'All (${all.length})',
-              'Unread (${unread.length})',
-              'Archive (${archived.length})',
+              L.all(all.length),
+              L.unread(unread.length),
+              L.archive(archived.length),
             ],
             index: _tab,
             onChanged: (i) => setState(() => _tab = i),
           ),
           const SizedBox(height: Gap.sm),
           if (shown.isEmpty)
-            StateBlock.empty('Nothing here right now.')
+            StateBlock.empty(L.nothingHereRightNow)
           else
             for (final n in shown) ...[
               _NotificationRow(

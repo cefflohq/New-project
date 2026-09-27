@@ -4,6 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'models.dart';
 
+import 'package:cefflo_rider_mobile/l10n/l10n.dart';
+
 /// Thrown for any backend failure the UI is expected to surface truthfully.
 /// Native auth callback (password recovery link). Registered in the
 /// Android manifest and iOS Info.plist, and must be in the Supabase Auth
@@ -94,6 +96,15 @@ class RiderRepository {
   Future<void> updatePassword(String password) =>
       _run(() => _db.auth.updateUser(UserAttributes(password: password)));
 
+  /// Per-user UI language (en / ms), kept in the user's own auth metadata.
+  /// Best-effort: the device choice still applies if this fails.
+  Future<void> saveUiLocale(String code) async {
+    if (isDemo) return;
+    try {
+      await _db.auth.updateUser(UserAttributes(data: {'ui_locale': code}));
+    } catch (_) {}
+  }
+
   Future<void> signOut() => _run(() => _db.auth.signOut());
 
   // -------------------------------------------------------- identity/scope
@@ -104,7 +115,7 @@ class RiderRepository {
   /// place. Mirrors rider/backend.js's classifyRiderRelationships() exactly.
   Future<List<RiderRelationship>> myRiderRelationships() async {
     final user = currentUser;
-    if (user == null) throw RepositoryError('Not signed in.');
+    if (user == null) throw RepositoryError(L.notSigned);
     final rows = await _run(
       // Ordered, so a multi-business Driver always resolves the same first
       // active relationship until explicit selection exists (D-63).
@@ -411,9 +422,7 @@ class RiderRepository {
     } on PostgrestException catch (e) {
       final missing = _isMissingFunction(e);
       throw RepositoryError(
-        missing
-            ? 'This action needs a backend contract that is not deployed here (${e.message}).'
-            : e.message,
+        missing ? L.actionNeedsBackendContractThatNot(e.message) : e.message,
         isMissingContract: missing,
       );
     } on AuthException catch (e) {

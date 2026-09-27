@@ -34,7 +34,7 @@ class DemoData {
     phone: '+60 12-345 6789',
   );
 
-  static const profile = DriverProfile(
+  static final profile = DriverProfile(
     fullName: 'Ali Rahman',
     phone: '+60 12 345 6789',
     email: 'ali.rahman@email.com',
@@ -47,7 +47,7 @@ class DemoData {
 
   /// D34/D35 render a different signed-in identity than the onboarding
   /// screens do; both names appear across the locked set.
-  static const activeProfile = DriverProfile(
+  static final activeProfile = DriverProfile(
     fullName: 'Ahmad Rizky',
     phone: '+60 12 345 6789',
     email: 'ahmadrizky@gmail.com',
@@ -425,13 +425,6 @@ class DemoData {
       title: 'Account & Profile',
       body: 'Profile, settings, app access',
     ),
-  ];
-
-  static const languages = <String>[
-    'English',
-    'Bahasa Melayu',
-    '中文 (简体)',
-    'தமிழ்',
   ];
 
   static const vehicleTypes = <String>['Motorbike', 'Car', 'Van'];

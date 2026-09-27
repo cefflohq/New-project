@@ -9,6 +9,10 @@ import '../../data/driver_models.dart';
 import '../widgets.dart';
 import 'auth.dart' show showLanguageSheet;
 
+import 'package:cefflo_rider_mobile/l10n/l10n.dart';
+
+import '../../core/ui_locale.dart';
+
 // ---------------------------------------------------------------------------
 // Shared
 // ---------------------------------------------------------------------------
@@ -146,7 +150,7 @@ class ProfileScreen extends StatelessWidget {
     final c = context.c;
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
-        title: 'Profile',
+        title: L.profile,
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
@@ -224,7 +228,7 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            'Edit',
+                            L.edit,
                             style: TextStyle(
                               fontFamily: 'Manrope',
                               fontSize: 13,
@@ -244,31 +248,31 @@ class ProfileScreen extends StatelessWidget {
           Divider(height: 1, color: c.border),
           CeffloListTile(
             icon: LucideIcons.car,
-            label: 'Vehicle Details',
+            label: L.vehicleDetails,
             onTap: () => app.go(DRoute.vehicleDetails),
           ),
           CeffloListTile(
             icon: LucideIcons.fileText,
-            label: 'Documents',
+            label: L.documents,
             onTap: () => app.go(DRoute.documents),
           ),
           CeffloListTile(
             icon: LucideIcons.globe,
-            label: 'Language',
-            value: app.language,
+            label: L.language,
+            value: uiLanguageNames[app.uiLocale.languageCode]!,
             onTap: () async {
-              final picked = await showLanguageSheet(context, app.language);
-              if (picked != null) app.setLanguage(picked);
+              final picked = await showLanguageSheet(context, app.uiLocale);
+              if (picked != null) await app.setUiLocale(picked);
             },
           ),
           CeffloListTile(
             icon: LucideIcons.shield,
-            label: 'Security',
+            label: L.security,
             onTap: () => app.go(DRoute.settings),
           ),
           CeffloListTile(
             icon: LucideIcons.circleHelp,
-            label: 'Help & Support',
+            label: L.helpSupport,
             onTap: () => app.go(DRoute.helpSupport),
           ),
         ],
@@ -289,7 +293,7 @@ class ProfileScreen extends StatelessWidget {
                   Icon(LucideIcons.logOut, size: 20, color: c.attention),
                   const SizedBox(width: 10),
                   Text(
-                    'Log Out',
+                    L.logOut,
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 16,
@@ -302,7 +306,7 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Gap.sm),
-          const AppVersionFooter(items: ['About', 'v1.2.0 (Driver)']),
+          AppVersionFooter(items: [L.about, L.v120Driver]),
         ],
       ),
     );
@@ -325,18 +329,18 @@ Future<void> showLogOutConfirm(BuildContext context, AppState app) =>
               ),
               const SizedBox(height: Gap.lg),
               Text(
-                'Log out?',
+                L.logOut2,
                 style: modalContext.t.displaySmall?.copyWith(fontSize: 20),
               ),
               const SizedBox(height: Gap.sm),
               Text(
-                'You’ll need to sign in again to\ncontinue delivering.',
+                L.youllNeedSignAgainContinueDelivering,
                 textAlign: TextAlign.center,
                 style: modalContext.t.bodyMedium,
               ),
               const SizedBox(height: Gap.lg),
               CeffloPrimaryButton(
-                'Log Out',
+                L.logOut,
                 height: 52,
                 pill: false,
                 onTap: () {
@@ -350,7 +354,7 @@ Future<void> showLogOutConfirm(BuildContext context, AppState app) =>
               ),
               const SizedBox(height: Gap.sm),
               CeffloSecondaryButton(
-                'Cancel',
+                L.cancel,
                 pill: false,
                 onTap: () => Navigator.of(modalContext).pop(),
               ),
@@ -390,7 +394,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final app = AppScope.of(context);
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
-        title: 'Edit Profile',
+        title: L.editProfile,
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
@@ -417,10 +421,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     child: InkWell(
                       customBorder: const CircleBorder(),
                       onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Photo upload is not wired up in this preview.',
-                          ),
+                        SnackBar(
+                          content: Text(L.photoUploadNotWiredUpPreview),
                           behavior: SnackBarBehavior.floating,
                           backgroundColor: CefColors.navy,
                         ),
@@ -441,14 +443,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
           const SizedBox(height: Gap.xl),
-          CeffloTextField(label: 'Full Name', controller: _name, onTap: null),
+          CeffloTextField(label: L.fullName, controller: _name, onTap: null),
           const SizedBox(height: Gap.lg),
-          CeffloPhoneField(label: 'Phone Number', controller: _phone),
+          CeffloPhoneField(label: L.phoneNumber, controller: _phone),
           const SizedBox(height: Gap.lg),
-          CeffloTextField(label: 'Email', controller: _email, readOnly: true),
+          CeffloTextField(label: L.email, controller: _email, readOnly: true),
           const SizedBox(height: Gap.xl),
           CeffloPrimaryButton(
-            'Save',
+            L.save,
             pill: false,
             onTap: () {
               app.updateProfile(
@@ -495,7 +497,7 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
     final app = AppScope.of(context);
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
-        title: 'Vehicle Details',
+        title: L.vehicleDetails,
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
@@ -509,22 +511,19 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           CeffloSelectField<String>(
-            label: 'Vehicle Type',
+            label: L.vehicleType,
             value: _type,
             icon: LucideIcons.bike,
             options: DemoData.vehicleTypes,
             onChanged: (v) => setState(() => _type = v),
           ),
           const SizedBox(height: Gap.lg),
-          CeffloTextField(label: 'Model', controller: _model),
+          CeffloTextField(label: L.model, controller: _model),
           const SizedBox(height: Gap.lg),
-          CeffloTextField(
-            label: 'Registration / Plate Number',
-            controller: _plate,
-          ),
+          CeffloTextField(label: L.registrationPlateNumber, controller: _plate),
           const SizedBox(height: Gap.xl),
           CeffloPrimaryButton(
-            'Save',
+            L.save,
             onTap: () {
               app.updateProfile(
                 app.profile.copyWith(
@@ -560,7 +559,7 @@ class DocumentsScreen extends StatelessWidget {
     final app = AppScope.of(context);
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
-        title: 'Documents',
+        title: L.documents,
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
@@ -582,9 +581,9 @@ class DocumentsScreen extends StatelessWidget {
                 title: doc.title,
                 subtitle: doc.expiryLabel ?? '',
                 statusLabel: switch (doc.state) {
-                  DocumentState.verified => 'Verified',
-                  DocumentState.uploaded => 'In review',
-                  DocumentState.missing => 'Missing',
+                  DocumentState.verified => L.verified,
+                  DocumentState.uploaded => L.review,
+                  DocumentState.missing => L.missing,
                 },
                 statusTone: switch (doc.state) {
                   DocumentState.verified => ChipTone.success,
@@ -633,15 +632,15 @@ class DocumentsScreen extends StatelessWidget {
             const SizedBox(height: Gap.lg),
             Builder(
               builder: (sheetContext) => CeffloPrimaryButton(
-                'Submit for Review',
+                L.submitReview,
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
                   await showCeffloSubmitFlow(
                     context,
-                    submittingTitle: 'Submitting…',
-                    submittingBody: 'Please wait a moment.',
-                    successTitle: 'Document submitted',
-                    successBody: '${doc.title} has been sent for verification.',
+                    submittingTitle: L.submitting,
+                    submittingBody: L.pleaseWaitMoment,
+                    successTitle: L.documentSubmitted,
+                    successBody: L.hasBeenSentVerification(doc.title),
                     onDone: () =>
                         app.setDocumentState(doc.id, DocumentState.uploaded),
                   );
@@ -668,7 +667,7 @@ class SettingsScreen extends StatelessWidget {
     final c = context.c;
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
-        title: 'Settings',
+        title: L.settings,
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
@@ -683,27 +682,27 @@ class SettingsScreen extends StatelessWidget {
         children: [
           OutlinedNavRow(
             icon: LucideIcons.globe,
-            label: 'Language',
-            value: app.language,
+            label: L.language,
+            value: uiLanguageNames[app.uiLocale.languageCode]!,
             onTap: () async {
-              final picked = await showLanguageSheet(context, app.language);
-              if (picked != null) app.setLanguage(picked);
+              final picked = await showLanguageSheet(context, app.uiLocale);
+              if (picked != null) await app.setUiLocale(picked);
             },
           ),
           const SizedBox(height: Gap.md),
           OutlinedNavRow(
             icon: LucideIcons.bell,
-            label: 'Notification',
+            label: L.notification,
             onTap: () => app.go(DRoute.notifications),
           ),
           const SizedBox(height: Gap.md),
           OutlinedNavRow(
             icon: LucideIcons.moon,
-            label: 'Appearance',
-            value: 'Light',
+            label: L.appearance,
+            value: L.light,
             onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Light Mode only in this release.'),
+              SnackBar(
+                content: Text(L.lightModeOnlyRelease),
                 behavior: SnackBarBehavior.floating,
                 backgroundColor: CefColors.navy,
               ),
@@ -712,12 +711,10 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: Gap.md),
           OutlinedNavRow(
             icon: LucideIcons.lock,
-            label: 'Security',
+            label: L.security,
             onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Security settings are not wired up in this preview.',
-                ),
+              SnackBar(
+                content: Text(L.securitySettingsNotWiredUpPreview),
                 behavior: SnackBarBehavior.floating,
                 backgroundColor: CefColors.navy,
               ),
@@ -726,7 +723,7 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: Gap.md),
           OutlinedNavRow(
             icon: LucideIcons.circleHelp,
-            label: 'Help & Support',
+            label: L.helpSupport,
             onTap: () => app.go(DRoute.helpSupport),
           ),
           const SizedBox(height: Gap.xl),
@@ -751,7 +748,7 @@ class SettingsScreen extends StatelessWidget {
                       Icon(LucideIcons.logOut, size: 20, color: c.attention),
                       const SizedBox(width: 10),
                       Text(
-                        'Log Out',
+                        L.logOut,
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 16,
@@ -766,7 +763,7 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Gap.lg),
-          const AppVersionFooter(items: ['About', 'v1.2.0', 'Term']),
+          AppVersionFooter(items: [L.about, 'v1.2.0', L.term]),
         ],
       ),
     );

@@ -5,6 +5,8 @@
 /// never disagree about what a status means.
 library;
 
+import 'package:cefflo_rider_mobile/l10n/l10n.dart';
+
 enum DeliveryStatus {
   created,
   readyForPickup,
@@ -35,14 +37,14 @@ enum DeliveryStatus {
   /// Rider PWA's uiStatus() already makes, since a Rider has no legitimate
   /// use for the Vendor-side "pending approval" distinction.
   String get label => switch (this) {
-    DeliveryStatus.created => 'Ready for pickup',
-    DeliveryStatus.readyForPickup => 'Ready for pickup',
-    DeliveryStatus.pickedUp => 'Picked up',
-    DeliveryStatus.outForDelivery => 'Out for delivery',
-    DeliveryStatus.arrived => 'Out for delivery',
-    DeliveryStatus.delivered => 'Delivered',
-    DeliveryStatus.issue => 'Issue',
-    DeliveryStatus.cancelled => 'Cancelled',
+    DeliveryStatus.created => L.readyPickup,
+    DeliveryStatus.readyForPickup => L.readyPickup,
+    DeliveryStatus.pickedUp => L.pickedUp,
+    DeliveryStatus.outForDelivery => L.outDelivery,
+    DeliveryStatus.arrived => L.outDelivery,
+    DeliveryStatus.delivered => L.delivered,
+    DeliveryStatus.issue => L.issue,
+    DeliveryStatus.cancelled => L.cancelled,
   };
 }
 
@@ -202,7 +204,7 @@ class RiderOrderItem {
   final int quantity;
 
   static RiderOrderItem fromJson(Map<String, dynamic> j) => RiderOrderItem(
-    name: (j['name'] ?? j['product_name'] ?? 'Item').toString(),
+    name: (j['name'] ?? j['product_name'] ?? L.item).toString(),
     quantity: int.tryParse('${j['quantity'] ?? j['qty'] ?? 1}') ?? 1,
   );
 }

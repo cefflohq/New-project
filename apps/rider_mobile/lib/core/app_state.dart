@@ -5,7 +5,10 @@ import '../data/driver_models.dart';
 import '../data/models.dart';
 import '../data/rider_repository.dart';
 import 'live_location.dart';
+import 'ui_locale.dart';
 import 'routes.dart';
+
+import 'package:cefflo_rider_mobile/l10n/l10n.dart';
 
 /// Where the signed-in Driver sits in the account lifecycle the references
 /// describe: no business yet (D11/D16/D17), details submitted and awaiting
@@ -70,7 +73,12 @@ class AppState extends ChangeNotifier {
   List<DriverNotification> notifications = DemoData.notifications;
   List<DriverDocument> documents = DemoData.documents;
   List<DriverDocument> onboardingDocuments = DemoData.onboardingDocuments;
-  String language = 'English';
+
+  /// UI language (en / ms). Independent of country/market (Founder,
+  /// 2026-09-27). Starts from the device language; an explicit choice
+  /// persists on this device and follows the signed-in user.
+  Locale uiLocale = resolveDeviceLocale();
+  final UiLocaleStore _localeStore = UiLocaleStore();
 
   /// D21.1/D21.2 let the Driver reorder stops and slide to confirm the
   /// route; once confirmed, D21's filtered Stop List is what the route
@@ -181,8 +189,25 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setLanguage(String next) {
-    language = next;
+  /// Applies a stored explicit choice (device), if any. Called at startup.
+  Future<void> restoreUiLocale() async {
+    final stored = await _localeStore.read();
+    if (stored != null) _applyUiLocale(stored);
+  }
+
+  /// Explicit user choice: applied now, persisted on this device and saved
+  /// to the user's profile when signed in. Operational state is untouched.
+  Future<void> setUiLocale(Locale next) async {
+    _applyUiLocale(next);
+    await _localeStore.write(next);
+    if (!repo.isDemo && repo.currentUser != null) {
+      await repo.saveUiLocale(next.languageCode);
+    }
+  }
+
+  void _applyUiLocale(Locale next) {
+    uiLocale = next;
+    applyUiLocale(next);
     notifyListeners();
   }
 
@@ -214,7 +239,7 @@ class AppState extends ChangeNotifier {
       stops: [
         for (final s in currentRun.stops)
           if (s.id == stopId)
-            s.copyWith(status: StopStatus.delivered, deliveredAt: 'Just now')
+            s.copyWith(status: StopStatus.delivered, deliveredAt: L.justNow)
           else
             s,
       ],
@@ -269,6 +294,12 @@ class AppState extends ChangeNotifier {
     sessionError = null;
     notifyListeners();
     try {
+      // The signed-in user's own language follows them across devices.
+      final own = parseUiLocale(repo.currentUser?.userMetadata?['ui_locale']);
+      if (own != null && own != uiLocale) {
+        _applyUiLocale(own);
+        await _localeStore.write(own);
+      }
       relationships = await repo.myRiderRelationships();
       final activeOnes = relationships.where((r) => r.isActive).toList();
       active = activeOnes.isEmpty ? null : activeOnes.first;
@@ -353,7 +384,7 @@ class AppState extends ChangeNotifier {
     final rel = active ?? (relationships.isEmpty ? null : relationships.first);
     if (rel != null) {
       business = DriverBusiness(
-        name: rel.businessName ?? 'Business',
+        name: rel.businessName ?? L.business,
         category: '',
         location: rel.businessAddress ?? '',
       );
@@ -366,7 +397,7 @@ class AppState extends ChangeNotifier {
         vehicleType: rel.vehicleType ?? '',
         vehicleModel: '',
         plateNumber: rel.plate ?? '',
-        statusLabel: rel.isActive ? 'Active Driver' : 'Pending review',
+        statusLabel: rel.isActive ? L.activeDriver : L.pendingReview,
       );
     }
     // No notification feed or document store exists on the backend yet:
@@ -445,10 +476,10 @@ class AppState extends ChangeNotifier {
       ...r.orders,
     ]..sort((a, b) => (a.sequence ?? 1 << 30).compareTo(b.sequence ?? 1 << 30));
     final phase = _phaseOf(r);
-    final biz = active?.businessName ?? business?.name ?? 'Business';
+    final biz = active?.businessName ?? business?.name ?? L.business;
     return DriverRun(
       id: r.sessionId ?? 'run',
-      reference: r.waveName ?? 'Delivery run',
+      reference: r.waveName ?? L.deliveryRun,
       dateLabel: todayDateLabel,
       zone: biz,
       pickupBusinessName: biz,
@@ -483,20 +514,28 @@ class AppState extends ChangeNotifier {
     deliveryStatus: o.status.name,
   );
 
-  static const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  static const _months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
+  static List<String> get _days => [
+    L.mon,
+    L.tue,
+    L.wed,
+    L.thu,
+    L.fri,
+    L.sat,
+    L.sun,
+  ];
+  static List<String> get _months => [
+    L.jan,
+    L.feb,
+    L.mar,
+    L.apr,
+    L.may,
+    L.jun,
+    L.jul,
+    L.aug,
+    L.sep,
+    L.oct,
+    L.nov,
+    L.dec,
   ];
   static String _dateLabel(DateTime d) =>
       '${_days[d.weekday - 1]}, ${d.day} ${_months[d.month - 1]} ${d.year}';
@@ -663,9 +702,7 @@ class AppState extends ChangeNotifier {
       IssueReason.customerRequestedReschedule || IssueReason.other => null,
     };
     if (type == null) {
-      throw RepositoryError(
-        'This reason can\'t be recorded yet. Choose another reason or contact the business.',
-      );
+      throw RepositoryError(L.reasonCantRecordedYetChooseAnother);
     }
     return _thenRefresh(() async {
       await repo.reportDeliveryIssue(

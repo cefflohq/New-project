@@ -9,12 +9,15 @@ import 'core/responsive.dart';
 import 'core/routes.dart';
 import 'core/safe_area.dart';
 import 'core/theme.dart';
+import 'core/ui_locale.dart';
 import 'data/live_adapters.dart';
 import 'data/rider_repository.dart';
 import 'ui/router.dart';
 import 'ui/screens/auth.dart';
 import 'ui/shell.dart';
 import 'ui/widgets.dart';
+
+import 'package:cefflo_rider_mobile/l10n/l10n.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -158,6 +161,8 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
   @override
   void initState() {
     super.initState();
+    applyUiLocale(app.uiLocale);
+    app.restoreUiLocale();
     app.onPrototypeSignOut = () {
       if (mounted) setState(() => _prototypeAuthenticated = false);
     };
@@ -201,15 +206,21 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
       animation: app,
       builder: (context, _) => MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Cefflo Driver',
+        title: L.ceffloDriver,
+        // BM + EN (Founder 2026-09-27). Country never selects language.
+        locale: app.uiLocale,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
         // Locked Light Mode only: D38 shows an Appearance row, but no
         // reference draws a dark screen, so no dark theme is built behind it.
         themeMode: AppState.themeMode,
         theme: buildRiderTheme(),
         // Applied above the Navigator so every route, dialog and bottom
         // sheet lays out against the same normalized canvas.
-        builder: (context, child) =>
-            _EdgeToEdgeInsets(child: ResponsiveDensity(child: child!)),
+        builder: (context, child) => LocaleRefresh(
+          locale: app.uiLocale,
+          child: _EdgeToEdgeInsets(child: ResponsiveDensity(child: child!)),
+        ),
         home: Builder(
           builder: (context) {
             if (!_signedIn || _recovering) {

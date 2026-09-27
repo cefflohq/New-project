@@ -10,6 +10,8 @@ import '../core/routes.dart';
 import '../core/theme.dart';
 import 'brand.dart';
 
+import 'package:cefflo_rider_mobile/l10n/l10n.dart';
+
 /// Edge-to-edge system bars: both transparent, so the navy gradient runs
 /// behind the status bar and the white surface behind the gesture area.
 SystemUiOverlayStyle _surfaceSystemUi({
@@ -209,7 +211,7 @@ class CeffloBackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
-    label: 'Back',
+    label: L.back,
     child: GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -309,7 +311,7 @@ class CeffloBellButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
-    label: 'Notifications',
+    label: L.notifications,
     child: GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -1505,11 +1507,11 @@ class CeffloBottomNav extends StatelessWidget {
   final NavTab active;
   final ValueChanged<NavTab> onTap;
 
-  static const _items = <(NavTab, IconData, String)>[
-    (NavTab.home, LucideIcons.house, 'Home'),
-    (NavTab.runs, LucideIcons.tag, 'Runs'),
-    (NavTab.history, LucideIcons.archive, 'History'),
-    (NavTab.profile, LucideIcons.user, 'Profile'),
+  static List<(NavTab, IconData, String)> get _items => [
+    (NavTab.home, LucideIcons.house, L.home),
+    (NavTab.runs, LucideIcons.tag, L.runs),
+    (NavTab.history, LucideIcons.archive, L.history),
+    (NavTab.profile, LucideIcons.user, L.profile),
   ];
 
   static const _activeIcons = <NavTab, IconData>{
@@ -1617,7 +1619,7 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
             button: true,
             enabled: _active,
             label: widget.label,
-            hint: 'Slide to confirm',
+            hint: L.slideConfirm,
             child: SizedBox(
               height: Sizes.slideKnob,
               child: Stack(
@@ -1910,11 +1912,9 @@ Future<T?> showCeffloModal<T>(BuildContext context, Widget modal) =>
 /// The processing half of the reference's two-step submit motif: four dots
 /// over a title and a supporting line, on the shared [CeffloModal] geometry.
 class CeffloSubmittingModal extends StatelessWidget {
-  const CeffloSubmittingModal({
-    super.key,
-    this.title = 'Submitting…',
-    this.body = 'Please wait a moment.',
-  });
+  CeffloSubmittingModal({super.key, String? title, String? body})
+    : title = title ?? L.submitting,
+      body = body ?? L.pleaseWaitMoment;
 
   final String title;
   final String body;
@@ -1939,13 +1939,13 @@ class CeffloSubmittingModal extends StatelessWidget {
 /// The success half of the same motif — identical geometry, so the pair
 /// swaps in place rather than resizing.
 class CeffloSubmittedModal extends StatelessWidget {
-  const CeffloSubmittedModal({
+  CeffloSubmittedModal({
     super.key,
     required this.title,
     required this.body,
     required this.onDone,
-    this.doneLabel = 'Done',
-  });
+    String? doneLabel,
+  }) : doneLabel = doneLabel ?? L.done;
 
   final String title;
   final String body;
@@ -1978,11 +1978,11 @@ class CeffloSubmittedModal extends StatelessWidget {
 /// sent anywhere.
 Future<bool> showCeffloSubmitFlow(
   BuildContext context, {
-  String submittingTitle = 'Submitting…',
-  String submittingBody = 'Please wait a moment.',
+  String? submittingTitle,
+  String? submittingBody,
   required String successTitle,
   required String successBody,
-  String doneLabel = 'Done',
+  String? doneLabel,
   Duration delay = const Duration(milliseconds: 1300),
   VoidCallback? onDone,
   Future<void> Function()? action,
@@ -2114,7 +2114,7 @@ class StateBlock extends StatelessWidget {
             const SizedBox(height: Gap.lg),
             SizedBox(
               width: 180,
-              child: CeffloSecondaryButton('Try again', onTap: onRetry),
+              child: CeffloSecondaryButton(L.tryAgain, onTap: onRetry),
             ),
           ],
         ],

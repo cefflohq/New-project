@@ -5,6 +5,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/theme.dart';
 
+import 'package:cefflo_rider_mobile/l10n/l10n.dart';
+
 /// A painted stand-in for the live map surface D21.2 and D22 render.
 ///
 /// The prototype deliberately does **not** ship a screenshot of a real map
@@ -345,7 +347,7 @@ class MapRecenterPill extends StatelessWidget {
             ),
             const SizedBox(width: 7),
             Text(
-              'Re-center',
+              L.reCenter,
               style: TextStyle(
                 fontFamily: 'Manrope',
                 fontSize: 13.5,

@@ -9,6 +9,8 @@
 /// screen; every field corresponds to something a reference renders.
 library;
 
+import 'package:cefflo_rider_mobile/l10n/l10n.dart';
+
 enum StopStatus { pending, delivered, issue }
 
 /// One delivery stop inside a run, as D21/D21.1/D21.2/D22/D23/D32 draw it.
@@ -106,7 +108,7 @@ class DriverRun {
   final String? vehicleLabel; // "Motorbike (WYX 1234)"
 
   int get orderCount => stops.length;
-  String get distanceText => distanceKm == null ? '—' : '$distanceKm km';
+  String get distanceText => distanceKm == null ? '—' : L.km(distanceKm!);
   int get deliveredCount =>
       stops.where((s) => s.status == StopStatus.delivered).length;
   int get pendingCount =>
@@ -114,9 +116,9 @@ class DriverRun {
   int get issueCount => stops.where((s) => s.status == StopStatus.issue).length;
 
   String get statusLabel => switch (state) {
-    RunState.assigned => 'Assigned',
-    RunState.onTheWay => 'On the way',
-    RunState.completed => 'Completed',
+    RunState.assigned => L.assigned,
+    RunState.onTheWay => L.way,
+    RunState.completed => L.completed,
   };
 
   DriverRun copyWith({List<DriverStop>? stops, RunState? state}) => DriverRun(
@@ -222,7 +224,7 @@ class DriverBusiness {
 
 /// The signed-in Driver, as D12.1/D14.x/D34/D35/D36 render them.
 class DriverProfile {
-  const DriverProfile({
+  DriverProfile({
     required this.fullName,
     required this.phone,
     required this.email,
@@ -232,8 +234,8 @@ class DriverProfile {
     required this.vehicleModel,
     required this.plateNumber,
     this.emergencyContact,
-    this.statusLabel = 'Active Driver',
-  });
+    String? statusLabel,
+  }) : statusLabel = statusLabel ?? L.activeDriver;
 
   final String fullName;
   final String phone;
@@ -277,23 +279,21 @@ enum IssueReason {
   other;
 
   String get title => switch (this) {
-    IssueReason.customerNotAvailable => 'Customer not available',
-    IssueReason.wrongAddress => 'Wrong address',
-    IssueReason.customerRequestedReschedule => 'Customer requested reschedule',
-    IssueReason.itemsNotAvailable => 'Item(s) not available',
-    IssueReason.safetyConcern => 'Safety concern',
-    IssueReason.other => 'Other',
+    IssueReason.customerNotAvailable => L.customerNotAvailable,
+    IssueReason.wrongAddress => L.wrongAddress,
+    IssueReason.customerRequestedReschedule => L.customerRequestedReschedule,
+    IssueReason.itemsNotAvailable => L.itemSNotAvailable,
+    IssueReason.safetyConcern => L.safetyConcern,
+    IssueReason.other => L.other,
   };
 
   String get body => switch (this) {
-    IssueReason.customerNotAvailable =>
-      'Customer did not answer or not at location.',
-    IssueReason.wrongAddress => 'Address not found or incorrect.',
-    IssueReason.customerRequestedReschedule =>
-      'Customer asked to deliver at a later time.',
-    IssueReason.itemsNotAvailable => 'Item(s) not available at store.',
-    IssueReason.safetyConcern => 'Unsafe to complete delivery.',
-    IssueReason.other => 'Tell us more about the issue.',
+    IssueReason.customerNotAvailable => L.customerDidNotAnswerNotLocation,
+    IssueReason.wrongAddress => L.addressNotFoundIncorrect,
+    IssueReason.customerRequestedReschedule => L.customerAskedDeliverLaterTime,
+    IssueReason.itemsNotAvailable => L.itemSNotAvailableStore,
+    IssueReason.safetyConcern => L.unsafeCompleteDelivery,
+    IssueReason.other => L.tellUsMoreAboutIssue,
   };
 }
 
@@ -307,20 +307,19 @@ enum SupportCategory {
   other;
 
   String get title => switch (this) {
-    SupportCategory.deliveryRunIssue => 'Delivery / Run Issue',
-    SupportCategory.vendorBusinessIssue => 'Vendor / Business Issue',
-    SupportCategory.ceffloAppIssue => 'Cefflo App Issue',
-    SupportCategory.accountDocuments => 'Account / Documents',
-    SupportCategory.other => 'Other',
+    SupportCategory.deliveryRunIssue => L.deliveryRunIssue,
+    SupportCategory.vendorBusinessIssue => L.vendorBusinessIssue,
+    SupportCategory.ceffloAppIssue => L.ceffloAppIssue,
+    SupportCategory.accountDocuments => L.accountDocuments,
+    SupportCategory.other => L.other,
   };
 
   String get body => switch (this) {
-    SupportCategory.deliveryRunIssue => 'Orders, pickup, delivery, customer',
-    SupportCategory.vendorBusinessIssue =>
-      'Assignment, payment, customer issue',
-    SupportCategory.ceffloAppIssue => 'App bug, error, technical problem',
-    SupportCategory.accountDocuments => 'Profile, documents, verification',
-    SupportCategory.other => 'Something else',
+    SupportCategory.deliveryRunIssue => L.ordersPickupDeliveryCustomer,
+    SupportCategory.vendorBusinessIssue => L.assignmentPaymentCustomerIssue,
+    SupportCategory.ceffloAppIssue => L.appBugErrorTechnicalProblem,
+    SupportCategory.accountDocuments => L.profileDocumentsVerification,
+    SupportCategory.other => L.somethingElse,
   };
 
   /// D40-B exists because a vendor-owned operational issue is not Cefflo's

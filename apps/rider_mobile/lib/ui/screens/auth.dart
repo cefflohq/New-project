@@ -13,6 +13,10 @@ import '../../data/rider_repository.dart';
 import '../brand.dart';
 import '../widgets.dart';
 
+import 'package:cefflo_rider_mobile/l10n/l10n.dart';
+
+import '../../core/ui_locale.dart';
+
 /// D01–D09. The auth family owns its own stage stack: it runs before the
 /// app shell exists, so it does not share the signed-in navigation graph.
 class AuthFlow extends StatefulWidget {
@@ -632,8 +636,6 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  String _language = 'English';
-
   @override
   Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
     value: const SystemUiOverlayStyle(
@@ -655,7 +657,10 @@ class _SignInScreenState extends State<SignInScreen> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: LanguagePill(
-                    language: _language,
+                    language:
+                        uiLanguageNames[AppScope.of(context)
+                            .uiLocale
+                            .languageCode]!,
                     onDark: true,
                     onTap: () => _pickLanguage(context),
                   ),
@@ -664,19 +669,19 @@ class _SignInScreenState extends State<SignInScreen> {
                 const CeffloSplashLockup(),
                 const Spacer(flex: 4),
                 CeffloAuthOption(
-                  label: 'Continue with Apple',
+                  label: L.continueApple,
                   iconChild: const AppleGlyph(size: 24),
                   onTap: widget.onEmail,
                 ),
                 const SizedBox(height: Gap.md),
                 CeffloAuthOption(
-                  label: 'Continue with Google',
+                  label: L.continueGoogle,
                   iconChild: const GoogleGlyph(size: 24),
                   onTap: widget.onEmail,
                 ),
                 const SizedBox(height: Gap.md),
                 CeffloAuthOption(
-                  label: 'Continue with Email',
+                  label: L.continueEmail,
                   icon: LucideIcons.mail,
                   onTap: widget.onEmail,
                 ),
@@ -685,7 +690,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Have an invite?',
+                      L.haveInvite,
                       style: TextStyle(
                         fontFamily: 'Manrope',
                         fontSize: 14.5,
@@ -702,7 +707,7 @@ class _SignInScreenState extends State<SignInScreen> {
                           vertical: 4,
                         ),
                         child: Text(
-                          'Get started',
+                          L.getStarted,
                           style: TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 14.5,
@@ -726,16 +731,18 @@ class _SignInScreenState extends State<SignInScreen> {
   );
 
   Future<void> _pickLanguage(BuildContext context) async {
-    final picked = await showLanguageSheet(context, _language);
-    if (picked != null && mounted) setState(() => _language = picked);
+    final app = AppScope.read(context);
+    final picked = await showLanguageSheet(context, app.uiLocale);
+    if (picked != null) await app.setUiLocale(picked);
   }
 }
 
 /// D39 Select Language — reused by D02's language pill and D38's Language
 /// row, since the references draw the same sheet in both places.
-Future<String?> showLanguageSheet(BuildContext context, String current) {
+/// Offers exactly the supported UI languages, by their native names.
+Future<Locale?> showLanguageSheet(BuildContext context, Locale current) {
   var selected = current;
-  return showCeffloSheet<String>(
+  return showCeffloSheet<Locale>(
     context,
     child: StatefulBuilder(
       builder: (context, setSheetState) => Column(
@@ -743,9 +750,9 @@ Future<String?> showLanguageSheet(BuildContext context, String current) {
         children: [
           const SheetGrabber(),
           const SizedBox(height: 6),
-          Text('Select Language', style: context.t.titleLarge),
+          Text(L.selectLanguage, style: context.t.titleLarge),
           const SizedBox(height: Gap.lg),
-          for (final lang in DemoData.languages)
+          for (final lang in supportedUiLocales)
             Column(
               children: [
                 InkWell(
@@ -759,7 +766,7 @@ Future<String?> showLanguageSheet(BuildContext context, String current) {
                       children: [
                         Expanded(
                           child: Text(
-                            lang,
+                            uiLanguageNames[lang.languageCode]!,
                             style: TextStyle(
                               fontFamily: 'Manrope',
                               fontSize: 16,
@@ -789,7 +796,7 @@ Future<String?> showLanguageSheet(BuildContext context, String current) {
               Gap.lg,
             ),
             child: CeffloPrimaryButton(
-              'Done',
+              L.done,
               onTap: () => Navigator.of(context).pop(selected),
             ),
           ),
@@ -888,13 +895,13 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   @override
   Widget build(BuildContext context) => CeffloAuthScaffold(
     onBack: widget.onBack,
-    title: 'Sign In with Email',
-    subtitle: 'Enter your email and password\nto continue.',
+    title: L.signEmail,
+    subtitle: L.enterEmailPasswordContinue,
     sheet: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         CeffloTextField(
-          label: 'Email',
+          label: L.email,
           controller: _email,
           hint: 'you@domain.com',
           icon: LucideIcons.mail,
@@ -902,9 +909,9 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
         ),
         const SizedBox(height: Gap.lg),
         CeffloPasswordField(
-          label: 'Password',
+          label: L.password,
           controller: _password,
-          hint: 'Enter your password',
+          hint: L.enterPassword,
         ),
         if (_error != null) ...[
           const SizedBox(height: Gap.sm),
@@ -926,7 +933,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
         Align(
           alignment: Alignment.centerRight,
           child: CeffloTextLink(
-            'Forgot Password?',
+            L.forgotPassword,
             onTap: widget.onForgotPassword,
             fontSize: 14,
             color: CefColors.navy,
@@ -934,20 +941,20 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
         ),
         const SizedBox(height: Gap.lg),
         CeffloPrimaryButton(
-          _busy ? 'Signing In…' : 'Sign In',
+          _busy ? L.signing : L.sign,
           busy: _busy,
           onTap: _busy ? null : _submit,
         ),
         const SizedBox(height: Gap.section),
         const CeffloOrDivider(),
         const SizedBox(height: Gap.lg),
-        Text('Continue with', style: context.t.bodyLarge),
+        Text(L.continueText, style: context.t.bodyLarge),
         const SizedBox(height: Gap.md),
         Row(
           children: [
             Expanded(
               child: CeffloAuthChip(
-                label: 'Apple',
+                label: L.apple,
                 iconChild: const AppleGlyph(size: 21),
                 onTap: widget.onSignIn,
               ),
@@ -955,7 +962,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             const SizedBox(width: Gap.md),
             Expanded(
               child: CeffloAuthChip(
-                label: 'Google',
+                label: L.google,
                 iconChild: const GoogleGlyph(),
                 onTap: widget.onSignIn,
               ),
@@ -964,8 +971,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
         ),
         const SizedBox(height: Gap.section),
         CeffloInlinePrompt(
-          prompt: 'Don’t have an account?',
-          action: 'Sign Up',
+          prompt: L.dontHaveAccount,
+          action: L.signUp,
           onTap: widget.onSignUp,
         ),
       ],
@@ -1030,7 +1037,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       if (!mounted) return;
       if (needsVerification) {
         setState(() {
-          _error = 'Check your email to verify this account, then sign in.';
+          _error = L.checkEmailVerifyAccountThenSign;
         });
       } else {
         await app.loadSession();
@@ -1046,20 +1053,20 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   @override
   Widget build(BuildContext context) => CeffloAuthScaffold(
     onBack: widget.onBack,
-    title: 'Create your\naccount',
-    subtitle: 'Let’s get you started. Create your\nCefflo Driver account.',
+    title: L.createAccount2,
+    subtitle: L.letsGetStartedCreateCeffloDriver,
     sheet: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         CeffloTextField(
-          label: 'Full Name',
+          label: L.fullName,
           controller: _name,
-          hint: 'Enter your full name',
+          hint: L.enterFullName,
           icon: LucideIcons.user,
         ),
         const SizedBox(height: Gap.md),
         CeffloTextField(
-          label: 'Email',
+          label: L.email,
           controller: _email,
           hint: 'you@domain.com',
           icon: LucideIcons.mail,
@@ -1067,20 +1074,20 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         ),
         const SizedBox(height: Gap.md),
         CeffloPhoneField(
-          label: 'Phone Number',
+          label: L.phoneNumber,
           controller: _phone,
-          hint: 'Enter your phone number',
+          hint: L.enterPhoneNumber,
         ),
         const SizedBox(height: Gap.md),
         CeffloPasswordField(
-          label: 'Password',
+          label: L.password,
           controller: _password,
-          hint: 'Create a password',
+          hint: L.createPassword,
         ),
         const SizedBox(height: Gap.md),
-        const CeffloNote(
+        CeffloNote(
           icon: LucideIcons.info,
-          body: 'Password must be at least 8 characters\nwith a number and a letter.',
+          body: L.passwordMustLeast8CharactersNumber,
         ),
         if (_error != null) ...[
           const SizedBox(height: Gap.sm),
@@ -1097,14 +1104,14 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         ],
         const SizedBox(height: Gap.lg),
         CeffloPrimaryButton(
-          _busy ? 'Creating Account…' : 'Create Account',
+          _busy ? L.creatingAccount : L.createAccount3,
           busy: _busy,
           onTap: _busy ? null : _create,
         ),
         const SizedBox(height: Gap.lg),
         CeffloInlinePrompt(
-          prompt: 'Already have an account?',
-          action: 'Sign In',
+          prompt: L.alreadyHaveAccount,
+          action: L.sign,
           onTap: widget.onSignIn,
         ),
       ],
@@ -1166,8 +1173,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) => CeffloAuthScaffold(
     onBack: widget.onBack,
-    title: 'Forgot\nPassword?',
-    subtitle: 'No worries. Enter your email and\nwe’ll send you a reset link.',
+    title: L.forgotPassword2,
+    subtitle: L.noWorriesEnterEmailWellSend,
     scrollable: false,
     sheetPadding: const EdgeInsets.fromLTRB(
       Gap.gutter,
@@ -1179,7 +1186,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         CeffloTextField(
-          label: 'Email',
+          label: L.email,
           controller: _email,
           hint: 'you@domain.com',
           icon: LucideIcons.mail,
@@ -1200,17 +1207,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ],
         const SizedBox(height: Gap.lg),
         CeffloPrimaryButton(
-          _busy ? 'Sending…' : 'Send Reset Link',
+          _busy ? L.sending : L.sendResetLink,
           busy: _busy,
           onTap: _busy ? null : _send,
         ),
         const SizedBox(height: Gap.lg),
-        CeffloTextLink('Back to Sign In', onTap: widget.onBackToSignIn),
+        CeffloTextLink(L.backSign, onTap: widget.onBackToSignIn),
         const SizedBox(height: 44),
-        const CeffloNote(
+        CeffloNote(
           icon: LucideIcons.lock,
-          title: 'Keep your account secure',
-          body: 'We’ll send a secure link to reset your password. The link will expire after a short period.',
+          title: L.keepAccountSecure,
+          body: L.wellSendSecureLinkResetPassword,
         ),
       ],
     ),
@@ -1283,10 +1290,10 @@ class CheckEmailScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Gap.lg),
-          Text('Check your email', style: context.t.displayMedium),
+          Text(L.checkEmail, style: context.t.displayMedium),
           const SizedBox(height: Gap.sm),
-          const Text(
-            'We’ve sent a password reset link to',
+          Text(
+            L.weveSentPasswordResetLink,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'Manrope',
@@ -1320,7 +1327,7 @@ class CheckEmailScreen extends StatelessWidget {
                   ),
                 ),
                 CeffloTextLink(
-                  'Edit',
+                  L.edit,
                   onTap: onBack,
                   fontSize: 14,
                   color: Colors.white,
@@ -1334,24 +1341,9 @@ class CheckEmailScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _numbered(
-            context,
-            1,
-            'Open your email inbox',
-            'Check your inbox (and spam folder).',
-          ),
-          _numbered(
-            context,
-            2,
-            'Click the reset link',
-            'Follow the instructions in the email.',
-          ),
-          _numbered(
-            context,
-            3,
-            'Set a new password',
-            'Return to the app and sign in.',
-          ),
+          _numbered(context, 1, L.openEmailInbox, L.checkInboxSpamFolder),
+          _numbered(context, 2, L.clickResetLink, L.followInstructionsEmail),
+          _numbered(context, 3, L.setNewPassword, L.returnAppSign),
           const SizedBox(height: Gap.md),
           Divider(color: c.border, height: 1),
           const SizedBox(height: Gap.lg),
@@ -1364,13 +1356,10 @@ class CheckEmailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Didn’t receive the email?',
-                      style: context.t.titleSmall,
-                    ),
+                    Text(L.didntReceiveEmail, style: context.t.titleSmall),
                     const SizedBox(height: 2),
                     Text(
-                      'You can request a new link in 60 seconds.',
+                      L.canRequestNewLink60Seconds,
                       style: context.t.bodySmall,
                     ),
                   ],
@@ -1388,7 +1377,7 @@ class CheckEmailScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(Sizes.buttonRadius),
             ),
             child: Text(
-              'Resend Email (58s)',
+              L.resendEmail58s,
               style: TextStyle(
                 fontFamily: 'Manrope',
                 fontSize: 16,
@@ -1398,7 +1387,7 @@ class CheckEmailScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Gap.lg),
-          Center(child: CeffloTextLink('Back to Sign In', onTap: onOpenLink)),
+          Center(child: CeffloTextLink(L.backSign, onTap: onOpenLink)),
         ],
       ),
     );
@@ -1460,7 +1449,7 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
 
   Future<void> _update() async {
     if (_password.text != _confirm.text) {
-      setState(() => _error = 'Passwords do not match.');
+      setState(() => _error = L.passwordsDoNotMatch);
       return;
     }
     final app = AppScope.read(context);
@@ -1485,26 +1474,26 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
   @override
   Widget build(BuildContext context) => CeffloAuthScaffold(
     onBack: widget.onBack,
-    title: 'Set a new\npassword',
-    subtitle: 'Choose a strong password for\nyour Cefflo Driver account.',
+    title: L.setNewPassword2,
+    subtitle: L.chooseStrongPasswordCeffloDriverAccount,
     sheet: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         CeffloPasswordField(
-          label: 'New Password',
+          label: L.newPassword,
           controller: _password,
-          hint: 'Enter new password',
+          hint: L.enterNewPassword,
         ),
         const SizedBox(height: Gap.md),
         CeffloPasswordField(
-          label: 'Confirm Password',
+          label: L.confirmPassword,
           controller: _confirm,
-          hint: 'Confirm your password',
+          hint: L.confirmPassword2,
         ),
         const SizedBox(height: Gap.md),
-        const CeffloNote(
+        CeffloNote(
           icon: LucideIcons.info,
-          body: 'Password must be at least 8 characters\nwith a number and a letter.',
+          body: L.passwordMustLeast8CharactersNumber,
         ),
         if (_error != null) ...[
           const SizedBox(height: Gap.sm),
@@ -1521,7 +1510,7 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
         ],
         const SizedBox(height: Gap.lg),
         CeffloPrimaryButton(
-          _busy ? 'Updating…' : 'Update Password',
+          _busy ? L.updating : L.updatePassword,
           busy: _busy,
           onTap: _busy ? null : _update,
         ),
@@ -1538,16 +1527,16 @@ String driverAuthErrorText(RepositoryError error) {
     'rate_limit_exceeded',
   };
   if (invalid.contains(error.code)) {
-    return 'Email or password is incorrect. Try again.';
+    return L.emailPasswordIncorrectTryAgain;
   }
   if (limited.contains(error.code)) {
-    return 'Too many attempts. Please wait before trying again.';
+    return L.tooManyAttemptsPleaseWaitBefore;
   }
   final lower = error.message.toLowerCase();
   if (lower.contains('clientexception') ||
       lower.contains('failed to fetch') ||
       lower.contains('socket')) {
-    return 'Unable to connect. Check your connection and try again.';
+    return L.unableConnectCheckConnectionTryAgain;
   }
   return error.message;
 }
@@ -1568,13 +1557,13 @@ class PasswordUpdatedScreen extends StatelessWidget {
         const CeffloSuccessTick(size: 96, glow: true),
         const SizedBox(height: Gap.xl),
         Text(
-          'Password Updated!',
+          L.passwordUpdated,
           textAlign: TextAlign.center,
           style: context.t.displayMedium,
         ),
         const SizedBox(height: Gap.md),
-        const Text(
-          'Your password has been\nsuccessfully updated.',
+        Text(
+          L.passwordHasBeenSuccessfullyUpdated,
           textAlign: TextAlign.center,
           style: TextStyle(
             fontFamily: 'Manrope',
@@ -1590,19 +1579,19 @@ class PasswordUpdatedScreen extends StatelessWidget {
     sheet: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const CeffloNote(
+        CeffloNote(
           icon: LucideIcons.shield,
-          title: 'Your account is secure',
-          body: 'You can now sign in with your new password.',
+          title: L.accountSecure,
+          body: L.canNowSignNewPassword,
         ),
         const SizedBox(height: Gap.md),
-        const CeffloNote(
+        CeffloNote(
           icon: LucideIcons.smartphone,
-          title: 'You’ll stay signed in',
-          body: 'On this device, you can continue using the app.',
+          title: L.youllStaySigned,
+          body: L.deviceCanContinueUsingApp,
         ),
         const SizedBox(height: Gap.section),
-        CeffloPrimaryButton('Back to Sign In', onTap: onBackToSignIn),
+        CeffloPrimaryButton(L.backSign, onTap: onBackToSignIn),
       ],
     ),
   );
@@ -1633,7 +1622,7 @@ class InvitationLandingScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
           child: Text(
-            'Maybe Later',
+            L.maybeLater,
             style: TextStyle(
               fontFamily: 'Manrope',
               fontSize: 15,
@@ -1643,10 +1632,8 @@ class InvitationLandingScreen extends StatelessWidget {
           ),
         ),
       ),
-      title: 'You’re Invited!',
-      subtitle:
-          'Join ${business.name} on Cefflo. Be part of their delivery team '
-          'and start making deliveries.',
+      title: L.youreInvited,
+      subtitle: L.joinCeffloPartTheirDeliveryTeam(business.name),
       sheetPadding: const EdgeInsets.fromLTRB(
         Gap.gutter,
         Gap.lg,
@@ -1660,25 +1647,25 @@ class InvitationLandingScreen extends StatelessWidget {
         children: [
           BusinessIdentityRow(business: business),
           const SizedBox(height: Gap.lg),
-          const CeffloFeatureRow(
+          CeffloFeatureRow(
             icon: LucideIcons.users,
-            title: 'Work with a trusted local business',
-            body: 'Make deliveries within their service area.',
+            title: L.workTrustedLocalBusiness,
+            body: L.makeDeliveriesWithinTheirServiceArea,
           ),
-          const CeffloFeatureRow(
+          CeffloFeatureRow(
             icon: LucideIcons.clock,
-            title: 'Start delivering today',
-            body: 'Get access once your account is approved.',
+            title: L.startDeliveringToday,
+            body: L.getAccessOnceAccountApproved,
           ),
-          const CeffloFeatureRow(
+          CeffloFeatureRow(
             icon: LucideIcons.shield,
-            title: 'All in one app',
-            body: 'Orders, navigation and support.',
+            title: L.allOneApp,
+            body: L.ordersNavigationSupport,
           ),
           const SizedBox(height: Gap.lg),
-          CeffloPrimaryButton('Accept Invitation', onTap: onAccept),
+          CeffloPrimaryButton(L.acceptInvitation, onTap: onAccept),
           const SizedBox(height: Gap.md),
-          Center(child: CeffloTextLink('Decline', onTap: onDecline)),
+          Center(child: CeffloTextLink(L.decline, onTap: onDecline)),
         ],
       ),
     );

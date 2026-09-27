@@ -8,6 +8,8 @@ import '../../data/demo_data.dart';
 import '../../data/driver_models.dart';
 import '../widgets.dart';
 
+import 'package:cefflo_rider_mobile/l10n/l10n.dart';
+
 // ---------------------------------------------------------------------------
 // D40 — Help & Support
 // ---------------------------------------------------------------------------
@@ -56,7 +58,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
 
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
-        title: 'Help & Support',
+        title: L.helpSupport,
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
@@ -93,7 +95,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                     decoration: InputDecoration(
                       isCollapsed: true,
                       border: InputBorder.none,
-                      hintText: 'How can we help?',
+                      hintText: L.howCanWeHelp,
                       hintStyle: TextStyle(
                         fontFamily: 'Manrope',
                         fontSize: 15,
@@ -107,10 +109,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
             ),
           ),
           const SizedBox(height: Gap.lg),
-          Text('Common Driver Topics', style: context.t.titleMedium),
+          Text(L.commonDriverTopics, style: context.t.titleMedium),
           const SizedBox(height: Gap.md),
           if (topics.isEmpty)
-            StateBlock.empty('No topics match “${_search.text.trim()}”.')
+            StateBlock.empty(L.noTopicsMatch(_search.text.trim()))
           else
             for (var row = 0; row < (topics.length + 1) ~/ 2; row++) ...[
               // IntrinsicHeight so the two cards in a row match height even
@@ -145,19 +147,19 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
               const SizedBox(height: Gap.md),
             ],
           const SizedBox(height: Gap.sm),
-          Text('Need more help?', style: context.t.titleMedium),
+          Text(L.needMoreHelp, style: context.t.titleMedium),
           const SizedBox(height: Gap.md),
           _HelpRow(
             icon: LucideIcons.messageSquare,
-            title: 'Contact Support',
-            subtitle: 'Submit a support ticket',
+            title: L.contactSupport,
+            subtitle: L.submitSupportTicket,
             onTap: () => showContactSupportSheet(context, app),
           ),
           const SizedBox(height: Gap.md),
           _HelpRow(
             icon: LucideIcons.fileText,
-            title: 'My Support Tickets',
-            subtitle: 'Check your ticket status',
+            title: L.mySupportTickets,
+            subtitle: L.checkTicketStatus,
             onTap: () => _showTickets(context),
           ),
         ],
@@ -174,12 +176,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
         children: [
           const SheetGrabber(),
           const SizedBox(height: 6),
-          Text('My Support Tickets', style: context.t.titleLarge),
+          Text(L.mySupportTickets, style: context.t.titleLarge),
           const SizedBox(height: Gap.lg),
-          StateBlock.empty(
-            'You have no support tickets yet. Submit one from Contact Support '
-            'and it will appear here.',
-          ),
+          StateBlock.empty(L.haveNoSupportTicketsYetSubmit),
         ],
       ),
     ),
@@ -279,7 +278,7 @@ Future<void> showContactSupportSheet(BuildContext context, AppState app) =>
                   const SizedBox(width: Sizes.tapTarget),
                   Expanded(
                     child: Text(
-                      'Contact Support',
+                      L.contactSupport,
                       textAlign: TextAlign.center,
                       style: context.t.titleLarge,
                     ),
@@ -299,7 +298,7 @@ Future<void> showContactSupportSheet(BuildContext context, AppState app) =>
               ),
               const SizedBox(height: Gap.sm),
               Text(
-                'What do you need help with?',
+                L.whatDoNeedHelp,
                 style: context.t.titleSmall?.copyWith(fontSize: 14.5),
               ),
               const SizedBox(height: Gap.md),
@@ -363,7 +362,7 @@ class VendorSupportScreen extends StatelessWidget {
     final c = context.c;
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
-        title: 'Vendor Support',
+        title: L.vendorSupport,
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
@@ -394,20 +393,19 @@ class VendorSupportScreen extends StatelessWidget {
           const SizedBox(height: Gap.lg),
           Center(
             child: Text(
-              'Contact Business',
+              L.contactBusiness,
               style: context.t.displaySmall?.copyWith(fontSize: 21),
             ),
           ),
           const SizedBox(height: Gap.md),
           Text(
-            'This issue is related to the vendor’s business operations (e.g. '
-            'orders, assignments, customer, delivery instructions).',
+            L.issueRelatedVendorsBusinessOperationsE,
             textAlign: TextAlign.center,
             style: context.t.bodyMedium,
           ),
           const SizedBox(height: Gap.md),
           Text(
-            'Please contact the business directly for faster assistance.',
+            L.pleaseContactBusinessDirectlyFasterAssistance,
             textAlign: TextAlign.center,
             style: context.t.bodyMedium,
           ),
@@ -459,30 +457,28 @@ class VendorSupportScreen extends StatelessWidget {
                 Divider(height: 1, color: c.border),
                 _ContactRow(
                   icon: LucideIcons.phone,
-                  title: 'Call',
+                  title: L.call,
                   subtitle: vendor.phone ?? '',
-                  onTap: () => _toast(context, 'Calling ${vendor.name}…'),
+                  onTap: () => _toast(context, L.calling2(vendor.name)),
                 ),
                 Divider(height: 1, color: c.border),
                 _ContactRow(
                   icon: LucideIcons.messageSquare,
-                  title: 'Chat',
-                  subtitle: 'In-app message to vendor',
-                  onTap: () => _toast(context, 'Opening vendor chat…'),
+                  title: L.chat,
+                  subtitle: L.appMessageVendor,
+                  onTap: () => _toast(context, L.openingVendorChat),
                 ),
               ],
             ),
           ),
           const SizedBox(height: Gap.md),
-          const CeffloNote(
+          CeffloNote(
             icon: LucideIcons.info,
-            body:
-                'Cefflo does not manage vendor operations. For app or account '
-                'issues, please go back and select the relevant category.',
+            body: L.ceffloDoesNotManageVendorOperations,
           ),
           const SizedBox(height: Gap.lg),
           CeffloSecondaryButton(
-            'Back to Help & Support',
+            L.backHelpSupport,
             pill: false,
             onTap: app.back,
           ),
@@ -579,7 +575,7 @@ class _SubmitTicketScreenState extends State<SubmitTicketScreen> {
     final c = context.c;
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
-        title: 'Submit Ticket',
+        title: L.submitTicket,
         onBack: app.back,
         onBell: () => app.go(DRoute.notifications),
       ),
@@ -610,19 +606,19 @@ class _SubmitTicketScreenState extends State<SubmitTicketScreen> {
           const SizedBox(height: Gap.lg),
           Center(
             child: Text(
-              'Cefflo Support',
+              L.ceffloSupport,
               style: context.t.displaySmall?.copyWith(fontSize: 21),
             ),
           ),
           const SizedBox(height: Gap.sm),
           Text(
-            'Tell us about the issue and we’ll get back to you as soon as possible.',
+            L.tellUsAboutIssueWellGet,
             textAlign: TextAlign.center,
             style: context.t.bodyMedium,
           ),
           const SizedBox(height: Gap.lg),
           CeffloSelectField<SupportCategory>(
-            label: 'Category',
+            label: L.category,
             value: _category,
             options: SupportCategory.values,
             optionLabel: (v) => v.title,
@@ -630,15 +626,13 @@ class _SubmitTicketScreenState extends State<SubmitTicketScreen> {
           ),
           const SizedBox(height: Gap.lg),
           CeffloTextField(
-            label: 'Describe your issue',
+            label: L.describeIssue,
             controller: _description,
-            hint:
-                'Please provide as much detail as possible…\n'
-                '(e.g. what happened, when, steps to reproduce)',
+            hint: L.pleaseProvideMuchDetailPossibleE,
             maxLines: 4,
           ),
           const SizedBox(height: Gap.lg),
-          const CeffloFieldLabel('Add screenshot or photo (optional)'),
+          CeffloFieldLabel(L.addScreenshotPhotoOptional),
           const SizedBox(height: 6),
           Material(
             color: c.card,
@@ -662,14 +656,11 @@ class _SubmitTicketScreenState extends State<SubmitTicketScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _photoAdded ? 'Photo attached' : 'Tap to add photo',
+                            _photoAdded ? L.photoAttached : L.tapAddPhoto,
                             style: context.t.titleSmall,
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            'PNG, JPG (Max 5MB each)',
-                            style: context.t.bodySmall,
-                          ),
+                          Text(L.pngJpgMax5mbEach, style: context.t.bodySmall),
                         ],
                       ),
                     ],
@@ -681,15 +672,15 @@ class _SubmitTicketScreenState extends State<SubmitTicketScreen> {
         ],
       ),
       footer: CeffloPrimaryButton(
-        'Submit Ticket',
+        L.submitTicket,
         pill: false,
         onTap: _description.text.trim().isEmpty
             ? null
             : () async {
                 await showCeffloSubmitFlow(
                   context,
-                  successTitle: 'Request submitted',
-                  successBody: 'We’ll get back to you soon.',
+                  successTitle: L.requestSubmitted,
+                  successBody: L.wellGetBackSoon,
                   onDone: () => app.resetTo(DRoute.helpSupport),
                 );
               },

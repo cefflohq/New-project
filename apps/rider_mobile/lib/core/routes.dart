@@ -12,6 +12,8 @@
 /// routes.dart — one shared pattern across both Flutter clients.
 library;
 
+import 'package:cefflo_rider_mobile/l10n/l10n.dart';
+
 /// Bottom navigation, reconciled from the references.
 ///
 /// Two label sets appear across the set: Home/Runs/History/Profile
@@ -93,116 +95,116 @@ class RouteSpec {
   final bool requiresEntityId;
 }
 
-const routeSpecs = <DRoute, RouteSpec>{
-  DRoute.splash: RouteSpec(route: DRoute.splash, id: 'D01', title: 'Splash'),
-  DRoute.signIn: RouteSpec(route: DRoute.signIn, id: 'D02', title: 'Sign In'),
+Map<DRoute, RouteSpec> get routeSpecs => <DRoute, RouteSpec>{
+  DRoute.splash: RouteSpec(route: DRoute.splash, id: 'D01', title: L.splash),
+  DRoute.signIn: RouteSpec(route: DRoute.signIn, id: 'D02', title: L.sign),
   DRoute.emailSignIn: RouteSpec(
     route: DRoute.emailSignIn,
     id: 'D03',
-    title: 'Sign In with Email',
+    title: L.signEmail,
     parent: DRoute.signIn,
   ),
   DRoute.createAccount: RouteSpec(
     route: DRoute.createAccount,
     id: 'D04',
-    title: 'Create your account',
+    title: L.createAccount,
     parent: DRoute.signIn,
   ),
   DRoute.forgotPassword: RouteSpec(
     route: DRoute.forgotPassword,
     id: 'D05',
-    title: 'Forgot Password?',
+    title: L.forgotPassword,
     parent: DRoute.emailSignIn,
   ),
   DRoute.checkEmail: RouteSpec(
     route: DRoute.checkEmail,
     id: 'D06',
-    title: 'Check your email',
+    title: L.checkEmail,
     parent: DRoute.forgotPassword,
   ),
   DRoute.setNewPassword: RouteSpec(
     route: DRoute.setNewPassword,
     id: 'D07',
-    title: 'Set a new password',
+    title: L.setNewPassword,
     parent: DRoute.checkEmail,
   ),
   DRoute.passwordUpdated: RouteSpec(
     route: DRoute.passwordUpdated,
     id: 'D08',
-    title: 'Password Updated!',
+    title: L.passwordUpdated,
     parent: DRoute.setNewPassword,
   ),
   DRoute.invitationLanding: RouteSpec(
     route: DRoute.invitationLanding,
     id: 'D09',
-    title: 'Invitation Landing',
+    title: L.invitationLanding,
   ),
 
   DRoute.acceptInvitation: RouteSpec(
     route: DRoute.acceptInvitation,
     id: 'D10',
-    title: 'Accept Invitation',
+    title: L.acceptInvitation,
     parent: DRoute.invitationLanding,
   ),
   DRoute.noBusinessConnectedHome: RouteSpec(
     route: DRoute.noBusinessConnectedHome,
     id: 'D11',
-    title: 'No Business Connected',
+    title: L.noBusinessConnected,
     tab: NavTab.home,
   ),
   DRoute.driverDetails: RouteSpec(
     route: DRoute.driverDetails,
     id: 'D12',
-    title: 'Driver Details',
+    title: L.driverDetails,
     parent: DRoute.acceptInvitation,
   ),
   DRoute.personalDetails: RouteSpec(
     route: DRoute.personalDetails,
     id: 'D12.1',
-    title: 'Personal Details',
+    title: L.personalDetails,
     parent: DRoute.driverDetails,
   ),
   DRoute.vehicleAndDocuments: RouteSpec(
     route: DRoute.vehicleAndDocuments,
     id: 'D12.2',
-    title: 'Vehicle & Documents',
+    title: L.vehicleDocuments,
     parent: DRoute.personalDetails,
   ),
   DRoute.pendingReview: RouteSpec(
     route: DRoute.pendingReview,
     id: 'D14.1',
-    title: 'Application Under Review',
+    title: L.applicationUnderReview,
     tab: NavTab.home,
   ),
   DRoute.approved: RouteSpec(
     route: DRoute.approved,
     id: 'D14.2',
-    title: 'You’re Approved!',
+    title: L.youreApproved,
     tab: NavTab.home,
   ),
   DRoute.readyToGo: RouteSpec(
     route: DRoute.readyToGo,
     id: 'D14.3',
-    title: 'Ready to Go',
+    title: L.readyGo,
     tab: NavTab.home,
   ),
   DRoute.noBusinessConnected: RouteSpec(
     route: DRoute.noBusinessConnected,
     id: 'D16',
-    title: 'No Business Connected',
+    title: L.noBusinessConnected,
     tab: NavTab.home,
   ),
   DRoute.joinBusiness: RouteSpec(
     route: DRoute.joinBusiness,
     id: 'D17',
-    title: 'Join Business',
+    title: L.joinBusiness,
     parent: DRoute.noBusinessConnected,
     tab: NavTab.home,
   ),
   DRoute.businessJoined: RouteSpec(
     route: DRoute.businessJoined,
     id: 'D18',
-    title: 'Business Joined',
+    title: L.businessJoined,
     parent: DRoute.joinBusiness,
     tab: NavTab.home,
   ),
@@ -210,13 +212,13 @@ const routeSpecs = <DRoute, RouteSpec>{
   DRoute.today: RouteSpec(
     route: DRoute.today,
     id: 'D19',
-    title: 'Today',
+    title: L.today,
     tab: NavTab.home,
   ),
   DRoute.runDetails: RouteSpec(
     route: DRoute.runDetails,
     id: 'D20',
-    title: 'Run Details',
+    title: L.runDetails,
     parent: DRoute.today,
     tab: NavTab.runs,
     requiresEntityId: true,
@@ -224,7 +226,7 @@ const routeSpecs = <DRoute, RouteSpec>{
   DRoute.stopList: RouteSpec(
     route: DRoute.stopList,
     id: 'D21',
-    title: 'Stop List',
+    title: L.stopList,
     parent: DRoute.runDetails,
     tab: NavTab.runs,
     requiresEntityId: true,
@@ -232,7 +234,7 @@ const routeSpecs = <DRoute, RouteSpec>{
   DRoute.navigationToStop: RouteSpec(
     route: DRoute.navigationToStop,
     id: 'D22',
-    title: 'Navigation to Stop',
+    title: L.navigationStop,
     parent: DRoute.stopList,
     tab: NavTab.runs,
     requiresEntityId: true,
@@ -240,7 +242,7 @@ const routeSpecs = <DRoute, RouteSpec>{
   DRoute.confirmDelivery: RouteSpec(
     route: DRoute.confirmDelivery,
     id: 'D23',
-    title: 'Confirm Delivery',
+    title: L.confirmDelivery,
     parent: DRoute.navigationToStop,
     tab: NavTab.runs,
     requiresEntityId: true,
@@ -248,7 +250,7 @@ const routeSpecs = <DRoute, RouteSpec>{
   DRoute.deliveryIssue: RouteSpec(
     route: DRoute.deliveryIssue,
     id: 'D28',
-    title: 'Delivery Issue',
+    title: L.deliveryIssue,
     parent: DRoute.confirmDelivery,
     tab: NavTab.runs,
     requiresEntityId: true,
@@ -256,7 +258,7 @@ const routeSpecs = <DRoute, RouteSpec>{
   DRoute.reportIssue: RouteSpec(
     route: DRoute.reportIssue,
     id: 'D29',
-    title: 'Report Issue',
+    title: L.reportIssue,
     parent: DRoute.deliveryIssue,
     tab: NavTab.runs,
     requiresEntityId: true,
@@ -264,7 +266,7 @@ const routeSpecs = <DRoute, RouteSpec>{
   DRoute.runCompleted: RouteSpec(
     route: DRoute.runCompleted,
     id: 'D30',
-    title: 'Run Completed',
+    title: L.runCompleted,
     parent: DRoute.today,
     tab: NavTab.runs,
     requiresEntityId: true,
@@ -273,13 +275,13 @@ const routeSpecs = <DRoute, RouteSpec>{
   DRoute.deliveryHistory: RouteSpec(
     route: DRoute.deliveryHistory,
     id: 'D31',
-    title: 'Delivery History',
+    title: L.deliveryHistory,
     tab: NavTab.history,
   ),
   DRoute.historyDetail: RouteSpec(
     route: DRoute.historyDetail,
     id: 'D32',
-    title: 'History Detail',
+    title: L.historyDetail,
     parent: DRoute.deliveryHistory,
     tab: NavTab.history,
     requiresEntityId: true,
@@ -287,7 +289,7 @@ const routeSpecs = <DRoute, RouteSpec>{
   DRoute.notifications: RouteSpec(
     route: DRoute.notifications,
     id: 'D33',
-    title: 'Notifications',
+    title: L.notifications,
     parent: DRoute.deliveryHistory,
     tab: NavTab.history,
   ),
@@ -295,34 +297,34 @@ const routeSpecs = <DRoute, RouteSpec>{
   DRoute.profile: RouteSpec(
     route: DRoute.profile,
     id: 'D34',
-    title: 'Profile',
+    title: L.profile,
     tab: NavTab.profile,
   ),
   DRoute.editProfile: RouteSpec(
     route: DRoute.editProfile,
     id: 'D35',
-    title: 'Edit Profile',
+    title: L.editProfile,
     parent: DRoute.profile,
     tab: NavTab.profile,
   ),
   DRoute.vehicleDetails: RouteSpec(
     route: DRoute.vehicleDetails,
     id: 'D36',
-    title: 'Vehicle Details',
+    title: L.vehicleDetails,
     parent: DRoute.profile,
     tab: NavTab.profile,
   ),
   DRoute.documents: RouteSpec(
     route: DRoute.documents,
     id: 'D37',
-    title: 'Documents',
+    title: L.documents,
     parent: DRoute.profile,
     tab: NavTab.profile,
   ),
   DRoute.settings: RouteSpec(
     route: DRoute.settings,
     id: 'D38',
-    title: 'Settings',
+    title: L.settings,
     parent: DRoute.profile,
     tab: NavTab.profile,
   ),
@@ -330,21 +332,21 @@ const routeSpecs = <DRoute, RouteSpec>{
   DRoute.helpSupport: RouteSpec(
     route: DRoute.helpSupport,
     id: 'D40',
-    title: 'Help & Support',
+    title: L.helpSupport,
     parent: DRoute.profile,
     tab: NavTab.profile,
   ),
   DRoute.vendorSupport: RouteSpec(
     route: DRoute.vendorSupport,
     id: 'D40-B',
-    title: 'Vendor Support',
+    title: L.vendorSupport,
     parent: DRoute.helpSupport,
     tab: NavTab.profile,
   ),
   DRoute.submitTicket: RouteSpec(
     route: DRoute.submitTicket,
     id: 'D40-C',
-    title: 'Submit Ticket',
+    title: L.submitTicket,
     parent: DRoute.helpSupport,
     tab: NavTab.profile,
   ),

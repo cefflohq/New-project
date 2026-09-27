@@ -9,10 +9,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
   supabase_flutter: ^2.8.0
   lucide_icons_flutter: ^3.1.18
   image_picker: ^1.2.3
   geolocator: ^14.1.0
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:
@@ -21,6 +25,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
     # D-35 canonical logo assets, copied byte-identical from
     # docs/cefflo/brand/assets/logo/. The mark is never redrawn in code.
