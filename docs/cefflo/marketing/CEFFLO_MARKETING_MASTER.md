@@ -919,6 +919,54 @@ DEPRECATED
 
 History remains traceable.
 
+### Active Founder decisions (2026-09-27)
+
+Source: `docs/cefflo/founder/CEFFLO_2026-09-27_FOUNDER_DECISIONS_EXECUTION.md`,
+Parts B–F.
+
+- **AI Creator Personas:**
+  - Marketing may operate Cefflo-owned AI creator personas as recurring
+    creators. Each approved persona keeps a stable identity (face, age range,
+    voice, accent/language behaviour, personality, speaking style, visual
+    identity, business angle).
+  - Persona count and identities are controlled by the Marketing content
+    system, never improvised per post.
+- **Malaysian voice:**
+  - Natural Malaysian Bahasa Melayu, with English mixing only where it fits
+    the persona.
+  - Conversational, sounding like a person talking to a phone camera.
+  - No announcer tone, no textbook-formal BM, no slang caricature.
+- **Human behaviour:** natural eye movement, blinking, micro-expression,
+  head/hand movement, pauses and tempo. No frozen avatar posture, robotic
+  gestures or permanently fixed eye contact.
+- **Controlled-imperfection smartphone UGC:**
+  - Default format: vertical 9:16, consumer-phone rendering, slight handheld
+    movement, natural exposure, white balance and motion blur, believable skin
+    texture, everyday lighting.
+  - Not cinematic, over-sharp, HDR-heavy or studio-lit.
+  - Imperfection is subtle, never degraded.
+- **No fake testimony:**
+  - An AI persona is never a real customer. Scripts must not claim usage
+    history, revenue, savings, volumes, logos, testimonials or statistics that
+    are not evidence-backed.
+  - Real-customer UGC only with a genuine identity, permission and
+    evidence-backed results, per the Claims Registry.
+- **Platform synthetic-media gate:**
+  - Before automated publishing of photorealistic AI-human content, verify the
+    current official disclosure rules for each destination platform.
+  - Publishing must be able to add the required labels. Policies are not
+    hard-coded here.
+- **Funnel:** problem-first UGC → problem→solution → product proof/demo →
+  corporate trust film → real customer UGC (once evidence exists) → conversion
+  ads. Cefflo does not need to be hard-sold in every video. Product
+  demonstrations follow the canonical operating model.
+- **Measurement chain:** content → distribution → qualified attention → lead
+  → vendor signup → activated vendor → paid vendor. Posts generated is never
+  the success metric.
+- **Render boundary:** the render stage is operational only once a real
+  video-generation provider is connected. Scripts or prompts alone do not
+  make it live.
+
 ---
 
 # 8. Context Precedence

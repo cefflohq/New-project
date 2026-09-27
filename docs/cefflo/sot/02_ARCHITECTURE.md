@@ -90,6 +90,33 @@ Separate mobile app; companion, not replacement. Its selected baseline is
 DEV/STAGING, integration in progress, and not yet visually locked or production
 ready.
 
+### Mobile delivery target (Founder, 2026-09-27)
+Vendor Mobile and Driver Mobile ship as installed **Android and iOS**
+applications built from their Flutter codebases. Their Flutter Web builds are
+preview/QA artifacts only and are never production surfaces.
+`rider.cefflo.com` is not the Driver app. Vendor Web/Desktop, Customer
+Tracking, the Public Website and Founder Admin remain web surfaces.
+
+### Country / market and language (Founder, 2026-09-27)
+Country/market and UI language are **independent settings**. Authority:
+`docs/cefflo/founder/CEFFLO_2026-09-27_FOUNDER_DECISIONS_EXECUTION.md`,
+Part A.
+- **Country/market** governs phone format, currency, timezone defaults,
+  address format, availability and regional commercial configuration. It
+  never sets the UI language.
+- **Language** is per user, not per business.
+  - First launch uses the device language if Cefflo supports it, otherwise
+    English.
+  - An explicit user choice persists and overrides device detection until it
+    is reset.
+  - Language never changes operational data or business logic.
+- **Malaysia launch scope:** production-quality Bahasa Melayu and English in
+  Vendor Mobile, Driver Mobile, and Vendor Web/Desktop where its architecture
+  supports it. More languages come only after translation QA. Core flows must
+  not ship partially translated.
+- Customer Tracking and the Public Website use their own localization
+  strategy, not the authenticated-user preference.
+
 ### Driver Flutter (formerly "Rider Flutter")
 Separate execution app with Rider-specific state/authorization. **"Cefflo Driver" is the LOCKED user-facing product name (D-38, 2026-09-14)** — not merely a freeze-era architectural label. The app's internal role/state/authorization remains "Rider," unchanged — also locked, permanently, at the backend/schema/API layer. UI/UX screen-inventory authority: `13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` (D-37, 2026-09-14).
 
