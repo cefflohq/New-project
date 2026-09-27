@@ -61,8 +61,13 @@ that out.
 
 ## 2. Recovery posture
 
-- Backups and PITR **cannot be seen** with the public key. The Founder must
-  verify in the Supabase Dashboard → Database → Backups:
+- Public (publishable-key) probes prove **only** that certain objects are
+  reachable. They do **not** prove the full Production schema, RLS, grants,
+  functions, triggers, out-of-band objects or data. §1 is therefore evidence
+  for planning, not clearance to write.
+- Backups and PITR **cannot be seen** with the public key. The Founder (or an
+  operator with Dashboard access) must verify in Supabase Dashboard →
+  Database → Backups:
   - the plan tier (Free has no automated backups; Pro has daily backups with
     7-day retention);
   - whether PITR is enabled.
@@ -71,111 +76,139 @@ that out.
   RLS or grants.
 - **Rollback is therefore restore-from-backup/PITR, or a forward fix.** A
   schema-level "undo" is not available.
-- **Required before step 3:** a fresh manual backup, or a confirmed PITR
-  point, taken immediately before migration.
+- **The write gate requires both:**
+  - a privileged inspection (below);
+  - a verified recovery point taken immediately before gate step G4.
 
-## 3. Release procedure
+## 3. Release procedure (gated; each gate must pass before the next)
 
-1. **PRECHECK.**
-   - Founder approves the release gate.
-   - Confirm backup/PITR, and record the restore point.
-   - Secret-key parity inspection: out-of-band objects and row counts per
-     table.
-2. **Apply migrations** 1→53 in order, each in its own transaction (Supabase
-   CLI `db push`, or the same `psql -1 -f` procedure used on staging), and
-   record each in `supabase_migrations.schema_migrations`. **Stop at the first
-   error** and do not continue.
-3. **Post-migration verification.**
-   - Marker probes from §1 all return 200.
-   - `schema_migrations` count is 54 and matches the repo.
-   - The D-64 backfill: every order has `order_date`/`order_seq`, with no
-     duplicate `(business_id, order_date, order_seq)`.
-4. **RLS verification:**
-   - anon sees `[]` on all operational tables;
-   - a second business sees none of the first business's rows;
-   - `rider_live_keys` and `latest_rider_locations` refuse foreign callers;
-   - `public_tracking` returns null for `#CF-xxx`, `public_ref` and the order
-     UUID used as a token.
-5. **Function configuration:**
-   - `tracking-pod`: set `CEFFLO_TRACKING_CORS_ORIGINS=https://tracking.cefflo.com`
-     (the canonical origin, `02_ARCHITECTURE.md`).
-   - Deploy `geocode-order` with `CEFFLO_MAPBOX_ACCESS_TOKEN`, if Mapbox is
-     approved for launch (§5).
-6. **Auth configuration (§4):**
-   - custom SMTP;
-   - Site URL;
-   - redirect allowlist `cefflo-vendor://auth-callback`,
-     `cefflo-driver://auth-callback`, `https://invite.cefflo.com/**`;
-   - email templates (the Vendor sign-up confirmation uses OTP code
-     `{{ .Token }}`).
-7. **Hosting and DNS (§6).**
-8. **Smoke test** with TEST-ONLY accounts:
-   - Vendor sign-in, create order (`#CF-001`), dispatch;
-   - Driver (Android build against Production) accept → pickup → deliver
-     with POD;
-   - Customer tracking link from the order;
-   - password recovery via the deep link.
-9. **Rollback / recovery:**
-   - Migration failure: stop, and restore from the step-1 restore point, or
-     forward-fix if the failure is isolated and understood.
-   - Config or DNS failure: revert that setting (DNS records are reversible;
-     keep the prior values recorded).
+| Gate | Action | Pass criterion | On failure |
+|---|---|---|---|
+| G1 BACKUP/PITR VERIFIED | Take a fresh manual backup, or record the PITR timestamp. Confirm in the Dashboard that it is restorable. | Restore point ID/time recorded in the release log | STOP. No write. |
+| G2 PROD SCHEMA + RLS INSPECTION | Privileged read-only session (`psql` with the DB connection string, from an operator machine and never committed). Dump `schema_migrations`, `pg_policies`, table/column list, functions, triggers, grants and row counts per table. Diff against staging at `202609270002`. | Only expected differences (the 53 pending migrations). No out-of-band objects that a migration would collide with. | STOP. Resolve each difference into the plan (a forward-compatible migration, or a documented skip) and re-run G2. |
+| G3 ORDERED PLAN | Fix the exact list `202608270001 → 202609270002` (53 files), with a checksum of each file at the release commit. Name the operator and the approver. | Plan signed off by the Founder | STOP. |
+| G4 APPLY, STOP ON FIRST ERROR | Apply each migration in order, each in its own transaction (`psql -v ON_ERROR_STOP=1 -1 -f <file>`, or `supabase db push`). Record each in `supabase_migrations.schema_migrations`. | Every file commits, and 54 rows are in `schema_migrations` | Halt at the failing file and do not continue. Either forward-fix (isolated and understood), or restore the G1 point. |
+| G5 SCHEMA/RPC/RLS VERIFY | Re-run the G2 dump and diff it against staging. Marker probes (§1) return 200. D-64 backfill: every order has `order_date`/`order_seq`, with no duplicate `(business_id, order_date, order_seq)`. RLS checks as below. | Diff is empty, and all checks pass | Forward fix, or restore G1 |
+| G6 EDGE FUNCTION / AUTH CONFIG | Deploy `geocode-order` and `tracking-pod`. Set their secrets (§5, `CEFFLO_TRACKING_CORS_ORIGINS=https://tracking.cefflo.com`). Configure Auth SMTP, Site URL, redirect allowlist and templates (§4). | Function health responds; test emails are received from `no-reply@cefflo.com` | Revert the setting or secret, or undeploy |
+| G7 TEST-ONLY PROD SMOKE | Use TEST-ONLY accounts. **Vendor:** signup confirmation deep link, sign-in, create order `#CF-001` (location resolves), dispatch. **Driver** (Production build): invitation → accept → pickup → deliver with POD. **Customer:** tracking link. **Recovery:** password reset via the deep link. | Full lifecycle passes | Fix, or roll back the failing layer. Delete TEST-ONLY rows. |
+| G8 GO / ROLLBACK | Founder decides GO. DNS cut-over (§6) happens **only after** G7. | GO recorded | Roll back per layer: DNS records, then config, then DB restore to G1 (last resort) |
 
-## 4. Auth email (custom SMTP)
+RLS checks in G5:
 
-The repo decides **no** sender domain, sender address or provider. `supabase/config.toml`
-covers local development only. Production settings needed (Supabase Auth →
-SMTP):
+- anon sees `[]` on all operational tables;
+- a second business sees none of the first business's rows;
+- `rider_live_keys` and `latest_rider_locations` refuse foreign callers;
+- `public_tracking` returns null for `#CF-xxx`, `public_ref` and the order
+  UUID used as a token.
 
-- `SMTP_HOST`
-- `SMTP_PORT`
-- `SMTP_USER`
-- `SMTP_PASSWORD`
-- `SMTP_FROM_ADDRESS`
-- `SMTP_FROM_NAME`
+Credentials the operator needs for G1–G6 (never committed or printed): the
+Production DB connection string, a Supabase access token for the CLI, and
+Dashboard access for backups and Auth settings.
 
-Founder decision required: the sender domain and address (for example on
-`cefflo.com`, with SPF/DKIM/DMARC DNS records at Cloudflare) and the provider.
+## 4. Auth email (custom SMTP): prepared, not configured
 
-Native apps (done in code): password recovery redirects to
-`cefflo-vendor://auth-callback` / `cefflo-driver://auth-callback`. The app
-opens the existing Set New Password screen, then signs out after the update.
+- **Decided identity:**
+  - display name **"Cefflo"**;
+  - sender **`no-reply@cefflo.com`**;
+  - never a personal mailbox.
+- **Provider:** not chosen (Founder). Whatever provider is chosen, the settings
+  are Supabase Auth → SMTP:
+  - `SMTP_HOST`
+  - `SMTP_PORT` (587 STARTTLS or 465)
+  - `SMTP_USER`
+  - `SMTP_PASSWORD`
+  - sender `no-reply@cefflo.com`
+  - name `Cefflo`
+- **DNS at Cloudflare for `cefflo.com`:**
+  - the provider's SPF include merged into the single existing SPF TXT;
+  - the provider's DKIM CNAME/TXT records;
+  - `_dmarc` TXT, starting at `v=DMARC1; p=none; rua=mailto:<monitored address>`,
+    then tightened.
+- **Auth URL configuration:**
+  - Site URL `https://vendor.cefflo.com`;
+  - redirect allowlist:
+    - `cefflo-vendor://auth-callback`
+    - `cefflo-driver://auth-callback`
+    - `https://vendor.cefflo.com/**`
+    - `https://invite.cefflo.com/**`
+- **Code, verified 2026-09-27:**
+  - `resetPasswordForEmail` redirects to the app scheme;
+  - `signUp` passes `emailRedirectTo` to the app scheme in both apps, as does
+    Vendor `resend`, so confirmation links no longer fall back to the Site URL.
+  - Android intent filters and the iOS `CFBundleURLSchemes` declare
+    `cefflo-vendor` and `cefflo-driver`.
+- **Templates:** confirm signup, reset password, magic link/OTP (the Vendor
+  email OTP uses `{{ .Token }}`). Each is branded "Cefflo" with no personal
+  names.
+- **Invitations:**
+  - Vendor creates the invitation through RPC (`p_invited_email/name/phone`) and shares
+    the `https://invite.cefflo.com/...` link.
+  - The Driver opens it, signs up or signs in (the confirmation deep link returns
+    to the app), then accepts.
+  - The invitation flow sends **no** Supabase invite email, so SMTP only affects
+    signup, recovery and OTP.
+  - `invite.cefflo.com` must resolve before launch (§6).
 
-## 5. Geocoding (Mapbox)
+## 5. Geocoding (Mapbox): required for launch
 
-- `geocode-order` reads the **server-side** secret `CEFFLO_MAPBOX_ACCESS_TOKEN`
-  (Mapbox Geocoding v6, `permanent=true`). It is never in client code.
-- Without it, orders are marked `location_status=failed`
-  (`invalid_credentials`). Manual location entry and manual run building
-  still work.
-- Coverage decisions, suggested runs and ETA need coordinates, so launch
-  **without** Mapbox is functional but degraded.
-- Recommended token restrictions: a Mapbox secret token with geocoding scope
-  only, used only from the Edge Function, and URL-restricted where Mapbox
-  allows.
+- Launch quality **requires** geocoding. There is no degraded manual-location
+  launch plan.
+- **Token scope:**
+  - `geocode-order` reads the **server-side** secret `CEFFLO_MAPBOX_ACCESS_TOKEN`
+    (Mapbox Geocoding v6 forward, `permanent=true`).
+  - Verified 2026-09-27: no Mapbox token appears in any client, test fixture or
+    committed file. Only the env-var name is in `.env.staging.example`.
+- **Failure behaviour is truthful.** The order's `location_status` becomes
+  `failed` with a recorded reason:
+  - `invalid_credentials`
+  - `rate_limited`
+  - `provider_unavailable`
+  - `network_failure`
+  - `no_result`
+  - `malformed_provider_response`
 
-## 6. DNS / hosting (read-only inventory, 2026-09-27)
+  Or it becomes `ambiguous` (low confidence). The Vendor UI shows "Address could not be located"
+  or "Address ambiguous", never a fake coordinate.
+- **Deploy requirements (G6):**
+  - a Mapbox account with Permanent Geocoding enabled;
+  - a token with geocoding scope only;
+  - `supabase secrets set CEFFLO_MAPBOX_ACCESS_TOKEN=… --project-ref lmaxtrubwdniovxyuqdy`;
+  - `supabase functions deploy geocode-order --project-ref lmaxtrubwdniovxyuqdy`.
+- **Verification:** a G7 test order resolves (`location_status=resolved`), and
+  coverage, suggested runs and ETA render.
+
+## 6. DNS / hosting: prepared, not changed
 
 Authoritative nameservers: Cloudflare (`chuck`/`maya.ns.cloudflare.com`).
+`preview.cefflo.com` is **not touched**.
 
 | Host | Serves today | Production target |
 |---|---|---|
-| `cefflo.com`, `www.cefflo.com` | Vercel, retirement placeholder | Public Website, once approved (D-62 NOT IMPLEMENTED); placeholder until then |
-| `vendor.cefflo.com` | Vercel, retirement placeholder | Vendor Web/Desktop (static build `vendor/`) |
-| `tracking.cefflo.com` | Vercel, retirement placeholder | Customer Tracking (static build `customer/`) |
-| `foundr.cefflo.com` | Vercel, retirement placeholder | Founder Admin (`foundr/`); internal |
-| `invite.cefflo.com` | **NXDOMAIN** | Invitation route (`invite/`). Vendor Web already issues links to this host, so it is **required for Driver onboarding** |
-| `rider.cefflo.com` | Vercel, retirement placeholder | Stays retired; not the Driver app |
-| `preview.cefflo.com` | Cloudflare, Vendor preview | Keep; preview infrastructure |
-| `api.cefflo.com`, `app.cefflo.com` | NXDOMAIN | Not required (clients talk to Supabase directly) |
+| `cefflo.com`, `www.cefflo.com` | Vercel, retirement placeholder | Unchanged (Website Master is out of scope) |
+| `vendor.cefflo.com` | Vercel, retirement placeholder | Vendor Web/Desktop (static `vendor/`) |
+| `tracking.cefflo.com` | Vercel, retirement placeholder | Customer Tracking (static `customer/`) |
+| `invite.cefflo.com` | **NXDOMAIN** | Invitation route (`invite/`); **required for Driver onboarding** |
+| `foundr.cefflo.com` | Vercel, retirement placeholder | Founder Admin (`foundr/`); internal, behind Cloudflare Access |
+| `rider.cefflo.com` | Vercel, retirement placeholder | Stays retired |
+| `preview.cefflo.com` | Cloudflare, Vendor preview | **Do not touch** |
 
-- Minimum plan: host the canonical static build (`scripts/build-static.mjs`
-  with production env) on Cloudflare Pages. Then repoint `vendor`,
-  `tracking`, `invite` and `foundr` from Vercel to Pages.
-- Record prior DNS values for rollback. Remove Vercel records only after
-  Pages is verified.
-- Native Vendor/Driver apps need no web host, only the auth redirect schemes
-  above and public privacy/support URLs for the stores.
+Cut-over, after G7 only:
+
+1. **Record.** Export the current Cloudflare DNS records for the 4 hosts
+   (type, target, proxy flag, TTL) into the release log. This is the rollback
+   source.
+2. **Build.** `scripts/build-static.mjs` with the Production env (publishable
+   key only; never a secret key or DB URL). Deploy to one Cloudflare Pages
+   project per host, or one project with per-host routes. Verify on the
+   `*.pages.dev` URLs first.
+3. **Attach.** Add each custom domain in Pages; this creates a proxied CNAME to
+   the Pages project. For `invite` this is a new record. For `vendor`,
+   `tracking` and `foundr` it replaces the Vercel record.
+4. **Verify.** HTTPS 200, the correct surface on each host, the tracking link
+   from a G7 order, and the invite link.
+5. **Rollback.** Restore the recorded record values (DNS changes take effect
+   within minutes when proxied). For `invite`, delete the record. Remove the
+   Vercel projects only after a stable period.
 
 ## 7. Monitoring (launch minimum)
 
@@ -197,10 +230,13 @@ Authoritative nameservers: Cloudflare (`chuck`/`maya.ns.cloudflare.com`).
 | Vendor iOS | Created (PR #12). Bundle `com.cefflo.vendor` (Android `com.cefflo.cefflo_vendor_mobile`), display "Cefflo Vendor", camera/photo usage strings, URL scheme `cefflo-vendor`. **Build/archive needs macOS + Xcode.** |
 | Driver iOS | Created (PR #12). Bundle `com.cefflo.driver` (Android `com.cefflo.cefflo_rider_mobile`), display "Cefflo Driver", location/camera/photo usage strings, URL scheme `cefflo-driver`. **Build/archive needs macOS + Xcode.** |
 
-- **Identifiers.** Package and bundle IDs follow the repo's existing `com.cefflo` org
-  convention and are **PROVISIONAL**. No Founder-approved IDs exist in the
-  repo. They must be confirmed (or replaced) before the first store upload,
-  because they are permanent once published.
+- **Identifiers (final, 2026-09-27):**
+  - Android: `com.cefflo.cefflo_vendor_mobile` and `com.cefflo.cefflo_rider_mobile`
+    (kept).
+  - iOS: `com.cefflo.vendor` and `com.cefflo.driver`.
+
+  iOS forbids `_`, so the iOS IDs cannot mirror the Android ones. Nothing is
+  registered yet, and all four are permanent once published.
 - **Remaining for stores:**
   - **Android:** Google Play Console account, an upload keystore (`key.properties`
     outside git) and `signingConfigs.release`, an AAB build, a store listing,
@@ -217,10 +253,10 @@ Authoritative nameservers: Cloudflare (`chuck`/`maya.ns.cloudflare.com`).
 
 | # | Mutation | Why | Target | Risk | Verification | Recovery |
 |---|---|---|---|---|---|---|
-| 1 | Fresh backup / PITR restore point | Migrations are forward-only | Prod DB | None | Restore point recorded | — |
-| 2 | Apply migrations 202608270001 → 202609270002 (53) | Production is at foundation only | Prod DB | High (schema, RLS, backfill) | §3 steps 3–4 | Restore point or forward fix |
+| 1 | G1 fresh backup / PITR point + G2 privileged read-only inspection | Migrations are forward-only; public probes do not prove full state | Prod DB (read) | None | Restore point recorded; G2 diff only the 53 pending | — |
+| 2 | Apply migrations 202608270001 → 202609270002 (53) | Production is at foundation only | Prod DB | High (schema, RLS, backfill) | G5 | Restore point or forward fix |
 | 3 | Custom SMTP, email templates, Site URL, redirect allowlist | Built-in mailer is rate-limited; native recovery links | Prod Auth | Medium | Recovery and verification email received | Revert settings |
 | 4 | `tracking-pod` `CEFFLO_TRACKING_CORS_ORIGINS=https://tracking.cefflo.com` | POD photo on the hosted tracking page | Prod function secret | Low | POD thumbnail loads on `tracking.cefflo.com` | Revert secret |
-| 5 | Deploy `geocode-order` plus `CEFFLO_MAPBOX_ACCESS_TOKEN` (if approved) | Coordinates for coverage, planning and ETA | Prod functions | Low | New order resolves location | Undeploy / unset |
-| 6 | Cloudflare Pages project; DNS `vendor`, `tracking`, `invite`, `foundr` → Pages | Serve canonical web surfaces | Cloudflare | Medium (reversible) | HTTPS 200 and smoke test | Restore recorded records |
-| 7 | Production smoke test (§3 step 8) with TEST-ONLY accounts | Release proof | Prod | Low (test rows) | Full lifecycle passes | Clean TEST-ONLY rows |
+| 5 | Deploy `geocode-order` plus `CEFFLO_MAPBOX_ACCESS_TOKEN` (required) | Coordinates for coverage, planning and ETA | Prod functions | Low | New order resolves location | Undeploy / unset |
+| 6 | Production smoke test (G7, on `*.pages.dev` hosts) with TEST-ONLY accounts | Release proof | Prod | Low (test rows) | Full lifecycle passes | Clean TEST-ONLY rows |
+| 7 | Cloudflare Pages project; DNS `vendor`, `tracking`, `invite`, `foundr` → Pages (G8, after GO) | Serve canonical web surfaces | Cloudflare | Medium (reversible) | HTTPS 200 and smoke test | Restore recorded records |
