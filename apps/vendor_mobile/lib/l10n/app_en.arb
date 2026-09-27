@@ -1263,5 +1263,9 @@
   "tagFood": "Food",
   "tagFashion": "Fashion",
   "tagBeauty": "Beauty",
-  "tagGifts": "Gifts"
+  "tagGifts": "Gifts",
+  "locatingBusinessAddress": "Locating your business address…",
+  "businessAddressLocated": "Business address located",
+  "pickupLocationRequired": "Your pickup location is required. We could not locate your business address; make sure it is complete, then try again.",
+  "tryLocatingAgain": "Try locating again"
 }

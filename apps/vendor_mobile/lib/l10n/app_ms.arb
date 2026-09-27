@@ -822,5 +822,9 @@
   "tagFood": "Makanan",
   "tagFashion": "Fesyen",
   "tagBeauty": "Kecantikan",
-  "tagGifts": "Hadiah"
+  "tagGifts": "Hadiah",
+  "locatingBusinessAddress": "Mencari lokasi alamat perniagaan anda…",
+  "businessAddressLocated": "Alamat perniagaan ditemui",
+  "pickupLocationRequired": "Lokasi pengambilan anda diperlukan. Kami tidak dapat mencari alamat perniagaan anda; pastikan ia lengkap, kemudian cuba lagi.",
+  "tryLocatingAgain": "Cuba cari semula"
 }

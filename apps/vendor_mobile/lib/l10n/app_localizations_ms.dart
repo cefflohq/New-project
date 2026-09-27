@@ -2723,4 +2723,18 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get tagGifts => 'Hadiah';
+
+  @override
+  String get locatingBusinessAddress =>
+      'Mencari lokasi alamat perniagaan anda…';
+
+  @override
+  String get businessAddressLocated => 'Alamat perniagaan ditemui';
+
+  @override
+  String get pickupLocationRequired =>
+      'Lokasi pengambilan anda diperlukan. Kami tidak dapat mencari alamat perniagaan anda; pastikan ia lengkap, kemudian cuba lagi.';
+
+  @override
+  String get tryLocatingAgain => 'Cuba cari semula';
 }

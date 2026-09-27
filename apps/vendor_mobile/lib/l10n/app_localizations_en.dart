@@ -2720,4 +2720,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tagGifts => 'Gifts';
+
+  @override
+  String get locatingBusinessAddress => 'Locating your business address…';
+
+  @override
+  String get businessAddressLocated => 'Business address located';
+
+  @override
+  String get pickupLocationRequired =>
+      'Your pickup location is required. We could not locate your business address; make sure it is complete, then try again.';
+
+  @override
+  String get tryLocatingAgain => 'Try locating again';
 }

@@ -752,6 +752,28 @@ class VendorRepository {
 
   // ------------------------------------------------------------- business
 
+  /// Resolves the business's own saved address to its real pickup origin
+  /// via the canonical geocode-order function (`business_id` mode, Mapbox,
+  /// server-side token). Stores nothing: the caller saves the result with
+  /// [setServiceArea]. Returns null when the address cannot be located.
+  Future<({double latitude, double longitude})?> locateBusinessAddress(
+    String businessId,
+  ) async {
+    if (_demo) return (latitude: 3.1319, longitude: 101.6841);
+    final res = await _run(
+      () => _db!.functions.invoke(
+        'geocode-order',
+        body: {'business_id': businessId},
+      ),
+    );
+    final data = res.data;
+    if (data is! Map || data['status'] != 'resolved') return null;
+    final lat = (data['latitude'] as num?)?.toDouble();
+    final lng = (data['longitude'] as num?)?.toDouble();
+    if (lat == null || lng == null) return null;
+    return (latitude: lat, longitude: lng);
+  }
+
   Future<Map<String, dynamic>> business(String businessId) async {
     if (_demo) {
       return const {

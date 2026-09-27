@@ -5042,6 +5042,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Gifts'**
   String get tagGifts;
+
+  /// No description provided for @locatingBusinessAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Locating your business address…'**
+  String get locatingBusinessAddress;
+
+  /// No description provided for @businessAddressLocated.
+  ///
+  /// In en, this message translates to:
+  /// **'Business address located'**
+  String get businessAddressLocated;
+
+  /// No description provided for @pickupLocationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Your pickup location is required. We could not locate your business address; make sure it is complete, then try again.'**
+  String get pickupLocationRequired;
+
+  /// No description provided for @tryLocatingAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try locating again'**
+  String get tryLocatingAgain;
 }
 
 class _AppLocalizationsDelegate

@@ -475,26 +475,64 @@ class ServiceAreaScreen extends StatefulWidget {
 }
 
 class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
-  // Kuala Lumpur city-centre fallback: the demo/UI-only origin used until a
-  // real pickup-location picker is wired in Phase 3.
-  double latitude = 3.1390;
-  double longitude = 101.6869;
+  // The pickup origin is the business's real location: the saved origin, or
+  // the business address resolved by geocoding. There is no default
+  // coordinate; without a real origin the area cannot be saved.
+  double? latitude;
+  double? longitude;
   double radiusKm = 5;
   bool busy = false;
+  bool locating = false;
+  bool locateFailed = false;
   String? error;
   bool loaded = false;
+
+  bool get _hasOrigin => latitude != null && longitude != null;
 
   void _prefill(Map<String, dynamic> b) {
     if (loaded) return;
     loaded = true;
-    latitude = (b['service_origin_latitude'] as num?)?.toDouble() ?? latitude;
-    longitude =
-        (b['service_origin_longitude'] as num?)?.toDouble() ?? longitude;
+    latitude = (b['service_origin_latitude'] as num?)?.toDouble();
+    longitude = (b['service_origin_longitude'] as num?)?.toDouble();
     radiusKm =
         (b['service_coverage_radius_km'] as num?)?.toDouble() ?? radiusKm;
+    if (!_hasOrigin) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _locate());
+    }
+  }
+
+  Future<void> _locate() async {
+    final app = AppScope.read(context);
+    final businessId = app.business?.id;
+    if (businessId == null || locating) return;
+    setState(() {
+      locating = true;
+      locateFailed = false;
+      error = null;
+    });
+    try {
+      final origin = await app.repo.locateBusinessAddress(businessId);
+      if (!mounted) return;
+      setState(() {
+        latitude = origin?.latitude;
+        longitude = origin?.longitude;
+        locateFailed = origin == null;
+      });
+    } on RepositoryError catch (e) {
+      if (mounted) {
+        setState(() {
+          locateFailed = true;
+          error = e.message;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => locating = false);
+    }
   }
 
   Future<void> _save(Future<void> Function() reload) async {
+    final lat = latitude, lng = longitude;
+    if (lat == null || lng == null) return;
     final app = AppScope.read(context);
     setState(() {
       busy = true;
@@ -503,8 +541,8 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
     try {
       await app.repo.setServiceArea(
         businessId: app.business!.id,
-        latitude: latitude,
-        longitude: longitude,
+        latitude: lat,
+        longitude: lng,
         radiusKm: radiusKm,
       );
       if (!mounted) return;
@@ -552,6 +590,21 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
                 attention: !configured,
               ),
             ),
+            CefListRow(
+              icon: LucideIcons.store,
+              title: L.pickupLocation2,
+              subtitle: locating
+                  ? L.locatingBusinessAddress
+                  : _hasOrigin
+                  ? (b['address'] as String? ?? L.businessAddressLocated)
+                  : L.pickupLocationRequired,
+              subtitleMaxLines: 4,
+              trailing: _hasOrigin
+                  ? StatusChip(L.ready)
+                  : StatusChip(L.notSet, attention: true),
+            ),
+            if (!_hasOrigin && locateFailed && !locating)
+              CefButton(L.tryLocatingAgain, secondary: true, onTap: _locate),
             SectionHeading(L.howFarDoDeliver),
             SizedBox(height: 190, child: CoveragePreview(radiusKm: radiusKm)),
             const SizedBox(height: Gap.md),
@@ -572,7 +625,7 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
             CefButton(
               L.saveServiceArea,
               busy: busy,
-              onTap: () => _save(reload),
+              onTap: _hasOrigin ? () => _save(reload) : null,
             ),
             const SizedBox(height: Gap.section),
             CefListRow(
