@@ -133,7 +133,15 @@ class AuthFlow extends StatefulWidget {
     super.key,
     this.onPrototypeAuthenticated,
     this.onPrototypeSignedUp,
+    this.recovery = false,
+    this.onRecoveryDone,
   });
+
+  /// Opened from a password-recovery link: start at Set New Password.
+  final bool recovery;
+
+  /// Called after the recovered password is saved.
+  final VoidCallback? onRecoveryDone;
 
   final VoidCallback? onPrototypeAuthenticated;
 
@@ -147,7 +155,9 @@ class AuthFlow extends StatefulWidget {
 }
 
 class _AuthFlowState extends State<AuthFlow> {
-  final List<_Stage> _stack = [_Stage.splash];
+  late final List<_Stage> _stack = [
+    widget.recovery ? _Stage.setNewPassword : _Stage.splash,
+  ];
 
   /// Carried between stages so "Check your email" / "Verify your email" can
   /// show and act on the address the Rider actually typed.
@@ -231,7 +241,10 @@ class _AuthFlowState extends State<AuthFlow> {
       ),
       _Stage.setNewPassword => SetNewPasswordScreen(
         onBack: _back,
-        onUpdated: () => _replace(_Stage.emailSignIn),
+        onUpdated: () {
+          _replace(_Stage.emailSignIn);
+          widget.onRecoveryDone?.call();
+        },
       ),
     };
   }

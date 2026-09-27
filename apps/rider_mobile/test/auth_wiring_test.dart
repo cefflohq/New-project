@@ -1,4 +1,5 @@
 import 'package:cefflo_rider_mobile/core/app_state.dart';
+import 'package:cefflo_rider_mobile/core/routes.dart';
 import 'package:cefflo_rider_mobile/core/theme.dart';
 import 'package:cefflo_rider_mobile/data/rider_repository.dart';
 import 'package:cefflo_rider_mobile/ui/screens/auth.dart';
@@ -20,6 +21,28 @@ void main() {
       view.resetPhysicalSize();
       view.resetDevicePixelRatio();
     });
+  });
+
+  testWidgets('a password-recovery link opens D07 Set a new password', (
+    tester,
+  ) async {
+    final app = AppState(RiderRepository.demo());
+    await tester.pumpWidget(
+      host(
+        app,
+        AuthFlow(
+          initial: DRoute.setNewPassword,
+          onAuthenticated: (_) {},
+          onPasswordUpdated: () {},
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.byType(SetNewPasswordScreen), findsOneWidget);
+  });
+
+  test('recovery links use the native app callback', () {
+    expect(authRedirectUrl, 'cefflo-driver://auth-callback');
   });
 
   test('auth errors map from backend codes, not provider prose', () {

@@ -6,6 +6,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'models.dart';
 
 /// Thrown for any backend failure the UI is expected to surface truthfully.
+/// Native auth callback (password recovery link). Registered in the
+/// Android manifest and iOS Info.plist, and must be in the Supabase Auth
+/// redirect allowlist for the environment.
+const authRedirectUrl = 'cefflo-vendor://auth-callback';
+
 class RepositoryError implements Exception {
   RepositoryError(this.message, {this.isMissingContract = false, this.code});
   final String message;
@@ -85,8 +90,12 @@ class VendorRepository {
   /// Locked Forgot Password screen. Supabase deliberately does not reveal
   /// whether the address exists; the locked "Check your email" copy matches
   /// that ("If an account exists for this email...").
-  Future<void> sendPasswordReset(String email) =>
-      _run(() => _db!.auth.resetPasswordForEmail(email.trim()));
+  Future<void> sendPasswordReset(String email) => _run(
+    () => _db!.auth.resetPasswordForEmail(
+      email.trim(),
+      redirectTo: authRedirectUrl,
+    ),
+  );
 
   /// Locked Verify-your-email / Verification-link-expired screens.
   Future<void> resendSignUpVerification(String email) =>

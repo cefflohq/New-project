@@ -127,6 +127,9 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
   late final AppState app = AppState(widget.repo, live: widget.live);
   bool _prototypeAuthenticated = false;
 
+  /// A password-recovery link opened the app (native deep link).
+  bool _recovering = false;
+
   /// Auth routes are owned by [AuthFlow], which runs before the shell.
   static const _authRoutes = {
     DRoute.splash,
@@ -180,6 +183,9 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
       app.loadingSession = false;
     }
     widget.repo.authChanges.listen((state) {
+      if (state.event == AuthChangeEvent.passwordRecovery) {
+        setState(() => _recovering = true);
+      }
       if (state.session == null) app.clearSession();
     });
   }
@@ -206,9 +212,16 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
             _EdgeToEdgeInsets(child: ResponsiveDensity(child: child!)),
         home: Builder(
           builder: (context) {
-            if (!_signedIn) {
+            if (!_signedIn || _recovering) {
               return AuthFlow(
-                initial: _authInitial,
+                key: ValueKey(_recovering),
+                initial: _recovering ? DRoute.setNewPassword : _authInitial,
+                onPasswordUpdated: _recovering
+                    ? () async {
+                        await widget.repo.signOut();
+                        if (mounted) setState(() => _recovering = false);
+                      }
+                    : null,
                 onAuthenticated: (landing) {
                   app.stage = landing == null ? app.stage : _stageFor(landing);
                   app.resetTo(landing ?? app.homeRoute);
