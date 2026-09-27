@@ -1331,4 +1331,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orSeparator => 'or';
+
+  @override
+  String get joinBusinessDeliveryTeamCefflo =>
+      'Join a business\'s delivery team on Cefflo. Open the invitation link you received to connect.';
+
+  @override
+  String get pasteFullInvitationLink =>
+      'Paste the full invitation link you received.';
+
+  @override
+  String get car => 'Car';
+
+  @override
+  String get van => 'Van';
+
+  @override
+  String get detailsManagedByBusiness =>
+      'Your details are managed by your business. Ask them to update anything that has changed.';
+
+  @override
+  String get supportTicketsNotConnectedYet =>
+      'Support tickets are not connected yet. Contact your business directly for help.';
+
+  @override
+  String get runsDeliveries => 'Runs & Deliveries';
+
+  @override
+  String get ordersNavigationDeliveryProcess =>
+      'Orders, navigation, delivery process';
+
+  @override
+  String get deliveryIssues => 'Delivery Issues';
+
+  @override
+  String get failedDeliveryCustomerNotAvailable =>
+      'Failed delivery, customer not available';
+
+  @override
+  String get vehicleDocuments2 => 'Vehicle & Documents';
+
+  @override
+  String get licenceRegistrationDocumentVerification =>
+      'Licence, registration, document verification';
+
+  @override
+  String get accountProfile => 'Account & Profile';
+
+  @override
+  String get profileSettingsAppAccess => 'Profile, settings, app access';
+
+  @override
+  String itemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
 }

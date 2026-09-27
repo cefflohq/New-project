@@ -577,5 +577,27 @@
   "history": "History",
   "slideConfirm": "Slide to confirm",
   "tryAgain": "Try again",
-  "orSeparator": "or"
+  "orSeparator": "or",
+  "joinBusinessDeliveryTeamCefflo": "Join a business's delivery team on Cefflo. Open the invitation link you received to connect.",
+  "pasteFullInvitationLink": "Paste the full invitation link you received.",
+  "car": "Car",
+  "van": "Van",
+  "detailsManagedByBusiness": "Your details are managed by your business. Ask them to update anything that has changed.",
+  "supportTicketsNotConnectedYet": "Support tickets are not connected yet. Contact your business directly for help.",
+  "runsDeliveries": "Runs & Deliveries",
+  "ordersNavigationDeliveryProcess": "Orders, navigation, delivery process",
+  "deliveryIssues": "Delivery Issues",
+  "failedDeliveryCustomerNotAvailable": "Failed delivery, customer not available",
+  "vehicleDocuments2": "Vehicle & Documents",
+  "licenceRegistrationDocumentVerification": "Licence, registration, document verification",
+  "accountProfile": "Account & Profile",
+  "profileSettingsAppAccess": "Profile, settings, app access",
+  "itemCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "@itemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

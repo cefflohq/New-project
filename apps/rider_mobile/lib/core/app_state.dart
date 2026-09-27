@@ -66,13 +66,45 @@ class AppState extends ChangeNotifier {
 
   // --- driver-facing presentation state ---------------------------------
   DriverStage stage = DriverStage.active;
-  DriverProfile profile = DemoData.activeProfile;
-  DriverBusiness? business = DemoData.business;
-  DriverRun currentRun = DemoData.currentRun;
-  List<DriverRun> history = DemoData.history;
-  List<DriverNotification> notifications = DemoData.notifications;
-  List<DriverDocument> documents = DemoData.documents;
-  List<DriverDocument> onboardingDocuments = DemoData.onboardingDocuments;
+  // Demo fixtures seed the prototype only; a live session starts empty and
+  // is filled from the backend by [loadSession].
+  late DriverProfile profile = repo.isDemo
+      ? DemoData.activeProfile
+      : DriverProfile(
+          fullName: '',
+          phone: '',
+          email: repo.currentUser?.email ?? '',
+          dateOfBirth: '',
+          address: '',
+          vehicleType: '',
+          vehicleModel: '',
+          plateNumber: '',
+          statusLabel: '',
+        );
+  late DriverBusiness? business = repo.isDemo ? DemoData.business : null;
+  late DriverRun currentRun = repo.isDemo ? DemoData.currentRun : _emptyRun();
+  late List<DriverRun> history = repo.isDemo ? DemoData.history : const [];
+  late List<DriverNotification> notifications = repo.isDemo
+      ? DemoData.notifications
+      : const [];
+  late List<DriverDocument> documents = repo.isDemo
+      ? DemoData.documents
+      : const [];
+  late List<DriverDocument> onboardingDocuments = repo.isDemo
+      ? DemoData.onboardingDocuments
+      : const [];
+
+  DriverRun _emptyRun() => DriverRun(
+    id: 'none',
+    reference: '',
+    dateLabel: todayDateLabel,
+    zone: '',
+    pickupBusinessName: business?.name ?? '',
+    pickupAddress: business?.location ?? '',
+    distanceKm: null,
+    state: RunState.assigned,
+    stops: const [],
+  );
 
   /// UI language (en / ms). Independent of country/market (Founder,
   /// 2026-09-27). Starts from the device language; an explicit choice
@@ -431,17 +463,7 @@ class AppState extends ChangeNotifier {
     if (current == null) {
       runPhase = null;
       routeConfirmed = false;
-      currentRun = DriverRun(
-        id: 'none',
-        reference: '',
-        dateLabel: todayDateLabel,
-        zone: '',
-        pickupBusinessName: business?.name ?? '',
-        pickupAddress: business?.location ?? '',
-        distanceKm: null,
-        state: RunState.assigned,
-        stops: const [],
-      );
+      currentRun = _emptyRun();
       return;
     }
     currentRun = _toDriverRun(current);

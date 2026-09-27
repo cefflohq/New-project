@@ -417,6 +417,13 @@ class RiderRepository {
       e.message.contains('does not exist') ||
       e.message.contains('Could not find the function');
 
+  /// Accepts a Rider invitation (the same accept_rider_invitation contract
+  /// the invite page uses). Creates this user's rider row as pending; the
+  /// business approves it. The token is used once and never stored.
+  Future<void> acceptRiderInvitation(String token) => _run(
+    () => _db.rpc('accept_rider_invitation', params: {'p_token': token}),
+  );
+
   Future<T> _run<T>(Future<T> Function() action) async {
     try {
       return await action();

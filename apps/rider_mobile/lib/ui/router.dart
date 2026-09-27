@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/app_state.dart';
 import '../core/routes.dart';
 import 'screens/history.dart';
 import 'screens/onboarding.dart';
@@ -15,8 +16,18 @@ import 'screens/support.dart';
 /// route identically.
 Widget buildScreen(BuildContext context, RiderLocation loc) {
   final id = loc.entityId;
+  // Live: joining a business is the real invitation accept (D17). The
+  // designed D10/D12 onboarding screens have no backend yet, so they are
+  // prototype-only.
+  final live = !AppScope.of(context).repo.isDemo;
   return switch (loc.route) {
     // --- Onboarding / business join -------------------------------------
+    DRoute.acceptInvitation ||
+    DRoute.driverDetails ||
+    DRoute.personalDetails ||
+    DRoute.vehicleAndDocuments when live => const JoinBusinessScreen(),
+    DRoute.businessJoined when live && AppScope.of(context).business == null =>
+      const JoinBusinessScreen(),
     DRoute.acceptInvitation => const AcceptInvitationScreen(),
     DRoute.noBusinessConnectedHome => const NoBusinessConnectedHomeScreen(),
     DRoute.driverDetails => const DriverDetailsScreen(),

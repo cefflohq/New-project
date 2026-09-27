@@ -283,10 +283,11 @@ class TodayScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: Gap.lg),
-              NavyBusinessRow(
-                business: app.business ?? DemoData.business,
-                onTap: () => app.go(DRoute.profile),
-              ),
+              if (app.business case final business?)
+                NavyBusinessRow(
+                  business: business,
+                  onTap: () => app.go(DRoute.profile),
+                ),
             ],
           ),
         ),
@@ -1496,7 +1497,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                     child: Text(L.orderDetails, style: context.t.titleMedium),
                   ),
                   Text(
-                    '${stop.items.length} ${stop.items.length == 1 ? 'item' : 'items'}',
+                    L.itemCount(stop.items.length),
                     style: context.t.bodyMedium,
                   ),
                   const SizedBox(width: 6),

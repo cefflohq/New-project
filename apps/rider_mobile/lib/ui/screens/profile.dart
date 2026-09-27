@@ -392,6 +392,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
+    // Live: profile details come from the business's rider record and there
+    // is no Driver-side update contract, so the screen is read-only rather
+    // than a Save that would not persist.
+    final live = !app.repo.isDemo;
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
         title: L.editProfile,
@@ -412,56 +416,67 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               clipBehavior: Clip.none,
               children: [
                 DriverAvatar(name: _name.text, size: 100),
-                Positioned(
-                  right: -2,
-                  bottom: -2,
-                  child: Material(
-                    color: CefColors.navy,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(L.photoUploadNotWiredUpPreview),
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: CefColors.navy,
+                if (!live)
+                  Positioned(
+                    right: -2,
+                    bottom: -2,
+                    child: Material(
+                      color: CefColors.navy,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(L.photoUploadNotWiredUpPreview),
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor: CefColors.navy,
+                          ),
                         ),
-                      ),
-                      child: const SizedBox(
-                        width: 34,
-                        height: 34,
-                        child: Icon(
-                          LucideIcons.camera,
-                          size: 17,
-                          color: Colors.white,
+                        child: const SizedBox(
+                          width: 34,
+                          height: 34,
+                          child: Icon(
+                            LucideIcons.camera,
+                            size: 17,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
           const SizedBox(height: Gap.xl),
-          CeffloTextField(label: L.fullName, controller: _name, onTap: null),
+          CeffloTextField(label: L.fullName, controller: _name, readOnly: live),
           const SizedBox(height: Gap.lg),
-          CeffloPhoneField(label: L.phoneNumber, controller: _phone),
+          if (live)
+            CeffloTextField(
+              label: L.phoneNumber,
+              controller: _phone,
+              readOnly: true,
+            )
+          else
+            CeffloPhoneField(label: L.phoneNumber, controller: _phone),
           const SizedBox(height: Gap.lg),
           CeffloTextField(label: L.email, controller: _email, readOnly: true),
           const SizedBox(height: Gap.xl),
-          CeffloPrimaryButton(
-            L.save,
-            pill: false,
-            onTap: () {
-              app.updateProfile(
-                app.profile.copyWith(
-                  fullName: _name.text.trim(),
-                  phone: _phone.text.trim(),
-                ),
-              );
-              app.back();
-            },
-          ),
+          if (live)
+            CeffloNote(icon: LucideIcons.info, body: L.detailsManagedByBusiness)
+          else
+            CeffloPrimaryButton(
+              L.save,
+              pill: false,
+              onTap: () {
+                app.updateProfile(
+                  app.profile.copyWith(
+                    fullName: _name.text.trim(),
+                    phone: _phone.text.trim(),
+                  ),
+                );
+                app.back();
+              },
+            ),
         ],
       ),
     );
@@ -495,6 +510,7 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
+    final live = !app.repo.isDemo;
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
         title: L.vehicleDetails,
@@ -514,27 +530,39 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
             label: L.vehicleType,
             value: _type,
             icon: LucideIcons.bike,
-            options: DemoData.vehicleTypes,
-            onChanged: (v) => setState(() => _type = v),
+            options: [
+              ...DemoData.vehicleTypes,
+              if (!DemoData.vehicleTypes.contains(_type) && _type.isNotEmpty)
+                _type,
+            ],
+            optionLabel: vehicleTypeLabel,
+            onChanged: live ? (_) {} : (v) => setState(() => _type = v),
           ),
           const SizedBox(height: Gap.lg),
-          CeffloTextField(label: L.model, controller: _model),
+          CeffloTextField(label: L.model, controller: _model, readOnly: live),
           const SizedBox(height: Gap.lg),
-          CeffloTextField(label: L.registrationPlateNumber, controller: _plate),
+          CeffloTextField(
+            label: L.registrationPlateNumber,
+            controller: _plate,
+            readOnly: live,
+          ),
           const SizedBox(height: Gap.xl),
-          CeffloPrimaryButton(
-            L.save,
-            onTap: () {
-              app.updateProfile(
-                app.profile.copyWith(
-                  vehicleType: _type,
-                  vehicleModel: _model.text.trim(),
-                  plateNumber: _plate.text.trim(),
-                ),
-              );
-              app.back();
-            },
-          ),
+          if (live)
+            CeffloNote(icon: LucideIcons.info, body: L.detailsManagedByBusiness)
+          else
+            CeffloPrimaryButton(
+              L.save,
+              onTap: () {
+                app.updateProfile(
+                  app.profile.copyWith(
+                    vehicleType: _type,
+                    vehicleModel: _model.text.trim(),
+                    plateNumber: _plate.text.trim(),
+                  ),
+                );
+                app.back();
+              },
+            ),
         ],
       ),
     );

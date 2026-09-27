@@ -1615,6 +1615,9 @@ class InvitationLandingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Live: the inviting business is only known once the Driver opens their
+    // invitation link, so the landing shows no business identity.
+    final demo = AppScope.read(context).repo.isDemo;
     final business = DemoData.invitingBusiness;
     return CeffloAuthScaffold(
       headerAction: GestureDetector(
@@ -1633,7 +1636,9 @@ class InvitationLandingScreen extends StatelessWidget {
         ),
       ),
       title: L.youreInvited,
-      subtitle: L.joinCeffloPartTheirDeliveryTeam(business.name),
+      subtitle: demo
+          ? L.joinCeffloPartTheirDeliveryTeam(business.name)
+          : L.joinBusinessDeliveryTeamCefflo,
       sheetPadding: const EdgeInsets.fromLTRB(
         Gap.gutter,
         Gap.lg,
@@ -1645,8 +1650,10 @@ class InvitationLandingScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          BusinessIdentityRow(business: business),
-          const SizedBox(height: Gap.lg),
+          if (demo) ...[
+            BusinessIdentityRow(business: business),
+            const SizedBox(height: Gap.lg),
+          ],
           CeffloFeatureRow(
             icon: LucideIcons.users,
             title: L.workTrustedLocalBusiness,

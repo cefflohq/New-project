@@ -519,10 +519,21 @@ class CeffloAuthScaffold extends StatelessWidget {
                                 alignment: Alignment.centerLeft,
                                 child: CeffloBackButton(onTap: onBack!),
                               ),
+                            // The action keeps inside its reserved 104px
+                            // (longer translations scale down rather than
+                            // run into the centred title).
                             if (headerAction != null)
                               Align(
                                 alignment: Alignment.centerRight,
-                                child: headerAction,
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 100,
+                                  ),
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: headerAction,
+                                  ),
+                                ),
                               ),
                           ],
                         ),
@@ -1284,17 +1295,22 @@ class CeffloSegmentedTabs extends StatelessWidget {
                     border: i == index ? Border.all(color: c.border) : null,
                     boxShadow: i == index ? cefCardShadow() : null,
                   ),
-                  child: Text(
-                    labels[i],
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 13.5,
-                      fontWeight: i == index
-                          ? FontWeight.w700
-                          : FontWeight.w600,
-                      color: i == index ? c.textPrimary : c.textSecondary,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  // Longer translations ("Belum selesai (7)") shrink to fit
+                  // instead of losing their count to an ellipsis.
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      labels[i],
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 13.5,
+                        fontWeight: i == index
+                            ? FontWeight.w700
+                            : FontWeight.w600,
+                        color: i == index ? c.textPrimary : c.textSecondary,
+                      ),
                     ),
                   ),
                 ),

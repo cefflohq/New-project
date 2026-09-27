@@ -1,7 +1,9 @@
 import 'package:cefflo_rider_mobile/core/app_state.dart';
 import 'package:cefflo_rider_mobile/core/routes.dart';
+import 'package:cefflo_rider_mobile/data/driver_models.dart';
 import 'package:cefflo_rider_mobile/data/models.dart';
 import 'package:cefflo_rider_mobile/data/rider_repository.dart';
+import 'package:cefflo_rider_mobile/ui/screens/onboarding.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -79,5 +81,37 @@ void main() {
     expect(repo.signedOut, isTrue);
     expect(app.relationships, isEmpty);
     expect(app.active, isNull);
+  });
+
+  test(
+    'a live session never shows demo business, profile or documents',
+    () async {
+      final app = await hydrate(const []);
+      expect(app.business, isNull);
+      expect(app.profile.fullName, isEmpty);
+      expect(app.documents, isEmpty);
+      expect(app.onboardingDocuments, isEmpty);
+      expect(app.notifications, isEmpty);
+      expect(app.history, isEmpty);
+    },
+  );
+
+  test('invitation token comes from the invite link or a bare token', () {
+    const token =
+        '4f9a0c1e2b3d4a5f6e7d8c9b0a1f2e3d4c5b6a7f8e9d0c1b2a3f4e5d6c7b8a9f';
+    expect(
+      invitationTokenFrom('https://invite.cefflo.com/?type=rider&token=$token'),
+      token,
+    );
+    expect(invitationTokenFrom('  $token '), token);
+    expect(invitationTokenFrom('https://invite.cefflo.com/'), isNull);
+    expect(invitationTokenFrom('hello'), isNull);
+    expect(invitationTokenFrom(''), isNull);
+  });
+
+  test('stored vehicle types map to display labels, never the reverse', () {
+    expect(vehicleTypeLabel('motorcycle'), 'Motorbike');
+    expect(vehicleTypeLabel('car'), 'Car');
+    expect(vehicleTypeLabel('van'), 'Van');
   });
 }

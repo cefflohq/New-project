@@ -1,3 +1,5 @@
+import 'package:cefflo_rider_mobile/l10n/l10n.dart';
+
 import 'driver_models.dart';
 
 /// In-memory fixture data for the prototype/preview boot mode
@@ -40,7 +42,7 @@ class DemoData {
     email: 'ali.rahman@email.com',
     dateOfBirth: '12 Jan 1990',
     address: 'Kuala Lumpur, Malaysia',
-    vehicleType: 'Motorbike',
+    vehicleType: 'motorcycle',
     vehicleModel: 'Yamaha Y15ZR',
     plateNumber: 'WYX 1234',
   );
@@ -53,7 +55,7 @@ class DemoData {
     email: 'ahmadrizky@gmail.com',
     dateOfBirth: '12 Jan 1990',
     address: 'Kuala Lumpur, Malaysia',
-    vehicleType: 'Motorbike',
+    vehicleType: 'motorcycle',
     vehicleModel: 'Yamaha Y15ZR',
     plateNumber: 'WYX 1234',
   );
@@ -408,24 +410,22 @@ class DemoData {
   static const todayDateLabel = 'Mon, 14 Sep 2026';
 
   /// D40's "Common Driver Topics" grid.
-  static const supportTopics = <SupportTopic>[
+  static List<SupportTopic> get supportTopics => [
     SupportTopic(
-      title: 'Runs & Deliveries',
-      body: 'Orders, navigation, delivery process',
+      title: L.runsDeliveries,
+      body: L.ordersNavigationDeliveryProcess,
     ),
     SupportTopic(
-      title: 'Delivery Issues',
-      body: 'Failed delivery, customer not available',
+      title: L.deliveryIssues,
+      body: L.failedDeliveryCustomerNotAvailable,
     ),
     SupportTopic(
-      title: 'Vehicle & Documents',
-      body: 'License, registration, document verification',
+      title: L.vehicleDocuments2,
+      body: L.licenceRegistrationDocumentVerification,
     ),
-    SupportTopic(
-      title: 'Account & Profile',
-      body: 'Profile, settings, app access',
-    ),
+    SupportTopic(title: L.accountProfile, body: L.profileSettingsAppAccess),
   ];
 
-  static const vehicleTypes = <String>['Motorbike', 'Car', 'Van'];
+  /// Stored `rider_vehicle_type` values; shown through [vehicleTypeLabel].
+  static const vehicleTypes = <String>['motorcycle', 'car', 'van'];
 }

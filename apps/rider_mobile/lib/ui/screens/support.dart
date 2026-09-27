@@ -358,7 +358,13 @@ class VendorSupportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    final vendor = DemoData.supportVendor;
+    // Live: the Driver's own business. Call/chat are prototype-only until a
+    // business contact channel exists.
+    final demo = app.repo.isDemo;
+    final vendor = demo
+        ? DemoData.supportVendor
+        : (app.business ??
+              DriverBusiness(name: L.business, category: '', location: ''));
     final c = context.c;
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
@@ -453,21 +459,23 @@ class VendorSupportScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: Gap.md),
-                Divider(height: 1, color: c.border),
-                _ContactRow(
-                  icon: LucideIcons.phone,
-                  title: L.call,
-                  subtitle: vendor.phone ?? '',
-                  onTap: () => _toast(context, L.calling2(vendor.name)),
-                ),
-                Divider(height: 1, color: c.border),
-                _ContactRow(
-                  icon: LucideIcons.messageSquare,
-                  title: L.chat,
-                  subtitle: L.appMessageVendor,
-                  onTap: () => _toast(context, L.openingVendorChat),
-                ),
+                if (demo) ...[
+                  const SizedBox(height: Gap.md),
+                  Divider(height: 1, color: c.border),
+                  _ContactRow(
+                    icon: LucideIcons.phone,
+                    title: L.call,
+                    subtitle: vendor.phone ?? '',
+                    onTap: () => _toast(context, L.calling2(vendor.name)),
+                  ),
+                  Divider(height: 1, color: c.border),
+                  _ContactRow(
+                    icon: LucideIcons.messageSquare,
+                    title: L.chat,
+                    subtitle: L.appMessageVendor,
+                    onTap: () => _toast(context, L.openingVendorChat),
+                  ),
+                ],
               ],
             ),
           ),
@@ -671,20 +679,27 @@ class _SubmitTicketScreenState extends State<SubmitTicketScreen> {
           ),
         ],
       ),
-      footer: CeffloPrimaryButton(
-        L.submitTicket,
-        pill: false,
-        onTap: _description.text.trim().isEmpty
-            ? null
-            : () async {
-                await showCeffloSubmitFlow(
-                  context,
-                  successTitle: L.requestSubmitted,
-                  successBody: L.wellGetBackSoon,
-                  onDone: () => app.resetTo(DRoute.helpSupport),
-                );
-              },
-      ),
+      // Support tickets have no backend yet: the live app says so instead of
+      // confirming a request that was never sent.
+      footer: !app.repo.isDemo
+          ? CeffloNote(
+              icon: LucideIcons.info,
+              body: L.supportTicketsNotConnectedYet,
+            )
+          : CeffloPrimaryButton(
+              L.submitTicket,
+              pill: false,
+              onTap: _description.text.trim().isEmpty
+                  ? null
+                  : () async {
+                      await showCeffloSubmitFlow(
+                        context,
+                        successTitle: L.requestSubmitted,
+                        successBody: L.wellGetBackSoon,
+                        onDone: () => app.resetTo(DRoute.helpSupport),
+                      );
+                    },
+            ),
     );
   }
 }

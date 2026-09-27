@@ -401,5 +401,20 @@
   "history": "Sejarah",
   "slideConfirm": "Leret untuk sahkan",
   "tryAgain": "Cuba lagi",
-  "orSeparator": "atau"
+  "orSeparator": "atau",
+  "joinBusinessDeliveryTeamCefflo": "Sertai pasukan penghantaran sebuah perniagaan di Cefflo. Buka pautan jemputan yang anda terima untuk menyambung.",
+  "pasteFullInvitationLink": "Tampal pautan jemputan penuh yang anda terima.",
+  "car": "Kereta",
+  "van": "Van",
+  "detailsManagedByBusiness": "Butiran anda diurus oleh perniagaan anda. Minta mereka mengemas kini apa-apa yang telah berubah.",
+  "supportTicketsNotConnectedYet": "Tiket sokongan belum disambungkan. Hubungi perniagaan anda terus untuk bantuan.",
+  "runsDeliveries": "Larian & Penghantaran",
+  "ordersNavigationDeliveryProcess": "Pesanan, navigasi, proses penghantaran",
+  "deliveryIssues": "Isu Penghantaran",
+  "failedDeliveryCustomerNotAvailable": "Penghantaran gagal, pelanggan tiada",
+  "vehicleDocuments2": "Kenderaan & Dokumen",
+  "licenceRegistrationDocumentVerification": "Lesen, pendaftaran, pengesahan dokumen",
+  "accountProfile": "Akaun & Profil",
+  "profileSettingsAppAccess": "Profil, tetapan, akses aplikasi",
+  "itemCount": "{count} item"
 }

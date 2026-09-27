@@ -5,6 +5,7 @@ import '../../core/app_state.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/demo_data.dart';
+import '../../data/driver_models.dart';
 import '../brand.dart';
 import '../widgets.dart';
 import 'auth.dart' show BusinessIdentityRow;
@@ -267,7 +268,7 @@ class _DriverDetailsScreenState extends State<DriverDetailsScreen> {
     text: _app.repo.isDemo ? '12 345 6789' : _app.profile.phone,
   );
   final _plate = TextEditingController();
-  String _vehicle = L.motorbike;
+  String _vehicle = DemoData.vehicleTypes.first;
 
   @override
   void dispose() {
@@ -329,6 +330,7 @@ class _DriverDetailsScreenState extends State<DriverDetailsScreen> {
             label: L.vehicleType,
             value: _vehicle,
             options: DemoData.vehicleTypes,
+            optionLabel: vehicleTypeLabel,
             icon: LucideIcons.bike,
             onChanged: (v) => setState(() => _vehicle = v),
           ),
@@ -548,7 +550,7 @@ class VehicleAndDocumentsScreen extends StatefulWidget {
 
 class _VehicleAndDocumentsScreenState extends State<VehicleAndDocumentsScreen> {
   final _plate = TextEditingController(text: L.vaa1234);
-  String _vehicle = L.motorbike;
+  String _vehicle = DemoData.vehicleTypes.first;
 
   @override
   void dispose() {
@@ -598,6 +600,7 @@ class _VehicleAndDocumentsScreenState extends State<VehicleAndDocumentsScreen> {
             label: L.vehicleType,
             value: _vehicle,
             options: DemoData.vehicleTypes,
+            optionLabel: vehicleTypeLabel,
             icon: LucideIcons.bike,
             onChanged: (v) => setState(() => _vehicle = v),
           ),
@@ -610,8 +613,10 @@ class _VehicleAndDocumentsScreenState extends State<VehicleAndDocumentsScreen> {
           const SizedBox(height: Gap.section),
           Divider(height: 1, color: context.c.border),
           const SizedBox(height: Gap.section),
-          SectionRow(icon: LucideIcons.fileText, label: L.requiredDocuments),
-          const SizedBox(height: Gap.sm),
+          if (app.onboardingDocuments.isNotEmpty) ...[
+            SectionRow(icon: LucideIcons.fileText, label: L.requiredDocuments),
+            const SizedBox(height: Gap.sm),
+          ],
           for (final doc in app.onboardingDocuments)
             CeffloDocumentRow(
               icon: doc.id == 'licence' ? LucideIcons.idCard : LucideIcons.bike,
@@ -1346,6 +1351,16 @@ class _StorefrontBadge extends StatelessWidget {
 // D17 — Join Business
 // ---------------------------------------------------------------------------
 
+/// The invitation token from a pasted invite link (`?token=`), or a bare
+/// pasted token. Null when neither is present.
+String? invitationTokenFrom(String input) {
+  final text = input.trim();
+  if (text.isEmpty) return null;
+  final fromQuery = Uri.tryParse(text)?.queryParameters['token'];
+  if (fromQuery != null && fromQuery.isNotEmpty) return fromQuery;
+  return RegExp(r'^[0-9a-fA-F]{32,}$').hasMatch(text) ? text : null;
+}
+
 class JoinBusinessScreen extends StatefulWidget {
   const JoinBusinessScreen({super.key});
 
@@ -1356,6 +1371,35 @@ class JoinBusinessScreen extends StatefulWidget {
 class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
   final _link = TextEditingController();
   int _tab = 0;
+  bool _busy = false;
+  String? _error;
+
+  Future<void> _join() async {
+    final app = AppScope.read(context);
+    if (app.repo.isDemo) {
+      app.go(DRoute.businessJoined);
+      return;
+    }
+    final token = invitationTokenFrom(_link.text);
+    if (token == null) {
+      setState(() => _error = L.pasteFullInvitationLink);
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await app.repo.acceptRiderInvitation(token);
+      // The accepted relationship is pending until the business approves
+      // it; reloading lands on the stage the backend now reports.
+      await app.loadSession();
+    } catch (e) {
+      if (mounted) setState(() => _error = '$e');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -1366,6 +1410,8 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
+    // QR scanning is not built yet: the live app offers the link only.
+    final demo = app.repo.isDemo;
     return CeffloNavySheetScaffold(
       header: CeffloBrandHeader(
         onBack: app.back,
@@ -1398,63 +1444,74 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          CeffloSegmentedTabs(
-            labels: [L.inviteLink, L.qrCode],
-            index: _tab,
-            onChanged: (i) => setState(() => _tab = i),
-          ),
-          const SizedBox(height: Gap.lg),
+          if (demo) ...[
+            CeffloSegmentedTabs(
+              labels: [L.inviteLink, L.qrCode],
+              index: _tab,
+              onChanged: (i) => setState(() => _tab = i),
+            ),
+            const SizedBox(height: Gap.lg),
+          ],
           CeffloTextField(
             label: L.invitationLink,
             controller: _link,
             hint: 'https://...',
             icon: LucideIcons.link,
           ),
-          const SizedBox(height: Gap.lg),
-          CeffloPrimaryButton(
-            L.continueText2,
-            onTap: () => app.go(DRoute.businessJoined),
-          ),
-          const SizedBox(height: Gap.lg),
-          Center(child: Text(L.orSeparator, style: context.t.bodyMedium)),
-          const SizedBox(height: Gap.md),
-          Container(
-            decoration: BoxDecoration(
-              color: CefColors.tintNeutral,
-              borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          if (_error != null) ...[
+            const SizedBox(height: Gap.sm),
+            Text(
+              _error!,
+              style: context.t.bodySmall?.copyWith(color: context.c.attention),
             ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
+          ],
+          const SizedBox(height: Gap.lg),
+          CeffloPrimaryButton(L.continueText2, busy: _busy, onTap: _join),
+          if (demo) ...[
+            const SizedBox(height: Gap.lg),
+            Center(child: Text(L.orSeparator, style: context.t.bodyMedium)),
+            const SizedBox(height: Gap.md),
+            Container(
+              decoration: BoxDecoration(
+                color: CefColors.tintNeutral,
                 borderRadius: BorderRadius.circular(Sizes.cardRadius),
-                onTap: () => setState(() => _tab = 1),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 16,
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        LucideIcons.qrCode,
-                        size: 24,
-                        color: CefColors.navy,
-                      ),
-                      const SizedBox(width: 13),
-                      Expanded(
-                        child: Text(L.scanQrCode, style: context.t.titleSmall),
-                      ),
-                      Icon(
-                        LucideIcons.chevronRight,
-                        size: 20,
-                        color: context.c.textSecondary,
-                      ),
-                    ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(Sizes.cardRadius),
+                  onTap: () => setState(() => _tab = 1),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 16,
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          LucideIcons.qrCode,
+                          size: 24,
+                          color: CefColors.navy,
+                        ),
+                        const SizedBox(width: 13),
+                        Expanded(
+                          child: Text(
+                            L.scanQrCode,
+                            style: context.t.titleSmall,
+                          ),
+                        ),
+                        Icon(
+                          LucideIcons.chevronRight,
+                          size: 20,
+                          color: context.c.textSecondary,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
+          ],
           const SizedBox(height: Gap.lg),
           CeffloNote(
             icon: LucideIcons.info,

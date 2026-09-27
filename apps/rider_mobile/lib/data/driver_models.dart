@@ -335,3 +335,12 @@ class SupportTopic {
   final String title;
   final String body;
 }
+
+/// Display label for a stored vehicle type (`rider_vehicle_type`: motorcycle,
+/// car, van). The stored value is never translated or compared translated.
+String vehicleTypeLabel(String value) => switch (value.toLowerCase()) {
+  'motorcycle' || 'motorbike' => L.motorbike,
+  'car' => L.car,
+  'van' => L.van,
+  _ => value,
+};

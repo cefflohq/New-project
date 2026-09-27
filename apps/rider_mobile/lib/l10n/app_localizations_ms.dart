@@ -1344,4 +1344,58 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get orSeparator => 'atau';
+
+  @override
+  String get joinBusinessDeliveryTeamCefflo =>
+      'Sertai pasukan penghantaran sebuah perniagaan di Cefflo. Buka pautan jemputan yang anda terima untuk menyambung.';
+
+  @override
+  String get pasteFullInvitationLink =>
+      'Tampal pautan jemputan penuh yang anda terima.';
+
+  @override
+  String get car => 'Kereta';
+
+  @override
+  String get van => 'Van';
+
+  @override
+  String get detailsManagedByBusiness =>
+      'Butiran anda diurus oleh perniagaan anda. Minta mereka mengemas kini apa-apa yang telah berubah.';
+
+  @override
+  String get supportTicketsNotConnectedYet =>
+      'Tiket sokongan belum disambungkan. Hubungi perniagaan anda terus untuk bantuan.';
+
+  @override
+  String get runsDeliveries => 'Larian & Penghantaran';
+
+  @override
+  String get ordersNavigationDeliveryProcess =>
+      'Pesanan, navigasi, proses penghantaran';
+
+  @override
+  String get deliveryIssues => 'Isu Penghantaran';
+
+  @override
+  String get failedDeliveryCustomerNotAvailable =>
+      'Penghantaran gagal, pelanggan tiada';
+
+  @override
+  String get vehicleDocuments2 => 'Kenderaan & Dokumen';
+
+  @override
+  String get licenceRegistrationDocumentVerification =>
+      'Lesen, pendaftaran, pengesahan dokumen';
+
+  @override
+  String get accountProfile => 'Akaun & Profil';
+
+  @override
+  String get profileSettingsAppAccess => 'Profil, tetapan, akses aplikasi';
+
+  @override
+  String itemCount(int count) {
+    return '$count item';
+  }
 }

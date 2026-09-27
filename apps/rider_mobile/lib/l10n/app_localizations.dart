@@ -2509,6 +2509,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'or'**
   String get orSeparator;
+
+  /// No description provided for @joinBusinessDeliveryTeamCefflo.
+  ///
+  /// In en, this message translates to:
+  /// **'Join a business\'s delivery team on Cefflo. Open the invitation link you received to connect.'**
+  String get joinBusinessDeliveryTeamCefflo;
+
+  /// No description provided for @pasteFullInvitationLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the full invitation link you received.'**
+  String get pasteFullInvitationLink;
+
+  /// No description provided for @car.
+  ///
+  /// In en, this message translates to:
+  /// **'Car'**
+  String get car;
+
+  /// No description provided for @van.
+  ///
+  /// In en, this message translates to:
+  /// **'Van'**
+  String get van;
+
+  /// No description provided for @detailsManagedByBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Your details are managed by your business. Ask them to update anything that has changed.'**
+  String get detailsManagedByBusiness;
+
+  /// No description provided for @supportTicketsNotConnectedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Support tickets are not connected yet. Contact your business directly for help.'**
+  String get supportTicketsNotConnectedYet;
+
+  /// No description provided for @runsDeliveries.
+  ///
+  /// In en, this message translates to:
+  /// **'Runs & Deliveries'**
+  String get runsDeliveries;
+
+  /// No description provided for @ordersNavigationDeliveryProcess.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders, navigation, delivery process'**
+  String get ordersNavigationDeliveryProcess;
+
+  /// No description provided for @deliveryIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Issues'**
+  String get deliveryIssues;
+
+  /// No description provided for @failedDeliveryCustomerNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed delivery, customer not available'**
+  String get failedDeliveryCustomerNotAvailable;
+
+  /// No description provided for @vehicleDocuments2.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle & Documents'**
+  String get vehicleDocuments2;
+
+  /// No description provided for @licenceRegistrationDocumentVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Licence, registration, document verification'**
+  String get licenceRegistrationDocumentVerification;
+
+  /// No description provided for @accountProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Account & Profile'**
+  String get accountProfile;
+
+  /// No description provided for @profileSettingsAppAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile, settings, app access'**
+  String get profileSettingsAppAccess;
+
+  /// No description provided for @itemCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item} other{{count} items}}'**
+  String itemCount(int count);
 }
 
 class _AppLocalizationsDelegate
