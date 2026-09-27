@@ -110,6 +110,47 @@ No unregistered department or agent may execute privileged company actions.
 
 ---
 
+## 2A. Department Activation Register (2026-09-27, D-71)
+
+A registered department is **defined**, not **activated**. Activation
+(autonomous runtime, agents, schedules or external actions) needs its own
+approved implementation plan and Founder Gate. The current company priority
+is product / production readiness.
+
+| Department | Master SOT in repo | Runtime state (repo evidence) | Activation |
+|---|---|---|---|
+| Engineering | `engineering/CEFFLO_ENGINEERING_MASTER.md` | `automation/n8n/engineering` FG-ENG-04 runtime; pilot activation prohibited; Phase 01 rejects production actions | Human-led development active; autonomous pilot NOT ACTIVE |
+| Cyber Security (cross-company guardrail) | `security/CEFFLO_CYBER_SECURITY_MASTER.md` | guardrail rules applied in review/release | Guardrail ACTIVE (rules); no autonomous agent |
+| Marketing | `marketing/CEFFLO_MARKETING_MASTER.md` | `automation/n8n/content-engine`: every workflow inactive; no paid AI, publishing, ads or schedule | NOT ACTIVE |
+| Customer Service | registered here (CS1–CS6); no Master SOT in repo | none | NOT ACTIVE (Master not yet authored) |
+| Sales & CRM | registered here (S1–S6); no Master SOT in repo | none | NOT ACTIVE (Master not yet authored) |
+| Product Intelligence | registered here (PI1–PI6); no Master SOT in repo | none | NOT ACTIVE (Master not yet authored) |
+
+Operating model per department (from `CEFFLO_AI_COMPANY_OPERATING_PRINCIPLES.md`):
+
+> Service Contract → Output → Permission → Approval → Learning Loop,
+> Founder-by-Exception.
+
+A department may be activated only when its contract (§18 template of the
+principles) defines inputs, outputs, permissions, the approval level, audit
+and a failure model. Its Master SOT must also exist.
+
+## 2B. Approval Level ↔ Permission Class Mapping
+
+The Operating Principles' risk-based approval levels (L0–L4) and this
+Master's permission classes (§13, P0–P4) are one scale. This Master stays the
+enforcement authority; the principles supply the approval semantics.
+
+| Permission class (§13) | Approval level (principles §7) | Rule |
+|---|---|---|
+| P0 Read | L0 Read only | autonomous |
+| P1 Internal create/update | L1 Autonomous execution | autonomous within contract |
+| P2 External reversible action | L2 Autonomous + audit | autonomous within limits, every action logged |
+| P3 Material action | L3 Human approval required | prepared fully, executed after approval |
+| P4 High-impact / destructive / financial / canonical | L3 Founder Gate, or L4 Human only | Founder Gate. L4 actions (legal commitments, irreversible financial authority, critical security authority, fundamental positioning) are never delegated to an agent |
+
+---
+
 # 3. Control Layer Components
 
 ## CL1 — Intake & Task Router

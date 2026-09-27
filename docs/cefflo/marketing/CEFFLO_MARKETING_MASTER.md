@@ -951,6 +951,15 @@ Parts B–F.
     are not evidence-backed.
   - Real-customer UGC only with a genuine identity, permission and
     evidence-backed results, per the Claims Registry.
+- **Country Packs (FUTURE, architecture only; D-71):**
+  - Localisation beyond Malaysia runs through a per-market Country Pack.
+    Its fields and QA are defined in
+    `commercial/CEFFLO_GLOBAL_UNIT_ECONOMICS_PRICING_AND_MARKET_EXPANSION_STUDY.md`
+    §V–W.
+  - Packs inherit product truth and these persona rules, never use
+    stereotyped personas, and show only that market's approved prices.
+  - No country-specific automation is active; activation needs separate
+    approval.
 - **Platform synthetic-media gate:**
   - Before automated publishing of photorealistic AI-human content, verify the
     current official disclosure rules for each destination platform.

@@ -7,6 +7,27 @@
 > now (architecture optionality, §24), build only after the production
 > baseline is stable and the gates in §26 are met. Consistent with the stale
 > doctrine rule: Cefflo does not own a rider fleet (`sot/00_INDEX.md` §13).
+>
+> **Architecture compatibility check (2026-09-27, D-71), against §24.**
+> The current system is compatible. **No runtime change was made** to
+> "prepare" for this future.
+> - **Identity ≠ membership.** The Driver identity is the Supabase auth user.
+>   Each vendor relationship is a separate `riders` row keyed
+>   `UNIQUE(business_id, auth_user_id)` (migration 202608290004 replaced the
+>   old global `UNIQUE(auth_user_id)`). Ending one relationship does not
+>   remove the identity.
+> - **No "one rider = one vendor" assumption.**
+>   - The ambiguous global `current_rider_id()` was dropped. Rider RPCs verify
+>     an explicit `p_rider_id` via `is_current_rider()`.
+>   - The Driver app already holds multiple relationships with an explicit
+>     active selection.
+> - **Privacy.** Orders, stops, locations and POD stay business-scoped.
+>   Nothing vendor-confidential is attached to the identity itself.
+> - **Known future work (additive, not a lock-in):**
+>   - rider profile fields (name, phone, vehicle) live per relationship; a
+>     portable profile would be a new table;
+>   - `availability_status` is per relationship; a cross-vendor
+>     availability/commitment engine would be new.
 
 **Status:** Founder-approved future product direction  
 **Implementation doctrine:** Design now, build after the current production baseline is stable  

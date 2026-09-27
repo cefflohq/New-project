@@ -207,3 +207,7 @@ This closes the gap originally flagged when the five-canonical-product-surface a
 
 ## 18. Strategy (FUTURE — added 2026-09-26, D-67)
 - `docs/cefflo/strategy/CEFFLO_RIDER_NETWORK_STRATEGY.md` — FUTURE: Founder-approved direction (Rider Hub, portable rider identity, capacity network). Not current scope; design-now/build-later, gated by production stability and real usage.
+
+## 19. Commercial study (added 2026-09-27, D-71)
+- `docs/cefflo/commercial/CEFFLO_GLOBAL_UNIT_ECONOMICS_PRICING_AND_MARKET_EXPANSION_MASTER.md`: FOUNDER DIRECTION / study brief. Authorizes audit and documentation only.
+- `docs/cefflo/commercial/CEFFLO_GLOBAL_UNIT_ECONOMICS_PRICING_AND_MARKET_EXPANSION_STUDY.md`: STUDY. Unit-cost model, pricing stress thresholds and worldwide-readiness audit. Not a pricing decision; `sot/10_PRICING.md` remains the pricing authority.

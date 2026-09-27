@@ -1440,3 +1440,46 @@ database or visual implementation is approved.
   implementation work.
 - Customer Tracking stays vendor-configurable (white-label) and is exempt.
 - Pricing is untouched.
+
+## D-71 Document Authority — Global Unit Economics Study; Department Activation Register (2026-09-27)
+
+**Decision (Founder direction, recorded).** This follows the D-67 pattern.
+It is needed because a new Founder document arrived and must have exactly one
+authority position. It records document authority and governance only, and
+approves no product feature, price or Production change. D-67 to D-70 are
+unchanged.
+
+- **New brief.**
+  `commercial/CEFFLO_GLOBAL_UNIT_ECONOMICS_PRICING_AND_MARKET_EXPANSION_MASTER.md`
+  is FOUNDER DIRECTION / study brief. Its executed output is
+  `commercial/…_STUDY.md` (STUDY).
+- **Pricing.** `sot/10_PRICING.md` remains the only pricing authority.
+  - Candidates stay candidates.
+  - No per-rider or hybrid charging (P-04 stands).
+  - There are no non-MY price books.
+- **Country ≠ language.** This stays governed by `sot/02_ARCHITECTURE.md`
+  (already canonical); the study only audits readiness.
+- **Already canonical (D-67), re-supplied unchanged:**
+  - `control/CEFFLO_AI_COMPANY_OPERATING_PRINCIPLES.md` (CANONICAL
+    principles);
+  - `strategy/CEFFLO_RIDER_NETWORK_STRATEGY.md` (FUTURE strategy).
+
+  They were verified byte-identical to the supplied files apart from the
+  D-67 banner. The Rider Network doc gained an architecture compatibility
+  note: compatible, no runtime change.
+- **Control Layer Master §2A/§2B.**
+  - A department that is defined is not activated. Current activation state:
+    - Engineering: human-led; autonomous pilot not active.
+    - Cyber Security: guardrail rules active.
+    - Marketing, Customer Service, Sales & CRM and Product Intelligence: not
+      active.
+  - The Customer Service, Sales & CRM and Product Intelligence Masters do not
+    exist yet.
+  - The principles' approval levels L0–L4 are mapped onto permission classes
+    P0–P4, which gives one scale.
+- **Not approved here:**
+  - Rider Hub, Capacity Network or marketplace behaviour;
+  - network fees;
+  - department activation;
+  - country launches, country pricing or payment changes;
+  - telemetry beyond existing tables.
