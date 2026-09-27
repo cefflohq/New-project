@@ -20,7 +20,11 @@ class AuthFlow extends StatefulWidget {
     super.key,
     this.initial = DRoute.splash,
     required this.onAuthenticated,
+    this.onPasswordUpdated,
   });
+
+  /// Recovery-link flow only: called when D08 returns to sign-in.
+  final VoidCallback? onPasswordUpdated;
 
   final DRoute initial;
 
@@ -88,7 +92,10 @@ class _AuthFlowState extends State<AuthFlow> {
       onUpdated: () => _go(DRoute.passwordUpdated),
     ),
     DRoute.passwordUpdated => PasswordUpdatedScreen(
-      onBackToSignIn: () => _resetTo(DRoute.emailSignIn),
+      onBackToSignIn: () {
+        _resetTo(DRoute.emailSignIn);
+        widget.onPasswordUpdated?.call();
+      },
     ),
     // Accepting the invitation drops the Driver into the signed-in shell at
     // D10; "Maybe Later" lands on the same shell with no business connected.

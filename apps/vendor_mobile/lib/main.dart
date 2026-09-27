@@ -85,6 +85,9 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
   late final AppState app = AppState(widget.repo);
   bool _prototypeAuthenticated = false;
 
+  /// A password-recovery link opened the app (native deep link).
+  bool _recovering = false;
+
   @override
   void initState() {
     super.initState();
@@ -112,6 +115,9 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
       app.loadingSession = false;
     }
     widget.repo.authChanges.listen((state) {
+      if (state.event == AuthChangeEvent.passwordRecovery) {
+        setState(() => _recovering = true);
+      }
       if (state.session == null) {
         app.clearSession();
       }
@@ -192,9 +198,16 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
             }
             // Founder-locked Vendor Auth batch (2026-09-11): the auth family
             // owns its own stage flow, starting at the locked Splash.
-            if ((widget.repo.isDemo && !_prototypeAuthenticated) ||
+            if (_recovering ||
+                (widget.repo.isDemo && !_prototypeAuthenticated) ||
                 (!widget.repo.isDemo && widget.repo.currentUser == null)) {
               return AuthFlow(
+                key: ValueKey(_recovering),
+                recovery: _recovering,
+                onRecoveryDone: () async {
+                  await widget.repo.signOut();
+                  if (mounted) setState(() => _recovering = false);
+                },
                 onPrototypeAuthenticated: widget.repo.isDemo
                     ? () => setState(() => _prototypeAuthenticated = true)
                     : null,

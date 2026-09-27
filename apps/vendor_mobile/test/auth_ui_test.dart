@@ -37,6 +37,16 @@ void main() {
     child: MaterialApp(theme: buildVendorTheme(Brightness.light), home: child),
   );
 
+  testWidgets('a password-recovery link opens Set a new password', (tester) async {
+    await tester.pumpWidget(host(AuthFlow(recovery: true, onRecoveryDone: () {})));
+    await tester.pump();
+    expect(find.byType(SetNewPasswordScreen), findsOneWidget);
+  });
+
+  test('recovery links use the native app callback', () {
+    expect(authRedirectUrl, 'cefflo-vendor://auth-callback');
+  });
+
   group('locked copy is present', () {
     testWidgets('02 Sign In offers all three locked entry points', (tester) async {
       await tester.pumpWidget(host(SignInScreen(onEmail: () {}, onSignUp: () {})));

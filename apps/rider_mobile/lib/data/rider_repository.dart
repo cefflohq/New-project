@@ -5,6 +5,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'models.dart';
 
 /// Thrown for any backend failure the UI is expected to surface truthfully.
+/// Native auth callback (password recovery link). Registered in the
+/// Android manifest and iOS Info.plist, and must be in the Supabase Auth
+/// redirect allowlist for the environment.
+const authRedirectUrl = 'cefflo-driver://auth-callback';
+
 class RepositoryError implements Exception {
   RepositoryError(this.message, {this.isMissingContract = false, this.code});
   final String message;
@@ -79,8 +84,12 @@ class RiderRepository {
     return response.session == null;
   }
 
-  Future<void> sendPasswordReset(String email) =>
-      _run(() => _db.auth.resetPasswordForEmail(email.trim()));
+  Future<void> sendPasswordReset(String email) => _run(
+    () => _db.auth.resetPasswordForEmail(
+      email.trim(),
+      redirectTo: authRedirectUrl,
+    ),
+  );
 
   Future<void> updatePassword(String password) =>
       _run(() => _db.auth.updateUser(UserAttributes(password: password)));
