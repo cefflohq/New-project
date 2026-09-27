@@ -194,8 +194,8 @@ Authoritative nameservers: Cloudflare (`chuck`/`maya.ns.cloudflare.com`).
 |---|---|
 | Vendor Android | Project existed (`0950f2f`). Release manifest was missing INTERNET, now fixed (PR #12). Release APK builds (82.5 MB) with package `com.cefflo.cefflo_vendor_mobile`, label "Cefflo Vendor", deep link `cefflo-vendor://auth-callback`. **Store signing not configured** (debug-signed). |
 | Driver Android | Created (PR #12). Release APK builds (59.5 MB) with `com.cefflo.cefflo_rider_mobile`, label "Cefflo Driver", INTERNET + fine/coarse location, deep link `cefflo-driver://auth-callback`. Store signing not configured. |
-| Vendor iOS | Created (PR #12). Bundle `com.cefflo.ceffloVendorMobile`, display "Cefflo Vendor", camera/photo usage strings, URL scheme `cefflo-vendor`. **Build/archive needs macOS + Xcode.** |
-| Driver iOS | Created (PR #12). Bundle `com.cefflo.ceffloRiderMobile`, display "Cefflo Driver", location/camera/photo usage strings, URL scheme `cefflo-driver`. **Build/archive needs macOS + Xcode.** |
+| Vendor iOS | Created (PR #12). Bundle `com.cefflo.vendor` (Android `com.cefflo.cefflo_vendor_mobile`), display "Cefflo Vendor", camera/photo usage strings, URL scheme `cefflo-vendor`. **Build/archive needs macOS + Xcode.** |
+| Driver iOS | Created (PR #12). Bundle `com.cefflo.driver` (Android `com.cefflo.cefflo_rider_mobile`), display "Cefflo Driver", location/camera/photo usage strings, URL scheme `cefflo-driver`. **Build/archive needs macOS + Xcode.** |
 
 - **Identifiers.** Package and bundle IDs follow the repo's existing `com.cefflo` org
   convention and are **PROVISIONAL**. No Founder-approved IDs exist in the
