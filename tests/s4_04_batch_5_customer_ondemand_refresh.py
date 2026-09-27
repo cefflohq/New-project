@@ -64,12 +64,19 @@ class RefreshTriggerTests(unittest.TestCase):
 
 class DuplicateEventProtectionTests(unittest.TestCase):
     def test_in_flight_guard_present(self):
+        # D-66 coalescing gate: never two parallel public_tracking reads; a
+        # trigger during an in-flight read becomes exactly one follow-up.
         self.assertIn("isRefreshing", BACKEND_JS)
-        self.assertIn("if (isRefreshing) return;", BACKEND_JS)
+        self.assertIn("if (isRefreshing) { pending = true; return; }", BACKEND_JS)
+        self.assertIn("if (pending) { pending = false; guardedRefresh(); }", BACKEND_JS)
 
     def test_cooldown_present_and_uniform(self):
-        self.assertIn("REFRESH_COOLDOWN_MS = 3000", BACKEND_JS)
-        self.assertIn("if (Date.now() - lastRefreshAt < REFRESH_COOLDOWN_MS) return;", BACKEND_JS)
+        # D-66 superseded the 3 s drop-cooldown with a >= 10 s spacing between
+        # fetch starts; early triggers are deferred (not dropped), once.
+        self.assertIn("const MIN_GAP_MS = 10000;", BACKEND_JS)
+        self.assertIn("const wait = MIN_GAP_MS - (Date.now() - lastRefreshAt);", BACKEND_JS)
+        self.assertIn("if (!spacingTimer) spacingTimer = setTimeout(", BACKEND_JS)
+        self.assertNotIn("REFRESH_COOLDOWN_MS", BACKEND_JS)
 
 
 class FreshnessIndicatorTests(unittest.TestCase):
