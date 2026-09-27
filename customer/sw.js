@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cefflo-customer-shell-v1';
+const CACHE_NAME = 'cefflo-customer-shell-v2';
 const ROOT = new URL('./', self.registration.scope).pathname;
 const SHELL = [
   ROOT,
