@@ -32,7 +32,7 @@
     (function () {
       if (!new URLSearchParams(location.search).get('token')) return;
       window.CEFFLO_SESSION_KEY = 'cefflo_customer_auth_session';
-      ['../shared/config.js?v=20260916a', '../shared/client.js?v=20260916a', './backend.js?v=20260916a'].forEach(function (src) {
+      ['../shared/config.js?v=20260916a', '../shared/client.js?v=20260916a', './live.js?v=20260927a', './backend.js?v=20260927a'].forEach(function (src) {
         var script = document.createElement('script');
         script.src = src;
         script.async = false; // preserve execution order and keep blocking `load`

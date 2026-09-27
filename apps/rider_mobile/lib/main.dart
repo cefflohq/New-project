@@ -4,10 +4,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/app_state.dart';
 import 'core/env.dart';
+import 'core/live_location.dart';
 import 'core/responsive.dart';
 import 'core/routes.dart';
 import 'core/safe_area.dart';
 import 'core/theme.dart';
+import 'data/live_adapters.dart';
 import 'data/rider_repository.dart';
 import 'ui/router.dart';
 import 'ui/screens/auth.dart';
@@ -46,8 +48,23 @@ Future<void> main() async {
     publishableKey: Env.supabasePublishableKey,
   );
 
-  runApp(DriverMobileApp(repo: RiderRepository(Supabase.instance.client)));
+  final repo = RiderRepository(Supabase.instance.client);
+  runApp(DriverMobileApp(repo: repo, live: _liveFor(repo)));
 }
+
+LiveLocationService _liveFor(RiderRepository repo) => LiveLocationService(
+  source: GeolocatorSource(),
+  channelFor: (topic) => SupabaseLiveChannel(repo.realtimeClient, topic),
+  loadKeys: repo.liveKeys,
+  write: (riderId, fix) => repo.recordLocation(
+    riderId: riderId,
+    latitude: fix.latitude,
+    longitude: fix.longitude,
+    accuracy: fix.accuracy,
+    heading: fix.heading,
+    speed: fix.speed,
+  ),
+);
 
 /// Resolves `?screen=D21.2` (or `/screen/D21.2`) to a route, so any one of
 /// the locked reference screens can be opened directly in the preview build
@@ -86,9 +103,17 @@ DriverStage _stageFor(DRoute route) => switch (route) {
 };
 
 class DriverMobileApp extends StatefulWidget {
-  const DriverMobileApp({super.key, required this.repo, this.previewId});
+  const DriverMobileApp({
+    super.key,
+    required this.repo,
+    this.previewId,
+    this.live,
+  });
 
   final RiderRepository repo;
+
+  /// Phase 2B.4 live location (real build only).
+  final LiveLocationService? live;
 
   /// Preview-only deep link: a reference caption id such as "D21.2"
   /// (see [previewIdFromUri]).
@@ -99,7 +124,7 @@ class DriverMobileApp extends StatefulWidget {
 }
 
 class _DriverMobileAppState extends State<DriverMobileApp> {
-  late final AppState app = AppState(widget.repo);
+  late final AppState app = AppState(widget.repo, live: widget.live);
   bool _prototypeAuthenticated = false;
 
   /// Auth routes are owned by [AuthFlow], which runs before the shell.

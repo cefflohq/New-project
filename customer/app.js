@@ -169,6 +169,7 @@ function pickupScreen(vm) {
       ${infoRow('Items', esc(vm.order.itemsLabel))}
       ${infoRow('Picked Up At', esc(vm.pickup.atLabel))}
       ${infoRow('Note', esc(vm.order.note))}
+      ${vm.liveRider ? riderLive(vm.liveRider) : ''}
     </section>`;
 }
 
@@ -197,6 +198,7 @@ function onTheWayScreen(vm) {
              <p class="rider__name">${esc(vm.rider.name)}</p>
              <p class="rider__meta">${esc(vm.rider.vehicle)}</p>
              <p class="rider__meta">${esc(vm.rider.plate)}</p>
+             ${riderLive(vm.rider)}
            </div>
            <div class="contact-actions">
              ${contactAction('call', 'phone', 'Call', vm.rider)}
@@ -206,6 +208,21 @@ function onTheWayScreen(vm) {
        </section>`
     : '';
   return `${map}${rider}`;
+}
+
+/** D-66: truthful last known rider point + stops before this order. */
+function riderLive(rider) {
+  const parts = [];
+  if (Number.isInteger(rider.stopsAhead)) {
+    parts.push(rider.stopsAhead === 0 ? 'Your delivery is next' : `${rider.stopsAhead} ${rider.stopsAhead === 1 ? 'stop' : 'stops'} before yours`);
+  }
+  const loc = rider.location;
+  if (loc) {
+    const mins = Math.max(0, Math.round((Date.now() - new Date(loc.recordedAt).getTime()) / 60000));
+    const when = mins < 1 ? 'just now' : `${mins} min ago`;
+    parts.push(`<a class="rider__loc" href="https://www.google.com/maps?q=${encodeURIComponent(`${loc.lat},${loc.lng}`)}" target="_blank" rel="noopener">Location updated ${esc(when)}</a>`);
+  }
+  return parts.map((p) => `<p class="rider__meta">${p.startsWith('<a') ? p : esc(p)}</p>`).join('');
 }
 
 function contactAction(kind, glyph, label, rider) {
