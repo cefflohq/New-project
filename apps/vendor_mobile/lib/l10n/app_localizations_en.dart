@@ -2957,4 +2957,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hwExternalProvider => 'External provider';
+
+  @override
+  String get hwPasswordSecurity => 'Password & Security';
+
+  @override
+  String get hwNotifNewWork => 'New preparation work';
+
+  @override
+  String get hwNotifNewWorkSub => 'When new orders are added to your workload.';
+
+  @override
+  String get hwNotifChanges => 'Workload changes';
+
+  @override
+  String get hwNotifChangesSub =>
+      'When tomorrow\'s or today\'s workload is updated.';
 }

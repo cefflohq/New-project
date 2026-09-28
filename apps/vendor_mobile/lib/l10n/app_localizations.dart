@@ -5456,6 +5456,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'External provider'**
   String get hwExternalProvider;
+
+  /// No description provided for @hwPasswordSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Password & Security'**
+  String get hwPasswordSecurity;
+
+  /// No description provided for @hwNotifNewWork.
+  ///
+  /// In en, this message translates to:
+  /// **'New preparation work'**
+  String get hwNotifNewWork;
+
+  /// No description provided for @hwNotifNewWorkSub.
+  ///
+  /// In en, this message translates to:
+  /// **'When new orders are added to your workload.'**
+  String get hwNotifNewWorkSub;
+
+  /// No description provided for @hwNotifChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Workload changes'**
+  String get hwNotifChanges;
+
+  /// No description provided for @hwNotifChangesSub.
+  ///
+  /// In en, this message translates to:
+  /// **'When tomorrow\'s or today\'s workload is updated.'**
+  String get hwNotifChangesSub;
 }
 
 class _AppLocalizationsDelegate

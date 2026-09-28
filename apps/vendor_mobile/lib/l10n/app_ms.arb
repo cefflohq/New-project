@@ -891,5 +891,10 @@
   "hwNoZoneToSort": "Tiada zon untuk diisih sekarang.",
   "hwNoWork": "Tiada kerja penyediaan sekarang.",
   "hwPackFirst": "Sahkan pembungkusan zon ini dahulu.",
-  "hwExternalProvider": "Penyedia luar"
+  "hwExternalProvider": "Penyedia luar",
+  "hwPasswordSecurity": "Kata Laluan & Keselamatan",
+  "hwNotifNewWork": "Kerja penyediaan baharu",
+  "hwNotifNewWorkSub": "Apabila pesanan baharu ditambah ke beban kerja anda.",
+  "hwNotifChanges": "Perubahan beban kerja",
+  "hwNotifChangesSub": "Apabila beban kerja hari ini atau esok dikemas kini."
 }

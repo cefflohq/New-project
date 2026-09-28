@@ -18,6 +18,11 @@ import 'screens/storefront/storefront_screens.dart';
 Widget buildScreen(BuildContext context, VendorLocation loc) {
   final id = loc.entityId;
   final app = AppScope.of(context);
+  // D-74: Owner-only areas. An Operator reaching one directly lands on
+  // Settings (UX guard; the server independently refuses Owner-only RPCs).
+  if (!(app.business?.isOwner ?? true) && _ownerOnly.contains(loc.route)) {
+    return const SettingsScreen();
+  }
   return switch (loc.route) {
     VRoute.today => const TodayScreen(),
     VRoute.welcomeSetup => const WelcomeSetupScreen(),
@@ -48,11 +53,7 @@ Widget buildScreen(BuildContext context, VendorLocation loc) {
     VRoute.customers => const CustomersScreen(),
     VRoute.customerDetail => CustomerDetailScreen(customerName: id!),
     VRoute.settings => const SettingsScreen(),
-    // D-73: Owner-only; an Operator reaching this route sees Settings.
-    VRoute.subscription =>
-      (app.business?.isOwner ?? true)
-          ? const SubscriptionScreen()
-          : const SettingsScreen(),
+    VRoute.subscription => const SubscriptionScreen(),
     VRoute.choosePlan => const ChoosePlanScreen(),
     VRoute.reviewPayment => ReviewPaymentScreen(selection: id!),
     VRoute.billingHistory => const BillingHistoryScreen(),
@@ -68,3 +69,15 @@ Widget buildScreen(BuildContext context, VendorLocation loc) {
     _ => UiPrototypeScreen(spec: loc.spec),
   };
 }
+
+/// Business ownership, team, billing: never shown to an Operator (D-74).
+const _ownerOnly = {
+  VRoute.businessProfile,
+  VRoute.team,
+  VRoute.teamMemberDetail,
+  VRoute.helperRegistrationLink,
+  VRoute.subscription,
+  VRoute.choosePlan,
+  VRoute.reviewPayment,
+  VRoute.billingHistory,
+};

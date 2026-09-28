@@ -206,6 +206,45 @@ void main() {
     expect(helper.isOwner, isFalse);
   });
 
+  testWidgets('Operator Settings hide business details, Team, billing', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      VendorMobileApp(
+        repo: VendorRepository.demo(demoRole: 'operator'),
+        access: AuthAccess.operator,
+        auditLocation: const VendorLocation(VRoute.settings),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Business Profile'), findsNothing);
+    expect(find.text('Team'), findsNothing);
+    expect(find.text('Subscription'), findsNothing);
+    expect(find.text('Storefront'), findsOneWidget); // Operator scope kept
+  });
+
+  testWidgets('Operator opening an Owner-only page lands on Settings', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      VendorMobileApp(
+        repo: VendorRepository.demo(demoRole: 'operator'),
+        access: AuthAccess.operator,
+        auditLocation: const VendorLocation(VRoute.businessProfile),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Storefront'), findsOneWidget); // Settings, not profile
+  });
+
   test('an Operator is not the Owner (Subscription hidden)', () {
     final op = Business.fromRow({
       'business_id': 'b1',

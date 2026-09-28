@@ -78,16 +78,17 @@ void main() {
     expect(find.text('0 / 8 packed'), findsOneWidget);
   });
 
-  testWidgets('Packing: grey until N/N, then a deliberate slide', (
+  testWidgets('Packing + Sorting is one step: N/N enables ONE slide', (
     tester,
   ) async {
     await pumpHelper(tester);
+    // Helper tabs: no separate Sorting step.
+    expect(find.text('Sorting'), findsNothing);
     await tester.tap(find.text('Zones').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Shah Alam'));
     await tester.pumpAndSettle();
     expect(find.text('Slide to Confirm Pickup'), findsOneWidget);
-    expect(find.text('Slide to Confirm Packing'), findsNothing);
     expect(find.text('0 / 8'), findsOneWidget);
     expect(slider(tester).enabled, isFalse);
     for (var n = 1001; n <= 1007; n++) {
@@ -110,55 +111,37 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('8 / 8'), findsOneWidget);
     expect(slider(tester).enabled, isTrue); // enabled, NOT confirmed
-    expect(find.text('Packing'), findsWidgets); // still on Packing
-    await slide(tester);
-    // Deliberate slide confirmed packing -> Sorting for the same Zone.
-    expect(find.text('Sorting'), findsWidgets);
-    expect(find.text('0 / 8'), findsOneWidget);
-  });
-
-  testWidgets('Sorting to Ready for Pickup with rider and plate', (
-    tester,
-  ) async {
-    await pumpHelper(tester);
-    await tester.tap(find.text('Zones').last);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Shah Alam'));
-    await tester.pumpAndSettle();
-    for (var n = 1001; n <= 1008; n++) {
-      await tester.scrollUntilVisible(
-        find.byKey(ValueKey('order-ord-$n')),
-        200,
-      );
-      await tester.tap(find.byKey(ValueKey('order-ord-$n')));
-      await tester.pumpAndSettle();
-    }
-    expect(find.text('8 / 8'), findsOneWidget);
-    expect(slider(tester).enabled, isTrue);
-    await slide(tester);
-    expect(find.text('Pickup Time'), findsOneWidget);
-    expect(slider(tester).enabled, isFalse);
-    for (var n = 1001; n <= 1008; n++) {
-      await tester.scrollUntilVisible(
-        find.byKey(ValueKey('order-ord-$n')),
-        200,
-      );
-      await tester.tap(find.byKey(ValueKey('order-ord-$n')));
-      await tester.pumpAndSettle();
-    }
-    expect(find.text('8 / 8'), findsOneWidget);
-    expect(find.text('Sorted'), findsWidgets);
-    expect(slider(tester).enabled, isTrue);
-    await slide(tester);
+    expect(find.text('Ready for Pickup'), findsNothing);
+    await slide(tester); // the single deliberate slide
     expect(find.text('Ready for Pickup'), findsWidgets);
     expect(find.text('This zone is ready for rider pickup.'), findsOneWidget);
     expect(find.text('PICKUP RIDER'), findsOneWidget);
     expect(find.text('Amir Hakim'), findsOneWidget);
     expect(find.text('Motorcycle'), findsOneWidget);
     expect(find.text('VMC 4312'), findsOneWidget);
-    // No extra actions on this screen.
     for (final t in ['Notify Rider', 'Assign Rider', 'Next Step']) {
       expect(find.text(t), findsNothing);
     }
+  });
+
+  testWidgets('Helper More has account basics', (tester) async {
+    await pumpHelper(tester);
+    await tester.tap(find.text('More').last);
+    await tester.pumpAndSettle();
+    for (final t in [
+      'Profile',
+      'Password & Security',
+      'Notifications',
+      'Language',
+      'Privacy',
+      'About Cefflo',
+      'Sign out',
+    ]) {
+      expect(find.text(t), findsOneWidget, reason: t);
+    }
+    await tester.tap(find.text('Notifications'));
+    await tester.pumpAndSettle();
+    expect(find.text('New preparation work'), findsOneWidget);
+    expect(find.text('New orders'), findsNothing); // not the Vendor list
   });
 }

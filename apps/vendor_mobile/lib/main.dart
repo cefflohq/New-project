@@ -52,9 +52,11 @@ Future<void> main() async {
       VendorMobileApp(
         // Prototype only: ?access=helper previews the Helper workspace.
         repo: VendorRepository.demo(
-          demoRole: authAccessFromUri(Uri.base) == AuthAccess.helper
-              ? 'helper'
-              : 'owner',
+          demoRole: switch (authAccessFromUri(Uri.base)) {
+            AuthAccess.helper => 'helper',
+            AuthAccess.operator => 'operator',
+            AuthAccess.vendor => 'owner',
+          },
         ),
         access: authAccessFromUri(Uri.base),
         auditId: auditId,
@@ -245,7 +247,10 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
                 onPrototypeSignedUp: widget.repo.isDemo
                     ? () => setState(() {
                         _prototypeAuthenticated = true;
-                        app.resetTo(VRoute.welcomeSetup);
+                        // Operator / Helper never register a business.
+                        if (widget.access == AuthAccess.vendor) {
+                          app.resetTo(VRoute.welcomeSetup);
+                        }
                       })
                     : null,
               );

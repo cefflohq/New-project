@@ -2956,4 +2956,21 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get hwExternalProvider => 'Penyedia luar';
+
+  @override
+  String get hwPasswordSecurity => 'Kata Laluan & Keselamatan';
+
+  @override
+  String get hwNotifNewWork => 'Kerja penyediaan baharu';
+
+  @override
+  String get hwNotifNewWorkSub =>
+      'Apabila pesanan baharu ditambah ke beban kerja anda.';
+
+  @override
+  String get hwNotifChanges => 'Perubahan beban kerja';
+
+  @override
+  String get hwNotifChangesSub =>
+      'Apabila beban kerja hari ini atau esok dikemas kini.';
 }

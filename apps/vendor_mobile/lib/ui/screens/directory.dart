@@ -1747,10 +1747,17 @@ class SettingsScreen extends StatelessWidget {
         ),
         row(L.appearance, LucideIcons.palette, VRoute.appearance),
         label(L.business),
-        row(L.businessProfile2, LucideIcons.building2, VRoute.businessProfile),
+        // D-74: business details and Team are Owner-only.
+        if (app.business?.isOwner ?? true)
+          row(
+            L.businessProfile2,
+            LucideIcons.building2,
+            VRoute.businessProfile,
+          ),
         row(L.storefront, LucideIcons.store, VRoute.storefront),
         row(L.products, LucideIcons.package, VRoute.products),
-        row(L.team, LucideIcons.users, VRoute.team),
+        if (app.business?.isOwner ?? true)
+          row(L.team, LucideIcons.users, VRoute.team),
         // D-73: Subscription/Billing is Owner-only (presentation; the
         // server never grants billing authority from this).
         if (app.business?.isOwner ?? true)

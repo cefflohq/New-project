@@ -7,15 +7,22 @@ import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../data/vendor_repository.dart';
 import '../system_bars.dart';
+import '../../core/routes.dart';
+import '../router.dart';
 import '../widgets.dart';
-import 'directory.dart' show showLanguageSheet;
+import 'directory.dart' show languageName, showLanguageSheet;
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
 
 /// D-74 Helper workspace (Founder-approved Helper boards): the whole Vendor
 /// app for a signed-in member whose role is `helper`.
 ///
-///   Preparation -> Zones -> Packing -> Sorting -> Ready for Pickup
+///   Preparation -> Zones -> Packing (incl. sorting) -> Ready for Pickup
+///
+/// Founder correction: Packing and Sorting are ONE step in the UI. The
+/// Helper checks each order once and slides once; the slide records the
+/// canonical backend checkpoints in order (confirm_packing, each order
+/// sorted, confirm_sorting per Run), so audit truth is unchanged.
 ///
 /// No Vendor shell or navigation exists here. The server is the authority:
 /// reads come only from my_fulfilment_tasks (minimised contract), writes
@@ -53,7 +60,7 @@ const _rank = {
 };
 int _r(FulfilmentTask t) => _rank[t.status] ?? 0;
 
-enum _Tab { preparation, zones, packing, sorting, more }
+enum _Tab { preparation, zones, packing, more }
 
 /// One Zone of the working day: its tasks and derived progress.
 class _Zone {
@@ -147,15 +154,11 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
       _zones.where((z) => (z.id ?? '') == key).firstOrNull;
 
   _Zone? get _packingZone =>
-      _zone(_zoneKey) ?? _zones.where((z) => !z.packingConfirmed).firstOrNull;
-
-  _Zone? get _sortingZone =>
-      _zone(_zoneKey) ??
-      _zones.where((z) => z.packingConfirmed && !z.ready).firstOrNull;
+      _zone(_zoneKey) ?? _zones.where((z) => !z.ready).firstOrNull;
 
   void _openZone(_Zone z) => setState(() {
     _zoneKey = z.id ?? '';
-    _tab = z.packingConfirmed ? _Tab.sorting : _Tab.packing;
+    _tab = _Tab.packing;
     _showReady = z.ready;
   });
 
@@ -183,47 +186,26 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
     await repo.advancePreparation(t.orderId, 'packed');
   });
 
-  Future<void> _sort(FulfilmentTask t) async {
-    if (!t.packingConfirmed) {
-      showCefToast(context, L.hwPackFirst, error: true);
-      return;
-    }
-    await _run(
-      t.orderId,
-      () => AppScope.read(context).repo.advancePreparation(t.orderId, 'sorted'),
-    );
-  }
-
-  /// Packing slide: confirm packing for the Zone (server re-checks N/N).
-  Future<bool> _confirmPacking(_Zone z) async {
+  /// The one slide: packing confirmation, each order sorted, then sorting
+  /// confirmation per Run -> Ready for Pickup. Steps already done are
+  /// skipped, so a retry after a failure continues where it stopped.
+  /// Never Rider custody.
+  Future<bool> _confirmZone(_Zone z) async {
     final app = AppScope.read(context);
+    final repo = app.repo;
+    final biz = app.business!.id;
     try {
-      await app.repo.confirmPacking(
-        app.business!.id,
-        z.id,
-        z.tasks.first.orderDate,
-      );
-      await _reload();
-      if (mounted) setState(() => _tab = _Tab.sorting);
-      return true;
-    } on RepositoryError catch (e) {
-      if (mounted) showCefToast(context, e.message, error: true);
-      await _reload();
-      return false;
-    }
-  }
-
-  /// Sorting slide: confirm sorting for every Run group of the Zone, which
-  /// makes the orders Ready for Pickup. Not Rider custody.
-  Future<bool> _confirmSorting(_Zone z) async {
-    final app = AppScope.read(context);
-    try {
-      final runs = z.tasks.map((t) => t.runId).toSet();
-      for (final run in runs) {
+      if (!z.packingConfirmed) {
+        await repo.confirmPacking(biz, z.id, z.tasks.first.orderDate);
+      }
+      for (final t in z.tasks.where((t) => t.status == 'packed')) {
+        await repo.advancePreparation(t.orderId, 'sorted');
+      }
+      for (final run in z.tasks.map((t) => t.runId).toSet()) {
         final inRun = z.tasks.where((t) => t.runId == run);
         if (inRun.every((t) => _r(t) >= 4)) continue;
-        await app.repo.confirmSorting(
-          app.business!.id,
+        await repo.confirmSorting(
+          biz,
           z.id,
           run,
           run == null ? inRun.first.orderDate : null,
@@ -257,7 +239,7 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
                   : const StateBlock.loading(),
             );
           }
-          final zone = _tab == _Tab.sorting ? _sortingZone : null;
+          final zone = _tab == _Tab.packing ? _packingZone : null;
           if (_showReady && zone != null && zone.ready) {
             return _ReadyScreen(
               zone: zone,
@@ -274,7 +256,6 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
               _Tab.preparation => _preparation(),
               _Tab.zones => _zonesScreen(),
               _Tab.packing => _packing(),
-              _Tab.sorting => _sorting(),
               _Tab.more => _more(),
             },
             bottomNavigationBar: _BottomNav(
@@ -485,13 +466,6 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
 
   Widget _zoneChip(_Zone z) {
     if (z.ready) return _Chip(L.hwReadyStatus, bg: _greenTint, fg: _green);
-    if (z.packingConfirmed) {
-      return _Chip(
-        L.hwSortingStatus,
-        bg: CefColors.brandTint,
-        fg: CefColors.brand,
-      );
-    }
     if (z.packed > 0) {
       return _Chip(
         L.hwPackingStatus,
@@ -527,8 +501,8 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
       bottom: SlideToConfirm(
         key: const ValueKey('packing-slider'),
         label: L.hwSlideConfirmPickup,
-        enabled: complete && !z.packingConfirmed,
-        onConfirm: () => _confirmPacking(z),
+        enabled: complete && !z.ready,
+        onConfirm: () => _confirmZone(z),
       ),
       children: [
         for (final t in z.tasks)
@@ -545,123 +519,220 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
     );
   }
 
-  // ----------------------------------------------------- 4 · Sorting
-
-  Widget _sorting() {
-    final text = Theme.of(context).textTheme;
-    final z = _sortingZone;
-    if (z == null) {
-      return _Page(
-        title: L.hwSorting,
-        subtitle: '',
-        onBack: () => setState(() => _tab = _Tab.zones),
-        children: [_Empty(L.hwNoZoneToSort)],
-      );
-    }
-    final complete = z.sorted == z.orders;
-    return _Page(
-      title: L.hwSorting,
-      subtitle: z.name,
-      trailing: _CountPill('${z.sorted} / ${z.orders}'),
-      onBack: () => setState(() {
-        _tab = _Tab.zones;
-        _zoneKey = null;
-      }),
-      onRefresh: _reload,
-      bottom: SlideToConfirm(
-        key: const ValueKey('sorting-slider'),
-        label: L.hwSlideConfirmPickup,
-        enabled: complete && !z.ready,
-        onConfirm: () => _confirmSorting(z),
-      ),
-      children: [
-        _Card(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Row(
-            children: [
-              const Icon(LucideIcons.clock, color: CefColors.brand, size: 30),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(L.hwPickupTime, style: _sub(text)),
-                    Text(
-                      z.pickupAt == null ? '—' : _time(context, z.pickupAt!),
-                      maxLines: 1,
-                      softWrap: false,
-                      style: text.titleLarge?.copyWith(
-                        color: _ink,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(width: 1, height: 44, color: _line),
-              Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      L.hwNOrders(z.orders),
-                      style: text.titleMedium?.copyWith(
-                        color: _ink,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(L.hwNItems(z.items), style: _sub(text)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: Gap.sm),
-        for (final t in z.tasks)
-          _OrderRow(
-            task: t,
-            done: _r(t) >= 3,
-            busy: _busy.contains(t.orderId),
-            chip: _r(t) >= 3
-                ? _Chip(L.hwSortedStatus, bg: _greenTint, fg: _green)
-                : _Chip(L.hwPending, bg: _amberTint, fg: _amberInk),
-            onTap: _r(t) >= 3 ? null : () => _sort(t),
-          ),
-      ],
-    );
-  }
-
   // -------------------------------------------------------- More
+
+  /// Opens a shared account screen (Profile, Security, Privacy, About)
+  /// on top of the Helper workspace, never inside the Vendor shell.
+  void _push(String title, Widget body) => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => Scaffold(
+        appBar: AppBar(title: Text(title)),
+        body: body,
+      ),
+    ),
+  );
 
   Widget _more() {
     final app = AppScope.of(context);
+    final text = Theme.of(context).textTheme;
+    final email = app.repo.currentUser?.email ?? '';
+    final name = (app.repo.currentUser?.userMetadata?['full_name'] as String?)
+        ?.trim();
+    Widget label(String t) => Padding(
+      padding: const EdgeInsets.only(top: Gap.lg, bottom: Gap.sm, left: 4),
+      child: Text(
+        t.toUpperCase(),
+        style: text.labelMedium?.copyWith(
+          color: _muted,
+          letterSpacing: .8,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+    Widget group(List<Widget> rows) => _Card(
+      padding: EdgeInsets.zero,
+      child: Column(children: rows),
+    );
+    Widget row(
+      IconData icon,
+      String title,
+      VoidCallback onTap, {
+      String? trailing,
+      bool last = false,
+    }) => CefListRow(
+      title: title,
+      icon: icon,
+      trailing: trailing == null ? null : Text(trailing, style: _sub(text)),
+      showDivider: !last,
+      onTap: onTap,
+    );
     return _Page(
       title: L.hwMore,
       subtitle: _board?.businessName ?? '',
       children: [
         _Card(
-          padding: EdgeInsets.zero,
-          child: Column(
+          padding: const EdgeInsets.all(18),
+          child: Row(
             children: [
-              CefListRow(
-                title: L.language,
-                icon: LucideIcons.globe,
-                onTap: () => showLanguageSheet(context),
+              _Avatar(
+                label: (name?.isNotEmpty ?? false)
+                    ? name!
+                    : (email.isEmpty ? 'H' : email),
+                size: 56,
               ),
-              CefListRow(
-                title: L.signOut,
-                icon: LucideIcons.logOut,
-                showChevron: false,
-                showDivider: false,
-                onTap: () async {
-                  await app.repo.signOut();
-                  app.clearSession();
-                },
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      (name?.isNotEmpty ?? false) ? name! : L.helperText,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: text.titleMedium?.copyWith(
+                        color: _ink,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (email.isNotEmpty)
+                      Text(
+                        email,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: _sub(text),
+                      ),
+                    const SizedBox(height: 6),
+                    _Chip(
+                      '${L.helperText} · ${_board?.businessName ?? ''}',
+                      bg: CefColors.brandTint,
+                      fg: CefColors.brand,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
+        label(L.account),
+        group([
+          row(
+            LucideIcons.user,
+            L.profile,
+            () => _push(
+              L.profile,
+              buildScreen(context, const VendorLocation(VRoute.editProfile)),
+            ),
+          ),
+          row(
+            LucideIcons.lock,
+            L.hwPasswordSecurity,
+            () => _push(
+              L.security,
+              buildScreen(context, const VendorLocation(VRoute.security)),
+            ),
+          ),
+          row(
+            LucideIcons.bell,
+            L.notifications,
+            () => _push(L.notifications, const _HelperNotifications()),
+          ),
+          row(
+            LucideIcons.globe,
+            L.language,
+            () => showLanguageSheet(context),
+            trailing: languageName(app.uiLocale),
+            last: true,
+          ),
+        ]),
+        label(L.support),
+        group([
+          row(
+            LucideIcons.shieldCheck,
+            L.privacy,
+            () => _push(
+              L.privacy,
+              buildScreen(context, const VendorLocation(VRoute.privacyPolicy)),
+            ),
+          ),
+          row(
+            LucideIcons.info,
+            L.aboutCefflo,
+            () => _push(
+              L.aboutCefflo,
+              buildScreen(context, const VendorLocation(VRoute.about)),
+            ),
+            last: true,
+          ),
+        ]),
+        const SizedBox(height: Gap.lg),
+        group([
+          CefListRow(
+            title: L.signOut,
+            leading: const IconTile(
+              LucideIcons.logOut,
+              color: Color(0xFFD73C2B),
+            ),
+            titleColor: const Color(0xFFD73C2B),
+            showChevron: false,
+            showDivider: false,
+            onTap: () async {
+              await app.repo.signOut();
+              app.clearSession();
+            },
+          ),
+        ]),
+      ],
+    );
+  }
+}
+
+/// Helper notification preferences: only fulfilment signals (the Helper
+/// workspace itself stays the source of truth; notifications are secondary).
+class _HelperNotifications extends StatefulWidget {
+  const _HelperNotifications();
+  @override
+  State<_HelperNotifications> createState() => _HelperNotificationsState();
+}
+
+class _HelperNotificationsState extends State<_HelperNotifications> {
+  bool _work = true, _changes = true;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    Widget tile(String title, String sub, bool v, ValueChanged<bool> on) =>
+        SwitchListTile(
+          value: v,
+          onChanged: on,
+          activeThumbColor: CefColors.brand,
+          title: Text(title, style: text.titleMedium?.copyWith(fontSize: 16)),
+          subtitle: Text(sub, style: _sub(text)),
+        );
+    return ListView(
+      padding: const EdgeInsets.all(Gap.gutter),
+      children: [
+        _Card(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Column(
+            children: [
+              tile(
+                L.hwNotifNewWork,
+                L.hwNotifNewWorkSub,
+                _work,
+                (v) => setState(() => _work = v),
+              ),
+              tile(
+                L.hwNotifChanges,
+                L.hwNotifChangesSub,
+                _changes,
+                (v) => setState(() => _changes = v),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: Gap.md),
+        Text(L.notificationSettingsNotConnectedYet, style: _sub(text)),
       ],
     );
   }
@@ -1299,7 +1370,6 @@ class _BottomNav extends StatelessWidget {
       (_Tab.preparation, LucideIcons.utensils, L.hwPreparation),
       (_Tab.zones, LucideIcons.map, L.hwZones),
       (_Tab.packing, LucideIcons.package, L.hwPacking),
-      (_Tab.sorting, LucideIcons.layers, L.hwSorting),
       (_Tab.more, LucideIcons.menu, L.hwMore),
     ];
     return DecoratedBox(

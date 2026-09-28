@@ -1413,5 +1413,10 @@
   "hwNoZoneToSort": "No zone to sort right now.",
   "hwNoWork": "No preparation work right now.",
   "hwPackFirst": "Confirm packing for this zone first.",
-  "hwExternalProvider": "External provider"
+  "hwExternalProvider": "External provider",
+  "hwPasswordSecurity": "Password & Security",
+  "hwNotifNewWork": "New preparation work",
+  "hwNotifNewWorkSub": "When new orders are added to your workload.",
+  "hwNotifChanges": "Workload changes",
+  "hwNotifChangesSub": "When tomorrow's or today's workload is updated."
 }
