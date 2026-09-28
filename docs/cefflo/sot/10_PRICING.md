@@ -1,11 +1,11 @@
-**Status:** CANDIDATE — NOT Founder-Locked (merged into repo 2026-09-04)
-**Repo-reconciliation note:** Fills the "no Cefflo Pricing Master exists" gap flagged in `docs/cefflo/sot/00_INDEX.md` §9 and `docs/cefflo/05_DECISIONS.md` D-23. This document is a pricing DIRECTION CANDIDATE only — every number in it (RM0/RM99/RM199/RM499, delivery allowances, Rider/Zone/team caps) is explicitly unlocked per the source document's own §16/§19. `docs/cefflo/sot/07_BUSINESS_LAUNCH_COMMERCIAL.md` §4 ("Pricing Authority") requires a current Founder-approved Pricing Master before any price is published as final — this candidate does not itself satisfy that requirement; it is the working input to it. Do not treat any figure below as final commercial truth, and do not let it override `docs/cefflo/sot/07_BUSINESS_LAUNCH_COMMERCIAL.md` §12 ("Product Truth Gate") for marketing/pricing pages.
+**Status:** LOCKED — Founder-approved 2026-09-28 (`docs/cefflo/05_DECISIONS.md` D-73). Malaysia price book (MYR).
+**Lock note (D-73):** The Founder locked the plan prices, the delivery allowances and the Free cap of **150 completed deliveries/month**. The per-plan limits in §5–§8 are locked as written, except items §16 still lists as open. Every figure below that is not listed in §16 is final commercial truth for Malaysia and may be published. Earlier history: this file entered the repo on 2026-09-04 as an unlocked candidate (D-23).
 
 ---
 
 # CEFFLO PRICING PLAN — MASTER AUDIT & DECISION MD
 
-**Status:** Pricing Direction Candidate — NOT Founder-Locked
+**Status:** Founder-Locked (D-73, 2026-09-28)
 **Market:** Malaysia-first, Asia-ready
 **Product:** Cefflo — Local Same-Day Delivery Operating System
 **Date:** 4 September 2026
@@ -150,23 +150,23 @@ conversion, no non-MY prices): see the D-71 study §T. Architecture only.
 
 ---
 
-## 4. CURRENT PRICING CANDIDATE
+## 4. LOCKED PRICING (MALAYSIA)
 
 | Plan | Monthly List Price | Delivery Allowance Candidate | Position |
 |---|---|---|---|
-| **FREE** | **RM0** | **100 / month** | Experience Cefflo |
+| **FREE** | **RM0** | **150 / month** | Experience Cefflo |
 | **GROW** | **RM99** | **500 / month** | Small growing operation |
 | **OPERATE** | **RM199** | **1,500 / month** | Core / hero plan |
 | **SCALE** | **RM499** | **5,000 / month** | High-volume operation |
 | **ENTERPRISE** | **Custom** | Custom | High-volume / special requirements |
 
-**OPERATE** is the current candidate for the **Most Popular / Hero** plan.
+**OPERATE** is the **Most Popular / Hero** plan.
 
 These prices and allowances are **not yet Founder-locked**.
 
 ---
 
-## 5. FREE PLAN — CURRENT CANDIDATE
+## 5. FREE PLAN — LOCKED
 
 ### Purpose
 
@@ -175,7 +175,7 @@ Allow a new Malaysian business to run genuine deliveries with Cefflo without pro
 ### Candidate Limits
 
 - RM0 forever;
-- 100 completed deliveries per monthly billing cycle;
+- 150 completed deliveries per monthly billing cycle;
 - 1 business;
 - 1 business location;
 - 1 primary admin/user;
@@ -195,13 +195,15 @@ Allow a new Malaysian business to run genuine deliveries with Cefflo without pro
 
 ### Founder Gate F-01
 
-Pressure-test **100 vs 150 completed deliveries/month** before final lock.
+**RESOLVED (D-73): 150 completed deliveries/month.**
+
+Original gate: pressure-test **100 vs 150 completed deliveries/month** before final lock.
 
 Do not raise the cap simply because a larger number looks more attractive. The decision must consider conversion behavior, cost, abuse and the target micro-business usage pattern.
 
 ---
 
-## 6. GROW — CURRENT CANDIDATE
+## 6. GROW — LOCKED
 
 **RM99/month**
 
@@ -224,7 +226,7 @@ Working positioning:
 
 ---
 
-## 7. OPERATE — CURRENT CANDIDATE
+## 7. OPERATE — LOCKED
 
 **RM199/month**
 
@@ -257,7 +259,7 @@ The product should be able to defend this price through operational value rather
 
 ---
 
-## 8. SCALE — CURRENT CANDIDATE
+## 8. SCALE — LOCKED
 
 **RM499/month**
 
@@ -306,11 +308,11 @@ Enterprise must not become a dumping ground for features that should exist in th
 
 Example:
 
-A Free business is at `98 / 100`.
+A Free business is at `148 / 150`.
 
 It dispatches a legitimate 7-stop run.
 
-Cefflo must allow all 7 deliveries to complete even if usage becomes `105 / 100`.
+Cefflo must allow all 7 deliveries to complete even if usage becomes `155 / 150`.
 
 After the run:
 
@@ -486,7 +488,7 @@ Track:
 - activation rate;
 - first delivery completed;
 - first run dispatched;
-- Free businesses reaching 25 / 50 / 75 / 100 deliveries;
+- Free businesses reaching 50 / 100 / 150 deliveries;
 - Free → Grow conversion;
 - Grow → Operate conversion;
 - time-to-upgrade;
@@ -500,7 +502,7 @@ Track:
 - discount dependency;
 - plan downgrade behavior.
 
-The 100-delivery Free cap can be revisited using actual evidence.
+The 150-delivery Free cap can be revisited using actual evidence.
 
 ---
 
@@ -508,10 +510,10 @@ The 100-delivery Free cap can be revisited using actual evidence.
 
 The following remain open until final pricing audit:
 
-- Free cap: 100 vs 150;
-- Grow allowance: 500;
-- Operate allowance: 1,500;
-- Scale allowance: 5,000;
+- ~~Free cap: 100 vs 150~~ — resolved: 150 (D-73);
+- ~~Grow allowance: 500~~ — locked (D-73);
+- ~~Operate allowance: 1,500~~ — locked (D-73);
+- ~~Scale allowance: 5,000~~ — locked (D-73);
 - exact Rider caps;
 - exact Zone caps;
 - team-user caps;
@@ -606,4 +608,4 @@ Pricing becomes Founder-Locked only when:
 
 Until then:
 
-**RM0 / RM99 / RM199 / RM499 / Custom is the approved pricing direction candidate, not the final commercial lock.**
+**Locked by the Founder on 2026-09-28 (D-73): FREE RM0 (150) / GROW RM99 (500) / OPERATE RM199 (1,500) / SCALE RM499 (5,000) / ENTERPRISE Custom.** Items still listed as open in §16 remain open.

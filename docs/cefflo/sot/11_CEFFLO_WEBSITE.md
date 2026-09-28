@@ -34,14 +34,14 @@ This is not the full commercial website.
 May expand into the full public/commercial web presence:
 - complete product pages;
 - use-case/solution pages;
-- pricing (once `docs/cefflo/sot/10_PRICING.md` is Founder-locked, not before);
+- pricing from `docs/cefflo/sot/10_PRICING.md` (Founder-locked 2026-09-28, D-73; publish only values that file lists as locked);
 - signup/onboarding entry;
 - SaaS subscription/commercial entry;
 - account/commercial routing where appropriate;
-- Razorpay Curlec integration for Cefflo's own SaaS subscription billing where applicable (`docs/cefflo/sot/01_PRODUCT_TRUTH.md` §9 payment boundary).
+- Razorpay Curlec (Malaysia) and Stripe (global) for Cefflo's own SaaS subscription billing where applicable (D-73) (`docs/cefflo/sot/01_PRODUCT_TRUTH.md` §9 payment boundary).
 
 ## 3. Payment Boundary
-Curlec is for **Vendor → Cefflo** SaaS subscription/payment only. The Website must never expand this into vendor-customer delivery payments — same boundary as `01_PRODUCT_TRUTH.md` §9 and `07_BUSINESS_LAUNCH_COMMERCIAL.md`.
+Curlec and Stripe are for **Vendor → Cefflo** SaaS subscription/payment only. The Website must never expand this into vendor-customer delivery payments — same boundary as `01_PRODUCT_TRUTH.md` §9 and `07_BUSINESS_LAUNCH_COMMERCIAL.md`.
 
 ## 4. Must Not Own
 The Website must never independently own or calculate canonical:
@@ -60,7 +60,7 @@ The Website must never independently own or calculate canonical:
 All of the above remain backend-owned per `docs/cefflo/sot/02_ARCHITECTURE.md` §2. The Website may display marketing/product information and handle acquisition/commercial flows only.
 
 ## 5. Current Implementation State
-**NOT IMPLEMENTED (D-62, 2026-09-25).** The previous built site (`marketing/index.html`, including `marketing/prelaunch/`) was not an approved Website UI and was removed from the active baseline, build and routing; `www.cefflo.com` serves no product UI. No dedicated Phase 03 pre-launch landing page has been built. No Phase 06 commercial website has been built. This document does not authorize building either.
+The homepage lives in `website/` on branch `claude/public-website` (Bahasa Melayu, locked D-73 pricing, real canonical app captures). The retired `marketing/` site must not return (D-62). `website/` is not yet wired into the static build or host routing; serving it on `cefflo.com` needs Founder approval.
 
 ## 6. Relationship to the Marketing Knowledge Pack
 This document is the **product-surface** doctrine (what the Website is, its boundaries). `docs/cefflo/sot/marketing/00_MARKETING_KNOWLEDGE_PACK_INDEX.md` and its pack govern the **content/creative** doctrine that will eventually populate this surface. Neither replaces the other.

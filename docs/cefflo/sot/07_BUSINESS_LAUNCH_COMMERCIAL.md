@@ -41,9 +41,12 @@ Pricing system should support:
 - tax presentation rules;
 - versioned effective dates.
 
-## 5. Subscription Gateway — Malaysia
-Founder-locked primary gateway:
-**Razorpay Curlec**
+## 5. Subscription Gateways (updated D-73, 2026-09-28)
+Founder-locked gateways:
+- **Stripe**: global subscription gateway (non-Malaysian markets, as each market is enabled).
+- **Razorpay Curlec**: Malaysia gateway. It carries local methods such as FPX/DuitNow, cards and e-wallets / pay-later (for example Touch 'n Go eWallet, GrabPay, SPayLater), for each method Curlec supports and activates for the merchant account.
+
+App-store rule: the Vendor app is distributed through the App Store and Google Play. Before store submission, confirm that selling the subscription through Stripe/Curlec complies with current Apple and Google billing policy for the build that ships (D-73 open item).
 
 Scope:
 **Vendor → Cefflo SaaS subscription/billing only.**

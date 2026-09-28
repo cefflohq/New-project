@@ -1529,3 +1529,53 @@ onboarding and approval, and never asks again.
 - **Supersedes:**
   - the D-62 note that `invite/` is only a temporary supporting route;
   - the D09/D10 invitation steps in the Driver 42-screen master.
+
+## D-73 Malaysia Pricing Locked; Stripe + Curlec Gateways; Free Cap 150 (2026-09-28)
+
+**Decision (Founder).**
+
+- **Pricing locked** as written in `sot/10_PRICING.md` (Malaysia, MYR):
+
+  | Plan | Monthly | Completed deliveries / month |
+  |---|---:|---:|
+  | FREE | RM0 | **150** |
+  | GROW | RM99 | 500 |
+  | OPERATE ⭐ | RM199 | 1,500 |
+  | SCALE | RM499 | 5,000 |
+  | ENTERPRISE | Custom | Custom |
+
+  - Free cap: **150** (Founder Gate F-01 resolved; was 100 vs 150).
+  - Per-plan limits in §5–§8 are locked as written.
+  - Still open (§16): overage model, annual pricing, promotion rules, API
+    entitlement, multi-location entitlement (SCALE "3 locations" still
+    needs reconciliation with the business/location architecture), POD
+    retention, reporting differentiation, Enterprise qualification.
+- **Gateways:**
+  - **Stripe**: global subscription gateway.
+  - **Razorpay Curlec**: Malaysia, carrying local methods such as FPX/DuitNow,
+    cards, Touch 'n Go eWallet, GrabPay and SPayLater, for each method Curlec
+    supports and activates.
+  - Scope is unchanged: Vendor → Cefflo SaaS billing only, never
+    vendor-customer payments.
+- **Public Website** may publish the locked prices and allowances. The
+  primary CTA is downloading the Vendor app (App Store / Google Play).
+
+**Evidence note.** The Global Unit Economics Study (D-71) answered "evidence
+sufficient to reconsider pricing: NO" because provider prices were not yet
+recorded. This lock is a Founder commercial decision taken with that known;
+the study's margin thresholds (§J) remain the check once real COGS is
+recorded.
+
+**Open items created by this decision:**
+
+1. App-store billing policy: confirm, before store submission, that selling
+   the in-app-used subscription through Stripe/Curlec complies with current
+   Apple and Google policy for the shipped build (or whether store billing
+   must be offered).
+2. Curlec and Stripe onboarding, webhooks and the subscription state machine
+   remain gated by `sot/07_BUSINESS_LAUNCH_COMMERCIAL.md` §6. Nothing is
+   implemented by this decision.
+3. Subscription screens V-50–V-54 remain HOLD until billing is authorized.
+
+**Supersedes:** the CANDIDATE status of `sot/10_PRICING.md`; the Free cap of
+100; Curlec as the only named gateway.

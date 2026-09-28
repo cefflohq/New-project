@@ -119,7 +119,7 @@ Any customer invoice/receipt/e-Invoice capability must follow the latest explici
 Cefflo does **not** manage vendor-customer payments unless Founder explicitly reintroduces that scope.
 
 Separate boundary:
-Cefflo may charge Vendors for Cefflo's own SaaS subscription. For Malaysia, Razorpay Curlec is the locked primary gateway for Vendor-to-Cefflo subscription billing. This does not make Cefflo the payment processor for vendor-customer transactions.
+Cefflo may charge Vendors for Cefflo's own SaaS subscription. For Malaysia, Razorpay Curlec is the locked gateway for Vendor-to-Cefflo subscription billing; Stripe is the locked global gateway for other markets (D-73). This does not make Cefflo the payment processor for vendor-customer transactions.
 
 ## 10. Capability Truth States
 Every capability exposed to agents/marketing must have one state:

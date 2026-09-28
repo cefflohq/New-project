@@ -118,11 +118,11 @@ Primary:
 
 ## 9. Cefflo Pricing
 Primary:
-- `docs/cefflo/sot/10_PRICING.md` — status: CANDIDATE, **NOT Founder-Locked**. RM0/RM99/RM199/RM499/Custom tier structure and all delivery/rider/zone/team allowances remain open per its own §16/§19.
+- `docs/cefflo/sot/10_PRICING.md` — status: **LOCKED (Founder, 2026-09-28, D-73)**. FREE RM0 (150 deliveries) / GROW RM99 (500) / OPERATE RM199 (1,500) / SCALE RM499 (5,000) / ENTERPRISE Custom. Items its §16 lists as open (overage, annual, promotions, API, multi-location, retention, reporting tiers, Enterprise qualification) remain open.
 - international pricing framework — not present beyond the "regional price books, not simple currency conversion" principle in §10_PRICING.md §3 P-08.
 - approved price books — not present.
 
-Candidate/simulation values must remain labeled. Do not publish any figure in `docs/cefflo/sot/10_PRICING.md` as final commercial truth.
+Only values `docs/cefflo/sot/10_PRICING.md` lists as locked may be published. Items still open there must not be published as final.
 
 ## 10. Business & Launch
 Primary:
@@ -196,7 +196,7 @@ Use:
 The knowledge base is healthy when an agent can locate the correct domain SOT, resolve conflicts deterministically, distinguish current truth from exploration/history, and execute without inventing missing product doctrine.
 
 ## 16. Open gaps / pending Founder decisions (updated 2026-09-04, second pass)
-- `docs/cefflo/sot/10_PRICING.md` exists but is a CANDIDATE, not Founder-locked — no final price may be published (domain 9 above).
+- ~~`docs/cefflo/sot/10_PRICING.md` is a CANDIDATE~~ — resolved: prices locked 2026-09-28 (D-73).
 - `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md` remains "Founder Review Required" while its DEV/STAGING implementation is integrated and awaits UI lock. Subscription/billing V-50–V-54 are HOLD and excluded from active routes pending separate Founder approval; V-41 Delivery Settings still needs reconciliation against Service Area/Zones (domain 1 above).
 - `docs/cefflo/sot/marketing/07_MARKETING_MEMORY.md` exists but its performance memory is intentionally empty — no AI Marketing Engine implementation or real campaign data exists yet (domain 6/7 above).
 - `docs/cefflo/sot/13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` (active master as of 2026-09-14, D-37, superseding `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`) remains a "WORKING MASTER BASELINE" — not yet Founder-locked, not yet implemented; the current live Rider client is the PWA at `docs/cefflo/07_RIDER.md`.
