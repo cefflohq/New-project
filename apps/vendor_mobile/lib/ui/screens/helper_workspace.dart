@@ -37,10 +37,12 @@ class HelperWorkspaceScreen extends StatefulWidget {
 
 // ------------------------------------------------------------------ tokens
 
+/// Cefflo blue header gradient (deep blue -> bright Cefflo blue).
 const _headerBlue = LinearGradient(
-  begin: Alignment.topCenter,
-  end: Alignment.bottomCenter,
-  colors: [Color(0xFF0B3FC9), Color(0xFF1250E6)],
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [Color(0xFF0A2A8A), Color(0xFF0B47D4), Color(0xFF1B7BF0)],
+  stops: [0.0, 0.55, 1.0],
 );
 const _ink = CefColors.navy;
 const _muted = Color(0xFF6B7385);
@@ -227,7 +229,7 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
   Widget build(BuildContext context) {
     return CefSystemBars(
       background: Brightness.dark,
-      browserChromeColor: const Color(0xFF0B3FC9),
+      browserChromeColor: const Color(0xFF0A2A8A),
       child: FutureBuilder<FulfilmentBoard>(
         future: _load,
         builder: (context, snap) {
