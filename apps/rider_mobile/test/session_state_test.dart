@@ -15,9 +15,21 @@ class _FakeRepo extends RiderRepository {
 
   final List<RiderRelationship> rels;
   var signedOut = false;
+  final calls = <String>[];
+  bool claimFails = false;
 
   @override
-  Future<List<RiderRelationship>> myRiderRelationships() async => rels;
+  Future<List<Map<String, dynamic>>> claimMyRiderInvitations() async {
+    calls.add('claim');
+    if (claimFails) throw RepositoryError('network');
+    return const [];
+  }
+
+  @override
+  Future<List<RiderRelationship>> myRiderRelationships() async {
+    calls.add('relationships');
+    return rels;
+  }
 
   @override
   Future<List<RiderOrder>> myOrders(String riderId) async => const [];
@@ -113,5 +125,24 @@ void main() {
     expect(vehicleTypeLabel('motorcycle'), 'Motorbike');
     expect(vehicleTypeLabel('car'), 'Car');
     expect(vehicleTypeLabel('van'), 'Van');
+  });
+
+  test(
+    'PWA consent is claimed before relationships are read (one acceptance)',
+    () async {
+      final repo = _FakeRepo([_rel('r1', 'bA', 'pending')]);
+      final app = AppState(repo);
+      await app.loadSession();
+      expect(repo.calls, ['claim', 'relationships']);
+      expect(app.current.route, DRoute.pendingReview);
+    },
+  );
+
+  test('a failed claim never blocks signing in', () async {
+    final repo = _FakeRepo(const [])..claimFails = true;
+    final app = AppState(repo);
+    await app.loadSession();
+    expect(app.sessionError, isNull);
+    expect(app.current.route, DRoute.noBusinessConnected);
   });
 }

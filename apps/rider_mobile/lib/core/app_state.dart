@@ -332,6 +332,13 @@ class AppState extends ChangeNotifier {
         _applyUiLocale(own);
         await _localeStore.write(own);
       }
+      // One invitation, one acceptance: a consent given in the Invitation
+      // PWA becomes the pending membership here, before relationships are
+      // read. Best-effort -- a failed claim never blocks signing in, and the
+      // next session load retries it.
+      try {
+        await repo.claimMyRiderInvitations();
+      } on RepositoryError catch (_) {}
       relationships = await repo.myRiderRelationships();
       final activeOnes = relationships.where((r) => r.isActive).toList();
       active = activeOnes.isEmpty ? null : activeOnes.first;

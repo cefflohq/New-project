@@ -296,18 +296,6 @@ abstract class AppLocalizations {
   /// **'Password Updated!'**
   String get passwordUpdated;
 
-  /// No description provided for @invitationLanding.
-  ///
-  /// In en, this message translates to:
-  /// **'Invitation Landing'**
-  String get invitationLanding;
-
-  /// No description provided for @acceptInvitation.
-  ///
-  /// In en, this message translates to:
-  /// **'Accept Invitation'**
-  String get acceptInvitation;
-
   /// No description provided for @noBusinessConnected.
   ///
   /// In en, this message translates to:
@@ -1070,66 +1058,6 @@ abstract class AppLocalizations {
   /// **'On this device, you can continue using the app.'**
   String get deviceCanContinueUsingApp;
 
-  /// No description provided for @maybeLater.
-  ///
-  /// In en, this message translates to:
-  /// **'Maybe Later'**
-  String get maybeLater;
-
-  /// No description provided for @youreInvited.
-  ///
-  /// In en, this message translates to:
-  /// **'You’re Invited!'**
-  String get youreInvited;
-
-  /// No description provided for @joinCeffloPartTheirDeliveryTeam.
-  ///
-  /// In en, this message translates to:
-  /// **'Join {business} on Cefflo. Be part of their delivery team and start making deliveries.'**
-  String joinCeffloPartTheirDeliveryTeam(Object business);
-
-  /// No description provided for @workTrustedLocalBusiness.
-  ///
-  /// In en, this message translates to:
-  /// **'Work with a trusted local business'**
-  String get workTrustedLocalBusiness;
-
-  /// No description provided for @makeDeliveriesWithinTheirServiceArea.
-  ///
-  /// In en, this message translates to:
-  /// **'Make deliveries within their service area.'**
-  String get makeDeliveriesWithinTheirServiceArea;
-
-  /// No description provided for @startDeliveringToday.
-  ///
-  /// In en, this message translates to:
-  /// **'Start delivering today'**
-  String get startDeliveringToday;
-
-  /// No description provided for @getAccessOnceAccountApproved.
-  ///
-  /// In en, this message translates to:
-  /// **'Get access once your account is approved.'**
-  String get getAccessOnceAccountApproved;
-
-  /// No description provided for @allOneApp.
-  ///
-  /// In en, this message translates to:
-  /// **'All in one app'**
-  String get allOneApp;
-
-  /// No description provided for @ordersNavigationSupport.
-  ///
-  /// In en, this message translates to:
-  /// **'Orders, navigation and support.'**
-  String get ordersNavigationSupport;
-
-  /// No description provided for @decline.
-  ///
-  /// In en, this message translates to:
-  /// **'Decline'**
-  String get decline;
-
   /// No description provided for @all.
   ///
   /// In en, this message translates to:
@@ -1207,66 +1135,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nothing here right now.'**
   String get nothingHereRightNow;
-
-  /// No description provided for @youveBeenInvitedJoinBusinessCefflo.
-  ///
-  /// In en, this message translates to:
-  /// **'You’ve been invited to join this\nbusiness on Cefflo.'**
-  String get youveBeenInvitedJoinBusinessCefflo;
-
-  /// No description provided for @messageFromBusiness.
-  ///
-  /// In en, this message translates to:
-  /// **'Message from the business'**
-  String get messageFromBusiness;
-
-  /// No description provided for @makeDeliveriesOurCustomers.
-  ///
-  /// In en, this message translates to:
-  /// **'Make deliveries for our customers'**
-  String get makeDeliveriesOurCustomers;
-
-  /// No description provided for @helpUsDeliverOrdersWithinOur.
-  ///
-  /// In en, this message translates to:
-  /// **'Help us deliver orders within our service area.'**
-  String get helpUsDeliverOrdersWithinOur;
-
-  /// No description provided for @simpleStraightforward.
-  ///
-  /// In en, this message translates to:
-  /// **'Simple and straightforward'**
-  String get simpleStraightforward;
-
-  /// No description provided for @completeDetailsGetApprovedByBusiness.
-  ///
-  /// In en, this message translates to:
-  /// **'Complete your details and get approved by the business.'**
-  String get completeDetailsGetApprovedByBusiness;
-
-  /// No description provided for @partTeam.
-  ///
-  /// In en, this message translates to:
-  /// **'Be part of the team'**
-  String get partTeam;
-
-  /// No description provided for @workTrustedLocalBusinessCefflo.
-  ///
-  /// In en, this message translates to:
-  /// **'Work with a trusted local business on Cefflo.'**
-  String get workTrustedLocalBusinessCefflo;
-
-  /// No description provided for @acceptContinue.
-  ///
-  /// In en, this message translates to:
-  /// **'Accept & Continue'**
-  String get acceptContinue;
-
-  /// No description provided for @declineInvitation.
-  ///
-  /// In en, this message translates to:
-  /// **'Decline Invitation'**
-  String get declineInvitation;
 
   /// No description provided for @goodMorning.
   ///
@@ -2509,12 +2377,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'or'**
   String get orSeparator;
-
-  /// No description provided for @joinBusinessDeliveryTeamCefflo.
-  ///
-  /// In en, this message translates to:
-  /// **'Join a business\'s delivery team on Cefflo. Open the invitation link you received to connect.'**
-  String get joinBusinessDeliveryTeamCefflo;
 
   /// No description provided for @pasteFullInvitationLink.
   ///

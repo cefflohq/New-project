@@ -8,7 +8,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/app_state.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
-import '../../data/demo_data.dart';
 import '../../data/rider_repository.dart';
 import '../brand.dart';
 import '../widgets.dart';
@@ -78,7 +77,14 @@ class _AuthFlowState extends State<AuthFlow> {
     ),
     DRoute.createAccount => CreateAccountScreen(
       onBack: _back,
-      onCreated: () => _go(DRoute.invitationLanding),
+      // One invitation, one acceptance: the rider already accepted in the
+      // Invitation PWA. A new account goes straight into the app; live,
+      // loadSession claims that consent server-side (by the invited email)
+      // and lands on the stage it produces. The prototype walks the
+      // designed onboarding forms instead.
+      onCreated: () => widget.onAuthenticated(
+        AppScope.read(context).repo.isDemo ? DRoute.driverDetails : null,
+      ),
       onSignIn: () => _resetTo(DRoute.emailSignIn),
     ),
     DRoute.forgotPassword => ForgotPasswordScreen(
@@ -100,13 +106,6 @@ class _AuthFlowState extends State<AuthFlow> {
         _resetTo(DRoute.emailSignIn);
         widget.onPasswordUpdated?.call();
       },
-    ),
-    // Accepting the invitation drops the Driver into the signed-in shell at
-    // D10; "Maybe Later" lands on the same shell with no business connected.
-    DRoute.invitationLanding => InvitationLandingScreen(
-      onAccept: () => widget.onAuthenticated(DRoute.acceptInvitation),
-      onDecline: () => _resetTo(DRoute.signIn),
-      onMaybeLater: () => widget.onAuthenticated(DRoute.noBusinessConnected),
     ),
     _ => SignInScreen(
       onEmail: () => _go(DRoute.emailSignIn),
@@ -1600,84 +1599,6 @@ class PasswordUpdatedScreen extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // D09 — Invitation Landing
 // ---------------------------------------------------------------------------
-
-class InvitationLandingScreen extends StatelessWidget {
-  const InvitationLandingScreen({
-    super.key,
-    required this.onAccept,
-    required this.onDecline,
-    required this.onMaybeLater,
-  });
-
-  final VoidCallback onAccept;
-  final VoidCallback onDecline;
-  final VoidCallback onMaybeLater;
-
-  @override
-  Widget build(BuildContext context) {
-    // Live: the inviting business is only known once the Driver opens their
-    // invitation link, so the landing shows no business identity.
-    final demo = AppScope.read(context).repo.isDemo;
-    final business = DemoData.invitingBusiness;
-    return CeffloAuthScaffold(
-      headerAction: GestureDetector(
-        onTap: onMaybeLater,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-          child: Text(
-            L.maybeLater,
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: CefColors.onNavy.withValues(alpha: 0.9),
-            ),
-          ),
-        ),
-      ),
-      title: L.youreInvited,
-      subtitle: demo
-          ? L.joinCeffloPartTheirDeliveryTeam(business.name)
-          : L.joinBusinessDeliveryTeamCefflo,
-      sheetPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
-        Gap.lg,
-        Gap.gutter,
-        Gap.xl,
-      ),
-      scrollable: false,
-      sheet: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (demo) ...[
-            BusinessIdentityRow(business: business),
-            const SizedBox(height: Gap.lg),
-          ],
-          CeffloFeatureRow(
-            icon: LucideIcons.users,
-            title: L.workTrustedLocalBusiness,
-            body: L.makeDeliveriesWithinTheirServiceArea,
-          ),
-          CeffloFeatureRow(
-            icon: LucideIcons.clock,
-            title: L.startDeliveringToday,
-            body: L.getAccessOnceAccountApproved,
-          ),
-          CeffloFeatureRow(
-            icon: LucideIcons.shield,
-            title: L.allOneApp,
-            body: L.ordersNavigationSupport,
-          ),
-          const SizedBox(height: Gap.lg),
-          CeffloPrimaryButton(L.acceptInvitation, onTap: onAccept),
-          const SizedBox(height: Gap.md),
-          Center(child: CeffloTextLink(L.decline, onTap: onDecline)),
-        ],
-      ),
-    );
-  }
-}
 
 /// Business identity row — logo tile, name, category, location. Repeated in
 /// D09, D10, D18, D19 and D40-B.

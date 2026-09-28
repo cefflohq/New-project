@@ -143,7 +143,6 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
     DRoute.checkEmail,
     DRoute.setNewPassword,
     DRoute.passwordUpdated,
-    DRoute.invitationLanding,
   };
 
   DRoute? get _previewRoute {

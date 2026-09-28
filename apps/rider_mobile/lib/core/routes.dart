@@ -34,9 +34,7 @@ enum DRoute {
   checkEmail, // D06
   setNewPassword, // D07
   passwordUpdated, // D08
-  invitationLanding, // D09
   // --- Onboarding / business join (D10–D18) ----------------------------
-  acceptInvitation, // D10
   noBusinessConnectedHome, // D11 (home-shell variant, pre-details)
   driverDetails, // D12
   personalDetails, // D12.1
@@ -134,18 +132,6 @@ Map<DRoute, RouteSpec> get routeSpecs => <DRoute, RouteSpec>{
     title: L.passwordUpdated,
     parent: DRoute.setNewPassword,
   ),
-  DRoute.invitationLanding: RouteSpec(
-    route: DRoute.invitationLanding,
-    id: 'D09',
-    title: L.invitationLanding,
-  ),
-
-  DRoute.acceptInvitation: RouteSpec(
-    route: DRoute.acceptInvitation,
-    id: 'D10',
-    title: L.acceptInvitation,
-    parent: DRoute.invitationLanding,
-  ),
   DRoute.noBusinessConnectedHome: RouteSpec(
     route: DRoute.noBusinessConnectedHome,
     id: 'D11',
@@ -156,7 +142,6 @@ Map<DRoute, RouteSpec> get routeSpecs => <DRoute, RouteSpec>{
     route: DRoute.driverDetails,
     id: 'D12',
     title: L.driverDetails,
-    parent: DRoute.acceptInvitation,
   ),
   DRoute.personalDetails: RouteSpec(
     route: DRoute.personalDetails,

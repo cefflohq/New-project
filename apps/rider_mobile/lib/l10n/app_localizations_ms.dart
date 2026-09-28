@@ -110,12 +110,6 @@ class AppLocalizationsMs extends AppLocalizations {
   String get passwordUpdated => 'Kata Laluan Dikemas Kini!';
 
   @override
-  String get invitationLanding => 'Jemputan';
-
-  @override
-  String get acceptInvitation => 'Terima Jemputan';
-
-  @override
   String get noBusinessConnected => 'Tiada Perniagaan Disambungkan';
 
   @override
@@ -523,41 +517,6 @@ class AppLocalizationsMs extends AppLocalizations {
       'Pada peranti ini, anda boleh terus menggunakan aplikasi.';
 
   @override
-  String get maybeLater => 'Mungkin Nanti';
-
-  @override
-  String get youreInvited => 'Anda Dijemput!';
-
-  @override
-  String joinCeffloPartTheirDeliveryTeam(Object business) {
-    return 'Sertai $business di Cefflo. Jadi sebahagian daripada pasukan penghantaran mereka dan mula membuat penghantaran.';
-  }
-
-  @override
-  String get workTrustedLocalBusiness =>
-      'Bekerja dengan perniagaan tempatan yang dipercayai';
-
-  @override
-  String get makeDeliveriesWithinTheirServiceArea =>
-      'Buat penghantaran dalam kawasan servis mereka.';
-
-  @override
-  String get startDeliveringToday => 'Mula menghantar hari ini';
-
-  @override
-  String get getAccessOnceAccountApproved =>
-      'Dapatkan akses sebaik sahaja akaun anda diluluskan.';
-
-  @override
-  String get allOneApp => 'Semua dalam satu aplikasi';
-
-  @override
-  String get ordersNavigationSupport => 'Pesanan, navigasi dan sokongan.';
-
-  @override
-  String get decline => 'Tolak';
-
-  @override
   String all(Object allCount) {
     return 'Semua ($allCount)';
   }
@@ -611,41 +570,6 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get nothingHereRightNow => 'Tiada apa-apa di sini buat masa ini.';
-
-  @override
-  String get youveBeenInvitedJoinBusinessCefflo =>
-      'Anda telah dijemput untuk menyertai\nperniagaan ini di Cefflo.';
-
-  @override
-  String get messageFromBusiness => 'Mesej daripada perniagaan';
-
-  @override
-  String get makeDeliveriesOurCustomers =>
-      'Buat penghantaran untuk pelanggan kami';
-
-  @override
-  String get helpUsDeliverOrdersWithinOur =>
-      'Bantu kami menghantar pesanan dalam kawasan servis kami.';
-
-  @override
-  String get simpleStraightforward => 'Mudah dan terus';
-
-  @override
-  String get completeDetailsGetApprovedByBusiness =>
-      'Lengkapkan butiran anda dan dapatkan kelulusan perniagaan.';
-
-  @override
-  String get partTeam => 'Jadi sebahagian daripada pasukan';
-
-  @override
-  String get workTrustedLocalBusinessCefflo =>
-      'Bekerja dengan perniagaan tempatan yang dipercayai di Cefflo.';
-
-  @override
-  String get acceptContinue => 'Terima & Teruskan';
-
-  @override
-  String get declineInvitation => 'Tolak Jemputan';
 
   @override
   String get goodMorning => 'Selamat Pagi,';
@@ -1344,10 +1268,6 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get orSeparator => 'atau';
-
-  @override
-  String get joinBusinessDeliveryTeamCefflo =>
-      'Sertai pasukan penghantaran sebuah perniagaan di Cefflo. Buka pautan jemputan yang anda terima untuk menyambung.';
 
   @override
   String get pasteFullInvitationLink =>

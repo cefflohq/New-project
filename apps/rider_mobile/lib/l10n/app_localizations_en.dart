@@ -110,12 +110,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordUpdated => 'Password Updated!';
 
   @override
-  String get invitationLanding => 'Invitation Landing';
-
-  @override
-  String get acceptInvitation => 'Accept Invitation';
-
-  @override
   String get noBusinessConnected => 'No Business Connected';
 
   @override
@@ -519,40 +513,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'On this device, you can continue using the app.';
 
   @override
-  String get maybeLater => 'Maybe Later';
-
-  @override
-  String get youreInvited => 'You’re Invited!';
-
-  @override
-  String joinCeffloPartTheirDeliveryTeam(Object business) {
-    return 'Join $business on Cefflo. Be part of their delivery team and start making deliveries.';
-  }
-
-  @override
-  String get workTrustedLocalBusiness => 'Work with a trusted local business';
-
-  @override
-  String get makeDeliveriesWithinTheirServiceArea =>
-      'Make deliveries within their service area.';
-
-  @override
-  String get startDeliveringToday => 'Start delivering today';
-
-  @override
-  String get getAccessOnceAccountApproved =>
-      'Get access once your account is approved.';
-
-  @override
-  String get allOneApp => 'All in one app';
-
-  @override
-  String get ordersNavigationSupport => 'Orders, navigation and support.';
-
-  @override
-  String get decline => 'Decline';
-
-  @override
   String all(Object allCount) {
     return 'All ($allCount)';
   }
@@ -606,40 +566,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nothingHereRightNow => 'Nothing here right now.';
-
-  @override
-  String get youveBeenInvitedJoinBusinessCefflo =>
-      'You’ve been invited to join this\nbusiness on Cefflo.';
-
-  @override
-  String get messageFromBusiness => 'Message from the business';
-
-  @override
-  String get makeDeliveriesOurCustomers => 'Make deliveries for our customers';
-
-  @override
-  String get helpUsDeliverOrdersWithinOur =>
-      'Help us deliver orders within our service area.';
-
-  @override
-  String get simpleStraightforward => 'Simple and straightforward';
-
-  @override
-  String get completeDetailsGetApprovedByBusiness =>
-      'Complete your details and get approved by the business.';
-
-  @override
-  String get partTeam => 'Be part of the team';
-
-  @override
-  String get workTrustedLocalBusinessCefflo =>
-      'Work with a trusted local business on Cefflo.';
-
-  @override
-  String get acceptContinue => 'Accept & Continue';
-
-  @override
-  String get declineInvitation => 'Decline Invitation';
 
   @override
   String get goodMorning => 'Good Morning,';
@@ -1331,10 +1257,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orSeparator => 'or';
-
-  @override
-  String get joinBusinessDeliveryTeamCefflo =>
-      'Join a business\'s delivery team on Cefflo. Open the invitation link you received to connect.';
 
   @override
   String get pasteFullInvitationLink =>

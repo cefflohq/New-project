@@ -9,11 +9,10 @@ import 'widgets.dart';
 /// Routes that own the whole viewport and draw no bottom navigation.
 ///
 /// Two groups, both taken from the references: the multi-step onboarding
-/// forms (D10, D12, D12.1, D12.2), which are a wizard rather than a tab —
+/// forms (D12, D12.1, D12.2), which are a wizard rather than a tab —
 /// every one of them renders the full-bleed `CeffloAuthScaffold` — and D22
 /// Navigation to Stop, whose reference is edge-to-edge map with no tab bar.
 const _fullBleedRoutes = <DRoute>{
-  DRoute.acceptInvitation,
   DRoute.driverDetails,
   DRoute.personalDetails,
   DRoute.vehicleAndDocuments,

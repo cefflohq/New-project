@@ -424,6 +424,15 @@ class RiderRepository {
     () => _db.rpc('accept_rider_invitation', params: {'p_token': token}),
   );
 
+  /// Claims every invitation this account consented to in the Invitation
+  /// PWA, bound server-side to the caller's own confirmed email (never an
+  /// email sent from the client). Creates the pending rider membership.
+  /// Idempotent: returns an empty list once nothing is left to claim.
+  Future<List<Map<String, dynamic>>> claimMyRiderInvitations() async {
+    final result = await _run(() => _db.rpc('claim_my_rider_invitations'));
+    return _rows(result);
+  }
+
   Future<T> _run<T>(Future<T> Function() action) async {
     try {
       return await action();

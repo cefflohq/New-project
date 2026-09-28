@@ -33,8 +33,6 @@
   "checkEmail": "Check your email",
   "setNewPassword": "Set a new password",
   "passwordUpdated": "Password Updated!",
-  "invitationLanding": "Invitation Landing",
-  "acceptInvitation": "Accept Invitation",
   "noBusinessConnected": "No Business Connected",
   "driverDetails": "Driver Details",
   "personalDetails": "Personal Details",
@@ -176,23 +174,6 @@
   "canNowSignNewPassword": "You can now sign in with your new password.",
   "youllStaySigned": "You’ll stay signed in",
   "deviceCanContinueUsingApp": "On this device, you can continue using the app.",
-  "maybeLater": "Maybe Later",
-  "youreInvited": "You’re Invited!",
-  "joinCeffloPartTheirDeliveryTeam": "Join {business} on Cefflo. Be part of their delivery team and start making deliveries.",
-  "@joinCeffloPartTheirDeliveryTeam": {
-    "placeholders": {
-      "business": {
-        "type": "Object"
-      }
-    }
-  },
-  "workTrustedLocalBusiness": "Work with a trusted local business",
-  "makeDeliveriesWithinTheirServiceArea": "Make deliveries within their service area.",
-  "startDeliveringToday": "Start delivering today",
-  "getAccessOnceAccountApproved": "Get access once your account is approved.",
-  "allOneApp": "All in one app",
-  "ordersNavigationSupport": "Orders, navigation and support.",
-  "decline": "Decline",
   "all": "All ({allCount})",
   "@all": {
     "placeholders": {
@@ -268,16 +249,6 @@
     }
   },
   "nothingHereRightNow": "Nothing here right now.",
-  "youveBeenInvitedJoinBusinessCefflo": "You’ve been invited to join this\nbusiness on Cefflo.",
-  "messageFromBusiness": "Message from the business",
-  "makeDeliveriesOurCustomers": "Make deliveries for our customers",
-  "helpUsDeliverOrdersWithinOur": "Help us deliver orders within our service area.",
-  "simpleStraightforward": "Simple and straightforward",
-  "completeDetailsGetApprovedByBusiness": "Complete your details and get approved by the business.",
-  "partTeam": "Be part of the team",
-  "workTrustedLocalBusinessCefflo": "Work with a trusted local business on Cefflo.",
-  "acceptContinue": "Accept & Continue",
-  "declineInvitation": "Decline Invitation",
   "goodMorning": "Good Morning,",
   "letsGetConnected": "Let’s get you connected.",
   "accountReadyButYoureNotConnected": "Your account is ready, but you’re not\nconnected to any business yet.",
@@ -578,7 +549,6 @@
   "slideConfirm": "Slide to confirm",
   "tryAgain": "Try again",
   "orSeparator": "or",
-  "joinBusinessDeliveryTeamCefflo": "Join a business's delivery team on Cefflo. Open the invitation link you received to connect.",
   "pasteFullInvitationLink": "Paste the full invitation link you received.",
   "car": "Car",
   "van": "Van",
