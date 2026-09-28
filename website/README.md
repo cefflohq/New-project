@@ -1,6 +1,9 @@
 # CEFFLO Public Website — homepage
 
-Static, dependency-free homepage (`index.html` + `img/`), Bahasa Melayu.
+Static, dependency-free homepage (`index.html` + `img/` + `fonts/`), Bahasa Melayu.
+
+Inter is self-hosted in `fonts/` (Latin subset of the Inter files the Vendor app
+bundles, SIL OFL 1.1, see `fonts/LICENSE`), so the page makes no third-party requests.
 
 ## Authority
 

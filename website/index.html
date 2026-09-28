@@ -10,10 +10,13 @@
 <meta property="og:description" content="Order, zon, run multi-drop, rider dan tracking customer dalam satu sistem. Mula percuma.">
 <meta property="og:type" content="website">
 <link rel="icon" type="image/png" href="img/logo_mark.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
+/* Inter (SIL OFL 1.1), subset to Latin; same files the Vendor app bundles. */
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/inter-Regular.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap; src: url("fonts/inter-Medium.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap; src: url("fonts/inter-SemiBold.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/inter-Bold.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 800; font-display: swap; src: url("fonts/inter-ExtraBold.woff2") format("woff2"); }
 /* Colour values are the canonical Vendor Mobile tokens
    (apps/vendor_mobile/lib/core/theme.dart, D-70). */
 :root {
@@ -438,7 +441,6 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
 .poster.side .p-hero, .poster.side .p-tilt-l { --w: 220px; }
 .poster.side.short { height: 440px; }
 @media (min-width: 1100px) { .poster.side { height: 660px; } .poster.side .p-hero, .poster.side .p-tilt-l { --w: 240px; } .poster.side .chip { width: 56%; } .poster.side .chip.small { width: 30%; } }
-.dark .poster.side { box-shadow: 0 0 0 1px rgba(255,255,255,.06); }
 .intake-card {
   position: absolute; left: 50%; top: 50%; width: min(84%, 430px); z-index: 2;
   transform: translate(-50%, -50%) perspective(1400px) rotateY(-12deg) rotateX(8deg) rotateZ(2deg);
@@ -495,6 +497,91 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
 .final-phones .fan-l { transform: rotate(-8deg) translateY(40px); }
 .final-phones .fan-r { transform: rotate(8deg) translateY(40px); }
 
+
+/* ---------- premium pass ---------- */
+.hero { padding: 12px 12px 0; }
+.hero-shell {
+  position: relative; overflow: hidden; isolation: isolate;
+  border-radius: 40px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 116px);
+  color: #fff;
+  background:
+    radial-gradient(45% 35% at 50% 72%, rgba(5, 146, 235, .75) 0%, rgba(5, 146, 235, 0) 70%),
+    radial-gradient(40% 30% at 85% 10%, rgba(0, 96, 254, .45) 0%, rgba(0, 96, 254, 0) 70%),
+    linear-gradient(170deg, #011C47 0%, #01265E 30%, #00378F 60%, #005CC4 100%);
+}
+.hero-shell::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(60% 55% at 50% 60%, #000 10%, transparent 75%); mask-image: radial-gradient(60% 55% at 50% 60%, #000 10%, transparent 75%);
+}
+.hero-shell::after { /* soft light beam */
+  content: ""; position: absolute; z-index: -1; left: -10%; right: -10%; top: 38%; height: 38%;
+  background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,.10) 45%, rgba(255,255,255,0) 60%);
+  transform: rotate(-12deg); filter: blur(10px);
+}
+.hero .label { color: #9FD4FF; }
+.hero .h1 { color: #fff; }
+.hero .lead { color: rgba(255,255,255,.78); }
+.hero .micro, .hero .micro strong { color: rgba(255,255,255,.88); }
+.hero .store-note { color: rgba(255,255,255,.55); }
+.poster.bare { background: none; border-radius: 0; margin-top: 24px; }
+.poster.bare::before { display: none; }
+@media (min-width: 1100px) { .poster.bare { height: 740px; } .poster.bare .p-hero { --w: 300px; } }
+
+/* headline accent: brand gradient instead of grey */
+.h1 .soft, .h2 .soft {
+  background-image: linear-gradient(90deg, #005CC4 0%, #0592EB 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+.hero .h1 .soft, .dark .h2 .soft, .final .h2 .soft { background-image: linear-gradient(90deg, #7CC6FF 0%, #FFFFFF 100%); }
+
+/* product floats on glow, not inside boxes */
+.poster.light { background: radial-gradient(50% 42% at 50% 48%, rgba(0, 96, 254, .16) 0%, rgba(0, 96, 254, 0) 70%); }
+.poster.light::before { -webkit-mask-image: radial-gradient(45% 45% at 50% 48%, #000 10%, transparent 70%); mask-image: radial-gradient(45% 45% at 50% 48%, #000 10%, transparent 70%); }
+.dark .poster { background: radial-gradient(50% 45% at 50% 48%, rgba(5, 146, 235, .45) 0%, rgba(5, 146, 235, 0) 70%); box-shadow: none; }
+.panel { background: radial-gradient(50% 45% at 50% 48%, rgba(0, 96, 254, .14) 0%, rgba(0, 96, 254, 0) 70%); }
+
+/* chips: framed cards with gradient labels */
+.chip img { box-shadow: none; border-radius: 12px; }
+.chip .card {
+  display: block; background: #fff; padding: 6px; border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(1, 38, 94, .10), 0 30px 60px -24px rgba(0, 16, 50, .55), 0 0 0 1px rgba(1, 38, 94, .04);
+}
+.chip figcaption, .poster.light .chip figcaption {
+  color: #fff; border: 0;
+  background: linear-gradient(90deg, #005CC4 0%, #0592EB 100%);
+  box-shadow: 0 10px 20px -10px rgba(0, 96, 254, .7);
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+@media (max-width: 899px) {
+  .chip figcaption { color: #fff; background: linear-gradient(90deg, #005CC4 0%, #0592EB 100%); border: 0; }
+}
+
+/* nav edge */
+.nav-bar { box-shadow: inset 0 0 0 1px rgba(255,255,255,.14), 0 18px 40px -18px rgba(1, 38, 94, .7); }
+
+/* comparison: Cefflo column as the brand card */
+.vcol.us { background: linear-gradient(160deg, #00378F 0%, #005CC4 60%, #0592EB 100%); color: #fff; }
+.vcol.us h3 { color: var(--mustard); }
+.vcol.us li::before { border-color: var(--mustard); }
+
+/* pricing: hero plan as brand card */
+.plan.hero-plan { border: 0; color: #fff; background: linear-gradient(165deg, #01265E 0%, #00378F 45%, #005CC4 100%); box-shadow: 0 30px 60px -28px rgba(1, 38, 94, .7); }
+.plan.hero-plan .for, .plan.hero-plan .price span { color: rgba(255,255,255,.75); }
+.plan.hero-plan .allow { border-top-color: rgba(255,255,255,.18); }
+.plan.hero-plan li::before { border-color: var(--mustard); }
+.plan.hero-plan .tag { background: var(--mustard); color: var(--on-mustard); }
+
+.plan.hero-plan ul { color: #fff; }
+@media (min-width: 1100px) {
+  .poster.light, .dark .poster, .poster.bare { overflow: visible; }
+  .poster.light .orbit, .dark .poster .orbit { width: 100%; }
+}
+section { overflow-x: clip; }
+
 /* ---------- motion ---------- */
 @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
 .hero .head > * { animation: rise 650ms var(--ease) both; }
@@ -533,7 +620,7 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
 
   <!-- 02 HERO -->
   <section class="hero">
-    <div class="wrap">
+    <div class="hero-shell on-dark"><div class="wrap">
       <div class="head center">
         <span class="label">Sistem operasi delivery hari-sama</span>
         <h1 class="h1">Uruskan delivery tempatan. <span class="soft">Tanpa serabut.</span></h1>
@@ -543,16 +630,16 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
           <p class="micro"><strong>Mula percuma</strong> · 150 penghantaran sebulan · tanpa kad kredit</p>
         </div>
       </div>
-      <div class="poster poster-wide" role="img" aria-label="Skrin sebenar app Cefflo Vendor dengan elemen dari app Vendor, Cefflo Driver dan tracking customer">
+      <div class="poster poster-wide bare" role="img" aria-label="Skrin sebenar app Cefflo Vendor dengan elemen dari app Vendor, Cefflo Driver dan tracking customer">
         <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
         <div class="ground"></div>
         <div class="phone p-hero"><div class="screen"><img src="img/v11_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <figure class="chip tl"><figcaption>Ringkasan hari ini</figcaption><img src="img/f_kpi.webp" alt=""></figure>
-        <figure class="chip tr"><figcaption>Siap dihantar</figcaption><img src="img/f_delivered.webp" alt=""></figure>
-        <figure class="chip bl"><figcaption>Rider: stop seterusnya</figcaption><img src="img/f_stop.webp" alt=""></figure>
-        <figure class="chip br"><figcaption>Customer nampak status</figcaption><img src="img/f_status.webp" alt=""></figure>
+        <figure class="chip tl"><figcaption>Ringkasan hari ini</figcaption><span class="card"><img src="img/f_kpi.webp" alt=""></span></figure>
+        <figure class="chip tr"><figcaption>Siap dihantar</figcaption><span class="card"><img src="img/f_delivered.webp" alt=""></span></figure>
+        <figure class="chip bl"><figcaption>Rider: stop seterusnya</figcaption><span class="card"><img src="img/f_stop.webp" alt=""></span></figure>
+        <figure class="chip br"><figcaption>Customer nampak status</figcaption><span class="card"><img src="img/f_status.webp" alt=""></span></figure>
       </div>
-    </div>
+    </div></div>
   </section>
 
   <!-- 05 BUILT FOR -->
@@ -582,7 +669,7 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
         <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
         <div class="ground"></div>
         <div class="phone p-hero"><div class="screen"><img src="img/v12_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <figure class="chip br"><figcaption>Status setiap order jelas</figcaption><img src="img/f_delivered.webp" alt=""></figure>
+        <figure class="chip br"><figcaption>Status setiap order jelas</figcaption><span class="card"><img src="img/f_delivered.webp" alt=""></span></figure>
       </div>
     </div>
   </section>
@@ -617,7 +704,7 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
         <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
         <div class="ground"></div>
         <div class="phone p-tilt-l"><div class="screen"><img src="img/v16_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <figure class="chip tl"><figcaption>Ringkasan order hari ini</figcaption><img src="img/f_kpi.webp" alt=""></figure>
+        <figure class="chip tl"><figcaption>Ringkasan order hari ini</figcaption><span class="card"><img src="img/f_kpi.webp" alt=""></span></figure>
       </div>
     </div>
   </section>
@@ -701,9 +788,9 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
         <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
         <div class="ground"></div>
         <div class="phone p-tilt-l"><div class="screen"><img src="img/d21_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <figure class="chip tl"><figcaption>12 order, satu run</figcaption><img src="img/f_stop.webp" alt=""></figure>
-        <figure class="chip small tr"><figcaption>Bukti hantar</figcaption><img src="img/f_pod.webp" alt=""></figure>
-        <figure class="chip br"><figcaption>Slide untuk siap</figcaption><img src="img/f_slide.webp" alt=""></figure>
+        <figure class="chip tl"><figcaption>12 order, satu run</figcaption><span class="card"><img src="img/f_stop.webp" alt=""></span></figure>
+        <figure class="chip small tr"><figcaption>Bukti hantar</figcaption><span class="card"><img src="img/f_pod.webp" alt=""></span></figure>
+        <figure class="chip br"><figcaption>Slide untuk siap</figcaption><span class="card"><img src="img/f_slide.webp" alt=""></span></figure>
       </div>
     </div>
   </section>
@@ -720,9 +807,9 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
         <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
         <div class="ground"></div>
         <div class="phone p-hero"><div class="screen"><img src="img/c_done_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <figure class="chip small tl"><figcaption>Dalam perjalanan</figcaption><img src="img/c_way_top.webp" alt=""></figure>
-        <figure class="chip small tr"><figcaption>Bukti hantar</figcaption><img src="img/f_pod.webp" alt=""></figure>
-        <figure class="chip br"><figcaption>Sudah sampai</figcaption><img src="img/f_status.webp" alt=""></figure>
+        <figure class="chip small tl"><figcaption>Dalam perjalanan</figcaption><span class="card"><img src="img/c_way_top.webp" alt=""></span></figure>
+        <figure class="chip small tr"><figcaption>Bukti hantar</figcaption><span class="card"><img src="img/f_pod.webp" alt=""></span></figure>
+        <figure class="chip br"><figcaption>Sudah sampai</figcaption><span class="card"><img src="img/f_status.webp" alt=""></span></figure>
       </div>
     </div>
   </section>
