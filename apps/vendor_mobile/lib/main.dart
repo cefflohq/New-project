@@ -50,7 +50,12 @@ Future<void> main() async {
     );
     runApp(
       VendorMobileApp(
-        repo: VendorRepository.demo(),
+        // Prototype only: ?access=helper previews the Helper workspace.
+        repo: VendorRepository.demo(
+          demoRole: authAccessFromUri(Uri.base) == AuthAccess.helper
+              ? 'helper'
+              : 'owner',
+        ),
         access: authAccessFromUri(Uri.base),
         auditId: auditId,
         auditLocation: auditId == null ? null : _auditLocation(auditId),

@@ -4,11 +4,13 @@
 /// role comes from the server (claim_my_team_invitations, then
 /// get_my_businesses). Opening the Operator Sign-In does not make anyone an
 /// Operator.
-enum AuthAccess { vendor, operator }
+enum AuthAccess { vendor, operator, helper }
 
-/// `?access=operator` on the launch URL (web preview / links) selects the
-/// Operator Sign-In. Anything else is the standard Vendor Sign-In.
+/// `?access=operator` / `?access=helper` on the launch URL (web preview /
+/// links) selects that Sign-In. Anything else is the standard Vendor Sign-In.
 AuthAccess authAccessFromUri(Uri uri) =>
-    uri.queryParameters['access'] == 'operator'
-    ? AuthAccess.operator
-    : AuthAccess.vendor;
+    switch (uri.queryParameters['access']) {
+      'operator' => AuthAccess.operator,
+      'helper' => AuthAccess.helper,
+      _ => AuthAccess.vendor,
+    };

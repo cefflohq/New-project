@@ -284,6 +284,19 @@ class RiderRow {
 
 /// D-74 fulfilment task (my_fulfilment_tasks). The server returns only
 /// what preparation and handover need: no phone, address or location.
+/// my_fulfilment_tasks result: the business, its open fulfilment tasks and
+/// public display image URLs by product name.
+class FulfilmentBoard {
+  const FulfilmentBoard({
+    required this.businessName,
+    required this.tasks,
+    this.itemImages = const {},
+  });
+  final String businessName;
+  final List<FulfilmentTask> tasks;
+  final Map<String, String> itemImages;
+}
+
 class FulfilmentTask {
   const FulfilmentTask({
     required this.orderId,
@@ -302,10 +315,25 @@ class FulfilmentTask {
     this.runName,
     this.stopSequence,
     this.handoverRiderName,
+    this.lines = const [],
+    this.pickupAt,
+    this.riderVehicleType,
+    this.riderVehiclePlate,
   });
 
   final String orderId, orderNumber, customerName, status;
   final List<String> items;
+
+  /// Item name + quantity, for aggregate preparation and item counts.
+  final List<({String name, int qty})> lines;
+
+  /// Scheduled pickup of the order's Run (delivery_sessions.pickup_at).
+  final DateTime? pickupAt;
+
+  /// Assigned rider's vehicle, only once Ready (server-minimised).
+  final String? riderVehicleType, riderVehiclePlate;
+
+  int get itemCount => lines.fold(0, (sum, l) => sum + l.qty);
   final String? notes, zoneId, zoneName, runId, orderDate, runName;
   final String? handoverRiderName;
 
@@ -332,6 +360,19 @@ class FulfilmentTask {
     runName: r['run_name'] as String?,
     stopSequence: (r['stop_sequence'] as num?)?.toInt(),
     handoverRiderName: r['handover_rider_name'] as String?,
+    pickupAt: DateTime.tryParse('${r['pickup_at'] ?? ''}'),
+    riderVehicleType: r['handover_rider_vehicle_type'] as String?,
+    riderVehiclePlate: r['handover_rider_vehicle_plate'] as String?,
+    lines: [
+      for (final it in (r['items'] is List ? r['items'] as List : const []))
+        if (it is String)
+          (name: it, qty: 1)
+        else if (it is Map && (it['name'] ?? it['title']) != null)
+          (
+            name: '${it['name'] ?? it['title']}',
+            qty: ((it['quantity'] ?? it['qty'] ?? 1) as num).toInt(),
+          ),
+    ],
     handoverProvider: r['handover_external'] is Map
         ? [
             (r['handover_external'] as Map)['provider_name'],

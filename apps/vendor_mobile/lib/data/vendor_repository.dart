@@ -36,8 +36,14 @@ class RepositoryError implements Exception {
 /// class computes eligibility, planning or capacity locally — the server owns
 /// those decisions.
 class VendorRepository {
-  VendorRepository(SupabaseClient db) : _db = db, _demo = false;
-  VendorRepository.demo() : _db = null, _demo = true;
+  VendorRepository(SupabaseClient db)
+    : _db = db,
+      _demo = false,
+      demoRole = 'owner';
+  VendorRepository.demo({this.demoRole = 'owner'}) : _db = null, _demo = true;
+
+  /// UI-prototype only: the membership role the demo account resolves to.
+  final String demoRole;
 
   final SupabaseClient? _db;
   final bool _demo;
@@ -162,7 +168,18 @@ class VendorRepository {
   }
 
   Future<List<Business>> myBusinesses() async {
-    if (_demo) return _DemoData.businesses;
+    if (_demo) {
+      return [
+        for (final b in _DemoData.businesses)
+          Business(
+            id: b.id,
+            name: demoRole == 'helper' ? 'Kak Lina Kitchen' : b.name,
+            role: demoRole,
+            timezone: b.timezone,
+            currency: b.currency,
+          ),
+      ];
+    }
     final rows = await _run(() => _db!.rpc('get_my_businesses'));
     return _rows(rows).map(Business.fromRow).toList();
   }
@@ -469,16 +486,30 @@ class VendorRepository {
   }
 
   // D-74 fulfilment (Owner, Operator or Helper; enforced server-side).
-  Future<List<FulfilmentTask>> myFulfilmentTasks(String businessId) async {
-    if (_demo) return _DemoData.fulfilment;
+  Future<List<FulfilmentTask>> myFulfilmentTasks(String businessId) async =>
+      (await myFulfilmentBoard(businessId)).tasks;
+
+  /// The Helper workspace data: tasks plus public display image URLs.
+  Future<FulfilmentBoard> myFulfilmentBoard(String businessId) async {
+    if (_demo) return _DemoFulfilment.board();
     final raw = await _run(
       () => _db!.rpc(
         'my_fulfilment_tasks',
         params: {'p_business_id': businessId},
       ),
     );
-    final tasks = raw is Map ? raw['tasks'] : null;
-    return _rows(tasks).map(FulfilmentTask.fromRow).toList();
+    final map = raw is Map ? raw : const {};
+    final images = <String, String>{
+      for (final e in ((map['item_images'] as Map?) ?? const {}).entries)
+        '${e.key}'.toLowerCase(): _db!.storage
+            .from('cefflo-product-display')
+            .getPublicUrl('${e.value}'),
+    };
+    return FulfilmentBoard(
+      businessName: (map['business_name'] as String?) ?? '',
+      tasks: _rows(map['tasks']).map(FulfilmentTask.fromRow).toList(),
+      itemImages: images,
+    );
   }
 
   /// Slide to Confirm Packing for a Zone + order-date group.
@@ -487,7 +518,7 @@ class VendorRepository {
     String? zoneId,
     String? orderDate,
   ) async {
-    if (_demo) return;
+    if (_demo) return _DemoFulfilment.confirmPacking(zoneId, orderDate);
     await _run(
       () => _db!.rpc(
         'confirm_packing',
@@ -507,7 +538,7 @@ class VendorRepository {
     String? runId,
     String? orderDate,
   ) async {
-    if (_demo) return;
+    if (_demo) return _DemoFulfilment.confirmSorting(zoneId, runId);
     await _run(
       () => _db!.rpc(
         'confirm_sorting',
@@ -522,7 +553,7 @@ class VendorRepository {
   }
 
   Future<void> advancePreparation(String orderId, String next) async {
-    if (_demo) return;
+    if (_demo) return _DemoFulfilment.advance(orderId, next);
     await _run(
       () => _db!.rpc(
         'advance_preparation',
@@ -934,20 +965,6 @@ class VendorRepository {
 class _DemoData {
   static final now = DateTime(2026, 9, 13, 9, 41);
 
-  static const fulfilment = [
-    FulfilmentTask(
-      orderId: 'ord-1001',
-      orderNumber: '#CF-001',
-      customerName: 'Aisyah Rahman',
-      items: ['2× Nasi Lemak', '1× Teh Tarik'],
-      status: 'not_started',
-      notes: 'Less spicy',
-      zoneName: 'Bangsar',
-      runName: 'Morning run',
-      stopSequence: 1,
-    ),
-  ];
-
   static const businesses = [
     Business(
       id: 'business-demo',
@@ -1327,3 +1344,113 @@ class _DemoData {
     ],
   );
 }
+
+/// UI-prototype fulfilment workload (Founder Helper boards): stateful, so the
+/// preview and widget tests can walk Prepare -> Pack -> Sort -> Ready with
+/// the same rules the server enforces (packed -> sorted only after packing
+/// is confirmed; Ready only via Confirm Sorting on a fully sorted group).
+class _DemoFulfilment {
+  static const _menu = [
+    [('Nasi Ayam', 2), ('Air Teh', 1)],
+    [('Nasi Daging', 1), ('Air Oren', 1)],
+    [('Nasi Ayam', 1)],
+    [('Nasi Ayam', 1), ('Brownies', 2), ('Air Teh', 1)],
+    [('Nasi Daging', 1), ('Air Teh', 1)],
+    [('Nasi Ayam', 2), ('Air Oren', 1)],
+    [('Brownies', 1)],
+    [('Nasi Ayam', 1), ('Air Teh', 1)],
+  ];
+  static const _zones = [
+    ('z-shah', 'Shah Alam', 'r-shah', 10, 30, 8),
+    ('z-pj', 'Petaling Jaya', 'r-pj', 11, 0, 5),
+    ('z-klang', 'Klang', 'r-klang', 11, 30, 4),
+    ('z-subang', 'Subang', 'r-subang', 13, 0, 3),
+  ];
+  static List<Map<String, dynamic>>? _rows;
+
+  static List<Map<String, dynamic>> get rows => _rows ??= _seed();
+
+  static List<Map<String, dynamic>> _seed() {
+    final out = <Map<String, dynamic>>[];
+    var n = 1001;
+    for (final (zoneId, zone, runId, h, m, count) in _zones) {
+      for (var i = 0; i < count; i++) {
+        final items = _menu[(n + i) % _menu.length];
+        out.add({
+          'order_id': 'ord-$n',
+          'order_number': '#CF$n',
+          'customer_name': 'Customer $n',
+          'items': [
+            for (final (name, qty) in items) {'name': name, 'quantity': qty},
+          ],
+          'order_date': '2026-09-28',
+          'preparation_status': 'not_started',
+          'packing_confirmed': false,
+          'zone_id': zoneId,
+          'zone_name': zone,
+          'run_id': runId,
+          'pickup_at': DateTime(2026, 9, 28, h, m).toUtc().toIso8601String(),
+          'stop_sequence': i + 1,
+        });
+        n++;
+      }
+    }
+    return out;
+  }
+
+  /// Test/preview hook: restart the sample workload.
+  static void reset() => _rows = null;
+
+  static FulfilmentBoard board() => FulfilmentBoard(
+    businessName: 'Kak Lina Kitchen',
+    tasks: rows.map(FulfilmentTask.fromRow).toList(),
+  );
+
+  static const _order = [
+    'not_started',
+    'preparing',
+    'packed',
+    'sorted',
+    'ready',
+  ];
+
+  static void advance(String orderId, String next) {
+    final r = rows.firstWhere((r) => r['order_id'] == orderId);
+    final from = _order.indexOf(r['preparation_status'] as String);
+    if (_order.indexOf(next) != from + 1 || next == 'ready') {
+      throw RepositoryError('invalid preparation transition');
+    }
+    if (next == 'sorted' && r['packing_confirmed'] != true) {
+      throw RepositoryError('packing not confirmed');
+    }
+    r['preparation_status'] = next;
+  }
+
+  static void confirmPacking(String? zoneId, String? orderDate) {
+    final g = rows.where((r) => r['zone_id'] == zoneId).toList();
+    if (g.any((r) => _order.indexOf(r['preparation_status'] as String) < 2)) {
+      throw RepositoryError('packing incomplete');
+    }
+    for (final r in g) {
+      r['packing_confirmed'] = true;
+    }
+  }
+
+  static void confirmSorting(String? zoneId, String? runId) {
+    final g = rows
+        .where((r) => r['zone_id'] == zoneId && r['run_id'] == runId)
+        .toList();
+    if (g.any((r) => _order.indexOf(r['preparation_status'] as String) < 3)) {
+      throw RepositoryError('sorting incomplete');
+    }
+    for (final r in g) {
+      r['preparation_status'] = 'ready';
+      r['handover_rider_name'] = 'Amir Hakim';
+      r['handover_rider_vehicle_type'] = 'motorcycle';
+      r['handover_rider_vehicle_plate'] = 'VMC 4312';
+    }
+  }
+}
+
+/// Test hook for the stateful prototype workload.
+void resetDemoFulfilment() => _DemoFulfilment.reset();

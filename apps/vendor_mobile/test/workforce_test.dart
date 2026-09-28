@@ -87,11 +87,10 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.textContaining('To prepare'), findsOneWidget);
-    expect(find.text('#CF-001'), findsOneWidget);
-    expect(find.text('Start preparing'), findsOneWidget);
-    // No Vendor navigation for a Helper.
-    for (final tab in ['Orders', 'Zones', 'Riders', 'More']) {
+    expect(find.text('Kak Lina Kitchen'), findsOneWidget);
+    expect(find.text('Required Items'), findsOneWidget);
+    // No Vendor navigation for a Helper (Helper tabs only).
+    for (final tab in ['Orders', 'Riders', 'Today']) {
       expect(find.text(tab), findsNothing);
     }
   });

@@ -272,8 +272,10 @@ class AppState extends ChangeNotifier {
       business = businesses.isEmpty ? null : businesses.first;
       // Signed in through the Operator Sign-In but no membership was
       // claimed: say so. Business setup would make this account an Owner.
-      if (business == null && access == AuthAccess.operator) {
-        sessionError = L.noOperatorAccessYet;
+      if (business == null && access != AuthAccess.vendor) {
+        sessionError = access == AuthAccess.helper
+            ? L.noHelperAccessYet
+            : L.noOperatorAccessYet;
         return;
       }
       // A signed-in account without a business starts in business setup.

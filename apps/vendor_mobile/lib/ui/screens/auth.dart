@@ -796,7 +796,9 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  bool get operator => widget.access == AuthAccess.operator;
+  /// Operator / Helper Sign-In variants (Founder boards, D-74).
+  bool get operator => widget.access != AuthAccess.vendor;
+  bool get helper => widget.access == AuthAccess.helper;
 
   @override
   Widget build(BuildContext context) {
@@ -844,10 +846,12 @@ class _SignInScreenState extends State<SignInScreen> {
                           ),
                           if (operator) ...[
                             const SizedBox(height: Gap.xl),
-                            const Center(
+                            Center(
                               child: _AccessChip(
-                                icon: LucideIcons.users,
-                                label: null,
+                                icon: helper
+                                    ? LucideIcons.package
+                                    : LucideIcons.users,
+                                label: helper ? L.helperAccess : null,
                               ),
                             ),
                             const SizedBox(height: Gap.lg),
@@ -864,7 +868,9 @@ class _SignInScreenState extends State<SignInScreen> {
                             ),
                             const SizedBox(height: Gap.xs),
                             Text(
-                              L.signInStoreOperations,
+                              helper
+                                  ? L.signInPreparationTasks
+                                  : L.signInStoreOperations,
                               textAlign: TextAlign.center,
                               style: text.bodyLarge?.copyWith(
                                 color: Colors.white.withValues(alpha: .9),

@@ -2844,4 +2844,116 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get noOperatorAccessYet =>
       'Akaun ini belum ada akses Operator. Terima pautan jemputan daripada pemilik perniagaan, kemudian log masuk dengan alamat e-mel yang menerima jemputan itu.';
+
+  @override
+  String get helperAccess => 'Akses Pembantu';
+
+  @override
+  String get signInPreparationTasks => 'Log masuk ke tugasan penyediaan anda';
+
+  @override
+  String get noHelperAccessYet =>
+      'Akaun ini belum ada akses Pembantu. Terima pautan jemputan daripada pemilik perniagaan, kemudian log masuk dengan alamat e-mel yang menerima jemputan itu.';
+
+  @override
+  String get hwPreparation => 'Penyediaan';
+
+  @override
+  String get hwZones => 'Zon';
+
+  @override
+  String get hwPacking => 'Bungkus';
+
+  @override
+  String get hwSorting => 'Isih';
+
+  @override
+  String get hwMore => 'Lagi';
+
+  @override
+  String get hwOrders => 'pesanan';
+
+  @override
+  String get hwItems => 'item';
+
+  @override
+  String get hwRequiredItems => 'Item Diperlukan';
+
+  @override
+  String hwNOrders(int n) {
+    return '$n pesanan';
+  }
+
+  @override
+  String hwNItems(int n) {
+    return '$n item';
+  }
+
+  @override
+  String hwNItem(int n) {
+    return '$n item';
+  }
+
+  @override
+  String get hwPacked => 'dibungkus';
+
+  @override
+  String get hwPending => 'Belum';
+
+  @override
+  String get hwPackingStatus => 'Membungkus';
+
+  @override
+  String get hwPackedStatus => 'Dibungkus';
+
+  @override
+  String get hwSortingStatus => 'Mengisih';
+
+  @override
+  String get hwSortedStatus => 'Diisih';
+
+  @override
+  String get hwReadyStatus => 'Sedia';
+
+  @override
+  String get hwSlideConfirmPickup => 'Leret untuk Sahkan Pengambilan';
+
+  @override
+  String get hwPickupTime => 'Masa Pengambilan';
+
+  @override
+  String get hwReadyForPickup => 'Sedia untuk Diambil';
+
+  @override
+  String get hwZoneReady => 'Zon ini sedia untuk diambil oleh rider.';
+
+  @override
+  String get hwPickupRider => 'RIDER PENGAMBILAN';
+
+  @override
+  String get hwRiderNotAssigned => 'Rider belum ditetapkan';
+
+  @override
+  String get hwMotorcycle => 'Motosikal';
+
+  @override
+  String get hwCar => 'Kereta';
+
+  @override
+  String get hwVan => 'Van';
+
+  @override
+  String get hwNoZoneToPack => 'Tiada zon untuk dibungkus sekarang.';
+
+  @override
+  String get hwNoZoneToSort => 'Tiada zon untuk diisih sekarang.';
+
+  @override
+  String get hwNoWork => 'Tiada kerja penyediaan sekarang.';
+
+  @override
+  String get hwPackFirst => 'Sahkan pembungkusan zon ini dahulu.';
+
+  @override
+  String get hwExternalProvider => 'Penyedia luar';
 }

@@ -5246,6 +5246,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This account has no Operator access yet. Accept the invitation link from the business owner, then sign in with the email address it was sent to.'**
   String get noOperatorAccessYet;
+
+  /// No description provided for @helperAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Helper Access'**
+  String get helperAccess;
+
+  /// No description provided for @signInPreparationTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to your preparation tasks'**
+  String get signInPreparationTasks;
+
+  /// No description provided for @noHelperAccessYet.
+  ///
+  /// In en, this message translates to:
+  /// **'This account has no Helper access yet. Accept the invitation link from the business owner, then sign in with the email address it was sent to.'**
+  String get noHelperAccessYet;
+
+  /// No description provided for @hwPreparation.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparation'**
+  String get hwPreparation;
+
+  /// No description provided for @hwZones.
+  ///
+  /// In en, this message translates to:
+  /// **'Zones'**
+  String get hwZones;
+
+  /// No description provided for @hwPacking.
+  ///
+  /// In en, this message translates to:
+  /// **'Packing'**
+  String get hwPacking;
+
+  /// No description provided for @hwSorting.
+  ///
+  /// In en, this message translates to:
+  /// **'Sorting'**
+  String get hwSorting;
+
+  /// No description provided for @hwMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get hwMore;
+
+  /// No description provided for @hwOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'orders'**
+  String get hwOrders;
+
+  /// No description provided for @hwItems.
+  ///
+  /// In en, this message translates to:
+  /// **'items'**
+  String get hwItems;
+
+  /// No description provided for @hwRequiredItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Required Items'**
+  String get hwRequiredItems;
+
+  /// No description provided for @hwNOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} orders'**
+  String hwNOrders(int n);
+
+  /// No description provided for @hwNItems.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} items'**
+  String hwNItems(int n);
+
+  /// No description provided for @hwNItem.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 item} other{{n} items}}'**
+  String hwNItem(int n);
+
+  /// No description provided for @hwPacked.
+  ///
+  /// In en, this message translates to:
+  /// **'packed'**
+  String get hwPacked;
+
+  /// No description provided for @hwPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get hwPending;
+
+  /// No description provided for @hwPackingStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Packing'**
+  String get hwPackingStatus;
+
+  /// No description provided for @hwPackedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Packed'**
+  String get hwPackedStatus;
+
+  /// No description provided for @hwSortingStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Sorting'**
+  String get hwSortingStatus;
+
+  /// No description provided for @hwSortedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Sorted'**
+  String get hwSortedStatus;
+
+  /// No description provided for @hwReadyStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get hwReadyStatus;
+
+  /// No description provided for @hwSlideConfirmPickup.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide to Confirm Pickup'**
+  String get hwSlideConfirmPickup;
+
+  /// No description provided for @hwPickupTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup Time'**
+  String get hwPickupTime;
+
+  /// No description provided for @hwReadyForPickup.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready for Pickup'**
+  String get hwReadyForPickup;
+
+  /// No description provided for @hwZoneReady.
+  ///
+  /// In en, this message translates to:
+  /// **'This zone is ready for rider pickup.'**
+  String get hwZoneReady;
+
+  /// No description provided for @hwPickupRider.
+  ///
+  /// In en, this message translates to:
+  /// **'PICKUP RIDER'**
+  String get hwPickupRider;
+
+  /// No description provided for @hwRiderNotAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Rider not assigned yet'**
+  String get hwRiderNotAssigned;
+
+  /// No description provided for @hwMotorcycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Motorcycle'**
+  String get hwMotorcycle;
+
+  /// No description provided for @hwCar.
+  ///
+  /// In en, this message translates to:
+  /// **'Car'**
+  String get hwCar;
+
+  /// No description provided for @hwVan.
+  ///
+  /// In en, this message translates to:
+  /// **'Van'**
+  String get hwVan;
+
+  /// No description provided for @hwNoZoneToPack.
+  ///
+  /// In en, this message translates to:
+  /// **'No zone to pack right now.'**
+  String get hwNoZoneToPack;
+
+  /// No description provided for @hwNoZoneToSort.
+  ///
+  /// In en, this message translates to:
+  /// **'No zone to sort right now.'**
+  String get hwNoZoneToSort;
+
+  /// No description provided for @hwNoWork.
+  ///
+  /// In en, this message translates to:
+  /// **'No preparation work right now.'**
+  String get hwNoWork;
+
+  /// No description provided for @hwPackFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm packing for this zone first.'**
+  String get hwPackFirst;
+
+  /// No description provided for @hwExternalProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'External provider'**
+  String get hwExternalProvider;
 }
 
 class _AppLocalizationsDelegate

@@ -1713,6 +1713,23 @@ separate (Driver app, `riders`). Supersedes D-73's Helper model.
     provider's delivery to completion (no provider integration in V1).
     Operator UI for Replace / Outsource is not built yet (backend
     contract only).
+- **Helper UI (Founder boards, `202609280011`).**
+  - Helper Sign-In is the `AuthAccess.helper` variant of `SignInScreen`.
+  - Helper workspace: Preparation (aggregate items) → Zones (ordered by
+    pickup time, earliest first) → Packing → Sorting → Ready for Pickup.
+  - Packing and Sorting end in "Slide to Confirm Pickup". The slider is
+    grey and inert until N / N, then Cefflo blue with a yellow handle; the
+    Helper must deliberately slide.
+  - The Packing slide calls `confirm_packing`; the Sorting slide calls
+    `confirm_sorting` for each Run group of the Zone, which makes the
+    orders Ready for Pickup. This is a Helper release, never Rider custody;
+    the Rider still confirms pickup in the Driver app, now gated on Ready.
+  - **Pickup time** is the Run's `delivery_sessions.pickup_at`, set by
+    Owner/Operator via `set_run_pickup_time` (audited). A Zone's pickup
+    time is the earliest of its Runs.
+  - The Helper contract adds `pickup_at`; the rider's vehicle type and
+    plate only once Ready; and public display image paths.
+  - Operator UI to set the pickup time is not built yet.
 - **Sign-In UI** (Operator / Helper) is not built yet. It plugs into
   `apps/vendor_mobile/lib/ui/screens/auth.dart` (`SignInScreen`). Role is
   never taken from which screen was used.

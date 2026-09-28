@@ -2839,4 +2839,122 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get noOperatorAccessYet =>
       'This account has no Operator access yet. Accept the invitation link from the business owner, then sign in with the email address it was sent to.';
+
+  @override
+  String get helperAccess => 'Helper Access';
+
+  @override
+  String get signInPreparationTasks => 'Sign in to your preparation tasks';
+
+  @override
+  String get noHelperAccessYet =>
+      'This account has no Helper access yet. Accept the invitation link from the business owner, then sign in with the email address it was sent to.';
+
+  @override
+  String get hwPreparation => 'Preparation';
+
+  @override
+  String get hwZones => 'Zones';
+
+  @override
+  String get hwPacking => 'Packing';
+
+  @override
+  String get hwSorting => 'Sorting';
+
+  @override
+  String get hwMore => 'More';
+
+  @override
+  String get hwOrders => 'orders';
+
+  @override
+  String get hwItems => 'items';
+
+  @override
+  String get hwRequiredItems => 'Required Items';
+
+  @override
+  String hwNOrders(int n) {
+    return '$n orders';
+  }
+
+  @override
+  String hwNItems(int n) {
+    return '$n items';
+  }
+
+  @override
+  String hwNItem(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get hwPacked => 'packed';
+
+  @override
+  String get hwPending => 'Pending';
+
+  @override
+  String get hwPackingStatus => 'Packing';
+
+  @override
+  String get hwPackedStatus => 'Packed';
+
+  @override
+  String get hwSortingStatus => 'Sorting';
+
+  @override
+  String get hwSortedStatus => 'Sorted';
+
+  @override
+  String get hwReadyStatus => 'Ready';
+
+  @override
+  String get hwSlideConfirmPickup => 'Slide to Confirm Pickup';
+
+  @override
+  String get hwPickupTime => 'Pickup Time';
+
+  @override
+  String get hwReadyForPickup => 'Ready for Pickup';
+
+  @override
+  String get hwZoneReady => 'This zone is ready for rider pickup.';
+
+  @override
+  String get hwPickupRider => 'PICKUP RIDER';
+
+  @override
+  String get hwRiderNotAssigned => 'Rider not assigned yet';
+
+  @override
+  String get hwMotorcycle => 'Motorcycle';
+
+  @override
+  String get hwCar => 'Car';
+
+  @override
+  String get hwVan => 'Van';
+
+  @override
+  String get hwNoZoneToPack => 'No zone to pack right now.';
+
+  @override
+  String get hwNoZoneToSort => 'No zone to sort right now.';
+
+  @override
+  String get hwNoWork => 'No preparation work right now.';
+
+  @override
+  String get hwPackFirst => 'Confirm packing for this zone first.';
+
+  @override
+  String get hwExternalProvider => 'External provider';
 }
