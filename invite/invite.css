@@ -76,7 +76,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .features span { display: block; margin-top: 2px; font-size: 13px; color: var(--muted); line-height: 1.45; }
 .cta { display: block; width: 100%; margin-top: 16px; min-height: 54px; border: 0; border-radius: 16px; background: var(--yellow); color: var(--ink); font: 600 16px Inter, system-ui, sans-serif; cursor: pointer; }
 .cta:disabled { opacity: .6; cursor: default; }
-.cta:focus-visible, .text-btn:focus-visible, .store:focus-visible { outline: 3px solid #7EB0FF; outline-offset: 2px; }
+.cta:focus-visible, .text-btn:focus-visible, .badge:focus-visible { outline: 3px solid #7EB0FF; outline-offset: 2px; }
 .text-btn { display: block; margin: 14px auto 0; padding: 10px 16px; border: 0; background: none; color: var(--ink); font: 600 15px Inter, system-ui, sans-serif; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .status { margin-top: 18px; border-radius: 12px; padding: 11px 14px; font-size: 13.5px; line-height: 1.5; background: var(--red-tint); color: var(--red); }
 
@@ -84,10 +84,15 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .success { display: grid; place-items: center; margin: 12px auto 22px; width: 116px; height: 116px; border-radius: 50%; background: var(--green-tint); }
 .success div { width: 72px; height: 72px; border-radius: 50%; background: var(--green); display: grid; place-items: center; }
 .success svg { width: 38px; height: 38px; stroke: #fff; stroke-width: 3; }
-.stores { margin: 24px auto 0; width: 100%; max-width: 360px; display: grid; gap: 12px; }
-.store { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 54px; padding: 12px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); text-decoration: none; font-size: 15px; font-weight: 600; }
-.store-icon { width: 22px; height: 22px; flex: none; stroke: none; }
-.store[aria-disabled="true"] { opacity: .5; pointer-events: none; }
+.stores { margin: 26px auto 0; display: grid; gap: 12px; justify-items: center; }
+/* Official-style store badges (black, logo + two-line label). */
+.badge { display: flex; align-items: center; gap: 10px; width: 200px; height: 60px; padding: 0 16px; border-radius: 12px; background: #000; border: 1px solid #A6A6A6; color: #fff; text-decoration: none; }
+.badge-logo { width: 28px; height: 28px; flex: none; stroke: none; }
+.badge-text { display: flex; flex-direction: column; line-height: 1.1; }
+.badge-text small { font-size: 11px; font-weight: 500; letter-spacing: .01em; }
+.badge-text b { font-size: 21px; font-weight: 600; letter-spacing: -.01em; }
+/* Until real listing URLs are configured the badges keep their look but are inert. */
+.badge[aria-disabled="true"] { pointer-events: none; cursor: default; }
 
 /* Screen 4 */
 .warn { display: grid; place-items: center; margin: 12px auto 22px; width: 88px; height: 88px; border-radius: 50%; background: var(--red-tint); color: var(--red); }

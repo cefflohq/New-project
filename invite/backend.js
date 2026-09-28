@@ -80,10 +80,6 @@
         if (url) { a.href = url; a.target = '_blank'; a.removeAttribute('aria-disabled'); }
         else { a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); }
       }
-      // The rider's own platform first; the other stays available.
-      if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
-        $('storeIos').parentNode.insertBefore($('storeIos'), $('storeAndroid'));
-      }
     }
 
     function invited(result) {
