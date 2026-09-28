@@ -2737,4 +2737,57 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get tryLocatingAgain => 'Cuba cari semula';
+
+  @override
+  String get helperText => 'Pembantu';
+
+  @override
+  String get operatorRoleDescription =>
+      'Bantu urus operasi penghantaran harian. Memerlukan akaun Vendor.';
+
+  @override
+  String get helperRoleDescription =>
+      'Bantu sediakan dan bungkus pesanan. Guna Helper PWA. Tidak perlu akaun Vendor.';
+
+  @override
+  String get helperName => 'Nama pembantu';
+
+  @override
+  String get contactOptional => 'Hubungan (pilihan)';
+
+  @override
+  String get helperNameRequired => 'Masukkan nama pembantu.';
+
+  @override
+  String get helpersSection => 'Pembantu';
+
+  @override
+  String get noHelpersOptional => 'Tiada pembantu. Pembantu adalah pilihan.';
+
+  @override
+  String get helperInvitedStatus => 'Dijemput';
+
+  @override
+  String get helperInviteExpired => 'Jemputan tamat';
+
+  @override
+  String get newWorkspaceLink => 'Pautan ruang kerja baharu';
+
+  @override
+  String get newInviteLink => 'Pautan jemputan baharu';
+
+  @override
+  String get removeHelper => 'Buang';
+
+  @override
+  String get helperRemoved =>
+      'Pembantu dibuang. Pautan mereka tidak lagi berfungsi.';
+
+  @override
+  String get helperLinkReplaces =>
+      'Kongsi pautan ini dengan pembantu. Pautan sebelum ini tidak lagi berfungsi.';
+
+  @override
+  String get ownerCanRunAlone =>
+      'Anda boleh menjalankan perniagaan sebagai Pemilik sahaja. Operator dan Pembantu adalah pilihan.';
 }

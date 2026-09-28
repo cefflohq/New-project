@@ -826,5 +826,21 @@
   "locatingBusinessAddress": "Mencari lokasi alamat perniagaan anda…",
   "businessAddressLocated": "Alamat perniagaan ditemui",
   "pickupLocationRequired": "Lokasi pengambilan anda diperlukan. Kami tidak dapat mencari alamat perniagaan anda; pastikan ia lengkap, kemudian cuba lagi.",
-  "tryLocatingAgain": "Cuba cari semula"
+  "tryLocatingAgain": "Cuba cari semula",
+  "helperText": "Pembantu",
+  "operatorRoleDescription": "Bantu urus operasi penghantaran harian. Memerlukan akaun Vendor.",
+  "helperRoleDescription": "Bantu sediakan dan bungkus pesanan. Guna Helper PWA. Tidak perlu akaun Vendor.",
+  "helperName": "Nama pembantu",
+  "contactOptional": "Hubungan (pilihan)",
+  "helperNameRequired": "Masukkan nama pembantu.",
+  "helpersSection": "Pembantu",
+  "noHelpersOptional": "Tiada pembantu. Pembantu adalah pilihan.",
+  "helperInvitedStatus": "Dijemput",
+  "helperInviteExpired": "Jemputan tamat",
+  "newWorkspaceLink": "Pautan ruang kerja baharu",
+  "newInviteLink": "Pautan jemputan baharu",
+  "removeHelper": "Buang",
+  "helperRemoved": "Pembantu dibuang. Pautan mereka tidak lagi berfungsi.",
+  "helperLinkReplaces": "Kongsi pautan ini dengan pembantu. Pautan sebelum ini tidak lagi berfungsi.",
+  "ownerCanRunAlone": "Anda boleh menjalankan perniagaan sebagai Pemilik sahaja. Operator dan Pembantu adalah pilihan."
 }

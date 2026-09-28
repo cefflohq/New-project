@@ -175,27 +175,15 @@ with psycopg.connect(target.database_url) as conn:
         assert cur.fetchone()[0] == "revoked"
 
         # =====================================================================
-        # Owner-role invitation: only Owner may create it; Operator denied;
-        # accepted correctly grants owner.
+        # D-73: team invitations are Operator-only. No Owner / co-owner
+        # invitation exists for anyone; an Operator cannot invite at all.
         # =====================================================================
         actor(operator_a)
         rejected(cur, "select create_team_invitation(%s,'owner','coowner@test.invalid')", (business_a,), "forbidden")
 
         actor(owner_a)
-        cur.execute("select create_team_invitation(%s,'owner','coowner@test.invalid')", (business_a,))
-        owner_invite_token = cur.fetchone()[0]["token"]
-        coowner_user = uuid.uuid4()
-        cur.execute("reset role")
-        cur.execute(
-            "insert into auth.users(id,aud,role,email,created_at,updated_at) values(%s,'authenticated','authenticated','coowner@test.invalid',now(),now())",
-            (coowner_user,),
-        )
-        actor(coowner_user)
-        cur.execute("select accept_team_invitation(%s)", (owner_invite_token,))
-        assert cur.fetchone()[0]["role"] == "owner"
-        cur.execute("reset role")
-        cur.execute("select role from business_members where business_id=%s and user_id=%s", (business_a, coowner_user))
-        assert cur.fetchone()[0] == "owner"
+        rejected(cur, "select create_team_invitation(%s,'owner','coowner@test.invalid')", (business_a,), "only operators are invited")
+        rejected(cur, "select create_team_invitation(%s,'helper','helper@test.invalid')", (business_a,), "only operators are invited")
 
         # =====================================================================
         # Multi-business membership: Aisyah, already Operator of Business A,

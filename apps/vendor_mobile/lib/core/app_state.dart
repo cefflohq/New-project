@@ -258,6 +258,11 @@ class AppState extends ChangeNotifier {
         _applyUiLocale(own);
         await _localeStore.write(own);
       }
+      // D-73: claim accepted Operator invitations first so the new
+      // membership is in the list. Nothing to claim is not an error.
+      try {
+        await repo.claimMyTeamInvitations();
+      } on RepositoryError catch (_) {}
       businesses = await repo.myBusinesses();
       business = businesses.isEmpty ? null : businesses.first;
       // A signed-in account without a business starts in business setup.

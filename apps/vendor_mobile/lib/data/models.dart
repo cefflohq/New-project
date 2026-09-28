@@ -281,6 +281,29 @@ class RiderRow {
   bool get isOffline => !isActive && !isPending;
 }
 
+/// D-73 accountless Helper (Helper PWA only; no Vendor account). The
+/// server never returns token hashes; links exist only when (re)issued.
+class HelperWorker {
+  const HelperWorker({
+    required this.id,
+    required this.name,
+    required this.status,
+    this.contact,
+  });
+
+  final String id, name, status;
+  final String? contact;
+
+  factory HelperWorker.fromRow(Map<String, dynamic> r) => HelperWorker(
+    id: r['helper_id'] as String,
+    name: (r['display_name'] as String?) ?? '',
+    status: (r['status'] as String?) ?? 'invited',
+    contact: r['contact'] as String?,
+  );
+
+  bool get isActive => status == 'active';
+}
+
 class TeamMember {
   const TeamMember({
     required this.userId,

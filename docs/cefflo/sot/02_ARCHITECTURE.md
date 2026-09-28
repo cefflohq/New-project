@@ -20,6 +20,8 @@
 
 Operations/Helper is a permission-scoped role within Vendor Product's team system (D-22; `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md` §15 — "reuse existing Core Team/auth/invitation plumbing... not a competing identity system"), not a sixth surface.
 
+**D-73 (2026-09-28):** the Helper is now **accountless**. Helpers live in `helper_workers` (not `business_members`) and work only in the **Helper PWA** (`helper/`), a supporting web surface next to the **Invitation PWA** (`invite/`, which handles rider, Operator and Helper invitations). Neither is a sixth product; both are served beside the Vendor Web build. The Operator stays an authenticated `business_members` role.
+
 **Workforce terminology — LOCKED (2026-09-14, D-38):** "Cefflo Driver" is the locked user-facing product name; "Rider" is the locked internal/backend/schema/API role and is unchanged (see `docs/cefflo/sot/01_PRODUCT_TRUTH.md` §4). "Driver Product" in this freeze is that locked product name applied to the Flutter Mobile surface described by `13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` (formerly `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`, superseded 2026-09-14 per D-37) — no schema is touched, and none is authorized to be touched merely to match the product label. The terminology-scope question this freeze originally left open (whether "Driver Product" was a surface label or a broader reopening) was closed by D-38: it is a permanent, intentional dual-namespace — product name "Driver," schema/backend role "Rider" — not a migration in either direction.
 
 D-40 authorizes only the isolated Vendor Flutter baseline integration and

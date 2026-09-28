@@ -1267,5 +1267,21 @@
   "locatingBusinessAddress": "Locating your business address…",
   "businessAddressLocated": "Business address located",
   "pickupLocationRequired": "Your pickup location is required. We could not locate your business address; make sure it is complete, then try again.",
-  "tryLocatingAgain": "Try locating again"
+  "tryLocatingAgain": "Try locating again",
+  "helperText": "Helper",
+  "operatorRoleDescription": "Help manage daily delivery operations. Requires a Vendor account.",
+  "helperRoleDescription": "Help prepare and pack orders. Uses Helper PWA. No Vendor account required.",
+  "helperName": "Helper name",
+  "contactOptional": "Contact (optional)",
+  "helperNameRequired": "Enter the Helper's name.",
+  "helpersSection": "Helpers",
+  "noHelpersOptional": "No Helpers. Helpers are optional.",
+  "helperInvitedStatus": "Invited",
+  "helperInviteExpired": "Invite expired",
+  "newWorkspaceLink": "New workspace link",
+  "newInviteLink": "New invite link",
+  "removeHelper": "Remove",
+  "helperRemoved": "Helper removed. Their link no longer works.",
+  "helperLinkReplaces": "Share this link with the Helper. The previous link no longer works.",
+  "ownerCanRunAlone": "You can run your business as the Owner alone. Operators and Helpers are optional."
 }

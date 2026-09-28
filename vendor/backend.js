@@ -8,7 +8,13 @@
     issue: 'issue', cancelled: 'cancelled'
   };
 
-  async function businesses() { return api.rpc('get_my_businesses', {}); }
+  // D-73: an Operator who accepted a team invitation in the Invitation PWA
+  // becomes a member only here, after signing in with the invited, confirmed
+  // email. Claim runs before the business list so the new membership shows.
+  async function businesses() {
+    try { await api.rpc('claim_my_team_invitations', {}); } catch (_) { /* nothing to claim or offline */ }
+    return api.rpc('get_my_businesses', {});
+  }
   async function createDelivery(input) {
     return api.rpc('create_delivery', {
       p_business_id: input.businessId, p_customer_name: input.customerName,
@@ -126,6 +132,13 @@
   const createTeamInvitation = input => api.rpc('create_team_invitation', {
     p_business_id: input.businessId, p_role: input.role, p_invited_email: input.email
   });
+  // D-73 accountless Helpers (Owner-only, enforced server-side).
+  const createHelperInvitation = input => api.rpc('create_helper_invitation', {
+    p_business_id: input.businessId, p_display_name: input.name, p_contact: input.contact || null
+  });
+  const listHelperWorkers = businessId => api.rpc('list_helper_workers', { p_business_id: businessId });
+  const rotateHelperAccess = helperId => api.rpc('rotate_helper_access', { p_helper_id: helperId });
+  const revokeHelperWorker = helperId => api.rpc('revoke_helper_worker', { p_helper_id: helperId });
   const revokeTeamInvitation = invitationId => api.rpc('revoke_team_invitation', { p_invitation_id: invitationId });
   const createRiderInvitation = input => api.rpc('create_rider_invitation', {
     p_business_id: input.businessId, p_invited_email: input.email, p_invited_name: input.name, p_invited_phone: input.phone
@@ -337,6 +350,11 @@
     ]);
     state.teamMembers = members.map(m => ({ userId: m.user_id, role: m.role, status: m.status, createdAt: m.created_at }));
     state.teamInvitations = teamInvitations.map(i => ({ id: i.id, role: i.role, email: i.invited_email, status: i.status, expiresAt: i.expires_at, createdAt: i.created_at }));
+    state.helperWorkers = [];
+    if (state.currentMemberRole === 'owner') {
+      const helpers = await listHelperWorkers(state.businessId).catch(() => null);
+      state.helperWorkers = (Array.isArray(helpers) ? helpers : []).map(h => ({ id: h.helper_id, name: h.display_name, contact: h.contact, status: h.status }));
+    }
     state.riderInvitations = riderInvitations.map(i => ({ id: i.id, email: i.invited_email, name: i.invited_name, status: i.status, expiresAt: i.expires_at, createdAt: i.created_at }));
     return true;
   }
@@ -804,15 +822,45 @@
   };
   ACTIONS.confirmInviteTeamMember = async function () {
     try {
-      const email = document.getElementById('tim_email')?.value.trim();
-      const role = document.getElementById('tim_role')?.value;
-      if (!email || !role) throw new Error(t('completeRequiredFields'));
-      const result = await createTeamInvitation({ businessId: state.businessId, email, role });
-      const link = `${inviteBaseUrl()}?type=team&token=${encodeURIComponent(result.token)}`;
+      // D-73: Operator or Helper only; Owner is never invited.
+      const role = document.querySelector('input[name="tim_role"]:checked')?.value;
+      let link, title;
+      if (role === 'helper') {
+        const name = document.getElementById('tim_helper_name')?.value.trim();
+        const contact = document.getElementById('tim_helper_contact')?.value.trim();
+        if (!name) throw new Error(t('completeRequiredFields'));
+        const result = await createHelperInvitation({ businessId: state.businessId, name, contact });
+        link = `${inviteBaseUrl()}?type=helper&token=${encodeURIComponent(result.token)}`;
+        title = 'Helper invite link ready';
+      } else if (role === 'operator') {
+        const email = document.getElementById('tim_email')?.value.trim();
+        if (!email) throw new Error(t('completeRequiredFields'));
+        const result = await createTeamInvitation({ businessId: state.businessId, email, role: 'operator' });
+        link = `${inviteBaseUrl()}?type=team&token=${encodeURIComponent(result.token)}`;
+        title = 'Operator invite link ready';
+      } else throw new Error(t('completeRequiredFields'));
       await hydrateTeamWorkspace();
-      openSheet(renderInviteLinkSheet('Invite link ready', link));
+      openSheet(renderInviteLinkSheet(title, link));
       render();
     } catch (error) { toast(error.message || 'Unable to create invitation', 'error'); }
+  };
+  // Rotation replaces the stored hash: the previous link stops working at once.
+  ACTIONS.confirmRotateHelper = async function (el) {
+    try {
+      const result = await rotateHelperAccess(el.dataset.id);
+      const link = result.kind === 'access'
+        ? `${helperBaseUrl()}#${result.token}`
+        : `${inviteBaseUrl()}?type=helper&token=${encodeURIComponent(result.token)}`;
+      await hydrateTeamWorkspace();
+      openSheet(renderInviteLinkSheet(result.kind === 'access' ? 'New Helper workspace link' : 'New Helper invite link', link));
+      render();
+    } catch (error) { toast(error.message || 'Unable to create a new link', 'error'); }
+  };
+  ACTIONS.confirmRevokeHelper = async function (el) {
+    try {
+      await revokeHelperWorker(el.dataset.id);
+      await hydrateTeamWorkspace(); render(); toast('Helper removed. Their link no longer works.', 'success');
+    } catch (error) { toast(error.message || 'Unable to remove Helper', 'error'); }
   };
   ACTIONS.confirmRevokeTeamInvitation = async function (el) {
     try {

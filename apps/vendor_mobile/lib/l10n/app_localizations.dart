@@ -5066,6 +5066,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try locating again'**
   String get tryLocatingAgain;
+
+  /// No description provided for @helperText.
+  ///
+  /// In en, this message translates to:
+  /// **'Helper'**
+  String get helperText;
+
+  /// No description provided for @operatorRoleDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Help manage daily delivery operations. Requires a Vendor account.'**
+  String get operatorRoleDescription;
+
+  /// No description provided for @helperRoleDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Help prepare and pack orders. Uses Helper PWA. No Vendor account required.'**
+  String get helperRoleDescription;
+
+  /// No description provided for @helperName.
+  ///
+  /// In en, this message translates to:
+  /// **'Helper name'**
+  String get helperName;
+
+  /// No description provided for @contactOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact (optional)'**
+  String get contactOptional;
+
+  /// No description provided for @helperNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the Helper\'s name.'**
+  String get helperNameRequired;
+
+  /// No description provided for @helpersSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Helpers'**
+  String get helpersSection;
+
+  /// No description provided for @noHelpersOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'No Helpers. Helpers are optional.'**
+  String get noHelpersOptional;
+
+  /// No description provided for @helperInvitedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Invited'**
+  String get helperInvitedStatus;
+
+  /// No description provided for @helperInviteExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite expired'**
+  String get helperInviteExpired;
+
+  /// No description provided for @newWorkspaceLink.
+  ///
+  /// In en, this message translates to:
+  /// **'New workspace link'**
+  String get newWorkspaceLink;
+
+  /// No description provided for @newInviteLink.
+  ///
+  /// In en, this message translates to:
+  /// **'New invite link'**
+  String get newInviteLink;
+
+  /// No description provided for @removeHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeHelper;
+
+  /// No description provided for @helperRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Helper removed. Their link no longer works.'**
+  String get helperRemoved;
+
+  /// No description provided for @helperLinkReplaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this link with the Helper. The previous link no longer works.'**
+  String get helperLinkReplaces;
+
+  /// No description provided for @ownerCanRunAlone.
+  ///
+  /// In en, this message translates to:
+  /// **'You can run your business as the Owner alone. Operators and Helpers are optional.'**
+  String get ownerCanRunAlone;
 }
 
 class _AppLocalizationsDelegate

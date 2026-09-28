@@ -2733,4 +2733,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tryLocatingAgain => 'Try locating again';
+
+  @override
+  String get helperText => 'Helper';
+
+  @override
+  String get operatorRoleDescription =>
+      'Help manage daily delivery operations. Requires a Vendor account.';
+
+  @override
+  String get helperRoleDescription =>
+      'Help prepare and pack orders. Uses Helper PWA. No Vendor account required.';
+
+  @override
+  String get helperName => 'Helper name';
+
+  @override
+  String get contactOptional => 'Contact (optional)';
+
+  @override
+  String get helperNameRequired => 'Enter the Helper\'s name.';
+
+  @override
+  String get helpersSection => 'Helpers';
+
+  @override
+  String get noHelpersOptional => 'No Helpers. Helpers are optional.';
+
+  @override
+  String get helperInvitedStatus => 'Invited';
+
+  @override
+  String get helperInviteExpired => 'Invite expired';
+
+  @override
+  String get newWorkspaceLink => 'New workspace link';
+
+  @override
+  String get newInviteLink => 'New invite link';
+
+  @override
+  String get removeHelper => 'Remove';
+
+  @override
+  String get helperRemoved => 'Helper removed. Their link no longer works.';
+
+  @override
+  String get helperLinkReplaces =>
+      'Share this link with the Helper. The previous link no longer works.';
+
+  @override
+  String get ownerCanRunAlone =>
+      'You can run your business as the Owner alone. Operators and Helpers are optional.';
 }

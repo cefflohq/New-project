@@ -461,6 +461,59 @@ class VendorRepository {
     return _single(row);
   }
 
+  /// D-73: an Operator who accepted in the Invitation PWA becomes a member
+  /// here, bound server-side to the signed-in, confirmed email.
+  Future<void> claimMyTeamInvitations() async {
+    if (_demo) return;
+    await _run(() => _db!.rpc('claim_my_team_invitations'));
+  }
+
+  // D-73 accountless Helpers. Owner-only, enforced server-side.
+  Future<Map<String, dynamic>> createHelperInvitation({
+    required String businessId,
+    required String name,
+    String? contact,
+  }) async {
+    if (_demo) return {'token': 'demo-helper-token', 'kind': 'invitation'};
+    final row = await _run(
+      () => _db!.rpc(
+        'create_helper_invitation',
+        params: {
+          'p_business_id': businessId,
+          'p_display_name': name,
+          'p_contact': contact,
+        },
+      ),
+    );
+    return _single(row);
+  }
+
+  Future<List<HelperWorker>> helperWorkers(String businessId) async {
+    if (_demo) return const [];
+    final rows = await _run(
+      () => _db!.rpc(
+        'list_helper_workers',
+        params: {'p_business_id': businessId},
+      ),
+    );
+    return _rows(rows).map(HelperWorker.fromRow).toList();
+  }
+
+  /// Replaces the Helper's link; the previous one stops working at once.
+  /// Returns `{kind: 'access'|'invitation', token}`.
+  Future<Map<String, dynamic>> rotateHelperAccess(String helperId) async {
+    final row = await _run(
+      () => _db!.rpc('rotate_helper_access', params: {'p_helper_id': helperId}),
+    );
+    return _single(row);
+  }
+
+  Future<void> revokeHelperWorker(String helperId) async {
+    await _run(
+      () => _db!.rpc('revoke_helper_worker', params: {'p_helper_id': helperId}),
+    );
+  }
+
   // -------------------------------------------------------------- products
 
   Future<List<Product>> products(String businessId) async {

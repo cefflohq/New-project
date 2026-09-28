@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/app_state.dart';
 import '../core/routes.dart';
 import 'screens/directory.dart';
 import 'screens/operations.dart';
@@ -16,6 +17,7 @@ import 'screens/storefront/storefront_screens.dart';
 /// bounded settings, help, and supporting surfaces.
 Widget buildScreen(BuildContext context, VendorLocation loc) {
   final id = loc.entityId;
+  final app = AppScope.of(context);
   return switch (loc.route) {
     VRoute.today => const TodayScreen(),
     VRoute.welcomeSetup => const WelcomeSetupScreen(),
@@ -46,7 +48,11 @@ Widget buildScreen(BuildContext context, VendorLocation loc) {
     VRoute.customers => const CustomersScreen(),
     VRoute.customerDetail => CustomerDetailScreen(customerName: id!),
     VRoute.settings => const SettingsScreen(),
-    VRoute.subscription => const SubscriptionScreen(),
+    // D-73: Owner-only; an Operator reaching this route sees Settings.
+    VRoute.subscription =>
+      (app.business?.isOwner ?? true)
+          ? const SubscriptionScreen()
+          : const SettingsScreen(),
     VRoute.choosePlan => const ChoosePlanScreen(),
     VRoute.reviewPayment => ReviewPaymentScreen(selection: id!),
     VRoute.billingHistory => const BillingHistoryScreen(),

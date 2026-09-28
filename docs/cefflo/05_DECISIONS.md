@@ -1529,3 +1529,73 @@ onboarding and approval, and never asks again.
 - **Supersedes:**
   - the D-62 note that `invite/` is only a temporary supporting route;
   - the D09/D10 invitation steps in the Driver 42-screen master.
+
+## D-73 Workforce Model: Owner, Operator, accountless Helper (2026-09-28)
+
+**Decision (Founder gate approved).** A business has four kinds of people.
+Only the Owner is mandatory; a business may run with the Owner alone.
+
+| Role | Identity | Surface | Authority |
+|---|---|---|---|
+| **Owner** | account, `business_members.role = owner` | Vendor Web + Vendor Mobile | everything, including billing and ownership |
+| **Operator** (optional) | account, `business_members.role = operator` | Vendor Web + Vendor Mobile | daily operations, Products, Storefront; invite / approve / deactivate riders. No billing, no ownership |
+| **Helper** (optional) | **no account**, `helper_workers` row | Helper PWA (`helper/`) only | Prepare → Pack → Ready for one business |
+| **Rider** | account, `riders` + `rider_invitations` | Cefflo Driver | unchanged (D-72); never merged into Team |
+
+- **Data model: Architecture B.** `business_members.user_id` stays NOT
+  NULL. No fake auth users. Helpers live in their own table
+  (`202609280003`); RLS is on with no policies and every grant is revoked,
+  so the only access path is the `SECURITY DEFINER` RPCs below.
+- **Team invitation picker: Operator or Helper only.** There is no Owner,
+  co-owner or ownership-transfer invitation. `create_team_invitation`
+  rejects any role other than `operator`; the team consent / claim / accept
+  paths also reject `helper`.
+- **Operator:** invited by email, accepts once in the Invitation PWA
+  (`?type=team`, `consent_team_invitation`, `202609280002`), then becomes a
+  member only after signing in to Vendor Web or Vendor Mobile with the
+  invited, confirmed email (`claim_my_team_invitations`, run before the
+  business list is read).
+- **Operator rider permissions:** `approve_pending_rider` and
+  `deactivate_rider` now require Owner **or** Operator of the rider's own
+  business (`is_business_operational`). Cross-business stays forbidden.
+- **Subscription / Billing is Owner-only.** It is hidden from Operators on
+  Vendor Web (Settings rows, direct route falls back to Settings) and Vendor
+  Mobile (Settings row, route falls back). This is presentation only: no
+  billing backend was invented and UI hiding is not treated as
+  authorization.
+- **Helper visibility (server-enforced by `helper_tasks`):** order / CF
+  number, customer name, items, preparation notes, preparation status and
+  time, only for this business's orders still before pickup. Never phone,
+  address, rider, location, tracking, payment, billing, zones or runs.
+- **Helper access lifecycle** (chosen by engineering, per the gate; no
+  fixed 90-day expiry):
+  1. The Owner creates a Helper → a single-use **invite token** valid for
+     **7 days** (`?type=helper&token=`).
+  2. The Helper accepts in the Invitation PWA → the server returns an
+     **access token once**. It travels to the Helper PWA in the URL
+     fragment (`helper/#<token>`, never sent to a server as a URL), is
+     kept in that device's local storage, and is removed from the address
+     bar immediately.
+  3. The access token has **no idle or calendar expiry while the Helper is
+     active**. Staff churn is handled by explicit Owner action instead of a
+     timer that would lock out a working kitchen mid-shift.
+  4. **Rotate** (Owner): replaces the stored hash; the old link dies at
+     once and the new link is shown once. For an unaccepted Helper it issues
+     a new 7-day invite instead.
+  5. **Revoke** (Owner): clears the hash; every link dies at once.
+  - Only SHA-256 hashes are stored. Tokens are 256-bit random, validated as
+    64 hex, and rate-limited (`helper_access`, 60/min). An order ID alone
+    grants nothing. `access_last_used_at` is stamped for the Owner's
+    awareness.
+- **V1 sharing is manual** (copy / share / QR). No WhatsApp, SMS or email
+  is sent by Cefflo.
+- **Migration `202609280002`** (team consent / claim) was applied to
+  staging before this gate; it is reconciled forward by `202609280003`,
+  not rolled back.
+- **Staging only.** Neither migration is on Production; both join the
+  Production release queue.
+- **Supersedes:**
+  - D-22 / Grow V1 §15 reading of Operations/Helper as a team-member role
+    on the shared auth plumbing: the Helper is now accountless;
+  - the Owner-role team invitation from S4-07 (no co-owner invitations);
+  - the S4-07 rule that only the Owner approves riders.

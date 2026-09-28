@@ -131,16 +131,12 @@ with psycopg.connect(target.database_url) as conn:
         actor(owner_b)
         rejected(cur, "select approve_pending_rider(%s)", (rider_id,), "forbidden")
 
-        # Operator cannot approve either -- Owner-only per explicit Founder
-        # decision, not assumed from the general Rider-management authority.
+        # =====================================================================
+        # D-73: Owner OR Operator of the Rider's own business may approve.
+        # The Operator's approval activates -- and now the real
+        # ACCOUNT_NOT_APPROVED gate genuinely passes.
+        # =====================================================================
         actor(operator_a)
-        rejected(cur, "select approve_pending_rider(%s)", (rider_id,), "forbidden")
-
-        # =====================================================================
-        # Owner approval activates -- and now the real ACCOUNT_NOT_APPROVED
-        # gate genuinely passes.
-        # =====================================================================
-        actor(owner_a)
         cur.execute("select approve_pending_rider(%s)", (rider_id,))
         cur.execute("reset role")
         cur.execute("select status from riders where id=%s", (rider_id,))
