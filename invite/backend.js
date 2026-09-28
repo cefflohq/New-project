@@ -57,18 +57,16 @@
     }
 
     // Store destinations are configuration, never guessed. Until the Founder
-    // supplies real listing URLs the rows stay visible but disabled, with a
-    // truthful note -- the acceptance itself is already saved server-side.
+    // supplies real listing URLs the rows stay visible but disabled -- the
+    // acceptance itself is already saved server-side.
     function configureStores() {
       const stores = (window.CEFFLO_CONFIG && window.CEFFLO_CONFIG.driverStoreUrls) || {};
       const rows = [['storeAndroid', stores.android], ['storeIos', stores.ios]];
-      let missing = false;
       for (const [id, url] of rows) {
         const a = $(id);
         if (url) { a.href = url; a.target = '_blank'; a.removeAttribute('aria-disabled'); }
-        else { a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); missing = true; }
+        else { a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); }
       }
-      $('storeNote').hidden = !missing;
       // The rider's own platform first; the other stays available.
       if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
         $('storeIos').parentNode.insertBefore($('storeIos'), $('storeAndroid'));

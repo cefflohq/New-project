@@ -24,7 +24,7 @@
   </header>
   <section class="rider-sheet">
     <!-- Screen 1: validating -->
-    <div id="scrValidating" class="screen" hidden>
+    <div id="scrValidating" class="screen centered" hidden>
       <div class="ring" aria-hidden="true"></div>
       <h1>Checking invitation…</h1>
       <p class="lede">Please wait while we verify your invitation link.</p>
@@ -40,7 +40,7 @@
     </div>
 
     <!-- Screen 2: invited (decision) -->
-    <div id="scrInvited" class="screen" hidden>
+    <div id="scrInvited" class="screen decision" hidden>
       <div class="biz">
         <div class="biz-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10h16v10H4zM3 10l2-6h14l2 6M9 20v-5h6v5"/></svg></div>
         <div>
@@ -53,13 +53,15 @@
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><div><b>Start delivering today</b><span>Get access once your account is approved.</span></div></li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6l7-3z"/></svg><div><b>All in one app</b><span>Orders, navigation and support.</span></div></li>
       </ul>
-      <div class="status" id="decisionStatus" role="status" aria-live="polite" hidden></div>
-      <button class="cta" id="acceptBtn" type="button">Accept Invitation</button>
-      <button class="text-btn" id="declineBtn" type="button">Decline</button>
+      <div class="actions">
+        <div class="status" id="decisionStatus" role="status" aria-live="polite" hidden></div>
+        <button class="cta" id="acceptBtn" type="button">Accept Invitation</button>
+        <button class="text-btn" id="declineBtn" type="button">Decline</button>
+      </div>
     </div>
 
     <!-- Screen 3: accepted -> download the Driver app -->
-    <div id="scrAccepted" class="screen" hidden>
+    <div id="scrAccepted" class="screen centered" hidden>
       <div class="success" aria-hidden="true"><div><svg viewBox="0 0 24 24"><path d="M6 12.5l4 4 8-9"/></svg></div></div>
       <h1>You’re in!</h1>
       <p class="lede" id="acceptedBody"></p>
@@ -74,11 +76,10 @@
           <span>Download now and register</span>
         </a>
       </div>
-      <p class="store-note" id="storeNote" hidden>Cefflo Driver is not in the app stores yet. Your acceptance is saved — once the app is available, install it and sign up with your invited email.</p>
     </div>
 
     <!-- Screen 4: unavailable -->
-    <div id="scrUnavailable" class="screen" hidden>
+    <div id="scrUnavailable" class="screen centered" hidden>
       <div class="warn" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/></svg></div>
       <h1>Invitation unavailable</h1>
       <p class="lede" id="unavailableBody">This invitation link is not valid.</p>

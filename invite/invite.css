@@ -37,10 +37,15 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .rider-hero p { margin: 8px auto 0; max-width: 32ch; font-size: 14px; line-height: 1.5; color: rgba(255,255,255,.86); }
 .rider-hero p strong { color: #9FD2FF; font-weight: 600; }
 .rider-sheet {
-  flex: 1; background: var(--surface); margin-top: -22px; border-radius: 24px 24px 0 0;
+  flex: 1; display: flex; flex-direction: column;
+  background: var(--surface); margin-top: -22px; border-radius: 24px 24px 0 0;
   padding: 26px 20px calc(env(safe-area-inset-bottom, 0px) + 28px);
 }
-.screen { max-width: 440px; margin: 0 auto; }
+.screen { flex: 1; display: flex; flex-direction: column; width: 100%; max-width: 440px; margin: 0 auto; }
+/* Validating, accepted and unavailable: content centred in the white sheet. */
+.screen.centered { justify-content: center; padding-bottom: 24px; }
+/* Invited: details at the top, the decision pinned to the bottom (thumb reach). */
+.screen.decision .actions { margin-top: auto; padding-top: 24px; }
 .screen h1 { margin: 0; text-align: center; font-size: 24px; font-weight: 700; letter-spacing: -.01em; text-wrap: balance; }
 .lede { margin: 10px auto 0; max-width: 34ch; text-align: center; font-size: 15px; line-height: 1.55; color: var(--muted); }
 .next { margin: 18px auto 0; max-width: 36ch; text-align: center; font-size: 14px; line-height: 1.55; color: var(--muted); }
@@ -70,7 +75,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .features svg { width: 24px; height: 24px; flex: none; color: var(--ink); margin-top: 1px; }
 .features b { display: block; font-size: 14.5px; font-weight: 600; }
 .features span { display: block; margin-top: 2px; font-size: 13px; color: var(--muted); line-height: 1.45; }
-.cta { display: block; width: 100%; margin-top: 28px; min-height: 54px; border: 0; border-radius: 16px; background: var(--yellow); color: var(--ink); font: 600 16px Inter, system-ui, sans-serif; cursor: pointer; }
+.cta { display: block; width: 100%; margin-top: 16px; min-height: 54px; border: 0; border-radius: 16px; background: var(--yellow); color: var(--ink); font: 600 16px Inter, system-ui, sans-serif; cursor: pointer; }
 .cta:disabled { opacity: .6; cursor: default; }
 .cta:focus-visible, .text-btn:focus-visible, .store:focus-visible { outline: 3px solid #7EB0FF; outline-offset: 2px; }
 .text-btn { display: block; margin: 14px auto 0; padding: 10px 16px; border: 0; background: none; color: var(--ink); font: 600 15px Inter, system-ui, sans-serif; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -80,11 +85,10 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .success { display: grid; place-items: center; margin: 12px auto 22px; width: 116px; height: 116px; border-radius: 50%; background: var(--green-tint); }
 .success div { width: 72px; height: 72px; border-radius: 50%; background: var(--green); display: grid; place-items: center; }
 .success svg { width: 38px; height: 38px; stroke: #fff; stroke-width: 3; }
-.stores { margin: 24px auto 0; max-width: 360px; display: grid; gap: 12px; }
-.store { display: flex; align-items: center; gap: 12px; min-height: 54px; padding: 12px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); text-decoration: none; font-size: 15px; font-weight: 600; }
+.stores { margin: 24px auto 0; width: 100%; max-width: 360px; display: grid; gap: 12px; }
+.store { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 54px; padding: 12px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); text-decoration: none; font-size: 15px; font-weight: 600; }
 .store-icon { width: 22px; height: 22px; flex: none; stroke: none; }
 .store[aria-disabled="true"] { opacity: .5; pointer-events: none; }
-.store-note { margin: 14px auto 0; max-width: 36ch; text-align: center; font-size: 12.5px; line-height: 1.5; color: var(--faint); }
 
 /* Screen 4 */
 .warn { display: grid; place-items: center; margin: 12px auto 22px; width: 88px; height: 88px; border-radius: 50%; background: var(--red-tint); color: var(--red); }
