@@ -24,12 +24,29 @@ class HelperWorkspaceScreen extends StatefulWidget {
 }
 
 class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
-  static const _stages = ['not_started', 'preparing', 'packed', 'ready'];
+  // D-74 Sorting: per-order checkpoints; Ready only via Confirm Sorting.
+  static const _stages = [
+    'not_started',
+    'preparing',
+    'packed',
+    'sorted',
+    'ready',
+    'picked_up',
+  ];
   static const _next = {
     'not_started': 'preparing',
     'preparing': 'packed',
-    'packed': 'ready',
+    'packed': 'sorted',
   };
+  static const _rank = {
+    'not_started': 0,
+    'preparing': 1,
+    'packed': 2,
+    'sorted': 3,
+    'ready': 4,
+  };
+
+  String _stageOf(FulfilmentTask t) => t.pickedUp ? 'picked_up' : t.status;
 
   String _stage = 'not_started';
   Future<List<FulfilmentTask>>? _load;
@@ -55,13 +72,15 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
   String _label(String stage) => switch (stage) {
     'preparing' => L.stagePreparing,
     'packed' => L.stagePacked,
+    'sorted' => L.stageSorted,
     'ready' => L.stageReady,
+    'picked_up' => L.stagePickedUp,
     _ => L.toPrepare,
   };
 
   String _action(String stage) => switch (stage) {
     'preparing' => L.markPacked,
-    'packed' => L.markReady,
+    'packed' => L.markSorted,
     _ => L.startPreparing,
   };
 
@@ -76,6 +95,103 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
     } finally {
       if (mounted) setState(() => _busy.remove(t.orderId));
     }
+  }
+
+  /// Groups of still-open tasks (picked-up orders are not in any group).
+  Map<String, List<FulfilmentTask>> _groups(
+    List<FulfilmentTask> all,
+    String Function(FulfilmentTask) key,
+  ) {
+    final out = <String, List<FulfilmentTask>>{};
+    for (final t in all.where((t) => !t.pickedUp)) {
+      out.putIfAbsent(key(t), () => []).add(t);
+    }
+    return out;
+  }
+
+  Future<void> _confirm(String key, Future<void> Function() call) async {
+    setState(() => _busy.add(key));
+    try {
+      await call();
+      await _reload();
+    } on RepositoryError catch (e) {
+      if (mounted) showCefToast(context, e.message, error: true);
+    } finally {
+      if (mounted) setState(() => _busy.remove(key));
+    }
+  }
+
+  List<Widget> _groupButtons(List<FulfilmentTask> all) {
+    final repo = AppScope.read(context).repo;
+    final biz = AppScope.read(context).business!.id;
+    if (_stage == 'packed') {
+      return [
+        for (final e in _groups(
+          all,
+          (t) => 'pack|${t.zoneId}|${t.orderDate}',
+        ).entries)
+          if (e.value.any((t) => t.status == 'packed' && !t.packingConfirmed))
+            _groupButton(
+              e.key,
+              L.confirmPackingGroup(
+                e.value.first.zoneName ?? L.noZone,
+                '${e.value.where((t) => (_rank[t.status] ?? 0) >= 2).length}',
+                '${e.value.length}',
+              ),
+              e.value.every((t) => (_rank[t.status] ?? 0) >= 2),
+              () => repo.confirmPacking(
+                biz,
+                e.value.first.zoneId,
+                e.value.first.orderDate,
+              ),
+            ),
+      ];
+    }
+    if (_stage == 'sorted') {
+      return [
+        for (final e in _groups(
+          all,
+          (t) =>
+              'sort|${t.zoneId}|${t.runId}|${t.runId == null ? t.orderDate : ''}',
+        ).entries)
+          if (e.value.any((t) => t.status == 'sorted'))
+            _groupButton(
+              e.key,
+              L.confirmSortingGroup(
+                e.value.first.zoneName ?? L.noZone,
+                '${e.value.where((t) => (_rank[t.status] ?? 0) >= 3).length}',
+                '${e.value.length}',
+              ),
+              e.value.every((t) => (_rank[t.status] ?? 0) >= 3),
+              () => repo.confirmSorting(
+                biz,
+                e.value.first.zoneId,
+                e.value.first.runId,
+                e.value.first.orderDate,
+              ),
+            ),
+      ];
+    }
+    return const [];
+  }
+
+  Widget _groupButton(
+    String key,
+    String label,
+    bool complete,
+    Future<void> Function() call,
+  ) => Padding(
+    padding: const EdgeInsets.only(bottom: Gap.sm),
+    child: CefButton(
+      label,
+      busy: _busy.contains(key),
+      onTap: complete ? () => _confirm(key, call) : null,
+    ),
+  );
+
+  String _time(DateTime at) {
+    final l = at.toLocal();
+    return '${l.hour.toString().padLeft(2, '0')}:${l.minute.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -104,7 +220,7 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
           }
           if (!snap.hasData) return const StateBlock.loading();
           final all = snap.data!;
-          final rows = all.where((t) => t.status == _stage).toList();
+          final rows = all.where((t) => _stageOf(t) == _stage).toList();
           return PageBody(
             onRefresh: _reload,
             children: [
@@ -115,13 +231,14 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
                   for (final s in _stages)
                     CefChoiceChip(
                       label:
-                          '${_label(s)} (${all.where((t) => t.status == s).length})',
+                          '${_label(s)} (${all.where((t) => _stageOf(t) == s).length})',
                       selected: _stage == s,
                       onTap: () => setState(() => _stage = s),
                     ),
                 ],
               ),
               const SizedBox(height: Gap.md),
+              ..._groupButtons(all),
               if (rows.isEmpty)
                 StateBlock.empty(
                   all.isEmpty ? L.newTasksAppearHere : L.noTasksInStage,
@@ -154,14 +271,24 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
                             Text(t.notes!, style: text.bodySmall),
                           ],
                           const SizedBox(height: Gap.sm),
-                          if (_next.containsKey(t.status))
+                          if (t.pickedUp)
+                            Text(
+                              L.pickedUpBy(
+                                t.handoverRiderName ?? '',
+                                _time(t.pickedUpAt!),
+                              ),
+                              style: text.labelLarge,
+                            )
+                          else if (t.status == 'packed' && !t.packingConfirmed)
+                            Text(L.packingNotConfirmed, style: text.bodySmall)
+                          else if (_next.containsKey(t.status))
                             CefButton(
                               _action(t.status),
                               compact: true,
                               busy: _busy.contains(t.orderId),
                               onTap: () => _advance(t),
                             )
-                          else
+                          else if (t.status == 'ready')
                             Text(
                               t.handoverRiderName != null
                                   ? L.handoverTo(t.handoverRiderName!)

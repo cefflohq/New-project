@@ -34,9 +34,9 @@ schema needs a secret key, so it was not used.
 **Conclusion.**
 - Production holds only the foundation migration `202608130001`.
 - **53 canonical migrations were missing** at the 2026-09-27 probe, `202608270001` through
-  `202609270002`. D-72 added `202609280001`, D-73 added `202609280002`–`202609280003` and D-74 added `202609280004`–`202609280006`, so **59** are now pending (the
+  `202609270002`. D-72 added `202609280001`, D-73 added `202609280002`–`202609280003` and D-74 added `202609280004`–`202609280008`, so **61** are now pending (the
   G2 inspection establishes the real number). The table below lists them in order.
-- Staging holds all 59 repo migrations from `202608270001` on, plus the foundation (60 rows in `schema_migrations`), an exact match.
+- Staging holds all 61 repo migrations from `202608270001` on, plus the foundation (62 rows in `schema_migrations`), an exact match.
 - Edge functions: `tracking-pod` is deployed on Production and staging.
   `geocode-order` is deployed on neither.
 
@@ -60,6 +60,8 @@ Ordered migration set for Production (apply in this exact order):
 | 57 | 202609280004 (D-74 authenticated Helper: predicates, invitations, fulfilment contract, D-73 token retirement) |
 | 58 | 202609280005 (D-74 restore declined helper_workers history) |
 | 59 | 202609280006 (D-74 Zone in the fulfilment contract) |
+| 60 | 202609280007 (D-74 Sorting: `sorted` preparation state; own transaction) |
+| 61 | 202609280008 (D-74 Sorting: per-order checkpoints, confirm_packing / confirm_sorting, Run eligibility) |
 
 Before applying, a secret-key or dashboard inspection must confirm there are
 **no manual out-of-band Production objects**: compare `pg_proc`, `pg_policies`

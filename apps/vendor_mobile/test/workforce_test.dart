@@ -104,6 +104,27 @@ void main() {
     expect(t.handoverRiderName, 'Zahid');
   });
 
+  test('sorting checkpoints and pickup parse per order', () {
+    final t = FulfilmentTask.fromRow({
+      'order_id': 'o2',
+      'order_number': '#CF-041',
+      'customer_name': 'Amir',
+      'items': const [],
+      'preparation_status': 'packed',
+      'packing_confirmed': true,
+      'zone_id': 'z1',
+      'zone_name': 'Shah Alam',
+      'run_id': 'r1',
+      'order_date': '2026-09-29',
+      'picked_up_at': '2026-09-29T03:34:00Z',
+      'handover_rider_name': 'Amir',
+    });
+    expect(t.packingConfirmed, isTrue);
+    expect(t.zoneId, 'z1');
+    expect(t.runId, 'r1');
+    expect(t.pickedUp, isTrue);
+  });
+
   test('roles resolve from membership', () {
     final helper = Business.fromRow({
       'business_id': 'b1',

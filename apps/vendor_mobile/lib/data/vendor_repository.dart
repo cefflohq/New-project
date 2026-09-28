@@ -481,6 +481,46 @@ class VendorRepository {
     return _rows(tasks).map(FulfilmentTask.fromRow).toList();
   }
 
+  /// Slide to Confirm Packing for a Zone + order-date group.
+  Future<void> confirmPacking(
+    String businessId,
+    String? zoneId,
+    String? orderDate,
+  ) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'confirm_packing',
+        params: {
+          'p_business_id': businessId,
+          'p_zone_id': zoneId,
+          'p_order_date': orderDate,
+        },
+      ),
+    );
+  }
+
+  /// Slide to Confirm Sorting for a Zone + Run (or Zone + date) group.
+  Future<void> confirmSorting(
+    String businessId,
+    String? zoneId,
+    String? runId,
+    String? orderDate,
+  ) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'confirm_sorting',
+        params: {
+          'p_business_id': businessId,
+          'p_zone_id': zoneId,
+          'p_delivery_session_id': runId,
+          'p_order_date': orderDate,
+        },
+      ),
+    );
+  }
+
   Future<void> advancePreparation(String orderId, String next) async {
     if (_demo) return;
     await _run(

@@ -1653,11 +1653,28 @@ separate (Driver app, `riders`). Supersedes D-73's Helper model.
   - `helper_workers` is kept read-locked as history, with declined
     outcomes restored from the audit trail (`202609280005`);
   - the Helper PWA (`helper/`) and `?type=helper` are removed.
-- **Open for the Founder:** Sort / sorted-verified is not a stored state
-  yet. The workflow master leaves open whether it is tracked per order or
-  per Zone/Run group, so no state was invented. Today the flow is
-  `not_started → preparing → packed → ready`, and handover is the Rider's
-  existing pickup.
+- **Sorting (Founder decision, `202609280007`–`…0008`).** Truth is stored
+  per order; the workflow runs per group.
+  - **Per-order states:** `not_started → preparing → packed → sorted →
+    ready` (the existing enum extended, no parallel state). Each stop
+    records `packed_at/by`, `packing_confirmed_at/by`, `sorted_at/by` and
+    `ready_at/by` from the authenticated user.
+  - **Packing group** is Zone + order date. `confirm_packing` needs every
+    eligible order packed.
+  - **Packed → Sorted** is per order, only after that order's packing is
+    confirmed. Packing never marks an order Sorted.
+  - **Sorting group** is Zone + Run (or Zone + order date before a Run
+    exists). `confirm_sorting` needs every order sorted, then makes each
+    one Ready for Pickup. Ready is refused per order.
+  - **No order-count limit** anywhere; a 27-order Zone is tested.
+  - **Runs:** `build_rider_run` now accepts packed orders so Sorting can
+    follow the Run. Orders still `preparing`, or already `sorted`, stay out
+    of new Runs. Helpers can't build, assign or reassign Runs or Riders.
+  - **Handover:** the Rider's independent pickup in the Driver app is
+    unchanged. For 24 hours afterwards the Helper sees read-only "Picked
+    up • Rider • time".
+  - **Preparation** stays aggregate demand, not per Zone. Aggregate item
+    totals are a client-side view over the same contract.
 - **Sign-In UI** (Operator / Helper) is not built yet. It plugs into
   `apps/vendor_mobile/lib/ui/screens/auth.dart` (`SignInScreen`). Role is
   never taken from which screen was used.

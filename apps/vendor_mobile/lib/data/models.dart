@@ -292,7 +292,12 @@ class FulfilmentTask {
     required this.items,
     required this.status,
     this.notes,
+    this.zoneId,
     this.zoneName,
+    this.runId,
+    this.orderDate,
+    this.packingConfirmed = false,
+    this.pickedUpAt,
     this.runName,
     this.stopSequence,
     this.handoverRiderName,
@@ -300,7 +305,12 @@ class FulfilmentTask {
 
   final String orderId, orderNumber, customerName, status;
   final List<String> items;
-  final String? notes, zoneName, runName, handoverRiderName;
+  final String? notes, zoneId, zoneName, runId, orderDate, runName;
+  final String? handoverRiderName;
+  final bool packingConfirmed;
+  final DateTime? pickedUpAt;
+
+  bool get pickedUp => pickedUpAt != null;
   final int? stopSequence;
 
   factory FulfilmentTask.fromRow(Map<String, dynamic> r) => FulfilmentTask(
@@ -309,7 +319,12 @@ class FulfilmentTask {
     customerName: (r['customer_name'] as String?) ?? '',
     status: (r['preparation_status'] as String?) ?? 'not_started',
     notes: r['notes'] as String?,
+    zoneId: r['zone_id'] as String?,
     zoneName: r['zone_name'] as String?,
+    runId: r['run_id'] as String?,
+    orderDate: r['order_date'] as String?,
+    packingConfirmed: r['packing_confirmed'] == true,
+    pickedUpAt: DateTime.tryParse('${r['picked_up_at'] ?? ''}'),
     runName: r['run_name'] as String?,
     stopSequence: (r['stop_sequence'] as num?)?.toInt(),
     handoverRiderName: r['handover_rider_name'] as String?,

@@ -54,6 +54,13 @@
   const importOrdersBatch = (businessId, rows, idempotencyKey) => api.rpc('import_orders_batch', {
     p_business_id: businessId, p_rows: rows, p_idempotency_key: idempotencyKey
   });
+  // D-74 Sorting: group checkpoints (server derives the group's orders).
+  const confirmPacking = (zoneId, orderDate) => api.rpc('confirm_packing', {
+    p_business_id: state.businessId, p_zone_id: zoneId || null, p_order_date: orderDate || null
+  });
+  const confirmSorting = (zoneId, sessionId, orderDate) => api.rpc('confirm_sorting', {
+    p_business_id: state.businessId, p_zone_id: zoneId || null, p_delivery_session_id: sessionId || null, p_order_date: orderDate || null
+  });
   const advancePreparation = (orderId, next) => api.rpc('advance_preparation', {
     p_order_id: orderId, p_next: next
   });
@@ -170,7 +177,7 @@
   // Ready is upstream of assignment (a Helper works on an order before a
   // Vendor ever builds a run for it), so listRiderAssignments' assignment-
   // scoped join above cannot carry preparation truth for unassigned orders.
-  const listDeliveryStops = businessId => api.request(`/rest/v1/delivery_stops?business_id=eq.${encodeURIComponent(businessId)}&select=id,order_id,preparation_status,preparation_updated_at&order=created_at.asc`);
+  const listDeliveryStops = businessId => api.request(`/rest/v1/delivery_stops?business_id=eq.${encodeURIComponent(businessId)}&select=id,order_id,preparation_status,preparation_updated_at,packing_confirmed_at&order=created_at.asc`);
   // Grow V1 Flow 2 (A2): the business's own service-area columns.
   // get_my_businesses() is a curated cross-membership view that doesn't
   // carry them; a direct, RLS-scoped single-row fetch is the smallest
@@ -188,7 +195,7 @@
       id: row.public_ref, backendId: row.id, publicRef: row.public_ref, number: row.order_number, customer: row.customer_name, customerName: row.customer_name,
       phone: row.customer_phone, customerPhone: row.customer_phone, address: row.delivery_address,
       note: row.notes || '', notes: row.notes || '', items: row.items || [], riderId: row.assigned_rider_id,
-      zoneId: row.zone_id, deliverySessionId: row.delivery_session_id,
+      zoneId: row.zone_id, deliverySessionId: row.delivery_session_id, orderDate: row.order_date,
       status: statusToUi[row.delivery_status] || row.delivery_status, backendStatus: row.delivery_status,
       total: '0.00', payment: row.payment_status || 'Pending',
       trackingToken: localStorage.getItem(`cefflo_tracking_token_${row.id}`),
@@ -285,6 +292,7 @@
       const stop = stopByOrderId.get(order.backendId);
       order.preparationStatus = stop ? stop.preparation_status : 'not_started';
       order.deliveryStopId = stop ? stop.id : null;
+      order.packingConfirmed = !!stop?.packing_confirmed_at;
     });
     const ratingOrderIds = new Set(ratings.map(item => item.order_id));
     state.orders.forEach(order => { order.ratingSubmitted = ratingOrderIds.has(order.backendId); order.riderName = state.riders.find(r => r.id === order.riderId)?.name || null; });
@@ -675,6 +683,19 @@
     }
   };
   ACTIONS.advancePreparationAction = advancePreparationAction;
+  const groupAction = (fn, done) => async function (el) {
+    const d = el.dataset;
+    if (el.disabled) return;
+    el.disabled = true;
+    try {
+      await fn(d.zone || null, d.run || null, d.date || null);
+      await hydrateCanonicalWorkspace(); toast(done, 'success'); render();
+    } catch (error) {
+      toast(error.message || 'Unable to confirm', 'error'); el.disabled = false;
+    }
+  };
+  ACTIONS.confirmPackingAction = groupAction((zone, _run, date) => confirmPacking(zone, date), 'Packing confirmed');
+  ACTIONS.confirmSortingAction = groupAction((zone, run, date) => confirmSorting(zone, run, date), 'Sorting confirmed · Ready for Pickup');
 
   confirmEditRiderVehicle = async function (el) {
     try {

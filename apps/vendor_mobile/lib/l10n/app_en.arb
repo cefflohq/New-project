@@ -1276,7 +1276,7 @@
   "toPrepare": "To prepare",
   "stagePreparing": "Preparing",
   "stagePacked": "Packed",
-  "stageReady": "Ready",
+  "stageReady": "Ready for pickup",
   "startPreparing": "Start preparing",
   "markPacked": "Mark packed",
   "markReady": "Mark ready",
@@ -1301,5 +1301,49 @@
     }
   },
   "noTasksInStage": "No orders here.",
-  "newTasksAppearHere": "New orders to prepare will appear here."
+  "newTasksAppearHere": "New orders to prepare will appear here.",
+  "stageSorted": "Sorted",
+  "markSorted": "Mark sorted",
+  "packingNotConfirmed": "Packing not confirmed yet",
+  "confirmPackingGroup": "Confirm packing · {zone} · {done} / {total} packed",
+  "@confirmPackingGroup": {
+    "placeholders": {
+      "zone": {
+        "type": "String"
+      },
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmSortingGroup": "Confirm sorting · {zone} · {done} / {total} sorted",
+  "@confirmSortingGroup": {
+    "placeholders": {
+      "zone": {
+        "type": "String"
+      },
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "pickedUpBy": "Picked up • {rider} • {time}",
+  "@pickedUpBy": {
+    "placeholders": {
+      "rider": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "stagePickedUp": "Picked up",
+  "noZone": "No zone"
 }

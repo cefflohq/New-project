@@ -2766,7 +2766,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get stagePacked => 'Dibungkus';
 
   @override
-  String get stageReady => 'Sedia';
+  String get stageReady => 'Sedia untuk diambil';
 
   @override
   String get startPreparing => 'Mula sediakan';
@@ -2796,4 +2796,34 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get newTasksAppearHere =>
       'Pesanan baharu untuk disediakan akan muncul di sini.';
+
+  @override
+  String get stageSorted => 'Diisih';
+
+  @override
+  String get markSorted => 'Tanda diisih';
+
+  @override
+  String get packingNotConfirmed => 'Pembungkusan belum disahkan';
+
+  @override
+  String confirmPackingGroup(String zone, String done, String total) {
+    return 'Sahkan pembungkusan · $zone · $done / $total dibungkus';
+  }
+
+  @override
+  String confirmSortingGroup(String zone, String done, String total) {
+    return 'Sahkan pengisihan · $zone · $done / $total diisih';
+  }
+
+  @override
+  String pickedUpBy(String rider, String time) {
+    return 'Diambil • $rider • $time';
+  }
+
+  @override
+  String get stagePickedUp => 'Diambil';
+
+  @override
+  String get noZone => 'Tiada zon';
 }

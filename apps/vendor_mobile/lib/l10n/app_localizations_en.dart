@@ -2762,7 +2762,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stagePacked => 'Packed';
 
   @override
-  String get stageReady => 'Ready';
+  String get stageReady => 'Ready for pickup';
 
   @override
   String get startPreparing => 'Start preparing';
@@ -2791,4 +2791,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get newTasksAppearHere => 'New orders to prepare will appear here.';
+
+  @override
+  String get stageSorted => 'Sorted';
+
+  @override
+  String get markSorted => 'Mark sorted';
+
+  @override
+  String get packingNotConfirmed => 'Packing not confirmed yet';
+
+  @override
+  String confirmPackingGroup(String zone, String done, String total) {
+    return 'Confirm packing · $zone · $done / $total packed';
+  }
+
+  @override
+  String confirmSortingGroup(String zone, String done, String total) {
+    return 'Confirm sorting · $zone · $done / $total sorted';
+  }
+
+  @override
+  String pickedUpBy(String rider, String time) {
+    return 'Picked up • $rider • $time';
+  }
+
+  @override
+  String get stagePickedUp => 'Picked up';
+
+  @override
+  String get noZone => 'No zone';
 }

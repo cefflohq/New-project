@@ -5118,7 +5118,7 @@ abstract class AppLocalizations {
   /// No description provided for @stageReady.
   ///
   /// In en, this message translates to:
-  /// **'Ready'**
+  /// **'Ready for pickup'**
   String get stageReady;
 
   /// No description provided for @startPreparing.
@@ -5168,6 +5168,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New orders to prepare will appear here.'**
   String get newTasksAppearHere;
+
+  /// No description provided for @stageSorted.
+  ///
+  /// In en, this message translates to:
+  /// **'Sorted'**
+  String get stageSorted;
+
+  /// No description provided for @markSorted.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark sorted'**
+  String get markSorted;
+
+  /// No description provided for @packingNotConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Packing not confirmed yet'**
+  String get packingNotConfirmed;
+
+  /// No description provided for @confirmPackingGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm packing · {zone} · {done} / {total} packed'**
+  String confirmPackingGroup(String zone, String done, String total);
+
+  /// No description provided for @confirmSortingGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm sorting · {zone} · {done} / {total} sorted'**
+  String confirmSortingGroup(String zone, String done, String total);
+
+  /// No description provided for @pickedUpBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Picked up • {rider} • {time}'**
+  String pickedUpBy(String rider, String time);
+
+  /// No description provided for @stagePickedUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Picked up'**
+  String get stagePickedUp;
+
+  /// No description provided for @noZone.
+  ///
+  /// In en, this message translates to:
+  /// **'No zone'**
+  String get noZone;
 }
 
 class _AppLocalizationsDelegate

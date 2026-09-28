@@ -6552,25 +6552,47 @@ function pageTeam(){
 // per the Founder's map clarification, this is plain operational UI
 // (order/address/status/action), no map. Only pending-fulfillment orders
 // are shown (delivered/cancelled have nothing left to prepare).
+// D-74 Sorting: per-order truth, group checkpoints. Packed -> Sorted only
+// after the order's Zone packing is confirmed; Ready only through Confirm
+// Sorting for the whole Zone + Run group (server-enforced).
 const PREP_STAGES = [
   { key:'not_started', label:'Not Started', next:'preparing', nextLabel:'Start Preparing' },
   { key:'preparing', label:'Preparing', next:'packed', nextLabel:'Mark Packed' },
-  { key:'packed', label:'Packed', next:'ready', nextLabel:'Mark Ready' },
-  { key:'ready', label:'Ready', next:null, nextLabel:null },
+  { key:'packed', label:'Packed', next:'sorted', nextLabel:'Mark Sorted' },
+  { key:'sorted', label:'Sorted', next:null, nextLabel:null },
+  { key:'ready', label:'Ready for Pickup', next:null, nextLabel:null },
 ];
+const PREP_RANK = {not_started:0, preparing:1, packed:2, sorted:3, ready:4};
+function prepGroups(orders, keyOf){
+  const groups = new Map();
+  orders.forEach(o=>{ const k=keyOf(o); if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(o); });
+  return [...groups.values()];
+}
+function prepZoneName(o){ return (state.zones||[]).find(z=>z.id===o.zoneId)?.name || 'No zone'; }
 function renderHelperPoolContent(){
-  const orders = (state.orders||[]).filter(o=>!['delivered','cancelled'].includes(o.backendStatus));
-  if(!orders.length) return `<div class="empty-state"><h3>No active orders</h3><p>Prepare/Pack/Ready will appear here once orders come in.</p></div>`;
+  const orders = (state.orders||[]).filter(o=>['created','ready_for_pickup'].includes(o.backendStatus));
+  if(!orders.length) return `<div class="empty-state"><h3>No active orders</h3><p>Prepare/Pack/Sort/Ready will appear here once orders come in.</p></div>`;
+  const rank = o=>PREP_RANK[o.preparationStatus||'not_started'];
+  const packing = prepGroups(orders, o=>`${o.zoneId||''}|${o.orderDate||''}`)
+    .filter(g=>g.some(o=>o.preparationStatus==='packed' && !o.packingConfirmed))
+    .map(g=>{ const done=g.filter(o=>rank(o)>=2).length; return `<button class="btn btn-primary" style="width:100%;margin:6px 0;" data-action="confirmPackingAction" data-zone="${g[0].zoneId||''}" data-date="${g[0].orderDate||''}" ${done<g.length?'disabled':''}>Confirm Packing · ${prepZoneName(g[0])} · ${done} / ${g.length} packed</button>`; }).join('');
+  const sorting = prepGroups(orders, o=>`${o.zoneId||''}|${o.deliverySessionId||''}|${o.deliverySessionId?'':o.orderDate||''}`)
+    .filter(g=>g.some(o=>o.preparationStatus==='sorted'))
+    .map(g=>{ const done=g.filter(o=>rank(o)>=3).length; return `<button class="btn btn-primary" style="width:100%;margin:6px 0;" data-action="confirmSortingAction" data-zone="${g[0].zoneId||''}" data-run="${g[0].deliverySessionId||''}" data-date="${g[0].orderDate||''}" ${done<g.length?'disabled':''}>Confirm Sorting · ${prepZoneName(g[0])} · ${done} / ${g.length} sorted</button>`; }).join('');
   return PREP_STAGES.map(stage=>{
     const rows = orders.filter(o=>(o.preparationStatus||'not_started')===stage.key);
+    const groupButtons = stage.key==='packed' ? packing : stage.key==='sorted' ? sorting : '';
     return `<div class="section-title workforce-section-title" style="margin-top:16px;">${stage.label} (${rows.length})</div>
-      ${rows.length?`<div class="settings-group">${rows.map(o=>`
+      ${groupButtons}
+      ${rows.length?`<div class="settings-group">${rows.map(o=>{
+        const canNext = stage.next && !(stage.key==='packed' && !o.packingConfirmed);
+        return `
         <div class="card bordered" style="margin-bottom:8px;padding:12px 14px;">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-            <div style="min-width:0;"><div class="t-body" style="font-weight:600;overflow:hidden;text-overflow:ellipsis;">${orderNo(o)} &middot; ${o.customerName}</div><div class="t-caption" style="overflow:hidden;text-overflow:ellipsis;">${o.address}</div></div>
-            ${stage.next?`<button class="btn btn-secondary" style="flex:0 0 auto;width:auto;" data-action="advancePreparationAction" data-orderid="${o.backendId}" data-next="${stage.next}">${stage.nextLabel}</button>`:`<span class="status-chip chip-active">Ready</span>`}
+            <div style="min-width:0;flex:1;"><div class="t-body" style="font-weight:600;overflow:hidden;text-overflow:ellipsis;">${orderNo(o)} &middot; ${o.customerName}</div><div class="t-caption" style="overflow:hidden;text-overflow:ellipsis;">${prepZoneName(o)}${stage.key==='packed'&&!o.packingConfirmed?' &middot; packing not confirmed':''}</div></div>
+            ${canNext?`<button class="btn btn-secondary" style="flex:0 0 auto;width:auto;" data-action="advancePreparationAction" data-orderid="${o.backendId}" data-next="${stage.next}">${stage.nextLabel}</button>`:stage.key==='ready'?`<span class="status-chip chip-active">Ready</span>`:''}
           </div>
-        </div>`).join('')}</div>`:`<div class="t-caption" style="color:var(--text-secondary);margin-bottom:4px;">None</div>`}
+        </div>`;}).join('')}</div>`:`<div class="t-caption" style="color:var(--text-secondary);margin-bottom:4px;">None</div>`}
     `;
   }).join('');
 }

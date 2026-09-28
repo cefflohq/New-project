@@ -835,7 +835,7 @@
   "toPrepare": "Untuk disediakan",
   "stagePreparing": "Sedang disediakan",
   "stagePacked": "Dibungkus",
-  "stageReady": "Sedia",
+  "stageReady": "Sedia untuk diambil",
   "startPreparing": "Mula sediakan",
   "markPacked": "Tanda dibungkus",
   "markReady": "Tanda sedia",
@@ -843,5 +843,13 @@
   "handoverTo": "Serahkan kepada {rider}",
   "runStop": "{run} · hentian {stop}",
   "noTasksInStage": "Tiada pesanan di sini.",
-  "newTasksAppearHere": "Pesanan baharu untuk disediakan akan muncul di sini."
+  "newTasksAppearHere": "Pesanan baharu untuk disediakan akan muncul di sini.",
+  "stageSorted": "Diisih",
+  "markSorted": "Tanda diisih",
+  "packingNotConfirmed": "Pembungkusan belum disahkan",
+  "confirmPackingGroup": "Sahkan pembungkusan · {zone} · {done} / {total} dibungkus",
+  "confirmSortingGroup": "Sahkan pengisihan · {zone} · {done} / {total} diisih",
+  "pickedUpBy": "Diambil • {rider} • {time}",
+  "stagePickedUp": "Diambil",
+  "noZone": "Tiada zon"
 }
