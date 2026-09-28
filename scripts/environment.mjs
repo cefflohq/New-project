@@ -34,7 +34,24 @@ export function resolveFrontendEnvironment(values) {
     throw new Error('Known Production Supabase project is forbidden for non-production builds');
   }
 
-  return { name, projectRef, supabaseUrl: url.origin, publishableKey };
+  const driverStoreUrls = {
+    android: storeUrl(values.CEFFLO_DRIVER_PLAY_STORE_URL, 'play.google.com', 'CEFFLO_DRIVER_PLAY_STORE_URL'),
+    ios: storeUrl(values.CEFFLO_DRIVER_APP_STORE_URL, 'apps.apple.com', 'CEFFLO_DRIVER_APP_STORE_URL'),
+  };
+
+  return { name, projectRef, supabaseUrl: url.origin, publishableKey, driverStoreUrls };
+}
+
+// Cefflo Driver store listings for the invitation PWA. Optional: absent
+// until the Founder supplies the real listing URLs (never guessed). When
+// present they must be https links on the official store host.
+function storeUrl(raw, host, name) {
+  const value = String(raw || '').trim();
+  if (!value) return null;
+  let url;
+  try { url = new URL(value); } catch { throw new Error(`${name} must be a valid absolute URL`); }
+  if (url.protocol !== 'https:' || url.hostname !== host) throw new Error(`${name} must be an https://${host}/ listing URL`);
+  return url.href;
 }
 
 export function serializeRuntimeConfig(environment) {
@@ -46,7 +63,8 @@ export function serializeRuntimeConfig(environment) {
     schema: 'public',
     authRequired: true,
     realtimeEnabled: true,
-    storageBucket: 'cefflo-pod'
+    storageBucket: 'cefflo-pod',
+    driverStoreUrls: environment.driverStoreUrls || { android: null, ios: null }
   };
   return `window.CEFFLO_CONFIG = Object.freeze(${JSON.stringify(config, null, 2)});\n`;
 }
