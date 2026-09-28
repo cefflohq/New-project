@@ -1532,6 +1532,10 @@ onboarding and approval, and never asks again.
 
 ## D-73 Workforce Model: Owner, Operator, accountless Helper (2026-09-28)
 
+> **Helper model SUPERSEDED by D-74 (2026-09-28).** Owner, Operator,
+> co-owner and Operator-rider rules below still stand; the accountless
+> Helper, `helper_workers` access tokens and the Helper PWA do not.
+
 **Decision (Founder gate approved).** A business has four kinds of people.
 Only the Owner is mandatory; a business may run with the Owner alone.
 
@@ -1599,3 +1603,62 @@ Only the Owner is mandatory; a business may run with the Owner alone.
     on the shared auth plumbing: the Helper is now accountless;
   - the Owner-role team invitation from S4-07 (no co-owner invitations);
   - the S4-07 rule that only the Owner approves riders.
+
+## D-74 Helper is an authenticated Vendor role (2026-09-28)
+
+**Decision (Founder-locked: `CEFFLO_OPERATOR_HELPER_OPERATING_MODEL_MASTER`
+and `CEFFLO_HELPER_OPERATING_WORKFLOW_MASTER`).** One Vendor App family and
+one backend. Owner, Operator and Helper are authenticated users whose role
+comes only from `business_members (business_id, user_id, role, status)`,
+created by an Owner invitation and claimed server-side. Rider stays
+separate (Driver app, `riders`). Supersedes D-73's Helper model.
+
+- **Authorization predicates** (`202609280004`):
+
+  | Predicate | Roles | Guards |
+  |---|---|---|
+  | `is_business_owner` | owner | billing, profile, team, ownership |
+  | `is_business_operational` | owner, operator | operations, planning, riders |
+  | `is_business_member` | owner, operator (**narrowed: no helper**) | all Vendor RLS + Vendor RPCs |
+  | `is_business_helper` | helper | Helper-only rules |
+  | `is_business_fulfilment` | owner, operator, helper | preparation only |
+
+  `is_business_member` backed 21 RLS policies and 27 RPCs, so narrowing it
+  closes every Vendor table and RPC to Helpers in one place. Billing stays
+  platform-admin/Owner-only server-side (`admin_set_subscription`,
+  `business_subscriptions`); UI hiding is UX only.
+- **Helper data contract:** `my_fulfilment_tasks(business_id)` only. It
+  returns order number, customer name, items, notes, order date,
+  preparation status and time, Zone (id + name), Run name and date, stop
+  sequence, and the assigned rider's name only once Ready (handover). It
+  never returns phone, address, coordinates, payment, tracking or
+  unrelated orders, and only covers orders not yet picked up.
+- **Helper writes:** `advance_preparation` (Owner, Operator or Helper of
+  that business). Attribution is the authenticated `auth.uid()` in
+  `preparation_updated_by`, and the event has `actor_role = helper`.
+  `preparation_updated_by_helper` is deprecated history.
+- **Invitations:** `create_team_invitation` takes `operator | helper`,
+  Owner only; there is never an Owner invitation. The PWA link is
+  `?type=team` for both. Consent is anonymous; the claim binds to the
+  confirmed email. **An invitation never changes an existing Owner**,
+  and last-owner protection covers any role change.
+- **Clients:**
+  - Vendor Mobile routes `role = helper` to a narrow fulfilment workspace
+    with no Vendor shell or navigation.
+  - Vendor Web refuses Helper-only accounts and points to the mobile app.
+  - Operators keep the existing Vendor screens.
+- **Retired D-73 artifacts:**
+  - token RPCs are dropped;
+  - every outstanding Helper secret is invalidated;
+  - `helper_workers` is kept read-locked as history, with declined
+    outcomes restored from the audit trail (`202609280005`);
+  - the Helper PWA (`helper/`) and `?type=helper` are removed.
+- **Open for the Founder:** Sort / sorted-verified is not a stored state
+  yet. The workflow master leaves open whether it is tracked per order or
+  per Zone/Run group, so no state was invented. Today the flow is
+  `not_started → preparing → packed → ready`, and handover is the Rider's
+  existing pickup.
+- **Sign-In UI** (Operator / Helper) is not built yet. It plugs into
+  `apps/vendor_mobile/lib/ui/screens/auth.dart` (`SignInScreen`). Role is
+  never taken from which screen was used.
+- **Staging only:** `202609280004` to `202609280006`. Not on Production.

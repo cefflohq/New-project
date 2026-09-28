@@ -1,14 +1,16 @@
 (function () {
-  // Invitation PWA (D-72 rider, D-73 team + helper). The page records the
-  // invitee's single decision and never asks them to log in:
-  //   rider  Accept -> consent_rider_invitation  -> Driver app claims it
-  //   team   Accept -> consent_team_invitation   -> Vendor app/Web claims it (Operator)
-  //   helper Accept -> accept_helper_invitation  -> Helper workspace access (no account)
+  // Invitation PWA (D-72 rider, D-74 team). The page records the invitee's
+  // single decision and never asks them to log in:
+  //   rider  Accept -> consent_rider_invitation -> Driver app claims it
+  //   team   Accept -> consent_team_invitation  -> Cefflo Vendor claims it
+  //          (role Operator or Helper, fixed by the Owner's invitation)
+  // The accountless ?type=helper link of D-73 is retired (D-74).
   const api = window.CEFFLO;
   const $ = id => document.getElementById(id);
   const params = new URLSearchParams(location.search);
   const token = params.get('token');
-  const type = ['rider', 'team', 'helper'].includes(params.get('type')) ? params.get('type') : 'rider';
+  const requested = params.get('type');
+  const type = requested === 'team' ? 'team' : 'rider';
 
   const ICON = {
     people: '<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 5a3 3 0 0 1 0 6M21 20a6 6 0 0 0-4-5.7"/>',
@@ -39,25 +41,21 @@
         ['clock', 'Vendor app or Vendor Web', 'Sign in with the email address this invitation was sent to.'],
         ['shield', 'Access set by the owner', 'Billing and ownership stay with the business owner.'],
       ],
+      // The invitation's role (from the server) picks the wording.
+      helper: {
+        invitedLine: 'Help them prepare, pack and hand over orders as a Helper.',
+        features: [
+          ['box', 'Prepare and pack orders', 'Prepare, pack and mark orders Ready for handover.'],
+          ['clock', 'In the Cefflo Vendor app', 'Sign in with the email address this invitation was sent to.'],
+          ['shield', 'Only what you need', 'Order items for preparation. No customer contact details.'],
+        ],
+        next: 'Download Cefflo Vendor and sign in with the email address this invitation was sent to. Your Helper workspace opens there.',
+      },
       resolve: 'resolve_team_invitation', accept: 'consent_team_invitation', decline: 'decline_team_invitation',
       pending: 'pending', acceptedStatuses: ['consented', 'accepted'], acceptedResult: 'consented',
       stores: 'vendorStoreUrls',
       next: 'Download Cefflo Vendor to create your account, or sign in with the email address this invitation was sent to.',
       revoked: 'Contact the business owner if you still want to join their team.',
-    },
-    helper: {
-      product: 'Helper',
-      invitedLine: 'Help them prepare and pack orders. No account needed.',
-      features: [
-        ['box', 'Prepare and pack orders', 'See what to prepare and mark it Ready.'],
-        ['clock', 'No account needed', 'Your Helper workspace opens on this device.'],
-        ['shield', 'Only what you need', 'Order items for preparation. No customer contact details.'],
-      ],
-      resolve: 'resolve_helper_invitation', accept: 'accept_helper_invitation', decline: 'decline_helper_invitation',
-      pending: 'invited', acceptedStatuses: ['accepted'], acceptedResult: 'accepted',
-      stores: null,
-      next: 'Your Helper workspace is ready on this device.',
-      revoked: 'Contact the business owner if you still want to help their team.',
     },
   }[type];
 
@@ -115,30 +113,15 @@
     show('scrUnavailable');
   }
 
-  // Screen 3. For a helper the workspace link carries the access secret in
-  // the URL fragment (never sent to a server); it exists only right after
-  // this device accepted. A reopened, already-accepted link gets no secret.
-  function accepted(accessToken) {
+  // Screen 3: download Cefflo Driver (rider) or Cefflo Vendor (team).
+  function accepted() {
     setHero('');
     $('acceptedBody').textContent = businessName
       ? `You’ve accepted the invitation from ${businessName}.`
       : 'You’ve accepted the invitation.';
-    const workspace = $('openWorkspace');
-    workspace.hidden = true;
-    $('stores').hidden = true;
-    if (type === 'helper') {
-      if (accessToken) {
-        $('acceptedNext').textContent = KIND.next;
-        workspace.href = `../helper/#${accessToken}`;
-        workspace.hidden = false;
-      } else {
-        $('acceptedNext').textContent = 'This invitation was already accepted. Ask the business owner to share your Helper workspace link.';
-      }
-    } else {
-      $('acceptedNext').textContent = KIND.next;
-      configureStores();
-      $('stores').hidden = false;
-    }
+    $('acceptedNext').textContent = KIND.next;
+    configureStores();
+    $('stores').hidden = false;
     show('scrAccepted');
   }
 
@@ -179,7 +162,7 @@
     if (kind === 'accept') acceptBtn.textContent = 'Accepting…';
     try {
       const result = await api.rpc(kind === 'accept' ? KIND.accept : KIND.decline, { p_token: token }, { token: null });
-      if (kind === 'accept' && result?.status === KIND.acceptedResult) return accepted(result.access_token);
+      if (kind === 'accept' && result?.status === KIND.acceptedResult) return accepted();
       if (kind === 'decline' && result?.status === 'declined') return unavailable('declined');
       throw new Error('unexpected');
     } catch (error) {
@@ -202,7 +185,7 @@
     setHero('');
     markChecks(0);
     show('scrValidating');
-    if (!token || !/^[0-9a-f]{64}$/i.test(token)) return unavailable('invalid');
+    if (requested === 'helper' || !token || !/^[0-9a-f]{64}$/i.test(token)) return unavailable('invalid');
     let result;
     try {
       result = await api.rpc(KIND.resolve, { p_token: token }, { token: null });
@@ -212,6 +195,7 @@
     if (!result) { businessName = ''; return unavailable('invalid'); }
     markChecks(3);
     businessName = result.business_name || '';
+    if (type === 'team' && result.role === 'helper') Object.assign(KIND, KIND.helper);
     // Reopening or refreshing an already-decided link never repeats it.
     if (result.status === KIND.pending) return invited(result);
     if (KIND.acceptedStatuses.includes(result.status)) return accepted(null);

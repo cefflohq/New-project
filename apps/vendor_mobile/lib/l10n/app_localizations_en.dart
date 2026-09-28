@@ -2743,46 +2743,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helperRoleDescription =>
-      'Help prepare and pack orders. Uses Helper PWA. No Vendor account required.';
-
-  @override
-  String get helperName => 'Helper name';
-
-  @override
-  String get contactOptional => 'Contact (optional)';
-
-  @override
-  String get helperNameRequired => 'Enter the Helper\'s name.';
-
-  @override
-  String get helpersSection => 'Helpers';
-
-  @override
-  String get noHelpersOptional => 'No Helpers. Helpers are optional.';
-
-  @override
-  String get helperInvitedStatus => 'Invited';
-
-  @override
-  String get helperInviteExpired => 'Invite expired';
-
-  @override
-  String get newWorkspaceLink => 'New workspace link';
-
-  @override
-  String get newInviteLink => 'New invite link';
-
-  @override
-  String get removeHelper => 'Remove';
-
-  @override
-  String get helperRemoved => 'Helper removed. Their link no longer works.';
-
-  @override
-  String get helperLinkReplaces =>
-      'Share this link with the Helper. The previous link no longer works.';
+      'Help prepare, pack and hand over orders. Uses the Cefflo Vendor app.';
 
   @override
   String get ownerCanRunAlone =>
       'You can run your business as the Owner alone. Operators and Helpers are optional.';
+
+  @override
+  String get helperWorkspaceTitle => 'Helper';
+
+  @override
+  String get toPrepare => 'To prepare';
+
+  @override
+  String get stagePreparing => 'Preparing';
+
+  @override
+  String get stagePacked => 'Packed';
+
+  @override
+  String get stageReady => 'Ready';
+
+  @override
+  String get startPreparing => 'Start preparing';
+
+  @override
+  String get markPacked => 'Mark packed';
+
+  @override
+  String get markReady => 'Mark ready';
+
+  @override
+  String get readyForHandover => 'Ready for handover';
+
+  @override
+  String handoverTo(String rider) {
+    return 'Hand over to $rider';
+  }
+
+  @override
+  String runStop(String run, String stop) {
+    return '$run · stop $stop';
+  }
+
+  @override
+  String get noTasksInStage => 'No orders here.';
+
+  @override
+  String get newTasksAppearHere => 'New orders to prepare will appear here.';
 }

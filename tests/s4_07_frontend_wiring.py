@@ -93,22 +93,24 @@ class SharedInvitePageTests(unittest.TestCase):
             self.assertNotIn(forbidden, combined)
 
     def test_invitation_pwa_never_logs_in_or_signs_up(self):
-        # D-72/D-73: every invitation (rider, team/Operator, helper) is one
-        # decision on this page; accounts are created in the apps.
+        # D-72/D-74: every invitation (rider, team = Operator or Helper) is
+        # one decision on this page; accounts are created in the apps.
         for forbidden in ("/auth/v1/signup", "api.login", "setSession", "accept_rider_invitation", "accept_team_invitation"):
             self.assertNotIn(forbidden, INVITE_JS)
 
-    def test_three_invitation_types_use_their_own_contracts(self):
+    def test_invitation_types_use_their_own_contracts(self):
         for name in ("resolve_rider_invitation", "consent_rider_invitation", "decline_rider_invitation",
-                     "resolve_team_invitation", "consent_team_invitation", "decline_team_invitation",
-                     "resolve_helper_invitation", "accept_helper_invitation", "decline_helper_invitation"):
+                     "resolve_team_invitation", "consent_team_invitation", "decline_team_invitation"):
             self.assertIn(f"'{name}'", INVITE_JS)
 
-    def test_helper_access_only_travels_in_the_link_fragment(self):
-        # The helper access secret is shown once, as a fragment link, and is
-        # never stored by the invitation page.
-        self.assertIn("`../helper/#${accessToken}`", INVITE_JS)
+    def test_retired_accountless_helper_token_model_is_gone(self):
+        # D-74: Helpers are authenticated Vendor members; no access secret,
+        # Helper PWA link or token RPC remains, and nothing is stored locally.
+        for retired in ("accept_helper_invitation", "resolve_helper_invitation", "decline_helper_invitation",
+                        "helper_tasks", "../helper/", "access_token"):
+            self.assertNotIn(retired, INVITE_JS)
         self.assertNotIn("localStorage", INVITE_JS)
+        self.assertFalse((ROOT / "helper").exists())
 
     def test_raw_token_never_sent_to_a_non_invite_rpc(self):
         # Only invitation RPCs may receive the raw token, and always anonymously.

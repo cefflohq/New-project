@@ -22,14 +22,6 @@ class Env {
     defaultValue: 'https://invite.cefflo.com/',
   );
 
-  /// Helper PWA workspace (D-73). Defaults to /helper/ beside the invite page.
-  static const _helperBaseUrl = String.fromEnvironment(
-    'CEFFLO_HELPER_BASE_URL',
-  );
-  static String get helperBaseUrl => _helperBaseUrl.isNotEmpty
-      ? _helperBaseUrl
-      : Uri.parse(inviteBaseUrl).resolve('../helper/').toString();
-
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabasePublishableKey.isNotEmpty;
 

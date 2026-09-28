@@ -1,4 +1,4 @@
-/* Cefflo invitation PWA: rider, team (Operator) and helper.
+/* Cefflo invitation PWA: rider and team (Operator / Helper).
    Rider tokens follow the Cefflo Flow Palette (sot/12_EXPERIENCE_SYSTEM.md §0A). */
 :root {
   --navy: #01265E;
@@ -95,7 +95,6 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 /* Until real listing URLs are configured the badges keep their look but are inert. */
 .badge[aria-disabled="true"] { pointer-events: none; cursor: default; }
 
-.cta.workspace { display: flex; align-items: center; justify-content: center; max-width: 360px; margin: 26px auto 0; text-decoration: none; }
 
 /* Screen 4 */
 .warn { display: grid; place-items: center; margin: 12px auto 22px; width: 88px; height: 88px; border-radius: 50%; background: var(--red-tint); color: var(--red); }

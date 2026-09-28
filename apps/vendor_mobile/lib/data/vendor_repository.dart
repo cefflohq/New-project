@@ -468,49 +468,26 @@ class VendorRepository {
     await _run(() => _db!.rpc('claim_my_team_invitations'));
   }
 
-  // D-73 accountless Helpers. Owner-only, enforced server-side.
-  Future<Map<String, dynamic>> createHelperInvitation({
-    required String businessId,
-    required String name,
-    String? contact,
-  }) async {
-    if (_demo) return {'token': 'demo-helper-token', 'kind': 'invitation'};
-    final row = await _run(
+  // D-74 fulfilment (Owner, Operator or Helper; enforced server-side).
+  Future<List<FulfilmentTask>> myFulfilmentTasks(String businessId) async {
+    if (_demo) return _DemoData.fulfilment;
+    final raw = await _run(
       () => _db!.rpc(
-        'create_helper_invitation',
-        params: {
-          'p_business_id': businessId,
-          'p_display_name': name,
-          'p_contact': contact,
-        },
-      ),
-    );
-    return _single(row);
-  }
-
-  Future<List<HelperWorker>> helperWorkers(String businessId) async {
-    if (_demo) return const [];
-    final rows = await _run(
-      () => _db!.rpc(
-        'list_helper_workers',
+        'my_fulfilment_tasks',
         params: {'p_business_id': businessId},
       ),
     );
-    return _rows(rows).map(HelperWorker.fromRow).toList();
+    final tasks = raw is Map ? raw['tasks'] : null;
+    return _rows(tasks).map(FulfilmentTask.fromRow).toList();
   }
 
-  /// Replaces the Helper's link; the previous one stops working at once.
-  /// Returns `{kind: 'access'|'invitation', token}`.
-  Future<Map<String, dynamic>> rotateHelperAccess(String helperId) async {
-    final row = await _run(
-      () => _db!.rpc('rotate_helper_access', params: {'p_helper_id': helperId}),
-    );
-    return _single(row);
-  }
-
-  Future<void> revokeHelperWorker(String helperId) async {
+  Future<void> advancePreparation(String orderId, String next) async {
+    if (_demo) return;
     await _run(
-      () => _db!.rpc('revoke_helper_worker', params: {'p_helper_id': helperId}),
+      () => _db!.rpc(
+        'advance_preparation',
+        params: {'p_order_id': orderId, 'p_next': next},
+      ),
     );
   }
 
@@ -916,6 +893,20 @@ class VendorRepository {
 /// `CEFFLO_UI_PROTOTYPE=true` is explicitly supplied at runtime.
 class _DemoData {
   static final now = DateTime(2026, 9, 13, 9, 41);
+
+  static const fulfilment = [
+    FulfilmentTask(
+      orderId: 'ord-1001',
+      orderNumber: '#CF-001',
+      customerName: 'Aisyah Rahman',
+      items: ['2× Nasi Lemak', '1× Teh Tarik'],
+      status: 'not_started',
+      notes: 'Less spicy',
+      zoneName: 'Bangsar',
+      runName: 'Morning run',
+      stopSequence: 1,
+    ),
+  ];
 
   static const businesses = [
     Business(

@@ -1270,18 +1270,36 @@
   "tryLocatingAgain": "Try locating again",
   "helperText": "Helper",
   "operatorRoleDescription": "Help manage daily delivery operations. Requires a Vendor account.",
-  "helperRoleDescription": "Help prepare and pack orders. Uses Helper PWA. No Vendor account required.",
-  "helperName": "Helper name",
-  "contactOptional": "Contact (optional)",
-  "helperNameRequired": "Enter the Helper's name.",
-  "helpersSection": "Helpers",
-  "noHelpersOptional": "No Helpers. Helpers are optional.",
-  "helperInvitedStatus": "Invited",
-  "helperInviteExpired": "Invite expired",
-  "newWorkspaceLink": "New workspace link",
-  "newInviteLink": "New invite link",
-  "removeHelper": "Remove",
-  "helperRemoved": "Helper removed. Their link no longer works.",
-  "helperLinkReplaces": "Share this link with the Helper. The previous link no longer works.",
-  "ownerCanRunAlone": "You can run your business as the Owner alone. Operators and Helpers are optional."
+  "helperRoleDescription": "Help prepare, pack and hand over orders. Uses the Cefflo Vendor app.",
+  "ownerCanRunAlone": "You can run your business as the Owner alone. Operators and Helpers are optional.",
+  "helperWorkspaceTitle": "Helper",
+  "toPrepare": "To prepare",
+  "stagePreparing": "Preparing",
+  "stagePacked": "Packed",
+  "stageReady": "Ready",
+  "startPreparing": "Start preparing",
+  "markPacked": "Mark packed",
+  "markReady": "Mark ready",
+  "readyForHandover": "Ready for handover",
+  "handoverTo": "Hand over to {rider}",
+  "@handoverTo": {
+    "placeholders": {
+      "rider": {
+        "type": "String"
+      }
+    }
+  },
+  "runStop": "{run} · stop {stop}",
+  "@runStop": {
+    "placeholders": {
+      "run": {
+        "type": "String"
+      },
+      "stop": {
+        "type": "String"
+      }
+    }
+  },
+  "noTasksInStage": "No orders here.",
+  "newTasksAppearHere": "New orders to prepare will appear here."
 }

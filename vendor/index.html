@@ -6474,7 +6474,7 @@ function pageTeam(){
   const members=state.teamMembers||[];
   const teamInvites=(state.teamInvitations||[]).filter(i=>['pending','consented'].includes(i.status));
   const canRunRiders=isOwner||state.currentMemberRole==='operator';
-  const helpers=(state.helperWorkers||[]).filter(h=>['invited','expired','active'].includes(h.status));
+
   const riders=state.riders||[];
   const activeRiders=riders.filter(r=>r.status==='active');
   const pendingRiders=riders.filter(r=>r.status==='pending');
@@ -6484,16 +6484,16 @@ function pageTeam(){
     <div class="card bordered" style="margin-bottom:8px;padding:12px 14px;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div class="t-body" style="font-weight:600;">${m.userId.slice(0,8)}&hellip;</div>
-        <span class="status-chip ${m.role==='owner'?'chip-active':'chip-preparing'}">${m.role==='owner'?'Owner':'Operator'}</span>
+        <span class="status-chip ${m.role==='owner'?'chip-active':'chip-preparing'}">${m.role==='owner'?'Owner':m.role==='helper'?'Helper':'Operator'}</span>
       </div>
       <div class="t-caption" style="margin-top:2px;">${m.status==='active'?'Active':'Inactive'}</div>
       ${isOwner&&m.role!=='owner'?`<button class="btn btn-secondary" style="width:100%;margin-top:8px;" data-action="openManageTeamMember" data-userid="${m.userId}" data-role="${m.role}" data-status="${m.status}">Manage</button>`:''}
-    </div>`).join(''):`<div class="empty-state"><h3>No team members yet</h3><p>You can run your business as the Owner alone. Operators are optional.</p></div>`;
+    </div>`).join(''):`<div class="empty-state"><h3>No team members yet</h3><p>You can run your business as the Owner alone. Operators and Helpers are optional.</p></div>`;
 
   const teamInviteRows=teamInvites.map(i=>`
     <div class="card bordered" style="margin-bottom:8px;padding:12px 14px;">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-        <div style="min-width:0;flex:1;"><div class="t-body" style="font-weight:600;overflow:hidden;text-overflow:ellipsis;">${i.email}</div><div class="t-caption">Operator &middot; expires ${new Date(i.expiresAt).toLocaleDateString()}</div></div>
+        <div style="min-width:0;flex:1;"><div class="t-body" style="font-weight:600;overflow:hidden;text-overflow:ellipsis;">${i.email}</div><div class="t-caption">${i.role==='helper'?'Helper':'Operator'} &middot; expires ${new Date(i.expiresAt).toLocaleDateString()}</div></div>
         ${isOwner?`<button class="btn btn-secondary" style="flex:0 0 auto;width:auto;" data-action="confirmRevokeTeamInvitation" data-id="${i.id}">Revoke</button>`:''}
       </div>
     </div>`).join('');
@@ -6520,25 +6520,11 @@ function pageTeam(){
       </div>
     </div>`).join('');
 
-  const helperRows=helpers.map(h=>`
-    <div class="card bordered" style="margin-bottom:8px;padding:12px 14px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-        <div style="min-width:0;flex:1;"><div class="t-body" style="font-weight:600;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(h.name)}</div><div class="t-caption">Helper &middot; ${h.status==='active'?'Active':h.status==='expired'?'Invite expired':'Invited, not accepted yet'}${h.contact?` &middot; ${escapeHtml(h.contact)}`:''}</div></div>
-        <span class="status-chip ${h.status==='active'?'chip-active':'chip-preparing'}">${h.status==='active'?'Active':h.status==='expired'?'Expired':'Invited'}</span>
-      </div>
-      <div class="btn-row" style="margin-top:8px;">
-        <button class="btn btn-secondary" style="flex:1;" data-action="confirmRevokeHelper" data-id="${h.id}">Remove</button>
-        <button class="btn btn-primary" style="flex:1;" data-action="confirmRotateHelper" data-id="${h.id}" data-status="${h.status}">${h.status==='active'?'New workspace link':'New invite link'}</button>
-      </div>
-    </div>`).join('');
-
   const coreContent=`
     <div class="section-title workforce-section-title">Team</div>
     <div class="settings-group">${teamRows}</div>
     ${isOwner?`<button class="btn btn-primary" style="width:100%;margin-top:4px;" data-action="openInviteTeamMember">+ Invite Team Member</button>`:''}
     ${teamInviteRows?`<div class="section-title workforce-section-title" style="margin-top:20px;">Pending Team Invitations</div>${teamInviteRows}`:''}
-    ${isOwner?`<div class="section-title workforce-section-title" style="margin-top:20px;">Helpers</div>
-    ${helperRows||`<div class="t-caption" style="color:var(--text-secondary);margin-bottom:4px;">No Helpers. Helpers are optional -- invite one with + Invite Team Member.</div>`}`:''}
     <div class="section-title workforce-section-title" style="margin-top:20px;">Riders</div>
     <div class="settings-group">${riderRows}</div>
     <button class="btn btn-primary" style="width:100%;margin-top:4px;" data-action="openInviteRiderReal">+ Invite Rider</button>
@@ -6645,8 +6631,6 @@ function pageWorkSessionDetail(){
   return `${innerHeader('Work Session')}<div class="content"><div class="empty-state"><h3>Work Sessions is not connected yet</h3><p>Work Sessions requires a backend contract that does not exist yet.</p></div></div>`;
 }
 function setTeamTab(el){teamUiTab=el.dataset.tab||'core';render();}
-function escapeHtml(v){ return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function helperBaseUrl(){ return new URL('../helper/', new URL(inviteBaseUrl(), location.href)).href; }
 function inviteBaseUrl(){
   // Absolute: the link is copied and shared outside this page.
   return location.hostname==='vendor.cefflo.com' ? 'https://invite.cefflo.com/' : new URL('../invite/', location.href).href;
@@ -6662,20 +6646,12 @@ function openInviteTeamMember(){
   openSheet(`
     <div class="sheet-title">Invite Team Member</div>
     <div class="role-pick" role="radiogroup" aria-label="Role">
-      <label class="role-opt"><input type="radio" name="tim_role" value="operator" checked onchange="selectInviteRole('operator')"><span><b>Operator</b><small>Help manage daily delivery operations. Requires a Vendor account.</small></span></label>
-      <label class="role-opt"><input type="radio" name="tim_role" value="helper" onchange="selectInviteRole('helper')"><span><b>Helper</b><small>Help prepare and pack orders. Uses Helper PWA. No Vendor account required.</small></span></label>
+      <label class="role-opt"><input type="radio" name="tim_role" value="operator" checked><span><b>Operator</b><small>Help manage daily delivery operations. Requires a Vendor account.</small></span></label>
+      <label class="role-opt"><input type="radio" name="tim_role" value="helper"><span><b>Helper</b><small>Help prepare, pack and hand over orders. Uses the Cefflo Vendor mobile app.</small></span></label>
     </div>
-    <div id="tim_operator_fields"><div class="field"><label>Email</label><input id="tim_email" type="email" placeholder="name@example.com"></div></div>
-    <div id="tim_helper_fields" class="hidden">
-      <div class="field"><label>Helper name</label><input id="tim_helper_name" maxlength="80" placeholder="e.g. Aina"></div>
-      <div class="field"><label>Contact (optional)</label><input id="tim_helper_contact" maxlength="120" placeholder="Phone or note, for your reference"></div>
-    </div>
+    <div class="field"><label>Email</label><input id="tim_email" type="email" placeholder="name@example.com"></div>
     <button class="btn btn-primary" style="width:100%;" data-action="confirmInviteTeamMember">Generate Invite Link</button>
   `);
-}
-function selectInviteRole(role){
-  document.getElementById('tim_operator_fields').classList.toggle('hidden', role!=='operator');
-  document.getElementById('tim_helper_fields').classList.toggle('hidden', role!=='helper');
 }
 function openInviteRiderReal(){
   openSheet(`
@@ -6691,7 +6667,7 @@ function openManageTeamMember(el){
   openSheet(`
     <div class="sheet-title">Manage Team Member</div>
     <div class="field"><label>Role</label>
-      <select id="mtm_role" disabled><option value="${role}" selected>${role==='owner'?'Owner':'Operator'}</option></select>
+      <select id="mtm_role" disabled><option value="${role}" selected>${role==='owner'?'Owner':role==='helper'?'Helper':'Operator'}</option></select>
     </div>
     <div class="field"><label>Status</label>
       <select id="mtm_status"><option value="active" ${status==='active'?'selected':''}>Active</option><option value="inactive" ${status==='inactive'?'selected':''}>Inactive</option></select>
@@ -7454,7 +7430,7 @@ const ACTIONS = {
   setBilling, selectPlanOption, showBillingDeferred,
   toggleFaq,
   closeSheet,
-  openInviteTeamMember, selectInviteRole, openInviteRiderReal, openManageTeamMember,
+  openInviteTeamMember, openInviteRiderReal, openManageTeamMember,
   openCreateZone, confirmCreateZone, openRenameZone, confirmRenameZone, confirmToggleZoneStatus,
   setTeamTab,
   // Grow V1 Flow 2
@@ -8128,7 +8104,8 @@ async function loadAuthenticatedBusinesses(){
   // server-side to this confirmed email) before reading memberships.
   try{await authRpc('claim_my_team_invitations',{});}catch{}
   const rows=await authRpc('get_my_businesses',{});
-  return Array.isArray(rows)?rows:[];
+  // D-74: Helpers work in the Cefflo Vendor mobile app, not Vendor Web.
+  return (Array.isArray(rows)?rows:[]).filter(row=>row.member_role!=='helper');
 }
 function applyBusinessIdentity(business){
   if(!business)return false;
@@ -8144,7 +8121,11 @@ async function bootstrapPendingBusinessIfRequired(){
   let businesses=await loadAuthenticatedBusinesses();
   if(businesses.length)return businesses;
   const pending=readPendingBusiness();
-  if(!pending?.name)throw new Error('No business is linked to this account. Complete Sign Up first.');
+  if(!pending?.name){
+    const all=await authRpc('get_my_businesses',{}).catch(()=>[]);
+    if(Array.isArray(all)&&all.some(row=>row.member_role==='helper'))throw new Error('Helpers use the Cefflo Vendor mobile app. Sign in there with this account.');
+    throw new Error('No business is linked to this account. Complete Sign Up first.');
+  }
   await authRpc('bootstrap_business',{
     p_name:pending.name,
     p_phone:pending.phone||null,

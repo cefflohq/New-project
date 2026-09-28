@@ -2747,47 +2747,53 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get helperRoleDescription =>
-      'Bantu sediakan dan bungkus pesanan. Guna Helper PWA. Tidak perlu akaun Vendor.';
-
-  @override
-  String get helperName => 'Nama pembantu';
-
-  @override
-  String get contactOptional => 'Hubungan (pilihan)';
-
-  @override
-  String get helperNameRequired => 'Masukkan nama pembantu.';
-
-  @override
-  String get helpersSection => 'Pembantu';
-
-  @override
-  String get noHelpersOptional => 'Tiada pembantu. Pembantu adalah pilihan.';
-
-  @override
-  String get helperInvitedStatus => 'Dijemput';
-
-  @override
-  String get helperInviteExpired => 'Jemputan tamat';
-
-  @override
-  String get newWorkspaceLink => 'Pautan ruang kerja baharu';
-
-  @override
-  String get newInviteLink => 'Pautan jemputan baharu';
-
-  @override
-  String get removeHelper => 'Buang';
-
-  @override
-  String get helperRemoved =>
-      'Pembantu dibuang. Pautan mereka tidak lagi berfungsi.';
-
-  @override
-  String get helperLinkReplaces =>
-      'Kongsi pautan ini dengan pembantu. Pautan sebelum ini tidak lagi berfungsi.';
+      'Bantu sediakan, bungkus dan serahkan pesanan. Guna aplikasi Cefflo Vendor.';
 
   @override
   String get ownerCanRunAlone =>
       'Anda boleh menjalankan perniagaan sebagai Pemilik sahaja. Operator dan Pembantu adalah pilihan.';
+
+  @override
+  String get helperWorkspaceTitle => 'Pembantu';
+
+  @override
+  String get toPrepare => 'Untuk disediakan';
+
+  @override
+  String get stagePreparing => 'Sedang disediakan';
+
+  @override
+  String get stagePacked => 'Dibungkus';
+
+  @override
+  String get stageReady => 'Sedia';
+
+  @override
+  String get startPreparing => 'Mula sediakan';
+
+  @override
+  String get markPacked => 'Tanda dibungkus';
+
+  @override
+  String get markReady => 'Tanda sedia';
+
+  @override
+  String get readyForHandover => 'Sedia untuk diserahkan';
+
+  @override
+  String handoverTo(String rider) {
+    return 'Serahkan kepada $rider';
+  }
+
+  @override
+  String runStop(String run, String stop) {
+    return '$run · hentian $stop';
+  }
+
+  @override
+  String get noTasksInStage => 'Tiada pesanan di sini.';
+
+  @override
+  String get newTasksAppearHere =>
+      'Pesanan baharu untuk disediakan akan muncul di sini.';
 }

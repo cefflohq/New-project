@@ -5082,86 +5082,92 @@ abstract class AppLocalizations {
   /// No description provided for @helperRoleDescription.
   ///
   /// In en, this message translates to:
-  /// **'Help prepare and pack orders. Uses Helper PWA. No Vendor account required.'**
+  /// **'Help prepare, pack and hand over orders. Uses the Cefflo Vendor app.'**
   String get helperRoleDescription;
-
-  /// No description provided for @helperName.
-  ///
-  /// In en, this message translates to:
-  /// **'Helper name'**
-  String get helperName;
-
-  /// No description provided for @contactOptional.
-  ///
-  /// In en, this message translates to:
-  /// **'Contact (optional)'**
-  String get contactOptional;
-
-  /// No description provided for @helperNameRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter the Helper\'s name.'**
-  String get helperNameRequired;
-
-  /// No description provided for @helpersSection.
-  ///
-  /// In en, this message translates to:
-  /// **'Helpers'**
-  String get helpersSection;
-
-  /// No description provided for @noHelpersOptional.
-  ///
-  /// In en, this message translates to:
-  /// **'No Helpers. Helpers are optional.'**
-  String get noHelpersOptional;
-
-  /// No description provided for @helperInvitedStatus.
-  ///
-  /// In en, this message translates to:
-  /// **'Invited'**
-  String get helperInvitedStatus;
-
-  /// No description provided for @helperInviteExpired.
-  ///
-  /// In en, this message translates to:
-  /// **'Invite expired'**
-  String get helperInviteExpired;
-
-  /// No description provided for @newWorkspaceLink.
-  ///
-  /// In en, this message translates to:
-  /// **'New workspace link'**
-  String get newWorkspaceLink;
-
-  /// No description provided for @newInviteLink.
-  ///
-  /// In en, this message translates to:
-  /// **'New invite link'**
-  String get newInviteLink;
-
-  /// No description provided for @removeHelper.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove'**
-  String get removeHelper;
-
-  /// No description provided for @helperRemoved.
-  ///
-  /// In en, this message translates to:
-  /// **'Helper removed. Their link no longer works.'**
-  String get helperRemoved;
-
-  /// No description provided for @helperLinkReplaces.
-  ///
-  /// In en, this message translates to:
-  /// **'Share this link with the Helper. The previous link no longer works.'**
-  String get helperLinkReplaces;
 
   /// No description provided for @ownerCanRunAlone.
   ///
   /// In en, this message translates to:
   /// **'You can run your business as the Owner alone. Operators and Helpers are optional.'**
   String get ownerCanRunAlone;
+
+  /// No description provided for @helperWorkspaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Helper'**
+  String get helperWorkspaceTitle;
+
+  /// No description provided for @toPrepare.
+  ///
+  /// In en, this message translates to:
+  /// **'To prepare'**
+  String get toPrepare;
+
+  /// No description provided for @stagePreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing'**
+  String get stagePreparing;
+
+  /// No description provided for @stagePacked.
+  ///
+  /// In en, this message translates to:
+  /// **'Packed'**
+  String get stagePacked;
+
+  /// No description provided for @stageReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get stageReady;
+
+  /// No description provided for @startPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Start preparing'**
+  String get startPreparing;
+
+  /// No description provided for @markPacked.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark packed'**
+  String get markPacked;
+
+  /// No description provided for @markReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark ready'**
+  String get markReady;
+
+  /// No description provided for @readyForHandover.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready for handover'**
+  String get readyForHandover;
+
+  /// No description provided for @handoverTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Hand over to {rider}'**
+  String handoverTo(String rider);
+
+  /// No description provided for @runStop.
+  ///
+  /// In en, this message translates to:
+  /// **'{run} · stop {stop}'**
+  String runStop(String run, String stop);
+
+  /// No description provided for @noTasksInStage.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders here.'**
+  String get noTasksInStage;
+
+  /// No description provided for @newTasksAppearHere.
+  ///
+  /// In en, this message translates to:
+  /// **'New orders to prepare will appear here.'**
+  String get newTasksAppearHere;
 }
 
 class _AppLocalizationsDelegate

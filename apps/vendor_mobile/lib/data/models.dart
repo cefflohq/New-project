@@ -109,6 +109,7 @@ class Business {
   );
 
   bool get isOwner => role == 'owner';
+  bool get isHelper => role == 'helper';
 }
 
 class VendorOrder {
@@ -281,27 +282,45 @@ class RiderRow {
   bool get isOffline => !isActive && !isPending;
 }
 
-/// D-73 accountless Helper (Helper PWA only; no Vendor account). The
-/// server never returns token hashes; links exist only when (re)issued.
-class HelperWorker {
-  const HelperWorker({
-    required this.id,
-    required this.name,
+/// D-74 fulfilment task (my_fulfilment_tasks). The server returns only
+/// what preparation and handover need: no phone, address or location.
+class FulfilmentTask {
+  const FulfilmentTask({
+    required this.orderId,
+    required this.orderNumber,
+    required this.customerName,
+    required this.items,
     required this.status,
-    this.contact,
+    this.notes,
+    this.zoneName,
+    this.runName,
+    this.stopSequence,
+    this.handoverRiderName,
   });
 
-  final String id, name, status;
-  final String? contact;
+  final String orderId, orderNumber, customerName, status;
+  final List<String> items;
+  final String? notes, zoneName, runName, handoverRiderName;
+  final int? stopSequence;
 
-  factory HelperWorker.fromRow(Map<String, dynamic> r) => HelperWorker(
-    id: r['helper_id'] as String,
-    name: (r['display_name'] as String?) ?? '',
-    status: (r['status'] as String?) ?? 'invited',
-    contact: r['contact'] as String?,
+  factory FulfilmentTask.fromRow(Map<String, dynamic> r) => FulfilmentTask(
+    orderId: r['order_id'] as String,
+    orderNumber: (r['order_number'] ?? '').toString(),
+    customerName: (r['customer_name'] as String?) ?? '',
+    status: (r['preparation_status'] as String?) ?? 'not_started',
+    notes: r['notes'] as String?,
+    zoneName: r['zone_name'] as String?,
+    runName: r['run_name'] as String?,
+    stopSequence: (r['stop_sequence'] as num?)?.toInt(),
+    handoverRiderName: r['handover_rider_name'] as String?,
+    items: [
+      for (final it in (r['items'] is List ? r['items'] as List : const []))
+        if (it is String)
+          it
+        else if (it is Map && (it['name'] ?? it['title']) != null)
+          '${it['quantity'] ?? it['qty'] ?? 1}× ${it['name'] ?? it['title']}',
+    ],
   );
-
-  bool get isActive => status == 'active';
 }
 
 class TeamMember {

@@ -1623,7 +1623,6 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
   final name = TextEditingController();
   final phone = TextEditingController();
   final email = TextEditingController();
-  final contact = TextEditingController();
   // D-73: Operator or Helper only. Owner is never invited.
   String role = 'operator';
   bool busy = false;
@@ -1637,16 +1636,12 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
     name.dispose();
     phone.dispose();
     email.dispose();
-    contact.dispose();
     super.dispose();
   }
 
   bool get helper => !rider && role == 'helper';
 
   String? _validate() {
-    if (helper) {
-      return name.text.trim().isEmpty ? L.helperNameRequired : null;
-    }
     if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email.text.trim())) {
       return L.enterValidEmailAddress;
     }
@@ -1674,13 +1669,7 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
       error = null;
     });
     try {
-      final result = helper
-          ? await app.repo.createHelperInvitation(
-              businessId: businessId,
-              name: name.text.trim(),
-              contact: contact.text.trim().isEmpty ? null : contact.text.trim(),
-            )
-          : rider
+      final result = rider
           ? await app.repo.createRiderInvitation(
               businessId: businessId,
               email: email.text.trim(),
@@ -1690,7 +1679,7 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
           : await app.repo.createTeamInvitation(
               businessId: businessId,
               email: email.text.trim(),
-              role: 'operator',
+              role: helper ? 'helper' : 'operator',
             );
       final token = result['token'];
       if (token is! String || token.isEmpty) {
@@ -1701,7 +1690,7 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
         () => link = Uri.parse(Env.inviteBaseUrl)
             .replace(
               queryParameters: {
-                'type': rider ? 'rider' : (helper ? 'helper' : 'team'),
+                'type': rider ? 'rider' : 'team',
                 'token': token,
               },
             )
@@ -1834,41 +1823,27 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
       ),
       const SizedBox(height: Gap.md),
     ],
-    if (helper) ...[
+    if (rider) ...[
       CefField(
-        label: L.helperName,
+        label: L.riderName,
         controller: name,
         prefixIcon: LucideIcons.user,
       ),
       const SizedBox(height: Gap.md),
       CefField(
-        label: L.contactOptional,
-        controller: contact,
+        label: L.phoneNumber,
+        controller: phone,
+        keyboardType: TextInputType.phone,
         prefixIcon: LucideIcons.phone,
       ),
-    ] else ...[
-      if (rider) ...[
-        CefField(
-          label: L.riderName,
-          controller: name,
-          prefixIcon: LucideIcons.user,
-        ),
-        const SizedBox(height: Gap.md),
-        CefField(
-          label: L.phoneNumber,
-          controller: phone,
-          keyboardType: TextInputType.phone,
-          prefixIcon: LucideIcons.phone,
-        ),
-        const SizedBox(height: Gap.md),
-      ],
-      CefField(
-        label: L.email,
-        controller: email,
-        keyboardType: TextInputType.emailAddress,
-        prefixIcon: LucideIcons.mail,
-      ),
+      const SizedBox(height: Gap.md),
     ],
+    CefField(
+      label: L.email,
+      controller: email,
+      keyboardType: TextInputType.emailAddress,
+      prefixIcon: LucideIcons.mail,
+    ),
   ];
 
   List<Widget> _result(TextTheme text, String link) => [

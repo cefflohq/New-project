@@ -10,10 +10,9 @@ export const CANONICAL_SURFACES = Object.freeze({
   vendor: 'Vendor Web/Desktop',
   customer: 'Customer Tracking PWA',
   foundr: 'Founder Web/PWA',
-  // Invitation PWA: rider, team (Operator) and helper invitations (D-72/D-73).
+  // Invitation PWA: rider and team (Operator / Helper) invitations (D-72/D-74).
+  // The accountless Helper PWA of D-73 is retired: Helpers use Cefflo Vendor.
   invite: 'Invitation PWA',
-  // Helper PWA: accountless Prepare -> Pack -> Ready (D-73).
-  helper: 'Helper PWA',
   // Not a product: kill-switch worker for retired web surfaces.
   retired: 'Retirement worker',
   shared: 'Shared runtime client/config',

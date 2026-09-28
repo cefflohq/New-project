@@ -1,3 +1,5 @@
+import 'ui/screens/helper_workspace.dart';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -242,6 +244,11 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
                   ),
                 ),
               );
+            }
+            // D-74 role resolution: a Helper gets only the fulfilment
+            // workspace, never the Vendor shell or its navigation.
+            if (app.business?.isHelper ?? false) {
+              return const HelperWorkspaceScreen();
             }
             return VendorShell(child: buildScreen(context, app.current));
           },
