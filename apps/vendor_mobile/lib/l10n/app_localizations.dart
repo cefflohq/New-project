@@ -5222,6 +5222,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hand over to {provider}'**
   String handoverToProvider(String provider);
+
+  /// No description provided for @operatorAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Operator Access'**
+  String get operatorAccess;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get welcomeBack;
+
+  /// No description provided for @signInStoreOperations.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to your store operations'**
+  String get signInStoreOperations;
+
+  /// No description provided for @noOperatorAccessYet.
+  ///
+  /// In en, this message translates to:
+  /// **'This account has no Operator access yet. Accept the invitation link from the business owner, then sign in with the email address it was sent to.'**
+  String get noOperatorAccessYet;
 }
 
 class _AppLocalizationsDelegate

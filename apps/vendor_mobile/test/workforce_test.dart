@@ -1,4 +1,7 @@
+import 'package:cefflo_vendor_mobile/core/app_state.dart';
+import 'package:cefflo_vendor_mobile/core/auth_access.dart';
 import 'package:cefflo_vendor_mobile/core/routes.dart';
+import 'package:cefflo_vendor_mobile/ui/screens/auth.dart';
 import 'package:cefflo_vendor_mobile/data/models.dart';
 import 'package:cefflo_vendor_mobile/data/vendor_repository.dart';
 import 'package:cefflo_vendor_mobile/main.dart';
@@ -7,6 +10,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 // D-74 workforce: Operator or Helper invitations only (never Owner), both
 // authenticated; a Helper resolves into the fulfilment workspace only.
+class _NoMembershipRepo extends VendorRepository {
+  _NoMembershipRepo() : super.demo();
+  @override
+  Future<List<Business>> myBusinesses() async => const [];
+}
+
 class _HelperRepo extends VendorRepository {
   _HelperRepo() : super.demo();
   @override
@@ -136,6 +145,56 @@ void main() {
       },
     });
     expect(ext.handoverProvider, 'Lalamove · Ali · VAN 1234');
+  });
+
+  Future<void> pumpSignIn(WidgetTester tester, AuthAccess access) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      VendorMobileApp(repo: VendorRepository.demo(), access: access),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 5));
+    expect(find.byType(SignInScreen), findsOneWidget);
+  }
+
+  testWidgets('Operator Sign-In shows the Operator context', (tester) async {
+    await pumpSignIn(tester, AuthAccess.operator);
+    expect(find.text('Operator Access'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.text('Sign in to your store operations'), findsOneWidget);
+    expect(find.text('Continue with Email'), findsOneWidget);
+    expect(find.text('Get started'), findsOneWidget);
+  });
+
+  testWidgets('standard Vendor Sign-In has no Operator context', (
+    tester,
+  ) async {
+    await pumpSignIn(tester, AuthAccess.vendor);
+    expect(find.text('Operator Access'), findsNothing);
+    expect(find.text('Continue with Email'), findsOneWidget);
+  });
+
+  test('access hint comes only from the launch URL', () {
+    expect(
+      authAccessFromUri(Uri.parse('https://x/?access=operator')),
+      AuthAccess.operator,
+    );
+    expect(authAccessFromUri(Uri.parse('https://x/')), AuthAccess.vendor);
+    expect(
+      authAccessFromUri(Uri.parse('https://x/?access=owner')),
+      AuthAccess.vendor,
+    );
+  });
+
+  test('Operator sign-in without a claimed membership never opens '
+      'business setup', () async {
+    final app = AppState(_NoMembershipRepo())..access = AuthAccess.operator;
+    await app.loadSession();
+    expect(app.business, isNull);
+    expect(app.sessionError, contains('no Operator access yet'));
+    expect(app.current.route, isNot(VRoute.welcomeSetup));
   });
 
   test('roles resolve from membership', () {

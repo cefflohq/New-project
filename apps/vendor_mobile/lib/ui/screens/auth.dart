@@ -19,6 +19,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show OAuthProvider;
 
 import '../../core/app_state.dart';
+import '../../core/auth_access.dart';
 import '../../core/theme.dart';
 import '../../data/vendor_repository.dart';
 import '../system_bars.dart';
@@ -139,7 +140,12 @@ class AuthFlow extends StatefulWidget {
     this.onPrototypeSignedUp,
     this.recovery = false,
     this.onRecoveryDone,
+    this.access = AuthAccess.vendor,
   });
+
+  /// Which Sign-In variant opens (D-74). The rest of the auth suite is
+  /// shared; the role is resolved by the server after sign-in.
+  final AuthAccess access;
 
   /// Opened from a password-recovery link: start at Set New Password.
   final bool recovery;
@@ -202,6 +208,7 @@ class _AuthFlowState extends State<AuthFlow> {
     return switch (_stage) {
       _Stage.splash => SplashScreen(onReady: () => _replace(_Stage.signIn)),
       _Stage.signIn => SignInScreen(
+        access: widget.access,
         onEmail: () => _go(_Stage.emailSignIn),
         onSignUp: () => _go(_Stage.signUp),
         onPrototypeAuthenticated: widget.onPrototypeAuthenticated,
@@ -742,7 +749,12 @@ class SignInScreen extends StatefulWidget {
     required this.onEmail,
     required this.onSignUp,
     this.onPrototypeAuthenticated,
+    this.access = AuthAccess.vendor,
   });
+
+  /// Operator Sign-In (Founder board, D-74): same providers and flow, with
+  /// the Operator Access context. Never sets the role.
+  final AuthAccess access;
   final VoidCallback onEmail;
   final VoidCallback onSignUp;
   final VoidCallback? onPrototypeAuthenticated;
@@ -784,6 +796,8 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
+  bool get operator => widget.access == AuthAccess.operator;
+
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
@@ -812,7 +826,9 @@ class _SignInScreenState extends State<SignInScreen> {
                         children: [
                           const SizedBox(height: Gap.md),
                           Align(
-                            alignment: Alignment.centerLeft,
+                            alignment: operator
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
                             child: _LanguagePill(onTap: _openLanguageSheet),
                           ),
                           const Spacer(flex: 5),
@@ -826,6 +842,37 @@ class _SignInScreenState extends State<SignInScreen> {
                               letterSpacing: 6,
                             ),
                           ),
+                          if (operator) ...[
+                            const SizedBox(height: Gap.xl),
+                            const Center(
+                              child: _AccessChip(
+                                icon: LucideIcons.users,
+                                label: null,
+                              ),
+                            ),
+                            const SizedBox(height: Gap.lg),
+                            Text(
+                              L.welcomeBack,
+                              textAlign: TextAlign.center,
+                              style: text.headlineMedium?.copyWith(
+                                color: Colors.white,
+                                fontSize: 32,
+                                height: 1.15,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -.5,
+                              ),
+                            ),
+                            const SizedBox(height: Gap.xs),
+                            Text(
+                              L.signInStoreOperations,
+                              textAlign: TextAlign.center,
+                              style: text.bodyLarge?.copyWith(
+                                color: Colors.white.withValues(alpha: .9),
+                                fontSize: 17,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
                           const Spacer(flex: 4),
                           _ProviderButton(
                             label: L.continueApple,
@@ -908,6 +955,34 @@ class _SignInScreenState extends State<SignInScreen> {
       ),
     );
   }
+}
+
+/// "Operator Access" context chip on the Operator Sign-In (D-74).
+class _AccessChip extends StatelessWidget {
+  const _AccessChip({required this.icon, this.label});
+  final IconData icon;
+  final String? label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: Gap.lg, vertical: 10),
+    decoration: BoxDecoration(
+      color: Colors.white.withValues(alpha: .16),
+      borderRadius: BorderRadius.circular(999),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: Colors.white, size: 18),
+        const SizedBox(width: Gap.sm),
+        Text(
+          label ?? L.operatorAccess,
+          style: Theme.of(context).textTheme.labelLarge
+              ?.copyWith(color: Colors.white),
+        ),
+      ],
+    ),
+  );
 }
 
 class _LanguagePill extends StatelessWidget {

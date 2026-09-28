@@ -2831,4 +2831,17 @@ class AppLocalizationsMs extends AppLocalizations {
   String handoverToProvider(String provider) {
     return 'Serahkan kepada $provider';
   }
+
+  @override
+  String get operatorAccess => 'Akses Operator';
+
+  @override
+  String get welcomeBack => 'Selamat kembali';
+
+  @override
+  String get signInStoreOperations => 'Log masuk ke operasi kedai anda';
+
+  @override
+  String get noOperatorAccessYet =>
+      'Akaun ini belum ada akses Operator. Terima pautan jemputan daripada pemilik perniagaan, kemudian log masuk dengan alamat e-mel yang menerima jemputan itu.';
 }

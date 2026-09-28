@@ -852,5 +852,9 @@
   "pickedUpBy": "Diambil • {rider} • {time}",
   "stagePickedUp": "Diambil",
   "noZone": "Tiada zon",
-  "handoverToProvider": "Serahkan kepada {provider}"
+  "handoverToProvider": "Serahkan kepada {provider}",
+  "operatorAccess": "Akses Operator",
+  "welcomeBack": "Selamat kembali",
+  "signInStoreOperations": "Log masuk ke operasi kedai anda",
+  "noOperatorAccessYet": "Akaun ini belum ada akses Operator. Terima pautan jemputan daripada pemilik perniagaan, kemudian log masuk dengan alamat e-mel yang menerima jemputan itu."
 }

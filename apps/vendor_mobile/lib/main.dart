@@ -1,3 +1,4 @@
+import 'core/auth_access.dart';
 import 'ui/screens/helper_workspace.dart';
 
 import 'package:flutter/material.dart';
@@ -50,6 +51,7 @@ Future<void> main() async {
     runApp(
       VendorMobileApp(
         repo: VendorRepository.demo(),
+        access: authAccessFromUri(Uri.base),
         auditId: auditId,
         auditLocation: auditId == null ? null : _auditLocation(auditId),
       ),
@@ -67,17 +69,26 @@ Future<void> main() async {
     publishableKey: Env.supabasePublishableKey,
   );
 
-  runApp(VendorMobileApp(repo: VendorRepository(Supabase.instance.client)));
+  runApp(
+    VendorMobileApp(
+      repo: VendorRepository(Supabase.instance.client),
+      access: authAccessFromUri(Uri.base),
+    ),
+  );
 }
 
 class VendorMobileApp extends StatefulWidget {
   const VendorMobileApp({
     super.key,
     required this.repo,
+    this.access = AuthAccess.vendor,
     this.auditId,
     this.auditLocation,
   });
   final VendorRepository repo;
+
+  /// Sign-In variant (D-74); presentation only, never a role.
+  final AuthAccess access;
   final int? auditId;
   final VendorLocation? auditLocation;
 
@@ -97,6 +108,7 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
     super.initState();
     applyUiLocale(app.uiLocale);
     app.restoreUiLocale();
+    app.access = widget.access;
     // Sign Out calls app.clearSession(), which lives in AppState -- but the
     // "is a prototype session authenticated" flag below has to live here
     // instead, since it gates which widget MaterialApp.home builds, before
@@ -216,6 +228,7 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
                 (!widget.repo.isDemo && widget.repo.currentUser == null)) {
               return AuthFlow(
                 key: ValueKey(_recovering),
+                access: widget.access,
                 recovery: _recovering,
                 onRecoveryDone: () async {
                   await widget.repo.signOut();
@@ -238,9 +251,26 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
             if (app.sessionError != null) {
               return Scaffold(
                 body: SafeArea(
-                  child: StateBlock.error(
-                    app.sessionError!,
-                    onRetry: app.loadSession,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: Gap.gutter),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        StateBlock.error(
+                          app.sessionError!,
+                          onRetry: app.loadSession,
+                        ),
+                        // A signed-in account that cannot continue (e.g. no
+                        // Operator access yet) can switch account.
+                        TextButton(
+                          onPressed: () async {
+                            await widget.repo.signOut();
+                            app.clearSession();
+                          },
+                          child: Text(L.signOut),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );

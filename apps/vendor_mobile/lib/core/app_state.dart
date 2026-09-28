@@ -1,3 +1,5 @@
+import 'auth_access.dart';
+
 import 'package:flutter/material.dart';
 
 import '../data/models.dart';
@@ -33,6 +35,9 @@ class AppState extends ChangeNotifier {
   /// persists on this device and follows the signed-in user.
   Locale uiLocale = resolveDeviceLocale();
   final UiLocaleStore _localeStore = UiLocaleStore();
+
+  /// Sign-In variant hint (D-74). Presentation only; never a role.
+  AuthAccess access = AuthAccess.vendor;
 
   bool loadingSession = true;
   String? sessionError;
@@ -265,6 +270,12 @@ class AppState extends ChangeNotifier {
       } on RepositoryError catch (_) {}
       businesses = await repo.myBusinesses();
       business = businesses.isEmpty ? null : businesses.first;
+      // Signed in through the Operator Sign-In but no membership was
+      // claimed: say so. Business setup would make this account an Owner.
+      if (business == null && access == AuthAccess.operator) {
+        sessionError = L.noOperatorAccessYet;
+        return;
+      }
       // A signed-in account without a business starts in business setup.
       if (!repo.isDemo && business == null) {
         _stack
@@ -297,6 +308,7 @@ class AppState extends ChangeNotifier {
   VoidCallback? onSignOut;
 
   void clearSession() {
+    sessionError = null;
     businesses = const [];
     business = null;
     _stack

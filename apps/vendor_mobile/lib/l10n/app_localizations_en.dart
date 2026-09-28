@@ -2826,4 +2826,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String handoverToProvider(String provider) {
     return 'Hand over to $provider';
   }
+
+  @override
+  String get operatorAccess => 'Operator Access';
+
+  @override
+  String get welcomeBack => 'Welcome back';
+
+  @override
+  String get signInStoreOperations => 'Sign in to your store operations';
+
+  @override
+  String get noOperatorAccessYet =>
+      'This account has no Operator access yet. Accept the invitation link from the business owner, then sign in with the email address it was sent to.';
 }
