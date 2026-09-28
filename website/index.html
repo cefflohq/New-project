@@ -74,7 +74,7 @@ section { padding-block: calc(var(--section) / 2); }
 }
 .h1, .h2 { margin: 0; font-weight: 800; letter-spacing: -.035em; line-height: 1.02; text-wrap: balance; }
 .h1 { font-size: clamp(42px, 7vw, 104px); }
-@media (min-width: 1100px) { .hero .h1 { font-size: clamp(54px, 4.6vw, 76px); } .split .h2 { font-size: clamp(36px, 3.6vw, 58px); } }
+@media (min-width: 1100px) { .hero .h1 { font-size: clamp(56px, 6vw, 96px); } .split .h2 { font-size: clamp(36px, 3.6vw, 58px); } }
 .h2 { font-size: clamp(34px, 4.6vw, 68px); }
 .h1 .soft, .h2 .soft { color: var(--ink-3); }
 .lead { margin: 22px 0 0; max-width: 40ch; color: var(--ink-2); font-size: clamp(18px, 1.6vw, 21px); line-height: 1.5; }
@@ -141,35 +141,39 @@ section { padding-block: calc(var(--section) / 2); }
   position: relative;
   width: var(--w);
   aspect-ratio: 393 / 852;
-  padding: calc(var(--w) * .024);
-  border-radius: calc(var(--w) * .165);
-  background: #050608;
+  padding: calc(var(--w) * .034);
+  border-radius: calc(var(--w) * .168);
+  background: linear-gradient(135deg, #B9BEC6 0%, #4A4E55 18%, #2A2D32 40%, #8D929A 55%, #34373C 72%, #A8ADB5 100%);
   box-shadow:
-    0 0 0 calc(var(--w) * .006) #3A3D42,
-    0 0 0 calc(var(--w) * .010) #1C1E22,
-    inset 0 0 0 1px rgba(255,255,255,.10),
-    0 50px 90px -40px rgba(11, 18, 32, .55),
-    0 20px 40px -24px rgba(11, 18, 32, .35);
+    inset 0 0 0 1px rgba(255,255,255,.35),
+    inset 0 0 calc(var(--w) * .01) rgba(0,0,0,.6),
+    0 60px 100px -40px rgba(4, 16, 40, .6),
+    0 24px 44px -26px rgba(4, 16, 40, .45);
   flex: none;
 }
 .phone::before, .phone::after {
-  content: ""; position: absolute; width: calc(var(--w) * .012); border-radius: 2px;
+  content: ""; position: absolute; width: calc(var(--w) * .013); border-radius: 3px;
 }
 .phone::before { /* action button + volume up/down */
-  left: calc(var(--w) * -.019);
+  left: calc(var(--w) * -.011);
   top: 18%; height: 24%;
-  background: linear-gradient(#2A2D32 0 14%, transparent 14% 30%, #2A2D32 30% 62%, transparent 62% 72%, #2A2D32 72% 100%);
+  background: linear-gradient(#6E737B 0 14%, transparent 14% 30%, #6E737B 30% 62%, transparent 62% 72%, #6E737B 72% 100%);
 }
 .phone::after { /* side button */
-  right: calc(var(--w) * -.019);
-  top: 25%; height: 12%;
-  background: #2A2D32;
+  right: calc(var(--w) * -.011);
+  top: 26%; height: 12%;
+  background: #6E737B;
 }
 .screen {
   position: relative; width: 100%; height: 100%;
-  border-radius: calc(var(--w) * .14);
+  border-radius: calc(var(--w) * .136);
+  box-shadow: 0 0 0 calc(var(--w) * .022) #050608;
   overflow: hidden; background: #fff;
   container-type: inline-size;
+}
+.screen::after { /* faint glass reflection */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(118deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,0) 32%);
 }
 .screen > img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
 .sb {
@@ -199,31 +203,88 @@ section { padding-block: calc(var(--section) / 2); }
 /* ---------- hero ---------- */
 .hero { padding-top: calc(env(safe-area-inset-top, 0px) + 120px); padding-bottom: 0; }
 .hero-grid { display: grid; gap: 48px; align-items: center; }
-.stage {
-  position: relative;
-  border-radius: 32px;
-  background: var(--gradient);
-  overflow: hidden;
-  height: 560px;
+.poster {
+  position: relative; overflow: hidden; isolation: isolate;
+  border-radius: 36px;
+  height: 600px;
+  background:
+    radial-gradient(60% 50% at 55% 42%, rgba(5, 146, 235, .65) 0%, rgba(5, 146, 235, 0) 70%),
+    linear-gradient(160deg, #01265E 0%, #00378F 42%, #005CC4 78%, #0592EB 100%);
 }
-.stage .phone { position: absolute; }
-.stage .p-main { --w: 240px; left: 50%; top: 44px; transform: translateX(-50%); z-index: 3; }
-.stage .p-left, .stage .p-right { --w: 170px; top: 150px; z-index: 2; }
-.stage .p-left { left: 14px; }
-.stage .p-right { right: 14px; }
+.poster::before { /* faint grid */
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background-image: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(70% 60% at 50% 45%, #000 20%, transparent 75%);
+          mask-image: radial-gradient(70% 60% at 50% 45%, #000 20%, transparent 75%);
+}
+.poster.light {
+  background:
+    radial-gradient(55% 45% at 50% 45%, rgba(0, 96, 254, .22) 0%, rgba(0, 96, 254, 0) 70%),
+    linear-gradient(180deg, #F4F8FF 0%, #E6EFFF 100%);
+}
+.poster.light::before { background-image: linear-gradient(rgba(0,96,254,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(0,96,254,.07) 1px, transparent 1px); }
+.orbit { position: absolute; left: 50%; top: 46%; width: 118%; transform: translate(-50%, -50%) rotate(-14deg); z-index: 0; overflow: visible; }
+.orbit ellipse { fill: none; stroke: rgba(255,255,255,.45); stroke-width: 1.4; filter: drop-shadow(0 0 6px rgba(255,255,255,.8)); }
+.poster.light .orbit ellipse { stroke: rgba(0,96,254,.35); filter: drop-shadow(0 0 5px rgba(0,96,254,.5)); }
+.poster .phone { position: absolute; left: 50%; top: 52px; z-index: 2; }
+.poster .p-hero { --w: 230px; transform: translateX(-50%) perspective(1800px) rotateY(-16deg) rotateX(7deg) rotateZ(5deg); }
+.poster .p-tilt-l { --w: 230px; transform: translateX(-50%) perspective(1800px) rotateY(16deg) rotateX(7deg) rotateZ(-5deg); }
+.ground {
+  position: absolute; left: 50%; bottom: 26px; width: 62%; height: 44px; transform: translateX(-50%); z-index: 1;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(0, 8, 30, .55), rgba(0, 8, 30, 0));
+}
+.poster.light .ground { background: radial-gradient(50% 50% at 50% 50%, rgba(1, 38, 94, .28), rgba(1, 38, 94, 0)); }
+.chip {
+  position: absolute; z-index: 3; margin: 0;
+  width: 58%; max-width: 330px;
+  animation: float 7s ease-in-out infinite alternate;
+}
+.chip img { width: 100%; border-radius: 14px; background: #fff; box-shadow: 0 28px 50px -22px rgba(0, 16, 50, .6), 0 0 0 1px rgba(255,255,255,.6); }
+.chip figcaption {
+  display: inline-block; margin: 0 0 7px 6px;
+  padding: 5px 11px; border-radius: 999px;
+  font-size: 12px; font-weight: 700; letter-spacing: .01em; white-space: nowrap;
+  color: #fff; background: rgba(255,255,255,.16);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.28);
+}
+.poster.light .chip figcaption { color: var(--brand); background: #fff; border-color: var(--line); }
+.chip.tr, .chip.br { text-align: right; }
+.chip.tr figcaption, .chip.br figcaption { margin: 0 6px 7px 0; }
+@media (max-width: 899px) {
+  .chip figcaption { color: var(--brand); background: #fff; border-color: rgba(255,255,255,.9); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: 0 8px 18px -10px rgba(0,16,50,.5); }
+}
+.chip.tl { left: -4%; top: 9%; transform: rotate(-4deg); }
+.chip.tr { right: -4%; top: 34%; transform: rotate(3deg); animation-delay: -2s; }
+.chip.bl { left: -4%; top: 58%; transform: rotate(-2deg); animation-delay: -4s; }
+.chip.br { right: -3%; top: 78%; transform: rotate(3deg); animation-delay: -1s; }
+.chip.small { width: 34%; max-width: 170px; }
 @media (max-width: 599px) {
-  .stage { height: 540px; }
-  .stage .p-main { --w: 220px; top: 36px; }
-  .stage .p-left, .stage .p-right { --w: 150px; top: 150px; }
-  .stage .p-left { left: -22px; }
-  .stage .p-right { right: -22px; }
+  .chip { width: 62%; }
+  .chip.tl { left: 3%; top: 6%; }
+  .chip.tr { right: 3%; }
+  .chip.br { right: 3%; }
+  .hero .chip.bl { display: none; }
+  .chip.bl { left: 3%; }
+  .chip.small { width: 40%; right: 3%; }
+}
+@keyframes float { from { translate: 0 0; } to { translate: 0 -10px; } }
+@media (min-width: 600px) {
+  .poster { height: 640px; }
+  .poster .p-hero, .poster .p-tilt-l { --w: 250px; }
+  .chip { width: 46%; }
+  .chip.tl { left: 3%; } .chip.tr { right: 3%; } .chip.bl { left: 2%; } .chip.br { right: 3%; }
+  .chip.small { width: 26%; }
 }
 @media (min-width: 1100px) {
-  .hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; }
-  .stage { height: 680px; }
-  .stage .p-main { --w: 280px; top: 50px; }
-  .stage .p-left, .stage .p-right { --w: 205px; top: 190px; }
+  .poster { height: 700px; }
+  .poster .p-hero, .poster .p-tilt-l { --w: 280px; top: 58px; }
+  .chip { width: 50%; }
+  .chip.tl { left: -2%; } .chip.tr { right: -2%; } .chip.bl { left: -3%; } .chip.br { right: -2%; }
 }
+.poster-wide { max-width: 1000px; margin: 56px auto 0; }
+@media (min-width: 1100px) { .poster-wide .chip { width: 38%; } .poster-wide .chip.small { width: 20%; } .poster-wide .chip.tl { left: 6%; } .poster-wide .chip.bl { left: 5%; } .poster-wide .chip.tr { right: 6%; } .poster-wide .chip.br { right: 6%; } }
 
 /* ---------- categories strip ---------- */
 .cats { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 28px; }
@@ -413,8 +474,8 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
 
   <!-- 02 HERO -->
   <section class="hero">
-    <div class="wrap hero-grid">
-      <div class="head">
+    <div class="wrap">
+      <div class="head center">
         <span class="label">Sistem operasi delivery hari-sama</span>
         <h1 class="h1">Uruskan delivery tempatan. <span class="soft">Tanpa serabut.</span></h1>
         <p class="lead">Order hari ini disusun ikut kawasan, jadi run multi-drop untuk rider anda sendiri. Customer semak status sendiri melalui pautan.</p>
@@ -423,10 +484,14 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
           <p class="micro"><strong>Mula percuma</strong> · 150 penghantaran sebulan · tanpa kad kredit</p>
         </div>
       </div>
-      <div class="stage" role="img" aria-label="Skrin sebenar app Cefflo: Vendor Today, Cefflo Driver dan tracking customer">
-        <div class="phone p-left"><div class="screen"><img src="img/c_done_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <div class="phone p-right"><div class="screen"><img src="img/d19_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <div class="phone p-main"><div class="screen"><img src="img/v11_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
+      <div class="poster poster-wide" role="img" aria-label="Skrin sebenar app Cefflo Vendor dengan elemen dari app Vendor, Cefflo Driver dan tracking customer">
+        <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
+        <div class="ground"></div>
+        <div class="phone p-hero"><div class="screen"><img src="img/v11_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
+        <figure class="chip tl"><figcaption>Ringkasan hari ini</figcaption><img src="img/f_kpi.webp" alt=""></figure>
+        <figure class="chip tr"><figcaption>Siap dihantar</figcaption><img src="img/f_delivered.webp" alt=""></figure>
+        <figure class="chip bl"><figcaption>Rider: stop seterusnya</figcaption><img src="img/f_stop.webp" alt=""></figure>
+        <figure class="chip br"><figcaption>Customer nampak status</figcaption><img src="img/f_status.webp" alt=""></figure>
       </div>
     </div>
   </section>
@@ -567,16 +632,13 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
         <h2 class="h2">Rider tahu stop seterusnya. <span class="soft">Tanpa call.</span></h2>
         <p class="lead">Run, senarai stop ikut turutan, bukti hantar dan slide untuk siap. Semua dalam app rider.</p>
       </div>
-      <div class="showcase reveal">
-        <div class="phone side"><div class="screen"><img src="img/d19_ph.webp" alt="Skrin utama Cefflo Driver: Today's Overview dan Current Run"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <div class="phone big"><div class="screen"><img src="img/d21_ph.webp" alt="Skrin Stop List: 12 order dengan turutan stop dan status"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div>
-          <div class="anno-list">
-            <div class="anno l" style="top: 12%"><span>12 order, satu run</span><i></i></div>
-            <div class="anno r" style="top: 30%"><span>Stop ikut turutan</span><i></i></div>
-            <div class="anno l" style="top: 60%"><span>Status setiap stop</span><i></i></div>
-          </div>
-        </div>
-        <div class="phone side"><div class="screen"><img src="img/d23_ph.webp" alt="Skrin Confirm Delivery: bukti hantar bergambar dan Slide to Complete"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
+      <div class="poster light poster-wide reveal" role="img" aria-label="Skrin Stop List Cefflo Driver dengan elemen bukti hantar dan Slide to Complete">
+        <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
+        <div class="ground"></div>
+        <div class="phone p-tilt-l"><div class="screen"><img src="img/d21_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
+        <figure class="chip tl"><figcaption>12 order, satu run</figcaption><img src="img/f_stop.webp" alt=""></figure>
+        <figure class="chip small tr"><figcaption>Bukti hantar</figcaption><img src="img/f_pod.webp" alt=""></figure>
+        <figure class="chip br"><figcaption>Slide untuk siap</figcaption><img src="img/f_slide.webp" alt=""></figure>
       </div>
     </div>
   </section>

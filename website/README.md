@@ -28,6 +28,7 @@ Every screen in `img/` is an unaltered capture of a canonical app on
 | `v12`, `v17`, `v14_top`, `v20_top`, `v11_attn` | Vendor Mobile `V12`, `V17`, `V14` (top crop), `V20` (top crop), `V11` (Need Attention crop) |
 | `d19_ph`, `d21_ph`, `d23_ph` | Cefflo Driver `?screen=D19`, `D21`, `D23` (phone frames) |
 | `d20`, `d23` | Cefflo Driver `D20`, `D23` (card crops) |
+| `f_kpi`, `f_delivered` (V11), `f_stop` (D21), `f_slide` (D23), `f_status`, `f_pod` (Customer delivered) | Floating poster chips: straight crops of the iPhone 15 captures |
 | `c_done_ph`, `c_way_top` | Customer Tracking `?state=delivered` (phone frame), `?state=on_the_way` (status crop) |
 
 Crops are deliberate:
