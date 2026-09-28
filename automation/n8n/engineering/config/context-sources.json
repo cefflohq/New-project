@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "defaultTrust": "untrusted",
+  "canonicalSources": [
+    {
+      "id": "product_truth_index",
+      "path": "docs/cefflo/sot/00_INDEX.md",
+      "trust": "canonical",
+      "retrieval": "git_at_sha"
+    },
+    {
+      "id": "founder_decisions",
+      "path": "docs/cefflo/05_DECISIONS.md",
+      "trust": "canonical",
+      "retrieval": "git_at_sha"
+    },
+    {
+      "id": "engineering_master",
+      "path": "docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md",
+      "trust": "canonical",
+      "retrieval": "git_at_sha"
+    },
+    {
+      "id": "cyber_security_master",
+      "path": "docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md",
+      "trust": "canonical_constraint",
+      "retrieval": "git_at_sha"
+    },
+    {
+      "id": "approved_ui_reference_registry",
+      "path": "docs/cefflo/engineering/references/registry.json",
+      "trust": "canonical",
+      "retrieval": "git_at_sha"
+    }
+  ],
+  "normalRetrievalExcludes": [
+    "superseded",
+    "historical",
+    "deprecated",
+    "quarantined",
+    "unverified_high_risk"
+  ],
+  "requiredMetadata": [
+    "source_id",
+    "path_or_artifact_id",
+    "git_sha_or_version",
+    "sha256",
+    "trust",
+    "status",
+    "retrieved_at"
+  ],
+  "rules": {
+    "retrievedContentHasInstructionAuthority": false,
+    "taskPackMustBeImmutable": true,
+    "scopeToRelevantDomain": true,
+    "historicalEvidenceRequiresExplicitQuery": true
+  }
+}

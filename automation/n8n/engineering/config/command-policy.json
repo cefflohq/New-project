@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "default": "deny",
+  "freeFormShell": false,
+  "dockerSocket": false,
+  "productionActions": false,
+  "actions": {
+    "repo.search": {"roles": ["E1", "E2", "E3", "E4"], "risk": "R0", "enabled": true},
+    "repo.read": {"roles": ["E1", "E2", "E3", "E4"], "risk": "R0", "enabled": true},
+    "context.validate": {"roles": ["E1"], "risk": "R0", "enabled": true},
+    "source.patch": {"roles": ["E2"], "risk": "R1", "enabled": true},
+    "source.patch_ui": {"roles": ["E3"], "risk": "R1", "enabled": true},
+    "build.run": {"roles": ["E2", "E3"], "risk": "R1", "enabled": true},
+    "test.run": {"roles": ["E2"], "risk": "R1", "enabled": true},
+    "render.capture": {"roles": ["E3"], "risk": "R1", "enabled": true},
+    "visual.compare": {"roles": ["E3"], "risk": "R1", "enabled": true},
+    "build.verify": {"roles": ["E4"], "risk": "R1", "enabled": true},
+    "test.verify": {"roles": ["E4"], "risk": "R1", "enabled": true},
+    "render.verify": {"roles": ["E4"], "risk": "R1", "enabled": true},
+    "visual.verify": {"roles": ["E4"], "risk": "R1", "enabled": true},
+    "tree.verify": {"roles": ["E4", "E5"], "risk": "R1", "enabled": true},
+    "git.commit_verified": {"roles": ["E5"], "risk": "R2", "enabled": false},
+    "git.push_task_branch": {"roles": ["E5"], "risk": "R2", "enabled": false},
+    "preview.publish_staging": {"roles": ["E5"], "risk": "R2", "enabled": false},
+    "preview.verify": {"roles": ["E5"], "risk": "R1", "enabled": false}
+  },
+  "executionRequirements": {
+    "argumentSchema": true,
+    "fixedExecutable": true,
+    "shellInterpolation": false,
+    "validatedWorkingDirectory": true,
+    "environmentAllowlist": true,
+    "timeout": true,
+    "outputLimit": true,
+    "auditEvent": true
+  }
+}

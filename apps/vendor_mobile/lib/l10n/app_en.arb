@@ -1,0 +1,1271 @@
+{
+  "@@locale": "en",
+  "paymentsNotAvailableYet": "Payments are not available yet.",
+  "splash": "Splash",
+  "sign": "Sign in",
+  "createAccount": "Create account",
+  "accountRecovery": "Account recovery",
+  "resetPassword": "Reset password",
+  "welcome": "Welcome",
+  "businessInformation": "Business information",
+  "pickupLocation": "Pickup location",
+  "serviceArea": "Service area",
+  "setupComplete": "Setup complete",
+  "today": "Today",
+  "orders": "Orders",
+  "orderDetail": "Order detail",
+  "newOrder": "New order",
+  "importOrders": "Import orders",
+  "editOrder": "Edit order",
+  "zones": "Zones",
+  "zone": "Zone",
+  "deliveryProgress": "Delivery progress",
+  "riders": "Riders",
+  "riderDetail": "Rider detail",
+  "riderRegistrationLink": "Rider registration link",
+  "team": "Team",
+  "teamMember": "Team member",
+  "teamMemberRegistrationLink": "Team member registration link",
+  "coverage": "Coverage",
+  "zoneConfiguration": "Zone configuration",
+  "createZone": "Create zone",
+  "storefront": "Storefront",
+  "viewStorefront": "View storefront",
+  "templatePreview": "Template preview",
+  "customize": "Customize",
+  "products": "Products",
+  "customers": "Customers",
+  "customer": "Customer",
+  "editProduct": "Edit product",
+  "addProduct": "Add product",
+  "businessProfile": "Business profile",
+  "businessAddress": "Business address",
+  "businessHours": "Business hours",
+  "deliverySettings": "Delivery settings",
+  "profile": "Profile",
+  "security": "Security",
+  "changePassword": "Change password",
+  "more": "More",
+  "notificationPreferences": "Notification preferences",
+  "appearance": "Appearance",
+  "subscription": "Subscription",
+  "choosePlan": "Choose a plan",
+  "reviewPayment": "Review & Payment",
+  "billingHistory": "Billing History",
+  "helpSupport": "Help & support",
+  "helpCentre": "Help centre",
+  "contactSupport": "Contact support",
+  "privacyPolicy": "Privacy policy",
+  "termsService": "Terms of service",
+  "aboutCefflo": "About Cefflo",
+  "notifications": "Notifications",
+  "pendingApproval": "Pending approval",
+  "pickup": "Pickup",
+  "pickedUp": "Picked up",
+  "way": "On the way",
+  "arrived": "Arrived",
+  "delivered": "Delivered",
+  "issue": "Issue",
+  "cancelled": "Cancelled",
+  "ongoing": "Ongoing",
+  "business": "Business",
+  "approved": "Approved",
+  "item": "Item",
+  "rider": "Rider",
+  "product": "Product",
+  "serviceAreaNotSet": "Service area not set",
+  "awaitingLocation": "Awaiting location",
+  "coverage2": "In coverage",
+  "outsideCoverage": "Outside coverage",
+  "unknown": "Unknown",
+  "addressNotYetLocated": "Address not yet located",
+  "addressAmbiguous": "Address is ambiguous",
+  "addressCouldNotLocated": "Address could not be located",
+  "noRiderCompatibleVehicleEnoughSpare": "No rider with a compatible vehicle and enough spare capacity",
+  "dispatched": "Dispatched",
+  "accepted": "Accepted",
+  "pickingUp": "Picking up",
+  "completed": "Completed",
+  "declined": "Declined",
+  "capacityExceededActiveRequestedExceeds": "Capacity exceeded: {current_load} active + {requested} requested exceeds {effective_capacity}.",
+  "@capacityExceededActiveRequestedExceeds": {
+    "placeholders": {
+      "current_load": {
+        "type": "Object"
+      },
+      "requested": {
+        "type": "Object"
+      },
+      "effective_capacity": {
+        "type": "Object"
+      }
+    }
+  },
+  "vehicleIncompatibleNeedsRiderHas": "Vehicle incompatible: needs {vehicle_requirement}, rider has {rider_vehicle_type}.",
+  "@vehicleIncompatibleNeedsRiderHas": {
+    "placeholders": {
+      "vehicle_requirement": {
+        "type": "Object"
+      },
+      "rider_vehicle_type": {
+        "type": "Object"
+      }
+    }
+  },
+  "experienceCefflo": "Experience Cefflo.",
+  "t100DeliveriesMonth": "100 deliveries a month",
+  "up3Riders2Zones": "Up to 3 riders · 2 zones",
+  "customerTrackingProofDelivery": "Customer tracking and proof of delivery",
+  "businessesRunningLocalDeliveriesRegularly": "For businesses running local deliveries regularly.",
+  "t500DeliveriesMonth": "500 deliveries a month",
+  "up10Riders5Zones": "Up to 10 riders · 5 zones",
+  "up3TeamMembers": "Up to 3 team members",
+  "standardReportingSupport": "Standard reporting and support",
+  "runLocalDeliveryOperationOnePlace": "Run your local delivery operation in one place.",
+  "t1500DeliveriesMonth": "1,500 deliveries a month",
+  "unlimitedRidersZones": "Unlimited riders and zones",
+  "up10TeamMembers": "Up to 10 team members",
+  "advancedOperationalReporting": "Advanced operational reporting",
+  "prioritySupport": "Priority support",
+  "highVolumeComplexOperations": "For high-volume, complex operations.",
+  "t5000DeliveriesMonth": "5,000 deliveries a month",
+  "up25TeamMembers": "Up to 25 team members",
+  "advancedControlsIntegrations": "Advanced controls and integrations",
+  "modernInter": "Modern (Inter)",
+  "boldInter": "Bold (Inter)",
+  "elegantInterItalic": "Elegant (Inter Italic)",
+  "classicInterCaps": "Classic (Inter Caps)",
+  "orderWasNotCreatedBackendReturned": "Order was not created: backend returned no id.",
+  "removingDeliveryFromTodaysPlanNot": "Removing a delivery from today's plan is not available yet.",
+  "runNotFound": "Run not found.",
+  "uiPrototypeModeHasNoBackend": "UI prototype mode has no backend connection.",
+  "actionNeedsBackendContractThatNot": "This action needs a backend contract that is not deployed here ({message}).",
+  "@actionNeedsBackendContractThatNot": {
+    "placeholders": {
+      "message": {
+        "type": "Object"
+      }
+    }
+  },
+  "unexpectedBackendResponseShape": "Unexpected backend response shape.",
+  "updatingPassword": "Updating password…",
+  "savingNewPassword": "Saving your new password.",
+  "passwordUpdated": "Password updated",
+  "canNowSignNewPassword": "You can now sign in with your new password.",
+  "operateTodayGrowTomorrow": "Operate Today.\nGrow Tomorrow.",
+  "back": "Back",
+  "emailPasswordIncorrectTryAgain": "Email or password is incorrect. Try again.",
+  "tooManyAttemptsPleaseWaitBefore": "Too many attempts. Please wait before trying again.",
+  "unableConnectCheckConnectionTryAgain": "Unable to connect. Check your connection and try again.",
+  "unableConnect": "Unable to connect",
+  "tooManyAttempts": "Too many attempts",
+  "continueApple": "Continue with Apple",
+  "continueGoogle": "Continue with Google",
+  "continueEmail": "Continue with Email",
+  "haveInvite": "Have an invite? ",
+  "getStarted": "Get started",
+  "language": "Language",
+  "signEmail": "Sign in with Email",
+  "enterEmailPasswordContinue": "Enter your email and password to continue.",
+  "email": "Email",
+  "password": "Password",
+  "enterPassword": "Enter your password",
+  "forgotPassword": "Forgot password?",
+  "tryAgain": "Try again",
+  "signing": "Signing in…",
+  "dontHaveAccount": "Don't have an account? ",
+  "signUp": "Sign up",
+  "passwordsDoNotMatch": "Passwords do not match.",
+  "createAccount2": "Create your account",
+  "startManagingDeliveries": "Start managing your deliveries.",
+  "useLeast8Characters": "Use at least 8 characters.",
+  "confirmPassword": "Confirm password",
+  "confirmPassword2": "Confirm your password",
+  "creatingAccount": "Creating account…",
+  "alreadyHaveAccount": "Already have an account? ",
+  "enterEmailWellSendResetLink": "Enter your email and we'll send you a reset link.",
+  "sendResetLink": "Send reset link",
+  "sending": "Sending…",
+  "backSign": "Back to sign in",
+  "checkEmail": "Check your email",
+  "ifAccountExistsEmailYoullReceive": "If an account exists for this email, you'll receive a password reset link.",
+  "checkSpamFolderToo": "Check your spam folder too.",
+  "tryAnotherEmail": "Try another email",
+  "verificationEmailSent": "Verification email sent to {email}.",
+  "@verificationEmailSent": {
+    "placeholders": {
+      "email": {
+        "type": "Object"
+      }
+    }
+  },
+  "verifyEmail": "Verify your email",
+  "openVerificationLinkEmailConfirmAccount": "Open the verification link in your email to confirm your account.",
+  "resendVerificationEmail": "Resend verification email",
+  "useDifferentEmail": "Use a different email",
+  "emailVerified": "Email verified",
+  "emailConfirmedSignContinue": "Your email is confirmed.\nSign in to continue.",
+  "continueSign": "Continue to sign in",
+  "verificationEmailSent2": "Verification email sent to {trim}.",
+  "@verificationEmailSent2": {
+    "placeholders": {
+      "trim": {
+        "type": "Object"
+      }
+    }
+  },
+  "verificationLinkExpired": "Verification link expired",
+  "linkHasExpiredInvalidRequestNew": "This link has expired or is invalid.\nRequest a new verification email.",
+  "sendNewVerificationEmail": "Send new verification email",
+  "setNewPassword": "Set a new password",
+  "chooseStrongPasswordAccount": "Choose a strong password for your account.",
+  "newPassword": "New password",
+  "enterNewPassword": "Enter a new password",
+  "updatePassword": "Update password",
+  "updating": "Updating…",
+  "noBusinessLinked": "No business linked.",
+  "zones2": "Zones ({zonesCount})",
+  "@zones2": {
+    "placeholders": {
+      "zonesCount": {
+        "type": "Object"
+      }
+    }
+  },
+  "noZonesYetTapCreateFirst": "No zones yet. Tap + to create your first zone.",
+  "active": "Active",
+  "inactive": "Inactive",
+  "theseZonesDefineWhereDeliverAdd": "These zones define where you deliver. Add, edit or deactivate zones anytime.",
+  "searchZones": "Search zones...",
+  "noZonesConfiguredYet": "No zones configured yet.",
+  "zoneNotFound": "Zone not found",
+  "zoneOptions": "Zone options",
+  "editZoneName": "Edit zone name",
+  "deleteZone": "Delete zone",
+  "cancel": "Cancel",
+  "zoneRenamed": "Zone renamed to {updated}",
+  "@zoneRenamed": {
+    "placeholders": {
+      "updated": {
+        "type": "Object"
+      }
+    }
+  },
+  "couldNotRename": "Could not rename: {e}",
+  "@couldNotRename": {
+    "placeholders": {
+      "e": {
+        "type": "Object"
+      }
+    }
+  },
+  "delete": "Delete {zone}?",
+  "@delete": {
+    "placeholders": {
+      "zone": {
+        "type": "Object"
+      }
+    }
+  },
+  "willRemoveZoneFromDeliverySetup": "This will remove the zone from your delivery setup.",
+  "delete2": "Delete",
+  "removedFromDeliverySetup": "{zone} removed from your delivery setup",
+  "@removedFromDeliverySetup": {
+    "placeholders": {
+      "zone": {
+        "type": "Object"
+      }
+    }
+  },
+  "couldNotDelete": "Could not delete: {e}",
+  "@couldNotDelete": {
+    "placeholders": {
+      "e": {
+        "type": "Object"
+      }
+    }
+  },
+  "zoneNameRequired": "Zone name is required.",
+  "zoneName": "Zone name",
+  "save": "Save",
+  "t0Km": "0 km",
+  "km": "{distance} km",
+  "@km": {
+    "placeholders": {
+      "distance": {
+        "type": "Object"
+      }
+    }
+  },
+  "totalDistance": "Total distance",
+  "totalOrders": "Total orders",
+  "todaysDeliveries": "Today's deliveries",
+  "noDeliveriesPlannedZoneToday": "No deliveries planned in this zone today.",
+  "dispatch": "Dispatch",
+  "unassignedRider": "Unassigned rider",
+  "order": "{count} order{s}",
+  "@order": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      },
+      "s": {
+        "type": "Object"
+      }
+    }
+  },
+  "km2": "{distanceKm} km",
+  "@km2": {
+    "placeholders": {
+      "distanceKm": {
+        "type": "Object"
+      }
+    }
+  },
+  "min": "{travelMinutes} min",
+  "@min": {
+    "placeholders": {
+      "travelMinutes": {
+        "type": "Object"
+      }
+    }
+  },
+  "removedFromToday": "{delivery} removed from today",
+  "@removedFromToday": {
+    "placeholders": {
+      "delivery": {
+        "type": "Object"
+      }
+    }
+  },
+  "processing": "Processing...",
+  "creatingZone": "Creating your zone",
+  "successful": "Successful",
+  "newZoneHasBeenCreatedSuccessfully": "Your new zone has been created successfully.",
+  "createZone2": "Create Zone",
+  "zoneWillCoverHighlightedAreaMap": "This zone will cover the highlighted area on the map. You can always edit it later.",
+  "zoneDetails": "Zone details",
+  "nameAreaDeliver": "Name the area you deliver to",
+  "enterZoneName": "Enter zone name",
+  "all": "All",
+  "offline": "Offline",
+  "pending": "Pending",
+  "noRidersYet": "No riders yet.",
+  "jan": "Jan",
+  "feb": "Feb",
+  "mar": "Mar",
+  "apr": "Apr",
+  "may": "May",
+  "jun": "Jun",
+  "jul": "Jul",
+  "aug": "Aug",
+  "sep": "Sep",
+  "oct": "Oct",
+  "nov": "Nov",
+  "dec": "Dec",
+  "riderNotFound": "Rider not found",
+  "pendingReview": "Pending Review",
+  "riderApplicant": "Rider applicant",
+  "reject": "Reject",
+  "rejectingRiders": "Rejecting riders",
+  "approveRider": "Approve Rider",
+  "approvingRiders": "Approving riders",
+  "customerRating": "Customer rating",
+  "joined": "Joined",
+  "drivingLicence": "Driving Licence",
+  "noLicenceDocumentAvailable": "No licence document available",
+  "additionalInformation": "Additional Information",
+  "noAdditionalInformationAvailable": "No additional information available.",
+  "searchTeamMembers": "Search team members...",
+  "noTeamMembersYet": "No team members yet.",
+  "teamMemberNotFound": "Team member not found",
+  "notProvided": "Not provided",
+  "roleAccess": "Role & access",
+  "accountStatus": "Account status",
+  "businessOwnerAlwaysKeepsFullAccess": "The business owner always keeps full access and cannot be removed from the team.",
+  "removeFromTeam": "Remove from Team",
+  "canManageDailyOperationsOrdersRiders": "Can manage daily operations, orders, riders and team members. Cannot manage billing or subscription.",
+  "canAccessDailyOperationsOrdersRiders": "Can access daily operations, orders and riders. Cannot manage billing or subscription.",
+  "remove": "Remove {userId}?",
+  "@remove": {
+    "placeholders": {
+      "userId": {
+        "type": "Object"
+      }
+    }
+  },
+  "theyWillLoseAccessBusinessImmediately": "They will lose access to this business immediately.",
+  "remove2": "Remove",
+  "searchProducts": "Search products...",
+  "noProductsCatalogueYet": "No products in the catalogue yet.",
+  "rm": "RM {displayPrice} · {status}",
+  "@rm": {
+    "placeholders": {
+      "displayPrice": {
+        "type": "Object"
+      },
+      "status": {
+        "type": "Object"
+      }
+    }
+  },
+  "searchCustomers": "Search customers...",
+  "orders2": "Orders ({count})",
+  "@orders2": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "account": "Account",
+  "businessProfile2": "Business Profile",
+  "support": "Support",
+  "helpSupport2": "Help & Support",
+  "privacy": "Privacy",
+  "signOut": "Sign out",
+  "version100": "Version 1.0.0",
+  "businessInformation2": "Business Information",
+  "nameTypeContactDetails": "Name, type and contact details",
+  "pickupLocation2": "Pickup Location",
+  "whereDeliveriesStartFrom": "Where deliveries start from",
+  "serviceArea2": "Service Area",
+  "howFarDeliver": "How far you deliver",
+  "letsSetUpBusiness": "Let’s set up your business",
+  "justFewDetailsBeforeStartDelivering": "Just a few details before you start delivering with Cefflo. Takes about 2 minutes.",
+  "getStarted2": "Get Started",
+  "step": "Step {step} of {totalSteps}",
+  "@step": {
+    "placeholders": {
+      "step": {
+        "type": "Object"
+      },
+      "totalSteps": {
+        "type": "Object"
+      }
+    }
+  },
+  "foodBeverage": "Food & Beverage",
+  "homeLiving": "Home & Living",
+  "retail": "Retail",
+  "groceries": "Groceries",
+  "other": "Other",
+  "businessNameRequired": "Business name is required.",
+  "enterValidPhoneNumber": "Enter a valid phone number.",
+  "continueText": "Continue",
+  "tellUsAboutBusiness": "Tell us about your business",
+  "appearsDeliveryOrdersReceipts": "This appears on your delivery orders and receipts.",
+  "businessName": "Business Name",
+  "eGKopiKita": "e.g. Kopi Kita",
+  "businessType": "Business Type",
+  "contactPhone": "Contact Phone",
+  "pickupAddressRequired": "Pickup address is required.",
+  "whereDoDeliveriesStartFrom": "Where do deliveries start from?",
+  "ridersPickUpOrdersFromLocation": "Riders pick up orders from this location.",
+  "pickupAddress": "Pickup Address",
+  "searchEnterAddress": "Search or enter your address",
+  "postcode": "Postcode",
+  "city": "City",
+  "howFarDoDeliver": "How far do you deliver?",
+  "ceffloUsesDecideWhichOrdersCan": "Cefflo uses this to decide which orders you can accept.",
+  "finishSetup": "Finish Setup",
+  "configured": "Configured",
+  "teamRiders": "Team & Riders",
+  "ready": "Ready",
+  "preferences": "Preferences",
+  "setText": "Set",
+  "business2": "Your Business\nis ",
+  "ready2": "Ready!",
+  "deliverySetupCompleteLetsStartDelivering": "Your delivery setup is complete.\nLet’s start delivering with Cefflo.",
+  "goToday": "Go to Today",
+  "noBusinessLinkedAccountYet": "No business is linked to this account yet.",
+  "noOrders": "No {toLowerCase} orders.",
+  "@noOrders": {
+    "placeholders": {
+      "toLowerCase": {
+        "type": "Object"
+      }
+    }
+  },
+  "todayItem": "Today, {createdAt} · {itemsCount} item{s}",
+  "@todayItem": {
+    "placeholders": {
+      "createdAt": {
+        "type": "Object"
+      },
+      "itemsCount": {
+        "type": "Object"
+      },
+      "s": {
+        "type": "Object"
+      }
+    }
+  },
+  "editOrder2": "Edit Order",
+  "deliver": "Deliver to",
+  "directions": "Directions",
+  "notSet": "Not set",
+  "deliveryInstruction": "Delivery Instruction",
+  "items": "Items ({itemsCount})",
+  "@items": {
+    "placeholders": {
+      "itemsCount": {
+        "type": "Object"
+      }
+    }
+  },
+  "viewReceipt": "View receipt",
+  "receiptView": "The receipt view",
+  "noItemsOrder": "No items on this order.",
+  "viewAllItems": "View all {itemsCount} items",
+  "@viewAllItems": {
+    "placeholders": {
+      "itemsCount": {
+        "type": "Object"
+      }
+    }
+  },
+  "zoneSet": "Zone set to {z}",
+  "@zoneSet": {
+    "placeholders": {
+      "z": {
+        "type": "Object"
+      }
+    }
+  },
+  "couldNotSetZone": "Could not set zone: {e}",
+  "@couldNotSetZone": {
+    "placeholders": {
+      "e": {
+        "type": "Object"
+      }
+    }
+  },
+  "orderApproved": "Order approved",
+  "couldNotApprove": "Could not approve: {e}",
+  "@couldNotApprove": {
+    "placeholders": {
+      "e": {
+        "type": "Object"
+      }
+    }
+  },
+  "approveOrder": "Approve Order",
+  "approving": "Approving…",
+  "manualEntry": "Manual Entry",
+  "createSingleOrderStepByStep": "Create a single order step by step",
+  "importOrders2": "Import Orders",
+  "importMultipleOrdersFromFiles": "Import multiple orders from your files",
+  "recentImports": "Recent Imports",
+  "viewAll": "View all",
+  "importHistory": "The import history",
+  "connected": "Connected",
+  "openingImport": "Opening this import",
+  "googleSheets": "Google Sheets",
+  "importFromGoogleSheets": "Import from your Google Sheets",
+  "mealPrepOrders": "Meal Prep Orders",
+  "t16Sep2026": "16 Sep 2026",
+  "excel": "Excel",
+  "uploadExcelFileXlsxXls": "Upload an Excel file (.xlsx, .xls)",
+  "cateringSept": "Catering Sept",
+  "t14Sep2026": "14 Sep 2026",
+  "googleDrive": "Google Drive",
+  "importFromFilesGoogleDrive": "Import from files in your Google Drive",
+  "hamperOrders": "Hamper Orders",
+  "t12Sep2026": "12 Sep 2026",
+  "selectSource": "Select your source",
+  "googleSheetsExcelGoogleDrive": "Google Sheets, Excel or Google Drive",
+  "chooseFile": "Choose a file",
+  "pickConnectedSheet": "Or pick a connected sheet",
+  "mapColumns": "Map the columns",
+  "previewOrders": "And preview your orders",
+  "importText": "Import",
+  "reviewOrders": "And review the orders",
+  "chooseSourceImportMultipleOrders": "Choose a source to import multiple orders.",
+  "howWorks": "How it works?",
+  "sources": "Sources",
+  "importingFrom": "Importing from {source}",
+  "@importingFrom": {
+    "placeholders": {
+      "source": {
+        "type": "Object"
+      }
+    }
+  },
+  "customerNameRequired": "Customer name is required.",
+  "deliveryAddressRequired": "Delivery address is required.",
+  "creatingOrder": "Creating your order",
+  "updatingOrder": "Updating your order",
+  "newOrderHasBeenCreatedSuccessfully": "Your new order has been created successfully.",
+  "orderHasBeenUpdatedSuccessfully": "Your order has been updated successfully.",
+  "reviewCreate": "Review & Create",
+  "updateOrder": "Update Order",
+  "createNewOrderStepByStep": "Create a new order step by step.",
+  "updateOrderDetails": "Update order details.",
+  "selectExistingCustomerAddNewOne": "Select an existing customer or add a new one.",
+  "customerName": "Customer name",
+  "searchCustomerByNamePhoneEmail": "Search customer by name, phone or email...",
+  "phoneNumber": "Phone number",
+  "enterPhoneNumber": "Enter phone number...",
+  "address": "Address",
+  "deliveryAddress": "Delivery address",
+  "enterDeliveryAddress": "Enter delivery address...",
+  "items2": "Items",
+  "addOrderItems": "Add order items",
+  "addItemsOrder": "Add items to this order",
+  "addingOrderItems": "Adding order items",
+  "instructions": "Instructions",
+  "specialRequestsOptional": "Special requests (optional)",
+  "instruction": "Instruction",
+  "addDeliveryNotes": "Add delivery notes...",
+  "productNameRequired": "Product name is required.",
+  "enterValidPrice": "Enter a valid price.",
+  "addingProduct": "Adding your product",
+  "updatingProduct": "Updating your product",
+  "newProductHasBeenAddedSuccessfully": "Your new product has been added successfully.",
+  "productHasBeenUpdatedSuccessfully": "Your product has been updated successfully.",
+  "addProduct2": "Add Product",
+  "saveChanges": "Save Changes",
+  "productPhoto": "Product Photo",
+  "productDetails": "Product Details",
+  "productName": "Product name",
+  "enterProductName": "Enter product name",
+  "description": "Description",
+  "enterProductDescription": "Enter product description",
+  "priceRm": "Price (RM)",
+  "rm000": "RM 0.00",
+  "available": "Available",
+  "showProductStorefront": "Show this product in your storefront",
+  "way2": "On the Way",
+  "addProductPhoto": "Add product photo",
+  "deliveryRun": "Delivery run",
+  "delivered2": "{done} of {total} delivered",
+  "@delivered2": {
+    "placeholders": {
+      "done": {
+        "type": "Object"
+      },
+      "total": {
+        "type": "Object"
+      }
+    }
+  },
+  "remaining": "{done} remaining",
+  "@remaining": {
+    "placeholders": {
+      "done": {
+        "type": "Object"
+      }
+    }
+  },
+  "nextStop": "Next stop",
+  "next": "Next",
+  "upcomingStops": "Upcoming stops",
+  "everyStopRunFinished": "Every stop on this run is finished.",
+  "run": "{zone} Run",
+  "@run": {
+    "placeholders": {
+      "zone": {
+        "type": "Object"
+      }
+    }
+  },
+  "dispatched2": "Dispatched to {rider}",
+  "@dispatched2": {
+    "placeholders": {
+      "rider": {
+        "type": "Object"
+      }
+    }
+  },
+  "dispatchOrder": "Dispatch {count} order{s}",
+  "@dispatchOrder": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      },
+      "s": {
+        "type": "Object"
+      }
+    }
+  },
+  "chooseRider": "Choose the rider for {zone}.",
+  "@chooseRider": {
+    "placeholders": {
+      "zone": {
+        "type": "Object"
+      }
+    }
+  },
+  "noActiveRidersYet": "No active riders yet.",
+  "checkingVehicleCapacity": "Checking vehicle and capacity…",
+  "dispatching": "Dispatching…",
+  "savingServiceArea": "Saving your service area",
+  "serviceAreaHasBeenSaved": "Your service area has been saved.",
+  "coverageConfiguredCeffloDecidesEachOrders": "Coverage is configured. Cefflo decides each order’s coverage from this.",
+  "noServiceAreaConfiguredYetOrders": "No service area configured yet. Orders will show “Not set” instead of a coverage verdict.",
+  "saveServiceArea": "Save service area",
+  "manageZones": "Manage zones",
+  "seeConfigureZonesDeliver": "See and configure the zones you deliver to",
+  "deliveryRadius": "Delivery radius",
+  "km3": "{round} km",
+  "@km3": {
+    "placeholders": {
+      "round": {
+        "type": "Object"
+      }
+    }
+  },
+  "sf": "SF-{padLeft}",
+  "@sf": {
+    "placeholders": {
+      "padLeft": {
+        "type": "Object"
+      }
+    }
+  },
+  "cart": "Your Cart",
+  "cartEmpty": "Your cart is empty.",
+  "rm2": "RM {price}",
+  "@rm2": {
+    "placeholders": {
+      "price": {
+        "type": "Object"
+      }
+    }
+  },
+  "addNoteOptional": "Add a note (optional)",
+  "subtotal": "Subtotal",
+  "deliveryFee": "Delivery Fee",
+  "total": "Total",
+  "proceedCheckout": "Proceed to Checkout",
+  "rm3": "RM {toStringAsFixed}",
+  "@rm3": {
+    "placeholders": {
+      "toStringAsFixed": {
+        "type": "Object"
+      }
+    }
+  },
+  "checkout": "Checkout",
+  "customerInfo": "Customer Info",
+  "fullName": "Full name",
+  "deliveryAddress2": "Delivery Address",
+  "deliveryOption": "Delivery Option",
+  "standardDelivery": "Standard delivery",
+  "t3045Min": "30-45 min",
+  "expressDelivery": "Express delivery",
+  "t1520MinRm300": "15-20 min · +RM 3.00",
+  "paymentMethod": "Payment Method",
+  "cashDelivery": "Cash on Delivery",
+  "payWhenOrderArrives": "Pay when your order arrives",
+  "card": "Card",
+  "prototypeOnlyNoRealPaymentProcessed": "Prototype only -- no real payment is processed",
+  "orderSummary": "Order Summary",
+  "placeOrder": "Place Order",
+  "orderPlaced": "Order placed!",
+  "orderHasBeenCreatedPrototypeFlow": "Order {orderRef} has been created. This is a prototype flow -- no real order or payment was processed.",
+  "@orderHasBeenCreatedPrototypeFlow": {
+    "placeholders": {
+      "orderRef": {
+        "type": "Object"
+      }
+    }
+  },
+  "continueShopping": "Continue Shopping",
+  "store": "Your store",
+  "defaultText": "Default",
+  "white": "White",
+  "warm": "Warm",
+  "cool": "Cool",
+  "discardChanges": "Discard changes?",
+  "storefrontStaysChangesMadeHereNot": "Your storefront stays as it is. Changes you made here are not saved.",
+  "keepEditing": "Keep editing",
+  "discard": "Discard",
+  "saving": "Saving...",
+  "updatingStorefront": "Updating your storefront",
+  "live": "{def} is live",
+  "@live": {
+    "placeholders": {
+      "def": {
+        "type": "Object"
+      }
+    }
+  },
+  "storefrontUpdated": "Storefront updated",
+  "productsNowShowLayout": "Your products now show in the {def} layout.",
+  "@productsNowShowLayout": {
+    "placeholders": {
+      "def": {
+        "type": "Object"
+      }
+    }
+  },
+  "customersNowSeeChanges": "Customers now see your changes.",
+  "couldntOpenPhotosPleaseTryAgain": "Couldn't open your photos. Please try again.",
+  "customize2": "Customize {def}",
+  "@customize2": {
+    "placeholders": {
+      "def": {
+        "type": "Object"
+      }
+    }
+  },
+  "adjustColoursStyleMatchBrand": "Adjust the colours and style to match your brand.",
+  "resetTemplateDefaults": "Reset to template defaults",
+  "brandColour": "Brand colour",
+  "customColour": "Custom colour",
+  "background": "Background",
+  "custom": "Custom",
+  "heroImage": "Hero image",
+  "shownBehindStorefrontBanner": "Shown behind your storefront banner.",
+  "upload": "Upload",
+  "change": "Change",
+  "storeName": "Store name",
+  "fromBusinessProfile": "From your Business Profile.",
+  "taglineOptional": "Tagline (optional)",
+  "colour": "Colour {hex}",
+  "@colour": {
+    "placeholders": {
+      "hex": {
+        "type": "Object"
+      }
+    }
+  },
+  "background2": "{label} background",
+  "@background2": {
+    "placeholders": {
+      "label": {
+        "type": "Object"
+      }
+    }
+  },
+  "pickColour": "Pick a Colour",
+  "done": "Done",
+  "exploreTemplates": "Explore Templates",
+  "previewAnyLayoutOwnProducts": "Preview any layout with your own products.",
+  "noTemplatesHereYet": "No templates here yet.",
+  "everyTemplateShowsTheseProducts": "Every template shows these products",
+  "comingSoon": "Coming soon",
+  "customize3": "Customize: {join}",
+  "@customize3": {
+    "placeholders": {
+      "join": {
+        "type": "Object"
+      }
+    }
+  },
+  "useTemplate": "Use This Template",
+  "close": "Close",
+  "storefront2": "Your storefront",
+  "rm4": "RM{amount}",
+  "@rm4": {
+    "placeholders": {
+      "amount": {
+        "type": "Object"
+      }
+    }
+  },
+  "deliveries": "Deliveries",
+  "teamMembers": "Team members",
+  "plan": "{plan} plan",
+  "@plan": {
+    "placeholders": {
+      "plan": {
+        "type": "Object"
+      }
+    }
+  },
+  "nextRenewal": "Next renewal on {nextRenewal}",
+  "@nextRenewal": {
+    "placeholders": {
+      "nextRenewal": {
+        "type": "Object"
+      }
+    }
+  },
+  "currentUsage": "Current usage",
+  "cycle": "This cycle",
+  "changePlan": "Change plan",
+  "paymentMethod2": "Payment method",
+  "paymentMethods": "Payment methods",
+  "billingHistory2": "Billing history",
+  "unlimited": "{used} · Unlimited",
+  "@unlimited": {
+    "placeholders": {
+      "used": {
+        "type": "Object"
+      }
+    }
+  },
+  "currentPlan": "Current plan",
+  "selectPlanThatFitsBusiness": "Select the plan that fits your business.",
+  "plansPricesCurrentPricingCandidate": "Plans and prices are the current pricing candidate.",
+  "monthly": "Monthly",
+  "yearly": "Yearly",
+  "t2MonthsFree": "2 months free",
+  "mostPopular": "Most Popular",
+  "current": "Current",
+  "processingPayment": "Processing payment",
+  "pleaseWaitWhileWeConfirmPayment": "Please wait while we confirm your payment.",
+  "subscriptionActive": "Subscription active",
+  "paymentUnsuccessful": "Payment unsuccessful",
+  "weCouldntProcessPaymentNoCharge": "We couldn't process your payment.\nNo charge was made.",
+  "changePaymentMethod": "Change payment method",
+  "subscribe": "Subscribe",
+  "billingCycle": "Billing cycle",
+  "creditDebitCard": "Credit / Debit card",
+  "fpxOnlineBanking": "FPX online banking",
+  "demoNoRealPaymentProcessed": "Demo — no real payment is processed.",
+  "noInvoicesYet": "No invoices yet.",
+  "paid": "Paid",
+  "due": "Due",
+  "downloadInvoice": "Download invoice",
+  "invoiceDownload": "Invoice download",
+  "ahmadRazi": "Ahmad Razi",
+  "vfy7281": "VFY 7281",
+  "bangsar": "Bangsar",
+  "t224Pm": "2:24 PM",
+  "sitiAminah": "Siti Aminah",
+  "bmd4120": "BMD 4120",
+  "sentul": "Sentul",
+  "t156Pm": "1:56 PM",
+  "jasonLim": "Jason Lim",
+  "vdt3302": "VDT 3302",
+  "setapak": "Setapak",
+  "t1241Pm": "12:41 PM",
+  "nurIman": "Nur Iman",
+  "vfe9812": "VFE 9812",
+  "shahAlam": "Shah Alam",
+  "t1128Am": "11:28 AM",
+  "danielTan": "Daniel Tan",
+  "bpl6683": "BPL 6683",
+  "petalingJaya": "Petaling Jaya",
+  "t1054Am": "10:54 AM",
+  "farahLee": "Farah Lee",
+  "vds7721": "VDS 7721",
+  "putrajaya": "Putrajaya",
+  "t0917Am": "09:17 AM",
+  "hafizKhan": "Hafiz Khan",
+  "bpq3091": "BPQ 3091",
+  "klang": "Klang",
+  "t0836Am": "08:36 AM",
+  "totalOrders2": "Total Orders",
+  "recentDelivery": "Recent Delivery",
+  "noCompletedDeliveriesYet": "No completed deliveries yet.",
+  "needAttention": "Need Attention",
+  "needAttention2": "Need Attention ({issuesCount})",
+  "@needAttention2": {
+    "placeholders": {
+      "issuesCount": {
+        "type": "Object"
+      }
+    }
+  },
+  "nothingNeedsAttention": "Nothing needs your attention.",
+  "needsAction": "Needs your action",
+  "activeRun": "Active run",
+  "inviteRider": "Invite rider",
+  "inviteTeamMember": "Invite team member",
+  "online": "Online",
+  "youreOfflineNewOrdersPaused": "You're offline. New orders are paused.",
+  "youreOnline": "You're online.",
+  "businesses": "Your businesses",
+  "goodMorning": "Good Morning,",
+  "goodAfternoon": "Good Afternoon,",
+  "goodEvening": "Good Evening,",
+  "heresWhatsHappeningToday": "Here's what's happening today.",
+  "searchOrderNumberCustomer": "Search order number or customer...",
+  "searchRiders": "Search riders...",
+  "addOrder": "Add order",
+  "addZone": "Add zone",
+  "notificationOptions": "Notification options",
+  "markAllRead": "Mark all as read",
+  "clearAllNotifications": "Clear all notifications",
+  "search": "Search",
+  "notWiredUpYet": "{action} is not wired up yet.",
+  "@notWiredUpYet": {
+    "placeholders": {
+      "action": {
+        "type": "Object"
+      }
+    }
+  },
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "filter": "Filter",
+  "phoneApp": "the phone app",
+  "whatsapp": "WhatsApp",
+  "couldNotOpen": "Could not open {target}.",
+  "@couldNotOpen": {
+    "placeholders": {
+      "target": {
+        "type": "Object"
+      }
+    }
+  },
+  "call": "Call",
+  "call2": "Call {phone}",
+  "@call2": {
+    "placeholders": {
+      "phone": {
+        "type": "Object"
+      }
+    }
+  },
+  "whatsapp2": "WhatsApp {phone}",
+  "@whatsapp2": {
+    "placeholders": {
+      "phone": {
+        "type": "Object"
+      }
+    }
+  },
+  "contact": "Contact",
+  "loading": "Loading",
+  "somethingWentWrong": "Something went wrong",
+  "weCouldntCompleteActionRightNow": "We couldn't complete this action right now. Please try again.",
+  "delivery": "Delivery",
+  "activeTeamMemberCanAccessBusiness": "Active · This team member can currently access your business.",
+  "fullAccessIncludingBillingSubscription": "Full access to every part of the business, including billing and subscription.",
+  "importSampleSubtitle": "{label} · {count} orders\n{date}",
+  "@importSampleSubtitle": {
+    "placeholders": {
+      "label": {
+        "type": "Object"
+      },
+      "count": {
+        "type": "Object"
+      },
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "nextSetHowFarDeliver": "Next: set how far you deliver",
+  "reservedLaterApprovedDeliverySettingsPass": "Reserved for a later approved delivery settings pass.",
+  "edit": "Edit",
+  "rating": "Rating",
+  "nameContactDescription": "Name, contact, description",
+  "businessAddress2": "Business Address",
+  "storeAddressServiceArea": "Store address and service area",
+  "businessHours2": "Business Hours",
+  "setOperatingHours": "Set your operating hours",
+  "storeReady": "Your store is ready",
+  "keepBusinessInformationUpDate": "Keep your business information up to date.",
+  "editingBusinessDetailsAppNotConnected": "Editing business details in the app is not connected yet.",
+  "businessDetails": "Business details",
+  "howCustomersRidersSeeBusiness": "How customers and riders see your business.",
+  "taglineOptional2": "Tagline (Optional)",
+  "shortDescription": "Short Description",
+  "whereCustomersRidersCanReach": "Where customers and riders can reach you.",
+  "code": "Code",
+  "businessEmail": "Business Email",
+  "editingBusinessAddressAppNotConnected": "Editing the business address in the app is not connected yet.",
+  "saveAddress": "Save Address",
+  "addressDetails": "Address details",
+  "addressLine1": "Address Line 1",
+  "addressLine2Optional": "Address Line 2 (Optional)",
+  "state": "State",
+  "businessHoursNotConnectedYet": "Business hours are not connected yet.",
+  "monday": "Monday",
+  "tuesday": "Tuesday",
+  "wednesday": "Wednesday",
+  "thursday": "Thursday",
+  "friday": "Friday",
+  "saturday": "Saturday",
+  "sunday": "Sunday",
+  "saveHours": "Save Hours",
+  "operatingHours": "Operating Hours",
+  "letCustomersKnowWhenBusinessOpen": "Let your customers know when your business is open.",
+  "applyMondaysHoursAllDays": "Apply Monday's hours to all days",
+  "personalDetails": "Personal details",
+  "nameShownTeam": "Your name as shown to your team.",
+  "fullName2": "Full Name",
+  "signEmailRole": "Sign-in email and role.",
+  "emailAddress": "Email Address",
+  "emailCannotChangedApp": "Email cannot be changed in the app.",
+  "role": "Role",
+  "managedByBusiness": "Managed by your business.",
+  "keepAccountSafe": "Keep your account safe",
+  "manageHowSignBusinessAccount": "Manage how you sign in to your business account.",
+  "signAccess": "Sign-in & access",
+  "changePassword2": "Change your password",
+  "twoFactorAuthentication": "Two-Factor Authentication",
+  "useLeast8CharactersLetterNumber": "Use at least 8 characters with a letter and a number.",
+  "updatingPassword2": "Updating your password",
+  "passwordHasBeenUpdatedSuccessfully": "Your password has been updated successfully.",
+  "updatePassword2": "Update Password",
+  "useStrongPasswordKeepAccountSecure": "Use a strong password to keep your account secure.",
+  "newPassword2": "New Password",
+  "enterNewPassword2": "Enter new password",
+  "minimum8Characters": "Minimum 8 characters",
+  "includeLeastOneLetterOneNumber": "Include at least one letter and one number",
+  "confirmNewPassword": "Confirm New Password",
+  "confirmNewPassword2": "Confirm new password",
+  "notificationSettingsNotConnectedYet": "Notification settings are not connected yet.",
+  "always": "Always on",
+  "issuesDeliveryProgressAccountSecurityAlerts": "Issues, delivery progress and account security alerts keep your operation running, so they cannot be turned off.",
+  "orderIssues": "Order issues",
+  "accountSecurity": "Account & security",
+  "optional": "Optional",
+  "newOrders": "New orders",
+  "whenNewOrderComes": "When a new order comes in.",
+  "riderStatus": "Rider status",
+  "whenRidersGoOnlineOffline": "When riders go online or offline.",
+  "productNews": "Product news",
+  "tipsNewCeffloFeatures": "Tips and new Cefflo features.",
+  "blue": "Blue",
+  "navy": "Navy",
+  "red": "Red",
+  "green": "Green",
+  "yellow": "Yellow",
+  "orange": "Orange",
+  "black": "Black",
+  "accentColour": "Accent colour",
+  "chooseAccentColourApp": "Choose the accent colour for the app.",
+  "hue": "Hue",
+  "lightness": "Lightness",
+  "apply": "Apply",
+  "closed": "Closed",
+  "wereHereHelp": "We’re here to help",
+  "howCanWeHelp": "How can we help?",
+  "searchHelpArticlesTopics": "Search for help, articles or topics...",
+  "helpCentre2": "Help Centre",
+  "browseArticlesGuidesFaqs": "Browse articles, guides and FAQs",
+  "contactSupport2": "Contact Support",
+  "chatSendSupportRequest": "Chat or send a support request",
+  "popularTopics": "Popular Topics",
+  "accountSecurity2": "Account & Security",
+  "loginProfileSecuritySettings": "Login, profile, security settings",
+  "ordersDelivery": "Orders & Delivery",
+  "orderManagementDeliveryIssues": "Order management, delivery issues",
+  "ridersTeam": "Riders & Team",
+  "riderInvitesApprovalsTeamAccess": "Rider invites, approvals, team access",
+  "subscriptionBilling": "Subscription & Billing",
+  "plansPaymentsInvoices": "Plans, payments, invoices",
+  "appGuides": "App Guides",
+  "stepByStepTutorials": "Step-by-step tutorials",
+  "findAnswers": "Find answers",
+  "searchOurHelpCentreBrowseTopics": "Search our help centre or browse topics below.",
+  "searchHelpEGZonesRiders": "Search for help, e.g. zones, riders...",
+  "browseTopics": "Browse topics",
+  "gettingStarted": "Getting Started",
+  "setUpAccountBusiness": "Set up your account and business",
+  "manageOrdersRunsZones": "Manage orders, runs and zones",
+  "zonesRiders": "Zones & Riders",
+  "coverageRidersDispatch": "Coverage, riders and dispatch",
+  "profileSecuritySettings": "Profile, security and settings",
+  "plansPaymentsInvoices2": "Plans, payments and invoices",
+  "popularQuestions": "Popular Questions",
+  "howDoICreateDeliveryZone": "How do I create a delivery zone?",
+  "howDoIAddRider": "How do I add a rider?",
+  "canIChangeMyPlanLater": "Can I change my plan later?",
+  "howDoesRouteOptimizationWork": "How does route optimization work?",
+  "whereCanMyCustomersTrackTheir": "Where can my customers track their orders?",
+  "viewingAllQuestions": "Viewing all questions",
+  "sendingSupportRequestsFromAppNot": "Sending support requests from the app is not connected yet.",
+  "wereHereHelp2": "We’re here to help.",
+  "getTouch": "Get in touch",
+  "tellUsAboutIssueOurTeam": "Tell us about your issue and our team will get back to you.",
+  "issueCategory": "Issue Category",
+  "selectCategory": "Select a category",
+  "subject": "Subject",
+  "brieflyDescribeIssue": "Briefly describe your issue",
+  "message": "Message",
+  "tellUsMoreAboutIssue": "Tell us more about your issue...",
+  "addScreenshotsOptional": "Add Screenshots (Optional)",
+  "pngJpgUp10mbEach": "PNG, JPG up to 10MB each",
+  "tapAttachImages": "Tap to attach images",
+  "whereWeWillReply": "Where we will reply to you.",
+  "contactEmail": "Contact Email",
+  "sendRequest": "Send Request",
+  "sendingRequest": "Sending your request",
+  "supportRequestHasBeenSent": "Your support request has been sent.",
+  "ourSupportTeamWillGetBack": "ⓘ Our support team will get back to you as soon as possible.",
+  "trustTransparency": "Trust & Transparency",
+  "wereCommittedProtectingDataPrivacy": "We’re committed to protecting your data and your privacy.",
+  "termsThatGuideUseCefflo": "The terms that guide your use of Cefflo.",
+  "lastUpdated12Sep2026": "Last updated: 12 Sep 2026",
+  "page": "On this page",
+  "t1Introduction2InformationWeCollect": "1.  Introduction\n2.  Information We Collect\n3.  How We Use Your Information\n4.  Data Sharing\n5.  Data Security\n6.  Your Rights\n7.  Cookies and Tracking Technologies\n8.  Changes to This Policy\n9.  Contact Us",
+  "t1AcceptanceTerms2AccountResponsibilities": "1.  Acceptance of Terms\n2.  Account Responsibilities\n3.  Acceptable Use\n4.  Subscription and Billing\n5.  Intellectual Property\n6.  Service Availability\n7.  Limitation of Liability\n8.  Changes to These Terms\n9.  Contact Us",
+  "t1Introduction": "1. Introduction",
+  "t1AcceptanceTerms": "1. Acceptance of Terms",
+  "ceffloWeUsOurValuesPrivacy": "Cefflo (“we”, “us” or “our”) values your privacy. This policy explains how we collect, use, disclose and safeguard your information when you use our services.",
+  "byAccessingUsingCeffloAgreeThese": "By accessing or using Cefflo, you agree to these terms and to use the service responsibly in accordance with applicable laws.",
+  "t2InformationWeCollect": "2. Information We Collect",
+  "t2AccountResponsibilities": "2. Account Responsibilities",
+  "weCollectInformationThatProvideDirectly": "We collect information that you provide directly to us, together with limited operational data needed to deliver and improve the service.",
+  "responsibleMaintainingAccurateAccountInformationProtecting": "You are responsible for maintaining accurate account information and protecting access to your account.",
+  "moreOrdersLessWorkSmootherDelivery": "More orders. Less work. A smoother delivery day.",
+  "ourPurpose": "Our purpose",
+  "operateTodayGrowTomorrow2": "Operate Today. Grow Tomorrow.",
+  "localSameDayDeliveryOperatingSystem": "A local same-day delivery operating system built for businesses.",
+  "appInformation": "App information",
+  "version": "Version",
+  "privacyPolicy2": "Privacy Policy",
+  "readPolicy": "Read policy",
+  "termsService2": "Terms of Service",
+  "readTerms": "Read terms",
+  "notificationDeleted": "Notification deleted",
+  "undo": "Undo",
+  "markUnread": "Mark as unread",
+  "markRead": "Mark as read",
+  "youreAllCaughtUp": "You're all caught up.",
+  "enterValidEmailAddress": "Enter a valid email address.",
+  "nameRequired": "Name is required.",
+  "linkCopied": "Link copied",
+  "scanJoin": "Scan to join",
+  "invitedPersonCanScanCodeOpen": "The invited person can scan this code to open the invitation.",
+  "generateInviteLink": "Generate invite link",
+  "copyLink": "Copy link",
+  "inviteRidersBusiness": "Invite riders to your business",
+  "inviteTeamMember2": "Invite a team member",
+  "theyOpenLinkJoinTeamComplete": "They open the link to join your team and complete their profile, vehicle and documents.",
+  "theyOpenLinkHelpRunDeliveries": "They open the link to help run deliveries and manage orders.",
+  "riderName": "Rider name",
+  "operatorText": "Operator",
+  "owner": "Owner",
+  "ownerAccessFullBusinessOwnershipIncluding": "Owner access is full business ownership, including billing and team management.",
+  "invitationLink": "Invitation link",
+  "showQrCode": "Show QR code",
+  "scanOpenInvitation": "Scan to open the invitation",
+  "linkShownOnlyOnceExpires7": "This link is shown only once and expires in 7 days. Invited riders appear in your Riders list as Pending Review once they complete registration.",
+  "linkShownOnlyOnceExpires72": "This link is shown only once and expires in 7 days. Invited team members appear in your Team list once they accept.",
+  "backSettings": "Back to Settings",
+  "active2": "{def}, {style}, active",
+  "@active2": {
+    "placeholders": {
+      "def": {
+        "type": "Object"
+      },
+      "style": {
+        "type": "Object"
+      }
+    }
+  },
+  "zoneOrdersRiders": "{orders, plural, =1{1 order} other{{orders} orders}} · {riders, plural, =1{1 rider} other{{riders} riders}}",
+  "@zoneOrdersRiders": {
+    "placeholders": {
+      "orders": {
+        "type": "int"
+      },
+      "riders": {
+        "type": "int"
+      }
+    }
+  },
+  "perMonth": "/ month",
+  "perYear": "/ year",
+  "roleOwner": "Owner",
+  "roleOperator": "Operator",
+  "tagFood": "Food",
+  "tagFashion": "Fashion",
+  "tagBeauty": "Beauty",
+  "tagGifts": "Gifts",
+  "locatingBusinessAddress": "Locating your business address…",
+  "businessAddressLocated": "Business address located",
+  "pickupLocationRequired": "Your pickup location is required. We could not locate your business address; make sure it is complete, then try again.",
+  "tryLocatingAgain": "Try locating again"
+}

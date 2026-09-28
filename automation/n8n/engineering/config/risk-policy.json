@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "modelMayChangeRiskClass": false,
+  "classes": {
+    "R0": {"description": "scoped read", "phase01": "allow_by_policy"},
+    "R1": {"description": "reversible development change", "phase01": "allow_by_policy_and_audit"},
+    "R2": {"description": "sensitive or staging action", "phase01": "require_verification"},
+    "R3": {"description": "production or Crown Jewel change", "phase01": "deny"},
+    "R4": {"description": "destructive, company-wide or emergency change", "phase01": "deny"}
+  },
+  "forbiddenEnvironments": ["production"],
+  "crownJewelAccess": false,
+  "securityExceptionGate": "FG-ENG-06"
+}

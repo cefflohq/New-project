@@ -1,23 +1,57 @@
-# CEFFLO --- AGENTS ROUTER
+# CEFFLO --- AGENTS ROUTER (Codex context map)
 
-Status: Canonical Primary executor: Codex Final authority: Founder
+Status: Canonical routing map for the `docs/cefflo/` context documents,
+scoped to Codex tasks. Final authority: Founder.
+
+Company AI governance and cross-department orchestration are defined by
+`docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`. Human-led development
+collaboration is defined by `docs/cefflo/agent-os/CEFFLO_AGENT_OS_CORE.md`.
+Brand and product authority is routed through `docs/cefflo/sot/00_INDEX.md`.
+This file does not create a company super-agent or assign runtime authority;
+it routes Codex to the smallest relevant canonical context set.
 
 ## A-00 Purpose
 
-This file is the mandatory router for every Cefflo engineering task. It
+This file is a router for Cefflo engineering tasks worked by Codex. It
 tells Codex which small canonical documents to load, how to scope work,
-and which actions require approval.
+and which actions require approval. See `docs/cefflo/agent-os/CODEX_OPERATING.md`
+for Codex's full operating rules.
 
 ## A-01 Source of Truth
 
 -   GitHub `main` is canonical code SOT unless Founder explicitly
     approves another baseline.
 -   Canonical docs live in `docs/cefflo/`.
+-   The current canonical Founder-approved SOT root is `docs/cefflo/sot/00_INDEX.md` (2026-09-04); it supersedes `docs/cefflo/CEFFLO_BRAND_BRAIN.md` for brand/product/architecture doctrine per the same layering this file already describes above.
 -   Do not treat old exports, prototypes, screenshots, duplicate HTML
     files, historical deployments, or local snapshots as SOT without
     verification.
 -   If code and docs materially conflict, report the conflict before
     changing architecture or locked behaviour.
+
+## A-01a Canonical UI Baseline and Retired UI (D-62, Founder-approved 2026-09-26)
+
+-   Until the canonical release reaches `main`, the ONLY UI reference
+    baseline is branch `claude/canonical-integration`. `main` currently
+    carries only the `retired/` cache-cleanup page for production hosts.
+-   Canonical UI products: Vendor Mobile `apps/vendor_mobile`, Vendor
+    Web/Desktop `vendor/`, Driver Flutter `apps/rider_mobile`, Customer
+    Tracking `customer/`, Founder `foundr/`. Invitation `invite/` is a
+    temporary supporting route. Public Website: NOT IMPLEMENTED.
+-   RETIRED — never use as reference, design input, copy source or
+    evidence, even though copies still exist in older branches, local
+    worktrees, `/tmp` snapshots, screenshots or Git history:
+    -   the purple UI (e.g. `#7C6CF0`, `#6047D7`, `#5A40CD`, `#7861FF`)
+        and its "Welcome to CEFFLO / Delivery better for your home food
+        business" welcome;
+    -   the static Rider PWA (`rider/`);
+    -   the Vendor Web woman/product welcome presentation;
+    -   the old `marketing/` site, `marketing/prelaunch/` and
+        `previews/s4-10a…d`.
+-   Before using any UI file, confirm it comes from
+    `claude/canonical-integration`. If a task points at another branch's
+    UI, stop and report it. `tests/test_canonical_ui_baseline.py` fails if
+    retired UI returns to the canonical baseline.
 
 ## A-02 Mandatory Start
 
@@ -45,6 +79,32 @@ acceptance criteria.
 -   PWA/cache/version/offline → `15_PWA.md`
 -   QA/release/go-live → `16_QA_RELEASE.md`
 -   Codex/Claude/VPS/Remote workflow → `17_AI_WORKFLOW.md`
+-   Full canonical knowledge index → `docs/cefflo/sot/00_INDEX.md`
+-   CEFFLO Marketing Department architecture and M1–M6 doctrine →
+    `docs/cefflo/marketing/CEFFLO_MARKETING_MASTER.md`
+-   Engineering Department architecture and E1–E5 doctrine →
+    `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md`
+-   Cross-company security architecture and AI/tool boundaries →
+    `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md`
+-   Company AI governance, cross-department routing and n8n control-plane
+    contracts → `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`
+
+For Control Layer work, load the Control Layer Master first, then only the
+relevant department master and the Cyber Security Master. The Control Layer
+governs between departments; n8n is its primary technical execution/control-
+plane engine; departments retain their internal reasoning and ownership.
+
+For Marketing Department work, load the Marketing Master and Control Layer
+Master. Load Product Truth, Brand Truth or other company truth only as scoped by
+the task. Do not load `docs/cefflo/sot/marketing/**`, Marketing reconciliation
+reports, or `automation/n8n/content-engine/**` into normal context; those paths
+are legacy migration evidence unless a historical or replacement-analysis task
+explicitly requires them.
+
+For Engineering Department bootstrap work, load both masters above. The
+Engineering Master defines the department; the Cyber Security Master constrains
+the relevant attack surface. The security master is not authority to build the
+full company Cyber Security system unless the Founder grants that scope.
 
 Load multiple domain docs only when the task genuinely crosses those
 contracts.

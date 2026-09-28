@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "environmentAllowlist": ["local", "development", "staging"],
+  "roles": {
+    "E1": {
+      "name": "Lead",
+      "capabilities": ["structured_planning", "scope_analysis", "ambiguity_detection"],
+      "read": ["task_pack", "scoped_repo", "canonical_context", "approved_references"],
+      "write": ["plan", "scope", "task_findings"],
+      "actions": ["repo.search", "repo.read", "context.validate"],
+      "denied": ["source.write", "git.commit", "git.push", "preview.publish", "production.*"]
+    },
+    "E2": {
+      "name": "Build",
+      "capabilities": ["code_reasoning", "structured_tool_requests"],
+      "read": ["task_pack", "assigned_worktree"],
+      "write": ["assigned_source_paths", "task_artifacts"],
+      "actions": ["repo.search", "repo.read", "source.patch", "build.run", "test.run"],
+      "denied": ["git.commit", "git.push", "preview.publish", "verification.pass", "production.*"]
+    },
+    "E3": {
+      "name": "Pixel",
+      "capabilities": ["multi_image_vision", "visual_reasoning", "structured_tool_requests"],
+      "read": ["task_pack", "approved_reference", "current_render", "scoped_ui_source"],
+      "write": ["approved_ui_paths", "visual_findings", "task_artifacts"],
+      "actions": ["repo.search", "repo.read", "source.patch_ui", "build.run", "render.capture", "visual.compare"],
+      "denied": ["backend.write", "git.commit", "git.push", "preview.publish", "production.*"]
+    },
+    "E4": {
+      "name": "Verify",
+      "capabilities": ["independent_verification", "code_review", "multi_image_vision"],
+      "read": ["task_pack", "candidate_tree", "approved_reference", "verification_inputs"],
+      "write": ["verification_outputs", "findings", "verdict"],
+      "actions": ["repo.search", "repo.read", "build.verify", "test.verify", "render.verify", "visual.verify", "tree.verify"],
+      "denied": ["source.write", "source.patch", "git.commit", "git.push", "preview.publish", "production.*"]
+    },
+    "E5": {
+      "name": "Ship",
+      "capabilities": ["deterministic_release", "exception_summary"],
+      "read": ["task_pack", "verified_manifest", "e4_verdict"],
+      "write": ["git_metadata", "preview_record", "ship_evidence"],
+      "actions": ["tree.verify", "git.commit_verified", "git.push_task_branch", "preview.publish_staging", "preview.verify"],
+      "denied": ["source.write", "source.patch", "git.push_protected", "preview.publish_production", "production.*"]
+    }
+  }
+}

@@ -1,73 +1,66 @@
-# CEFFLO --- AI WORKFLOW
+# CEFFLO — DEVELOPMENT AI WORKFLOW
 
-## AI-00 Objective
+**Status:** ACTIVE — development collaboration only
+**Company runtime authority:** `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`
 
-Use AI to increase execution speed without creating duplicate ownership,
-context waste or conflicting code.
+## AI-00 Scope
+
+This document governs human-led repository work performed with ChatGPT, Claude
+and Codex. It does not define the CEFFLO company runtime, cross-department
+orchestration, model-provider architecture or autonomous department execution.
+
+The company boundary is:
+
+```text
+Founder → CEFFLO Control Layer → n8n → departments → approved tools
+```
+
+Cyber Security is a cross-company guardrail. Department masters govern their
+internal roles and workflows.
 
 ## AI-01 Founder
 
-Founder: - sets product priorities; - approves protected actions; -
-approves phase gates; - may direct Codex remotely from Android.
+The Founder sets priorities, resolves doctrine conflicts, approves protected
+actions and phase gates, reviews evidence and authorizes Production.
 
-## AI-02 Codex
+## AI-02 Development Collaboration
 
-Primary engineering executor and canonical code integrator: - inspect
-repo; - implement frontend/backend; - test/QA; - Git operations; -
-deployment engineering; - technical reports.
+Use `docs/cefflo/agent-os/CEFFLO_AGENT_OS_CORE.md` and the relevant role
+Operating MD for repository collaboration. Agent selection is a development
+workflow choice, not company runtime routing authority.
 
-Codex follows `00_AGENTS.md`.
+Founder instruction overrides normal development routing. Do not ask multiple
+agents to duplicate the same substantial analysis without a stated verification
+purpose.
 
-## AI-03 Claude
+## AI-03 Context and Handoffs
 
-Optional specialist, not mandatory in every sprint. Best use: - UI
-concept/prototype; - visual improvement; - new interface exploration; -
-architecture/product critique; - independent review.
+Load only the canonical documents required for the task. Use compact handoffs
+that preserve branch, SHA, scope, evidence, blockers and Founder-gate state.
+Repository presence alone does not establish current authority.
 
-If Claude lacks GitHub write access, do not make Founder manually
-shuttle code back and forth for routine implementation. Approved
-concepts/specs are passed to Codex for clean integration.
+## AI-04 Implementation Ownership
 
-## AI-04 Handoff
+Assign one implementer to a change unless an independent review, verification
+role or deliberate prototype comparison is part of the task. Keep branch and
+worktree ownership explicit and preserve a clean review boundary.
 
-When Claude is used, handoff should state: - objective; - scope; -
-approved visual/product outcome; - acceptance criteria; - do-not-touch
-areas. Codex implements in canonical repo and reports result.
+## AI-05 Autonomy and Founder Gates
 
-## AI-05 No Duplicate Implementation
+Agents may execute approved normal development within the repository rules.
+Credentials, production access, destructive changes, security exceptions,
+spend and other protected actions remain Founder-gated.
 
-Do not ask Claude and Codex to independently build the same production
-feature unless intentionally comparing prototypes. One canonical
-executor prevents conflict and wasted usage.
+## AI-06 Runtime Boundary
 
-## AI-06 Usage Efficiency
+Do not use this document to create company runtime agents, routes, permissions,
+events, cost policy or n8n workflows. Those contracts belong to the Control
+Layer Master and the applicable department and Cyber Security masters.
 
--   Codex: code/repo/testing/deployment.
--   Claude: only high-value specialist work when it adds value.
--   Avoid repeated full-repo prompts.
--   Use router docs and section IDs.
--   Continue current phase/sprint instead of re-explaining Cefflo every
-    session.
+Jev is **CANDIDATE JUDGMENT ENGINE — NOT QUALIFIED / NOT REQUIRED / NO ACTIVE
+DEPENDENCY**. Development tooling must not treat it as required infrastructure.
 
-## AI-07 VPS
+## AI-07 Remote and Source Control
 
-Contabo Ubuntu VPS is the current persistent AI workstation. Repository
-workspace: `New-project` as verified during setup; re-verify path/state
-when needed.
-
-## AI-08 Remote
-
-ChatGPT Desktop on VPS + ChatGPT Android Remote allows Founder to steer
-the connected workspace from phone. Remote does not replace
-Git/source-control discipline.
-
-## AI-09 Autonomy
-
-Codex may autonomously execute approved normal development. Protected
-actions remain Founder-gated under `00_AGENTS.md`.
-
-## AI-10 Future Orchestration
-
-Do not build a complex autonomous multi-agent orchestrator before Stage
-4 unless Founder explicitly reprioritizes it. Principle: **Design now →
-Build when needed → Automate when proven → Scale when valuable.**
+Remote steering does not replace Git discipline, verified repository truth,
+scoped context, reviewable evidence or Founder approval.

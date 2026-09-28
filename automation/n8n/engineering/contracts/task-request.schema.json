@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cefflo.local/schemas/engineering/task-request.schema.json",
+  "title": "CEFFLO Engineering Task Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["request_id", "requested_by", "environment", "objective", "scope", "idempotency_key"],
+  "properties": {
+    "request_id": {"type": "string", "pattern": "^ENG-REQ-[A-Z0-9-]+$"},
+    "requested_by": {"type": "string", "minLength": 1},
+    "environment": {"enum": ["local", "development", "staging"]},
+    "objective": {"type": "string", "minLength": 1, "maxLength": 8000},
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "base_ref"],
+      "properties": {
+        "repository": {"type": "string", "const": "cefflohq/New-project"},
+        "base_ref": {"type": "string", "minLength": 1},
+        "allowed_paths": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "denied_paths": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "reference_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "acceptance_criteria": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "idempotency_key": {"type": "string", "minLength": 16, "maxLength": 200}
+  }
+}

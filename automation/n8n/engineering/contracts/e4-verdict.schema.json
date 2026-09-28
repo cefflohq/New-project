@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cefflo.local/schemas/engineering/e4-verdict.schema.json",
+  "title": "CEFFLO E4 Independent Verification Verdict",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "verification_run_id", "task_pack_hash", "tree_hash", "independent_execution", "verdict", "checks", "evidence_manifest_hash"],
+  "properties": {
+    "task_id": {"type": "string"},
+    "verification_run_id": {"type": "string"},
+    "task_pack_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "tree_hash": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "independent_execution": {"const": true},
+    "source_write_permitted": {"const": false},
+    "verdict": {"enum": ["PASS", "FAIL", "BLOCKED"]},
+    "checks": {"type": "array", "items": {"type": "object"}, "minItems": 1},
+    "findings": {"type": "array", "items": {"type": "object"}},
+    "evidence_manifest_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "completed_at": {"type": "string", "format": "date-time"}
+  }
+}

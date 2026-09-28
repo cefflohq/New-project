@@ -8,6 +8,29 @@ Status: Phase 1 baseline locked. Update only from verified evidence.
 4 sprint is S4-01 from `PHASE_1_STAGE4_GAP_REPORT.md`; it has not started.
 See `STAGE_4_EXECUTION_HANDOFF.md` for entry and approval gates.
 
+## CS-00a Canonical UI Baseline (D-62, 2026-09-25)
+
+The active repository baseline carries exactly these UI products:
+
+| Product | Surface | Active source |
+|---|---|---|
+| Vendor | Mobile | `apps/vendor_mobile` (Flutter) |
+| Vendor | Web/Desktop | `vendor/` |
+| Driver | Flutter Mobile | `apps/rider_mobile` |
+| Customer Tracking | PWA | `customer/` |
+| Founder | Web/PWA | `foundr/` |
+
+- **Public Website: NOT IMPLEMENTED.** The previous `marketing/` site is not
+  canonical and was removed from the active baseline and routing.
+- **Invitation (`invite/`, `invite.cefflo.com`):** temporary supporting
+  Vendor → Driver acceptance route, not a product. Its destination is
+  canonical Driver onboarding.
+- Removed from the active baseline (history keeps them): the static Rider PWA
+  (`rider/`), `marketing/`, `previews/s4-10a…d`, and the Vendor Web/Desktop
+  welcome presentation (unauthenticated startup is the login screen).
+- The static build publishes only `scripts/canonical-surfaces.mjs`; guarded by
+  `tests/test_canonical_ui_baseline.py`.
+
 ## CS-01 Verified AI Workstation
 
 Verified during setup: - Contabo Ubuntu 24.04 desktop accessible; -
@@ -61,7 +84,7 @@ sessions and multi-stop delivery are required Stage 4 scope, not legacy.
 GitHub records a successful Vercel deployment for the canonical source, but
 public asset parity is blocked by Vercel SSO/protection. `cefflo.com` serves a
 Hostinger parked page with failed public HTTPS. `vendor.cefflo.com`,
-`rider.cefflo.com`, `track.cefflo.com`, `foundr.cefflo.com` and
+`rider.cefflo.com`, `tracking.cefflo.com`, `foundr.cefflo.com` and
 `api.cefflo.com` were authoritative `NXDOMAIN` during P1.3. Cloudflare remains
 the intended DNS/edge architecture; cutover is authorized only in the
 controlled production-release phase. See `PHASE_1_DEPLOYMENT_DOMAIN_MAP.md`.

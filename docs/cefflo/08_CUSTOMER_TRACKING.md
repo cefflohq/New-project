@@ -1,12 +1,15 @@
 # CEFFLO --- CUSTOMER TRACKING
 
+Fuller canonical Customer Tracking doctrine:
+`docs/cefflo/sot/04_CUSTOMER_TRACKING.md`.
+
 ## CT-00 Purpose
 
 Give customers clear delivery visibility without requiring an account.
 
 ## CT-01 Access
 
-Planned route: `track.cefflo.com`. Access is tokenized. Public access
+Planned route: `tracking.cefflo.com`. Access is tokenized. Public access
 must expose only required customer-facing data.
 
 ## CT-02 Core Experience

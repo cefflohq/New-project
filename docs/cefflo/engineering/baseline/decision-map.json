@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "evidenceDate": "2026-09-19",
+  "sharedAuthorityAtMergeBase": [
+    {
+      "decision": "D-33",
+      "status": "CANONICAL",
+      "effect": "CEFFLO Experience System is the shared visual authority"
+    },
+    {
+      "decision": "D-34",
+      "status": "CANONICAL",
+      "effect": "Warning semantic token family is locked"
+    },
+    {
+      "decision": "D-35/D-36",
+      "status": "CANONICAL",
+      "effect": "Yellow/Navy logo assets and removal of obsolete Purple/Signal-Lime presentation"
+    }
+  ],
+  "currentBranchAuthority": [
+    {
+      "decision": "D-37",
+      "commit": "2e02edc4d6e0eabdc15d4e9c028e9bce37a87ae1",
+      "status": "ACTIVE",
+      "effect": "42-screen Driver Flutter master supersedes the 33-screen Rider Flutter master"
+    },
+    {
+      "decision": "D-38",
+      "commit": "2e02edc4d6e0eabdc15d4e9c028e9bce37a87ae1",
+      "status": "LOCKED",
+      "effect": "Cefflo Driver is the user-facing mobile product; Rider remains backend/schema/API terminology"
+    },
+    {
+      "decision": "D-39 / FG-ENG-01",
+      "commits": [
+        "5c01ab36b395ad28057193621eb14f4753ba6643",
+        "734cc1c3990c81402df67b5d563df918f73da7cb"
+      ],
+      "status": "ACTIVE",
+      "effect": "Engineering Bootstrap Phase 01 is authorized through the FG-ENG-02 stop"
+    },
+    {
+      "decision": "D-40 / FG-ENG-02",
+      "commit": "pending baseline result commit",
+      "status": "APPROVED_WITH_AMENDMENTS",
+      "effect": "Curated baseline integration authorized; Inter retained; historical exact compact tokens deferred to FG-ENG-03"
+    }
+  ],
+  "experienceBranchImplementationClaims": [
+    {
+      "area": "Vendor Flutter",
+      "evidence": "apps/vendor_mobile and 40 unique commits",
+      "decisionRelationship": "Implements a master still labelled Founder Review Required / not blanket-authorized",
+      "classification": "REQUIRES_BASELINE_SELECTION"
+    },
+    {
+      "area": "Driver/Rider Flutter scaffold",
+      "commit": "21f002c38c60d0fe5141b1c879e969407c3f4097",
+      "decisionRelationship": "Built against superseded 33-screen R-01–R-33 authority before D-37/D-38",
+      "classification": "SUPERSEDED_ACTIVE_SCAFFOLD"
+    },
+    {
+      "area": "Vendor typography",
+      "commit": "5ac0594532fc46a439d0db123bb10c10f0835bf2",
+      "decisionRelationship": "Inter is approved as active app UI typography by D-40",
+      "classification": "INCLUDED"
+    },
+    {
+      "area": "Vendor subscription/billing screens V-50–V-54",
+      "commits": [
+        "ee114a962f33827cd10864579131940f5f34612e",
+        "17e4121f41d57bc8f707f042f4748f038facd61b"
+      ],
+      "decisionRelationship": "Implemented demo UI while canonical Vendor Flutter master keeps V-50–V-54 on HOLD",
+      "classification": "CONFLICTING"
+    }
+  ],
+  "authorityResolution": {
+    "rule": "Latest explicit Founder decision and canonical SOT override implementation claims",
+    "requiredResult": "Preserve D-37 through D-40, retain Inter, preserve safe current token implementation pending FG-ENG-03, and do not activate HOLD scope"
+  }
+}

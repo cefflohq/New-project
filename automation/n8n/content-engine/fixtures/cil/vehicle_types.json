@@ -1,0 +1,38 @@
+{
+  "taxonomy_version": "1.1",
+  "_terminology_note": "GATE B RESOLVED (D-27), refined 2026-09-12 (D-29). canonical_role stays 'rider' for every vehicle type -- this is the product/backend/API/schema identifier (matches docs/cefflo/audits/CEFFLO_GROW_V1_SCOPE_LOCK_AUDIT_REPORT.md §11a and the real rider_vehicle_type enum in supabase/migrations/202609030003_s4_11_batch_3_vehicle_capacity_compatibility.sql) and MUST NOT be changed by this file. natural_language_label is a Creative Intelligence / Content World / marketing-copy DISPLAY term only, vehicle-contextual: Motorcycle->Rider (primary; Driver also acceptable, see alt_label), Car->Driver, Van->Driver (alt_label 'Van Driver' available for scripts wanting the more specific form). A mixed/general workforce (more than one vehicle type in a scenario) uses mixed_fleet_label ('Delivery Team') instead of any single vehicle's label -- see resolveWorkforceLabel() in scripts/cil-scenario-engine.mjs, which returns the primary natural_language_label (alt_label is available for scripts wanting the alternate form but is not the default). These display labels never appear in backend code, schema, API contracts, or application role identifiers.",
+  "mixed_fleet_label": "Delivery Team",
+  "general_workforce_term": "Driver / Delivery Team",
+  "_general_workforce_term_note": "Founder clarification 2026-09-12 (see docs/cefflo/05_DECISIONS.md D-28, PENDING -- not yet reconciled repo-wide, marketing/CIL layer only): when referring to the delivery workforce GENERICALLY, with no specific vehicle named and no scenario vehicle_mix to resolve against, use 'Driver' or 'Delivery Team', not 'Rider' -- Rider is vehicle-specific to motorcycle context only, not the universal/default term. This refines, and is consistent with, the GATE B resolution above (resolveWorkforceLabel() is unchanged for scenario-scoped labels; this field is for un-scoped generic references only, e.g. product-surface naming or general marketing copy that names no vehicle). Applying this beyond the CIL/marketing layer -- to the live rider/ app, riders table/schema, FOUNDR 'Riders' section, or the 08_RIDER_FLUTTER_33_SCREEN_MASTER.md product name -- is explicitly NOT done here and requires separate Founder confirmation; see the Phase 01/02 execution report this field was added under.",
+  "vehicle_types": [
+    {
+      "id": "motorcycle",
+      "canonical_role": "rider",
+      "natural_language_label": "Rider",
+      "alt_label": "Driver",
+      "schema_enum_value": "motorcycle",
+      "characteristics": ["small_payload", "agile", "easier_parking", "useful_for_smaller_drops", "useful_for_dense_urban_areas", "limited_bulky_item_capacity", "weather_exposure"],
+      "default_capacity_max_stops": 6
+    },
+    {
+      "id": "car",
+      "canonical_role": "rider",
+      "natural_language_label": "Driver",
+      "alt_label": null,
+      "schema_enum_value": "car",
+      "characteristics": ["medium_payload", "protected_cargo", "suitable_for_fragile_or_larger_products", "suitable_for_multiple_moderate_size_drops", "more_parking_constraints_than_motorcycle"],
+      "default_capacity_max_stops": null
+    },
+    {
+      "id": "van",
+      "canonical_role": "rider",
+      "natural_language_label": "Driver",
+      "alt_label": "Van Driver",
+      "schema_enum_value": "van",
+      "characteristics": ["high_payload", "suitable_for_bulk_orders", "catering", "larger_delivery_batches", "bulky_items", "business_to_business_delivery", "larger_multi_drop_runs"],
+      "default_capacity_max_stops": null
+    }
+  ],
+  "vehicle_compatibility_requirements": ["any", "motorcycle_ok", "car_or_larger", "van_required"],
+  "realism_rule": "Vehicle selection inside a scenario must make operational sense: consider item size, quantity, fragility, temperature requirements, number of drops, order volume, distance, urban conditions, parking, weather, and business type. Do not randomly assign vehicle mix. Creative realism outranks visual variety."
+}

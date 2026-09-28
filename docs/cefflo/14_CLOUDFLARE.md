@@ -7,7 +7,7 @@ Cloudflare covers Cefflo domain/DNS/edge controls where configured.
 ## CF-01 Domain Map
 
 Target names: - `cefflo.com` - `vendor.cefflo.com` -
-`rider.cefflo.com` - `track.cefflo.com` - `foundr.cefflo.com` -
+`rider.cefflo.com` - `tracking.cefflo.com` - `foundr.cefflo.com` -
 `api.cefflo.com` only if architecture requires it.
 
 Phase 1 must verify actual records and ownership.

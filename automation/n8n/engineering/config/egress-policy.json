@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "default": "deny",
+  "arbitraryDestinations": false,
+  "validateRedirectTargets": true,
+  "allowlistedDestinations": [
+    "https://api.openai.com/v1/responses",
+    "https://api.deepseek.com/responses"
+  ],
+  "profiles": {
+    "build_default": [],
+    "dependency_install": [],
+    "model_adapter": [
+      "https://api.openai.com/v1/responses",
+      "https://api.deepseek.com/responses"
+    ],
+    "git_task_branch": [],
+    "staging_preview": []
+  },
+  "rules": {
+    "destinationFromModelOutput": false,
+    "credentialForwarding": false,
+    "productionDestination": false,
+    "logDeniedAttempt": true
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cefflo.com/contracts/content-engine/context-pack.schema.json",
+  "title": "Cefflo Task-Specific Context Pack",
+  "type": "object",
+  "required": ["product_truth_context", "brand_context", "audience_context", "content_rules", "claim_guardrails", "source_references", "retrieved_at", "status"],
+  "properties": {
+    "product_truth_context": { "$ref": "#/$defs/items" },
+    "brand_context": { "$ref": "#/$defs/items" },
+    "audience_context": { "$ref": "#/$defs/items" },
+    "content_rules": { "$ref": "#/$defs/items" },
+    "claim_guardrails": { "$ref": "#/$defs/items" },
+    "source_references": { "type": "array", "items": { "type": "object", "required": ["source", "section", "source_revision"] } },
+    "retrieved_at": { "type": "string", "format": "date-time" },
+    "status": { "const": "CONTEXT_READY" }
+  },
+  "$defs": {
+    "items": { "type": "array", "items": { "type": "object", "required": ["source", "section", "content", "source_revision"] } }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cefflo.local/schemas/engineering/visual-comparison.schema.json",
+  "title": "CEFFLO E3 Visual Comparison",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "reference", "render", "viewport", "comparison_path", "verdict", "findings"],
+  "properties": {
+    "task_id": {"type": "string"},
+    "reference": {"$ref": "#/$defs/imageEvidence"},
+    "render": {"$ref": "#/$defs/imageEvidence"},
+    "viewport": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": {"type": "integer", "minimum": 1},
+        "height": {"type": "integer", "minimum": 1},
+        "device_scale_factor": {"type": "number", "exclusiveMinimum": 0},
+        "theme": {"type": "string"}
+      }
+    },
+    "comparison_path": {"const": "genuine_multimodal_same_request"},
+    "verdict": {"enum": ["PASS", "REPAIR", "BLOCKED"]},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["region", "category", "severity", "observation", "targeted_correction"],
+        "properties": {
+          "region": {"type": "string"},
+          "category": {"type": "string"},
+          "severity": {"enum": ["low", "medium", "high", "blocking"]},
+          "observation": {"type": "string"},
+          "targeted_correction": {"type": "string"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "imageEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_id", "sha256", "mime_type"],
+      "properties": {
+        "artifact_id": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "mime_type": {"enum": ["image/png", "image/jpeg", "image/webp"]}
+      }
+    }
+  }
+}

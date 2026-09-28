@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cefflo.local/schemas/engineering/role-request.schema.json",
+  "title": "CEFFLO Engineering Role Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["request_id", "task_id", "role", "environment", "task_pack_hash", "attempt", "capabilities"],
+  "properties": {
+    "request_id": {"type": "string"},
+    "task_id": {"type": "string"},
+    "role": {"enum": ["E1", "E2", "E3", "E4", "E5"]},
+    "environment": {"enum": ["local", "development", "staging"]},
+    "task_pack_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "attempt": {"type": "integer", "minimum": 1, "maximum": 3},
+    "capabilities": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "input_artifacts": {"type": "array", "items": {"type": "string"}},
+    "allowed_actions": {"type": "array", "items": {"type": "string"}},
+    "deadline": {"type": "string", "format": "date-time"}
+  }
+}

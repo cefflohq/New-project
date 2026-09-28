@@ -1,7 +1,16 @@
 {
   "name": "cefflo-frontends",
   "private": true,
+  "devDependencies": {
+    "supabase": "2.116.0"
+  },
   "scripts": {
-    "build": "node scripts/build-static.mjs"
+    "build": "node scripts/build-static.mjs",
+    "check:environment": "node scripts/check-environment.mjs",
+    "test:environment": "python3 -m unittest tests/test_environment_guard.py",
+    "supabase:start": "supabase start",
+    "supabase:status": "supabase status",
+    "supabase:stop": "supabase stop",
+    "supabase:reset": "python3 tests/guarded_supabase_reset.py"
   }
 }

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cefflo.com/contracts/content-engine/content-package.schema.json",
+  "title": "Cefflo Phase 03 -- Content & Script Package",
+  "type": "object",
+  "required": ["scenario_id", "hook", "script", "caption", "platform_packages", "generation_provider", "generation_cost"],
+  "properties": {
+    "scenario_id": { "type": "string", "pattern": "^CIL-[0-9]{4,}$" },
+    "hook": {
+      "type": "object",
+      "required": ["hook_family", "hook_bm", "register"],
+      "properties": {
+        "hook_family": { "type": "string" },
+        "hook_bm": { "type": "string" },
+        "hook_en": { "type": "string", "description": "Generated independently from the same scenario, never translated from hook_bm -- see docs/cefflo/sot/marketing/10_BRAND_VOICE_LANGUAGE_SYSTEM.md §3.1." },
+        "register": { "type": "string", "enum": ["clean_natural", "everyday_business", "pasar_beradab"] }
+      }
+    },
+    "script": { "type": "object" },
+    "caption": { "type": "string" },
+    "platform_packages": {
+      "type": "array",
+      "items": { "type": "object", "required": ["lane"], "properties": { "lane": { "type": "string", "enum": ["meta", "tiktok", "threads"] } } }
+    },
+    "generation_provider": { "type": "string", "enum": ["deterministic", "ai_router"], "description": "§9 cost doctrine: deterministic by default; ai_router only for HIGH/MAX-tier scenarios once the DeepSeek AI Router Master is live." },
+    "generation_cost": { "type": "number", "minimum": 0 },
+    "pre_production_qa": { "type": "object", "properties": { "status": { "type": "string", "enum": ["PASS", "REVISE", "REJECT"] }, "failed_checks": { "type": "array", "items": { "type": "string" } } } },
+    "production": {
+      "type": "object",
+      "properties": {
+        "provider": { "type": "string" },
+        "status": { "type": "string", "enum": ["ACCEPTED", "REJECTED"] },
+        "attempts": { "type": "array", "items": { "type": "object" } },
+        "total_cost": { "type": "number", "minimum": 0 }
+      }
+    },
+    "post_production_qa": { "type": "object", "properties": { "status": { "type": "string", "enum": ["PASS", "REVISE", "REJECT"] }, "failed_checks": { "type": "array", "items": { "type": "string" } } } },
+    "approval_state": { "type": "string", "enum": ["DRAFT", "QA_PASS", "FOUNDER_REVIEW", "APPROVED", "SCHEDULED", "PUBLISHED", "REVISE", "REJECTED", "HOLD"] }
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cefflo.com/contracts/content-engine/cil-scenario.schema.json",
+  "title": "Cefflo Creative Intelligence Layer -- Scenario Object",
+  "type": "object",
+  "required": [
+    "scenario_id", "business_archetype", "order_profile", "delivery_team", "vehicle_mix",
+    "trigger", "operational_problem", "personas", "human_behaviour", "emotional_tension",
+    "cefflo_relevance", "desired_outcome", "creative_opportunities", "language_context",
+    "risk_flags", "novelty_signature", "validation"
+  ],
+  "properties": {
+    "scenario_id": { "type": "string", "pattern": "^CIL-[0-9]{4,}$" },
+    "business_archetype": {
+      "type": "object",
+      "required": ["business_type", "scale"],
+      "properties": {
+        "business_type": { "type": "string" },
+        "scale": { "type": "string" },
+        "daily_order_volume": { "type": ["integer", "null"] },
+        "delivery_window": { "type": ["string", "null"] }
+      }
+    },
+    "order_profile": {
+      "type": "object",
+      "required": ["count"],
+      "properties": {
+        "count": { "type": "integer", "minimum": 1 },
+        "delivery_window": { "type": ["string", "null"] },
+        "characteristics": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "delivery_team": {
+      "type": "object",
+      "required": ["expected", "available"],
+      "properties": {
+        "expected": { "type": "integer", "minimum": 0 },
+        "available": { "type": "integer", "minimum": 0 },
+        "label": {
+          "type": "string",
+          "description": "Vehicle-contextual DISPLAY term only (Rider / Driver / Delivery Team), resolved by resolveWorkforceLabel() per the GATE B resolution (docs/cefflo/05_DECISIONS.md D-27). Never the product/schema role identifier, which stays 'rider'."
+        }
+      }
+    },
+    "vehicle_mix": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type", "count"],
+        "properties": {
+          "type": { "type": "string", "enum": ["motorcycle", "car", "van"] },
+          "count": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "trigger": {
+      "type": "object",
+      "required": ["type"],
+      "properties": { "type": { "type": "string" } }
+    },
+    "operational_problem": {
+      "type": "object",
+      "required": ["primary"],
+      "properties": {
+        "primary": { "type": "string" },
+        "secondary": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "personas": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "human_behaviour": { "type": "array", "items": { "type": "string" } },
+    "environment": { "type": "object" },
+    "emotional_tension": { "type": "array", "items": { "type": "string" } },
+    "cefflo_relevance": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Only Product-Truth-approved capability IDs may appear here -- enforced by the scenario validator, not by this schema alone."
+    },
+    "desired_outcome": { "type": "array", "items": { "type": "string" } },
+    "creative_opportunities": { "type": "array", "items": { "type": "string" } },
+    "language_context": {
+      "type": "object",
+      "properties": {
+        "register": { "type": "string", "enum": ["clean_natural", "everyday_business", "pasar_beradab"] },
+        "primary_language": { "type": "string" }
+      }
+    },
+    "risk_flags": { "type": "array", "items": { "type": "string" } },
+    "novelty_signature": {
+      "type": "object",
+      "description": "Fingerprint used by the diversity engine -- business archetype + persona + vehicle mix + problem + hook structure + format, per docs/cefflo/sot/marketing/11_CREATIVE_INTELLIGENCE_LAYER.md §20."
+    },
+    "validation": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": { "type": "string", "enum": ["PASS", "REJECT", "REVISE", "HOLD"] },
+        "failed_checks": { "type": "array", "items": { "type": "string" } },
+        "scores": { "type": "object" }
+      }
+    }
+  },
+  "additionalProperties": false
+}

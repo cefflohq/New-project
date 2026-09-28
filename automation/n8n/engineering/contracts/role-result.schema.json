@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cefflo.local/schemas/engineering/role-result.schema.json",
+  "title": "CEFFLO Engineering Role Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["request_id", "task_id", "role", "attempt", "status", "evidence", "telemetry"],
+  "properties": {
+    "request_id": {"type": "string"},
+    "task_id": {"type": "string"},
+    "role": {"enum": ["E1", "E2", "E3", "E4", "E5"]},
+    "attempt": {"type": "integer", "minimum": 1, "maximum": 3},
+    "status": {"enum": ["PASS", "FAIL", "BLOCKED", "ESCALATE", "DENIED"]},
+    "summary": {"type": "string"},
+    "requested_actions": {"type": "array", "items": {"type": "object"}},
+    "findings": {"type": "array", "items": {"type": "object"}},
+    "evidence": {"type": "array", "items": {"type": "string"}},
+    "telemetry": {
+      "type": "object",
+      "required": ["duration_ms", "cost_status"],
+      "properties": {
+        "provider_ref": {"type": ["string", "null"]},
+        "model_ref": {"type": ["string", "null"]},
+        "input_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "cached_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "output_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "duration_ms": {"type": "integer", "minimum": 0},
+        "cost_status": {"enum": ["reported", "estimated", "unavailable", "not_applicable"]},
+        "cost_amount": {"type": ["number", "null"], "minimum": 0}
+      }
+    }
+  }
+}

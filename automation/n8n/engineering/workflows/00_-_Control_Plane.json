@@ -1,0 +1,125 @@
+{
+  "id": "20000000-0000-4000-8000-000000000000",
+  "name": "CEFFLO ENG - 00 - Control Plane",
+  "description": "Inactive Engineering entrypoint. It fails closed until FG-ENG-07 and then chains scoped context and role execution.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "20000000-0000-4000-8000-000000000100",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const i=$input.first().json;\nif(i.mode!=='qualification' && i.founder_gate!=='FG-ENG-07_APPROVED') throw new Error('PILOT_GATE_CLOSED');\nif(i.environment==='production'||!['local','development','staging'].includes(i.environment)) throw new Error('ENVIRONMENT_DENIED');\nif(!i.task_id||!i.baseline_sha||!i.task_pack_hash) throw new Error('TASK_ENVELOPE_INVALID');\nreturn [{json:{...i,pilot_enabled:false,control_status:'GATE_ACCEPTED'}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "20000000-0000-4000-8000-000000000101",
+      "name": "Enforce Founder Gate"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "20000000-0000-4000-8000-000000000001",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        500,
+        0
+      ],
+      "id": "20000000-0000-4000-8000-000000000102",
+      "name": "Build Scoped Context"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "20000000-0000-4000-8000-000000000002",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        760,
+        0
+      ],
+      "id": "20000000-0000-4000-8000-000000000103",
+      "name": "Execute Qualified Role"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Enforce Founder Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enforce Founder Gate": {
+      "main": [
+        [
+          {
+            "node": "Build Scoped Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Scoped Context": {
+      "main": [
+        [
+          {
+            "node": "Execute Qualified Role",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloEngineering": true,
+    "environment": "DEV_STAGING",
+    "activationProhibitedUntil": "FG-ENG-07",
+    "pilotEnabled": false
+  },
+  "pinData": {},
+  "tags": []
+}

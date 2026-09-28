@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "evidenceDate": "2026-09-19",
+  "nodes": [
+    {
+      "id": "canonical_docs",
+      "paths": ["docs/cefflo/**"],
+      "dependsOn": [],
+      "consumers": ["engineering_context", "vendor_mobile", "vendor_web", "driver_mobile"]
+    },
+    {
+      "id": "engineering_bootstrap",
+      "paths": ["automation/n8n/engineering/**", "docs/cefflo/engineering/**", "docs/cefflo/security/**"],
+      "dependsOn": ["canonical_docs"],
+      "consumers": ["future_engineering_control_plane"]
+    },
+    {
+      "id": "vendor_mobile",
+      "paths": ["apps/vendor_mobile/**"],
+      "dependsOn": ["canonical_docs", "supabase_contracts", "brand_assets", "flutter_sdk"],
+      "consumers": ["vendor_v11_pilot", "future_vendor_mobile"]
+    },
+    {
+      "id": "vendor_v11_pilot",
+      "paths": [
+        "apps/vendor_mobile/PREVIEW_AUDIT_MANIFEST.md",
+        "apps/vendor_mobile/lib/ui/screens/operations.dart",
+        "apps/vendor_mobile/lib/ui/screens/today_content.dart",
+        "apps/vendor_mobile/lib/data/vendor_repository.dart"
+      ],
+      "dependsOn": ["vendor_mobile", "approved_reference_fg_eng_03"],
+      "consumers": ["future_acceptance_test"]
+    },
+    {
+      "id": "supabase_contracts",
+      "paths": ["supabase/migrations/**", "shared/**", "vendor/backend.js", "rider/backend.js"],
+      "dependsOn": [],
+      "consumers": ["vendor_mobile", "driver_mobile", "vendor_web", "rider_web"]
+    },
+    {
+      "id": "vendor_web",
+      "paths": ["vendor/index.html"],
+      "dependsOn": ["supabase_contracts", "brand_assets", "experience_system"],
+      "consumers": ["static_build", "vercel_preview"]
+    },
+    {
+      "id": "rider_web",
+      "paths": ["rider/index.html"],
+      "dependsOn": ["supabase_contracts", "experience_system"],
+      "consumers": ["static_build", "vercel_preview"]
+    },
+    {
+      "id": "driver_mobile_superseded_scaffold",
+      "paths": ["apps/rider_mobile/**"],
+      "dependsOn": ["superseded_33_screen_master", "supabase_contracts", "flutter_sdk"],
+      "consumers": [],
+      "validReusableParts": ["backend repository research", "typed backend models", "environment guard pattern"],
+      "invalidAsActiveBaseline": ["R-01–R-33 route graph", "Rider user-facing product naming", "unfinished app with no screens/main entrypoint"]
+    },
+    {
+      "id": "brand_assets",
+      "paths": ["docs/cefflo/brand/assets/logo/**", "shared/brand/**", "apps/vendor_mobile/assets/brand/**"],
+      "dependsOn": ["D-35", "D-36"],
+      "consumers": ["vendor_mobile", "vendor_web", "invite", "marketing_prelaunch"]
+    },
+    {
+      "id": "experience_system",
+      "paths": ["docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md"],
+      "dependsOn": ["D-33", "D-34"],
+      "consumers": ["vendor_mobile", "vendor_web", "rider_web", "invite", "marketing_prelaunch"]
+    },
+    {
+      "id": "vendor_auth_prototype",
+      "paths": ["previews/vendor-auth-prototype/**"],
+      "dependsOn": [],
+      "consumers": [],
+      "dependencySearchResult": "No tracked consumer found outside the prototype itself"
+    }
+  ],
+  "criticalOrdering": [
+    "Founder selects baseline",
+    "Canonical decisions applied",
+    "Vendor mobile conflicts reconciled",
+    "Build/test evidence collected",
+    "Only then may the resulting baseline become Engineering task input"
+  ]
+}

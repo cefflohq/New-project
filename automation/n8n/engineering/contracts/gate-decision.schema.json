@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cefflo.local/schemas/engineering/gate-decision.schema.json",
+  "title": "CEFFLO Engineering Founder Gate Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["gate_id", "decided_by", "decision", "scope_hash", "decided_at"],
+  "properties": {
+    "gate_id": {"enum": ["FG-ENG-01", "FG-ENG-02", "FG-ENG-03", "FG-ENG-04", "FG-ENG-05", "FG-ENG-06", "FG-ENG-07", "FG-ENG-08"]},
+    "decided_by": {"type": "string", "minLength": 1},
+    "decision": {"enum": ["APPROVED", "REJECTED", "REVOKED"]},
+    "scope_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "task_id": {"type": ["string", "null"]},
+    "baseline_sha": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+    "conditions": {"type": "array", "items": {"type": "string"}},
+    "expires_at": {"type": ["string", "null"], "format": "date-time"},
+    "decided_at": {"type": "string", "format": "date-time"}
+  }
+}
