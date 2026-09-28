@@ -75,6 +75,15 @@ The UI must not force these four cases through one fake linear flow.
 
 **Vendor invitation → Invitation Landing → Create Account → Accept Business Invitation → Complete Driver Setup → Review & Submit → Pending Vendor Review → Approved → Today**
 
+> **Superseded by D-72 (2026-09-28).** The invitation decision now happens
+> once, in the Invitation PWA (`invite/`): validate → You're Invited →
+> Accept (consent) → download Cefflo Driver. The app has no invitation
+> screen. After Create Account or Sign In with the invited email it claims
+> the consent server-side (`claim_my_rider_invitations`) and continues at
+> Pending Vendor Review. D09 Invitation Landing and D10 Accept Business
+> Invitation are removed from the app; D17 Join Business remains for an
+> existing account joining by link.
+
 Rules:
 
 - Invitation context must survive authentication/account creation.

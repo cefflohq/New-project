@@ -96,25 +96,43 @@ class SharedInvitePageTests(unittest.TestCase):
         self.assertIn("/auth/v1/signup", INVITE_JS)
 
     def test_pending_token_cleared_on_terminal_success(self):
-        fn = block(INVITE_JS, r"async function accept\(\) \{")
+        fn = block(INVITE_JS, r"async function accept\(\) \{", "\n    }\n")
         self.assertIn("clearPending()", fn)
 
     def test_pending_token_cleared_on_terminal_invalid_resolve(self):
-        fn = block(INVITE_JS, r"async function resolveInvite\(\) \{")
-        self.assertIn("clearPending()", fn)
+        # Team (staff) flow: a terminal resolve (invalid/expired/revoked/used)
+        # clears any stashed token.
+        fn = block(INVITE_JS, r"function teamFlow\(\) \{", "\n  }\n")
+        resolve = fn[fn.index("rpc('resolve_team_invitation'"):]
+        self.assertIn("clearPending(); return;", resolve[:resolve.index("$('summaryBusiness')")])
 
     def test_pending_token_not_cleared_while_awaiting_email_confirmation(self):
-        signup_fn = block(INVITE_JS, r"document\.getElementById\('signupBtn'\)\.addEventListener\('click', async \(\) => \{", "\n  });")
-        # savePending must be called for the awaiting-confirmation branch,
-        # and must NOT be immediately followed by a clearPending in that
-        # same branch (only the terminal accept()/resolveInvite() paths clear it).
-        self.assertIn("savePending(token, type)", signup_fn)
+        # Team flow signup awaiting email confirmation stashes the token and
+        # does not clear it in that branch (only terminal paths clear it).
+        fn = block(INVITE_JS, r"function teamFlow\(\) \{", "\n  }\n")
+        signup = fn[fn.index("$('signupBtn').addEventListener"):]
+        waiting = signup[signup.index("else {"):signup.index("setStatus('Account created.")]
+        self.assertIn("localStorage.setItem(PENDING_KEY", waiting)
+        self.assertNotIn("clearPending", waiting)
+
+    def test_rider_flow_has_no_login_or_signup(self):
+        # D-72: the rider decision needs no account; the Driver app claims it.
+        fn = block(INVITE_JS, r"function riderFlow\(\) \{", "\n  }\n")
+        for forbidden in ("/auth/v1/signup", "api.login", "accept_rider_invitation"):
+            self.assertNotIn(forbidden, fn)
+        self.assertIn("consent_rider_invitation", fn)
+        self.assertIn("decline_rider_invitation", fn)
 
     def test_raw_token_never_sent_to_a_non_invite_rpc(self):
-        # Only resolve_/accept_ RPC calls may reference the token variable.
-        rpc_calls_with_token = re.findall(r"api\.rpc\('([a-z_]+)',\s*\{\s*p_token:\s*token", INVITE_JS)
-        for name in rpc_calls_with_token:
-            self.assertTrue(name.startswith("resolve_") or name.startswith("accept_"), name)
+        # Only invitation RPCs may receive the raw token.
+        calls = re.findall(r"api\.rpc\(([^,]+),\s*\{\s*p_token:\s*(?:token|teamToken)", INVITE_JS)
+        self.assertTrue(calls)
+        allowed = ("resolve_", "accept_", "consent_", "decline_")
+        for expr in calls:
+            names = re.findall(r"'([a-z_]+_invitation)'", expr)
+            self.assertTrue(names, expr)
+            for name in names:
+                self.assertTrue(name.startswith(allowed), name)
 
 
 class BuildScriptTests(unittest.TestCase):

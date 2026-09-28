@@ -1492,3 +1492,40 @@ unchanged.
   - department activation;
   - country launches, country pricing or payment changes;
   - telemetry beyond existing tables.
+
+## D-72 Rider Invitation: One Acceptance, in the Invitation PWA (2026-09-28)
+
+**Decision (Founder, Option 1).** A rider accepts a Vendor invitation
+exactly once, in the Invitation PWA. The Driver native app handles account,
+onboarding and approval, and never asks again.
+
+- **Invitation PWA** (`invite/`, rider path). There are four states:
+  1. validating;
+  2. You're Invited (business name + operating area; Accept / Decline);
+  3. accepted (download Cefflo Driver);
+  4. unavailable (invalid / expired / revoked / declined).
+
+  The PWA has no login or signup. Store listing URLs are runtime config and
+  are not set until real listings exist. The team (staff) invitation flow
+  is unchanged.
+- **Backend** (`202609280001`, applied to staging only):
+  - `consent_rider_invitation` / `decline_rider_invitation`: anonymous,
+    bound to the token, no rider row;
+  - `claim_my_rider_invitations`: authenticated, using the caller's own
+    confirmed email from `auth.users`, never an email from the client.
+    Creates the rider membership at `pending`;
+  - status is now `pending | consented | accepted | declined | revoked |
+    expired`;
+  - `resolve_rider_invitation` returns only name, operating area and
+    status. The business has no category field, so none is shown;
+  - `accept` and `revoke` also cover `consented`.
+- **Owner approval (`approve_pending_rider`) is unchanged and still
+  required.**
+- **Driver app:**
+  - `loadSession` claims consents before reading relationships;
+  - Create Account no longer routes to an invitation screen;
+  - D09 Invitation Landing and D10 Accept Business Invitation are removed;
+  - D17 Join Business (existing account, paste link) is kept.
+- **Supersedes:**
+  - the D-62 note that `invite/` is only a temporary supporting route;
+  - the D09/D10 invitation steps in the Driver 42-screen master.

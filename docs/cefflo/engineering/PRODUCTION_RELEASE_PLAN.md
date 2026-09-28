@@ -33,8 +33,9 @@ schema needs a secret key, so it was not used.
 
 **Conclusion.**
 - Production holds only the foundation migration `202608130001`.
-- **53 canonical migrations are missing**, `202608270001` through
-  `202609270002`. The table below lists them in order.
+- **53 canonical migrations were missing** at the 2026-09-27 probe, `202608270001` through
+  `202609270002`. D-72 added `202609280001`, so **54** are now pending (the
+  G2 inspection establishes the real number). The table below lists them in order.
 - Staging holds all 54 repo migrations in `schema_migrations`, an exact match.
 - Edge functions: `tracking-pod` is deployed on Production and staging.
   `geocode-order` is deployed on neither.
@@ -53,6 +54,7 @@ Ordered migration set for Production (apply in this exact order):
 | 46–50 | 202609040001 → 202609040005 (F2 hardening) |
 | 51 | 202609260001 (D-64 order number, with a data backfill of existing orders) |
 | 52–53 | 202609270001 → 202609270002 (D-66 live location) |
+| 54 | 202609280001 (D-72 rider invitation consent + claim) |
 
 Before applying, a secret-key or dashboard inspection must confirm there are
 **no manual out-of-band Production objects**: compare `pg_proc`, `pg_policies`
@@ -85,8 +87,8 @@ that out.
 | Gate | Action | Pass criterion | On failure |
 |---|---|---|---|
 | G1 BACKUP/PITR VERIFIED | Take a fresh manual backup, or record the PITR timestamp. Confirm in the Dashboard that it is restorable. | Restore point ID/time recorded in the release log | STOP. No write. |
-| G2 PROD SCHEMA + RLS INSPECTION | Privileged read-only session (`psql` with the DB connection string, from an operator machine and never committed). Dump `schema_migrations`, `pg_policies`, table/column list, functions, triggers, grants and row counts per table. Diff against staging at `202609270002`. | Only expected differences (the 53 pending migrations). No out-of-band objects that a migration would collide with. | STOP. Resolve each difference into the plan (a forward-compatible migration, or a documented skip) and re-run G2. |
-| G3 ORDERED PLAN | Fix the exact list `202608270001 → 202609270002` (53 files), with a checksum of each file at the release commit. Name the operator and the approver. | Plan signed off by the Founder | STOP. |
+| G2 PROD SCHEMA + RLS INSPECTION | Privileged read-only session (`psql` with the DB connection string, from an operator machine and never committed). Dump `schema_migrations`, `pg_policies`, table/column list, functions, triggers, grants and row counts per table. Diff against staging at `202609280001`. | Only expected differences (the 54 pending migrations). No out-of-band objects that a migration would collide with. | STOP. Resolve each difference into the plan (a forward-compatible migration, or a documented skip) and re-run G2. |
+| G3 ORDERED PLAN | Fix the exact list `202608270001 → 202609280001` (54 files), with a checksum of each file at the release commit. Name the operator and the approver. | Plan signed off by the Founder | STOP. |
 | G4 APPLY, STOP ON FIRST ERROR | Apply each migration in order, each in its own transaction (`psql -v ON_ERROR_STOP=1 -1 -f <file>`, or `supabase db push`). Record each in `supabase_migrations.schema_migrations`. | Every file commits, and 54 rows are in `schema_migrations` | Halt at the failing file and do not continue. Either forward-fix (isolated and understood), or restore the G1 point. |
 | G5 SCHEMA/RPC/RLS VERIFY | Re-run the G2 dump and diff it against staging. Marker probes (§1) return 200. D-64 backfill: every order has `order_date`/`order_seq`, with no duplicate `(business_id, order_date, order_seq)`. RLS checks as below. | Diff is empty, and all checks pass | Forward fix, or restore G1 |
 | G6 EDGE FUNCTION / AUTH CONFIG | Deploy `geocode-order` and `tracking-pod`. Set their secrets (§5, `CEFFLO_TRACKING_CORS_ORIGINS=https://tracking.cefflo.com`). Configure Auth SMTP, Site URL, redirect allowlist and templates (§4). | Function health responds; test emails are received from `no-reply@cefflo.com` | Revert the setting or secret, or undeploy |
@@ -280,8 +282,8 @@ Cut-over, after G7 only:
 
 | # | Mutation | Why | Target | Risk | Verification | Recovery |
 |---|---|---|---|---|---|---|
-| 1 | G1 fresh backup / PITR point + G2 privileged read-only inspection | Migrations are forward-only; public probes do not prove full state | Prod DB (read) | None | Restore point recorded; G2 diff only the 53 pending | — |
-| 2 | Apply migrations 202608270001 → 202609270002 (53) | Production is at foundation only | Prod DB | High (schema, RLS, backfill) | G5 | Restore point or forward fix |
+| 1 | G1 fresh backup / PITR point + G2 privileged read-only inspection | Migrations are forward-only; public probes do not prove full state | Prod DB (read) | None | Restore point recorded; G2 diff only the 54 pending | — |
+| 2 | Apply migrations 202608270001 → 202609280001 (54) | Production is at foundation only | Prod DB | High (schema, RLS, backfill) | G5 | Restore point or forward fix |
 | 3 | Custom SMTP, email templates, Site URL, redirect allowlist | Built-in mailer is rate-limited; native recovery links | Prod Auth | Medium | Recovery and verification email received | Revert settings |
 | 4 | `tracking-pod` `CEFFLO_TRACKING_CORS_ORIGINS=https://tracking.cefflo.com` | POD photo on the hosted tracking page | Prod function secret | Low | POD thumbnail loads on `tracking.cefflo.com` | Revert secret |
 | 5 | Deploy `geocode-order` plus `CEFFLO_MAPBOX_ACCESS_TOKEN` (required) | Coordinates for coverage, planning and ETA | Prod functions | Low | New order resolves location | Undeploy / unset |
@@ -299,7 +301,7 @@ Classes:
 
 | Item | Class | State |
 |---|---|---|
-| Production migrations (53 pending, foundation only) | P0 | Plan ready (§1, §3); **not applied** |
+| Production migrations (54 pending, foundation only) | P0 | Plan ready (§1, §3); **not applied** |
 | Backup / PITR confirmed | P0 | Founder/operator Dashboard check |
 | Privileged schema/RLS inspection (G2) | P0 | Needs Production DB credentials |
 | SMTP provider + sender `Cefflo <no-reply@cefflo.com>` + SPF/DKIM/DMARC | P0 | Signup confirmation, reset and OTP need it. Provider is a Founder choice |
