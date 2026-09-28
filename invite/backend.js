@@ -23,7 +23,16 @@
 
     function show(id) {
       screens.forEach(s => { $(s).hidden = s !== id; });
-      $('headerName').textContent = businessName;
+      // The inviting business once known; otherwise (validating, or a link
+      // that belongs to no business) the centred Cefflo Driver wordmark.
+      const header = $('headerName');
+      header.textContent = '';
+      if (businessName) header.textContent = businessName;
+      else {
+        const b = document.createElement('b'); b.textContent = 'Cefflo';
+        const span = document.createElement('span'); span.textContent = ' Driver';
+        header.append(b, span);
+      }
       window.scrollTo(0, 0);
     }
     function setHero(title, body) {
