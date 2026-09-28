@@ -74,7 +74,7 @@ section { padding-block: calc(var(--section) / 2); }
 }
 .h1, .h2 { margin: 0; font-weight: 800; letter-spacing: -.035em; line-height: 1.02; text-wrap: balance; }
 .h1 { font-size: clamp(42px, 7vw, 104px); }
-@media (min-width: 1100px) { .hero .h1 { font-size: clamp(56px, 5.4vw, 88px); } .split .h2 { font-size: clamp(36px, 3.6vw, 58px); } }
+@media (min-width: 1100px) { .hero .h1 { font-size: clamp(54px, 4.6vw, 76px); } .split .h2 { font-size: clamp(36px, 3.6vw, 58px); } }
 .h2 { font-size: clamp(34px, 4.6vw, 68px); }
 .h1 .soft, .h2 .soft { color: var(--ink-3); }
 .lead { margin: 22px 0 0; max-width: 40ch; color: var(--ink-2); font-size: clamp(18px, 1.6vw, 21px); line-height: 1.5; }
@@ -109,12 +109,14 @@ section { padding-block: calc(var(--section) / 2); }
   position: fixed; z-index: 50; left: 50%; transform: translateX(-50%);
   top: calc(env(safe-area-inset-top, 0px) + 12px);
   width: min(calc(100% - 24px), 1000px);
+  transition: transform 320ms var(--ease);
 }
+.nav.hide { transform: translate(-50%, calc(-100% - 24px)); }
 .nav-bar {
   display: flex; align-items: center; gap: 12px;
-  height: 60px; padding: 0 10px 0 16px;
-  border-radius: 20px;
-  background: rgba(1, 38, 94, .96);
+  height: 62px; padding: 0 8px 0 24px;
+  border-radius: 999px;
+  background: linear-gradient(100deg, #01265E 0%, #00378F 35%, #005CC4 70%, #0592EB 100%);
   box-shadow: 0 16px 40px -18px rgba(1, 38, 94, .6);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   color: #fff;
@@ -125,25 +127,69 @@ section { padding-block: calc(var(--section) / 2); }
 .nav-links { display: none; margin-left: auto; gap: 26px; font-size: 15px; font-weight: 500; color: rgba(255,255,255,.78); }
 .nav-links a:hover { color: #fff; }
 .nav-go {
-  margin-left: auto; height: 42px; padding: 0 18px; border-radius: 12px;
+  margin-left: auto; height: 46px; padding: 0 22px; border-radius: 999px;
   display: inline-flex; align-items: center;
   background: var(--mustard); color: var(--on-mustard); font-weight: 700; font-size: 15px;
 }
 @media (min-width: 900px) { .nav-links { display: flex; } .nav-go { margin-left: 12px; } }
 
-/* ---------- phone frame (real captures, untouched) ---------- */
+/* ---------- iPhone 15 frame (real captures, untouched) ----------
+   Screen 393 x 852 pt, 55 pt screen radius, thin black bezel, titanium band,
+   Dynamic Island, status bar and home indicator drawn as frame chrome. */
 .phone {
   --w: 300px;
+  position: relative;
   width: var(--w);
-  aspect-ratio: 390 / 844;
-  padding: calc(var(--w) * .03);
-  border-radius: calc(var(--w) * .15);
-  background: #0E1116;
-  box-shadow: 0 40px 80px -36px rgba(11, 18, 32, .55), inset 0 0 0 1.5px rgba(255,255,255,.08);
+  aspect-ratio: 393 / 852;
+  padding: calc(var(--w) * .024);
+  border-radius: calc(var(--w) * .165);
+  background: #050608;
+  box-shadow:
+    0 0 0 calc(var(--w) * .006) #3A3D42,
+    0 0 0 calc(var(--w) * .010) #1C1E22,
+    inset 0 0 0 1px rgba(255,255,255,.10),
+    0 50px 90px -40px rgba(11, 18, 32, .55),
+    0 20px 40px -24px rgba(11, 18, 32, .35);
   flex: none;
 }
-.phone > img { width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: calc(var(--w) * .125); background: #fff; }
-.cap { margin-top: 14px; text-align: center; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.phone::before, .phone::after {
+  content: ""; position: absolute; width: calc(var(--w) * .012); border-radius: 2px;
+}
+.phone::before { /* action button + volume up/down */
+  left: calc(var(--w) * -.019);
+  top: 18%; height: 24%;
+  background: linear-gradient(#2A2D32 0 14%, transparent 14% 30%, #2A2D32 30% 62%, transparent 62% 72%, #2A2D32 72% 100%);
+}
+.phone::after { /* side button */
+  right: calc(var(--w) * -.019);
+  top: 25%; height: 12%;
+  background: #2A2D32;
+}
+.screen {
+  position: relative; width: 100%; height: 100%;
+  border-radius: calc(var(--w) * .14);
+  overflow: hidden; background: #fff;
+  container-type: inline-size;
+}
+.screen > img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+.sb {
+  position: absolute; top: 0; left: 0; right: 0; height: 13.7cqw;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.2cqw 7.5cqw 0 9.5cqw;
+  color: #fff; pointer-events: none;
+}
+.sb .t { font-weight: 600; font-size: 4.3cqw; letter-spacing: -.01em; width: 18cqw; }
+.sb .island {
+  position: absolute; left: 50%; top: 2.8cqw; transform: translateX(-50%);
+  width: 32cqw; height: 9.4cqw; border-radius: 999px; background: #000;
+}
+.sb .ic { display: flex; align-items: center; gap: 1.4cqw; }
+.sb svg { height: 3.2cqw; width: auto; display: block; }
+.home {
+  position: absolute; left: 50%; bottom: 2cqw; transform: translateX(-50%);
+  width: 34cqw; height: 1.3cqw; border-radius: 999px; background: #0F1A36;
+}
+.cap { margin-top: 16px; text-align: center; font-size: 13px; font-weight: 600; color: var(--ink-2); }
 .on-dark .cap { color: rgba(255,255,255,.75); }
 
 /* screen crop in a card (real capture, cropped only) */
@@ -161,29 +207,22 @@ section { padding-block: calc(var(--section) / 2); }
   height: 560px;
 }
 .stage .phone { position: absolute; }
-.stage .p-main { --w: 250px; left: 50%; top: 40px; transform: translateX(-50%); z-index: 3; }
-.stage .p-left { --w: 190px; left: calc(50% - 250px); top: 150px; z-index: 2; opacity: .96; }
-.stage .p-right { --w: 200px; left: calc(50% + 70px); top: 120px; z-index: 2; }
-.stage-tag {
-  position: absolute; z-index: 4;
-  padding: 7px 12px; border-radius: 999px;
-  background: rgba(255,255,255,.95); color: var(--ink);
-  font-size: 12.5px; font-weight: 700;
-  box-shadow: 0 10px 24px -12px rgba(0,0,0,.35);
-  white-space: nowrap;
-}
+.stage .p-main { --w: 240px; left: 50%; top: 44px; transform: translateX(-50%); z-index: 3; }
+.stage .p-left, .stage .p-right { --w: 170px; top: 150px; z-index: 2; }
+.stage .p-left { left: 14px; }
+.stage .p-right { right: 14px; }
 @media (max-width: 599px) {
-  .stage { height: 520px; }
-  .stage .p-main { --w: 230px; top: 36px; }
-  .stage .p-left { --w: 160px; left: calc(50% - 190px); top: 170px; }
-  .stage .p-right { --w: 170px; left: calc(50% + 40px); top: 140px; }
+  .stage { height: 540px; }
+  .stage .p-main { --w: 220px; top: 36px; }
+  .stage .p-left, .stage .p-right { --w: 150px; top: 150px; }
+  .stage .p-left { left: -22px; }
+  .stage .p-right { right: -22px; }
 }
 @media (min-width: 1100px) {
   .hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; }
-  .stage { height: 660px; }
-  .stage .p-main { --w: 290px; }
-  .stage .p-left { --w: 210px; left: calc(50% - 270px); top: 190px; }
-  .stage .p-right { --w: 220px; left: calc(50% + 70px); top: 150px; }
+  .stage { height: 680px; }
+  .stage .p-main { --w: 280px; top: 50px; }
+  .stage .p-left, .stage .p-right { --w: 205px; top: 190px; }
 }
 
 /* ---------- categories strip ---------- */
@@ -336,22 +375,6 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
 .foot-links a:hover { color: #fff; }
 .copy { margin-top: 36px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.12); font-size: 13px; color: rgba(255,255,255,.55); }
 
-/* ---------- sticky mobile CTA ---------- */
-.sticky {
-  position: fixed; z-index: 45; left: 12px; right: 12px;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
-  display: flex; align-items: center; gap: 12px;
-  padding: 10px 10px 10px 18px; border-radius: 18px;
-  background: rgba(11, 18, 32, .96); color: #fff;
-  box-shadow: 0 18px 40px -16px rgba(0,0,0,.5);
-  transform: translateY(140%); transition: transform 260ms var(--ease);
-}
-.sticky.show { transform: none; }
-.sticky b { display: block; font-size: 15px; }
-.sticky span { display: block; font-size: 12.5px; color: rgba(255,255,255,.7); }
-.sticky a { margin-left: auto; height: 44px; padding: 0 18px; border-radius: 12px; background: var(--mustard); color: var(--on-mustard); font-weight: 700; display: inline-flex; align-items: center; white-space: nowrap; }
-@media (min-width: 900px) { .sticky { display: none; } }
-
 /* ---------- motion ---------- */
 @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
 .hero .head > * { animation: rise 650ms var(--ease) both; }
@@ -401,12 +424,9 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
         </div>
       </div>
       <div class="stage" role="img" aria-label="Skrin sebenar app Cefflo: Vendor Today, Cefflo Driver dan tracking customer">
-        <div class="phone p-left"><img src="img/c_done.webp" alt=""></div>
-        <div class="phone p-right"><img src="img/d19.webp" alt=""></div>
-        <div class="phone p-main"><img src="img/v11.webp" alt=""></div>
-        <span class="stage-tag" style="left: 16px; bottom: 20px">Customer</span>
-        <span class="stage-tag" style="left: 50%; transform: translateX(-50%); bottom: 20px">Vendor</span>
-        <span class="stage-tag" style="right: 16px; bottom: 20px">Rider</span>
+        <div class="phone p-left"><div class="screen"><img src="img/c_done_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
+        <div class="phone p-right"><div class="screen"><img src="img/d19_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
+        <div class="phone p-main"><div class="screen"><img src="img/v11_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
       </div>
     </div>
   </section>
@@ -435,7 +455,7 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
         <p class="grow">Bisnes membesar hanya bila operasi ikut membesar. <em>Grow = Operate.</em></p>
       </div>
       <div class="show reveal">
-        <div class="phone"><img src="img/v12.webp" alt="Skrin Orders Cefflo: semua order hari ini dalam satu senarai, dengan tab Ongoing, Issue dan Delivered"></div>
+        <div class="phone"><div class="screen"><img src="img/v12_ph.webp" alt="Skrin Orders Cefflo: semua order hari ini dalam satu senarai, dengan tab Ongoing, Issue dan Delivered"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
         <p class="cap">Dengan Cefflo: semua order hari ini, satu senarai.</p>
       </div>
     </div>
@@ -468,7 +488,7 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
         </div>
       </div>
       <div class="show on-dark reveal">
-        <div class="phone"><img src="img/v16.webp" alt="Skrin Zones Cefflo: peta zon Bangsar, Mont Kiara, TTDI, Damansara, Petaling Jaya dan Klang dengan bilangan order dan rider setiap zon"></div>
+        <div class="phone"><div class="screen"><img src="img/v16_ph.webp" alt="Skrin Zones Cefflo: peta zon Bangsar, Mont Kiara, TTDI, Damansara, Petaling Jaya dan Klang dengan bilangan order dan rider setiap zon"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
         <p class="cap">Order dikumpul ikut zon, siap dengan bilangan rider.</p>
       </div>
     </div>
@@ -526,16 +546,15 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
         <p class="lead">Nampak berapa order siap, berapa bermasalah, siapa hantar apa, dan apa yang perlu tindakan anda sekarang.</p>
       </div>
       <div class="showcase reveal">
-        <div class="phone side"><img src="img/v19.webp" alt="Skrin Active run: Bangsar Run, 1 of 3 delivered, stop seterusnya"></div>
-        <div class="phone big">
-          <img src="img/v11.webp" alt="Skrin Today Cefflo Vendor: jumlah order, Ready, Issue, Delivered, Recent Delivery dan Need Attention">
+        <div class="phone side"><div class="screen"><img src="img/v19_ph.webp" alt="Skrin Active run: Bangsar Run, 1 of 3 delivered, stop seterusnya"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
+        <div class="phone big"><div class="screen"><img src="img/v11_ph.webp" alt="Skrin Today Cefflo Vendor: jumlah order, Ready, Issue, Delivered, Recent Delivery dan Need Attention"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div>
           <div class="anno-list">
             <div class="anno l" style="top: 22%"><span>Ringkasan hari ini</span><i></i></div>
             <div class="anno r" style="top: 44%"><span>Siapa hantar apa</span><i></i></div>
             <div class="anno l" style="top: 80%"><span>Perlu perhatian</span><i></i></div>
           </div>
         </div>
-        <div class="phone side"><img src="img/v17.webp" alt="Skrin zon Bangsar dengan penghantaran hari ini dan butang Dispatch"></div>
+        <div class="phone side"><div class="screen"><img src="img/v17_ph.webp" alt="Skrin zon Bangsar dengan penghantaran hari ini dan butang Dispatch"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
       </div>
     </div>
   </section>
@@ -549,16 +568,15 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
         <p class="lead">Run, senarai stop ikut turutan, bukti hantar dan slide untuk siap. Semua dalam app rider.</p>
       </div>
       <div class="showcase reveal">
-        <div class="phone side"><img src="img/d19.webp" alt="Skrin utama Cefflo Driver: Today's Overview dan Current Run"></div>
-        <div class="phone big">
-          <img src="img/d21.webp" alt="Skrin Stop List: 12 order dengan turutan stop dan status">
+        <div class="phone side"><div class="screen"><img src="img/d19_ph.webp" alt="Skrin utama Cefflo Driver: Today's Overview dan Current Run"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
+        <div class="phone big"><div class="screen"><img src="img/d21_ph.webp" alt="Skrin Stop List: 12 order dengan turutan stop dan status"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div>
           <div class="anno-list">
             <div class="anno l" style="top: 12%"><span>12 order, satu run</span><i></i></div>
             <div class="anno r" style="top: 30%"><span>Stop ikut turutan</span><i></i></div>
             <div class="anno l" style="top: 60%"><span>Status setiap stop</span><i></i></div>
           </div>
         </div>
-        <div class="phone side"><img src="img/d23.webp" alt="Skrin Confirm Delivery: bukti hantar bergambar dan Slide to Complete"></div>
+        <div class="phone side"><div class="screen"><img src="img/d23_ph.webp" alt="Skrin Confirm Delivery: bukti hantar bergambar dan Slide to Complete"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
       </div>
     </div>
   </section>
@@ -577,7 +595,7 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
           <p class="cap">Dalam perjalanan</p>
         </div>
         <div>
-          <div class="phone"><img src="img/c_done.webp" alt="Tracking customer: Delivered, dengan butiran penghantaran, bukti hantar dan rating"></div>
+          <div class="phone"><div class="screen"><img src="img/c_done_ph.webp" alt="Tracking customer: Delivered, dengan butiran penghantaran, bukti hantar dan rating"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
           <p class="cap">Sudah sampai, dengan bukti</p>
         </div>
       </div>
@@ -694,9 +712,9 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
           <p class="micro"><strong>Mula percuma</strong> · 150 penghantaran sebulan · tanpa kad kredit</p>
         </div>
         <div class="final-phones">
-          <div class="phone hide-sm"><img src="img/d21.webp" alt=""></div>
-          <div class="phone"><img src="img/v11.webp" alt=""></div>
-          <div class="phone hide-sm"><img src="img/c_done.webp" alt=""></div>
+          <div class="phone hide-sm"><div class="screen"><img src="img/d21_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
+          <div class="phone"><div class="screen"><img src="img/v11_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
+          <div class="phone hide-sm"><div class="screen"><img src="img/c_done_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
         </div>
       </div>
       <p class="proof-note">Semua paparan skrin di laman ini ialah app Cefflo sebenar dengan data demo.</p>
@@ -723,11 +741,6 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
     <p class="copy">© 2026 Cefflo · Grow = Operate</p>
   </div>
 </footer>
-
-<div class="sticky" id="sticky" aria-hidden="true">
-  <div><b>Mula percuma</b><span>150 penghantaran sebulan</span></div>
-  <a href="#muat-turun" tabindex="-1">Muat turun</a>
-</div>
 
 <script>
 (function () {
@@ -765,17 +778,14 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
     }
   });
 
-  var sticky = document.getElementById('sticky');
-  var hero = document.querySelector('.hero');
-  var final = document.getElementById('muat-turun');
-  function onScroll() {
+  var nav = document.querySelector('.nav');
+  var lastY = window.scrollY;
+  window.addEventListener('scroll', function () {
     var y = window.scrollY;
-    var past = y > hero.offsetTop + hero.offsetHeight - 200;
-    var atEnd = final.getBoundingClientRect().top < window.innerHeight * .8;
-    sticky.classList.toggle('show', past && !atEnd);
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
+    if (Math.abs(y - lastY) < 6) return;
+    nav.classList.toggle('hide', y > lastY && y > 120);
+    lastY = y;
+  }, { passive: true });
 
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduce || !('IntersectionObserver' in window)) return;

@@ -13,14 +13,22 @@ Static, dependency-free homepage (`index.html` + `img/`), Bahasa Melayu.
 
 ## Product imagery
 
+Phone images (`*_ph`) are captured at the iPhone 15 app area (393 × 764 pt, @3x)
+and extended with the app's own top and bottom edge colour for the status bar
+and home-indicator areas. The page draws the iPhone 15 frame, Dynamic Island,
+status bar and home indicator around them. Card crops use the earlier 390 pt
+captures.
+
 Every screen in `img/` is an unaltered capture of a canonical app on
 `claude/canonical-integration`, run in its prototype/demo mode:
 
 | File | Source |
 |---|---|
-| `v11`, `v12`, `v16`, `v17`, `v19`, `v14_top`, `v20_top`, `v11_attn` | Vendor Mobile, `/audit/V11`, `V12`, `V16`, `V17`, `V19`, `V14` (top crop), `V20` (top crop), `V11` (Need Attention crop) |
-| `d19`, `d20`, `d21`, `d23` | Cefflo Driver, `?screen=D19`, `D20`, `D21`, `D23` |
-| `c_done`, `c_way_top` | Customer Tracking, `?state=delivered`, `?state=on_the_way` (status crop) |
+| `v11_ph`, `v12_ph`, `v16_ph`, `v17_ph`, `v19_ph` | Vendor Mobile `/audit/V11`, `V12`, `V16`, `V17`, `V19` (phone frames) |
+| `v12`, `v17`, `v14_top`, `v20_top`, `v11_attn` | Vendor Mobile `V12`, `V17`, `V14` (top crop), `V20` (top crop), `V11` (Need Attention crop) |
+| `d19_ph`, `d21_ph`, `d23_ph` | Cefflo Driver `?screen=D19`, `D21`, `D23` (phone frames) |
+| `d20`, `d23` | Cefflo Driver `D20`, `D23` (card crops) |
+| `c_done_ph`, `c_way_top` | Customer Tracking `?state=delivered` (phone frame), `?state=on_the_way` (status crop) |
 
 Crops are deliberate:
 
