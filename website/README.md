@@ -1,6 +1,11 @@
 # CEFFLO Public Website — homepage
 
-Static, dependency-free homepage (`index.html` + `img/` + `fonts/`), Bahasa Melayu.
+Static, dependency-free homepage (`index.html` + `img/` + `fonts/`).
+
+English is the default language. Bahasa Melayu is built in: every translated
+element carries its BM text in `data-ms`, the nav **BM / EN** button switches
+language and remembers the choice on the device, and `?lang=ms` opens the BM
+version directly (for BM campaign links).
 
 Inter is self-hosted in `fonts/` (Latin subset of the Inter files the Vendor app
 bundles, SIL OFL 1.1, see `fonts/LICENSE`), so the page makes no third-party requests.

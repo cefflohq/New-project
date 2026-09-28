@@ -60,7 +60,7 @@ The Website must never independently own or calculate canonical:
 All of the above remain backend-owned per `docs/cefflo/sot/02_ARCHITECTURE.md` §2. The Website may display marketing/product information and handle acquisition/commercial flows only.
 
 ## 5. Current Implementation State
-The homepage lives in `website/` on branch `claude/public-website` (Bahasa Melayu, locked D-73 pricing, real canonical app captures). The retired `marketing/` site must not return (D-62). `website/` is not yet wired into the static build or host routing; serving it on `cefflo.com` needs Founder approval.
+The homepage lives in `website/` on branch `claude/public-website` (English by default with a built-in Bahasa Melayu toggle, locked D-73 pricing, real canonical app captures). The retired `marketing/` site must not return (D-62). `website/` is not yet wired into the static build or host routing; serving it on `cefflo.com` needs Founder approval.
 
 ## 6. Relationship to the Marketing Knowledge Pack
 This document is the **product-surface** doctrine (what the Website is, its boundaries). `docs/cefflo/sot/marketing/00_MARKETING_KNOWLEDGE_PACK_INDEX.md` and its pack govern the **content/creative** doctrine that will eventually populate this surface. Neither replaces the other.

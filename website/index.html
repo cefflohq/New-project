@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="ms">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Cefflo — Sistem Operasi Delivery Hari-Sama</title>
-<meta name="description" content="Cefflo menyusun order hari ini ikut kawasan, menjadikannya run multi-drop untuk rider anda sendiri, dan memberi customer pautan tracking. Mula percuma.">
+<title>Cefflo — Same-Day Delivery Operating System</title>
+<meta name="description" content="Cefflo groups today&#39;s orders by area, turns them into multi-drop runs for your own riders, and gives customers a tracking link. Start free.">
 <meta name="theme-color" content="#01265E">
-<meta property="og:title" content="Cefflo — Uruskan delivery tempatan tanpa serabut">
-<meta property="og:description" content="Order, zon, run multi-drop, rider dan tracking customer dalam satu sistem. Mula percuma.">
+<meta property="og:title" content="Cefflo — Run local delivery without the chaos">
+<meta property="og:description" content="Orders, zones, multi-drop runs, riders and customer tracking in one system. Start free.">
 <meta property="og:type" content="website">
 <link rel="icon" type="image/png" href="img/logo_mark.png">
 <style>
@@ -582,6 +582,15 @@ footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: ca
 }
 section { overflow-x: clip; }
 
+.lang {
+  margin-left: auto; height: 40px; min-width: 48px; padding: 0 12px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.35); background: transparent; color: #fff;
+  font: 700 13px/1 "Inter", system-ui, sans-serif; letter-spacing: .04em; cursor: pointer;
+}
+.lang:hover { background: rgba(255,255,255,.12); }
+.lang + .nav-go { margin-left: 8px; }
+@media (min-width: 900px) { .lang { margin-left: 16px; } }
+
 /* ---------- motion ---------- */
 @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
 .hero .head > * { animation: rise 650ms var(--ease) both; }
@@ -602,17 +611,18 @@ section { overflow-x: clip; }
 
 <header class="nav">
   <div class="nav-bar">
-    <a class="brand" href="#top" aria-label="Cefflo — laman utama">
+    <a class="brand" href="#top" aria-label="Cefflo home">
       <img class="mark" src="img/logo_mark.png" alt="">
       <img class="word" src="img/logo_word.png" alt="Cefflo">
     </a>
-    <nav class="nav-links" aria-label="Utama">
-      <a href="#cara">Cara ia berfungsi</a>
-      <a href="#driver">Rider</a>
-      <a href="#harga">Harga</a>
-      <a href="#soalan">Soalan</a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#cara"><span data-ms="Cara ia berfungsi">How it works</span></a>
+      <a href="#driver"><span data-ms="Rider">Riders</span></a>
+      <a href="#harga"><span data-ms="Harga">Pricing</span></a>
+      <a href="#soalan"><span data-ms="Soalan">FAQ</span></a>
     </nav>
-    <a class="nav-go" href="#muat-turun">Muat turun</a>
+    <button class="lang" id="langBtn" type="button" aria-label="Bahasa Melayu">BM</button>
+    <a class="nav-go" href="#muat-turun"><span data-ms="Muat turun">Download</span></a>
   </div>
 </header>
 
@@ -622,22 +632,22 @@ section { overflow-x: clip; }
   <section class="hero">
     <div class="hero-shell on-dark"><div class="wrap">
       <div class="head center">
-        <span class="label">Sistem operasi delivery hari-sama</span>
-        <h1 class="h1">Uruskan delivery tempatan. <span class="soft">Tanpa serabut.</span></h1>
-        <p class="lead">Order hari ini disusun ikut kawasan, jadi run multi-drop untuk rider anda sendiri. Customer semak status sendiri melalui pautan.</p>
+        <span class="label"><span data-ms="Sistem operasi delivery hari-sama">Same-day delivery operating system</span></span>
+        <h1 class="h1"><span data-ms="Uruskan delivery tempatan. &lt;span class=&quot;soft&quot;&gt;Tanpa serabut.&lt;/span&gt;">Run local delivery. <span class="soft">Without the chaos.</span></span></h1>
+        <p class="lead"><span data-ms="Order hari ini disusun ikut kawasan, jadi run multi-drop untuk rider anda sendiri. Customer semak status sendiri melalui pautan.">Today&#39;s orders are grouped by area and turned into multi-drop runs for your own riders. Customers check their status from a link.</span></p>
         <div>
           <div class="cta-row" data-stores></div>
-          <p class="micro"><strong>Mula percuma</strong> · 150 penghantaran sebulan · tanpa kad kredit</p>
+          <p class="micro"><span data-ms="&lt;strong&gt;Mula percuma&lt;/strong&gt; · 150 penghantaran sebulan · tanpa kad kredit"><strong>Start free</strong> · 150 deliveries a month · no credit card</span></p>
         </div>
       </div>
-      <div class="poster poster-wide bare" role="img" aria-label="Skrin sebenar app Cefflo Vendor dengan elemen dari app Vendor, Cefflo Driver dan tracking customer">
+      <div class="poster poster-wide bare" role="img" aria-label="Real Cefflo Vendor app screen with elements from the Vendor app, Cefflo Driver and customer tracking">
         <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
         <div class="ground"></div>
         <div class="phone p-hero"><div class="screen"><img src="img/v11_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <figure class="chip tl"><figcaption>Ringkasan hari ini</figcaption><span class="card"><img src="img/f_kpi.webp" alt=""></span></figure>
-        <figure class="chip tr"><figcaption>Siap dihantar</figcaption><span class="card"><img src="img/f_delivered.webp" alt=""></span></figure>
-        <figure class="chip bl"><figcaption>Rider: stop seterusnya</figcaption><span class="card"><img src="img/f_stop.webp" alt=""></span></figure>
-        <figure class="chip br"><figcaption>Customer nampak status</figcaption><span class="card"><img src="img/f_status.webp" alt=""></span></figure>
+        <figure class="chip tl"><figcaption><span data-ms="Ringkasan hari ini">Today at a glance</span></figcaption><span class="card"><img src="img/f_kpi.webp" alt=""></span></figure>
+        <figure class="chip tr"><figcaption><span data-ms="Siap dihantar">Delivered</span></figcaption><span class="card"><img src="img/f_delivered.webp" alt=""></span></figure>
+        <figure class="chip bl"><figcaption><span data-ms="Rider: stop seterusnya">Rider: next stop</span></figcaption><span class="card"><img src="img/f_stop.webp" alt=""></span></figure>
+        <figure class="chip br"><figcaption><span data-ms="Customer nampak status">Customer sees the status</span></figcaption><span class="card"><img src="img/f_status.webp" alt=""></span></figure>
       </div>
     </div></div>
   </section>
@@ -645,9 +655,9 @@ section { overflow-x: clip; }
   <!-- 05 BUILT FOR -->
   <section style="padding-bottom: 0">
     <div class="wrap center reveal">
-      <p class="micro" style="margin: 0; font-size: 15px">Dibina untuk bisnes yang hantar order sendiri</p>
+      <p class="micro" style="margin: 0; font-size: 15px"><span data-ms="Dibina untuk bisnes yang hantar order sendiri">Built for businesses that deliver their own orders</span></p>
       <div class="cats">
-        <span>F&amp;B</span><span>Bakeri &amp; kek</span><span>Meal prep</span><span>Florist</span><span>Hamper &amp; hadiah</span><span>Kecantikan</span><span>Runcit tempatan</span>
+        <span>F&amp;B</span><span><span data-ms="Bakeri &amp;amp; kek">Bakeries &amp; cakes</span></span><span>Meal prep</span><span><span data-ms="Florist">Florists</span></span><span><span data-ms="Hamper &amp;amp; hadiah">Hampers &amp; gifts</span></span><span><span data-ms="Kecantikan">Beauty</span></span><span><span data-ms="Runcit tempatan">Local retail</span></span>
       </div>
     </div>
   </section>
@@ -656,20 +666,20 @@ section { overflow-x: clip; }
   <section id="masalah">
     <div class="wrap split">
       <div class="reveal">
-        <span class="label">Masalahnya</span>
-        <h2 class="h2">Order bertambah itu rezeki. <span class="soft">Sampailah delivery tak terkejar.</span></h2>
+        <span class="label"><span data-ms="Masalahnya">The problem</span></span>
+        <h2 class="h2"><span data-ms="Order bertambah itu rezeki. &lt;span class=&quot;soft&quot;&gt;Sampailah delivery tak terkejar.&lt;/span&gt;">More orders are good news. <span class="soft">Until delivery can&#39;t keep up.</span></span></h2>
         <ol class="pains">
-          <li><span class="n">01</span><div><b>Order bersepah</b><span>Dalam WhatsApp, DM, nota dan ingatan anda sendiri.</span></div></li>
-          <li><span class="n">02</span><div><b>Rider call setiap stop</b><span>"Lepas ni pergi mana dulu?"</span></div></li>
-          <li><span class="n">03</span><div><b>Customer tanya tak henti</b><span>"Order saya dah sampai mana?"</span></div></li>
+          <li><span class="n">01</span><div><b><span data-ms="Order bersepah">Orders everywhere</span></b><span><span data-ms="Dalam WhatsApp, DM, nota dan ingatan anda sendiri.">In WhatsApp, DMs, notes and your own memory.</span></span></div></li>
+          <li><span class="n">02</span><div><b><span data-ms="Rider call setiap stop">Riders call at every stop</span></b><span><span data-ms="&quot;Lepas ni pergi mana dulu?&quot;">"Where do I go next?"</span></span></div></li>
+          <li><span class="n">03</span><div><b><span data-ms="Customer tanya tak henti">Customers keep asking</span></b><span><span data-ms="&quot;Order saya dah sampai mana?&quot;">"Where&#39;s my order?"</span></span></div></li>
         </ol>
-        <p class="grow">Bisnes membesar hanya bila operasi ikut membesar. <em>Grow = Operate.</em></p>
+        <p class="grow"><span data-ms="Bisnes membesar hanya bila operasi ikut membesar. &lt;em&gt;Grow = Operate.&lt;/em&gt;">A business grows only as far as its operation can. <em>Grow = Operate.</em></span></p>
       </div>
-      <div class="poster light side reveal" role="img" aria-label="Skrin Orders Cefflo: semua order hari ini dalam satu senarai dengan status">
+      <div class="poster light side reveal" role="img" aria-label="Cefflo Orders screen: all of today&#39;s orders in one list with their status">
         <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
         <div class="ground"></div>
         <div class="phone p-hero"><div class="screen"><img src="img/v12_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <figure class="chip br"><figcaption>Status setiap order jelas</figcaption><span class="card"><img src="img/f_delivered.webp" alt=""></span></figure>
+        <figure class="chip br"><figcaption><span data-ms="Status setiap order jelas">Every order&#39;s status, clear</span></figcaption><span class="card"><img src="img/f_delivered.webp" alt=""></span></figure>
       </div>
     </div>
   </section>
@@ -678,33 +688,33 @@ section { overflow-x: clip; }
   <section class="dark">
     <div class="wrap split rev">
       <div class="reveal">
-        <span class="label">Bezanya</span>
-        <h2 class="h2">Jangan setakat hantar. <span class="soft">Uruskan delivery.</span></h2>
-        <p class="lead">Servis penghantaran membantu anda hantar satu job. Cefflo membantu anda menjalankan seluruh operasi delivery anda sendiri, setiap hari.</p>
+        <span class="label"><span data-ms="Bezanya">The difference</span></span>
+        <h2 class="h2"><span data-ms="Jangan setakat hantar. &lt;span class=&quot;soft&quot;&gt;Uruskan delivery.&lt;/span&gt;">Don&#39;t just send deliveries. <span class="soft">Run delivery.</span></span></h2>
+        <p class="lead"><span data-ms="Servis penghantaran membantu anda hantar satu job. Cefflo membantu anda menjalankan seluruh operasi delivery anda sendiri, setiap hari.">A delivery service helps you send one job. Cefflo helps you run your whole delivery operation, every day.</span></p>
         <div class="versus">
           <div class="vcol them">
-            <h3>Tempah penghantaran</h3>
+            <h3><span data-ms="Tempah penghantaran">Book a delivery</span></h3>
             <ul>
-              <li>Satu order ditempah sebagai satu job</li>
-              <li>Rider disediakan oleh platform</li>
-              <li>Perancangan hari anda tetap dalam kepala</li>
+              <li><span data-ms="Satu order ditempah sebagai satu job">One order booked as one job</span></li>
+              <li><span data-ms="Rider disediakan oleh platform">Riders supplied by the platform</span></li>
+              <li><span data-ms="Perancangan hari anda tetap dalam kepala">Your day&#39;s plan still lives in your head</span></li>
             </ul>
           </div>
           <div class="vcol us">
-            <h3>Jalankan dengan Cefflo</h3>
+            <h3><span data-ms="Jalankan dengan Cefflo">Run it with Cefflo</span></h3>
             <ul>
-              <li>Semua order hari ini disusun jadi run multi-drop</li>
-              <li>Rider anda sendiri, customer anda sendiri</li>
-              <li>Seluruh hari delivery dalam satu skrin</li>
+              <li><span data-ms="Semua order hari ini disusun jadi run multi-drop">All of today&#39;s orders grouped into multi-drop runs</span></li>
+              <li><span data-ms="Rider anda sendiri, customer anda sendiri">Your own riders, your own customers</span></li>
+              <li><span data-ms="Seluruh hari delivery dalam satu skrin">Your whole delivery day on one screen</span></li>
             </ul>
           </div>
         </div>
       </div>
-      <div class="poster side reveal" role="img" aria-label="Skrin Zones Cefflo: peta zon dengan bilangan order dan rider setiap zon">
+      <div class="poster side reveal" role="img" aria-label="Cefflo Zones screen: zone map with orders and riders per zone">
         <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
         <div class="ground"></div>
         <div class="phone p-tilt-l"><div class="screen"><img src="img/v16_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <figure class="chip tl"><figcaption>Ringkasan order hari ini</figcaption><span class="card"><img src="img/f_kpi.webp" alt=""></span></figure>
+        <figure class="chip tl"><figcaption><span data-ms="Ringkasan order hari ini">Today&#39;s orders at a glance</span></figcaption><span class="card"><img src="img/f_kpi.webp" alt=""></span></figure>
       </div>
     </div>
   </section>
@@ -713,25 +723,25 @@ section { overflow-x: clip; }
   <section id="cara">
     <div class="wrap">
       <div class="head center reveal">
-        <span class="label">Cara ia berfungsi</span>
-        <h2 class="h2">Empat langkah. <span class="soft">Dari order sampai ke pintu.</span></h2>
+        <span class="label"><span data-ms="Cara ia berfungsi">How it works</span></span>
+        <h2 class="h2"><span data-ms="Empat langkah. &lt;span class=&quot;soft&quot;&gt;Dari order sampai ke pintu.&lt;/span&gt;">Four steps. <span class="soft">From order to doorstep.</span></span></h2>
       </div>
       <div class="steps">
         <article class="step reveal">
-          <div class="step-top"><span class="num">01</span><h3>Order masuk</h3><p>Taip satu-satu, atau import fail CSV dan Excel yang anda dah guna.</p></div>
-          <div class="step-shot"><img src="img/v14_top.webp" alt="Skrin New order: Manual Entry dan Import Orders"></div>
+          <div class="step-top"><span class="num">01</span><h3><span data-ms="Order masuk">Orders come in</span></h3><p><span data-ms="Taip satu-satu, atau import fail CSV dan Excel yang anda dah guna.">Type them in, or import the CSV and Excel files you already use.</span></p></div>
+          <div class="step-shot"><img src="img/v14_top.webp" alt="New order screen: Manual Entry and Import Orders"></div>
         </article>
         <article class="step reveal">
-          <div class="step-top"><span class="num">02</span><h3>Susun &amp; rancang</h3><p>Order dikumpul ikut zon. Cefflo cadangkan run, anda semak dan sahkan.</p></div>
-          <div class="step-shot"><img src="img/v17.webp" alt="Skrin zon Bangsar: jumlah jarak, order, dan senarai penghantaran hari ini"></div>
+          <div class="step-top"><span class="num">02</span><h3><span data-ms="Susun &amp;amp; rancang">Group &amp; plan</span></h3><p><span data-ms="Order dikumpul ikut zon. Cefflo cadangkan run, anda semak dan sahkan.">Orders are grouped by zone. Cefflo suggests runs; you review and confirm.</span></p></div>
+          <div class="step-shot"><img src="img/v17.webp" alt="Bangsar zone screen: distance, orders and today&#39;s deliveries"></div>
         </article>
         <article class="step reveal">
-          <div class="step-top"><span class="num">03</span><h3>Hantar ke rider</h3><p>Setiap run pergi kepada rider anda, ikut kenderaan motosikal, kereta atau van.</p></div>
-          <div class="step-shot"><img src="img/v20_top.webp" alt="Skrin Riders: senarai rider dengan jenis kenderaan dan status"></div>
+          <div class="step-top"><span class="num">03</span><h3><span data-ms="Hantar ke rider">Dispatch to riders</span></h3><p><span data-ms="Setiap run pergi kepada rider anda, ikut kenderaan motosikal, kereta atau van.">Each run goes to one of your riders, matched to their motorcycle, car or van.</span></p></div>
+          <div class="step-shot"><img src="img/v20_top.webp" alt="Riders screen: riders with vehicle type and status"></div>
         </article>
         <article class="step reveal">
-          <div class="step-top"><span class="num">04</span><h3>Sampai</h3><p>Rider ikut turutan stop, ambil gambar bukti hantar, dan slide untuk siap.</p></div>
-          <div class="step-shot"><img src="img/d23.webp" alt="Skrin Confirm Delivery dalam Cefflo Driver dengan bukti hantar dan Slide to Complete"></div>
+          <div class="step-top"><span class="num">04</span><h3><span data-ms="Sampai">Delivered</span></h3><p><span data-ms="Rider ikut turutan stop, ambil gambar bukti hantar, dan slide untuk siap.">Riders follow the stop order, take a proof-of-delivery photo and slide to complete.</span></p></div>
+          <div class="step-shot"><img src="img/d23.webp" alt="Cefflo Driver Confirm Delivery with proof of delivery and Slide to Complete"></div>
         </article>
       </div>
     </div>
@@ -741,12 +751,12 @@ section { overflow-x: clip; }
   <section style="padding-top: 0">
     <div class="wrap split">
       <div class="reveal">
-        <span class="label">Bawa masuk order</span>
-        <h2 class="h2">Terus ambil order cara anda. <span class="soft">Cefflo urus apa yang jadi selepas itu.</span></h2>
-        <p class="lead">Tak perlu tukar cara customer order. Masukkan order secara manual, atau import terus dari spreadsheet anda.</p>
+        <span class="label"><span data-ms="Bawa masuk order">Bring your orders in</span></span>
+        <h2 class="h2"><span data-ms="Terus ambil order cara anda. &lt;span class=&quot;soft&quot;&gt;Cefflo urus apa yang jadi selepas itu.&lt;/span&gt;">Keep taking orders your way. <span class="soft">Cefflo runs what happens next.</span></span></h2>
+        <p class="lead"><span data-ms="Tak perlu tukar cara customer order. Masukkan order secara manual, atau import terus dari spreadsheet anda.">No need to change how customers order. Enter orders by hand, or import them straight from your spreadsheet.</span></p>
         <div class="formats"><span>Manual</span><span>CSV</span><span>Excel</span></div>
       </div>
-      <div class="poster light side short reveal" role="img" aria-label="Skrin New order: Manual Entry dan Import Orders">
+      <div class="poster light side short reveal" role="img" aria-label="New order screen: Manual Entry and Import Orders">
         <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
         <div class="intake-card"><img src="img/v14_top.webp" alt=""></div>
         <span class="fmt f1">Manual</span><span class="fmt f2">CSV</span><span class="fmt f3">Excel</span>
@@ -758,20 +768,20 @@ section { overflow-x: clip; }
   <section id="operasi">
     <div class="wrap">
       <div class="head center reveal">
-        <span class="label">Operasi hari ini</span>
-        <h2 class="h2">Satu hari delivery. <span class="soft">Satu skrin.</span></h2>
-        <p class="lead">Nampak berapa order siap, berapa bermasalah, siapa hantar apa, dan apa yang perlu tindakan anda sekarang.</p>
+        <span class="label"><span data-ms="Operasi hari ini">Operate today</span></span>
+        <h2 class="h2"><span data-ms="Satu hari delivery. &lt;span class=&quot;soft&quot;&gt;Satu skrin.&lt;/span&gt;">One delivery day. <span class="soft">One screen.</span></span></h2>
+        <p class="lead"><span data-ms="Nampak berapa order siap, berapa bermasalah, siapa hantar apa, dan apa yang perlu tindakan anda sekarang.">See what&#39;s done, what has an issue, who&#39;s delivering what, and what needs you right now.</span></p>
       </div>
       <div class="panel reveal"><div class="showcase">
-        <div class="phone side sl"><div class="screen"><img src="img/v19_ph.webp" alt="Skrin Active run: Bangsar Run, 1 of 3 delivered, stop seterusnya"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <div class="phone big"><div class="screen"><img src="img/v11_ph.webp" alt="Skrin Today Cefflo Vendor: jumlah order, Ready, Issue, Delivered, Recent Delivery dan Need Attention"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div>
+        <div class="phone side sl"><div class="screen"><img src="img/v19_ph.webp" alt="Active run screen: Bangsar Run, 1 of 3 delivered, next stop"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
+        <div class="phone big"><div class="screen"><img src="img/v11_ph.webp" alt="Cefflo Vendor Today screen: total orders, Ready, Issue, Delivered, Recent Delivery and Need Attention"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div>
           <div class="anno-list">
-            <div class="anno l" style="top: 22%"><span>Ringkasan hari ini</span><i></i></div>
-            <div class="anno r" style="top: 44%"><span>Siapa hantar apa</span><i></i></div>
-            <div class="anno l" style="top: 80%"><span>Perlu perhatian</span><i></i></div>
+            <div class="anno l" style="top: 22%"><span><span data-ms="Ringkasan hari ini">Today at a glance</span></span><i></i></div>
+            <div class="anno r" style="top: 44%"><span><span data-ms="Siapa hantar apa">Who&#39;s delivering what</span></span><i></i></div>
+            <div class="anno l" style="top: 80%"><span><span data-ms="Perlu perhatian">Needs attention</span></span><i></i></div>
           </div>
         </div>
-        <div class="phone side sr"><div class="screen"><img src="img/v17_ph.webp" alt="Skrin zon Bangsar dengan penghantaran hari ini dan butang Dispatch"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
+        <div class="phone side sr"><div class="screen"><img src="img/v17_ph.webp" alt="Bangsar zone screen with today&#39;s deliveries and the Dispatch button"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
       </div></div>
     </div>
   </section>
@@ -781,16 +791,16 @@ section { overflow-x: clip; }
     <div class="wrap">
       <div class="head center reveal">
         <span class="label">Cefflo Driver</span>
-        <h2 class="h2">Rider tahu stop seterusnya. <span class="soft">Tanpa call.</span></h2>
-        <p class="lead">Run, senarai stop ikut turutan, bukti hantar dan slide untuk siap. Semua dalam app rider.</p>
+        <h2 class="h2"><span data-ms="Rider tahu stop seterusnya. &lt;span class=&quot;soft&quot;&gt;Tanpa call.&lt;/span&gt;">Riders know the next stop. <span class="soft">No calls.</span></span></h2>
+        <p class="lead"><span data-ms="Run, senarai stop ikut turutan, bukti hantar dan slide untuk siap. Semua dalam app rider.">The run, stops in order, proof of delivery and slide to complete. All in the rider app.</span></p>
       </div>
-      <div class="poster light poster-wide reveal" role="img" aria-label="Skrin Stop List Cefflo Driver dengan elemen bukti hantar dan Slide to Complete">
+      <div class="poster light poster-wide reveal" role="img" aria-label="Cefflo Driver Stop List with proof of delivery and Slide to Complete">
         <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
         <div class="ground"></div>
         <div class="phone p-tilt-l"><div class="screen"><img src="img/d21_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <figure class="chip tl"><figcaption>12 order, satu run</figcaption><span class="card"><img src="img/f_stop.webp" alt=""></span></figure>
-        <figure class="chip small tr"><figcaption>Bukti hantar</figcaption><span class="card"><img src="img/f_pod.webp" alt=""></span></figure>
-        <figure class="chip br"><figcaption>Slide untuk siap</figcaption><span class="card"><img src="img/f_slide.webp" alt=""></span></figure>
+        <figure class="chip tl"><figcaption><span data-ms="12 order, satu run">12 orders, one run</span></figcaption><span class="card"><img src="img/f_stop.webp" alt=""></span></figure>
+        <figure class="chip small tr"><figcaption><span data-ms="Bukti hantar">Proof of delivery</span></figcaption><span class="card"><img src="img/f_pod.webp" alt=""></span></figure>
+        <figure class="chip br"><figcaption><span data-ms="Slide untuk siap">Slide to complete</span></figcaption><span class="card"><img src="img/f_slide.webp" alt=""></span></figure>
       </div>
     </div>
   </section>
@@ -799,17 +809,17 @@ section { overflow-x: clip; }
   <section id="tracking">
     <div class="wrap split">
       <div class="reveal">
-        <span class="label">Tracking customer</span>
-        <h2 class="h2">Customer semak sendiri. <span class="soft">Anda bukan lagi 'hotline'.</span></h2>
-        <p class="lead">Setiap order ada pautan tracking. Tiada app, tiada akaun. Customer nampak status Pickup, On the Way dan Delivered, siap dengan bukti hantar.</p>
+        <span class="label"><span data-ms="Tracking customer">Customer tracking</span></span>
+        <h2 class="h2"><span data-ms="Customer semak sendiri. &lt;span class=&quot;soft&quot;&gt;Anda bukan lagi &amp;#39;hotline&amp;#39;.&lt;/span&gt;">Customers check for themselves. <span class="soft">You&#39;re not the hotline anymore.</span></span></h2>
+        <p class="lead"><span data-ms="Setiap order ada pautan tracking. Tiada app, tiada akaun. Customer nampak status Pickup, On the Way dan Delivered, siap dengan bukti hantar.">Every order gets a tracking link. No app, no account. Customers see Pickup, On the Way and Delivered, with proof of delivery.</span></p>
       </div>
-      <div class="poster light side reveal" role="img" aria-label="Tracking customer: status Delivered dengan bukti hantar">
+      <div class="poster light side reveal" role="img" aria-label="Customer tracking: Delivered status with proof of delivery">
         <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
         <div class="ground"></div>
         <div class="phone p-hero"><div class="screen"><img src="img/c_done_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <figure class="chip small tl"><figcaption>Dalam perjalanan</figcaption><span class="card"><img src="img/c_way_top.webp" alt=""></span></figure>
-        <figure class="chip small tr"><figcaption>Bukti hantar</figcaption><span class="card"><img src="img/f_pod.webp" alt=""></span></figure>
-        <figure class="chip br"><figcaption>Sudah sampai</figcaption><span class="card"><img src="img/f_status.webp" alt=""></span></figure>
+        <figure class="chip small tl"><figcaption><span data-ms="Dalam perjalanan">On the way</span></figcaption><span class="card"><img src="img/c_way_top.webp" alt=""></span></figure>
+        <figure class="chip small tr"><figcaption><span data-ms="Bukti hantar">Proof of delivery</span></figcaption><span class="card"><img src="img/f_pod.webp" alt=""></span></figure>
+        <figure class="chip br"><figcaption><span data-ms="Sudah sampai">Delivered</span></figcaption><span class="card"><img src="img/f_status.webp" alt=""></span></figure>
       </div>
     </div>
   </section>
@@ -818,25 +828,25 @@ section { overflow-x: clip; }
   <section id="kenapa" style="padding-top: 0">
     <div class="wrap">
       <div class="head center reveal">
-        <span class="label">Kenapa Cefflo</span>
-        <h2 class="h2">Apa yang berubah <span class="soft">untuk bisnes anda.</span></h2>
+        <span class="label"><span data-ms="Kenapa Cefflo">Why Cefflo</span></span>
+        <h2 class="h2"><span data-ms="Apa yang berubah &lt;span class=&quot;soft&quot;&gt;untuk bisnes anda.&lt;/span&gt;">What changes <span class="soft">for your business.</span></span></h2>
       </div>
       <div class="outs">
         <article class="out reveal">
-          <div><h3>Order tak lagi bersepah</h3><p>Order dari mana-mana saluran masuk ke satu senarai, dengan status yang sama untuk semua.</p></div>
-          <div class="shot"><img src="img/v12.webp" alt="Senarai Orders dengan status"></div>
+          <div><h3><span data-ms="Order tak lagi bersepah">Orders stop scattering</span></h3><p><span data-ms="Order dari mana-mana saluran masuk ke satu senarai, dengan status yang sama untuk semua.">Orders from any channel land in one list, with the same status for every order.</span></p></div>
+          <div class="shot"><img src="img/v12.webp" alt="Orders list with status"></div>
         </article>
         <article class="out reveal">
-          <div><h3>Multi-drop, bukan satu order satu trip</h3><p>Satu run membawa banyak stop, jadi rider anda buat lebih banyak dalam satu perjalanan.</p></div>
-          <div class="shot"><img src="img/d20.webp" alt="Run Details: 12 orders, 3.2 km, tiga langkah run"></div>
+          <div><h3><span data-ms="Multi-drop, bukan satu order satu trip">Multi-drop, not one order per trip</span></h3><p><span data-ms="Satu run membawa banyak stop, jadi rider anda buat lebih banyak dalam satu perjalanan.">One run carries many stops, so your riders do more in a single trip.</span></p></div>
+          <div class="shot"><img src="img/d20.webp" alt="Run Details: 12 orders, 3.2 km, three run steps"></div>
         </article>
         <article class="out reveal">
-          <div><h3>Rider anda. Customer anda.</h3><p>Cefflo bukan marketplace. Anda jemput rider sendiri, dan customer kekal milik bisnes anda.</p></div>
-          <div class="shot"><img src="img/v20_top.webp" alt="Senarai rider bisnes dengan kenderaan masing-masing"></div>
+          <div><h3><span data-ms="Rider anda. Customer anda.">Your riders. Your customers.</span></h3><p><span data-ms="Cefflo bukan marketplace. Anda jemput rider sendiri, dan customer kekal milik bisnes anda.">Cefflo isn&#39;t a marketplace. You invite your own riders, and your customers stay yours.</span></p></div>
+          <div class="shot"><img src="img/v20_top.webp" alt="The business&#39;s riders with their vehicles"></div>
         </article>
         <article class="out reveal">
-          <div><h3>Masalah tak tenggelam</h3><p>Order yang ada isu muncul di bahagian Perlu Perhatian, supaya tiada yang tertinggal.</p></div>
-          <div class="shot" style="display: grid; place-items: center; padding: 16px"><img src="img/v11_attn.webp" alt="Need Attention: order dengan nombor telefon tiada" style="border-radius: 12px"></div>
+          <div><h3><span data-ms="Masalah tak tenggelam">Problems don&#39;t get buried</span></h3><p><span data-ms="Order yang ada isu muncul di bahagian Perlu Perhatian, supaya tiada yang tertinggal.">Orders with an issue show up under Needs Attention, so nothing slips through.</span></p></div>
+          <div class="shot" style="display: grid; place-items: center; padding: 16px"><img src="img/v11_attn.webp" alt="Needs Attention: an order missing a phone number" style="border-radius: 12px"></div>
         </article>
       </div>
     </div>
@@ -846,48 +856,48 @@ section { overflow-x: clip; }
   <section id="harga" style="background: #fff">
     <div class="wrap">
       <div class="head center reveal">
-        <span class="label">Harga</span>
-        <h2 class="h2">Mula percuma. <span class="soft">Naik plan bila bisnes membesar.</span></h2>
-        <p class="lead">Bayar ikut penghantaran yang siap, bukan ikut bilangan rider.</p>
+        <span class="label"><span data-ms="Harga">Pricing</span></span>
+        <h2 class="h2"><span data-ms="Mula percuma. &lt;span class=&quot;soft&quot;&gt;Naik plan bila bisnes membesar.&lt;/span&gt;">Start free. <span class="soft">Upgrade as you grow.</span></span></h2>
+        <p class="lead"><span data-ms="Bayar ikut penghantaran yang siap, bukan ikut bilangan rider.">Pay for completed deliveries, not for the number of riders.</span></p>
       </div>
       <div class="plans">
         <article class="plan reveal">
           <h3>FREE</h3>
-          <p class="for">Rasa sendiri operasi Cefflo dengan penghantaran sebenar.</p>
-          <div class="price"><b>RM0</b><span>/ bulan</span></div>
-          <p class="allow"><strong>150</strong>penghantaran siap sebulan</p>
-          <ul><li>Sehingga 3 rider aktif</li><li>Sehingga 2 zon</li><li>1 pengguna</li></ul>
+          <p class="for"><span data-ms="Rasa sendiri operasi Cefflo dengan penghantaran sebenar.">Run real deliveries on Cefflo.</span></p>
+          <div class="price"><b>RM0</b><span><span data-ms="/ bulan">/ month</span></span></div>
+          <p class="allow"><strong>150</strong><span data-ms="penghantaran siap sebulan">completed deliveries a month</span></p>
+          <ul><li><span data-ms="Sehingga 3 rider aktif">Up to 3 active riders</span></li><li><span data-ms="Sehingga 2 zon">Up to 2 zones</span></li><li><span data-ms="1 pengguna">1 user</span></li></ul>
         </article>
         <article class="plan reveal">
           <h3>GROW</h3>
-          <p class="for">Untuk bisnes yang dah hantar setiap hari.</p>
-          <div class="price"><b>RM99</b><span>/ bulan</span></div>
-          <p class="allow"><strong>500</strong>penghantaran siap sebulan</p>
-          <ul><li>Sehingga 10 rider aktif</li><li>Sehingga 5 zon</li><li>Sehingga 3 pengguna</li></ul>
+          <p class="for"><span data-ms="Untuk bisnes yang dah hantar setiap hari.">For businesses delivering every day.</span></p>
+          <div class="price"><b>RM99</b><span><span data-ms="/ bulan">/ month</span></span></div>
+          <p class="allow"><strong>500</strong><span data-ms="penghantaran siap sebulan">completed deliveries a month</span></p>
+          <ul><li><span data-ms="Sehingga 10 rider aktif">Up to 10 active riders</span></li><li><span data-ms="Sehingga 5 zon">Up to 5 zones</span></li><li><span data-ms="Sehingga 3 pengguna">Up to 3 users</span></li></ul>
         </article>
         <article class="plan hero-plan reveal">
-          <span class="tag">Pilihan utama</span>
+          <span class="tag"><span data-ms="Pilihan utama">Recommended</span></span>
           <h3>OPERATE</h3>
-          <p class="for">Jalankan operasi delivery bisnes anda sepenuhnya.</p>
-          <div class="price"><b>RM199</b><span>/ bulan</span></div>
-          <p class="allow"><strong>1,500</strong>penghantaran siap sebulan</p>
-          <ul><li>Rider tanpa had</li><li>Zon tanpa had</li><li>Sehingga 10 pengguna</li></ul>
+          <p class="for"><span data-ms="Jalankan operasi delivery bisnes anda sepenuhnya.">Run your whole delivery operation.</span></p>
+          <div class="price"><b>RM199</b><span><span data-ms="/ bulan">/ month</span></span></div>
+          <p class="allow"><strong>1,500</strong><span data-ms="penghantaran siap sebulan">completed deliveries a month</span></p>
+          <ul><li><span data-ms="Rider tanpa had">Unlimited riders</span></li><li><span data-ms="Zon tanpa had">Unlimited zones</span></li><li><span data-ms="Sehingga 10 pengguna">Up to 10 users</span></li></ul>
         </article>
         <article class="plan reveal">
           <h3>SCALE</h3>
-          <p class="for">Untuk operasi berkapasiti tinggi.</p>
-          <div class="price"><b>RM499</b><span>/ bulan</span></div>
-          <p class="allow"><strong>5,000</strong>penghantaran siap sebulan</p>
-          <ul><li>Rider tanpa had</li><li>Zon tanpa had</li><li>Sehingga 25 pengguna</li></ul>
+          <p class="for"><span data-ms="Untuk operasi berkapasiti tinggi.">For high-volume operations.</span></p>
+          <div class="price"><b>RM499</b><span><span data-ms="/ bulan">/ month</span></span></div>
+          <p class="allow"><strong>5,000</strong><span data-ms="penghantaran siap sebulan">completed deliveries a month</span></p>
+          <ul><li><span data-ms="Rider tanpa had">Unlimited riders</span></li><li><span data-ms="Zon tanpa had">Unlimited zones</span></li><li><span data-ms="Sehingga 25 pengguna">Up to 25 users</span></li></ul>
         </article>
       </div>
-      <div class="enterprise reveal"><b>ENTERPRISE</b><span>Lebih 5,000 penghantaran sebulan atau keperluan khas? Harga disesuaikan.</span></div>
+      <div class="enterprise reveal"><b>ENTERPRISE</b><span><span data-ms="Lebih 5,000 penghantaran sebulan atau keperluan khas? Harga disesuaikan.">More than 5,000 deliveries a month or special requirements? Custom pricing.</span></span></div>
       <div class="promises">
-        <div class="promise reveal"><b>Delivery tak akan terhenti</b><span>Kalau kuota habis ketika rider sedang hantar, run itu tetap siap dengan selamat.</span></div>
-        <div class="promise reveal"><b>Hanya penghantaran yang siap dikira</b><span>Draf dan order yang dibatalkan sebelum dihantar tidak dikira.</span></div>
-        <div class="promise reveal"><b>Mula tanpa kad kredit</b><span>Plan FREE tidak perlukan butiran pembayaran.</span></div>
+        <div class="promise reveal"><b><span data-ms="Delivery tak akan terhenti">Deliveries never stop mid-run</span></b><span><span data-ms="Kalau kuota habis ketika rider sedang hantar, run itu tetap siap dengan selamat.">If you hit your quota while a rider is out, that run still finishes safely.</span></span></div>
+        <div class="promise reveal"><b><span data-ms="Hanya penghantaran yang siap dikira">Only completed deliveries count</span></b><span><span data-ms="Draf dan order yang dibatalkan sebelum dihantar tidak dikira.">Drafts and orders cancelled before dispatch aren&#39;t counted.</span></span></div>
+        <div class="promise reveal"><b><span data-ms="Mula tanpa kad kredit">Start without a credit card</span></b><span><span data-ms="Plan FREE tidak perlukan butiran pembayaran.">The FREE plan needs no payment details.</span></span></div>
       </div>
-      <p class="price-note">Harga dalam Ringgit Malaysia, sebulan.</p>
+      <p class="price-note"><span data-ms="Harga dalam Ringgit Malaysia, sebulan.">Prices in Malaysian Ringgit, per month.</span></p>
     </div>
   </section>
 
@@ -895,19 +905,19 @@ section { overflow-x: clip; }
   <section id="soalan">
     <div class="wrap">
       <div class="head center reveal">
-        <span class="label">Soalan lazim</span>
-        <h2 class="h2">Soalan, <span class="soft">dijawab.</span></h2>
+        <span class="label"><span data-ms="Soalan lazim">FAQ</span></span>
+        <h2 class="h2"><span data-ms="Soalan, &lt;span class=&quot;soft&quot;&gt;dijawab.&lt;/span&gt;">Questions, <span class="soft">answered.</span></span></h2>
       </div>
       <div class="faq">
-        <details><summary>Apa itu Cefflo?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p>Cefflo ialah sistem operasi untuk delivery tempatan hari-sama. Ia menyusun order hari ini ikut kawasan, menjadikannya run multi-drop untuk rider anda, dan memberi customer pautan untuk semak status.</p></details>
-        <details><summary>Cefflo ni marketplace atau servis penghantaran ke?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p>Bukan. Cefflo bukan marketplace, bukan syarikat rider dan bukan aggregator. Customer, saluran jualan dan rider kekal milik bisnes anda. Cefflo ialah sistem yang anda guna untuk menjalankan operasi delivery.</p></details>
-        <details><summary>Perlu ada rider sendiri?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p>Ya. Cefflo dibina untuk bisnes yang hantar dengan rider atau driver sendiri, sama ada motosikal, kereta atau van. Anda jemput mereka ke pasukan anda dan beri run kepada mereka.</p></details>
-        <details><summary>Boleh import order dari Excel?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p>Ya. Order boleh ditaip satu-satu, atau diimport dari fail CSV dan Excel.</p></details>
-        <details><summary>Perlu ada website sendiri?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p>Tidak. Cefflo menguruskan delivery untuk order dari saluran jualan yang anda dah guna sekarang, sama ada WhatsApp, media sosial, telefon atau lain-lain.</p></details>
-        <details><summary>Customer perlu muat turun app?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p>Tidak. Customer cuma buka pautan tracking. Tiada app, tiada akaun.</p></details>
-        <details><summary>Berapa harganya?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p>Plan FREE adalah RM0 untuk 150 penghantaran siap sebulan. Plan berbayar bermula RM99 sebulan (GROW, 500 penghantaran), RM199 (OPERATE, 1,500) dan RM499 (SCALE, 5,000). Bayaran dikira ikut penghantaran yang siap, bukan ikut bilangan rider.</p></details>
-        <details><summary>Apa jadi kalau kuota habis ketika rider tengah hantar?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p>Run yang sedang berjalan tetap siap, termasuk bukti hantar dan tracking customer. Had hanya terpakai untuk run baharu selepas itu.</p></details>
-        <details><summary>Bisnes apa yang sesuai?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p>Bisnes tempatan yang hantar order sendiri dalam kawasan servis mereka: F&amp;B, bakeri, meal prep, florist, hamper dan hadiah, kecantikan dan runcit tempatan.</p></details>
+        <details><summary><span data-ms="Apa itu Cefflo?">What is Cefflo?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Cefflo ialah sistem operasi untuk delivery tempatan hari-sama. Ia menyusun order hari ini ikut kawasan, menjadikannya run multi-drop untuk rider anda, dan memberi customer pautan untuk semak status.">Cefflo is an operating system for same-day local delivery. It groups today&#39;s orders by area, turns them into multi-drop runs for your riders, and gives customers a link to check their status.</span></p></details>
+        <details><summary><span data-ms="Cefflo ni marketplace atau servis penghantaran ke?">Is Cefflo a marketplace or a delivery service?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Bukan. Cefflo bukan marketplace, bukan syarikat rider dan bukan aggregator. Customer, saluran jualan dan rider kekal milik bisnes anda. Cefflo ialah sistem yang anda guna untuk menjalankan operasi delivery.">Neither. Cefflo isn&#39;t a marketplace, a rider company or an aggregator. Your customers, sales channels and riders stay yours. Cefflo is the system you run your delivery operation on.</span></p></details>
+        <details><summary><span data-ms="Perlu ada rider sendiri?">Do I need my own riders?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Ya. Cefflo dibina untuk bisnes yang hantar dengan rider atau driver sendiri, sama ada motosikal, kereta atau van. Anda jemput mereka ke pasukan anda dan beri run kepada mereka.">Yes. Cefflo is built for businesses that deliver with their own riders or drivers, on motorcycles, cars or vans. You invite them to your team and give them runs.</span></p></details>
+        <details><summary><span data-ms="Boleh import order dari Excel?">Can I import orders from Excel?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Ya. Order boleh ditaip satu-satu, atau diimport dari fail CSV dan Excel.">Yes. Orders can be typed in one by one, or imported from CSV and Excel files.</span></p></details>
+        <details><summary><span data-ms="Perlu ada website sendiri?">Do I need my own website?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Tidak. Cefflo menguruskan delivery untuk order dari saluran jualan yang anda dah guna sekarang, sama ada WhatsApp, media sosial, telefon atau lain-lain.">No. Cefflo runs delivery for orders from the sales channels you already use, whether WhatsApp, social media, phone calls or anything else.</span></p></details>
+        <details><summary><span data-ms="Customer perlu muat turun app?">Do customers need to download an app?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Tidak. Customer cuma buka pautan tracking. Tiada app, tiada akaun.">No. Customers just open the tracking link. No app, no account.</span></p></details>
+        <details><summary><span data-ms="Berapa harganya?">How much does it cost?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Plan FREE adalah RM0 untuk 150 penghantaran siap sebulan. Plan berbayar bermula RM99 sebulan (GROW, 500 penghantaran), RM199 (OPERATE, 1,500) dan RM499 (SCALE, 5,000). Bayaran dikira ikut penghantaran yang siap, bukan ikut bilangan rider.">The FREE plan is RM0 for 150 completed deliveries a month. Paid plans are RM99 a month (GROW, 500 deliveries), RM199 (OPERATE, 1,500) and RM499 (SCALE, 5,000). You pay for completed deliveries, not for the number of riders.</span></p></details>
+        <details><summary><span data-ms="Apa jadi kalau kuota habis ketika rider tengah hantar?">What happens if I hit my quota while a rider is delivering?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Run yang sedang berjalan tetap siap, termasuk bukti hantar dan tracking customer. Had hanya terpakai untuk run baharu selepas itu.">The run in progress still finishes, including proof of delivery and customer tracking. The limit only applies to new runs after that.</span></p></details>
+        <details><summary><span data-ms="Bisnes apa yang sesuai?">Which businesses is Cefflo for?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Bisnes tempatan yang hantar order sendiri dalam kawasan servis mereka: F&amp;amp;B, bakeri, meal prep, florist, hamper dan hadiah, kecantikan dan runcit tempatan.">Local businesses that deliver their own orders within their service area: F&amp;B, bakeries, meal prep, florists, hampers and gifts, beauty and local retail.</span></p></details>
       </div>
     </div>
   </section>
@@ -916,12 +926,12 @@ section { overflow-x: clip; }
   <section id="muat-turun" style="padding-bottom: 0">
     <div class="wrap">
       <div class="final reveal">
-        <span class="label" style="color: var(--mustard)">Mula sekarang</span>
-        <h2 class="h2">Order makin banyak? <span class="soft">Delivery pun boleh kemas.</span></h2>
-        <p class="lead" style="margin-inline: auto">Muat turun Cefflo dan jalankan delivery hari ini dengan plan FREE.</p>
+        <span class="label" style="color: var(--mustard)"><span data-ms="Mula sekarang">Get started</span></span>
+        <h2 class="h2"><span data-ms="Order makin banyak? &lt;span class=&quot;soft&quot;&gt;Delivery pun boleh kemas.&lt;/span&gt;">More orders coming in? <span class="soft">Keep delivery under control.</span></span></h2>
+        <p class="lead" style="margin-inline: auto"><span data-ms="Muat turun Cefflo dan jalankan delivery hari ini dengan plan FREE.">Download Cefflo and run today&#39;s deliveries on the FREE plan.</span></p>
         <div class="on-dark">
           <div class="cta-row" data-stores style="justify-content: center"></div>
-          <p class="micro"><strong>Mula percuma</strong> · 150 penghantaran sebulan · tanpa kad kredit</p>
+          <p class="micro"><span data-ms="&lt;strong&gt;Mula percuma&lt;/strong&gt; · 150 penghantaran sebulan · tanpa kad kredit"><strong>Start free</strong> · 150 deliveries a month · no credit card</span></p>
         </div>
         <div class="final-phones">
           <div class="phone hide-sm fan-l"><div class="screen"><img src="img/d21_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
@@ -929,7 +939,7 @@ section { overflow-x: clip; }
           <div class="phone hide-sm fan-r"><div class="screen"><img src="img/c_done_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
         </div>
       </div>
-      <p class="proof-note">Semua paparan skrin di laman ini ialah app Cefflo sebenar dengan data demo.</p>
+      <p class="proof-note"><span data-ms="Semua paparan skrin di laman ini ialah app Cefflo sebenar dengan data demo.">Every screen on this page is the real Cefflo app with demo data.</span></p>
     </div>
   </section>
 </main>
@@ -939,15 +949,15 @@ section { overflow-x: clip; }
     <div class="foot">
       <div>
         <a class="brand" href="#top" aria-label="Cefflo"><img class="mark" src="img/logo_mark.png" alt=""><img class="word" src="img/logo_word.png" alt="Cefflo"></a>
-        <p>Sistem operasi delivery hari-sama untuk bisnes yang hantar order sendiri.</p>
+        <p><span data-ms="Sistem operasi delivery hari-sama untuk bisnes yang hantar order sendiri.">The same-day delivery operating system for businesses that deliver their own orders.</span></p>
       </div>
-      <nav class="foot-links" aria-label="Pautan kaki">
-        <a href="#cara">Cara ia berfungsi</a>
-        <a href="#driver">Rider</a>
+      <nav class="foot-links" aria-label="Footer">
+        <a href="#cara"><span data-ms="Cara ia berfungsi">How it works</span></a>
+        <a href="#driver"><span data-ms="Rider">Riders</span></a>
         <a href="#tracking">Tracking</a>
-        <a href="#harga">Harga</a>
-        <a href="#soalan">Soalan</a>
-        <a href="#muat-turun">Muat turun</a>
+        <a href="#harga"><span data-ms="Harga">Pricing</span></a>
+        <a href="#soalan"><span data-ms="Soalan">FAQ</span></a>
+        <a href="#muat-turun"><span data-ms="Muat turun">Download</span></a>
       </nav>
     </div>
     <p class="copy">© 2026 Cefflo · Grow = Operate</p>
@@ -966,28 +976,56 @@ section { overflow-x: clip; }
   var ua = navigator.userAgent || '';
   var android = /Android/i.test(ua);
   var live = !!(STORE.ios || STORE.android);
+  var COPY = {
+    en: { soon: 'Coming soon to', ios: 'Download on the', android: 'Get it on', note: 'The app is being prepared for the App Store and Google Play.', toggle: 'BM', toggleLabel: 'Bahasa Melayu' },
+    ms: { soon: 'Akan datang di', ios: 'Muat turun di', android: 'Dapatkan di', note: 'App sedang disediakan untuk App Store dan Google Play.', toggle: 'EN', toggleLabel: 'English' }
+  };
 
-  function badge(kind) {
+  function badge(kind, t) {
     var url = STORE[kind];
     var a = document.createElement('a');
     a.className = 'badge';
     a.href = url || '#muat-turun';
     if (url) { a.target = '_blank'; a.rel = 'noopener'; }
-    a.innerHTML = kind === 'ios'
-      ? APPLE + '<span><small>' + (url ? 'Muat turun di' : 'Akan datang di') + '</small><b>App Store</b></span>'
-      : PLAY + '<span><small>' + (url ? 'Dapatkan di' : 'Akan datang di') + '</small><b>Google Play</b></span>';
+    a.innerHTML = (kind === 'ios' ? APPLE : PLAY) + '<span><small>' + (url ? t[kind] : t.soon) + '</small><b>' + (kind === 'ios' ? 'App Store' : 'Google Play') + '</b></span>';
     return a;
   }
-  document.querySelectorAll('[data-stores]').forEach(function (row) {
-    var order = android ? ['android', 'ios'] : ['ios', 'android'];
-    order.forEach(function (k) { row.appendChild(badge(k)); });
-    if (!live) {
-      var note = document.createElement('p');
-      note.className = 'store-note';
-      note.style.flexBasis = '100%';
-      note.textContent = 'App sedang disediakan untuk App Store dan Google Play.';
-      row.appendChild(note);
-    }
+  function renderStores(t) {
+    document.querySelectorAll('[data-stores]').forEach(function (row) {
+      row.innerHTML = '';
+      (android ? ['android', 'ios'] : ['ios', 'android']).forEach(function (k) { row.appendChild(badge(k, t)); });
+      if (!live) {
+        var note = document.createElement('p');
+        note.className = 'store-note';
+        note.style.flexBasis = '100%';
+        note.textContent = t.note;
+        row.appendChild(note);
+      }
+    });
+  }
+
+  /* English is the default; Bahasa Melayu is stored in data-ms. */
+  var langBtn = document.getElementById('langBtn');
+  function applyLang(l) {
+    document.querySelectorAll('[data-ms]').forEach(function (el) {
+      if (!el.hasAttribute('data-en')) el.setAttribute('data-en', el.innerHTML);
+      el.innerHTML = el.getAttribute(l === 'ms' ? 'data-ms' : 'data-en');
+    });
+    document.documentElement.lang = l;
+    renderStores(COPY[l]);
+    langBtn.textContent = COPY[l].toggle;
+    langBtn.setAttribute('aria-label', COPY[l].toggleLabel);
+  }
+  var lang = 'en';
+  try {
+    var q = new URLSearchParams(location.search).get('lang');
+    lang = q === 'ms' || q === 'en' ? q : (localStorage.getItem('cefflo_lang') || 'en');
+  } catch (e) {}
+  applyLang(lang);
+  langBtn.addEventListener('click', function () {
+    lang = lang === 'ms' ? 'en' : 'ms';
+    applyLang(lang);
+    try { localStorage.setItem('cefflo_lang', lang); } catch (e) {}
   });
 
   var nav = document.querySelector('.nav');
