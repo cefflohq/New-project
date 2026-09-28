@@ -1675,6 +1675,44 @@ separate (Driver app, `riders`). Supersedes D-73's Helper model.
     up • Rider • time".
   - **Preparation** stays aggregate demand, not per Zone. Aggregate item
     totals are a client-side view over the same contract.
+- **Plan lock + execution recovery (Founder, `202609280009`–`…0010`).**
+  - **Lock point:** the first order of a Run becomes `sorted`. It is
+    recorded in `delivery_sessions.sorting_started_at/by` with an event
+    `run.plan_locked`. A sorted or ready order with no Run is locked to its
+    Zone group.
+  - **Blocked on a locked Run** (not yet picked up), for Owner and Operator
+    alike, by one guard on `orders`: moving an order to or from the Run,
+    changing its Zone, adding orders (attach or build), and per-order rider
+    assign or reassign (which would split the Run). There are no merge or
+    split functions; those paths are covered by the same guard. Route
+    sequence (`save_run_sequence`, the Rider's own ordering) is unchanged.
+  - **Plan lock ≠ execution lock:**
+    - `replace_run_rider(run, rider, reason, note)` keeps the same Run,
+      orders and staging, so Sorting stays valid.
+    - `outsource_run(run, provider, reason, …)` hands the same Run and
+      staging to an External Provider (any provider, not only Lalamove),
+      stored in `delivery_outsourcing`.
+    - `outsource_run_export(run)` is the Copy / CSV contract: pickup plus
+      each order's number, name, phone, address, coordinates, items and
+      notes. Owner/Operator only, and every export is audited.
+    - `confirm_external_handover(run)` is performed by Owner, Operator or
+      Helper, only when the whole Run is Ready. It is recorded as
+      `delivery.external_handover`, never as a Driver-app checklist.
+    - Reasons: `rider_unavailable | no_show | sick | vehicle_issue |
+      emergency | other` (other needs a note). Both actions are refused
+      once pickup has started; the existing `initiate_delivery_recovery`
+      remains the post-pickup path.
+  - **Pickup gate:** an internal Rider cannot move an order to `picked_up`
+    while its preparation is `preparing`, `packed` or `sorted`. Orders that
+    never entered the Helper workflow (`not_started`) are unchanged.
+  - **Accountability only:** `run.plan_locked`, `run.rider_replaced`,
+    `run.outsourced`, `run.outsource_exported` and `run.external_handover`
+    carry who, when, previous and new party, and reason. No payroll, HR or
+    disciplinary action.
+  - **Known gaps:** after an external handover, Cefflo cannot track the
+    provider's delivery to completion (no provider integration in V1).
+    Operator UI for Replace / Outsource is not built yet (backend
+    contract only).
 - **Sign-In UI** (Operator / Helper) is not built yet. It plugs into
   `apps/vendor_mobile/lib/ui/screens/auth.dart` (`SignInScreen`). Role is
   never taken from which screen was used.

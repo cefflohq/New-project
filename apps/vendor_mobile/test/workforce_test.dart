@@ -123,6 +123,19 @@ void main() {
     expect(t.zoneId, 'z1');
     expect(t.runId, 'r1');
     expect(t.pickedUp, isTrue);
+    final ext = FulfilmentTask.fromRow({
+      'order_id': 'o3',
+      'order_number': '#CF-042',
+      'customer_name': 'Siti',
+      'items': const [],
+      'preparation_status': 'ready',
+      'handover_external': {
+        'provider_name': 'Lalamove',
+        'driver_name': 'Ali',
+        'vehicle': 'VAN 1234',
+      },
+    });
+    expect(ext.handoverProvider, 'Lalamove · Ali · VAN 1234');
   });
 
   test('roles resolve from membership', () {

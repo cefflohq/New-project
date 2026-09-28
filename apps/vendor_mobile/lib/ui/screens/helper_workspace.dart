@@ -274,7 +274,7 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
                           if (t.pickedUp)
                             Text(
                               L.pickedUpBy(
-                                t.handoverRiderName ?? '',
+                                t.handoverRiderName ?? t.handoverProvider ?? '',
                                 _time(t.pickedUpAt!),
                               ),
                               style: text.labelLarge,
@@ -290,7 +290,9 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
                             )
                           else if (t.status == 'ready')
                             Text(
-                              t.handoverRiderName != null
+                              t.handoverProvider != null
+                                  ? L.handoverToProvider(t.handoverProvider!)
+                                  : t.handoverRiderName != null
                                   ? L.handoverTo(t.handoverRiderName!)
                                   : L.readyForHandover,
                               style: text.labelLarge,

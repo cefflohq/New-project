@@ -2821,4 +2821,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noZone => 'No zone';
+
+  @override
+  String handoverToProvider(String provider) {
+    return 'Hand over to $provider';
+  }
 }

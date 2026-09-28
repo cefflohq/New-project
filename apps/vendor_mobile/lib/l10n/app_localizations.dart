@@ -5216,6 +5216,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No zone'**
   String get noZone;
+
+  /// No description provided for @handoverToProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Hand over to {provider}'**
+  String handoverToProvider(String provider);
 }
 
 class _AppLocalizationsDelegate

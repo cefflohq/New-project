@@ -298,6 +298,7 @@ class FulfilmentTask {
     this.orderDate,
     this.packingConfirmed = false,
     this.pickedUpAt,
+    this.handoverProvider,
     this.runName,
     this.stopSequence,
     this.handoverRiderName,
@@ -307,6 +308,9 @@ class FulfilmentTask {
   final List<String> items;
   final String? notes, zoneId, zoneName, runId, orderDate, runName;
   final String? handoverRiderName;
+
+  /// External Provider handover (D-74 Outsource Run): name, driver, vehicle.
+  final String? handoverProvider;
   final bool packingConfirmed;
   final DateTime? pickedUpAt;
 
@@ -328,6 +332,13 @@ class FulfilmentTask {
     runName: r['run_name'] as String?,
     stopSequence: (r['stop_sequence'] as num?)?.toInt(),
     handoverRiderName: r['handover_rider_name'] as String?,
+    handoverProvider: r['handover_external'] is Map
+        ? [
+            (r['handover_external'] as Map)['provider_name'],
+            (r['handover_external'] as Map)['driver_name'],
+            (r['handover_external'] as Map)['vehicle'],
+          ].whereType<String>().where((s) => s.isNotEmpty).join(' · ')
+        : null,
     items: [
       for (final it in (r['items'] is List ? r['items'] as List : const []))
         if (it is String)

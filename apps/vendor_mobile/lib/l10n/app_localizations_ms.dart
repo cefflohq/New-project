@@ -2826,4 +2826,9 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get noZone => 'Tiada zon';
+
+  @override
+  String handoverToProvider(String provider) {
+    return 'Serahkan kepada $provider';
+  }
 }

@@ -1345,5 +1345,13 @@
     }
   },
   "stagePickedUp": "Picked up",
-  "noZone": "No zone"
+  "noZone": "No zone",
+  "handoverToProvider": "Hand over to {provider}",
+  "@handoverToProvider": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  }
 }

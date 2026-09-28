@@ -851,5 +851,6 @@
   "confirmSortingGroup": "Sahkan pengisihan · {zone} · {done} / {total} diisih",
   "pickedUpBy": "Diambil • {rider} • {time}",
   "stagePickedUp": "Diambil",
-  "noZone": "Tiada zon"
+  "noZone": "Tiada zon",
+  "handoverToProvider": "Serahkan kepada {provider}"
 }
