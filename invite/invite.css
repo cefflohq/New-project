@@ -1,4 +1,4 @@
-/* Cefflo Driver invitation (rider) + staff invitation (team).
+/* Cefflo invitation PWA: rider, team (Operator) and helper.
    Rider tokens follow the Cefflo Flow Palette (sot/12_EXPERIENCE_SYSTEM.md §0A). */
 :root {
   --navy: #01265E;
@@ -95,29 +95,8 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 /* Until real listing URLs are configured the badges keep their look but are inert. */
 .badge[aria-disabled="true"] { pointer-events: none; cursor: default; }
 
+.cta.workspace { display: flex; align-items: center; justify-content: center; max-width: 360px; margin: 26px auto 0; text-decoration: none; }
+
 /* Screen 4 */
 .warn { display: grid; place-items: center; margin: 12px auto 22px; width: 88px; height: 88px; border-radius: 50%; background: var(--red-tint); color: var(--red); }
 .warn svg { width: 40px; height: 40px; stroke-width: 2; }
-
-/* ---- team (staff invitation; unchanged behaviour) ---- */
-.team { min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px; background: #F7F8FA; }
-.team .card { width: 100%; max-width: 400px; background: #fff; border: 1px solid #E3E6EE; border-radius: 20px; padding: 28px 24px; }
-.team .brand img { width: 40px; height: 40px; border-radius: 12px; display: block; margin-bottom: 16px; }
-.team h1 { font-size: 20px; margin: 0 0 6px; font-weight: 800; }
-.team .sub { font-size: 13px; color: #666C80; margin: 0 0 20px; line-height: 1.5; }
-.team .invite-summary { background: #F1F2EE; border-radius: 14px; padding: 14px 16px; margin-bottom: 20px; }
-.team .invite-summary b { display: block; font-size: 15px; margin-bottom: 2px; }
-.team .invite-summary span { font-size: 12px; color: #666C80; }
-.team .tabs { display: flex; gap: 6px; margin-bottom: 16px; background: #F7F8FA; border-radius: 12px; padding: 4px; }
-.team .tab-btn { flex: 1; border: 0; background: none; padding: 9px; border-radius: 9px; font: 700 13px Inter, system-ui, sans-serif; color: #666C80; cursor: pointer; }
-.team .tab-btn.active { background: #fff; color: #181818; }
-.team .field { margin-bottom: 12px; }
-.team .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #666C80; }
-.team .field input { width: 100%; padding: 11px 12px; border: 1px solid #E3E6EE; border-radius: 14px; font: 14px Inter, system-ui, sans-serif; }
-.team .btn { width: 100%; padding: 12px; border-radius: 999px; border: 0; font: 700 14px Inter, system-ui, sans-serif; cursor: pointer; background: var(--yellow); color: #181818; margin-top: 6px; }
-.team .btn:disabled { opacity: .5; }
-.team .status-msg { font-size: 12.5px; border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; line-height: 1.5; }
-.team .status-msg.error { background: var(--red-tint); color: var(--red); }
-.team .status-msg.success { background: var(--green-tint); color: #248648; }
-.team .owner-warning { font-size: 11.5px; background: #FFF6E5; color: #9A6700; border-radius: 10px; padding: 9px 11px; margin-bottom: 14px; line-height: 1.5; }
-.team .spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid #E3E6EE; border-top-color: #181818; animation: spin .8s linear infinite; margin: 24px auto; }

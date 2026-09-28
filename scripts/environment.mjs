@@ -38,11 +38,15 @@ export function resolveFrontendEnvironment(values) {
     android: storeUrl(values.CEFFLO_DRIVER_PLAY_STORE_URL, 'play.google.com', 'CEFFLO_DRIVER_PLAY_STORE_URL'),
     ios: storeUrl(values.CEFFLO_DRIVER_APP_STORE_URL, 'apps.apple.com', 'CEFFLO_DRIVER_APP_STORE_URL'),
   };
+  const vendorStoreUrls = {
+    android: storeUrl(values.CEFFLO_VENDOR_PLAY_STORE_URL, 'play.google.com', 'CEFFLO_VENDOR_PLAY_STORE_URL'),
+    ios: storeUrl(values.CEFFLO_VENDOR_APP_STORE_URL, 'apps.apple.com', 'CEFFLO_VENDOR_APP_STORE_URL'),
+  };
 
-  return { name, projectRef, supabaseUrl: url.origin, publishableKey, driverStoreUrls };
+  return { name, projectRef, supabaseUrl: url.origin, publishableKey, driverStoreUrls, vendorStoreUrls };
 }
 
-// Cefflo Driver store listings for the invitation PWA. Optional: absent
+// Cefflo Driver / Cefflo Vendor store listings for the invitation PWA. Optional: absent
 // until the Founder supplies the real listing URLs (never guessed). When
 // present they must be https links on the official store host.
 function storeUrl(raw, host, name) {
@@ -64,7 +68,8 @@ export function serializeRuntimeConfig(environment) {
     authRequired: true,
     realtimeEnabled: true,
     storageBucket: 'cefflo-pod',
-    driverStoreUrls: environment.driverStoreUrls || { android: null, ios: null }
+    driverStoreUrls: environment.driverStoreUrls || { android: null, ios: null },
+    vendorStoreUrls: environment.vendorStoreUrls || { android: null, ios: null }
   };
   return `window.CEFFLO_CONFIG = Object.freeze(${JSON.stringify(config, null, 2)});\n`;
 }

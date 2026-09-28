@@ -3,15 +3,17 @@
 // apps/vendor_mobile and apps/rider_mobile with their own toolchain.
 //
 // Canonical UI products: Vendor (Mobile + Web/Desktop), Driver (Flutter
-// Mobile), Customer Tracking (PWA), Founder (Web/PWA).
+// Mobile), Customer Tracking (PWA), Founder (Web/PWA), Invitation (PWA),
+// Helper (PWA).
 // Public Website: NOT IMPLEMENTED.
 export const CANONICAL_SURFACES = Object.freeze({
   vendor: 'Vendor Web/Desktop',
   customer: 'Customer Tracking PWA',
   foundr: 'Founder Web/PWA',
-  // Supporting route, not a product: Vendor -> Driver invitation acceptance,
-  // temporary until absorbed into canonical Driver onboarding.
-  invite: 'Invitation (temporary supporting route)',
+  // Invitation PWA: rider, team (Operator) and helper invitations (D-72/D-73).
+  invite: 'Invitation PWA',
+  // Helper PWA: accountless Prepare -> Pack -> Ready (D-73).
+  helper: 'Helper PWA',
   // Not a product: kill-switch worker for retired web surfaces.
   retired: 'Retirement worker',
   shared: 'Shared runtime client/config',
