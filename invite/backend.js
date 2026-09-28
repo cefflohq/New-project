@@ -21,7 +21,11 @@
     const hero = $('riderHero');
     let businessName = '';
 
-    function show(id) { screens.forEach(s => { $(s).hidden = s !== id; }); window.scrollTo(0, 0); }
+    function show(id) {
+      screens.forEach(s => { $(s).hidden = s !== id; });
+      $('headerName').textContent = businessName;
+      window.scrollTo(0, 0);
+    }
     function setHero(title, body) {
       hero.textContent = '';
       if (!title) return;
@@ -129,7 +133,7 @@
       } catch (_) {
         return unavailable('error');
       }
-      if (!result) return unavailable('invalid');
+      if (!result) { businessName = ''; return unavailable('invalid'); }
       markChecks(3);
       businessName = result.business_name || '';
       switch (result.status) {
