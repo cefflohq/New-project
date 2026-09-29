@@ -19,7 +19,6 @@ import { createPodAdapter } from './pod-adapter.js';
 import { icon, routeMapSvg } from './icons.js';
 
 const root = document.getElementById('app');
-const headerHost = document.getElementById('vendorHeader');
 const sheet = document.getElementById('sheet');
 const overlayRoot = document.getElementById('overlayRoot');
 
@@ -77,144 +76,102 @@ function normaliseStatusParam(value) {
   return allowed.includes(value) ? value : null;
 }
 
-/** Vendor theme tokens drive the accent; Cefflo does not own this colour. */
-function applyVendorTheme(theme) {
-  if (!theme) return;
-  const style = document.documentElement.style;
-  style.setProperty('--vendor-primary', theme.primary);
-  style.setProperty('--vendor-primary-strong', theme.primaryStrong);
-  style.setProperty('--vendor-primary-deep', theme.primaryDeep);
-  if (theme.headerTop) style.setProperty('--vendor-header-top', theme.headerTop);
-  if (theme.headerBottom) style.setProperty('--vendor-header-bottom', theme.headerBottom);
-  style.setProperty('--vendor-primary-soft', theme.primarySoft);
-  style.setProperty('--vendor-on-primary', theme.onPrimary);
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', theme.headerTop || theme.primaryStrong);
-}
-
 /* --------------------------------------------------------------- components */
 
-function vendorHeader(vendor) {
+// Founder direction (2026-09-29): the approved illustrated layout (big status
+// title, rider-on-scooter scene, three-step progress, rider + details cards)
+// in the Cefflo palette — blue gradient with Cefflo Yellow accents.
+
+const DASH = '—';
+const known = (value) => (value !== undefined && value !== null && value !== '' && value !== DASH ? value : null);
+
+const ILLUSTRATION = {
+  [CUSTOMER_STATUS.PICKED_UP]: { src: './assets/order-arriving.webp', alt: 'Your order has been collected' },
+  [CUSTOMER_STATUS.ON_THE_WAY]: { src: './assets/rider-on-the-way.webp', alt: 'Your rider on the way' }
+};
+
+function topBar(vm) {
+  const refresh = hasBackendToken
+    ? `<button class="refresh-btn" type="button" data-action="refresh" aria-label="Refresh tracking status">${icon('refresh', { size: 16 })}</button>`
+    : '';
   return `
-    <div class="vendor-header__inner">
-      <span class="vendor-header__mark" aria-hidden="true">${icon('leaf', { size: 26 })}</span>
-      <div class="vendor-header__text">
-        <p class="vendor-header__name">${esc(vendor.name)}</p>
-        <p class="vendor-header__tagline">${esc(vendor.tagline)}</p>
-      </div>
+    <div class="topbar">
+      <span class="topbar__store">${icon('store', { size: 16 })}<span>${esc(vm.vendor?.name)}</span></span>
+      ${refresh}
     </div>`;
 }
 
-function statusHead(vm) {
-  const glyph = {
-    [CUSTOMER_STATUS.PICKED_UP]: 'store',
-    [CUSTOMER_STATUS.ON_THE_WAY]: 'truck',
-    [CUSTOMER_STATUS.DELIVERED]: 'parcel'
-  }[vm.status];
+function hero(vm) {
+  const eta = vm.eta
+    ? `<div class="hero__eta"><small>${esc(vm.eta.label || 'Estimated arrival')}</small><strong>${esc(vm.eta.valueLabel)}</strong></div>`
+    : '';
+  const deliveredAt = vm.status === CUSTOMER_STATUS.DELIVERED && known(vm.delivery?.atLabel)
+    ? `<div class="hero__eta"><small>Delivered at</small><strong>${esc(vm.delivery.atLabel)}</strong></div>`
+    : '';
   return `
-    <div class="status-head">
-      <span class="status-head__glyph" aria-hidden="true">${icon(glyph, { size: 34 })}</span>
-      <div class="status-head__text">
-        <h1 class="status-head__title" id="heroStatus">${esc(vm.statusTitle)}</h1>
-        <p class="status-head__body">${esc(vm.statusBody)}</p>
-      </div>
-    </div>`;
-}
-
-/**
- * Exactly three milestones. Every dot carries a tick: reached dots use the
- * semantic success green (--success), future dots are light grey with a darker-grey tick.
- * State is also exposed as text so nothing depends on colour alone.
- */
-function deliveryProgress(vm) {
-  const parts = [];
-  vm.milestones.forEach((milestone, index) => {
-    if (index > 0) {
-      parts.push(`<span class="progress__bar${milestone.reached ? ' is-reached' : ''}" aria-hidden="true"></span>`);
-    }
-    parts.push(`
-      <span class="progress__step${milestone.reached ? ' is-reached' : ''}">
-        <span class="progress__dot">${icon('check', { size: 18 })}</span>
-        <span class="progress__label" aria-hidden="true">${esc(milestone.label)}</span>
-        <span class="sr-only">${esc(milestone.label)}: ${milestone.reached ? 'completed' : 'not reached yet'}</span>
-      </span>`);
-  });
-  return `<div class="progress" role="group" aria-label="Delivery progress">${parts.join('')}</div>`;
-}
-
-function infoRow(label, valueHtml, extraClass = '') {
-  return `
-    <div class="info-row ${extraClass}">
-      <span class="info-row__label">${esc(label)}</span>
-      <span class="info-row__value">${valueHtml}</span>
-    </div>`;
-}
-
-function pickupScreen(vm) {
-  return `
-    <section class="card">
-      <h2 class="card__title">Pickup Details</h2>
-      <div class="pickup">
-        ${vm.vendor.storefrontPhoto ? `<img class="pickup__thumb" src="${esc(vm.vendor.storefrontPhoto)}" alt="${esc(vm.vendor.storefrontAlt)}" loading="lazy">` : ''}
-        <div class="pickup__text">
-          <p class="pickup__name">${esc(vm.vendor.name)}</p>
-          <p class="pickup__address">${esc(vm.vendor.address)}</p>
-        </div>
-      </div>
-    </section>
-    <section class="card card--stacked">
-      <h2 class="card__title">Order Information</h2>
-      ${infoRow('Tracking ID', `<span class="mono" id="trackingReference">${esc(vm.reference)}</span>
-        <button class="ghost-btn" type="button" data-action="copy-reference" aria-label="Copy tracking reference">${icon('copy', { size: 18 })}</button>`, 'info-row--tight')}
-      ${infoRow('Items', esc(vm.order.itemsLabel))}
-      ${infoRow('Picked Up At', esc(vm.pickup.atLabel))}
-      ${infoRow('Note', esc(vm.order.note))}
-      ${vm.liveRider ? riderLive(vm.liveRider) : ''}
+    <section class="hero">
+      <h1 class="hero__title" id="heroStatus">${esc(vm.statusTitle)}</h1>
+      <p class="hero__body">${esc(vm.statusBody)}</p>
+      ${eta}${deliveredAt}
     </section>`;
 }
 
-function onTheWayScreen(vm) {
-  const eta = vm.eta
-    ? `<div class="map__eta">
-         <span class="map__eta-icon" aria-hidden="true">${icon('clock', { size: 22 })}</span>
-         <span class="map__eta-text"><small>${esc(vm.eta.label)}</small><strong>${esc(vm.eta.valueLabel)}</strong></span>
-       </div>`
-    : '';
-  // The map block renders only when the view model supplies a route, so a
-  // provider without route data degrades to no map instead of a fake one.
-  const map = vm.route
-    ? `<section class="map" aria-label="Delivery route illustration">
-         ${routeMapSvg()}
-         ${eta}
-       </section>
-       ${vm.route.live ? '' : '<p class="map__note">Illustrative route — not a live rider location.</p>'}`
-    : '';
-  const rider = vm.rider
-    ? `<section class="rider">
-         <h2 class="card__title">Rider Information</h2>
-         <div class="rider__row">
-           ${vm.rider.photo ? `<img class="rider__photo" src="${esc(vm.rider.photo)}" alt="${esc(vm.rider.photoAlt)}" loading="lazy">` : ''}
-           <div class="rider__text">
-             <p class="rider__name">${esc(vm.rider.name)}</p>
-             <p class="rider__meta">${esc(vm.rider.vehicle)}</p>
-             <p class="rider__meta">${esc(vm.rider.plate)}</p>
-             ${riderLive(vm.rider)}
-           </div>
-           <div class="contact-actions">
-             ${contactAction('call', 'phone', 'Call', vm.rider)}
-             ${contactAction('chat', 'chat', 'Chat', vm.rider)}
-           </div>
-         </div>
-       </section>`
-    : '';
-  return `${map}${rider}`;
+function illustration(vm) {
+  const art = ILLUSTRATION[vm.status];
+  if (!art) return '';
+  return `<div class="scene scene--${vm.status}"><img src="${art.src}" alt="${esc(art.alt)}" width="820" height="479"></div>`;
+}
+
+/**
+ * Exactly three milestones. Done steps are Cefflo blue with a tick; the
+ * current step carries the yellow ring. State is also exposed as text so
+ * nothing depends on colour alone.
+ */
+function deliveryProgress(vm) {
+  const current = vm.status === CUSTOMER_STATUS.DELIVERED ? -1 : vm.milestones.filter((m) => m.reached).length - 1;
+  const steps = vm.milestones.map((milestone, index) => {
+    const state = index === current ? 'is-current' : milestone.reached ? 'is-done' : '';
+    return `
+      <li class="steps__item ${state}">
+        <span class="steps__dot">${milestone.reached && index !== current ? icon('check', { size: 15 }) : index + 1}</span>
+        <span class="steps__label" aria-hidden="true">${esc(milestone.label)}</span>
+        <span class="sr-only">${esc(milestone.label)}: ${milestone.reached ? (index === current ? 'current step' : 'completed') : 'not reached yet'}</span>
+      </li>`;
+  }).join('');
+  const reached = vm.milestones.filter((m) => m.reached).length;
+  return `<ol class="steps" style="--fill:${Math.max(0, reached - 1) / (vm.milestones.length - 1)}" aria-label="Delivery progress">${steps}</ol>`;
+}
+
+function riderCard(vm) {
+  const rider = vm.rider || vm.liveRider;
+  if (!rider) return '';
+  const initial = esc((rider.name || 'R').trim().charAt(0).toUpperCase() || 'R');
+  const meta = [known(rider.vehicle), known(rider.plate)].filter(Boolean).join(' · ') || 'Delivery rider';
+  return `
+    <section class="rider-card">
+      <p class="eyebrow">Your rider</p>
+      <div class="rider-card__row">
+        ${rider.photo
+          ? `<img class="rider-card__avatar" src="${esc(rider.photo)}" alt="${esc(rider.photoAlt || '')}" loading="lazy">`
+          : `<span class="rider-card__avatar rider-card__avatar--initial" aria-hidden="true">${initial}</span>`}
+        <div class="rider-card__text">
+          <strong>${esc(rider.name)}</strong>
+          <small>${esc(meta)}</small>
+          ${riderLive(rider)}
+        </div>
+        <div class="contact-actions">
+          ${contactAction('call', 'phone', 'Call', rider)}
+          ${contactAction('chat', 'chat', 'Chat', rider)}
+        </div>
+      </div>
+    </section>`;
 }
 
 /** D-66: truthful last known rider point + stops before this order. */
 function riderLive(rider) {
   const parts = [];
   if (Number.isInteger(rider.stopsAhead)) {
-    parts.push(rider.stopsAhead === 0 ? 'Your delivery is next' : `${rider.stopsAhead} ${rider.stopsAhead === 1 ? 'stop' : 'stops'} before yours`);
+    parts.push(`<span class="live-chip">${esc(rider.stopsAhead === 0 ? 'Your delivery is next' : `${rider.stopsAhead} ${rider.stopsAhead === 1 ? 'stop' : 'stops'} before yours`)}</span>`);
   }
   const loc = rider.location;
   if (loc) {
@@ -222,44 +179,49 @@ function riderLive(rider) {
     const when = mins < 1 ? 'just now' : `${mins} min ago`;
     parts.push(`<a class="rider__loc" href="https://www.google.com/maps?q=${encodeURIComponent(`${loc.lat},${loc.lng}`)}" target="_blank" rel="noopener">Location updated ${esc(when)}</a>`);
   }
-  return parts.map((p) => `<p class="rider__meta">${p.startsWith('<a') ? p : esc(p)}</p>`).join('');
+  return parts.length ? `<span class="rider-card__live">${parts.join('')}</span>` : '';
 }
 
 function contactAction(kind, glyph, label, rider) {
   const available = Boolean(rider?.contact?.[kind]?.available);
   if (!available) return '';
   return `
-    <span class="contact-action">
-      <button class="contact-action__btn" type="button" data-action="contact-${kind}"
-        aria-label="${esc(label)} ${esc(rider.name)}, your rider">${icon(glyph, { size: 23 })}</button>
-      <span class="contact-action__label">${esc(label)}</span>
-    </span>`;
+    <button class="contact-btn" type="button" data-action="contact-${kind}"
+      aria-label="${esc(label)} ${esc(rider.name)}, your rider">${icon(glyph, { size: 19 })}</button>`;
 }
 
-function deliveredScreen(vm, ratingState) {
-  const pod = vm.pod
-    ? `<div class="info-row info-row--pod">
-         <span class="info-row__label">Proof of Delivery</span>
-         <button class="pod-thumb" type="button" data-action="open-pod" aria-label="Open proof of delivery">
-           ${ui.podImageUrl
-             ? `<img src="${esc(ui.podImageUrl)}" alt="${esc(vm.pod.alt)}">`
-             : '<span class="pod-thumb__placeholder" aria-hidden="true"></span>'}
-           <span class="pod-thumb__badge" aria-hidden="true">${icon('expand', { size: 15 })}</span>
-         </button>
-       </div>`
-    : '';
+function detailRow(label, value) {
+  return known(value) ? `<div class="details__row"><small>${esc(label)}</small><strong>${esc(value)}</strong></div>` : '';
+}
+
+function detailsCard(vm) {
+  const ref = String(vm.reference ?? '').replace(/^#/, '');
+  const rows = [detailRow('From', vm.vendor?.name), detailRow('Pickup address', vm.vendor?.address)];
+  if (vm.status === CUSTOMER_STATUS.PICKED_UP) {
+    rows.push(detailRow('Picked up at', vm.pickup?.atLabel), detailRow('Items', vm.order?.itemsLabel), detailRow('Note', vm.order?.note));
+  }
+  if (vm.status === CUSTOMER_STATUS.DELIVERED) {
+    rows.push(detailRow('Delivered to', vm.delivery?.address), detailRow('Received by', vm.delivery?.receivedBy));
+  }
   return `
-    <section class="card">
-      <h2 class="card__title">Delivery Details</h2>
-      <div class="destination">
-        <span class="destination__glyph" aria-hidden="true">${icon('home', { size: 28 })}</span>
-        <p class="destination__address">${esc(vm.delivery.address)}</p>
+    <section class="details">
+      <div class="details__head">
+        <h2>Delivery Details</h2>
+        ${known(ref) ? `<span class="details__ref">Order #<span id="trackingReference">${esc(ref)}</span>
+          <button class="ghost-btn" type="button" data-action="copy-reference" aria-label="Copy tracking reference">${icon('copy', { size: 15 })}</button></span>` : ''}
       </div>
-      ${infoRow('Delivered At', esc(vm.delivery.atLabel))}
-      ${infoRow('Received By', esc(vm.delivery.receivedBy))}
-      ${pod}
-    </section>
-    ${ratingBlock(vm, ratingState)}`;
+      ${rows.join('')}
+    </section>`;
+}
+
+function podButton(vm) {
+  if (!vm.pod) return '';
+  return `
+    <button class="pod-cta" type="button" data-action="open-pod">
+      <span class="pod-cta__thumb">${ui.podImageUrl ? `<img src="${esc(ui.podImageUrl)}" alt="">` : icon('expand', { size: 16 })}</span>
+      <span class="pod-cta__text"><strong>Proof of Delivery</strong><small>View the delivery photo</small></span>
+      ${icon('chevronRight', { size: 18 })}
+    </button>`;
 }
 
 /**
@@ -271,20 +233,19 @@ function ratingBlock(vm, ratingState) {
   if (ratingState.submitted) {
     return `
       <section class="rating is-rated" aria-labelledby="ratingTitle">
-        <h2 class="rating__title" id="ratingTitle">How was your delivery?</h2>
-        <div class="stars stars--readonly" role="img"
-          aria-label="You rated this delivery ${ratingState.value} out of 5 stars">
-          ${[1, 2, 3, 4, 5].map((value) => `
-            <span class="star${value <= ratingState.value ? ' is-selected' : ''}">
-              ${icon(value <= ratingState.value ? 'starFilled' : 'starOutline', { size: 34 })}
-            </span>`).join('')}
+        <span class="rating__done" aria-hidden="true">${icon('check', { size: 20 })}</span>
+        <div>
+          <h2 class="rating__title" id="ratingTitle">Thank you</h2>
+          <div class="stars stars--readonly" role="img" aria-label="You rated this delivery ${ratingState.value} out of 5 stars">
+            ${[1, 2, 3, 4, 5].map((value) => `<span class="star${value <= ratingState.value ? ' is-selected' : ''}">${icon(value <= ratingState.value ? 'starFilled' : 'starOutline', { size: 18 })}</span>`).join('')}
+          </div>
         </div>
-        <p class="rating__hint rating__hint--rated">Thanks for your rating</p>
       </section>`;
   }
   return `
     <section class="rating" aria-labelledby="ratingTitle">
-      <h2 class="rating__title" id="ratingTitle">How was your delivery?</h2>
+      <h2 class="rating__title" id="ratingTitle">Rate your delivery</h2>
+      <p class="rating__hint">How was your experience?</p>
       <div class="stars" id="starGroup" role="group" aria-labelledby="ratingTitle">
         ${[1, 2, 3, 4, 5].map((value) => `
           <button class="star" type="button" data-value="${value}" tabindex="${value === 1 ? '0' : '-1'}"
@@ -293,16 +254,15 @@ function ratingBlock(vm, ratingState) {
             <span class="star__filled">${icon('starFilled', { size: 34 })}</span>
           </button>`).join('')}
       </div>
-      <p class="rating__hint">Tap a star to rate your rider and delivery experience.</p>
     </section>`;
 }
 
 function unavailableScreen(vm) {
   return `
     <section class="unavailable${vm.quiet ? ' unavailable--quiet' : ''}">
-      ${vm.quiet ? '' : '<span class="unavailable__glyph" aria-hidden="true">!</span>'}
-      <h1 class="status-head__title" id="heroStatus">${esc(vm.statusTitle)}</h1>
-      <p class="status-head__body">${esc(vm.statusBody)}</p>
+      ${vm.quiet ? `<span class="unavailable__glyph unavailable__glyph--quiet" aria-hidden="true">${icon('clock', { size: 26 })}</span>` : '<span class="unavailable__glyph" aria-hidden="true">!</span>'}
+      <h1 class="hero__title" id="heroStatus">${esc(vm.statusTitle)}</h1>
+      <p class="hero__body">${esc(vm.statusBody)}</p>
     </section>`;
 }
 
@@ -310,8 +270,8 @@ function loadingScreen(vm) {
   return `
     <section class="unavailable" aria-busy="true">
       <span class="spinner" aria-hidden="true"></span>
-      <h1 class="status-head__title" id="heroStatus">${esc(vm.statusTitle)}</h1>
-      <p class="status-head__body">${esc(vm.statusBody)}</p>
+      <h1 class="hero__title" id="heroStatus">${esc(vm.statusTitle)}</h1>
+      <p class="hero__body">${esc(vm.statusBody)}</p>
     </section>`;
 }
 
@@ -321,21 +281,21 @@ function poweredByCefflo() {
 
 function trackingScreen(vm, ratingState) {
   if (vm.phase === TRACKING_PHASE.UNAVAILABLE) {
-    return `<div class="screen">${unavailableScreen(vm)}${poweredByCefflo()}</div>`;
+    return `<div class="screen screen--centered">${unavailableScreen(vm)}${poweredByCefflo()}</div>`;
   }
   if (vm.phase === TRACKING_PHASE.LOADING) {
-    return `<div class="screen">${loadingScreen(vm)}${poweredByCefflo()}</div>`;
+    return `<div class="screen screen--centered">${loadingScreen(vm)}${poweredByCefflo()}</div>`;
   }
-  const body = {
-    [CUSTOMER_STATUS.PICKED_UP]: () => pickupScreen(vm),
-    [CUSTOMER_STATUS.ON_THE_WAY]: () => onTheWayScreen(vm),
-    [CUSTOMER_STATUS.DELIVERED]: () => deliveredScreen(vm, ratingState)
-  }[vm.status];
+  const delivered = vm.status === CUSTOMER_STATUS.DELIVERED;
   return `
     <div class="screen screen--${vm.status}">
-      ${statusHead(vm)}
+      ${topBar(vm)}
+      ${hero(vm)}
+      ${illustration(vm)}
       ${deliveryProgress(vm)}
-      <div class="screen__body">${body()}</div>
+      ${riderCard(vm)}
+      ${detailsCard(vm)}
+      ${delivered ? podButton(vm) + ratingBlock(vm, ratingState) : ''}
       ${poweredByCefflo()}
     </div>`;
 }
@@ -378,8 +338,6 @@ function podMetaRow(glyph, label, value) {
 
 function render() {
   const vm = provider.store.getState();
-  applyVendorTheme(vm.vendor?.theme);
-  headerHost.innerHTML = vendorHeader(vm.vendor);
 
   const showPod = ui.view === 'pod' && vm.phase === TRACKING_PHASE.READY && vm.pod;
   sheet.innerHTML = showPod ? podScreen(vm) : trackingScreen(vm, rating.getState());
@@ -414,7 +372,15 @@ sheet.addEventListener('click', (event) => {
   if (action === 'open-fullscreen') openFullscreen();
   if (action === 'contact-call') contact('call', trigger);
   if (action === 'contact-chat') contact('chat', trigger);
+  if (action === 'refresh') refreshNow(trigger);
 });
+
+/** Token mode only: goes through backend.js's coalescing gate, never around it. */
+function refreshNow(trigger) {
+  trigger.classList.add('is-spinning');
+  setTimeout(() => trigger.classList.remove('is-spinning'), 700);
+  window.CEFFLO_CUSTOMER?.refresh?.();
+}
 
 function copyReference(trigger) {
   const value = document.getElementById('trackingReference')?.textContent?.trim();

@@ -98,7 +98,7 @@ export const POD_ASSETS = Object.freeze({
 /** Customer-safe status copy for each canonical customer-visible state. */
 export const STATUS_COPY = Object.freeze({
   picked_up: {
-    title: 'Pickup',
+    title: 'Picked Up',
     // Customer-facing wording, never first-person rider wording.
     body: 'Your rider has picked up your order.'
   },
