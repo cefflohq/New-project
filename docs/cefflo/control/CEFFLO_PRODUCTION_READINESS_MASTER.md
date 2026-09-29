@@ -327,6 +327,139 @@ If campaigns are in launch scope, define:
 - sender reputation
 - campaign delivery system
 
+
+## 8.8 P1 Audit Results — 2026-09-29 (audit only, no fixes applied)
+
+Classification keys: VERIFIED-STAGING (V) · IMPLEMENTED-UNVERIFIED (I) · PARTIAL (P) · MISSING (M) · FAKE · DEFERRED · FOUNDER-GATE (FG) · OUT-OF-SCOPE · N/A. Evidence IDs refer to Section 17.
+
+### 8.8.1 Auth Matrix
+
+| # | Flow | Vendor Mobile | Vendor Web | Operator (VM + VW) | Helper (VM only) | Driver Mobile | FOUNDR |
+|---|---|---|---|---|---|---|---|
+| 1 | Entry / Splash | I | I | I (`?access=operator`, presentation only) | I (`?access=helper`, presentation only) | I | I |
+| 2 | Sign Up (email) | I | I | N/A (invitation) | N/A (invitation) | I (full name + phone in user metadata) | N/A (no sign-up by design) |
+| 2b | Sign in with Google | FAKE-EQUIVALENT: button calls `signInWithOAuth`; no provider configured → provider error (FG-5) | M (no button) | inherits VM/VW | inherits VM | FAKE: button routes to email sign-in | OUT-OF-SCOPE |
+| 2c | Sign in with Apple | as Google | M | inherits | inherits | FAKE: routes to email sign-in | OUT-OF-SCOPE |
+| 3 | Email verification | P: Verify / Verified / Expired screens exist; confirm deep link emits `signedIn` but the root widget has no `setState` for it | I (verify + resend) | N/A | N/A | M: no Verify screen, error line only; no resend | N/A |
+| 4 | Sign In (email/password) | I | V (E2) | I | I | I (email or phone) | V (E1) |
+| 5 | Forgot Password | I | V (E2) | I | I | I | V (E1) |
+| 6 | Reset Password | P: native reset never completed on staging (E3) | V (E2) | P | P | P: never completed (E3) | V (E1) |
+| 6b | Invalid / expired link | M: link errors are not routed to Link Expired | I | as parent | as VM | M | V (E1, second use rejected) |
+| 7–9 | Session create / persist / refresh | I (supabase_flutter) | I (manual refresh on 401) | as parent | as VM | I (supabase_flutter) | I (manual refresh) |
+| 10 | App / browser reopen | I | I | I | I | I | I |
+| 11 | Expired session | I | I (401 → Sign In) | I | I | I | I |
+| 12 | Logout | I | I (`/auth/v1/logout` + clear) | I | I | I | I |
+| 13 | Invitation claim | I (`claim_my_team_invitations`) | I | I | I | I (`claim_my_rider_invitations`) | N/A |
+| 14 | Role resolution | I (`get_my_businesses`) | I (Helper-only → signed out with message; no Helper Web) | I | I | I (rider relationships) | I (`is_platform_admin`) |
+| 15 | No-access state | I (no business → setup; Operator/Helper entry → no-access copy) | I (Operator no-access screen) | I | I | I (no business → onboarding) | V (Access denied) |
+| 16 | Cross-business protection | I (RLS; depth owned by P6) | I | I | I | I | N/A |
+| 17–20 | Operator / Helper / Driver / FOUNDR authority | server-decided (E5) | server-decided | I | I | I | I |
+
+Backend facts (E5): claim RPCs require `email_confirmed_at` and use `auth.uid()`; all auth/role RPCs are SECURITY DEFINER; anon may execute only `resolve_*` / `consent_*` invitation RPCs. `?access=` never grants a role.
+
+### 8.8.2 Communication Matrix
+
+| Item | Status | Evidence / note |
+|---|---|---|
+| Auth sender `Cefflo <no-reply@auth.cefflo.com>` | V | Resend DKIM + `send.auth` SPF/MX live (E6); FOUNDR + Vendor Web recovery delivered (E1, E2) |
+| Password Reset email | V (FOUNDR, Vendor Web) | E1, E2 |
+| Confirm Signup / Verify Email | I | Last confirmation sent 2026-09-28, before Custom SMTP; not sent via Cefflo sender yet |
+| Resend verification | I (VM, VW); M (Driver: static disabled "Resend email (58s)") | code |
+| Email change / security notifications | M / unused | 0 email-change sends |
+| GoTrue invite email | N/A | Invitations use Cefflo Invitation PWA links |
+| Invitation delivery to invitee | P | Link shared manually by vendor; no send |
+| Templates, Site URL, link expiry, rate limits | FG (FG-1, FG-2) | Not readable with current tools; Site URL proven `http://localhost:3000` (E4) |
+| DMARC | M | none on `cefflo.com` / `auth.cefflo.com` (E6) |
+| `support@cefflo.com` | M | `cefflo.com` has no MX (E6); address shown in Vendor Web Help |
+| Vendor Mobile V-57 Contact Support | FAKE | `action: () async {}` then "Your support request has been sent."; demo address prefilled |
+| In-app notifications | I | `notifications` + preferences + realtime on staging (`202609290001`); not E2E-verified |
+| Push (FCM/APNs/Web Push) | DEFERRED | no provider |
+| WhatsApp / SMS | DEFERRED | no provider; existing WhatsApp controls are user-initiated `wa.me` links; no UI claims a message was sent |
+| Rider approval "we'll notify you" | I | backed by in-app `rider.approved` |
+| Customer operational messages | DEFERRED | tracking link shared manually |
+| Marketing / Website | N/A for auth | static, no login |
+
+### 8.8.3 P1 Gaps by Root Cause
+
+| ID | Root cause | Gaps | Class |
+|---|---|---|---|
+| G1 | Staging Auth config | Site URL `localhost:3000`; QA harness URLs not allowlisted; templates/expiry/rate limits unverified | FG-1, FG-2 |
+| G2 | Mobile auth-callback handling (shared VM + Driver) | native recovery never completed (E3); link errors not routed to Link Expired; `signedIn` from deep link does not rebuild root | P / M |
+| G3 | Driver verification UX | no Verify Email screen; fake static resend | M / FAKE |
+| G4 | Support channel | `support@` has no mailbox; V-57 fake success | M / FAKE |
+| G5 | Email-domain auth | no DMARC | M (FG-6) |
+| G6 | Unverified journeys | sign-up/verify via Cefflo sender; invitation claim E2E (Operator/Helper/Driver); logout/reopen/expiry E2E | I |
+| G7 | Social sign-in | Google/Apple unconfigured (VM), fake routing (Driver), missing (VW) | FG-5 (locked: implement) |
+| G8 | Canonical state | all P1 work on `claude/notification-system`, not `main` | FG-7 (HOLD) |
+
+### 8.8.4 Dependencies
+
+- G2 native E2E needs a real Android/iOS build on device and FG-1 redirect set.
+- G6 sign-up E2E needs FG-2 templates/config.
+- G4 needs FG-3 mailbox provider.
+- G7 needs Google Cloud + Apple Developer credentials (Founder accounts).
+- P1 PLATFORM VERIFIED needs all surfaces evidenced, then FG-7.
+
+
+## 8.9 P1 Implementation Plan (proposed 2026-09-29 — NOT STARTED, awaiting Founder authorization)
+
+Batches follow Founder decisions FG-1…FG-7 (Section 16). Values marked *proposal* must be confirmed against the live dashboard before being applied; nothing here has been applied.
+
+| Batch | Scope | Surfaces | Files / config | Depends on | Founder action | Tests | Staging evidence | Rollback | Owner |
+|---|---|---|---|---|---|---|---|---|---|
+| A — Staging Auth config | Site URL off localhost; one clean Redirect URL set (Section 8.9.1) | All authenticated surfaces | Supabase Dashboard → Auth → URL Configuration (no repo files) | — | Approve exact set; apply in dashboard (or authorise agent) | — | `/recover` from each origin resolves to its own redirect, never localhost | Re-enter previous list (captured before change) | Founder / config |
+| B — Auth email templates + config | Branded Confirm Signup, Reset Password, Change Email; subjects; link expiry; secure email change; email rate limit (8.9.2) | All authenticated surfaces | Dashboard → Auth → Emails / Rate Limits; repo copy `supabase/templates/*.html` + `supabase/config.toml` for local parity | A | Approve copy + values | template render check; local Supabase mail (Inbucket) | real sign-up confirm + reset + email change through `no-reply@auth.cefflo.com` | restore default template text (captured before change) | W-config |
+| C — Shared mobile auth callback | Root listener: rebuild + `loadSession` on `signedIn` from a link; route link errors (expired/used) to Link Expired; confirm recovery path on device | Vendor Mobile (+ Operator, Helper), Driver Mobile | `apps/vendor_mobile/lib/main.dart`, `.../ui/screens/auth.dart`; `apps/rider_mobile/lib/main.dart`, `.../ui/screens/auth.dart` | A | — | widget tests: `signedIn`, `passwordRecovery`, link error → expected screen | device: reset link → Set New Password → `PUT /user` 200 → sign-in; used link → Link Expired | revert commit | W1 `p1-mobile-auth` |
+| D — Driver Verify Email + resend | Driver Verify Email screen after sign-up; real resend with cooldown (`auth.resend(type: signup)`); expired-link screen; remove static fake resend | Driver Mobile | `apps/rider_mobile/lib/{ui/screens/auth.dart,core/routes.dart,data/rider_repository.dart,l10n/*}` | B (template), C | — | widget tests: sign-up → verify screen; resend calls backend; cooldown | sign-up → email → confirm → signed in; resend delivered | revert commit | W1 |
+| E — Google + Apple | Real OAuth for Vendor Mobile, Vendor Web, Driver (Operator/Helper via Vendor); replace Driver fake routing; add Vendor Web buttons | VM, VW, Operator, Helper, Driver | Supabase Auth providers (Google, Apple); `vendor_repository.dart` (already calls `signInWithOAuth`), `rider_repository.dart` + Driver auth screen; `apps/vendor_web/js/{api.js,pages/auth.js}`; iOS/Android config only if native SDK flow is chosen | A; Founder credentials | Google Cloud OAuth client; Apple Developer Services ID + key (.p8), Team ID, Key ID; approve consent-screen branding | unit: provider call + redirect; web: authorize URL + callback parse | each provider on each surface: new account, existing email account, invited Operator/Helper claim by provider email | disable provider in dashboard; revert commit | W1 (mobile) + W2 `p1-web-auth` (Vendor Web) |
+| F — `support@cefflo.com` | Real mailbox: provider, MX, SPF/DKIM for `cefflo.com`, reply capability, routing/ownership | Support (VW Help, VM V-57) | DNS `cefflo.com` (MX, SPF, DKIM); provider admin | Provider decision | Choose + purchase provider; approve DNS records | — | external → support inbound; support → external reply; headers show SPF/DKIM pass | remove MX / provider records | Founder / W-config |
+| G — V-57 Contact Support | Replace fake success with real hand-off to the FG-3 channel (compose to `support@cefflo.com` with subject + business/app context); remove demo prefill; no fabricated "sent" | Vendor Mobile | `apps/vendor_mobile/lib/ui/screens/prototype.dart` (V-57), l10n | F (mailbox live for QA) | Confirm treatment of the screenshot-attachment area (mail compose cannot pre-attach) | widget test: no success state without a real hand-off | message reaches support inbox | revert commit | W1 |
+| H — DMARC / domain hardening | DMARC monitoring for `cefflo.com` + `auth.cefflo.com` (8.9.3) | Email deliverability | DNS TXT `_dmarc.cefflo.com`, `_dmarc.auth.cefflo.com` | F for report mailbox (or external report address) | Approve exact records; apply in Cloudflare | — | `dig` shows records; aggregate reports received | delete TXT records | Founder / W-config |
+| I — Full P1 staging E2E | Auth + communication matrix run on every surface; evidence into Section 17 | All | none (evidence only) | A–H | Device access (Android/iOS), test inboxes | — | per-flow Auth log IDs, screenshots, DB reads | n/a | W-QA |
+
+### 8.9.1 Batch A — proposed final URL set (FG-1)
+
+- Site URL *proposal*: the stable Vercel branch alias of the staging integration branch, Vendor Web root: `https://new-project-git-claude-notific-b5ee9a-cefflohq26-6353s-projects.vercel.app/web/`. Preferred long-term: a dedicated staging domain (e.g. `staging.cefflo.com`) mapped to that branch — requires a Founder DNS/Vercel domain decision.
+- Redirect URLs *proposal* (complete list; everything else removed):
+  - `https://new-project-git-claude-notific-b5ee9a-cefflohq26-6353s-projects.vercel.app/**` (Vendor Web `/web/`, FOUNDR `/foundr/`)
+  - `cefflo-vendor://auth-callback`
+  - `cefflo-driver://auth-callback`
+  - `https://cefflo-vendor-app-staging.vercel.app/**` (QA HARNESS)
+  - `https://cefflo-driver-app-staging.vercel.app/**` (QA HARNESS)
+- Remove: `http://localhost:3000` and any per-deployment preview entries. The current list must be read from the dashboard before the change (not readable with agent tools) so removals are explicit.
+
+### 8.9.2 Batch B — proposed auth email configuration (FG-2)
+
+| Setting | Proposal | Basis |
+|---|---|---|
+| Sender | `Cefflo <no-reply@auth.cefflo.com>` | verified (E6) |
+| Templates in use | Confirm signup, Reset password, Change email address; Invite / Magic link / Reauthentication unused (keep branded minimal) | client code uses signup, recovery, resend-signup only |
+| Link format | keep `{{ .ConfirmationURL }}` | matches current client flows (implicit for web JS, PKCE for Flutter); `token_hash` would require client changes |
+| Branding | Cefflo logo, one CTA, plain fallback URL, no marketing, footer `support@cefflo.com` once F is live | Master 8.7, auth email setup task |
+| Link expiry | *proposal* keep 3600 s (1 h) — current value to be read from dashboard | security/usability balance |
+| Secure email change | *proposal* ON (confirm on both addresses) | security |
+| Email rate limit | *proposal* staging 30/h; production sized to the Resend plan quota (Founder to confirm plan) | avoid 429 during QA without exceeding provider quota |
+| Redirects | per Batch A | FG-1 |
+
+### 8.9.3 Batch H — proposed DMARC records (FG-6)
+
+| Name | Type | Value (*proposal*) |
+|---|---|---|
+| `_dmarc.cefflo.com` | TXT | `v=DMARC1; p=none; rua=mailto:dmarc@cefflo.com; fo=1; adkim=r; aspf=r` |
+| `_dmarc.auth.cefflo.com` | TXT | `v=DMARC1; p=none; rua=mailto:dmarc@cefflo.com; fo=1; adkim=r; aspf=r` |
+
+`rua` needs a receiving mailbox (depends on F) or an external report address. Alignment: Resend DKIM `d=auth.cefflo.com` aligns with From `auth.cefflo.com`. Progression after 2–4 weeks of clean reports: `p=quarantine`, then `p=reject`. `cefflo.com` SPF/DKIM are defined in F with the chosen mailbox provider.
+
+### 8.9.4 Execution order
+
+1. Founder: A (URL set) + B values + H records review; start F provider choice and E credentials in parallel.
+2. W1 `p1-mobile-auth`: C → D (single worktree, mobile auth files only).
+3. F live → G (W1) and H applied.
+4. E once credentials exist (W1 mobile, W2 Vendor Web).
+5. I full platform E2E → evidence → P1 PLATFORM VERIFIED → FG-7 merge decision.
+
+No batch touches migrations or RLS.
+
 ---
 
 # 9. P2 — Core Backend Wiring
@@ -620,6 +753,13 @@ Maintain one centralized register to prevent repeated decisions.
 
 | Gate ID | Decision Required | Why | Options | Impact | Blocks | Status |
 |---|---|---|---|---|---|---|
+| FG-1 | Staging Site URL + final Redirect URL set | Site URL is `localhost:3000` (E4); harness URLs not allowed | Direction approved: no localhost; harness URLs allowed as QA HARNESS | All auth links on staging | P1 E2E | 🟣 APPROVED DIRECTION — exact set to be presented before change |
+| FG-2 | Production-ready auth email config (templates, redirects, expiry, rate limits) | Unverified; sign-up via Cefflo sender untested | Direction approved | All auth email | P1 sign-up E2E, P8 | 🟣 APPROVED DIRECTION — exact config to be presented before change |
+| FG-3 | `support@cefflo.com` real mailbox | No MX (E6) | LOCKED: real mailbox; provider/purchase may need approval | Support, V-57, Vendor Web Help | G4 | 🟣 LOCKED — provider decision pending |
+| FG-4 | V-57 Contact Support | Fake success | LOCKED: route to FG-3 channel; no ticketing system; no fabricated "sent" | Vendor Mobile | — | 🟣 LOCKED |
+| FG-5 | Google + Apple sign-in | Unconfigured / fake / missing | LOCKED: Vendor + Driver = Email + Google + Apple; do not hide permanently | Vendor Mobile, Vendor Web, Driver (+ Operator/Helper via Vendor) | G7 | 🟣 LOCKED — credentials pending |
+| FG-6 | DMARC for `cefflo.com`, `auth.cefflo.com` | None (E6) | Approved: monitoring policy first | Deliverability | P8 | 🟣 APPROVED DIRECTION — exact records to be presented |
+| FG-7 | Merge `claude/notification-system` → `main` | P1 work not canonical | HOLD until P1 evidence complete | Canonical state | P1 platform verification | 🟣 HOLD |
 
 Founder approval is required before protected backend/schema/RLS/auth configuration changes, production deployment, or other decisions already governed by Cefflo’s canonical rules.
 
@@ -640,6 +780,19 @@ Acceptable evidence may include:
 - screenshot/preview where appropriate
 
 A UI screenshot alone does not prove backend persistence or authorization.
+
+
+## 17.1 Evidence Register — P1 (staging `cefflo-staging`, 2026-09-29 UTC)
+
+| ID | Evidence | Source |
+|---|---|---|
+| E1 | FOUNDR recovery: 12:21:21 `POST /recover` → 12:21:39 `GET /verify` 303 (`login`) → 12:21:51 `PUT /user` 200 (`user_modified`); 12:23:16, 12:24:02 reopen → 403 "One-time token not found" | Supabase Auth logs |
+| E2 | Vendor Web recovery: 12:29:30 `/recover` (redirect `/web/`) → 12:29:43 `/verify` 303 → 12:29:59 `PUT /user` 200 → 12:30:24 password `/token` 200 | Supabase Auth logs |
+| E3 | Native deep links allowed: 12:51–12:55 five `/recover` with `cefflo-driver://` / `cefflo-vendor://auth-callback`, each `/verify` 303; no PKCE `/token` exchange and no `PUT /user` followed; eight rejected reopenings. Likely the pre-`d04ad34` web harness (inference) — native device E2E still absent | Supabase Auth logs |
+| E4 | 13:10–13:11 four `/recover` resolved to `http://localhost:3000` → Site URL is localhost; harness URLs not allowlisted | Supabase Auth logs |
+| E5 | Auth RPC posture: claim RPCs check `email_confirmed_at` + `auth.uid()`; all SECURITY DEFINER; anon only `resolve_*`/`consent_*` | staging `pg_proc` read |
+| E6 | DNS: `cefflo.com` no MX, no DMARC; `_dmarc.auth.cefflo.com` none; `send.auth.cefflo.com` MX + SPF; `resend._domainkey.auth.cefflo.com` DKIM present | `dig` |
+| E7 | Automated tests: Vendor Mobile 159/159, Driver 55/55, FOUNDR recovery 10/10, repo 64/64 (support QA; not staging E2E) | local runs on `d04ad34` |
 
 ---
 
@@ -736,21 +889,32 @@ Do NOT introduce:
 
 Helper remains Vendor Mobile only. Operator remains a role/access mode through Vendor surfaces per canonical architecture. Driver remains Driver Mobile. Any temporary Vercel/web build used to test mobile behaviour must be labelled **QA HARNESS / STAGING TEST SURFACE**.
 
-## 20.4 P1 Status Snapshot — Password Recovery Only
+## 20.4 P1 Status Snapshot — Password Recovery (updated after P1 audit)
 
 | Surface | Recovery | Reason |
 |---|---|---|
-| FOUNDR | 🟢 VERIFIED-STAGING | Section 20.2 evidence |
-| Vendor Web | 🟡 IN PROGRESS | Implementation/tests exist; real staging E2E pending |
-| Vendor Mobile | 🟡 IN PROGRESS | Implementation/tests exist; real device/deep-link E2E pending |
-| Operator Access | 🟡 IN PROGRESS | Shares Vendor auth architecture; role/no-access E2E still requires verification |
-| Helper Access | 🟡 IN PROGRESS | Shares Vendor Mobile auth architecture; role/no-access E2E still requires verification |
-| Driver Mobile | 🟡 IN PROGRESS | Implementation/tests exist; real device/deep-link E2E pending |
+| FOUNDR | 🟢 VERIFIED-STAGING | E1 |
+| Vendor Web | 🟢 VERIFIED-STAGING | E2 (was IN PROGRESS before the audit) |
+| Vendor Mobile | 🟡 IN PROGRESS | E3: link accepted, reset never completed; native device E2E pending (G2) |
+| Operator Access | 🟡 IN PROGRESS | Shares Vendor architecture; role/no-access E2E pending |
+| Helper Access | 🟡 IN PROGRESS | Shares Vendor Mobile architecture; role/no-access E2E pending |
+| Driver Mobile | 🟡 IN PROGRESS | E3; native device E2E pending (G2) |
 | Customer Tracking | — NOT APPLICABLE | No customer login |
 
-**P1 PLATFORM STATUS = 🟡 IN PROGRESS**
+## 20.5 P1 Surface Status (whole package, after audit)
 
-Do NOT infer the status of Sign Up, Verify Email, Sign In, session handling, invitations or other P1 flows from recovery status. Those require the full P1 audit.
+| Surface | P1 Status | Open gaps |
+|---|---|---|
+| FOUNDR | 🟡 IN PROGRESS | Recovery + access-denied verified; logout/expiry/reopen unverified; not canonical (FG-7) |
+| Vendor Web | 🟡 IN PROGRESS | Sign-in + recovery verified; sign-up/verify, invitation, Google/Apple (G7), support email (G4) |
+| Vendor Mobile | 🟡 IN PROGRESS | G2, G4 (V-57 FAKE), G6, G7 |
+| Operator Access | 🟡 IN PROGRESS | Inherits VM + VW; claim E2E |
+| Helper Access | 🟡 IN PROGRESS | Inherits VM; claim E2E |
+| Driver Mobile | 🟡 IN PROGRESS | G2, G3, G6, G7 |
+| Customer Tracking | — N/A | No auth |
+| Marketing | — N/A | Static website, no auth |
+
+**P1 PLATFORM STATUS = 🟡 IN PROGRESS.** Founder decisions FG-1…FG-7 are recorded in Section 16; implementation batches are defined in 8.9.
 
 ---
 
