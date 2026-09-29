@@ -329,6 +329,89 @@ table.t .sub { display: block; color: var(--muted); font-size: 12.5px; margin-to
   .biz-chip .chev { opacity: .85; }
 }
 
+/* ---------------- reference alignment (Founder screens, 1536px) ----------------
+   Cards, shapes, padding and sizes matched to the Founder reference set:
+   Riders, Active Runs, Settings (Business Profile, Team, Security...). */
+:root { --r-lg: 18px; --card-pad: 22px; }
+.card { border-color: #E6EBF3; box-shadow: 0 1px 2px rgba(11, 27, 63, .04), 0 10px 28px rgba(11, 27, 63, .06); }
+:root[data-theme='dark'] .card { border-color: var(--border); }
+.main { padding: 22px 28px 36px; }
+.topbar { margin-bottom: 22px; min-height: 64px; gap: 18px; }
+.topbar h1 { font-size: 38px; letter-spacing: -.8px; }
+.topbar .date { font-size: 16px; margin-top: 10px; }
+.biz-switch { min-width: 260px; min-height: 56px; padding: 8px 16px; border-radius: 14px; border-color: #E6EBF3; gap: 14px; }
+.biz-switch b { font-size: 16px; }
+.biz-switch small { font-size: 13px; }
+.icon-btn { width: 48px; height: 48px; }
+.icon-btn svg.i { width: 24px; height: 24px; }
+.user-btn .avatar { width: 52px; height: 52px; font-size: 18px; background: #E8EDF5; }
+:root[data-theme='dark'] .user-btn .avatar { background: var(--neutral-tint); }
+.card-h { padding: 22px 24px 8px; }
+.card-h h2 { font-size: 21px; }
+.card-b { padding: 14px 24px 22px; }
+/* tabs */
+.tabs { gap: 36px; padding: 0 24px; }
+.tabs button { padding: 22px 4px 18px; font-size: 16px; }
+.tabs button.on { font-weight: 700; }
+.tabs .count { height: 26px; min-width: 26px; font-size: 13px; }
+/* tables */
+table.t { font-size: 15px; }
+table.t th { padding: 15px 18px; font-size: 14px; font-weight: 600; color: var(--ink-2); background: #F7F9FC; }
+table.t td { padding: 14px 18px; }
+table.t td b, .person b { font-size: 15.5px; font-weight: 600; }
+table.t .sub { font-size: 13.5px; margin-top: 3px; }
+.avatar.sm { width: 44px; height: 44px; font-size: 14px; }
+.person { gap: 14px; }
+:root:not([data-theme='dark']) table.t th { background: #F7F9FC; }
+:root[data-theme='dark'] table.t th { background: var(--surface-2); }
+/* chips, buttons, inputs */
+.chip { height: 30px; padding: 0 13px; font-size: 13.5px; font-weight: 600; }
+.btn { height: 48px; padding: 0 22px; font-size: 15px; }
+.btn.sm { height: 42px; padding: 0 18px; font-size: 14.5px; }
+.btn.cta { font-weight: 700; }
+.btn.soft { border-radius: 12px; }
+.search input { height: 46px; border-radius: 12px; font-size: 14.5px; border-color: #E6EBF3; }
+.search svg { top: 13px; }
+.input, .select { height: 48px; border-radius: 12px; border-color: #DCE3EE; font-size: 15px; padding: 0 16px; }
+.textarea { border-radius: 12px; border-color: #DCE3EE; font-size: 15px; padding: 12px 16px; }
+.field { gap: 8px; }
+.field label { font-size: 14.5px; color: var(--ink); font-weight: 500; }
+/* stats and key/value rows */
+.stat b { font-size: 32px; }
+.stat span { font-size: 14px; }
+.boxed { border-radius: 16px; padding: 16px 8px; }
+.kv { padding: 14px 0; gap: 18px; }
+.kv > svg.i { width: 24px; height: 24px; color: var(--ink-2); margin-top: 2px; }
+.kv small { font-size: 14px; }
+.kv b { font-size: 16px; }
+/* settings: page card holds white sub-cards; nav card on the right */
+.settings { grid-template-columns: minmax(0, 1fr) 420px; gap: 20px; }
+.settings-page { padding: 28px 28px 24px; background: #F9FBFE; }
+:root[data-theme='dark'] .settings-page { background: var(--surface); }
+.settings-page > h2 { font-size: 34px; letter-spacing: -.7px; }
+.settings-page > p.lead { font-size: 16.5px; margin: 6px 0 22px; }
+.sub-card { border-radius: 16px; padding: 22px 24px; margin-bottom: 18px; border-color: #E6EBF3; box-shadow: 0 1px 2px rgba(11, 27, 63, .03); }
+.sub-card h3 { font-size: 19px; font-weight: 700; }
+.sub-card .desc { font-size: 14.5px; margin-bottom: 16px; }
+.settings-nav { padding: 18px 22px 12px; }
+.settings-nav h4 { margin: 22px 8px 8px; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; }
+.settings-nav button { height: 54px; padding: 0 14px; gap: 18px; font-size: 16.5px; border-bottom-color: #EDF1F7; }
+.settings-nav button svg.i { width: 24px; height: 24px; }
+.settings-nav button .tail svg.i { width: 18px; height: 18px; }
+.settings-nav button.on { border-radius: 12px; font-weight: 600; box-shadow: inset 4px 0 0 var(--primary); }
+.settings-nav button.signout { font-weight: 600; }
+.gated { border-radius: 14px; padding: 14px 16px; font-size: 14px; }
+/* toggles (reference: 44 x 26 blue track, white knob) */
+.switch { width: 46px; height: 28px; border-radius: 14px; background: #D5DCE8; }
+.switch::after { top: 3px; left: 3px; width: 22px; height: 22px; box-shadow: 0 2px 4px rgba(11, 27, 63, .25); }
+.switch.on { background: #1A6BFF; }
+.switch.on::after { left: 21px; }
+/* list rows (Need Attention, delivery, team) */
+.list-row { padding: 14px 0; gap: 16px; }
+.list-row b { font-size: 15.5px; }
+.list-row small { font-size: 13.5px; }
+.att-ico { width: 46px; height: 46px; }
+
 /* ---------------- responsive ----------------
    Desktop layout from 1200px. Below that the two-column screens stack; below
    900px the rows tighten; below 768px the sidebar becomes a bottom navigation
@@ -426,3 +509,9 @@ table.t .sub { display: block; color: var(--muted); font-size: 12.5px; margin-to
   .rider-modal .modal-f .btn { flex: 1; min-width: 0; }
   .rd-deactivate { flex-basis: 100%; order: 3; text-align: center; margin: 4px 0 0; }
 }
+/* Today: the Recent Orders table sits in the narrower column; keep IDs, counts and times on one line. */
+.grid-today table.t td { padding: 12px 12px; font-size: 14.5px; }
+.grid-today table.t th { padding: 13px 12px; }
+.grid-today table.t td:nth-child(1), .grid-today table.t td:nth-child(4), .grid-today table.t td:nth-child(7), table.t td:first-child b { white-space: nowrap; }
+.actions { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.actions .btn { min-width: 0; padding: 0 14px; }
