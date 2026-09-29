@@ -554,3 +554,18 @@ table.t .sub { font-size: 13.5px; margin-top: 3px; }
 .sel { user-select: all; }
 .about-mark { width: 52px; height: 52px; padding: 10px; border-radius: 14px; background: linear-gradient(160deg, #01265E, #005CC4); object-fit: contain; }
 @media (max-width: 767px) { .toasts { top: calc(12px + env(safe-area-inset-top, 0px)); bottom: auto; } }
+
+/* ---------------- Active Runs summary (Founder reference) ---------------- */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 18px; }
+.kpi { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 22px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid #E6EBF3; box-shadow: 0 1px 2px rgba(11, 27, 63, .04), 0 10px 28px rgba(11, 27, 63, .06); }
+:root[data-theme='dark'] .kpi { border-color: var(--border); }
+.kpi b { display: block; font-size: 34px; font-weight: 800; letter-spacing: -.6px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi > div > span { display: block; margin-top: 6px; color: var(--ink-2); font-size: 15px; }
+.kpi-ico { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; flex: none; }
+.kpi-ico svg.i { width: 20px; height: 20px; }
+.kpi.blue { background: linear-gradient(180deg, var(--primary-tint), var(--surface)); }
+.kpi.blue b { color: var(--primary); } .kpi.blue .kpi-ico { background: var(--primary-tint); color: var(--primary); }
+.kpi.amber .kpi-ico { background: var(--warning-tint); color: #E0A800; }
+.kpi.green .kpi-ico { background: var(--success-tint); color: var(--success); }
+.kpi.red b { color: var(--danger); } .kpi.red .kpi-ico { background: var(--warning-tint); color: #E0A800; }
+@media (max-width: 899px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } .kpi { padding: 16px; } .kpi b { font-size: 28px; } }

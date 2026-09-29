@@ -88,6 +88,7 @@ const en = {
   'zones.noneBody': 'Zones group your orders by area.', 'zones.add': 'Add zone', 'zones.name': 'Zone name',
   'zones.created': 'Zone created', 'zones.riderGated': 'A rider per zone needs a zone–rider assignment, which is not in the backend yet.',
   // runs
+  'runs.kActive': 'Active Runs', 'runs.kTotal': 'Total Orders', 'runs.kDone': 'Completed', 'runs.kOngoing': 'Ongoing',
   'runs.title': 'Active Runs', 'runs.none': 'No active runs', 'runs.noneBody': 'Runs you plan appear here.',
   'runs.orders': '{n} orders', 'runs.pickup': 'Pickup {t}', 'runs.status.planned': 'Planned', 'runs.status.active': 'Active',
   'runs.status.completed': 'Completed', 'runs.status.cancelled': 'Cancelled',
@@ -268,6 +269,7 @@ const ms = {
   'zones.none': 'Belum ada zon', 'zones.noneBody': 'Zon mengumpulkan pesanan mengikut kawasan.', 'zones.add': 'Tambah zon',
   'zones.name': 'Nama zon', 'zones.created': 'Zon dicipta',
   'zones.riderGated': 'Rider bagi setiap zon memerlukan penetapan zon–rider, yang belum ada di backend.',
+  'runs.kActive': 'Run Aktif', 'runs.kTotal': 'Jumlah Pesanan', 'runs.kDone': 'Selesai', 'runs.kOngoing': 'Sedang Berjalan',
   'runs.title': 'Run Aktif', 'runs.none': 'Tiada run aktif', 'runs.noneBody': 'Run yang anda rancang dipaparkan di sini.',
   'runs.orders': '{n} pesanan', 'runs.pickup': 'Ambil {t}', 'runs.status.planned': 'Dirancang', 'runs.status.active': 'Aktif',
   'runs.status.completed': 'Selesai', 'runs.status.cancelled': 'Dibatalkan',
