@@ -5,7 +5,7 @@
 // Canonical UI products: Vendor (Mobile + Web/Desktop), Driver (Flutter
 // Mobile), Customer Tracking (PWA), Founder (Web/PWA), Invitation (PWA),
 // Helper (PWA).
-// Public Website: NOT IMPLEMENTED.
+// Public Website: website/index.html, published at the root (dist/index.html).
 export const CANONICAL_SURFACES = Object.freeze({
   vendor: 'Vendor Web/Desktop',
   customer: 'Customer Tracking PWA',

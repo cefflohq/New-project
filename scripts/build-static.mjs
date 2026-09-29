@@ -16,10 +16,10 @@ for (const directory of Object.keys(CANONICAL_SURFACES)) {
 
 await writeFile(new URL('../dist/shared/config.js', import.meta.url), serializeRuntimeConfig(environment));
 
-// Root fallback for a hostname vercel.json does not route (or a direct hit on
-// the deployment URL). There is no Public Website product (NOT IMPLEMENTED),
-// so this is a neutral notice -- never a product UI and never the old site.
-await writeFile(new URL('../dist/index.html', import.meta.url), '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><title>CEFFLO</title><p>No CEFFLO product is served at this address.</p>\n');
+// Root = the Founder-approved Public Website (www.cefflo.com / cefflo.com),
+// brought in from main @ 15efffe so one branch serves the website and every
+// product host (vercel.json routes the product hosts to their surfaces).
+await cp(new URL('../website/index.html', import.meta.url), new URL('../dist/index.html', import.meta.url));
 await mkdir(new URL('../dist/server/', import.meta.url), { recursive: true });
 await mkdir(new URL('../dist/.openai/', import.meta.url), { recursive: true });
 await writeFile(new URL('../dist/server/index.js', import.meta.url), "export default { fetch(request, env) { return env.ASSETS.fetch(request); } };\n");

@@ -152,7 +152,8 @@ class BuildOutputTests(unittest.TestCase):
         dist = ROOT / "dist"
         published = sorted(p.name for p in dist.iterdir())
         self.assertEqual(published, sorted([".openai", "customer", "foundr", "index.html", "invite", "retired", "server", "shared", "vendor"]))
-        self.assertNotIn("marketing", (dist / "index.html").read_text(encoding="utf-8"))
+        # Root is the Public Website (from main @ 15efffe), not a product UI.
+        self.assertIn("Local Same-Day Delivery Operating System", (dist / "index.html").read_text(encoding="utf-8"))
         vendor = (dist / "vendor" / "index.html").read_text(encoding="utf-8")
         for marker in WELCOME_MARKERS:
             self.assertNotIn(marker, vendor)

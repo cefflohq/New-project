@@ -83,6 +83,26 @@
       "has": [
         {
           "type": "host",
+          "value": "track.cefflo.com"
+        }
+      ],
+      "destination": "/retired/sw.js"
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "track.cefflo.com"
+        }
+      ],
+      "destination": "/retired/index.html"
+    },
+    {
+      "source": "/sw.js",
+      "has": [
+        {
+          "type": "host",
           "value": "rider.cefflo.com"
         }
       ],
