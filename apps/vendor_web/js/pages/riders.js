@@ -13,9 +13,9 @@ export default function riders({ el, params, setHeader }) {
   let tab = 'all', query = '', all = [], orders = [], ratings = [], locs = new Map();
   el.innerHTML = `<div class="split no-detail">
     <div class="card">
-      <div style="display:flex;align-items:center;gap:12px;padding-right:18px;border-bottom:1px solid var(--border)">
-        <div class="tabs" data-tabs style="border-bottom:0;flex:1"></div>
-        <div class="search" style="width:240px">${icon('search')}<input data-q placeholder="${esc(t('riders.search'))}" aria-label="${esc(t('c.search'))}"></div>
+      <div class="bar">
+        <div class="tabs" data-tabs></div>
+        <div class="search">${icon('search')}<input data-q placeholder="${esc(t('riders.search'))}" aria-label="${esc(t('c.search'))}"></div>
         <button class="btn cta sm" data-add>${icon('plus')}${esc(t('riders.add'))}</button>
       </div>
       <div data-list>${loadingRows(8)}</div>

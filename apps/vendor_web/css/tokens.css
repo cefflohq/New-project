@@ -1,7 +1,9 @@
-/* CEFFLO Vendor Web — design tokens (derived from the Founder reference
-   screens; the FIRST reference (Today) owns the sidebar treatment).
-   Light is the default; Dark redefines the same tokens. Components read
-   tokens only — never page-specific colours. */
+/* CEFFLO Vendor Web — design tokens (desktop system v3).
+   Neutral surfaces and graphite text carry the hierarchy; Cefflo blue is a
+   minor accent (active signal, links, focus, selection, primary action).
+   Density follows mature desktop SaaS dashboards: 32px controls, 40px
+   rows, 13–14px body. Light is the default; Dark redefines the same tokens.
+   Components read tokens only — never page-specific colours or sizes. */
 /* Inter, self-hosted: Latin subset of the Inter files the Vendor app bundles (SIL OFL 1.1, fonts/LICENSE). No third-party font request. */
 @font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("../fonts/inter-Regular.woff2") format("woff2"); }
 @font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap; src: url("../fonts/inter-Medium.woff2") format("woff2"); }
@@ -12,97 +14,105 @@
 :root {
   color-scheme: light;
   /* surfaces */
-  --bg: #f4f6f9;
+  --bg: #fbfbfc;
   --surface: #ffffff;
-  --surface-2: #f7f8fa;
-  --surface-hover: #f2f4f7;
+  --surface-2: #f7f8f9;
+  --surface-hover: #f2f3f5;
+  --surface-active: #eceef1;
   --elevated: #ffffff;
-  --overlay: rgba(10, 22, 52, 0.28);
-  /* sidebar (Today reference) */
-  --sidebar-bg: linear-gradient(180deg, #0d4bd6 0%, #0a42c4 45%, #0a3aae 100%);
-  --sidebar-ink: rgba(255, 255, 255, 0.92);
-  --sidebar-ink-muted: rgba(255, 255, 255, 0.72);
-  --sidebar-active-bg: #ffffff;
-  --sidebar-active-ink: #0d4bd6;
-  --sidebar-divider: rgba(255, 255, 255, 0.22);
-  /* text */
-  --ink: #0b1b3f;
-  --ink-2: #3c4a66;
-  --muted: #6b7690;
-  --faint: #98a2b8;
+  --overlay: rgba(17, 20, 26, 0.32);
+  /* sidebar: neutral, quiet */
+  --sidebar-bg: #f7f8f9;
+  --sidebar-border: #e6e8eb;
+  --sidebar-ink: #3d434d;
+  --sidebar-ink-strong: #15181d;
+  --sidebar-muted: #7a808a;
+  --sidebar-active-bg: #e9ebee;
+  /* text (graphite) */
+  --ink: #15181d;
+  --ink-2: #474d57;
+  --muted: #6c727c;
+  --faint: #9aa0a9;
   /* lines */
-  --border: #e5e9f0;
-  --border-strong: #d5dce6;
-  /* brand + signals */
+  --border: #e6e8eb;
+  --border-strong: #d6d9de;
+  /* brand + signals (blue is an accent, not a surface) */
   --primary: #0b5cf0;
+  --primary-hover: #0a52d8;
   --primary-ink: #ffffff;
-  --primary-tint: #edf3ff;
+  --primary-tint: #eef3fe;
   --cta: #ffc629;
-  --cta-ink: #0b1b3f;
-  --success: #1f9d55;
-  --success-tint: #e3f6ea;
-  --warning: #b7791f;
-  --warning-tint: #fff3d6;
-  --danger: #dc2f3c;
-  --danger-tint: #fde8ea;
+  --cta-ink: #15181d;
+  --success: #1a8a4b;
+  --success-tint: #e6f5ec;
+  --warning: #a86b0c;
+  --warning-tint: #fdf3dc;
+  --danger: #d12f3b;
+  --danger-tint: #fcebec;
   --purple: #6d4bd8;
-  --purple-tint: #efeafe;
-  --neutral-tint: #eef1f5;
-  /* shape */
-  --r-sm: 8px;
-  --r-md: 12px;
-  --r-lg: 16px;
-  --r-pill: 999px;
-  --shadow-card: 0 1px 2px rgba(11, 27, 63, 0.04), 0 6px 20px rgba(11, 27, 63, 0.05);
-  --shadow-pop: 0 18px 50px rgba(11, 27, 63, 0.18);
+  --purple-tint: #f0ecfd;
+  --neutral-tint: #eff1f3;
+  /* branded full-screen surfaces (sign-in, Business Setup) */
+  --brand-gradient: linear-gradient(180deg, #0d4bd6 0%, #0a42c4 45%, #0a3aae 100%);
+  --brand-deep: #0d4bd6;
+  /* shape: restrained radii, borders over elevation */
+  --r-xs: 4px; --r-sm: 6px; --r-md: 8px; --r-lg: 10px; --r-pill: 999px;
+  --shadow-pop: 0 8px 28px rgba(17, 20, 26, 0.12), 0 1px 3px rgba(17, 20, 26, 0.06);
   /* spacing scale */
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px;
   /* type scale */
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --fs-xs: 12px; --fs-sm: 13px; --fs-md: 14px; --fs-lg: 16px; --fs-xl: 20px; --fs-2xl: 24px; --fs-3xl: 34px;
-  /* type scale (Vendor Web v2) */
-  --t-page: 36px; --t-h2: 22px; --t-h3: 18px; --t-body: 15px; --t-sec: 14px; --t-meta: 13px;
-  --t-th: 13px; --t-pill: 13px; --t-nav: 15.5px; --t-btn: 15px;
+  --t-page: 20px;   /* page title */
+  --t-h2: 14.5px;   /* section title */
+  --t-h3: 14px;     /* sub-section title */
+  --t-body: 13.5px; /* body, table cells, controls */
+  --t-label: 13px;  /* labels, nav */
+  --t-meta: 12px;   /* helper, meta, table headers */
+  --t-stat: 22px;   /* numeric summaries */
   /* geometry */
-  --card-r: 16px; --card-pad: 24px; --card-border: var(--border);
-  --card-shadow: 0 1px 2px rgba(15, 26, 54, .04), 0 6px 18px rgba(15, 26, 54, .05);
-  --row-h: 60px; --ctl-h: 44px; --ctl-r: 10px;
+  --ctl-h: 32px; --ctl-h-sm: 28px; --ctl-r: var(--r-sm);
+  --row-h: 40px; --nav-h: 32px; --topbar-h: 48px;
+  --pad: 16px;      /* section padding */
+  --gap: 16px;      /* layout gap */
   /* layout */
-  --sidebar-collapsed: 88px;
-  --sidebar-expanded: 240px;
+  --sidebar-w: 232px;
+  --rail-w: 56px;
 }
 
 :root[data-theme='dark'] {
-  --card-shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
   color-scheme: dark;
-  --bg: #0b1222;
-  --surface: #121b30;
-  --surface-2: #17213a;
-  --surface-hover: #1b2743;
-  --elevated: #16203a;
-  --overlay: rgba(2, 6, 18, 0.55);
-  --sidebar-bg: linear-gradient(180deg, #0b2f86 0%, #0a2a78 45%, #08225f 100%);
-  --sidebar-active-bg: #e8efff;
-  --sidebar-active-ink: #0b3fb5;
-  --ink: #e8eefc;
-  --ink-2: #c3cde3;
-  --muted: #93a0bd;
-  --faint: #6b7896;
-  --border: #243150;
-  --border-strong: #2f3e62;
-  --primary: #4d8bff;
-  --primary-tint: #1a2c55;
-  --success: #43c07a;
-  --success-tint: #13311f;
+  --bg: #111317;
+  --surface: #16191e;
+  --surface-2: #1b1e24;
+  --surface-hover: #1f232a;
+  --surface-active: #262a32;
+  --elevated: #1b1e24;
+  --overlay: rgba(0, 0, 0, 0.55);
+  --sidebar-bg: #131519;
+  --sidebar-border: #262a31;
+  --sidebar-ink: #b9bec7;
+  --sidebar-ink-strong: #eceef1;
+  --sidebar-muted: #7d838d;
+  --sidebar-active-bg: #23272e;
+  --ink: #eceef1;
+  --ink-2: #c1c6ce;
+  --muted: #8d939d;
+  --faint: #656b75;
+  --border: #262a31;
+  --border-strong: #323740;
+  --primary: #5b95ff;
+  --primary-hover: #74a6ff;
+  --primary-tint: #19243a;
+  --success: #4cc27f;
+  --success-tint: #132a1d;
   --warning: #e3b04b;
-  --warning-tint: #3a2d10;
+  --warning-tint: #33280f;
   --danger: #ff6b76;
-  --danger-tint: #3b161b;
+  --danger-tint: #3a171b;
   --purple: #a58bff;
-  --purple-tint: #2a2150;
-  --neutral-tint: #1c2640;
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
-  --shadow-pop: 0 18px 50px rgba(0, 0, 0, 0.5);
+  --purple-tint: #261f45;
+  --neutral-tint: #22262d;
+  --shadow-pop: 0 10px 32px rgba(0, 0, 0, 0.5);
 }
 
 @media (prefers-reduced-motion: reduce) {

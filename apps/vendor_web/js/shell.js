@@ -1,10 +1,12 @@
-// The single application shell: sidebar (collapsed by default, expands
-// quickly on interaction, collapses when interaction ends), top bar and the
-// hash router. Pages only render into the content area.
+// The single application shell: a persistent neutral sidebar (workspace
+// switcher, primary navigation, Settings / Help and the account menu), a
+// compact top bar and the hash router. Pages only render into the content
+// area. Below 1024px the sidebar becomes an icon rail, below 768px an
+// off-canvas drawer; both open from the top-bar toggle.
 import { t, longToday } from './i18n.js';
 import { isDemo } from './demo.js';
 import { ctx, selectBusiness } from './store.js';
-import { esc, icon, initials, confirmDialog } from './ui.js';
+import { esc, icon, initials, avatar, confirmDialog } from './ui.js';
 import { notif, onNotifications, startNotifications, renderPanel, wirePanel, openNotificationPrefs } from './notifications.js';
 
 const NAV = [
@@ -35,44 +37,44 @@ export function rerenderShell() {
 
 function renderFrame() {
   const b = ctx.business;
+  const name = ctx.user?.user_metadata?.full_name || ctx.user?.email || '';
+  const link = (id, ic, key, href = `#/${id}`) => `<a href="${href}" data-nav="${id}" title="${esc(t(key))}">${icon(ic)}<span class="lbl">${esc(t(key))}</span></a>`;
   root.innerHTML = `
   <div class="shell">
     <aside class="sidebar" aria-label="Main navigation">
-      <div class="brand"><img class="mark" src="img/cefflo-mark-white.png" alt="Cefflo" width="26" height="32"><img class="full" src="img/cefflo-wordmark-white.png" alt="Cefflo" width="118" height="56"></div>
-      <nav class="nav">
-        ${NAV.map(([id, ic, key]) => `<a href="#/${id}" data-nav="${id}">${icon(ic)}<span class="lbl">${esc(t(key))}</span></a>`).join('')}
-        <hr>
-        <a href="#/settings" data-nav="settings">${icon('gear')}<span class="lbl">${esc(t('nav.settings'))}</span></a>
-      </nav>
-      <div class="sidebar-foot">
-        <button class="biz-chip" data-bizmenu aria-label="${esc(t('shell.switchBusiness'))}">
-          <span class="ico">${icon('store')}</span>
-          <span class="txt"><b>${esc(b?.business_name)}</b><small>${esc(t(`shell.role.${b?.member_role}`))}</small></span><span class="chev">${icon('down')}</span>
+      <a class="brand" href="#/today"><img src="img/cefflo-icon-navy.png" alt="" width="22" height="22"><b>Cefflo</b><small>Vendor</small></a>
+      <div class="ws">
+        <button class="ws-btn" data-bizmenu aria-haspopup="menu" aria-label="${esc(t('shell.switchBusiness'))}" title="${esc(b?.business_name)}">
+          <span class="ws-tile">${esc(initials(b?.business_name).slice(0, 1))}</span>
+          <span class="ws-txt"><b>${esc(b?.business_name)}</b><small>${esc(t(`shell.role.${b?.member_role}`))}</small></span>${icon('updown', 'i updown')}
         </button>
       </div>
+      <nav class="nav">${NAV.map(([id, ic, key]) => link(id, ic, key)).join('')}</nav>
+      <div class="sidebar-foot nav">
+        ${link('settings', 'gear', 'nav.settings')}
+        ${link('help', 'help', 'set.help', '#/settings/help')}
+        <div class="acct">
+          <button class="acct-btn" data-usermenu aria-haspopup="menu" title="${esc(name)}">${avatar(name, 'xs')}<span class="acct-txt"><b>${esc(name)}</b><small>${esc(ctx.user?.email)}</small></span>${icon('updown', 'i updown')}</button>
+        </div>
+      </div>
     </aside>
+    <div class="scrim" data-scrim></div>
     <main class="main">
-      ${isDemo() ? `<div class="demo-bar" role="status"><b>${esc(t('demo.bar'))}</b><span>${esc(t('demo.barBody'))}</span></div>` : ''}
       <header class="topbar">
+        <button class="icon-btn nav-toggle" data-navtoggle aria-label="${esc(t('shell.menu'))}" aria-expanded="false">${icon('menu')}</button>
         <h1 data-title></h1><div class="date" data-date></div>
         <div class="spacer"></div>
-        <div class="biz-switch" data-bizmenu role="button" tabindex="0" aria-haspopup="menu" aria-label="${esc(t('shell.switchBusiness'))}">
-          ${icon('store')}<div><b>${esc(b?.business_name)}</b><small>${esc(t(`shell.role.${b?.member_role}`))}</small></div>
-          <span style="margin-left:auto">${icon('down')}</span>
-        </div>
         <div style="position:relative">
           <button class="icon-btn" data-bell aria-haspopup="dialog" aria-label="${esc(t('shell.notifications'))}">${icon('bell')}<span class="nbadge" data-nbadge hidden></span></button>
         </div>
-        <div style="position:relative">
-          <button class="user-btn" data-usermenu aria-haspopup="menu">${`<span class="avatar">${esc(initials(ctx.user?.user_metadata?.full_name || ctx.user?.email))}</span>`}${icon('down')}</button>
-        </div>
       </header>
-      <section data-content></section>
+      ${isDemo() ? `<div class="demo-bar" role="status"><b>${esc(t('demo.bar'))}</b><span>${esc(t('demo.barBody'))}</span></div>` : ''}
+      <section class="content" data-content></section>
     </main>
   </div>`;
   content = root.querySelector('[data-content]');
   wireSidebar(root.querySelector('.sidebar'));
-  root.querySelectorAll('[data-bizmenu]').forEach(el => el.addEventListener('click', e => openBizMenu(e.currentTarget)));
+  root.querySelector('[data-bizmenu]').addEventListener('click', e => openBizMenu(e.currentTarget));
   root.querySelector('[data-usermenu]').addEventListener('click', e => openUserMenu(e.currentTarget));
   root.querySelector('[data-bell]').addEventListener('click', e => openBell(e.currentTarget));
   paintBadge();
@@ -103,44 +105,48 @@ function openBell(anchor) {
 }
 onNotifications(paintBadge);
 
+// Rail / drawer: the top-bar toggle opens the full sidebar over the page;
+// choosing a destination, the scrim or Escape closes it.
 function wireSidebar(sb) {
-  let timer;
-  const open = () => { clearTimeout(timer); sb.classList.add('expanded'); };
-  const close = () => { timer = setTimeout(() => sb.classList.remove('expanded'), 120); };
-  sb.addEventListener('mouseenter', open);
-  sb.addEventListener('mouseleave', close);
-  sb.addEventListener('focusin', open);
-  sb.addEventListener('focusout', e => { if (!sb.contains(e.relatedTarget)) close(); });
-  sb.addEventListener('click', e => { if (e.target.closest('a')) sb.classList.remove('expanded'); });
+  const toggle = root.querySelector('[data-navtoggle]');
+  const set = open => { sb.classList.toggle('open', open); toggle.setAttribute('aria-expanded', String(open)); };
+  toggle.addEventListener('click', () => set(!sb.classList.contains('open')));
+  root.querySelector('[data-scrim]').addEventListener('click', () => set(false));
+  sb.addEventListener('click', e => { if (e.target.closest('a')) set(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && sb.classList.contains('open')) set(false); });
 }
 
 function closeMenus() { document.querySelectorAll('.menu').forEach(m => m.remove()); }
 document.addEventListener('click', e => { if (!e.target.closest('.menu,[data-bizmenu],[data-usermenu],[data-bell]')) closeMenus(); });
 
+
 function openBizMenu(anchor) {
+  const wasOpen = !!anchor.parentElement.querySelector('.menu');
   closeMenus();
+  if (wasOpen) return;
   const m = document.createElement('div');
-  m.className = 'menu';
+  m.className = 'menu down-left';
   m.setAttribute('role', 'menu');
-  if (anchor.classList.contains('biz-chip')) Object.assign(m.style, { top: 'auto', bottom: 'calc(100% + 6px)', left: '0', right: 'auto' });
-  m.innerHTML = ctx.businesses.map(b => `<button role="menuitem" data-bid="${esc(b.business_id)}">${icon('store')}<span><b>${esc(b.business_name)}</b><small>${esc(t(`shell.role.${b.member_role}`))}</small></span>${b.business_id === ctx.bid ? icon('check') : ''}</button>`).join('');
+  m.innerHTML = `<div class="menu-label">${esc(t('shell.switchBusiness'))}</div>` + ctx.businesses.map(b => `<button role="menuitem" data-bid="${esc(b.business_id)}"><span class="ws-tile">${esc(initials(b.business_name).slice(0, 1))}</span><span><b>${esc(b.business_name)}</b><small>${esc(t(`shell.role.${b.member_role}`))}</small></span>${b.business_id === ctx.bid ? icon('check') : ''}</button>`).join('');
   m.addEventListener('click', e => {
     const id = e.target.closest('[data-bid]')?.dataset.bid;
     if (!id) return;
     closeMenus();
     if (id !== ctx.bid) { selectBusiness(id); rerenderShell(); }
   });
-  (anchor.classList.contains('biz-chip') ? anchor.parentElement : anchor).append(m);
+  anchor.parentElement.append(m);
 }
 
 function openUserMenu(anchor) {
+  const wasOpen = !!anchor.parentElement.querySelector('.menu');
   closeMenus();
+  if (wasOpen) return;
   const m = document.createElement('div');
-  m.className = 'menu';
+  m.className = 'menu up';
   m.setAttribute('role', 'menu');
-  m.innerHTML = `<div style="padding:10px 12px"><b>${esc(ctx.user?.user_metadata?.full_name || '')}</b><small>${esc(ctx.user?.email)}</small></div>
-    <button role="menuitem" data-go="#/settings/profile">${icon('user')}${esc(t('shell.profile'))}</button>
-    <button role="menuitem" class="danger" data-signout>${icon('logout')}${esc(t('shell.signOut'))}</button>`;
+  m.innerHTML = `<div class="menu-head"><b>${esc(ctx.user?.user_metadata?.full_name || '')}</b><small>${esc(ctx.user?.email)}</small></div>
+    <button role="menuitem" data-go="#/settings/profile">${icon('user')}<span>${esc(t('shell.profile'))}</span></button>
+    <button role="menuitem" class="danger" data-signout>${icon('logout')}<span>${esc(t('shell.signOut'))}</span></button>`;
   m.addEventListener('click', e => {
     if (e.target.closest('[data-go]')) { closeMenus(); location.hash = e.target.closest('[data-go]').dataset.go; }
     if (e.target.closest('[data-signout]')) { closeMenus(); confirmSignOut(); }
@@ -157,8 +163,9 @@ export function setHeader(title, withDate = true) {
 function route() {
   const [name = 'today', ...rest] = location.hash.replace(/^#\/?/, '').split('/');
   const page = pages[name] ? name : 'today';
+  const navKey = page === 'settings' && rest[0] === 'help' ? 'help' : page;
   root.querySelectorAll('[data-nav]').forEach(a => {
-    const on = a.dataset.nav === page;
+    const on = a.dataset.nav === navKey;
     a.classList.toggle('active', on);
     if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });

@@ -20,20 +20,20 @@ export default function settings({ el, params, setHeader }) {
   setHeader(t('set.title'), false);
   let sub = PAGES.includes(params[0]) ? params[0] : 'profile';
   if (OWNER_ONLY.has(sub) && !ctx.isOwner) sub = 'profile';
-  const item = (id, ic, key, tail = '') => `<button data-s="${id}" class="${sub === id ? 'on' : ''}">${icon(ic)}<span>${esc(t(key))}</span><span class="tail">${tail}${icon('right')}</span></button>`;
+  const item = (id, ic, key, tail = '') => `<button data-s="${id}" class="${sub === id ? 'on' : ''}"${sub === id ? ' aria-current="page"' : ''}>${icon(ic)}<span>${esc(t(key))}</span>${tail ? `<span class="tail">${tail}</span>` : ''}</button>`;
   el.innerHTML = `<div class="settings">
-    <div class="card settings-page" data-page>${loadingRows(4)}</div>
-    <nav class="card settings-nav" aria-label="${esc(t('set.title'))}">
+    <nav class="settings-nav" aria-label="${esc(t('set.title'))}">
       <h4>${esc(t('set.account'))}</h4>
       ${item('profile', 'user', 'set.profile')}${item('security', 'lock', 'set.security')}
       ${item('m:notifications', 'bell', 'set.notifications')}
-      ${item('m:language', 'globe', 'set.language', esc(prefs.lang === 'ms' ? 'Bahasa Melayu' : 'English'))}
+      ${item('m:language', 'globe', 'set.language', esc(prefs.lang === 'ms' ? 'BM' : 'EN'))}
       ${item('m:appearance', 'palette', 'set.appearance')}
       <h4>${esc(t('set.business'))}</h4>${ctx.isOwner ? item('business', 'building', 'set.businessProfile') + item('team', 'users', 'set.team') : ''}${item('integrations', 'link', 'set.integrations')}
       <h4>${esc(t('set.support'))}</h4>${item('help', 'help', 'set.help')}
       <h4>${esc(t('set.legal'))}</h4>${item('privacy', 'shield', 'set.privacy')}${item('about', 'info', 'set.about')}
       <button class="signout" data-signout>${icon('logout')}<span>${esc(t('set.signOut'))}</span></button>
-    </nav></div>`;
+    </nav>
+    <div class="settings-page" data-page>${loadingRows(4)}</div></div>`;
   const page = el.querySelector('[data-page]');
   el.querySelector('.settings-nav').addEventListener('click', e => {
     if (e.target.closest('[data-signout]')) { signOutHandler()(); return; }
@@ -87,15 +87,15 @@ async function profile(page) {
     const p = rows?.[0] || {};
     const name = p.display_name || u.user_metadata?.full_name || '';
     body.innerHTML = `
-      <div class="sub-card" style="display:flex;gap:24px;align-items:center">${avatar(name || u.email, 'lg')}
-        <div style="flex:1"><h3 style="font-size:24px">${esc(name || u.email)}</h3>${gatedNote(t('prof.photoGated'))}</div></div>
+      <div class="sub-card profile-id">${avatar(name || u.email, 'lg')}
+        <div class="grow"><h3>${esc(name || u.email)}</h3>${gatedNote(t('prof.photoGated'))}</div></div>
       <div class="sub-card"><h3>${esc(t('prof.personal'))}</h3>
         <div class="form-row"><label>${esc(t('prof.fullName'))}</label><input class="input" name="name" maxlength="80" value="${esc(name)}"></div>
         <div class="form-row"><label>${esc(t('prof.email'))}</label><div class="inline-field"><input class="input" name="email" type="email" value="${esc(u.email)}"><button class="btn soft" data-email>${esc(t('c.change'))}</button></div></div>
         <div class="form-row"><label>${esc(t('prof.phone'))}</label><input class="input" name="phone" inputmode="tel" value="${esc(p.phone || '')}"></div>
         <div class="err" data-err hidden></div>
-        <div style="display:flex;justify-content:flex-end"><button class="btn primary" data-save>${esc(t('c.save'))}</button></div></div>
-      <div class="sub-card" style="display:flex;align-items:center;gap:16px"><div style="flex:1"><h3>${esc(t('prof.password'))}</h3><p class="desc" style="margin:0">${esc(t('prof.passwordLead'))}</p></div>
+        <div class="row-end"><button class="btn primary" data-save>${esc(t('c.save'))}</button></div></div>
+      <div class="sub-card row-card"><div class="grow"><h3>${esc(t('prof.password'))}</h3><p class="desc" style="margin:0">${esc(t('prof.passwordLead'))}</p></div>
         <a class="btn soft" href="#/settings/security">${esc(t('prof.changePassword'))}</a></div>`;
     const err = body.querySelector('[data-err]');
     body.querySelector('[data-save]').addEventListener('click', async e => {

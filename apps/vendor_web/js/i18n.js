@@ -26,7 +26,7 @@ const en = {
   'nav.riders': 'Riders', 'nav.settings': 'Settings', 'nav.expand': 'Expand navigation',
   // shell
   'shell.switchBusiness': 'Switch business', 'shell.notifications': 'Notifications',
-  'shell.profile': 'Profile', 'shell.signOut': 'Sign out', 'shell.role.owner': 'Owner', 'shell.role.operator': 'Operator',
+  'shell.menu': 'Menu', 'shell.profile': 'Profile', 'shell.signOut': 'Sign out', 'shell.role.owner': 'Owner', 'shell.role.operator': 'Operator',
   // common
   'c.viewAll': 'View All', 'c.search': 'Search', 'c.save': 'Save', 'c.cancel': 'Cancel', 'c.close': 'Close',
   'c.edit': 'Edit', 'c.retry': 'Try again', 'c.loading': 'Loading…', 'c.saving': 'Saving…', 'c.saved': 'Saved',
@@ -275,7 +275,7 @@ const ms = {
   'bp.locateFailed': 'Kami tidak dapat mencari alamat ini. Masukkan koordinat secara manual.',
   'nav.today': 'Hari Ini', 'nav.orders': 'Pesanan', 'nav.zones': 'Zon', 'nav.runs': 'Run Aktif', 'nav.riders': 'Rider',
   'nav.settings': 'Tetapan', 'nav.expand': 'Kembangkan navigasi',
-  'shell.switchBusiness': 'Tukar perniagaan', 'shell.notifications': 'Notifikasi', 'shell.profile': 'Profil', 'shell.signOut': 'Log keluar',
+  'shell.switchBusiness': 'Tukar perniagaan', 'shell.notifications': 'Notifikasi', 'shell.menu': 'Menu', 'shell.profile': 'Profil', 'shell.signOut': 'Log keluar',
   'shell.role.owner': 'Pemilik', 'shell.role.operator': 'Operator',
   'c.viewAll': 'Lihat Semua', 'c.search': 'Cari', 'c.save': 'Simpan', 'c.cancel': 'Batal', 'c.close': 'Tutup', 'c.edit': 'Edit',
   'c.retry': 'Cuba lagi', 'c.loading': 'Memuatkan…', 'c.saving': 'Menyimpan…', 'c.saved': 'Disimpan', 'c.call': 'Panggil',

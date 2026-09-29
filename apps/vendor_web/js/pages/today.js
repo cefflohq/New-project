@@ -11,8 +11,8 @@ export default function today({ el, setHeader }) {
   el.innerHTML = `
   <div class="grid-today">
     <div class="stack">
-      <div class="card" style="min-height:340px;display:grid;place-items:center;padding:24px">
-        <div style="max-width:520px;display:grid;gap:12px;justify-items:center;text-align:center">
+      <div class="card map-slot">
+        <div>
           <div class="state" style="padding:0"><div class="ico">${icon('map')}</div><h3>${esc(t('today.mapTitle'))}</h3></div>
           ${gatedNote(t('today.mapGated'))}
         </div>
@@ -25,7 +25,7 @@ export default function today({ el, setHeader }) {
       </div>
       <div class="card">
         <div class="card-h"><h2>${esc(t('today.recent'))}</h2>
-          <div class="search" style="margin-left:auto;width:260px">${icon('search')}<input data-q placeholder="${esc(t('today.searchOrders'))}" aria-label="${esc(t('c.search'))}"></div>
+          <div class="search" style="margin-left:auto">${icon('search')}<input data-q placeholder="${esc(t('today.searchOrders'))}" aria-label="${esc(t('c.search'))}"></div>
           <a class="link" href="#/orders">${esc(t('c.viewAll'))}</a></div>
         <div class="tabs" data-tabs></div>
         <div data-recent>${loadingRows(5)}</div>
