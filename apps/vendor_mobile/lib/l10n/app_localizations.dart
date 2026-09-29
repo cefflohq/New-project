@@ -5624,6 +5624,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send a new reset link'**
   String get sendNewResetLink;
+
+  /// No description provided for @supportSendOpensEmailApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Send opens your email app with this message addressed to support@cefflo.com. Add screenshots there if they help.'**
+  String get supportSendOpensEmailApp;
+
+  /// No description provided for @writeMessageFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a message first.'**
+  String get writeMessageFirst;
+
+  /// No description provided for @emailApp.
+  ///
+  /// In en, this message translates to:
+  /// **'your email app'**
+  String get emailApp;
 }
 
 class _AppLocalizationsDelegate

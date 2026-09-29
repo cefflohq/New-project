@@ -919,5 +919,8 @@
   "ntDismiss": "Tutup",
   "linkNoLongerValid": "Pautan ini tidak lagi sah",
   "linkExpiredOrUsedRequestNew": "Pautan telah tamat tempoh atau telah digunakan. Minta e-mel pengesahan baharu, atau pautan tetapan semula kata laluan baharu.",
-  "sendNewResetLink": "Hantar pautan tetapan semula baharu"
+  "sendNewResetLink": "Hantar pautan tetapan semula baharu",
+  "supportSendOpensEmailApp": "Hantar membuka app e-mel anda dengan mesej ini kepada support@cefflo.com. Lampirkan tangkapan skrin di sana jika membantu.",
+  "writeMessageFirst": "Tulis mesej dahulu.",
+  "emailApp": "app e-mel anda"
 }

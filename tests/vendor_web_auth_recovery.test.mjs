@@ -126,3 +126,11 @@ test('no deployment hostname or localhost fallback is hard-coded in Vendor Web',
     assert.ok(!/redirect_to=[^`'"]*localhost/.test(src) && !/https?:\/\/localhost/.test(src), `${f} hard-codes localhost`);
   }
 });
+
+test('Continue with Google goes to GoTrue authorize and returns to this Vendor Web', () => {
+  setLocation('https://new-branch-preview.vercel.app/web/?access=operator#/today');
+  const url = new URL(api.googleSignInUrl());
+  assert.equal(url.origin + url.pathname, `${SUPABASE}/auth/v1/authorize`);
+  assert.equal(url.searchParams.get('provider'), 'google');
+  assert.equal(url.searchParams.get('redirect_to'), 'https://new-branch-preview.vercel.app/web/');
+});

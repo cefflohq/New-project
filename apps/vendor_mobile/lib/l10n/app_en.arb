@@ -1469,5 +1469,8 @@
   "ntDismiss": "Dismiss",
   "linkNoLongerValid": "This link is no longer valid",
   "linkExpiredOrUsedRequestNew": "It has expired or was already used. Request a new verification email, or a new password reset link.",
-  "sendNewResetLink": "Send a new reset link"
+  "sendNewResetLink": "Send a new reset link",
+  "supportSendOpensEmailApp": "Send opens your email app with this message addressed to support@cefflo.com. Add screenshots there if they help.",
+  "writeMessageFirst": "Write a message first.",
+  "emailApp": "your email app"
 }

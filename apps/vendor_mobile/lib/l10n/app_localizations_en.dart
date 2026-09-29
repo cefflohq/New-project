@@ -3055,4 +3055,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sendNewResetLink => 'Send a new reset link';
+
+  @override
+  String get supportSendOpensEmailApp =>
+      'Send opens your email app with this message addressed to support@cefflo.com. Add screenshots there if they help.';
+
+  @override
+  String get writeMessageFirst => 'Write a message first.';
+
+  @override
+  String get emailApp => 'your email app';
 }

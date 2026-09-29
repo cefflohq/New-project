@@ -2,6 +2,7 @@ import 'package:cefflo_vendor_mobile/core/app_state.dart';
 import 'package:cefflo_vendor_mobile/core/theme.dart';
 import 'package:cefflo_vendor_mobile/data/vendor_repository.dart';
 import 'package:cefflo_vendor_mobile/ui/screens/auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -98,7 +99,7 @@ void main() {
   });
 
   group('locked copy is present', () {
-    testWidgets('02 Sign In offers all three locked entry points', (
+    testWidgets('02 Sign In on Android offers Google and Email', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -107,12 +108,27 @@ void main() {
       await tester.pump();
 
       expect(find.text('VENDOR'), findsOneWidget);
-      expect(find.text('Continue with Apple'), findsOneWidget);
+      expect(find.text('Continue with Apple'), findsNothing);
       expect(find.text('Continue with Google'), findsOneWidget);
       expect(find.text('Continue with Email'), findsOneWidget);
       expect(find.text('Have an invite? '), findsOneWidget);
       expect(find.text('Get started'), findsOneWidget);
       expect(find.text('English'), findsOneWidget);
+    });
+
+    testWidgets('02 Sign In on iOS is Email only (no Apple, no Google)', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      await tester.pumpWidget(
+        host(SignInScreen(onEmail: () {}, onSignUp: () {})),
+      );
+      await tester.pump();
+      expect(find.text('Continue with Apple'), findsNothing);
+      expect(find.text('Continue with Google'), findsNothing);
+      expect(find.text('Continue with Email'), findsOneWidget);
+      debugDefaultTargetPlatformOverride = null;
     });
 
     testWidgets('03 Email Sign In shows the locked form', (tester) async {
@@ -470,7 +486,6 @@ void main() {
         await tester.pump();
 
         for (final label in const [
-          'Continue with Apple',
           'Continue with Google',
           'Continue with Email',
           'Get started',
@@ -479,9 +494,9 @@ void main() {
           expect(rect.bottom, lessThanOrEqualTo(size.height), reason: label);
         }
         // Grouped: the gap between consecutive providers stays small.
-        final apple = tester.getRect(find.text('Continue with Apple'));
+        final google = tester.getRect(find.text('Continue with Google'));
         final email = tester.getRect(find.text('Continue with Email'));
-        expect(email.top - apple.top, lessThan(160));
+        expect(email.top - google.top, lessThan(160));
         // Balanced: the invite prompt is lifted off the bottom edge.
         expect(
           size.height - tester.getRect(find.text('Get started')).bottom,

@@ -1474,6 +1474,27 @@ Future<void> launchWhatsApp(BuildContext context, String phone) => _launch(
   L.whatsapp,
 );
 
+/// The one support channel (FG-3/FG-4): support@cefflo.com.
+const supportEmail = 'support@cefflo.com';
+
+/// Opens the user's email app with a message to [supportEmail]. The user
+/// sends it from their own mail app; nothing is reported as sent here.
+Future<void> launchSupportEmail(
+  BuildContext context, {
+  required String subject,
+  required String body,
+}) => _launch(
+  context,
+  Uri(
+    scheme: 'mailto',
+    path: supportEmail,
+    query:
+        'subject=${Uri.encodeComponent(subject)}'
+        '&body=${Uri.encodeComponent(body)}',
+  ),
+  L.emailApp,
+);
+
 /// Opens turn-by-turn directions to [address] in the maps app / Google Maps.
 Future<void> launchDirections(BuildContext context, String address) => _launch(
   context,

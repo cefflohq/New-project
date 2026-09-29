@@ -3056,4 +3056,14 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get sendNewResetLink => 'Hantar pautan tetapan semula baharu';
+
+  @override
+  String get supportSendOpensEmailApp =>
+      'Hantar membuka app e-mel anda dengan mesej ini kepada support@cefflo.com. Lampirkan tangkapan skrin di sana jika membantu.';
+
+  @override
+  String get writeMessageFirst => 'Tulis mesej dahulu.';
+
+  @override
+  String get emailApp => 'app e-mel anda';
 }

@@ -123,3 +123,18 @@ test('app opens Set New Password for a recovery link before the admin gate', () 
   assert.match(app, /consumeAuthFragment\(\) === 'recovery'\) return renderSetPassword\(\)/);
   assert.match(app, /await F\.updatePassword\(p1\); await boot\(\)/);
 });
+
+test('Continue with Google goes to GoTrue authorize and returns to this FOUNDR', () => {
+  setLocation('https://new-branch-preview.vercel.app/foundr/?x=1');
+  const url = new URL(F.googleSignInUrl());
+  assert.equal(url.origin + url.pathname, `${SUPABASE}/auth/v1/authorize`);
+  assert.equal(url.searchParams.get('provider'), 'google');
+  assert.equal(url.searchParams.get('redirect_to'), 'https://new-branch-preview.vercel.app/foundr/');
+});
+
+test('Google returns a normal session: stored, not treated as recovery', () => {
+  setLocation('https://foundr.cefflo.com/#access_token=g-token&refresh_token=g-r&expires_at=2000000000&provider_token=p&token_type=bearer');
+  assert.equal(F.consumeAuthFragment(), null);
+  assert.equal(session.access_token, 'g-token');
+  assert.equal(location.hash, '');
+});

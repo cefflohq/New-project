@@ -217,6 +217,19 @@ Authentication and authorization are separate.
 
 A query parameter or UI mode may change presentation but may never grant role authority.
 
+### 8.1.00 FOUNDER FINAL LOCK — V1 AUTH PROVIDERS, APPLE DEFERRED (2026-09-29, supersedes 8.1.0 for Apple)
+
+| Surface | Providers |
+|---|---|
+| Vendor Mobile Android | Continue with Google · Continue with Email |
+| Vendor Mobile iOS | Continue with Email only |
+| Vendor Web | Continue with Google · Continue with Email |
+| Operator / Helper | inherit the Vendor surface they use |
+| Driver Mobile (Android + iOS) | Email only |
+| FOUNDR | Google only (Email/password kept as transitional staging access per FG-9 until cutover) |
+
+**Sign in with Apple is DEFERRED / OUT OF V1** on every surface. Consequences: FG-8 (Apple Hide My Email) no longer blocks P1; iOS Guideline 4.8 is not triggered (no third-party login on iOS); Apple token revocation is not needed for V1 deletion. FG-10 (account deletion) moves to **P6** and does not block P1; it remains required before any iOS submission (Guideline 5.1.1(v)).
+
 ### 8.1.0 FOUNDER LOCKED — CEFFLO V1 AUTH PROVIDER ARCHITECTURE (2026-09-29, final)
 
 Supersedes 8.1.1 for Driver Mobile. **Vendor = Email + ecosystem provider · Driver = Email only · FOUNDR = Google only.**
@@ -667,6 +680,22 @@ FG-10 deletion architecture ─► P6 backend design (deletion RPC, anonymizatio
 iOS App Store submission ◄── Batch E (Apple) + FG-10 implemented + Batch I
 ```
 
+## 8.12 P1 Execution Status (2026-09-29)
+
+| Batch | Status | Evidence / next step |
+|---|---|---|
+| A — Staging Auth URLs | 🔴 PENDING CONFIG | Founder applies 8.9.1 set in Supabase `cefflo-staging` → URL Configuration; remove `localhost:3000` |
+| B — Auth email templates/config | 🟡 IMPLEMENTED (repo) | `supabase/templates/{confirmation,recovery,email_change}.html` + `supabase/config.toml` local parity; Founder pastes templates/subjects into Dashboard → Auth → Emails |
+| C — Mobile link handling | 🟡 IMPLEMENTED-UNVERIFIED | `32ff558`; real-device E2E pending |
+| D — Driver Verify Email | 🟡 IMPLEMENTED-UNVERIFIED | `32ff558`; real-device E2E pending |
+| E — Google Auth | 🟡 IMPLEMENTED (code) | Vendor Mobile: Google + Email on Android and web harness, Email only on iOS, Apple removed, Google `redirectTo` = app return URL. Vendor Web: Continue with Google → `/auth/v1/authorize?provider=google`, returns to current page. FOUNDR: Continue with Google on top, Email/password below as transitional access (FG-9). Blocked on Google Cloud OAuth Web client + Supabase Google provider (redirect `https://tomvvmwktehexwhktenw.supabase.co/auth/v1/callback`) |
+| F — `support@cefflo.com` | 🔴 PENDING | Founder: mailbox provider + MX/SPF/DKIM |
+| G — V-57 Contact Support | 🟡 IMPLEMENTED | Send opens the mail app to `support@cefflo.com` with subject, message and business/role/account context; demo prefill and fake attachment area removed; no fabricated "sent"; empty message rejected. Live delivery needs F |
+| H — DMARC | 🔴 PENDING | Founder applies 8.9.3 records |
+| I — Full P1 staging E2E | ⏳ WAITING | after A–H |
+
+Path to close: A + B(dashboard) + E(credentials) + F + H → I → P1 VERIFIED → FG-7 canonical merge.
+
 ---
 
 # 9. P2 — Core Backend Wiring
@@ -964,12 +993,12 @@ Maintain one centralized register to prevent repeated decisions.
 | FG-2 | Production-ready auth email config (templates, redirects, expiry, rate limits) | Unverified; sign-up via Cefflo sender untested | Direction approved | All auth email | P1 sign-up E2E, P8 | 🟣 APPROVED DIRECTION — exact config to be presented before change |
 | FG-3 | `support@cefflo.com` real mailbox | No MX (E6) | LOCKED: real mailbox; provider/purchase may need approval | Support, V-57, Vendor Web Help | G4 | 🟣 LOCKED — provider decision pending |
 | FG-4 | V-57 Contact Support | Fake success | LOCKED: route to FG-3 channel; no ticketing system; no fabricated "sent" | Vendor Mobile | — | 🟣 LOCKED |
-| FG-5 | Sign-in providers | Unconfigured / fake / missing today | FOUNDER LOCKED — CEFFLO V1 AUTH PROVIDER ARCHITECTURE (8.1.0): Vendor iOS Email+Apple, Vendor Android Email+Google, Vendor Web Email+Google, Driver Email only, FOUNDR Google only | VM, VW, Operator, Helper, Driver, FOUNDR | G7 | 🟣 LOCKED — Vendor credentials pending |
+| FG-5 | Sign-in providers | Google implemented in code (8.12 E); provider unconfigured | FOUNDER FINAL LOCK (8.1.00): Vendor Android Email+Google, Vendor iOS Email only, Vendor Web Email+Google, Driver Email only, FOUNDR Google only; Apple DEFERRED / OUT OF V1 | VM, VW, Operator, Helper, Driver, FOUNDR | G7 | 🟣 LOCKED — Google credentials pending |
 | FG-6 | DMARC for `cefflo.com`, `auth.cefflo.com` | None (E6) | Approved: monitoring policy first | Deliverability | P8 | 🟣 APPROVED DIRECTION — exact records to be presented |
 | FG-7 | Merge `claude/notification-system` → `main` | P1 work not canonical | HOLD until P1 evidence complete | Canonical state | P1 platform verification | 🟣 HOLD |
-| FG-8 | Apple Hide My Email vs email-based invitation claim | Relay email never matches `invited_email`; duplicate Owner risk (8.10) | M1 real email for invited/existing users · M2 token-bound claim · M3 manual identity linking (8.10.3) | Vendor Owner, Operator, Helper on iOS | Batch E | 🟣 OPEN — analysis done, no backend change authorized |
+| FG-8 | Apple Hide My Email vs email-based invitation claim | Relay email never matches `invited_email`; duplicate Owner risk (8.10) | M1 real email for invited/existing users · M2 token-bound claim · M3 manual identity linking (8.10.3) | Vendor Owner, Operator, Helper on iOS | Batch E | ⚪ DEFERRED — Apple out of V1 (8.1.00); revisit only if Apple is added |
 | FG-9 | FOUNDR Google-only vs current Email + password (DECIDED 2026-09-29: target Google only; keep Email/Password as transitional staging access until Google-only is implemented, staging-E2E verified, admin authorization verified, recovery/access reviewed and cutover approved — no premature lockout) | Locked target differs from current implementation (8.8.6) | confirm removal of FOUNDR email/password + recovery once Google is live; admin identity linking | FOUNDR | E1 FOUNDR | 🟣 OPEN — the Founder brief refers to an "existing Google architecture", but FOUNDR is Email + password today (no Google code or identity exists, E10); clarification needed |
-| FG-10 | In-app account deletion + Apple token revocation | Mandatory (E9); CONFIRMED as Production Readiness requirement 2026-09-29 | Architecture in 8.11; open decisions: sole-Owner rule (transfer vs close business), retention periods, POD retention, Vendor Web placement, Apple token capture vs manual revocation | Vendor Mobile, Driver Mobile (+ Vendor Web optional) | iOS submission, P6 | 🟣 CONFIRMED — design pending, not authorized |
+| FG-10 | In-app account deletion + Apple token revocation | Mandatory (E9); CONFIRMED as Production Readiness requirement 2026-09-29 | Architecture in 8.11; open decisions: sole-Owner rule (transfer vs close business), retention periods, POD retention, Vendor Web placement, Apple token capture vs manual revocation | Vendor Mobile, Driver Mobile (+ Vendor Web optional) | iOS submission, P6 | 🟣 CONFIRMED — moved to P6 (does not block P1); required before iOS submission |
 
 Founder approval is required before protected backend/schema/RLS/auth configuration changes, production deployment, or other decisions already governed by Cefflo’s canonical rules.
 

@@ -1222,21 +1222,57 @@ class _FaqScreen extends StatelessWidget {
   );
 }
 
-class _ContactSupportScreen extends StatelessWidget {
+/// V-57 Contact Support (FG-4): hands the request to the real support
+/// channel, support@cefflo.com, through the user's own email app, with the
+/// business and account context attached. There is no in-app ticket
+/// backend, so the app never claims a request was sent.
+class _ContactSupportScreen extends StatefulWidget {
   const _ContactSupportScreen();
 
   @override
-  Widget build(BuildContext context) {
-    // Support requests have no backend yet: never claim one was sent.
-    if (!AppScope.read(context).repo.isDemo) {
-      return _ComingSoonScreen(
-        title: '',
-        message: L.sendingSupportRequestsFromAppNot,
-      );
+  State<_ContactSupportScreen> createState() => _ContactSupportScreenState();
+}
+
+class _ContactSupportScreenState extends State<_ContactSupportScreen> {
+  final _subject = TextEditingController();
+  final _message = TextEditingController();
+  String? _error;
+
+  @override
+  void dispose() {
+    _subject.dispose();
+    _message.dispose();
+    super.dispose();
+  }
+
+  Future<void> _compose() async {
+    final message = _message.text.trim();
+    if (message.isEmpty) {
+      setState(() => _error = L.writeMessageFirst);
+      return;
     }
+    setState(() => _error = null);
+    final app = AppScope.read(context);
+    final business = app.business;
+    final email = app.repo.currentUser?.email;
+    final subject = _subject.text.trim().isEmpty
+        ? 'Cefflo Vendor support'
+        : _subject.text.trim();
+    final body = [
+      message,
+      '',
+      '--',
+      if (business != null) 'Business: ${business.name} (${business.id})',
+      if (business != null) 'Role: ${business.role}',
+      if (email != null) 'Account: $email',
+      'App: Cefflo Vendor',
+    ].join('\n');
+    await launchSupportEmail(context, subject: subject, body: body);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final c = context.c;
-    // Archetype G (multi-section form).
     return PageBody(
       children: [
         Text(L.wereHereHelp2, style: text.bodyMedium),
@@ -1246,68 +1282,26 @@ class _ContactSupportScreen extends StatelessWidget {
           subtitle: L.tellUsAboutIssueOurTeam,
         ),
         CefField(
-          label: L.issueCategory,
-          hint: L.selectCategory,
-          suffixIcon: LucideIcons.chevronDown,
+          label: L.subject,
+          hint: L.brieflyDescribeIssue,
+          controller: _subject,
         ),
-        CefField(label: L.subject, hint: L.brieflyDescribeIssue),
         CefField(
           label: L.message,
           hint: L.tellUsMoreAboutIssue,
+          controller: _message,
           maxLines: 4,
           maxLength: 500,
-        ),
-        SectionHeading(
-          L.addScreenshotsOptional,
-          icon: LucideIcons.image,
-          subtitle: L.pngJpgUp10mbEach,
-        ),
-        Container(
-          height: 104,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: c.grouped,
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-            border: Border.all(color: c.border),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(LucideIcons.imagePlus, size: 28, color: c.iconColor),
-              const SizedBox(height: Gap.sm),
-              Text(L.tapAttachImages, style: text.titleSmall),
-            ],
-          ),
+          errorText: _error,
         ),
         SectionHeading(
           L.contact,
           icon: LucideIcons.mail,
-          subtitle: L.whereWeWillReply,
+          subtitle: supportEmail,
         ),
-        CefField(
-          label: L.contactEmail,
-          initialValue: 'yusuf@kopikita.my',
-          prefixIcon: LucideIcons.mail,
-          keyboardType: TextInputType.emailAddress,
-        ),
+        Text(L.supportSendOpensEmailApp, style: text.bodySmall),
         const SizedBox(height: Gap.md),
-        CefButton(
-          L.sendRequest,
-          onTap: () => runAsyncFeedback(
-            context,
-            action: () async {},
-            processingTitle: L.processing,
-            processingSubtitle: L.sendingRequest,
-            successTitle: L.successful,
-            successSubtitle: L.supportRequestHasBeenSent,
-          ),
-        ),
-        const SizedBox(height: Gap.sm),
-        Text(
-          L.ourSupportTeamWillGetBack,
-          textAlign: TextAlign.center,
-          style: text.bodySmall,
-        ),
+        CefButton(L.sendRequest, onTap: _compose),
       ],
     );
   }

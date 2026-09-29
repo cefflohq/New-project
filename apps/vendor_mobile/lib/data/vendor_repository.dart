@@ -145,12 +145,18 @@ class VendorRepository {
   Future<void> updatePassword(String newPassword) =>
       _run(() => _db!.auth.updateUser(UserAttributes(password: newPassword)));
 
-  /// Locked Continue-with-Apple / Continue-with-Google buttons. No OAuth
-  /// provider is configured for this environment, so this call surfaces the
-  /// provider's real error rather than a fabricated success -- see the
-  /// batch report's disclosed gap.
-  Future<void> signInWithProvider(OAuthProvider provider) =>
-      _run(() => _db!.auth.signInWithOAuth(provider));
+  /// Continue with Google (Founder-locked V1: Vendor Android and the web
+  /// QA harness only). Opens Google in the browser and returns through the
+  /// same auth callback as the emailed links; supabase_flutter exchanges
+  /// the code and the app root loads the session. Until the Google
+  /// provider is enabled for the project, the provider's real error is
+  /// shown -- never a fabricated success.
+  Future<void> signInWithGoogle() => _run(
+    () => _db!.auth.signInWithOAuth(
+      OAuthProvider.google,
+      redirectTo: authRedirectUrl,
+    ),
+  );
 
   /// Per-user UI language (en / ms), kept in the user's own auth metadata.
   /// Best-effort: the device choice still applies if this fails.

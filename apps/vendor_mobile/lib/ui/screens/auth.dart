@@ -14,9 +14,10 @@
 /// only the auth backdrops and third-party marks carry their own colours.
 library;
 
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show OAuthProvider;
 
 import '../../core/app_state.dart';
 import '../../core/auth_access.dart';
@@ -755,6 +756,13 @@ class _SplashProgress extends StatelessWidget {
 
 // ----------------------------------------------------------- 02 Sign In
 
+/// Founder-locked V1 sign-in providers for Cefflo Vendor (and the Operator
+/// and Helper access modes, which share it): Android shows Continue with
+/// Google + Email; iOS is Email only; Apple is out of V1. The web build is
+/// the QA harness for the Android app, so it follows Android.
+bool get vendorGoogleSignIn =>
+    kIsWeb || defaultTargetPlatform == TargetPlatform.android;
+
 class SignInScreen extends StatefulWidget {
   const SignInScreen({
     super.key,
@@ -779,7 +787,7 @@ class _SignInScreenState extends State<SignInScreen> {
   String? _providerError;
   bool _busy = false;
 
-  Future<void> _provider(OAuthProvider provider) async {
+  Future<void> _google() async {
     if (widget.onPrototypeAuthenticated != null) {
       widget.onPrototypeAuthenticated!();
       return;
@@ -789,7 +797,7 @@ class _SignInScreenState extends State<SignInScreen> {
       _providerError = null;
     });
     try {
-      await AppScope.read(context).repo.signInWithProvider(provider);
+      await AppScope.read(context).repo.signInWithGoogle();
     } on RepositoryError catch (e) {
       if (mounted) setState(() => _providerError = authErrorText(e));
     } finally {
@@ -914,28 +922,15 @@ class _SignInScreenState extends State<SignInScreen> {
                             ],
                             SizedBox(height: fit(Gap.lg, Gap.xxl)),
                             const Spacer(flex: 3),
-                            _ProviderButton(
-                              label: L.continueApple,
-                              foreground: ink,
-                              leading: Icon(
-                                Icons.apple,
-                                color: ink,
-                                size: Sizes.icon,
+                            if (vendorGoogleSignIn) ...[
+                              _ProviderButton(
+                                label: L.continueGoogle,
+                                foreground: ink,
+                                leading: const _GoogleGlyph(),
+                                onTap: _busy ? null : _google,
                               ),
-                              onTap: _busy
-                                  ? null
-                                  : () => _provider(OAuthProvider.apple),
-                            ),
-                            SizedBox(height: buttonGap),
-                            _ProviderButton(
-                              label: L.continueGoogle,
-                              foreground: ink,
-                              leading: const _GoogleGlyph(),
-                              onTap: _busy
-                                  ? null
-                                  : () => _provider(OAuthProvider.google),
-                            ),
-                            SizedBox(height: buttonGap),
+                              SizedBox(height: buttonGap),
+                            ],
                             _ProviderButton(
                               label: L.continueEmail,
                               foreground: CefColors.navy,

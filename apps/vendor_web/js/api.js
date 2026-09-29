@@ -74,6 +74,12 @@ export const api = {
     if (isDemo()) { exitDemo(); return; }
     await base.logout();
   },
+  // Continue with Google (Founder-locked V1 for Vendor Web). GoTrue's
+  // authorize redirect returns here with #access_token=..., which
+  // consumeAuthFragment stores exactly like an emailed link.
+  googleSignInUrl() {
+    return `${cfg.supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(authRedirect())}`;
+  },
   async recover(email) {
     return authFetch(`/auth/v1/recover?redirect_to=${encodeURIComponent(authRedirect())}`, { body: { email: email.trim() } });
   },

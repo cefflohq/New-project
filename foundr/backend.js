@@ -56,6 +56,10 @@
   // it follows local, preview, staging and production without a hard-coded
   // host; Supabase Auth honours it only when it is on the Redirect URLs list.
   const authRedirect = () => new URL('./', location.href).href;
+  // FOUNDR target sign-in is Google only (FG-9). GoTrue's authorize redirect
+  // returns here with #access_token=..., stored by consumeAuthFragment; the
+  // platform-admin gate then decides access exactly as for any session.
+  const googleSignInUrl = () => `${cfg.supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(authRedirect())}`;
   function recover(email) {
     return authFetch(`/auth/v1/recover?redirect_to=${encodeURIComponent(authRedirect())}`, { email: email.trim() });
   }
@@ -155,7 +159,7 @@
   }
 
   window.CEFFLO_FOUNDR = Object.freeze({
-    session: () => base.session(), signIn, signOut, recover, consumeAuthFragment, consumeAuthError, updatePassword, currentUser, isPlatformAdmin, listPlatformAdmins, probe,
+    session: () => base.session(), signIn, signOut, googleSignInUrl, recover, consumeAuthFragment, consumeAuthError, updatePassword, currentUser, isPlatformAdmin, listPlatformAdmins, probe,
     stuckRiders, listVendors, getVendor, listRiders, deliveryOperations,
     listAuditLog, listFeatureFlags, setFeatureFlag, activeMaintenance, listMaintenanceWindows, startMaintenance, endMaintenance,
     listSubscriptions, setSubscription, listAppVersions, recordAppVersion,
