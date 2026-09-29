@@ -21,6 +21,7 @@ async function authFetch(path, { method = 'POST', body, token } = {}) {
   if (!res.ok) {
     const err = new Error(data?.msg || data?.message || data?.error_description || `Request failed (${res.status})`);
     err.status = res.status;
+    err.code = data?.error_code || data?.code;
     throw err;
   }
   return data;
@@ -59,16 +60,31 @@ export const api = {
   get: path => (isDemo() ? demoGet(path) : call(() => base.request(path))),
   write: (path, method, body) => (isDemo() ? Promise.reject(readOnly()) : call(() => base.request(path, { method, body }))),
   rpc: (name, body = {}) => (isDemo() ? demoRpc(name, body) : call(() => base.rpc(name, body))),
+  // Same GoTrue password grant as the shared client's login(), called
+  // through authFetch so GoTrue's error_code (e.g. email_not_confirmed,
+  // invalid_credentials) reaches the screen instead of a bare status.
   async signIn(email, password) {
-    return base.login(email.trim(), password);
+    const session = await authFetch('/auth/v1/token?grant_type=password', { body: { email: email.trim(), password } });
+    return base.setSession(session);
   },
   async signOut() {
     if (isDemo()) { exitDemo(); return; }
     await base.logout();
   },
   async recover(email) {
-    const redirect = new URL('./', location.href).href;
-    return authFetch(`/auth/v1/recover?redirect_to=${encodeURIComponent(redirect)}`, { body: { email: email.trim() } });
+    return authFetch(`/auth/v1/recover?redirect_to=${encodeURIComponent(authRedirect())}`, { body: { email: email.trim() } });
+  },
+  // Create Account (Supabase GoTrue signup, as Vendor Mobile). Whether a
+  // session comes back is backend truth: none means the project requires
+  // email confirmation, so the caller shows Verify your email. Returns true
+  // when verification is still required.
+  async signUp(email, password) {
+    const res = await authFetch(`/auth/v1/signup?redirect_to=${encodeURIComponent(authRedirect())}`, { body: { email: email.trim(), password } });
+    if (res?.access_token) { base.setSession(res); return false; }
+    return true;
+  },
+  async resendSignUp(email) {
+    return authFetch(`/auth/v1/resend?redirect_to=${encodeURIComponent(authRedirect())}`, { body: { type: 'signup', email: email.trim() } });
   },
   async user() {
     if (isDemo()) return demoUser();
@@ -81,7 +97,25 @@ export const api = {
   refreshSession,
 };
 
-// Recovery / magic links land with #access_token=... in the URL.
+// Emailed links (recovery, sign-up verification) return to the app root.
+const authRedirect = () => new URL('./', location.href).href;
+
+// A failed emailed link (expired or already used) lands with
+// #error=...&error_code=otp_expired (or the same in the query string).
+// Returns { code, description } once and clears it from the address bar.
+export function consumeAuthError() {
+  const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+  const q = new URLSearchParams(location.search);
+  const src = h.get('error') ? h : q.get('error') ? q : null;
+  if (!src) return null;
+  const out = { code: src.get('error_code') || src.get('error'), description: src.get('error_description') || '' };
+  ['error', 'error_code', 'error_description'].forEach(k => q.delete(k));
+  const search = q.toString();
+  history.replaceState(null, '', location.pathname + (search ? `?${search}` : ''));
+  return out;
+}
+
+// Recovery / verification links land with #access_token=... in the URL.
 export function consumeAuthFragment() {
   const h = new URLSearchParams(location.hash.replace(/^#/, ''));
   if (!h.get('access_token')) return null;

@@ -11,7 +11,9 @@ import { showLink } from './riders.js';
 import { rerenderShell, signOutHandler } from '../shell.js';
 
 const PAGES = ['profile', 'security', 'business', 'team', 'integrations', 'help', 'privacy', 'about'];
-const OWNER_ONLY = new Set(['business', 'team', 'integrations', 'subscription']);
+// D-74, as Vendor Mobile: business details, Team and billing are Owner-only.
+// Integrations stays open to Operators (Founder, 2026-09-29).
+const OWNER_ONLY = new Set(['business', 'team', 'subscription']);
 
 export default function settings({ el, params, setHeader }) {
   setHeader(t('set.title'), false);
@@ -26,7 +28,7 @@ export default function settings({ el, params, setHeader }) {
       ${item('m:notifications', 'bell', 'set.notifications')}
       ${item('m:language', 'globe', 'set.language', esc(prefs.lang === 'ms' ? 'Bahasa Melayu' : 'English'))}
       ${item('m:appearance', 'palette', 'set.appearance')}
-      ${ctx.isOwner ? `<h4>${esc(t('set.business'))}</h4>${item('business', 'building', 'set.businessProfile')}${item('team', 'users', 'set.team')}${item('integrations', 'link', 'set.integrations')}` : ''}
+      <h4>${esc(t('set.business'))}</h4>${ctx.isOwner ? item('business', 'building', 'set.businessProfile') + item('team', 'users', 'set.team') : ''}${item('integrations', 'link', 'set.integrations')}
       <h4>${esc(t('set.support'))}</h4>${item('help', 'help', 'set.help')}
       <h4>${esc(t('set.legal'))}</h4>${item('privacy', 'shield', 'set.privacy')}${item('about', 'info', 'set.about')}
       <button class="signout" data-signout>${icon('logout')}<span>${esc(t('set.signOut'))}</span></button>

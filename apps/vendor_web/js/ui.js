@@ -102,11 +102,11 @@ export function toast(message, kind = '') {
 // ---------------------------------------------------------------- busy
 // Runs an async action with the button disabled + spinner, preventing
 // duplicate submissions. Returns the action result or throws.
-export async function busy(btn, action) {
+export async function busy(btn, action, label = t('c.saving')) {
   if (!btn || btn.disabled) return undefined;
   const html = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = `<i class="spin"></i>${esc(t('c.saving'))}`;
+  btn.innerHTML = `<i class="spin"></i>${esc(label)}`;
   try { return await action(); } finally { btn.disabled = false; btn.innerHTML = html; }
 }
 

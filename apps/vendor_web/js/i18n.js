@@ -212,6 +212,19 @@ const en = {
   'auth.inviteNote': 'Open the invitation link from your email or WhatsApp. It sets up your account, then you can sign in here.',
   'demo.enter': 'Explore demo', 'demo.or': 'or', 'demo.entryHint': 'Sample business, no sign-in. Not available in Production.',
   'demo.bar': 'Demo mode', 'demo.barBody': 'Sample data for Kopi Kita. Changes are not saved. Sign out to leave.',
+  // auth: Operator Sign-In and the account screens (copy as Vendor Mobile)
+  'auth.opAccess': 'Operator Access', 'auth.opWelcome': 'Welcome back', 'auth.opLead': 'Sign in to your store operations',
+  'auth.noOpTitle': 'No Operator access yet',
+  'auth.noOpBody': 'This account has no Operator access yet. Accept the invitation link from the business owner, then sign in with the email address it was sent to.',
+  'auth.createTitle': 'Create your account', 'auth.createLead': 'Start managing your deliveries.',
+  'auth.confirmPw': 'Confirm password', 'auth.pwRule': 'Use at least 8 characters.', 'auth.create': 'Create account',
+  'auth.haveAccount': 'Already have an account?', 'auth.noAccount': "Don't have an account?", 'auth.signUp': 'Sign up',
+  'auth.checkTitle': 'Check your email', 'auth.checkBody': "If an account exists for this email, you'll receive a password reset link.",
+  'auth.spam': 'Check your spam folder too.', 'auth.tryAnother': 'Try another email',
+  'auth.verifyTitle': 'Verify your email', 'auth.verifyBody': 'Open the verification link in your email to confirm your account.',
+  'auth.resend': 'Resend verification email', 'auth.resent': 'Verification email sent to {email}.', 'auth.differentEmail': 'Use a different email',
+  'auth.expiredTitle': 'Verification link expired', 'auth.expiredBody': 'This link has expired or is invalid. Request a new verification email.',
+  'auth.sending': 'Sending…',
   'auth.bad': 'Incorrect email or password.', 'auth.helper': 'Helpers use the Cefflo Vendor mobile app. Sign in there with this account.',
 };
 
@@ -402,6 +415,18 @@ const ms = {
   'auth.inviteNote': 'Buka pautan jemputan dari e-mel atau WhatsApp anda. Ia akan sediakan akaun anda, kemudian log masuk di sini.',
   'demo.enter': 'Terokai demo', 'demo.or': 'atau', 'demo.entryHint': 'Bisnes contoh, tanpa log masuk. Tiada di Production.',
   'demo.bar': 'Mod demo', 'demo.barBody': 'Data contoh untuk Kopi Kita. Perubahan tidak disimpan. Log keluar untuk tamat.',
+  'auth.opAccess': 'Akses Operator', 'auth.opWelcome': 'Selamat kembali', 'auth.opLead': 'Log masuk ke operasi kedai anda',
+  'auth.noOpTitle': 'Belum ada akses Operator',
+  'auth.noOpBody': 'Akaun ini belum ada akses Operator. Terima pautan jemputan daripada pemilik perniagaan, kemudian log masuk dengan alamat e-mel yang menerima jemputan itu.',
+  'auth.createTitle': 'Cipta akaun anda', 'auth.createLead': 'Mula mengurus penghantaran anda.',
+  'auth.confirmPw': 'Sahkan kata laluan', 'auth.pwRule': 'Gunakan sekurang-kurangnya 8 aksara.', 'auth.create': 'Cipta akaun',
+  'auth.haveAccount': 'Sudah ada akaun?', 'auth.noAccount': 'Belum ada akaun?', 'auth.signUp': 'Daftar',
+  'auth.checkTitle': 'Semak e-mel anda', 'auth.checkBody': 'Jika akaun wujud untuk e-mel ini, anda akan menerima pautan tetapan semula kata laluan.',
+  'auth.spam': 'Semak juga folder spam anda.', 'auth.tryAnother': 'Cuba e-mel lain',
+  'auth.verifyTitle': 'Sahkan e-mel anda', 'auth.verifyBody': 'Buka pautan pengesahan dalam e-mel anda untuk mengesahkan akaun anda.',
+  'auth.resend': 'Hantar semula e-mel pengesahan', 'auth.resent': 'E-mel pengesahan dihantar ke {email}.', 'auth.differentEmail': 'Gunakan e-mel lain',
+  'auth.expiredTitle': 'Pautan pengesahan tamat tempoh', 'auth.expiredBody': 'Pautan ini telah tamat tempoh atau tidak sah. Minta e-mel pengesahan baharu.',
+  'auth.sending': 'Menghantar…',
   'auth.bad': 'E-mel atau kata laluan salah.', 'auth.helper': 'Pembantu menggunakan aplikasi mudah alih Cefflo Vendor. Log masuk di sana dengan akaun ini.',
 };
 

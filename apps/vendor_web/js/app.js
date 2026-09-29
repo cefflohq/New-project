@@ -2,11 +2,12 @@
 // shell. The frontend is untrusted: the server enforces everything.
 import './prefs.js';
 import { t } from './i18n.js';
-import { api, consumeAuthFragment } from './api.js';
+import { operatorEntry } from './access.js';
+import { api, consumeAuthFragment, consumeAuthError } from './api.js';
 import { loadContext, clearContext, HelperOnlyError, NoBusinessError } from './store.js';
 import { mountShell } from './shell.js';
 import { errorState } from './ui.js';
-import { renderSignIn, renderSetPassword } from './pages/auth.js';
+import { renderSignIn, renderSetPassword, renderExpired, renderNoOperatorAccess } from './pages/auth.js';
 import today from './pages/today.js';
 import orders from './pages/orders.js';
 import zones from './pages/zones.js';
@@ -24,8 +25,15 @@ async function signOut() {
 }
 
 async function start(message = '') {
+  const linkError = consumeAuthError();
   const linkType = consumeAuthFragment();
   if (!api.session()?.access_token) {
+    // An expired or already-used emailed link: offer a fresh one.
+    if (linkError) {
+      if (/expired|invalid|denied/i.test(`${linkError.code} ${linkError.description}`)) renderExpired(root, { onSignedIn: () => start() });
+      else renderSignIn(root, { onSignedIn: () => start(), message: linkError.description });
+      return;
+    }
     renderSignIn(root, { onSignedIn: () => start(), message });
     return;
   }
@@ -38,6 +46,14 @@ async function start(message = '') {
     await loadContext();
     mountShell(root, PAGES, { signOut });
   } catch (e) {
+    // D-74: signed in through the Operator Sign-In with no membership after
+    // claiming invitations. Show the Operator no-access state; the Web App
+    // has no business creation, and this account must never become an Owner
+    // by falling through.
+    if (e instanceof NoBusinessError && operatorEntry()) {
+      renderNoOperatorAccess(root, { onRetry: () => start(), onSignOut: () => signOut() });
+      return;
+    }
     if (e instanceof HelperOnlyError || e instanceof NoBusinessError) {
       await api.signOut();
       renderSignIn(root, { onSignedIn: () => start(), message: e instanceof HelperOnlyError ? t('auth.helper') : t('c.noBusiness') });
