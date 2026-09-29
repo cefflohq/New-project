@@ -317,6 +317,8 @@ table.t .sub { display: block; color: var(--muted); font-size: 12.5px; margin-to
   .sub-card[style*="display:flex"] { flex-wrap: wrap; }
   .sub-card[style*="display:flex"] > div[style*="flex:1"] { flex: 1 1 240px !important; }
   .settings-page .sub-card h3 { font-size: 19px !important; }
+  .sub-card .list-row { flex-wrap: wrap; }
+  .sub-card .list-row .grow { flex-basis: calc(100% - 60px); }
   .tabs { gap: 20px; padding: 0 16px; }
   .avatar.lg { width: 72px; height: 72px; font-size: 24px; }
   .actions .btn { height: 46px; font-size: 14px; padding: 0 12px; }
@@ -329,3 +331,10 @@ table.t .sub { display: block; color: var(--muted); font-size: 12.5px; margin-to
   .toast { max-width: none; }
   .auth-card { padding: 26px 20px; }
 }
+
+/* ---------------- demo mode ---------------- */
+.demo-entry { display: grid; gap: 8px; justify-items: center; text-align: center; padding-top: 6px; border-top: 1px solid var(--border); }
+.demo-entry > span { color: var(--muted); font-size: 13px; margin-top: 8px; }
+.demo-entry small { color: var(--muted); font-size: 12.5px; }
+.demo-bar { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin-bottom: 14px; padding: 10px 14px; border-radius: 12px; background: var(--warning-tint); color: var(--ink); font-size: 13.5px; }
+.demo-bar b { color: var(--warning); }

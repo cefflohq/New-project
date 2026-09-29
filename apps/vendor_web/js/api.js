@@ -1,6 +1,8 @@
 // Data access for the Vendor Web App. Everything goes through the canonical
 // Supabase REST/RPC contracts with the signed-in user's JWT; RLS and RPC
 // authorisation remain the security boundary. No mock data, no fallbacks.
+import { isDemo, exitDemo, demoGet, demoRpc, demoUser, readOnly, DEMO_SESSION } from './demo.js';
+
 const base = window.CEFFLO;
 const cfg = window.CEFFLO_CONFIG;
 
@@ -53,14 +55,15 @@ async function call(fn) {
 }
 
 export const api = {
-  session: () => base.session(),
-  get: path => call(() => base.request(path)),
-  write: (path, method, body) => call(() => base.request(path, { method, body })),
-  rpc: (name, body = {}) => call(() => base.rpc(name, body)),
+  session: () => (isDemo() ? DEMO_SESSION : base.session()),
+  get: path => (isDemo() ? demoGet(path) : call(() => base.request(path))),
+  write: (path, method, body) => (isDemo() ? Promise.reject(readOnly()) : call(() => base.request(path, { method, body }))),
+  rpc: (name, body = {}) => (isDemo() ? demoRpc(name, body) : call(() => base.rpc(name, body))),
   async signIn(email, password) {
     return base.login(email.trim(), password);
   },
   async signOut() {
+    if (isDemo()) { exitDemo(); return; }
     await base.logout();
   },
   async recover(email) {
@@ -68,9 +71,11 @@ export const api = {
     return authFetch(`/auth/v1/recover?redirect_to=${encodeURIComponent(redirect)}`, { body: { email: email.trim() } });
   },
   async user() {
+    if (isDemo()) return demoUser();
     return call(() => authFetch('/auth/v1/user', { method: 'GET', token: base.session()?.access_token }));
   },
   async updateUser(attrs) {
+    if (isDemo()) throw readOnly();
     return call(() => authFetch('/auth/v1/user', { method: 'PUT', body: attrs, token: base.session()?.access_token }));
   },
   refreshSession,

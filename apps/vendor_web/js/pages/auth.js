@@ -3,6 +3,7 @@
 import { t } from '../i18n.js';
 import { api } from '../api.js';
 import { esc, busy } from '../ui.js';
+import { demoAllowed, enterDemo } from '../demo.js';
 
 export function renderSignIn(root, { onSignedIn, message = '' }) {
   root.innerHTML = `<div class="auth"><form class="auth-card" data-form novalidate>
@@ -14,6 +15,7 @@ export function renderSignIn(root, { onSignedIn, message = '' }) {
     <div class="err" data-err hidden role="alert"></div>
     <button class="btn primary" type="submit" style="width:100%">${esc(t('auth.signIn'))}</button>
     <button class="link-btn" type="button" data-forgot style="justify-self:center">${esc(t('auth.forgot'))}</button>
+    ${demoAllowed() ? `<div class="demo-entry"><span>${esc(t('demo.or'))}</span><button class="btn" type="button" data-demo style="width:100%">${esc(t('demo.enter'))}</button><small>${esc(t('demo.entryHint'))}</small></div>` : ''}
   </form></div>`;
   const form = root.querySelector('[data-form]'), err = root.querySelector('[data-err]');
   form.addEventListener('submit', async e => {
@@ -31,6 +33,7 @@ export function renderSignIn(root, { onSignedIn, message = '' }) {
     }
   });
   root.querySelector('[data-forgot]').addEventListener('click', () => renderForgot(root, { onSignedIn }));
+  root.querySelector('[data-demo]')?.addEventListener('click', () => { enterDemo(); onSignedIn(); });
 }
 
 function renderForgot(root, opts) {

@@ -2,6 +2,7 @@
 // quickly on interaction, collapses when interaction ends), top bar and the
 // hash router. Pages only render into the content area.
 import { t, longToday } from './i18n.js';
+import { isDemo } from './demo.js';
 import { ctx, selectBusiness } from './store.js';
 import { esc, icon, initials } from './ui.js';
 
@@ -46,6 +47,7 @@ function renderFrame() {
       </div>
     </aside>
     <main class="main">
+      ${isDemo() ? `<div class="demo-bar" role="status"><b>${esc(t('demo.bar'))}</b><span>${esc(t('demo.barBody'))}</span></div>` : ''}
       <header class="topbar">
         <h1 data-title></h1><div class="date" data-date></div>
         <div class="spacer"></div>

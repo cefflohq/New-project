@@ -139,6 +139,8 @@ const en = {
   'auth.password': 'Password', 'auth.signIn': 'Sign in', 'auth.forgot': 'Forgot password?',
   'auth.resetLead': 'We will email you a link to reset your password.', 'auth.sendReset': 'Send reset link',
   'auth.resetSent': 'If an account exists for this email, a reset link is on its way.', 'auth.backToSignIn': 'Back to sign in',
+  'demo.enter': 'Explore demo', 'demo.or': 'or', 'demo.entryHint': 'Sample business, no sign-in. Not available in Production.',
+  'demo.bar': 'Demo mode', 'demo.barBody': 'Sample data for Kopi Kita. Changes are not saved. Sign out to leave.',
   'auth.bad': 'Incorrect email or password.', 'auth.helper': 'Helpers use the Cefflo Vendor mobile app. Sign in there with this account.',
 };
 
@@ -257,6 +259,8 @@ const ms = {
   'auth.password': 'Kata laluan', 'auth.signIn': 'Log masuk', 'auth.forgot': 'Lupa kata laluan?',
   'auth.resetLead': 'Kami akan menghantar pautan untuk menetapkan semula kata laluan anda.', 'auth.sendReset': 'Hantar pautan',
   'auth.resetSent': 'Jika akaun wujud untuk e-mel ini, pautan sedang dihantar.', 'auth.backToSignIn': 'Kembali ke log masuk',
+  'demo.enter': 'Terokai demo', 'demo.or': 'atau', 'demo.entryHint': 'Bisnes contoh, tanpa log masuk. Tiada di Production.',
+  'demo.bar': 'Mod demo', 'demo.barBody': 'Data contoh untuk Kopi Kita. Perubahan tidak disimpan. Log keluar untuk tamat.',
   'auth.bad': 'E-mel atau kata laluan salah.', 'auth.helper': 'Pembantu menggunakan aplikasi mudah alih Cefflo Vendor. Log masuk di sana dengan akaun ini.',
 };
 
