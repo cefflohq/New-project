@@ -39,6 +39,36 @@
       "destination": "/vendor/icons/:path*"
     },
     {
+      "source": "/invite/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "vendor.cefflo.com"
+        }
+      ],
+      "destination": "/invite/:path*"
+    },
+    {
+      "source": "/app/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "vendor.cefflo.com"
+        }
+      ],
+      "destination": "/app/:path*"
+    },
+    {
+      "source": "/app",
+      "has": [
+        {
+          "type": "host",
+          "value": "vendor.cefflo.com"
+        }
+      ],
+      "destination": "/app/index.html"
+    },
+    {
       "source": "/:path*",
       "has": [
         {

@@ -6654,8 +6654,10 @@ function pageWorkSessionDetail(){
 }
 function setTeamTab(el){teamUiTab=el.dataset.tab||'core';render();}
 function inviteBaseUrl(){
-  // Absolute: the link is copied and shared outside this page.
-  return location.hostname==='vendor.cefflo.com' ? 'https://invite.cefflo.com/' : new URL('../invite/', location.href).href;
+  // Absolute: the link is copied and shared outside this page. Served
+  // beside the Vendor Web (vendor.cefflo.com/invite/) until invite.cefflo.com
+  // has DNS; the Invitation PWA is host-agnostic.
+  return new URL('../invite/', location.href).href;
 }
 function renderInviteLinkSheet(title,link){
   return `
