@@ -51,6 +51,53 @@
     return base.setSession(s);
   }
   async function signOut() { await base.logout(); }
+
+  // Password recovery. The emailed link returns to this page's own folder, so
+  // it follows local, preview, staging and production without a hard-coded
+  // host; Supabase Auth honours it only when it is on the Redirect URLs list.
+  const authRedirect = () => new URL('./', location.href).href;
+  function recover(email) {
+    return authFetch(`/auth/v1/recover?redirect_to=${encodeURIComponent(authRedirect())}`, { email: email.trim() });
+  }
+  // A recovery link lands with #access_token=...&type=recovery. Stores the
+  // session, clears the tokens from the address bar and returns the type.
+  function consumeAuthFragment() {
+    const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+    if (!h.get('access_token')) return null;
+    base.setSession({
+      access_token: h.get('access_token'),
+      refresh_token: h.get('refresh_token'),
+      expires_at: Number(h.get('expires_at')) || undefined,
+      token_type: 'bearer',
+    });
+    history.replaceState(null, '', location.pathname + location.search);
+    return h.get('type');
+  }
+  // An expired or used link lands with #error=...&error_code=otp_expired.
+  function consumeAuthError() {
+    const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+    const q = new URLSearchParams(location.search);
+    const src = h.get('error') ? h : q.get('error') ? q : null;
+    if (!src) return null;
+    const out = { code: src.get('error_code') || src.get('error'), description: src.get('error_description') || '' };
+    ['error', 'error_code', 'error_description'].forEach(k => q.delete(k));
+    const search = q.toString();
+    history.replaceState(null, '', location.pathname + (search ? `?${search}` : ''));
+    return out;
+  }
+  function updatePassword(password) {
+    return call(async () => {
+      const res = await fetch(`${cfg.supabaseUrl}/auth/v1/user`, {
+        method: 'PUT',
+        headers: { apikey: cfg.supabaseAnonKey, Authorization: `Bearer ${base.session()?.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      const text = await res.text();
+      const data = text ? JSON.parse(text) : null;
+      if (!res.ok) throw Object.assign(new Error(data?.msg || data?.message || `Request failed (${res.status})`), { status: res.status, code: data?.error_code });
+      return data;
+    });
+  }
   function currentUser() {
     return call(async () => {
       const res = await fetch(`${cfg.supabaseUrl}/auth/v1/user`, { headers: { apikey: cfg.supabaseAnonKey, Authorization: `Bearer ${base.session()?.access_token}` } });
@@ -108,7 +155,7 @@
   }
 
   window.CEFFLO_FOUNDR = Object.freeze({
-    session: () => base.session(), signIn, signOut, currentUser, isPlatformAdmin, listPlatformAdmins, probe,
+    session: () => base.session(), signIn, signOut, recover, consumeAuthFragment, consumeAuthError, updatePassword, currentUser, isPlatformAdmin, listPlatformAdmins, probe,
     stuckRiders, listVendors, getVendor, listRiders, deliveryOperations,
     listAuditLog, listFeatureFlags, setFeatureFlag, activeMaintenance, listMaintenanceWindows, startMaintenance, endMaintenance,
     listSubscriptions, setSubscription, listAppVersions, recordAppVersion,

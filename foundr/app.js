@@ -866,9 +866,11 @@ function renderSignIn(message = '') {
     <div class="field"><label for="em">Email</label><input id="em" type="email" autocomplete="username" required></div>
     <div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
     <div class="field-err" data-err hidden role="alert"></div>
-    <button class="btn primary" type="submit" style="width:100%">Sign in</button></form>`);
+    <button class="btn primary" type="submit" style="width:100%">Sign in</button>
+    <button class="link" type="button" data-forgot style="justify-self:center">Forgot password?</button></form>`);
   const form = root.querySelector('[data-signin]'), err = form.querySelector('[data-err]');
   form.querySelector('#em').focus();
+  form.querySelector('[data-forgot]').addEventListener('click', () => renderForgot(form.querySelector('#em').value.trim()));
   form.addEventListener('submit', async e => {
     e.preventDefault();
     const email = form.querySelector('#em').value.trim(), pw = form.querySelector('#pw').value;
@@ -879,6 +881,55 @@ function renderSignIn(message = '') {
     try { await F.signIn(email, pw); await boot(); } catch (ex) {
       err.textContent = /invalid/i.test(ex.message) ? 'Incorrect email or password.' : ex.message; err.hidden = false;
       btn.disabled = false; btn.textContent = 'Sign in';
+    }
+  });
+}
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+function renderForgot(prefill = '') {
+  authFrame(`<form data-forgot-form novalidate><h1>Reset password</h1><p class="sub">We'll email you a link to set a new password.</p>
+    <div class="field"><label for="em">Email</label><input id="em" type="email" autocomplete="username" required value="${esc(prefill)}"></div>
+    <div class="field-err" data-err hidden role="alert"></div>
+    <button class="btn primary" type="submit" style="width:100%">Send reset link</button>
+    <button class="link" type="button" data-back style="justify-self:center">Back to sign in</button></form>`);
+  const form = root.querySelector('[data-forgot-form]'), err = form.querySelector('[data-err]');
+  form.querySelector('#em').focus();
+  form.querySelector('[data-back]').addEventListener('click', () => renderSignIn());
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = form.querySelector('#em').value.trim();
+    if (!EMAIL_RE.test(email)) { err.textContent = 'Enter a valid email address.'; err.hidden = false; return; }
+    const btn = form.querySelector('[type=submit]');
+    btn.disabled = true; btn.textContent = 'Sending…'; err.hidden = true;
+    try {
+      await F.recover(email);
+      renderSignIn(`If ${email} has an account, a reset link is on its way. Open it on this device.`);
+    } catch (ex) {
+      err.textContent = ex.status === 429 ? 'Too many emails sent. Wait a while and try again.' : ex.message; err.hidden = false;
+      btn.disabled = false; btn.textContent = 'Send reset link';
+    }
+  });
+}
+// After a recovery link: the recovery session is stored; set a new password
+// before the admin gate runs.
+function renderSetPassword() {
+  authFrame(`<form data-setpw novalidate><h1>Set new password</h1><p class="sub">Choose a new password for your FOUNDR sign-in.</p>
+    <div class="field"><label for="p1">New password</label><input id="p1" type="password" autocomplete="new-password" required></div>
+    <div class="field"><label for="p2">Confirm password</label><input id="p2" type="password" autocomplete="new-password" required></div>
+    <div class="field-err" data-err hidden role="alert"></div>
+    <button class="btn primary" type="submit" style="width:100%">Save password</button></form>`);
+  const form = root.querySelector('[data-setpw]'), err = form.querySelector('[data-err]');
+  form.querySelector('#p1').focus();
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const p1 = form.querySelector('#p1').value, p2 = form.querySelector('#p2').value;
+    if (p1.length < 8) { err.textContent = 'Use at least 8 characters.'; err.hidden = false; return; }
+    if (p1 !== p2) { err.textContent = 'Passwords do not match.'; err.hidden = false; return; }
+    const btn = form.querySelector('[type=submit]');
+    btn.disabled = true; btn.textContent = 'Saving…'; err.hidden = true;
+    try { await F.updatePassword(p1); await boot(); } catch (ex) {
+      if (ex.status === 401) { await F.signOut().catch(() => {}); return renderSignIn('That reset link has expired. Request a new one.'); }
+      err.textContent = ex.message; err.hidden = false;
+      btn.disabled = false; btn.textContent = 'Save password';
     }
   });
 }
@@ -924,6 +975,14 @@ async function boot() {
   render();
 }
 
-boot();
+// An emailed recovery link lands here first: open Set New Password with its
+// session, or explain a link that has expired or was already used.
+function start() {
+  const linkError = F.consumeAuthError();
+  if (linkError) return renderSignIn(linkError.code === 'otp_expired' ? 'That reset link has expired or was already used. Request a new one.' : (linkError.description || 'That link could not be used.'));
+  if (F.consumeAuthFragment() === 'recovery') return renderSetPassword();
+  return boot();
+}
+start();
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
 })();
