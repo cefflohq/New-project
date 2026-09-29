@@ -4,7 +4,7 @@
 import { t, longToday } from './i18n.js';
 import { isDemo } from './demo.js';
 import { ctx, selectBusiness } from './store.js';
-import { esc, icon, initials } from './ui.js';
+import { esc, icon, initials, confirmDialog } from './ui.js';
 
 const NAV = [
   ['today', 'home', 'nav.today'],
@@ -109,7 +109,7 @@ function openUserMenu(anchor) {
     <button role="menuitem" class="danger" data-signout>${icon('logout')}${esc(t('shell.signOut'))}</button>`;
   m.addEventListener('click', e => {
     if (e.target.closest('[data-go]')) { closeMenus(); location.hash = e.target.closest('[data-go]').dataset.go; }
-    if (e.target.closest('[data-signout]')) { closeMenus(); onSignOut(); }
+    if (e.target.closest('[data-signout]')) { closeMenus(); confirmSignOut(); }
   });
   anchor.parentElement.append(m);
 }
@@ -135,4 +135,9 @@ function route() {
   if (typeof res === 'function') cleanup = res;
 }
 
-export function signOutHandler() { return onSignOut; }
+// Sign out always asks first (short yes/no popup).
+async function confirmSignOut() {
+  const ok = await confirmDialog({ title: t('out.title'), body: t('out.body'), confirmLabel: t('shell.signOut'), danger: true });
+  if (ok) onSignOut();
+}
+export function signOutHandler() { return confirmSignOut; }

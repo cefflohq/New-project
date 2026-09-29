@@ -71,8 +71,18 @@ function openAppearance() {
 }
 
 function openNotifications() {
-  modal({ title: t('notif.title'), lead: t('notif.lead'), body: gatedNote(t('notif.gated')),
-    footer: `<button class="btn" data-close>${esc(t('c.close'))}</button>` });
+  const pick = { ...prefs.notif };
+  const row = (k, ic) => `<div class="toggle-row">${icon(ic)}<div class="grow"><b>${esc(t(`notif.${k}`))}</b><small>${esc(t(`notif.${k}Sub`))}</small></div>
+    <button type="button" class="switch ${pick[k] ? 'on' : ''}" role="switch" aria-checked="${pick[k]}" aria-label="${esc(t(`notif.${k}`))}" data-k="${k}"></button></div>`;
+  const m = modal({ title: t('notif.title'), lead: t('notif.lead'), center: true,
+    body: `<div class="toggle-list">${row('orders', 'file')}${row('issues', 'alert')}${row('riders', 'users')}${row('runs', 'route')}</div>
+      <div class="gated">${icon('info')}<div>${esc(t('notif.device'))}</div></div>`,
+    footer: `<button class="btn primary" data-msave style="min-width:240px">${esc(t('c.save'))}</button>` });
+  m.el.addEventListener('click', e => {
+    const sw = e.target.closest('[data-k]');
+    if (sw) { const k = sw.dataset.k; pick[k] = !pick[k]; sw.classList.toggle('on', pick[k]); sw.setAttribute('aria-checked', String(pick[k])); }
+    if (e.target.closest('[data-msave]')) { savePrefs({ notif: pick }); m.close(); toast(t('c.saved')); }
+  });
 }
 
 // ---------------------------------------------------------------- pages
@@ -127,11 +137,19 @@ function security(page) {
   const body = header(page, 'set.security', 'sec.lead');
   body.innerHTML = `
     <div class="sub-card"><h3>${esc(t('prof.changePassword'))}</h3>
-      <div class="form-row"><label>${esc(t('sec.new'))}</label><input class="input" type="password" name="p1" autocomplete="new-password"></div>
-      <div class="form-row"><label>${esc(t('sec.confirm'))}</label><input class="input" type="password" name="p2" autocomplete="new-password"></div>
+      <p class="desc">${esc(t('sec.pwLead'))}</p>
+      <div class="form-row"><label for="p1">${esc(t('sec.new'))}</label><div class="pw"><input class="input" id="p1" type="password" name="p1" autocomplete="new-password"><button type="button" class="pw-eye" data-eye aria-label="${esc(t('sec.show'))}">${icon('eye')}</button></div></div>
+      <div class="form-row"><label for="p2">${esc(t('sec.confirm'))}</label><div class="pw"><input class="input" id="p2" type="password" name="p2" autocomplete="new-password"><button type="button" class="pw-eye" data-eye aria-label="${esc(t('sec.show'))}">${icon('eye')}</button></div></div>
       <div class="err" data-err hidden></div>
-      <div style="display:flex;justify-content:flex-end"><button class="btn primary" data-save>${esc(t('prof.changePassword'))}</button></div></div>
-    <div class="sub-card"><h3>${esc(t('sec.2fa'))}</h3><p class="desc">${esc(t('sec.2faLead'))}</p>${gatedNote(t('c.awaitingApproval'))}</div>`;
+      <div class="row-end"><span class="hint">${esc(t('sec.rule'))}</span><button class="btn primary" data-save>${esc(t('sec.update'))}</button></div></div>
+    <div class="sub-card"><h3>${esc(t('sec.2fa'))}</h3><p class="desc">${esc(t('sec.2faLead'))}</p>${gatedNote(t('c.awaitingApproval'))}</div>
+    <div class="sub-card row-card"><div class="grow"><h3>${esc(t('sec.actions'))}</h3><p class="desc" style="margin:0">${esc(t('sec.actionsLead'))}</p></div>
+      <button class="btn danger-soft" data-out>${icon('logout')}${esc(t('shell.signOut'))}</button></div>`;
+  body.addEventListener('click', e => {
+    const eye = e.target.closest('[data-eye]');
+    if (eye) { const i = eye.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; eye.classList.toggle('on', i.type === 'text'); }
+    if (e.target.closest('[data-out]')) signOutHandler()();
+  });
   body.querySelector('[data-save]').addEventListener('click', async e => {
     const p1 = body.querySelector('[name=p1]').value, p2 = body.querySelector('[name=p2]').value, err = body.querySelector('[data-err]');
     err.hidden = false;
@@ -246,23 +264,40 @@ function inviteMember(onDone) {
 
 function integrations(page) {
   const body = header(page, 'set.integrations', 'int.lead');
-  body.innerHTML = `
-    <div class="sub-card" style="display:flex;align-items:center;gap:16px">${`<span class="avatar">${icon('csv')}</span>`}
-      <div style="flex:1"><h3>${esc(t('int.csv'))}</h3><p class="desc" style="margin:0">${esc(t('int.csvSub'))}</p></div>
-      ${chip('active', true).replace(esc(t('st.active')), esc(t('int.available')))}
-      <a class="btn soft" href="#/today">${esc(t('today.importOrders'))}</a></div>
-    ${gatedNote(t('int.gated'))}`;
+  const row = (ic, name, sub, live, action = '') => `<div class="int-row"><span class="int-ico">${ic}</span>
+    <div class="grow"><b>${esc(name)}</b><small>${esc(sub)}</small></div>
+    ${live ? chip('active', true).replace(esc(t('st.active')), esc(t('int.available'))) : `<span class="chip neutral"><i class="dot"></i>${esc(t('int.planned'))}</span>`}${action}</div>`;
+  body.innerHTML = `<div class="sub-card int-list">
+      ${row(icon('csv'), t('int.csv'), t('int.csvSub'), true, `<a class="btn soft sm" href="#/today">${esc(t('today.importOrders'))}</a>`)}
+      ${row(icon('file'), t('int.manual'), t('int.manualSub'), true, `<a class="btn soft sm" href="#/orders">${esc(t('today.addOrder'))}</a>`)}
+      ${row(icon('store'), 'Shopify', t('int.shopSub'), false)}
+      ${row(icon('store'), 'WooCommerce', t('int.shopSub'), false)}
+      ${row(icon('store'), 'Wix eCommerce', t('int.shopSub'), false)}
+      ${row(icon('csv'), 'Google Sheets', t('int.sheetsSub'), false)}
+      ${row(icon('link'), 'API / Webhooks', t('int.apiSub'), false)}
+    </div>
+    <div class="sub-card"><h3>${esc(t('int.how'))}</h3>
+      <div class="steps4">${['int.s1', 'int.s2', 'int.s3', 'int.s4'].map((k, i) => `<div><span class="n">${i + 1}</span><b>${esc(t(k))}</b><small>${esc(t(`${k}Sub`))}</small></div>`).join('')}</div></div>`;
 }
 
 function staticPage(kind) {
   return page => {
-    const map = { help: ['set.help', 'help.lead'], privacy: ['set.privacy', 'about.lead'], about: ['set.about', 'about.lead'] };
+    const map = { help: ['set.help', 'help.lead'], privacy: ['set.privacy', 'priv.lead'], about: ['set.about', 'about.lead'] };
     const body = header(page, ...map[kind]);
-    body.innerHTML = kind === 'help'
-      ? gatedNote(t('help.gated'))
-      : kind === 'privacy'
-        ? `<div class="sub-card"><p class="desc" style="line-height:1.7">${esc(t('legal.privacy'))}</p></div>`
-        : `<div class="sub-card"><h3>Cefflo Vendor</h3><p class="desc">${esc(t('about.lead'))}</p></div>
-           <div class="sub-card"><h3>${esc(t('legal.termsTitle'))}</h3><p class="desc" style="line-height:1.7">${esc(t('legal.terms'))}</p></div>`;
+    if (kind === 'help') {
+      body.innerHTML = `<div class="sub-card"><h3>${esc(t('help.faq'))}</h3><div class="faq">
+          ${[1, 2, 3, 4, 5, 6].map(n => `<details><summary>${esc(t(`help.q${n}`))}${icon('down')}</summary><p>${esc(t(`help.a${n}`))}</p></details>`).join('')}</div></div>
+        <div class="sub-card row-card">${`<span class="int-ico">${icon('mail')}</span>`}<div class="grow"><h3>${esc(t('help.contact'))}</h3>
+          <p class="desc" style="margin:0">${esc(t('help.contactLead'))} <b class="sel">support@cefflo.com</b></p></div>
+          <a class="btn soft" href="mailto:support@cefflo.com">${icon('mail')}${esc(t('help.email'))}</a></div>`;
+    } else if (kind === 'privacy') {
+      body.innerHTML = `<div class="sub-card"><h3>${esc(t('set.privacy'))}</h3><p class="desc" style="line-height:1.7">${esc(t('legal.privacy'))}</p></div>
+        <div class="sub-card"><h3>${esc(t('legal.termsTitle'))}</h3><p class="desc" style="line-height:1.7">${esc(t('legal.terms'))}</p></div>`;
+    } else {
+      body.innerHTML = `<div class="sub-card row-card"><img src="img/cefflo-mark-white.png" alt="" class="about-mark"><div class="grow"><h3>Cefflo Vendor</h3><p class="desc" style="margin:0">${esc(t('about.lead'))}</p></div></div>
+        <div class="sub-card"><div class="kv">${icon('info')}<div><small>${esc(t('about.version'))}</small><b>${esc(t('about.versionVal'))}</b></div></div>
+          <div class="kv">${icon('shield')}<div><small>${esc(t('set.privacy'))}</small><b><a href="#/settings/privacy">${esc(t('about.readPrivacy'))}</a></b></div></div>
+          <div class="kv">${icon('mail')}<div><small>${esc(t('help.contact'))}</small><b class="sel">support@cefflo.com</b></div></div></div>`;
+    }
   };
 }
