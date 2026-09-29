@@ -5,6 +5,7 @@ import { t, longToday } from './i18n.js';
 import { isDemo } from './demo.js';
 import { ctx, selectBusiness } from './store.js';
 import { esc, icon, initials, confirmDialog } from './ui.js';
+import { notif, onNotifications, startNotifications, renderPanel, wirePanel, openNotificationPrefs } from './notifications.js';
 
 const NAV = [
   ['today', 'home', 'nav.today'],
@@ -21,7 +22,11 @@ export function mountShell(el, pageMap, { signOut }) {
   renderFrame();
   window.addEventListener('hashchange', route);
   route();
+  startNotifications();
 }
+
+// A notification deep-link into another of the user's businesses.
+window.addEventListener('cefflo:business-switched', () => { if (root?.isConnected) rerenderShell(); });
 
 export function rerenderShell() {
   renderFrame();
@@ -55,7 +60,9 @@ function renderFrame() {
           ${icon('store')}<div><b>${esc(b?.business_name)}</b><small>${esc(t(`shell.role.${b?.member_role}`))}</small></div>
           <span style="margin-left:auto">${icon('down')}</span>
         </div>
-        <button class="icon-btn" disabled title="${esc(t('shell.notificationsNotConnected'))}" aria-label="${esc(t('shell.notificationsNotConnected'))}">${icon('bell')}</button>
+        <div style="position:relative">
+          <button class="icon-btn" data-bell aria-haspopup="dialog" aria-label="${esc(t('shell.notifications'))}">${icon('bell')}<span class="nbadge" data-nbadge hidden></span></button>
+        </div>
         <div style="position:relative">
           <button class="user-btn" data-usermenu aria-haspopup="menu">${`<span class="avatar">${esc(initials(ctx.user?.user_metadata?.full_name || ctx.user?.email))}</span>`}${icon('down')}</button>
         </div>
@@ -67,7 +74,34 @@ function renderFrame() {
   wireSidebar(root.querySelector('.sidebar'));
   root.querySelectorAll('[data-bizmenu]').forEach(el => el.addEventListener('click', e => openBizMenu(e.currentTarget)));
   root.querySelector('[data-usermenu]').addEventListener('click', e => openUserMenu(e.currentTarget));
+  root.querySelector('[data-bell]').addEventListener('click', e => openBell(e.currentTarget));
+  paintBadge();
 }
+
+function paintBadge() {
+  const b = root?.querySelector('[data-nbadge]');
+  if (!b) return;
+  b.hidden = !notif.unread;
+  b.textContent = notif.unread > 99 ? '99+' : String(notif.unread);
+  root.querySelector('[data-bell]').setAttribute('aria-label', notif.unread ? `${t('shell.notifications')} (${notif.unread})` : t('shell.notifications'));
+}
+
+let panelOff = null;
+function openBell(anchor) {
+  const wasOpen = !!document.querySelector('.npanel');
+  closeMenus();
+  if (wasOpen) return;
+  const m = document.createElement('div');
+  m.className = 'menu npanel';
+  m.setAttribute('role', 'dialog');
+  m.setAttribute('aria-label', t('shell.notifications'));
+  const paint = () => { m.innerHTML = renderPanel(); };
+  paint();
+  wirePanel(m, { onPrefs: openNotificationPrefs, close: closeMenus });
+  panelOff = onNotifications(() => { if (m.isConnected) paint(); else { panelOff?.(); panelOff = null; } });
+  anchor.parentElement.append(m);
+}
+onNotifications(paintBadge);
 
 function wireSidebar(sb) {
   let timer;
@@ -81,7 +115,7 @@ function wireSidebar(sb) {
 }
 
 function closeMenus() { document.querySelectorAll('.menu').forEach(m => m.remove()); }
-document.addEventListener('click', e => { if (!e.target.closest('.menu,[data-bizmenu],[data-usermenu]')) closeMenus(); });
+document.addEventListener('click', e => { if (!e.target.closest('.menu,[data-bizmenu],[data-usermenu],[data-bell]')) closeMenus(); });
 
 function openBizMenu(anchor) {
   closeMenus();

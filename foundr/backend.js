@@ -94,6 +94,12 @@
     rpc('admin_create_announcement', { p_title: title, p_body: body, p_severity: severity ?? 'info', p_starts_at: startsAt ?? null, p_ends_at: endsAt ?? null });
   const setAnnouncementActive = (id, active) => rpc('admin_set_announcement_active', { p_id: id, p_active: active });
 
+  // ----- Notification broadcasts (in-app notification centre fan-out) -----
+  const broadcastNotification = (title, body, audience, businessId, reason) =>
+    rpc('admin_broadcast_notification', { p_title: title, p_body: body, p_audience: audience, p_business_id: businessId ?? null, p_reason: reason });
+  const listBroadcasts = (limit = 200) => rpc('admin_list_broadcasts', { p_limit: limit });
+  const broadcastAudienceSize = (audience, businessId) => rpc('admin_broadcast_audience_size', { p_audience: audience, p_business_id: businessId ?? null });
+
   // Round-trip time of a real authenticated backend call (System health).
   async function probe() {
     const t0 = performance.now();
@@ -107,5 +113,6 @@
     listAuditLog, listFeatureFlags, setFeatureFlag, activeMaintenance, listMaintenanceWindows, startMaintenance, endMaintenance,
     listSubscriptions, setSubscription, listAppVersions, recordAppVersion,
     activeAnnouncements, listAnnouncements, createAnnouncement, setAnnouncementActive,
+    broadcastNotification, listBroadcasts, broadcastAudienceSize,
   });
 })();

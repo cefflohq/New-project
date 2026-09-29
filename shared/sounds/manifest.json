@@ -1,0 +1,9 @@
+{
+  "_contract": "docs/cefflo/NOTIFICATION_EVENT_MATRIX.md §6 — Cefflo Signature Notification Sound",
+  "approved": false,
+  "version": null,
+  "files": {
+    "web": ["cefflo-signature.mp3", "cefflo-signature.ogg"],
+    "source": "cefflo-signature.wav"
+  }
+}

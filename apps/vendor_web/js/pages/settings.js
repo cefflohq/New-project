@@ -9,6 +9,7 @@ import { fetchBusiness, fetchZones, fetchMembers, fetchTeamInvites } from '../da
 import { esc, icon, avatar, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal, confirmDialog } from '../ui.js';
 import { showLink } from './riders.js';
 import { rerenderShell, signOutHandler } from '../shell.js';
+import { openNotificationPrefs } from '../notifications.js';
 
 const PAGES = ['profile', 'security', 'business', 'team', 'integrations', 'help', 'privacy', 'about'];
 // D-74, as Vendor Mobile: business details, Team and billing are Owner-only.
@@ -40,7 +41,7 @@ export default function settings({ el, params, setHeader }) {
     if (!s) return;
     if (s === 'm:language') return openLanguage();
     if (s === 'm:appearance') return openAppearance();
-    if (s === 'm:notifications') return openNotifications();
+    if (s === 'm:notifications') return openNotificationPrefs();
     location.hash = `#/settings/${s}`;
   });
   ({ profile, security, business, team, integrations, help: staticPage('help'), privacy: staticPage('privacy'), about: staticPage('about') })[sub](page);
@@ -69,21 +70,6 @@ function openAppearance() {
     const o = e.target.closest('[data-v]');
     if (o) { pick = o.dataset.v; m.el.querySelectorAll('[data-v]').forEach(b => b.classList.toggle('on', b === o)); }
     if (e.target.closest("[data-msave]")) { savePrefs({ theme: pick }); m.close(); }
-  });
-}
-
-function openNotifications() {
-  const pick = { ...prefs.notif };
-  const row = (k, ic) => `<div class="toggle-row">${icon(ic)}<div class="grow"><b>${esc(t(`notif.${k}`))}</b><small>${esc(t(`notif.${k}Sub`))}</small></div>
-    <button type="button" class="switch ${pick[k] ? 'on' : ''}" role="switch" aria-checked="${pick[k]}" aria-label="${esc(t(`notif.${k}`))}" data-k="${k}"></button></div>`;
-  const m = modal({ title: t('notif.title'), lead: t('notif.lead'), center: true,
-    body: `<div class="toggle-list">${row('orders', 'file')}${row('issues', 'alert')}${row('riders', 'users')}${row('runs', 'route')}</div>
-      <div class="gated">${icon('info')}<div>${esc(t('notif.device'))}</div></div>`,
-    footer: `<button class="btn primary" data-msave style="min-width:240px">${esc(t('c.save'))}</button>` });
-  m.el.addEventListener('click', e => {
-    const sw = e.target.closest('[data-k]');
-    if (sw) { const k = sw.dataset.k; pick[k] = !pick[k]; sw.classList.toggle('on', pick[k]); sw.setAttribute('aria-checked', String(pick[k])); }
-    if (e.target.closest('[data-msave]')) { savePrefs({ notif: pick }); m.close(); toast(t('c.saved')); }
   });
 }
 

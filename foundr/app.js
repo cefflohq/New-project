@@ -83,6 +83,7 @@ const LOADERS = {
   activeAnns: () => F.activeAnnouncements(),
   versions: () => F.listAppVersions(),
   admins: () => F.listPlatformAdmins(),
+  broadcasts: () => F.listBroadcasts(200),
 };
 const NEEDS = {
   overview: ['vendors', 'ops', 'stuck', 'audit', 'windows', 'activeAnns', 'flags', 'versions'],
@@ -322,11 +323,21 @@ function ridersTabs() {
 const SCOPES = [['all', 'All surfaces'], ['vendor', 'Vendor'], ['rider', 'Rider / Driver'], ['customer', 'Customer Tracking'], ['invite', 'Invite'], ['foundr', 'FOUNDR']];
 function controls() {
   const tab = state.tab || 'maintenance';
-  const title = head('Controls', 'Platform controls', 'Emergency maintenance, feature flags and platform announcements. Every change is confirmed and written to the audit log.');
-  const t = tabs([['maintenance', 'Maintenance'], ['flags', 'Feature flags'], ['announcements', 'Announcements']], tab);
-  const key = { maintenance: 'windows', flags: 'flags', announcements: 'anns' }[tab];
+  const title = head('Controls', 'Platform controls', 'Emergency maintenance, feature flags, platform announcements and notification broadcasts. Every change is confirmed and written to the audit log.');
+  const t = tabs([['maintenance', 'Maintenance'], ['flags', 'Feature flags'], ['announcements', 'Announcements'], ['broadcasts', 'Broadcasts']], tab);
+  const key = { maintenance: 'windows', flags: 'flags', announcements: 'anns', broadcasts: 'broadcasts' }[tab];
+  if (tab === 'broadcasts') ensure(['broadcasts', 'vendors']);
   if (failed([key])) return title + t + errorBlock([key]);
   if (!ready([key])) return title + t + loadingBlock();
+  if (tab === 'broadcasts') {
+    const list = data.broadcasts.filter(x => match(state.query, x.title, x.body, x.reason, x.business_name) && (!f('aud') || x.audience === f('aud')));
+    const pg = paginate(list);
+    return `${title}${t}
+    <div class="card card-pad status-panel" style="margin-bottom:12px"><p class="sub">Sends an in-app notification to the Vendor and/or Rider notification centre of every account in the audience, with a banner and sound while the app is open. Push to closed apps is not connected yet, so this is not an emergency channel for users who are offline; use a critical announcement for that.</p></div>
+    ${toolbar('Search broadcasts…', select('aud', [['', 'All audiences'], ...AUDIENCES], 'Audience') + `<button class="btn primary" data-modal="broadcast" ${'vendors' in data ? '' : 'disabled'}>＋ New broadcast</button>`)}
+    ${pg.total ? table(['Broadcast', 'Audience', 'Recipients', 'Read', 'Reason', 'Sent'], pg.rows.map(x => ({ id: x.id, cells: [`<b>${esc(x.title)}</b><span class="sub">${esc(x.body)}</span>`, esc(audienceLabel(x.audience)) + (x.business_name ? `<span class="sub">${esc(x.business_name)}</span>` : ''), num(x.recipient_count), `${num(x.read_count)}<span class="sub">${x.recipient_count ? Math.round(100 * x.read_count / x.recipient_count) + '%' : '—'}</span>`, esc(x.reason), esc(fmtDateTime(x.created_at))] }))) : emptyBlock(data.broadcasts.length ? 'No broadcasts match' : 'No broadcasts yet', data.broadcasts.length ? '' : 'Broadcasts appear here with their recipient and read counts.')}
+    ${pager(pg, 'broadcasts')}`;
+  }
   if (tab === 'maintenance') {
     const live = data.windows.filter(w => !w.ended_at);
     const pg = paginate(data.windows);
@@ -356,6 +367,9 @@ function controls() {
   ${pg.total ? table(['Announcement', 'Severity', 'Window', 'State', ''], pg.rows.map(a => ({ id: a.id, cells: [`<b>${esc(a.title)}</b><span class="sub">${esc(a.body)}</span>`, statusChip(a.severity), `${esc(fmtDateTime(a.starts_at))}<span class="sub">${a.ends_at ? 'until ' + esc(fmtDateTime(a.ends_at)) : 'no end'}</span>`, isLive(a) ? chip('Live') : a.active ? chip('Outside window', 'blue') : chip('Off', 'blue'), `<button class="btn" data-ann="${esc(a.id)}" data-active="${a.active ? 0 : 1}">${a.active ? 'Turn off' : 'Turn on'}</button>`] }))) : emptyBlock(anns.length ? 'No announcements match' : 'No announcements yet', anns.length ? '' : 'Critical announcements are the emergency channel to every client app.')}
   ${pager(pg, 'announcements')}`;
 }
+
+const AUDIENCES = [['vendors', 'All vendors (Owners and Operators)'], ['riders', 'All riders'], ['all', 'Everyone (vendors and riders)'], ['business', 'One business (its Owners and Operators)']];
+const audienceLabel = a => AUDIENCES.find(x => x[0] === a)?.[1] || a;
 
 // --- Client Versions
 const APPS = [['vendor', 'Vendor'], ['rider', 'Rider / Driver'], ['customer', 'Customer Tracking'], ['invite', 'Invite'], ['foundr', 'FOUNDR']];
@@ -426,7 +440,7 @@ function system() {
 }
 
 // --- Audit log
-const AUDIT_GROUPS = [['all', 'All'], ['maintenance', 'Maintenance'], ['feature_flag', 'Feature flags'], ['subscription', 'Subscriptions'], ['version', 'Versions'], ['announcement', 'Announcements']];
+const AUDIT_GROUPS = [['all', 'All'], ['maintenance', 'Maintenance'], ['feature_flag', 'Feature flags'], ['subscription', 'Subscriptions'], ['version', 'Versions'], ['announcement', 'Announcements'], ['broadcast', 'Broadcasts']];
 const inGroup = (a, g) => g === 'all' || String(a.action).includes(g) || String(a.target_type || '').includes(g);
 function auditRows() {
   const list = (data.audit || []).filter(a => inGroup(a, state.tab || 'all')
@@ -576,6 +590,20 @@ function modal() {
       const a = (data.anns || []).find(x => x.id === m.id);
       return wrap(`${m.active ? 'Turn on' : 'Turn off'} announcement?`, confirm([`<b>${esc(a?.title)}</b>`, m.active ? 'It shows in client apps during its window.' : 'Client apps stop showing it.'], 'set_announcement_active', false) + actions(m.active ? 'Turn on' : 'Turn off', !m.active));
     }
+    case 'broadcast': {
+      const biz = (data.vendors || []).slice().sort((a, b) => String(a.name).localeCompare(String(b.name)));
+      if (m.step === 'confirm') {
+        const size = m.size === undefined ? '<span class="sub inline">Counting…</span>' : m.size === null ? '<span class="sub inline">Could not count</span>' : `<b>${num(m.size)}</b> account${m.size === 1 ? '' : 's'}`;
+        return wrap('Send broadcast?', `<div class="preview-note"><div class="sub">Preview (as it appears in the notification centre)</div><div class="notif-preview"><b>${esc(v.title)}</b><span>${esc(v.body)}</span></div></div>`
+          + confirm([`Audience: <b>${esc(audienceLabel(v.audience))}</b>${v.audience === 'business' ? ` · ${esc(biz.find(x => x.business_id === v.business)?.name || '')}` : ''}`, `Recipients now: ${size}`, `Reason: ${esc(v.reason)}`, 'Delivered in-app only (notification centre, banner and sound while the app is open). It cannot be recalled.'], 'broadcast_notification', true)
+          + actions('Send broadcast', false).replace('type="submit"', `type="submit" ${m.size ? '' : 'disabled'}`));
+      }
+      return wrap('New broadcast', `<div class="field"><label for="b-title">Title</label><input id="b-title" name="title" value="${esc(v.title || '')}" maxlength="120"></div>
+        <div class="field"><label for="b-body">Message</label><textarea id="b-body" name="body" rows="3" maxlength="1000">${esc(v.body || '')}</textarea></div>
+        <div class="field"><label for="b-aud">Audience</label><select id="b-aud" name="audience">${AUDIENCES.map(([id, l]) => `<option value="${id}" ${(v.audience || 'vendors') === id ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+        <div class="field"><label for="b-biz">Business (only for One business)</label><select id="b-biz" name="business"><option value="">Choose a business…</option>${biz.map(x => `<option value="${esc(x.business_id)}" ${v.business === x.business_id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>
+        <div class="field"><label for="b-reason">Reason (stored in the audit log)</label><textarea id="b-reason" name="reason" rows="2" maxlength="500">${esc(v.reason || '')}</textarea></div>` + actions('Review'));
+    }
     case 'version':
       if (m.step === 'confirm') return wrap('Record release?', confirm([`App: <b>${esc(APPS.find(a => a[0] === v.app)?.[1])}</b>`, `Version: <b>${esc(v.version)}</b>`, `Min supported: ${esc(v.min || '—')}`, `Notes: ${esc(v.notes || '—')}`], 'record_app_version', false) + actions('Record release'));
       return wrap('Record release', `<div class="field"><label for="v-app">App</label><select id="v-app" name="app">${APPS.map(([id, l]) => `<option value="${id}" ${v.app === id ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
@@ -624,6 +652,13 @@ function validate(type, v) {
       if (!SEMVER.test(v.version || '')) return 'Version must look like 1.4.0.';
       if (v.min && !SEMVER.test(v.min)) return 'Min supported must look like 1.2.0.';
       return '';
+    case 'broadcast':
+      if (!v.title) return 'Title is required.';
+      if (!v.body) return 'Message is required.';
+      if (!AUDIENCES.some(a => a[0] === v.audience)) return 'Choose an audience.';
+      if (v.audience === 'business' && !v.business) return 'Choose the business.';
+      if (!v.reason) return 'Reason is required.';
+      return '';
     case 'subscription':
       if (v.mrr !== '' && (isNaN(Number(v.mrr)) || Number(v.mrr) < 0)) return 'MRR must be zero or a positive amount.';
       return '';
@@ -638,6 +673,13 @@ async function submitModal(form) {
     m.values = v;
     m.error = validate(m.type, v);
     if (!m.error) m.step = 'confirm';
+    // The confirmation shows the exact audience the server will target now.
+    if (!m.error && m.type === 'broadcast') {
+      delete m.size;
+      F.broadcastAudienceSize(v.audience, v.audience === 'business' ? v.business : null)
+        .then(n => { if (state.modal === m) { m.size = Number(n) || 0; if (!m.size) m.error = 'This audience has no accounts to notify.'; render(); } })
+        .catch(e => { if (state.modal === m) { m.size = null; m.error = e.message || 'Could not count the audience.'; handleAuthError(e); render(); } });
+    }
     return render();
   }
   m.busy = true; m.error = ''; render();
@@ -651,6 +693,7 @@ async function submitModal(form) {
       case 'toggle-flag': { const x = data.flags.find(y => y.key === m.id); await F.setFeatureFlag(m.id, !x.enabled, null); invalidate('flags'); done = `Flag ${m.id} turned ${x.enabled ? 'off' : 'on'}`; break; }
       case 'announcement': await F.createAnnouncement(v.title, v.body, v.severity, v.starts ? new Date(v.starts).toISOString() : null, v.ends ? new Date(v.ends).toISOString() : null); invalidate('anns', 'activeAnns'); done = 'Announcement published'; break;
       case 'toggle-ann': await F.setAnnouncementActive(m.id, !!m.active); invalidate('anns', 'activeAnns'); done = m.active ? 'Announcement turned on' : 'Announcement turned off'; break;
+      case 'broadcast': { const r = await F.broadcastNotification(v.title, v.body, v.audience, v.audience === 'business' ? v.business : null, v.reason); invalidate('broadcasts'); done = `Broadcast sent to ${num(r?.recipient_count ?? 0)} account${r?.recipient_count === 1 ? '' : 's'}`; break; }
       case 'version': await F.recordAppVersion(v.app, v.version, v.min || null, v.notes || null); invalidate('versions'); done = 'Release recorded'; break;
       case 'subscription': await F.setSubscription(m.id, v.plan, v.status, v.mrr === '' ? null : Math.round(Number(v.mrr) * 100), v.trial ? new Date(`${v.trial}T23:59:59+08:00`).toISOString() : null); invalidate('subs'); done = 'Subscription saved'; break;
     }
@@ -659,6 +702,7 @@ async function submitModal(form) {
     ensure(NEEDS[state.route]);
     ensure(['windows', 'activeAnns']);
     toast(done);
+    render(); // close the modal even when no reloaded key belongs to this page
   } catch (e) {
     m.busy = false; m.error = e.message || 'The server refused this action.';
     handleAuthError(e);

@@ -11,8 +11,6 @@ const stored = read();
 export const prefs = {
   theme: ['light', 'dark', 'system'].includes(stored.theme) ? stored.theme : 'light',
   lang: ['en', 'ms'].includes(stored.lang) ? stored.lang : 'en',
-  // Notification choices, kept on this device until notification delivery exists.
-  notif: { orders: true, issues: true, riders: true, runs: false, ...(stored.notif && typeof stored.notif === 'object' ? stored.notif : {}) },
 };
 
 export function savePrefs(next) {

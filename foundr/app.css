@@ -76,3 +76,4 @@ code{font-size:12.5px;background:#f4f6f9;padding:1px 5px;border-radius:4px}
 .nav{overflow:auto}
 @media(max-width:1050px){.version-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:720px){.date-control span{display:none}.global-search input{font-size:14px}.version-grid{grid-template-columns:1fr 1fr}.banner{padding:9px 13px}.metrics-cards{display:flex}.pop{right:-40px}.page-head{flex-wrap:wrap;gap:10px}}
+.preview-note{margin-bottom:12px}.notif-preview{display:grid;gap:3px;margin-top:6px;padding:10px 12px;border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:6px;background:#f8fafc;font-size:13.5px}.notif-preview span{color:var(--muted);white-space:pre-wrap}

@@ -6,6 +6,7 @@ import { operatorEntry } from './access.js';
 import { api, consumeAuthFragment, consumeAuthError } from './api.js';
 import { loadContext, clearContext, HelperOnlyError, NoBusinessError } from './store.js';
 import { mountShell } from './shell.js';
+import { stopNotifications } from './notifications.js';
 import { errorState } from './ui.js';
 import { renderSignIn, renderSetPassword, renderExpired, renderNoOperatorAccess } from './pages/auth.js';
 import { renderBusinessSetup } from './pages/setup.js';
@@ -22,6 +23,7 @@ const root = document.getElementById('app');
 const PAGES = { today, orders, zones, runs, riders, settings };
 
 async function signOut() {
+  stopNotifications();
   await api.signOut();
   clearContext();
   start();
