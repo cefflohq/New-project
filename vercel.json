@@ -49,6 +49,16 @@
       "destination": "/invite/:path*"
     },
     {
+      "source": "/web/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "vendor.cefflo.com"
+        }
+      ],
+      "destination": "/web/:path*"
+    },
+    {
       "source": "/app/:path*",
       "has": [
         {
@@ -201,6 +211,13 @@
           "value": "application/manifest+json"
         }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/web",
+      "destination": "/web/",
+      "permanent": false
     }
   ]
 }

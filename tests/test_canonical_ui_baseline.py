@@ -151,7 +151,10 @@ class BuildOutputTests(unittest.TestCase):
         subprocess.run(["node", "scripts/build-static.mjs"], cwd=ROOT, env=env, check=True, capture_output=True)
         dist = ROOT / "dist"
         published = sorted(p.name for p in dist.iterdir())
-        self.assertEqual(published, sorted([".openai", "customer", "foundr", "index.html", "invite", "retired", "server", "shared", "vendor"]))
+        self.assertEqual(published, sorted([".openai", "customer", "foundr", "index.html", "invite", "retired", "server", "shared", "vendor", "web"]))
+        # /web/ = the new Vendor Web App (apps/vendor_web); its demo mode is gated off in Production.
+        self.assertIn("<title>Cefflo Vendor</title>", (dist / "web" / "index.html").read_text(encoding="utf-8"))
+        self.assertIn("environment !== 'production'", (dist / "web" / "js" / "demo.js").read_text(encoding="utf-8"))
         # Root is the Public Website (from main @ 15efffe), not a product UI.
         self.assertIn("Local Same-Day Delivery Operating System", (dist / "index.html").read_text(encoding="utf-8"))
         vendor = (dist / "vendor" / "index.html").read_text(encoding="utf-8")
