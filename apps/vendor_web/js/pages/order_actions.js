@@ -66,12 +66,34 @@ function parseCsv(text) {
   return rows.filter(r => r.some(v => v.trim()));
 }
 
+// Excel (.xlsx/.xls) is read in the browser (same library the legacy vendor
+// web used) and turned into the same rows as a CSV, so both paths feed the
+// one canonical import_orders_batch.
+const XLSX_SRC = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+function loadXlsx() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  return new Promise((ok, fail) => {
+    const s = document.createElement('script');
+    s.src = XLSX_SRC;
+    s.onload = () => ok(window.XLSX);
+    s.onerror = () => fail(new Error(t('imp.xlsxLoadFailed')));
+    document.head.append(s);
+  });
+}
+async function readRows(file) {
+  if (!/\.xlsx?$/i.test(file.name)) return parseCsv(await file.text());
+  const X = await loadXlsx();
+  const wb = X.read(await file.arrayBuffer(), { type: 'array' });
+  const rows = X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '', raw: false });
+  return rows.map(r => r.map(v => String(v ?? ''))).filter(r => r.some(v => v.trim()));
+}
+
 export function openImport(onDone) {
   let valid = [];
   const m = modal({
     title: t('imp.title'), lead: t('imp.lead'),
     body: `<div class="hint">${esc(t('imp.columns'))}</div>
-      <input type="file" accept=".csv,text/csv" data-file class="input" style="padding-top:9px">
+      <input type="file" accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" data-file class="input" style="padding-top:9px">
       <div data-summary class="hint"></div><div class="err" data-err hidden></div>`,
     footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit disabled>${esc(t('imp.import'))}</button>`,
   });
@@ -80,7 +102,8 @@ export function openImport(onDone) {
     err.hidden = true; valid = [];
     const file = e.target.files?.[0];
     if (!file) return;
-    const rows = parseCsv(await file.text());
+    let rows;
+    try { rows = await readRows(file); } catch (ex) { err.textContent = ex.message; err.hidden = false; submit.disabled = true; return; }
     const head = (rows.shift() || []).map(h => h.trim().toLowerCase());
     const col = n => head.indexOf(n);
     const bad = [];

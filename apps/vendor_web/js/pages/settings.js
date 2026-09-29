@@ -291,6 +291,8 @@ const BRAND = {
   woo: '<span class="brand-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="7" width="30" height="16" rx="4" fill="#7F54B3"/><path fill="#7F54B3" d="M17 22l3 5 1-5z"/><text x="16" y="19" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="10" fill="#fff">Woo</text></svg></span>',
   wix: '<span class="brand-ico" style="color:var(--ink)"><svg viewBox="0 0 32 32" aria-hidden="true"><text x="16" y="21" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="12" fill="currentColor">WiX</text></svg></span>',
   sheets: '<span class="brand-ico"><img src="img/google-sheets-logo.png" alt="" width="26" height="26"></span>',
+  excel: '<span class="brand-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="9" y="4" width="20" height="24" rx="2" fill="#21A366"/><path fill="#33C481" d="M19 4h8a2 2 0 0 1 2 2v6H19z"/><path fill="#107C41" d="M9 16h10v12h-8a2 2 0 0 1-2-2z"/><rect x="3" y="9" width="14" height="14" rx="2" fill="#107C41"/><path fill="#fff" d="M6.4 12.5h2.3l1.3 2.4 1.3-2.4h2.2l-2.3 3.5 2.4 3.5h-2.3L10 17l-1.4 2.5H6.3l2.4-3.5z"/></svg></span>',
+  drive: '<span class="brand-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#0066DA" d="M4.3 24.6l1.3 2.3c.3.5.7.9 1.1 1.1l4.6-8H2.1c0 .6.1 1.1.4 1.6z"/><path fill="#00AC47" d="M16 11.5 11.4 3.5c-.4.3-.8.6-1.1 1.1L2.5 18.4c-.3.5-.4 1-.4 1.6h9.2z"/><path fill="#EA4335" d="M25.3 28c.4-.3.8-.6 1.1-1.1l.5-.9 2.6-4.4c.3-.5.4-1 .4-1.6h-9.2l2 3.9z"/><path fill="#00832D" d="M16 11.5l4.6-8c-.4-.3-1-.4-1.5-.4h-6.2c-.5 0-1.1.2-1.5.4z"/><path fill="#2684FC" d="M20.7 20H11.3l-4.6 8c.4.3 1 .4 1.5.4h15.6c.5 0 1.1-.2 1.5-.4z"/><path fill="#FFBA00" d="M25.2 12.1l-4.3-7.4c-.3-.5-.7-.9-1.1-1.1L15.2 11.5 20.7 20h9.2c0-.6-.1-1.1-.4-1.6z"/></svg></span>',
   api: `<span class="brand-ico file">${icon('code')}</span>`,
 };
 const INTEGRATIONS = [
@@ -299,7 +301,9 @@ const INTEGRATIONS = [
   { id: 'shopify', name: () => 'Shopify', sub: () => t('int.shopSub') },
   { id: 'woo', name: () => 'WooCommerce', sub: () => t('int.shopSub') },
   { id: 'wix', name: () => 'Wix eCommerce', sub: () => t('int.shopSub') },
+  { id: 'excel', name: () => 'Microsoft Excel', sub: () => t('int.excelSub'), live: true, action: 'import' },
   { id: 'sheets', name: () => 'Google Sheets', sub: () => t('int.sheetsSub') },
+  { id: 'drive', name: () => 'Google Drive', sub: () => t('int.driveSub') },
   { id: 'api', name: () => 'API / Webhooks', sub: () => t('int.apiSub') },
 ];
 let intSelected = 'csv';
