@@ -2461,6 +2461,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 item} other{{count} items}}'**
   String itemCount(int count);
+
+  /// No description provided for @ntNewRun.
+  ///
+  /// In en, this message translates to:
+  /// **'New run'**
+  String get ntNewRun;
+
+  /// No description provided for @ntNewRunFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'New run from {business}'**
+  String ntNewRunFrom(Object business);
+
+  /// No description provided for @ntRunOrdersAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 order assigned to you. Open it to accept.} other{{count} orders assigned to you. Open it to accept.}}'**
+  String ntRunOrdersAssigned(int count);
+
+  /// No description provided for @ntRunReassigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Run reassigned to you'**
+  String get ntRunReassigned;
+
+  /// No description provided for @ntRunReassignedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your business moved a run to you. Open it to accept.'**
+  String get ntRunReassignedBody;
+
+  /// No description provided for @ntRunRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Run moved to another rider'**
+  String get ntRunRemoved;
+
+  /// No description provided for @ntRunRemovedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your business reassigned a run you were on.'**
+  String get ntRunRemovedBody;
+
+  /// No description provided for @ntApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'You are approved'**
+  String get ntApproved;
+
+  /// No description provided for @ntApprovedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The business approved you as a rider.'**
+  String get ntApprovedBody;
+
+  /// No description provided for @ntAccessChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Access changed'**
+  String get ntAccessChanged;
+
+  /// No description provided for @ntAccessChangedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A business deactivated you as a rider.'**
+  String get ntAccessChangedBody;
+
+  /// No description provided for @ntJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get ntJustNow;
+
+  /// No description provided for @ntMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} min ago'**
+  String ntMinutesAgo(Object n);
+
+  /// No description provided for @ntHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} h ago'**
+  String ntHoursAgo(Object n);
+
+  /// No description provided for @ntSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification settings'**
+  String get ntSettings;
+
+  /// No description provided for @ntPrefLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to your account on every Cefflo app.'**
+  String get ntPrefLead;
+
+  /// No description provided for @ntPrefEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get ntPrefEnabled;
+
+  /// No description provided for @ntPrefEnabledSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Show alerts while the app is open. Everything is still kept here.'**
+  String get ntPrefEnabledSub;
+
+  /// No description provided for @ntPrefSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound'**
+  String get ntPrefSound;
+
+  /// No description provided for @ntPrefSoundSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Play a sound with an alert.'**
+  String get ntPrefSoundSub;
+
+  /// No description provided for @ntPushDeferred.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts when the app is closed are not available yet.'**
+  String get ntPushDeferred;
+
+  /// No description provided for @ntCouldNotUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update notifications. Try again.'**
+  String get ntCouldNotUpdate;
+
+  /// No description provided for @ntUrgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Urgent'**
+  String get ntUrgent;
+
+  /// No description provided for @ntDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get ntDismiss;
+
+  /// No description provided for @ntMarkAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all as read'**
+  String get ntMarkAllRead;
+
+  /// No description provided for @ntMarkUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as unread'**
+  String get ntMarkUnread;
+
+  /// No description provided for @ntMarkRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as read'**
+  String get ntMarkRead;
 }
 
 class _AppLocalizationsDelegate

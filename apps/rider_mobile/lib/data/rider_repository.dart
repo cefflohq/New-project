@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'driver_models.dart';
 import 'models.dart';
 
 import 'package:cefflo_rider_mobile/l10n/l10n.dart';
@@ -431,6 +432,108 @@ class RiderRepository {
   Future<List<Map<String, dynamic>>> claimMyRiderInvitations() async {
     final result = await _run(() => _db.rpc('claim_my_rider_invitations'));
     return _rows(result);
+  }
+
+  // ---- Notification centre (docs/cefflo/NOTIFICATION_EVENT_MATRIX.md).
+  // Rows are written only by the server; RLS returns the user's own rows.
+  static const _notifSelect =
+      'id,app,business_id,event_key,category,priority,title,body,target,params,created_at,read_at';
+
+  Future<List<DriverNotification>> notifications() async {
+    final rows = await _run(
+      () => _db
+          .from('notifications')
+          .select(_notifSelect)
+          .eq('app', 'rider')
+          .order('created_at', ascending: false)
+          .limit(50),
+    );
+    return _rows(rows).map(DriverNotification.fromRow).toList();
+  }
+
+  Future<int> unreadNotificationCount() async {
+    final rows = await _run(
+      () => _db
+          .from('notifications')
+          .select('id')
+          .eq('app', 'rider')
+          .isFilter('read_at', null)
+          .limit(100),
+    );
+    return _rows(rows).length;
+  }
+
+  /// Marks [ids] read, or every rider notification when null.
+  Future<void> markNotificationsRead({List<String>? ids}) => _run(
+    () => _db.rpc(
+      'mark_notifications_read',
+      params: {'p_ids': ids, 'p_app': 'rider'},
+    ),
+  );
+
+  Future<void> markNotificationUnread(String id) =>
+      _run(() => _db.rpc('mark_notification_unread', params: {'p_id': id}));
+
+  Future<NotificationPrefs> notificationPrefs() async {
+    final uid = currentUser?.id;
+    if (uid == null) return const NotificationPrefs();
+    final rows = _rows(
+      await _run(
+        () => _db
+            .from('notification_preferences')
+            .select('enabled,sound')
+            .eq('user_id', uid)
+            .limit(1),
+      ),
+    );
+    if (rows.isEmpty) return const NotificationPrefs();
+    return NotificationPrefs(
+      enabled: rows.first['enabled'] != false,
+      sound: rows.first['sound'] != false,
+    );
+  }
+
+  Future<void> saveNotificationPrefs(NotificationPrefs prefs) => _run(
+    () => _db.from('notification_preferences').upsert({
+      'user_id': _db.auth.currentUser!.id,
+      'enabled': prefs.enabled,
+      'sound': prefs.sound,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }, onConflict: 'user_id'),
+  );
+
+  /// Realtime feed of the signed-in user's notification rows. [onStatus]
+  /// receives true each time the channel is (re)subscribed. Returns a
+  /// cancel function, or null without a live session.
+  void Function()? watchNotifications({
+    required void Function(String type, Map<String, dynamic> row) onChange,
+    required void Function(bool subscribed) onStatus,
+  }) {
+    final db = _client;
+    final uid = db?.auth.currentUser?.id;
+    if (db == null || uid == null) return null;
+    final channel = db
+        .channel('notifications:$uid')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'notifications',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'recipient_user_id',
+            value: uid,
+          ),
+          callback: (payload) => onChange(
+            payload.eventType.name.toUpperCase(),
+            payload.eventType == PostgresChangeEvent.delete
+                ? payload.oldRecord
+                : payload.newRecord,
+          ),
+        )
+        .subscribe(
+          (status, _) => onStatus(status == RealtimeSubscribeStatus.subscribed),
+        );
+    return () => db.removeChannel(channel);
   }
 
   Future<T> _run<T>(Future<T> Function() action) async {

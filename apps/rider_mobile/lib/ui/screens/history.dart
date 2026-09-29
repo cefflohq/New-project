@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/notification_alerts.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/driver_models.dart';
@@ -339,6 +340,53 @@ class NotificationsScreen extends StatefulWidget {
 class _NotificationsScreenState extends State<NotificationsScreen> {
   int _tab = 0;
 
+  static final _compact = TextButton.styleFrom(
+    minimumSize: const Size(0, Sizes.tapTarget),
+    padding: const EdgeInsets.symmetric(horizontal: Gap.sm),
+  );
+
+  void _guard(Future<void> action) {
+    action.catchError((Object _) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(L.ntCouldNotUpdate),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    });
+  }
+
+  void _rowOptions(DriverNotification n) {
+    final app = AppScope.read(context);
+    showCeffloSheet<void>(
+      context,
+      child: Material(
+        type: MaterialType.transparency,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SheetGrabber(),
+            ListTile(
+              leading: Icon(n.unread ? LucideIcons.mailOpen : LucideIcons.mail),
+              title: Text(n.unread ? L.ntMarkRead : L.ntMarkUnread),
+              onTap: () {
+                Navigator.of(context).pop();
+                _guard(
+                  n.unread
+                      ? app.markNotificationRead(n)
+                      : app.markNotificationUnread(n),
+                );
+              },
+            ),
+            const SizedBox(height: Gap.md),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
@@ -376,14 +424,39 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             index: _tab,
             onChanged: (i) => setState(() => _tab = i),
           ),
-          const SizedBox(height: Gap.sm),
-          if (shown.isEmpty)
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: Gap.sm,
+            children: [
+              TextButton.icon(
+                key: const ValueKey('notif-settings'),
+                style: _compact,
+                onPressed: () => showNotificationPrefsSheet(context),
+                icon: const Icon(LucideIcons.settings, size: 18),
+                label: Text(L.ntSettings),
+              ),
+              if (unread.isNotEmpty)
+                TextButton(
+                  style: _compact,
+                  onPressed: () => _guard(app.markAllNotificationsRead()),
+                  child: Text(L.ntMarkAllRead),
+                ),
+            ],
+          ),
+          if (shown.isEmpty && app.notificationsError != null)
+            StateBlock.error(
+              app.notificationsError!,
+              onRetry: app.refreshNotifications,
+            )
+          else if (shown.isEmpty)
             StateBlock.empty(L.nothingHereRightNow)
           else
             for (final n in shown) ...[
               _NotificationRow(
                 notification: n,
-                onTap: () => app.markNotificationRead(n),
+                onTap: () => app.openNotification(n),
+                onLongPress: () => _rowOptions(n),
               ),
               if (n != shown.last) Divider(height: 1, color: context.c.border),
             ],
@@ -393,10 +466,103 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 }
 
+/// Notifications + Sound, stored in public.notification_preferences (the
+/// same row every Cefflo app of this account reads).
+Future<void> showNotificationPrefsSheet(BuildContext context) {
+  final app = AppScope.read(context);
+  // The sheet is a new route; carry the app state into it explicitly.
+  return showCeffloSheet<void>(
+    context,
+    child: Material(
+      type: MaterialType.transparency,
+      child: AppScope(state: app, child: const _NotificationPrefsSheet()),
+    ),
+  );
+}
+
+class _NotificationPrefsSheet extends StatefulWidget {
+  const _NotificationPrefsSheet();
+
+  @override
+  State<_NotificationPrefsSheet> createState() =>
+      _NotificationPrefsSheetState();
+}
+
+class _NotificationPrefsSheetState extends State<_NotificationPrefsSheet> {
+  bool _saving = false;
+  String? _error;
+
+  Future<void> _save(NotificationPrefs next) async {
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await AppScope.read(context).setNotificationPrefs(next);
+    } catch (e) {
+      if (mounted) setState(() => _error = '$e');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final p = app.notificationPrefs;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, Gap.lg),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SheetGrabber(),
+          const SizedBox(height: Gap.sm),
+          Text(L.ntSettings, style: context.t.titleMedium),
+          const SizedBox(height: 4),
+          Text(L.ntPrefLead, style: context.t.bodySmall),
+          SwitchListTile(
+            key: const ValueKey('pref-enabled'),
+            contentPadding: EdgeInsets.zero,
+            title: Text(L.ntPrefEnabled),
+            subtitle: Text(L.ntPrefEnabledSub),
+            value: p.enabled,
+            onChanged: _saving
+                ? null
+                : (v) => _save(NotificationPrefs(enabled: v, sound: p.sound)),
+          ),
+          SwitchListTile(
+            key: const ValueKey('pref-sound'),
+            contentPadding: EdgeInsets.zero,
+            title: Text(L.ntPrefSound),
+            subtitle: Text(L.ntPrefSoundSub),
+            value: p.sound,
+            onChanged: _saving || !p.enabled
+                ? null
+                : (v) => _save(NotificationPrefs(enabled: p.enabled, sound: v)),
+          ),
+          if (_error != null)
+            Text(
+              _error!,
+              style: context.t.bodySmall?.copyWith(color: context.c.attention),
+            ),
+          const SizedBox(height: Gap.sm),
+          Text(L.ntPushDeferred, style: context.t.bodySmall),
+        ],
+      ),
+    );
+  }
+}
+
 class _NotificationRow extends StatelessWidget {
-  const _NotificationRow({required this.notification, required this.onTap});
+  const _NotificationRow({
+    required this.notification,
+    required this.onTap,
+    this.onLongPress,
+  });
   final DriverNotification notification;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   static (IconData, Color, Color) _style(NotificationKind kind) =>
       switch (kind) {
@@ -434,11 +600,19 @@ class _NotificationRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (icon, bg, fg) = _style(notification.kind);
+    final (icon, bg, fg) = notification.urgent
+        ? (
+            LucideIcons.triangleAlert,
+            const Color(0xFFFCE9E7),
+            const Color(0xFFD73C2B),
+          )
+        : _style(notification.kind);
+    final copy = notificationCopy(notification);
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
+        onLongPress: onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 13),
           child: Row(
@@ -459,18 +633,28 @@ class _NotificationRow extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            notification.title,
+                            copy.title,
                             style: context.t.titleSmall?.copyWith(fontSize: 15),
                           ),
                         ),
                         Text(
-                          notification.timeLabel,
+                          notificationWhen(notification),
                           style: context.t.bodySmall,
                         ),
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text(notification.body, style: context.t.bodySmall),
+                    Text(copy.body, style: context.t.bodySmall),
+                    if (notification.urgent) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        L.ntUrgent,
+                        style: context.t.labelSmall?.copyWith(
+                          color: const Color(0xFFD73C2B),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),

@@ -1,3 +1,5 @@
+import 'dart:math' show max;
+
 import 'package:flutter/material.dart';
 
 import '../data/demo_data.dart';
@@ -5,6 +7,7 @@ import '../data/driver_models.dart';
 import '../data/models.dart';
 import '../data/rider_repository.dart';
 import 'live_location.dart';
+import 'notification_alerts.dart';
 import 'ui_locale.dart';
 import 'routes.dart';
 
@@ -294,14 +297,189 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// D33 — tapping a notification clears its unread dot. Prototype-local:
-  /// nothing is persisted, there is no read receipt on the backend yet.
-  void markNotificationRead(DriverNotification target) {
+  // --- D33 notification centre, backed by public.notifications ----------
+  // (docs/cefflo/NOTIFICATION_EVENT_MATRIX.md). The server writes every
+  // row; this keeps the list, read state and preferences in step with it and
+  // raises the foreground alert for rows arriving while the app is open.
+  int _unreadLive = 0;
+  NotificationPrefs notificationPrefs = const NotificationPrefs();
+  String? notificationsError;
+  void Function()? _cancelNotifications;
+  bool _subscribedOnce = false;
+  final Set<String> _seenNotifications = {};
+
+  /// The foreground alert currently shown over the app, if any.
+  final ValueNotifier<DriverNotification?> foregroundAlert = ValueNotifier(
+    null,
+  );
+
+  /// Sound/vibration side effects of an alert (replaceable in tests).
+  NotificationAlertEffects alertEffects = const NotificationAlertEffects();
+
+  int get unreadNotifications => repo.isDemo
+      ? notifications.where((n) => n.unread && !n.archived).length
+      : _unreadLive;
+
+  Future<void> startNotifications() async {
+    if (repo.isDemo) return;
+    stopNotifications();
+    await refreshNotifications();
+    try {
+      notificationPrefs = await repo.notificationPrefs();
+    } on RepositoryError catch (_) {}
+    _cancelNotifications = repo.watchNotifications(
+      onChange: _onNotificationChange,
+      onStatus: (subscribed) {
+        if (!subscribed) return;
+        // Rejoined after a drop: re-read history; alerts are never replayed.
+        if (_subscribedOnce) refreshNotifications();
+        _subscribedOnce = true;
+      },
+    );
+    notifyListeners();
+  }
+
+  void stopNotifications() {
+    _cancelNotifications?.call();
+    _cancelNotifications = null;
+    _subscribedOnce = false;
+    if (!repo.isDemo) {
+      notifications = const [];
+      _unreadLive = 0;
+      _seenNotifications.clear();
+    }
+    foregroundAlert.value = null;
+  }
+
+  /// App returned to the foreground (NotificationBanner observes the
+  /// lifecycle): re-read the centre in case the socket slept.
+  void onAppResumed() {
+    if (_cancelNotifications != null) refreshNotifications();
+  }
+
+  Future<void> refreshNotifications() async {
+    if (repo.isDemo) return;
+    try {
+      final rows = await repo.notifications();
+      _unreadLive = await repo.unreadNotificationCount();
+      notifications = rows;
+      _seenNotifications.addAll(rows.map((n) => n.id!));
+      notificationsError = null;
+    } on RepositoryError catch (e) {
+      notificationsError = e.message;
+    }
+    notifyListeners();
+  }
+
+  void _onNotificationChange(String type, Map<String, dynamic> row) {
+    final id = row['id']?.toString();
+    if (id == null) return;
+    if (type == 'INSERT') {
+      if (row['app'] != 'rider') return;
+      if (notifications.any((n) => n.id == id)) return;
+      final n = DriverNotification.fromRow(row);
+      notifications = [n, ...notifications].take(50).toList();
+      if (n.unread) _unreadLive++;
+      notifyListeners();
+      if (_seenNotifications.add(id)) _present(n);
+      // A run or account change: re-read the operational truth it reports.
+      if (n.eventKey?.startsWith('run.') == true) {
+        refreshOrders().catchError((_) {});
+      } else if (n.eventKey?.startsWith('rider.') == true) {
+        loadSession().catchError((_) {});
+      }
+    } else if (type == 'UPDATE') {
+      final i = notifications.indexWhere((n) => n.id == id);
+      if (i < 0) return;
+      final wasUnread = notifications[i].unread;
+      final nowUnread = row['read_at'] == null;
+      notifications = List.of(notifications)
+        ..[i] = notifications[i].copyWith(unread: nowUnread);
+      if (wasUnread && !nowUnread) _unreadLive = max(0, _unreadLive - 1);
+      if (!wasUnread && nowUnread) _unreadLive++;
+      notifyListeners();
+    } else if (type == 'DELETE') {
+      final gone = notifications.where((n) => n.id == id).toList();
+      if (gone.isEmpty) return;
+      notifications = notifications.where((n) => n.id != id).toList();
+      if (gone.first.unread) _unreadLive = max(0, _unreadLive - 1);
+      notifyListeners();
+    }
+  }
+
+  /// Foreground alert: banner + sound/vibration per preferences. Rows older
+  /// than two minutes only land in the centre.
+  void _present(DriverNotification n) {
+    if (!notificationPrefs.enabled) return;
+    final at = n.createdAt;
+    if (at != null && DateTime.now().difference(at).inMinutes >= 2) return;
+    foregroundAlert.value = n;
+    alertEffects.play(
+      sound: notificationPrefs.sound && notificationPlaysSound(n.eventKey),
+      urgent: n.urgent,
+    );
+  }
+
+  void dismissForegroundAlert() => foregroundAlert.value = null;
+
+  Future<void> _setRead(DriverNotification target, bool read) async {
+    if (target.unread == !read) return;
     notifications = [
       for (final n in notifications)
-        if (identical(n, target)) n.copyWith(unread: false) else n,
+        if (identical(n, target) || (n.id != null && n.id == target.id))
+          n.copyWith(unread: !read)
+        else
+          n,
     ];
+    if (!repo.isDemo) _unreadLive = max(0, _unreadLive + (read ? -1 : 1));
     notifyListeners();
+    if (repo.isDemo || target.id == null) return;
+    try {
+      if (read) {
+        await repo.markNotificationsRead(ids: [target.id!]);
+      } else {
+        await repo.markNotificationUnread(target.id!);
+      }
+    } on RepositoryError {
+      await refreshNotifications();
+      rethrow;
+    }
+  }
+
+  /// D33 — tapping a notification clears its unread dot (server read state).
+  Future<void> markNotificationRead(DriverNotification target) =>
+      _setRead(target, true);
+
+  Future<void> markNotificationUnread(DriverNotification target) =>
+      _setRead(target, false);
+
+  Future<void> markAllNotificationsRead() async {
+    notifications = [for (final n in notifications) n.copyWith(unread: false)];
+    if (!repo.isDemo) _unreadLive = 0;
+    notifyListeners();
+    if (repo.isDemo) return;
+    try {
+      await repo.markNotificationsRead();
+    } on RepositoryError {
+      await refreshNotifications();
+      rethrow;
+    }
+  }
+
+  Future<void> setNotificationPrefs(NotificationPrefs next) async {
+    if (!repo.isDemo) await repo.saveNotificationPrefs(next);
+    notificationPrefs = next;
+    notifyListeners();
+  }
+
+  /// Opens a notification: marks it read and follows its deep-link.
+  void openNotification(DriverNotification n) {
+    if (n.unread) markNotificationRead(n).catchError((_) {});
+    if (n.targetScreen == 'runs') {
+      go(hasRun ? DRoute.runDetails : homeRoute);
+    } else {
+      notifyListeners();
+    }
   }
 
   /// D37 — a document re-submitted for review drops back to "uploaded"
@@ -354,6 +532,7 @@ class AppState extends ChangeNotifier {
         ..add(RiderLocation(homeRoute));
       if (active != null) await _loadOrders();
       _project();
+      if (_cancelNotifications == null) startNotifications();
     } on RepositoryError catch (e) {
       sessionError = e.message;
     } finally {
@@ -439,9 +618,8 @@ class AppState extends ChangeNotifier {
         statusLabel: rel.isActive ? L.activeDriver : L.pendingReview,
       );
     }
-    // No notification feed or document store exists on the backend yet:
-    // show none rather than demo entries.
-    notifications = const [];
+    // No document store exists on the backend yet: show none rather than
+    // demo entries. Notifications are loaded by [startNotifications].
     documents = const [];
     final all = runs;
     bool open(RiderRun r) => r.orders.any((o) => !_terminal(o.status));
@@ -798,6 +976,7 @@ class AppState extends ChangeNotifier {
   }
 
   void clearSession() {
+    stopNotifications();
     live?.stop().catchError((_) {});
     relationships = const [];
     active = null;

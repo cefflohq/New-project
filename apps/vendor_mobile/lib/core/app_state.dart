@@ -162,7 +162,6 @@ class AppState extends ChangeNotifier {
   Future<void> startNotifications() async {
     if (repo.isDemo) return;
     stopNotifications();
-    WidgetsBinding.instance.addObserver(_lifecycle);
     await refreshNotifications();
     try {
       notificationPrefs = await repo.notificationPrefs();
@@ -183,7 +182,6 @@ class AppState extends ChangeNotifier {
     _cancelNotifications?.call();
     _cancelNotifications = null;
     _subscribedOnce = false;
-    WidgetsBinding.instance.removeObserver(_lifecycle);
     for (final t in _pendingDeletes.values) {
       t.cancel();
     }
@@ -196,9 +194,11 @@ class AppState extends ChangeNotifier {
     foregroundAlert.value = null;
   }
 
-  late final _lifecycle = _NotificationLifecycle(() {
+  /// App returned to the foreground (NotificationBanner observes the
+  /// lifecycle): re-read the centre in case the socket slept.
+  void onAppResumed() {
     if (_cancelNotifications != null) refreshNotifications();
-  });
+  }
 
   Future<void> refreshNotifications() async {
     if (repo.isDemo) return;
@@ -514,16 +514,6 @@ class AppState extends ChangeNotifier {
       ..add(const VendorLocation(VRoute.today));
     onSignOut?.call();
     notifyListeners();
-  }
-}
-
-class _NotificationLifecycle with WidgetsBindingObserver {
-  _NotificationLifecycle(this.onResume);
-  final VoidCallback onResume;
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) onResume();
   }
 }
 

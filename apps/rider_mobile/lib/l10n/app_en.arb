@@ -569,5 +569,60 @@
         "type": "int"
       }
     }
-  }
+  },
+  "ntNewRun": "New run",
+  "ntNewRunFrom": "New run from {business}",
+  "@ntNewRunFrom": {
+    "placeholders": {
+      "business": {
+        "type": "Object"
+      }
+    }
+  },
+  "ntRunOrdersAssigned": "{count, plural, =1{1 order assigned to you. Open it to accept.} other{{count} orders assigned to you. Open it to accept.}}",
+  "@ntRunOrdersAssigned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ntRunReassigned": "Run reassigned to you",
+  "ntRunReassignedBody": "Your business moved a run to you. Open it to accept.",
+  "ntRunRemoved": "Run moved to another rider",
+  "ntRunRemovedBody": "Your business reassigned a run you were on.",
+  "ntApproved": "You are approved",
+  "ntApprovedBody": "The business approved you as a rider.",
+  "ntAccessChanged": "Access changed",
+  "ntAccessChangedBody": "A business deactivated you as a rider.",
+  "ntJustNow": "just now",
+  "ntMinutesAgo": "{n} min ago",
+  "@ntMinutesAgo": {
+    "placeholders": {
+      "n": {
+        "type": "Object"
+      }
+    }
+  },
+  "ntHoursAgo": "{n} h ago",
+  "@ntHoursAgo": {
+    "placeholders": {
+      "n": {
+        "type": "Object"
+      }
+    }
+  },
+  "ntSettings": "Notification settings",
+  "ntPrefLead": "Applies to your account on every Cefflo app.",
+  "ntPrefEnabled": "Notifications",
+  "ntPrefEnabledSub": "Show alerts while the app is open. Everything is still kept here.",
+  "ntPrefSound": "Sound",
+  "ntPrefSoundSub": "Play a sound with an alert.",
+  "ntPushDeferred": "Alerts when the app is closed are not available yet.",
+  "ntCouldNotUpdate": "Could not update notifications. Try again.",
+  "ntUrgent": "Urgent",
+  "ntDismiss": "Dismiss",
+  "ntMarkAllRead": "Mark all as read",
+  "ntMarkUnread": "Mark as unread",
+  "ntMarkRead": "Mark as read"
 }

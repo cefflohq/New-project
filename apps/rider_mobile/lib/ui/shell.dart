@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../core/app_state.dart';
 import '../core/routes.dart';
 import 'brand.dart';
+import 'notification_banner.dart';
 import 'widgets.dart';
 
 /// Routes that own the whole viewport and draw no bottom navigation.
@@ -56,22 +57,26 @@ class DriverShell extends StatelessWidget {
         // the gradient never restarts.
         child: NavyBackdrop(
           watermark: false,
-          child: fullBleed
-              ? child
-              : Scaffold(
-                  backgroundColor: Colors.transparent,
-                  body: Column(
-                    children: [
-                      Expanded(child: child),
-                      CeffloBottomNav(
-                        active: app.activeTab,
-                        onTap: app.switchTab,
-                      ),
-                    ],
-                  ),
-                ),
+          child: Stack(
+            children: [
+              Positioned.fill(child: _body(app, fullBleed)),
+              const NotificationBanner(),
+            ],
+          ),
         ),
       ),
     );
   }
+
+  Widget _body(AppState app, bool fullBleed) => fullBleed
+      ? child
+      : Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Column(
+            children: [
+              Expanded(child: child),
+              CeffloBottomNav(active: app.activeTab, onTap: app.switchTab),
+            ],
+          ),
+        );
 }

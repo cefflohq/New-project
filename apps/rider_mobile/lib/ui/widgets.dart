@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../core/app_state.dart';
 import '../core/routes.dart';
 import '../core/theme.dart';
 import 'brand.dart';
@@ -315,10 +316,37 @@ class CeffloBellButton extends StatelessWidget {
     child: GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: const SizedBox(
+      child: SizedBox(
         width: Sizes.tapTarget,
         height: Sizes.tapTarget,
-        child: Icon(LucideIcons.bell, size: 23, color: CefColors.onNavy),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            const Icon(LucideIcons.bell, size: 23, color: CefColors.onNavy),
+            // Backend unread count (public.notifications); absent outside
+            // the signed-in app scope.
+            if ((context
+                        .dependOnInheritedWidgetOfExactType<AppScope>()
+                        ?.notifier
+                        ?.unreadNotifications ??
+                    0) >
+                0)
+              Positioned(
+                top: 9,
+                right: 10,
+                child: Container(
+                  key: const ValueKey('bell-unread-dot'),
+                  width: 9,
+                  height: 9,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4758),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: CefColors.onNavy, width: 1.5),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     ),
   );

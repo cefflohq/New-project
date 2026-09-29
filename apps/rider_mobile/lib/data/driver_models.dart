@@ -148,7 +148,9 @@ enum NotificationKind {
   appUpdate,
 }
 
-/// D33 Notifications.
+/// D33 Notifications. Live rows come from public.notifications
+/// (docs/cefflo/NOTIFICATION_EVENT_MATRIX.md); demo fixtures keep a fixed
+/// [timeLabel] and no id.
 class DriverNotification {
   const DriverNotification({
     required this.kind,
@@ -157,6 +159,13 @@ class DriverNotification {
     required this.timeLabel,
     required this.unread,
     this.archived = false,
+    this.id,
+    this.urgent = false,
+    this.eventKey,
+    this.params = const {},
+    this.targetScreen,
+    this.businessId,
+    this.createdAt,
   });
 
   final NotificationKind kind;
@@ -166,6 +175,45 @@ class DriverNotification {
   final bool unread;
   final bool archived;
 
+  final String? id;
+
+  /// Server priority: urgent operational events (run assigned / removed)
+  /// versus normal ones. Never derived on the client.
+  final bool urgent;
+  final String? eventKey;
+  final Map<String, dynamic> params;
+
+  /// Deep-link: 'runs' | 'none'.
+  final String? targetScreen;
+  final String? businessId;
+  final DateTime? createdAt;
+
+  factory DriverNotification.fromRow(Map<String, dynamic> r) {
+    final key = (r['event_key'] ?? '').toString();
+    final target = r['target'] is Map ? r['target'] as Map : const {};
+    return DriverNotification(
+      id: r['id'].toString(),
+      kind: switch (key) {
+        'run.assigned' => NotificationKind.runAssigned,
+        'run.removed' => NotificationKind.deliveryIssue,
+        'rider.approved' => NotificationKind.documentApproved,
+        _ => NotificationKind.appUpdate,
+      },
+      title: (r['title'] ?? '').toString(),
+      body: (r['body'] ?? '').toString(),
+      timeLabel: '',
+      unread: r['read_at'] == null,
+      urgent: r['priority'] == 'urgent',
+      eventKey: key,
+      params: r['params'] is Map
+          ? Map<String, dynamic>.from(r['params'] as Map)
+          : const {},
+      targetScreen: target['screen']?.toString(),
+      businessId: r['business_id']?.toString(),
+      createdAt: DateTime.tryParse((r['created_at'] ?? '').toString()),
+    );
+  }
+
   DriverNotification copyWith({bool? unread, bool? archived}) =>
       DriverNotification(
         kind: kind,
@@ -174,7 +222,21 @@ class DriverNotification {
         timeLabel: timeLabel,
         unread: unread ?? this.unread,
         archived: archived ?? this.archived,
+        id: id,
+        urgent: urgent,
+        eventKey: eventKey,
+        params: params,
+        targetScreen: targetScreen,
+        businessId: businessId,
+        createdAt: createdAt,
       );
+}
+
+/// Notification preferences (public.notification_preferences), shared by
+/// every Cefflo app of the account. Absent row = both on.
+class NotificationPrefs {
+  const NotificationPrefs({this.enabled = true, this.sound = true});
+  final bool enabled, sound;
 }
 
 enum DocumentState { uploaded, verified, missing }

@@ -1313,4 +1313,102 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get ntNewRun => 'New run';
+
+  @override
+  String ntNewRunFrom(Object business) {
+    return 'New run from $business';
+  }
+
+  @override
+  String ntRunOrdersAssigned(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count orders assigned to you. Open it to accept.',
+      one: '1 order assigned to you. Open it to accept.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get ntRunReassigned => 'Run reassigned to you';
+
+  @override
+  String get ntRunReassignedBody =>
+      'Your business moved a run to you. Open it to accept.';
+
+  @override
+  String get ntRunRemoved => 'Run moved to another rider';
+
+  @override
+  String get ntRunRemovedBody => 'Your business reassigned a run you were on.';
+
+  @override
+  String get ntApproved => 'You are approved';
+
+  @override
+  String get ntApprovedBody => 'The business approved you as a rider.';
+
+  @override
+  String get ntAccessChanged => 'Access changed';
+
+  @override
+  String get ntAccessChangedBody => 'A business deactivated you as a rider.';
+
+  @override
+  String get ntJustNow => 'just now';
+
+  @override
+  String ntMinutesAgo(Object n) {
+    return '$n min ago';
+  }
+
+  @override
+  String ntHoursAgo(Object n) {
+    return '$n h ago';
+  }
+
+  @override
+  String get ntSettings => 'Notification settings';
+
+  @override
+  String get ntPrefLead => 'Applies to your account on every Cefflo app.';
+
+  @override
+  String get ntPrefEnabled => 'Notifications';
+
+  @override
+  String get ntPrefEnabledSub =>
+      'Show alerts while the app is open. Everything is still kept here.';
+
+  @override
+  String get ntPrefSound => 'Sound';
+
+  @override
+  String get ntPrefSoundSub => 'Play a sound with an alert.';
+
+  @override
+  String get ntPushDeferred =>
+      'Alerts when the app is closed are not available yet.';
+
+  @override
+  String get ntCouldNotUpdate => 'Could not update notifications. Try again.';
+
+  @override
+  String get ntUrgent => 'Urgent';
+
+  @override
+  String get ntDismiss => 'Dismiss';
+
+  @override
+  String get ntMarkAllRead => 'Mark all as read';
+
+  @override
+  String get ntMarkUnread => 'Mark as unread';
+
+  @override
+  String get ntMarkRead => 'Mark as read';
 }

@@ -1318,4 +1318,106 @@ class AppLocalizationsMs extends AppLocalizations {
   String itemCount(int count) {
     return '$count item';
   }
+
+  @override
+  String get ntNewRun => 'Run baharu';
+
+  @override
+  String ntNewRunFrom(Object business) {
+    return 'Run baharu daripada $business';
+  }
+
+  @override
+  String ntRunOrdersAssigned(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pesanan ditugaskan kepada anda. Buka untuk terima.',
+      one: '1 pesanan ditugaskan kepada anda. Buka untuk terima.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get ntRunReassigned => 'Run ditugaskan semula kepada anda';
+
+  @override
+  String get ntRunReassignedBody =>
+      'Perniagaan anda memindahkan satu run kepada anda. Buka untuk terima.';
+
+  @override
+  String get ntRunRemoved => 'Run dipindahkan kepada rider lain';
+
+  @override
+  String get ntRunRemovedBody =>
+      'Perniagaan anda menugaskan semula run yang anda sertai.';
+
+  @override
+  String get ntApproved => 'Anda telah diluluskan';
+
+  @override
+  String get ntApprovedBody =>
+      'Perniagaan telah meluluskan anda sebagai rider.';
+
+  @override
+  String get ntAccessChanged => 'Akses berubah';
+
+  @override
+  String get ntAccessChangedBody =>
+      'Satu perniagaan telah menyahaktifkan anda sebagai rider.';
+
+  @override
+  String get ntJustNow => 'baru sahaja';
+
+  @override
+  String ntMinutesAgo(Object n) {
+    return '$n min lalu';
+  }
+
+  @override
+  String ntHoursAgo(Object n) {
+    return '$n jam lalu';
+  }
+
+  @override
+  String get ntSettings => 'Tetapan notifikasi';
+
+  @override
+  String get ntPrefLead => 'Terpakai pada akaun anda di semua aplikasi Cefflo.';
+
+  @override
+  String get ntPrefEnabled => 'Notifikasi';
+
+  @override
+  String get ntPrefEnabledSub =>
+      'Tunjukkan makluman semasa aplikasi dibuka. Semuanya tetap disimpan di sini.';
+
+  @override
+  String get ntPrefSound => 'Bunyi';
+
+  @override
+  String get ntPrefSoundSub => 'Mainkan bunyi bersama makluman.';
+
+  @override
+  String get ntPushDeferred =>
+      'Makluman semasa aplikasi ditutup belum tersedia.';
+
+  @override
+  String get ntCouldNotUpdate =>
+      'Tidak dapat mengemas kini notifikasi. Cuba lagi.';
+
+  @override
+  String get ntUrgent => 'Segera';
+
+  @override
+  String get ntDismiss => 'Tutup';
+
+  @override
+  String get ntMarkAllRead => 'Tanda semua sudah dibaca';
+
+  @override
+  String get ntMarkUnread => 'Tanda belum dibaca';
+
+  @override
+  String get ntMarkRead => 'Tanda sudah dibaca';
 }

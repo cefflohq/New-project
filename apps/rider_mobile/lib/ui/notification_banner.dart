@@ -6,13 +6,15 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../core/app_state.dart';
 import '../core/notification_alerts.dart';
 import '../core/theme.dart';
-import '../data/models.dart';
+import '../data/driver_models.dart';
 
-import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
+import 'package:cefflo_rider_mobile/l10n/l10n.dart';
 
 /// Foreground alert banner (NOTIFICATION_EVENT_MATRIX §5): shown once per
 /// notification while the app is open. Normal alerts leave after ~6 s;
-/// urgent ones stay until dismissed or opened. Tapping opens the deep-link.
+/// urgent ones (server priority: run assigned / removed) stay until
+/// dismissed or opened, with a red edge and alert icon. Tapping opens the
+/// deep-link.
 /// The notification itself stays in the centre either way.
 class NotificationBanner extends StatefulWidget {
   const NotificationBanner({super.key});
@@ -24,7 +26,7 @@ class NotificationBanner extends StatefulWidget {
 class _NotificationBannerState extends State<NotificationBanner>
     with WidgetsBindingObserver {
   AppState? _app;
-  AppNotification? _shown;
+  DriverNotification? _shown;
   Timer? _timer;
 
   @override
@@ -122,7 +124,7 @@ class _NotificationBannerState extends State<NotificationBanner>
                               n.urgent
                                   ? LucideIcons.triangleAlert
                                   : LucideIcons.bell,
-                              color: n.urgent ? c.attention : CefColors.brand,
+                              color: n.urgent ? c.attention : CefColors.navy,
                               size: Sizes.icon,
                             ),
                             const SizedBox(width: Gap.md),
