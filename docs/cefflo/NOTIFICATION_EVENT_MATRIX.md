@@ -145,7 +145,22 @@ contract defines where it plugs in.
   channel settings override the app on Android; iOS focus modes are
   respected.
 
-## 7. Deferred (not simulated)
+## 7. Surface status (branch `claude/notification-system`)
+
+| Surface | Centre | Banner | Sound | Read/unread | Preferences | Deep-link | Closed-app push |
+|---|---|---|---|---|---|---|---|
+| FOUNDR | — | — | — | read counts per broadcast | — | — | — |
+| FOUNDR Broadcasts | Controls › Broadcasts: compose, preview, exact audience size, reason, confirm, history (recipients, read), audit group | | | | | | |
+| Vendor Web | bell + badge + panel | yes (normal 6 s, urgent sticky) | web player (§6) | yes + mark all | Notifications, Sound, browser permission state | order / runs / rider (switches business) | deferred; browser Notification API only while the tab is open but hidden and permission is granted |
+| Vendor Mobile | X-01 | overlay banner | platform alert placeholder (§6) | yes + mark all, delete (Undo window), clear | V-47: Notifications, Sound | order / zones (runs) / rider | deferred |
+| Rider Mobile | D33 + unread dot on every bell | overlay banner, urgent = red edge, sticky, vibration | platform alert placeholder (§6) | yes (long-press) + mark all | Notification settings sheet | run | deferred |
+| Customer Tracking | not added (audit: no notification, push, WhatsApp or SMS claims; no polling; uses its own realtime channel) | | | | | | |
+
+Reconnect: every client re-reads the centre when its realtime channel
+rejoins and when the app/tab returns to the foreground; banners are never
+replayed.
+
+## 8. Deferred (not simulated)
 
 | Item | Why | Needs |
 |---|---|---|
