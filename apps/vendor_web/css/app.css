@@ -698,3 +698,32 @@ table.t .sub { font-size: var(--t-meta); margin-top: 2px; }
   .onb-card { padding: 24px 20px; }
 }
 @media (max-width: 480px) { .onb-row { grid-template-columns: 1fr; } .onb-steps { grid-auto-flow: row; } }
+
+/* ---------------- selection: Cefflo brand rule (as Vendor Mobile) ----------------
+   Selected = a Cefflo Yellow outline on a clean surface. Never a filled
+   blue tint, never a side bar. One rule for settings navigation, option
+   cards and master/detail rows. */
+.settings-nav button.on { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: inset 0 0 0 1.6px var(--cta); }
+.settings-nav button.on svg.i, .settings-nav button.on .tail, .settings-nav button.on .tail svg.i { color: var(--ink); }
+.settings-nav button.on:hover { background: var(--surface); }
+.opt { transition: border-color 120ms ease, box-shadow 120ms ease; }
+.opt:hover { border-color: var(--border-strong); }
+.opt.on { background: var(--surface); border-color: var(--cta); box-shadow: inset 0 0 0 .6px var(--cta); }
+.opt.on .radio { border-color: var(--cta); box-shadow: inset 0 0 0 4px var(--surface), inset 0 0 0 12px var(--cta); }
+.int-row.on { border-color: var(--cta); box-shadow: inset 0 0 0 .6px var(--cta); }
+table.t tr.sel td { background: var(--surface-2); }
+table.t tr.sel td:first-child { box-shadow: inset 2px 0 0 var(--cta); }
+
+/* ---------------- form rows that fit their card ---------------- */
+.sub-card { container-type: inline-size; }
+.form-row > * { min-width: 0; }
+.inline-field { display: flex; gap: 10px; min-width: 0; }
+.inline-field .input { flex: 1 1 auto; min-width: 0; }
+.inline-field .btn, .form-row .btn { height: var(--ctl-h); padding: 0 16px; border-radius: var(--ctl-r); flex: none; }
+@container (max-width: 560px) {
+  .form-row { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 8px 0; }
+}
+@container (max-width: 380px) {
+  .inline-field { flex-wrap: wrap; }
+  .inline-field .btn { width: 100%; }
+}

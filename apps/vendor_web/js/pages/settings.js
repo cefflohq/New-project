@@ -105,7 +105,7 @@ async function profile(page) {
         <div style="flex:1"><h3 style="font-size:24px">${esc(name || u.email)}</h3>${gatedNote(t('prof.photoGated'))}</div></div>
       <div class="sub-card"><h3>${esc(t('prof.personal'))}</h3>
         <div class="form-row"><label>${esc(t('prof.fullName'))}</label><input class="input" name="name" maxlength="80" value="${esc(name)}"></div>
-        <div class="form-row"><label>${esc(t('prof.email'))}</label><div style="display:flex;gap:10px"><input class="input" name="email" type="email" value="${esc(u.email)}"><button class="btn soft" data-email>${esc(t('c.change'))}</button></div></div>
+        <div class="form-row"><label>${esc(t('prof.email'))}</label><div class="inline-field"><input class="input" name="email" type="email" value="${esc(u.email)}"><button class="btn soft" data-email>${esc(t('c.change'))}</button></div></div>
         <div class="form-row"><label>${esc(t('prof.phone'))}</label><input class="input" name="phone" inputmode="tel" value="${esc(p.phone || '')}"></div>
         <div class="err" data-err hidden></div>
         <div style="display:flex;justify-content:flex-end"><button class="btn primary" data-save>${esc(t('c.save'))}</button></div></div>
