@@ -404,4 +404,47 @@ void main() {
       expect(tester.getSize(find.byType(DecoratedBox).first).width, 390);
     });
   });
+
+  // Viewport polish (Founder, 2026-09-29): all three providers and the
+  // invite prompt fit the first screen on short, standard and tall phones,
+  // including in-browser heights where the toolbars take part of the screen.
+  group('02 Sign In fits the first viewport', () {
+    for (final size in const [
+      Size(360, 560),
+      Size(390, 664),
+      Size(393, 852),
+      Size(430, 932),
+    ]) {
+      testWidgets('at ${size.width.toInt()}x${size.height.toInt()}', (
+        tester,
+      ) async {
+        final view = tester.view;
+        view.physicalSize = size * 3;
+        view.devicePixelRatio = 3.0;
+        await tester.pumpWidget(
+          host(SignInScreen(onEmail: () {}, onSignUp: () {})),
+        );
+        await tester.pump();
+
+        for (final label in const [
+          'Continue with Apple',
+          'Continue with Google',
+          'Continue with Email',
+          'Get started',
+        ]) {
+          final rect = tester.getRect(find.text(label));
+          expect(rect.bottom, lessThanOrEqualTo(size.height), reason: label);
+        }
+        // Grouped: the gap between consecutive providers stays small.
+        final apple = tester.getRect(find.text('Continue with Apple'));
+        final email = tester.getRect(find.text('Continue with Email'));
+        expect(email.top - apple.top, lessThan(160));
+        // Balanced: the invite prompt is lifted off the bottom edge.
+        expect(
+          size.height - tester.getRect(find.text('Get started')).bottom,
+          greaterThanOrEqualTo(Gap.md),
+        );
+      });
+    }
+  });
 }

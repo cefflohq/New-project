@@ -812,149 +812,177 @@ class _SignInScreenState extends State<SignInScreen> {
         body: _AuthBackdrop(
           child: SafeArea(
             child: LayoutBuilder(
-              builder: (context, constraints) => SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  // IntrinsicHeight gives the Column a bounded height inside
-                  // the scroll view, so the Spacers can pin the provider
-                  // stack toward the bottom edge as the locked board shows.
-                  child: IntrinsicHeight(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: Gap.gutter,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const SizedBox(height: Gap.md),
-                          Align(
-                            alignment: operator
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft,
-                            child: _LanguagePill(onTap: _openLanguageSheet),
-                          ),
-                          const Spacer(flex: 5),
-                          const Center(child: _BrandLockup(height: 128)),
-                          Text(
-                            'VENDOR',
-                            textAlign: TextAlign.center,
-                            style: text.titleSmall?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 6,
+              builder: (context, constraints) {
+                // Viewport-aware vertical rhythm: the layout reads the height
+                // actually available (Flutter Web tracks the visible, dynamic
+                // viewport, so browser chrome is already excluded; SafeArea
+                // clears the notch and the home indicator). k runs 0 on a
+                // short phone to 1 on a tall one; gaps shrink first, then the
+                // hero, while the provider buttons keep their full touch size.
+                final k =
+                    ((constraints.maxHeight - _compactHeight) /
+                            (_roomyHeight - _compactHeight))
+                        .clamp(0.0, 1.0);
+                double fit(double short, double tall) =>
+                    short + (tall - short) * k;
+                final buttonGap = fit(Gap.sm + 2, Gap.md);
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    // IntrinsicHeight bounds the Column inside the scroll
+                    // view so the flexible spacers can share the free height;
+                    // the scroll view only engages when even the compact
+                    // composition cannot fit (landscape, very large text).
+                    child: IntrinsicHeight(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: Gap.gutter,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            SizedBox(height: fit(Gap.xs, Gap.md)),
+                            Align(
+                              alignment: operator
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
+                              child: _LanguagePill(onTap: _openLanguageSheet),
                             ),
-                          ),
-                          if (operator) ...[
-                            const SizedBox(height: Gap.xl),
+                            const Spacer(flex: 3),
                             Center(
-                              child: _AccessChip(
-                                icon: helper
-                                    ? LucideIcons.package
-                                    : LucideIcons.users,
-                                label: helper ? L.helperAccess : null,
+                              child: _BrandLockup(
+                                height: fit(operator ? 76 : 92, 128),
                               ),
                             ),
-                            const SizedBox(height: Gap.lg),
                             Text(
-                              L.welcomeBack,
+                              'VENDOR',
                               textAlign: TextAlign.center,
-                              style: text.headlineMedium?.copyWith(
+                              style: text.titleSmall?.copyWith(
                                 color: Colors.white,
-                                fontSize: 32,
-                                height: 1.15,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -.5,
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 6,
                               ),
                             ),
-                            const SizedBox(height: Gap.xs),
-                            Text(
-                              helper
-                                  ? L.signInPreparationTasks
-                                  : L.signInStoreOperations,
-                              textAlign: TextAlign.center,
-                              style: text.bodyLarge?.copyWith(
-                                color: Colors.white.withValues(alpha: .9),
-                                fontSize: 17,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                          const Spacer(flex: 4),
-                          _ProviderButton(
-                            label: L.continueApple,
-                            foreground: ink,
-                            leading: Icon(
-                              Icons.apple,
-                              color: ink,
-                              size: Sizes.icon,
-                            ),
-                            onTap: _busy
-                                ? null
-                                : () => _provider(OAuthProvider.apple),
-                          ),
-                          const SizedBox(height: Gap.md),
-                          _ProviderButton(
-                            label: L.continueGoogle,
-                            foreground: ink,
-                            leading: const _GoogleGlyph(),
-                            onTap: _busy
-                                ? null
-                                : () => _provider(OAuthProvider.google),
-                          ),
-                          const SizedBox(height: Gap.md),
-                          _ProviderButton(
-                            label: L.continueEmail,
-                            foreground: CefColors.navy,
-                            leading: const Icon(
-                              LucideIcons.mail,
-                              size: Sizes.icon,
-                              color: CefColors.navy,
-                            ),
-                            onTap: widget.onEmail,
-                          ),
-                          if (_providerError != null) ...[
-                            const SizedBox(height: Gap.md),
-                            Text(
-                              _providerError!,
-                              textAlign: TextAlign.center,
-                              style: text.bodySmall?.copyWith(
-                                color: _onBackdropError,
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: Gap.xxl),
-                          Wrap(
-                            alignment: WrapAlignment.center,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              Text(
-                                L.haveInvite,
-                                style: text.bodyMedium?.copyWith(
-                                  color: Colors.white.withValues(alpha: .85),
+                            if (operator) ...[
+                              SizedBox(height: fit(Gap.md, Gap.xl)),
+                              Center(
+                                child: _AccessChip(
+                                  icon: helper
+                                      ? LucideIcons.package
+                                      : LucideIcons.users,
+                                  label: helper ? L.helperAccess : null,
                                 ),
                               ),
-                              GestureDetector(
-                                onTap: widget.onSignUp,
-                                child: Text(
-                                  L.getStarted,
-                                  style: text.labelLarge?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    decoration: TextDecoration.underline,
-                                    decorationColor: Colors.white,
-                                  ),
+                              SizedBox(height: fit(Gap.sm, Gap.lg)),
+                              Text(
+                                L.welcomeBack,
+                                textAlign: TextAlign.center,
+                                style: text.headlineMedium?.copyWith(
+                                  color: Colors.white,
+                                  fontSize: fit(28, 32),
+                                  height: 1.15,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -.5,
+                                ),
+                              ),
+                              const SizedBox(height: Gap.xs),
+                              Text(
+                                helper
+                                    ? L.signInPreparationTasks
+                                    : L.signInStoreOperations,
+                                textAlign: TextAlign.center,
+                                style: text.bodyLarge?.copyWith(
+                                  color: Colors.white.withValues(alpha: .9),
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w400,
                                 ),
                               ),
                             ],
-                          ),
-                          const SizedBox(height: Gap.xxxl),
-                        ],
+                            SizedBox(height: fit(Gap.lg, Gap.xxl)),
+                            const Spacer(flex: 3),
+                            _ProviderButton(
+                              label: L.continueApple,
+                              foreground: ink,
+                              leading: Icon(
+                                Icons.apple,
+                                color: ink,
+                                size: Sizes.icon,
+                              ),
+                              onTap: _busy
+                                  ? null
+                                  : () => _provider(OAuthProvider.apple),
+                            ),
+                            SizedBox(height: buttonGap),
+                            _ProviderButton(
+                              label: L.continueGoogle,
+                              foreground: ink,
+                              leading: const _GoogleGlyph(),
+                              onTap: _busy
+                                  ? null
+                                  : () => _provider(OAuthProvider.google),
+                            ),
+                            SizedBox(height: buttonGap),
+                            _ProviderButton(
+                              label: L.continueEmail,
+                              foreground: CefColors.navy,
+                              leading: const Icon(
+                                LucideIcons.mail,
+                                size: Sizes.icon,
+                                color: CefColors.navy,
+                              ),
+                              onTap: widget.onEmail,
+                            ),
+                            if (_providerError != null) ...[
+                              SizedBox(height: buttonGap),
+                              Text(
+                                _providerError!,
+                                textAlign: TextAlign.center,
+                                style: text.bodySmall?.copyWith(
+                                  color: _onBackdropError,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                            SizedBox(height: fit(Gap.lg, Gap.xxl)),
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                Text(
+                                  L.haveInvite,
+                                  style: text.bodyMedium?.copyWith(
+                                    color: Colors.white.withValues(alpha: .85),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: widget.onSignUp,
+                                  child: Text(
+                                    L.getStarted,
+                                    style: text.labelLarge?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            // Safe bottom space: a small fixed floor plus a
+                            // share of the free height, so on tall screens
+                            // the group lifts off the edge instead of
+                            // hugging it, without becoming bottom-heavy.
+                            SizedBox(height: fit(Gap.md, Gap.xl)),
+                            const Spacer(flex: 2),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ),
         ),
@@ -962,6 +990,11 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 }
+
+/// Heights (logical px, inside the safe area) between which the sign-in
+/// composition interpolates from its compact to its roomy rhythm.
+const _compactHeight = 560.0;
+const _roomyHeight = 780.0;
 
 /// "Operator Access" context chip on the Operator Sign-In (D-74).
 class _AccessChip extends StatelessWidget {
