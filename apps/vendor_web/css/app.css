@@ -404,3 +404,25 @@ table.t .sub { display: block; color: var(--muted); font-size: 12.5px; margin-to
 .demo-entry small { color: var(--muted); font-size: 12.5px; }
 .demo-bar { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin-bottom: 14px; padding: 10px 14px; border-radius: 12px; background: var(--warning-tint); color: var(--ink); font-size: 13.5px; }
 .demo-bar b { color: var(--warning); }
+
+/* ---------------- rider detail popup (Founder reference: Riders) ---------------- */
+.modal.rider-modal { width: min(620px, 100%); }
+.rider-modal .modal-h { align-items: center; padding-bottom: 14px; }
+.rd-head { flex: 1; min-width: 0; display: flex; align-items: center; gap: 16px; }
+.rd-id { flex: 1; min-width: 0; }
+.rd-name { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.rd-name h2 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -.4px; overflow-wrap: anywhere; }
+.rd-id .hint { font-size: 14px; margin-top: 3px; }
+.rider-modal .modal-b { gap: 16px; padding-top: 0; }
+.rd-tabs { padding: 0; margin: 0 -2px; }
+.rd-body { display: grid; gap: 14px; min-height: 280px; align-content: start; }
+.rider-modal .modal-f { align-items: center; }
+.rider-modal .modal-f .btn { min-width: 130px; }
+.rd-deactivate { margin-right: auto; color: var(--danger); }
+@media (max-width: 767px) {
+  .rd-head .round-btn { display: none; }
+  .rd-head .avatar.lg { width: 56px; height: 56px; font-size: 18px; }
+  .rider-modal .modal-f { flex-wrap: wrap; }
+  .rider-modal .modal-f .btn { flex: 1; min-width: 0; }
+  .rd-deactivate { flex-basis: 100%; order: 3; text-align: center; margin: 4px 0 0; }
+}

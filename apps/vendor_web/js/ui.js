@@ -113,11 +113,11 @@ export async function busy(btn, action) {
 // ---------------------------------------------------------------- modal
 // Focused popup over the current page; the page stays visible, softly
 // blurred. Returns { el, close }.
-export function modal({ title, lead = '', body = '', footer = '', center = false, onClose }) {
+export function modal({ title, lead = '', body = '', footer = '', center = false, onClose, cls = '', head = '' }) {
   const root = document.createElement('div');
   root.className = 'modal-root';
-  root.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}">
-    <div class="modal-h"><div><h2>${esc(title)}</h2>${lead ? `<p>${esc(lead)}</p>` : ''}</div>
+  root.innerHTML = `<div class="modal ${cls}" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+    <div class="modal-h">${head || `<div><h2>${esc(title)}</h2>${lead ? `<p>${esc(lead)}</p>` : ''}</div>`}
       <button class="icon-btn x" data-close aria-label="${esc(t('c.close'))}">${icon('x')}</button></div>
     <div class="modal-b">${body}</div>
     ${footer ? `<div class="modal-f ${center ? 'center' : ''}">${footer}</div>` : ''}</div>`;

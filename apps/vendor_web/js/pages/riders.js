@@ -5,13 +5,13 @@ import { t, fmtDate, fmtTime } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { fetchRiders, fetchOrders, fetchRatings, fetchLocations, orderNo } from '../data.js';
-import { esc, icon, chip, avatar, loadingRows, emptyState, errorState, toast, busy, modal, confirmDialog, copyText, phoneDigits, orderStatus } from '../ui.js';
+import { esc, icon, chip, avatar, loadingRows, emptyState, errorState, toast, busy, modal, confirmDialog, copyText, phoneDigits, orderStatus, gatedNote } from '../ui.js';
 
 export default function riders({ el, params, setHeader }) {
   setHeader(t('riders.title'));
   const selected = params[0] || null;
   let tab = 'all', query = '', all = [], orders = [], ratings = [], locs = new Map();
-  el.innerHTML = `<div class="split ${selected ? '' : 'no-detail'}">
+  el.innerHTML = `<div class="split no-detail">
     <div class="card">
       <div style="display:flex;align-items:center;gap:12px;padding-right:18px;border-bottom:1px solid var(--border)">
         <div class="tabs" data-tabs style="border-bottom:0;flex:1"></div>
@@ -20,7 +20,6 @@ export default function riders({ el, params, setHeader }) {
       </div>
       <div data-list>${loadingRows(8)}</div>
     </div>
-    ${selected ? `<div class="card panel" data-detail>${loadingRows(6)}</div>` : ''}
   </div>`;
   const $ = s => el.querySelector(s);
 
@@ -30,7 +29,7 @@ export default function riders({ el, params, setHeader }) {
       all = (r || []).filter(x => x.status !== 'inactive');
       orders = o || []; ratings = rt || []; locs = new Map((l || []).map(x => [x.rider_id, x]));
       paint();
-      if (selected) paintDetail();
+      if (selected) openDetail();
     } catch (e) { $('[data-list]').innerHTML = errorState(e, 'riders'); }
   }
   const stats = id => {
@@ -66,42 +65,59 @@ export default function riders({ el, params, setHeader }) {
       }).join('')}</tbody></table></div>` : emptyState(t('riders.none'), t('riders.noneBody'));
   }
 
-  function paintDetail() {
-    const box = $('[data-detail]');
+  // Rider detail as a popup over the list (Founder reference: Riders). The
+  // route keeps the rider id, so the popup can be linked and Back closes it.
+  function openDetail() {
     const r = all.find(x => x.id === selected);
-    if (!r) { box.innerHTML = emptyState(t('riders.none')); return; }
+    if (!r) { location.hash = '#/riders'; return; }
     const s = stats(r.id), digits = phoneDigits(r.phone);
     const loc = locs.get(r.id);
     const live = loc && Date.now() - new Date(loc.recorded_at).getTime() < 5 * 60000;
-    box.innerHTML = `
-      <div style="display:flex;gap:16px;align-items:center">${avatar(r.name, 'lg')}
-        <div style="flex:1;min-width:0"><div style="display:flex;gap:10px;align-items:center"><h2 style="margin:0;font-size:22px">${esc(r.name)}</h2>${chip(r.status === 'active' ? 'active' : 'pending')}</div>
-          <div class="hint" style="font-size:14px;margin-top:4px">${esc(r.phone)}</div><div class="hint" style="font-size:14px">${esc([r.vehicle_plate, vehicle(r)].filter(Boolean).join(' · '))}</div></div>
-        ${digits ? `<a class="round-btn" href="tel:${esc(r.phone)}" aria-label="${esc(t('c.call'))}">${icon('phone')}</a><a class="round-btn wa" href="https://wa.me/${esc(digits.replace(/^0/, '60'))}" target="_blank" rel="noopener" aria-label="WhatsApp">${icon('wa')}</a>` : ''}
-      </div>
-      <div class="tabs" style="padding:0;margin-top:14px" data-dtabs><button class="on" data-dt="ov">${esc(t('riders.overview'))}</button><button data-dt="hist">${esc(t('riders.history'))}</button></div>
-      <div data-dbody>
-        <div class="boxed stats" style="margin:16px 0"><div class="stat"><b class="c-blue">${s.total}</b><span>${esc(t('riders.totalOrders'))}</span></div>
-          <div class="stat"><b class="c-green">${s.completed}</b><span>${esc(t('riders.completed'))}</span></div>
-          <div class="stat"><b class="c-amber">${s.ongoing}</b><span>${esc(t('riders.ongoing'))}</span></div>
-          <div class="stat"><b class="c-red">${s.issues}</b><span>${esc(t('riders.issues'))}</span></div></div>
+    const wa = digits ? `https://wa.me/${esc(digits.replace(/^0/, '60'))}` : '';
+    const head = `<div class="rd-head">${avatar(r.name, 'lg')}
+        <div class="rd-id"><div class="rd-name"><h2>${esc(r.name)}</h2>${chip(r.status === 'active' ? 'active' : 'pending')}</div>
+          <div class="hint">${esc(r.phone)}</div><div class="hint">${esc([r.vehicle_plate, vehicle(r)].filter(Boolean).join(' · '))}</div></div>
+        ${digits ? `<a class="round-btn" href="tel:${esc(r.phone)}" aria-label="${esc(t('c.call'))}">${icon('phone')}</a><a class="round-btn wa" href="${wa}" target="_blank" rel="noopener" aria-label="WhatsApp">${icon('wa')}</a>` : ''}
+      </div>`;
+    const overview = `
+      <div class="boxed stats"><div class="stat"><b class="c-blue">${s.total}</b><span>${esc(t('riders.totalOrders'))}</span></div>
+        <div class="stat"><b class="c-green">${s.completed}</b><span>${esc(t('riders.completed'))}</span></div>
+        <div class="stat"><b class="c-amber">${s.ongoing}</b><span>${esc(t('riders.ongoing'))}</span></div>
+        <div class="stat"><b class="c-red">${s.issues}</b><span>${esc(t('riders.issues'))}</span></div></div>
+      <div>
         <div class="kv">${icon('user')}<div><small>${esc(t('riders.name'))}</small><b>${esc(r.name)}</b></div></div>
         <div class="kv">${icon('phone')}<div><small>${esc(t('riders.phone'))}</small><b>${esc(r.phone)}</b></div></div>
         <div class="kv">${icon('bike')}<div><small>${esc(t('riders.vehicleNumber'))}</small><b>${esc(r.vehicle_plate || t('c.none'))}</b></div></div>
         <div class="kv">${icon('bike')}<div><small>${esc(t('riders.vehicleType'))}</small><b>${esc(vehicle(r) || t('c.none'))}</b></div></div>
         <div class="kv">${icon('clock')}<div><small>${esc(t('riders.joined'))}</small><b>${esc(fmtDate(r.created_at))}</b></div></div>
+        <div class="kv">${icon('star')}<div><small>${esc(t('riders.rating'))}</small><b>${s.rating ? esc(s.rating) : '-'}</b></div></div>
         <div class="kv">${icon('route')}<div style="flex:1"><small>${esc(t('riders.availability'))}</small><b><span class="live" style="color:${live ? 'var(--success)' : 'var(--faint)'}"><i class="dot"></i>${esc(t(live ? 'st.online' : 'st.offline'))}</span></b></div></div>
-        ${r.status === 'pending'
-          ? `<div style="display:flex;gap:12px;margin-top:16px"><button class="btn" style="flex:1" data-reject>${esc(t('riders.reject'))}</button><button class="btn primary" style="flex:1" data-approve>${esc(t('riders.approve'))}</button></div>`
-          : `<div style="display:flex;gap:12px;margin-top:16px">${digits ? `<a class="btn" style="flex:1" href="tel:${esc(r.phone)}">${icon('phone')}${esc(t('c.call'))}</a><a class="btn" style="flex:1" href="https://wa.me/${esc(digits.replace(/^0/, '60'))}" target="_blank" rel="noopener">${icon('wa')}WhatsApp</a>` : ''}</div>
-             <button class="link-btn" style="margin-top:14px;color:var(--danger)" data-deactivate>${esc(t('riders.deactivate'))}</button>`}
       </div>`;
-    box.querySelector('[data-dtabs]').addEventListener('click', e => {
-      const b = e.target.closest('[data-dt]'); if (!b) return;
-      box.querySelectorAll('[data-dt]').forEach(x => x.classList.toggle('on', x === b));
-      if (b.dataset.dt === 'hist') {
-        box.querySelector('[data-dbody]').innerHTML = s.mine.length ? s.mine.slice(0, 30).map(o => `<a class="list-row" href="#/orders/${esc(o.id)}" style="color:inherit;text-decoration:none"><div class="grow"><b>${esc(orderNo(o))}</b><small>${esc(o.customer_name)} · ${esc(fmtDate(o.created_at))} ${esc(fmtTime(o.created_at))}</small></div>${chip(orderStatus(o))}</a>`).join('') : emptyState(t('riders.noHistory'));
-      } else paintDetail();
+    const history = s.mine.length ? `<div>${s.mine.slice(0, 30).map(o => `<a class="list-row" href="#/orders/${esc(o.id)}" style="color:inherit;text-decoration:none"><div class="grow"><b>${esc(orderNo(o))}</b><small>${esc(o.customer_name)} · ${esc(fmtDate(o.created_at))} ${esc(fmtTime(o.created_at))}</small></div>${chip(orderStatus(o))}</a>`).join('')}</div>` : emptyState(t('riders.noHistory'));
+    const TABS = { ov: overview, docs: gatedNote(t('riders.docsGated')), earn: gatedNote(t('riders.earningsGated')), hist: history };
+    const footer = r.status === 'pending'
+      ? `<button class="btn" data-reject>${esc(t('riders.reject'))}</button><button class="btn primary" data-approve>${esc(t('riders.approve'))}</button>`
+      : `<button class="link-btn rd-deactivate" data-deactivate>${esc(t('riders.deactivate'))}</button>${digits ? `<a class="btn" href="tel:${esc(r.phone)}">${icon('phone')}${esc(t('c.call'))}</a><a class="btn" href="${wa}" target="_blank" rel="noopener">${icon('wa')}WhatsApp</a>` : ''}`;
+    const m = modal({
+      title: r.name, head, cls: 'rider-modal', footer,
+      body: `<div class="tabs rd-tabs" role="tablist">${[['ov', 'riders.overview'], ['docs', 'riders.documents'], ['earn', 'riders.earnings'], ['hist', 'riders.history']]
+        .map(([id, key], i) => `<button class="${i ? '' : 'on'}" role="tab" data-dt="${id}">${esc(t(key))}</button>`).join('')}</div>
+        <div class="rd-body" data-dbody>${overview}</div>`,
+      onClose: () => { if (location.hash.startsWith(`#/riders/${selected}`)) location.hash = '#/riders'; },
+    });
+    m.el.addEventListener('click', async e => {
+      const tb = e.target.closest('[data-dt]');
+      if (tb) { m.el.querySelectorAll('[data-dt]').forEach(x => x.classList.toggle('on', x === tb)); m.el.querySelector('[data-dbody]').innerHTML = TABS[tb.dataset.dt]; return; }
+      const hl = e.target.closest('a.list-row');
+      if (hl) { e.preventDefault(); const to = hl.getAttribute('href'); m.close(); location.hash = to; return; }
+      const ap = e.target.closest('[data-approve]');
+      if (ap) { try { await busy(ap, () => api.rpc('approve_pending_rider', { p_rider_id: r.id })); toast(t('riders.approved')); m.close(); load(); } catch (ex) { toast(ex.message, 'error'); } return; }
+      const rj = e.target.closest('[data-reject],[data-deactivate]');
+      if (rj) {
+        const reject = rj.hasAttribute('data-reject');
+        if (!await confirmDialog({ title: reject ? t('riders.reject') : t('riders.deactivate'), body: r.name, confirmLabel: reject ? t('riders.reject') : t('riders.deactivate'), danger: true })) return;
+        try { await api.rpc('deactivate_rider', { p_rider_id: r.id }); toast(reject ? t('riders.rejected') : t('riders.deactivated')); m.close(); } catch (ex) { toast(ex.message, 'error'); }
+      }
     });
   }
 
@@ -110,14 +126,6 @@ export default function riders({ el, params, setHeader }) {
     const row = e.target.closest('tr[data-id]'); if (row) { location.hash = `#/riders/${row.dataset.id}`; return; }
     if (e.target.closest('[data-add]')) { openAddRider(load); return; }
     if (e.target.closest('[data-retry]')) { load(); return; }
-    const ap = e.target.closest('[data-approve]');
-    if (ap) { try { await busy(ap, () => api.rpc('approve_pending_rider', { p_rider_id: selected })); toast(t('riders.approved')); load(); } catch (ex) { toast(ex.message, 'error'); } return; }
-    const rj = e.target.closest('[data-reject],[data-deactivate]');
-    if (rj) {
-      const reject = rj.hasAttribute('data-reject');
-      if (!await confirmDialog({ title: reject ? t('riders.reject') : t('riders.deactivate'), body: all.find(r => r.id === selected)?.name, confirmLabel: reject ? t('riders.reject') : t('riders.deactivate'), danger: true })) return;
-      try { await api.rpc('deactivate_rider', { p_rider_id: selected }); toast(reject ? t('riders.rejected') : t('riders.deactivated')); location.hash = '#/riders'; } catch (ex) { toast(ex.message, 'error'); }
-    }
   });
   $('[data-q]').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); paint(); });
   load();
