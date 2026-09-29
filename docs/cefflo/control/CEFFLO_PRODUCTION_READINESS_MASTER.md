@@ -684,9 +684,9 @@ iOS App Store submission ◄── Batch E (Apple) + FG-10 implemented + Batch I
 
 | Batch | Status | Evidence / next step |
 |---|---|---|
-| A — Staging Auth URLs | 🔴 PENDING CONFIG | Founder applies 8.9.1 set in Supabase `cefflo-staging` → URL Configuration; remove `localhost:3000` |
-| B — Auth email templates/config | 🟡 IMPLEMENTED (repo) | `supabase/templates/{confirmation,recovery,email_change}.html` + `supabase/config.toml` local parity; Founder pastes templates/subjects into Dashboard → Auth → Emails |
-| C — Mobile link handling | 🟡 IMPLEMENTED-UNVERIFIED | `32ff558`; real-device E2E pending |
+| A — Staging Auth URLs | 🟡 PARTIAL | Founder confirmed `cefflo-vendor://auth-callback` in Redirect URLs (proven by E17). Site URL was set to `staging.cefflo.com`, which does NOT resolve (NXDOMAIN; Vercel reports it unconfigured) — Site URL must be corrected before A is VERIFIED; full list not yet reviewed against 8.9.1 |
+| B — Auth email templates/config | 🟡 PARTIAL | Templates applied in `cefflo-staging` → Authentication → Emails. **Confirm sign up VERIFIED-STAGING** (branded, sender "Cefflo", E17). Reset password delivery observed via native recovery (E18). Change email not yet exercised |
+| C — Mobile link handling | 🟡 PARTIAL — Vendor Android VERIFIED (8.12.1); Vendor iOS, Operator, Helper, Driver not verified | Vendor Android: sign-up confirmation and password-recovery links return through `cefflo-vendor://auth-callback` into the installed app (E17, E18) |
 | D — Driver Verify Email | 🟡 IMPLEMENTED-UNVERIFIED | `32ff558`; real-device E2E pending |
 | E — Google Auth | 🟡 IMPLEMENTED (code) | Vendor Mobile: Google + Email on Android and web harness, Email only on iOS, Apple removed, Google `redirectTo` = app return URL. Vendor Web: Continue with Google → `/auth/v1/authorize?provider=google`, returns to current page. FOUNDR: Continue with Google on top, Email/password below as transitional access (FG-9). Blocked on Google Cloud OAuth Web client + Supabase Google provider (redirect `https://tomvvmwktehexwhktenw.supabase.co/auth/v1/callback`) |
 | F — `support@cefflo.com` | 🔴 PENDING | Founder: mailbox provider + MX/SPF/DKIM |
@@ -695,6 +695,23 @@ iOS App Store submission ◄── Batch E (Apple) + FG-10 implemented + Batch I
 | I — Full P1 staging E2E | ⏳ WAITING | after A–H |
 
 Path to close: A + B(dashboard) + E(credentials) + F + H → I → P1 VERIFIED → FG-7 canonical merge.
+
+### 8.12.1 Founder Real-Device QA — Vendor Android native email auth (2026-09-29)
+
+Build: `app-arm64-v8a-release.apk`, source `1d78d71`, `CEFFLO_ENVIRONMENT=staging`, Supabase `tomvvmwktehexwhktenw`, package `com.cefflo.cefflo_vendor_mobile`, debug-signed sideload, SHA-256 `7b99fe245be5bc2856cbabc883c1bd67413a2f6871ca19d274b5cfc807915a99`. Physical Android device, Email only.
+
+| Step | Result | Evidence |
+|---|---|---|
+| Sign Up (new email, native app) | ✅ PASS | E17: `POST /signup` 18:56:52Z, referer `cefflo-vendor://auth-callback`, `user_confirmation_requested`; new `auth.users` row 18:56:50Z |
+| Confirmation email delivered | ✅ PASS | Founder: "Confirm your Cefflo account", sender Cefflo, branded template |
+| Confirm email → Supabase verify | ✅ PASS | E17: `GET /verify` 303, `user_signedup`, `email_confirmed_at` 18:58:53Z |
+| Native callback → installed app opens | ✅ PASS | Founder observed app open (not browser); redirect `cefflo-vendor://auth-callback` |
+| Authenticated session | ✅ PASS | E17: PKCE `/token` 200 at 18:58:53Z, `last_sign_in_at` 18:58:53Z. The PKCE verifier exists only in the app that started sign-up, so the exchange was made by the app. (The log `referer` on `/token` shows the Vendor Web URL; this is the GoTrue-recorded redirect context, not the caller.) |
+| Business Setup reached | ✅ PASS | Founder observed |
+| Password recovery via native link (existing user) | ✅ PASS | E18: `/recover` 18:50:09Z and `/verify` 18:50:26Z with referer `cefflo-vendor://auth-callback`, PKCE `/token` 200 18:50:27Z, password sign-in 200 18:50:51Z |
+
+**Scope of this PASS:** Vendor Mobile **Android**, Email Sign Up confirmation and password recovery only. NOT covered: Google OAuth (Batch E), Vendor iOS, Operator/Helper invitation flows, Driver, FOUNDR, change-email, support mailbox, overall P1.
+
 
 ---
 
@@ -1041,6 +1058,8 @@ A UI screenshot alone does not prove backend persistence or authorization.
 | E15 | Apple revoke endpoint `POST https://appleid.apple.com/auth/revoke` (client_id, client_secret JWT, token, token_type_hint) and TN3194 manual revocation path | developer.apple.com Sign in with Apple REST API + TN3194 (fetched 2026-09-29) |
 | E16 | P1 Batch C+D implemented in `32ff558`; tests Vendor 161/161, Driver 59/59 — IMPLEMENTED-UNVERIFIED (real-device E2E pending) | commit + local test runs |
 | E7 | Automated tests: Vendor Mobile 159/159, Driver 55/55, FOUNDR recovery 10/10, repo 64/64 (support QA; not staging E2E) | local runs on `d04ad34` |
+| E17 | Vendor Android native sign-up confirmation, staging auth logs + `auth.users` (user `a7bc4909…`), 2026-09-29 18:56–18:58Z | 8.12.1 |
+| E18 | Vendor Android native password recovery, staging auth logs (request `01a0ee81-0035…`), 2026-09-29 18:50Z | 8.12.1 |
 
 ---
 
