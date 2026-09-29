@@ -62,7 +62,10 @@ const ui = {
   view: 'tracking', // 'tracking' | 'pod'
   podImageUrl: null,
   ratingPreview: 0,
-  popupTimer: null,
+  ratingValue: 0,
+  ratingByPointer: false,
+  sheetState: 'idle', // 'idle' | 'submitting' | 'success' | 'error'
+  detailsOpen: false,
   lastFocused: null
 };
 
@@ -78,67 +81,104 @@ function normaliseStatusParam(value) {
 
 /* --------------------------------------------------------------- components */
 
-// Founder direction (2026-09-29): the approved illustrated layout (big status
-// title, rider-on-scooter scene, three-step progress, rider + details cards)
-// in the Cefflo palette — blue gradient with Cefflo Yellow accents.
+// Founder-approved Customer Tracking polish (2026-09-29): white page, near-
+// black headings, blue for identity/navigation, yellow for the live signal
+// and rating, green for completion, red for errors, grey footer.
 
 const DASH = '—';
 const known = (value) => (value !== undefined && value !== null && value !== '' && value !== DASH ? value : null);
 
-const ILLUSTRATION = {
-  [CUSTOMER_STATUS.PICKED_UP]: { src: './assets/order-arriving.webp', alt: 'Your order has been collected' },
-  [CUSTOMER_STATUS.ON_THE_WAY]: { src: './assets/rider-on-the-way.webp', alt: 'Your rider on the way' }
-};
+const PARCEL_ART = `<svg viewBox="0 0 240 150" aria-hidden="true" focusable="false">
+  <defs><linearGradient id="bxTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3D9AE"/><stop offset="1" stop-color="#E4BF86"/></linearGradient>
+  <linearGradient id="bxL" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#E2B878"/><stop offset="1" stop-color="#D5A65F"/></linearGradient></defs>
+  <g fill="#EAF1FF"><ellipse cx="46" cy="72" rx="20" ry="13"/><ellipse cx="62" cy="66" rx="16" ry="14"/><ellipse cx="190" cy="60" rx="18" ry="14"/><ellipse cx="206" cy="66" rx="16" ry="11"/></g>
+  <ellipse cx="120" cy="134" rx="70" ry="6" fill="#E3EBF8"/>
+  <path d="M84 52 120 40l36 12-36 12z" fill="url(#bxTop)"/>
+  <path d="M84 52v58l36 22V64z" fill="url(#bxL)"/>
+  <path d="M156 52v58l-36 22V64z" fill="#C99555"/>
+  <path d="M104 45.5 140 57.5v14l-8-3v-12L96 44.5z" fill="#fff" opacity=".75"/>
+  <circle cx="160" cy="112" r="20" fill="#22A559"/><circle cx="160" cy="112" r="20" fill="none" stroke="#fff" stroke-width="3"/>
+  <path d="m151 112 6 6 12-12" fill="none" stroke="#fff" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
 
-function topBar(vm) {
-  const refresh = hasBackendToken
-    ? `<button class="refresh-btn" type="button" data-action="refresh" aria-label="Refresh tracking status">${icon('refresh', { size: 16 })}</button>`
-    : '';
-  return `
-    <div class="topbar">
-      <span class="topbar__store">${icon('store', { size: 16 })}<span>${esc(vm.vendor?.name)}</span></span>
-      ${refresh}
-    </div>`;
+const ERROR_ART = `<svg viewBox="0 0 240 150" aria-hidden="true" focusable="false">
+  <g fill="#EEF3FB"><ellipse cx="44" cy="80" rx="20" ry="13"/><ellipse cx="60" cy="74" rx="15" ry="13"/><ellipse cx="196" cy="68" rx="17" ry="13"/><ellipse cx="210" cy="74" rx="14" ry="10"/></g>
+  <path d="M86 24h52l22 22v82a6 6 0 0 1-6 6H86a6 6 0 0 1-6-6V30a6 6 0 0 1 6-6z" fill="#EDF2FB"/>
+  <path d="M138 24v16a6 6 0 0 0 6 6h16z" fill="#DCE5F4"/>
+  <circle cx="98" cy="46" r="6" fill="#D6E1F4"/>
+  <g stroke="#D3DEF1" stroke-width="7" stroke-linecap="round"><path d="M96 70h44M96 86h40M96 102h30"/></g>
+  <circle cx="160" cy="104" r="24" fill="#EF4056"/>
+  <path d="M160 92v14" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="160" cy="116" r="3.2" fill="#fff"/>
+</svg>`;
+
+function vendorName(vm) {
+  const name = known(vm.vendor?.name);
+  // The token-mode placeholder ("Delivery tracking") is not a vendor identity.
+  if (!name || name === 'Delivery tracking') return '<div class="vendor-name vendor-name--empty" aria-hidden="true"></div>';
+  return `<p class="vendor-name">${esc(name)}</p>`;
 }
 
-function hero(vm) {
-  const eta = vm.eta
-    ? `<div class="hero__eta"><small>${esc(vm.eta.label || 'Estimated arrival')}</small><strong>${esc(vm.eta.valueLabel)}</strong></div>`
-    : '';
-  const deliveredAt = vm.status === CUSTOMER_STATUS.DELIVERED && known(vm.delivery?.atLabel)
-    ? `<div class="hero__eta"><small>Delivered at</small><strong>${esc(vm.delivery.atLabel)}</strong></div>`
-    : '';
+function statusHead(vm) {
   return `
     <section class="hero">
       <h1 class="hero__title" id="heroStatus">${esc(vm.statusTitle)}</h1>
       <p class="hero__body">${esc(vm.statusBody)}</p>
-      ${eta}${deliveredAt}
     </section>`;
 }
 
-function illustration(vm) {
-  const art = ILLUSTRATION[vm.status];
-  if (!art) return '';
-  return `<div class="scene scene--${vm.status}"><img src="${art.src}" alt="${esc(art.alt)}" width="820" height="479"></div>`;
+function etaCard(vm) {
+  if (!vm.eta) return '';
+  return `
+    <div class="fact fact--blue">
+      <small>${icon('clock', { size: 16 })}Estimated arrival</small>
+      <strong>${esc(vm.eta.valueLabel)}</strong>
+    </div>`;
+}
+
+function deliveredCard(vm) {
+  const at = known(vm.delivery?.atLabel);
+  if (!at) return '';
+  return `
+    <div class="fact fact--green">
+      <small><span class="fact__tick">${icon('check', { size: 11 })}</span>Delivered at</small>
+      <strong>${esc(at)}</strong>
+    </div>`;
 }
 
 /**
- * Exactly three milestones. Done steps are Cefflo blue with a tick; the
- * current step carries the yellow ring. State is also exposed as text so
- * nothing depends on colour alone.
+ * On the Way visual. The prototype (no token) shows the illustrative route
+ * and says so; a real order shows the rider scene plus, when the backend has
+ * one, the latest authorised rider point as a map link. No map is faked.
  */
-function deliveryProgress(vm) {
-  const current = vm.status === CUSTOMER_STATUS.DELIVERED ? -1 : vm.milestones.filter((m) => m.reached).length - 1;
-  const steps = vm.milestones.map((milestone, index) => {
-    const state = index === current ? 'is-current' : milestone.reached ? 'is-done' : '';
+function trackingVisual(vm) {
+  if (vm.route) {
     return `
-      <li class="steps__item ${state}">
-        <span class="steps__dot">${milestone.reached && index !== current ? icon('check', { size: 15 }) : index + 1}</span>
-        <span class="steps__label" aria-hidden="true">${esc(milestone.label)}</span>
-        <span class="sr-only">${esc(milestone.label)}: ${milestone.reached ? (index === current ? 'current step' : 'completed') : 'not reached yet'}</span>
-      </li>`;
-  }).join('');
+      <section class="map" aria-label="Delivery route illustration">
+        ${routeMapSvg()}
+        ${vm.route.live ? '' : '<span class="map__tag">Illustrative route</span>'}
+      </section>`;
+  }
+  return `<div class="scene scene--on_the_way"><img src="./assets/rider-on-the-way.webp" alt="Your rider on the way" width="820" height="479"></div>`;
+}
+
+function visual(vm) {
+  if (vm.status === CUSTOMER_STATUS.PICKED_UP) {
+    return '<div class="scene"><img src="./assets/order-arriving.webp" alt="Your order has been picked up" width="820" height="479"></div>';
+  }
+  if (vm.status === CUSTOMER_STATUS.ON_THE_WAY) return trackingVisual(vm);
+  return `<div class="scene scene--art">${PARCEL_ART}</div>`;
+}
+
+/** One progress component for every state; only the reached flags change. */
+function deliveryProgress(vm) {
+  const labels = ['Picked Up', 'On the Way', 'Delivered'];
   const reached = vm.milestones.filter((m) => m.reached).length;
+  const steps = vm.milestones.map((milestone, index) => `
+      <li class="steps__item${milestone.reached ? ' is-reached' : ''}">
+        <span class="steps__dot">${milestone.reached ? icon('check', { size: 14 }) : index + 1}</span>
+        <span class="steps__label" aria-hidden="true">${esc(labels[index] || milestone.label)}</span>
+        <span class="sr-only">${esc(labels[index] || milestone.label)}: ${milestone.reached ? 'completed' : 'not reached yet'}</span>
+      </li>`).join('');
   return `<ol class="steps" style="--fill:${Math.max(0, reached - 1) / (vm.milestones.length - 1)}" aria-label="Delivery progress">${steps}</ol>`;
 }
 
@@ -146,23 +186,20 @@ function riderCard(vm) {
   const rider = vm.rider || vm.liveRider;
   if (!rider) return '';
   const initial = esc((rider.name || 'R').trim().charAt(0).toUpperCase() || 'R');
-  const meta = [known(rider.vehicle), known(rider.plate)].filter(Boolean).join(' · ') || 'Delivery rider';
+  const meta = [known(rider.vehicle), known(rider.plate)].filter(Boolean).join(' · ');
   return `
-    <section class="rider-card">
-      <p class="eyebrow">Your rider</p>
-      <div class="rider-card__row">
-        ${rider.photo
-          ? `<img class="rider-card__avatar" src="${esc(rider.photo)}" alt="${esc(rider.photoAlt || '')}" loading="lazy">`
-          : `<span class="rider-card__avatar rider-card__avatar--initial" aria-hidden="true">${initial}</span>`}
-        <div class="rider-card__text">
-          <strong>${esc(rider.name)}</strong>
-          <small>${esc(meta)}</small>
-          ${riderLive(rider)}
-        </div>
-        <div class="contact-actions">
-          ${contactAction('call', 'phone', 'Call', rider)}
-          ${contactAction('chat', 'chat', 'Chat', rider)}
-        </div>
+    <section class="rider-card" aria-label="Your rider">
+      ${rider.photo
+        ? `<img class="rider-card__avatar" src="${esc(rider.photo)}" alt="${esc(rider.photoAlt || '')}" loading="lazy">`
+        : `<span class="rider-card__avatar rider-card__avatar--initial" aria-hidden="true">${initial}</span>`}
+      <div class="rider-card__text">
+        <strong>${esc(rider.name)}</strong>
+        ${meta ? `<small>${esc(meta)}</small>` : ''}
+        ${riderLive(rider)}
+      </div>
+      <div class="contact-actions">
+        ${contactAction('call', 'phone', 'Call', rider)}
+        ${contactAction('chat', 'chat', 'Message', rider)}
       </div>
     </section>`;
 }
@@ -183,87 +220,53 @@ function riderLive(rider) {
 }
 
 function contactAction(kind, glyph, label, rider) {
-  const available = Boolean(rider?.contact?.[kind]?.available);
-  if (!available) return '';
-  return `
-    <button class="contact-btn" type="button" data-action="contact-${kind}"
-      aria-label="${esc(label)} ${esc(rider.name)}, your rider">${icon(glyph, { size: 19 })}</button>`;
+  if (!rider?.contact?.[kind]?.available) return '';
+  return `<button class="contact-btn" type="button" data-action="contact-${kind}"
+    aria-label="${esc(label)} ${esc(rider.name)}, your rider">${icon(glyph, { size: 19 })}</button>`;
 }
 
 function detailRow(label, value) {
   return known(value) ? `<div class="details__row"><small>${esc(label)}</small><strong>${esc(value)}</strong></div>` : '';
 }
 
+/** Collapsed by default; expands in place (no navigation). Customer-relevant fields only. */
 function detailsCard(vm) {
   const ref = String(vm.reference ?? '').replace(/^#/, '');
-  const rows = [detailRow('From', vm.vendor?.name), detailRow('Pickup address', vm.vendor?.address)];
+  const rows = [];
+  if (known(ref)) {
+    rows.push(`<div class="details__row"><small>Order</small><strong class="details__ref">#<span id="trackingReference">${esc(ref)}</span>
+      <button class="ghost-btn" type="button" data-action="copy-reference" aria-label="Copy tracking reference">${icon('copy', { size: 15 })}</button></strong></div>`);
+  }
+  rows.push(detailRow('From', vm.vendor?.name), detailRow('Pickup address', vm.vendor?.address));
   if (vm.status === CUSTOMER_STATUS.PICKED_UP) {
     rows.push(detailRow('Picked up at', vm.pickup?.atLabel), detailRow('Items', vm.order?.itemsLabel), detailRow('Note', vm.order?.note));
   }
   if (vm.status === CUSTOMER_STATUS.DELIVERED) {
     rows.push(detailRow('Delivered to', vm.delivery?.address), detailRow('Received by', vm.delivery?.receivedBy));
+    if (vm.pod) {
+      rows.push(`<button class="pod-row" type="button" data-action="open-pod">
+        <span class="pod-row__thumb">${ui.podImageUrl ? `<img src="${esc(ui.podImageUrl)}" alt="">` : icon('expand', { size: 15 })}</span>
+        <span class="pod-row__text"><strong>Proof of Delivery</strong><small>View the delivery photo</small></span>${icon('chevronRight', { size: 18 })}</button>`);
+    }
   }
+  const open = ui.detailsOpen;
   return `
-    <section class="details">
-      <div class="details__head">
-        <h2>Delivery Details</h2>
-        ${known(ref) ? `<span class="details__ref">Order #<span id="trackingReference">${esc(ref)}</span>
-          <button class="ghost-btn" type="button" data-action="copy-reference" aria-label="Copy tracking reference">${icon('copy', { size: 15 })}</button></span>` : ''}
-      </div>
-      ${rows.join('')}
-    </section>`;
-}
-
-function podButton(vm) {
-  if (!vm.pod) return '';
-  return `
-    <button class="pod-cta" type="button" data-action="open-pod">
-      <span class="pod-cta__thumb">${ui.podImageUrl ? `<img src="${esc(ui.podImageUrl)}" alt="">` : icon('expand', { size: 16 })}</span>
-      <span class="pod-cta__text"><strong>Proof of Delivery</strong><small>View the delivery photo</small></span>
-      ${icon('chevronRight', { size: 18 })}
-    </button>`;
-}
-
-/**
- * Five stars are shown immediately — no gate button, no feedback form, no
- * second submit control. Choosing a star IS the submission.
- */
-function ratingBlock(vm, ratingState) {
-  if (!vm.ratingEligible) return '';
-  if (ratingState.submitted) {
-    return `
-      <section class="rating is-rated" aria-labelledby="ratingTitle">
-        <span class="rating__done" aria-hidden="true">${icon('check', { size: 20 })}</span>
-        <div>
-          <h2 class="rating__title" id="ratingTitle">Thank you</h2>
-          <div class="stars stars--readonly" role="img" aria-label="You rated this delivery ${ratingState.value} out of 5 stars">
-            ${[1, 2, 3, 4, 5].map((value) => `<span class="star${value <= ratingState.value ? ' is-selected' : ''}">${icon(value <= ratingState.value ? 'starFilled' : 'starOutline', { size: 18 })}</span>`).join('')}
-          </div>
-        </div>
-      </section>`;
-  }
-  return `
-    <section class="rating" aria-labelledby="ratingTitle">
-      <h2 class="rating__title" id="ratingTitle">Rate your delivery</h2>
-      <p class="rating__hint">How was your experience?</p>
-      <div class="stars" id="starGroup" role="group" aria-labelledby="ratingTitle">
-        ${[1, 2, 3, 4, 5].map((value) => `
-          <button class="star" type="button" data-value="${value}" tabindex="${value === 1 ? '0' : '-1'}"
-            aria-label="Rate ${value} out of 5 stars">
-            <span class="star__outline">${icon('starOutline', { size: 34 })}</span>
-            <span class="star__filled">${icon('starFilled', { size: 34 })}</span>
-          </button>`).join('')}
-      </div>
+    <section class="details${open ? ' is-open' : ''}">
+      <button class="details__toggle" type="button" data-action="toggle-details" aria-expanded="${open}" aria-controls="detailsBody">
+        ${icon('note', { size: 20 })}<span>Delivery details</span><span class="details__chev">${icon('chevronRight', { size: 18 })}</span>
+      </button>
+      <div class="details__body" id="detailsBody"${open ? '' : ' inert'}><div class="details__inner">${rows.join('')}</div></div>
     </section>`;
 }
 
 function unavailableScreen(vm) {
   return `
     <section class="unavailable${vm.quiet ? ' unavailable--quiet' : ''}">
-      ${vm.quiet ? `<span class="unavailable__glyph unavailable__glyph--quiet" aria-hidden="true">${icon('clock', { size: 26 })}</span>` : '<span class="unavailable__glyph" aria-hidden="true">!</span>'}
       <h1 class="hero__title" id="heroStatus">${esc(vm.statusTitle)}</h1>
       <p class="hero__body">${esc(vm.statusBody)}</p>
-    </section>`;
+      ${vm.quiet ? '' : `<div class="scene scene--art scene--error">${ERROR_ART}</div>`}
+    </section>
+    <button class="btn-yellow" type="button" data-action="retry-tracking">${icon('refresh', { size: 19 })}Try Again</button>`;
 }
 
 function loadingScreen(vm) {
@@ -279,23 +282,25 @@ function poweredByCefflo() {
   return '<footer class="powered">Powered by <strong>Cefflo</strong></footer>';
 }
 
-function trackingScreen(vm, ratingState) {
+function trackingScreen(vm) {
   if (vm.phase === TRACKING_PHASE.UNAVAILABLE) {
-    return `<div class="screen screen--centered">${unavailableScreen(vm)}${poweredByCefflo()}</div>`;
+    return `<div class="screen screen--unavailable">${vendorName(vm)}<div class="screen__main">${unavailableScreen(vm)}</div>${poweredByCefflo()}</div>`;
   }
   if (vm.phase === TRACKING_PHASE.LOADING) {
-    return `<div class="screen screen--centered">${loadingScreen(vm)}${poweredByCefflo()}</div>`;
+    return `<div class="screen">${vendorName(vm)}<div class="screen__main">${loadingScreen(vm)}</div>${poweredByCefflo()}</div>`;
   }
-  const delivered = vm.status === CUSTOMER_STATUS.DELIVERED;
+  const facts = vm.status === CUSTOMER_STATUS.ON_THE_WAY ? etaCard(vm) : vm.status === CUSTOMER_STATUS.DELIVERED ? deliveredCard(vm) : '';
   return `
-    <div class="screen screen--${vm.status}">
-      ${topBar(vm)}
-      ${hero(vm)}
-      ${illustration(vm)}
-      ${deliveryProgress(vm)}
-      ${riderCard(vm)}
-      ${detailsCard(vm)}
-      ${delivered ? podButton(vm) + ratingBlock(vm, ratingState) : ''}
+    <div class="screen screen--${vm.status}${vm.ratingEligible ? ' has-sheet' : ''}">
+      ${vendorName(vm)}
+      <div class="screen__main">
+        ${statusHead(vm)}
+        ${facts}
+        ${visual(vm)}
+        ${deliveryProgress(vm)}
+        ${vm.status === CUSTOMER_STATUS.DELIVERED ? '' : riderCard(vm)}
+        ${detailsCard(vm)}
+      </div>
       ${poweredByCefflo()}
     </div>`;
 }
@@ -340,7 +345,7 @@ function render() {
   const vm = provider.store.getState();
 
   const showPod = ui.view === 'pod' && vm.phase === TRACKING_PHASE.READY && vm.pod;
-  sheet.innerHTML = showPod ? podScreen(vm) : trackingScreen(vm, rating.getState());
+  sheet.innerHTML = showPod ? podScreen(vm) : trackingScreen(vm);
   sheet.scrollTop = 0;
 
   if (!prefersReducedMotion()) {
@@ -350,6 +355,7 @@ function render() {
       requestAnimationFrame(() => requestAnimationFrame(() => screen.classList.remove('is-entering')));
     }
   }
+  renderSheet(vm);
   if (vm.pod && !ui.podImageUrl) resolvePod(vm);
 }
 
@@ -372,14 +378,27 @@ sheet.addEventListener('click', (event) => {
   if (action === 'open-fullscreen') openFullscreen();
   if (action === 'contact-call') contact('call', trigger);
   if (action === 'contact-chat') contact('chat', trigger);
-  if (action === 'refresh') refreshNow(trigger);
+  if (action === 'toggle-details') toggleDetails(trigger);
+  if (action === 'retry-tracking') retryTracking(trigger);
 });
 
-/** Token mode only: goes through backend.js's coalescing gate, never around it. */
-function refreshNow(trigger) {
-  trigger.classList.add('is-spinning');
-  setTimeout(() => trigger.classList.remove('is-spinning'), 700);
-  window.CEFFLO_CUSTOMER?.refresh?.();
+/** Smooth in-place expand/collapse; no re-render, no navigation. */
+function toggleDetails(trigger) {
+  ui.detailsOpen = !ui.detailsOpen;
+  const card = trigger.closest('.details');
+  card.classList.toggle('is-open', ui.detailsOpen);
+  trigger.setAttribute('aria-expanded', String(ui.detailsOpen));
+  card.querySelector('.details__body').toggleAttribute('inert', !ui.detailsOpen);
+}
+
+/**
+ * Try Again reloads the link, which re-runs the one real public_tracking
+ * read; nothing about the failure is guessed.
+ */
+function retryTracking(trigger) {
+  trigger.disabled = true;
+  trigger.classList.add('is-busy');
+  setTimeout(() => location.reload(), prefersReducedMotion() ? 0 : 200);
 }
 
 function copyReference(trigger) {
@@ -550,52 +569,108 @@ function attachZoom(stage, image) {
   stage.addEventListener('pointercancel', release);
 }
 
-/* ---------------------------------------------------------------- rating */
+/* ------------------------------------------------ rating bottom sheet */
+
+// Delivered only. Choosing a star IS the submission (tap, or drag across the
+// stars and release). The same sheet then shows submitting (blue spinner) and,
+// only after the server confirmed, success (green check). A failure keeps the
+// chosen rating and offers a retry — never a fake success.
+
+function sheetBody(state) {
+  if (state === 'submitting') {
+    return `<div class="sheet-state" role="status" aria-live="polite">
+      <span class="sheet-spinner" aria-hidden="true"></span>
+      <h2 class="sheet-title">Thanks for your rating!</h2>
+      <p class="sheet-sub">Submitting your feedback…</p></div>`;
+  }
+  if (state === 'success') {
+    return `<div class="sheet-state" role="status" aria-live="polite">
+      <span class="sheet-success" aria-hidden="true">${icon('check', { size: 28 })}</span>
+      <h2 class="sheet-title">Thank you!</h2>
+      <p class="sheet-sub">Your feedback helps us improve our delivery service.</p></div>`;
+  }
+  const value = state === 'error' ? ui.ratingValue : 0;
+  return `<div class="sheet-state">
+      <h2 class="sheet-title" id="ratingTitle">Rate your delivery</h2>
+      <p class="sheet-sub">How was your experience?</p>
+      <div class="stars" id="starGroup" role="group" aria-labelledby="ratingTitle">
+        ${[1, 2, 3, 4, 5].map((n) => `
+          <button class="star${n <= value ? ' is-selected' : ''}" type="button" data-value="${n}" tabindex="${n === Math.max(1, value) ? '0' : '-1'}" aria-label="Rate ${n} out of 5 stars">
+            <span class="star__outline">${icon('starOutline', { size: 38 })}</span>
+            <span class="star__filled">${icon('starFilled', { size: 38 })}</span>
+          </button>`).join('')}
+      </div>
+      ${state === 'error' ? `<div class="sheet-error" role="alert"><span>We couldn't save your rating. Please try again.</span>
+        <button class="sheet-retry" type="button" data-action="retry-rating">Try again</button></div>` : ''}
+    </div>`;
+}
+
+function renderSheet(vm) {
+  let node = document.getElementById('ratingSheet');
+  const wanted = vm.phase === TRACKING_PHASE.READY && vm.ratingEligible && ui.view === 'tracking';
+  if (!wanted) { node?.remove(); return; }
+  const state = rating.getState().submitted ? 'success' : ui.sheetState;
+  if (!node) {
+    node = document.createElement('section');
+    node.id = 'ratingSheet';
+    node.className = 'rate-sheet';
+    node.setAttribute('aria-label', 'Rate your delivery');
+    node.innerHTML = '<span class="rate-sheet__handle" aria-hidden="true"></span><div class="rate-sheet__body"></div>';
+    overlayRoot.appendChild(node);
+    requestAnimationFrame(() => requestAnimationFrame(() => node.classList.add('is-open')));
+  }
+  if (node.dataset.state === state && state !== 'error') return;
+  node.dataset.state = state;
+  const body = node.querySelector('.rate-sheet__body');
+  body.classList.remove('is-swapping');
+  void body.offsetWidth;
+  body.innerHTML = sheetBody(state);
+  body.classList.add('is-swapping');
+}
 
 function starButtons() {
-  return [...sheet.querySelectorAll('#starGroup .star')];
+  return [...document.querySelectorAll('#starGroup .star')];
 }
 
 function paintStars(value) {
-  starButtons().forEach((button) => {
-    button.classList.toggle('is-selected', Number(button.dataset.value) <= value);
-  });
+  starButtons().forEach((button) => button.classList.toggle('is-selected', Number(button.dataset.value) <= value));
 }
 
-sheet.addEventListener('pointerdown', (event) => {
+const starAt = (event) => document.elementFromPoint(event.clientX, event.clientY)?.closest?.('#starGroup .star');
+
+overlayRoot.addEventListener('pointerdown', (event) => {
   const star = event.target.closest('#starGroup .star');
+  if (!star) return;
+  event.preventDefault();
+  ui.ratingPreview = Number(star.dataset.value);
+  paintStars(ui.ratingPreview);
+});
+
+window.addEventListener('pointermove', (event) => {
+  if (!ui.ratingPreview) return;
+  const star = starAt(event);
   if (!star) return;
   ui.ratingPreview = Number(star.dataset.value);
   paintStars(ui.ratingPreview);
 });
 
-sheet.addEventListener('pointermove', (event) => {
+window.addEventListener('pointerup', (event) => {
   if (!ui.ratingPreview) return;
-  const group = sheet.querySelector('#starGroup');
-  if (!group) return;
-  const target = document.elementFromPoint(event.clientX, event.clientY)?.closest?.('#starGroup .star');
-  if (!target) return;
-  ui.ratingPreview = Number(target.dataset.value);
-  paintStars(ui.ratingPreview);
-});
-
-sheet.addEventListener('pointerup', (event) => {
-  if (!ui.ratingPreview) return;
-  const group = sheet.querySelector('#starGroup');
-  const target = group && document.elementFromPoint(event.clientX, event.clientY)?.closest?.('#starGroup .star');
-  const value = target ? Number(target.dataset.value) : ui.ratingPreview;
+  const star = starAt(event);
+  const value = star ? Number(star.dataset.value) : ui.ratingPreview;
   ui.ratingPreview = 0;
+  ui.ratingByPointer = true;
   submitRating(value);
 });
 
-sheet.addEventListener('pointercancel', () => {
+window.addEventListener('pointercancel', () => {
   if (!ui.ratingPreview) return;
   ui.ratingPreview = 0;
-  paintStars(0);
+  paintStars(ui.sheetState === 'error' ? ui.ratingValue : 0);
 });
 
 // Keyboard: arrows move focus and preview, Enter/Space (native click) commits.
-sheet.addEventListener('keydown', (event) => {
+overlayRoot.addEventListener('keydown', (event) => {
   const star = event.target.closest?.('#starGroup .star');
   if (!star) return;
   const buttons = starButtons();
@@ -612,84 +687,31 @@ sheet.addEventListener('keydown', (event) => {
   paintStars(next + 1);
 });
 
-sheet.addEventListener('click', (event) => {
+overlayRoot.addEventListener('click', (event) => {
+  if (event.target.closest('[data-action="retry-rating"]')) { submitRating(ui.ratingValue); return; }
   const star = event.target.closest('#starGroup .star');
-  if (star) submitRating(Number(star.dataset.value));
+  if (!star) return;
+  // A pointer release already submitted; the click that follows is ignored.
+  if (ui.ratingByPointer) { ui.ratingByPointer = false; return; }
+  submitRating(Number(star.dataset.value));
 });
 
 async function submitRating(value) {
   const state = rating.getState();
-  if (state.submitted || state.pending) return;
+  if (state.submitted || state.pending || !value) return;
+  ui.ratingValue = value;
   paintStars(value);
+  await new Promise((resolve) => setTimeout(resolve, prefersReducedMotion() ? 0 : 180)); // let the fill land
+  ui.sheetState = 'submitting';
+  renderSheet(provider.store.getState());
+  const shownAt = Date.now();
   const result = await rating.submit(value);
-  if (!result.ok) return;
-  render(); // C3 becomes the rated / read-only state.
-  openThankYouPopup();
-}
-
-/* ------------------------------------------------- C3-R1 Thank You popup */
-
-function openThankYouPopup() {
-  const state = rating.getState();
-  // Only a rating submitted in this session opens the popup; a reopened or
-  // refreshed already-rated C3 never replays it.
-  if (!state.justSubmitted) return;
-  ui.lastFocused = document.activeElement;
-
-  const node = document.createElement('div');
-  node.className = 'popup';
-  node.innerHTML = `
-    <div class="popup__backdrop"></div>
-    <div class="popup__card" role="alertdialog" aria-modal="true" aria-labelledby="popupTitle" aria-describedby="popupBody">
-      <button class="popup__close" type="button" aria-label="Close">${icon('close', { size: 20 })}</button>
-      <span class="popup__halo" aria-hidden="true">
-        <span class="popup__disc">${icon('check', { size: 34 })}</span>
-      </span>
-      <h2 class="popup__title" id="popupTitle">Thank you!</h2>
-      <p class="popup__body" id="popupBody">Thanks for rating your delivery.</p>
-    </div>`;
-  overlayRoot.appendChild(node);
-
-  const close = () => closeThankYouPopup(node);
-  node.querySelector('.popup__close').addEventListener('click', close);
-  node.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') close();
-    if (event.key === 'Tab') keepFocusInside(event, node);
-  });
-  node.querySelector('.popup__close').focus({ preventScroll: true });
-
-  // ~3 second dwell, then auto-dismiss back to the C3 rated state.
-  ui.popupTimer = setTimeout(close, POPUP_DWELL_MS);
-}
-
-function closeThankYouPopup(node) {
-  clearTimeout(ui.popupTimer);
-  ui.popupTimer = null;
-  rating.acknowledgePopup();
-  const remove = () => node.remove();
-  if (prefersReducedMotion()) remove();
-  else {
-    node.classList.add('is-leaving');
-    setTimeout(remove, 240);
-  }
-  // Focus returns to C3 — the popup must never trap the customer after it ends.
-  const target = sheet.querySelector('.rating') || sheet.querySelector('.screen');
-  target?.setAttribute('tabindex', '-1');
-  target?.focus({ preventScroll: true });
-}
-
-function keepFocusInside(event, node) {
-  const focusable = [...node.querySelectorAll('button')];
-  if (!focusable.length) return;
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
+  // Keep the submitting state readable instead of flashing past it.
+  const rest = 650 - (Date.now() - shownAt);
+  if (rest > 0 && !prefersReducedMotion()) await new Promise((resolve) => setTimeout(resolve, rest));
+  ui.sheetState = result.ok ? 'success' : 'error';
+  if (result.ok) rating.acknowledgePopup();
+  renderSheet(provider.store.getState());
 }
 
 /* ----------------------------------------------- developer state simulator */
