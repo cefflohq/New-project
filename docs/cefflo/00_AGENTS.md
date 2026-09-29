@@ -88,6 +88,15 @@ acceptance criteria.
     `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md`
 -   Company AI governance, cross-department routing and n8n control-plane
     contracts → `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`
+-   Production Readiness execution control (P1–P8 packages, fleet rule,
+    status vocabulary, evidence and Founder Gate registers) →
+    `docs/cefflo/control/CEFFLO_PRODUCTION_READINESS_MASTER.md`
+
+For Production Readiness work (full-stack integration, readiness packages,
+launch audit, production cutover), load the Production Readiness Master. Its
+authority is PRODUCTION READINESS EXECUTION CONTROL only: it governs how the
+readiness program is executed and evidenced, and never overrides Product Truth
+or higher canonical product/architecture SOTs.
 
 For Control Layer work, load the Control Layer Master first, then only the
 relevant department master and the Cyber Security Master. The Control Layer
