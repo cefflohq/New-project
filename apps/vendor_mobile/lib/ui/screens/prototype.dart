@@ -5,6 +5,7 @@ import 'package:qr/qr.dart';
 
 import '../../core/app_state.dart';
 import '../../core/env.dart';
+import '../../core/notification_alerts.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/models.dart';
@@ -607,8 +608,10 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
   }
 }
 
-/// V-47 — Notifications (D-54): operational alerts are always on (no
-/// switch); only the genuinely optional categories can be turned off.
+/// V-47 — Notifications. Two account-level switches stored in
+/// public.notification_preferences (the same row every Cefflo app reads):
+/// Notifications (alerts while the app is open) and Sound. The centre always
+/// keeps every notification; operational truth is never hidden.
 class _NotificationPreferencesScreen extends StatefulWidget {
   const _NotificationPreferencesScreen();
 
@@ -619,80 +622,60 @@ class _NotificationPreferencesScreen extends StatefulWidget {
 
 class _NotificationPreferencesScreenState
     extends State<_NotificationPreferencesScreen> {
-  bool _newOrders = true;
-  bool _riderStatus = true;
-  bool _productNews = false;
+  bool _saving = false;
+
+  Future<void> _save(NotificationPrefs next) async {
+    final app = AppScope.read(context);
+    setState(() => _saving = true);
+    try {
+      await app.setNotificationPrefs(next);
+    } on RepositoryError catch (e) {
+      if (mounted) showCefToast(context, e.message, error: true);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // No notification backend exists yet, so the live app has no settings
-    // to store; only the demo shows the designed preferences.
-    if (!AppScope.read(context).repo.isDemo) {
-      return _ComingSoonScreen(
-        title: '',
-        message: L.notificationSettingsNotConnectedYet,
-      );
-    }
+    final app = AppScope.of(context);
+    final prefs = app.notificationPrefs;
     final text = Theme.of(context).textTheme;
-    Widget optional(
-      String title,
-      String subtitle,
-      IconData icon,
-      bool value,
-      ValueChanged<bool> onChanged,
-    ) => CefListRow(
-      title: title,
-      subtitle: subtitle,
-      subtitleMaxLines: 2,
-      icon: icon,
-      showChevron: false,
-      trailing: CefSwitch(value: value, onChanged: onChanged),
-    );
     return PageBody(
       children: [
-        SectionHeading(L.always),
-        Text(
-          L.issuesDeliveryProgressAccountSecurityAlerts,
-          style: text.bodySmall,
-        ),
+        Text(L.ntPrefLead, style: text.bodySmall),
         const SizedBox(height: Gap.xs),
         CefListRow(
-          title: L.orderIssues,
-          icon: LucideIcons.triangleAlert,
+          title: L.ntPrefEnabled,
+          subtitle: L.ntPrefEnabledSub,
+          subtitleMaxLines: 3,
+          icon: LucideIcons.bell,
           showChevron: false,
+          trailing: CefSwitch(
+            value: prefs.enabled,
+            onChanged: _saving
+                ? null
+                : (v) =>
+                      _save(NotificationPrefs(enabled: v, sound: prefs.sound)),
+          ),
         ),
         CefListRow(
-          title: L.deliveryProgress,
-          icon: LucideIcons.truck,
+          title: L.ntPrefSound,
+          subtitle: L.ntPrefSoundSub,
+          subtitleMaxLines: 2,
+          icon: LucideIcons.volume2,
           showChevron: false,
+          trailing: CefSwitch(
+            value: prefs.sound,
+            onChanged: _saving || !prefs.enabled
+                ? null
+                : (v) => _save(
+                    NotificationPrefs(enabled: prefs.enabled, sound: v),
+                  ),
+          ),
         ),
-        CefListRow(
-          title: L.accountSecurity,
-          icon: LucideIcons.lock,
-          showChevron: false,
-        ),
-        SectionHeading(L.optional),
-        optional(
-          L.newOrders,
-          L.whenNewOrderComes,
-          LucideIcons.package,
-          _newOrders,
-          (v) => setState(() => _newOrders = v),
-        ),
-        optional(
-          L.riderStatus,
-          L.whenRidersGoOnlineOffline,
-          LucideIcons.users,
-          _riderStatus,
-          (v) => setState(() => _riderStatus = v),
-        ),
-        optional(
-          L.productNews,
-          L.tipsNewCeffloFeatures,
-          LucideIcons.megaphone,
-          _productNews,
-          (v) => setState(() => _productNews = v),
-        ),
+        const SizedBox(height: Gap.md),
+        Text(L.ntPushDeferred, style: text.bodySmall),
       ],
     );
   }
@@ -1502,11 +1485,19 @@ class _NotificationInboxScreen extends StatelessWidget {
     );
   }
 
+  static void _guard(BuildContext context, Future<void> action) {
+    action.catchError((Object _) {
+      if (context.mounted) {
+        showCefToast(context, L.ntCouldNotUpdate, error: true);
+      }
+    });
+  }
+
   static void _showRowOptions(BuildContext context, AppNotification n) {
     final app = AppScope.read(context);
     showListSheet(
       context,
-      title: n.title,
+      title: notificationCopy(n).title,
       children: [
         CefListRow(
           title: n.read ? L.markUnread : L.markRead,
@@ -1514,7 +1505,7 @@ class _NotificationInboxScreen extends StatelessWidget {
           showChevron: false,
           onTap: () {
             Navigator.of(context).pop();
-            app.setNotificationRead(n.id, read: !n.read);
+            _guard(context, app.setNotificationRead(n.id, read: !n.read));
           },
         ),
         CefListRow(
@@ -1535,6 +1526,16 @@ class _NotificationInboxScreen extends StatelessWidget {
     final app = AppScope.of(context);
     final c = context.c;
     final items = app.notifications;
+    if (items.isEmpty && app.notificationsError != null) {
+      return PageBody(
+        children: [
+          StateBlock.error(
+            app.notificationsError!,
+            onRetry: app.refreshNotifications,
+          ),
+        ],
+      );
+    }
     if (items.isEmpty) {
       return PageBody(children: [StateBlock.empty(L.youreAllCaughtUp)]);
     }
@@ -1562,20 +1563,20 @@ class _NotificationInboxScreen extends StatelessWidget {
             ),
             confirmDismiss: (direction) async {
               if (direction == DismissDirection.startToEnd) {
-                app.setNotificationRead(n.id, read: !n.read);
+                _guard(context, app.setNotificationRead(n.id, read: !n.read));
                 return false;
               }
               return true;
             },
             onDismissed: (_) => _delete(context, n),
             child: CefListRow(
-              title: n.title,
-              subtitle: '${n.body}\n${n.timeLabel}',
+              title: notificationCopy(n).title,
+              subtitle: '${notificationCopy(n).body}\n${notificationWhen(n)}',
               subtitleMaxLines: 2,
               leading: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  IconTile(_icon(n.kind)),
+                  IconTile(_icon(n.kind), color: n.urgent ? c.attention : null),
                   if (!n.read)
                     Positioned(
                       top: 0,
@@ -1599,7 +1600,7 @@ class _NotificationInboxScreen extends StatelessWidget {
                 onTap: () => _showRowOptions(context, n),
               ),
               showChevron: false,
-              onTap: () => app.setNotificationRead(n.id, read: true),
+              onTap: () => app.openNotification(n),
             ),
           ),
       ],

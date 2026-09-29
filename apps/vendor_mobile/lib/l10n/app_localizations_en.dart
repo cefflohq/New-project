@@ -2973,4 +2973,76 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get hwNotifChangesSub =>
       'When tomorrow\'s or today\'s workload is updated.';
+
+  @override
+  String ntNewCustomerOrder(Object ref) {
+    return 'New customer order $ref';
+  }
+
+  @override
+  String get ntNewCustomerOrderBody =>
+      'A customer placed an order from your order page.';
+
+  @override
+  String ntDeliveryIssue(Object ref) {
+    return 'Delivery issue on $ref';
+  }
+
+  @override
+  String get ntRunDeclined => 'A rider declined a run';
+
+  @override
+  String get ntRunDeclinedBody => 'Reassign the orders so they can go out.';
+
+  @override
+  String get ntRiderJoined => 'A rider accepted your invitation';
+
+  @override
+  String get ntRiderJoinedBody =>
+      'Review and approve them before assigning runs.';
+
+  @override
+  String get ntRunCompleted => 'Run completed';
+
+  @override
+  String get ntRunCompletedBody => 'Every stop in the run is finished.';
+
+  @override
+  String get ntJustNow => 'just now';
+
+  @override
+  String ntMinutesAgo(Object n) {
+    return '$n min ago';
+  }
+
+  @override
+  String ntHoursAgo(Object n) {
+    return '$n h ago';
+  }
+
+  @override
+  String get ntPrefLead => 'Applies to your account on every Cefflo app.';
+
+  @override
+  String get ntPrefEnabled => 'Notifications';
+
+  @override
+  String get ntPrefEnabledSub =>
+      'Show alerts while Cefflo is open. Everything is still kept in the notification centre.';
+
+  @override
+  String get ntPrefSound => 'Sound';
+
+  @override
+  String get ntPrefSoundSub => 'Play a sound with an alert.';
+
+  @override
+  String get ntPushDeferred =>
+      'Alerts when the app is closed are not available yet.';
+
+  @override
+  String get ntCouldNotUpdate => 'Could not update notifications. Try again.';
+
+  @override
+  String get ntDismiss => 'Dismiss';
 }

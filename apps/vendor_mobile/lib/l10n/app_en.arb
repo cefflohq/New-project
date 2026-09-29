@@ -1418,5 +1418,53 @@
   "hwNotifNewWork": "New preparation work",
   "hwNotifNewWorkSub": "When new orders are added to your workload.",
   "hwNotifChanges": "Workload changes",
-  "hwNotifChangesSub": "When tomorrow's or today's workload is updated."
+  "hwNotifChangesSub": "When tomorrow's or today's workload is updated.",
+  "ntNewCustomerOrder": "New customer order {ref}",
+  "@ntNewCustomerOrder": {
+    "placeholders": {
+      "ref": {
+        "type": "Object"
+      }
+    }
+  },
+  "ntNewCustomerOrderBody": "A customer placed an order from your order page.",
+  "ntDeliveryIssue": "Delivery issue on {ref}",
+  "@ntDeliveryIssue": {
+    "placeholders": {
+      "ref": {
+        "type": "Object"
+      }
+    }
+  },
+  "ntRunDeclined": "A rider declined a run",
+  "ntRunDeclinedBody": "Reassign the orders so they can go out.",
+  "ntRiderJoined": "A rider accepted your invitation",
+  "ntRiderJoinedBody": "Review and approve them before assigning runs.",
+  "ntRunCompleted": "Run completed",
+  "ntRunCompletedBody": "Every stop in the run is finished.",
+  "ntJustNow": "just now",
+  "ntMinutesAgo": "{n} min ago",
+  "@ntMinutesAgo": {
+    "placeholders": {
+      "n": {
+        "type": "Object"
+      }
+    }
+  },
+  "ntHoursAgo": "{n} h ago",
+  "@ntHoursAgo": {
+    "placeholders": {
+      "n": {
+        "type": "Object"
+      }
+    }
+  },
+  "ntPrefLead": "Applies to your account on every Cefflo app.",
+  "ntPrefEnabled": "Notifications",
+  "ntPrefEnabledSub": "Show alerts while Cefflo is open. Everything is still kept in the notification centre.",
+  "ntPrefSound": "Sound",
+  "ntPrefSoundSub": "Play a sound with an alert.",
+  "ntPushDeferred": "Alerts when the app is closed are not available yet.",
+  "ntCouldNotUpdate": "Could not update notifications. Try again.",
+  "ntDismiss": "Dismiss"
 }

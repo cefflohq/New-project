@@ -726,20 +726,71 @@ class CapacityCheck {
 /// What a notification is about; decides its icon.
 enum NotificationKind { attention, order, rider, system }
 
-/// One entry in the vendor's notification centre.
+/// One entry in the vendor's notification centre. Live rows come from
+/// public.notifications (docs/cefflo/NOTIFICATION_EVENT_MATRIX.md); the demo
+/// session keeps its designed fixtures with a fixed [timeLabel].
 class AppNotification {
   const AppNotification({
     required this.id,
     required this.kind,
     required this.title,
     required this.body,
-    required this.timeLabel,
+    this.timeLabel = '',
     this.read = false,
+    this.urgent = false,
+    this.eventKey,
+    this.params = const {},
+    this.targetScreen,
+    this.targetId,
+    this.businessId,
+    this.createdAt,
   });
   final String id;
   final NotificationKind kind;
   final String title, body, timeLabel;
   final bool read;
+
+  /// Server priority (never derived on the client).
+  final bool urgent;
+  final String? eventKey;
+  final Map<String, dynamic> params;
+
+  /// Deep-link: 'order' | 'runs' | 'riders' | 'rider' | 'none'.
+  final String? targetScreen;
+  final String? targetId;
+  final String? businessId;
+  final DateTime? createdAt;
+
+  /// Parses a public.notifications row.
+  factory AppNotification.fromRow(Map<String, dynamic> r) {
+    final target = r['target'] is Map
+        ? Map<String, dynamic>.from(r['target'] as Map)
+        : const <String, dynamic>{};
+    final key = (r['event_key'] ?? '').toString();
+    final urgent = r['priority'] == 'urgent';
+    return AppNotification(
+      id: r['id'].toString(),
+      kind: urgent
+          ? NotificationKind.attention
+          : key.startsWith('order.')
+          ? NotificationKind.order
+          : key.startsWith('rider.')
+          ? NotificationKind.rider
+          : NotificationKind.system,
+      title: (r['title'] ?? '').toString(),
+      body: (r['body'] ?? '').toString(),
+      read: r['read_at'] != null,
+      urgent: urgent,
+      eventKey: key,
+      params: r['params'] is Map
+          ? Map<String, dynamic>.from(r['params'] as Map)
+          : const {},
+      targetScreen: target['screen']?.toString(),
+      targetId: target['id']?.toString(),
+      businessId: r['business_id']?.toString(),
+      createdAt: DateTime.tryParse((r['created_at'] ?? '').toString()),
+    );
+  }
 
   AppNotification copyWith({bool? read}) => AppNotification(
     id: id,
@@ -748,7 +799,21 @@ class AppNotification {
     body: body,
     timeLabel: timeLabel,
     read: read ?? this.read,
+    urgent: urgent,
+    eventKey: eventKey,
+    params: params,
+    targetScreen: targetScreen,
+    targetId: targetId,
+    businessId: businessId,
+    createdAt: createdAt,
   );
+}
+
+/// Notification preferences (public.notification_preferences). Absent row =
+/// defaults (both on).
+class NotificationPrefs {
+  const NotificationPrefs({this.enabled = true, this.sound = true});
+  final bool enabled, sound;
 }
 
 /// Display label for a business member role. The stored value ('owner' /

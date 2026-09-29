@@ -5486,6 +5486,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'When tomorrow\'s or today\'s workload is updated.'**
   String get hwNotifChangesSub;
+
+  /// No description provided for @ntNewCustomerOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'New customer order {ref}'**
+  String ntNewCustomerOrder(Object ref);
+
+  /// No description provided for @ntNewCustomerOrderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A customer placed an order from your order page.'**
+  String get ntNewCustomerOrderBody;
+
+  /// No description provided for @ntDeliveryIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery issue on {ref}'**
+  String ntDeliveryIssue(Object ref);
+
+  /// No description provided for @ntRunDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'A rider declined a run'**
+  String get ntRunDeclined;
+
+  /// No description provided for @ntRunDeclinedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reassign the orders so they can go out.'**
+  String get ntRunDeclinedBody;
+
+  /// No description provided for @ntRiderJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'A rider accepted your invitation'**
+  String get ntRiderJoined;
+
+  /// No description provided for @ntRiderJoinedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Review and approve them before assigning runs.'**
+  String get ntRiderJoinedBody;
+
+  /// No description provided for @ntRunCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Run completed'**
+  String get ntRunCompleted;
+
+  /// No description provided for @ntRunCompletedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every stop in the run is finished.'**
+  String get ntRunCompletedBody;
+
+  /// No description provided for @ntJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get ntJustNow;
+
+  /// No description provided for @ntMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} min ago'**
+  String ntMinutesAgo(Object n);
+
+  /// No description provided for @ntHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} h ago'**
+  String ntHoursAgo(Object n);
+
+  /// No description provided for @ntPrefLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to your account on every Cefflo app.'**
+  String get ntPrefLead;
+
+  /// No description provided for @ntPrefEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get ntPrefEnabled;
+
+  /// No description provided for @ntPrefEnabledSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Show alerts while Cefflo is open. Everything is still kept in the notification centre.'**
+  String get ntPrefEnabledSub;
+
+  /// No description provided for @ntPrefSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound'**
+  String get ntPrefSound;
+
+  /// No description provided for @ntPrefSoundSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Play a sound with an alert.'**
+  String get ntPrefSoundSub;
+
+  /// No description provided for @ntPushDeferred.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts when the app is closed are not available yet.'**
+  String get ntPushDeferred;
+
+  /// No description provided for @ntCouldNotUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update notifications. Try again.'**
+  String get ntCouldNotUpdate;
+
+  /// No description provided for @ntDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get ntDismiss;
 }
 
 class _AppLocalizationsDelegate

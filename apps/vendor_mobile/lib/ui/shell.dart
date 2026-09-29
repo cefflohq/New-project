@@ -5,6 +5,7 @@ import '../core/app_state.dart';
 import '../data/models.dart';
 import '../core/routes.dart';
 import '../core/theme.dart';
+import 'notification_banner.dart';
 import 'system_bars.dart';
 import 'widgets.dart';
 
@@ -137,7 +138,9 @@ class VendorShell extends StatelessWidget {
           backgroundColor: c.card,
           body: ToastInset(
             bottom: toastInset,
-            child: BrandBackdrop(child: body),
+            child: BrandBackdrop(
+              child: Stack(children: [body, const NotificationBanner()]),
+            ),
           ),
         ),
       ),
@@ -592,7 +595,11 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
               showChevron: false,
               onTap: () {
                 Navigator.of(context).pop();
-                app.markAllNotificationsRead();
+                app.markAllNotificationsRead().catchError((Object _) {
+                  if (context.mounted) {
+                    showCefToast(context, L.ntCouldNotUpdate, error: true);
+                  }
+                });
               },
             ),
             CefListRow(
@@ -601,7 +608,11 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
               showChevron: false,
               onTap: () {
                 Navigator.of(context).pop();
-                app.clearNotifications();
+                app.clearNotifications().catchError((Object _) {
+                  if (context.mounted) {
+                    showCefToast(context, L.ntCouldNotUpdate, error: true);
+                  }
+                });
               },
             ),
           ],

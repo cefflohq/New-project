@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'auth_access.dart';
+import 'notification_alerts.dart';
 
 import 'package:flutter/material.dart';
 
@@ -129,48 +132,237 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ---- Notification centre (X-01). No notification backend exists yet, so
-  // this is session state seeded with the demo feed; every management action
-  // (read, unread, delete, clear) is real within the session.
+  // ---- Notification centre (X-01), backed by public.notifications
+  // (docs/cefflo/NOTIFICATION_EVENT_MATRIX.md). The server writes every row;
+  // this keeps the list, read state and preferences in step with it and
+  // raises the foreground alert for rows that arrive while the app is open.
+  // The demo session keeps its designed feed and never touches a backend.
   late List<AppNotification> _notifications = repo.isDemo
       ? List.of(_demoNotifications)
       : [];
+  int _unreadLive = 0;
+  NotificationPrefs notificationPrefs = const NotificationPrefs();
+  String? notificationsError;
+  VoidCallback? _cancelNotifications;
+  bool _subscribedOnce = false;
+  final Set<String> _seenNotifications = {};
+  final Map<String, Timer> _pendingDeletes = {};
+
+  /// The foreground alert currently shown over the app (banner), if any.
+  final ValueNotifier<AppNotification?> foregroundAlert = ValueNotifier(null);
+
+  /// Sound/vibration side effects of an alert (replaceable in tests).
+  NotificationAlertEffects alertEffects = const NotificationAlertEffects();
 
   List<AppNotification> get notifications => List.unmodifiable(_notifications);
-  int get unreadNotifications => _notifications.where((n) => !n.read).length;
+  int get unreadNotifications =>
+      repo.isDemo ? _notifications.where((n) => !n.read).length : _unreadLive;
 
-  void setNotificationRead(String id, {required bool read}) {
+  /// Loads the centre, preferences and starts the realtime feed (live only).
+  Future<void> startNotifications() async {
+    if (repo.isDemo) return;
+    stopNotifications();
+    WidgetsBinding.instance.addObserver(_lifecycle);
+    await refreshNotifications();
+    try {
+      notificationPrefs = await repo.notificationPrefs();
+    } on RepositoryError catch (_) {}
+    _cancelNotifications = repo.watchNotifications(
+      onChange: _onNotificationChange,
+      onStatus: (subscribed) {
+        if (!subscribed) return;
+        // Rejoined after a drop: re-read history; alerts are never replayed.
+        if (_subscribedOnce) refreshNotifications();
+        _subscribedOnce = true;
+      },
+    );
+    notifyListeners();
+  }
+
+  void stopNotifications() {
+    _cancelNotifications?.call();
+    _cancelNotifications = null;
+    _subscribedOnce = false;
+    WidgetsBinding.instance.removeObserver(_lifecycle);
+    for (final t in _pendingDeletes.values) {
+      t.cancel();
+    }
+    _pendingDeletes.clear();
+    if (!repo.isDemo) {
+      _notifications = [];
+      _unreadLive = 0;
+      _seenNotifications.clear();
+    }
+    foregroundAlert.value = null;
+  }
+
+  late final _lifecycle = _NotificationLifecycle(() {
+    if (_cancelNotifications != null) refreshNotifications();
+  });
+
+  Future<void> refreshNotifications() async {
+    if (repo.isDemo) return;
+    try {
+      final rows = await repo.notifications();
+      _unreadLive = await repo.unreadNotificationCount();
+      _notifications = rows
+          .where((n) => !_pendingDeletes.containsKey(n.id))
+          .toList();
+      _seenNotifications.addAll(rows.map((n) => n.id));
+      notificationsError = null;
+    } on RepositoryError catch (e) {
+      notificationsError = e.message;
+    }
+    notifyListeners();
+  }
+
+  void _onNotificationChange(String type, Map<String, dynamic> row) {
+    final id = row['id']?.toString();
+    if (id == null) return;
+    if (type == 'INSERT') {
+      if (row['app'] != 'vendor') return;
+      if (_notifications.any((n) => n.id == id)) return;
+      final n = AppNotification.fromRow(row);
+      _notifications = [n, ..._notifications].take(50).toList();
+      if (!n.read) _unreadLive++;
+      notifyListeners();
+      if (_seenNotifications.add(id)) _present(n);
+    } else if (type == 'UPDATE') {
+      final i = _notifications.indexWhere((n) => n.id == id);
+      if (i < 0) return;
+      final was = _notifications[i].read;
+      final now = row['read_at'] != null;
+      _notifications = List.of(_notifications)
+        ..[i] = _notifications[i].copyWith(read: now);
+      if (!was && now) _unreadLive = (_unreadLive - 1).clamp(0, 1 << 30);
+      if (was && !now) _unreadLive++;
+      notifyListeners();
+    } else if (type == 'DELETE') {
+      final gone = _notifications.where((n) => n.id == id).toList();
+      if (gone.isEmpty) return;
+      _notifications = _notifications.where((n) => n.id != id).toList();
+      if (!gone.first.read) _unreadLive = (_unreadLive - 1).clamp(0, 1 << 30);
+      notifyListeners();
+    }
+  }
+
+  /// Foreground alert: banner + sound/vibration per preferences. Rows older
+  /// than two minutes (e.g. delivered late after a reconnect) only land in
+  /// the centre.
+  void _present(AppNotification n) {
+    if (!notificationPrefs.enabled) return;
+    final at = n.createdAt;
+    if (at != null && DateTime.now().difference(at).inMinutes >= 2) return;
+    foregroundAlert.value = n;
+    alertEffects.play(
+      sound: notificationPrefs.sound && notificationPlaysSound(n.eventKey),
+      urgent: n.urgent,
+    );
+  }
+
+  void dismissForegroundAlert() => foregroundAlert.value = null;
+
+  Future<void> setNotificationRead(String id, {required bool read}) async {
+    final before = _notifications;
+    final target = before.where((n) => n.id == id).firstOrNull;
+    if (target == null || target.read == read) return;
     _notifications = [
       for (final n in _notifications) n.id == id ? n.copyWith(read: read) : n,
     ];
+    if (!repo.isDemo) _unreadLive += read ? -1 : 1;
     notifyListeners();
+    if (repo.isDemo) return;
+    try {
+      if (read) {
+        await repo.markNotificationsRead(ids: [id]);
+      } else {
+        await repo.markNotificationUnread(id);
+      }
+    } on RepositoryError {
+      await refreshNotifications();
+      rethrow;
+    }
   }
 
-  void markAllNotificationsRead() {
+  Future<void> markAllNotificationsRead() async {
     _notifications = [for (final n in _notifications) n.copyWith(read: true)];
+    if (!repo.isDemo) _unreadLive = 0;
     notifyListeners();
+    if (repo.isDemo) return;
+    try {
+      await repo.markNotificationsRead();
+    } on RepositoryError {
+      await refreshNotifications();
+      rethrow;
+    }
   }
 
-  /// Removes [id] and returns what is needed to undo it.
+  /// Removes [id] and returns what is needed to undo it. Live, the server
+  /// delete runs once the undo window has passed.
   (int, AppNotification)? deleteNotification(String id) {
     final index = _notifications.indexWhere((n) => n.id == id);
     if (index < 0) return null;
     final removed = _notifications[index];
     _notifications = List.of(_notifications)..removeAt(index);
+    if (!repo.isDemo) {
+      if (!removed.read) _unreadLive = (_unreadLive - 1).clamp(0, 1 << 30);
+      _pendingDeletes[id] = Timer(const Duration(seconds: 5), () {
+        _pendingDeletes.remove(id);
+        repo.deleteNotification(id).catchError((_) => refreshNotifications());
+      });
+    }
     notifyListeners();
     return (index, removed);
   }
 
   void restoreNotification((int, AppNotification) entry) {
     final (index, notification) = entry;
+    _pendingDeletes.remove(notification.id)?.cancel();
+    if (!repo.isDemo && !notification.read) _unreadLive++;
     _notifications = List.of(_notifications)
       ..insert(index.clamp(0, _notifications.length), notification);
     notifyListeners();
   }
 
-  void clearNotifications() {
+  Future<void> clearNotifications() async {
     _notifications = [];
+    if (!repo.isDemo) _unreadLive = 0;
     notifyListeners();
+    if (repo.isDemo) return;
+    try {
+      await repo.clearNotifications();
+    } on RepositoryError {
+      await refreshNotifications();
+      rethrow;
+    }
+  }
+
+  Future<void> setNotificationPrefs(NotificationPrefs next) async {
+    if (!repo.isDemo) await repo.saveNotificationPrefs(next);
+    notificationPrefs = next;
+    notifyListeners();
+  }
+
+  /// Opens a notification: marks it read and follows its deep-link. A row
+  /// from another of the user's businesses switches to that business first.
+  void openNotification(AppNotification n) {
+    if (!n.read) setNotificationRead(n.id, read: true).catchError((_) {});
+    final other = businesses.where(
+      (b) => b.id == n.businessId && b.id != business?.id,
+    );
+    if (other.isNotEmpty) business = other.first;
+    switch (n.targetScreen) {
+      case 'order' when n.targetId != null:
+        go(VRoute.orderDetail, entityId: n.targetId);
+      case 'rider' when n.targetId != null:
+        go(VRoute.riderDetail, entityId: n.targetId);
+      case 'riders' || 'rider':
+        go(VRoute.riders);
+      case 'runs':
+        go(VRoute.zones);
+      default:
+        notifyListeners();
+    }
   }
 
   void go(VRoute route, {String? entityId}) {
@@ -284,6 +476,9 @@ class AppState extends ChangeNotifier {
           ..clear()
           ..add(const VendorLocation(VRoute.welcomeSetup));
       }
+      if (!repo.isDemo && business != null) {
+        startNotifications();
+      }
     } on RepositoryError catch (e) {
       sessionError = e.message;
     } finally {
@@ -310,6 +505,7 @@ class AppState extends ChangeNotifier {
   VoidCallback? onSignOut;
 
   void clearSession() {
+    stopNotifications();
     sessionError = null;
     businesses = const [];
     business = null;
@@ -318,6 +514,16 @@ class AppState extends ChangeNotifier {
       ..add(const VendorLocation(VRoute.today));
     onSignOut?.call();
     notifyListeners();
+  }
+}
+
+class _NotificationLifecycle with WidgetsBindingObserver {
+  _NotificationLifecycle(this.onResume);
+  final VoidCallback onResume;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) onResume();
   }
 }
 

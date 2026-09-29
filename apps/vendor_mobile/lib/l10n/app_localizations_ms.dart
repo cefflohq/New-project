@@ -2973,4 +2973,77 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get hwNotifChangesSub =>
       'Apabila beban kerja hari ini atau esok dikemas kini.';
+
+  @override
+  String ntNewCustomerOrder(Object ref) {
+    return 'Pesanan pelanggan baharu $ref';
+  }
+
+  @override
+  String get ntNewCustomerOrderBody =>
+      'Pelanggan membuat pesanan dari halaman pesanan anda.';
+
+  @override
+  String ntDeliveryIssue(Object ref) {
+    return 'Isu penghantaran pada $ref';
+  }
+
+  @override
+  String get ntRunDeclined => 'Rider menolak satu run';
+
+  @override
+  String get ntRunDeclinedBody =>
+      'Tugaskan semula pesanan supaya boleh dihantar.';
+
+  @override
+  String get ntRiderJoined => 'Rider menerima jemputan anda';
+
+  @override
+  String get ntRiderJoinedBody => 'Semak dan luluskan sebelum menugaskan run.';
+
+  @override
+  String get ntRunCompleted => 'Run selesai';
+
+  @override
+  String get ntRunCompletedBody => 'Semua hentian dalam run telah selesai.';
+
+  @override
+  String get ntJustNow => 'baru sahaja';
+
+  @override
+  String ntMinutesAgo(Object n) {
+    return '$n min lalu';
+  }
+
+  @override
+  String ntHoursAgo(Object n) {
+    return '$n jam lalu';
+  }
+
+  @override
+  String get ntPrefLead => 'Terpakai pada akaun anda di semua aplikasi Cefflo.';
+
+  @override
+  String get ntPrefEnabled => 'Notifikasi';
+
+  @override
+  String get ntPrefEnabledSub =>
+      'Tunjukkan makluman semasa Cefflo dibuka. Semuanya tetap disimpan di pusat notifikasi.';
+
+  @override
+  String get ntPrefSound => 'Bunyi';
+
+  @override
+  String get ntPrefSoundSub => 'Mainkan bunyi bersama makluman.';
+
+  @override
+  String get ntPushDeferred =>
+      'Makluman semasa aplikasi ditutup belum tersedia.';
+
+  @override
+  String get ntCouldNotUpdate =>
+      'Tidak dapat mengemas kini notifikasi. Cuba lagi.';
+
+  @override
+  String get ntDismiss => 'Tutup';
 }
