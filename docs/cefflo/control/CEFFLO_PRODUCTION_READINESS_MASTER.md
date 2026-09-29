@@ -217,7 +217,27 @@ Authentication and authorization are separate.
 
 A query parameter or UI mode may change presentation but may never grant role authority.
 
-### 8.1.1 FOUNDER LOCKED — PLATFORM-SPECIFIC AUTH PROVIDERS (2026-09-29)
+### 8.1.0 FOUNDER LOCKED — CEFFLO V1 AUTH PROVIDER ARCHITECTURE (2026-09-29, final)
+
+Supersedes 8.1.1 for Driver Mobile. **Vendor = Email + ecosystem provider · Driver = Email only · FOUNDR = Google only.**
+
+| Surface | iOS | Android | Web |
+|---|---|---|---|
+| Vendor Mobile | Continue with Apple · Continue with Email | Continue with Google · Continue with Email | — |
+| Vendor Web | — | — | Continue with Google · Continue with Email (Apple web OUT-OF-SCOPE V1) |
+| Operator Access (role via Vendor) | Apple · Email | Google · Email | Google · Email |
+| Helper Access (role via Vendor Mobile; no Helper Web) | Apple · Email | Google · Email | — |
+| Driver Mobile | **Email only** | **Email only** | — |
+| FOUNDR | — | — | **Google only** (no Email, no Apple) |
+| Customer Tracking / Marketing | no login | no login | no login |
+
+Driver V1 authentication = Email + password: Sign Up/onboarding per the Driver account architecture, Sign In, Forgot Password, Reset Password, Email Verification, Invitation Claim. NO Google, NO Apple, NO SMS OTP, phone auth, magic link or passwordless in this phase (future evaluation only). Existing Driver Google/Apple buttons that open Email Sign In are FAKE UI TO REMOVE — not providers to configure. Driver Sign In hierarchy: Email · Password · [Sign In] · Forgot password? · invitation/onboarding messaging, reflowed with no empty provider space; no self-service access that bypasses business/rider authorization. Driver invitation identity stays on the canonical email-based claim.
+
+`?access=operator|helper` controls presentation only; Operator and Helper authorization is server-side.
+
+Rationale: no auth parity across surfaces; fewer provider integrations, less account-linking complexity, smaller QA matrix, no Apple private-relay complication for Driver invitations.
+
+### 8.1.1 (SUPERSEDED for Driver by 8.1.0) PLATFORM-SPECIFIC AUTH PROVIDERS (2026-09-29)
 
 Supersedes the earlier requirement that Vendor and Driver expose Email + Google + Apple on every surface. Provider availability is platform-specific by design, not a temporary limitation.
 
@@ -359,8 +379,8 @@ Classification keys: VERIFIED-STAGING (V) · IMPLEMENTED-UNVERIFIED (I) · PARTI
 |---|---|---|---|---|---|---|---|
 | 1 | Entry / Splash | I | I | I (`?access=operator`, presentation only) | I (`?access=helper`, presentation only) | I | I |
 | 2 | Sign Up (email) | I | I | N/A (invitation) | N/A (invitation) | I (full name + phone in user metadata) | N/A (no sign-up by design) |
-| 2b | Google (target: Android + Web + FOUNDR) | Android: P — calls `signInWithOAuth`, provider not configured → provider error; iOS: button must NOT be shown | M (no button) | inherits VM/VW | inherits VM (Android only) | Android: FAKE — button opens Email Sign In; iOS: must NOT be shown | M — FOUNDR currently Email + password (see FG-9) |
-| 2c | Apple (target: iOS only) | iOS: P — calls `signInWithOAuth`, provider not configured; Android: must NOT be shown | OUT-OF-SCOPE | inherits VM (iOS) | inherits VM (iOS) | iOS: FAKE — button opens Email Sign In; Android: must NOT be shown | OUT-OF-SCOPE |
+| 2b | Google (target: VM Android + VW + FOUNDR; Driver OUT-OF-SCOPE) | Android: P — calls `signInWithOAuth`, provider not configured → provider error; iOS: button must NOT be shown | M (no button) | inherits VM/VW | inherits VM (Android only) | OUT-OF-SCOPE — existing button is FAKE (opens Email Sign In): REMOVE | M — FOUNDR currently Email + password (see FG-9) |
+| 2c | Apple (target: VM iOS only; Driver OUT-OF-SCOPE) | iOS: P — calls `signInWithOAuth`, provider not configured; Android: must NOT be shown | OUT-OF-SCOPE | inherits VM (iOS) | inherits VM (iOS) | OUT-OF-SCOPE — existing button is FAKE (opens Email Sign In): REMOVE | OUT-OF-SCOPE |
 | 3 | Email verification | P: Verify / Verified / Expired screens exist; confirm deep link emits `signedIn` but the root widget has no `setState` for it | I (verify + resend) | N/A | N/A | M: no Verify screen, error line only; no resend | N/A |
 | 4 | Sign In (email/password) | I | V (E2) | I | I | I (email or phone) | V (E1) |
 | 5 | Forgot Password | I | V (E2) | I | I | I | V (E1) |
@@ -410,7 +430,7 @@ Backend facts (E5): claim RPCs require `email_confirmed_at` and use `auth.uid()`
 | G4 | Support channel | `support@` has no mailbox; V-57 fake success | M / FAKE |
 | G5 | Email-domain auth | no DMARC | M (FG-6) |
 | G6 | Unverified journeys | sign-up/verify via Cefflo sender; invitation claim E2E (Operator/Helper/Driver); logout/reopen/expiry E2E | I |
-| G7 | Platform-specific OAuth implementation incomplete | Target (8.1.1): VM/Driver Android Google REAL + Apple NOT SHOWN; VM/Driver iOS Apple REAL + Google NOT SHOWN; VW Google REAL, Apple OUT-OF-SCOPE; FOUNDR Google REAL, Email + Apple OUT-OF-SCOPE. Today: VM providers unconfigured, Driver buttons FAKE (open Email Sign In), VW and FOUNDR have no Google. Any provider button that opens Email Sign In is FAKE and must not reach production | FG-5 (LOCKED platform-specific) |
+| G7 | Vendor social auth incomplete; Driver fake OAuth UI | Final (8.1.0): VM iOS Apple REQUIRED + Google NOT SHOWN; VM Android Google REQUIRED + Apple NOT SHOWN; VW Google REQUIRED, Apple OUT-OF-SCOPE; Operator/Helper inherit Vendor; Driver Email only, Google/Apple OUT-OF-SCOPE; FOUNDR Google REQUIRED, Email/Apple OUT-OF-SCOPE. Today: VM providers unconfigured and shown on both platforms; VW/FOUNDR no Google; Driver Google/Apple buttons FAKE → REMOVE (not configure) | FG-5 (LOCKED 8.1.0) |
 | G8 | Canonical state | all P1 work on `claude/notification-system`, not `main` | FG-7 (HOLD) |
 
 ### 8.8.5 Apple Compliance Check (for FG-5)
@@ -434,7 +454,7 @@ Backend facts (E5): claim RPCs require `email_confirmed_at` and use `auth.uid()`
 - G2 native E2E needs a real Android/iOS build on device and FG-1 redirect set.
 - G6 sign-up E2E needs FG-2 templates/config.
 - G4 needs FG-3 mailbox provider.
-- G7 needs Google Cloud (Android + Web clients) and Apple Developer (Services ID, key) credentials, plus FG-8 (Apple private relay vs email-based claim) and FG-9 (FOUNDR Google-only migration) resolved.
+- G7 (Vendor) needs Google Cloud (Web client; Android client only for a native flow) and Apple Developer (Services ID, key) credentials, plus FG-8 (Apple private relay vs Operator/Helper email claim) and FG-9 (FOUNDR Google-only vs current Email+password). Driver needs no provider credentials.
 - iOS submission additionally needs in-app account deletion with Sign in with Apple token revocation (FG-10, Guideline 5.1.1(v)).
 - P1 PLATFORM VERIFIED needs all surfaces evidenced, then FG-7.
 
@@ -448,8 +468,8 @@ Batches follow Founder decisions FG-1…FG-7 (Section 16). Values marked *propos
 | A — Staging Auth config | Site URL off localhost; one clean Redirect URL set (Section 8.9.1) | All authenticated surfaces | Supabase Dashboard → Auth → URL Configuration (no repo files) | — | Approve exact set; apply in dashboard (or authorise agent) | — | `/recover` from each origin resolves to its own redirect, never localhost | Re-enter previous list (captured before change) | Founder / config |
 | B — Auth email templates + config | Branded Confirm Signup, Reset Password, Change Email; subjects; link expiry; secure email change; email rate limit (8.9.2) | All authenticated surfaces | Dashboard → Auth → Emails / Rate Limits; repo copy `supabase/templates/*.html` + `supabase/config.toml` for local parity | A | Approve copy + values | template render check; local Supabase mail (Inbucket) | real sign-up confirm + reset + email change through `no-reply@auth.cefflo.com` | restore default template text (captured before change) | W-config |
 | C — Shared mobile auth callback | Root listener: rebuild + `loadSession` on `signedIn` from a link; route link errors (expired/used) to Link Expired; confirm recovery path on device | Vendor Mobile (+ Operator, Helper), Driver Mobile | `apps/vendor_mobile/lib/main.dart`, `.../ui/screens/auth.dart`; `apps/rider_mobile/lib/main.dart`, `.../ui/screens/auth.dart` | A | — | widget tests: `signedIn`, `passwordRecovery`, link error → expected screen | device: reset link → Set New Password → `PUT /user` 200 → sign-in; used link → Link Expired | revert commit | W1 `p1-mobile-auth` |
-| D — Driver Verify Email + resend | Driver Verify Email screen after sign-up; real resend with cooldown (`auth.resend(type: signup)`); expired-link screen; remove static fake resend | Driver Mobile | `apps/rider_mobile/lib/{ui/screens/auth.dart,core/routes.dart,data/rider_repository.dart,l10n/*}` | B (template), C | — | widget tests: sign-up → verify screen; resend calls backend; cooldown | sign-up → email → confirm → signed in; resend delivered | revert commit | W1 |
-| E — Platform-specific social auth | E1 Google: VM Android, Driver Android, Vendor Web, FOUNDR. E2 Apple: VM iOS, Driver iOS. Operator/Helper inherit Vendor. Only working options shown per platform (8.1.1) | VM, VW, Operator, Helper, Driver, FOUNDR | Supabase Auth providers (Google, Apple); VM + Driver auth screens (platform-conditional buttons); `vendor_repository.dart`, `rider_repository.dart`; `apps/vendor_web/js/{api.js,pages/auth.js}`; `foundr/{app.js,backend.js}` | A; credentials; FG-8, FG-9 (and FG-10 before iOS submission) | Google Cloud clients; Apple Developer Services ID + key; FG-8/9/10 decisions | per-platform button visibility tests; provider call + redirect; FOUNDR admin gate after Google | per platform/provider: new user, existing email user (same `auth.users.id`), invited Operator/Helper/Driver claim, Apple private relay behaviour, FOUNDR admin via Google | disable provider in dashboard; revert commit | W1 (mobile) + W2 `p1-web-auth` (VW, FOUNDR) |
+| D — Driver Email-only auth + Verify Email | Remove FAKE Google/Apple buttons and reflow Sign In (Email · Password · Sign In · Forgot); Verify Email screen with real resend, real cooldown, loading/success/rate-limit/error, invalid and expired link handling, confirmation transition; remove static "Resend email (58s)" | Driver Mobile | `apps/rider_mobile/lib/{ui/screens/auth.dart,core/routes.dart,data/rider_repository.dart,main.dart,l10n/*}` | B (template), C | — | widget tests: no provider buttons; sign-up → Verify Email; resend calls backend; cooldown; link error → expired state | sign-up → email → confirm → signed in; resend delivered; expired link handled | revert commit | W1 (AUTHORIZED) |
+| E — Vendor social auth | E1 Google: Vendor Mobile Android, Vendor Web. E2 Apple: Vendor Mobile iOS. Operator/Helper inherit Vendor. Excluded: Driver, Customer Tracking, Marketing; FOUNDR only if its Google sign-in needs completion/verification (FG-9) | VM, VW, Operator, Helper | Supabase Auth providers (Google, Apple); VM auth screen (platform-conditional buttons); `vendor_repository.dart`; `apps/vendor_web/js/{api.js,pages/auth.js}` | A; credentials; FG-8 (FG-10 before iOS submission) | Google Cloud Web client; Apple Developer Services ID + key; FG-8 decision | per-platform button visibility; provider call + redirect | per platform/provider: new Owner, existing email Owner (same `auth.users.id`), invited Operator/Helper claim, Apple private relay | disable provider; revert commit | W1 (VM) + W2 `p1-web-auth` (VW) — NOT AUTHORIZED |
 | F — `support@cefflo.com` | Real mailbox: provider, MX, SPF/DKIM for `cefflo.com`, reply capability, routing/ownership | Support (VW Help, VM V-57) | DNS `cefflo.com` (MX, SPF, DKIM); provider admin | Provider decision | Choose + purchase provider; approve DNS records | — | external → support inbound; support → external reply; headers show SPF/DKIM pass | remove MX / provider records | Founder / W-config |
 | G — V-57 Contact Support | Replace fake success with real hand-off to the FG-3 channel (compose to `support@cefflo.com` with subject + business/app context); remove demo prefill; no fabricated "sent" | Vendor Mobile | `apps/vendor_mobile/lib/ui/screens/prototype.dart` (V-57), l10n | F (mailbox live for QA) | Confirm treatment of the screenshot-attachment area (mail compose cannot pre-attach) | widget test: no success state without a real hand-off | message reaches support inbox | revert commit | W1 |
 | H — DMARC / domain hardening | DMARC monitoring for `cefflo.com` + `auth.cefflo.com` (8.9.3) | Email deliverability | DNS TXT `_dmarc.cefflo.com`, `_dmarc.auth.cefflo.com` | F for report mailbox (or external report address) | Approve exact records; apply in Cloudflare | — | `dig` shows records; aggregate reports received | delete TXT records | Founder / W-config |
@@ -488,29 +508,34 @@ Batches follow Founder decisions FG-1…FG-7 (Section 16). Values marked *propos
 
 `rua` needs a receiving mailbox (depends on F) or an external report address. Alignment: Resend DKIM `d=auth.cefflo.com` aligns with From `auth.cefflo.com`. Progression after 2–4 weeks of clean reports: `p=quarantine`, then `p=reject`. `cefflo.com` SPF/DKIM are defined in F with the chosen mailbox provider.
 
-### 8.9.5 Batch E — detail (supersedes previous Batch E)
+### 8.9.5 Batch E — VENDOR SOCIAL AUTH (supersedes previous Batch E; NOT AUTHORIZED)
 
-**E1 — Google** (Vendor Mobile Android, Driver Android, Vendor Web, FOUNDR Web). Not added to iOS.
-- Supabase: enable Google provider (Web client ID + secret); authorised redirect `https://tomvvmwktehexwhktenw.supabase.co/auth/v1/callback`; Redirect URLs per Batch A.
-- Mobile Android: browser OAuth via `signInWithOAuth(OAuthProvider.google, redirectTo: cefflo-vendor|driver://auth-callback)` (deep links already registered); button shown on Android only. Native Google SDK is optional and would add Android client IDs + SHA-1 per app.
-- Vendor Web: `/auth/v1/authorize?provider=google&redirect_to=<current page>`; callback parsed by existing `consumeAuthFragment`.
-- FOUNDR: Google-only sign-in page; `is_platform_admin()` gate unchanged; email/password + recovery removal subject to FG-9.
+**E1 — Google:** Vendor Mobile Android and Vendor Web only (Operator/Helper inherit). Supabase Google provider (Web client ID + secret, callback `https://tomvvmwktehexwhktenw.supabase.co/auth/v1/callback`). VM Android: browser OAuth to `cefflo-vendor://auth-callback`, button on Android only. VW: `/auth/v1/authorize?provider=google&redirect_to=<current page>`, parsed by `consumeAuthFragment`. Not on iOS, not on Driver.
 
-**E2 — Apple** (Vendor Mobile iOS, Driver iOS). Not added to Vendor Web, Android or FOUNDR.
-- Supabase: enable Apple provider (Services ID, Team ID, Key ID, .p8 → client secret, rotates ≤ 6 months).
-- iOS: Sign in with Apple capability per app; button shown on iOS only; native or web flow decided at implementation.
-- Private relay handling per FG-8; account deletion + token revocation per FG-10 before App Store submission.
+**E2 — Apple:** Vendor Mobile iOS only (Operator/Helper inherit). Supabase Apple provider (Services ID, Team ID, Key ID, .p8; secret ≤ 6 months). Sign in with Apple capability on the Vendor iOS App ID; button on iOS only. Not on Vendor Web, Android, Driver or FOUNDR.
 
-**Removal:** Driver fake Apple/Google buttons (open Email Sign In) and Vendor Mobile cross-platform buttons are replaced by the platform-conditional set; nothing decorative remains.
+**Excluded:** Driver Mobile (Email only; fake buttons removed in Batch D), Customer Tracking, Marketing; FOUNDR unless FG-9 requires Google completion/verification.
 
-**QA matrix (Batch I, P1 sign-in):** iOS {Email, Apple} × {Vendor, Operator, Helper, Driver}; Android {Email, Google} × {Vendor, Operator, Helper, Driver}; Web {Email, Google} × {Vendor, Operator}; FOUNDR {Google} × {admin, non-admin}. Each: new account, existing email account (same user id), invitation claim, sign-out/reopen.
+### 8.9.6 P1 QA Matrix (provider scope per 8.1.0)
+
+| Surface | Required QA | Not tested (out of scope) |
+|---|---|---|
+| Vendor iOS | Email; Apple | Google |
+| Vendor Android | Email; Google | Apple |
+| Vendor Web | Email; Google | Apple |
+| Operator | applicable Vendor provider per platform; invitation claim; server-side role resolution; no-access | providers outside Vendor matrix |
+| Helper | applicable Vendor Mobile provider; invitation claim; server-side role resolution; no-access | Web; providers outside matrix |
+| Driver | Email Sign Up/onboarding; Verify Email; Sign In; Forgot; Reset; session persistence; session expiry; logout; invitation claim; Driver authorization; no-access | Google; Apple |
+| FOUNDR | Google; platform-admin authorization; recovery/session per current architecture (FG-9) | Email, Apple (after FG-9) |
+
+Each provider case: new account, existing email account keeps the same `auth.users.id`, sign-out/reopen.
 
 ### 8.9.4 Execution order
 
 1. Founder: A (URL set) + B values + H records review; start F provider choice and E credentials in parallel.
 2. W1 `p1-mobile-auth`: C → D (single worktree, mobile auth files only).
 3. F live → G (W1) and H applied.
-4. E once credentials exist and FG-8/FG-9 are decided (W1 mobile, W2 Vendor Web + FOUNDR); FG-10 before any iOS submission.
+4. E (Vendor only) once credentials exist, FG-8/FG-9 are decided and E is authorized (W1 VM, W2 VW); FG-10 before any iOS submission.
 5. I full platform E2E → evidence → P1 PLATFORM VERIFIED → FG-7 merge decision.
 
 No batch touches migrations or RLS.
@@ -812,12 +837,12 @@ Maintain one centralized register to prevent repeated decisions.
 | FG-2 | Production-ready auth email config (templates, redirects, expiry, rate limits) | Unverified; sign-up via Cefflo sender untested | Direction approved | All auth email | P1 sign-up E2E, P8 | 🟣 APPROVED DIRECTION — exact config to be presented before change |
 | FG-3 | `support@cefflo.com` real mailbox | No MX (E6) | LOCKED: real mailbox; provider/purchase may need approval | Support, V-57, Vendor Web Help | G4 | 🟣 LOCKED — provider decision pending |
 | FG-4 | V-57 Contact Support | Fake success | LOCKED: route to FG-3 channel; no ticketing system; no fabricated "sent" | Vendor Mobile | — | 🟣 LOCKED |
-| FG-5 | Sign-in providers | Unconfigured / fake / missing today | FOUNDER LOCKED — PLATFORM-SPECIFIC AUTH PROVIDERS (8.1.1): iOS Email + Apple; Android Email + Google; Vendor Web Email + Google; FOUNDR Google only | VM, VW, Operator, Helper, Driver, FOUNDR | G7 | 🟣 LOCKED — credentials pending |
+| FG-5 | Sign-in providers | Unconfigured / fake / missing today | FOUNDER LOCKED — CEFFLO V1 AUTH PROVIDER ARCHITECTURE (8.1.0): Vendor iOS Email+Apple, Vendor Android Email+Google, Vendor Web Email+Google, Driver Email only, FOUNDR Google only | VM, VW, Operator, Helper, Driver, FOUNDR | G7 | 🟣 LOCKED — Vendor credentials pending |
 | FG-6 | DMARC for `cefflo.com`, `auth.cefflo.com` | None (E6) | Approved: monitoring policy first | Deliverability | P8 | 🟣 APPROVED DIRECTION — exact records to be presented |
 | FG-7 | Merge `claude/notification-system` → `main` | P1 work not canonical | HOLD until P1 evidence complete | Canonical state | P1 platform verification | 🟣 HOLD |
-| FG-8 | Apple Hide My Email vs email-based invitation claim | Private-relay email never matches `invited_email` (8.8.6) | e.g. require invitees to share their real Apple email; token-bound claim at acceptance; other — backend identity rule change needs approval | Operator, Helper, Driver on iOS | E2 invited-role flows | 🟣 OPEN — STOP before backend identity changes |
-| FG-9 | FOUNDR Google-only vs current Email + password | Locked target differs from current implementation (8.8.6) | confirm removal of FOUNDR email/password + recovery once Google is live; admin identity linking | FOUNDR | E1 FOUNDR | 🟣 OPEN — clarification needed |
-| FG-10 | In-app account deletion (Guideline 5.1.1(v)) + Sign in with Apple token revocation | Mandatory for iOS apps with account creation (E9); missing today | scope/backend design needs approval (deletion affects business data) | Vendor Mobile, Driver Mobile (iOS) | iOS submission, E2 | 🟣 OPEN |
+| FG-8 | Apple Hide My Email vs email-based invitation claim | Private-relay email never matches `invited_email` (8.8.6) | e.g. require invitees to share their real Apple email; token-bound claim at acceptance; other — backend identity rule change needs approval | Operator, Helper on Vendor iOS (Driver excluded: Email only) | E2 invited-role flows | 🟣 OPEN — STOP before backend identity changes |
+| FG-9 | FOUNDR Google-only vs current Email + password | Locked target differs from current implementation (8.8.6) | confirm removal of FOUNDR email/password + recovery once Google is live; admin identity linking | FOUNDR | E1 FOUNDR | 🟣 OPEN — the Founder brief refers to an "existing Google architecture", but FOUNDR is Email + password today (no Google code or identity exists, E10); clarification needed |
+| FG-10 | In-app account deletion (Guideline 5.1.1(v)) + Sign in with Apple token revocation | Mandatory for iOS apps with account creation (E9); missing today | scope/backend design needs approval (deletion affects business data) | Vendor Mobile iOS, Driver Mobile iOS (both support account creation) | iOS submission | 🟣 OPEN |
 
 Founder approval is required before protected backend/schema/RLS/auth configuration changes, production deployment, or other decisions already governed by Cefflo’s canonical rules.
 
@@ -850,7 +875,7 @@ A UI screenshot alone does not prove backend persistence or authorization.
 | E4 | 13:10–13:11 four `/recover` resolved to `http://localhost:3000` → Site URL is localhost; harness URLs not allowlisted | Supabase Auth logs |
 | E5 | Auth RPC posture: claim RPCs check `email_confirmed_at` + `auth.uid()`; all SECURITY DEFINER; anon only `resolve_*`/`consent_*` | staging `pg_proc` read |
 | E6 | DNS: `cefflo.com` no MX, no DMARC; `_dmarc.auth.cefflo.com` none; `send.auth.cefflo.com` MX + SPF; `resend._domainkey.auth.cefflo.com` DKIM present | `dig` |
-| E8 | Apple App Review Guideline 4.8 (Login Services), fetched 2026-09-29 from developer.apple.com/app-store/review/guidelines: extra equivalent login required only when a third-party/social login is used for the primary account | Apple official |
+| E8 | Apple App Review Guideline 4.8 (re-checked for 8.1.0 on 2026-09-29: Vendor iOS offers Email + Sign in with Apple, no third-party login → 4.8 not triggered; Driver iOS Email only → not triggered) (Login Services), fetched 2026-09-29 from developer.apple.com/app-store/review/guidelines: extra equivalent login required only when a third-party/social login is used for the primary account | Apple official |
 | E9 | Guideline 5.1.1(v) + "Offering account deletion in your app": in-app account deletion required when account creation is supported; Sign in with Apple apps should revoke tokens via the REST API | Apple official, fetched 2026-09-29 |
 | E10 | staging `auth.identities`: 120 rows, all provider `email`; no Google/Apple identities | staging DB read |
 | E7 | Automated tests: Vendor Mobile 159/159, Driver 55/55, FOUNDR recovery 10/10, repo 64/64 (support QA; not staging E2E) | local runs on `d04ad34` |
@@ -1009,7 +1034,7 @@ The final proof is not that individual apps “look finished.”
 
 The proof is that:
 
-**real users can authenticate — with exactly the sign-in options locked for their platform (8.1.1) — → perform their permitted work → produce canonical backend state → other relevant surfaces observe the correct state → communications occur truthfully → failures recover safely → permissions hold → the full business journey survives staging and production smoke validation.**
+**real users can authenticate — with exactly the sign-in options locked for their surface and platform (8.1.0) — → perform their permitted work → produce canonical backend state → other relevant surfaces observe the correct state → communications occur truthfully → failures recover safely → permissions hold → the full business journey survives staging and production smoke validation.**
 
 ---
 
