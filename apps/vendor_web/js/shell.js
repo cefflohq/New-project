@@ -130,7 +130,11 @@ function route() {
   });
   try { cleanup?.(); } catch { /* ignore */ }
   cleanup = null;
-  content.innerHTML = '';
+  // A fresh element per route, so listeners a page attached (and late async
+  // renders) never leak into the next page.
+  const fresh = content.cloneNode(false);
+  content.replaceWith(fresh);
+  content = fresh;
   const res = pages[page]({ el: content, params: rest.map(decodeURIComponent), setHeader });
   if (typeof res === 'function') cleanup = res;
 }

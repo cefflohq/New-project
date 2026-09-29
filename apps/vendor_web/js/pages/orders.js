@@ -28,6 +28,7 @@ export default function orders({ el, params, setHeader }) {
   const $ = s => el.querySelector(s);
 
   async function load() {
+    if (!el.isConnected) return; // page was left while a modal was saving
     try {
       const [o, s, r, z, l] = await Promise.all([fetchOrders(), fetchStops(), fetchRiders(), fetchZones(), fetchLocations()]);
       list = o || [];
@@ -35,8 +36,8 @@ export default function orders({ el, params, setHeader }) {
       riders = new Map((r || []).map(x => [x.id, x]));
       zones = new Map((z || []).map(x => [x.id, x]));
       locs = new Map((l || []).map(x => [x.rider_id, x]));
-      paint();
-    } catch (e) { $('[data-list]').innerHTML = errorState(e, 'orders'); }
+      if (el.isConnected) paint();
+    } catch (e) { if (el.isConnected) $('[data-list]').innerHTML = errorState(e, 'orders'); }
   }
   const st = o => orderStatus(o, prep.get(o.id));
   const inTab = (o, tb) => {

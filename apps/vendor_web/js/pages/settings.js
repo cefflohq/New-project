@@ -58,10 +58,10 @@ function openLanguage() {
 }
 
 function openAppearance() {
-  let pick = prefs.theme;
+  let pick = prefs.theme === 'dark' ? 'dark' : 'light';
   const opt = (v, key, subKey) => `<button class="opt ${pick === v ? 'on' : ''}" data-v="${v}"><div><b>${esc(t(key))}</b><small>${esc(t(subKey))}</small></div><span class="radio"></span></button>`;
   const m = modal({ title: t('app.title'), lead: t('app.lead'), center: true,
-    body: opt('light', 'app.light', 'app.lightSub') + opt('dark', 'app.dark', 'app.darkSub') + opt('system', 'app.system', 'app.systemSub'),
+    body: opt('light', 'app.light', 'app.lightSub') + opt('dark', 'app.dark', 'app.darkSub'),
     footer: `<button class="btn primary" data-msave style="min-width:240px">${esc(t('app.save'))}</button>` });
   m.el.addEventListener('click', e => {
     const o = e.target.closest('[data-v]');
@@ -262,22 +262,63 @@ function inviteMember(onDone) {
   });
 }
 
+// Integrations: master list + detail panel (Founder reference). Only what the
+// app can really do is Available; everything else is marked Planned and has no
+// connect action.
+const BRAND = {
+  csv: `<span class="brand-ico file">${icon('csv')}</span>`,
+  manual: `<span class="brand-ico file">${icon('file')}</span>`,
+  shopify: '<span class="brand-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#95BF47" d="M22.6 6.3c0-.1-.1-.2-.2-.2l-2.1-.2-1.6-1.6c-.2-.2-.5-.1-.6-.1l-.8.3C16.8 3.1 16 2.2 14.6 2.2h-.1c-.4-.5-.9-.7-1.3-.7-3.2 0-4.8 4-5.2 6l-2.3.7c-.7.2-.7.2-.8.9L3 27.3l15.2 2.8 8.2-1.8L22.6 6.3z"/><path fill="#5E8E3E" d="M22.4 6.1l-2.1-.2-1.6-1.6-.4-.1L18.2 30l8.2-1.8L22.6 6.3c0-.1-.1-.2-.2-.2z"/><path fill="#fff" d="M14.6 11.2l-1 3s-.9-.5-2-.5c-1.6 0-1.7 1-1.7 1.3 0 1.4 3.6 1.9 3.6 5.1 0 2.5-1.6 4.2-3.8 4.2-2.6 0-4-1.6-4-1.6l.7-2.3s1.4 1.2 2.6 1.2c.8 0 1.1-.6 1.1-1.1 0-1.8-3-1.9-3-4.9 0-2.5 1.8-5 5.5-5 1.4 0 2 .4 2 .4z"/></svg></span>',
+  woo: '<span class="brand-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="7" width="30" height="16" rx="4" fill="#7F54B3"/><path fill="#7F54B3" d="M17 22l3 5 1-5z"/><text x="16" y="19" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="10" fill="#fff">Woo</text></svg></span>',
+  wix: '<span class="brand-ico" style="color:var(--ink)"><svg viewBox="0 0 32 32" aria-hidden="true"><text x="16" y="21" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="12" fill="currentColor">WiX</text></svg></span>',
+  sheets: '<span class="brand-ico"><img src="img/google-sheets-logo.png" alt="" width="26" height="26"></span>',
+  api: `<span class="brand-ico file">${icon('code')}</span>`,
+};
+const INTEGRATIONS = [
+  { id: 'csv', name: () => t('int.csv'), sub: () => t('int.csvSub'), live: true, action: 'import' },
+  { id: 'manual', name: () => t('int.manual'), sub: () => t('int.manualSub'), live: true, action: 'add' },
+  { id: 'shopify', name: () => 'Shopify', sub: () => t('int.shopSub') },
+  { id: 'woo', name: () => 'WooCommerce', sub: () => t('int.shopSub') },
+  { id: 'wix', name: () => 'Wix eCommerce', sub: () => t('int.shopSub') },
+  { id: 'sheets', name: () => 'Google Sheets', sub: () => t('int.sheetsSub') },
+  { id: 'api', name: () => 'API / Webhooks', sub: () => t('int.apiSub') },
+];
+let intSelected = 'csv';
+
 function integrations(page) {
   const body = header(page, 'set.integrations', 'int.lead');
-  const row = (ic, name, sub, live, action = '') => `<div class="int-row"><span class="int-ico">${ic}</span>
-    <div class="grow"><b>${esc(name)}</b><small>${esc(sub)}</small></div>
-    ${live ? chip('active', true).replace(esc(t('st.active')), esc(t('int.available'))) : `<span class="chip neutral"><i class="dot"></i>${esc(t('int.planned'))}</span>`}${action}</div>`;
-  body.innerHTML = `<div class="sub-card int-list">
-      ${row(icon('csv'), t('int.csv'), t('int.csvSub'), true, `<a class="btn soft sm" href="#/today">${esc(t('today.importOrders'))}</a>`)}
-      ${row(icon('file'), t('int.manual'), t('int.manualSub'), true, `<a class="btn soft sm" href="#/orders">${esc(t('today.addOrder'))}</a>`)}
-      ${row(icon('store'), 'Shopify', t('int.shopSub'), false)}
-      ${row(icon('store'), 'WooCommerce', t('int.shopSub'), false)}
-      ${row(icon('store'), 'Wix eCommerce', t('int.shopSub'), false)}
-      ${row(icon('csv'), 'Google Sheets', t('int.sheetsSub'), false)}
-      ${row(icon('link'), 'API / Webhooks', t('int.apiSub'), false)}
+  const status = x => (x.live
+    ? `<span class="chip active"><i class="dot"></i>${esc(t('int.available'))}</span>`
+    : `<span class="chip neutral"><i class="dot"></i>${esc(t('int.planned'))}</span>`);
+  const paint = () => {
+    const x = INTEGRATIONS.find(i => i.id === intSelected) || INTEGRATIONS[0];
+    const points = x.live ? [`int.${x.id}P1`, `int.${x.id}P2`, `int.${x.id}P3`] : ['int.planP1', 'int.planP2', 'int.planP3'];
+    body.innerHTML = `<div class="int-md">
+      <div class="int-list" role="listbox" aria-label="${esc(t('set.integrations'))}">
+        ${INTEGRATIONS.map(i => `<button type="button" class="int-row ${i.id === x.id ? 'on' : ''}" role="option" aria-selected="${i.id === x.id}" data-int="${i.id}">
+          ${BRAND[i.id]}<span class="grow"><b>${esc(i.name())}</b><small>${esc(i.sub())}</small></span>${status(i)}${icon('right', 'i chev')}</button>`).join('')}
+      </div>
+      <aside class="int-detail card" aria-live="polite">
+        <div class="int-d-head">${BRAND[x.id].replace('brand-ico', 'brand-ico lg')}<div><h3>${esc(x.name())}</h3>${status(x)}</div></div>
+        <p class="int-d-sub">${esc(x.sub())}</p>
+        <ul class="int-points">${points.map((k, n) => `<li>${icon(['upload', 'map', 'route'][n])}<span>${esc(t(k))}</span></li>`).join('')}</ul>
+        <div class="gated">${icon('info')}<div><b>${esc(t(x.live ? 'int.needTitle' : 'int.planTitle'))}</b><br>${esc(t(x.live ? `int.${x.id}Need` : 'int.planNote'))}</div></div>
+        ${x.live
+          ? `<button class="btn primary int-cta" data-int-action="${x.action}">${icon(x.action === 'import' ? 'upload' : 'plus')}${esc(t(x.action === 'import' ? 'today.importOrders' : 'today.addOrder'))}</button>`
+          : `<button class="btn int-cta" disabled>${esc(t('c.notAvailable'))}</button>`}
+      </aside>
     </div>
-    <div class="sub-card"><h3>${esc(t('int.how'))}</h3>
-      <div class="steps4">${['int.s1', 'int.s2', 'int.s3', 'int.s4'].map((k, i) => `<div><span class="n">${i + 1}</span><b>${esc(t(k))}</b><small>${esc(t(`${k}Sub`))}</small></div>`).join('')}</div></div>`;
+    <div class="flow" aria-label="${esc(t('int.how'))}"><span class="flow-title">${esc(t('int.how'))}</span>
+      ${['int.s1', 'int.s2', 'int.s3', 'int.s4'].map((k, n) => `${n ? `<span class="flow-arrow">${icon('right')}</span>` : ''}<span class="flow-step"><span class="n">${n + 1}</span><span><b>${esc(t(k))}</b><small>${esc(t(`${k}Sub`))}</small></span></span>`).join('')}</div>`;
+  };
+  body.addEventListener('click', async e => {
+    const r = e.target.closest('[data-int]');
+    if (r) { intSelected = r.dataset.int; paint(); body.querySelector(`[data-int="${intSelected}"]`)?.focus(); return; }
+    const act = e.target.closest('[data-int-action]')?.dataset.intAction;
+    if (act === 'import') { const { openImport } = await import('./order_actions.js'); openImport(); }
+    if (act === 'add') { const { openAddOrder } = await import('./order_actions.js'); openAddOrder(); }
+  });
+  paint();
 }
 
 function staticPage(kind) {

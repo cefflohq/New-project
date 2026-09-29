@@ -12,10 +12,10 @@
 :root {
   color-scheme: light;
   /* surfaces */
-  --bg: #eef3fa;
+  --bg: #f4f6f9;
   --surface: #ffffff;
-  --surface-2: #f6f8fc;
-  --surface-hover: #f1f5fc;
+  --surface-2: #f7f8fa;
+  --surface-hover: #f2f4f7;
   --elevated: #ffffff;
   --overlay: rgba(10, 22, 52, 0.28);
   /* sidebar (Today reference) */
@@ -31,12 +31,12 @@
   --muted: #6b7690;
   --faint: #98a2b8;
   /* lines */
-  --border: #e4e9f2;
-  --border-strong: #d3dbe8;
+  --border: #e5e9f0;
+  --border-strong: #d5dce6;
   /* brand + signals */
   --primary: #0b5cf0;
   --primary-ink: #ffffff;
-  --primary-tint: #e7efff;
+  --primary-tint: #edf3ff;
   --cta: #ffc629;
   --cta-ink: #0b1b3f;
   --success: #1f9d55;
@@ -47,7 +47,7 @@
   --danger-tint: #fde8ea;
   --purple: #6d4bd8;
   --purple-tint: #efeafe;
-  --neutral-tint: #eef1f6;
+  --neutral-tint: #eef1f5;
   /* shape */
   --r-sm: 8px;
   --r-md: 12px;
@@ -60,12 +60,20 @@
   /* type scale */
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --fs-xs: 12px; --fs-sm: 13px; --fs-md: 14px; --fs-lg: 16px; --fs-xl: 20px; --fs-2xl: 24px; --fs-3xl: 34px;
+  /* type scale (Vendor Web v2) */
+  --t-page: 36px; --t-h2: 22px; --t-h3: 18px; --t-body: 15px; --t-sec: 14px; --t-meta: 13px;
+  --t-th: 13px; --t-pill: 13px; --t-nav: 15.5px; --t-btn: 15px;
+  /* geometry */
+  --card-r: 16px; --card-pad: 24px; --card-border: var(--border);
+  --card-shadow: 0 1px 2px rgba(15, 26, 54, .04), 0 6px 18px rgba(15, 26, 54, .05);
+  --row-h: 60px; --ctl-h: 44px; --ctl-r: 10px;
   /* layout */
-  --sidebar-collapsed: 76px;
-  --sidebar-expanded: 224px;
+  --sidebar-collapsed: 88px;
+  --sidebar-expanded: 240px;
 }
 
 :root[data-theme='dark'] {
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
   color-scheme: dark;
   --bg: #0b1222;
   --surface: #121b30;
