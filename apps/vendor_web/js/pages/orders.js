@@ -15,10 +15,10 @@ export default function orders({ el, params, setHeader }) {
   let list = [], prep = new Map(), riders = new Map(), zones = new Map(), locs = new Map();
   el.innerHTML = `<div class="split ${selected ? '' : 'no-detail'}">
     <div class="card">
-      <div style="display:flex;align-items:center;gap:12px;padding-right:18px;border-bottom:1px solid var(--border)">
-        <div class="tabs" data-tabs style="border-bottom:0;flex:1"></div>
+      <div class="bar">
+        <div class="tabs" data-tabs></div>
         <button class="btn sm" data-add aria-label="${esc(t('today.addOrder'))}" title="${esc(t('today.addOrder'))}">${icon('plus')}</button>
-        <div class="search" style="width:240px">${icon('search')}<input data-q placeholder="${esc(t('today.searchOrders'))}" aria-label="${esc(t('c.search'))}"></div>
+        <div class="search">${icon('search')}<input data-q placeholder="${esc(t('today.searchOrders'))}" aria-label="${esc(t('c.search'))}"></div>
         <div style="position:relative"><button class="btn sm" data-filter aria-haspopup="true" title="${esc(t('orders.filter'))}">${icon('filter')}</button></div>
       </div>
       <div data-list>${loadingRows(8)}</div>
@@ -123,7 +123,7 @@ export async function renderDetail(box, id, onChange) {
       box.innerHTML = `
         <div class="panel-h"><h2>${esc(orderNo(o))}</h2>${chip(s)}<button class="icon-btn" style="margin-left:auto" data-close-detail aria-label="${esc(t('c.close'))}">${icon('x')}</button></div>
         <div class="sec" style="display:flex;align-items:center;gap:10px">
-          <div style="flex:1"><b style="font-size:17px">${esc(o.customer_name)}</b><div class="hint" style="font-size:14px">${esc(o.customer_phone)}</div></div>
+          <div style="flex:1"><b style="font-size:15px">${esc(o.customer_name)}</b><div class="hint">${esc(o.customer_phone)}</div></div>
           ${digits ? `<a class="round-btn" href="tel:${esc(o.customer_phone)}" aria-label="${esc(t('c.call'))}">${icon('phone')}</a><a class="round-btn wa" href="https://wa.me/${esc(digits.replace(/^0/, '60'))}" target="_blank" rel="noopener" aria-label="WhatsApp">${icon('wa')}</a>` : ''}
         </div>
         <a class="sec kv" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.latitude != null ? `${o.latitude},${o.longitude}` : o.delivery_address)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:0">

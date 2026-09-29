@@ -14,9 +14,9 @@ export default function zones({ el, params, setHeader }) {
   let query = '', sortAsc = true, zs = [], orders = [];
   el.innerHTML = `<div class="split ${selected ? '' : 'no-detail'}">
     <div class="card">
-      <div style="display:flex;align-items:center;gap:12px;padding:14px 18px">
+      <div class="bar pad">
         <button class="btn sm" data-add>${icon('plus')}${esc(t('zones.add'))}</button>
-        <div class="search" style="width:280px;margin-left:auto">${icon('search')}<input data-q placeholder="${esc(t('zones.search'))}" aria-label="${esc(t('c.search'))}"></div>
+        <div class="search" style="margin-left:auto">${icon('search')}<input data-q placeholder="${esc(t('zones.search'))}" aria-label="${esc(t('c.search'))}"></div>
       </div>
       <div data-list>${loadingRows(8)}</div>
     </div>
@@ -59,7 +59,7 @@ export default function zones({ el, params, setHeader }) {
     box.innerHTML = `
       <div class="panel-h"><h2>${esc(z.name)}</h2>${chip(z.status === 'active' ? 'active' : 'inactive')}
         <div style="margin-left:auto;position:relative"><button class="icon-btn" data-zmenu aria-haspopup="menu" aria-label="…">${icon('dots')}</button></div></div>
-      <div class="boxed stats" style="margin:16px 0"><div class="stat"><b>${c.total}</b><span>${esc(t('zones.total'))}</span></div>
+      <div class="boxed stats" style="margin:12px 0"><div class="stat"><b>${c.total}</b><span>${esc(t('zones.total'))}</span></div>
         <div class="stat"><b class="c-green">${c.completed}</b><span>${esc(t('zones.completed'))}</span></div>
         <div class="stat"><b class="c-blue">${c.ongoing}</b><span>${esc(t('zones.ongoing'))}</span></div>
         <div class="stat"><b class="c-red">${c.issues}</b><span>${esc(t('zones.issues'))}</span></div></div>
@@ -67,7 +67,7 @@ export default function zones({ el, params, setHeader }) {
       <div class="sec"><h3>${esc(t('zones.ongoingOrders', { n: ongoing.length }))}</h3>${ongoing.slice(0, 6).map(row).join('') || `<div class="hint">${esc(t('c.none'))}</div>`}</div>
       <div class="sec"><h3>${esc(t('zones.completedOrders', { n: done.length }))}</h3>${done.slice(0, 6).map(row).join('') || `<div class="hint">${esc(t('c.none'))}</div>`}</div>
       <div class="sec"><h3>${esc(t('zones.issuesOrders', { n: issues.length }))}</h3>${issues.slice(0, 6).map(row).join('') || `<div class="hint">${esc(t('c.none'))}</div>`}</div>
-      <a class="btn" style="width:100%;border-radius:12px" href="#/orders">${esc(t('zones.viewAllOrders', { z: z.name }))} ${icon('right')}</a>`;
+      <a class="btn" style="width:100%" href="#/orders">${esc(t('zones.viewAllOrders', { z: z.name }))} ${icon('right')}</a>`;
   }
 
   function zoneMenu(anchor) {

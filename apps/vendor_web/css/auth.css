@@ -1,0 +1,140 @@
+/* CEFFLO Vendor Web — sign-in and Business Setup (owner onboarding).
+   Branded full-screen surfaces that mirror Vendor Mobile; they sit outside
+   the desktop shell and keep their own, larger touch sizing. */
+/* ---------------- auth (as Cefflo Vendor mobile sign-in) ---------------- */
+.auth {
+  position: relative; min-height: 100vh; display: flex; flex-direction: column; align-items: center; color: #fff;
+  padding: 20px 20px calc(36px + env(safe-area-inset-bottom, 0px)); overflow: hidden; isolation: isolate;
+  background:
+    radial-gradient(55% 32% at 68% 47%, rgba(70, 160, 255, .55) 0%, rgba(70, 160, 255, 0) 70%),
+    linear-gradient(180deg, #5BC0F8 0%, #3A9BEF 22%, #1A6FE0 45%, #0E4FBE 66%, #0A3486 84%, #061F5C 100%);
+}
+.auth-top { align-self: stretch; display: flex; }
+.auth-lang { position: relative; }
+.auth-lang-btn { display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border: 0; border-radius: 12px; background: transparent; color: #fff; font-size: 17px; font-weight: 600; cursor: pointer; }
+.auth-lang-btn:hover { background: rgba(255,255,255,.12); }
+.auth-lang-btn svg { width: 22px; height: 22px; }
+.auth-lang-btn svg:last-child { width: 18px; height: 18px; }
+.auth-lang-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 5; min-width: 200px; padding: 6px; border-radius: 14px; background: #fff; box-shadow: 0 18px 50px rgba(1, 16, 50, .35); display: grid; }
+.auth-lang-menu[hidden] { display: none; }
+.auth-lang-menu button { text-align: left; border: 0; background: none; padding: 11px 12px; border-radius: 10px; font-size: 15px; color: #0F1A36; cursor: pointer; }
+.auth-lang-menu button:hover { background: #F0F4FB; }
+.auth-lang-menu button[aria-checked="true"] { font-weight: 700; color: #0060FE; }
+.auth-hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; padding: 40px 0; }
+.auth-logo { width: 150px; height: auto; filter: drop-shadow(0 18px 30px rgba(1, 20, 70, .25)); }
+.auth-product { font-size: 20px; font-weight: 600; letter-spacing: .55em; margin-right: -.55em; }
+.auth-bottom { width: min(460px, 100%); display: grid; gap: 14px; }
+.auth-pill { display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; height: 60px; border-radius: 999px; border: 0; background: #fff; color: #0F1A36; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 10px 30px -14px rgba(1, 16, 50, .5); transition: transform 120ms ease; }
+.auth-pill:hover { transform: translateY(-1px); }
+.auth-pill svg { width: 24px; height: 24px; }
+.auth-pill.ghost { background: rgba(255,255,255,.12); color: #fff; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.55); }
+.auth-hint { text-align: center; font-size: 13px; color: rgba(255,255,255,.7); margin-top: -4px; }
+.auth-invite { margin: 14px 0 0; text-align: center; font-size: 16px; color: rgba(255,255,255,.85); }
+.auth-link { border: 0; background: none; padding: 0; color: #fff; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.auth-invite-note, .auth-note { margin: 0; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,.14); color: #fff; font-size: 14px; line-height: 1.45; text-align: center; }
+.auth-card { width: 100%; background: var(--elevated); color: var(--ink); border-radius: 24px; box-shadow: 0 30px 80px -30px rgba(1, 16, 50, .6); padding: 28px 26px 22px; display: grid; gap: 14px; }
+.auth-card h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -.4px; }
+.auth-card p { margin: -6px 0 0; color: var(--muted); }
+.auth-card .btn.primary { height: 50px; background: #01265E; border-color: #01265E; }
+.auth-card .btn.primary:hover { background: #00378F; border-color: #00378F; filter: none; }
+.auth-card-links { display: flex; justify-content: space-between; gap: 12px; }
+:root[data-theme='dark'] .auth-card .btn.primary { background: var(--primary); border-color: var(--primary); }
+@media (min-width: 960px) {
+  .auth { padding: 28px 40px 48px; }
+  .auth-logo { width: 170px; }
+  .auth-bottom { width: 440px; }
+}
+@media (max-height: 720px) { .auth-hero { gap: 16px; padding: 16px 0; } .auth-logo { width: 110px; } }
+
+/* auth: viewport-aware vertical composition (dynamic viewport + safe areas).
+   Free height is shared hero 3 : bottom 1 instead of pinning the actions to
+   the bottom edge; gaps and the logo shrink on short screens first. */
+.auth {
+  min-height: 100vh; min-height: 100dvh;
+  padding-top: calc(clamp(8px, 2dvh, 20px) + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(clamp(12px, 3dvh, 32px) + env(safe-area-inset-bottom, 0px));
+}
+.auth-hero { flex: 3 1 auto; gap: clamp(12px, 3dvh, 26px); padding: clamp(12px, 4dvh, 40px) 0; }
+.auth-logo { width: clamp(96px, 19dvh, 150px); }
+.auth-bottom { gap: clamp(10px, 1.6dvh, 14px); }
+.auth-invite { margin-top: clamp(4px, 1.4dvh, 14px); }
+.auth::after { content: ''; flex: 1 1 0; min-height: 0; }
+@media (min-width: 960px) { .auth-logo { width: clamp(110px, 19dvh, 170px); } }
+
+/* auth: Operator Sign-In context and the account/status screens */
+.auth-top.right { justify-content: flex-end; }
+.auth-top.right .auth-lang-menu { left: auto; right: 0; }
+.auth-chip { display: inline-flex; align-items: center; gap: 8px; margin-top: clamp(4px, 1dvh, 10px); padding: 9px 18px; border-radius: 999px; background: rgba(255,255,255,.16); color: #fff; font-size: 15px; font-weight: 600; }
+.auth-chip svg { width: 18px; height: 18px; }
+.auth-title { margin: 0; font-size: clamp(26px, 4dvh, 32px); font-weight: 800; letter-spacing: -.5px; line-height: 1.15; text-align: center; }
+.auth-lead { margin: -8px 0 0; font-size: 17px; color: rgba(255,255,255,.9); text-align: center; }
+.auth-card .hint { color: var(--muted); font-size: 13px; }
+.auth-foot { margin: 0; text-align: center; font-size: 14.5px; color: var(--muted); }
+.auth-center { text-align: center; justify-items: center; }
+.auth-center > .btn, .auth-center > .gated, .auth-center > .err, .auth-center > .field { justify-self: stretch; }
+.auth-center p { margin: -6px 0 0; }
+.auth-status { width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; background: var(--primary-tint); color: var(--primary); }
+.auth-status svg { width: 28px; height: 28px; }
+.auth-email { font-weight: 700; color: var(--ink) !important; word-break: break-all; }
+.auth-muted { font-size: 13.5px; }
+/* Operator Sign-In carries a longer hero (chip, title, lead): on short
+   viewports the logo and gaps give way first, as on Vendor Mobile. */
+.auth-hero.op { gap: clamp(8px, 1.8dvh, 22px); padding: clamp(8px, 2.5dvh, 40px) 0; }
+.auth-hero.op .auth-logo { width: clamp(72px, 14dvh, 150px); }
+
+/* ---------------- business setup (owner onboarding) ---------------- */
+.onb { display: grid; grid-template-columns: minmax(300px, 420px) 1fr; min-height: 100vh; background: var(--bg); }
+.onb-side { background: var(--brand-gradient); color: #fff; padding: 40px 40px 28px; display: flex; flex-direction: column; gap: 28px; position: relative; overflow: hidden; }
+.onb-logo { width: 56px; height: auto; filter: drop-shadow(0 12px 24px rgba(1, 20, 70, .3)); }
+.onb-kicker { font-size: 13px; font-weight: 600; letter-spacing: .45em; opacity: .85; }
+.onb-side h1 { margin: 10px 0 8px; font-size: 32px; font-weight: 800; letter-spacing: -.6px; line-height: 1.15; text-wrap: balance; }
+.onb-side p { margin: 0; color: rgba(255,255,255,.82); font-size: 15.5px; line-height: 1.5; max-width: 32ch; }
+.onb-steps { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 14px; }
+.onb-steps li { display: flex; align-items: center; gap: 14px; font-size: 16px; color: rgba(255,255,255,.7); }
+.onb-steps li.on { color: #fff; font-weight: 700; }
+.onb-steps li.done { color: #fff; }
+.onb-num { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,.45); display: grid; place-items: center; font-weight: 700; flex: none; }
+.onb-steps li.on .onb-num { background: #fff; color: var(--brand-deep); border-color: #fff; }
+.onb-steps li.done .onb-num { background: var(--cta); border-color: var(--cta); color: var(--cta-ink); }
+.onb-num svg { width: 18px; height: 18px; }
+.onb-signout { margin-top: auto; align-self: flex-start; display: inline-flex; gap: 10px; align-items: center; border: 0; background: rgba(255,255,255,.12); color: #fff; border-radius: 12px; padding: 10px 14px; cursor: pointer; font-weight: 600; }
+.onb-main { display: grid; place-items: center; padding: 40px 24px; }
+.onb-card { width: min(520px, 100%); padding: 32px 32px 28px; }
+.onb-card form { display: grid; gap: 16px; }
+.onb-count { font-size: 12.5px; font-weight: 700; letter-spacing: .08em; color: var(--primary); text-transform: uppercase; }
+.onb-card h2 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.4px; }
+.onb-lead { margin: -8px 0 4px; color: var(--muted); font-size: 15px; line-height: 1.5; }
+.onb-row { display: grid; grid-template-columns: 160px 1fr; gap: 14px; }
+.onb-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 6px; }
+.onb-actions.center { justify-content: center; }
+.onb-center { display: grid; justify-items: center; text-align: center; gap: 14px; }
+.onb-center .onb-lead { margin: -6px 0 6px; }
+.onb-status { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; background: var(--primary-tint); color: var(--primary); }
+.onb-status svg { width: 36px; height: 36px; }
+.onb-status.ok { background: var(--success-tint); color: var(--success); }
+.onb-status.warn { background: var(--warning-tint); color: var(--warning); }
+.onb-go { width: 100%; height: 52px; }
+.onb-next { width: 100%; display: grid; gap: 8px; margin-top: 10px; text-align: left; }
+.onb-next > span { font-size: 13px; color: var(--muted); font-weight: 600; }
+.onb-next button { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--ink); cursor: pointer; text-align: left; }
+.onb-next button:hover { background: var(--surface-hover); }
+.onb-next button > svg:first-child { color: var(--primary); }
+.onb-next button > svg:last-child { margin-left: auto; color: var(--faint); }
+.onb-next b { display: block; font-size: 15px; }
+.onb-next small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+@media (max-width: 900px) {
+  .onb { grid-template-columns: 1fr; }
+  .onb-side { padding: 24px 20px; gap: 16px; }
+  .onb-side h1 { font-size: 24px; }
+  .onb-steps { grid-auto-flow: column; justify-content: start; gap: 22px; }
+  .onb-signout { position: absolute; top: 20px; right: 20px; margin: 0; }
+  .onb-main { padding: 20px 16px 32px; place-items: start center; }
+  .onb-card { padding: 24px 20px; }
+}
+@media (max-width: 480px) { .onb-row { grid-template-columns: 1fr; } .onb-steps { grid-auto-flow: row; } }
+
+/* The desktop system's compact controls do not apply on these surfaces. */
+.auth-card .input, .auth-card .select, .onb-card .input, .onb-card .select { height: 44px; border-radius: 10px; font-size: 15px; }
+.auth-card .btn, .onb-card .btn { height: 46px; padding: 0 20px; border-radius: 999px; font-size: 15px; }
+.auth-card .field label, .onb-card .field label { font-size: 13.5px; }
+.auth-card .gated, .onb-card .gated { font-size: 13.5px; }
