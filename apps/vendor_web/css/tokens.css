@@ -1,0 +1,95 @@
+/* CEFFLO Vendor Web — design tokens (derived from the Founder reference
+   screens; the FIRST reference (Today) owns the sidebar treatment).
+   Light is the default; Dark redefines the same tokens. Components read
+   tokens only — never page-specific colours. */
+:root {
+  color-scheme: light;
+  /* surfaces */
+  --bg: #eef3fa;
+  --surface: #ffffff;
+  --surface-2: #f6f8fc;
+  --surface-hover: #f1f5fc;
+  --elevated: #ffffff;
+  --overlay: rgba(10, 22, 52, 0.28);
+  /* sidebar (Today reference) */
+  --sidebar-bg: linear-gradient(180deg, #0d4bd6 0%, #0a42c4 45%, #0a3aae 100%);
+  --sidebar-ink: rgba(255, 255, 255, 0.92);
+  --sidebar-ink-muted: rgba(255, 255, 255, 0.72);
+  --sidebar-active-bg: #ffffff;
+  --sidebar-active-ink: #0d4bd6;
+  --sidebar-divider: rgba(255, 255, 255, 0.22);
+  /* text */
+  --ink: #0b1b3f;
+  --ink-2: #3c4a66;
+  --muted: #6b7690;
+  --faint: #98a2b8;
+  /* lines */
+  --border: #e4e9f2;
+  --border-strong: #d3dbe8;
+  /* brand + signals */
+  --primary: #0b5cf0;
+  --primary-ink: #ffffff;
+  --primary-tint: #e7efff;
+  --cta: #ffc629;
+  --cta-ink: #0b1b3f;
+  --success: #1f9d55;
+  --success-tint: #e3f6ea;
+  --warning: #b7791f;
+  --warning-tint: #fff3d6;
+  --danger: #dc2f3c;
+  --danger-tint: #fde8ea;
+  --purple: #6d4bd8;
+  --purple-tint: #efeafe;
+  --neutral-tint: #eef1f6;
+  /* shape */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-pill: 999px;
+  --shadow-card: 0 1px 2px rgba(11, 27, 63, 0.04), 0 6px 20px rgba(11, 27, 63, 0.05);
+  --shadow-pop: 0 18px 50px rgba(11, 27, 63, 0.18);
+  /* spacing scale */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px;
+  /* type scale */
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fs-xs: 12px; --fs-sm: 13px; --fs-md: 14px; --fs-lg: 16px; --fs-xl: 20px; --fs-2xl: 24px; --fs-3xl: 34px;
+  /* layout */
+  --sidebar-collapsed: 76px;
+  --sidebar-expanded: 212px;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0b1222;
+  --surface: #121b30;
+  --surface-2: #17213a;
+  --surface-hover: #1b2743;
+  --elevated: #16203a;
+  --overlay: rgba(2, 6, 18, 0.55);
+  --sidebar-bg: linear-gradient(180deg, #0b2f86 0%, #0a2a78 45%, #08225f 100%);
+  --sidebar-active-bg: #e8efff;
+  --sidebar-active-ink: #0b3fb5;
+  --ink: #e8eefc;
+  --ink-2: #c3cde3;
+  --muted: #93a0bd;
+  --faint: #6b7896;
+  --border: #243150;
+  --border-strong: #2f3e62;
+  --primary: #4d8bff;
+  --primary-tint: #1a2c55;
+  --success: #43c07a;
+  --success-tint: #13311f;
+  --warning: #e3b04b;
+  --warning-tint: #3a2d10;
+  --danger: #ff6b76;
+  --danger-tint: #3b161b;
+  --purple: #a58bff;
+  --purple-tint: #2a2150;
+  --neutral-tint: #1c2640;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow-pop: 0 18px 50px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion: 0ms; }
+}
