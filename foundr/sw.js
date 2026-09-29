@@ -1,6 +1,6 @@
-const CACHE_NAME = 'cefflo-foundr-live-v15';
+const CACHE_NAME = 'cefflo-foundr-live-v16';
 const ROOT = new URL('./', self.registration.scope).pathname;
-const SHELL = [ROOT, `${ROOT}app.css`, `${ROOT}backend.js`, `${ROOT}app.js`, `${ROOT}icons/icon-192.png`, `${ROOT}icons/icon-512.png`];
+const SHELL = [ROOT, `${ROOT}app.css`, `${ROOT}backend.js`, `${ROOT}app.js`, `${ROOT}img/cefflo-logo.png`, `${ROOT}img/earth.jpg`, `${ROOT}icons/icon-192.png`, `${ROOT}icons/icon-512.png`];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)));

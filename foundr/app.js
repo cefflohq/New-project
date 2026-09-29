@@ -858,16 +858,34 @@ window.addEventListener('popstate', () => { if (!authScreen) { const r = route0(
 // boundary itself.
 function authFrame(inner) {
   authScreen = true;
-  root.innerHTML = `<div class="auth-screen"><div class="auth-box"><div class="auth-brand">Cefflo <span>FOUNDR</span></div>${inner}</div></div>`;
+  root.innerHTML = `<div class="auth-screen"><main class="auth-stage">
+    <div class="auth-brand"><img src="./img/cefflo-logo.png" alt="Cefflo" width="120" height="187"><span>FOUNDR</span></div>
+    <div class="auth-box">${inner}</div></main></div>`;
 }
+const AUTH_ICON = {
+  mail: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>',
+  lock: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.2"/></svg>',
+  eye: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+  eyeOff: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/><path d="m4 4 16 16"/></svg>',
+};
 function renderSignIn(message = '') {
-  authFrame(`<form data-signin novalidate><h1>Sign in</h1><p class="sub">Platform admins only. There is no sign-up.</p>
+  authFrame(`<form data-signin novalidate><p class="auth-eyebrow">Admin dashboard</p>
+    <h1 class="auth-title">Sign in to <span>FOUNDR</span></h1>
     ${message ? `<div class="auth-msg" role="status">${esc(message)}</div>` : ''}
-    <div class="field"><label for="em">Email</label><input id="em" type="email" autocomplete="username" required></div>
-    <div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
+    <label class="auth-input">${AUTH_ICON.mail}<input id="em" type="email" autocomplete="username" placeholder="name@company.com" aria-label="Email" required></label>
+    <label class="auth-input">${AUTH_ICON.lock}<input id="pw" type="password" autocomplete="current-password" placeholder="Enter your password" aria-label="Password" required>
+      <button class="auth-eye" type="button" data-eye aria-label="Show password" aria-pressed="false">${AUTH_ICON.eyeOff}</button></label>
     <div class="field-err" data-err hidden role="alert"></div>
-    <button class="btn primary" type="submit" style="width:100%">Sign in</button>
-    <button class="link" type="button" data-forgot style="justify-self:center">Forgot password?</button></form>`);
+    <button class="auth-submit" type="submit">Sign in <svg class="auth-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
+    <button class="auth-link" type="button" data-forgot>Forgot password?</button>
+    <p class="auth-foot">Only authorised admins can access FOUNDR.</p></form>`);
+  const eye = root.querySelector('[data-eye]'), pwIn = root.querySelector('#pw');
+  eye.addEventListener('click', () => {
+    const show = pwIn.type === 'password';
+    pwIn.type = show ? 'text' : 'password';
+    eye.setAttribute('aria-pressed', String(show)); eye.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    eye.innerHTML = show ? AUTH_ICON.eye : AUTH_ICON.eyeOff;
+  });
   const form = root.querySelector('[data-signin]'), err = form.querySelector('[data-err]');
   form.querySelector('#em').focus();
   form.querySelector('[data-forgot]').addEventListener('click', () => renderForgot(form.querySelector('#em').value.trim()));
@@ -880,7 +898,7 @@ function renderSignIn(message = '') {
     btn.disabled = true; btn.textContent = 'Signing in…'; err.hidden = true;
     try { await F.signIn(email, pw); await boot(); } catch (ex) {
       err.textContent = /invalid/i.test(ex.message) ? 'Incorrect email or password.' : ex.message; err.hidden = false;
-      btn.disabled = false; btn.textContent = 'Sign in';
+      btn.disabled = false; btn.innerHTML = 'Sign in <svg class="auth-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>';
     }
   });
 }
@@ -889,8 +907,8 @@ function renderForgot(prefill = '') {
   authFrame(`<form data-forgot-form novalidate><h1>Reset password</h1><p class="sub">We'll email you a link to set a new password.</p>
     <div class="field"><label for="em">Email</label><input id="em" type="email" autocomplete="username" required value="${esc(prefill)}"></div>
     <div class="field-err" data-err hidden role="alert"></div>
-    <button class="btn primary" type="submit" style="width:100%">Send reset link</button>
-    <button class="link" type="button" data-back style="justify-self:center">Back to sign in</button></form>`);
+    <button class="auth-submit" type="submit">Send reset link</button>
+    <button class="auth-link" type="button" data-back>Back to sign in</button></form>`);
   const form = root.querySelector('[data-forgot-form]'), err = form.querySelector('[data-err]');
   form.querySelector('#em').focus();
   form.querySelector('[data-back]').addEventListener('click', () => renderSignIn());
@@ -916,7 +934,7 @@ function renderSetPassword() {
     <div class="field"><label for="p1">New password</label><input id="p1" type="password" autocomplete="new-password" required></div>
     <div class="field"><label for="p2">Confirm password</label><input id="p2" type="password" autocomplete="new-password" required></div>
     <div class="field-err" data-err hidden role="alert"></div>
-    <button class="btn primary" type="submit" style="width:100%">Save password</button></form>`);
+    <button class="auth-submit" type="submit">Save password</button></form>`);
   const form = root.querySelector('[data-setpw]'), err = form.querySelector('[data-err]');
   form.querySelector('#p1').focus();
   form.addEventListener('submit', async e => {
@@ -934,11 +952,11 @@ function renderSetPassword() {
   });
 }
 function renderDenied(email) {
-  authFrame(`<h1>Access denied</h1><p class="sub">${esc(email || 'This account')} is signed in but is not a platform admin. Access is granted directly in the database by an existing admin.</p><button class="btn primary" data-signout-denied style="width:100%;margin-top:14px">Sign out</button>`);
+  authFrame(`<h1>Access denied</h1><p class="sub">${esc(email || 'This account')} is signed in but is not a platform admin. Access is granted directly in the database by an existing admin.</p><button class="auth-submit" data-signout-denied>Sign out</button>`);
   root.querySelector('[data-signout-denied]').addEventListener('click', signOut);
 }
 function renderBootError(e) {
-  authFrame(`<h1>Could not reach Cefflo</h1><p class="sub">${esc(e.message)}</p><button class="btn primary" data-boot-retry style="width:100%;margin-top:14px">Try again</button>`);
+  authFrame(`<h1>Could not reach Cefflo</h1><p class="sub">${esc(e.message)}</p><button class="auth-submit" data-boot-retry>Try again</button>`);
   root.querySelector('[data-boot-retry]').addEventListener('click', boot);
 }
 let bouncing = false;
