@@ -611,3 +611,18 @@ table.t .sub { font-size: var(--t-meta); margin-top: 2px; }
 /* polish: form grids align to the top; inline rows align controls to a common baseline */
 .field { align-content: start; }
 .person { white-space: nowrap; }
+
+/* auth: viewport-aware vertical composition (dynamic viewport + safe areas).
+   Free height is shared hero 3 : bottom 1 instead of pinning the actions to
+   the bottom edge; gaps and the logo shrink on short screens first. */
+.auth {
+  min-height: 100vh; min-height: 100dvh;
+  padding-top: calc(clamp(8px, 2dvh, 20px) + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(clamp(12px, 3dvh, 32px) + env(safe-area-inset-bottom, 0px));
+}
+.auth-hero { flex: 3 1 auto; gap: clamp(12px, 3dvh, 26px); padding: clamp(12px, 4dvh, 40px) 0; }
+.auth-logo { width: clamp(96px, 19dvh, 150px); }
+.auth-bottom { gap: clamp(10px, 1.6dvh, 14px); }
+.auth-invite { margin-top: clamp(4px, 1.4dvh, 14px); }
+.auth::after { content: ''; flex: 1 1 0; min-height: 0; }
+@media (min-width: 960px) { .auth-logo { width: clamp(110px, 19dvh, 170px); } }
