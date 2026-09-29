@@ -540,6 +540,133 @@ Each provider case: new account, existing email account keeps the same `auth.use
 
 No batch touches migrations or RLS.
 
+
+## 8.10 FG-8 — Apple Hide My Email: Identity Architecture Note (analysis only, 2026-09-29)
+
+**Status:** analysis for Founder decision. No backend, schema, RLS or Auth-config change is authorized or made. Invitation email matching is NOT weakened. A private relay address is NOT treated as the same identity as any other email. No custom merging.
+
+### 8.10.1 Verified facts
+
+| # | Fact | Source |
+|---|---|---|
+| F1 | Supabase Auth automatically links identities with the same email to one user, only when the email is verified; when it links, it removes other unconfirmed identities of that user | Supabase docs "Identity linking" (fetched 2026-09-29), E11 |
+| F2 | Manual linking (`linkIdentity()`) links an OAuth identity with a different email to the signed-in user; it must be enabled (`GOTRUE_SECURITY_MANUAL_LINKING_ENABLED` / dashboard) and requires the user to be signed in | same, E11 |
+| F3 | Unlinking needs a signed-in user with at least 2 identities | same, E11 |
+| F4 | Supabase Auth does not store provider tokens (`provider_token`, `provider_refresh_token`); the app must send them to a trusted server if needed later | Supabase docs "Social login" (fetched), E12 |
+| F5 | Private relay addresses route to a verified Apple Account address; are identical across all apps of one developer team; carry a limit of 100 emails/day; can be managed/stopped by the user in Settings → Sign in with Apple; when the user stops forwarding, the relay rejects all future email | Apple "Communicating using the private email relay service" (fetched), E13 |
+| F6 | To send to relay addresses, outbound emails/domains must be registered with Apple and authenticated with SPF | same, E13 |
+| F7 | Invitation claims (`claim_my_team_invitations`, `claim_my_rider_invitations`) match `lower(trim(auth.users.email))` of the confirmed caller to `invited_email`; token acceptance (`accept_*_invitation`) exists server-side | migrations `202609280001/2`, E5 |
+| F8 | Staging has 120 identities, all `email` | E10 |
+
+### 8.10.2 Scenario analysis
+
+| Scenario | What happens with the current architecture | Risk |
+|---|---|---|
+| Existing Vendor Owner (email account) → Apple, sharing real email | Apple identity auto-links to the existing user if that email is verified (F1) | Low; must be proven in Batch E |
+| Existing Vendor Owner → Apple with Hide My Email | Relay address ≠ account email → **new, separate user**; no business, lands in Business Setup; could create a second business | **Duplicate account / duplicate business** |
+| New Vendor Owner → Apple with Hide My Email | New user with relay email; works; all auth email (reset, notices) goes via relay (F5) | Relay must be registered (F6); if user stops forwarding, email recovery is lost (see recovery) |
+| Operator invitation → Apple with Hide My Email | Claim compares relay email to invited email → no match → **no-access** | Invitee stuck; not a security hole (fails closed) |
+| Helper invitation → Apple with Hide My Email | Same as Operator → no-access | Same |
+| Driver | Driver is Email only (8.1.0) → not affected | None |
+| Password recovery for an Apple-only user | No password exists; "Forgot password" does not apply; access is via Apple. Email reset links would go to the relay | Losing Apple ID access = losing Cefflo access unless another identity is linked |
+| User stops relay forwarding | Cefflo can no longer email the user (security notices, receipts); login via Apple still works | Silent loss of communication channel |
+| Account deletion (Apple user) | Needs Apple token revocation (FG-10 §8.11.5); Supabase does not hold Apple tokens (F4) | Revocation needs a token captured at sign-in or the manual path |
+
+Security implications: the current design fails closed (a non-matching relay email never gains a membership). Any model that lets a relay-email user claim an invitation must bind to something the inviter controls (the invitation token) or to a verified real email — never to a name, phone or unverified claim.
+
+### 8.10.3 Safe solution models (Founder to choose; none chosen or implemented)
+
+| Model | How it works | Pros | Cons / work |
+|---|---|---|---|
+| **M1 — Real email required for invited roles and existing accounts** | Keep email-based claim. Operator/Helper invitations and existing Owners are told (Invitation PWA + sign-in copy) to share their real email with Apple or use Continue with Email. New Owners may use Hide My Email freely | No backend change; strongest invitation binding; simplest | UX friction; relies on the user choosing correctly; wrong choice still yields no-access (fails closed) and a possible duplicate Owner account |
+| **M2 — Token-bound claim at acceptance** | The invitee signs in first (any provider, including relay), then accepts with the invitation token; the server binds the membership to `auth.uid()` via the existing `accept_*_invitation` token path instead of email equality | Works with Hide My Email; binding is to the secret token the inviter sent | Backend identity-rule change (Founder gate); token possession becomes the proof, so token handling, expiry and single use must be airtight; the invited email is no longer verified to match |
+| **M3 — Manual identity linking** | Enable manual linking (F2). A signed-in email user links their Apple identity (with relay) from Settings; invitations and Owner accounts stay email-bound | No duplicate accounts for users who link; keeps email matching intact | Requires enabling a Supabase Auth setting; linking UI; does not help a brand-new invitee who only has Apple |
+
+M1 can ship alone; M3 can complement M1 or M2. Duplicate Owner accounts are only prevented by M3 (or user choice under M1).
+
+---
+
+## 8.11 FG-10 — Account Lifecycle / Deletion Impact Audit (analysis only, 2026-09-29)
+
+**Status:** analysis for Founder decision. No deletion code, schema or RLS change. "Delete account" must never mean "delete business" unless explicitly decided; Owner identity lifecycle and Business lifecycle are separate.
+
+### 8.11.1 Verified data model (staging schema, E14)
+
+`auth.users` deletion today would:
+- **CASCADE:** `profiles`, `business_members` (membership rows), `notifications`, `notification_preferences`, `platform_admins`, auth sessions/identities/tokens.
+- **SET NULL (row kept, actor unlinked):** `riders.auth_user_id`, `orders.approved_by`, `delivery_sessions.sorting_started_by`, `delivery_stops.{ready_by, pod_submitted_by, packed_by, packing_confirmed_by, preparation_updated_by, sorted_by}`, `delivery_events.actor_user_id`, `business_profile_audit.actor_user_id`, `admin_audit_log.admin_user_id`, `team_invitations.accepted_by`, `rider_invitations.accepted_by`, `delivery_outsourcing.*_by`, `business_subscriptions.updated_by`, platform/admin tables' `*_by`.
+- **RESTRICT (deletion fails):** `team_invitations.invited_by`, `rider_invitations.invited_by`, `helper_workers.invited_by` → **any user who ever sent an invitation cannot be deleted** without first handling those rows.
+
+Business ownership is **only** `business_members.role = 'owner'` (`businesses` has no owner column); roles are `owner, operator, helper`. No trigger protects the last Owner. 15 staging businesses already have more than one Owner. `businesses` deletion cascades orders, stops, events, riders, zones, invitations, subscriptions, products, media, public pages, notifications. 2 staging Driver accounts are linked to more than one business (`riders` row per business). Storage buckets: `cefflo-pod` (private), `cefflo-product-originals` (private), `cefflo-product-display` (public).
+
+Personal data columns: `profiles.{display_name, phone}`, `riders.{name, phone, vehicle_plate}` + `rider_locations`, `helper_workers.{display_name, contact}`, `rider_invitations.{invited_email, invited_name, invited_phone}`, `team_invitations.invited_email`, `businesses.{name, phone, email, address}` (business, not person), `orders.{customer_name, customer_phone, delivery_address, notes}` (customer data, business-owned), `ratings.feedback`, `delivery_stops.pod_note` + POD objects, `delivery_outsourcing.{contact, driver_name}`, JSON `metadata` in `delivery_events` / `admin_audit_log`.
+
+### 8.11.2 Impact by role
+
+| Area | A. Vendor Owner | B. Operator | C. Helper | D. Driver |
+|---|---|---|---|---|
+| auth user / profile | delete / delete | delete / delete | delete / delete | delete / delete |
+| Membership | removed (cascade) | removed | removed | n/a (`riders` rows) |
+| Business ownership | **must be resolved first** (see 8.11.3) | none | none | none |
+| Orders / runs / stops / events | business-owned; retained; actor columns SET NULL | same | same | business-owned; retained; `rider_id` kept on anonymized rider row |
+| Assignments / delivery history | retained (business record) | retained | retained | retained against anonymized `riders` row |
+| Ratings | n/a | n/a | n/a | retained (rider-linked); `feedback` is customer text, business-owned |
+| POD | n/a | n/a | n/a | photos are delivery evidence (business record); retention decision needed |
+| Live location | n/a | n/a | n/a | `rider_locations` → delete |
+| Notifications / prefs | delete (cascade) | delete | delete | delete |
+| Audit logs | retain, actor unlinked | retain | retain | retain |
+| Invitations sent | **blocks deletion (RESTRICT)** → reassign/anonymize `invited_by` | same if they invited | n/a | n/a |
+| Invitations received | `invited_email` → anonymize after acceptance | same | same | `invited_email/name/phone` → anonymize |
+| Subscriptions | business-level; not deleted with the person | n/a | n/a | n/a |
+| Apple revocation | if Apple-linked | if Apple-linked | if Apple-linked | n/a (Email only) |
+
+Classification: **delete** — auth user, identities, sessions, profile, notifications, preferences, live locations, device/local data. **Anonymize** — `riders` name/phone/plate, invitation contact fields, `helper_workers` contact, personal names inside JSON metadata. **Retain (business/legal/operational)** — orders, stops, events, assignments, ratings, audit logs, POD (subject to a retention period decision). Legal retention periods are a Founder/legal decision (not determined here).
+
+### 8.11.3 Owner deletion vs Business lifecycle
+
+- If another Owner exists → remove only this Owner's membership; business continues.
+- If sole Owner → deletion must be **blocked until** the Owner either transfers ownership (promote an Operator/another member to Owner) or separately and explicitly chooses **Close business** (a distinct, confirmed business-lifecycle action with its own retention rules). Deleting the auth user alone today would leave an ownerless business (cascade removes the only owner membership).
+
+### 8.11.4 Proposed deletion architecture (not implemented)
+
+User requests deletion → re-authentication/confirmation (fresh sign-in; typed confirmation) → server pre-checks (sole-Owner block; sent-invitation rows) → **Apple authorization revoked where applicable** → Cefflo identity lifecycle (single server-side RPC/Edge Function with service role, idempotent, audited) → personal data deleted/anonymized per 8.11.2 → operational records retained with actor unlinked → memberships removed → sessions invalidated (all devices) → confirmation shown in-app (and by email if a deliverable address exists) → client returns to signed-out state and clears local data.
+
+### 8.11.5 Apple token revocation (Vendor Apple users; Driver not applicable)
+
+- Endpoint `POST https://appleid.apple.com/auth/revoke` with `client_id` (App ID / Services ID), `client_secret` (JWT signed with the Sign in with Apple key), `token` (refresh or access token), `token_type_hint` (E15).
+- Supabase does not store Apple tokens (F4) → Batch E must capture a refresh token (or authorization code) at Apple sign-in and store it server-side, encrypted, for later revocation; or use Apple's manual path: delete account data, direct the user to revoke in Apple ID settings, and handle the credential-revoked notification (TN3194, E15).
+- If revocation is skipped, a returning user is not shown the initial Apple authorization again (TN3194).
+
+### 8.11.6 Backend areas eventually affected
+
+New deletion RPC/Edge Function (service role); `invited_by` RESTRICT handling on `team_invitations`, `rider_invitations`, `helper_workers`; sole-Owner guard and ownership transfer on `business_members`; anonymization of `riders`, invitation tables, `helper_workers`, JSON metadata; `rider_locations` purge; storage (`cefflo-pod`) retention; Apple token store (if M chosen for revocation); audit event for deletion; RLS for any new tables. All are P6-sensitive and need Founder gates.
+
+### 8.11.7 Security risks
+
+Account takeover via weak re-auth before deletion; deletion by a stolen session (require fresh auth); partial deletion leaving orphaned PII; ownerless business; retained PII in JSON metadata/logs; Apple token storage (secret handling); relay-email duplicates enabling a second business; invitation token replay if M2 is chosen.
+
+### 8.11.8 Recommended UI placement
+
+- Vendor Mobile (Owner/Operator/Helper): More → Settings → Account → **Delete account** (separate from any business setting). Owner sees the ownership-transfer/close-business step when sole Owner.
+- Driver Mobile: Profile/Settings → Account → **Delete account**.
+- Vendor Web: Settings → Account → Delete account (not an Apple requirement; recommended for parity — Founder decision).
+- FOUNDR: out of scope (platform admins managed in the database).
+
+### 8.11.9 Dependency graph (Batch E, P1, P6)
+
+```
+FG-1 stable staging URLs ──┐
+FG-8 identity model ───────┼─► Batch E (Vendor Google + Apple) ─► P1 Batch I (E2E)
+Provider credentials ──────┤
+Apple config (App ID,      │
+  Services ID, key, relay  │
+  domain registration F6) ─┘
+FG-10 deletion architecture ─► P6 backend design (deletion RPC, anonymization,
+  (8.11) + Founder gates        RESTRICT handling, sole-Owner guard) ─► implementation
+                              ─► Apple token capture decided before Batch E ships Apple
+iOS App Store submission ◄── Batch E (Apple) + FG-10 implemented + Batch I
+```
+
 ---
 
 # 9. P2 — Core Backend Wiring
@@ -840,9 +967,9 @@ Maintain one centralized register to prevent repeated decisions.
 | FG-5 | Sign-in providers | Unconfigured / fake / missing today | FOUNDER LOCKED — CEFFLO V1 AUTH PROVIDER ARCHITECTURE (8.1.0): Vendor iOS Email+Apple, Vendor Android Email+Google, Vendor Web Email+Google, Driver Email only, FOUNDR Google only | VM, VW, Operator, Helper, Driver, FOUNDR | G7 | 🟣 LOCKED — Vendor credentials pending |
 | FG-6 | DMARC for `cefflo.com`, `auth.cefflo.com` | None (E6) | Approved: monitoring policy first | Deliverability | P8 | 🟣 APPROVED DIRECTION — exact records to be presented |
 | FG-7 | Merge `claude/notification-system` → `main` | P1 work not canonical | HOLD until P1 evidence complete | Canonical state | P1 platform verification | 🟣 HOLD |
-| FG-8 | Apple Hide My Email vs email-based invitation claim | Private-relay email never matches `invited_email` (8.8.6) | e.g. require invitees to share their real Apple email; token-bound claim at acceptance; other — backend identity rule change needs approval | Operator, Helper on Vendor iOS (Driver excluded: Email only) | E2 invited-role flows | 🟣 OPEN — STOP before backend identity changes |
-| FG-9 | FOUNDR Google-only vs current Email + password | Locked target differs from current implementation (8.8.6) | confirm removal of FOUNDR email/password + recovery once Google is live; admin identity linking | FOUNDR | E1 FOUNDR | 🟣 OPEN — the Founder brief refers to an "existing Google architecture", but FOUNDR is Email + password today (no Google code or identity exists, E10); clarification needed |
-| FG-10 | In-app account deletion (Guideline 5.1.1(v)) + Sign in with Apple token revocation | Mandatory for iOS apps with account creation (E9); missing today | scope/backend design needs approval (deletion affects business data) | Vendor Mobile iOS, Driver Mobile iOS (both support account creation) | iOS submission | 🟣 OPEN |
+| FG-8 | Apple Hide My Email vs email-based invitation claim | Relay email never matches `invited_email`; duplicate Owner risk (8.10) | M1 real email for invited/existing users · M2 token-bound claim · M3 manual identity linking (8.10.3) | Vendor Owner, Operator, Helper on iOS | Batch E | 🟣 OPEN — analysis done, no backend change authorized |
+| FG-9 | FOUNDR Google-only vs current Email + password (DECIDED 2026-09-29: target Google only; keep Email/Password as transitional staging access until Google-only is implemented, staging-E2E verified, admin authorization verified, recovery/access reviewed and cutover approved — no premature lockout) | Locked target differs from current implementation (8.8.6) | confirm removal of FOUNDR email/password + recovery once Google is live; admin identity linking | FOUNDR | E1 FOUNDR | 🟣 OPEN — the Founder brief refers to an "existing Google architecture", but FOUNDR is Email + password today (no Google code or identity exists, E10); clarification needed |
+| FG-10 | In-app account deletion + Apple token revocation | Mandatory (E9); CONFIRMED as Production Readiness requirement 2026-09-29 | Architecture in 8.11; open decisions: sole-Owner rule (transfer vs close business), retention periods, POD retention, Vendor Web placement, Apple token capture vs manual revocation | Vendor Mobile, Driver Mobile (+ Vendor Web optional) | iOS submission, P6 | 🟣 CONFIRMED — design pending, not authorized |
 
 Founder approval is required before protected backend/schema/RLS/auth configuration changes, production deployment, or other decisions already governed by Cefflo’s canonical rules.
 
@@ -878,6 +1005,12 @@ A UI screenshot alone does not prove backend persistence or authorization.
 | E8 | Apple App Review Guideline 4.8 (re-checked for 8.1.0 on 2026-09-29: Vendor iOS offers Email + Sign in with Apple, no third-party login → 4.8 not triggered; Driver iOS Email only → not triggered) (Login Services), fetched 2026-09-29 from developer.apple.com/app-store/review/guidelines: extra equivalent login required only when a third-party/social login is used for the primary account | Apple official |
 | E9 | Guideline 5.1.1(v) + "Offering account deletion in your app": in-app account deletion required when account creation is supported; Sign in with Apple apps should revoke tokens via the REST API | Apple official, fetched 2026-09-29 |
 | E10 | staging `auth.identities`: 120 rows, all provider `email`; no Google/Apple identities | staging DB read |
+| E11 | Supabase identity linking: automatic linking only for verified same-email identities (removes other unconfirmed identities); manual linking needs setting + signed-in user; unlink needs ≥2 identities | supabase.com/docs/guides/auth/auth-identity-linking (fetched 2026-09-29) |
+| E12 | Supabase does not store provider tokens | supabase.com/docs/guides/auth/social-login (fetched 2026-09-29) |
+| E13 | Apple private relay: same per developer team, 100 emails/day, user can stop forwarding (relay then rejects), outbound domains must be registered + SPF | developer.apple.com "Communicating using the private email relay service" (fetched 2026-09-29) |
+| E14 | Staging FK/ON DELETE map, ownership model, roles, buckets, PII columns (8.11.1) | staging `pg_constraint` / `information_schema` reads 2026-09-29 |
+| E15 | Apple revoke endpoint `POST https://appleid.apple.com/auth/revoke` (client_id, client_secret JWT, token, token_type_hint) and TN3194 manual revocation path | developer.apple.com Sign in with Apple REST API + TN3194 (fetched 2026-09-29) |
+| E16 | P1 Batch C+D implemented in `32ff558`; tests Vendor 161/161, Driver 59/59 — IMPLEMENTED-UNVERIFIED (real-device E2E pending) | commit + local test runs |
 | E7 | Automated tests: Vendor Mobile 159/159, Driver 55/55, FOUNDR recovery 10/10, repo 64/64 (support QA; not staging E2E) | local runs on `d04ad34` |
 
 ---
