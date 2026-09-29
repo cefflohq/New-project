@@ -8,6 +8,9 @@ import { loadContext, clearContext, HelperOnlyError, NoBusinessError } from './s
 import { mountShell } from './shell.js';
 import { errorState } from './ui.js';
 import { renderSignIn, renderSetPassword, renderExpired, renderNoOperatorAccess } from './pages/auth.js';
+import { renderBusinessSetup } from './pages/setup.js';
+import { openAddOrder } from './pages/order_actions.js';
+import { openAddRider } from './pages/riders.js';
 import today from './pages/today.js';
 import orders from './pages/orders.js';
 import zones from './pages/zones.js';
@@ -54,7 +57,24 @@ async function start(message = '') {
       renderNoOperatorAccess(root, { onRetry: () => start(), onSignOut: () => signOut() });
       return;
     }
-    if (e instanceof HelperOnlyError || e instanceof NoBusinessError) {
+    // Owner onboarding: a signed-in account with no business (and not
+    // entering as an Operator) sets up its business with the existing
+    // bootstrap_business. The server decides everything; this only guides.
+    if (e instanceof NoBusinessError) {
+      renderBusinessSetup(root, {
+        reload: () => loadContext(),
+        onSignOut: () => signOut(),
+        onExpired: async () => { await api.signOut(); clearContext(); start(t('setup.expired')); },
+        onReady: action => {
+          location.hash = action === 'area' ? '#/settings/business' : '#/today';
+          mountShell(root, PAGES, { signOut });
+          if (action === 'rider') openAddRider();
+          if (action === 'order') openAddOrder();
+        },
+      });
+      return;
+    }
+    if (e instanceof HelperOnlyError) {
       await api.signOut();
       renderSignIn(root, { onSignedIn: () => start(), message: e instanceof HelperOnlyError ? t('auth.helper') : t('c.noBusiness') });
       return;

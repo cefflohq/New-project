@@ -647,3 +647,54 @@ table.t .sub { font-size: var(--t-meta); margin-top: 2px; }
    viewports the logo and gaps give way first, as on Vendor Mobile. */
 .auth-hero.op { gap: clamp(8px, 1.8dvh, 22px); padding: clamp(8px, 2.5dvh, 40px) 0; }
 .auth-hero.op .auth-logo { width: clamp(72px, 14dvh, 150px); }
+
+/* ---------------- business setup (owner onboarding) ---------------- */
+.onb { display: grid; grid-template-columns: minmax(300px, 420px) 1fr; min-height: 100vh; background: var(--bg); }
+.onb-side { background: var(--sidebar-bg); color: #fff; padding: 40px 40px 28px; display: flex; flex-direction: column; gap: 28px; position: relative; overflow: hidden; }
+.onb-logo { width: 56px; height: auto; filter: drop-shadow(0 12px 24px rgba(1, 20, 70, .3)); }
+.onb-kicker { font-size: 13px; font-weight: 600; letter-spacing: .45em; opacity: .85; }
+.onb-side h1 { margin: 10px 0 8px; font-size: 32px; font-weight: 800; letter-spacing: -.6px; line-height: 1.15; text-wrap: balance; }
+.onb-side p { margin: 0; color: rgba(255,255,255,.82); font-size: 15.5px; line-height: 1.5; max-width: 32ch; }
+.onb-steps { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 14px; }
+.onb-steps li { display: flex; align-items: center; gap: 14px; font-size: 16px; color: rgba(255,255,255,.7); }
+.onb-steps li.on { color: #fff; font-weight: 700; }
+.onb-steps li.done { color: #fff; }
+.onb-num { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,.45); display: grid; place-items: center; font-weight: 700; flex: none; }
+.onb-steps li.on .onb-num { background: #fff; color: var(--sidebar-active-ink); border-color: #fff; }
+.onb-steps li.done .onb-num { background: var(--cta); border-color: var(--cta); color: var(--cta-ink); }
+.onb-num svg { width: 18px; height: 18px; }
+.onb-signout { margin-top: auto; align-self: flex-start; display: inline-flex; gap: 10px; align-items: center; border: 0; background: rgba(255,255,255,.12); color: #fff; border-radius: 12px; padding: 10px 14px; cursor: pointer; font-weight: 600; }
+.onb-main { display: grid; place-items: center; padding: 40px 24px; }
+.onb-card { width: min(520px, 100%); padding: 32px 32px 28px; }
+.onb-card form { display: grid; gap: 16px; }
+.onb-count { font-size: 12.5px; font-weight: 700; letter-spacing: .08em; color: var(--primary); text-transform: uppercase; }
+.onb-card h2 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.4px; }
+.onb-lead { margin: -8px 0 4px; color: var(--muted); font-size: 15px; line-height: 1.5; }
+.onb-row { display: grid; grid-template-columns: 160px 1fr; gap: 14px; }
+.onb-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 6px; }
+.onb-actions.center { justify-content: center; }
+.onb-center { display: grid; justify-items: center; text-align: center; gap: 14px; }
+.onb-center .onb-lead { margin: -6px 0 6px; }
+.onb-status { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; background: var(--primary-tint); color: var(--primary); }
+.onb-status svg { width: 36px; height: 36px; }
+.onb-status.ok { background: var(--success-tint); color: var(--success); }
+.onb-status.warn { background: var(--warning-tint); color: var(--warning); }
+.onb-go { width: 100%; height: 52px; }
+.onb-next { width: 100%; display: grid; gap: 8px; margin-top: 10px; text-align: left; }
+.onb-next > span { font-size: 13px; color: var(--muted); font-weight: 600; }
+.onb-next button { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--ink); cursor: pointer; text-align: left; }
+.onb-next button:hover { background: var(--surface-hover); }
+.onb-next button > svg:first-child { color: var(--primary); }
+.onb-next button > svg:last-child { margin-left: auto; color: var(--faint); }
+.onb-next b { display: block; font-size: 15px; }
+.onb-next small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+@media (max-width: 900px) {
+  .onb { grid-template-columns: 1fr; }
+  .onb-side { padding: 24px 20px; gap: 16px; }
+  .onb-side h1 { font-size: 24px; }
+  .onb-steps { grid-auto-flow: column; justify-content: start; gap: 22px; }
+  .onb-signout { position: absolute; top: 20px; right: 20px; margin: 0; }
+  .onb-main { padding: 20px 16px 32px; place-items: start center; }
+  .onb-card { padding: 24px 20px; }
+}
+@media (max-width: 480px) { .onb-row { grid-template-columns: 1fr; } .onb-steps { grid-auto-flow: row; } }

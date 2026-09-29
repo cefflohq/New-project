@@ -33,6 +33,9 @@ async function refreshSession() {
   if (!s?.refresh_token) throw Object.assign(new Error('Session expired'), { status: 401 });
   refreshing ??= authFetch('/auth/v1/token?grant_type=refresh_token', { body: { refresh_token: s.refresh_token } })
     .then(next => base.setSession(next))
+    // A refresh the server rejects means the session is over: report it as
+    // an expired session (401), never as an ordinary request error.
+    .catch(() => { throw Object.assign(new Error('Session expired'), { status: 401 }); })
     .finally(() => { refreshing = null; });
   return refreshing;
 }
@@ -94,6 +97,8 @@ export const api = {
     if (isDemo()) throw readOnly();
     return call(() => authFetch('/auth/v1/user', { method: 'PUT', body: attrs, token: base.session()?.access_token }));
   },
+  // Supabase Edge Function with the signed-in user's JWT (e.g. geocode-order).
+  fn: (name, body) => call(() => authFetch(`/functions/v1/${name}`, { body, token: base.session()?.access_token })),
   refreshSession,
 };
 

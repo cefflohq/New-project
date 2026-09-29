@@ -4,6 +4,23 @@
 import { prefs } from './prefs.js';
 
 const en = {
+  // business setup (owner onboarding)
+  'c.optional': 'Optional', 'setup.sideTitle': 'Set up your business', 'setup.sideLead': 'Two quick steps and your delivery workspace is ready.',
+  'setup.step1': 'Your Business', 'setup.step2': 'Pickup Location', 'setup.stepOf': 'Step {n} of 2',
+  'setup.step1Lead': 'Tell us who you are. You can change this later in Business Profile.',
+  'setup.step2Lead': 'Where riders collect your orders.', 'setup.contactPhone': 'Contact Phone',
+  'setup.emailHint': 'Your account email. It is used for your business.', 'setup.nameTooLong': 'Use 120 characters or fewer.',
+  'setup.street': 'Street / Pickup Address', 'setup.postcode': 'Postcode', 'setup.city': 'City',
+  'setup.postcodeInvalid': 'Enter a 5-digit Malaysian postcode.', 'setup.continue': 'Continue', 'setup.create': 'Create Business',
+  'setup.creating': 'Creating…', 'setup.finishing': 'Opening your business…', 'setup.finishingLead': 'Your business was created. Loading your workspace.',
+  'setup.reloadFailed': 'Your business was created', 'setup.reloadFailedLead': 'We could not load it yet. Try again — no second business will be created.',
+  'setup.readyKicker': 'BUSINESS READY', 'setup.readyTitle': 'Your business is ready', 'setup.readyLead': '{name} is set up on Cefflo.',
+  'setup.goToday': 'Go to Today', 'setup.nextSteps': 'Recommended next steps (optional)',
+  'setup.setArea': 'Set Service Area', 'setup.setAreaSub': 'Your pickup origin and delivery radius.',
+  'setup.addRiderSub': 'Invite a rider to your delivery team.', 'setup.firstOrder': 'Add First Order', 'setup.firstOrderSub': 'Create your first delivery order.',
+  'setup.expired': 'Your session expired. Sign in again to continue — your setup is saved on this device.',
+  'bp.locate': 'Locate from business address', 'bp.located': 'Location found. Review the radius and save.',
+  'bp.locateFailed': 'We could not locate this address. Enter the coordinates manually.',
   // navigation
   'nav.today': 'Today', 'nav.orders': 'Orders', 'nav.zones': 'Zones', 'nav.runs': 'Active Runs',
   'nav.riders': 'Riders', 'nav.settings': 'Settings', 'nav.expand': 'Expand navigation',
@@ -229,6 +246,22 @@ const en = {
 };
 
 const ms = {
+  'c.optional': 'Pilihan', 'setup.sideTitle': 'Sediakan perniagaan anda', 'setup.sideLead': 'Dua langkah ringkas dan ruang kerja penghantaran anda sedia.',
+  'setup.step1': 'Perniagaan Anda', 'setup.step2': 'Lokasi Pengambilan', 'setup.stepOf': 'Langkah {n} daripada 2',
+  'setup.step1Lead': 'Beritahu kami tentang perniagaan anda. Anda boleh ubah kemudian di Profil Perniagaan.',
+  'setup.step2Lead': 'Tempat rider mengambil pesanan anda.', 'setup.contactPhone': 'Telefon Hubungan',
+  'setup.emailHint': 'E-mel akaun anda. Ia digunakan untuk perniagaan anda.', 'setup.nameTooLong': 'Guna 120 aksara atau kurang.',
+  'setup.street': 'Jalan / Alamat Pengambilan', 'setup.postcode': 'Poskod', 'setup.city': 'Bandar',
+  'setup.postcodeInvalid': 'Masukkan poskod Malaysia 5 digit.', 'setup.continue': 'Teruskan', 'setup.create': 'Cipta Perniagaan',
+  'setup.creating': 'Mencipta…', 'setup.finishing': 'Membuka perniagaan anda…', 'setup.finishingLead': 'Perniagaan anda telah dicipta. Memuatkan ruang kerja anda.',
+  'setup.reloadFailed': 'Perniagaan anda telah dicipta', 'setup.reloadFailedLead': 'Kami belum dapat memuatkannya. Cuba lagi — tiada perniagaan kedua akan dicipta.',
+  'setup.readyKicker': 'PERNIAGAAN SEDIA', 'setup.readyTitle': 'Perniagaan anda sedia', 'setup.readyLead': '{name} telah disediakan di Cefflo.',
+  'setup.goToday': 'Pergi ke Hari Ini', 'setup.nextSteps': 'Langkah seterusnya yang disyorkan (pilihan)',
+  'setup.setArea': 'Tetapkan Kawasan Servis', 'setup.setAreaSub': 'Asal pengambilan dan radius penghantaran anda.',
+  'setup.addRiderSub': 'Jemput rider ke pasukan penghantaran anda.', 'setup.firstOrder': 'Tambah Pesanan Pertama', 'setup.firstOrderSub': 'Cipta pesanan penghantaran pertama anda.',
+  'setup.expired': 'Sesi anda telah tamat. Log masuk semula untuk meneruskan — persediaan anda disimpan pada peranti ini.',
+  'bp.locate': 'Cari dari alamat perniagaan', 'bp.located': 'Lokasi dijumpai. Semak radius dan simpan.',
+  'bp.locateFailed': 'Kami tidak dapat mencari alamat ini. Masukkan koordinat secara manual.',
   'nav.today': 'Hari Ini', 'nav.orders': 'Pesanan', 'nav.zones': 'Zon', 'nav.runs': 'Run Aktif', 'nav.riders': 'Rider',
   'nav.settings': 'Tetapan', 'nav.expand': 'Kembangkan navigasi',
   'shell.switchBusiness': 'Tukar perniagaan', 'shell.notifications': 'Notifikasi',

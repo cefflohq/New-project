@@ -185,6 +185,7 @@ async function business(page) {
           <div class="field"><label>&nbsp;</label><input class="input" name="lng" inputmode="decimal" value="${esc(b.service_origin_longitude ?? '')}" placeholder="101.687"></div>
           <div class="field"><label>${esc(t('bp.radius'))} (km)</label><input class="input" name="radius" inputmode="decimal" value="${esc(b.service_coverage_radius_km ?? '')}"></div>
           <button class="btn soft" data-area>${esc(t('c.save'))}</button></div>
+        <button class="link-btn" type="button" data-locate style="margin-top:10px">${esc(t('bp.locate'))}</button>
         <div class="err" data-aerr hidden></div>
         <div style="margin-top:12px">${gatedNote(t('bp.mapGated'))}</div></div>
       <div class="sub-card"><h3>${esc(t('bp.schedule'))} · ${esc(t('bp.description'))} · ${esc(t('bp.social'))}</h3>${gatedNote(t('bp.gatedFields'))}</div>`;
@@ -198,6 +199,22 @@ async function business(page) {
         await busy(e.currentTarget, () => api.rpc('update_business_profile', { p_business_id: ctx.bid, p_name: v('name'), p_phone: v('phone') || null, p_email: v('email') || null, p_address: v('address') || null, p_operating_area: b.operating_area, p_timezone: b.timezone, p_currency: b.currency, p_idempotency_key: crypto.randomUUID() }));
         toast(t('c.saved'));
       } catch (ex) { err.textContent = ex.message; err.hidden = false; }
+    });
+    // Pickup origin from the saved business address: the existing
+    // geocode-order business mode, then the owner saves with the existing
+    // set_business_service_area. No polygons.
+    body.querySelector('[data-locate]').addEventListener('click', async e => {
+      const aerr = body.querySelector('[data-aerr]');
+      aerr.hidden = true;
+      try {
+        const res = await busy(e.currentTarget, () => api.fn('geocode-order', { business_id: ctx.bid }));
+        if (res?.status !== 'resolved') throw new Error(t('bp.locateFailed'));
+        body.querySelector('[name=lat]').value = res.latitude;
+        body.querySelector('[name=lng]').value = res.longitude;
+        const r = body.querySelector('[name=radius]');
+        if (!r.value) r.value = 5;
+        toast(t('bp.located'));
+      } catch (ex) { aerr.textContent = ex.message && ex.status !== 404 ? ex.message : t('bp.locateFailed'); aerr.hidden = false; }
     });
     body.querySelector('[data-area]').addEventListener('click', async e => {
       const aerr = body.querySelector('[data-aerr]');
