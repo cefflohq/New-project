@@ -256,41 +256,78 @@ table.t .sub { display: block; color: var(--muted); font-size: 12.5px; margin-to
 .sub-card .desc { color: var(--muted); margin: 0 0 12px; font-size: 14px; }
 .gated { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; background: var(--neutral-tint); color: var(--ink-2); font-size: 13.5px; }
 
-/* ---------------- auth (Cefflo brand, D-70) ---------------- */
+/* ---------------- auth (as Cefflo Vendor mobile sign-in) ---------------- */
 .auth {
-  --auth-grad: linear-gradient(160deg, #01265E 0%, #00378F 38%, #005CC4 72%, #0592EB 100%);
-  position: relative; min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr); align-content: center; justify-items: center;
-  gap: 28px; padding: 72px 20px 56px; background: var(--auth-grad); color: #fff; overflow: hidden; isolation: isolate;
+  position: relative; min-height: 100vh; display: flex; flex-direction: column; align-items: center; color: #fff;
+  padding: 20px 20px calc(36px + env(safe-area-inset-bottom, 0px)); overflow: hidden; isolation: isolate;
+  background:
+    radial-gradient(55% 32% at 68% 47%, rgba(70, 160, 255, .55) 0%, rgba(70, 160, 255, 0) 70%),
+    linear-gradient(180deg, #5BC0F8 0%, #3A9BEF 22%, #1A6FE0 45%, #0E4FBE 66%, #0A3486 84%, #061F5C 100%);
 }
-.auth::before { /* the Cefflo chevron facets, very faint */
-  content: ''; position: absolute; inset: -20% -10% auto auto; width: 70vmax; height: 70vmax; z-index: -1; pointer-events: none;
-  background: conic-gradient(from 200deg at 60% 50%, rgba(255,255,255,.07), rgba(255,255,255,0) 25%, rgba(255,255,255,.05) 50%, rgba(255,255,255,0) 75%);
-  border-radius: 50%; filter: blur(2px);
-}
-.auth-lang { position: absolute; top: 20px; right: 20px; display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(255,255,255,.12); }
-.auth-lang button { border: 0; background: transparent; color: rgba(255,255,255,.8); font-weight: 700; font-size: 13px; letter-spacing: .04em; height: 32px; min-width: 44px; border-radius: 999px; cursor: pointer; }
-.auth-lang button[aria-pressed="true"] { background: #fff; color: #01265E; }
-.auth-brand-side { display: grid; justify-items: center; text-align: center; gap: 10px; }
-.auth-wordmark { width: 180px; height: auto; }
-.auth-product { font-size: 13px; font-weight: 600; letter-spacing: .5em; margin-right: -.5em; color: rgba(255,255,255,.9); }
-.auth-tagline { margin: 8px 0 0; max-width: 30ch; font-size: 16px; line-height: 1.5; color: rgba(255,255,255,.78); }
-.auth-panel { width: min(440px, 100%); }
-.auth-card { width: 100%; background: var(--elevated); color: var(--ink); border-radius: 24px; box-shadow: 0 30px 80px -30px rgba(1, 16, 50, .6); padding: 32px 30px 28px; display: grid; gap: 16px; }
-.auth-card h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.4px; }
-.auth-card p { margin: -8px 0 0; color: var(--muted); }
-.auth-mark { width: 44px; height: 44px; border-radius: 12px; }
+.auth-top { align-self: stretch; display: flex; }
+.auth-lang { position: relative; }
+.auth-lang-btn { display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border: 0; border-radius: 12px; background: transparent; color: #fff; font-size: 17px; font-weight: 600; cursor: pointer; }
+.auth-lang-btn:hover { background: rgba(255,255,255,.12); }
+.auth-lang-btn svg { width: 22px; height: 22px; }
+.auth-lang-btn svg:last-child { width: 18px; height: 18px; }
+.auth-lang-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 5; min-width: 200px; padding: 6px; border-radius: 14px; background: #fff; box-shadow: 0 18px 50px rgba(1, 16, 50, .35); display: grid; }
+.auth-lang-menu[hidden] { display: none; }
+.auth-lang-menu button { text-align: left; border: 0; background: none; padding: 11px 12px; border-radius: 10px; font-size: 15px; color: #0F1A36; cursor: pointer; }
+.auth-lang-menu button:hover { background: #F0F4FB; }
+.auth-lang-menu button[aria-checked="true"] { font-weight: 700; color: #0060FE; }
+.auth-hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; padding: 40px 0; }
+.auth-logo { width: 150px; height: auto; filter: drop-shadow(0 18px 30px rgba(1, 20, 70, .25)); }
+.auth-product { font-size: 20px; font-weight: 600; letter-spacing: .55em; margin-right: -.55em; }
+.auth-bottom { width: min(460px, 100%); display: grid; gap: 14px; }
+.auth-pill { display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; height: 60px; border-radius: 999px; border: 0; background: #fff; color: #0F1A36; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 10px 30px -14px rgba(1, 16, 50, .5); transition: transform 120ms ease; }
+.auth-pill:hover { transform: translateY(-1px); }
+.auth-pill svg { width: 24px; height: 24px; }
+.auth-pill.ghost { background: rgba(255,255,255,.12); color: #fff; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.55); }
+.auth-hint { text-align: center; font-size: 13px; color: rgba(255,255,255,.7); margin-top: -4px; }
+.auth-invite { margin: 14px 0 0; text-align: center; font-size: 16px; color: rgba(255,255,255,.85); }
+.auth-link { border: 0; background: none; padding: 0; color: #fff; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.auth-invite-note, .auth-note { margin: 0; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,.14); color: #fff; font-size: 14px; line-height: 1.45; text-align: center; }
+.auth-card { width: 100%; background: var(--elevated); color: var(--ink); border-radius: 24px; box-shadow: 0 30px 80px -30px rgba(1, 16, 50, .6); padding: 28px 26px 22px; display: grid; gap: 14px; }
+.auth-card h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -.4px; }
+.auth-card p { margin: -6px 0 0; color: var(--muted); }
 .auth-card .btn.primary { height: 50px; background: #01265E; border-color: #01265E; }
 .auth-card .btn.primary:hover { background: #00378F; border-color: #00378F; filter: none; }
-.auth-foot { margin: 0; font-size: 12.5px; color: rgba(255,255,255,.6); }
-@media (min-width: 960px) {
-  .auth { grid-template-columns: minmax(0, 1fr) 440px; justify-items: start; align-items: center; gap: 48px 72px; padding: 64px max(64px, 8vw); }
-  .auth-brand-side { justify-items: start; text-align: left; gap: 14px; }
-  .auth-wordmark { width: 300px; }
-  .auth-product { font-size: 15px; }
-  .auth-tagline { font-size: 20px; max-width: 24ch; }
-  .auth-foot { position: absolute; left: max(64px, 8vw); bottom: 28px; }
-}
+.auth-card-links { display: flex; justify-content: space-between; gap: 12px; }
 :root[data-theme='dark'] .auth-card .btn.primary { background: var(--primary); border-color: var(--primary); }
+@media (min-width: 960px) {
+  .auth { padding: 28px 40px 48px; }
+  .auth-logo { width: 170px; }
+  .auth-bottom { width: 440px; }
+}
+@media (max-height: 720px) { .auth-hero { gap: 16px; padding: 16px 0; } .auth-logo { width: 110px; } }
+
+/* ---------------- sidebar polish (Founder reference: Riders) ---------------- */
+.brand { height: 48px; padding: 0 12px; margin-bottom: 30px; }
+.brand img { display: block; }
+.brand .mark { height: 30px; width: auto; }
+.brand .full { height: 46px; width: auto; display: none; }
+.sidebar.expanded .brand .full { display: block; }
+.nav { gap: 8px; }
+.nav a { height: 52px; padding: 0 16px; gap: 16px; font-size: 16.5px; font-weight: 500; border-radius: 14px; }
+.nav a svg.i { width: 22px; height: 22px; }
+.nav a.active { box-shadow: 0 8px 20px -10px rgba(3, 20, 70, .5); }
+.nav hr { margin: 14px 10px; }
+.biz-chip { padding: 10px; border-radius: 16px; background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); }
+.biz-chip .ico { width: 40px; height: 40px; border-radius: 12px; background: rgba(6, 25, 80, .6); }
+.biz-chip .txt { flex: 1; min-width: 0; }
+.biz-chip b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; }
+.biz-chip .chev { opacity: 0; transition: opacity 100ms ease; display: grid; }
+.biz-chip .chev svg { width: 18px; height: 18px; }
+.sidebar.expanded .biz-chip .chev { opacity: .85; }
+/* Desktop: the sidebar stays open with labels, as in the reference. */
+@media (min-width: 1200px) {
+  .shell { grid-template-columns: var(--sidebar-expanded) minmax(0, 1fr); }
+  .sidebar, .sidebar.expanded { width: var(--sidebar-expanded); box-shadow: none; padding: 26px 14px 18px; }
+  .brand .mark { display: none; }
+  .brand .full { display: block; }
+  .nav a .lbl, .biz-chip .txt { opacity: 1; }
+  .biz-chip .chev { opacity: .85; }
+}
 
 /* ---------------- responsive ----------------
    Desktop layout from 1200px. Below that the two-column screens stack; below

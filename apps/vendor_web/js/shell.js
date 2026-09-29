@@ -33,7 +33,7 @@ function renderFrame() {
   root.innerHTML = `
   <div class="shell">
     <aside class="sidebar" aria-label="Main navigation">
-      <div class="brand"><span class="mark">C</span><span class="full">Cefflo</span></div>
+      <div class="brand"><img class="mark" src="img/cefflo-mark-white.png" alt="Cefflo" width="26" height="32"><img class="full" src="img/cefflo-wordmark-white.png" alt="Cefflo" width="118" height="56"></div>
       <nav class="nav">
         ${NAV.map(([id, ic, key]) => `<a href="#/${id}" data-nav="${id}">${icon(ic)}<span class="lbl">${esc(t(key))}</span></a>`).join('')}
         <hr>
@@ -42,7 +42,7 @@ function renderFrame() {
       <div class="sidebar-foot">
         <button class="biz-chip" data-bizmenu aria-label="${esc(t('shell.switchBusiness'))}">
           <span class="ico">${icon('store')}</span>
-          <span class="txt"><b>${esc(b?.business_name)}</b><small>${esc(t(`shell.role.${b?.member_role}`))}</small></span>
+          <span class="txt"><b>${esc(b?.business_name)}</b><small>${esc(t(`shell.role.${b?.member_role}`))}</small></span><span class="chev">${icon('down')}</span>
         </button>
       </div>
     </aside>
