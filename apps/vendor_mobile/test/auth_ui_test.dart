@@ -54,6 +54,20 @@ void main() {
     expect(authRedirectUrl, 'cefflo-vendor://auth-callback');
   });
 
+  test('a web build returns recovery links to the page it is served from', () {
+    expect(
+      webAuthRedirectUrl(Uri.parse('https://vendor.example.app/?code=abc#/x')),
+      'https://vendor.example.app/',
+    );
+    // The Operator / Helper Sign-In variant survives the round trip.
+    expect(
+      webAuthRedirectUrl(
+        Uri.parse('https://vendor.example.app/?access=operator&code=abc'),
+      ),
+      'https://vendor.example.app/?access=operator',
+    );
+  });
+
   group('locked copy is present', () {
     testWidgets('02 Sign In offers all three locked entry points', (
       tester,

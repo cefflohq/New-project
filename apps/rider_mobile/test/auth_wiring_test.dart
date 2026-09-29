@@ -45,6 +45,17 @@ void main() {
     expect(authRedirectUrl, 'cefflo-driver://auth-callback');
   });
 
+  test('a web build returns recovery links to the page it is served from', () {
+    expect(
+      webAuthRedirectUrl(Uri.parse('https://driver.example.app/?code=abc#/x')),
+      'https://driver.example.app/',
+    );
+    expect(
+      webAuthRedirectUrl(Uri.parse('http://127.0.0.1:8080/app/')),
+      'http://127.0.0.1:8080/app/',
+    );
+  });
+
   test('auth errors map from backend codes, not provider prose', () {
     expect(
       driverAuthErrorText(

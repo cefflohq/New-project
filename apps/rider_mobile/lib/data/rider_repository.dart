@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'driver_models.dart';
@@ -11,7 +12,27 @@ import 'package:cefflo_rider_mobile/l10n/l10n.dart';
 /// Native auth callback (password recovery link). Registered in the
 /// Android manifest and iOS Info.plist, and must be in the Supabase Auth
 /// redirect allowlist for the environment.
-const authRedirectUrl = 'cefflo-driver://auth-callback';
+const nativeAuthRedirectUrl = 'cefflo-driver://auth-callback';
+
+/// Where emailed auth links (recovery, sign-up confirmation) return to.
+/// Native builds use the app's deep link; a web build returns to the page
+/// it is served from, since a browser cannot open the custom scheme.
+String get authRedirectUrl =>
+    kIsWeb ? webAuthRedirectUrl(Uri.base) : nativeAuthRedirectUrl;
+
+/// The current page without any auth callback parameters or fragment. Only
+/// the Sign-In variant (`access`) is kept, so an Operator or Helper returns
+/// to the same variant. Must match a Supabase Auth Redirect URL entry.
+String webAuthRedirectUrl(Uri base) {
+  final access = base.queryParameters['access'];
+  return Uri(
+    scheme: base.scheme,
+    host: base.host,
+    port: base.hasPort ? base.port : null,
+    path: base.path.isEmpty ? '/' : base.path,
+    queryParameters: access == null ? null : {'access': access},
+  ).toString();
+}
 
 class RepositoryError implements Exception {
   RepositoryError(this.message, {this.isMissingContract = false, this.code});
