@@ -262,3 +262,70 @@ table.t .sub { display: block; color: var(--muted); font-size: 12.5px; margin-to
 .auth-card h1 { margin: 0; font-size: 26px; font-weight: 800; }
 .auth-card p { margin: 0; color: var(--muted); }
 .auth-brand { font-weight: 800; font-size: 28px; color: var(--primary); letter-spacing: -.5px; }
+
+/* ---------------- responsive ----------------
+   Desktop layout from 1200px. Below that the two-column screens stack; below
+   900px the rows tighten; below 768px the sidebar becomes a bottom navigation
+   bar and the top bar wraps. Inline widths on search boxes give way here. */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.g4 { display: grid; grid-template-columns: 1fr 1fr 140px auto; gap: 10px; align-items: end; }
+.card-h { flex-wrap: wrap; }
+.tabs { overflow-x: auto; scrollbar-width: none; }
+.tabs button { flex: none; white-space: nowrap; }
+.tabs::-webkit-scrollbar { display: none; }
+.grid-today > *, .stack > *, .split > *, .settings > * { min-width: 0; }
+.sub-card > div { min-width: 0; }
+.sub-card h3, .panel-h h2 { overflow-wrap: anywhere; }
+
+@media (max-width: 1199px) {
+  .grid-today, .split, .settings { grid-template-columns: minmax(0, 1fr); }
+  .settings > .settings-nav { order: -1; }
+  .actions { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+}
+
+@media (max-width: 899px) {
+  .main { padding: 14px 16px 28px; }
+  .actions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .actions .btn { min-width: 0; }
+  .form-row { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .g4 { grid-template-columns: 1fr 1fr; }
+  .g4 > :last-child { grid-column: 1 / -1; }
+  .card-h .search, .card-h > .search { flex: 1 1 100%; width: 100% !important; margin-left: 0 !important; order: 5; }
+  .pager { flex-wrap: wrap; gap: 10px; }
+  .settings-page { padding: 18px 16px; }
+  .settings-page > h2 { font-size: 24px; }
+}
+
+@media (max-width: 767px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .main { grid-column: 1; padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+  .sidebar, .sidebar.expanded {
+    inset: auto 0 0 0; width: 100%; height: auto; flex-direction: row; box-shadow: 0 -8px 24px rgba(11, 27, 63, .16);
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+  }
+  .sidebar::after, .brand, .sidebar-foot, .nav hr { display: none; }
+  .nav { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); width: 100%; gap: 2px; }
+  .nav a { flex-direction: column; justify-content: center; gap: 3px; height: 56px; padding: 0 2px; font-size: 11px; border-radius: 12px; }
+  .nav a .lbl { opacity: 1; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .topbar { flex-wrap: wrap; gap: 6px 10px; margin-bottom: 14px; }
+  .topbar h1 { font-size: 28px; }
+  .topbar .spacer { display: none; }
+  .topbar .icon-btn { margin-left: auto; }
+  .topbar .date { order: 3; flex-basis: 100%; margin-top: 0; font-size: 14px; }
+  .biz-switch { order: 4; flex: 1 1 100%; min-width: 0; }
+  .g2 { grid-template-columns: minmax(0, 1fr); }
+  .sub-card[style*="display:flex"] { flex-wrap: wrap; }
+  .sub-card[style*="display:flex"] > div[style*="flex:1"] { flex: 1 1 240px !important; }
+  .settings-page .sub-card h3 { font-size: 19px !important; }
+  .tabs { gap: 20px; padding: 0 16px; }
+  .avatar.lg { width: 72px; height: 72px; font-size: 24px; }
+  .actions .btn { height: 46px; font-size: 14px; padding: 0 12px; }
+  .stat b { font-size: 24px; }
+  .modal-root { padding: 12px; align-items: end; }
+  .modal { border-radius: 20px; max-height: calc(100vh - 24px); }
+  .modal-h, .modal-b, .modal-f { padding-left: 18px; padding-right: 18px; }
+  .modal-h h2 { font-size: 22px; }
+  .toasts { left: 16px; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+  .toast { max-width: none; }
+  .auth-card { padding: 26px 20px; }
+}

@@ -2,6 +2,13 @@
    screens; the FIRST reference (Today) owns the sidebar treatment).
    Light is the default; Dark redefines the same tokens. Components read
    tokens only — never page-specific colours. */
+/* Inter, self-hosted: Latin subset of the Inter files the Vendor app bundles (SIL OFL 1.1, fonts/LICENSE). No third-party font request. */
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("../fonts/inter-Regular.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap; src: url("../fonts/inter-Medium.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap; src: url("../fonts/inter-SemiBold.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 700; font-display: swap; src: url("../fonts/inter-Bold.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 800; font-display: swap; src: url("../fonts/inter-ExtraBold.woff2") format("woff2"); }
+
 :root {
   color-scheme: light;
   /* surfaces */

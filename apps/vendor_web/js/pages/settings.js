@@ -149,7 +149,7 @@ async function business(page) {
     const active = (zs || []).filter(z => z.status === 'active');
     body.innerHTML = `
       <div class="sub-card"><h3>${esc(t('bp.info'))}</h3><p class="desc">${esc(t('bp.infoLead'))}</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="g2">
           <div class="field"><label>${esc(t('bp.name'))}</label><input class="input" name="name" maxlength="120" value="${esc(b.name)}"></div>
           <div class="field"><label>${esc(t('bp.email'))}</label><input class="input" name="email" type="email" value="${esc(b.email || '')}"></div>
           <div class="field"><label>${esc(t('bp.phone'))}</label><input class="input" name="phone" inputmode="tel" value="${esc(b.phone || '')}"></div>
@@ -160,7 +160,7 @@ async function business(page) {
         <div class="boxed stats" style="margin-bottom:12px"><div class="stat"><b style="font-size:18px">${b.service_coverage_radius_km ? esc(t('bp.km', { n: Number(b.service_coverage_radius_km) })) : '—'}</b><span>${esc(t('bp.radius'))}</span></div>
           <div class="stat"><b style="font-size:18px">${esc(t('bp.zonesN', { n: active.length }))}</b><span>${esc(t('bp.activeZones'))}</span></div>
           <div class="stat"><b style="font-size:15px">${esc(active.slice(0, 3).map(z => z.name).join(', ') || '—')}</b><span>${esc(t('bp.areasCovered'))}</span></div></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 140px auto;gap:10px;align-items:end">
+        <div class="g4">
           <div class="field"><label>${esc(t('bp.origin'))}</label><input class="input" name="lat" inputmode="decimal" value="${esc(b.service_origin_latitude ?? '')}" placeholder="3.139"></div>
           <div class="field"><label>&nbsp;</label><input class="input" name="lng" inputmode="decimal" value="${esc(b.service_origin_longitude ?? '')}" placeholder="101.687"></div>
           <div class="field"><label>${esc(t('bp.radius'))} (km)</label><input class="input" name="radius" inputmode="decimal" value="${esc(b.service_coverage_radius_km ?? '')}"></div>
