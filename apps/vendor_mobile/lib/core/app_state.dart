@@ -43,6 +43,11 @@ class AppState extends ChangeNotifier {
   AuthAccess access = AuthAccess.vendor;
 
   bool loadingSession = true;
+
+  /// True once [loadSession] has hydrated this signed-in account; reset by
+  /// [clearSession]. Lets the app root load a session that began outside
+  /// the auth screens (an emailed confirmation link) exactly once.
+  bool sessionLoaded = false;
   String? sessionError;
 
   // ---- Storefront presentation config (V-31/X-02/V-33). Presentation
@@ -479,6 +484,7 @@ class AppState extends ChangeNotifier {
       if (!repo.isDemo && business != null) {
         startNotifications();
       }
+      sessionLoaded = true;
     } on RepositoryError catch (e) {
       sessionError = e.message;
     } finally {
@@ -505,6 +511,7 @@ class AppState extends ChangeNotifier {
   VoidCallback? onSignOut;
 
   void clearSession() {
+    sessionLoaded = false;
     stopNotifications();
     sessionError = null;
     businesses = const [];

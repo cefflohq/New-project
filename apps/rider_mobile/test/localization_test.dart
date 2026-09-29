@@ -87,14 +87,19 @@ void main() {
           locale: app.uiLocale,
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
-          home: SignInScreen(onEmail: () {}, onSignUp: () {}),
+          home: EmailSignInScreen(
+            onSignIn: () {},
+            onForgotPassword: () {},
+            onSignUp: () {},
+          ),
         ),
       ),
     );
     await tester.pump();
-    expect(find.text('Teruskan dengan E-mel'), findsOneWidget);
+    expect(find.text('Lupa Kata Laluan?'), findsOneWidget);
+    expect(find.text('Ada jemputan?'), findsOneWidget);
     expect(find.text('Bahasa Melayu'), findsOneWidget);
-    expect(find.text('Continue with Email'), findsNothing);
+    expect(find.text('Forgot Password?'), findsNothing);
   });
 
   test('every English string has a Bahasa Melayu translation', () {

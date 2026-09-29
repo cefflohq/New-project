@@ -95,4 +95,91 @@ void main() {
 
     expect(authenticated, isTrue);
   });
+
+  testWidgets('Driver Sign In is Email only: no Google or Apple options', (
+    tester,
+  ) async {
+    final app = AppState(RiderRepository.demo());
+    await tester.pumpWidget(
+      host(app, AuthFlow(initial: DRoute.signIn, onAuthenticated: (_) {})),
+    );
+    await tester.pump();
+    expect(find.byType(EmailSignInScreen), findsOneWidget);
+    for (final provider in [
+      'Apple',
+      'Google',
+      'Continue with Apple',
+      'Continue with Google',
+    ]) {
+      expect(find.text(provider), findsNothing, reason: provider);
+    }
+    expect(find.text('Forgot Password?'), findsOneWidget);
+    expect(find.text('Have an invite?'), findsOneWidget);
+  });
+
+  testWidgets('Verify Email counts down, then resends through the backend', (
+    tester,
+  ) async {
+    final app = AppState(RiderRepository.demo());
+    await tester.pumpWidget(
+      host(
+        app,
+        VerifyEmailScreen(
+          email: 'driver@example.test',
+          onBack: () {},
+          onBackToSignIn: () {},
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('driver@example.test'), findsOneWidget);
+    // An email was just sent: the resend is cooling down, not fake-disabled.
+    expect(find.text('Resend email (60s)'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('Resend email (59s)'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 60));
+    expect(find.text('Resend email'), findsOneWidget);
+
+    // The prototype build has no backend: the real call fails and says so.
+    // Nothing is shown as sent.
+    await tester.tap(find.text('Resend email'));
+    await tester.pump();
+    await tester.pump();
+    expect(find.byKey(const Key('driver-resend-sent')), findsNothing);
+    expect(find.byKey(const Key('driver-auth-error')), findsOneWidget);
+  });
+
+  testWidgets('Check Email shows the address the reset went to', (
+    tester,
+  ) async {
+    final app = AppState(RiderRepository.demo());
+    await tester.pumpWidget(
+      host(
+        app,
+        AuthFlow(initial: DRoute.forgotPassword, onAuthenticated: (_) {}),
+      ),
+    );
+    await tester.enterText(find.byType(TextField).first, 'me@example.test');
+    await tester.tap(find.text('Send Reset Link'));
+    await tester.pump();
+    expect(find.byType(CheckEmailScreen), findsOneWidget);
+    expect(find.text('me@example.test'), findsOneWidget);
+    expect(find.text('you@domain.com'), findsNothing);
+    expect(find.text('Resend email (60s)'), findsOneWidget);
+  });
+
+  testWidgets('a refused emailed link opens D09 with real next steps', (
+    tester,
+  ) async {
+    final app = AppState(RiderRepository.demo());
+    await tester.pumpWidget(
+      host(app, AuthFlow(initial: DRoute.linkExpired, onAuthenticated: (_) {})),
+    );
+    await tester.pump();
+    expect(find.byType(LinkExpiredScreen), findsOneWidget);
+    expect(find.text('Resend verification email'), findsOneWidget);
+    await tester.tap(find.text('Send a new reset link'));
+    await tester.pump();
+    expect(find.byType(ForgotPasswordScreen), findsOneWidget);
+  });
 }

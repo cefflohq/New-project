@@ -5606,6 +5606,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dismiss'**
   String get ntDismiss;
+
+  /// No description provided for @linkNoLongerValid.
+  ///
+  /// In en, this message translates to:
+  /// **'This link is no longer valid'**
+  String get linkNoLongerValid;
+
+  /// No description provided for @linkExpiredOrUsedRequestNew.
+  ///
+  /// In en, this message translates to:
+  /// **'It has expired or was already used. Request a new verification email, or a new password reset link.'**
+  String get linkExpiredOrUsedRequestNew;
+
+  /// No description provided for @sendNewResetLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a new reset link'**
+  String get sendNewResetLink;
 }
 
 class _AppLocalizationsDelegate

@@ -61,6 +61,11 @@ class AppState extends ChangeNotifier {
   Map<String, String> sessionNames = const {};
 
   bool loadingSession = true;
+
+  /// True once [loadSession] has hydrated this signed-in account; reset by
+  /// [clearSession]. Lets the app root load a session that began outside
+  /// the auth screens (an emailed confirmation link) exactly once.
+  bool sessionLoaded = false;
   String? sessionError;
 
   /// Light Mode only. D38 shows an Appearance row; no dark theme is built
@@ -533,6 +538,7 @@ class AppState extends ChangeNotifier {
       if (active != null) await _loadOrders();
       _project();
       if (_cancelNotifications == null) startNotifications();
+      sessionLoaded = true;
     } on RepositoryError catch (e) {
       sessionError = e.message;
     } finally {
@@ -976,6 +982,7 @@ class AppState extends ChangeNotifier {
   }
 
   void clearSession() {
+    sessionLoaded = false;
     stopNotifications();
     live?.stop().catchError((_) {});
     relationships = const [];

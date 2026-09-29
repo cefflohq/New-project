@@ -3046,4 +3046,14 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get ntDismiss => 'Tutup';
+
+  @override
+  String get linkNoLongerValid => 'Pautan ini tidak lagi sah';
+
+  @override
+  String get linkExpiredOrUsedRequestNew =>
+      'Pautan telah tamat tempoh atau telah digunakan. Minta e-mel pengesahan baharu, atau pautan tetapan semula kata laluan baharu.';
+
+  @override
+  String get sendNewResetLink => 'Hantar pautan tetapan semula baharu';
 }

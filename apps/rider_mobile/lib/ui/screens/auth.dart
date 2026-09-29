@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -44,7 +43,14 @@ class AuthFlow extends StatefulWidget {
 class _AuthFlowState extends State<AuthFlow> {
   late final List<DRoute> _stack = [widget.initial];
 
-  void _go(DRoute route) => setState(() => _stack.add(route));
+  /// Carried to D04.1 / D06 so they show, and resend to, the address the
+  /// Driver actually typed.
+  String _email = '';
+
+  void _go(DRoute route, {String? email}) => setState(() {
+    if (email != null) _email = email;
+    _stack.add(route);
+  });
 
   void _back() => setState(() {
     if (_stack.length > 1) {
@@ -62,19 +68,19 @@ class _AuthFlowState extends State<AuthFlow> {
       ..add(route);
   });
 
+  /// Driver V1 is Email only (Founder locked): the Sign In screen is the
+  /// email + password form itself, with no provider options.
+  Widget _signIn() => EmailSignInScreen(
+    onBack: _stack.length > 1 ? _back : null,
+    onSignIn: () => widget.onAuthenticated(null),
+    onForgotPassword: () => _go(DRoute.forgotPassword),
+    onSignUp: () => _go(DRoute.createAccount),
+  );
+
   @override
   Widget build(BuildContext context) => switch (_stack.last) {
     DRoute.splash => SplashScreen(onContinue: () => _resetTo(DRoute.signIn)),
-    DRoute.signIn => SignInScreen(
-      onEmail: () => _go(DRoute.emailSignIn),
-      onSignUp: () => _go(DRoute.createAccount),
-    ),
-    DRoute.emailSignIn => EmailSignInScreen(
-      onBack: _back,
-      onSignIn: () => widget.onAuthenticated(null),
-      onForgotPassword: () => _go(DRoute.forgotPassword),
-      onSignUp: () => _go(DRoute.createAccount),
-    ),
+    DRoute.signIn || DRoute.emailSignIn => _signIn(),
     DRoute.createAccount => CreateAccountScreen(
       onBack: _back,
       // One invitation, one acceptance: the rider already accepted in the
@@ -85,17 +91,27 @@ class _AuthFlowState extends State<AuthFlow> {
       onCreated: () => widget.onAuthenticated(
         AppScope.read(context).repo.isDemo ? DRoute.driverDetails : null,
       ),
-      onSignIn: () => _resetTo(DRoute.emailSignIn),
+      onVerify: (email) => _go(DRoute.verifyEmail, email: email),
+      onSignIn: () => _resetTo(DRoute.signIn),
+    ),
+    DRoute.verifyEmail => VerifyEmailScreen(
+      email: _email,
+      onBack: _back,
+      onBackToSignIn: () => _resetTo(DRoute.signIn),
     ),
     DRoute.forgotPassword => ForgotPasswordScreen(
       onBack: _back,
-      onSent: () => _go(DRoute.checkEmail),
-      onBackToSignIn: () => _resetTo(DRoute.emailSignIn),
+      onSent: (email) => _go(DRoute.checkEmail, email: email),
+      onBackToSignIn: () => _resetTo(DRoute.signIn),
     ),
     DRoute.checkEmail => CheckEmailScreen(
+      email: _email,
       onBack: _back,
-      onOpenLink: () => _go(DRoute.setNewPassword),
-      onBackToSignIn: () => _resetTo(DRoute.emailSignIn),
+      onBackToSignIn: () => _resetTo(DRoute.signIn),
+    ),
+    DRoute.linkExpired => LinkExpiredScreen(
+      onForgotPassword: () => _go(DRoute.forgotPassword),
+      onBackToSignIn: () => _resetTo(DRoute.signIn),
     ),
     DRoute.setNewPassword => SetNewPasswordScreen(
       onBack: _back,
@@ -103,345 +119,17 @@ class _AuthFlowState extends State<AuthFlow> {
     ),
     DRoute.passwordUpdated => PasswordUpdatedScreen(
       onBackToSignIn: () {
-        _resetTo(DRoute.emailSignIn);
+        _resetTo(DRoute.signIn);
         widget.onPasswordUpdated?.call();
       },
     ),
-    _ => SignInScreen(
-      onEmail: () => _go(DRoute.emailSignIn),
-      onSignUp: () => _go(DRoute.createAccount),
-    ),
+    _ => _signIn(),
   };
 }
 
 // ---------------------------------------------------------------------------
 // Shared auth pieces
 // ---------------------------------------------------------------------------
-
-/// Full-width bordered social/email control (D02). Icon left, label centred.
-class CeffloAuthOption extends StatelessWidget {
-  const CeffloAuthOption({
-    super.key,
-    required this.label,
-    required this.onTap,
-    this.icon,
-    this.iconChild,
-  });
-
-  final String label;
-  final VoidCallback onTap;
-  final IconData? icon;
-  final Widget? iconChild;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return Material(
-      color: c.card,
-      borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-        onTap: onTap,
-        child: Container(
-          // Full width explicitly: the row is centred in a Column, so
-          // without this the Stack would shrink-wrap the label and the
-          // left-positioned icon would land on top of it.
-          width: double.infinity,
-          height: 56,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-            border: Border.all(color: c.border),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              iconChild ?? Icon(icon, size: 24, color: CefColors.navy),
-              const SizedBox(width: 16),
-              Text(
-                label,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: c.textPrimary,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Compact half-width variant used by D03's Apple / Google pair.
-class CeffloAuthChip extends StatelessWidget {
-  const CeffloAuthChip({
-    super.key,
-    required this.label,
-    required this.onTap,
-    this.icon,
-    this.iconChild,
-  });
-
-  final String label;
-  final VoidCallback onTap;
-  final IconData? icon;
-  final Widget? iconChild;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return Material(
-      color: c.card,
-      borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-        onTap: onTap,
-        child: Container(
-          height: 54,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-            border: Border.all(color: c.border),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              iconChild ?? Icon(icon, size: 21, color: CefColors.navy),
-              const SizedBox(width: 10),
-              Text(
-                label,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: c.textPrimary,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Third-party sign-in marks
-// ---------------------------------------------------------------------------
-//
-// `lucide_icons_flutter` ships no brand logos (its `apple` glyph is the fruit,
-// not the Apple Inc. mark), and `assets/brand/` is Cefflo-only by policy, so
-// the two marks the references draw on D02/D03 are reproduced here from their
-// official outlines rather than approximated with drawing primitives.
-
-/// Minimal SVG path-data reader — enough for the two brand outlines below
-/// (`M m L l H h V v C c S s Z z`; neither mark uses arcs or quadratics).
-Path _svgPath(String d) {
-  final tokens = RegExp(r'[MmLlHhVvCcSsZz]|-?\d*\.?\d+(?:[eE][-+]?\d+)?')
-      .allMatches(d)
-      .map((m) => m[0]!)
-      .toList();
-
-  final path = Path();
-  var i = 0;
-  var x = 0.0, y = 0.0; // current point
-  var cx = 0.0, cy = 0.0; // last cubic control point, for S/s reflection
-  var startX = 0.0, startY = 0.0;
-  var command = '';
-  var lastWasCubic = false;
-
-  double next() => double.parse(tokens[i++]);
-
-  while (i < tokens.length) {
-    if (RegExp(r'^[A-Za-z]$').hasMatch(tokens[i])) command = tokens[i++];
-    final rel = command.toLowerCase() == command;
-    switch (command.toLowerCase()) {
-      case 'm':
-        final nx = next(), ny = next();
-        x = rel ? x + nx : nx;
-        y = rel ? y + ny : ny;
-        path.moveTo(x, y);
-        startX = x;
-        startY = y;
-        // A repeated coordinate pair after M is an implicit lineTo.
-        command = rel ? 'l' : 'L';
-        lastWasCubic = false;
-      case 'l':
-        final nx = next(), ny = next();
-        x = rel ? x + nx : nx;
-        y = rel ? y + ny : ny;
-        path.lineTo(x, y);
-        lastWasCubic = false;
-      case 'h':
-        final nx = next();
-        x = rel ? x + nx : nx;
-        path.lineTo(x, y);
-        lastWasCubic = false;
-      case 'v':
-        final ny = next();
-        y = rel ? y + ny : ny;
-        path.lineTo(x, y);
-        lastWasCubic = false;
-      case 'c':
-        final x1 = rel ? x + next() : next(), y1 = rel ? y + next() : next();
-        final x2 = rel ? x + next() : next(), y2 = rel ? y + next() : next();
-        final nx = rel ? x + next() : next(), ny = rel ? y + next() : next();
-        path.cubicTo(x1, y1, x2, y2, nx, ny);
-        cx = x2;
-        cy = y2;
-        x = nx;
-        y = ny;
-        lastWasCubic = true;
-      case 's':
-        final x1 = lastWasCubic ? 2 * x - cx : x;
-        final y1 = lastWasCubic ? 2 * y - cy : y;
-        final x2 = rel ? x + next() : next(), y2 = rel ? y + next() : next();
-        final nx = rel ? x + next() : next(), ny = rel ? y + next() : next();
-        path.cubicTo(x1, y1, x2, y2, nx, ny);
-        cx = x2;
-        cy = y2;
-        x = nx;
-        y = ny;
-        lastWasCubic = true;
-      case 'z':
-        path.close();
-        x = startX;
-        y = startY;
-        lastWasCubic = false;
-    }
-  }
-  return path;
-}
-
-/// Paints one or more SVG outlines, scaled uniformly into the widget box.
-class _BrandMarkPainter extends CustomPainter {
-  const _BrandMarkPainter(this.shapes, this.viewBox);
-
-  /// (path data, fill colour) pairs, painted in order.
-  final List<(String, Color)> shapes;
-  final Size viewBox;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final scale = math.min(
-      size.width / viewBox.width,
-      size.height / viewBox.height,
-    );
-    canvas.save();
-    canvas.translate(
-      (size.width - viewBox.width * scale) / 2,
-      (size.height - viewBox.height * scale) / 2,
-    );
-    canvas.scale(scale);
-    for (final (d, color) in shapes) {
-      canvas.drawPath(_svgPath(d), Paint()..color = color);
-    }
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(covariant _BrandMarkPainter oldDelegate) =>
-      oldDelegate.shapes != shapes || oldDelegate.viewBox != viewBox;
-}
-
-/// The Apple mark used by "Continue with Apple" (D02) and D03's Apple chip.
-class AppleGlyph extends StatelessWidget {
-  const AppleGlyph({super.key, this.size = 22, this.color = Colors.black});
-  final double size;
-  final Color color;
-
-  static const _body =
-      'M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 '
-      '134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 '
-      '123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57-'
-      '155.5-127C46.7 790.7 0 663 0 541.8c0-194.4 126.4-297.5 250.8-297.5 '
-      '66.1 0 121.2 43.4 162.7 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 '
-      '2.6 198.3 99.2z';
-  static const _leaf =
-      'M554.1 159.4c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1'
-      '-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 '
-      '7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 '
-      '135.5-71.3z';
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: size,
-    height: size,
-    child: CustomPaint(
-      painter: _BrandMarkPainter([
-        (_body, color),
-        (_leaf, color),
-      ], const Size(814, 1000)),
-    ),
-  );
-}
-
-/// The four-colour Google "G" used by "Continue with Google" (D02) and
-/// D03's Google chip.
-class GoogleGlyph extends StatelessWidget {
-  const GoogleGlyph({super.key, this.size = 22});
-  final double size;
-
-  static const _blue =
-      'M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 '
-      '5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z';
-  static const _green =
-      'M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 '
-      '2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 '
-      '46 24 46z';
-  static const _yellow =
-      'M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34'
-      'C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z';
-  static const _red =
-      'M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 '
-      '24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 '
-      '12.31-9.07z';
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: size,
-    height: size,
-    child: CustomPaint(
-      painter: _BrandMarkPainter(const [
-        (_blue, Color(0xFF4285F4)),
-        (_green, Color(0xFF34A853)),
-        (_yellow, Color(0xFFFBBC05)),
-        (_red, Color(0xFFEA4335)),
-      ], const Size(48, 48)),
-    ),
-  );
-}
-
-/// "OR" rule with a hairline either side (D02, D03).
-class CeffloOrDivider extends StatelessWidget {
-  const CeffloOrDivider({super.key, this.label = 'OR'});
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return Row(
-      children: [
-        Expanded(child: Divider(color: c.border, height: 1)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: c.textSecondary,
-            ),
-          ),
-        ),
-        Expanded(child: Divider(color: c.border, height: 1)),
-      ],
-    );
-  }
-}
 
 /// "Already have an account? Sign In" / "Don't have an account? Sign Up".
 class CeffloInlinePrompt extends StatelessWidget {
@@ -621,119 +309,10 @@ class _SplashScreenState extends State<SplashScreen> {
 // D02 — Sign In
 // ---------------------------------------------------------------------------
 
-class SignInScreen extends StatefulWidget {
-  const SignInScreen({
-    super.key,
-    required this.onEmail,
-    required this.onSignUp,
-  });
-  final VoidCallback onEmail;
-  final VoidCallback onSignUp;
-
-  @override
-  State<SignInScreen> createState() => _SignInScreenState();
-}
-
-class _SignInScreenState extends State<SignInScreen> {
-  @override
-  Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
-    value: const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      statusBarBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarDividerColor: Colors.transparent,
-      systemNavigationBarIconBrightness: Brightness.light,
-      systemNavigationBarContrastEnforced: false,
-    ),
-    child: Scaffold(
-      body: NavyBackdrop(
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Gap.gutter),
-            child: Column(
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: LanguagePill(
-                    language:
-                        uiLanguageNames[AppScope.of(context)
-                            .uiLocale
-                            .languageCode]!,
-                    onDark: true,
-                    onTap: () => _pickLanguage(context),
-                  ),
-                ),
-                const Spacer(flex: 3),
-                const CeffloSplashLockup(),
-                const Spacer(flex: 4),
-                CeffloAuthOption(
-                  label: L.continueApple,
-                  iconChild: const AppleGlyph(size: 24),
-                  onTap: widget.onEmail,
-                ),
-                const SizedBox(height: Gap.md),
-                CeffloAuthOption(
-                  label: L.continueGoogle,
-                  iconChild: const GoogleGlyph(size: 24),
-                  onTap: widget.onEmail,
-                ),
-                const SizedBox(height: Gap.md),
-                CeffloAuthOption(
-                  label: L.continueEmail,
-                  icon: LucideIcons.mail,
-                  onTap: widget.onEmail,
-                ),
-                const SizedBox(height: Gap.xl),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      L.haveInvite,
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w500,
-                        color: CefColors.onNavy.withValues(alpha: .85),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    InkWell(
-                      onTap: widget.onSignUp,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 2,
-                          vertical: 4,
-                        ),
-                        child: Text(
-                          L.getStarted,
-                          style: TextStyle(
-                            fontFamily: 'Manrope',
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w700,
-                            color: CefColors.onNavy,
-                            decoration: TextDecoration.underline,
-                            decorationColor: CefColors.onNavy,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: Gap.lg),
-              ],
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
-
-  Future<void> _pickLanguage(BuildContext context) async {
-    final app = AppScope.read(context);
-    final picked = await showLanguageSheet(context, app.uiLocale);
-    if (picked != null) await app.setUiLocale(picked);
-  }
+Future<void> _pickLanguage(BuildContext context) async {
+  final app = AppScope.read(context);
+  final picked = await showLanguageSheet(context, app.uiLocale);
+  if (picked != null) await app.setUiLocale(picked);
 }
 
 /// D39 Select Language — reused by D02's language pill and D38's Language
@@ -842,13 +421,14 @@ class _RadioDot extends StatelessWidget {
 class EmailSignInScreen extends StatefulWidget {
   const EmailSignInScreen({
     super.key,
-    required this.onBack,
+    this.onBack,
     required this.onSignIn,
     required this.onForgotPassword,
     required this.onSignUp,
   });
 
-  final VoidCallback onBack;
+  /// Null when this is the first auth screen (nothing to go back to).
+  final VoidCallback? onBack;
   final VoidCallback onSignIn;
   final VoidCallback onForgotPassword;
   final VoidCallback onSignUp;
@@ -896,6 +476,11 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     onBack: widget.onBack,
     title: L.signEmail,
     subtitle: L.enterEmailPasswordContinue,
+    headerAction: LanguagePill(
+      language: uiLanguageNames[AppScope.of(context).uiLocale.languageCode]!,
+      onDark: true,
+      onTap: () => _pickLanguage(context),
+    ),
     sheet: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -945,33 +530,11 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           onTap: _busy ? null : _submit,
         ),
         const SizedBox(height: Gap.section),
-        const CeffloOrDivider(),
-        const SizedBox(height: Gap.lg),
-        Text(L.continueText, style: context.t.bodyLarge),
-        const SizedBox(height: Gap.md),
-        Row(
-          children: [
-            Expanded(
-              child: CeffloAuthChip(
-                label: L.apple,
-                iconChild: const AppleGlyph(size: 21),
-                onTap: widget.onSignIn,
-              ),
-            ),
-            const SizedBox(width: Gap.md),
-            Expanded(
-              child: CeffloAuthChip(
-                label: L.google,
-                iconChild: const GoogleGlyph(),
-                onTap: widget.onSignIn,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: Gap.section),
+        // Drivers join through a business invitation; account creation
+        // follows it (the claim is bound server-side to the invited email).
         CeffloInlinePrompt(
-          prompt: L.dontHaveAccount,
-          action: L.signUp,
+          prompt: L.haveInvite,
+          action: L.getStarted,
           onTap: widget.onSignUp,
         ),
       ],
@@ -988,11 +551,15 @@ class CreateAccountScreen extends StatefulWidget {
     super.key,
     required this.onBack,
     required this.onCreated,
+    required this.onVerify,
     required this.onSignIn,
   });
 
   final VoidCallback onBack;
   final VoidCallback onCreated;
+
+  /// The project requires email confirmation: open D04.1 for this address.
+  final ValueChanged<String> onVerify;
   final VoidCallback onSignIn;
 
   @override
@@ -1035,9 +602,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       );
       if (!mounted) return;
       if (needsVerification) {
-        setState(() {
-          _error = L.checkEmailVerifyAccountThenSign;
-        });
+        widget.onVerify(_email.text.trim());
       } else {
         await app.loadSession();
         if (mounted) widget.onCreated();
@@ -1131,7 +696,7 @@ class ForgotPasswordScreen extends StatefulWidget {
   });
 
   final VoidCallback onBack;
-  final VoidCallback onSent;
+  final ValueChanged<String> onSent;
   final VoidCallback onBackToSignIn;
 
   @override
@@ -1152,7 +717,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Future<void> _send() async {
     final app = AppScope.read(context);
     if (app.repo.isDemo) {
-      widget.onSent();
+      widget.onSent(_email.text.trim());
       return;
     }
     setState(() {
@@ -1161,7 +726,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     });
     try {
       await app.repo.sendPasswordReset(_email.text);
-      if (mounted) widget.onSent();
+      if (mounted) widget.onSent(_email.text.trim());
     } on RepositoryError catch (error) {
       if (mounted) setState(() => _error = driverAuthErrorText(error));
     } finally {
@@ -1231,13 +796,11 @@ class CheckEmailScreen extends StatelessWidget {
   const CheckEmailScreen({
     super.key,
     required this.onBack,
-    required this.onOpenLink,
     required this.onBackToSignIn,
-    this.email = 'you@domain.com',
+    required this.email,
   });
 
   final VoidCallback onBack;
-  final VoidCallback onOpenLink;
   final VoidCallback onBackToSignIn;
   final String email;
 
@@ -1367,26 +930,12 @@ class CheckEmailScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: Gap.lg),
-          // Disabled resend, exactly as the reference renders it.
-          Container(
-            height: Sizes.buttonHeight,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: CefColors.tintNeutral,
-              borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-            ),
-            child: Text(
-              L.resendEmail58s,
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: c.textSecondary,
-              ),
-            ),
+          ResendEmailButton(
+            onResend: () =>
+                AppScope.read(context).repo.sendPasswordReset(email),
           ),
           const SizedBox(height: Gap.lg),
-          Center(child: CeffloTextLink(L.backSign, onTap: onOpenLink)),
+          Center(child: CeffloTextLink(L.backSign, onTap: onBackToSignIn)),
         ],
       ),
     );
@@ -1413,6 +962,319 @@ class CheckEmailScreen extends StatelessWidget {
           ],
         ),
       );
+}
+
+/// A real resend: calls [onResend], then counts down [cooldown] before it
+/// can be used again (an email was just sent when the screen opened, so the
+/// countdown starts immediately unless [coolingDown] is false). Success and
+/// failure come from the backend; nothing is shown as sent that was not.
+class ResendEmailButton extends StatefulWidget {
+  const ResendEmailButton({
+    super.key,
+    required this.onResend,
+    this.label,
+    this.coolingDown = true,
+  });
+
+  final Future<void> Function() onResend;
+  final String? label;
+  final bool coolingDown;
+
+  /// Matches the "request a new link in 60 seconds" copy.
+  static const cooldown = 60;
+
+  @override
+  State<ResendEmailButton> createState() => _ResendEmailButtonState();
+}
+
+class _ResendEmailButtonState extends State<ResendEmailButton> {
+  Timer? _timer;
+  int _left = 0;
+  bool _busy = false;
+  String? _notice;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.coolingDown) _startCooldown();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startCooldown() {
+    _timer?.cancel();
+    _left = ResendEmailButton.cooldown;
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return timer.cancel();
+      setState(() => _left--);
+      if (_left <= 0) timer.cancel();
+    });
+  }
+
+  Future<void> _send() async {
+    setState(() {
+      _busy = true;
+      _notice = null;
+      _error = null;
+    });
+    try {
+      await widget.onResend();
+      if (!mounted) return;
+      setState(() {
+        _notice = L.emailSentCheckInbox;
+        _startCooldown();
+      });
+    } on RepositoryError catch (error) {
+      if (mounted) setState(() => _error = driverAuthErrorText(error));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final label = widget.label ?? L.resendEmail;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        CeffloPrimaryButton(
+          _busy
+              ? L.sending
+              : _left > 0
+              ? L.resendEmailIn(_left)
+              : label,
+          key: const Key('driver-resend-email'),
+          busy: _busy,
+          onTap: _busy || _left > 0 ? null : _send,
+        ),
+        if (_notice != null || _error != null) ...[
+          const SizedBox(height: Gap.sm),
+          Text(
+            _error ?? _notice!,
+            key: Key(
+              _error != null ? 'driver-auth-error' : 'driver-resend-sent',
+            ),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: _error != null
+                  ? const Color(0xFFC83D4B)
+                  : context.c.textSecondary,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Navy header shared by D04.1: mail badge, title, lead line and the
+/// address the email went to.
+class _MailSentHeader extends StatelessWidget {
+  const _MailSentHeader({
+    required this.title,
+    required this.lead,
+    required this.email,
+    required this.onEdit,
+  });
+
+  final String title;
+  final String lead;
+  final String email;
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      Container(
+        width: 96,
+        height: 96,
+        decoration: BoxDecoration(
+          color: const Color(0xFF0A1C36).withValues(alpha: 0.75),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        ),
+        child: const Icon(LucideIcons.mail, size: 42, color: Colors.white),
+      ),
+      const SizedBox(height: Gap.lg),
+      Text(title, style: context.t.displayMedium, textAlign: TextAlign.center),
+      const SizedBox(height: Gap.sm),
+      Text(
+        lead,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: CefColors.onNavyMuted,
+        ),
+      ),
+      const SizedBox(height: Gap.md),
+      Container(
+        height: 54,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF071A33).withValues(alpha: 0.55),
+          borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+        ),
+        child: Row(
+          children: [
+            const Icon(LucideIcons.mail, size: 20, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                email,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontFamily: 'Manrope',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            CeffloTextLink(
+              L.edit,
+              onTap: onEdit,
+              fontSize: 14,
+              color: Colors.white,
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+// ---------------------------------------------------------------------------
+// D04.1 — Verify Your Email
+// ---------------------------------------------------------------------------
+
+/// After sign-up on a project that requires email confirmation. The emailed
+/// link returns to the app (auth callback), which signs the Driver in; the
+/// app root reacts to that sign-in, so this screen needs no polling.
+class VerifyEmailScreen extends StatelessWidget {
+  const VerifyEmailScreen({
+    super.key,
+    required this.email,
+    required this.onBack,
+    required this.onBackToSignIn,
+  });
+
+  final String email;
+  final VoidCallback onBack;
+  final VoidCallback onBackToSignIn;
+
+  @override
+  Widget build(BuildContext context) => CeffloAuthScaffold(
+    onBack: onBack,
+    headerChild: _MailSentHeader(
+      title: L.verifyYourEmail,
+      lead: L.weSentVerificationLinkTo,
+      email: email,
+      onEdit: onBack,
+    ),
+    sheet: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          L.openLinkOnThisPhone,
+          textAlign: TextAlign.center,
+          style: context.t.bodyLarge,
+        ),
+        const SizedBox(height: Gap.md),
+        Text(
+          L.checkInboxSpamFolder,
+          textAlign: TextAlign.center,
+          style: context.t.bodySmall,
+        ),
+        const SizedBox(height: Gap.xl),
+        ResendEmailButton(
+          onResend: () =>
+              AppScope.read(context).repo.resendSignUpVerification(email),
+        ),
+        const SizedBox(height: Gap.lg),
+        Center(child: CeffloTextLink(L.useDifferentEmail, onTap: onBack)),
+        const SizedBox(height: Gap.md),
+        Center(child: CeffloTextLink(L.backSign, onTap: onBackToSignIn)),
+      ],
+    ),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// D09 — Link No Longer Valid
+// ---------------------------------------------------------------------------
+
+/// An emailed link (sign-up confirmation or password reset) that opened the
+/// app but was expired, already used, or opened away from the device that
+/// requested it. The server's answer is final; this offers a new email.
+class LinkExpiredScreen extends StatefulWidget {
+  const LinkExpiredScreen({
+    super.key,
+    required this.onForgotPassword,
+    required this.onBackToSignIn,
+  });
+
+  final VoidCallback onForgotPassword;
+  final VoidCallback onBackToSignIn;
+
+  @override
+  State<LinkExpiredScreen> createState() => _LinkExpiredScreenState();
+}
+
+class _LinkExpiredScreenState extends State<LinkExpiredScreen> {
+  final _email = TextEditingController();
+
+  @override
+  void dispose() {
+    _email.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => CeffloAuthScaffold(
+    title: L.linkNoLongerValid,
+    subtitle: L.linkExpiredOrUsedRequestNew,
+    sheet: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        CeffloTextField(
+          label: L.email,
+          controller: _email,
+          hint: 'you@domain.com',
+          icon: LucideIcons.mail,
+          keyboardType: TextInputType.emailAddress,
+        ),
+        const SizedBox(height: Gap.lg),
+        ResendEmailButton(
+          label: L.resendVerificationEmail,
+          coolingDown: false,
+          onResend: () =>
+              AppScope.read(context).repo.resendSignUpVerification(_email.text),
+        ),
+        const SizedBox(height: Gap.lg),
+        Center(
+          child: CeffloTextLink(
+            L.sendNewResetLink,
+            onTap: widget.onForgotPassword,
+          ),
+        ),
+        const SizedBox(height: Gap.md),
+        Center(child: CeffloTextLink(L.backSign, onTap: widget.onBackToSignIn)),
+      ],
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------

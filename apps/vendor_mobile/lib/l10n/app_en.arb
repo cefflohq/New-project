@@ -1466,5 +1466,8 @@
   "ntPrefSoundSub": "Play a sound with an alert.",
   "ntPushDeferred": "Alerts when the app is closed are not available yet.",
   "ntCouldNotUpdate": "Could not update notifications. Try again.",
-  "ntDismiss": "Dismiss"
+  "ntDismiss": "Dismiss",
+  "linkNoLongerValid": "This link is no longer valid",
+  "linkExpiredOrUsedRequestNew": "It has expired or was already used. Request a new verification email, or a new password reset link.",
+  "sendNewResetLink": "Send a new reset link"
 }

@@ -2,6 +2,7 @@ import 'core/auth_access.dart';
 import 'ui/screens/helper_workspace.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/app_state.dart';
@@ -110,6 +111,10 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
   /// A password-recovery link opened the app (native deep link).
   bool _recovering = false;
 
+  /// An emailed auth link opened the app but the server refused it
+  /// (expired, already used, or opened away from the requesting device).
+  bool _linkRejected = false;
+
   @override
   void initState() {
     super.initState();
@@ -139,14 +144,42 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
     } else {
       app.loadingSession = false;
     }
-    widget.repo.authChanges.listen((state) {
-      if (state.event == AuthChangeEvent.passwordRecovery) {
-        setState(() => _recovering = true);
-      }
-      if (state.session == null) {
-        app.clearSession();
-      }
-    });
+    widget.repo.authChanges.listen(_onAuthChange, onError: _onAuthLinkError);
+  }
+
+  void _onAuthChange(AuthState state) {
+    if (!mounted) return;
+    switch (state.event) {
+      case AuthChangeEvent.passwordRecovery:
+        setState(() {
+          _recovering = true;
+          _linkRejected = false;
+        });
+      case AuthChangeEvent.signedIn:
+        // A sign-up confirmation link signs the user in outside the auth
+        // screens. Rebuild, and load the session after this frame unless
+        // the sign-in screen is already doing it.
+        setState(() => _linkRejected = false);
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || _recovering) return;
+          if (widget.repo.currentUser != null &&
+              !app.loadingSession &&
+              !app.sessionLoaded) {
+            app.loadSession();
+          }
+        });
+      default:
+        break;
+    }
+    if (state.session == null) {
+      app.clearSession();
+    }
+  }
+
+  /// supabase_flutter reports a refused callback link as a stream error.
+  void _onAuthLinkError(Object error) {
+    if (!mounted || error is! AuthException) return;
+    setState(() => _linkRejected = true);
   }
 
   @override
@@ -234,9 +267,10 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
                 (widget.repo.isDemo && !_prototypeAuthenticated) ||
                 (!widget.repo.isDemo && widget.repo.currentUser == null)) {
               return AuthFlow(
-                key: ValueKey(_recovering),
+                key: ValueKey((_recovering, _linkRejected)),
                 access: widget.access,
                 recovery: _recovering,
+                linkRejected: _linkRejected,
                 onRecoveryDone: () async {
                   await widget.repo.signOut();
                   if (mounted) setState(() => _recovering = false);

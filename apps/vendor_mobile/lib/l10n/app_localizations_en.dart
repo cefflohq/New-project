@@ -3045,4 +3045,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ntDismiss => 'Dismiss';
+
+  @override
+  String get linkNoLongerValid => 'This link is no longer valid';
+
+  @override
+  String get linkExpiredOrUsedRequestNew =>
+      'It has expired or was already used. Request a new verification email, or a new password reset link.';
+
+  @override
+  String get sendNewResetLink => 'Send a new reset link';
 }

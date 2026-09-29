@@ -950,12 +950,6 @@ abstract class AppLocalizations {
   /// **'You can request a new link in 60 seconds.'**
   String get canRequestNewLink60Seconds;
 
-  /// No description provided for @resendEmail58s.
-  ///
-  /// In en, this message translates to:
-  /// **'Resend Email (58s)'**
-  String get resendEmail58s;
-
   /// No description provided for @passwordsDoNotMatch.
   ///
   /// In en, this message translates to:
@@ -2623,6 +2617,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mark as read'**
   String get ntMarkRead;
+
+  /// No description provided for @verifyYourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your email'**
+  String get verifyYourEmail;
+
+  /// No description provided for @weSentVerificationLinkTo.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a verification link to'**
+  String get weSentVerificationLinkTo;
+
+  /// No description provided for @openLinkOnThisPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the link on this phone to activate your account, then you\'re signed in.'**
+  String get openLinkOnThisPhone;
+
+  /// No description provided for @resendEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend email'**
+  String get resendEmail;
+
+  /// No description provided for @resendEmailIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend email ({seconds}s)'**
+  String resendEmailIn(int seconds);
+
+  /// No description provided for @emailSentCheckInbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Email sent. Check your inbox and spam folder.'**
+  String get emailSentCheckInbox;
+
+  /// No description provided for @linkNoLongerValid.
+  ///
+  /// In en, this message translates to:
+  /// **'This link is no longer valid'**
+  String get linkNoLongerValid;
+
+  /// No description provided for @linkExpiredOrUsedRequestNew.
+  ///
+  /// In en, this message translates to:
+  /// **'It has expired or was already used. Request a new one below.'**
+  String get linkExpiredOrUsedRequestNew;
+
+  /// No description provided for @resendVerificationEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend verification email'**
+  String get resendVerificationEmail;
+
+  /// No description provided for @sendNewResetLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a new reset link'**
+  String get sendNewResetLink;
+
+  /// No description provided for @useDifferentEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a different email'**
+  String get useDifferentEmail;
 }
 
 class _AppLocalizationsDelegate

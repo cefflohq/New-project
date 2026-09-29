@@ -156,7 +156,6 @@
   "returnAppSign": "Return to the app and sign in.",
   "didntReceiveEmail": "Didn’t receive the email?",
   "canRequestNewLink60Seconds": "You can request a new link in 60 seconds.",
-  "resendEmail58s": "Resend Email (58s)",
   "passwordsDoNotMatch": "Passwords do not match.",
   "setNewPassword2": "Set a new\npassword",
   "chooseStrongPasswordCeffloDriverAccount": "Choose a strong password for\nyour Cefflo Driver account.",
@@ -624,5 +623,23 @@
   "ntDismiss": "Dismiss",
   "ntMarkAllRead": "Mark all as read",
   "ntMarkUnread": "Mark as unread",
-  "ntMarkRead": "Mark as read"
+  "ntMarkRead": "Mark as read",
+  "verifyYourEmail": "Verify your email",
+  "weSentVerificationLinkTo": "We sent a verification link to",
+  "openLinkOnThisPhone": "Open the link on this phone to activate your account, then you're signed in.",
+  "resendEmail": "Resend email",
+  "resendEmailIn": "Resend email ({seconds}s)",
+  "emailSentCheckInbox": "Email sent. Check your inbox and spam folder.",
+  "linkNoLongerValid": "This link is no longer valid",
+  "linkExpiredOrUsedRequestNew": "It has expired or was already used. Request a new one below.",
+  "resendVerificationEmail": "Resend verification email",
+  "sendNewResetLink": "Send a new reset link",
+  "useDifferentEmail": "Use a different email",
+  "@resendEmailIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  }
 }

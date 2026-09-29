@@ -452,9 +452,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'You can request a new link in 60 seconds.';
 
   @override
-  String get resendEmail58s => 'Resend Email (58s)';
-
-  @override
   String get passwordsDoNotMatch => 'Passwords do not match.';
 
   @override
@@ -1411,4 +1408,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ntMarkRead => 'Mark as read';
+
+  @override
+  String get verifyYourEmail => 'Verify your email';
+
+  @override
+  String get weSentVerificationLinkTo => 'We sent a verification link to';
+
+  @override
+  String get openLinkOnThisPhone =>
+      'Open the link on this phone to activate your account, then you\'re signed in.';
+
+  @override
+  String get resendEmail => 'Resend email';
+
+  @override
+  String resendEmailIn(int seconds) {
+    return 'Resend email (${seconds}s)';
+  }
+
+  @override
+  String get emailSentCheckInbox =>
+      'Email sent. Check your inbox and spam folder.';
+
+  @override
+  String get linkNoLongerValid => 'This link is no longer valid';
+
+  @override
+  String get linkExpiredOrUsedRequestNew =>
+      'It has expired or was already used. Request a new one below.';
+
+  @override
+  String get resendVerificationEmail => 'Resend verification email';
+
+  @override
+  String get sendNewResetLink => 'Send a new reset link';
+
+  @override
+  String get useDifferentEmail => 'Use a different email';
 }

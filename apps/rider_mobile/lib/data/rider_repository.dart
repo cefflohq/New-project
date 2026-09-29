@@ -109,6 +109,16 @@ class RiderRepository {
     return response.session == null;
   }
 
+  /// Driver Verify Email (D04.1) and the invalid-link screen (D09): a new
+  /// sign-up confirmation email, returning to the same auth callback.
+  Future<void> resendSignUpVerification(String email) => _run(
+    () => _db.auth.resend(
+      type: OtpType.signup,
+      email: email.trim(),
+      emailRedirectTo: authRedirectUrl,
+    ),
+  );
+
   Future<void> sendPasswordReset(String email) => _run(
     () => _db.auth.resetPasswordForEmail(
       email.trim(),

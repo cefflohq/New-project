@@ -34,6 +34,8 @@ enum DRoute {
   checkEmail, // D06
   setNewPassword, // D07
   passwordUpdated, // D08
+  verifyEmail, // D04.1
+  linkExpired, // D09
   // --- Onboarding / business join (D10–D18) ----------------------------
   noBusinessConnectedHome, // D11 (home-shell variant, pre-details)
   driverDetails, // D12
@@ -131,6 +133,18 @@ Map<DRoute, RouteSpec> get routeSpecs => <DRoute, RouteSpec>{
     id: 'D08',
     title: L.passwordUpdated,
     parent: DRoute.setNewPassword,
+  ),
+  DRoute.verifyEmail: RouteSpec(
+    route: DRoute.verifyEmail,
+    id: 'D04.1',
+    title: L.verifyYourEmail,
+    parent: DRoute.createAccount,
+  ),
+  DRoute.linkExpired: RouteSpec(
+    route: DRoute.linkExpired,
+    id: 'D09',
+    title: L.linkNoLongerValid,
+    parent: DRoute.signIn,
   ),
   DRoute.noBusinessConnectedHome: RouteSpec(
     route: DRoute.noBusinessConnectedHome,

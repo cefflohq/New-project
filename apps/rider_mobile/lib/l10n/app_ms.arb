@@ -142,7 +142,6 @@
   "returnAppSign": "Kembali ke aplikasi dan log masuk.",
   "didntReceiveEmail": "Tidak terima e-mel?",
   "canRequestNewLink60Seconds": "Anda boleh minta pautan baharu dalam 60 saat.",
-  "resendEmail58s": "Hantar Semula E-mel (58s)",
   "passwordsDoNotMatch": "Kata laluan tidak sepadan.",
   "setNewPassword2": "Tetapkan kata\nlaluan baharu",
   "chooseStrongPasswordCeffloDriverAccount": "Pilih kata laluan yang kukuh untuk\nakaun Cefflo Driver anda.",
@@ -420,5 +419,16 @@
   "ntDismiss": "Tutup",
   "ntMarkAllRead": "Tanda semua sudah dibaca",
   "ntMarkUnread": "Tanda belum dibaca",
-  "ntMarkRead": "Tanda sudah dibaca"
+  "ntMarkRead": "Tanda sudah dibaca",
+  "verifyYourEmail": "Sahkan e-mel anda",
+  "weSentVerificationLinkTo": "Kami telah menghantar pautan pengesahan ke",
+  "openLinkOnThisPhone": "Buka pautan itu pada telefon ini untuk mengaktifkan akaun anda, kemudian anda akan log masuk.",
+  "resendEmail": "Hantar semula e-mel",
+  "resendEmailIn": "Hantar semula e-mel ({seconds}s)",
+  "emailSentCheckInbox": "E-mel dihantar. Semak peti masuk dan folder spam anda.",
+  "linkNoLongerValid": "Pautan ini tidak lagi sah",
+  "linkExpiredOrUsedRequestNew": "Pautan telah tamat tempoh atau telah digunakan. Minta pautan baharu di bawah.",
+  "resendVerificationEmail": "Hantar semula e-mel pengesahan",
+  "sendNewResetLink": "Hantar pautan tetapan semula baharu",
+  "useDifferentEmail": "Guna e-mel lain"
 }

@@ -916,5 +916,8 @@
   "ntPrefSoundSub": "Mainkan bunyi bersama makluman.",
   "ntPushDeferred": "Makluman semasa aplikasi ditutup belum tersedia.",
   "ntCouldNotUpdate": "Tidak dapat mengemas kini notifikasi. Cuba lagi.",
-  "ntDismiss": "Tutup"
+  "ntDismiss": "Tutup",
+  "linkNoLongerValid": "Pautan ini tidak lagi sah",
+  "linkExpiredOrUsedRequestNew": "Pautan telah tamat tempoh atau telah digunakan. Minta e-mel pengesahan baharu, atau pautan tetapan semula kata laluan baharu.",
+  "sendNewResetLink": "Hantar pautan tetapan semula baharu"
 }

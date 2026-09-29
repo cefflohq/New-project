@@ -50,6 +50,35 @@ void main() {
     expect(find.byType(SetNewPasswordScreen), findsOneWidget);
   });
 
+  testWidgets('a refused emailed link opens Link Expired with both ways on', (
+    tester,
+  ) async {
+    await tester.pumpWidget(host(const AuthFlow(linkRejected: true)));
+    await tester.pump();
+    expect(find.byType(VerificationLinkExpiredScreen), findsOneWidget);
+    expect(find.text('This link is no longer valid'), findsOneWidget);
+    await tester.tap(find.text('Send a new reset link'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ForgotPasswordScreen), findsOneWidget);
+  });
+
+  testWidgets('the sign-up Link Expired state keeps its own copy', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(
+        VerificationLinkExpiredScreen(
+          email: 'a@b.test',
+          onBack: () {},
+          onBackToSignIn: () {},
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('Send a new reset link'), findsNothing);
+    expect(find.text('This link is no longer valid'), findsNothing);
+  });
+
   test('recovery links use the native app callback', () {
     expect(authRedirectUrl, 'cefflo-vendor://auth-callback');
   });

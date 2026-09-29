@@ -139,6 +139,7 @@ class AuthFlow extends StatefulWidget {
     this.onPrototypeAuthenticated,
     this.onPrototypeSignedUp,
     this.recovery = false,
+    this.linkRejected = false,
     this.onRecoveryDone,
     this.access = AuthAccess.vendor,
   });
@@ -149,6 +150,10 @@ class AuthFlow extends StatefulWidget {
 
   /// Opened from a password-recovery link: start at Set New Password.
   final bool recovery;
+
+  /// Opened from an emailed link the server refused: start at Link
+  /// Expired, offering a new verification email or a new reset link.
+  final bool linkRejected;
 
   /// Called after the recovered password is saved.
   final VoidCallback? onRecoveryDone;
@@ -166,7 +171,11 @@ class AuthFlow extends StatefulWidget {
 
 class _AuthFlowState extends State<AuthFlow> {
   late final List<_Stage> _stack = [
-    widget.recovery ? _Stage.setNewPassword : _Stage.splash,
+    widget.recovery
+        ? _Stage.setNewPassword
+        : widget.linkRejected
+        ? _Stage.linkExpired
+        : _Stage.splash,
   ];
 
   /// Carried between stages so "Check your email" / "Verify your email" can
@@ -249,6 +258,9 @@ class _AuthFlowState extends State<AuthFlow> {
         email: _email,
         onBack: _back,
         onBackToSignIn: () => _replace(_Stage.emailSignIn),
+        onForgotPassword: widget.linkRejected
+            ? () => _go(_Stage.forgotPassword)
+            : null,
       ),
       _Stage.setNewPassword => SetNewPasswordScreen(
         onBack: _back,
@@ -1688,11 +1700,17 @@ class VerificationLinkExpiredScreen extends StatefulWidget {
     required this.email,
     required this.onBack,
     required this.onBackToSignIn,
+    this.onForgotPassword,
   });
 
   final String email;
   final VoidCallback onBack;
   final VoidCallback onBackToSignIn;
+
+  /// Set when an emailed link opened the app and the server refused it. The
+  /// link may have been a sign-up confirmation or a password reset, so both
+  /// ways forward are offered.
+  final VoidCallback? onForgotPassword;
 
   @override
   State<VerificationLinkExpiredScreen> createState() =>
@@ -1739,8 +1757,12 @@ class _VerificationLinkExpiredScreenState
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _SheetHeading(
-          L.verificationLinkExpired,
-          L.linkHasExpiredInvalidRequestNew,
+          widget.onForgotPassword != null
+              ? L.linkNoLongerValid
+              : L.verificationLinkExpired,
+          widget.onForgotPassword != null
+              ? L.linkExpiredOrUsedRequestNew
+              : L.linkHasExpiredInvalidRequestNew,
           status: _StatusIcon(LucideIcons.clock),
         ),
         if (_notice != null) ...[
@@ -1764,6 +1786,13 @@ class _VerificationLinkExpiredScreenState
           busyLabel: L.sending,
           onTap: _error != null && _isRateLimited(_error!) ? null : _send,
         ),
+        if (widget.onForgotPassword != null) ...[
+          const SizedBox(height: Gap.lg),
+          _TextLink(
+            L.sendNewResetLink,
+            onTap: _busy ? null : widget.onForgotPassword,
+          ),
+        ],
         const SizedBox(height: Gap.xl),
         _TextLink(L.backSign, onTap: _busy ? null : widget.onBackToSignIn),
       ],

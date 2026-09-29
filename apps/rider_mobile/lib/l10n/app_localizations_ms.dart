@@ -456,9 +456,6 @@ class AppLocalizationsMs extends AppLocalizations {
       'Anda boleh minta pautan baharu dalam 60 saat.';
 
   @override
-  String get resendEmail58s => 'Hantar Semula E-mel (58s)';
-
-  @override
   String get passwordsDoNotMatch => 'Kata laluan tidak sepadan.';
 
   @override
@@ -1420,4 +1417,43 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get ntMarkRead => 'Tanda sudah dibaca';
+
+  @override
+  String get verifyYourEmail => 'Sahkan e-mel anda';
+
+  @override
+  String get weSentVerificationLinkTo =>
+      'Kami telah menghantar pautan pengesahan ke';
+
+  @override
+  String get openLinkOnThisPhone =>
+      'Buka pautan itu pada telefon ini untuk mengaktifkan akaun anda, kemudian anda akan log masuk.';
+
+  @override
+  String get resendEmail => 'Hantar semula e-mel';
+
+  @override
+  String resendEmailIn(int seconds) {
+    return 'Hantar semula e-mel (${seconds}s)';
+  }
+
+  @override
+  String get emailSentCheckInbox =>
+      'E-mel dihantar. Semak peti masuk dan folder spam anda.';
+
+  @override
+  String get linkNoLongerValid => 'Pautan ini tidak lagi sah';
+
+  @override
+  String get linkExpiredOrUsedRequestNew =>
+      'Pautan telah tamat tempoh atau telah digunakan. Minta pautan baharu di bawah.';
+
+  @override
+  String get resendVerificationEmail => 'Hantar semula e-mel pengesahan';
+
+  @override
+  String get sendNewResetLink => 'Hantar pautan tetapan semula baharu';
+
+  @override
+  String get useDifferentEmail => 'Guna e-mel lain';
 }
