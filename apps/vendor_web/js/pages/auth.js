@@ -4,10 +4,32 @@ import { t } from '../i18n.js';
 import { api } from '../api.js';
 import { esc, busy } from '../ui.js';
 import { demoAllowed, enterDemo } from '../demo.js';
+import { prefs, savePrefs } from '../prefs.js';
+
+// Branded frame shared by every auth screen: D-70 gradient, white wordmark,
+// VENDOR label and a language switch (as on Cefflo Vendor mobile sign-in).
+function frame(root, card, rerender) {
+  root.innerHTML = `<div class="auth">
+    <div class="auth-lang" role="group" aria-label="${esc(t('set.language'))}">
+      <button type="button" data-lang="en" aria-pressed="${prefs.lang === 'en'}">EN</button>
+      <button type="button" data-lang="ms" aria-pressed="${prefs.lang === 'ms'}">BM</button>
+    </div>
+    <div class="auth-brand-side">
+      <img class="auth-wordmark" src="img/cefflo-wordmark-white.png" alt="Cefflo" width="280" height="134">
+      <span class="auth-product">VENDOR</span>
+      <p class="auth-tagline">${esc(t('auth.tagline'))}</p>
+    </div>
+    <div class="auth-panel">${card}</div>
+    <p class="auth-foot">© ${new Date().getFullYear()} Cefflo · Grow = Operate</p>
+  </div>`;
+  root.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => {
+    if (prefs.lang !== b.dataset.lang) { savePrefs({ lang: b.dataset.lang }); rerender(); }
+  }));
+}
 
 export function renderSignIn(root, { onSignedIn, message = '' }) {
-  root.innerHTML = `<div class="auth"><form class="auth-card" data-form novalidate>
-    <div class="auth-brand">Cefflo <span style="color:var(--muted);font-weight:600;font-size:15px;letter-spacing:3px">VENDOR</span></div>
+  frame(root, `<form class="auth-card" data-form novalidate>
+    <img class="auth-mark" src="img/cefflo-mark.png" alt="" width="44" height="44">
     <h1>${esc(t('auth.welcome'))}</h1><p>${esc(t('auth.lead'))}</p>
     ${message ? `<div class="gated">${esc(message)}</div>` : ''}
     <div class="field"><label for="em">${esc(t('auth.email'))}</label><input class="input" id="em" type="email" autocomplete="username" required></div>
@@ -16,7 +38,7 @@ export function renderSignIn(root, { onSignedIn, message = '' }) {
     <button class="btn primary" type="submit" style="width:100%">${esc(t('auth.signIn'))}</button>
     <button class="link-btn" type="button" data-forgot style="justify-self:center">${esc(t('auth.forgot'))}</button>
     ${demoAllowed() ? `<div class="demo-entry"><span>${esc(t('demo.or'))}</span><button class="btn" type="button" data-demo style="width:100%">${esc(t('demo.enter'))}</button><small>${esc(t('demo.entryHint'))}</small></div>` : ''}
-  </form></div>`;
+  </form>`, () => renderSignIn(root, { onSignedIn, message }));
   const form = root.querySelector('[data-form]'), err = root.querySelector('[data-err]');
   form.addEventListener('submit', async e => {
     e.preventDefault();
@@ -37,12 +59,12 @@ export function renderSignIn(root, { onSignedIn, message = '' }) {
 }
 
 function renderForgot(root, opts) {
-  root.innerHTML = `<div class="auth"><form class="auth-card" data-form novalidate>
-    <div class="auth-brand">Cefflo</div><h1>${esc(t('auth.forgot'))}</h1><p>${esc(t('auth.resetLead'))}</p>
+  frame(root, `<form class="auth-card" data-form novalidate>
+    <img class="auth-mark" src="img/cefflo-mark.png" alt="" width="44" height="44"><h1>${esc(t('auth.forgot'))}</h1><p>${esc(t('auth.resetLead'))}</p>
     <div class="field"><label for="em">${esc(t('auth.email'))}</label><input class="input" id="em" type="email" autocomplete="username"></div>
     <div class="err" data-err hidden role="alert"></div><div class="gated" data-ok hidden></div>
     <button class="btn primary" type="submit" style="width:100%">${esc(t('auth.sendReset'))}</button>
-    <button class="link-btn" type="button" data-back style="justify-self:center">${esc(t('auth.backToSignIn'))}</button></form></div>`;
+    <button class="link-btn" type="button" data-back style="justify-self:center">${esc(t('auth.backToSignIn'))}</button></form>`, () => renderForgot(root, opts));
   const form = root.querySelector('[data-form]'), err = root.querySelector('[data-err]');
   form.addEventListener('submit', async e => {
     e.preventDefault();
@@ -59,12 +81,12 @@ function renderForgot(root, opts) {
 
 // After a recovery link: set a new password before entering the app.
 export function renderSetPassword(root, { onDone }) {
-  root.innerHTML = `<div class="auth"><form class="auth-card" data-form novalidate>
-    <div class="auth-brand">Cefflo</div><h1>${esc(t('prof.changePassword'))}</h1>
+  frame(root, `<form class="auth-card" data-form novalidate>
+    <img class="auth-mark" src="img/cefflo-mark.png" alt="" width="44" height="44"><h1>${esc(t('prof.changePassword'))}</h1>
     <div class="field"><label for="p1">${esc(t('sec.new'))}</label><input class="input" id="p1" type="password" autocomplete="new-password"></div>
     <div class="field"><label for="p2">${esc(t('sec.confirm'))}</label><input class="input" id="p2" type="password" autocomplete="new-password"></div>
     <div class="err" data-err hidden role="alert"></div>
-    <button class="btn primary" type="submit" style="width:100%">${esc(t('c.save'))}</button></form></div>`;
+    <button class="btn primary" type="submit" style="width:100%">${esc(t('c.save'))}</button></form>`, () => renderSetPassword(root, { onDone }));
   const form = root.querySelector('[data-form]'), err = root.querySelector('[data-err]');
   form.addEventListener('submit', async e => {
     e.preventDefault();

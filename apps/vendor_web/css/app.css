@@ -256,12 +256,41 @@ table.t .sub { display: block; color: var(--muted); font-size: 12.5px; margin-to
 .sub-card .desc { color: var(--muted); margin: 0 0 12px; font-size: 14px; }
 .gated { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; background: var(--neutral-tint); color: var(--ink-2); font-size: 13.5px; }
 
-/* ---------------- auth ---------------- */
-.auth { min-height: 100vh; display: grid; place-items: center; background: var(--sidebar-bg); padding: 24px; }
-.auth-card { width: min(420px, 100%); background: var(--elevated); border-radius: 22px; box-shadow: var(--shadow-pop); padding: 32px 30px; display: grid; gap: 16px; }
-.auth-card h1 { margin: 0; font-size: 26px; font-weight: 800; }
-.auth-card p { margin: 0; color: var(--muted); }
-.auth-brand { font-weight: 800; font-size: 28px; color: var(--primary); letter-spacing: -.5px; }
+/* ---------------- auth (Cefflo brand, D-70) ---------------- */
+.auth {
+  --auth-grad: linear-gradient(160deg, #01265E 0%, #00378F 38%, #005CC4 72%, #0592EB 100%);
+  position: relative; min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr); align-content: center; justify-items: center;
+  gap: 28px; padding: 72px 20px 56px; background: var(--auth-grad); color: #fff; overflow: hidden; isolation: isolate;
+}
+.auth::before { /* the Cefflo chevron facets, very faint */
+  content: ''; position: absolute; inset: -20% -10% auto auto; width: 70vmax; height: 70vmax; z-index: -1; pointer-events: none;
+  background: conic-gradient(from 200deg at 60% 50%, rgba(255,255,255,.07), rgba(255,255,255,0) 25%, rgba(255,255,255,.05) 50%, rgba(255,255,255,0) 75%);
+  border-radius: 50%; filter: blur(2px);
+}
+.auth-lang { position: absolute; top: 20px; right: 20px; display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(255,255,255,.12); }
+.auth-lang button { border: 0; background: transparent; color: rgba(255,255,255,.8); font-weight: 700; font-size: 13px; letter-spacing: .04em; height: 32px; min-width: 44px; border-radius: 999px; cursor: pointer; }
+.auth-lang button[aria-pressed="true"] { background: #fff; color: #01265E; }
+.auth-brand-side { display: grid; justify-items: center; text-align: center; gap: 10px; }
+.auth-wordmark { width: 180px; height: auto; }
+.auth-product { font-size: 13px; font-weight: 600; letter-spacing: .5em; margin-right: -.5em; color: rgba(255,255,255,.9); }
+.auth-tagline { margin: 8px 0 0; max-width: 30ch; font-size: 16px; line-height: 1.5; color: rgba(255,255,255,.78); }
+.auth-panel { width: min(440px, 100%); }
+.auth-card { width: 100%; background: var(--elevated); color: var(--ink); border-radius: 24px; box-shadow: 0 30px 80px -30px rgba(1, 16, 50, .6); padding: 32px 30px 28px; display: grid; gap: 16px; }
+.auth-card h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.4px; }
+.auth-card p { margin: -8px 0 0; color: var(--muted); }
+.auth-mark { width: 44px; height: 44px; border-radius: 12px; }
+.auth-card .btn.primary { height: 50px; background: #01265E; border-color: #01265E; }
+.auth-card .btn.primary:hover { background: #00378F; border-color: #00378F; filter: none; }
+.auth-foot { margin: 0; font-size: 12.5px; color: rgba(255,255,255,.6); }
+@media (min-width: 960px) {
+  .auth { grid-template-columns: minmax(0, 1fr) 440px; justify-items: start; align-items: center; gap: 48px 72px; padding: 64px max(64px, 8vw); }
+  .auth-brand-side { justify-items: start; text-align: left; gap: 14px; }
+  .auth-wordmark { width: 300px; }
+  .auth-product { font-size: 15px; }
+  .auth-tagline { font-size: 20px; max-width: 24ch; }
+  .auth-foot { position: absolute; left: max(64px, 8vw); bottom: 28px; }
+}
+:root[data-theme='dark'] .auth-card .btn.primary { background: var(--primary); border-color: var(--primary); }
 
 /* ---------------- responsive ----------------
    Desktop layout from 1200px. Below that the two-column screens stack; below
