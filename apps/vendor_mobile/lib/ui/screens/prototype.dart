@@ -434,7 +434,7 @@ class _DayHours {
   TimeOfDay opens, closes;
 }
 
-/// Business Hours on the real backend (202610010003): Owner-only, the
+/// Business Hours on the real backend (20260930090613): Owner-only, the
 /// whole week saved at once through set_business_hours.
 class _BusinessHoursScreen extends StatefulWidget {
   const _BusinessHoursScreen();

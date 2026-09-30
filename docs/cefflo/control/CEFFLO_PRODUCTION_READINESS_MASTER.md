@@ -714,7 +714,7 @@ Build: `app-arm64-v8a-release.apk`, source `1d78d71`, `CEFFLO_ENVIRONMENT=stagin
 
 ### 8.14 Profile Photo — backend capability (staging, Founder-approved 2026-09-30)
 
-Migration `202609300001_profile_avatars.sql`, applied to `cefflo-staging` only:
+Migration `20260930044838_profile_avatars.sql`, applied to `cefflo-staging` only:
 - Bucket `cefflo-avatars`: private, 2 MB limit, JPEG / PNG / WebP only.
 - `profiles.avatar_url text` + check `profiles_avatar_url_own_path` (value null or `<id>/avatar`).
 - Storage policies `avatars_owner_{read,insert,update,delete}`: authenticated, `name = auth.uid() || '/avatar'` only. No other table, bucket, RPC or policy touched.

@@ -3554,10 +3554,6 @@ class AppLocalizationsMs extends AppLocalizations {
       'Sehingga 5 foto · JPG, PNG atau WebP · 5 MB setiap satu. Foto pertama ialah kulit.';
 
   @override
-  String get photosNotLiveYet =>
-      'Foto baharu dipaparkan di kedai anda setelah diproses dan diluluskan.';
-
-  @override
   String get subTrial => 'Percubaan';
 
   @override

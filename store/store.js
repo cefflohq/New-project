@@ -46,9 +46,9 @@
     if (!products.length) { root.append(el('p', { class: 'state' }, 'No products yet.')); return; }
     for (const p of products) {
       const qty = cart.get(p.id) || 0;
-      const img = p.images && p.images[0]
-        ? el('img', { src: `${cfg.supabaseUrl}${p.images[0]}`, alt: '' })
-        : el('div', { class: 'ph' });
+      // Every approved photo, in the vendor's order (first = cover).
+      const imgs = (p.images || []).map(src => el('img', { src: `${cfg.supabaseUrl}${src}`, alt: '', loading: 'lazy' }));
+      const img = imgs.length ? el('div', { class: 'gallery' }, ...imgs) : el('div', { class: 'ph' });
       const count = el('span', {}, String(qty));
       const change = d => () => {
         const next = Math.max(0, Math.min(50, (cart.get(p.id) || 0) + d));

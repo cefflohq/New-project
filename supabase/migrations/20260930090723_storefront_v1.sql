@@ -190,7 +190,7 @@ begin
     'template_key', page.template_key,
     'theme', page.theme,
     'business', jsonb_build_object('name', b.name, 'area', nullif(trim(b.operating_area), '')),
-    -- Business Hours (202610010003): the week as set by the Owner, and
+    -- Business Hours (20260930090613): the week as set by the Owner, and
     -- open/closed now in the business's own timezone. Empty week = null.
     'hours', (select jsonb_agg(jsonb_build_object('weekday', h.weekday, 'is_open', h.is_open,
         'opens_at', to_char(h.opens_at, 'HH24:MI'), 'closes_at', to_char(h.closes_at, 'HH24:MI')) order by h.weekday)

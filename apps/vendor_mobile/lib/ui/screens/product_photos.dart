@@ -10,7 +10,7 @@ import '../widgets.dart';
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
 
-/// Up to 5 product photos (Founder, 2026-10-01; 202610010002). Changes are
+/// Up to 5 product photos (Founder, 2026-10-01; 20260930090556). Changes are
 /// kept on the form and committed with the product's Save, so a new
 /// product can take photos before it exists. JPG / PNG / WebP, 5 MB each,
 /// checked here and again by the server.
@@ -214,7 +214,6 @@ class ProductPhotosField extends StatelessWidget {
       final c = context.c;
       final text = Theme.of(context).textTheme;
       final photos = controller.photos;
-      final notLive = photos.any((p) => p.isNew || p.status != 'approved');
       Widget tile(Widget child, {VoidCallback? onTap}) => InkWell(
         onTap: enabled ? onTap : null,
         borderRadius: BorderRadius.circular(Sizes.cardRadius),
@@ -295,11 +294,6 @@ class ProductPhotosField extends StatelessWidget {
           ),
           const SizedBox(height: Gap.sm),
           Text(L.photosRules, style: text.bodySmall),
-          if (photos.isNotEmpty && notLive)
-            Padding(
-              padding: const EdgeInsets.only(top: Gap.xs),
-              child: Text(L.photosNotLiveYet, style: text.bodySmall),
-            ),
         ],
       );
     },

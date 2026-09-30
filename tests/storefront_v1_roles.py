@@ -1,4 +1,4 @@
-"""Rollback-only acceptance for 202610010002..06 (Founder approval 2026-10-01).
+"""Rollback-only acceptance for 20260930090556..06 (Founder approval 2026-10-01).
 
 Proves: Helpers cannot manage storefront, order pages, product media or
 business hours; Operators manage storefront/media but not the slug or
@@ -109,6 +109,22 @@ with psycopg.connect(target.database_url) as conn:
         cur.execute("select (create_product_media(%s,%s,'image/jpeg',3::smallint)).position", (product, media[5]))
         cur.execute("select count(*) from product_media where product_id=%s and archived_at is null", (product,))
         assert cur.fetchone()[0] == 5, "replacing one position keeps the other four"
+
+        # V1 original-as-is (20260930104624): a registered photo becomes
+        # displayable only once its display object exists; Helper refused.
+        rejected(cur, "select mark_product_media_displayable(%s)", (media[0],), contains="display upload not found")
+        cur.execute("reset role")
+        for m in media[:5]:
+            cur.execute("insert into storage.objects(bucket_id,name) values('cefflo-product-display',%s)",
+                        (f"{business}/{product}/{m}/display.jpg",))
+        actor(helper)
+        rejected(cur, "select mark_product_media_displayable(%s)", (media[0],), contains="forbidden")
+        actor(operator)
+        for m in (media[0], media[1]):
+            cur.execute("select (mark_product_media_displayable(%s)).status", (m,))
+            assert cur.fetchone()[0] == "approved"
+        cur.execute("select processing_version from product_media where id=%s", (media[0],))
+        assert cur.fetchone()[0] == 0, "original-as-is is recorded as unprocessed"
 
         # Owner: slug rules and hours.
         actor(owner)

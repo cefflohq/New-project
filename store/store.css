@@ -27,3 +27,6 @@ h2 { font-size: 18px; margin: 20px 0 10px; }
 .muted { color: var(--muted); }
 .bar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--line); padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 12px; }
 .bar .cta { margin: 0; width: auto; flex: 1; }
+.product { flex-wrap: wrap; }
+.gallery { display: flex; gap: 6px; overflow-x: auto; scroll-snap-type: x mandatory; flex: 1 1 100%; }
+.gallery img { width: 120px; height: 120px; border-radius: 10px; object-fit: cover; flex: none; scroll-snap-align: start; }

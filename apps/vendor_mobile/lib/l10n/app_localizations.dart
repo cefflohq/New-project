@@ -6495,12 +6495,6 @@ abstract class AppLocalizations {
   /// **'Up to 5 photos · JPG, PNG or WebP · 5 MB each. The first photo is the cover.'**
   String get photosRules;
 
-  /// No description provided for @photosNotLiveYet.
-  ///
-  /// In en, this message translates to:
-  /// **'New photos appear on your storefront once they\'re processed and approved.'**
-  String get photosNotLiveYet;
-
   /// No description provided for @subTrial.
   ///
   /// In en, this message translates to:

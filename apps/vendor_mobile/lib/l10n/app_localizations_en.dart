@@ -3551,10 +3551,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Up to 5 photos · JPG, PNG or WebP · 5 MB each. The first photo is the cover.';
 
   @override
-  String get photosNotLiveYet =>
-      'New photos appear on your storefront once they\'re processed and approved.';
-
-  @override
   String get subTrial => 'Trial';
 
   @override

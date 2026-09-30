@@ -304,7 +304,7 @@ class VendorRepository {
   }
 
   // --------------------------------------------------------- product media
-  // 202610010002: up to 5 active photos per product at positions 1..5,
+  // 20260930090556: up to 5 active photos per product at positions 1..5,
   // originals in the private cefflo-product-originals bucket at
   // {business}/{product}/{media}/original.{ext}. Owner + Operator only.
 
@@ -332,8 +332,8 @@ class VendorRepository {
     }
   }
 
-  /// Uploads one photo and registers it (create_product_media), at the
-  /// first free position.
+  /// Uploads one photo, registers it (create_product_media) at the first
+  /// free position and makes it displayable on the storefront.
   Future<void> addProductPhoto({
     required String businessId,
     required String productId,
@@ -364,6 +364,23 @@ class VendorRepository {
           'p_content_type': contentType,
         },
       ),
+    ); // V1 original-as-is (20260930104624): the same validated bytes go to
+    // the public display bucket, then the server verifies the object and
+    // approves it (processing_version 0 = not processed). No worker needed.
+    await _run(
+      () => _db!.storage
+          .from('cefflo-product-display')
+          .uploadBinary(
+            '$businessId/$productId/$mediaId/display.$ext',
+            bytes,
+            fileOptions: FileOptions(contentType: contentType),
+          ),
+    );
+    await _run(
+      () => _db!.rpc(
+        'mark_product_media_displayable',
+        params: {'p_media_id': mediaId},
+      ),
     );
   }
 
@@ -380,7 +397,7 @@ class VendorRepository {
       );
 
   // --------------------------------------------------------- business hours
-  // 202610010003: one row per weekday (1 = Monday), wall-clock times in the
+  // 20260930090613: one row per weekday (1 = Monday), wall-clock times in the
   // business's own timezone. Members read; the Owner saves the whole week.
 
   Future<List<Map<String, dynamic>>> businessHours(String businessId) async {
@@ -409,7 +426,7 @@ class VendorRepository {
   }
 
   // ------------------------------------------------------------ storefront
-  // Storefront V1 (202610010004): the business's one permanent, slug-based
+  // Storefront V1 (20260930090723): the business's one permanent, slug-based
   // storefront on public_order_pages. Owner + Operator on the server.
 
   /// The storefront (created unpublished on first open).
