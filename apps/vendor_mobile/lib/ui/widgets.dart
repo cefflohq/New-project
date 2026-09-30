@@ -1,4 +1,8 @@
 import 'dart:async';
+
+export 'toast.dart' show showCefToast;
+import 'toast.dart';
+
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -21,63 +25,6 @@ class ToastInset extends InheritedWidget {
 
   @override
   bool updateShouldNotify(ToastInset old) => old.bottom != bottom;
-}
-
-/// The one toast: a light-grey rounded card floating above the bottom nav,
-/// shown for 3 seconds, with a
-/// status mark (navy check, or red alert when [error]), the message, and an
-/// optional action such as Undo. Every confirmation and error in the app
-/// uses it.
-void showCefToast(
-  BuildContext context,
-  String message, {
-  bool error = false,
-  String? actionLabel,
-  VoidCallback? onAction,
-}) {
-  final c = context.c;
-  final inset = ToastInset.of(context);
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        // Pops up for 3 seconds, then dismisses itself -- also when it
-        // carries an action such as Undo (Flutter keeps action snackbars
-        // until dismissed unless told otherwise).
-        duration: const Duration(seconds: 3),
-        persist: false,
-        margin: EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, inset + Gap.md),
-        content: Row(
-          children: [
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: error ? c.attention : CefColors.navy,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                error ? LucideIcons.x : LucideIcons.check,
-                size: 14,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(width: Gap.md),
-            Expanded(
-              child: Text(
-                message,
-                style: Theme.of(context).textTheme.bodyLarge
-                    ?.copyWith(color: c.textPrimary),
-              ),
-            ),
-          ],
-        ),
-        action: actionLabel == null
-            ? null
-            : SnackBarAction(label: actionLabel, onPressed: onAction ?? () {}),
-      ),
-    );
 }
 
 /// Shared feedback for controls that must visibly react to a tap even though

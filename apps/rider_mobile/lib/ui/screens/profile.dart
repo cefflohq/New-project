@@ -425,12 +425,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       shape: const CircleBorder(),
                       child: InkWell(
                         customBorder: const CircleBorder(),
-                        onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(L.photoUploadNotWiredUpPreview),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: CefColors.navy,
-                          ),
+                        onTap: () => showCefToast(
+                          context,
+                          L.photoUploadNotWiredUpPreview,
+                          error: false,
                         ),
                         child: const SizedBox(
                           width: 34,
@@ -728,24 +726,17 @@ class SettingsScreen extends StatelessWidget {
             icon: LucideIcons.moon,
             label: L.appearance,
             value: L.light,
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(L.lightModeOnlyRelease),
-                behavior: SnackBarBehavior.floating,
-                backgroundColor: CefColors.navy,
-              ),
-            ),
+            onTap: () =>
+                showCefToast(context, L.lightModeOnlyRelease, error: false),
           ),
           const SizedBox(height: Gap.md),
           OutlinedNavRow(
             icon: LucideIcons.lock,
             label: L.security,
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(L.securitySettingsNotWiredUpPreview),
-                behavior: SnackBarBehavior.floating,
-                backgroundColor: CefColors.navy,
-              ),
+            onTap: () => showCefToast(
+              context,
+              L.securitySettingsNotWiredUpPreview,
+              error: false,
             ),
           ),
           const SizedBox(height: Gap.md),

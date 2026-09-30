@@ -1,4 +1,8 @@
 import 'dart:async';
+
+export 'toast.dart' show showCefToast;
+import 'toast.dart';
+
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -2043,7 +2047,6 @@ Future<bool> showCeffloSubmitFlow(
   Future<void> Function()? action,
 }) async {
   final navigator = Navigator.of(context, rootNavigator: true);
-  final messenger = ScaffoldMessenger.maybeOf(context);
   unawaited(
     showCeffloModal<void>(
       context,
@@ -2065,9 +2068,9 @@ Future<bool> showCeffloSubmitFlow(
   if (!navigator.mounted) return false;
   navigator.pop();
   if (failure != null) {
-    messenger?.showSnackBar(
-      SnackBar(content: Text('$failure'), behavior: SnackBarBehavior.floating),
-    );
+    if (navigator.context.mounted) {
+      showCefToast(navigator.context, '$failure', error: true);
+    }
     return false;
   }
   await showCeffloModal<void>(

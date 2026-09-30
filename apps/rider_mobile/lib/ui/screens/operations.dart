@@ -568,9 +568,7 @@ class _RunPrimaryActionState extends State<_RunPrimaryAction> {
       await action();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$e'), behavior: SnackBarBehavior.floating),
-        );
+        showCefToast(context, '$e', error: true);
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -894,12 +892,7 @@ class _StopListScreenState extends State<StopListScreen> {
             if (mounted) setState(() => _filter = 0);
           } catch (e) {
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('$e'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+              showCefToast(context, '$e', error: true);
             }
           }
         },
@@ -1350,12 +1343,7 @@ class NavigationToStopScreen extends StatelessWidget {
                             app.go(DRoute.confirmDelivery, entityId: stop.id);
                           } catch (e) {
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('$e'),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
+                              showCefToast(context, '$e', error: true);
                             }
                           }
                         },
@@ -1576,12 +1564,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
           final real = !app.repo.isDemo;
           final photo = _photo;
           if (real && photo == null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(L.takeProofDeliveryPhotoFirst),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+            showCefToast(context, L.takeProofDeliveryPhotoFirst, error: false);
             return;
           }
           if (!real) app.markStopDelivered(stop.id);

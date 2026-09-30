@@ -496,13 +496,7 @@ class VendorSupportScreen extends StatelessWidget {
   }
 
   void _toast(BuildContext context, String message) =>
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: CefColors.navy,
-        ),
-      );
+      showCefToast(context, message);
 }
 
 class _ContactRow extends StatelessWidget {

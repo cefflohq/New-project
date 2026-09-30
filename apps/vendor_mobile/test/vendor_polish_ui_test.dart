@@ -353,20 +353,29 @@ void main() {
     expect(find.byType(SkeletonPulse), findsNothing);
   });
 
-  testWidgets('toasts float with a status mark and an action', (tester) async {
-    await pumpAt(tester, const VendorLocation(VRoute.notificationInbox));
-    await tester.drag(find.text('System update'), const Offset(-500, 0));
-    await tester.pumpAndSettle();
-    final bar = tester.widget<SnackBar>(find.byType(SnackBar));
-    expect(bar.behavior, SnackBarBehavior.floating);
-    expect(find.byIcon(LucideIcons.check), findsOneWidget);
-    expect(find.text('Undo'), findsOneWidget);
-    expect(bar.duration, const Duration(seconds: 3));
-    // Gone on its own after 3 seconds, even with an action.
-    await tester.pump(const Duration(seconds: 3));
-    await tester.pumpAndSettle();
-    expect(find.byType(SnackBar), findsNothing);
-  });
+  testWidgets(
+    'toasts float under the header with a status mark and an action',
+    (tester) async {
+      await pumpAt(tester, const VendorLocation(VRoute.notificationInbox));
+      await tester.drag(find.text('System update'), const Offset(-500, 0));
+      await tester.pumpAndSettle();
+      expect(find.byType(SnackBar), findsNothing);
+      expect(find.byIcon(LucideIcons.circleCheck), findsOneWidget);
+      expect(find.text('Undo'), findsOneWidget);
+      // Floats in the upper part of the screen, below the header.
+      final top = tester.getTopLeft(find.text('Undo')).dy;
+      expect(
+        top,
+        lessThan(
+          tester.view.physicalSize.height / tester.view.devicePixelRatio / 2,
+        ),
+      );
+      // Gone on its own after 3 seconds, even with an action.
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
+      expect(find.text('Undo'), findsNothing);
+    },
+  );
 
   testWidgets('one universal background persists across tabs', (tester) async {
     await pumpAt(tester, const VendorLocation(VRoute.today));

@@ -348,12 +348,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void _guard(Future<void> action) {
     action.catchError((Object _) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(L.ntCouldNotUpdate),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        showCefToast(context, L.ntCouldNotUpdate, error: true);
       }
     });
   }
