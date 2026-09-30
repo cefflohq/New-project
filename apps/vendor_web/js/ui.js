@@ -149,3 +149,12 @@ export function copyText(text) {
 }
 
 export const phoneDigits = p => String(p || '').replace(/[^\d]/g, '');
+
+// The browser's own chrome (mobile URL bar, PWA title bar) takes the colour
+// of the screen's top edge: the dark brand blue on auth and Business Setup,
+// the light page tone inside the app.
+export function setChromeColor(color) {
+  let m = document.querySelector('meta[name="theme-color"]');
+  if (!m) { m = document.createElement('meta'); m.name = 'theme-color'; document.head.append(m); }
+  m.content = color;
+}

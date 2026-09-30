@@ -19,7 +19,7 @@
 import { t } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
-import { esc, icon } from '../ui.js';
+import { esc, icon, setChromeColor } from '../ui.js';
 
 const PHONE = /^\+?[0-9][0-9\s-]{5,19}$/;
 const draftKey = () => `cefflo.vendorweb.setupDraft.${ctx.user?.id || 'anon'}`;
@@ -62,6 +62,7 @@ export const composeAddress = d => [String(d.street || '').trim(),
  * @param opts.onExpired () => void   session expired: sign in again (draft kept)
  */
 export function renderBusinessSetup(root, opts) {
+  setChromeColor('#0a3aae');
   const d = { name: '', phone: '', street: '', postcode: '', city: '', ...readDraft() };
   let step = d.step === 2 ? 2 : 1;
   let created = false; // bootstrap_business already succeeded in this visit

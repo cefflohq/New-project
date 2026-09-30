@@ -53,7 +53,7 @@
   --purple-tint: #f0ecfd;
   --neutral-tint: #eff1f3;
   /* branded full-screen surfaces (sign-in, Business Setup) */
-  --brand-gradient: linear-gradient(180deg, #0d4bd6 0%, #0a42c4 45%, #0a3aae 100%);
+  --brand-gradient: linear-gradient(0deg, #0d4bd6 0%, #0a42c4 45%, #0a3aae 100%);
   --brand-deep: #0d4bd6;
   /* shape: restrained radii, borders over elevation */
   --r-xs: 4px; --r-sm: 6px; --r-md: 8px; --r-lg: 10px; --r-pill: 999px;

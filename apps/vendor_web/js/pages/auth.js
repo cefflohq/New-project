@@ -5,7 +5,7 @@
 // GoTrue call; nothing here decides a role -- the server does, after sign-in.
 import { t } from '../i18n.js';
 import { api } from '../api.js';
-import { esc, busy, icon } from '../ui.js';
+import { esc, busy, icon, setChromeColor } from '../ui.js';
 import { prefs, savePrefs } from '../prefs.js';
 import { operatorEntry } from '../access.js';
 
@@ -15,10 +15,11 @@ const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 // sign-in: the brand backdrop, the Cefflo lockup, the spaced VENDOR label,
 // a language menu at the top and the actions below the hero.
 function frame(root, bottom, rerender, { hero = '', langRight = false, brand = true } = {}) {
+  setChromeColor('#061F5C');
   root.innerHTML = `<div class="auth">
-    <div class="auth-top${langRight ? ' right' : ''}">
+    <div class="auth-top right">
       <div class="auth-lang">
-        <button type="button" class="auth-lang-btn" data-langmenu aria-haspopup="menu" aria-expanded="false">${icon('globe')}<span>${prefs.lang === 'ms' ? 'Bahasa Melayu' : 'English'}</span>${icon('down')}</button>
+        <button type="button" class="auth-lang-btn" data-langmenu aria-haspopup="menu" aria-expanded="false" aria-label="${prefs.lang === 'ms' ? 'Bahasa Melayu' : 'English'}">${icon('globe')}<span>${prefs.lang === 'ms' ? 'BM' : 'EN'}</span></button>
         <div class="auth-lang-menu" role="menu" hidden>
           <button type="button" role="menuitemradio" aria-checked="${prefs.lang === 'en'}" data-lang="en">English</button>
           <button type="button" role="menuitemradio" aria-checked="${prefs.lang === 'ms'}" data-lang="ms">Bahasa Melayu</button>

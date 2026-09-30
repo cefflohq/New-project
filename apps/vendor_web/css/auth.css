@@ -9,8 +9,8 @@
   color: #fff; overflow: hidden; isolation: isolate;
   padding: calc(clamp(8px, 2dvh, 16px) + env(safe-area-inset-top, 0px)) 16px calc(clamp(12px, 3dvh, 28px) + env(safe-area-inset-bottom, 0px));
   background:
-    radial-gradient(55% 32% at 68% 47%, rgba(70, 160, 255, .55) 0%, rgba(70, 160, 255, 0) 70%),
-    linear-gradient(180deg, #5BC0F8 0%, #3A9BEF 22%, #1A6FE0 45%, #0E4FBE 66%, #0A3486 84%, #061F5C 100%);
+    radial-gradient(55% 32% at 68% 53%, rgba(70, 160, 255, .55) 0%, rgba(70, 160, 255, 0) 70%),
+    linear-gradient(0deg, #5BC0F8 0%, #3A9BEF 22%, #1A6FE0 45%, #0E4FBE 66%, #0A3486 84%, #061F5C 100%);
 }
 /* One focus, centred: the brand and the screen's action sit together in the
    middle; equal flexible space above and below. */
@@ -22,10 +22,9 @@
 .auth::after { order: 4; }
 .auth-top.right { justify-content: flex-end; }
 .auth-lang { position: relative; }
-.auth-lang-btn { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+.auth-lang-btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border: 1px solid rgba(255,255,255,.28); border-radius: 999px; background: rgba(255,255,255,.08); color: #fff; font-size: 12.5px; font-weight: 700; letter-spacing: .04em; cursor: pointer; }
 .auth-lang-btn:hover { background: rgba(255,255,255,.12); }
-.auth-lang-btn svg { width: 18px; height: 18px; }
-.auth-lang-btn svg:last-child { width: 14px; height: 14px; }
+.auth-lang-btn svg { width: 16px; height: 16px; }
 .auth-lang-menu { position: absolute; top: calc(100% + 4px); left: 0; z-index: 5; min-width: 180px; padding: 4px; border-radius: 10px; background: #fff; box-shadow: 0 12px 36px rgba(1, 16, 50, .3); display: grid; }
 .auth-top.right .auth-lang-menu { left: auto; right: 0; }
 .auth-lang-menu[hidden] { display: none; }

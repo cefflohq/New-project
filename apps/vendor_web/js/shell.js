@@ -6,7 +6,7 @@
 import { t, longToday } from './i18n.js';
 import { isDemo } from './demo.js';
 import { ctx, selectBusiness } from './store.js';
-import { esc, icon, initials, avatar, confirmDialog } from './ui.js';
+import { esc, icon, initials, avatar, confirmDialog, setChromeColor } from './ui.js';
 import { notif, onNotifications, startNotifications, renderPanel, wirePanel, openNotificationPrefs } from './notifications.js';
 
 const NAV = [
@@ -36,6 +36,7 @@ export function rerenderShell() {
 }
 
 function renderFrame() {
+  setChromeColor(getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#fbfbfc');
   const b = ctx.business;
   const name = ctx.user?.user_metadata?.full_name || ctx.user?.email || '';
   const link = (id, ic, key, href = `#/${id}`) => `<a href="${href}" data-nav="${id}" title="${esc(t(key))}">${icon(ic)}<span class="lbl">${esc(t(key))}</span></a>`;
