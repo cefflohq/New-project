@@ -991,7 +991,13 @@ async function boot() {
   if (!F.session()?.access_token) return renderSignIn();
   authFrame('<div class="skel"></div><div class="skel"></div>');
   try {
-    me.user = await F.currentUser();
+    // A stored session whose access token expired and whose refresh token is
+    // gone answers /auth/v1/user with 403 bad_jwt: that is a session that
+    // ended, not an outage — back to Sign In.
+    try { me.user = await F.currentUser(); } catch (e) {
+      if (e?.status === 401 || e?.status === 403) { await F.signOut().catch(() => {}); return renderSignIn('Your session ended. Sign in again.'); }
+      throw e;
+    }
     if (await F.isPlatformAdmin() !== true) return renderDenied(me.user?.email);
   } catch (e) {
     if (e?.status === 401 || /JWT|session/i.test(String(e?.message))) { await F.signOut().catch(() => {}); return renderSignIn('Your session ended. Sign in again.'); }
