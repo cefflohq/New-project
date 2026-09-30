@@ -15,7 +15,7 @@ const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 // Branded frame shared by every auth screen, matching Cefflo Vendor mobile
 // sign-in: the brand backdrop, the Cefflo lockup, the spaced VENDOR label,
 // a language menu at the top and the actions below the hero.
-function frame(root, bottom, rerender, { hero = '', langRight = false } = {}) {
+function frame(root, bottom, rerender, { hero = '', langRight = false, brand = true } = {}) {
   root.innerHTML = `<div class="auth">
     <div class="auth-top${langRight ? ' right' : ''}">
       <div class="auth-lang">
@@ -26,11 +26,11 @@ function frame(root, bottom, rerender, { hero = '', langRight = false } = {}) {
         </div>
       </div>
     </div>
-    <div class="auth-hero${hero ? ' op' : ''}">
+    ${brand ? `<div class="auth-hero${hero ? ' op' : ''}">
       <img class="auth-logo" src="img/cefflo-logo.png" alt="Cefflo" width="150" height="234">
       <span class="auth-product">VENDOR</span>
       ${hero}
-    </div>
+    </div>` : '<div class="auth-hero bare"></div>'}
     <div class="auth-bottom">${bottom}</div>
   </div>`;
   const btn = root.querySelector('[data-langmenu]'), menu = root.querySelector('.auth-lang-menu');
@@ -252,4 +252,147 @@ export function renderSetPassword(root, { onDone }) {
     if (p1 !== p2) { err.textContent = t('sec.mismatch'); err.hidden = false; return; }
     try { await busy(form.querySelector('[type=submit]'), () => api.updateUser({ password: p1 })); onDone(); } catch (ex) { err.textContent = ex.message; err.hidden = false; }
   });
+}
+
+// ---------------------------------------------------------------- 6-digit code
+// Verify with the 6-digit code from the email (sign-up, password recovery or
+// an email change). Presentation and interaction only: `onVerify(code)` and
+// `onResend()` belong to the auth flow that owns the GoTrue calls. A
+// rejection carries `{ kind: 'incorrect' | 'expired' | 'rate' | 'network',
+// retryAfter?, message? }`; GoTrue answers an expired and a mistyped code
+// with the same `otp_expired`, so 'incorrect' is the default and 'expired'
+// is used only when the backend says so unambiguously. Success is shown only
+// after `onVerify` resolves. The code is read from the inputs when needed
+// and never logged or stored.
+const OTP_LEN = 6;
+export function renderVerifyCode(root, opts, { email, purpose = 'signup', onVerify, onResend, onContinue, onBack, cooldown = 60 }) {
+  let left = 0, timer = null, verifying = false, failed = null;
+  const title = t(`otp.title.${purpose}`);
+  const draw = () => frame(root, `<form class="auth-card auth-center" data-form novalidate>
+    ${status(purpose === 'recovery' ? 'lock' : 'mail')}
+    <h1>${esc(title)}</h1><p>${esc(t('otp.lead'))}</p>
+    <p class="auth-email">${esc(email)}</p>
+    <div class="otp" role="group" aria-label="${esc(t('otp.label'))}">
+      ${Array.from({ length: OTP_LEN }, (_, i) => `<input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="${i ? 'off' : 'one-time-code'}" aria-label="${esc(t('otp.digit', { n: i + 1 }))}" data-i="${i}">`).join('')}
+    </div>
+    <div class="err" data-err hidden role="alert"></div><div class="gated" data-ok hidden role="status"></div>
+    <button class="btn primary" type="submit" data-verify style="width:100%" disabled>${esc(t('otp.verify'))}</button>
+    <p class="otp-resend" data-resendline></p>
+    <button class="link-btn" type="button" data-back>${esc(t(purpose === 'signup' ? 'auth.differentEmail' : 'auth.backToSignIn'))}</button>
+    <p class="auth-muted">${esc(t('auth.spam'))}</p>
+  </form>`, draw, { brand: false });
+  draw();
+  const $ = s => root.querySelector(s);
+  const boxes = [...root.querySelectorAll('.otp-box')];
+  const err = $('[data-err]'), ok = $('[data-ok]'), verifyBtn = $('[data-verify]'), line = $('[data-resendline]');
+  const code = () => boxes.map(b => b.value).join('');
+  const clearMsgs = () => { err.hidden = true; ok.hidden = true; };
+  const setFailed = kind => { failed = kind; root.querySelector('.otp').classList.toggle('bad', !!kind && kind !== 'expired'); };
+  const sync = () => {
+    verifyBtn.disabled = failed === 'expired' ? left > 0 : verifying || !!failed || code().length !== OTP_LEN;
+  };
+  const paintLine = () => {
+    if (failed === 'expired') { line.innerHTML = left > 0 ? esc(t('otp.resendIn', { s: left })) : ''; sync(); return; }
+    line.innerHTML = left > 0 ? esc(t('otp.resendIn', { s: left }))
+      : `${esc(t('otp.noCode'))} <button class="link-btn" type="button" data-resend>${esc(t('otp.resend'))}</button>`;
+    line.querySelector('[data-resend]')?.addEventListener('click', resend);
+  };
+  const countdown = s => {
+    clearInterval(timer); left = s; paintLine();
+    if (s > 0) timer = setInterval(() => { left -= 1; if (!root.contains(line)) return clearInterval(timer); if (left <= 0) clearInterval(timer); paintLine(); }, 1000);
+  };
+  const failText = f => ({ incorrect: t('otp.incorrect'), expired: t('otp.expired'), rate: t('otp.rate'), network: t('otp.network') })[f?.kind] || f?.message || t('otp.incorrect');
+  const fill = (from, digits) => {
+    digits.split('').slice(0, OTP_LEN - from).forEach((d, k) => { boxes[from + k].value = d; });
+    const next = Math.min(from + digits.length, OTP_LEN - 1);
+    boxes[next].focus();
+  };
+  const changed = () => {
+    if (failed && failed !== 'expired') { setFailed(null); clearMsgs(); }
+    sync();
+    if (code().length === OTP_LEN && !verifying && !failed) verify();
+  };
+  boxes.forEach((b, i) => {
+    b.addEventListener('input', () => {
+      const digits = b.value.replace(/\D/g, '');
+      b.value = '';
+      if (digits) fill(i, digits);
+      changed();
+    });
+    b.addEventListener('paste', e => {
+      e.preventDefault();
+      const digits = (e.clipboardData?.getData('text') || '').replace(/\D/g, '').slice(0, OTP_LEN);
+      if (!digits) return;
+      boxes.forEach(x => { x.value = ''; });
+      fill(0, digits);
+      changed();
+    });
+    b.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !b.value && i > 0) { e.preventDefault(); boxes[i - 1].value = ''; boxes[i - 1].focus(); changed(); }
+      else if (e.key === 'ArrowLeft' && i > 0) { e.preventDefault(); boxes[i - 1].focus(); }
+      else if (e.key === 'ArrowRight' && i < OTP_LEN - 1) { e.preventDefault(); boxes[i + 1].focus(); }
+    });
+    b.addEventListener('focus', () => b.select());
+  });
+  async function verify() {
+    if (code().length !== OTP_LEN || verifying) return;
+    verifying = true; clearMsgs();
+    const value = code();
+    boxes.forEach(b => { b.disabled = true; });
+    let ran = false;
+    try {
+      // busy() skips a disabled button, so enable it for the call and only
+      // treat the code as verified when onVerify actually ran and resolved.
+      verifyBtn.disabled = false;
+      await busy(verifyBtn, () => { ran = true; return onVerify(value); }, t('otp.verifying'));
+      if (!ran) throw { kind: 'network' };
+      clearInterval(timer);
+      if (purpose === 'recovery') return onContinue();
+      renderVerified();
+    } catch (f) {
+      verifying = false;
+      boxes.forEach(b => { b.disabled = false; });
+      setFailed(f?.kind || 'incorrect');
+      showErr(err, failText(f));
+      if (failed === 'expired') {
+        boxes.forEach(b => { b.value = ''; b.disabled = true; });
+        verifyBtn.textContent = t('otp.sendNew');
+      } else boxes[OTP_LEN - 1].focus();
+      paintLine(); sync();
+    }
+  }
+  async function resend() {
+    if (left > 0) return;
+    clearMsgs();
+    const target = failed === 'expired' ? verifyBtn : line.querySelector('[data-resend]');
+    let ran = false;
+    try {
+      target.disabled = false;
+      await busy(target, () => { ran = true; return onResend(); }, t('auth.sending'));
+      if (!ran) return;
+      setFailed(null);
+      boxes.forEach(b => { b.value = ''; b.disabled = false; });
+      verifyBtn.textContent = t('otp.verify');
+      ok.textContent = t('otp.resent', { email }); ok.hidden = false;
+      countdown(cooldown); boxes[0].focus();
+    } catch (f) {
+      showErr(err, failText(f));
+      if (f?.retryAfter) countdown(f.retryAfter); else paintLine();
+    }
+    sync();
+  }
+  function renderVerified() {
+    frame(root, `<div class="auth-card auth-center" data-verified>
+      ${status('check')}
+      <h1>${esc(t('otp.verifiedTitle'))}</h1><p>${esc(t('otp.verifiedLead'))}</p>
+      <button class="btn primary" type="button" data-continue style="width:100%">${esc(t('otp.continue'))}</button>
+    </div>`, renderVerified, { brand: false });
+    root.querySelector('[data-continue]').addEventListener('click', () => onContinue());
+  }
+  $('[data-form]').addEventListener('submit', e => { e.preventDefault(); if (failed === 'expired') resend(); else verify(); });
+  $('[data-back]').addEventListener('click', () => { clearInterval(timer); onBack(); });
+  countdown(cooldown);
+  sync();
+  boxes[0].focus();
+  return { close: () => clearInterval(timer) };
 }

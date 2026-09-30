@@ -2683,6 +2683,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use a different email'**
   String get useDifferentEmail;
+
+  /// No description provided for @otpLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code we sent to'**
+  String get otpLead;
+
+  /// No description provided for @otpVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get otpVerify;
+
+  /// No description provided for @otpVerifying.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying…'**
+  String get otpVerifying;
+
+  /// No description provided for @otpNoCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t get the code?'**
+  String get otpNoCode;
+
+  /// No description provided for @otpResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code'**
+  String get otpResend;
+
+  /// No description provided for @otpResendIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code in {seconds}s'**
+  String otpResendIn(int seconds);
+
+  /// No description provided for @otpResent.
+  ///
+  /// In en, this message translates to:
+  /// **'A new code is on its way to {email}.'**
+  String otpResent(String email);
+
+  /// No description provided for @otpIncorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'That code didn\'t work. Check the digits and try again.'**
+  String get otpIncorrect;
+
+  /// No description provided for @otpExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'This code has expired. Request a new code to continue.'**
+  String get otpExpired;
+
+  /// No description provided for @otpSendNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a new code'**
+  String get otpSendNew;
+
+  /// No description provided for @otpVerifiedLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Your email is confirmed. You can continue.'**
+  String get otpVerifiedLead;
+
+  /// No description provided for @otpContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get otpContinue;
+
+  /// No description provided for @otpCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'6-digit verification code'**
+  String get otpCodeLabel;
+
+  /// No description provided for @otpEmailVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verified'**
+  String get otpEmailVerified;
 }
 
 class _AppLocalizationsDelegate

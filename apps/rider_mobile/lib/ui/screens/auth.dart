@@ -1212,6 +1212,438 @@ class VerifyEmailScreen extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
+// D08.2 — Verify Email with a 6-digit code
+// ---------------------------------------------------------------------------
+
+/// Why a code was not accepted, as the backend reports it. The wiring layer
+/// maps GoTrue's `error_code` onto these; the screen never guesses. GoTrue
+/// answers an expired and a mistyped code with the same `otp_expired`, so
+/// [incorrect] is the default and [expired] is used only when the backend
+/// says so unambiguously.
+enum OtpFailureKind { incorrect, expired, rateLimited, network, other }
+
+class OtpFailure implements Exception {
+  const OtpFailure(this.kind, {this.message, this.retryAfterSeconds});
+  final OtpFailureKind kind;
+  final String? message;
+
+  /// Resend cooldown the backend asked for, when it says so.
+  final int? retryAfterSeconds;
+}
+
+/// Verify your email with the 6-digit code sent at sign-up. Presentation
+/// and interaction only: [onVerify] and [onResend] come from the auth flow,
+/// which owns the backend calls; the verified state appears only after
+/// [onVerify] completes. The code is never logged or persisted.
+class VerifyEmailCodeScreen extends StatefulWidget {
+  const VerifyEmailCodeScreen({
+    super.key,
+    required this.email,
+    required this.onVerify,
+    required this.onResend,
+    required this.onContinue,
+    required this.onBack,
+    required this.onBackToSignIn,
+    this.resendCooldown = ResendEmailButton.cooldown,
+    this.title,
+    this.showVerifiedState = true,
+  });
+
+  final String email;
+  final Future<void> Function(String code) onVerify;
+  final Future<void> Function() onResend;
+
+  /// Into the existing Driver onboarding / access flow.
+  final VoidCallback onContinue;
+
+  /// Edit the address (back to sign-up), as the mail header's edit action.
+  final VoidCallback onBack;
+  final VoidCallback onBackToSignIn;
+  final int resendCooldown;
+
+  /// The same screen serves password recovery: a different heading, and on
+  /// success it hands straight to Set New Password instead of showing the
+  /// verified state.
+  final String? title;
+  final bool showVerifiedState;
+
+  static const length = 6;
+
+  @override
+  State<VerifyEmailCodeScreen> createState() => _VerifyEmailCodeScreenState();
+}
+
+class _VerifyEmailCodeScreenState extends State<VerifyEmailCodeScreen> {
+  final _code = TextEditingController();
+  final _focus = FocusNode();
+  Timer? _timer;
+  int _left = 0;
+  bool _verifying = false;
+  bool _resending = false;
+  bool _verified = false;
+  OtpFailureKind? _failure;
+  String? _error;
+  String? _notice;
+
+  @override
+  void initState() {
+    super.initState();
+    _startCooldown(widget.resendCooldown);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focus.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _code.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  void _startCooldown(int seconds) {
+    _timer?.cancel();
+    _left = seconds;
+    if (seconds <= 0) return;
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return t.cancel();
+      setState(() => _left--);
+      if (_left <= 0) t.cancel();
+    });
+  }
+
+  bool get _complete => _code.text.length == VerifyEmailCodeScreen.length;
+
+  void _changed(String value) {
+    setState(() {
+      _failure = null;
+      _error = null;
+    });
+    if (_complete && !_verifying) _verify();
+  }
+
+  String _failureText(OtpFailure f) => switch (f.kind) {
+    OtpFailureKind.incorrect => L.otpIncorrect,
+    OtpFailureKind.expired => L.otpExpired,
+    OtpFailureKind.rateLimited => L.tooManyAttemptsPleaseWaitBefore,
+    OtpFailureKind.network => L.unableConnectCheckConnectionTryAgain,
+    OtpFailureKind.other => f.message ?? L.otpIncorrect,
+  };
+
+  Future<void> _verify() async {
+    if (!_complete || _verifying) return;
+    setState(() {
+      _verifying = true;
+      _failure = null;
+      _error = null;
+      _notice = null;
+    });
+    try {
+      await widget.onVerify(_code.text);
+      if (!mounted) return;
+      _timer?.cancel();
+      _focus.unfocus();
+      if (!widget.showVerifiedState) return widget.onContinue();
+      setState(() => _verified = true);
+    } on OtpFailure catch (f) {
+      if (!mounted) return;
+      setState(() {
+        _failure = f.kind;
+        _error = _failureText(f);
+        if (f.kind == OtpFailureKind.expired) _code.clear();
+      });
+      if (f.kind != OtpFailureKind.expired) _focus.requestFocus();
+    } finally {
+      if (mounted) setState(() => _verifying = false);
+    }
+  }
+
+  Future<void> _resend() async {
+    if (_resending || _left > 0) return;
+    setState(() {
+      _resending = true;
+      _error = null;
+      _notice = null;
+    });
+    try {
+      await widget.onResend();
+      if (!mounted) return;
+      setState(() {
+        _failure = null;
+        _code.clear();
+        _notice = L.otpResent(widget.email);
+        _startCooldown(widget.resendCooldown);
+      });
+      _focus.requestFocus();
+    } on OtpFailure catch (f) {
+      if (!mounted) return;
+      setState(() {
+        _error = _failureText(f);
+        if (f.retryAfterSeconds != null) _startCooldown(f.retryAfterSeconds!);
+      });
+    } finally {
+      if (mounted) setState(() => _resending = false);
+    }
+  }
+
+  static const _errorColor = Color(0xFFC83D4B);
+
+  Widget _note(String text, {required bool error, Key? key}) => Semantics(
+    liveRegion: true,
+    child: Text(
+      text,
+      key: key,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontFamily: 'Manrope',
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: error ? _errorColor : context.c.textSecondary,
+      ),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    if (_verified) {
+      // Success content centred in the sheet, Continue at its foot: the
+      // navy header stays a slim band, so no area of the screen sits empty.
+      return CeffloAuthScaffold(
+        scrollable: false,
+        sheet: Column(
+          key: const Key('otp-verified'),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Spacer(),
+            Center(
+              child: Container(
+                width: 96,
+                height: 96,
+                decoration: const BoxDecoration(
+                  color: CefColors.navy,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  LucideIcons.check,
+                  size: 44,
+                  color: CefColors.accent,
+                ),
+              ),
+            ),
+            const SizedBox(height: Gap.xl),
+            Text(
+              L.otpEmailVerified,
+              textAlign: TextAlign.center,
+              style: context.t.displayMedium?.copyWith(
+                color: context.c.textPrimary,
+              ),
+            ),
+            const SizedBox(height: Gap.sm),
+            Text(
+              L.otpVerifiedLead,
+              textAlign: TextAlign.center,
+              style: context.t.bodyLarge,
+            ),
+            const Spacer(),
+            CeffloPrimaryButton(L.otpContinue, onTap: widget.onContinue),
+          ],
+        ),
+      );
+    }
+    final expired = _failure == OtpFailureKind.expired;
+    return CeffloAuthScaffold(
+      onBack: _verifying ? null : widget.onBack,
+      headerChild: _MailSentHeader(
+        title: widget.title ?? L.verifyYourEmail,
+        lead: L.otpLead,
+        email: widget.email,
+        onEdit: widget.onBack,
+      ),
+      sheet: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _DriverOtpBoxes(
+            controller: _code,
+            focusNode: _focus,
+            enabled: !_verifying && !expired,
+            error: _failure != null && !expired,
+            onChanged: _changed,
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: Gap.md),
+            _note(_error!, error: true, key: const Key('otp-error')),
+          ],
+          if (_notice != null) ...[
+            const SizedBox(height: Gap.md),
+            _note(_notice!, error: false, key: const Key('otp-notice')),
+          ],
+          const SizedBox(height: Gap.xl),
+          if (expired)
+            CeffloPrimaryButton(
+              _resending ? L.sending : L.otpSendNew,
+              key: const Key('otp-send-new'),
+              busy: _resending,
+              onTap: _left > 0 ? null : _resend,
+            )
+          else
+            CeffloPrimaryButton(
+              _verifying ? L.otpVerifying : L.otpVerify,
+              key: const Key('otp-verify'),
+              busy: _verifying,
+              onTap: _complete && _failure == null ? _verify : null,
+            ),
+          const SizedBox(height: Gap.lg),
+          if (!(expired && _left <= 0))
+            Center(
+              child: _left > 0
+                  ? Text(
+                      L.otpResendIn(_left),
+                      key: const Key('otp-resend-countdown'),
+                      style: context.t.bodySmall,
+                    )
+                  : Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: Gap.xs,
+                      children: [
+                        Text(L.otpNoCode, style: context.t.bodyLarge),
+                        _resending
+                            ? Text(L.sending, style: context.t.bodyLarge)
+                            : CeffloTextLink(
+                                L.otpResend,
+                                key: const Key('otp-resend'),
+                                onTap: () {
+                                  if (!_verifying) _resend();
+                                },
+                              ),
+                      ],
+                    ),
+            ),
+          const SizedBox(height: Gap.md),
+          Center(
+            child: CeffloTextLink(
+              L.backSign,
+              onTap: () {
+                if (!_verifying) widget.onBackToSignIn();
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Six digit boxes in the Driver input geometry over one hidden numeric
+/// field (keyboard, one-time-code autofill, paste and backspace come from
+/// the platform field).
+class _DriverOtpBoxes extends StatelessWidget {
+  const _DriverOtpBoxes({
+    required this.controller,
+    required this.focusNode,
+    required this.enabled,
+    required this.error,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final bool enabled;
+  final bool error;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    const n = VerifyEmailCodeScreen.length;
+    return Semantics(
+      label: L.otpCodeLabel,
+      textField: true,
+      child: SizedBox(
+        height: Sizes.inputHeight + 4,
+        child: Stack(
+          children: [
+            ListenableBuilder(
+              listenable: Listenable.merge([controller, focusNode]),
+              builder: (context, _) {
+                final v = controller.text;
+                final active = focusNode.hasFocus
+                    ? (v.length < n ? v.length : n - 1)
+                    : -1;
+                return Row(
+                  children: [
+                    for (var i = 0; i < n; i++) ...[
+                      if (i > 0) const SizedBox(width: Gap.sm),
+                      Expanded(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 120),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: enabled ? c.card : CefColors.tintNeutral,
+                            borderRadius: BorderRadius.circular(
+                              Sizes.inputRadius,
+                            ),
+                            border: Border.all(
+                              color: error
+                                  ? const Color(0xFFC83D4B)
+                                  : i == active
+                                  ? CefColors.navy
+                                  : c.border,
+                              width: error || i == active ? 1.8 : 1,
+                            ),
+                          ),
+                          child: Text(
+                            i < v.length ? v[i] : '',
+                            style: TextStyle(
+                              fontFamily: 'Manrope',
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: enabled ? c.textPrimary : c.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              },
+            ),
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0,
+                child: TextField(
+                  key: const Key('otp-input'),
+                  controller: controller,
+                  focusNode: focusNode,
+                  enabled: enabled,
+                  onChanged: onChanged,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  autofillHints: const [AutofillHints.oneTimeCode],
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(n),
+                  ],
+                  showCursor: false,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    counterText: '',
+                    isCollapsed: true,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // D09 — Link No Longer Valid
 // ---------------------------------------------------------------------------
 

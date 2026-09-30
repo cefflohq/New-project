@@ -712,6 +712,42 @@ Build: `app-arm64-v8a-release.apk`, source `1d78d71`, `CEFFLO_ENVIRONMENT=stagin
 
 **Scope of this PASS:** Vendor Mobile **Android**, Email Sign Up confirmation and password recovery only. NOT covered: Google OAuth (Batch E), Vendor iOS, Operator/Helper invitation flows, Driver, FOUNDR, change-email, support mailbox, overall P1.
 
+### 8.13 6-Digit Email OTP Standardization — Audit and Migration Map (2026-09-30, PROPOSED — NOT APPLIED)
+
+Founder direction: sign-up, password recovery and email change verify with a 6-digit Email OTP. Supabase Auth stays the only auth system: no custom OTP tables, generators, reset tokens or services. Nothing below is configured yet; UI is prepared behind injected handlers (Founder visual gate).
+
+**Current state (audited 2026-09-30, branch `claude/otp-verify-ui` from `claude/notification-system`)**
+
+| Surface | Sign up | Confirm | Recovery | Change email | Session |
+|---|---|---|---|---|---|
+| Vendor Mobile (Owner/Operator/Helper) | `auth.signUp(emailRedirectTo)` | emailed link → `cefflo-vendor://auth-callback` (PKCE) | `resetPasswordForEmail(redirectTo)` → link → Set New Password → `updateUser(password)` | not exposed (email read-only) | PKCE code exchange by supabase_flutter; `verifyOTP(type: email)` already exists (email sign-in helper) |
+| Vendor Web (Owner/Operator) | `POST /auth/v1/signup?redirect_to` | link → web callback | `POST /auth/v1/recover?redirect_to` → link → `PUT /auth/v1/user {password}` | **exposed**: Settings → Profile → `PUT /auth/v1/user {email}` (secure change: both addresses) | token/fragment consumed by `api.js` |
+| Driver Mobile | `auth.signUp(emailRedirectTo)` | link → `cefflo-driver://auth-callback` | `resetPasswordForEmail` → link → D07 | not exposed (read-only) | as Vendor Mobile |
+| FOUNDR | no sign-up | n/a | `POST /auth/v1/recover` (transitional email access, FG-9) | not exposed | password grant; Google target |
+
+Templates (`supabase/templates/*.html`, applied to staging Dashboard): confirmation, recovery, email_change — link only (`{{ .ConfirmationURL }}`); no `{{ .Token }}`.
+
+**Supabase facts that shape the design (verify each on staging before rollout)**
+- The same emails carry a one-time code when the template includes `{{ .Token }}`; `verifyOtp` accepts it with the flow's own `type`: `signup` (or `email`), `recovery`, `email_change`. The link keeps working alongside the code.
+- Code length and validity are Auth settings (Email OTP length / expiration). The UI never shows or assumes a validity period.
+- Resend is bound by the Auth email rate limits (one email per address per window); the UI's cooldown is only a fallback and adopts the backend's "retry after N seconds".
+- GoTrue returns the same `otp_expired` for an expired and a mistyped code; the UI therefore shows "didn't work" by default and "expired" only when the backend is unambiguous.
+- Sign-up for an address that is already confirmed returns an obfuscated success and sends no email (enumeration protection; observed on staging 2026-09-29 as `user_repeated_signup`). The code screen must not claim otherwise; copy stays "Enter the code we sent".
+- Recovery via code yields a session only after `verifyOtp(type: recovery)`; Set New Password then uses the existing `updateUser(password)`.
+- Secure email change sends codes to BOTH addresses; each is verified with `verifyOtp(type: email_change)` against its own address.
+
+**Migration map**
+
+| Flow | Current flow | Reusable infrastructure | Required change | Target OTP flow | Surfaces |
+|---|---|---|---|---|---|
+| Sign up | signUp → link email → callback → session | `signUp`, `resend(type: signup)`, confirmation template, session handling, Verify screen entry points | template adds `{{ .Token }}`; add `verifyOtp(signup)` per repository/api; route the existing Verify Email step to the code screen; keep link as fallback during rollout | Sign up → code email → enter 6 digits → `verifyOtp` → session → existing onboarding (Business Setup / workspace / Driver onboarding) | Vendor Mobile, Vendor Web, Driver |
+| Password recovery | recover → link → callback → Set New Password | `resetPasswordForEmail` / `/recover`, recovery template, Set New Password screens, `updateUser(password)` | template adds `{{ .Token }}`; add `verifyOtp(recovery)`; Check-your-email step becomes the code screen (title "Reset your password", no verified state) | Forgot → email → code → `verifyOtp(recovery)` → Set New Password → done | Vendor Mobile, Vendor Web, Driver; FOUNDR only while its transitional email access exists |
+| Change email | `PUT /user {email}` → links to both addresses | `updateUser`, email_change template, secure change | template adds `{{ .Token }}`; code screen for the new address (and the current one, since secure change is on) | Profile → new email → code(s) → `verifyOtp(email_change)` → updated | Vendor Web only (not exposed elsewhere) |
+
+**Founder decisions needed before the real migration:** (1) keep links alongside codes during rollout (recommended) or codes only; (2) Email OTP length and expiry values on staging; (3) whether change-email verifies both addresses by code or keeps secure change as-is.
+
+**UI prepared (Founder visual gate):** `VerifyEmailCodeScreen` in Vendor Mobile and Driver (each in its own design system), `renderVerifyCode` in Vendor Web; injected `onVerify` / `onResend`; not yet reachable from the live flows. FOUNDR: no sign-up; recovery code screen only if its email access is kept.
+
 
 ---
 

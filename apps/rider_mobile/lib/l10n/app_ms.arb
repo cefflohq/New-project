@@ -430,5 +430,19 @@
   "linkExpiredOrUsedRequestNew": "Pautan telah tamat tempoh atau telah digunakan. Minta pautan baharu di bawah.",
   "resendVerificationEmail": "Hantar semula e-mel pengesahan",
   "sendNewResetLink": "Hantar pautan tetapan semula baharu",
-  "useDifferentEmail": "Guna e-mel lain"
+  "useDifferentEmail": "Guna e-mel lain",
+  "otpLead": "Masukkan kod 6 digit yang kami hantar ke",
+  "otpVerify": "Sahkan",
+  "otpVerifying": "Mengesahkan…",
+  "otpNoCode": "Tidak menerima kod?",
+  "otpResend": "Hantar semula kod",
+  "otpResendIn": "Hantar semula kod dalam {seconds}s",
+  "otpResent": "Kod baharu sedang dihantar ke {email}.",
+  "otpIncorrect": "Kod itu tidak berjaya. Semak digit dan cuba lagi.",
+  "otpExpired": "Kod ini telah tamat tempoh. Minta kod baharu untuk teruskan.",
+  "otpSendNew": "Hantar kod baharu",
+  "otpVerifiedLead": "E-mel anda telah disahkan. Anda boleh teruskan.",
+  "otpContinue": "Teruskan",
+  "otpCodeLabel": "Kod pengesahan 6 digit",
+  "otpEmailVerified": "E-mel disahkan"
 }

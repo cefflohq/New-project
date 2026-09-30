@@ -14,9 +14,12 @@
 /// only the auth backdrops and third-party marks carry their own colours.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
@@ -358,10 +361,18 @@ class _Tagline extends StatelessWidget {
 /// keyboard is open the lockup folds away so the form and its primary action
 /// get the room.
 class _SheetScaffold extends StatelessWidget {
-  const _SheetScaffold({required this.child, this.onBack});
+  const _SheetScaffold({
+    required this.child,
+    this.onBack,
+    this.showBrand = true,
+  });
 
   final Widget child;
   final VoidCallback? onBack;
+
+  /// The brand lockup above the sheet. Code-entry screens drop it (Founder,
+  /// 2026-09-30) so the sheet sits higher and the task stays uncluttered.
+  final bool showBrand;
 
   /// Visible height of the header lockup.
   static const _headerLockup = 96.0;
@@ -396,7 +407,7 @@ class _SheetScaffold extends StatelessWidget {
                       AnimatedSize(
                         duration: const Duration(milliseconds: 200),
                         curve: Curves.easeOut,
-                        child: keyboardOpen
+                        child: keyboardOpen || !showBrand
                             ? const SizedBox(
                                 width: double.infinity,
                                 height: Gap.lg,
@@ -511,6 +522,7 @@ class _SheetHeading extends StatelessWidget {
 class _TextLink extends StatelessWidget {
   const _TextLink(
     this.label, {
+    super.key,
     required this.onTap,
     this.align = TextAlign.center,
   });
@@ -581,7 +593,12 @@ class _StatusIcon extends StatelessWidget {
 
 /// Centred supporting prose on a sheet.
 class _CenteredNote extends StatelessWidget {
-  const _CenteredNote(this.text, {this.muted = false, this.error = false});
+  const _CenteredNote(
+    this.text, {
+    super.key,
+    this.muted = false,
+    this.error = false,
+  });
   final String text;
   final bool muted;
   final bool error;
@@ -1662,6 +1679,458 @@ class _VerifyYourEmailScreenState extends State<VerifyYourEmailScreen> {
       ],
     ),
   );
+}
+
+// ------------------------------------------ 10b Verify Email (6-digit code)
+
+/// Why a code was not accepted, as the backend reports it. The wiring layer
+/// maps GoTrue's `error_code` onto these; the screen never guesses. GoTrue
+/// answers an expired and a mistyped code with the same `otp_expired`, so
+/// [incorrect] is the default and [expired] is used only when the backend
+/// says so unambiguously.
+enum OtpFailureKind { incorrect, expired, rateLimited, network, other }
+
+class OtpFailure implements Exception {
+  const OtpFailure(this.kind, {this.message, this.retryAfterSeconds});
+  final OtpFailureKind kind;
+
+  /// The backend's own text, shown for [OtpFailureKind.other].
+  final String? message;
+
+  /// Resend cooldown the backend asked for, when it says ("…after 42
+  /// seconds"); the screen's default cooldown is only a fallback.
+  final int? retryAfterSeconds;
+}
+
+/// Verify your email with the 6-digit code sent at sign-up. Presentation
+/// and interaction only: [onVerify] and [onResend] are supplied by the auth
+/// flow, which owns the backend calls. Nothing here decides success — the
+/// verified state is shown only after [onVerify] completes. The code lives
+/// in the field's controller for the lifetime of the screen and is never
+/// logged or persisted.
+class VerifyEmailCodeScreen extends StatefulWidget {
+  const VerifyEmailCodeScreen({
+    super.key,
+    required this.email,
+    required this.onVerify,
+    required this.onResend,
+    required this.onContinue,
+    required this.onBack,
+    required this.onUseDifferentEmail,
+    this.resendCooldown = 60,
+    this.title,
+    this.showVerifiedState = true,
+  });
+
+  final String email;
+  final Future<void> Function(String code) onVerify;
+  final Future<void> Function() onResend;
+
+  /// Into the existing post-verification flow (Business Setup for an
+  /// Owner, the workspace for an Operator or Helper).
+  final VoidCallback onContinue;
+  final VoidCallback onBack;
+  final VoidCallback onUseDifferentEmail;
+
+  /// Seconds before another code may be requested. A code was just sent
+  /// when this screen opens, so the countdown starts immediately.
+  final int resendCooldown;
+
+  /// The same screen serves password recovery: a different heading, and on
+  /// success it hands straight to Set New Password instead of showing the
+  /// verified state.
+  final String? title;
+  final bool showVerifiedState;
+
+  static const length = 6;
+
+  @override
+  State<VerifyEmailCodeScreen> createState() => _VerifyEmailCodeScreenState();
+}
+
+class _VerifyEmailCodeScreenState extends State<VerifyEmailCodeScreen> {
+  final _code = TextEditingController();
+  final _focus = FocusNode();
+  Timer? _timer;
+  int _left = 0;
+  bool _verifying = false;
+  bool _resending = false;
+  bool _verified = false;
+  OtpFailureKind? _failure;
+  String? _error;
+  String? _notice;
+
+  @override
+  void initState() {
+    super.initState();
+    _startCooldown(widget.resendCooldown);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focus.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _code.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  void _startCooldown(int seconds) {
+    _timer?.cancel();
+    _left = seconds;
+    if (seconds <= 0) return;
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return t.cancel();
+      setState(() => _left--);
+      if (_left <= 0) t.cancel();
+    });
+  }
+
+  bool get _complete => _code.text.length == VerifyEmailCodeScreen.length;
+
+  void _changed(String value) {
+    // Typing again after a rejected code clears the error state.
+    if (_failure != null || _error != null) {
+      setState(() {
+        _failure = null;
+        _error = null;
+      });
+    } else {
+      setState(() {});
+    }
+    if (_complete && !_verifying && _failure == null) _verify();
+  }
+
+  String _failureText(OtpFailure f) => switch (f.kind) {
+    OtpFailureKind.incorrect => L.otpIncorrect,
+    OtpFailureKind.expired => L.otpExpired,
+    OtpFailureKind.rateLimited => L.tooManyAttemptsPleaseWaitBefore,
+    OtpFailureKind.network => L.unableConnectCheckConnectionTryAgain,
+    OtpFailureKind.other => f.message ?? L.otpIncorrect,
+  };
+
+  Future<void> _verify() async {
+    if (!_complete || _verifying) return;
+    setState(() {
+      _verifying = true;
+      _failure = null;
+      _error = null;
+      _notice = null;
+    });
+    try {
+      await widget.onVerify(_code.text);
+      if (!mounted) return;
+      _timer?.cancel();
+      _focus.unfocus();
+      if (!widget.showVerifiedState) return widget.onContinue();
+      setState(() => _verified = true);
+    } on OtpFailure catch (f) {
+      if (!mounted) return;
+      setState(() {
+        _failure = f.kind;
+        _error = _failureText(f);
+        if (f.kind == OtpFailureKind.expired) _code.clear();
+      });
+      if (f.kind != OtpFailureKind.expired) {
+        _code.selection = TextSelection.collapsed(offset: _code.text.length);
+        _focus.requestFocus();
+      }
+    } finally {
+      if (mounted) setState(() => _verifying = false);
+    }
+  }
+
+  Future<void> _resend() async {
+    if (_resending || _left > 0) return;
+    setState(() {
+      _resending = true;
+      _error = null;
+      _notice = null;
+    });
+    try {
+      await widget.onResend();
+      if (!mounted) return;
+      setState(() {
+        _failure = null;
+        _code.clear();
+        _notice = L.otpResent(widget.email);
+        _startCooldown(widget.resendCooldown);
+      });
+      _focus.requestFocus();
+    } on OtpFailure catch (f) {
+      if (!mounted) return;
+      setState(() {
+        _error = _failureText(f);
+        if (f.retryAfterSeconds != null) _startCooldown(f.retryAfterSeconds!);
+      });
+    } finally {
+      if (mounted) setState(() => _resending = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_verified) {
+      return _SheetScaffold(
+        showBrand: false,
+        child: Column(
+          key: const Key('otp-verified'),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Success content centred in the sheet; Continue at its foot.
+            const Spacer(),
+            _SheetHeading(
+              L.emailVerified,
+              L.otpVerifiedLead,
+              status: _StatusIcon(LucideIcons.check),
+            ),
+            const Spacer(),
+            CefButton(L.otpContinue, onTap: widget.onContinue),
+          ],
+        ),
+      );
+    }
+    final text = Theme.of(context).textTheme;
+    final expired = _failure == OtpFailureKind.expired;
+    return _SheetScaffold(
+      showBrand: false,
+      onBack: _verifying ? null : widget.onBack,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SheetHeading(
+            widget.title ?? L.verifyEmail,
+            L.otpLead,
+            status: _StatusIcon(LucideIcons.mail),
+          ),
+          const SizedBox(height: Gap.xs),
+          Text(
+            widget.email,
+            key: const Key('otp-email'),
+            textAlign: TextAlign.center,
+            style: text.titleSmall,
+          ),
+          const SizedBox(height: Gap.xxl),
+          _OtpBoxes(
+            controller: _code,
+            focusNode: _focus,
+            enabled: !_verifying && !expired,
+            error: _failure != null && !expired,
+            onChanged: _changed,
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: Gap.md),
+            Semantics(
+              liveRegion: true,
+              child: _CenteredNote(
+                _error!,
+                error: true,
+                key: const Key('otp-error'),
+              ),
+            ),
+          ],
+          if (_notice != null) ...[
+            const SizedBox(height: Gap.md),
+            Semantics(
+              liveRegion: true,
+              child: _CenteredNote(_notice!, key: const Key('otp-notice')),
+            ),
+          ],
+          const SizedBox(height: Gap.xxl),
+          if (expired)
+            CefButton(
+              L.otpSendNew,
+              key: const Key('otp-send-new'),
+              busy: _resending,
+              busyLabel: L.sending,
+              onTap: _left > 0 ? null : _resend,
+            )
+          else
+            CefButton(
+              L.otpVerify,
+              key: const Key('otp-verify'),
+              busy: _verifying,
+              busyLabel: L.otpVerifying,
+              onTap: _complete && _failure == null ? _verify : null,
+            ),
+          const SizedBox(height: Gap.xl),
+          _ResendLine(
+            left: _left,
+            busy: _resending,
+            hidden: expired && _left <= 0,
+            onResend: _verifying ? null : _resend,
+          ),
+          const SizedBox(height: Gap.lg),
+          _TextLink(
+            L.useDifferentEmail,
+            onTap: _verifying ? null : widget.onUseDifferentEmail,
+          ),
+          const SizedBox(height: Gap.lg),
+          _CenteredNote(L.checkSpamFolderToo, muted: true),
+        ],
+      ),
+    );
+  }
+}
+
+/// "Didn't get the code? Resend code" — or the countdown while the
+/// backend's resend window is closed.
+class _ResendLine extends StatelessWidget {
+  const _ResendLine({
+    required this.left,
+    required this.busy,
+    required this.hidden,
+    required this.onResend,
+  });
+  final int left;
+  final bool busy;
+  final bool hidden;
+  final VoidCallback? onResend;
+
+  @override
+  Widget build(BuildContext context) {
+    if (hidden) return const SizedBox.shrink();
+    final body = Theme.of(context).textTheme.bodyMedium;
+    if (left > 0) {
+      return Text(
+        L.otpResendIn(left),
+        key: const Key('otp-resend-countdown'),
+        textAlign: TextAlign.center,
+        style: body?.copyWith(color: context.c.textSecondary),
+      );
+    }
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: Gap.xs,
+      children: [
+        Text(L.otpNoCode, style: body),
+        busy
+            ? Text(L.sending, style: body)
+            : _TextLink(
+                L.otpResend,
+                onTap: onResend,
+                key: const Key('otp-resend'),
+              ),
+      ],
+    );
+  }
+}
+
+/// Six digit boxes over one hidden numeric field: the system keyboard,
+/// one-time-code autofill, paste of the whole code and backspace all come
+/// from the platform field, and the boxes show where the next digit goes.
+class _OtpBoxes extends StatelessWidget {
+  const _OtpBoxes({
+    required this.controller,
+    required this.focusNode,
+    required this.enabled,
+    required this.error,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final bool enabled;
+  final bool error;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    const n = VerifyEmailCodeScreen.length;
+    return Semantics(
+      label: L.otpCodeLabel,
+      textField: true,
+      child: SizedBox(
+        height: 58,
+        child: Stack(
+          children: [
+            ListenableBuilder(
+              listenable: Listenable.merge([controller, focusNode]),
+              builder: (context, _) {
+                final v = controller.text;
+                return Row(
+                  children: [
+                    for (var i = 0; i < n; i++) ...[
+                      if (i > 0) SizedBox(width: i == n ~/ 2 ? Gap.md : Gap.sm),
+                      Expanded(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 120),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: enabled ? c.card : c.subtle,
+                            borderRadius: BorderRadius.circular(
+                              Sizes.inputRadius * .75,
+                            ),
+                            border: Border.all(
+                              color: error
+                                  ? c.attention
+                                  : focusNode.hasFocus &&
+                                        (i == v.length ||
+                                            (v.length == n && i == n - 1))
+                                  ? CefColors.ceffloMustard
+                                  : c.border,
+                              width:
+                                  error || (focusNode.hasFocus && i == v.length)
+                                  ? 1.6
+                                  : 1,
+                            ),
+                          ),
+                          child: Text(
+                            i < v.length ? v[i] : '',
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: enabled
+                                      ? c.textPrimary
+                                      : c.textSecondary,
+                                ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              },
+            ),
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0,
+                child: TextField(
+                  key: const Key('otp-input'),
+                  controller: controller,
+                  focusNode: focusNode,
+                  enabled: enabled,
+                  onChanged: onChanged,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  autofillHints: const [AutofillHints.oneTimeCode],
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(n),
+                  ],
+                  showCursor: false,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    filled: false,
+                    counterText: '',
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // --------------------------------------------------- 11 Email Verified

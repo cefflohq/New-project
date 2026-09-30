@@ -922,5 +922,18 @@
   "sendNewResetLink": "Hantar pautan tetapan semula baharu",
   "supportSendOpensEmailApp": "Hantar membuka app e-mel anda dengan mesej ini kepada support@cefflo.com. Lampirkan tangkapan skrin di sana jika membantu.",
   "writeMessageFirst": "Tulis mesej dahulu.",
-  "emailApp": "app e-mel anda"
+  "emailApp": "app e-mel anda",
+  "otpLead": "Masukkan kod 6 digit yang kami hantar ke",
+  "otpVerify": "Sahkan",
+  "otpVerifying": "Mengesahkan…",
+  "otpNoCode": "Tidak menerima kod?",
+  "otpResend": "Hantar semula kod",
+  "otpResendIn": "Hantar semula kod dalam {seconds}s",
+  "otpResent": "Kod baharu sedang dihantar ke {email}.",
+  "otpIncorrect": "Kod itu tidak berjaya. Semak digit dan cuba lagi.",
+  "otpExpired": "Kod ini telah tamat tempoh. Minta kod baharu untuk teruskan.",
+  "otpSendNew": "Hantar kod baharu",
+  "otpVerifiedLead": "E-mel anda telah disahkan. Anda boleh teruskan.",
+  "otpContinue": "Teruskan",
+  "otpCodeLabel": "Kod pengesahan 6 digit"
 }

@@ -1446,4 +1446,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get useDifferentEmail => 'Use a different email';
+
+  @override
+  String get otpLead => 'Enter the 6-digit code we sent to';
+
+  @override
+  String get otpVerify => 'Verify';
+
+  @override
+  String get otpVerifying => 'Verifying…';
+
+  @override
+  String get otpNoCode => 'Didn\'t get the code?';
+
+  @override
+  String get otpResend => 'Resend code';
+
+  @override
+  String otpResendIn(int seconds) {
+    return 'Resend code in ${seconds}s';
+  }
+
+  @override
+  String otpResent(String email) {
+    return 'A new code is on its way to $email.';
+  }
+
+  @override
+  String get otpIncorrect =>
+      'That code didn\'t work. Check the digits and try again.';
+
+  @override
+  String get otpExpired =>
+      'This code has expired. Request a new code to continue.';
+
+  @override
+  String get otpSendNew => 'Send a new code';
+
+  @override
+  String get otpVerifiedLead => 'Your email is confirmed. You can continue.';
+
+  @override
+  String get otpContinue => 'Continue';
+
+  @override
+  String get otpCodeLabel => '6-digit verification code';
+
+  @override
+  String get otpEmailVerified => 'Email verified';
 }

@@ -3066,4 +3066,50 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get emailApp => 'app e-mel anda';
+
+  @override
+  String get otpLead => 'Masukkan kod 6 digit yang kami hantar ke';
+
+  @override
+  String get otpVerify => 'Sahkan';
+
+  @override
+  String get otpVerifying => 'Mengesahkan…';
+
+  @override
+  String get otpNoCode => 'Tidak menerima kod?';
+
+  @override
+  String get otpResend => 'Hantar semula kod';
+
+  @override
+  String otpResendIn(int seconds) {
+    return 'Hantar semula kod dalam ${seconds}s';
+  }
+
+  @override
+  String otpResent(String email) {
+    return 'Kod baharu sedang dihantar ke $email.';
+  }
+
+  @override
+  String get otpIncorrect =>
+      'Kod itu tidak berjaya. Semak digit dan cuba lagi.';
+
+  @override
+  String get otpExpired =>
+      'Kod ini telah tamat tempoh. Minta kod baharu untuk teruskan.';
+
+  @override
+  String get otpSendNew => 'Hantar kod baharu';
+
+  @override
+  String get otpVerifiedLead =>
+      'E-mel anda telah disahkan. Anda boleh teruskan.';
+
+  @override
+  String get otpContinue => 'Teruskan';
+
+  @override
+  String get otpCodeLabel => 'Kod pengesahan 6 digit';
 }

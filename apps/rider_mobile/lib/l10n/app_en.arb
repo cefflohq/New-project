@@ -641,5 +641,33 @@
         "type": "int"
       }
     }
-  }
+  },
+  "otpLead": "Enter the 6-digit code we sent to",
+  "otpVerify": "Verify",
+  "otpVerifying": "Verifying…",
+  "otpNoCode": "Didn't get the code?",
+  "otpResend": "Resend code",
+  "otpResendIn": "Resend code in {seconds}s",
+  "@otpResendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "otpResent": "A new code is on its way to {email}.",
+  "@otpResent": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "otpIncorrect": "That code didn't work. Check the digits and try again.",
+  "otpExpired": "This code has expired. Request a new code to continue.",
+  "otpSendNew": "Send a new code",
+  "otpVerifiedLead": "Your email is confirmed. You can continue.",
+  "otpContinue": "Continue",
+  "otpCodeLabel": "6-digit verification code",
+  "otpEmailVerified": "Email verified"
 }
