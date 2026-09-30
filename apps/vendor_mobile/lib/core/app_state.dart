@@ -382,6 +382,10 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Server data changed outside a screen's own load (e.g. a pop-up created
+  /// a record): listening screens rebuild and reload what they show.
+  void dataChanged() => notifyListeners();
+
   void back() {
     if (_stack.length > 1) {
       _stack.removeLast();

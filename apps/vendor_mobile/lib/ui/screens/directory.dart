@@ -43,7 +43,7 @@ class ZonesScreen extends StatelessWidget {
           SizedBox(height: Gap.sm),
         ],
       ),
-      key: ValueKey('zones-${business.id}'),
+      key: ValueKey('zones-${business.id}-${zonesRevision.value}'),
       load: () async => (
         await app.repo.zones(business.id),
         await app.repo.orders(business.id),
@@ -292,7 +292,7 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> {
       return PageBody(children: [StateBlock.empty(L.noBusinessLinked)]);
     }
     return AsyncView<List<Zone>>(
-      key: ValueKey('zone-configuration-${business.id}'),
+      key: ValueKey('zone-configuration-${business.id}-${zonesRevision.value}'),
       load: () => app.repo.zones(business.id),
       builder: (context, zones, reload) {
         final q = _query.text.trim().toLowerCase();
@@ -1786,6 +1786,145 @@ class SettingsScreen extends StatelessWidget {
         const SizedBox(height: Gap.sm),
         Center(child: Text(L.version100, style: text.labelSmall)),
       ],
+    );
+  }
+}
+
+/// Bumped when a zone is created from the Create Zone pop-up, so the zone
+/// lists (keyed on it) load again.
+final ValueNotifier<int> zonesRevision = ValueNotifier(0);
+
+/// Create Zone as a centred pop-up (Founder, 2026-09-30): the name only, no
+/// map, the mustard primary action. Creates through the existing
+/// create_zone RPC; the pop-up closes only after the server accepts.
+Future<void> showCreateZoneDialog(BuildContext context) =>
+    showGeneralDialog<void>(
+      context: context,
+      barrierLabel: L.createZone,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withValues(alpha: .35),
+      transitionDuration: const Duration(milliseconds: 200),
+      transitionBuilder: (context, animation, _, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOut,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: ScaleTransition(
+            scale: Tween(begin: .96, end: 1.0).animate(curved),
+            child: child,
+          ),
+        );
+      },
+      pageBuilder: (context, _, _) => const _CreateZoneDialog(),
+    );
+
+class _CreateZoneDialog extends StatefulWidget {
+  const _CreateZoneDialog();
+
+  @override
+  State<_CreateZoneDialog> createState() => _CreateZoneDialogState();
+}
+
+class _CreateZoneDialogState extends State<_CreateZoneDialog> {
+  final _name = TextEditingController();
+  bool _busy = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final name = _name.text.trim();
+    if (name.isEmpty) {
+      setState(() => _error = L.zoneNameRequired);
+      return;
+    }
+    final app = AppScope.read(context);
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      if (!app.repo.isDemo) {
+        await app.repo.createZone(app.business!.id, name);
+      }
+      if (!mounted) return;
+      zonesRevision.value++;
+      app.dataChanged();
+      Navigator.of(context).pop();
+      showCefToast(context, L.newZoneHasBeenCreatedSuccessfully);
+    } catch (e) {
+      if (mounted) setState(() => _error = '$e');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          Gap.gutter,
+          0,
+          Gap.gutter,
+          MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: Material(
+          color: context.c.card,
+          borderRadius: BorderRadius.circular(Sizes.cardRadius + 6),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                Gap.xxl,
+                Gap.xxl,
+                Gap.xxl,
+                Gap.xl,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    L.createZone,
+                    textAlign: TextAlign.center,
+                    style: text.titleMedium,
+                  ),
+                  const SizedBox(height: Gap.xs),
+                  Text(
+                    L.nameAreaDeliver,
+                    textAlign: TextAlign.center,
+                    style: text.bodySmall,
+                  ),
+                  const SizedBox(height: Gap.xl),
+                  CefField(
+                    label: L.zoneName,
+                    controller: _name,
+                    hint: L.enterZoneName,
+                    prefixIcon: LucideIcons.mapPin,
+                    errorText: _error,
+                    enabled: !_busy,
+                  ),
+                  const SizedBox(height: Gap.sm),
+                  CefButton(L.createZone2, busy: _busy, onTap: _save),
+                  const SizedBox(height: Gap.xs),
+                  TextButton(
+                    onPressed: _busy ? null : () => Navigator.of(context).pop(),
+                    child: Text(L.cancel),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

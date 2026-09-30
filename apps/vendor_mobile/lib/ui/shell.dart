@@ -7,6 +7,7 @@ import '../core/routes.dart';
 import '../core/theme.dart';
 import 'notification_banner.dart';
 import 'system_bars.dart';
+import 'screens/directory.dart' show showCreateZoneDialog;
 import 'widgets.dart';
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
@@ -627,7 +628,10 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
         icon: LucideIcons.plus,
         tooltip: addAction.$1,
         color: Colors.white,
-        onTap: () => app.go(addAction.$2),
+        // Create Zone is a pop-up, not a page (Founder, 2026-09-30).
+        onTap: () => addAction.$2 == VRoute.createZone
+            ? showCreateZoneDialog(context)
+            : app.go(addAction.$2),
       ),
     ];
   }
