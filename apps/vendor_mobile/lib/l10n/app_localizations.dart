@@ -1026,13 +1026,13 @@ abstract class AppLocalizations {
   /// No description provided for @enterEmailWellSendResetLink.
   ///
   /// In en, this message translates to:
-  /// **'Enter your email and we\'ll send you a reset link.'**
+  /// **'Enter your email and we\'ll send you a 6-digit code.'**
   String get enterEmailWellSendResetLink;
 
   /// No description provided for @sendResetLink.
   ///
   /// In en, this message translates to:
-  /// **'Send reset link'**
+  /// **'Send code'**
   String get sendResetLink;
 
   /// No description provided for @sending.
@@ -5688,7 +5688,7 @@ abstract class AppLocalizations {
   /// No description provided for @otpIncorrect.
   ///
   /// In en, this message translates to:
-  /// **'That code didn\'t work. Check the digits and try again.'**
+  /// **'That code is incorrect or has expired. Check the digits or request a new code.'**
   String get otpIncorrect;
 
   /// No description provided for @otpExpired.
@@ -5720,6 +5720,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'6-digit verification code'**
   String get otpCodeLabel;
+
+  /// No description provided for @otpRecoveryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset your password'**
+  String get otpRecoveryTitle;
 }
 
 class _AppLocalizationsDelegate

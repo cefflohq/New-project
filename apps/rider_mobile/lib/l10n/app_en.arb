@@ -141,12 +141,12 @@
   "createAccount3": "Create Account",
   "alreadyHaveAccount": "Already have an account?",
   "forgotPassword2": "Forgot\nPassword?",
-  "noWorriesEnterEmailWellSend": "No worries. Enter your email and\nwe’ll send you a reset link.",
+  "noWorriesEnterEmailWellSend": "No worries. Enter your email and\nwe’ll send you a 6-digit code.",
   "sending": "Sending…",
-  "sendResetLink": "Send Reset Link",
+  "sendResetLink": "Send Code",
   "backSign": "Back to Sign In",
   "keepAccountSecure": "Keep your account secure",
-  "wellSendSecureLinkResetPassword": "We’ll send a secure link to reset your password. The link will expire after a short period.",
+  "wellSendSecureLinkResetPassword": "We’ll email you a 6-digit code to reset your password.",
   "weveSentPasswordResetLink": "We’ve sent a password reset link to",
   "edit": "Edit",
   "openEmailInbox": "Open your email inbox",
@@ -663,11 +663,12 @@
       }
     }
   },
-  "otpIncorrect": "That code didn't work. Check the digits and try again.",
+  "otpIncorrect": "That code is incorrect or has expired. Check the digits or request a new code.",
   "otpExpired": "This code has expired. Request a new code to continue.",
   "otpSendNew": "Send a new code",
   "otpVerifiedLead": "Your email is confirmed. You can continue.",
   "otpContinue": "Continue",
   "otpCodeLabel": "6-digit verification code",
-  "otpEmailVerified": "Email verified"
+  "otpEmailVerified": "Email verified",
+  "otpRecoveryTitle": "Reset your password"
 }

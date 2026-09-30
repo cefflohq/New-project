@@ -149,24 +149,26 @@ void main() {
     expect(find.byKey(const Key('driver-auth-error')), findsOneWidget);
   });
 
-  testWidgets('Check Email shows the address the reset went to', (
-    tester,
-  ) async {
-    final app = AppState(RiderRepository.demo());
-    await tester.pumpWidget(
-      host(
-        app,
-        AuthFlow(initial: DRoute.forgotPassword, onAuthenticated: (_) {}),
-      ),
-    );
-    await tester.enterText(find.byType(TextField).first, 'me@example.test');
-    await tester.tap(find.text('Send Reset Link'));
-    await tester.pump();
-    expect(find.byType(CheckEmailScreen), findsOneWidget);
-    expect(find.text('me@example.test'), findsOneWidget);
-    expect(find.text('you@domain.com'), findsNothing);
-    expect(find.text('Resend email (60s)'), findsOneWidget);
-  });
+  testWidgets(
+    'Forgot Password asks for the 6-digit code sent to that address',
+    (tester) async {
+      final app = AppState(RiderRepository.demo());
+      await tester.pumpWidget(
+        host(
+          app,
+          AuthFlow(initial: DRoute.forgotPassword, onAuthenticated: (_) {}),
+        ),
+      );
+      await tester.enterText(find.byType(TextField).first, 'me@example.test');
+      await tester.tap(find.text('Send Code'));
+      await tester.pump();
+      expect(find.byType(VerifyEmailCodeScreen), findsOneWidget);
+      expect(find.text('Reset your password'), findsOneWidget);
+      expect(find.text('me@example.test'), findsOneWidget);
+      expect(find.text('you@domain.com'), findsNothing);
+      expect(find.text('Resend code in 60s'), findsOneWidget);
+    },
+  );
 
   testWidgets('a refused emailed link opens D09 with real next steps', (
     tester,

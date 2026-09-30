@@ -139,6 +139,32 @@ class VendorRepository {
     ),
   );
 
+  /// 6-digit code from the sign-up email (Supabase Email OTP). On success
+  /// GoTrue confirms the address and returns a session.
+  Future<void> verifySignUpCode({
+    required String email,
+    required String code,
+  }) => _run(
+    () => _db!.auth.verifyOTP(
+      email: email.trim(),
+      token: code,
+      type: OtpType.signup,
+    ),
+  );
+
+  /// 6-digit code from the password-recovery email. On success GoTrue
+  /// returns a recovery session; Set New Password then updates the password.
+  Future<void> verifyRecoveryCode({
+    required String email,
+    required String code,
+  }) => _run(
+    () => _db!.auth.verifyOTP(
+      email: email.trim(),
+      token: code,
+      type: OtpType.recovery,
+    ),
+  );
+
   /// Locked Set-a-new-password screen. Requires an active recovery session,
   /// which only exists after the emailed link has been opened -- this method
   /// never invents one.

@@ -95,6 +95,20 @@ export const api = {
   async resendSignUp(email) {
     return authFetch(`/auth/v1/resend?redirect_to=${encodeURIComponent(authRedirect())}`, { body: { type: 'signup', email: email.trim() } });
   },
+  // 6-digit Email OTP (GoTrue /verify): 'signup', 'recovery' or
+  // 'email_change'. A signup/recovery code returns a session, stored like a
+  // password sign-in. An email-change code may return only a message while
+  // the other address still has to confirm (Secure Email Change); then
+  // `done` is false.
+  async verifyOtp(type, email, token) {
+    const res = await authFetch('/auth/v1/verify', { body: { type, email: email.trim(), token }, token: base.session()?.access_token });
+    if (res?.access_token) base.setSession(res);
+    return { done: !!res?.access_token || !!res?.user || !!res?.id, message: res?.msg || '' };
+  },
+  // A new code for a pending email change (to the addresses GoTrue chose).
+  async resendEmailChange(newEmail) {
+    return authFetch('/auth/v1/resend', { body: { type: 'email_change', email: newEmail.trim() }, token: base.session()?.access_token });
+  },
   async user() {
     if (isDemo()) return demoUser();
     return call(() => authFetch('/auth/v1/user', { method: 'GET', token: base.session()?.access_token }));

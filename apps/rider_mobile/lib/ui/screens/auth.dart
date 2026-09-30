@@ -23,7 +23,14 @@ class AuthFlow extends StatefulWidget {
     this.initial = DRoute.splash,
     required this.onAuthenticated,
     this.onPasswordUpdated,
+    this.onCodeHold,
   });
+
+  /// Holds the auth screens on top while a 6-digit code flow finishes:
+  /// verifying creates a session, and without the hold the app root would
+  /// leave before "Email verified" — or, for recovery, before the new
+  /// password is set.
+  final ValueChanged<bool>? onCodeHold;
 
   /// Recovery-link flow only: called when D08 returns to sign-in.
   final VoidCallback? onPasswordUpdated;
@@ -77,6 +84,27 @@ class _AuthFlowState extends State<AuthFlow> {
     onSignUp: () => _go(DRoute.createAccount),
   );
 
+  /// A code call whose GoTrue failure becomes the code screen's state.
+  Future<void> _codeCall(Future<void> Function() call) async {
+    try {
+      await call();
+    } on RepositoryError catch (e) {
+      throw otpFailureFrom(e);
+    }
+  }
+
+  /// Verifying creates a session, so hold the auth screens first; a
+  /// rejected code releases the hold.
+  Future<void> _verifyCode(Future<void> Function() call) async {
+    widget.onCodeHold?.call(true);
+    try {
+      await _codeCall(call);
+    } catch (_) {
+      widget.onCodeHold?.call(false);
+      rethrow;
+    }
+  }
+
   @override
   Widget build(BuildContext context) => switch (_stack.last) {
     DRoute.splash => SplashScreen(onContinue: () => _resetTo(DRoute.signIn)),
@@ -94,8 +122,23 @@ class _AuthFlowState extends State<AuthFlow> {
       onVerify: (email) => _go(DRoute.verifyEmail, email: email),
       onSignIn: () => _resetTo(DRoute.signIn),
     ),
-    DRoute.verifyEmail => VerifyEmailScreen(
+    DRoute.verifyEmail => VerifyEmailCodeScreen(
+      key: ValueKey(('verify', _email)),
       email: _email,
+      onVerify: (code) => _verifyCode(
+        () =>
+            AppScope.read(context).repo
+                .verifySignUpCode(email: _email, code: code),
+      ),
+      onResend: () => _codeCall(
+        () => AppScope.read(context).repo.resendSignUpVerification(_email),
+      ),
+      // Session exists: release the hold; the app root loads it and lands
+      // on the stage it produces (as a confirmed sign-up does today).
+      onContinue: () {
+        widget.onCodeHold?.call(false);
+        widget.onAuthenticated(null);
+      },
       onBack: _back,
       onBackToSignIn: () => _resetTo(DRoute.signIn),
     ),
@@ -104,8 +147,20 @@ class _AuthFlowState extends State<AuthFlow> {
       onSent: (email) => _go(DRoute.checkEmail, email: email),
       onBackToSignIn: () => _resetTo(DRoute.signIn),
     ),
-    DRoute.checkEmail => CheckEmailScreen(
+    DRoute.checkEmail => VerifyEmailCodeScreen(
+      key: ValueKey(('recovery', _email)),
       email: _email,
+      title: L.otpRecoveryTitle,
+      showVerifiedState: false,
+      onVerify: (code) => _verifyCode(
+        () =>
+            AppScope.read(context).repo
+                .verifyRecoveryCode(email: _email, code: code),
+      ),
+      onResend: () => _codeCall(
+        () => AppScope.read(context).repo.sendPasswordReset(_email),
+      ),
+      onContinue: () => _go(DRoute.setNewPassword),
       onBack: _back,
       onBackToSignIn: () => _resetTo(DRoute.signIn),
     ),
@@ -1832,6 +1887,35 @@ String driverAuthErrorText(RepositoryError error) {
     return L.unableConnectCheckConnectionTryAgain;
   }
   return error.message;
+}
+
+/// Maps a GoTrue failure on a 6-digit code (verify or resend) to the code
+/// screen's states. GoTrue reports an expired and a mistyped code alike
+/// (`otp_expired`), so both read as [OtpFailureKind.incorrect]. A resend
+/// refused by the email rate limit carries the backend's own wait time.
+OtpFailure otpFailureFrom(RepositoryError e) {
+  final m = e.message.toLowerCase();
+  final wait = RegExp(r'after (\d+) seconds?').firstMatch(m);
+  final retry = wait == null ? null : int.tryParse(wait.group(1)!);
+  const limited = {
+    'over_email_send_rate_limit',
+    'over_request_rate_limit',
+    'rate_limit_exceeded',
+  };
+  if (e.code == 'otp_expired' || e.code == 'otp_disabled') {
+    return const OtpFailure(OtpFailureKind.incorrect);
+  }
+  if (limited.contains(e.code) || retry != null) {
+    return OtpFailure(OtpFailureKind.rateLimited, retryAfterSeconds: retry);
+  }
+  final text = driverAuthErrorText(e);
+  if (text == L.unableConnectCheckConnectionTryAgain) {
+    return const OtpFailure(OtpFailureKind.network);
+  }
+  if (m.contains('expired') || m.contains('invalid')) {
+    return const OtpFailure(OtpFailureKind.incorrect);
+  }
+  return OtpFailure(OtpFailureKind.other, message: e.message);
 }
 
 // ---------------------------------------------------------------------------

@@ -49,6 +49,47 @@ const showErr = (el, text) => { el.textContent = text; el.hidden = false; };
 const notConfirmed = e => /not confirmed/i.test(e?.message || '') || e?.code === 'email_not_confirmed';
 const expired = e => /expired|invalid/i.test(`${e?.message || ''} ${e?.code || ''}`);
 
+// GoTrue failure on a 6-digit code -> the code screen's state. GoTrue answers
+// an expired and a mistyped code alike (otp_expired), so both read as
+// 'incorrect'; a refused resend carries the backend's own wait time.
+export function otpFailure(ex) {
+  const m = `${ex?.message || ''}`.toLowerCase();
+  const wait = /after (\d+) seconds?/.exec(m);
+  const retryAfter = wait ? Number(wait[1]) : undefined;
+  if (ex?.code === 'otp_expired' || ex?.code === 'otp_disabled') return { kind: 'incorrect' };
+  if (/rate_limit/.test(ex?.code || '') || ex?.status === 429 || retryAfter) return { kind: 'rate', retryAfter };
+  if (ex instanceof TypeError) return { kind: 'network' };
+  if (/expired|invalid/.test(m)) return { kind: 'incorrect' };
+  return { kind: 'other', message: ex?.message };
+}
+const viaOtp = call => async (...a) => { try { return await call(...a); } catch (ex) { throw otpFailure(ex); } };
+
+// Sign-up code: verify -> session -> the app (Business Setup for a new Owner).
+function renderSignUpCode(root, opts, email) {
+  renderVerifyCode(root, opts, {
+    email, purpose: 'signup',
+    onVerify: viaOtp(code => api.verifyOtp('signup', email, code)),
+    onResend: viaOtp(() => api.resendSignUp(email)),
+    onContinue: () => opts.onSignedIn(),
+    onBack: () => renderSignUp(root, opts),
+  });
+}
+
+// Recovery code: verify -> recovery session -> Set New Password -> sign out
+// -> Sign In with the new password.
+function renderRecoveryCode(root, opts, email) {
+  renderVerifyCode(root, opts, {
+    email, purpose: 'recovery',
+    onVerify: viaOtp(code => api.verifyOtp('recovery', email, code)),
+    onResend: viaOtp(() => api.recover(email)),
+    onContinue: () => renderSetPassword(root, { onDone: async () => {
+      await api.signOut();
+      renderSignIn(root, { ...opts, message: t('otp.pwUpdated') });
+    } }),
+    onBack: () => renderForgot(root, opts),
+  });
+}
+
 export function renderSignIn(root, opts, mode = 'choose') {
   const { onSignedIn, message = '' } = opts;
   const again = next => renderSignIn(root, opts, next);
@@ -95,7 +136,11 @@ export function renderSignIn(root, opts, mode = 'choose') {
       onSignedIn();
     } catch (ex) {
       // An account that never confirmed its email goes to Verify your email.
-      if (notConfirmed(ex)) return renderVerify(root, opts, email);
+      if (notConfirmed(ex)) {
+        // The sign-in attempt sends no code; send one, then ask for it.
+        try { await api.resendSignUp(email); } catch { /* the code screen's resend covers it */ }
+        return renderSignUpCode(root, opts, email);
+      }
       showErr(err, /invalid/i.test(ex.message) ? t('auth.bad') : ex.message);
     }
   });
@@ -128,7 +173,7 @@ function renderSignUp(root, opts) {
     err.hidden = true;
     try {
       const needsVerification = await busy(form.querySelector('[type=submit]'), () => api.signUp(email, p1), t('c.loading'));
-      if (needsVerification) renderVerify(root, opts, email);
+      if (needsVerification) renderSignUpCode(root, opts, email);
       else opts.onSignedIn();
     } catch (ex) { showErr(err, ex.message); }
   });
@@ -201,7 +246,7 @@ function renderForgot(root, opts) {
     err.hidden = true;
     try {
       await busy(form.querySelector('[type=submit]'), () => api.recover(email), t('auth.sending'));
-      renderCheckEmail(root, opts);
+      renderRecoveryCode(root, opts, email);
     } catch (ex) { showErr(err, ex.message); }
   });
   root.querySelector('[data-back]').addEventListener('click', () => renderSignIn(root, opts, 'email'));
@@ -265,29 +310,74 @@ export function renderSetPassword(root, { onDone }) {
 // after `onVerify` resolves. The code is read from the inputs when needed
 // and never logged or stored.
 const OTP_LEN = 6;
-export function renderVerifyCode(root, opts, { email, purpose = 'signup', onVerify, onResend, onContinue, onBack, cooldown = 60 }) {
+
+// Six digit inputs: one-time-code autofill, numeric keyboard, auto-advance,
+// paste of the whole code, backspace to the previous box, arrow keys. Shared
+// by the auth code screen and the Change Email dialog. The code is read from
+// the inputs when needed and never logged or stored.
+export const otpBoxesHtml = () => `<div class="otp" role="group" aria-label="${esc(t('otp.label'))}">
+  ${Array.from({ length: OTP_LEN }, (_, i) => `<input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="${i ? 'off' : 'one-time-code'}" aria-label="${esc(t('otp.digit', { n: i + 1 }))}" data-i="${i}">`).join('')}
+</div>`;
+export function wireOtpBoxes(group, onChange) {
+  const boxes = [...group.querySelectorAll('.otp-box')];
+  const fill = (from, digits) => {
+    digits.split('').slice(0, OTP_LEN - from).forEach((d, k) => { boxes[from + k].value = d; });
+    boxes[Math.min(from + digits.length, OTP_LEN - 1)].focus();
+  };
+  boxes.forEach((b, i) => {
+    b.addEventListener('input', () => {
+      const digits = b.value.replace(/\D/g, '');
+      b.value = '';
+      if (digits) fill(i, digits);
+      onChange();
+    });
+    b.addEventListener('paste', e => {
+      e.preventDefault();
+      const digits = (e.clipboardData?.getData('text') || '').replace(/\D/g, '').slice(0, OTP_LEN);
+      if (!digits) return;
+      boxes.forEach(x => { x.value = ''; });
+      fill(0, digits);
+      onChange();
+    });
+    b.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !b.value && i > 0) { e.preventDefault(); boxes[i - 1].value = ''; boxes[i - 1].focus(); onChange(); }
+      else if (e.key === 'ArrowLeft' && i > 0) { e.preventDefault(); boxes[i - 1].focus(); }
+      else if (e.key === 'ArrowRight' && i < OTP_LEN - 1) { e.preventDefault(); boxes[i + 1].focus(); }
+    });
+    b.addEventListener('focus', () => b.select());
+  });
+  return {
+    code: () => boxes.map(b => b.value).join(''),
+    complete: () => boxes.every(b => b.value),
+    clear: () => boxes.forEach(b => { b.value = ''; }),
+    disable: on => boxes.forEach(b => { b.disabled = on; }),
+    bad: on => group.classList.toggle('bad', on),
+    focus: () => (boxes.find(b => !b.value) || boxes[OTP_LEN - 1]).focus(),
+  };
+}
+
+export function renderVerifyCode(root, opts, args) {
+  const { email, purpose = 'signup', onVerify, onResend, onContinue, onBack, cooldown = 60 } = args;
   let left = 0, timer = null, verifying = false, failed = null;
   const title = t(`otp.title.${purpose}`);
   const draw = () => frame(root, `<form class="auth-card auth-center" data-form novalidate>
     ${status(purpose === 'recovery' ? 'lock' : 'mail')}
     <h1>${esc(title)}</h1><p>${esc(t('otp.lead'))}</p>
     <p class="auth-email">${esc(email)}</p>
-    <div class="otp" role="group" aria-label="${esc(t('otp.label'))}">
-      ${Array.from({ length: OTP_LEN }, (_, i) => `<input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="${i ? 'off' : 'one-time-code'}" aria-label="${esc(t('otp.digit', { n: i + 1 }))}" data-i="${i}">`).join('')}
-    </div>
+    ${otpBoxesHtml()}
     <div class="err" data-err hidden role="alert"></div><div class="gated" data-ok hidden role="status"></div>
     <button class="btn primary" type="submit" data-verify style="width:100%" disabled>${esc(t('otp.verify'))}</button>
     <p class="otp-resend" data-resendline></p>
     <button class="link-btn" type="button" data-back>${esc(t(purpose === 'signup' ? 'auth.differentEmail' : 'auth.backToSignIn'))}</button>
     <p class="auth-muted">${esc(t('auth.spam'))}</p>
-  </form>`, draw, { brand: false });
+  </form>`, () => renderVerifyCode(root, opts, args), { brand: false });
   draw();
   const $ = s => root.querySelector(s);
-  const boxes = [...root.querySelectorAll('.otp-box')];
   const err = $('[data-err]'), ok = $('[data-ok]'), verifyBtn = $('[data-verify]'), line = $('[data-resendline]');
-  const code = () => boxes.map(b => b.value).join('');
+  const otp = wireOtpBoxes(root.querySelector('.otp'), () => changed());
+  const code = () => otp.code();
   const clearMsgs = () => { err.hidden = true; ok.hidden = true; };
-  const setFailed = kind => { failed = kind; root.querySelector('.otp').classList.toggle('bad', !!kind && kind !== 'expired'); };
+  const setFailed = kind => { failed = kind; otp.bad(!!kind && kind !== 'expired'); };
   const sync = () => {
     verifyBtn.disabled = failed === 'expired' ? left > 0 : verifying || !!failed || code().length !== OTP_LEN;
   };
@@ -302,43 +392,16 @@ export function renderVerifyCode(root, opts, { email, purpose = 'signup', onVeri
     if (s > 0) timer = setInterval(() => { left -= 1; if (!root.contains(line)) return clearInterval(timer); if (left <= 0) clearInterval(timer); paintLine(); }, 1000);
   };
   const failText = f => ({ incorrect: t('otp.incorrect'), expired: t('otp.expired'), rate: t('otp.rate'), network: t('otp.network') })[f?.kind] || f?.message || t('otp.incorrect');
-  const fill = (from, digits) => {
-    digits.split('').slice(0, OTP_LEN - from).forEach((d, k) => { boxes[from + k].value = d; });
-    const next = Math.min(from + digits.length, OTP_LEN - 1);
-    boxes[next].focus();
-  };
-  const changed = () => {
+  function changed() {
     if (failed && failed !== 'expired') { setFailed(null); clearMsgs(); }
     sync();
     if (code().length === OTP_LEN && !verifying && !failed) verify();
-  };
-  boxes.forEach((b, i) => {
-    b.addEventListener('input', () => {
-      const digits = b.value.replace(/\D/g, '');
-      b.value = '';
-      if (digits) fill(i, digits);
-      changed();
-    });
-    b.addEventListener('paste', e => {
-      e.preventDefault();
-      const digits = (e.clipboardData?.getData('text') || '').replace(/\D/g, '').slice(0, OTP_LEN);
-      if (!digits) return;
-      boxes.forEach(x => { x.value = ''; });
-      fill(0, digits);
-      changed();
-    });
-    b.addEventListener('keydown', e => {
-      if (e.key === 'Backspace' && !b.value && i > 0) { e.preventDefault(); boxes[i - 1].value = ''; boxes[i - 1].focus(); changed(); }
-      else if (e.key === 'ArrowLeft' && i > 0) { e.preventDefault(); boxes[i - 1].focus(); }
-      else if (e.key === 'ArrowRight' && i < OTP_LEN - 1) { e.preventDefault(); boxes[i + 1].focus(); }
-    });
-    b.addEventListener('focus', () => b.select());
-  });
+  }
   async function verify() {
     if (code().length !== OTP_LEN || verifying) return;
     verifying = true; clearMsgs();
     const value = code();
-    boxes.forEach(b => { b.disabled = true; });
+    otp.disable(true);
     let ran = false;
     try {
       // busy() skips a disabled button, so enable it for the call and only
@@ -351,13 +414,13 @@ export function renderVerifyCode(root, opts, { email, purpose = 'signup', onVeri
       renderVerified();
     } catch (f) {
       verifying = false;
-      boxes.forEach(b => { b.disabled = false; });
+      otp.disable(false);
       setFailed(f?.kind || 'incorrect');
       showErr(err, failText(f));
       if (failed === 'expired') {
-        boxes.forEach(b => { b.value = ''; b.disabled = true; });
+        otp.clear(); otp.disable(true);
         verifyBtn.textContent = t('otp.sendNew');
-      } else boxes[OTP_LEN - 1].focus();
+      } else otp.focus();
       paintLine(); sync();
     }
   }
@@ -371,10 +434,10 @@ export function renderVerifyCode(root, opts, { email, purpose = 'signup', onVeri
       await busy(target, () => { ran = true; return onResend(); }, t('auth.sending'));
       if (!ran) return;
       setFailed(null);
-      boxes.forEach(b => { b.value = ''; b.disabled = false; });
+      otp.clear(); otp.disable(false);
       verifyBtn.textContent = t('otp.verify');
       ok.textContent = t('otp.resent', { email }); ok.hidden = false;
-      countdown(cooldown); boxes[0].focus();
+      countdown(cooldown); otp.focus();
     } catch (f) {
       showErr(err, failText(f));
       if (f?.retryAfter) countdown(f.retryAfter); else paintLine();
@@ -393,6 +456,6 @@ export function renderVerifyCode(root, opts, { email, purpose = 'signup', onVeri
   $('[data-back]').addEventListener('click', () => { clearInterval(timer); onBack(); });
   countdown(cooldown);
   sync();
-  boxes[0].focus();
+  otp.focus();
   return { close: () => clearInterval(timer) };
 }

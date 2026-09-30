@@ -153,8 +153,8 @@
   "confirmPassword2": "Sahkan kata laluan anda",
   "creatingAccount": "Sedang mencipta akaun…",
   "alreadyHaveAccount": "Sudah ada akaun? ",
-  "enterEmailWellSendResetLink": "Masukkan e-mel anda dan kami akan hantar pautan tetapan semula.",
-  "sendResetLink": "Hantar pautan tetapan semula",
+  "enterEmailWellSendResetLink": "Masukkan e-mel anda dan kami akan menghantar kod 6 digit.",
+  "sendResetLink": "Hantar kod",
   "sending": "Sedang menghantar…",
   "backSign": "Kembali ke log masuk",
   "checkEmail": "Semak e-mel anda",
@@ -930,10 +930,11 @@
   "otpResend": "Hantar semula kod",
   "otpResendIn": "Hantar semula kod dalam {seconds}s",
   "otpResent": "Kod baharu sedang dihantar ke {email}.",
-  "otpIncorrect": "Kod itu tidak berjaya. Semak digit dan cuba lagi.",
+  "otpIncorrect": "Kod itu salah atau telah tamat tempoh. Semak digit atau minta kod baharu.",
   "otpExpired": "Kod ini telah tamat tempoh. Minta kod baharu untuk teruskan.",
   "otpSendNew": "Hantar kod baharu",
   "otpVerifiedLead": "E-mel anda telah disahkan. Anda boleh teruskan.",
   "otpContinue": "Teruskan",
-  "otpCodeLabel": "Kod pengesahan 6 digit"
+  "otpCodeLabel": "Kod pengesahan 6 digit",
+  "otpRecoveryTitle": "Tetapkan semula kata laluan"
 }

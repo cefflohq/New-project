@@ -186,10 +186,10 @@ void main() {
 
       expect(find.text('Forgot password?'), findsOneWidget);
       expect(
-        find.text("Enter your email and we'll send you a reset link."),
+        find.text("Enter your email and we'll send you a 6-digit code."),
         findsOneWidget,
       );
-      expect(find.text('Send reset link'), findsOneWidget);
+      expect(find.text('Send code'), findsOneWidget);
       expect(find.text('Back to sign in'), findsOneWidget);
     });
 

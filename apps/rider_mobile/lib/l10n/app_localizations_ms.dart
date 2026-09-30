@@ -408,13 +408,13 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get noWorriesEnterEmailWellSend =>
-      'Jangan risau. Masukkan e-mel anda dan\nkami akan hantar pautan tetapan semula.';
+      'Jangan risau. Masukkan e-mel anda dan\nkami akan menghantar kod 6 digit.';
 
   @override
   String get sending => 'Sedang menghantar…';
 
   @override
-  String get sendResetLink => 'Hantar Pautan Tetapan Semula';
+  String get sendResetLink => 'Hantar Kod';
 
   @override
   String get backSign => 'Kembali ke Log Masuk';
@@ -424,7 +424,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get wellSendSecureLinkResetPassword =>
-      'Kami akan hantar pautan selamat untuk menetapkan semula kata laluan anda. Pautan ini akan tamat tempoh selepas seketika.';
+      'Kami akan menghantar kod 6 digit ke e-mel anda untuk menetapkan semula kata laluan.';
 
   @override
   String get weveSentPasswordResetLink =>
@@ -1484,7 +1484,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get otpIncorrect =>
-      'Kod itu tidak berjaya. Semak digit dan cuba lagi.';
+      'Kod itu salah atau telah tamat tempoh. Semak digit atau minta kod baharu.';
 
   @override
   String get otpExpired =>
@@ -1505,4 +1505,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get otpEmailVerified => 'E-mel disahkan';
+
+  @override
+  String get otpRecoveryTitle => 'Tetapkan semula kata laluan';
 }

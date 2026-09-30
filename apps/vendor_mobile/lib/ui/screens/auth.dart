@@ -58,6 +58,8 @@ enum _Stage {
   forgotPassword,
   checkEmail,
   verifyEmail,
+  verifyCode,
+  recoveryCode,
   emailVerified,
   linkExpired,
   setNewPassword,
@@ -145,8 +147,15 @@ class AuthFlow extends StatefulWidget {
     this.recovery = false,
     this.linkRejected = false,
     this.onRecoveryDone,
+    this.onCodeHold,
     this.access = AuthAccess.vendor,
   });
+
+  /// Holds the auth screens on top while a 6-digit code flow finishes:
+  /// verifying a code creates a session, and without the hold the app root
+  /// would leave the auth screens before "Email verified" is shown — or,
+  /// for password recovery, before the new password is set.
+  final ValueChanged<bool>? onCodeHold;
 
   /// Which Sign-In variant opens (D-74). The rest of the auth suite is
   /// shared; the role is resolved by the server after sign-in.
@@ -216,6 +225,27 @@ class _AuthFlowState extends State<AuthFlow> {
     });
   }
 
+  /// A code call whose GoTrue failure becomes the code screen's state.
+  Future<void> _codeCall(Future<void> Function() call) async {
+    try {
+      await call();
+    } on RepositoryError catch (e) {
+      throw otpFailureFrom(e);
+    }
+  }
+
+  /// Verifying creates a session, so hold the auth screens first; a
+  /// rejected code releases the hold again.
+  Future<void> _verifyCode(Future<void> Function() call) async {
+    widget.onCodeHold?.call(true);
+    try {
+      await _codeCall(call);
+    } catch (_) {
+      widget.onCodeHold?.call(false);
+      rethrow;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return switch (_stage) {
@@ -230,18 +260,27 @@ class _AuthFlowState extends State<AuthFlow> {
         onBack: _back,
         onForgotPassword: () => _go(_Stage.forgotPassword),
         onSignUp: () => _go(_Stage.signUp),
-        onNeedsVerification: (email) => _go(_Stage.verifyEmail, email: email),
+        // An unconfirmed account signing in: send it a fresh code (the
+        // sign-in attempt itself sends none), then ask for it.
+        onNeedsVerification: (email) async {
+          try {
+            await AppScope.read(context).repo.resendSignUpVerification(email);
+          } on RepositoryError {
+            // The code screen's resend covers a refused send.
+          }
+          if (mounted) _go(_Stage.verifyCode, email: email);
+        },
         onPrototypeAuthenticated: widget.onPrototypeAuthenticated,
       ),
       _Stage.signUp => SignUpScreen(
         onBack: _back,
         onSignIn: () => _replace(_Stage.emailSignIn),
-        onNeedsVerification: (email) => _go(_Stage.verifyEmail, email: email),
+        onNeedsVerification: (email) => _go(_Stage.verifyCode, email: email),
         onPrototypeSignedUp: widget.onPrototypeSignedUp,
       ),
       _Stage.forgotPassword => ForgotPasswordScreen(
         onBack: _back,
-        onSent: (email) => _go(_Stage.checkEmail, email: email),
+        onSent: (email) => _go(_Stage.recoveryCode, email: email),
       ),
       _Stage.checkEmail => CheckYourEmailScreen(
         onBack: _back,
@@ -254,6 +293,40 @@ class _AuthFlowState extends State<AuthFlow> {
         onBackToSignIn: () => _replace(_Stage.emailSignIn),
         onUseDifferentEmail: () => _replace(_Stage.signUp),
         onExpired: () => _replace(_Stage.linkExpired, email: _email),
+      ),
+      _Stage.verifyCode => VerifyEmailCodeScreen(
+        key: ValueKey(('verify', _email)),
+        email: _email,
+        onVerify: (code) => _verifyCode(
+          () =>
+              AppScope.read(context).repo
+                  .verifySignUpCode(email: _email, code: code),
+        ),
+        onResend: () => _codeCall(
+          () => AppScope.read(context).repo.resendSignUpVerification(_email),
+        ),
+        // The session exists: release the hold and the app root loads it
+        // into Business Setup (Owner) or the workspace (Operator / Helper).
+        onContinue: () => widget.onCodeHold?.call(false),
+        onBack: _back,
+        onUseDifferentEmail: () => _replace(_Stage.signUp),
+      ),
+      _Stage.recoveryCode => VerifyEmailCodeScreen(
+        key: ValueKey(('recovery', _email)),
+        email: _email,
+        title: L.otpRecoveryTitle,
+        showVerifiedState: false,
+        onVerify: (code) => _verifyCode(
+          () =>
+              AppScope.read(context).repo
+                  .verifyRecoveryCode(email: _email, code: code),
+        ),
+        onResend: () => _codeCall(
+          () => AppScope.read(context).repo.sendPasswordReset(_email),
+        ),
+        onContinue: () => _go(_Stage.setNewPassword),
+        onBack: _back,
+        onUseDifferentEmail: () => _replace(_Stage.forgotPassword),
       ),
       _Stage.emailVerified => EmailVerifiedScreen(
         onContinue: () => _replace(_Stage.emailSignIn),
@@ -663,6 +736,37 @@ String authErrorText(RepositoryError e) {
 bool needsEmailVerification(RepositoryError e) =>
     e.code == 'email_not_confirmed' ||
     e.message.toLowerCase().contains('not confirmed');
+
+/// Maps a GoTrue failure on a 6-digit code (verify or resend) to the code
+/// screen's states. GoTrue reports an expired and a mistyped code alike
+/// (`otp_expired`, "Token has expired or is invalid"), so both read as
+/// [OtpFailureKind.incorrect] — the copy covers either. A resend refused by
+/// the email rate limit carries the backend's own wait time.
+OtpFailure otpFailureFrom(RepositoryError e) {
+  final m = e.message.toLowerCase();
+  final wait = RegExp(r'after (\d+) seconds?').firstMatch(m);
+  final retry = wait == null ? null : int.tryParse(wait.group(1)!);
+  switch (e.code) {
+    case 'otp_expired':
+    case 'otp_disabled':
+    case 'invalid_credentials':
+      return const OtpFailure(OtpFailureKind.incorrect);
+    case 'over_request_rate_limit':
+    case 'over_email_send_rate_limit':
+      return OtpFailure(OtpFailureKind.rateLimited, retryAfterSeconds: retry);
+  }
+  final text = authErrorText(e);
+  if (_isConnectionError(text)) {
+    return const OtpFailure(OtpFailureKind.network);
+  }
+  if (_isRateLimited(text) || retry != null) {
+    return OtpFailure(OtpFailureKind.rateLimited, retryAfterSeconds: retry);
+  }
+  if (m.contains('expired') || m.contains('invalid')) {
+    return const OtpFailure(OtpFailureKind.incorrect);
+  }
+  return OtpFailure(OtpFailureKind.other, message: e.message);
+}
 
 bool _isConnectionError(String text) => text.startsWith(L.unableConnect);
 bool _isRateLimited(String text) => text.startsWith(L.tooManyAttempts);

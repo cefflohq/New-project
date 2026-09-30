@@ -405,13 +405,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noWorriesEnterEmailWellSend =>
-      'No worries. Enter your email and\nwe’ll send you a reset link.';
+      'No worries. Enter your email and\nwe’ll send you a 6-digit code.';
 
   @override
   String get sending => 'Sending…';
 
   @override
-  String get sendResetLink => 'Send Reset Link';
+  String get sendResetLink => 'Send Code';
 
   @override
   String get backSign => 'Back to Sign In';
@@ -421,7 +421,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wellSendSecureLinkResetPassword =>
-      'We’ll send a secure link to reset your password. The link will expire after a short period.';
+      'We’ll email you a 6-digit code to reset your password.';
 
   @override
   String get weveSentPasswordResetLink => 'We’ve sent a password reset link to';
@@ -1474,7 +1474,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get otpIncorrect =>
-      'That code didn\'t work. Check the digits and try again.';
+      'That code is incorrect or has expired. Check the digits or request a new code.';
 
   @override
   String get otpExpired =>
@@ -1494,4 +1494,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get otpEmailVerified => 'Email verified';
+
+  @override
+  String get otpRecoveryTitle => 'Reset your password';
 }

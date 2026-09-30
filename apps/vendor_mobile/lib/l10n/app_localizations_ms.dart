@@ -498,10 +498,10 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get enterEmailWellSendResetLink =>
-      'Masukkan e-mel anda dan kami akan hantar pautan tetapan semula.';
+      'Masukkan e-mel anda dan kami akan menghantar kod 6 digit.';
 
   @override
-  String get sendResetLink => 'Hantar pautan tetapan semula';
+  String get sendResetLink => 'Hantar kod';
 
   @override
   String get sending => 'Sedang menghantar…';
@@ -3094,7 +3094,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get otpIncorrect =>
-      'Kod itu tidak berjaya. Semak digit dan cuba lagi.';
+      'Kod itu salah atau telah tamat tempoh. Semak digit atau minta kod baharu.';
 
   @override
   String get otpExpired =>
@@ -3112,4 +3112,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get otpCodeLabel => 'Kod pengesahan 6 digit';
+
+  @override
+  String get otpRecoveryTitle => 'Tetapkan semula kata laluan';
 }

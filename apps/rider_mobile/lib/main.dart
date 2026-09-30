@@ -134,6 +134,10 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
   /// A password-recovery link opened the app (native deep link).
   bool _recovering = false;
 
+  /// A 6-digit code flow is finishing inside the auth screens: keep them
+  /// on top even though a session exists (AuthFlow.onCodeHold).
+  bool _codeHold = false;
+
   /// An emailed auth link opened the app but the server refused it
   /// (expired, already used, or opened away from the requesting device).
   bool _linkRejected = false;
@@ -210,7 +214,7 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
         // the sign-in screen is already doing it.
         setState(() => _linkRejected = false);
         SchedulerBinding.instance.addPostFrameCallback((_) {
-          if (!mounted || _recovering) return;
+          if (!mounted || _recovering || _codeHold) return;
           if (widget.repo.currentUser != null &&
               !app.loadingSession &&
               !app.sessionLoaded) {
@@ -257,7 +261,7 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
         ),
         home: Builder(
           builder: (context) {
-            if (!_signedIn || _recovering) {
+            if (!_signedIn || _recovering || _codeHold) {
               return AuthFlow(
                 key: ValueKey((_recovering, _linkRejected)),
                 initial: _recovering
@@ -265,12 +269,29 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
                     : _linkRejected
                     ? DRoute.linkExpired
                     : _authInitial,
-                onPasswordUpdated: _recovering
+                // A recovery link or a recovery code: either way the new
+                // password is followed by signing out, then Sign In.
+                onPasswordUpdated: _recovering || _codeHold
                     ? () async {
                         await widget.repo.signOut();
-                        if (mounted) setState(() => _recovering = false);
+                        if (mounted) {
+                          setState(() {
+                            _recovering = false;
+                            _codeHold = false;
+                          });
+                        }
                       }
                     : null,
+                onCodeHold: (hold) {
+                  if (!mounted) return;
+                  setState(() => _codeHold = hold);
+                  if (!hold &&
+                      widget.repo.currentUser != null &&
+                      !app.loadingSession &&
+                      !app.sessionLoaded) {
+                    app.loadSession();
+                  }
+                },
                 onAuthenticated: (landing) {
                   app.stage = landing == null ? app.stage : _stageFor(landing);
                   app.resetTo(landing ?? app.homeRoute);

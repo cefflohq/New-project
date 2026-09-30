@@ -115,6 +115,10 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
   /// (expired, already used, or opened away from the requesting device).
   bool _linkRejected = false;
 
+  /// A 6-digit code flow is finishing inside the auth screens (see
+  /// AuthFlow.onCodeHold): keep them on top even though a session exists.
+  bool _codeHold = false;
+
   @override
   void initState() {
     super.initState();
@@ -161,7 +165,7 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
         // the sign-in screen is already doing it.
         setState(() => _linkRejected = false);
         SchedulerBinding.instance.addPostFrameCallback((_) {
-          if (!mounted || _recovering) return;
+          if (!mounted || _recovering || _codeHold) return;
           if (widget.repo.currentUser != null &&
               !app.loadingSession &&
               !app.sessionLoaded) {
@@ -264,6 +268,7 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
             // Founder-locked Vendor Auth batch (2026-09-11): the auth family
             // owns its own stage flow, starting at the locked Splash.
             if (_recovering ||
+                _codeHold ||
                 (widget.repo.isDemo && !_prototypeAuthenticated) ||
                 (!widget.repo.isDemo && widget.repo.currentUser == null)) {
               return AuthFlow(
@@ -273,7 +278,24 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
                 linkRejected: _linkRejected,
                 onRecoveryDone: () async {
                   await widget.repo.signOut();
-                  if (mounted) setState(() => _recovering = false);
+                  if (mounted) {
+                    setState(() {
+                      _recovering = false;
+                      _codeHold = false;
+                    });
+                  }
+                },
+                onCodeHold: (hold) {
+                  if (!mounted) return;
+                  setState(() => _codeHold = hold);
+                  // Released with a session (sign-up verified): load it,
+                  // which the signedIn listener skipped while held.
+                  if (!hold &&
+                      widget.repo.currentUser != null &&
+                      !app.loadingSession &&
+                      !app.sessionLoaded) {
+                    app.loadSession();
+                  }
                 },
                 onPrototypeAuthenticated: widget.repo.isDemo
                     ? () => setState(() => _prototypeAuthenticated = true)

@@ -183,8 +183,8 @@
   "confirmPassword2": "Confirm your password",
   "creatingAccount": "Creating account…",
   "alreadyHaveAccount": "Already have an account? ",
-  "enterEmailWellSendResetLink": "Enter your email and we'll send you a reset link.",
-  "sendResetLink": "Send reset link",
+  "enterEmailWellSendResetLink": "Enter your email and we'll send you a 6-digit code.",
+  "sendResetLink": "Send code",
   "sending": "Sending…",
   "backSign": "Back to sign in",
   "checkEmail": "Check your email",
@@ -1494,10 +1494,11 @@
       }
     }
   },
-  "otpIncorrect": "That code didn't work. Check the digits and try again.",
+  "otpIncorrect": "That code is incorrect or has expired. Check the digits or request a new code.",
   "otpExpired": "This code has expired. Request a new code to continue.",
   "otpSendNew": "Send a new code",
   "otpVerifiedLead": "Your email is confirmed. You can continue.",
   "otpContinue": "Continue",
-  "otpCodeLabel": "6-digit verification code"
+  "otpCodeLabel": "6-digit verification code",
+  "otpRecoveryTitle": "Reset your password"
 }

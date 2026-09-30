@@ -863,7 +863,7 @@ abstract class AppLocalizations {
   /// No description provided for @noWorriesEnterEmailWellSend.
   ///
   /// In en, this message translates to:
-  /// **'No worries. Enter your email and\nwe’ll send you a reset link.'**
+  /// **'No worries. Enter your email and\nwe’ll send you a 6-digit code.'**
   String get noWorriesEnterEmailWellSend;
 
   /// No description provided for @sending.
@@ -875,7 +875,7 @@ abstract class AppLocalizations {
   /// No description provided for @sendResetLink.
   ///
   /// In en, this message translates to:
-  /// **'Send Reset Link'**
+  /// **'Send Code'**
   String get sendResetLink;
 
   /// No description provided for @backSign.
@@ -893,7 +893,7 @@ abstract class AppLocalizations {
   /// No description provided for @wellSendSecureLinkResetPassword.
   ///
   /// In en, this message translates to:
-  /// **'We’ll send a secure link to reset your password. The link will expire after a short period.'**
+  /// **'We’ll email you a 6-digit code to reset your password.'**
   String get wellSendSecureLinkResetPassword;
 
   /// No description provided for @weveSentPasswordResetLink.
@@ -2729,7 +2729,7 @@ abstract class AppLocalizations {
   /// No description provided for @otpIncorrect.
   ///
   /// In en, this message translates to:
-  /// **'That code didn\'t work. Check the digits and try again.'**
+  /// **'That code is incorrect or has expired. Check the digits or request a new code.'**
   String get otpIncorrect;
 
   /// No description provided for @otpExpired.
@@ -2767,6 +2767,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Email verified'**
   String get otpEmailVerified;
+
+  /// No description provided for @otpRecoveryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset your password'**
+  String get otpRecoveryTitle;
 }
 
 class _AppLocalizationsDelegate

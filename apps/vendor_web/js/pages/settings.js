@@ -9,6 +9,7 @@ import { fetchBusiness, fetchZones, fetchMembers, fetchTeamInvites } from '../da
 import { esc, icon, avatar, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal, confirmDialog } from '../ui.js';
 import { showLink } from './riders.js';
 import { rerenderShell, signOutHandler } from '../shell.js';
+import { otpBoxesHtml, wireOtpBoxes, otpFailure } from './auth.js';
 import { openNotificationPrefs } from '../notifications.js';
 
 const PAGES = ['profile', 'security', 'business', 'team', 'integrations', 'help', 'privacy', 'about'];
@@ -116,7 +117,19 @@ async function profile(page) {
       const email = body.querySelector('[name=email]').value.trim();
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { err.textContent = t('c.invalidEmail'); err.hidden = false; return; }
       if (email === u.email) return;
-      try { await busy(e.currentTarget, () => api.updateUser({ email })); toast(t('prof.emailSent')); } catch (ex) { err.textContent = ex.message; err.hidden = false; }
+      // Secure Email Change (kept, Founder 2026-09-30): GoTrue sends a code to
+      // BOTH addresses and changes the email only after both are confirmed.
+      try {
+        await busy(e.currentTarget, () => api.updateUser({ email }));
+        // Done only when the account's email really is the new one.
+        openEmailChangeCodes(u.email, email, async () => {
+          ctx.user = await api.user();
+          body.querySelector('[name=email]').value = ctx.user.email;
+          if (ctx.user.email !== email) return false;
+          toast(t('otp.changeDone', { email: ctx.user.email }));
+          return true;
+        });
+      } catch (ex) { err.textContent = ex.message; err.hidden = false; }
     });
   } catch (e) { body.innerHTML = errorState(e); }
 }
@@ -350,4 +363,62 @@ function staticPage(kind) {
           <div class="kv">${icon('mail')}<div><small>${esc(t('help.contact'))}</small><b class="sel">support@cefflo.com</b></div></div></div>`;
     }
   };
+}
+
+// Change Email with 6-digit codes, one step per address. The email changes
+// only when GoTrue has accepted both codes (Secure Email Change); a step's
+// success is shown only after GoTrue accepts that code.
+function openEmailChangeCodes(current, next, onDone) {
+  const steps = [{ email: current, key: 'otp.changeCurrent' }, { email: next, key: 'otp.changeNew' }];
+  let i = 0, busyNow = false, left = 0, timer = null;
+  const m = modal({
+    title: t('otp.title.email_change'),
+    body: `<p class="hint" data-step></p><p class="auth-email" data-addr style="margin:0;text-align:center"></p>
+      ${otpBoxesHtml()}
+      <div class="err" data-err hidden role="alert"></div><div class="gated" data-ok hidden role="status"></div>
+      <p class="hint" data-line style="text-align:center;margin:0"></p>`,
+    footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-verify disabled>${esc(t('otp.verify'))}</button>`,
+    onClose: () => clearInterval(timer),
+  });
+  const $ = s => m.el.querySelector(s);
+  const err = $('[data-err]'), ok = $('[data-ok]'), verifyBtn = $('[data-verify]'), line = $('[data-line]');
+  const otp = wireOtpBoxes($('.otp'), () => {
+    err.hidden = true; otp.bad(false);
+    verifyBtn.disabled = busyNow || !otp.complete();
+    if (otp.complete() && !busyNow) verify();
+  });
+  const paint = () => {
+    $('[data-step]').textContent = t(steps[i].key);
+    $('[data-addr]').textContent = steps[i].email;
+    otp.clear(); otp.focus(); verifyBtn.disabled = true;
+  };
+  const paintLine = () => {
+    line.innerHTML = left > 0 ? esc(t('otp.resendIn', { s: left })) : `${esc(t('otp.noCode'))} <button class="link-btn" type="button" data-resend>${esc(t('otp.resend'))}</button>`;
+    line.querySelector('[data-resend]')?.addEventListener('click', resend);
+  };
+  const countdown = s => { clearInterval(timer); left = s; paintLine(); if (s > 0) timer = setInterval(() => { left -= 1; if (left <= 0) clearInterval(timer); if (m.el.isConnected) paintLine(); }, 1000); };
+  const failText = f => ({ incorrect: t('otp.incorrect'), rate: t('otp.rate'), network: t('otp.network') })[f?.kind] || f?.message || t('otp.incorrect');
+  async function verify() {
+    busyNow = true; err.hidden = true; ok.hidden = true; otp.disable(true);
+    let ran = false, res;
+    try {
+      verifyBtn.disabled = false;
+      await busy(verifyBtn, async () => { ran = true; res = await api.verifyOtp('email_change', steps[i].email, otp.code()); }, t('otp.verifying'));
+      if (!ran) throw { kind: 'network' };
+      if (i < steps.length - 1 && !res.done) { i += 1; paint(); return; }
+      if (await onDone()) { m.close(); return; }
+      // GoTrue accepted the code but the change is not complete yet.
+      err.textContent = res.message || t('otp.incorrect'); err.hidden = false;
+    } catch (ex) {
+      const f = ex?.kind ? ex : otpFailure(ex);
+      err.textContent = failText(f); err.hidden = false; otp.bad(true);
+    } finally { busyNow = false; otp.disable(false); if (m.el.isConnected) otp.focus(); }
+  }
+  async function resend() {
+    if (left > 0) return;
+    try { await api.resendEmailChange(next); ok.textContent = t('otp.resent', { email: steps[i].email }); ok.hidden = false; countdown(60); }
+    catch (ex) { const f = otpFailure(ex); err.textContent = failText(f); err.hidden = false; if (f.retryAfter) countdown(f.retryAfter); }
+  }
+  verifyBtn.addEventListener('click', verify);
+  paint(); countdown(60);
 }

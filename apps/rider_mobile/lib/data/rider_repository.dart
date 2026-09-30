@@ -126,6 +126,32 @@ class RiderRepository {
     ),
   );
 
+  /// 6-digit code from the sign-up email (Supabase Email OTP). On success
+  /// GoTrue confirms the address and returns a session.
+  Future<void> verifySignUpCode({
+    required String email,
+    required String code,
+  }) => _run(
+    () => _db.auth.verifyOTP(
+      email: email.trim(),
+      token: code,
+      type: OtpType.signup,
+    ),
+  );
+
+  /// 6-digit code from the password-recovery email: a recovery session for
+  /// Set New Password.
+  Future<void> verifyRecoveryCode({
+    required String email,
+    required String code,
+  }) => _run(
+    () => _db.auth.verifyOTP(
+      email: email.trim(),
+      token: code,
+      type: OtpType.recovery,
+    ),
+  );
+
   Future<void> updatePassword(String password) =>
       _run(() => _db.auth.updateUser(UserAttributes(password: password)));
 

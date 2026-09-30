@@ -498,10 +498,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enterEmailWellSendResetLink =>
-      'Enter your email and we\'ll send you a reset link.';
+      'Enter your email and we\'ll send you a 6-digit code.';
 
   @override
-  String get sendResetLink => 'Send reset link';
+  String get sendResetLink => 'Send code';
 
   @override
   String get sending => 'Sending…';
@@ -3093,7 +3093,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get otpIncorrect =>
-      'That code didn\'t work. Check the digits and try again.';
+      'That code is incorrect or has expired. Check the digits or request a new code.';
 
   @override
   String get otpExpired =>
@@ -3110,4 +3110,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get otpCodeLabel => '6-digit verification code';
+
+  @override
+  String get otpRecoveryTitle => 'Reset your password';
 }
