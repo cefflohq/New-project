@@ -530,3 +530,16 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
   .skel, .btn .spin, .modal-root, .modal, .nbanner { animation: none; }
   .sidebar, .switch::after { transition: none; }
 }
+
+/* ---- profile photo ---- */
+.photo { position: relative; flex: none; }
+.photo-btn { position: relative; display: block; padding: 0; border: 0; background: none; border-radius: 50%; cursor: pointer; }
+.photo-btn .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+.photo-btn .avatar { overflow: hidden; }
+.photo-cam { position: absolute; right: -2px; bottom: -2px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--border-strong); color: var(--ink-2); }
+.photo-cam svg.i { width: 14px; height: 14px; }
+.photo-btn:hover .photo-cam { color: var(--ink); border-color: var(--ink-2); }
+.photo-btn .spin { position: absolute; inset: 0; margin: auto; width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--primary); border-right-color: transparent; animation: spin .7s linear infinite; }
+.photo-btn.busy .avatar { opacity: .45; }
+.photo-actions { display: flex; gap: 16px; margin-top: 4px; font-size: var(--t-label); }
+.link-btn.danger { color: var(--danger); }

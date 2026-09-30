@@ -117,6 +117,48 @@ export const api = {
     if (isDemo()) throw readOnly();
     return call(() => authFetch('/auth/v1/user', { method: 'PUT', body: attrs, token: base.session()?.access_token }));
   },
+  // Profile photo (bucket cefflo-avatars). The object path is always the
+  // signed-in user's own '<uid>/avatar'; storage policies enforce it, the
+  // client only follows it. Upload replaces in place (x-upsert).
+  avatarPath: uid => `${uid}/avatar`,
+  async uploadAvatar(uid, file) {
+    if (isDemo()) throw readOnly();
+    return call(async () => {
+      const res = await fetch(`${cfg.supabaseUrl}/storage/v1/object/cefflo-avatars/${uid}/avatar`, {
+        method: 'POST',
+        headers: { apikey: cfg.supabaseAnonKey, Authorization: `Bearer ${base.session()?.access_token}`, 'Content-Type': file.type, 'x-upsert': 'true', 'cache-control': 'no-cache' },
+        body: file,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw Object.assign(new Error(data?.message || data?.error || `Upload failed (${res.status})`), { status: res.status });
+      }
+    });
+  },
+  async removeAvatar(uid) {
+    if (isDemo()) throw readOnly();
+    return call(async () => {
+      const res = await fetch(`${cfg.supabaseUrl}/storage/v1/object/cefflo-avatars/${uid}/avatar`, {
+        method: 'DELETE',
+        headers: { apikey: cfg.supabaseAnonKey, Authorization: `Bearer ${base.session()?.access_token}` },
+      });
+      if (!res.ok && res.status !== 404) throw Object.assign(new Error(`Remove failed (${res.status})`), { status: res.status });
+    });
+  },
+  // A short-lived signed URL for the private photo (the bucket is private).
+  async avatarUrl(path) {
+    if (!path || isDemo()) return '';
+    return call(async () => {
+      const res = await fetch(`${cfg.supabaseUrl}/storage/v1/object/sign/cefflo-avatars/${path}`, {
+        method: 'POST',
+        headers: { apikey: cfg.supabaseAnonKey, Authorization: `Bearer ${base.session()?.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expiresIn: 3600 }),
+      });
+      if (!res.ok) return '';
+      const data = await res.json();
+      return data?.signedURL ? `${cfg.supabaseUrl}/storage/v1${data.signedURL}` : '';
+    });
+  },
   // Supabase Edge Function with the signed-in user's JWT (e.g. geocode-order).
   fn: (name, body) => call(() => authFetch(`/functions/v1/${name}`, { body, token: base.session()?.access_token })),
   refreshSession,

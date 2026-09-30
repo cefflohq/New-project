@@ -712,6 +712,17 @@ Build: `app-arm64-v8a-release.apk`, source `1d78d71`, `CEFFLO_ENVIRONMENT=stagin
 
 **Scope of this PASS:** Vendor Mobile **Android**, Email Sign Up confirmation and password recovery only. NOT covered: Google OAuth (Batch E), Vendor iOS, Operator/Helper invitation flows, Driver, FOUNDR, change-email, support mailbox, overall P1.
 
+### 8.14 Profile Photo — backend capability (staging, Founder-approved 2026-09-30)
+
+Migration `202609300001_profile_avatars.sql`, applied to `cefflo-staging` only:
+- Bucket `cefflo-avatars`: private, 2 MB limit, JPEG / PNG / WebP only.
+- `profiles.avatar_url text` + check `profiles_avatar_url_own_path` (value null or `<id>/avatar`).
+- Storage policies `avatars_owner_{read,insert,update,delete}`: authenticated, `name = auth.uid() || '/avatar'` only. No other table, bucket, RPC or policy touched.
+- Identity scope: every surface signs in through the same `auth.users` + `profiles` row (Vendor Owner / Operator / Helper, Driver, FOUNDR). The control is implemented only on Vendor Web → Settings → Profile; other surfaces can reuse the same path later.
+
+RLS evidence (SQL, as `authenticated` with each user's JWT claims; every write undone, 0 objects / 0 avatar rows after): A inserts `A/avatar` ALLOWED; A inserts `B/avatar` DENIED (RLS); A inserts `A/other.png` DENIED; A updates `B/avatar` 0 rows; A sees `B/avatar` 0 rows (so cannot sign, read or delete it — Storage API delete is RLS-filtered the same way; direct SQL delete is blocked by Supabase); B sees own 1 row; A sets own `avatar_url` to B's path DENIED (check); A sets own path ALLOWED; A updates B's profile 0 rows; anon insert DENIED.
+Pending: real upload / replace / remove / persistence after sign-out through the Web UI (Founder device QA).
+
 ### 8.13 6-Digit Email OTP Standardization — Audit and Migration Map (2026-09-30, PROPOSED — NOT APPLIED)
 
 Founder direction: sign-up, password recovery and email change verify with a 6-digit Email OTP. Supabase Auth stays the only auth system: no custom OTP tables, generators, reset tokens or services. Nothing below is configured yet; UI is prepared behind injected handlers (Founder visual gate).
