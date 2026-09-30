@@ -1507,5 +1507,99 @@
   "howStepSource": "Pick a source",
   "howStepFile": "Choose a file",
   "howStepMap": "Match columns",
-  "howStepImport": "Import"
+  "howStepImport": "Import",
+  "importExcelCsv": "Excel / CSV",
+  "importExcelCsvHint": "Upload a CSV or Excel file (.xlsx)",
+  "connectGoogle": "Connect Google",
+  "googleConnectPending": "Connecting Google isn't available yet. For now, download the sheet as CSV or .xlsx and use Excel / CSV.",
+  "importReadingFile": "Reading the file",
+  "importReadFailed": "This file couldn't be read. Use a CSV or .xlsx file with a header row.",
+  "importNoRows": "No order rows were found under the header row.",
+  "importMatchHint": "We matched what we could. Check each field and choose the right column.",
+  "importNotMapped": "Not matched",
+  "importRequiredTag": "Required",
+  "importMatchRequired": "Match the required fields: {fields}",
+  "@importMatchRequired": {
+    "placeholders": {
+      "fields": {
+        "type": "Object"
+      }
+    }
+  },
+  "importContinueReview": "Review rows",
+  "importReviewTitle": "Review",
+  "importRowsDetected": "Rows detected",
+  "importRowsValid": "Ready",
+  "importRowsInvalid": "Need attention",
+  "importMappedFields": "Matched fields",
+  "importRowMissing": "Row {row}: missing {fields}",
+  "@importRowMissing": {
+    "placeholders": {
+      "row": {
+        "type": "Object"
+      },
+      "fields": {
+        "type": "Object"
+      }
+    }
+  },
+  "importInvalidNote": "Rows that need attention won't be imported. Fix them in the file and import it again.",
+  "importCountOrders": "Import {count} orders",
+  "@importCountOrders": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "importingOrders": "Importing orders",
+  "importResultDone": "Import complete",
+  "importResultPartial": "Import partly complete",
+  "importResultNone": "Nothing was imported",
+  "importCommittedCount": "{count} orders created",
+  "@importCommittedCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "importRejectedCount": "{count} rows rejected by Cefflo",
+  "@importRejectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "importSkippedCount": "{count} rows not sent (need attention)",
+  "@importSkippedCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "importRowReason": "Row {row}: {reason}",
+  "@importRowReason": {
+    "placeholders": {
+      "row": {
+        "type": "Object"
+      },
+      "reason": {
+        "type": "Object"
+      }
+    }
+  },
+  "importViewOrders": "View orders",
+  "importAnotherFile": "Import another file",
+  "importChangeFile": "Choose another file",
+  "importBackToMatch": "Back to matching",
+  "importFieldPhone": "Customer phone",
+  "importFieldZone": "Zone",
+  "importFieldItems": "Items",
+  "importFieldNotes": "Notes",
+  "importKpiCreated": "Created",
+  "importKpiRejected": "Rejected",
+  "importKpiNotSent": "Not sent"
 }

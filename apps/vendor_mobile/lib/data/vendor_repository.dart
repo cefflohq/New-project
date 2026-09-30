@@ -904,6 +904,45 @@ class VendorRepository {
     return _single(row);
   }
 
+  /// Commits imported rows through the canonical `import_orders_batch`.
+  /// Each row carries `source_row_ref`; the server returns what it
+  /// committed and what it rejected (with the reason). Reuse the same
+  /// [idempotencyKey] when retrying the same file.
+  Future<
+    ({
+      List<Map<String, dynamic>> committed,
+      List<Map<String, dynamic>> rejected,
+    })
+  >
+  importOrdersBatch({
+    required String businessId,
+    required List<Map<String, dynamic>> rows,
+    required String idempotencyKey,
+  }) async {
+    if (_demo) {
+      return (
+        committed: <Map<String, dynamic>>[],
+        rejected: <Map<String, dynamic>>[],
+      );
+    }
+    final res = await _run(
+      () => _db!.rpc(
+        'import_orders_batch',
+        params: {
+          'p_business_id': businessId,
+          'p_rows': rows,
+          'p_idempotency_key': idempotencyKey,
+        },
+      ),
+    );
+    final m = Map<String, dynamic>.from(res as Map);
+    List<Map<String, dynamic>> list(Object? v) => [
+      for (final e in (v as List? ?? const []))
+        Map<String, dynamic>.from(e as Map),
+    ];
+    return (committed: list(m['committed']), rejected: list(m['rejected']));
+  }
+
   // ------------------------------------------------------------- business
 
   /// Resolves the business's own saved address to its real pickup origin

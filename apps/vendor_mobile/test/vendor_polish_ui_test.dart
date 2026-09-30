@@ -71,8 +71,11 @@ void main() {
       lessThan(tester.getTopLeft(find.text('Google Sheets')).dy),
     );
     expect(find.text('4. Import'), findsOneWidget);
-    expect(find.text('Excel'), findsOneWidget);
+    expect(find.text('Excel / CSV'), findsOneWidget);
     expect(find.text('Google Drive'), findsOneWidget);
+    // Google sources say honestly that they need a connection (Batch E).
+    expect(find.text('Connect Google'), findsNWidgets(2));
+    expect(find.textContaining('not wired'), findsNothing);
   });
 
   testWidgets('Products exposes its add action in the header', (tester) async {

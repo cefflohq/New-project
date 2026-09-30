@@ -5768,6 +5768,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Import'**
   String get howStepImport;
+
+  /// No description provided for @importExcelCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Excel / CSV'**
+  String get importExcelCsv;
+
+  /// No description provided for @importExcelCsvHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a CSV or Excel file (.xlsx)'**
+  String get importExcelCsvHint;
+
+  /// No description provided for @connectGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Google'**
+  String get connectGoogle;
+
+  /// No description provided for @googleConnectPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting Google isn\'t available yet. For now, download the sheet as CSV or .xlsx and use Excel / CSV.'**
+  String get googleConnectPending;
+
+  /// No description provided for @importReadingFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading the file'**
+  String get importReadingFile;
+
+  /// No description provided for @importReadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'This file couldn\'t be read. Use a CSV or .xlsx file with a header row.'**
+  String get importReadFailed;
+
+  /// No description provided for @importNoRows.
+  ///
+  /// In en, this message translates to:
+  /// **'No order rows were found under the header row.'**
+  String get importNoRows;
+
+  /// No description provided for @importMatchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'We matched what we could. Check each field and choose the right column.'**
+  String get importMatchHint;
+
+  /// No description provided for @importNotMapped.
+  ///
+  /// In en, this message translates to:
+  /// **'Not matched'**
+  String get importNotMapped;
+
+  /// No description provided for @importRequiredTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get importRequiredTag;
+
+  /// No description provided for @importMatchRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Match the required fields: {fields}'**
+  String importMatchRequired(Object fields);
+
+  /// No description provided for @importContinueReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review rows'**
+  String get importContinueReview;
+
+  /// No description provided for @importReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get importReviewTitle;
+
+  /// No description provided for @importRowsDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rows detected'**
+  String get importRowsDetected;
+
+  /// No description provided for @importRowsValid.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get importRowsValid;
+
+  /// No description provided for @importRowsInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Need attention'**
+  String get importRowsInvalid;
+
+  /// No description provided for @importMappedFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Matched fields'**
+  String get importMappedFields;
+
+  /// No description provided for @importRowMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Row {row}: missing {fields}'**
+  String importRowMissing(Object row, Object fields);
+
+  /// No description provided for @importInvalidNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Rows that need attention won\'t be imported. Fix them in the file and import it again.'**
+  String get importInvalidNote;
+
+  /// No description provided for @importCountOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Import {count} orders'**
+  String importCountOrders(Object count);
+
+  /// No description provided for @importingOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing orders'**
+  String get importingOrders;
+
+  /// No description provided for @importResultDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Import complete'**
+  String get importResultDone;
+
+  /// No description provided for @importResultPartial.
+  ///
+  /// In en, this message translates to:
+  /// **'Import partly complete'**
+  String get importResultPartial;
+
+  /// No description provided for @importResultNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was imported'**
+  String get importResultNone;
+
+  /// No description provided for @importCommittedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} orders created'**
+  String importCommittedCount(Object count);
+
+  /// No description provided for @importRejectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} rows rejected by Cefflo'**
+  String importRejectedCount(Object count);
+
+  /// No description provided for @importSkippedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} rows not sent (need attention)'**
+  String importSkippedCount(Object count);
+
+  /// No description provided for @importRowReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Row {row}: {reason}'**
+  String importRowReason(Object row, Object reason);
+
+  /// No description provided for @importViewOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'View orders'**
+  String get importViewOrders;
+
+  /// No description provided for @importAnotherFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Import another file'**
+  String get importAnotherFile;
+
+  /// No description provided for @importChangeFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another file'**
+  String get importChangeFile;
+
+  /// No description provided for @importBackToMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to matching'**
+  String get importBackToMatch;
+
+  /// No description provided for @importFieldPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer phone'**
+  String get importFieldPhone;
+
+  /// No description provided for @importFieldZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone'**
+  String get importFieldZone;
+
+  /// No description provided for @importFieldItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Items'**
+  String get importFieldItems;
+
+  /// No description provided for @importFieldNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get importFieldNotes;
+
+  /// No description provided for @importKpiCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Created'**
+  String get importKpiCreated;
+
+  /// No description provided for @importKpiRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get importKpiRejected;
+
+  /// No description provided for @importKpiNotSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Not sent'**
+  String get importKpiNotSent;
 }
 
 class _AppLocalizationsDelegate

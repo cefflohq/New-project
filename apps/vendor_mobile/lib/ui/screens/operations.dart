@@ -8,6 +8,7 @@ import '../../data/models.dart';
 import '../async_view.dart';
 import '../shell.dart';
 import '../widgets.dart';
+import 'import_flow.dart' show ordersRevision;
 import 'planning.dart' show CoveragePreview, RadiusSlider;
 import 'today_content.dart';
 
@@ -578,7 +579,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       return PageBody(children: [StateBlock.empty(L.noBusinessLinked)]);
     }
     return AsyncView<List<VendorOrder>>(
-      key: ValueKey('orders-${business.id}'),
+      key: ValueKey('orders-${business.id}-${ordersRevision.value}'),
       load: () => app.repo.orders(business.id),
       builder: (context, orders, reload) {
         final visible = orders.where((o) => tab.accepts(o.status)).toList();
@@ -914,117 +915,6 @@ class NewOrderEntryScreen extends StatelessWidget {
       ],
     );
   }
-}
-
-/// The three file sources the import flow accepts. Each source uses the
-/// provider's official product mark bundled locally for deterministic render.
-enum _ImportSource {
-  googleSheets('assets/brand/google-sheets-logo.png'),
-  excel('assets/brand/microsoft-excel-logo.png'),
-  googleDrive('assets/brand/google-drive-logo.png');
-
-  const _ImportSource(this.assetPath);
-
-  final String assetPath;
-
-  String get label => switch (this) {
-    _ImportSource.googleSheets => L.googleSheets,
-    _ImportSource.excel => L.excel,
-    _ImportSource.googleDrive => L.googleDrive,
-  };
-
-  String get description => switch (this) {
-    _ImportSource.googleSheets => L.importFromGoogleSheets,
-    _ImportSource.excel => L.uploadExcelFileXlsxXls,
-    _ImportSource.googleDrive => L.importFromFilesGoogleDrive,
-  };
-}
-
-class _ImportSourceMark extends StatelessWidget {
-  const _ImportSourceMark({required this.source});
-  final _ImportSource source;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: Sizes.avatar,
-    height: Sizes.avatar,
-    child: Center(
-      child: Image.asset(
-        source.assetPath,
-        width: 32,
-        height: 32,
-        fit: BoxFit.contain,
-        filterQuality: FilterQuality.high,
-      ),
-    ),
-  );
-}
-
-/// X-04 — Pick where the bulk orders come from: the numbered guidance rows
-/// (same step-row language as Welcome), then one navigation row per source.
-class ImportOrdersScreen extends StatelessWidget {
-  const ImportOrdersScreen({super.key});
-
-  static List<(IconData, String)> get _steps => [
-    (LucideIcons.layers, L.howStepSource),
-    (LucideIcons.fileSpreadsheet, L.howStepFile),
-    (LucideIcons.columns3, L.howStepMap),
-    (LucideIcons.circleCheck, L.howStepImport),
-  ];
-
-  @override
-  Widget build(BuildContext context) => PageBody(
-    children: [
-      // How it works, at a glance: four icons in a row, a word each.
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (final (index, step) in _steps.indexed)
-            Expanded(
-              child: _HowStep(icon: step.$1, label: step.$2, n: index + 1),
-            ),
-        ],
-      ),
-      SectionHeading(L.sources, icon: LucideIcons.cloudUpload),
-      for (final source in _ImportSource.values)
-        CefListRow(
-          leading: _ImportSourceMark(source: source),
-          title: source.label,
-          subtitle: source.description,
-          subtitleMaxLines: 2,
-          onTap: () =>
-              showNotWiredYetSnackBar(context, L.importingFrom(source.label)),
-        ),
-    ],
-  );
-}
-
-class _HowStep extends StatelessWidget {
-  const _HowStep({required this.icon, required this.label, required this.n});
-  final IconData icon;
-  final String label;
-  final int n;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      Container(
-        width: 52,
-        height: 52,
-        decoration: BoxDecoration(
-          color: context.c.subtle,
-          borderRadius: BorderRadius.circular(Sizes.cardRadius),
-        ),
-        child: Icon(icon, size: 24, color: CefColors.navy),
-      ),
-      const SizedBox(height: Gap.sm),
-      Text(
-        '$n. $label',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.labelMedium,
-      ),
-    ],
-  );
 }
 
 /// X-03 / V-15 — Save validates and persists through the canonical RPC. The

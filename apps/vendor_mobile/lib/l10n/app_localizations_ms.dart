@@ -3137,4 +3137,140 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get howStepImport => 'Import';
+
+  @override
+  String get importExcelCsv => 'Excel / CSV';
+
+  @override
+  String get importExcelCsvHint => 'Muat naik fail CSV atau Excel (.xlsx)';
+
+  @override
+  String get connectGoogle => 'Sambung Google';
+
+  @override
+  String get googleConnectPending =>
+      'Sambungan Google belum tersedia. Buat masa ini, muat turun helaian sebagai CSV atau .xlsx dan guna Excel / CSV.';
+
+  @override
+  String get importReadingFile => 'Membaca fail';
+
+  @override
+  String get importReadFailed =>
+      'Fail ini tidak dapat dibaca. Guna fail CSV atau .xlsx yang ada baris tajuk.';
+
+  @override
+  String get importNoRows =>
+      'Tiada baris pesanan ditemui di bawah baris tajuk.';
+
+  @override
+  String get importMatchHint =>
+      'Kami padankan apa yang boleh. Semak setiap medan dan pilih lajur yang betul.';
+
+  @override
+  String get importNotMapped => 'Tidak dipadankan';
+
+  @override
+  String get importRequiredTag => 'Wajib';
+
+  @override
+  String importMatchRequired(Object fields) {
+    return 'Padankan medan wajib: $fields';
+  }
+
+  @override
+  String get importContinueReview => 'Semak baris';
+
+  @override
+  String get importReviewTitle => 'Semakan';
+
+  @override
+  String get importRowsDetected => 'Baris dikesan';
+
+  @override
+  String get importRowsValid => 'Sedia';
+
+  @override
+  String get importRowsInvalid => 'Perlu semakan';
+
+  @override
+  String get importMappedFields => 'Medan dipadankan';
+
+  @override
+  String importRowMissing(Object row, Object fields) {
+    return 'Baris $row: tiada $fields';
+  }
+
+  @override
+  String get importInvalidNote =>
+      'Baris yang perlu semakan tidak akan diimport. Betulkan dalam fail dan import semula.';
+
+  @override
+  String importCountOrders(Object count) {
+    return 'Import $count pesanan';
+  }
+
+  @override
+  String get importingOrders => 'Mengimport pesanan';
+
+  @override
+  String get importResultDone => 'Import selesai';
+
+  @override
+  String get importResultPartial => 'Import separa selesai';
+
+  @override
+  String get importResultNone => 'Tiada yang diimport';
+
+  @override
+  String importCommittedCount(Object count) {
+    return '$count pesanan dicipta';
+  }
+
+  @override
+  String importRejectedCount(Object count) {
+    return '$count baris ditolak oleh Cefflo';
+  }
+
+  @override
+  String importSkippedCount(Object count) {
+    return '$count baris tidak dihantar (perlu semakan)';
+  }
+
+  @override
+  String importRowReason(Object row, Object reason) {
+    return 'Baris $row: $reason';
+  }
+
+  @override
+  String get importViewOrders => 'Lihat pesanan';
+
+  @override
+  String get importAnotherFile => 'Import fail lain';
+
+  @override
+  String get importChangeFile => 'Pilih fail lain';
+
+  @override
+  String get importBackToMatch => 'Kembali ke padanan';
+
+  @override
+  String get importFieldPhone => 'Telefon pelanggan';
+
+  @override
+  String get importFieldZone => 'Zon';
+
+  @override
+  String get importFieldItems => 'Barang';
+
+  @override
+  String get importFieldNotes => 'Nota';
+
+  @override
+  String get importKpiCreated => 'Dicipta';
+
+  @override
+  String get importKpiRejected => 'Ditolak';
+
+  @override
+  String get importKpiNotSent => 'Tidak dihantar';
 }

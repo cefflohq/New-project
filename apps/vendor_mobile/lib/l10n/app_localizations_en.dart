@@ -3135,4 +3135,139 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get howStepImport => 'Import';
+
+  @override
+  String get importExcelCsv => 'Excel / CSV';
+
+  @override
+  String get importExcelCsvHint => 'Upload a CSV or Excel file (.xlsx)';
+
+  @override
+  String get connectGoogle => 'Connect Google';
+
+  @override
+  String get googleConnectPending =>
+      'Connecting Google isn\'t available yet. For now, download the sheet as CSV or .xlsx and use Excel / CSV.';
+
+  @override
+  String get importReadingFile => 'Reading the file';
+
+  @override
+  String get importReadFailed =>
+      'This file couldn\'t be read. Use a CSV or .xlsx file with a header row.';
+
+  @override
+  String get importNoRows => 'No order rows were found under the header row.';
+
+  @override
+  String get importMatchHint =>
+      'We matched what we could. Check each field and choose the right column.';
+
+  @override
+  String get importNotMapped => 'Not matched';
+
+  @override
+  String get importRequiredTag => 'Required';
+
+  @override
+  String importMatchRequired(Object fields) {
+    return 'Match the required fields: $fields';
+  }
+
+  @override
+  String get importContinueReview => 'Review rows';
+
+  @override
+  String get importReviewTitle => 'Review';
+
+  @override
+  String get importRowsDetected => 'Rows detected';
+
+  @override
+  String get importRowsValid => 'Ready';
+
+  @override
+  String get importRowsInvalid => 'Need attention';
+
+  @override
+  String get importMappedFields => 'Matched fields';
+
+  @override
+  String importRowMissing(Object row, Object fields) {
+    return 'Row $row: missing $fields';
+  }
+
+  @override
+  String get importInvalidNote =>
+      'Rows that need attention won\'t be imported. Fix them in the file and import it again.';
+
+  @override
+  String importCountOrders(Object count) {
+    return 'Import $count orders';
+  }
+
+  @override
+  String get importingOrders => 'Importing orders';
+
+  @override
+  String get importResultDone => 'Import complete';
+
+  @override
+  String get importResultPartial => 'Import partly complete';
+
+  @override
+  String get importResultNone => 'Nothing was imported';
+
+  @override
+  String importCommittedCount(Object count) {
+    return '$count orders created';
+  }
+
+  @override
+  String importRejectedCount(Object count) {
+    return '$count rows rejected by Cefflo';
+  }
+
+  @override
+  String importSkippedCount(Object count) {
+    return '$count rows not sent (need attention)';
+  }
+
+  @override
+  String importRowReason(Object row, Object reason) {
+    return 'Row $row: $reason';
+  }
+
+  @override
+  String get importViewOrders => 'View orders';
+
+  @override
+  String get importAnotherFile => 'Import another file';
+
+  @override
+  String get importChangeFile => 'Choose another file';
+
+  @override
+  String get importBackToMatch => 'Back to matching';
+
+  @override
+  String get importFieldPhone => 'Customer phone';
+
+  @override
+  String get importFieldZone => 'Zone';
+
+  @override
+  String get importFieldItems => 'Items';
+
+  @override
+  String get importFieldNotes => 'Notes';
+
+  @override
+  String get importKpiCreated => 'Created';
+
+  @override
+  String get importKpiRejected => 'Rejected';
+
+  @override
+  String get importKpiNotSent => 'Not sent';
 }
