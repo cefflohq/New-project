@@ -3399,4 +3399,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String messageCopiedPasteIn(Object app) {
     return 'Mesej disalin. Tampal dalam $app.';
   }
+
+  @override
+  String get shareInviteLink => 'Kongsi pautan jemputan';
 }

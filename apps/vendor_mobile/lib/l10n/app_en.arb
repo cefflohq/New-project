@@ -1685,5 +1685,6 @@
         "type": "Object"
       }
     }
-  }
+  },
+  "shareInviteLink": "Share invite link"
 }

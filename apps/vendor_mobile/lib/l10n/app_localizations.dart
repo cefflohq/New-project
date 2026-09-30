@@ -6218,6 +6218,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Message copied. Paste it in {app}.'**
   String messageCopiedPasteIn(Object app);
+
+  /// No description provided for @shareInviteLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Share invite link'**
+  String get shareInviteLink;
 }
 
 class _AppLocalizationsDelegate

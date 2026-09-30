@@ -3396,4 +3396,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String messageCopiedPasteIn(Object app) {
     return 'Message copied. Paste it in $app.';
   }
+
+  @override
+  String get shareInviteLink => 'Share invite link';
 }

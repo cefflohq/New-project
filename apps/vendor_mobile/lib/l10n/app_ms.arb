@@ -1018,5 +1018,6 @@
   "joinPendingTitle": "Menunggu kelulusan",
   "joinPendingBody": "Permintaan anda telah dihantar kepada {business}. Anda akan mendapat akses setelah diluluskan.",
   "joinLinkUnavailable": "Pautan jemputan ini tidak lagi sah. Minta pautan baharu daripada bisnes.",
-  "messageCopiedPasteIn": "Mesej disalin. Tampal dalam {app}."
+  "messageCopiedPasteIn": "Mesej disalin. Tampal dalam {app}.",
+  "shareInviteLink": "Kongsi pautan jemputan"
 }

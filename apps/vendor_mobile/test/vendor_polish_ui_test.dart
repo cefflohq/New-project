@@ -309,11 +309,26 @@ void main() {
     tester,
   ) async {
     await pumpAt(tester, const VendorLocation(VRoute.riderRegistrationLink));
-    // The link is there on open: no manual form, no Generate step.
+    // The link is there on open: no manual form, no Generate, no Reset.
     expect(find.byType(TextField), findsNothing);
     expect(find.text('Generate invite link'), findsNothing);
+    expect(find.text('Reset link'), findsNothing);
     expect(find.text('Your invite link'), findsOneWidget);
     expect(find.textContaining('?link=demo-rider-link'), findsOneWidget);
+    // QR pop-up never repeats the URL.
+    await tester.tap(find.byTooltip('Show QR code'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Dialog), findsOneWidget);
+    expect(find.text('Scan to join'), findsOneWidget);
+    expect(find.textContaining('?link='), findsOneWidget);
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Dialog), findsNothing);
+    // One Share action opens every target in a pop-up.
+    expect(find.text('WhatsApp'), findsNothing);
+    await tester.tap(find.text('Share invite link'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Dialog), findsOneWidget);
     for (final t in [
       'WhatsApp',
       'Telegram',
@@ -326,25 +341,9 @@ void main() {
     ]) {
       expect(find.text(t), findsOneWidget);
     }
-    // "More" is also the bottom-navigation tab.
-    expect(find.text('More'), findsNWidgets(2));
-    await tester.tap(find.byTooltip('Show QR code'));
-    await tester.pumpAndSettle();
-    expect(find.byType(Dialog), findsOneWidget);
-    expect(find.text('Scan to join'), findsOneWidget);
-    // The QR pop-up never repeats the URL: it stays the one on the page.
-    expect(find.textContaining('?link='), findsOneWidget);
-    await tester.tap(find.text('Done'));
+    await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
     expect(find.byType(Dialog), findsNothing);
-    // Reset asks first, then replaces the link.
-    await tester.tap(find.text('Reset link'));
-    await tester.pumpAndSettle();
-    expect(find.text('Reset this invite link?'), findsOneWidget);
-    await tester.tap(find.widgetWithText(TextButton, 'Reset link').last);
-    await tester.pumpAndSettle();
-    expect(find.textContaining('?link=demo-rider-link-reset'), findsOneWidget);
-    await tester.pump(const Duration(seconds: 4));
   });
 
   testWidgets('order identity is centred on the hero', (tester) async {

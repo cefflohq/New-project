@@ -1647,7 +1647,6 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
   String role = 'operator';
   final Map<String, String> _tokens = {};
   bool _loading = false;
-  bool _resetting = false;
   String? error;
 
   bool get rider => widget.rider;
@@ -1698,43 +1697,6 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
   void _copyLink(String link) {
     Clipboard.setData(ClipboardData(text: link));
     showCefToast(context, L.linkCopied);
-  }
-
-  Future<void> _reset() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(L.resetLinkTitle),
-        content: Text(L.resetLinkBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(L.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              L.resetLink,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
-    final app = AppScope.read(context);
-    final wanted = kind;
-    setState(() => _resetting = true);
-    try {
-      final token = await app.repo.resetInviteLink(app.business!.id, wanted);
-      if (!mounted) return;
-      setState(() => _tokens[wanted] = token);
-      showCefToast(context, L.linkResetDone);
-    } catch (e) {
-      if (mounted) showCefToast(context, '$e', error: true);
-    } finally {
-      if (mounted) setState(() => _resetting = false);
-    }
   }
 
   Future<void> _open(String target, Uri uri) async {
@@ -1798,71 +1760,90 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final link = this.link;
-    return PageBody(
-      children: [
-        Row(
-          children: [
-            const IconTile(LucideIcons.userPlus),
-            const SizedBox(width: Gap.md),
-            Expanded(
+    // Centred in the white surface: identity, link, one Share action.
+    return LayoutBuilder(
+      builder: (context, box) => SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(
+          horizontal: Gap.gutter,
+          vertical: Gap.xl,
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: (box.maxHeight - Gap.xl * 2).clamp(0, double.infinity),
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: PageBody.maxContentWidth,
+              ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  const Center(child: IconTile(LucideIcons.userPlus)),
+                  const SizedBox(height: Gap.md),
                   Text(
                     rider ? L.inviteRidersBusiness : L.inviteTeamMember2,
-                    style: text.titleSmall,
+                    textAlign: TextAlign.center,
+                    style: text.titleMedium,
                   ),
-                  const SizedBox(height: 2),
-                  Text(L.inviteLinkPermanent, style: text.bodySmall),
+                  const SizedBox(height: Gap.xs),
+                  Text(
+                    L.inviteLinkPermanent,
+                    textAlign: TextAlign.center,
+                    style: text.bodySmall,
+                  ),
+                  const SizedBox(height: Gap.lg),
+                  if (!rider) ...[
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: Gap.sm,
+                      children: [
+                        for (final (value, label) in [
+                          ('operator', L.operatorText),
+                          ('helper', L.helperText),
+                        ])
+                          CefChoiceChip(
+                            label: label,
+                            selected: role == value,
+                            onTap: () {
+                              setState(() => role = value);
+                              _load();
+                            },
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: Gap.sm),
+                    Text(
+                      role == 'helper'
+                          ? L.helperRoleDescription
+                          : L.operatorRoleDescription,
+                      textAlign: TextAlign.center,
+                      style: text.bodySmall,
+                    ),
+                    const SizedBox(height: Gap.lg),
+                  ],
+                  if (link == null && error == null)
+                    const SkeletonPulse(child: SkeletonBox(height: 52))
+                  else if (link != null)
+                    ..._linkSection(text, link),
+                  if (error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: Gap.md),
+                      child: Text(
+                        error!,
+                        style: text.bodySmall?.copyWith(
+                          color: context.c.attention,
+                        ),
+                      ),
+                    ),
+                  if (_loading && link != null) const LinearProgressIndicator(),
                 ],
               ),
             ),
-          ],
+          ),
         ),
-        const SizedBox(height: Gap.lg),
-        if (!rider) ...[
-          Text(L.role, style: text.labelLarge),
-          const SizedBox(height: Gap.sm),
-          Wrap(
-            spacing: Gap.sm,
-            children: [
-              for (final (value, label) in [
-                ('operator', L.operatorText),
-                ('helper', L.helperText),
-              ])
-                CefChoiceChip(
-                  label: label,
-                  selected: role == value,
-                  onTap: () {
-                    setState(() => role = value);
-                    _load();
-                  },
-                ),
-            ],
-          ),
-          const SizedBox(height: Gap.sm),
-          Text(
-            role == 'helper'
-                ? L.helperRoleDescription
-                : L.operatorRoleDescription,
-            style: text.bodySmall,
-          ),
-          const SizedBox(height: Gap.lg),
-        ],
-        if (link == null && error == null)
-          const SkeletonPulse(child: SkeletonBox(height: 52))
-        else if (link != null)
-          ..._linkSection(text, link),
-        if (error != null)
-          Padding(
-            padding: const EdgeInsets.only(top: Gap.md),
-            child: Text(
-              error!,
-              style: text.bodySmall?.copyWith(color: context.c.attention),
-            ),
-          ),
-        if (_loading && link != null) const LinearProgressIndicator(),
-      ],
+      ),
     );
   }
 
@@ -1985,48 +1966,75 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
         ),
       ),
       const SizedBox(height: Gap.xl),
-      Text(L.shareVia, style: text.titleSmall),
-      const SizedBox(height: Gap.md),
-      LayoutBuilder(
-        builder: (context, box) => Wrap(
-          runSpacing: Gap.md,
-          children: [
-            for (final (icon, label, onTap) in targets)
-              SizedBox(
-                width: box.maxWidth / 5,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(Sizes.cardRadius),
-                  onTap: onTap,
-                  child: Column(
-                    children: [
-                      icon,
-                      const SizedBox(height: Gap.xs),
-                      Text(
-                        label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: text.labelSmall,
+      CefButton(
+        L.shareInviteLink,
+        icon: LucideIcons.share2,
+        onTap: () => _showShareTargets(text, targets),
+      ),
+    ];
+  }
+
+  /// Every share target in one centred pop-up (Founder, 2026-10-01): the
+  /// page keeps one link, Copy, QR and a single Share action.
+  void _showShareTargets(
+    TextTheme text,
+    List<(Widget, String, VoidCallback)> targets,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        backgroundColor: context.c.card,
+        insetPadding: const EdgeInsets.symmetric(horizontal: Gap.xl),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Sizes.cardRadius),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.xl, Gap.lg, Gap.md),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(L.shareVia, style: text.titleMedium),
+              const SizedBox(height: Gap.lg),
+              LayoutBuilder(
+                builder: (context, box) => Wrap(
+                  runSpacing: Gap.md,
+                  children: [
+                    for (final (icon, label, onTap) in targets)
+                      SizedBox(
+                        width: box.maxWidth / 5,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(Sizes.cardRadius),
+                          onTap: () {
+                            Navigator.of(dialogContext).pop();
+                            onTap();
+                          },
+                          child: Column(
+                            children: [
+                              icon,
+                              const SizedBox(height: Gap.xs),
+                              Text(
+                                label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: text.labelSmall,
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
-          ],
-        ),
-      ),
-      const SizedBox(height: Gap.xl),
-      Align(
-        alignment: Alignment.centerLeft,
-        child: TextButton.icon(
-          onPressed: _resetting ? null : _reset,
-          icon: Icon(LucideIcons.rotateCcw, size: 18, color: c.attention),
-          label: Text(
-            L.resetLink,
-            style: text.labelLarge?.copyWith(color: c.attention),
+              const SizedBox(height: Gap.sm),
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(L.cancel),
+              ),
+            ],
           ),
         ),
       ),
-    ];
+    );
   }
 }
 
