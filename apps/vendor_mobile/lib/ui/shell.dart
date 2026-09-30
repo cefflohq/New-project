@@ -435,7 +435,11 @@ class _ToggleTrack extends StatelessWidget {
       on ? L.online : L.offline,
       maxLines: 1,
       style: Theme.of(context).textTheme.labelSmall
-          ?.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+          // Online: dark text on Cefflo mustard (Founder, 2026-10-01).
+          ?.copyWith(
+            color: on ? CefColors.onAccent : Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
     );
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -443,7 +447,9 @@ class _ToggleTrack extends StatelessWidget {
       height: _h,
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        color: on ? context.c.success : Colors.white.withValues(alpha: .28),
+        color: on
+            ? CefColors.ceffloMustard
+            : Colors.white.withValues(alpha: .28),
         borderRadius: BorderRadius.circular(_h),
         border: Border.all(color: Colors.white.withValues(alpha: .55)),
       ),
