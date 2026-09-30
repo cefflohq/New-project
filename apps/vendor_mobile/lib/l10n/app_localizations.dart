@@ -6374,6 +6374,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Email the Cefflo support team'**
   String get emailSupportTeam;
+
+  /// No description provided for @yourStorefront.
+  ///
+  /// In en, this message translates to:
+  /// **'Your storefront'**
+  String get yourStorefront;
+
+  /// No description provided for @storefrontPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Published'**
+  String get storefrontPublished;
+
+  /// No description provided for @storefrontUnpublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Not published'**
+  String get storefrontUnpublished;
+
+  /// No description provided for @storefrontUnpublishedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers can\'t open this link until you publish your storefront.'**
+  String get storefrontUnpublishedNote;
+
+  /// No description provided for @storefrontPublishedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers can open this link and order. It stays the same, so you can put it on your website or social media.'**
+  String get storefrontPublishedNote;
+
+  /// No description provided for @storefrontLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Storefront link'**
+  String get storefrontLink;
+
+  /// No description provided for @shareStorefront.
+  ///
+  /// In en, this message translates to:
+  /// **'Share storefront'**
+  String get shareStorefront;
+
+  /// No description provided for @storefrontShareMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Order from {business} online:'**
+  String storefrontShareMessage(Object business);
+
+  /// No description provided for @scanToOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to order'**
+  String get scanToOrder;
+
+  /// No description provided for @scanToOrderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers scan with a phone camera to open your storefront.'**
+  String get scanToOrderBody;
+
+  /// No description provided for @storefrontLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your storefront couldn\'t be loaded.'**
+  String get storefrontLoadFailed;
+
+  /// No description provided for @hoursSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Business hours saved.'**
+  String get hoursSaved;
+
+  /// No description provided for @overnightHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Closes the next day'**
+  String get overnightHint;
+
+  /// No description provided for @open24h.
+  ///
+  /// In en, this message translates to:
+  /// **'Open 24 hours'**
+  String get open24h;
+
+  /// No description provided for @photosMax5.
+  ///
+  /// In en, this message translates to:
+  /// **'A product can have up to 5 photos.'**
+  String get photosMax5;
+
+  /// No description provided for @photoOver5mb.
+  ///
+  /// In en, this message translates to:
+  /// **'This photo is larger than 5 MB after compression. Choose a smaller one.'**
+  String get photoOver5mb;
+
+  /// No description provided for @photoN.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo {n}'**
+  String photoN(Object n);
+
+  /// No description provided for @moveEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Move earlier'**
+  String get moveEarlier;
+
+  /// No description provided for @moveLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Move later'**
+  String get moveLater;
+
+  /// No description provided for @photosRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to 5 photos · JPG, PNG or WebP · 5 MB each. The first photo is the cover.'**
+  String get photosRules;
+
+  /// No description provided for @photosNotLiveYet.
+  ///
+  /// In en, this message translates to:
+  /// **'New photos appear on your storefront once they\'re processed and approved.'**
+  String get photosNotLiveYet;
+
+  /// No description provided for @subTrial.
+  ///
+  /// In en, this message translates to:
+  /// **'Trial'**
+  String get subTrial;
+
+  /// No description provided for @subActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get subActive;
+
+  /// No description provided for @subPastDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment overdue'**
+  String get subPastDue;
+
+  /// No description provided for @subSuspended.
+  ///
+  /// In en, this message translates to:
+  /// **'Suspended'**
+  String get subSuspended;
+
+  /// No description provided for @subCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get subCancelled;
 }
 
 class _AppLocalizationsDelegate

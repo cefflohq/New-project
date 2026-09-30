@@ -11,10 +11,12 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../core/app_state.dart';
+import '../../../core/env.dart';
 import '../../../core/routes.dart';
 import '../../../core/theme.dart';
 import '../../shell.dart';
 import '../../system_bars.dart';
+import '../../share_link.dart';
 import '../../widgets.dart';
 import 'shared/storefront_surface.dart';
 import 'shared/template_definition.dart';
@@ -197,6 +199,80 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
   static const _all = '__all__';
   String _filter = _all;
 
+  String? _loadError;
+  bool _toggling = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final app = AppScope.read(context);
+    if (!app.repo.isDemo) {
+      app
+          .loadStorefront((id) => storefrontTemplateById(id).defaults)
+          .catchError((Object e) {
+            if (mounted) setState(() => _loadError = '$e');
+          });
+    }
+  }
+
+  Future<void> _setPublished(bool value) async {
+    final app = AppScope.read(context);
+    setState(() => _toggling = true);
+    try {
+      await app.setStorefrontPublished(value);
+    } catch (e) {
+      if (mounted) showCefToast(context, '$e', error: true);
+    } finally {
+      if (mounted) setState(() => _toggling = false);
+    }
+  }
+
+  /// YOUR STOREFRONT: published state and the permanent public link
+  /// (Storefront V1). Only for the live backend; the demo has none.
+  Widget _yourStorefront(BuildContext context) {
+    final app = AppScope.of(context);
+    final text = Theme.of(context).textTheme;
+    final sf = app.storefront;
+    if (_loadError != null) return StateBlock.error(L.storefrontLoadFailed);
+    if (sf == null) return const SkeletonPulse(child: SkeletonBox(height: 120));
+    final link = '${Env.storefrontBaseUrl}${sf.slug}';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(child: Text(L.yourStorefront, style: text.titleMedium)),
+            Text(
+              sf.published ? L.storefrontPublished : L.storefrontUnpublished,
+              style: text.labelMedium,
+            ),
+            const SizedBox(width: Gap.sm),
+            CefSwitch(
+              value: sf.published,
+              onChanged: _toggling ? null : _setPublished,
+            ),
+          ],
+        ),
+        const SizedBox(height: Gap.xs),
+        Text(
+          sf.published
+              ? L.storefrontPublishedNote
+              : L.storefrontUnpublishedNote,
+          style: text.bodySmall,
+        ),
+        const SizedBox(height: Gap.lg),
+        PermanentLinkSection(
+          title: L.storefrontLink,
+          link: link,
+          shareLabel: L.shareStorefront,
+          shareText: L.storefrontShareMessage(app.business?.name ?? 'Cefflo'),
+          qrTitle: L.scanToOrder,
+          qrBody: L.scanToOrderBody,
+        ),
+      ],
+    );
+  }
+
   /// Display label for a registry tag; the tag itself stays the filter key.
   static String _tagLabel(String tag) => switch (tag) {
     'Food' => L.tagFood,
@@ -226,6 +302,16 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
             padding: EdgeInsets.only(bottom: Gap.lg + bottomInset),
             children: [
               _CurrentStorefrontHero(def: active, catalogue: catalogue),
+              if (!app.repo.isDemo)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    Gap.gutter,
+                    Gap.xl,
+                    Gap.gutter,
+                    0,
+                  ),
+                  child: _yourStorefront(context),
+                ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(
                   Gap.gutter,

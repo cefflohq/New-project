@@ -303,6 +303,146 @@ class VendorRepository {
     return res.user?.email;
   }
 
+  // --------------------------------------------------------- product media
+  // 202610010002: up to 5 active photos per product at positions 1..5,
+  // originals in the private cefflo-product-originals bucket at
+  // {business}/{product}/{media}/original.{ext}. Owner + Operator only.
+
+  Future<List<Map<String, dynamic>>> productMedia(String productId) async {
+    if (_demo) return const [];
+    final rows = await _run(
+      () => _db!
+          .from('product_media')
+          .select('id, position, status, original_storage_path')
+          .eq('product_id', productId)
+          .isFilter('archived_at', null)
+          .inFilter('status', ['queued', 'processing', 'prepared', 'approved'])
+          .order('position'),
+    );
+    return _rows(rows);
+  }
+
+  Future<String?> productOriginalUrl(String path) async {
+    try {
+      return await _db!.storage
+          .from('cefflo-product-originals')
+          .createSignedUrl(path, 3600);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Uploads one photo and registers it (create_product_media), at the
+  /// first free position.
+  Future<void> addProductPhoto({
+    required String businessId,
+    required String productId,
+    required Uint8List bytes,
+    required String contentType,
+  }) async {
+    final mediaId = newIdempotencyKey();
+    final ext = switch (contentType) {
+      'image/png' => 'png',
+      'image/webp' => 'webp',
+      _ => 'jpg',
+    };
+    await _run(
+      () => _db!.storage
+          .from('cefflo-product-originals')
+          .uploadBinary(
+            '$businessId/$productId/$mediaId/original.$ext',
+            bytes,
+            fileOptions: FileOptions(contentType: contentType),
+          ),
+    );
+    await _run(
+      () => _db!.rpc(
+        'create_product_media',
+        params: {
+          'p_product_id': productId,
+          'p_media_id': mediaId,
+          'p_content_type': contentType,
+        },
+      ),
+    );
+  }
+
+  Future<void> removeProductPhoto(String mediaId) => _run(
+    () => _db!.rpc('archive_product_media', params: {'p_media_id': mediaId}),
+  );
+
+  Future<void> reorderProductPhotos(String productId, List<String> mediaIds) =>
+      _run(
+        () => _db!.rpc(
+          'reorder_product_media',
+          params: {'p_product_id': productId, 'p_media_ids': mediaIds},
+        ),
+      );
+
+  // --------------------------------------------------------- business hours
+  // 202610010003: one row per weekday (1 = Monday), wall-clock times in the
+  // business's own timezone. Members read; the Owner saves the whole week.
+
+  Future<List<Map<String, dynamic>>> businessHours(String businessId) async {
+    if (_demo) return const [];
+    final rows = await _run(
+      () => _db!
+          .from('business_hours')
+          .select('weekday, is_open, opens_at, closes_at')
+          .eq('business_id', businessId)
+          .order('weekday'),
+    );
+    return _rows(rows);
+  }
+
+  Future<void> setBusinessHours(
+    String businessId,
+    List<Map<String, dynamic>> days,
+  ) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'set_business_hours',
+        params: {'p_business_id': businessId, 'p_days': days},
+      ),
+    );
+  }
+
+  // ------------------------------------------------------------ storefront
+  // Storefront V1 (202610010004): the business's one permanent, slug-based
+  // storefront on public_order_pages. Owner + Operator on the server.
+
+  /// The storefront (created unpublished on first open).
+  Future<Map<String, dynamic>> getStorefront(String businessId) async {
+    final res = await _run(
+      () => _db!.rpc('get_storefront', params: {'p_business_id': businessId}),
+    );
+    return _single(res);
+  }
+
+  Future<void> setStorefrontPublished(String businessId, bool published) =>
+      _run(
+        () => _db!.rpc(
+          'set_storefront_published',
+          params: {'p_business_id': businessId, 'p_published': published},
+        ),
+      );
+
+  Future<void> saveStorefrontAppearance(
+    String businessId,
+    String templateKey,
+    Map<String, String> theme,
+  ) => _run(
+    () => _db!.rpc(
+      'save_storefront_appearance',
+      params: {
+        'p_business_id': businessId,
+        'p_template_key': templateKey,
+        'p_theme': theme,
+      },
+    ),
+  );
+
   /// The business's subscription row, or null when none is visible to this
   /// account (FOUNDR administers subscriptions).
   Future<Map<String, dynamic>?> businessSubscription(String businessId) async {

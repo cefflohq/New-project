@@ -3483,4 +3483,92 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get emailSupportTeam => 'E-mel pasukan sokongan Cefflo';
+
+  @override
+  String get yourStorefront => 'Kedai dalam talian anda';
+
+  @override
+  String get storefrontPublished => 'Diterbitkan';
+
+  @override
+  String get storefrontUnpublished => 'Belum diterbitkan';
+
+  @override
+  String get storefrontUnpublishedNote =>
+      'Pelanggan tidak boleh membuka pautan ini sehingga anda menerbitkan kedai anda.';
+
+  @override
+  String get storefrontPublishedNote =>
+      'Pelanggan boleh membuka pautan ini dan membuat pesanan. Pautan kekal sama, jadi anda boleh letak di laman web atau media sosial.';
+
+  @override
+  String get storefrontLink => 'Pautan kedai';
+
+  @override
+  String get shareStorefront => 'Kongsi kedai';
+
+  @override
+  String storefrontShareMessage(Object business) {
+    return 'Pesan daripada $business secara dalam talian:';
+  }
+
+  @override
+  String get scanToOrder => 'Imbas untuk memesan';
+
+  @override
+  String get scanToOrderBody =>
+      'Pelanggan imbas dengan kamera telefon untuk membuka kedai anda.';
+
+  @override
+  String get storefrontLoadFailed => 'Kedai anda tidak dapat dimuatkan.';
+
+  @override
+  String get hoursSaved => 'Waktu operasi disimpan.';
+
+  @override
+  String get overnightHint => 'Tutup pada hari berikutnya';
+
+  @override
+  String get open24h => 'Buka 24 jam';
+
+  @override
+  String get photosMax5 => 'Satu produk boleh ada sehingga 5 foto.';
+
+  @override
+  String get photoOver5mb =>
+      'Foto ini lebih besar daripada 5 MB selepas dimampatkan. Pilih yang lebih kecil.';
+
+  @override
+  String photoN(Object n) {
+    return 'Foto $n';
+  }
+
+  @override
+  String get moveEarlier => 'Alih ke depan';
+
+  @override
+  String get moveLater => 'Alih ke belakang';
+
+  @override
+  String get photosRules =>
+      'Sehingga 5 foto · JPG, PNG atau WebP · 5 MB setiap satu. Foto pertama ialah kulit.';
+
+  @override
+  String get photosNotLiveYet =>
+      'Foto baharu dipaparkan di kedai anda setelah diproses dan diluluskan.';
+
+  @override
+  String get subTrial => 'Percubaan';
+
+  @override
+  String get subActive => 'Aktif';
+
+  @override
+  String get subPastDue => 'Bayaran tertunggak';
+
+  @override
+  String get subSuspended => 'Digantung';
+
+  @override
+  String get subCancelled => 'Dibatalkan';
 }

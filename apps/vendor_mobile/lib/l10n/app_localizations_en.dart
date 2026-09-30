@@ -3480,4 +3480,92 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emailSupportTeam => 'Email the Cefflo support team';
+
+  @override
+  String get yourStorefront => 'Your storefront';
+
+  @override
+  String get storefrontPublished => 'Published';
+
+  @override
+  String get storefrontUnpublished => 'Not published';
+
+  @override
+  String get storefrontUnpublishedNote =>
+      'Customers can\'t open this link until you publish your storefront.';
+
+  @override
+  String get storefrontPublishedNote =>
+      'Customers can open this link and order. It stays the same, so you can put it on your website or social media.';
+
+  @override
+  String get storefrontLink => 'Storefront link';
+
+  @override
+  String get shareStorefront => 'Share storefront';
+
+  @override
+  String storefrontShareMessage(Object business) {
+    return 'Order from $business online:';
+  }
+
+  @override
+  String get scanToOrder => 'Scan to order';
+
+  @override
+  String get scanToOrderBody =>
+      'Customers scan with a phone camera to open your storefront.';
+
+  @override
+  String get storefrontLoadFailed => 'Your storefront couldn\'t be loaded.';
+
+  @override
+  String get hoursSaved => 'Business hours saved.';
+
+  @override
+  String get overnightHint => 'Closes the next day';
+
+  @override
+  String get open24h => 'Open 24 hours';
+
+  @override
+  String get photosMax5 => 'A product can have up to 5 photos.';
+
+  @override
+  String get photoOver5mb =>
+      'This photo is larger than 5 MB after compression. Choose a smaller one.';
+
+  @override
+  String photoN(Object n) {
+    return 'Photo $n';
+  }
+
+  @override
+  String get moveEarlier => 'Move earlier';
+
+  @override
+  String get moveLater => 'Move later';
+
+  @override
+  String get photosRules =>
+      'Up to 5 photos · JPG, PNG or WebP · 5 MB each. The first photo is the cover.';
+
+  @override
+  String get photosNotLiveYet =>
+      'New photos appear on your storefront once they\'re processed and approved.';
+
+  @override
+  String get subTrial => 'Trial';
+
+  @override
+  String get subActive => 'Active';
+
+  @override
+  String get subPastDue => 'Payment overdue';
+
+  @override
+  String get subSuspended => 'Suspended';
+
+  @override
+  String get subCancelled => 'Cancelled';
 }

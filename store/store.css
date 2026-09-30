@@ -1,0 +1,29 @@
+:root { --accent: #0060FE; --ink: #14171c; --muted: #6b7489; --line: #e6e9f0; --bg: #f6f7f9; --mustard: #ffc93c; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: var(--ink); background: var(--bg); }
+.top { background: var(--accent); color: #fff; padding: 28px 16px 22px; }
+.top.gradient { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 65%, #000) 0%, var(--accent) 100%); }
+.top h1 { margin: 0 0 4px; font-size: 24px; }
+.top p { margin: 0; opacity: .85; font-size: 14px; }
+main { max-width: 640px; margin: 0 auto; padding: 16px 16px 96px; }
+.state { color: var(--muted); text-align: center; padding: 48px 0; }
+h2 { font-size: 18px; margin: 20px 0 10px; }
+.product { display: flex; gap: 12px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin-bottom: 10px; }
+.product img, .product .ph { width: 76px; height: 76px; border-radius: 10px; object-fit: cover; background: var(--bg); flex: none; }
+.product .info { flex: 1; min-width: 0; }
+.product b { display: block; }
+.product small { color: var(--muted); display: block; margin: 2px 0 6px; }
+.qty { display: flex; align-items: center; gap: 10px; }
+.qty button { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: #fff; font-size: 18px; }
+.sheet { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+.sheet label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 0; }
+.sheet input, .sheet textarea { width: 100%; margin-top: 6px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; font: inherit; }
+.sheet ul { padding: 0; margin: 0; list-style: none; }
+.sheet li { display: flex; justify-content: space-between; padding: 6px 0; }
+.total { display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 10px; }
+.cta { width: 100%; border: 0; border-radius: 999px; background: var(--mustard); color: #181818; font: 700 16px Inter, system-ui, sans-serif; padding: 14px; margin-top: 16px; }
+.cta[disabled] { opacity: .5; }
+.error { color: #ef4444; font-size: 14px; }
+.muted { color: var(--muted); }
+.bar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--line); padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 12px; }
+.bar .cta { margin: 0; width: auto; flex: 1; }

@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:qr/qr.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../core/app_state.dart';
 import '../../core/appearance.dart';
@@ -15,6 +10,7 @@ import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../data/vendor_repository.dart';
+import '../share_link.dart';
 import '../shell.dart';
 import 'auth.dart' show VerifyEmailCodeScreen, otpFailureFrom;
 import '../widgets.dart';
@@ -220,15 +216,12 @@ class _BusinessProfileScreen extends StatelessWidget {
               icon: LucideIcons.mapPin,
               onTap: () => app.go(VRoute.businessAddress),
             ),
-            // Business Hours returns when its backend exists (migration
-            // drafted, awaiting approval); never a dead row.
-            if (demo)
-              CefListRow(
-                title: L.businessHours2,
-                subtitle: L.setOperatingHours,
-                icon: LucideIcons.clock,
-                onTap: () => app.go(VRoute.businessHours),
-              ),
+            CefListRow(
+              title: L.businessHours2,
+              subtitle: L.setOperatingHours,
+              icon: LucideIcons.clock,
+              onTap: () => app.go(VRoute.businessHours),
+            ),
           ],
         ),
       ],
@@ -431,18 +424,127 @@ class _BusinessFieldsFormState extends State<_BusinessFieldsForm> {
   }
 }
 
-class _BusinessHoursScreen extends StatelessWidget {
+/// One weekday: closed, or open from [opens] to [closes] (wall-clock, the
+/// business's timezone). [closes] before [opens] = closes the next day;
+/// equal = open 24 hours.
+class _DayHours {
+  _DayHours(this.weekday, this.open, this.opens, this.closes);
+  final int weekday;
+  bool open;
+  TimeOfDay opens, closes;
+}
+
+/// Business Hours on the real backend (202610010003): Owner-only, the
+/// whole week saved at once through set_business_hours.
+class _BusinessHoursScreen extends StatefulWidget {
   const _BusinessHoursScreen();
 
   @override
-  Widget build(BuildContext context) {
-    if (!AppScope.read(context).repo.isDemo) {
-      return _ComingSoonScreen(
-        title: '',
-        message: L.businessHoursNotConnectedYet,
-      );
+  State<_BusinessHoursScreen> createState() => _BusinessHoursScreenState();
+}
+
+class _BusinessHoursScreenState extends State<_BusinessHoursScreen> {
+  List<_DayHours>? _days;
+  bool _saving = false;
+  String? _error;
+
+  static TimeOfDay _parse(Object? v, TimeOfDay fallback) {
+    final p = '${v ?? ''}'.split(':');
+    if (p.length < 2) return fallback;
+    return TimeOfDay(
+      hour: int.tryParse(p[0]) ?? 0,
+      minute: int.tryParse(p[1]) ?? 0,
+    );
+  }
+
+  static String _fmt(TimeOfDay t) =>
+      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final app = AppScope.read(context);
+    try {
+      final rows = await app.repo.businessHours(app.business!.id);
+      final byDay = {for (final r in rows) r['weekday'] as int: r};
+      _days = [
+        for (var d = 1; d <= 7; d++)
+          _DayHours(
+            d,
+            byDay[d]?['is_open'] == true,
+            _parse(byDay[d]?['opens_at'], const TimeOfDay(hour: 9, minute: 0)),
+            _parse(
+              byDay[d]?['closes_at'],
+              const TimeOfDay(hour: 18, minute: 0),
+            ),
+          ),
+      ];
+    } on RepositoryError catch (e) {
+      _error = e.message;
     }
-    final days = [
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _pick(_DayHours d, bool opening) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: opening ? d.opens : d.closes,
+    );
+    if (picked == null) return;
+    setState(() => opening ? d.opens = picked : d.closes = picked);
+  }
+
+  void _copyMonday() {
+    final m = _days!.first;
+    setState(() {
+      for (final d in _days!.skip(1)) {
+        d
+          ..open = m.open
+          ..opens = m.opens
+          ..closes = m.closes;
+      }
+    });
+  }
+
+  Future<void> _save() async {
+    final app = AppScope.read(context);
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await app.repo.setBusinessHours(app.business!.id, [
+        for (final d in _days!)
+          {
+            'weekday': d.weekday,
+            'is_open': d.open,
+            if (d.open) 'opens_at': _fmt(d.opens),
+            if (d.open) 'closes_at': _fmt(d.closes),
+          },
+      ]);
+      if (!mounted) return;
+      showCefToast(context, L.hoursSaved);
+      app.back();
+    } on RepositoryError catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final days = _days;
+    if (days == null && _error == null) {
+      return const PageBody(children: [StateBlock.loading()]);
+    }
+    if (days == null) return PageBody(children: [StateBlock.error(_error!)]);
+    final text = Theme.of(context).textTheme;
+    final names = [
       L.monday,
       L.tuesday,
       L.wednesday,
@@ -451,30 +553,88 @@ class _BusinessHoursScreen extends StatelessWidget {
       L.saturday,
       L.sunday,
     ];
-    // Archetype G (form).
+    Widget time(_DayHours d, bool opening) => OutlinedButton(
+      onPressed: _saving ? null : () => _pick(d, opening),
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(72, 40),
+        side: BorderSide(color: context.c.border),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Sizes.inputRadius),
+        ),
+      ),
+      child: Text(_fmt(opening ? d.opens : d.closes), style: text.bodyMedium),
+    );
     return PageBody(
-      bottom: CefButton(L.saveHours, onTap: () {}),
+      bottom: CefButton(L.saveHours, busy: _saving, onTap: _save),
       children: [
         SectionHeading(
           L.operatingHours,
           icon: LucideIcons.clock3,
           subtitle: L.letCustomersKnowWhenBusinessOpen,
         ),
-        // Demo schedule by weekday index (0 = Monday): Sunday closed,
-        // Friday/Saturday open late.
-        for (final (i, day) in days.indexed)
-          _BusinessHourRow(
-            day: day,
-            enabled: i != 6,
-            close: i == 4 || i == 5 ? '21:00' : '20:00',
+        for (final d in days)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: Gap.xs),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(names[d.weekday - 1], style: text.titleSmall),
+                    ),
+                    if (!d.open) ...[
+                      Text(L.closed, style: text.bodyMedium),
+                      const SizedBox(width: Gap.md),
+                    ] else ...[
+                      time(d, true),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
+                        child: Text('–', style: text.bodyMedium),
+                      ),
+                      time(d, false),
+                      const SizedBox(width: Gap.sm),
+                    ],
+                    CefSwitch(
+                      value: d.open,
+                      onChanged: _saving
+                          ? null
+                          : (v) => setState(() => d.open = v),
+                    ),
+                  ],
+                ),
+                if (d.open && d.opens == d.closes)
+                  Text(
+                    L.open24h,
+                    textAlign: TextAlign.end,
+                    style: text.bodySmall,
+                  )
+                else if (d.open &&
+                    (d.closes.hour * 60 + d.closes.minute) <
+                        (d.opens.hour * 60 + d.opens.minute))
+                  Text(
+                    L.overnightHint,
+                    textAlign: TextAlign.end,
+                    style: text.bodySmall,
+                  ),
+              ],
+            ),
           ),
         const SizedBox(height: Gap.sm),
         CefActionRow(
           icon: LucideIcons.copy,
           label: L.applyMondaysHoursAllDays,
           chevron: false,
-          onTap: () {},
+          onTap: _copyMonday,
         ),
+        if (_error != null)
+          Padding(
+            padding: const EdgeInsets.only(top: Gap.md),
+            child: Text(
+              _error!,
+              style: text.bodySmall?.copyWith(color: context.c.attention),
+            ),
+          ),
       ],
     );
   }
@@ -1319,90 +1479,6 @@ class _ColourPickerSheetState extends State<_ColourPickerSheet> {
   }
 }
 
-class _BusinessHourRow extends StatelessWidget {
-  const _BusinessHourRow({
-    required this.day,
-    required this.enabled,
-    required this.close,
-  });
-  final String day;
-  final bool enabled;
-  final String close;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    // Day label, switch and separator share the field's control height so
-    // they line up with the CefFields (which carry their own bottom gap).
-    Widget control(Widget child, {double? width}) => SizedBox(
-      width: width,
-      height: Sizes.controlHeight,
-      child: Align(alignment: Alignment.centerLeft, child: child),
-    );
-    final dayLabel = Text(
-      day,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: text.titleSmall,
-    );
-    final toggle = CefSwitch(value: enabled, onChanged: (_) {});
-    final times = [
-      const Expanded(child: CefField(initialValue: '08:00')),
-      control(
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
-          child: Text('–', style: text.bodyMedium),
-        ),
-      ),
-      Expanded(child: CefField(initialValue: close)),
-    ];
-    final closed = Text(L.closed, style: text.bodyMedium);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final scale = MediaQuery.textScalerOf(context).scale(1);
-        // One line needs the day label (~92 * scale), switch + separator
-        // (~77) and two time fields (28 padding + ~44 * scale text each);
-        // with less room (narrow phone, large text) the times drop below.
-        final inline = constraints.maxWidth >= 133 + 180 * scale;
-        if (inline) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              control(dayLabel, width: 92 * scale),
-              control(toggle),
-              const SizedBox(width: Gap.sm),
-              if (enabled)
-                ...times
-              else
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: Gap.md),
-                    child: control(closed),
-                  ),
-                ),
-            ],
-          );
-        }
-        return Column(
-          children: [
-            Row(
-              children: [
-                Expanded(child: control(dayLabel)),
-                if (!enabled) ...[closed, const SizedBox(width: Gap.md)],
-                toggle,
-              ],
-            ),
-            if (enabled)
-              Row(crossAxisAlignment: CrossAxisAlignment.start, children: times)
-            else
-              const SizedBox(height: Gap.sm),
-          ],
-        );
-      },
-    );
-  }
-}
-
 class _Requirement extends StatelessWidget {
   const _Requirement(this.text, {this.met = false});
   final String text;
@@ -1968,73 +2044,6 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
         .toString();
   }
 
-  String _message(String link) {
-    final business = AppScope.read(context).business?.name ?? 'Cefflo';
-    return '${L.inviteShareMessage(business)}\n$link';
-  }
-
-  void _copyLink(String link) {
-    Clipboard.setData(ClipboardData(text: link));
-    showCefToast(context, L.linkCopied);
-  }
-
-  Future<void> _open(String target, Uri uri) async {
-    var opened = false;
-    try {
-      opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } catch (_) {}
-    if (!opened && mounted) {
-      showCefToast(context, L.couldNotOpen(target), error: true);
-    }
-  }
-
-  Future<void> _systemShare(String link) async {
-    try {
-      await SharePlus.instance.share(ShareParams(text: _message(link)));
-    } catch (_) {
-      if (mounted) _copyLink(link);
-    }
-  }
-
-  /// Compact, centred pop-up: the QR of the same link. The link itself is
-  /// not repeated here -- it is already on the screen behind.
-  void _showQrModal(String link) {
-    final text = Theme.of(context).textTheme;
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => Dialog(
-        backgroundColor: context.c.card,
-        insetPadding: const EdgeInsets.symmetric(horizontal: Gap.xxxl),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(Sizes.cardRadius),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(Gap.xxl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(L.scanJoin, style: text.titleMedium),
-              const SizedBox(height: Gap.xs),
-              Text(
-                L.scanToJoinBody,
-                textAlign: TextAlign.center,
-                style: text.bodySmall,
-              ),
-              const SizedBox(height: Gap.lg),
-              _QrCode(data: link, size: 220),
-              const SizedBox(height: Gap.lg),
-              CefButton(
-                L.done,
-                secondary: true,
-                onTap: () => Navigator.of(dialogContext).pop(),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
@@ -2127,248 +2136,18 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
   }
 
   List<Widget> _linkSection(TextTheme text, String link) {
-    final c = context.c;
-    final message = _message(link);
-    final encodedMessage = Uri.encodeComponent(message);
     final business = AppScope.read(context).business?.name ?? 'Cefflo';
-    final encodedLink = Uri.encodeComponent(link);
-    // Instagram and TikTok have no web share link for text: the ready
-    // message is copied and the app's inbox opens to paste it.
-    Future<void> pasteIn(String app, Uri inbox) async {
-      await Clipboard.setData(ClipboardData(text: message));
-      if (mounted) showCefToast(context, L.messageCopiedPasteIn(app));
-      await _open(app, inbox);
-    }
-
-    // Official brand marks on their official colours (Founder, 2026-10-01).
-    final targets = <(Widget, String, VoidCallback)>[
-      (
-        _BrandTile(const Color(0xFF25D366), FontAwesomeIcons.whatsapp),
-        'WhatsApp',
-        () =>
-            _open('WhatsApp', Uri.parse('https://wa.me/?text=$encodedMessage')),
-      ),
-      (
-        _BrandTile(const Color(0xFF229ED9), FontAwesomeIcons.telegram),
-        'Telegram',
-        () => _open(
-          'Telegram',
-          Uri.parse(
-            'https://t.me/share/url?url=$encodedLink'
-            '&text=${Uri.encodeComponent(L.inviteShareMessage(business))}',
-          ),
-        ),
-      ),
-      (
-        _BrandTile(const Color(0xFF0084FF), FontAwesomeIcons.facebookMessenger),
-        'Messenger',
-        () => _open(
-          'Messenger',
-          Uri.parse('fb-messenger://share/?link=$encodedLink'),
-        ),
-      ),
-      (
-        _BrandTile(const Color(0xFF1877F2), FontAwesomeIcons.facebook),
-        'Facebook',
-        () => _open(
-          'Facebook',
-          Uri.parse(
-            'https://www.facebook.com/sharer/sharer.php?u=$encodedLink',
-          ),
-        ),
-      ),
-      (
-        _BrandTile(const Color(0xFF000000), FontAwesomeIcons.threads),
-        'Threads',
-        () => _open(
-          'Threads',
-          Uri.parse('https://www.threads.net/intent/post?text=$encodedMessage'),
-        ),
-      ),
-      (
-        const _BrandTile.instagram(),
-        'Instagram',
-        () => pasteIn(
-          'Instagram',
-          Uri.parse('https://www.instagram.com/direct/inbox/'),
-        ),
-      ),
-      (
-        _BrandTile(const Color(0xFF000000), FontAwesomeIcons.tiktok),
-        'TikTok',
-        () => pasteIn('TikTok', Uri.parse('https://www.tiktok.com/messages')),
-      ),
-      (
-        _BrandTile.icon(const Color(0xFF34C759), LucideIcons.messageSquareText),
-        'SMS',
-        () => _open('SMS', Uri.parse('sms:?body=$encodedMessage')),
-      ),
-      (
-        _BrandTile.icon(c.subtle, LucideIcons.ellipsis, glyph: c.textPrimary),
-        L.moreText,
-        () => _systemShare(link),
-      ),
-    ];
     return [
-      Text(L.yourInviteLink, style: text.titleSmall),
-      const SizedBox(height: Gap.sm),
-      Container(
-        padding: const EdgeInsets.only(left: Gap.md),
-        decoration: BoxDecoration(
-          color: c.card,
-          border: Border.all(color: c.border),
-          borderRadius: BorderRadius.circular(Sizes.inputRadius),
-        ),
-        child: Row(
-          children: [
-            Icon(LucideIcons.link, size: 20, color: c.textSecondary),
-            const SizedBox(width: Gap.sm),
-            Expanded(
-              child: Text(
-                link,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: text.bodyMedium,
-              ),
-            ),
-            IconButton(
-              tooltip: L.copyLink,
-              onPressed: () => _copyLink(link),
-              icon: Icon(LucideIcons.copy, size: 20, color: c.textSecondary),
-            ),
-            IconButton(
-              tooltip: L.showQrCode,
-              onPressed: () => _showQrModal(link),
-              icon: Icon(LucideIcons.qrCode, size: 20, color: c.textSecondary),
-            ),
-          ],
-        ),
-      ),
-      const SizedBox(height: Gap.xl),
-      CefButton(
-        L.shareInviteLink,
-        icon: LucideIcons.share2,
-        onTap: () => _showShareTargets(text, targets),
+      PermanentLinkSection(
+        title: L.yourInviteLink,
+        link: link,
+        shareLabel: L.shareInviteLink,
+        shareText: L.inviteShareMessage(business),
+        qrTitle: L.scanJoin,
+        qrBody: L.scanToJoinBody,
       ),
     ];
   }
-
-  /// Every share target in one centred pop-up (Founder, 2026-10-01): the
-  /// page keeps one link, Copy, QR and a single Share action.
-  void _showShareTargets(
-    TextTheme text,
-    List<(Widget, String, VoidCallback)> targets,
-  ) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => Dialog(
-        backgroundColor: context.c.card,
-        insetPadding: const EdgeInsets.symmetric(horizontal: Gap.xl),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(Sizes.cardRadius),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.xl, Gap.lg, Gap.md),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(L.shareVia, style: text.titleMedium),
-              const SizedBox(height: Gap.lg),
-              LayoutBuilder(
-                builder: (context, box) => Wrap(
-                  runSpacing: Gap.md,
-                  children: [
-                    for (final (icon, label, onTap) in targets)
-                      SizedBox(
-                        width: box.maxWidth / 5,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(Sizes.cardRadius),
-                          onTap: () {
-                            Navigator.of(dialogContext).pop();
-                            onTap();
-                          },
-                          child: Column(
-                            children: [
-                              icon,
-                              const SizedBox(height: Gap.xs),
-                              Text(
-                                label,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: text.labelSmall,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: Gap.sm),
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: Text(L.cancel),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// A scannable QR code for [data], painted module by module in the text
-/// colour on white with the standard quiet zone.
-class _QrCode extends StatelessWidget {
-  const _QrCode({required this.data, required this.size});
-  final String data;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) => SizedBox.square(
-    dimension: size,
-    child: CustomPaint(
-      painter: _QrPainter(
-        QrImage(
-          QrCode.fromData(data: data, errorCorrectLevel: QrErrorCorrectLevel.M),
-        ),
-        context.c.textPrimary,
-      ),
-    ),
-  );
-}
-
-class _QrPainter extends CustomPainter {
-  _QrPainter(this.image, this.color);
-  final QrImage image;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const quiet = 2; // modules of white border
-    final count = image.moduleCount;
-    final cell = size.width / (count + quiet * 2);
-    canvas.drawRect(Offset.zero & size, Paint()..color = Colors.white);
-    final paint = Paint()..color = color;
-    for (var y = 0; y < count; y++) {
-      for (var x = 0; x < count; x++) {
-        if (!image.isDark(y, x)) continue;
-        canvas.drawRect(
-          Rect.fromLTWH(
-            (x + quiet) * cell,
-            (y + quiet) * cell,
-            cell + .5,
-            cell + .5,
-          ),
-          paint,
-        );
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_QrPainter old) =>
-      old.image != image || old.color != color;
 }
 
 class _ComingSoonScreen extends StatelessWidget {
@@ -2387,54 +2166,5 @@ class _ComingSoonScreen extends StatelessWidget {
         onTap: () => AppScope.read(context).resetTo(VRoute.settings),
       ),
     ],
-  );
-}
-
-/// An official share-target mark: the brand glyph in white on the brand's
-/// own colour (Instagram on its gradient), app-icon shaped.
-class _BrandTile extends StatelessWidget {
-  const _BrandTile(this.color, this.fa)
-    : icon = null,
-      glyph = Colors.white,
-      gradient = null;
-  const _BrandTile.icon(this.color, this.icon, {this.glyph = Colors.white})
-    : fa = null,
-      gradient = null;
-  const _BrandTile.instagram()
-    : color = null,
-      fa = FontAwesomeIcons.instagram,
-      icon = null,
-      glyph = Colors.white,
-      gradient = const LinearGradient(
-        begin: Alignment.bottomLeft,
-        end: Alignment.topRight,
-        colors: [
-          Color(0xFFFEDA75),
-          Color(0xFFFA7E1E),
-          Color(0xFFD62976),
-          Color(0xFF962FBF),
-          Color(0xFF4F5BD5),
-        ],
-      );
-
-  final Color? color;
-  final FaIconData? fa;
-  final IconData? icon;
-  final Color glyph;
-  final Gradient? gradient;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 48,
-    height: 48,
-    decoration: BoxDecoration(
-      color: color,
-      gradient: gradient,
-      borderRadius: BorderRadius.circular(14),
-    ),
-    alignment: Alignment.center,
-    child: fa != null
-        ? FaIcon(fa, size: 24, color: glyph)
-        : Icon(icon, size: 24, color: glyph),
   );
 }

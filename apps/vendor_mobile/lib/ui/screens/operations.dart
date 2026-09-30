@@ -9,6 +9,7 @@ import '../async_view.dart';
 import '../shell.dart';
 import '../widgets.dart';
 import 'import_flow.dart' show ordersRevision;
+import 'product_photos.dart';
 import 'planning.dart' show CoveragePreview, RadiusSlider;
 import 'today_content.dart';
 
@@ -1141,6 +1142,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   bool busy = false;
   String? error;
   final errors = <String, String>{};
+  final photos = ProductPhotosController();
 
   @override
   void initState() {
@@ -1158,6 +1160,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       description.text = p.description ?? '';
       price.text = p.displayPrice?.toStringAsFixed(2) ?? '';
       active = p.status == 'active';
+      await photos.load(app.repo, p.id);
     } catch (e) {
       error = '$e';
     } finally {
@@ -1202,15 +1205,17 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     });
     try {
       final priceValue = num.parse(price.text.trim());
+      String productId;
       if (widget.isNew) {
-        await app.repo.createProduct(
+        productId = (await app.repo.createProduct(
           businessId: app.business!.id,
           name: name.text.trim(),
           description: description.text.trim(),
           displayPrice: priceValue,
           status: active ? 'active' : 'inactive',
-        );
+        )).id;
       } else {
+        productId = widget.productId!;
         await app.repo.updateProduct(
           productId: widget.productId!,
           name: name.text.trim(),
@@ -1219,6 +1224,12 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           status: active ? 'active' : 'inactive',
         );
       }
+      // Photos commit with the product (removals, uploads, order).
+      await photos.commit(
+        app.repo,
+        businessId: app.business!.id,
+        productId: productId,
+      );
       if (!mounted) return;
       app.back();
     } catch (e) {
@@ -1233,6 +1244,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     name.dispose();
     description.dispose();
     price.dispose();
+    photos.dispose();
     super.dispose();
   }
 
@@ -1249,7 +1261,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         // Archetype H (product / content form).
         Text(L.productPhoto, style: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: Gap.md),
-        const _PhotoDropzone(),
+        ProductPhotosField(controller: photos, enabled: !busy),
         SectionHeading(L.productDetails, icon: LucideIcons.package),
         CefField(
           label: L.productName,
@@ -1380,67 +1392,4 @@ class _OrderProgress extends StatelessWidget {
       }),
     );
   }
-}
-
-/// Dashed photo drop area of the product form. Tapping it is not wired to a
-/// picker yet, exactly as before.
-class _PhotoDropzone extends StatelessWidget {
-  const _PhotoDropzone();
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return CustomPaint(
-      painter: _DashedRectPainter(
-        color: c.textSecondary.withValues(alpha: .45),
-      ),
-      child: Container(
-        height: 132,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: c.grouped,
-          borderRadius: BorderRadius.circular(Sizes.cardRadius),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(LucideIcons.imagePlus, size: 34, color: c.iconColor),
-            const SizedBox(height: Gap.sm),
-            Text(
-              L.addProductPhoto,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DashedRectPainter extends CustomPainter {
-  _DashedRectPainter({required this.color});
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final path = Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(
-          Offset.zero & size,
-          const Radius.circular(Sizes.cardRadius),
-        ),
-      );
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
-    for (final metric in path.computeMetrics()) {
-      for (double d = 0; d < metric.length; d += 9) {
-        canvas.drawPath(metric.extractPath(d, d + 5), paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DashedRectPainter old) => old.color != color;
 }

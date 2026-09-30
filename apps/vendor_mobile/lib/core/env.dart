@@ -22,6 +22,14 @@ class Env {
     defaultValue: 'https://invite.cefflo.com/',
   );
 
+  /// Base of the public storefront URL: `{base}{slug}`. Production is
+  /// cefflo.com once its routing ships; staging builds point at the staging
+  /// storefront host.
+  static const storefrontBaseUrl = String.fromEnvironment(
+    'CEFFLO_STOREFRONT_BASE_URL',
+    defaultValue: 'https://cefflo.com/',
+  );
+
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabasePublishableKey.isNotEmpty;
 

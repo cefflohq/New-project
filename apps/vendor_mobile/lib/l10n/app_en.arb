@@ -1718,5 +1718,45 @@
     }
   },
   "planQuestionSubject": "Subscription question",
-  "emailSupportTeam": "Email the Cefflo support team"
+  "emailSupportTeam": "Email the Cefflo support team",
+  "yourStorefront": "Your storefront",
+  "storefrontPublished": "Published",
+  "storefrontUnpublished": "Not published",
+  "storefrontUnpublishedNote": "Customers can't open this link until you publish your storefront.",
+  "storefrontPublishedNote": "Customers can open this link and order. It stays the same, so you can put it on your website or social media.",
+  "storefrontLink": "Storefront link",
+  "shareStorefront": "Share storefront",
+  "storefrontShareMessage": "Order from {business} online:",
+  "@storefrontShareMessage": {
+    "placeholders": {
+      "business": {
+        "type": "Object"
+      }
+    }
+  },
+  "scanToOrder": "Scan to order",
+  "scanToOrderBody": "Customers scan with a phone camera to open your storefront.",
+  "storefrontLoadFailed": "Your storefront couldn't be loaded.",
+  "hoursSaved": "Business hours saved.",
+  "overnightHint": "Closes the next day",
+  "open24h": "Open 24 hours",
+  "photosMax5": "A product can have up to 5 photos.",
+  "photoOver5mb": "This photo is larger than 5 MB after compression. Choose a smaller one.",
+  "photoN": "Photo {n}",
+  "@photoN": {
+    "placeholders": {
+      "n": {
+        "type": "Object"
+      }
+    }
+  },
+  "moveEarlier": "Move earlier",
+  "moveLater": "Move later",
+  "photosRules": "Up to 5 photos · JPG, PNG or WebP · 5 MB each. The first photo is the cover.",
+  "photosNotLiveYet": "New photos appear on your storefront once they're processed and approved.",
+  "subTrial": "Trial",
+  "subActive": "Active",
+  "subPastDue": "Payment overdue",
+  "subSuspended": "Suspended",
+  "subCancelled": "Cancelled"
 }

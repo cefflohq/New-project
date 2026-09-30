@@ -52,11 +52,9 @@ class AppState extends ChangeNotifier {
   bool sessionLoaded = false;
   String? sessionError;
 
-  // ---- Storefront presentation config (V-31/X-02/V-33). Presentation
-  // only: which template is live and the vendor's saved customization per
-  // template. Products and business data are never stored here, so
-  // switching templates cannot touch them. No backend yet, so this is
-  // in-memory session state behind this small adapter boundary.
+  // ---- Storefront (V-31/X-02/V-33). Template and customization persist on
+  // the server (public_order_pages, Storefront V1); these fields mirror the
+  // loaded state. Products and business data are never stored here.
   String activeStorefrontTemplateId = 'arena';
 
   /// Saved customization per template id, so returning to a template keeps
@@ -67,9 +65,74 @@ class AppState extends ChangeNotifier {
   StorefrontBranding? savedStorefrontBranding(String templateId) =>
       _storefrontBranding[templateId];
 
+  /// The business's real storefront (slug, published) once loaded; null in
+  /// the demo and before [loadStorefront].
+  ({String slug, bool published})? storefront;
+
+  /// Loads the storefront and its saved appearance from the server
+  /// (get_storefront creates it, unpublished, on first open).
+  /// [defaultsFor] gives a template's default branding (the template
+  /// registry lives in the UI layer).
+  Future<void> loadStorefront(
+    StorefrontBranding Function(String templateId) defaultsFor,
+  ) async {
+    final b = business;
+    if (repo.isDemo || b == null) return;
+    final m = await repo.getStorefront(b.id);
+    storefront = (slug: m['slug'] as String, published: m['published'] == true);
+    final key = (m['template_key'] as String?) ?? activeStorefrontTemplateId;
+    final theme = Map<String, dynamic>.from((m['theme'] as Map?) ?? const {});
+    activeStorefrontTemplateId = key;
+    if (theme.isNotEmpty) {
+      final defaults = defaultsFor(key);
+      Color? hex(String k) =>
+          theme[k] is String ? parseStorefrontHex(theme[k] as String) : null;
+      _storefrontBranding[key] = defaults.copyWith(
+        primary: hex('accent'),
+        secondary: hex('secondary'),
+        mode: theme['style'] == 'gradient'
+            ? BrandColorMode.gradient
+            : theme['style'] == 'plain'
+            ? BrandColorMode.solid
+            : null,
+        font: StorefrontFontTreatment.values
+            .where((f) => f.name == theme['font'])
+            .firstOrNull,
+        backgroundId: theme['background'] as String?,
+        customBackground: hex('background_color'),
+        tagline: theme['tagline'] as String?,
+      );
+    }
+    notifyListeners();
+  }
+
+  Future<void> setStorefrontPublished(bool published) async {
+    final b = business, s = storefront;
+    if (b == null || s == null) return;
+    await repo.setStorefrontPublished(b.id, published);
+    storefront = (slug: s.slug, published: published);
+    notifyListeners();
+  }
+
   /// Save / Apply from Customize: makes [templateId] the live storefront
-  /// with [branding]. Drafts never reach this until the vendor saves.
-  void applyStorefront(String templateId, StorefrontBranding branding) {
+  /// with [branding], saved on the server first (live), so it persists.
+  Future<void> applyStorefront(
+    String templateId,
+    StorefrontBranding branding,
+  ) async {
+    final b = business;
+    if (!repo.isDemo && b != null) {
+      await repo.saveStorefrontAppearance(b.id, templateId, {
+        'accent': branding.primary.hex,
+        if (branding.secondary != null) 'secondary': branding.secondary!.hex,
+        'style': branding.isGradient ? 'gradient' : 'plain',
+        'font': branding.font.name,
+        'background': branding.backgroundId,
+        if (branding.customBackground != null)
+          'background_color': branding.customBackground!.hex,
+        if (branding.tagline.isNotEmpty) 'tagline': branding.tagline,
+      });
+    }
     activeStorefrontTemplateId = templateId;
     _storefrontBranding[templateId] = branding;
     notifyListeners();

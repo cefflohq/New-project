@@ -695,7 +695,14 @@ class _LiveSubscription extends StatelessWidget {
                         ),
                         const SizedBox(height: Gap.sm),
                         Text(
-                          '${L.subscriptionStatus}: ${sub['status'] ?? '—'}',
+                          '${L.subscriptionStatus}: ${switch (sub['status']) {
+                            'trial' => L.subTrial,
+                            'active' => L.subActive,
+                            'past_due' => L.subPastDue,
+                            'suspended' => L.subSuspended,
+                            'cancelled' => L.subCancelled,
+                            _ => '—',
+                          }}',
                           style: text.bodySmall,
                         ),
                         if (trial != null) ...[
