@@ -671,5 +671,30 @@
   "otpCodeLabel": "6-digit verification code",
   "otpEmailVerified": "Email verified",
   "otpRecoveryTitle": "Reset your password",
-  "enterNamePhone": "Enter your full name and phone number."
+  "enterNamePhone": "Enter your full name and phone number.",
+  "alreadyPartOf": "You're already part of {business}.",
+  "@alreadyPartOf": {
+    "placeholders": {
+      "business": {
+        "type": "Object"
+      }
+    }
+  },
+  "joinRequestSentTo": "Request sent to {business}. You'll get access once it's approved.",
+  "@joinRequestSentTo": {
+    "placeholders": {
+      "business": {
+        "type": "Object"
+      }
+    }
+  },
+  "joiningBusiness": "Joining {business}",
+  "@joiningBusiness": {
+    "placeholders": {
+      "business": {
+        "type": "Object"
+      }
+    }
+  },
+  "continueText3": "Continue"
 }

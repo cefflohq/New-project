@@ -2779,6 +2779,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter your full name and phone number.'**
   String get enterNamePhone;
+
+  /// No description provided for @alreadyPartOf.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re already part of {business}.'**
+  String alreadyPartOf(Object business);
+
+  /// No description provided for @joinRequestSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent to {business}. You\'ll get access once it\'s approved.'**
+  String joinRequestSentTo(Object business);
+
+  /// No description provided for @joiningBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Joining {business}'**
+  String joiningBusiness(Object business);
+
+  /// No description provided for @continueText3.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueText3;
 }
 
 class _AppLocalizationsDelegate

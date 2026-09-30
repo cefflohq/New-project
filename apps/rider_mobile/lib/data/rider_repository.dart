@@ -484,16 +484,30 @@ class RiderRepository {
 
   /// Joins a business through its permanent rider invite link. Always
   /// lands as a pending rider until the business approves.
-  Future<void> joinViaInviteLink({
+  /// Returns the server's answer: status 'pending' for a new request, or
+  /// this rider's existing status at that business ('active', 'pending',
+  /// 'inactive') when already joined.
+  Future<Map<String, dynamic>> joinViaInviteLink({
     required String token,
     required String name,
     required String phone,
-  }) => _run(
-    () => _db.rpc(
-      'join_via_invite_link',
-      params: {'p_token': token, 'p_name': name, 'p_phone': phone},
-    ),
-  );
+  }) async {
+    final res = await _run(
+      () => _db.rpc(
+        'join_via_invite_link',
+        params: {'p_token': token, 'p_name': name, 'p_phone': phone},
+      ),
+    );
+    return Map<String, dynamic>.from(res as Map);
+  }
+
+  /// Business name and state of a permanent invite link (anonymous-safe).
+  Future<Map<String, dynamic>?> resolveInviteLink(String token) async {
+    final res = await _run(
+      () => _db.rpc('resolve_invite_link', params: {'p_token': token}),
+    );
+    return res == null ? null : Map<String, dynamic>.from(res as Map);
+  }
 
   /// Claims every invitation this account consented to in the Invitation
   /// PWA, bound server-side to the caller's own confirmed email (never an

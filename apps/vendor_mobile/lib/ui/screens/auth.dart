@@ -2543,12 +2543,18 @@ class _JoinRequestScreenState extends State<JoinRequestScreen> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
   Map<String, dynamic>? _link;
-  bool _loading = true, _busy = false, _sent = false;
+  bool _loading = true, _busy = false;
+
+  /// The server's answer: 'pending' (request sent / already waiting) or
+  /// 'active' (this account is already part of the business).
+  String? _result;
   String? _error;
 
   @override
   void initState() {
     super.initState();
+    // Prefilled from the signed-in account; the invitee can change it.
+    _name.text = AppScope.read(context).userDisplayName;
     _resolve();
   }
 
@@ -2591,17 +2597,31 @@ class _JoinRequestScreenState extends State<JoinRequestScreen> {
         phone: _phone.text.trim().isEmpty ? null : _phone.text.trim(),
       );
       if (!mounted) return;
-      if (res['status'] == 'active') {
-        await app.finishJoin();
-        await app.loadSession();
-        return;
-      }
-      setState(() => _sent = true);
+      // Never a silent redirect: 'active' is a terminal "already part of"
+      // state the invitee acknowledges.
+      setState(
+        () => _result = res['status'] == 'active' ? 'active' : 'pending',
+      );
     } on RepositoryError catch (e) {
       if (mounted) setState(() => _error = e.message);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// Done with this invite: back into the app as this account.
+  Future<void> _continue() async {
+    final app = AppScope.read(context);
+    await app.finishJoin();
+    await app.loadSession();
+  }
+
+  /// Switch account but KEEP the pending invite: after signing in again the
+  /// same invite opens (the token stays on the device).
+  Future<void> _useAnotherAccount() async {
+    final app = AppScope.read(context);
+    await app.repo.signOut();
+    app.clearSession();
   }
 
   Future<void> _signOut() async {
@@ -2614,10 +2634,39 @@ class _JoinRequestScreenState extends State<JoinRequestScreen> {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final app = AppScope.of(context);
+    final email = app.repo.currentUser?.email ?? '';
+    final account = Padding(
+      padding: const EdgeInsets.only(top: Gap.md),
+      child: Column(
+        children: [
+          if (email.isNotEmpty)
+            Text(
+              L.signedInAs(email),
+              textAlign: TextAlign.center,
+              style: text.bodySmall,
+            ),
+          TextButton(
+            onPressed: _busy ? null : _useAnotherAccount,
+            child: Text(L.useAnotherAccount),
+          ),
+        ],
+      ),
+    );
     final Widget body;
     if (_loading) {
       body = const StateBlock.loading();
-    } else if (_sent) {
+    } else if (_result == 'active') {
+      body = Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SheetHeading(L.alreadyPartOf(_business), L.alreadyPartOfBody),
+          const SizedBox(height: Gap.xxl),
+          CefButton(L.continueToApp, onTap: _continue),
+          account,
+        ],
+      );
+    } else if (_result == 'pending') {
       body = Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -2662,11 +2711,7 @@ class _JoinRequestScreenState extends State<JoinRequestScreen> {
           ),
           const SizedBox(height: Gap.md),
           CefButton(L.joinSubmit, busy: _busy, onTap: _send),
-          const SizedBox(height: Gap.md),
-          TextButton(
-            onPressed: _busy ? null : _signOut,
-            child: Text(L.signOut),
-          ),
+          account,
         ],
       );
     }

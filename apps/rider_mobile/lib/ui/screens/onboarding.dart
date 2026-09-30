@@ -1290,8 +1290,26 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
     super.initState();
     // The name / phone fields appear as soon as a permanent link is pasted.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _link.addListener(() => setState(() {}));
+      if (!mounted) return;
+      _link.addListener(() => setState(() {}));
+      final open = _openToken;
+      if (open != null) _resolveTarget(open);
     });
+  }
+
+  /// The target business of the permanent link (shown before joining).
+  String? _targetBusiness;
+
+  /// Set when this account is already part of the target business.
+  bool _alreadyJoined = false;
+
+  Future<void> _resolveTarget(String token) async {
+    try {
+      final link = await AppScope.read(context).repo.resolveInviteLink(token);
+      if (mounted) {
+        setState(() => _targetBusiness = link?['business_name'] as String?);
+      }
+    } catch (_) {}
   }
 
   Future<void> _joinOpenLink(String token) async {
@@ -1305,14 +1323,24 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
       _error = null;
     });
     try {
-      await app.repo.joinViaInviteLink(
+      final res = await app.repo.joinViaInviteLink(
         token: token,
         name: _name.text.trim(),
         phone: _phone.text.trim(),
       );
+      final business = _targetBusiness ?? 'Cefflo';
+      // Already a rider of this business: a terminal state the rider
+      // acknowledges -- never a silent return to home.
+      if (res['status'] == 'active' || res['status'] == 'inactive') {
+        await app.finishJoin();
+        if (mounted) setState(() => _alreadyJoined = true);
+        return;
+      }
       await app.finishJoin();
-      // Pending until the business approves: reloading lands on the
-      // Pending Review stage the backend now reports.
+      if (mounted) showCefToast(context, L.joinRequestSentTo(business));
+      // Pending until the business approves: reloading lands on the stage
+      // the backend now reports (Pending Review, or the rider's existing
+      // active business).
       await app.loadSession();
     } catch (e) {
       if (mounted) setState(() => _error = '$e');
@@ -1392,101 +1420,128 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
           ),
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (demo) ...[
-            CeffloSegmentedTabs(
-              labels: [L.inviteLink, L.qrCode],
-              index: _tab,
-              onChanged: (i) => setState(() => _tab = i),
-            ),
-            const SizedBox(height: Gap.lg),
-          ],
-          CeffloTextField(
-            label: L.invitationLink,
-            controller: _link,
-            hint: 'https://...',
-            icon: LucideIcons.link,
-          ),
-          // A permanent invite link asks who is joining (phone required);
-          // the business approves before any access.
-          if (_openToken != null) ...[
-            const SizedBox(height: Gap.md),
-            CeffloTextField(
-              label: L.fullName,
-              controller: _name,
-              icon: LucideIcons.user,
-            ),
-            const SizedBox(height: Gap.md),
-            CeffloTextField(
-              label: L.phoneNumber,
-              controller: _phone,
-              icon: LucideIcons.phone,
-              keyboardType: TextInputType.phone,
-            ),
-          ],
-          if (_error != null) ...[
-            const SizedBox(height: Gap.sm),
-            Text(
-              _error!,
-              style: context.t.bodySmall?.copyWith(color: context.c.attention),
-            ),
-          ],
-          const SizedBox(height: Gap.lg),
-          CeffloPrimaryButton(L.continueText2, busy: _busy, onTap: _join),
-          if (demo) ...[
-            const SizedBox(height: Gap.lg),
-            Center(child: Text(L.orSeparator, style: context.t.bodyMedium)),
-            const SizedBox(height: Gap.md),
-            Container(
-              decoration: BoxDecoration(
-                color: CefColors.tintNeutral,
-                borderRadius: BorderRadius.circular(Sizes.cardRadius),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(Sizes.cardRadius),
-                  onTap: () => setState(() => _tab = 1),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 16,
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          LucideIcons.qrCode,
-                          size: 24,
-                          color: CefColors.navy,
-                        ),
-                        const SizedBox(width: 13),
-                        Expanded(
-                          child: Text(
-                            L.scanQrCode,
-                            style: context.t.titleSmall,
-                          ),
-                        ),
-                        Icon(
-                          LucideIcons.chevronRight,
-                          size: 20,
-                          color: context.c.textSecondary,
-                        ),
-                      ],
+      body: _alreadyJoined
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  L.alreadyPartOf(_targetBusiness ?? 'Cefflo'),
+                  textAlign: TextAlign.center,
+                  style: context.t.titleMedium,
+                ),
+                const SizedBox(height: Gap.lg),
+                CeffloPrimaryButton(
+                  L.continueText3,
+                  onTap: () => app.loadSession(),
+                ),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (_targetBusiness != null && _openToken != null) ...[
+                  Text(
+                    L.joiningBusiness(_targetBusiness!),
+                    style: context.t.titleMedium,
+                  ),
+                  const SizedBox(height: Gap.md),
+                ],
+                if (demo) ...[
+                  CeffloSegmentedTabs(
+                    labels: [L.inviteLink, L.qrCode],
+                    index: _tab,
+                    onChanged: (i) => setState(() => _tab = i),
+                  ),
+                  const SizedBox(height: Gap.lg),
+                ],
+                CeffloTextField(
+                  label: L.invitationLink,
+                  controller: _link,
+                  hint: 'https://...',
+                  icon: LucideIcons.link,
+                ),
+                // A permanent invite link asks who is joining (phone required);
+                // the business approves before any access.
+                if (_openToken != null) ...[
+                  const SizedBox(height: Gap.md),
+                  CeffloTextField(
+                    label: L.fullName,
+                    controller: _name,
+                    icon: LucideIcons.user,
+                  ),
+                  const SizedBox(height: Gap.md),
+                  CeffloTextField(
+                    label: L.phoneNumber,
+                    controller: _phone,
+                    icon: LucideIcons.phone,
+                    keyboardType: TextInputType.phone,
+                  ),
+                ],
+                if (_error != null) ...[
+                  const SizedBox(height: Gap.sm),
+                  Text(
+                    _error!,
+                    style: context.t.bodySmall?.copyWith(
+                      color: context.c.attention,
                     ),
                   ),
+                ],
+                const SizedBox(height: Gap.lg),
+                CeffloPrimaryButton(L.continueText2, busy: _busy, onTap: _join),
+                if (demo) ...[
+                  const SizedBox(height: Gap.lg),
+                  Center(
+                    child: Text(L.orSeparator, style: context.t.bodyMedium),
+                  ),
+                  const SizedBox(height: Gap.md),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: CefColors.tintNeutral,
+                      borderRadius: BorderRadius.circular(Sizes.cardRadius),
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+                        onTap: () => setState(() => _tab = 1),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 16,
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                LucideIcons.qrCode,
+                                size: 24,
+                                color: CefColors.navy,
+                              ),
+                              const SizedBox(width: 13),
+                              Expanded(
+                                child: Text(
+                                  L.scanQrCode,
+                                  style: context.t.titleSmall,
+                                ),
+                              ),
+                              Icon(
+                                LucideIcons.chevronRight,
+                                size: 20,
+                                color: context.c.textSecondary,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: Gap.lg),
+                CeffloNote(
+                  icon: LucideIcons.info,
+                  body: L.dontHaveLinkCodeRequestInvitation,
                 ),
-              ),
+              ],
             ),
-          ],
-          const SizedBox(height: Gap.lg),
-          CeffloNote(
-            icon: LucideIcons.info,
-            body: L.dontHaveLinkCodeRequestInvitation,
-          ),
-        ],
-      ),
     );
   }
 }

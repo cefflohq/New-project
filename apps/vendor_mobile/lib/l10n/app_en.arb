@@ -1761,5 +1761,25 @@
   "signOutConfirmTitle": "Sign out?",
   "signOutConfirmBody": "You'll need to sign in again to manage your business.",
   "yesSignOut": "Yes, sign out",
-  "heroTooLarge": "This image is larger than 5 MB. Choose a smaller one."
+  "heroTooLarge": "This image is larger than 5 MB. Choose a smaller one.",
+  "signedInAs": "Signed in as {email}",
+  "@signedInAs": {
+    "placeholders": {
+      "email": {
+        "type": "Object"
+      }
+    }
+  },
+  "useAnotherAccount": "Use another account",
+  "alreadyPartOf": "You're already part of {business}.",
+  "@alreadyPartOf": {
+    "placeholders": {
+      "business": {
+        "type": "Object"
+      }
+    }
+  },
+  "alreadyPartOfBody": "This account already has access. No new request was needed.",
+  "continueToApp": "Continue",
+  "ntWebSoundPending": "In this browser version sound is not available yet. The Cefflo notification sound is still being designed; the phone app uses the device's alert sound for now."
 }

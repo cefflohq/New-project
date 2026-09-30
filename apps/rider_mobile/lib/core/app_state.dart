@@ -538,7 +538,9 @@ class AppState extends ChangeNotifier {
         ..add(RiderLocation(homeRoute));
       // Opened from a business's permanent invite link: go straight to
       // Join Business with the link filled in.
-      if (stage == DriverStage.noBusiness && joinToken != null) {
+      // Any stage: a rider may belong to several businesses, so an
+      // existing membership never hides a new invite.
+      if (joinToken != null) {
         _stack.add(const RiderLocation(DRoute.joinBusiness));
       }
       if (active != null) await _loadOrders();

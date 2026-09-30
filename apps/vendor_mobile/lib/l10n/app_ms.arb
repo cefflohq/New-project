@@ -1073,5 +1073,11 @@
   "signOutConfirmTitle": "Log keluar?",
   "signOutConfirmBody": "Anda perlu log masuk semula untuk mengurus bisnes anda.",
   "yesSignOut": "Ya, log keluar",
-  "heroTooLarge": "Imej ini lebih besar daripada 5 MB. Pilih yang lebih kecil."
+  "heroTooLarge": "Imej ini lebih besar daripada 5 MB. Pilih yang lebih kecil.",
+  "signedInAs": "Log masuk sebagai {email}",
+  "useAnotherAccount": "Guna akaun lain",
+  "alreadyPartOf": "Anda sudah menjadi sebahagian daripada {business}.",
+  "alreadyPartOfBody": "Akaun ini sudah mempunyai akses. Tiada permintaan baharu diperlukan.",
+  "continueToApp": "Teruskan",
+  "ntWebSoundPending": "Dalam versi pelayar ini, bunyi belum tersedia. Bunyi notifikasi Cefflo masih direka; app telefon menggunakan bunyi amaran peranti buat masa ini."
 }

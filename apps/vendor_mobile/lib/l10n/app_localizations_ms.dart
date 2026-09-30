@@ -3581,4 +3581,28 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get heroTooLarge =>
       'Imej ini lebih besar daripada 5 MB. Pilih yang lebih kecil.';
+
+  @override
+  String signedInAs(Object email) {
+    return 'Log masuk sebagai $email';
+  }
+
+  @override
+  String get useAnotherAccount => 'Guna akaun lain';
+
+  @override
+  String alreadyPartOf(Object business) {
+    return 'Anda sudah menjadi sebahagian daripada $business.';
+  }
+
+  @override
+  String get alreadyPartOfBody =>
+      'Akaun ini sudah mempunyai akses. Tiada permintaan baharu diperlukan.';
+
+  @override
+  String get continueToApp => 'Teruskan';
+
+  @override
+  String get ntWebSoundPending =>
+      'Dalam versi pelayar ini, bunyi belum tersedia. Bunyi notifikasi Cefflo masih direka; app telefon menggunakan bunyi amaran peranti buat masa ini.';
 }

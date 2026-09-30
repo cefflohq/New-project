@@ -6548,6 +6548,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This image is larger than 5 MB. Choose a smaller one.'**
   String get heroTooLarge;
+
+  /// No description provided for @signedInAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in as {email}'**
+  String signedInAs(Object email);
+
+  /// No description provided for @useAnotherAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Use another account'**
+  String get useAnotherAccount;
+
+  /// No description provided for @alreadyPartOf.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re already part of {business}.'**
+  String alreadyPartOf(Object business);
+
+  /// No description provided for @alreadyPartOfBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This account already has access. No new request was needed.'**
+  String get alreadyPartOfBody;
+
+  /// No description provided for @continueToApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueToApp;
+
+  /// No description provided for @ntWebSoundPending.
+  ///
+  /// In en, this message translates to:
+  /// **'In this browser version sound is not available yet. The Cefflo notification sound is still being designed; the phone app uses the device\'s alert sound for now.'**
+  String get ntWebSoundPending;
 }
 
 class _AppLocalizationsDelegate

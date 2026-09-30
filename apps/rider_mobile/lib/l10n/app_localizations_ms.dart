@@ -1511,4 +1511,22 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get enterNamePhone => 'Masukkan nama penuh dan nombor telefon anda.';
+
+  @override
+  String alreadyPartOf(Object business) {
+    return 'Anda sudah menjadi sebahagian daripada $business.';
+  }
+
+  @override
+  String joinRequestSentTo(Object business) {
+    return 'Permintaan dihantar kepada $business. Anda akan mendapat akses setelah diluluskan.';
+  }
+
+  @override
+  String joiningBusiness(Object business) {
+    return 'Menyertai $business';
+  }
+
+  @override
+  String get continueText3 => 'Teruskan';
 }

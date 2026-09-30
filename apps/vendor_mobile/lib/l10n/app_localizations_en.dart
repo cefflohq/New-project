@@ -3578,4 +3578,28 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get heroTooLarge =>
       'This image is larger than 5 MB. Choose a smaller one.';
+
+  @override
+  String signedInAs(Object email) {
+    return 'Signed in as $email';
+  }
+
+  @override
+  String get useAnotherAccount => 'Use another account';
+
+  @override
+  String alreadyPartOf(Object business) {
+    return 'You\'re already part of $business.';
+  }
+
+  @override
+  String get alreadyPartOfBody =>
+      'This account already has access. No new request was needed.';
+
+  @override
+  String get continueToApp => 'Continue';
+
+  @override
+  String get ntWebSoundPending =>
+      'In this browser version sound is not available yet. The Cefflo notification sound is still being designed; the phone app uses the device\'s alert sound for now.';
 }

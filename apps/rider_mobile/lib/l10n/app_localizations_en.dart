@@ -1500,4 +1500,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enterNamePhone => 'Enter your full name and phone number.';
+
+  @override
+  String alreadyPartOf(Object business) {
+    return 'You\'re already part of $business.';
+  }
+
+  @override
+  String joinRequestSentTo(Object business) {
+    return 'Request sent to $business. You\'ll get access once it\'s approved.';
+  }
+
+  @override
+  String joiningBusiness(Object business) {
+    return 'Joining $business';
+  }
+
+  @override
+  String get continueText3 => 'Continue';
 }
