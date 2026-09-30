@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:qr/qr.dart';
 import 'package:share_plus/share_plus.dart';
@@ -1869,43 +1870,81 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
     final c = context.c;
     final message = _message(link);
     final encodedMessage = Uri.encodeComponent(message);
+    final business = AppScope.read(context).business?.name ?? 'Cefflo';
+    final encodedLink = Uri.encodeComponent(link);
+    // Instagram and TikTok have no web share link for text: the ready
+    // message is copied and the app's inbox opens to paste it.
+    Future<void> pasteIn(String app, Uri inbox) async {
+      await Clipboard.setData(ClipboardData(text: message));
+      if (mounted) showCefToast(context, L.messageCopiedPasteIn(app));
+      await _open(app, inbox);
+    }
+
+    // Official brand marks on their official colours (Founder, 2026-10-01).
     final targets = <(Widget, String, VoidCallback)>[
       (
-        const WhatsAppGlyph(),
+        _BrandTile(const Color(0xFF25D366), FontAwesomeIcons.whatsapp),
         'WhatsApp',
         () =>
             _open('WhatsApp', Uri.parse('https://wa.me/?text=$encodedMessage')),
       ),
       (
-        const Icon(LucideIcons.send, color: Color(0xFF229ED9), size: 26),
+        _BrandTile(const Color(0xFF229ED9), FontAwesomeIcons.telegram),
         'Telegram',
         () => _open(
           'Telegram',
           Uri.parse(
-            'https://t.me/share/url?url=${Uri.encodeComponent(link)}'
-            '&text=${Uri.encodeComponent(L.inviteShareMessage(AppScope.read(context).business?.name ?? 'Cefflo'))}',
+            'https://t.me/share/url?url=$encodedLink'
+            '&text=${Uri.encodeComponent(L.inviteShareMessage(business))}',
           ),
         ),
       ),
       (
-        const Icon(
-          LucideIcons.messageCircleMore,
-          color: Color(0xFF0084FF),
-          size: 26,
-        ),
+        _BrandTile(const Color(0xFF0084FF), FontAwesomeIcons.facebookMessenger),
         'Messenger',
         () => _open(
           'Messenger',
-          Uri.parse('fb-messenger://share/?link=${Uri.encodeComponent(link)}'),
+          Uri.parse('fb-messenger://share/?link=$encodedLink'),
         ),
       ),
       (
-        Icon(LucideIcons.messageSquareText, color: c.iconColor, size: 26),
+        _BrandTile(const Color(0xFF1877F2), FontAwesomeIcons.facebook),
+        'Facebook',
+        () => _open(
+          'Facebook',
+          Uri.parse(
+            'https://www.facebook.com/sharer/sharer.php?u=$encodedLink',
+          ),
+        ),
+      ),
+      (
+        _BrandTile(const Color(0xFF000000), FontAwesomeIcons.threads),
+        'Threads',
+        () => _open(
+          'Threads',
+          Uri.parse('https://www.threads.net/intent/post?text=$encodedMessage'),
+        ),
+      ),
+      (
+        const _BrandTile.instagram(),
+        'Instagram',
+        () => pasteIn(
+          'Instagram',
+          Uri.parse('https://www.instagram.com/direct/inbox/'),
+        ),
+      ),
+      (
+        _BrandTile(const Color(0xFF000000), FontAwesomeIcons.tiktok),
+        'TikTok',
+        () => pasteIn('TikTok', Uri.parse('https://www.tiktok.com/messages')),
+      ),
+      (
+        _BrandTile.icon(const Color(0xFF34C759), LucideIcons.messageSquareText),
         'SMS',
         () => _open('SMS', Uri.parse('sms:?body=$encodedMessage')),
       ),
       (
-        Icon(LucideIcons.ellipsis, color: c.iconColor, size: 26),
+        _BrandTile.icon(c.subtle, LucideIcons.ellipsis, glyph: c.textPrimary),
         L.moreText,
         () => _systemShare(link),
       ),
@@ -1948,26 +1987,32 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
       const SizedBox(height: Gap.xl),
       Text(L.shareVia, style: text.titleSmall),
       const SizedBox(height: Gap.md),
-      Row(
-        children: [
-          for (final (icon, label, onTap) in targets)
-            Expanded(
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: onTap,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: Gap.sm),
+      LayoutBuilder(
+        builder: (context, box) => Wrap(
+          runSpacing: Gap.md,
+          children: [
+            for (final (icon, label, onTap) in targets)
+              SizedBox(
+                width: box.maxWidth / 5,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(Sizes.cardRadius),
+                  onTap: onTap,
                   child: Column(
                     children: [
-                      SizedBox(height: 30, child: Center(child: icon)),
+                      icon,
                       const SizedBox(height: Gap.xs),
-                      Text(label, style: text.labelSmall),
+                      Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: text.labelSmall,
+                      ),
                     ],
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
       const SizedBox(height: Gap.xl),
       Align(
@@ -2055,5 +2100,54 @@ class _ComingSoonScreen extends StatelessWidget {
         onTap: () => AppScope.read(context).resetTo(VRoute.settings),
       ),
     ],
+  );
+}
+
+/// An official share-target mark: the brand glyph in white on the brand's
+/// own colour (Instagram on its gradient), app-icon shaped.
+class _BrandTile extends StatelessWidget {
+  const _BrandTile(this.color, this.fa)
+    : icon = null,
+      glyph = Colors.white,
+      gradient = null;
+  const _BrandTile.icon(this.color, this.icon, {this.glyph = Colors.white})
+    : fa = null,
+      gradient = null;
+  const _BrandTile.instagram()
+    : color = null,
+      fa = FontAwesomeIcons.instagram,
+      icon = null,
+      glyph = Colors.white,
+      gradient = const LinearGradient(
+        begin: Alignment.bottomLeft,
+        end: Alignment.topRight,
+        colors: [
+          Color(0xFFFEDA75),
+          Color(0xFFFA7E1E),
+          Color(0xFFD62976),
+          Color(0xFF962FBF),
+          Color(0xFF4F5BD5),
+        ],
+      );
+
+  final Color? color;
+  final FaIconData? fa;
+  final IconData? icon;
+  final Color glyph;
+  final Gradient? gradient;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 48,
+    height: 48,
+    decoration: BoxDecoration(
+      color: color,
+      gradient: gradient,
+      borderRadius: BorderRadius.circular(14),
+    ),
+    alignment: Alignment.center,
+    child: fa != null
+        ? FaIcon(fa, size: 24, color: glyph)
+        : Icon(icon, size: 24, color: glyph),
   );
 }

@@ -1677,5 +1677,13 @@
       }
     }
   },
-  "joinLinkUnavailable": "This invite link is no longer valid. Ask the business for the new link."
+  "joinLinkUnavailable": "This invite link is no longer valid. Ask the business for the new link.",
+  "messageCopiedPasteIn": "Message copied. Paste it in {app}.",
+  "@messageCopiedPasteIn": {
+    "placeholders": {
+      "app": {
+        "type": "Object"
+      }
+    }
+  }
 }

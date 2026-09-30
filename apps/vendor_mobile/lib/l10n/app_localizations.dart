@@ -6212,6 +6212,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This invite link is no longer valid. Ask the business for the new link.'**
   String get joinLinkUnavailable;
+
+  /// No description provided for @messageCopiedPasteIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Message copied. Paste it in {app}.'**
+  String messageCopiedPasteIn(Object app);
 }
 
 class _AppLocalizationsDelegate

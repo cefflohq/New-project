@@ -314,7 +314,16 @@ void main() {
     expect(find.text('Generate invite link'), findsNothing);
     expect(find.text('Your invite link'), findsOneWidget);
     expect(find.textContaining('?link=demo-rider-link'), findsOneWidget);
-    for (final t in ['WhatsApp', 'Telegram', 'Messenger', 'SMS']) {
+    for (final t in [
+      'WhatsApp',
+      'Telegram',
+      'Messenger',
+      'Facebook',
+      'Threads',
+      'Instagram',
+      'TikTok',
+      'SMS',
+    ]) {
       expect(find.text(t), findsOneWidget);
     }
     // "More" is also the bottom-navigation tab.

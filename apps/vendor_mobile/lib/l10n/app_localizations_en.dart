@@ -3391,4 +3391,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get joinLinkUnavailable =>
       'This invite link is no longer valid. Ask the business for the new link.';
+
+  @override
+  String messageCopiedPasteIn(Object app) {
+    return 'Message copied. Paste it in $app.';
+  }
 }

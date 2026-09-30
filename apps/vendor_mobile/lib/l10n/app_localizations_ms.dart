@@ -3394,4 +3394,9 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get joinLinkUnavailable =>
       'Pautan jemputan ini tidak lagi sah. Minta pautan baharu daripada bisnes.';
+
+  @override
+  String messageCopiedPasteIn(Object app) {
+    return 'Mesej disalin. Tampal dalam $app.';
+  }
 }
