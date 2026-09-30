@@ -996,5 +996,6 @@
   "copyText": "Salin",
   "messageCopied": "Mesej disalin",
   "inviteMsgRider": "Hai, anda dijemput menyertai {business} sebagai rider. Daftar di sini: {link}",
-  "inviteMsgTeam": "Hai, anda dijemput menyertai {business} di Cefflo. Buka pautan ini: {link}"
+  "inviteMsgTeam": "Hai, anda dijemput menyertai {business} di Cefflo. Buka pautan ini: {link}",
+  "noPendingRidersYet": "Tiada rider menunggu kelulusan lagi."
 }

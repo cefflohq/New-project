@@ -6,6 +6,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/app_state.dart';
+import 'core/appearance.dart';
 import 'core/chrome_color.dart';
 import 'core/env.dart';
 import 'core/preview_path.dart';
@@ -187,11 +188,18 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
     setState(() => _linkRejected = true);
   }
 
+  ThemeData _themeWithAccent() {
+    CefColors.applyAccent(liveAppearance.value.accent);
+    return buildVendorTheme(Brightness.light);
+  }
+
   @override
   Widget build(BuildContext context) => AppScope(
     state: app,
     child: AnimatedBuilder(
-      animation: app,
+      // The device-local Appearance drives the accent (active tabs, nav,
+      // accent icons) live, including while it is only being previewed.
+      animation: Listenable.merge([app, liveAppearance]),
       builder: (context, _) => MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Cefflo Vendor',
@@ -202,7 +210,7 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
         // Locked: Light Mode only for the current release. No system/dark
         // theme switch is exposed (Appearance is a "Coming Soon" surface).
         themeMode: ThemeMode.light,
-        theme: buildVendorTheme(Brightness.light),
+        theme: _themeWithAccent(),
         // Applied above the Navigator so every route, dialog and bottom
         // sheet lays out against the same normalized canvas, and -- since
         // this app is overwhelmingly light-background -- gets the
@@ -212,6 +220,7 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
         // tree, which takes precedence for that route.
         builder: (context, child) => LocaleRefresh(
           locale: app.uiLocale,
+          accent: CefColors.brand,
           child: CefSystemBars(
             background: Brightness.light,
             browserChromeColor: CefColors.light.chrome,

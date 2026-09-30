@@ -114,10 +114,27 @@ class CefColors extends ThemeExtension<CefColors> {
 
   /// The one interactive Vendor blue (D-51): active navigation, active
   /// tabs, links, selected states, map boundaries and pins, progress.
-  static const brand = Color(0xFF0060FE);
+  ///
+  /// Follows the device-local Appearance colour (Founder, 2026-10-01):
+  /// accent icons, active tabs and navigation take the chosen colour.
+  /// [standardBrand] is the Cefflo default. Set only through
+  /// [applyAccent]; semantic status colours never change.
+  static Color brand = standardBrand;
+  static const standardBrand = Color(0xFF0060FE);
 
   /// [brand] at 10% on white: tinted action rows and info notes.
-  static const brandTint = Color(0xFFE6EFFF);
+  static Color brandTint = standardBrandTint;
+  static const standardBrandTint = Color(0xFFE6EFFF);
+
+  static void applyAccent(Color? accent) {
+    brand = accent ?? standardBrand;
+    brandTint = accent == null
+        ? standardBrandTint
+        : Color.alphaBlend(
+            accent.withValues(alpha: .10),
+            const Color(0xFFFFFFFF),
+          );
+  }
 
   static const light = CefColors(
     canvas: Color(0xFFFFFFFF), // Mobile workspace
@@ -133,7 +150,7 @@ class CefColors extends ThemeExtension<CefColors> {
     attention: Color(0xFFEF4444),
     success: Color(0xFF10B981),
     warning: Color(0xFFF59E0B),
-    info: brand, // no second blue
+    info: standardBrand, // no second blue
     iconColor: navy, // every non-navigation icon
   );
 

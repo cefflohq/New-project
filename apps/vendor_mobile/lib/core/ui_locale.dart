@@ -55,10 +55,19 @@ class UiLocaleStore {
 
 /// Rebuilds every descendant when the UI locale changes, so screens that
 /// read strings through `L` switch language in place (state is kept).
+///
+/// The same refresh runs when the Appearance [accent] changes, since
+/// screens read the accent token directly.
 class LocaleRefresh extends StatefulWidget {
-  const LocaleRefresh({super.key, required this.locale, required this.child});
+  const LocaleRefresh({
+    super.key,
+    required this.locale,
+    required this.child,
+    this.accent,
+  });
 
   final Locale locale;
+  final Color? accent;
   final Widget child;
 
   @override
@@ -69,7 +78,7 @@ class _LocaleRefreshState extends State<LocaleRefresh> {
   @override
   void didUpdateWidget(LocaleRefresh old) {
     super.didUpdateWidget(old);
-    if (old.locale != widget.locale) {
+    if (old.locale != widget.locale || old.accent != widget.accent) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         void walk(Element e) {

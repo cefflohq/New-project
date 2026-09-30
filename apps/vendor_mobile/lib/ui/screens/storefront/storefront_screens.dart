@@ -573,7 +573,7 @@ class _TemplateTile extends StatelessWidget {
                       child: Container(
                         width: 24,
                         height: 24,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           color: CefColors.brand,
                           shape: BoxShape.circle,
                         ),
@@ -727,7 +727,7 @@ class StorefrontTemplatePreviewScreen extends StatelessWidget {
                               padding: const EdgeInsets.only(bottom: Gap.sm),
                               child: Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     LucideIcons.check,
                                     size: 18,
                                     color: CefColors.brand,

@@ -3320,4 +3320,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String inviteMsgTeam(Object business, Object link) {
     return 'Hai, anda dijemput menyertai $business di Cefflo. Buka pautan ini: $link';
   }
+
+  @override
+  String get noPendingRidersYet => 'Tiada rider menunggu kelulusan lagi.';
 }

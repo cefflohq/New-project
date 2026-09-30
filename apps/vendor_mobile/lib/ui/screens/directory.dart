@@ -961,10 +961,7 @@ class _SequenceBadge extends StatelessWidget {
     width: 28,
     height: 28,
     alignment: Alignment.center,
-    decoration: const BoxDecoration(
-      color: CefColors.brand,
-      shape: BoxShape.circle,
-    ),
+    decoration: BoxDecoration(color: CefColors.brand, shape: BoxShape.circle),
     child: Text(
       '$sequence',
       style: Theme.of(context).textTheme.labelMedium
@@ -1006,7 +1003,7 @@ class _ZoneMap extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: Gap.xs),
-              const Icon(LucideIcons.mapPin, color: CefColors.brand, size: 28),
+              Icon(LucideIcons.mapPin, color: CefColors.brand, size: 28),
             ],
           ),
         ),
@@ -1084,7 +1081,7 @@ class _CreateZoneScreenState extends State<CreateZoneScreen> {
             borderRadius: BorderRadius.circular(Sizes.cardRadius),
             child: CustomPaint(
               painter: _CoverageMapPainter.of(context),
-              child: const Center(
+              child: Center(
                 child: Icon(
                   LucideIcons.mapPin,
                   color: CefColors.brand,
@@ -1174,7 +1171,11 @@ class _RidersScreenState extends State<RidersScreen> {
             ),
             const SizedBox(height: Gap.md),
             if (visible.isEmpty)
-              StateBlock.empty(L.noRidersYet)
+              StateBlock.empty(switch (tab) {
+                1 => L.noActiveRidersYet,
+                2 => L.noPendingRidersYet,
+                _ => L.noRidersYet,
+              })
             else
               for (final r in visible)
                 CefListRow(
@@ -1706,7 +1707,7 @@ void showLanguageSheet(BuildContext context) {
           title: languageName(locale),
           showChevron: false,
           trailing: app.uiLocale == locale
-              ? const Icon(
+              ? Icon(
                   LucideIcons.check,
                   size: Sizes.icon,
                   color: CefColors.brand,

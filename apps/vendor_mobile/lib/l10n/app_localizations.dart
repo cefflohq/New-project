@@ -6086,6 +6086,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hi, you\'re invited to join {business} on Cefflo. Open this link: {link}'**
   String inviteMsgTeam(Object business, Object link);
+
+  /// No description provided for @noPendingRidersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No pending riders yet.'**
+  String get noPendingRidersYet;
 }
 
 class _AppLocalizationsDelegate

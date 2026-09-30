@@ -3317,4 +3317,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String inviteMsgTeam(Object business, Object link) {
     return 'Hi, you\'re invited to join $business on Cefflo. Open this link: $link';
   }
+
+  @override
+  String get noPendingRidersYet => 'No pending riders yet.';
 }

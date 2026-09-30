@@ -789,7 +789,7 @@ class _ReadyScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
             child: Row(
               children: [
-                const Icon(LucideIcons.clock, color: CefColors.brand, size: 30),
+                Icon(LucideIcons.clock, color: CefColors.brand, size: 30),
                 const SizedBox(width: 12),
                 Expanded(
                   flex: 3,
@@ -1217,7 +1217,7 @@ class _ItemImage extends StatelessWidget {
     final placeholder = Container(
       color: CefColors.brandTint,
       alignment: Alignment.center,
-      child: const Icon(LucideIcons.utensils, color: CefColors.brand),
+      child: Icon(LucideIcons.utensils, color: CefColors.brand),
     );
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),

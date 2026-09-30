@@ -41,6 +41,11 @@ class Appearance {
     );
   }
 
+  /// Accent for icons, active tabs and navigation on white: the chosen
+  /// colour, deepened until it reads at 4.5:1 on white. Null = standard.
+  Color? get accent =>
+      color == null ? null : legibleBackdropColor(Color(color!));
+
   /// Single colour for the status bar / browser chrome.
   Color get chrome =>
       color == null ? CefGradients.brandChrome : backdrop.colors.first;

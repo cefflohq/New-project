@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/app_state.dart';
+import '../core/appearance.dart';
 import '../data/models.dart';
 import '../core/routes.dart';
 import '../core/theme.dart';
@@ -120,27 +121,32 @@ class VendorShell extends StatelessWidget {
     final toastInset =
         MediaQuery.paddingOf(context).bottom + (showNav ? Sizes.nav : 0);
 
-    return CefSystemBars.split(
-      // Gradient behind the status bar; white nav or surface behind the
-      // gesture area.
-      statusBarBackground: Brightness.dark,
-      navigationBarBackground: Brightness.light,
-      browserChromeColor: CefGradients.brandChrome,
-      child: PopScope(
-        canPop: !app.canGoBack,
-        onPopInvokedWithResult: (didPop, _) {
-          if (!didPop && app.canGoBack) app.back();
-        },
-        // The universal Vendor background (D-52): painted once, here, under
-        // every authenticated route. This element is reused across route
-        // changes, so the gradient never restarts; headers and the status
-        // bar are transparent windows onto it.
-        child: Scaffold(
-          backgroundColor: c.card,
-          body: ToastInset(
-            bottom: toastInset,
-            child: BrandBackdrop(
-              child: Stack(children: [body, const NotificationBanner()]),
+    // The browser / status bar follows the device-local Appearance, live
+    // while previewing, so the top of the screen always matches the header.
+    return ValueListenableBuilder<Appearance>(
+      valueListenable: liveAppearance,
+      builder: (context, look, _) => CefSystemBars.split(
+        // Gradient behind the status bar; white nav or surface behind the
+        // gesture area.
+        statusBarBackground: Brightness.dark,
+        navigationBarBackground: Brightness.light,
+        browserChromeColor: look.chrome,
+        child: PopScope(
+          canPop: !app.canGoBack,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop && app.canGoBack) app.back();
+          },
+          // The universal Vendor background (D-52): painted once, here, under
+          // every authenticated route. This element is reused across route
+          // changes, so the gradient never restarts; headers and the status
+          // bar are transparent windows onto it.
+          child: Scaffold(
+            backgroundColor: c.card,
+            body: ToastInset(
+              bottom: toastInset,
+              child: BrandBackdrop(
+                child: Stack(children: [body, const NotificationBanner()]),
+              ),
             ),
           ),
         ),
@@ -493,7 +499,7 @@ void _showBusinessSwitcher(BuildContext context, AppState app) {
           icon: LucideIcons.store,
           showChevron: false,
           trailing: b.id == app.business?.id
-              ? const Icon(
+              ? Icon(
                   LucideIcons.check,
                   size: Sizes.icon,
                   color: CefColors.brand,
@@ -864,18 +870,49 @@ class PageBody extends StatelessWidget {
   /// No-op at every tested phone width (largest is ~412dp).
   static const maxContentWidth = 480.0;
 
+  /// A page that ends in an empty / error / blocked state: the state is
+  /// centred in the space left below the page's own controls (tabs, search)
+  /// and above the navigation, by layout -- never a fixed offset.
+  bool get _endsInState =>
+      children.isNotEmpty &&
+      children.last is StateBlock &&
+      (children.last as StateBlock).kind != StateKind.loading;
+
   @override
   Widget build(BuildContext context) {
-    final list = ListView(
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: EdgeInsets.fromLTRB(
-        Gap.gutter,
-        Gap.lg,
-        Gap.gutter,
-        bottom == null ? Gap.xxl : Gap.lg,
-      ),
-      children: children,
+    final padding = EdgeInsets.fromLTRB(
+      Gap.gutter,
+      Gap.lg,
+      Gap.gutter,
+      bottom == null ? Gap.xxl : Gap.lg,
     );
+    final Widget list = _endsInState
+        ? CustomScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            physics: onRefresh == null
+                ? null
+                : const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: padding.copyWith(bottom: 0),
+                sliver: SliverList.list(
+                  children: children.sublist(0, children.length - 1),
+                ),
+              ),
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  padding: padding.copyWith(top: 0),
+                  child: Center(child: children.last),
+                ),
+              ),
+            ],
+          )
+        : ListView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: padding,
+            children: children,
+          );
     final constrained = Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: maxContentWidth),

@@ -193,7 +193,7 @@ class _ImportOrdersScreenState extends State<ImportOrdersScreen> {
             subtitle: _sample(i),
             showChevron: false,
             trailing: _mapping[f] == i
-                ? const Icon(LucideIcons.check, color: CefColors.brand)
+                ? Icon(LucideIcons.check, color: CefColors.brand)
                 : null,
             onTap: () {
               setState(() {

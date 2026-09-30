@@ -325,7 +325,7 @@ class _BusinessAddressScreen extends StatelessWidget {
           ),
           child: Stack(
             children: [
-              const Center(
+              Center(
                 child: Icon(
                   LucideIcons.mapPin,
                   size: 52,
@@ -842,7 +842,7 @@ class _ColourRow extends StatelessWidget {
         ),
       ),
       trailing: selected
-          ? const Icon(LucideIcons.check, color: CefColors.brand)
+          ? Icon(LucideIcons.check, color: CefColors.brand)
           : null,
       onTap: onTap,
     ),

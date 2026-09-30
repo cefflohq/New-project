@@ -536,11 +536,7 @@ class _BackgroundTile extends StatelessWidget {
                 child: color == null
                     ? Icon(LucideIcons.palette, size: 20, color: c.iconColor)
                     : selected
-                    ? const Icon(
-                        LucideIcons.check,
-                        size: 18,
-                        color: CefColors.brand,
-                      )
+                    ? Icon(LucideIcons.check, size: 18, color: CefColors.brand)
                     : null,
               ),
               const SizedBox(height: Gap.xs),

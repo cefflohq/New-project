@@ -567,11 +567,7 @@ class CefLink extends StatelessWidget {
             ),
             if (chevron) ...[
               const SizedBox(width: 2),
-              const Icon(
-                LucideIcons.chevronRight,
-                size: 18,
-                color: CefColors.brand,
-              ),
+              Icon(LucideIcons.chevronRight, size: 18, color: CefColors.brand),
             ],
           ],
         ),
@@ -2099,7 +2095,7 @@ class _AsyncFeedbackOverlayState extends State<_AsyncFeedbackOverlay> {
     final closable = _stage != _FeedbackStage.processing;
     final body = switch (_stage) {
       _FeedbackStage.processing => [
-        const SizedBox.square(
+        SizedBox.square(
           dimension: 36,
           child: CircularProgressIndicator(
             strokeWidth: 3,
