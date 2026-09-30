@@ -91,7 +91,6 @@ svg.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor;
 .avatar.xs { width: 24px; height: 24px; font-size: 10.5px; }
 .avatar.sm { width: 28px; height: 28px; font-size: 11px; }
 .avatar.lg { width: 48px; height: 48px; font-size: 16px; }
-.avatar.xl { width: 80px; height: 80px; font-size: 26px; }
 
 .demo-bar { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin: 12px 24px 0; padding: 7px 12px; border-radius: var(--r-sm); background: var(--warning-tint); color: var(--ink); font-size: var(--t-meta); border: 1px solid color-mix(in srgb, var(--warning) 20%, transparent); }
 .demo-bar b { color: var(--warning); }
@@ -353,8 +352,6 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
 .sub-card .desc { color: var(--muted); margin: 0 0 10px; font-size: var(--t-label); }
 .sub-card .form-row:last-child { border-bottom: 0; }
 .profile-id { display: flex; gap: 12px; align-items: center; }
-.profile-id h3 { margin: 0; font-size: 16px; }
-.profile-id { gap: 16px; }
 .profile-id .grow { flex: 1; min-width: 0; display: grid; gap: 6px; }
 .row-end { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
 .row-end .hint { margin-right: auto; }
@@ -531,15 +528,16 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
   .sidebar, .switch::after { transition: none; }
 }
 
-/* ---- profile photo ---- */
-.photo { position: relative; flex: none; }
+/* ---- profile photo: centred, no card; icon actions under it ---- */
+.photo { display: grid; justify-items: center; gap: 8px; margin: 4px 0 20px; }
 .photo-btn { position: relative; display: block; padding: 0; border: 0; background: none; border-radius: 50%; cursor: pointer; }
-.photo-btn .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
 .photo-btn .avatar { overflow: hidden; }
-.photo-cam { position: absolute; right: -2px; bottom: -2px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--border-strong); color: var(--ink-2); }
-.photo-cam svg.i { width: 14px; height: 14px; }
-.photo-btn:hover .photo-cam { color: var(--ink); border-color: var(--ink-2); }
+.photo-btn .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
 .photo-btn .spin { position: absolute; inset: 0; margin: auto; width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--primary); border-right-color: transparent; animation: spin .7s linear infinite; }
 .photo-btn.busy .avatar { opacity: .45; }
-.photo-actions { display: flex; gap: 16px; margin-top: 4px; font-size: var(--t-label); }
-.link-btn.danger { color: var(--danger); }
+.photo-actions { display: flex; gap: 6px; }
+.photo-actions .icon-btn { border: 1px solid var(--border); }
+.icon-btn.danger { color: var(--danger); }
+.icon-btn.danger:hover { background: var(--danger-tint); color: var(--danger); }
+.photo .err { text-align: center; }
+.avatar.xl { width: 96px; height: 96px; font-size: 30px; }

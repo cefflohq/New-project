@@ -88,14 +88,15 @@ async function profile(page) {
     const p = rows?.[0] || {};
     const name = p.display_name || u.user_metadata?.full_name || '';
     body.innerHTML = `
-      <div class="sub-card profile-id">
-        <div class="photo">
-          <button type="button" class="photo-btn" data-photo aria-label="${esc(t('prof.photoChange'))}">${avatar(name || u.email, 'xl')}<span class="photo-cam">${icon('camera')}</span><i class="spin" data-photo-spin hidden></i></button>
-          <input type="file" accept="image/jpeg,image/png,image/webp" data-photo-input hidden>
+      <div class="photo">
+        <button type="button" class="photo-btn" data-photo aria-label="${esc(t('prof.photoChange'))}">${avatar(name || u.email, 'xl')}<i class="spin" data-photo-spin hidden></i></button>
+        <input type="file" accept="image/jpeg,image/png,image/webp" data-photo-input hidden>
+        <div class="photo-actions">
+          <button class="icon-btn" type="button" data-photo-pick title="${esc(t('prof.photoChange'))}" aria-label="${esc(t('prof.photoChange'))}">${icon('camera')}</button>
+          <button class="icon-btn danger" type="button" data-photo-remove title="${esc(t('prof.photoRemove'))}" aria-label="${esc(t('prof.photoRemove'))}" ${p.avatar_url ? '' : 'hidden'}>${icon('trash')}</button>
         </div>
-        <div class="grow">${name ? `<h3>${esc(name)}</h3>` : ''}
-          <div class="photo-actions"><button class="link-btn" type="button" data-photo-pick>${esc(t('prof.photoChange'))}</button><button class="link-btn danger" type="button" data-photo-remove ${p.avatar_url ? '' : 'hidden'}>${esc(t('prof.photoRemove'))}</button></div>
-          <div class="err" data-photo-err hidden role="alert"></div></div></div>
+        <div class="err" data-photo-err hidden role="alert"></div>
+      </div>
       <div class="sub-card"><h3>${esc(t('prof.personal'))}</h3>
         <div class="form-row"><label>${esc(t('prof.fullName'))}</label><input class="input" name="name" maxlength="80" value="${esc(name)}"></div>
         <div class="form-row"><label>${esc(t('prof.email'))}</label><div class="inline-field"><input class="input" name="email" type="email" value="${esc(u.email)}"><button class="btn soft" data-email>${esc(t('c.change'))}</button></div></div>
@@ -104,7 +105,10 @@ async function profile(page) {
         <div class="row-end"><button class="btn primary" data-save>${esc(t('c.save'))}</button></div></div>
       <div class="sub-card row-card"><div class="grow"><h3>${esc(t('prof.password'))}</h3><p class="desc" style="margin:0">${esc(t('prof.passwordLead'))}</p></div>
         <a class="btn soft" href="#/settings/security">${esc(t('prof.changePassword'))}</a></div>`;
-    wirePhoto(body, u, rows, name, p.avatar_url);
+    // One shared answer to "does this user's profiles row exist yet?" for
+    // Save and the photo control, so neither inserts it twice.
+    const row = { exists: !!rows?.length };
+    wirePhoto(body, u, row, name, p.avatar_url);
     const err = body.querySelector('[data-err]');
     body.querySelector('[data-save]').addEventListener('click', async e => {
       const display_name = body.querySelector('[name=name]').value.trim();
@@ -113,8 +117,8 @@ async function profile(page) {
       err.hidden = true;
       try {
         await busy(e.currentTarget, async () => {
-          if (rows?.length) await api.write(`/rest/v1/profiles?id=eq.${u.id}`, 'PATCH', { display_name, phone: phone || null, updated_at: new Date().toISOString() });
-          else await api.write('/rest/v1/profiles', 'POST', { id: u.id, display_name, phone: phone || null });
+          if (row.exists) await api.write(`/rest/v1/profiles?id=eq.${u.id}`, 'PATCH', { display_name, phone: phone || null, updated_at: new Date().toISOString() });
+          else { await api.write('/rest/v1/profiles', 'POST', { id: u.id, display_name, phone: phone || null }); row.exists = true; }
           ctx.user = await api.updateUser({ data: { full_name: display_name } });
         });
         toast(t('c.saved'));
@@ -435,7 +439,7 @@ function openEmailChangeCodes(current, next, onDone) {
 // photo shown is always the one read back from storage, never the local file.
 const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const PHOTO_MAX = 2 * 1024 * 1024;
-function wirePhoto(body, u, rows, name, savedPath) {
+function wirePhoto(body, u, row, name, savedPath) {
   const btn = body.querySelector('[data-photo]'), input = body.querySelector('[data-photo-input]');
   const spin = body.querySelector('[data-photo-spin]'), err = body.querySelector('[data-photo-err]');
   const removeBtn = body.querySelector('[data-photo-remove]');
@@ -451,8 +455,8 @@ function wirePhoto(body, u, rows, name, savedPath) {
   const setBusy = on => { btn.disabled = on; spin.hidden = !on; btn.classList.toggle('busy', on); };
   const fail = m => { err.textContent = m; err.hidden = false; };
   const saveRow = async avatar_url => {
-    if (rows?.length) await api.write(`/rest/v1/profiles?id=eq.${u.id}`, 'PATCH', { avatar_url, updated_at: new Date().toISOString() });
-    else { await api.write('/rest/v1/profiles', 'POST', { id: u.id, avatar_url }); rows = [{}]; }
+    if (row.exists) await api.write(`/rest/v1/profiles?id=eq.${u.id}`, 'PATCH', { avatar_url, updated_at: new Date().toISOString() });
+    else { await api.write('/rest/v1/profiles', 'POST', { id: u.id, avatar_url }); row.exists = true; }
     const back = await api.get(`/rest/v1/profiles?id=eq.${u.id}&select=avatar_url`);
     return back?.[0]?.avatar_url || null;
   };
