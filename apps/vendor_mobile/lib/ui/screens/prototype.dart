@@ -379,7 +379,7 @@ class _BusinessFieldsFormState extends State<_BusinessFieldsForm> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const PageBody(children: [StateBlock.loading()]);
+    if (_loading) return const SkeletonForm();
     final text = Theme.of(context).textTheme;
     return PageBody(
       bottom: CefButton(L.saveChanges, busy: _saving, onTap: _save),
@@ -536,7 +536,7 @@ class _BusinessHoursSectionState extends State<_BusinessHoursSection> {
   @override
   Widget build(BuildContext context) {
     final days = _days;
-    if (days == null && _error == null) return const StateBlock.loading();
+    if (days == null && _error == null) return const SkeletonForm(fields: 3);
     if (days == null) return StateBlock.error(_error!);
     final text = Theme.of(context).textTheme;
     final names = [
@@ -790,7 +790,7 @@ class _EditProfileScreenState extends State<_EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const PageBody(children: [StateBlock.loading()]);
+    if (_loading) return const SkeletonForm();
     final app = AppScope.of(context);
     final text = Theme.of(context).textTheme;
     final live = !app.repo.isDemo;

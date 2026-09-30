@@ -3625,4 +3625,10 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get emailAlreadyRegistered => 'Emel ini sudah didaftarkan.';
+
+  @override
+  String get productAddedToast => 'Produk berjaya ditambah';
+
+  @override
+  String get productUpdatedToast => 'Produk berjaya dikemas kini';
 }

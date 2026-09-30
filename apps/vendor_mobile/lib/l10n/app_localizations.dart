@@ -6620,6 +6620,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This email is already registered.'**
   String get emailAlreadyRegistered;
+
+  /// No description provided for @productAddedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Product added successfully'**
+  String get productAddedToast;
+
+  /// No description provided for @productUpdatedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Product updated successfully'**
+  String get productUpdatedToast;
 }
 
 class _AppLocalizationsDelegate

@@ -1085,5 +1085,7 @@
   "categoryRequired": "Pilih atau taip kategori.",
   "newCategoryChip": "Baharu: {name}",
   "unnamedTeamMember": "Ahli pasukan",
-  "emailAlreadyRegistered": "Emel ini sudah didaftarkan."
+  "emailAlreadyRegistered": "Emel ini sudah didaftarkan.",
+  "productAddedToast": "Produk berjaya ditambah",
+  "productUpdatedToast": "Produk berjaya dikemas kini"
 }

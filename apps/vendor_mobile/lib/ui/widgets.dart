@@ -1870,6 +1870,36 @@ class SkeletonHeading extends StatelessWidget {
 
 /// The default loading state for a page: a heading and rows in the page
 /// gutters. [top] adds page-specific shapes above (KPIs, a map...).
+/// Form-shaped placeholder (label + field per row) for edit screens while
+/// their data loads -- the same pulsing language as [SkeletonPage], never a
+/// lone spinner (Founder, 2026-10-01).
+class SkeletonForm extends StatelessWidget {
+  const SkeletonForm({super.key, this.fields = 4});
+  final int fields;
+
+  @override
+  Widget build(BuildContext context) => SkeletonPulse(
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(Gap.gutter, Gap.lg, Gap.gutter, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SkeletonBox(width: 180, height: 22),
+          const SizedBox(height: Gap.sm),
+          const SkeletonBox(width: 260, height: 14),
+          const SizedBox(height: Gap.xl),
+          for (var i = 0; i < fields; i++) ...[
+            const SkeletonBox(width: 110, height: 14),
+            const SizedBox(height: Gap.sm),
+            const SkeletonBox(height: Sizes.controlHeight),
+            const SizedBox(height: Gap.lg),
+          ],
+        ],
+      ),
+    ),
+  );
+}
+
 class SkeletonPage extends StatelessWidget {
   const SkeletonPage({super.key, this.top = const [], this.rows = 5});
   final List<Widget> top;

@@ -2724,7 +2724,7 @@ class _JoinRequestScreenState extends State<JoinRequestScreen> {
     );
     final Widget body;
     if (_loading) {
-      body = const StateBlock.loading();
+      body = const SkeletonForm(fields: 2);
     } else if (_result == 'active') {
       body = Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

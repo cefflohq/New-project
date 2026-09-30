@@ -1229,18 +1229,13 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   Future<void> _save() async {
     if (!_validate()) return;
     final app = AppScope.read(context);
+    // Everyday save: the button spins, then a short toast (Founder,
+    // 2026-10-01) -- the same in the demo and live.
+    // UI feedback only (showCefToast): no notification record, no sound,
+    // not the Cefflo notification banner.
+    final saved = widget.isNew ? L.productAddedToast : L.productUpdatedToast;
     if (app.repo.isDemo) {
-      final ok = await runAsyncFeedback(
-        context,
-        action: () async {},
-        processingTitle: L.processing,
-        processingSubtitle: widget.isNew ? L.addingProduct : L.updatingProduct,
-        successTitle: L.successful,
-        successSubtitle: widget.isNew
-            ? L.newProductHasBeenAddedSuccessfully
-            : L.productHasBeenUpdatedSuccessfully,
-      );
-      if (!mounted || !ok) return;
+      showCefToast(context, saved);
       app.back();
       return;
     }
@@ -1279,6 +1274,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         productId: productId,
       );
       if (!mounted) return;
+      showCefToast(context, saved);
       app.back();
     } catch (e) {
       if (mounted) setState(() => error = '$e');

@@ -1794,5 +1794,7 @@
     }
   },
   "unnamedTeamMember": "Team member",
-  "emailAlreadyRegistered": "This email is already registered."
+  "emailAlreadyRegistered": "This email is already registered.",
+  "productAddedToast": "Product added successfully",
+  "productUpdatedToast": "Product updated successfully"
 }

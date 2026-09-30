@@ -3622,4 +3622,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emailAlreadyRegistered => 'This email is already registered.';
+
+  @override
+  String get productAddedToast => 'Product added successfully';
+
+  @override
+  String get productUpdatedToast => 'Product updated successfully';
 }
