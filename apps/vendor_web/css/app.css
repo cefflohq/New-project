@@ -91,6 +91,7 @@ svg.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor;
 .avatar.xs { width: 24px; height: 24px; font-size: 10.5px; }
 .avatar.sm { width: 28px; height: 28px; font-size: 11px; }
 .avatar.lg { width: 48px; height: 48px; font-size: 16px; }
+.avatar.xl { width: 80px; height: 80px; font-size: 26px; }
 
 .demo-bar { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin: 12px 24px 0; padding: 7px 12px; border-radius: var(--r-sm); background: var(--warning-tint); color: var(--ink); font-size: var(--t-meta); border: 1px solid color-mix(in srgb, var(--warning) 20%, transparent); }
 .demo-bar b { color: var(--warning); }
@@ -352,7 +353,8 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
 .sub-card .desc { color: var(--muted); margin: 0 0 10px; font-size: var(--t-label); }
 .sub-card .form-row:last-child { border-bottom: 0; }
 .profile-id { display: flex; gap: 12px; align-items: center; }
-.profile-id h3 { margin: 0; font-size: 15px; }
+.profile-id h3 { margin: 0; font-size: 16px; }
+.profile-id { gap: 16px; }
 .profile-id .grow { flex: 1; min-width: 0; display: grid; gap: 6px; }
 .row-end { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
 .row-end .hint { margin-right: auto; }

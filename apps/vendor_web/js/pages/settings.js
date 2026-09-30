@@ -88,8 +88,8 @@ async function profile(page) {
     const p = rows?.[0] || {};
     const name = p.display_name || u.user_metadata?.full_name || '';
     body.innerHTML = `
-      <div class="sub-card profile-id">${avatar(name || u.email, 'lg')}
-        <div class="grow"><h3>${esc(name || u.email)}</h3>${gatedNote(t('prof.photoGated'))}</div></div>
+      <div class="sub-card profile-id">${avatar(name || u.email, 'xl')}
+        ${name ? `<div class="grow"><h3>${esc(name)}</h3></div>` : ''}</div>
       <div class="sub-card"><h3>${esc(t('prof.personal'))}</h3>
         <div class="form-row"><label>${esc(t('prof.fullName'))}</label><input class="input" name="name" maxlength="80" value="${esc(name)}"></div>
         <div class="form-row"><label>${esc(t('prof.email'))}</label><div class="inline-field"><input class="input" name="email" type="email" value="${esc(u.email)}"><button class="btn soft" data-email>${esc(t('c.change'))}</button></div></div>
