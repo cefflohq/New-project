@@ -541,3 +541,17 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
 .icon-btn.danger:hover { background: var(--danger-tint); color: var(--danger); }
 .photo .err { text-align: center; }
 .avatar.xl { width: 96px; height: 96px; font-size: 30px; }
+
+/* ---- one rule for section actions (Founder 2026-09-30): desktop, every
+   action sits at the right of its section; phone, every action is full
+   width at the foot of its section. Never mixed. ---- */
+.row-card > .btn, .row-card > a.btn { margin-left: auto; }
+.row-end .hint { flex: 1 1 100%; margin: 0 0 4px; }
+@media (min-width: 561px) { .row-end .hint { flex: 1; margin: 0; } }
+@media (max-width: 767px) {
+  .row-end { flex-direction: column; align-items: stretch; }
+  .row-end .btn, .row-card > .btn, .row-card > a.btn, .inline-field .btn { width: 100%; margin-left: 0; }
+  .row-card { flex-direction: column; align-items: stretch; }
+  .row-card .grow { min-width: 0; }
+  .inline-field { flex-wrap: wrap; }
+}
