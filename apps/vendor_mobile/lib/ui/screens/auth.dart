@@ -1010,11 +1010,13 @@ class _SignInScreenState extends State<SignInScreen> {
                             ),
                             const Spacer(flex: 3),
                             Center(
-                              child: _Wordmark(
-                                height: fit(operator ? 30 : 34, 42),
+                              // The Sign In choice has room for the full
+                              // logo; the form screens after it carry only
+                              // the wordmark (Founder, 2026-09-30).
+                              child: _BrandLockup(
+                                height: fit(operator ? 76 : 92, 128),
                               ),
                             ),
-                            SizedBox(height: fit(Gap.sm, Gap.md)),
                             Text(
                               'VENDOR',
                               textAlign: TextAlign.center,

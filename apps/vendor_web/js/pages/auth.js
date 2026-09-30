@@ -17,7 +17,7 @@ const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 // back chevron (icon only) at the left, the language control at the right.
 function frame(root, bottom, rerender, { hero = '', product = false, back = null } = {}) {
   setChromeColor('#061F5C');
-  root.innerHTML = `<div class="auth">
+  root.innerHTML = `<div class="auth${product ? ' choose' : ''}">
     <div class="auth-top">
       ${back ? `<button type="button" class="auth-back" data-topback aria-label="${esc(t('c.back'))}">${icon('chevl')}</button>` : ''}
       <div class="auth-lang">
@@ -29,8 +29,9 @@ function frame(root, bottom, rerender, { hero = '', product = false, back = null
       </div>
     </div>
     <div class="auth-hero${hero ? ' op' : ''}">
-      <img class="auth-word" src="img/cefflo-wordmark-white.png" alt="Cefflo" width="555" height="142">
-      ${product ? '<span class="auth-product">VENDOR</span>' : ''}
+      ${product
+        ? '<img class="auth-logo" src="img/cefflo-logo.png" alt="Cefflo" width="150" height="234"><span class="auth-product">VENDOR</span>'
+        : '<img class="auth-word" src="img/cefflo-wordmark-white.png" alt="Cefflo" width="555" height="142">'}
       ${hero}
     </div>
     <div class="auth-bottom">${bottom}</div>
