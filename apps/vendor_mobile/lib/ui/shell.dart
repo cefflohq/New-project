@@ -106,8 +106,12 @@ class VendorShell extends StatelessWidget {
               Expanded(
                 child: _OfflineTint(
                   // Offline greys the operational screens (Today, Orders,
-                  // Zones, Riders and their details); More stays in colour.
-                  active: !app.vendorOnline && app.activeTab != NavTab.more,
+                  // Zones, Riders and their details); More stays in colour,
+                  // and so do onboarding screens (no business to be online).
+                  active:
+                      !app.vendorOnline &&
+                      app.activeTab != NavTab.more &&
+                      app.current.route.index > VRoute.setupComplete.index,
                   child: hero || ownHeader
                       ? child
                       : ContentSurface(bottomSafeArea: !showNav, child: child),
