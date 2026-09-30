@@ -670,5 +670,6 @@
   "otpContinue": "Continue",
   "otpCodeLabel": "6-digit verification code",
   "otpEmailVerified": "Email verified",
-  "otpRecoveryTitle": "Reset your password"
+  "otpRecoveryTitle": "Reset your password",
+  "enterNamePhone": "Enter your full name and phone number."
 }

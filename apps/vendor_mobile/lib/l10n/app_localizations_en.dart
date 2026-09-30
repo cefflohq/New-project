@@ -3320,4 +3320,75 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noPendingRidersYet => 'No pending riders yet.';
+
+  @override
+  String inviteShareMessage(Object business) {
+    return 'Hi, you\'re invited to join $business. Click the link below to register.';
+  }
+
+  @override
+  String get resetLink => 'Reset link';
+
+  @override
+  String get resetLinkTitle => 'Reset this invite link?';
+
+  @override
+  String get resetLinkBody =>
+      'The current link stops working immediately. Share the new link with anyone who hasn\'t joined yet.';
+
+  @override
+  String get linkResetDone => 'A new invite link is ready.';
+
+  @override
+  String get inviteLinkPermanent =>
+      'This link stays the same until you reset it. Everyone who joins waits for your approval.';
+
+  @override
+  String get moreText => 'More';
+
+  @override
+  String get scanToJoinBody =>
+      'Scan with a phone camera to open the invitation.';
+
+  @override
+  String get joinRequests => 'Join requests';
+
+  @override
+  String get approveText => 'Approve';
+
+  @override
+  String get requestApproved => 'Request approved.';
+
+  @override
+  String get requestRejected => 'Request rejected.';
+
+  @override
+  String get riderApproved => 'Rider approved.';
+
+  @override
+  String get riderRejected => 'Rider rejected.';
+
+  @override
+  String joinTitle(Object business) {
+    return 'Join $business';
+  }
+
+  @override
+  String get joinBody =>
+      'Complete your details. The business approves every request before you get access.';
+
+  @override
+  String get joinSubmit => 'Send request';
+
+  @override
+  String get joinPendingTitle => 'Waiting for approval';
+
+  @override
+  String joinPendingBody(Object business) {
+    return 'Your request was sent to $business. You\'ll get access once it\'s approved.';
+  }
+
+  @override
+  String get joinLinkUnavailable =>
+      'This invite link is no longer valid. Ask the business for the new link.';
 }

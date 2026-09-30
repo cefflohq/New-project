@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'appearance.dart';
 import 'auth_access.dart';
+import 'join_link.dart';
 import 'notification_alerts.dart';
 
 import 'package:flutter/material.dart';
@@ -143,6 +144,23 @@ class AppState extends ChangeNotifier {
   }
 
   void previewAppearance(Appearance next) => liveAppearance.value = next;
+
+  // ---- Permanent invite link join (Operator / Helper). Kept on the device
+  // until the request is submitted; grants nothing by itself.
+  String? joinToken;
+  final JoinLinkStore _joinStore = JoinLinkStore();
+
+  Future<void> restoreJoinToken(Uri launch) async {
+    joinToken = await _joinStore.read(launch);
+    notifyListeners();
+  }
+
+  /// The request was sent (pending) or the account is already a member.
+  Future<void> finishJoin() async {
+    joinToken = null;
+    await _joinStore.clear();
+    notifyListeners();
+  }
 
   /// Back / cancel: the saved appearance returns.
   void discardAppearancePreview() => liveAppearance.value = appearance;

@@ -173,6 +173,7 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
     super.initState();
     applyUiLocale(app.uiLocale);
     app.restoreUiLocale();
+    if (!app.repo.isDemo) app.restoreJoinToken(Uri.base);
     app.onPrototypeSignOut = () {
       if (mounted) setState(() => _prototypeAuthenticated = false);
     };

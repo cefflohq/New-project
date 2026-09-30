@@ -1280,16 +1280,14 @@ class RiderDetailScreen extends StatelessWidget {
                       child: CefButton(
                         L.reject,
                         secondary: true,
-                        onTap: () =>
-                            showNotWiredYetSnackBar(context, L.rejectingRiders),
+                        onTap: () => _decideRider(context, rider.id, false),
                       ),
                     ),
                     const SizedBox(width: Gap.cardGap),
                     Expanded(
                       child: CefButton(
                         L.approveRider,
-                        onTap: () =>
-                            showNotWiredYetSnackBar(context, L.approvingRiders),
+                        onTap: () => _decideRider(context, rider.id, true),
                       ),
                     ),
                   ],
@@ -1356,10 +1354,14 @@ class _TeamScreenState extends State<TeamScreen> {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    return AsyncView<List<TeamMember>>(
+    return AsyncView<(List<TeamMember>, List<Map<String, dynamic>>)>(
       key: ValueKey('team-${app.business?.id}'),
-      load: () => app.repo.team(app.business!.id),
-      builder: (context, members, reload) {
+      load: () async => (
+        await app.repo.team(app.business!.id),
+        await app.repo.pendingTeamRequests(app.business!.id),
+      ),
+      builder: (context, data, reload) {
+        final (members, requests) = data;
         final q = _query.text.trim().toLowerCase();
         final visible = q.isEmpty
             ? members
@@ -1378,6 +1380,13 @@ class _TeamScreenState extends State<TeamScreen> {
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: Gap.md),
+            // Invite-link joins wait here until the Owner decides.
+            if (requests.isNotEmpty) ...[
+              SectionHeading(L.joinRequests, icon: LucideIcons.userPlus),
+              for (final r in requests)
+                _TeamRequestRow(request: r, onDecided: reload),
+              const SizedBox(height: Gap.md),
+            ],
             if (visible.isEmpty)
               StateBlock.empty(
                 q.isEmpty ? L.ownerCanRunAlone : L.noTeamMembersYet,
@@ -1935,6 +1944,104 @@ class _CreateZoneDialogState extends State<_CreateZoneDialog> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Pending rider decision through the existing canonical functions
+/// (approve_pending_rider / deactivate_rider), then back to the list.
+Future<void> _decideRider(
+  BuildContext context,
+  String riderId,
+  bool approve,
+) async {
+  final app = AppScope.read(context);
+  try {
+    if (approve) {
+      await app.repo.approvePendingRider(riderId);
+    } else {
+      await app.repo.rejectPendingRider(riderId);
+    }
+    if (!context.mounted) return;
+    app.dataChanged();
+    showCefToast(context, approve ? L.riderApproved : L.riderRejected);
+    app.back();
+  } catch (e) {
+    if (context.mounted) showCefToast(context, '$e', error: true);
+  }
+}
+
+class _TeamRequestRow extends StatefulWidget {
+  const _TeamRequestRow({required this.request, required this.onDecided});
+  final Map<String, dynamic> request;
+  final Future<void> Function() onDecided;
+
+  @override
+  State<_TeamRequestRow> createState() => _TeamRequestRowState();
+}
+
+class _TeamRequestRowState extends State<_TeamRequestRow> {
+  bool _busy = false;
+
+  Future<void> _decide(bool approve) async {
+    final app = AppScope.read(context);
+    setState(() => _busy = true);
+    try {
+      await app.repo.decideTeamRequest(widget.request['id'] as String, approve);
+      if (!mounted) return;
+      showCefToast(context, approve ? L.requestApproved : L.requestRejected);
+      await widget.onDecided();
+    } catch (e) {
+      if (mounted) showCefToast(context, '$e', error: true);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final r = widget.request;
+    final name = (r['name'] ?? '') as String;
+    final role = r['role'] == 'helper' ? L.helperText : L.operatorText;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Gap.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          CefListRow(
+            title: name,
+            subtitle: [
+              role,
+              if (r['phone'] != null) r['phone'] as String,
+            ].join(' · '),
+            leading: CefAvatar(name, filled: true),
+            trailing: StatusChip(L.pending, warning: true),
+            showChevron: false,
+            showDivider: false,
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: CefButton(
+                  L.reject,
+                  secondary: true,
+                  compact: true,
+                  onTap: _busy ? null : () => _decide(false),
+                ),
+              ),
+              const SizedBox(width: Gap.cardGap),
+              Expanded(
+                child: CefButton(
+                  L.approveText,
+                  busy: _busy,
+                  compact: true,
+                  onTap: () => _decide(true),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

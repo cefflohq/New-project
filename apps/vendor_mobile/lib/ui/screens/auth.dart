@@ -2526,3 +2526,150 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
     ),
   );
 }
+
+/// Join through a permanent invite link (Founder, 2026-10-01): the signed-in
+/// invitee confirms their details and sends ONE request. It is always
+/// pending -- the Owner approves or rejects it in Team -- so this screen
+/// never grants access and never opens Business Setup.
+class JoinRequestScreen extends StatefulWidget {
+  const JoinRequestScreen({super.key, required this.token});
+  final String token;
+
+  @override
+  State<JoinRequestScreen> createState() => _JoinRequestScreenState();
+}
+
+class _JoinRequestScreenState extends State<JoinRequestScreen> {
+  final _name = TextEditingController();
+  final _phone = TextEditingController();
+  Map<String, dynamic>? _link;
+  bool _loading = true, _busy = false, _sent = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _phone.dispose();
+    super.dispose();
+  }
+
+  Future<void> _resolve() async {
+    final app = AppScope.read(context);
+    try {
+      final link = await app.repo.resolveInviteLink(widget.token);
+      if (mounted) setState(() => _link = link);
+    } on RepositoryError catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  String get _business => (_link?['business_name'] as String?) ?? 'Cefflo';
+  bool get _open => _link?['status'] == 'open';
+
+  Future<void> _send() async {
+    if (_name.text.trim().isEmpty) {
+      setState(() => _error = L.nameRequired);
+      return;
+    }
+    final app = AppScope.read(context);
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final res = await app.repo.joinViaInviteLink(
+        token: widget.token,
+        name: _name.text.trim(),
+        phone: _phone.text.trim().isEmpty ? null : _phone.text.trim(),
+      );
+      if (!mounted) return;
+      if (res['status'] == 'active') {
+        await app.finishJoin();
+        await app.loadSession();
+        return;
+      }
+      setState(() => _sent = true);
+    } on RepositoryError catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _signOut() async {
+    final app = AppScope.read(context);
+    await app.finishJoin();
+    await app.repo.signOut();
+    app.clearSession();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final Widget body;
+    if (_loading) {
+      body = const StateBlock.loading();
+    } else if (_sent) {
+      body = Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SheetHeading(L.joinPendingTitle, L.joinPendingBody(_business)),
+          const SizedBox(height: Gap.xxl),
+          CefButton(L.signOut, secondary: true, onTap: _signOut),
+        ],
+      );
+    } else if (!_open) {
+      body = Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          StateBlock.error(_error ?? L.joinLinkUnavailable),
+          const SizedBox(height: Gap.lg),
+          CefButton(L.signOut, secondary: true, onTap: _signOut),
+        ],
+      );
+    } else {
+      body = Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SheetHeading(L.joinTitle(_business), L.joinBody),
+          const SizedBox(height: Gap.xl),
+          Text(
+            _link?['kind'] == 'helper' ? L.helperText : L.operatorText,
+            style: text.labelLarge,
+          ),
+          const SizedBox(height: Gap.md),
+          CefField(
+            controller: _name,
+            label: L.fullName,
+            prefixIcon: LucideIcons.user,
+            enabled: !_busy,
+            errorText: _error,
+          ),
+          CefField(
+            controller: _phone,
+            label: L.phoneNumber,
+            prefixIcon: LucideIcons.phone,
+            keyboardType: TextInputType.phone,
+            enabled: !_busy,
+          ),
+          const SizedBox(height: Gap.md),
+          CefButton(L.joinSubmit, busy: _busy, onTap: _send),
+          const SizedBox(height: Gap.md),
+          TextButton(
+            onPressed: _busy ? null : _signOut,
+            child: Text(L.signOut),
+          ),
+        ],
+      );
+    }
+    return _SheetScaffold(child: body);
+  }
+}

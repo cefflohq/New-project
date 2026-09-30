@@ -445,5 +445,6 @@
   "otpContinue": "Teruskan",
   "otpCodeLabel": "Kod pengesahan 6 digit",
   "otpEmailVerified": "E-mel disahkan",
-  "otpRecoveryTitle": "Tetapkan semula kata laluan"
+  "otpRecoveryTitle": "Tetapkan semula kata laluan",
+  "enterNamePhone": "Masukkan nama penuh dan nombor telefon anda."
 }

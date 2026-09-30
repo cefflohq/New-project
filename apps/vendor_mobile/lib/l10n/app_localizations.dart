@@ -6092,6 +6092,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No pending riders yet.'**
   String get noPendingRidersYet;
+
+  /// No description provided for @inviteShareMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi, you\'re invited to join {business}. Click the link below to register.'**
+  String inviteShareMessage(Object business);
+
+  /// No description provided for @resetLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset link'**
+  String get resetLink;
+
+  /// No description provided for @resetLinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset this invite link?'**
+  String get resetLinkTitle;
+
+  /// No description provided for @resetLinkBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The current link stops working immediately. Share the new link with anyone who hasn\'t joined yet.'**
+  String get resetLinkBody;
+
+  /// No description provided for @linkResetDone.
+  ///
+  /// In en, this message translates to:
+  /// **'A new invite link is ready.'**
+  String get linkResetDone;
+
+  /// No description provided for @inviteLinkPermanent.
+  ///
+  /// In en, this message translates to:
+  /// **'This link stays the same until you reset it. Everyone who joins waits for your approval.'**
+  String get inviteLinkPermanent;
+
+  /// No description provided for @moreText.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get moreText;
+
+  /// No description provided for @scanToJoinBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan with a phone camera to open the invitation.'**
+  String get scanToJoinBody;
+
+  /// No description provided for @joinRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Join requests'**
+  String get joinRequests;
+
+  /// No description provided for @approveText.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get approveText;
+
+  /// No description provided for @requestApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Request approved.'**
+  String get requestApproved;
+
+  /// No description provided for @requestRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Request rejected.'**
+  String get requestRejected;
+
+  /// No description provided for @riderApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Rider approved.'**
+  String get riderApproved;
+
+  /// No description provided for @riderRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rider rejected.'**
+  String get riderRejected;
+
+  /// No description provided for @joinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join {business}'**
+  String joinTitle(Object business);
+
+  /// No description provided for @joinBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your details. The business approves every request before you get access.'**
+  String get joinBody;
+
+  /// No description provided for @joinSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send request'**
+  String get joinSubmit;
+
+  /// No description provided for @joinPendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for approval'**
+  String get joinPendingTitle;
+
+  /// No description provided for @joinPendingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your request was sent to {business}. You\'ll get access once it\'s approved.'**
+  String joinPendingBody(Object business);
+
+  /// No description provided for @joinLinkUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This invite link is no longer valid. Ask the business for the new link.'**
+  String get joinLinkUnavailable;
 }
 
 class _AppLocalizationsDelegate

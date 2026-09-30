@@ -1636,5 +1636,46 @@
       }
     }
   },
-  "noPendingRidersYet": "No pending riders yet."
+  "noPendingRidersYet": "No pending riders yet.",
+  "inviteShareMessage": "Hi, you're invited to join {business}. Click the link below to register.",
+  "@inviteShareMessage": {
+    "placeholders": {
+      "business": {
+        "type": "Object"
+      }
+    }
+  },
+  "resetLink": "Reset link",
+  "resetLinkTitle": "Reset this invite link?",
+  "resetLinkBody": "The current link stops working immediately. Share the new link with anyone who hasn't joined yet.",
+  "linkResetDone": "A new invite link is ready.",
+  "inviteLinkPermanent": "This link stays the same until you reset it. Everyone who joins waits for your approval.",
+  "moreText": "More",
+  "scanToJoinBody": "Scan with a phone camera to open the invitation.",
+  "joinRequests": "Join requests",
+  "approveText": "Approve",
+  "requestApproved": "Request approved.",
+  "requestRejected": "Request rejected.",
+  "riderApproved": "Rider approved.",
+  "riderRejected": "Rider rejected.",
+  "joinTitle": "Join {business}",
+  "@joinTitle": {
+    "placeholders": {
+      "business": {
+        "type": "Object"
+      }
+    }
+  },
+  "joinBody": "Complete your details. The business approves every request before you get access.",
+  "joinSubmit": "Send request",
+  "joinPendingTitle": "Waiting for approval",
+  "joinPendingBody": "Your request was sent to {business}. You'll get access once it's approved.",
+  "@joinPendingBody": {
+    "placeholders": {
+      "business": {
+        "type": "Object"
+      }
+    }
+  },
+  "joinLinkUnavailable": "This invite link is no longer valid. Ask the business for the new link."
 }

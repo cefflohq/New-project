@@ -482,6 +482,19 @@ class RiderRepository {
     () => _db.rpc('accept_rider_invitation', params: {'p_token': token}),
   );
 
+  /// Joins a business through its permanent rider invite link. Always
+  /// lands as a pending rider until the business approves.
+  Future<void> joinViaInviteLink({
+    required String token,
+    required String name,
+    required String phone,
+  }) => _run(
+    () => _db.rpc(
+      'join_via_invite_link',
+      params: {'p_token': token, 'p_name': name, 'p_phone': phone},
+    ),
+  );
+
   /// Claims every invitation this account consented to in the Invitation
   /// PWA, bound server-side to the caller's own confirmed email (never an
   /// email sent from the client). Creates the pending rider membership.

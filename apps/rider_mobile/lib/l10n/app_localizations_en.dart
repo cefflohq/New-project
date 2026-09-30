@@ -1497,4 +1497,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get otpRecoveryTitle => 'Reset your password';
+
+  @override
+  String get enterNamePhone => 'Enter your full name and phone number.';
 }

@@ -3323,4 +3323,75 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get noPendingRidersYet => 'Tiada rider menunggu kelulusan lagi.';
+
+  @override
+  String inviteShareMessage(Object business) {
+    return 'Hai, anda dijemput menyertai $business. Klik pautan di bawah untuk mendaftar.';
+  }
+
+  @override
+  String get resetLink => 'Set semula pautan';
+
+  @override
+  String get resetLinkTitle => 'Set semula pautan jemputan ini?';
+
+  @override
+  String get resetLinkBody =>
+      'Pautan semasa terus tidak berfungsi. Kongsi pautan baharu dengan sesiapa yang belum menyertai.';
+
+  @override
+  String get linkResetDone => 'Pautan jemputan baharu sudah sedia.';
+
+  @override
+  String get inviteLinkPermanent =>
+      'Pautan ini kekal sama sehingga anda set semula. Semua yang menyertai perlu menunggu kelulusan anda.';
+
+  @override
+  String get moreText => 'Lagi';
+
+  @override
+  String get scanToJoinBody =>
+      'Imbas dengan kamera telefon untuk membuka jemputan.';
+
+  @override
+  String get joinRequests => 'Permintaan menyertai';
+
+  @override
+  String get approveText => 'Luluskan';
+
+  @override
+  String get requestApproved => 'Permintaan diluluskan.';
+
+  @override
+  String get requestRejected => 'Permintaan ditolak.';
+
+  @override
+  String get riderApproved => 'Rider diluluskan.';
+
+  @override
+  String get riderRejected => 'Rider ditolak.';
+
+  @override
+  String joinTitle(Object business) {
+    return 'Sertai $business';
+  }
+
+  @override
+  String get joinBody =>
+      'Lengkapkan butiran anda. Bisnes akan meluluskan setiap permintaan sebelum anda mendapat akses.';
+
+  @override
+  String get joinSubmit => 'Hantar permintaan';
+
+  @override
+  String get joinPendingTitle => 'Menunggu kelulusan';
+
+  @override
+  String joinPendingBody(Object business) {
+    return 'Permintaan anda telah dihantar kepada $business. Anda akan mendapat akses setelah diluluskan.';
+  }
+
+  @override
+  String get joinLinkUnavailable =>
+      'Pautan jemputan ini tidak lagi sah. Minta pautan baharu daripada bisnes.';
 }

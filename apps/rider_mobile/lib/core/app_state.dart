@@ -8,6 +8,7 @@ import '../data/models.dart';
 import '../data/rider_repository.dart';
 import 'live_location.dart';
 import 'notification_alerts.dart';
+import 'join_link.dart';
 import 'ui_locale.dart';
 import 'routes.dart';
 
@@ -535,6 +536,11 @@ class AppState extends ChangeNotifier {
       _stack
         ..clear()
         ..add(RiderLocation(homeRoute));
+      // Opened from a business's permanent invite link: go straight to
+      // Join Business with the link filled in.
+      if (stage == DriverStage.noBusiness && joinToken != null) {
+        _stack.add(const RiderLocation(DRoute.joinBusiness));
+      }
       if (active != null) await _loadOrders();
       _project();
       if (_cancelNotifications == null) startNotifications();
@@ -545,6 +551,21 @@ class AppState extends ChangeNotifier {
       loadingSession = false;
       notifyListeners();
     }
+  }
+
+  // ---- Permanent invite link (rider). Kept on the device through sign-up
+  // until the join request is sent; grants nothing by itself.
+  String? joinToken;
+  final JoinLinkStore _joinStore = JoinLinkStore();
+
+  Future<void> restoreJoinToken(Uri launch) async {
+    joinToken = await _joinStore.read(launch);
+    notifyListeners();
+  }
+
+  Future<void> finishJoin() async {
+    joinToken = null;
+    await _joinStore.clear();
   }
 
   Future<void> _loadOrders() async {

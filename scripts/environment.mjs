@@ -43,7 +43,23 @@ export function resolveFrontendEnvironment(values) {
     ios: storeUrl(values.CEFFLO_VENDOR_APP_STORE_URL, 'apps.apple.com', 'CEFFLO_VENDOR_APP_STORE_URL'),
   };
 
-  return { name, projectRef, supabaseUrl: url.origin, publishableKey, driverStoreUrls, vendorStoreUrls };
+  // Web builds of the apps the invitation PWA hands a permanent invite link
+  // to (Founder, 2026-10-01). Optional; https only.
+  const appWebUrls = {
+    driver: webAppUrl(values.CEFFLO_DRIVER_WEB_URL, 'CEFFLO_DRIVER_WEB_URL'),
+    vendor: webAppUrl(values.CEFFLO_VENDOR_WEB_URL, 'CEFFLO_VENDOR_WEB_URL'),
+  };
+
+  return { name, projectRef, supabaseUrl: url.origin, publishableKey, driverStoreUrls, vendorStoreUrls, appWebUrls };
+}
+
+function webAppUrl(raw, name) {
+  const value = String(raw || '').trim();
+  if (!value) return null;
+  let url;
+  try { url = new URL(value); } catch { throw new Error(`${name} must be a valid absolute URL`); }
+  if (url.protocol !== 'https:' || url.search || url.hash) throw new Error(`${name} must be an https URL without query or fragment`);
+  return url.href;
 }
 
 // Cefflo Driver / Cefflo Vendor store listings for the invitation PWA. Optional: absent
@@ -69,7 +85,8 @@ export function serializeRuntimeConfig(environment) {
     realtimeEnabled: true,
     storageBucket: 'cefflo-pod',
     driverStoreUrls: environment.driverStoreUrls || { android: null, ios: null },
-    vendorStoreUrls: environment.vendorStoreUrls || { android: null, ios: null }
+    vendorStoreUrls: environment.vendorStoreUrls || { android: null, ios: null },
+    appWebUrls: environment.appWebUrls || { driver: null, vendor: null }
   };
   return `window.CEFFLO_CONFIG = Object.freeze(${JSON.stringify(config, null, 2)});\n`;
 }

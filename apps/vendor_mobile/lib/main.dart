@@ -126,6 +126,7 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
     applyUiLocale(app.uiLocale);
     app.restoreUiLocale();
     app.restoreAppearance();
+    if (!widget.repo.isDemo) app.restoreJoinToken(Uri.base);
     app.access = widget.access;
     // Sign Out calls app.clearSession(), which lives in AppState -- but the
     // "is a prototype session authenticated" flag below has to live here
@@ -320,6 +321,12 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
                       })
                     : null,
               );
+            }
+            // Opened from a permanent invite link: finish the join request
+            // before anything else (never Business Setup, which would make
+            // this account an Owner).
+            if (!widget.repo.isDemo && app.joinToken != null) {
+              return JoinRequestScreen(token: app.joinToken!);
             }
             if (app.loadingSession) {
               return const Scaffold(body: StateBlock.loading());

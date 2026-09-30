@@ -1508,4 +1508,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get otpRecoveryTitle => 'Tetapkan semula kata laluan';
+
+  @override
+  String get enterNamePhone => 'Masukkan nama penuh dan nombor telefon anda.';
 }

@@ -500,6 +500,96 @@ class VendorRepository {
     return _single(row);
   }
 
+  /// The business's one permanent invite link for [kind] ('rider',
+  /// 'operator', 'helper'), created server-side on first use.
+  Future<String> inviteLinkToken(String businessId, String kind) async {
+    if (_demo) return 'demo-$kind-link';
+    final res = await _run(
+      () => _db!.rpc(
+        'get_invite_link',
+        params: {'p_business_id': businessId, 'p_kind': kind},
+      ),
+    );
+    return _single(res)['token'] as String;
+  }
+
+  /// Revokes the current link at once and returns the replacement token.
+  Future<String> resetInviteLink(String businessId, String kind) async {
+    if (_demo) return 'demo-$kind-link-reset';
+    final res = await _run(
+      () => _db!.rpc(
+        'reset_invite_link',
+        params: {'p_business_id': businessId, 'p_kind': kind},
+      ),
+    );
+    return _single(res)['token'] as String;
+  }
+
+  /// Business name, role and state of a permanent invite link.
+  Future<Map<String, dynamic>?> resolveInviteLink(String token) async {
+    final res = await _run(
+      () => _db!.rpc('resolve_invite_link', params: {'p_token': token}),
+    );
+    return res == null ? null : Map<String, dynamic>.from(res as Map);
+  }
+
+  /// Joins through a permanent invite link. Always lands as pending.
+  Future<Map<String, dynamic>> joinViaInviteLink({
+    required String token,
+    required String name,
+    String? phone,
+  }) async {
+    final res = await _run(
+      () => _db!.rpc(
+        'join_via_invite_link',
+        params: {'p_token': token, 'p_name': name, 'p_phone': phone},
+      ),
+    );
+    return _single(res);
+  }
+
+  /// Existing canonical approval of a pending rider.
+  Future<void> approvePendingRider(String riderId) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc('approve_pending_rider', params: {'p_rider_id': riderId}),
+    );
+  }
+
+  /// Existing canonical deactivation: a rejected applicant becomes inactive.
+  Future<void> rejectPendingRider(String riderId) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc('deactivate_rider', params: {'p_rider_id': riderId}),
+    );
+  }
+
+  /// Pending Operator / Helper requests (Owner only by RLS).
+  Future<List<Map<String, dynamic>>> pendingTeamRequests(
+    String businessId,
+  ) async {
+    if (_demo) return const [];
+    final rows = await _run(
+      () => _db!
+          .from('team_join_requests')
+          .select('id, role, name, phone, created_at')
+          .eq('business_id', businessId)
+          .eq('status', 'pending')
+          .order('created_at'),
+    );
+    return _rows(rows);
+  }
+
+  Future<void> decideTeamRequest(String requestId, bool approve) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'decide_team_join_request',
+        params: {'p_request_id': requestId, 'p_approve': approve},
+      ),
+    );
+  }
+
   // ------------------------------------------------------------------ team
 
   Future<List<TeamMember>> team(String businessId) async {

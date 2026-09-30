@@ -52,10 +52,12 @@ void main() {
     );
   });
 
-  testWidgets('a Helper is invited by email into the team link', (
+  testWidgets('Operator and Helper each have their own permanent link', (
     tester,
   ) async {
     await pumpAt(tester, const VendorLocation(VRoute.helperRegistrationLink));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('?link=demo-operator-link'), findsOneWidget);
     await tester.tap(find.text('Helper'));
     await tester.pumpAndSettle();
     expect(
@@ -64,12 +66,8 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('Email'), findsOneWidget);
-    await tester.enterText(find.byType(TextField).first, 'aina@example.com');
-    await tester.tap(find.text('Generate invite link'));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('?type=team&token='), findsWidgets);
-    expect(find.textContaining('type=helper'), findsNothing);
+    expect(find.textContaining('?link=demo-helper-link'), findsOneWidget);
+    expect(find.byType(TextField), findsNothing);
   });
 
   testWidgets('a Helper lands in the fulfilment workspace, not the shell', (

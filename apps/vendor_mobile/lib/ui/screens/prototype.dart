@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:qr/qr.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../core/app_state.dart';
 import '../../core/appearance.dart';
@@ -1626,10 +1627,12 @@ class _NotificationInboxScreen extends StatelessWidget {
   }
 }
 
-/// V-22 / V-25 — Rider/Team invitation. The Vendor names who is invited;
-/// the backend (create_rider_invitation / create_team_invitation) returns a
-/// one-time token, which becomes the invite.cefflo.com link. The raw token is
-/// shown only here, never stored on the device.
+/// V-22 / V-25 — Rider / team invite (Founder, 2026-10-01). Each business
+/// has ONE permanent invite link per role (rider, operator, helper), made by
+/// the server on first open (get_invite_link) and kept until Reset. Anyone
+/// who joins through it waits as pending until the business approves.
+/// Rider links: Owner or Operator. Operator / Helper links: Owner only
+/// (enforced server-side).
 class _InviteLinkScreen extends StatefulWidget {
   const _InviteLinkScreen({required this.rider});
   final bool rider;
@@ -1639,87 +1642,56 @@ class _InviteLinkScreen extends StatefulWidget {
 }
 
 class _InviteLinkScreenState extends State<_InviteLinkScreen> {
-  final name = TextEditingController();
-  final phone = TextEditingController();
-  final email = TextEditingController();
   // D-73: Operator or Helper only. Owner is never invited.
   String role = 'operator';
-  bool busy = false;
+  final Map<String, String> _tokens = {};
+  bool _loading = false;
+  bool _resetting = false;
   String? error;
-  String? link;
 
   bool get rider => widget.rider;
+  String get kind => rider ? 'rider' : role;
 
   @override
-  void dispose() {
-    name.dispose();
-    phone.dispose();
-    email.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
-  bool get helper => !rider && role == 'helper';
-
-  String? _validate() {
-    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email.text.trim())) {
-      return L.enterValidEmailAddress;
-    }
-    if (rider && name.text.trim().isEmpty) return L.nameRequired;
-    if (rider && phone.text.trim().length < 7) {
-      return L.enterValidPhoneNumber;
-    }
-    return null;
-  }
-
-  Future<void> _generate() async {
-    final problem = _validate();
-    if (problem != null) {
-      setState(() => error = problem);
-      return;
-    }
+  Future<void> _load() async {
+    if (_tokens.containsKey(kind)) return setState(() {});
     final app = AppScope.read(context);
     final businessId = app.business?.id;
     if (businessId == null) {
       setState(() => error = L.noBusinessLinked);
       return;
     }
+    final wanted = kind;
     setState(() {
-      busy = true;
+      _loading = true;
       error = null;
     });
     try {
-      final result = rider
-          ? await app.repo.createRiderInvitation(
-              businessId: businessId,
-              email: email.text.trim(),
-              name: name.text.trim(),
-              phone: phone.text.trim(),
-            )
-          : await app.repo.createTeamInvitation(
-              businessId: businessId,
-              email: email.text.trim(),
-              role: helper ? 'helper' : 'operator',
-            );
-      final token = result['token'];
-      if (token is! String || token.isEmpty) {
-        throw RepositoryError(L.unexpectedBackendResponseShape);
-      }
-      if (!mounted) return;
-      setState(
-        () => link = Uri.parse(Env.inviteBaseUrl)
-            .replace(
-              queryParameters: {
-                'type': rider ? 'rider' : 'team',
-                'token': token,
-              },
-            )
-            .toString(),
-      );
+      final token = await app.repo.inviteLinkToken(businessId, wanted);
+      if (mounted) setState(() => _tokens[wanted] = token);
     } catch (e) {
       if (mounted) setState(() => error = '$e');
     } finally {
-      if (mounted) setState(() => busy = false);
+      if (mounted) setState(() => _loading = false);
     }
+  }
+
+  String? get link {
+    final token = _tokens[kind];
+    if (token == null) return null;
+    return Uri.parse(Env.inviteBaseUrl)
+        .replace(queryParameters: {'link': token})
+        .toString();
+  }
+
+  String _message(String link) {
+    final business = AppScope.read(context).business?.name ?? 'Cefflo';
+    return '${L.inviteShareMessage(business)}\n$link';
   }
 
   void _copyLink(String link) {
@@ -1727,7 +1699,63 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
     showCefToast(context, L.linkCopied);
   }
 
-  /// Compact, centred modal over a dimmed page: the real QR code for [link].
+  Future<void> _reset() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(L.resetLinkTitle),
+        content: Text(L.resetLinkBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(L.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              L.resetLink,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final app = AppScope.read(context);
+    final wanted = kind;
+    setState(() => _resetting = true);
+    try {
+      final token = await app.repo.resetInviteLink(app.business!.id, wanted);
+      if (!mounted) return;
+      setState(() => _tokens[wanted] = token);
+      showCefToast(context, L.linkResetDone);
+    } catch (e) {
+      if (mounted) showCefToast(context, '$e', error: true);
+    } finally {
+      if (mounted) setState(() => _resetting = false);
+    }
+  }
+
+  Future<void> _open(String target, Uri uri) async {
+    var opened = false;
+    try {
+      opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
+    if (!opened && mounted) {
+      showCefToast(context, L.couldNotOpen(target), error: true);
+    }
+  }
+
+  Future<void> _systemShare(String link) async {
+    try {
+      await SharePlus.instance.share(ShareParams(text: _message(link)));
+    } catch (_) {
+      if (mounted) _copyLink(link);
+    }
+  }
+
+  /// Compact, centred pop-up: the QR of the same link. The link itself is
+  /// not repeated here -- it is already on the screen behind.
   void _showQrModal(String link) {
     final text = Theme.of(context).textTheme;
     showDialog<void>(
@@ -1746,12 +1774,12 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
               Text(L.scanJoin, style: text.titleMedium),
               const SizedBox(height: Gap.xs),
               Text(
-                L.invitedPersonCanScanCodeOpen,
+                L.scanToJoinBody,
                 textAlign: TextAlign.center,
                 style: text.bodySmall,
               ),
               const SizedBox(height: Gap.lg),
-              _QrCode(data: link, size: 200),
+              _QrCode(data: link, size: 220),
               const SizedBox(height: Gap.lg),
               CefButton(
                 L.done,
@@ -1770,9 +1798,6 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
     final text = Theme.of(context).textTheme;
     final link = this.link;
     return PageBody(
-      bottom: link == null
-          ? CefButton(L.generateInviteLink, busy: busy, onTap: _generate)
-          : null,
       children: [
         Row(
           children: [
@@ -1787,19 +1812,46 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
                     style: text.titleSmall,
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    rider
-                        ? L.theyOpenLinkJoinTeamComplete
-                        : L.theyOpenLinkHelpRunDeliveries,
-                    style: text.bodySmall,
-                  ),
+                  Text(L.inviteLinkPermanent, style: text.bodySmall),
                 ],
               ),
             ),
           ],
         ),
-        const SizedBox(height: Gap.md),
-        if (link == null) ..._form(text) else ..._result(text, link),
+        const SizedBox(height: Gap.lg),
+        if (!rider) ...[
+          Text(L.role, style: text.labelLarge),
+          const SizedBox(height: Gap.sm),
+          Wrap(
+            spacing: Gap.sm,
+            children: [
+              for (final (value, label) in [
+                ('operator', L.operatorText),
+                ('helper', L.helperText),
+              ])
+                CefChoiceChip(
+                  label: label,
+                  selected: role == value,
+                  onTap: () {
+                    setState(() => role = value);
+                    _load();
+                  },
+                ),
+            ],
+          ),
+          const SizedBox(height: Gap.sm),
+          Text(
+            role == 'helper'
+                ? L.helperRoleDescription
+                : L.operatorRoleDescription,
+            style: text.bodySmall,
+          ),
+          const SizedBox(height: Gap.lg),
+        ],
+        if (link == null && error == null)
+          const SkeletonPulse(child: SkeletonBox(height: 52))
+        else if (link != null)
+          ..._linkSection(text, link),
         if (error != null)
           Padding(
             padding: const EdgeInsets.only(top: Gap.md),
@@ -1808,124 +1860,54 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
               style: text.bodySmall?.copyWith(color: context.c.attention),
             ),
           ),
+        if (_loading && link != null) const LinearProgressIndicator(),
       ],
     );
   }
 
-  List<Widget> _form(TextTheme text) => [
-    if (!rider) ...[
-      Text(L.role, style: text.labelLarge),
-      const SizedBox(height: Gap.sm),
-      Wrap(
-        spacing: Gap.sm,
-        children: [
-          CefChoiceChip(
-            label: L.operatorText,
-            selected: role == 'operator',
-            onTap: () => setState(() => role = 'operator'),
-          ),
-          CefChoiceChip(
-            label: L.helperText,
-            selected: role == 'helper',
-            onTap: () => setState(() => role = 'helper'),
-          ),
-        ],
-      ),
-      const SizedBox(height: Gap.sm),
-      Text(
-        helper ? L.helperRoleDescription : L.operatorRoleDescription,
-        style: text.bodySmall,
-      ),
-      const SizedBox(height: Gap.md),
-    ],
-    if (rider) ...[
-      CefField(
-        label: L.riderName,
-        controller: name,
-        prefixIcon: LucideIcons.user,
-      ),
-      const SizedBox(height: Gap.md),
-      CefField(
-        label: L.phoneNumber,
-        controller: phone,
-        keyboardType: TextInputType.phone,
-        prefixIcon: LucideIcons.phone,
-      ),
-      const SizedBox(height: Gap.md),
-    ],
-    CefField(
-      label: L.email,
-      controller: email,
-      keyboardType: TextInputType.emailAddress,
-      prefixIcon: LucideIcons.mail,
-    ),
-  ];
-
-  String _message(String link) {
-    final business = AppScope.read(context).business?.name ?? 'Cefflo';
-    return rider
-        ? L.inviteMsgRider(business, link)
-        : L.inviteMsgTeam(business, link);
-  }
-
-  void _copyMessage(String link) {
-    Clipboard.setData(ClipboardData(text: _message(link)));
-    showCefToast(context, L.messageCopied);
-  }
-
-  Future<void> _share(String target, Uri uri) async {
-    var opened = false;
-    try {
-      opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } catch (_) {}
-    if (!opened && mounted) {
-      showCefToast(context, L.couldNotOpen(target), error: true);
-    }
-  }
-
-  /// Founder reference (2026-09-30): the link with QR and Copy, the ready
-  /// share message with Copy, then one-tap share targets. QR opens as a
-  /// centred pop-up, never a bottom sheet.
-  List<Widget> _result(TextTheme text, String link) {
+  List<Widget> _linkSection(TextTheme text, String link) {
     final c = context.c;
     final message = _message(link);
-    BoxDecoration box() => BoxDecoration(
-      color: c.card,
-      border: Border.all(color: c.border),
-      borderRadius: BorderRadius.circular(Sizes.inputRadius),
-    );
-    Widget copyButton(VoidCallback onTap) => TextButton.icon(
-      onPressed: onTap,
-      icon: Icon(LucideIcons.copy, size: 18, color: c.textPrimary),
-      label: Text(L.copyText, style: text.labelLarge),
-    );
-    final targets = <(Widget, String, Uri)>[
+    final encodedMessage = Uri.encodeComponent(message);
+    final targets = <(Widget, String, VoidCallback)>[
       (
         const WhatsAppGlyph(),
         'WhatsApp',
-        Uri.parse('https://wa.me/?text=${Uri.encodeComponent(message)}'),
+        () =>
+            _open('WhatsApp', Uri.parse('https://wa.me/?text=$encodedMessage')),
       ),
       (
-        const Icon(LucideIcons.send, color: Color(0xFF229ED9), size: 28),
+        const Icon(LucideIcons.send, color: Color(0xFF229ED9), size: 26),
         'Telegram',
-        Uri.parse(
-          'https://t.me/share/url?url=${Uri.encodeComponent(link)}'
-          '&text=${Uri.encodeComponent(message)}',
+        () => _open(
+          'Telegram',
+          Uri.parse(
+            'https://t.me/share/url?url=${Uri.encodeComponent(link)}'
+            '&text=${Uri.encodeComponent(L.inviteShareMessage(AppScope.read(context).business?.name ?? 'Cefflo'))}',
+          ),
         ),
       ),
       (
         const Icon(
-          LucideIcons.messageCircle,
-          color: Color(0xFF12A150),
-          size: 28,
+          LucideIcons.messageCircleMore,
+          color: Color(0xFF0084FF),
+          size: 26,
         ),
-        'SMS',
-        Uri.parse('sms:?body=${Uri.encodeComponent(message)}'),
+        'Messenger',
+        () => _open(
+          'Messenger',
+          Uri.parse('fb-messenger://share/?link=${Uri.encodeComponent(link)}'),
+        ),
       ),
       (
-        Icon(LucideIcons.mail, color: c.iconColor, size: 28),
-        L.email,
-        Uri.parse('mailto:?body=${Uri.encodeComponent(message)}'),
+        Icon(LucideIcons.messageSquareText, color: c.iconColor, size: 26),
+        'SMS',
+        () => _open('SMS', Uri.parse('sms:?body=$encodedMessage')),
+      ),
+      (
+        Icon(LucideIcons.ellipsis, color: c.iconColor, size: 26),
+        L.moreText,
+        () => _systemShare(link),
       ),
     ];
     return [
@@ -1933,10 +1915,14 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
       const SizedBox(height: Gap.sm),
       Container(
         padding: const EdgeInsets.only(left: Gap.md),
-        decoration: box(),
+        decoration: BoxDecoration(
+          color: c.card,
+          border: Border.all(color: c.border),
+          borderRadius: BorderRadius.circular(Sizes.inputRadius),
+        ),
         child: Row(
           children: [
-            Icon(LucideIcons.link, size: 20, color: c.iconColor),
+            Icon(LucideIcons.link, size: 20, color: c.textSecondary),
             const SizedBox(width: Gap.sm),
             Expanded(
               child: Text(
@@ -1946,47 +1932,36 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
                 style: text.bodyMedium,
               ),
             ),
-            IconAction(
-              icon: LucideIcons.qrCode,
-              tooltip: L.showQrCode,
-              onTap: () => _showQrModal(link),
+            IconButton(
+              tooltip: L.copyLink,
+              onPressed: () => _copyLink(link),
+              icon: Icon(LucideIcons.copy, size: 20, color: c.textSecondary),
             ),
-            copyButton(() => _copyLink(link)),
+            IconButton(
+              tooltip: L.showQrCode,
+              onPressed: () => _showQrModal(link),
+              icon: Icon(LucideIcons.qrCode, size: 20, color: c.textSecondary),
+            ),
           ],
         ),
       ),
-      const SizedBox(height: Gap.lg),
-      Text(L.shareMessage, style: text.titleSmall),
-      const SizedBox(height: Gap.sm),
-      Container(
-        padding: const EdgeInsets.fromLTRB(Gap.md, Gap.md, 0, Gap.md),
-        decoration: box(),
-        child: Row(
-          children: [
-            Icon(LucideIcons.messageSquareText, size: 20, color: c.iconColor),
-            const SizedBox(width: Gap.sm),
-            Expanded(child: Text(message, style: text.bodyMedium)),
-            copyButton(() => _copyMessage(link)),
-          ],
-        ),
-      ),
-      const SizedBox(height: Gap.lg),
+      const SizedBox(height: Gap.xl),
       Text(L.shareVia, style: text.titleSmall),
       const SizedBox(height: Gap.md),
       Row(
         children: [
-          for (final (icon, label, uri) in targets)
+          for (final (icon, label, onTap) in targets)
             Expanded(
               child: InkWell(
-                borderRadius: BorderRadius.circular(Sizes.cardRadius),
-                onTap: () => _share(label, uri),
+                customBorder: const CircleBorder(),
+                onTap: onTap,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: Gap.sm),
                   child: Column(
                     children: [
-                      SizedBox(height: 32, child: Center(child: icon)),
+                      SizedBox(height: 30, child: Center(child: icon)),
                       const SizedBox(height: Gap.xs),
-                      Text(label, style: text.labelMedium),
+                      Text(label, style: text.labelSmall),
                     ],
                   ),
                 ),
@@ -1994,10 +1969,17 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
             ),
         ],
       ),
-      const SizedBox(height: Gap.lg),
-      Text(
-        rider ? L.linkShownOnlyOnceExpires7 : L.linkShownOnlyOnceExpires72,
-        style: text.bodySmall,
+      const SizedBox(height: Gap.xl),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          onPressed: _resetting ? null : _reset,
+          icon: Icon(LucideIcons.rotateCcw, size: 18, color: c.attention),
+          label: Text(
+            L.resetLink,
+            style: text.labelLarge?.copyWith(color: c.attention),
+          ),
+        ),
       ),
     ];
   }

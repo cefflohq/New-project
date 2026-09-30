@@ -9,6 +9,10 @@
   const $ = id => document.getElementById(id);
   const params = new URLSearchParams(location.search);
   const token = params.get('token');
+  // A business's permanent invite link (Founder, 2026-10-01): ?link=<token>.
+  // Rider / Operator / Helper comes from the server, never from the URL.
+  const openLink = params.get('link');
+  const isOpenLink = openLink !== null;
   const requested = params.get('type');
   const type = requested === 'team' ? 'team' : 'rider';
 
@@ -18,7 +22,7 @@
     shield: '<path d="M12 3l7 3v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6l7-3z"/>',
     box: '<path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7M12 11v10"/>',
   };
-  const KIND = {
+  const KINDS = {
     rider: {
       product: 'Driver',
       invitedLine: 'Be part of their delivery team and start making deliveries.',
@@ -57,7 +61,9 @@
       next: 'Download Cefflo Vendor to create your account, or sign in with the email address this invitation was sent to.',
       revoked: 'Contact the business owner if you still want to join their team.',
     },
-  }[type];
+  };
+  const KIND = Object.assign({}, KINDS[type]);
+  const TEAM_KIND = KINDS.team;
 
   $('inviteApp').hidden = false;
   const screens = ['scrValidating', 'scrInvited', 'scrAccepted', 'scrUnavailable'];
@@ -103,6 +109,7 @@
     expired: ['This invitation has expired.', 'Ask the business to send you a new invitation.'],
     revoked: ['This invitation was withdrawn by the business.', KIND.revoked],
     declined: ['You declined this invitation.', 'If you change your mind, ask the business to send you a new invitation.'],
+    reset: ['This invite link is no longer valid.', 'The business has replaced it. Ask them for the new link.'],
     error: ['We could not check this invitation right now.', 'Check your connection and open the link again.'],
   };
   function unavailable(kind) {
@@ -179,6 +186,50 @@
   $('acceptBtn').addEventListener('click', () => decide('accept'));
   $('declineBtn').addEventListener('click', () => decide('decline'));
 
+  // Permanent invite link: sign in (or create an account) in the app for
+  // this role, which sends ONE pending join request. Nothing here grants
+  // access; the business approves every request.
+  async function resolveOpenLink() {
+    setHero('');
+    markChecks(0);
+    show('scrValidating');
+    if (!/^[0-9a-f]{48}$/.test(openLink || '')) return unavailable('invalid');
+    let result;
+    try {
+      result = await api.rpc('resolve_invite_link', { p_token: openLink }, { token: null });
+    } catch (_) {
+      return unavailable('error');
+    }
+    if (!result) return unavailable('invalid');
+    markChecks(3);
+    businessName = result.business_name || '';
+    if (result.status !== 'open') return unavailable('reset');
+    const kind = result.kind;
+    const base = kind === 'rider' ? KIND : Object.assign({}, TEAM_KIND, kind === 'helper' ? TEAM_KIND.helper : {});
+    Object.assign(KIND, base, {
+      next: kind === 'rider'
+        ? 'Sign in or create your account in Cefflo Driver, then send your request. You get access once the business approves it.'
+        : 'Sign in or create your account in Cefflo Vendor, then send your request. You get access once the business owner approves it.',
+    });
+    KIND.features = KIND.features.map(([icon, title, body]) =>
+      /email address this invitation/.test(body) ? [icon, title, 'Sign in with your own account. The owner approves your request.'] : [icon, title, body]);
+    const apps = (window.CEFFLO_CONFIG && window.CEFFLO_CONFIG.appWebUrls) || {};
+    const appUrl = kind === 'rider' ? apps.driver : apps.vendor;
+    invited(result);
+    $('declineBtn').hidden = true;
+    const accept = $('acceptBtn');
+    accept.textContent = 'Continue';
+    const go = () => {
+      if (!appUrl) return accepted();
+      const url = new URL(appUrl);
+      if (kind !== 'rider') url.searchParams.set('access', kind);
+      url.searchParams.set('join', openLink);
+      location.href = url.href;
+    };
+    accept.replaceWith(accept.cloneNode(true));
+    $('acceptBtn').addEventListener('click', go);
+  }
+
   // Screen 1: validation runs while this state is visible; the checklist
   // completes when the real answer arrives (no invented progress).
   async function resolve() {
@@ -202,5 +253,5 @@
     if (['declined', 'revoked', 'expired'].includes(result.status)) return unavailable(result.status);
     return unavailable('invalid');
   }
-  resolve();
+  if (isOpenLink) resolveOpenLink(); else resolve();
 })();

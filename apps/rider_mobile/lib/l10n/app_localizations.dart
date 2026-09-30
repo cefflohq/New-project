@@ -2773,6 +2773,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reset your password'**
   String get otpRecoveryTitle;
+
+  /// No description provided for @enterNamePhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your full name and phone number.'**
+  String get enterNamePhone;
 }
 
 class _AppLocalizationsDelegate

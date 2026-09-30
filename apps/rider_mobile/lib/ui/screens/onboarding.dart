@@ -1254,6 +1254,17 @@ String? invitationTokenFrom(String input) {
   return RegExp(r'^[0-9a-fA-F]{32,}$').hasMatch(text) ? text : null;
 }
 
+/// The token of a business's permanent invite link (`?link=` / `?join=`),
+/// or a bare 48-hex token. Null for anything else.
+String? openInviteTokenFrom(String input) {
+  final text = input.trim();
+  final uri = Uri.tryParse(text);
+  final fromQuery =
+      uri?.queryParameters['link'] ?? uri?.queryParameters['join'];
+  final token = fromQuery ?? text;
+  return RegExp(r'^[0-9a-f]{48}$').hasMatch(token) ? token : null;
+}
+
 class JoinBusinessScreen extends StatefulWidget {
   const JoinBusinessScreen({super.key});
 
@@ -1262,10 +1273,53 @@ class JoinBusinessScreen extends StatefulWidget {
 }
 
 class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
-  final _link = TextEditingController();
+  late final _link = TextEditingController(
+    text: AppScope.read(context).joinToken ?? '',
+  );
+  final _name = TextEditingController();
+  final _phone = TextEditingController();
   int _tab = 0;
   bool _busy = false;
   String? _error;
+
+  /// A business's permanent invite link (or its bare token).
+  String? get _openToken => openInviteTokenFrom(_link.text);
+
+  @override
+  void initState() {
+    super.initState();
+    // The name / phone fields appear as soon as a permanent link is pasted.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _link.addListener(() => setState(() {}));
+    });
+  }
+
+  Future<void> _joinOpenLink(String token) async {
+    final app = AppScope.read(context);
+    if (_name.text.trim().isEmpty || _phone.text.trim().length < 7) {
+      setState(() => _error = L.enterNamePhone);
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await app.repo.joinViaInviteLink(
+        token: token,
+        name: _name.text.trim(),
+        phone: _phone.text.trim(),
+      );
+      await app.finishJoin();
+      // Pending until the business approves: reloading lands on the
+      // Pending Review stage the backend now reports.
+      await app.loadSession();
+    } catch (e) {
+      if (mounted) setState(() => _error = '$e');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 
   Future<void> _join() async {
     final app = AppScope.read(context);
@@ -1273,6 +1327,8 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
       app.go(DRoute.businessJoined);
       return;
     }
+    final open = _openToken;
+    if (open != null) return _joinOpenLink(open);
     final token = invitationTokenFrom(_link.text);
     if (token == null) {
       setState(() => _error = L.pasteFullInvitationLink);
@@ -1297,6 +1353,8 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
   @override
   void dispose() {
     _link.dispose();
+    _name.dispose();
+    _phone.dispose();
     super.dispose();
   }
 
@@ -1351,6 +1409,23 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
             hint: 'https://...',
             icon: LucideIcons.link,
           ),
+          // A permanent invite link asks who is joining (phone required);
+          // the business approves before any access.
+          if (_openToken != null) ...[
+            const SizedBox(height: Gap.md),
+            CeffloTextField(
+              label: L.fullName,
+              controller: _name,
+              icon: LucideIcons.user,
+            ),
+            const SizedBox(height: Gap.md),
+            CeffloTextField(
+              label: L.phoneNumber,
+              controller: _phone,
+              icon: LucideIcons.phone,
+              keyboardType: TextInputType.phone,
+            ),
+          ],
           if (_error != null) ...[
             const SizedBox(height: Gap.sm),
             Text(
