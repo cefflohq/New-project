@@ -9,7 +9,9 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../core/app_state.dart';
 import '../core/routes.dart';
 import '../core/theme.dart';
+import '../core/ui_locale.dart';
 import 'brand.dart';
+import 'screens/auth.dart' show showLanguageSheet;
 
 import 'package:cefflo_rider_mobile/l10n/l10n.dart';
 
@@ -426,6 +428,7 @@ class CeffloAuthScaffold extends StatelessWidget {
     this.subtitle,
     this.headerTrailing,
     this.headerAction,
+    this.showLanguage = true,
     required this.sheet,
     this.sheetPadding = const EdgeInsets.fromLTRB(
       Gap.gutter,
@@ -447,6 +450,11 @@ class CeffloAuthScaffold extends StatelessWidget {
   /// e.g. D09's "Maybe Later" text action in the top-right.
   final Widget? headerAction;
 
+  /// The language control (globe + EN/BM) sits top right on every auth
+  /// screen unless the screen puts its own action there (Founder,
+  /// 2026-09-30).
+  final bool showLanguage;
+
   /// Fully custom navy content, used when a screen's header is not the
   /// standard title/subtitle pair (D06, D08).
   final Widget? headerChild;
@@ -457,6 +465,9 @@ class CeffloAuthScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final headerAction =
+        this.headerAction ??
+        (showLanguage ? const AuthLanguageControl() : null);
     // The title sits in the header row (below); this block carries the
     // centred supporting line, or a screen's own custom header content.
     final header =
@@ -2168,3 +2179,53 @@ class StateBlock extends StatelessWidget {
 }
 
 enum StateKind { loading, empty, error }
+
+/// Language control on the auth screens: the globe and the language code
+/// (EN / BM), no pill or chevron. Opens the Select Language sheet.
+class AuthLanguageControl extends StatelessWidget {
+  const AuthLanguageControl({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final code = app.uiLocale.languageCode;
+    return Semantics(
+      button: true,
+      label: uiLanguageNames[code],
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: () async {
+          final picked = await showLanguageSheet(context, app.uiLocale);
+          if (picked != null) await app.setUiLocale(picked);
+        },
+        child: SizedBox(
+          height: Sizes.tapTarget,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  LucideIcons.globe,
+                  size: 20,
+                  color: CefColors.onNavy,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  code == 'ms' ? 'BM' : 'EN',
+                  style: const TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: .5,
+                    color: CefColors.onNavy,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

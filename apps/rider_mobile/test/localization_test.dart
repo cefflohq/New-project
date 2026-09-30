@@ -98,7 +98,7 @@ void main() {
     await tester.pump();
     expect(find.text('Lupa Kata Laluan?'), findsOneWidget);
     expect(find.text('Ada jemputan?'), findsOneWidget);
-    expect(find.text('Bahasa Melayu'), findsOneWidget);
+    expect(find.text('BM'), findsOneWidget);
     expect(find.text('Forgot Password?'), findsNothing);
   });
 

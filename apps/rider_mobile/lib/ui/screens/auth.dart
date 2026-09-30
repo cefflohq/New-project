@@ -211,84 +211,6 @@ class CeffloInlinePrompt extends StatelessWidget {
   );
 }
 
-/// The globe + language + chevron pill at the foot of D02.
-class LanguagePill extends StatelessWidget {
-  const LanguagePill({
-    super.key,
-    required this.language,
-    required this.onTap,
-    this.onDark = false,
-  });
-  final String language;
-  final VoidCallback onTap;
-
-  /// D02 sits the selector straight on the blue backdrop with no pill behind
-  /// it; every other placement draws it on a white sheet.
-  final bool onDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    final row = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          LucideIcons.globe,
-          size: 20,
-          color: onDark ? CefColors.onNavy : CefColors.navy,
-        ),
-        const SizedBox(width: 10),
-        Text(
-          language,
-          style: TextStyle(
-            fontFamily: 'Manrope',
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: onDark ? CefColors.onNavy : c.textPrimary,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Icon(
-          LucideIcons.chevronDown,
-          size: 18,
-          color: onDark
-              ? CefColors.onNavy.withValues(alpha: .9)
-              : c.textSecondary,
-        ),
-      ],
-    );
-    if (onDark) {
-      return InkWell(
-        borderRadius: BorderRadius.circular(999),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-          child: row,
-        ),
-      );
-    }
-    return Center(
-      child: Material(
-        color: CefColors.tintNeutral,
-        borderRadius: BorderRadius.circular(999),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(999),
-          onTap: onTap,
-          child: Container(
-            height: 46,
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: c.border),
-            ),
-            child: row,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 // ---------------------------------------------------------------------------
 // D01 — Splash
 // ---------------------------------------------------------------------------
@@ -363,12 +285,6 @@ class _SplashScreenState extends State<SplashScreen> {
 // ---------------------------------------------------------------------------
 // D02 — Sign In
 // ---------------------------------------------------------------------------
-
-Future<void> _pickLanguage(BuildContext context) async {
-  final app = AppScope.read(context);
-  final picked = await showLanguageSheet(context, app.uiLocale);
-  if (picked != null) await app.setUiLocale(picked);
-}
 
 /// D39 Select Language — reused by D02's language pill and D38's Language
 /// row, since the references draw the same sheet in both places.
@@ -531,11 +447,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     onBack: widget.onBack,
     title: L.signEmail,
     subtitle: L.enterEmailPasswordContinue,
-    headerAction: LanguagePill(
-      language: uiLanguageNames[AppScope.of(context).uiLocale.languageCode]!,
-      onDark: true,
-      onTap: () => _pickLanguage(context),
-    ),
     sheet: Column(
       mainAxisSize: MainAxisSize.min,
       children: [

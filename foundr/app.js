@@ -856,11 +856,19 @@ window.addEventListener('popstate', () => { if (!authScreen) { const r = route0(
 // allowlist (is_platform_admin()). The server re-checks the same condition
 // on every admin RPC, so this gate is the UX of the boundary, not the
 // boundary itself.
-function authFrame(inner) {
+// Sign In carries the full logo; every other auth screen (reset, set new
+// password, access states) only the Cefflo wordmark, so the form is the
+// focus (Founder, 2026-09-30). Back is the chevron alone, top left.
+function authFrame(inner, { logo = false, back = null } = {}) {
   authScreen = true;
-  root.innerHTML = `<div class="auth-screen"><main class="auth-stage">
-    <div class="auth-brand"><img src="./img/cefflo-logo.png" alt="Cefflo" width="120" height="187"><span>FOUNDR</span></div>
+  root.innerHTML = `<div class="auth-screen">
+    ${back ? '<button type="button" class="auth-back" data-auth-back aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>' : ''}
+    <main class="auth-stage">
+    <div class="auth-brand${logo ? '' : ' word'}">${logo
+      ? '<img src="./img/cefflo-logo.png" alt="Cefflo" width="120" height="187">'
+      : '<img src="./img/cefflo-wordmark-white.png" alt="Cefflo" width="555" height="142">'}<span>FOUNDR</span></div>
     <div class="auth-box">${inner}</div></main></div>`;
+  if (back) root.querySelector('[data-auth-back]').addEventListener('click', back);
 }
 const AUTH_ICON = {
   mail: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>',
@@ -881,7 +889,7 @@ function renderSignIn(message = '') {
     <div class="field-err" data-err hidden role="alert"></div>
     <button class="auth-submit" type="submit">Sign in <svg class="auth-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
     <button class="auth-link" type="button" data-forgot>Forgot password?</button>
-    <p class="auth-foot">Only authorised admins can access FOUNDR.</p></form>`);
+    <p class="auth-foot">Only authorised admins can access FOUNDR.</p></form>`, { logo: true });
   root.querySelector('[data-google]').addEventListener('click', () => location.assign(F.googleSignInUrl()));
   const eye = root.querySelector('[data-eye]'), pwIn = root.querySelector('#pw');
   eye.addEventListener('click', () => {
@@ -911,11 +919,9 @@ function renderForgot(prefill = '') {
   authFrame(`<form data-forgot-form novalidate><h1>Reset password</h1><p class="sub">We'll email you a link to set a new password.</p>
     <div class="field"><label for="em">Email</label><input id="em" type="email" autocomplete="username" required value="${esc(prefill)}"></div>
     <div class="field-err" data-err hidden role="alert"></div>
-    <button class="auth-submit" type="submit">Send reset link</button>
-    <button class="auth-link" type="button" data-back>Back to sign in</button></form>`);
+    <button class="auth-submit" type="submit">Send reset link</button></form>`, { back: () => renderSignIn() });
   const form = root.querySelector('[data-forgot-form]'), err = form.querySelector('[data-err]');
   form.querySelector('#em').focus();
-  form.querySelector('[data-back]').addEventListener('click', () => renderSignIn());
   form.addEventListener('submit', async e => {
     e.preventDefault();
     const email = form.querySelector('#em').value.trim();
