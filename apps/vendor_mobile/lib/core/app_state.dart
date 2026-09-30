@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'appearance.dart';
 import 'auth_access.dart';
+import 'browser_history.dart';
 import 'join_link.dart';
 import 'notification_alerts.dart';
 
@@ -518,7 +519,23 @@ class AppState extends ChangeNotifier {
     final next = VendorLocation(route, entityId: entityId);
     if (next == current) return;
     _stack.add(next);
+    // One browser history entry per in-app step, so the browser / Android
+    // edge-swipe Back returns here instead of leaving the app.
+    if (hasBrowserHistory) {
+      pushBrowserHistoryEntry();
+      _historyDepth++;
+    }
     notifyListeners();
+  }
+
+  /// Browser entries pushed by [go] that have not been popped yet.
+  int _historyDepth = 0;
+
+  /// The browser's Back (swipe or button): pops the app's stack. Called
+  /// from the popstate listener set up at startup.
+  void onBrowserBack() {
+    if (_historyDepth > 0) _historyDepth--;
+    if (canGoBack) _back();
   }
 
   /// Server data changed outside a screen's own load (e.g. a pop-up created
@@ -526,6 +543,16 @@ class AppState extends ChangeNotifier {
   void dataChanged() => notifyListeners();
 
   void back() {
+    // In the browser, in-app Back goes through the browser's history so
+    // both stay in step (popstate then calls onBrowserBack once).
+    if (hasBrowserHistory && _historyDepth > 0) {
+      browserHistoryBack();
+      return;
+    }
+    _back();
+  }
+
+  void _back() {
     if (_stack.length > 1) {
       _stack.removeLast();
     } else {

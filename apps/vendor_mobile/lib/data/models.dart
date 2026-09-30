@@ -409,6 +409,13 @@ class TeamMember {
     email: r['email'] as String?,
   );
 
+  /// The person's name for display -- never the raw account id.
+  String get label => (displayName != null && displayName!.trim().isNotEmpty)
+      ? displayName!
+      : (email != null && email!.isNotEmpty)
+      ? email!
+      : L.unnamedTeamMember;
+
   /// The business owner cannot be removed from their own team.
   bool get isOwner => role.toLowerCase() == 'owner';
 }

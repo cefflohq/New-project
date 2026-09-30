@@ -904,7 +904,44 @@ class VendorRepository {
       () =>
           _db!.from('business_members').select().eq('business_id', businessId),
     );
-    return _rows(rows).map(TeamMember.fromRow).toList();
+    // business_members carries no names. Names come from what the backend
+    // already lets this account read: approved invite-link join requests
+    // (Owner) and the signed-in person's own profile. Never the raw id.
+    final named = <String, ({String? name, String? phone})>{};
+    try {
+      final reqs = await _db!
+          .from('team_join_requests')
+          .select('user_id, name, phone')
+          .eq('business_id', businessId)
+          .eq('status', 'approved')
+          .order('created_at');
+      for (final r in _rows(reqs)) {
+        named[r['user_id'] as String] = (
+          name: r['name'] as String?,
+          phone: r['phone'] as String?,
+        );
+      }
+    } catch (_) {}
+    final me = currentUser;
+    Map<String, dynamic>? myProfile;
+    try {
+      myProfile = await this.myProfile();
+    } catch (_) {}
+    return [
+      for (final m in _rows(rows).map(TeamMember.fromRow))
+        TeamMember(
+          userId: m.userId,
+          role: m.role,
+          displayName: m.userId == me?.id
+              ? ((myProfile?['display_name'] as String?) ??
+                    (me?.userMetadata?['full_name'] as String?))
+              : (named[m.userId]?.name ?? m.displayName),
+          phone: m.userId == me?.id
+              ? (myProfile?['phone'] as String?)
+              : (named[m.userId]?.phone ?? m.phone),
+          email: m.userId == me?.id ? me?.email : m.email,
+        ),
+    ];
   }
 
   Future<Map<String, dynamic>> createTeamInvitation({
@@ -1023,6 +1060,36 @@ class VendorRepository {
           .order('name'),
     );
     return _rows(rows).map(Product.fromRow).toList();
+  }
+
+  /// The business's product categories (create_product requires one).
+  Future<List<({String id, String name})>> productCategories(
+    String businessId,
+  ) async {
+    if (_demo) return const [(id: 'demo-cat', name: 'Menu')];
+    final rows = await _run(
+      () => _db!
+          .from('product_categories')
+          .select('id, name')
+          .eq('business_id', businessId)
+          .isFilter('archived_at', null)
+          .order('sort_order'),
+    );
+    return [
+      for (final r in _rows(rows))
+        (id: r['id'] as String, name: r['name'] as String),
+    ];
+  }
+
+  /// Existing canonical create_product_category.
+  Future<String> createProductCategory(String businessId, String name) async {
+    final row = await _run(
+      () => _db!.rpc(
+        'create_product_category',
+        params: {'p_business_id': businessId, 'p_name': name},
+      ),
+    );
+    return _single(row)['id'] as String;
   }
 
   Future<Product> createProduct({

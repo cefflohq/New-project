@@ -1781,5 +1781,17 @@
   },
   "alreadyPartOfBody": "This account already has access. No new request was needed.",
   "continueToApp": "Continue",
-  "ntWebSoundPending": "In this browser version sound is not available yet. The Cefflo notification sound is still being designed; the phone app uses the device's alert sound for now."
+  "ntWebSoundPending": "In this browser version sound is not available yet. The Cefflo notification sound is still being designed; the phone app uses the device's alert sound for now.",
+  "categoryLabel": "Category",
+  "categoryHint": "e.g. Donuts, Drinks",
+  "categoryRequired": "Choose or type a category.",
+  "newCategoryChip": "New: {name}",
+  "@newCategoryChip": {
+    "placeholders": {
+      "name": {
+        "type": "Object"
+      }
+    }
+  },
+  "unnamedTeamMember": "Team member"
 }

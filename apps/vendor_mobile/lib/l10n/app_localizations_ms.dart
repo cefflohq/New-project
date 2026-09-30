@@ -3605,4 +3605,21 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get ntWebSoundPending =>
       'Dalam versi pelayar ini, bunyi belum tersedia. Bunyi notifikasi Cefflo masih direka; app telefon menggunakan bunyi amaran peranti buat masa ini.';
+
+  @override
+  String get categoryLabel => 'Kategori';
+
+  @override
+  String get categoryHint => 'cth. Donut, Minuman';
+
+  @override
+  String get categoryRequired => 'Pilih atau taip kategori.';
+
+  @override
+  String newCategoryChip(Object name) {
+    return 'Baharu: $name';
+  }
+
+  @override
+  String get unnamedTeamMember => 'Ahli pasukan';
 }

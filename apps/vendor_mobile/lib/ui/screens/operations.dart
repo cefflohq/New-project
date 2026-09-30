@@ -5,6 +5,7 @@ import '../../core/app_state.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/models.dart';
+import '../../data/vendor_repository.dart';
 import '../async_view.dart';
 import '../shell.dart';
 import '../widgets.dart';
@@ -1146,11 +1147,41 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   String? error;
   final errors = <String, String>{};
   final photos = ProductPhotosController();
+  final category = TextEditingController();
+  List<({String id, String name})> categories = const [];
 
   @override
   void initState() {
     super.initState();
+    _loadCategories();
     if (!widget.isNew) _prefill();
+  }
+
+  /// create_product / update_product require a category of this business.
+  Future<void> _loadCategories() async {
+    final app = AppScope.read(context);
+    try {
+      final list = await app.repo.productCategories(app.business!.id);
+      if (!mounted) return;
+      setState(() {
+        categories = list;
+        if (category.text.isEmpty && list.isNotEmpty && widget.isNew) {
+          category.text = list.first.name;
+        }
+      });
+    } catch (_) {}
+  }
+
+  /// The chosen category's id; a new name is created first (existing
+  /// create_product_category), so no product is ever sent without one.
+  Future<String> _categoryId(VendorRepository repo, String businessId) async {
+    final name = category.text.trim();
+    for (final c in categories) {
+      if (c.name.toLowerCase() == name.toLowerCase()) return c.id;
+    }
+    final id = await repo.createProductCategory(businessId, name);
+    categories = [...categories, (id: id, name: name)];
+    return id;
   }
 
   Future<void> _prefill() async {
@@ -1163,6 +1194,14 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       description.text = p.description ?? '';
       price.text = p.displayPrice?.toStringAsFixed(2) ?? '';
       active = p.status == 'active';
+      final cats = await app.repo.productCategories(app.business!.id);
+      categories = cats;
+      category.text =
+          cats
+              .where((c) => c.id == p.categoryId)
+              .map((c) => c.name)
+              .firstOrNull ??
+          '';
       await photos.load(app.repo, p.id);
     } catch (e) {
       error = '$e';
@@ -1175,6 +1214,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     errors.clear();
     if (name.text.trim().isEmpty) {
       errors['name'] = L.productNameRequired;
+    }
+    if (category.text.trim().isEmpty) {
+      errors['category'] = L.categoryRequired;
     }
     final parsed = num.tryParse(price.text.trim());
     if (parsed == null || parsed < 0) {
@@ -1208,6 +1250,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     });
     try {
       final priceValue = num.parse(price.text.trim());
+      final categoryId = await _categoryId(app.repo, app.business!.id);
       String productId;
       if (widget.isNew) {
         productId = (await app.repo.createProduct(
@@ -1215,7 +1258,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           name: name.text.trim(),
           description: description.text.trim(),
           displayPrice: priceValue,
-          status: active ? 'active' : 'inactive',
+          categoryId: categoryId,
+          status: active ? 'active' : 'hidden',
         )).id;
       } else {
         productId = widget.productId!;
@@ -1224,7 +1268,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           name: name.text.trim(),
           description: description.text.trim(),
           displayPrice: priceValue,
-          status: active ? 'active' : 'inactive',
+          categoryId: categoryId,
+          status: active ? 'active' : 'hidden',
         );
       }
       // Photos commit with the product (removals, uploads, order).
@@ -1248,6 +1293,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     description.dispose();
     price.dispose();
     photos.dispose();
+    category.dispose();
     super.dispose();
   }
 
@@ -1266,6 +1312,32 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         const SizedBox(height: Gap.md),
         ProductPhotosField(controller: photos, enabled: !busy),
         SectionHeading(L.productDetails, icon: LucideIcons.package),
+        CefField(
+          label: L.categoryLabel,
+          controller: category,
+          hint: L.categoryHint,
+          prefixIcon: LucideIcons.tag,
+          errorText: errors['category'],
+          onChanged: (_) => setState(() {}),
+        ),
+        if (categories.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: Gap.md),
+            child: Wrap(
+              spacing: Gap.sm,
+              runSpacing: Gap.sm,
+              children: [
+                for (final c in categories)
+                  CefChoiceChip(
+                    label: c.name,
+                    selected:
+                        c.name.toLowerCase() ==
+                        category.text.trim().toLowerCase(),
+                    onTap: () => setState(() => category.text = c.name),
+                  ),
+              ],
+            ),
+          ),
         CefField(
           label: L.productName,
           controller: name,

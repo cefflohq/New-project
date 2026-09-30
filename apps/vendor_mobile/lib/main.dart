@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/app_state.dart';
 import 'core/appearance.dart';
+import 'core/browser_history.dart';
 import 'core/chrome_color.dart';
 import 'core/env.dart';
 import 'core/preview_path.dart';
@@ -126,6 +127,7 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
     applyUiLocale(app.uiLocale);
     app.restoreUiLocale();
     app.restoreAppearance();
+    listenBrowserBack(app.onBrowserBack);
     if (!widget.repo.isDemo) app.restoreJoinToken(Uri.base);
     app.access = widget.access;
     // Sign Out calls app.clearSession(), which lives in AppState -- but the

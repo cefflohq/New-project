@@ -35,6 +35,15 @@
 
   <title>Cefflo Driver</title>
   <link rel="manifest" href="manifest.json">
+<style>
+    /* Pre-splash (Founder, 2026-10-01): shown by the browser before Flutter
+       has loaded, instead of a blank white page. Removed on the first
+       Flutter frame. */
+    html, body { margin: 0; height: 100%; background: #01265E; }
+    #cef-presplash { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg,#01305F 0%,#0A6BE0 100%); z-index: 0; transition: opacity .25s ease; }
+    #cef-presplash img { width: 132px; height: auto; }
+    #cef-presplash.gone { opacity: 0; pointer-events: none; }
+  </style>
 </head>
 <body style="margin: 0; background: #FFFFFF;">
   <!-- Measures env(safe-area-inset-bottom) for lib/core/safe_area_web.dart. -->

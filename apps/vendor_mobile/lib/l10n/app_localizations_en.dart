@@ -3602,4 +3602,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get ntWebSoundPending =>
       'In this browser version sound is not available yet. The Cefflo notification sound is still being designed; the phone app uses the device\'s alert sound for now.';
+
+  @override
+  String get categoryLabel => 'Category';
+
+  @override
+  String get categoryHint => 'e.g. Donuts, Drinks';
+
+  @override
+  String get categoryRequired => 'Choose or type a category.';
+
+  @override
+  String newCategoryChip(Object name) {
+    return 'New: $name';
+  }
+
+  @override
+  String get unnamedTeamMember => 'Team member';
 }

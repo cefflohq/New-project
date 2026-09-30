@@ -6584,6 +6584,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'In this browser version sound is not available yet. The Cefflo notification sound is still being designed; the phone app uses the device\'s alert sound for now.'**
   String get ntWebSoundPending;
+
+  /// No description provided for @categoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get categoryLabel;
+
+  /// No description provided for @categoryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Donuts, Drinks'**
+  String get categoryHint;
+
+  /// No description provided for @categoryRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose or type a category.'**
+  String get categoryRequired;
+
+  /// No description provided for @newCategoryChip.
+  ///
+  /// In en, this message translates to:
+  /// **'New: {name}'**
+  String newCategoryChip(Object name);
+
+  /// No description provided for @unnamedTeamMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Team member'**
+  String get unnamedTeamMember;
 }
 
 class _AppLocalizationsDelegate

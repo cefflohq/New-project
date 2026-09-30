@@ -1079,5 +1079,10 @@
   "alreadyPartOf": "Anda sudah menjadi sebahagian daripada {business}.",
   "alreadyPartOfBody": "Akaun ini sudah mempunyai akses. Tiada permintaan baharu diperlukan.",
   "continueToApp": "Teruskan",
-  "ntWebSoundPending": "Dalam versi pelayar ini, bunyi belum tersedia. Bunyi notifikasi Cefflo masih direka; app telefon menggunakan bunyi amaran peranti buat masa ini."
+  "ntWebSoundPending": "Dalam versi pelayar ini, bunyi belum tersedia. Bunyi notifikasi Cefflo masih direka; app telefon menggunakan bunyi amaran peranti buat masa ini.",
+  "categoryLabel": "Kategori",
+  "categoryHint": "cth. Donut, Minuman",
+  "categoryRequired": "Pilih atau taip kategori.",
+  "newCategoryChip": "Baharu: {name}",
+  "unnamedTeamMember": "Ahli pasukan"
 }

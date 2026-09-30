@@ -1365,12 +1365,7 @@ class _TeamScreenState extends State<TeamScreen> {
         final q = _query.text.trim().toLowerCase();
         final visible = q.isEmpty
             ? members
-            : members
-                  .where(
-                    (m) =>
-                        (m.displayName ?? m.userId).toLowerCase().contains(q),
-                  )
-                  .toList();
+            : members.where((m) => m.label.toLowerCase().contains(q)).toList();
         return PageBody(
           onRefresh: reload,
           children: [
@@ -1395,9 +1390,9 @@ class _TeamScreenState extends State<TeamScreen> {
               // Archetype D (people list): filled avatar, status pill.
               for (final m in visible)
                 CefListRow(
-                  title: m.displayName ?? m.userId,
+                  title: m.label,
                   subtitle: roleLabel(m.role),
-                  leading: CefAvatar(m.displayName ?? m.userId, filled: true),
+                  leading: CefAvatar(m.label, filled: true),
                   trailing: StatusChip(L.active, success: true),
                   // Audit fix 2: bound to this member's id.
                   onTap: () =>
@@ -1431,7 +1426,7 @@ class TeamMemberDetailScreen extends StatelessWidget {
         );
       },
       builder: (context, member, reload) {
-        final name = member.displayName ?? member.userId;
+        final name = member.label;
         return HeroPage(
           onRefresh: reload,
           hero: DetailHero(
@@ -1492,7 +1487,7 @@ class TeamMemberDetailScreen extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(L.remove(member.displayName ?? member.userId)),
+        title: Text(L.remove(member.label)),
         content: Text(L.theyWillLoseAccessBusinessImmediately),
         actions: [
           TextButton(
