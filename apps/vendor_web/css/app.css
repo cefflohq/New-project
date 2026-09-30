@@ -528,16 +528,3 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
   .skel, .btn .spin, .modal-root, .modal, .nbanner { animation: none; }
   .sidebar, .switch::after { transition: none; }
 }
-
-/* auth: 6-digit code (Verify email / Reset password / Confirm new email) —
-   the auth-card field geometry, one box per digit. */
-.otp { display: grid; grid-template-columns: repeat(3, 1fr) 6px repeat(3, 1fr); gap: 8px; justify-self: stretch; margin: 4px 0 2px; }
-.otp .otp-box:nth-child(4) { grid-column: 5; }
-.otp-box { width: 100%; min-width: 0; height: 56px; border-radius: var(--ctl-r); border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); text-align: center; font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; caret-color: var(--primary); }
-.otp-box:focus { outline: none; border-color: #01265E; box-shadow: 0 0 0 3px var(--primary-tint); }
-.otp-box:disabled { background: var(--surface-2); color: var(--muted); }
-.otp.bad .otp-box { border-color: var(--danger); }
-.otp-resend { margin: 0 !important; font-size: 14px; color: var(--muted); }
-:root[data-theme='dark'] .otp-box:focus { border-color: var(--primary); }
-@media (max-width: 380px) { .otp { gap: 6px; } .otp-box { height: 50px; font-size: 21px; } }
-.auth-hero.bare { flex: 1 1 0; padding: 0; min-height: 0; }

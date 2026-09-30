@@ -6,7 +6,6 @@
 import { t } from '../i18n.js';
 import { api } from '../api.js';
 import { esc, busy, icon } from '../ui.js';
-import { demoAllowed, enterDemo } from '../demo.js';
 import { prefs, savePrefs } from '../prefs.js';
 import { operatorEntry } from '../access.js';
 
@@ -103,13 +102,10 @@ export function renderSignIn(root, opts, mode = 'choose') {
       ${message ? `<div class="auth-note" role="status">${esc(message)}</div>` : ''}
       <button class="auth-pill" type="button" data-google>${GOOGLE_G}<span>${esc(t('auth.withGoogle'))}</span></button>
       <button class="auth-pill" type="button" data-email>${icon('mail')}<span>${esc(t('auth.withEmail'))}</span></button>
-      ${demoAllowed() ? `<button class="auth-pill ghost" type="button" data-demo>${icon('store')}<span>${esc(t('demo.enter'))}</span></button>
-      <small class="auth-hint">${esc(t('demo.entryHint'))}</small>` : ''}
       <p class="auth-invite">${esc(t('auth.haveInvite'))} <button type="button" class="auth-link" data-invite>${esc(t('auth.getStarted'))}</button></p>`,
     () => again('choose'), { hero, langRight: op });
     root.querySelector('[data-google]').addEventListener('click', () => { location.assign(api.googleSignInUrl()); });
     root.querySelector('[data-email]').addEventListener('click', () => again('email'));
-    root.querySelector('[data-demo]')?.addEventListener('click', () => { enterDemo(); onSignedIn(); });
     root.querySelector('[data-invite]').addEventListener('click', () => renderSignUp(root, opts));
     return;
   }
