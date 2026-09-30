@@ -273,7 +273,7 @@ void main() {
     expect(demo.unreadNotifications, 0);
   });
 
-  testWidgets('banner: normal auto-dismisses; urgent stays; tap opens', (
+  testWidgets('banner: ~3 s normal, ~5 s urgent, swipe up, tap opens', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -288,7 +288,33 @@ void main() {
     repo.push!('INSERT', _row('n9', target: {'screen': 'order', 'id': 'o9'}));
     await tester.pump();
     expect(find.text('New customer order CF-1'), findsOneWidget);
-    await tester.pump(const Duration(seconds: 7));
+    expect(find.text('Cefflo'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 2500));
+    expect(find.byKey(const ValueKey('notification-banner')), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('notification-banner')), findsNothing);
+
+    repo.push!('INSERT', _row('n12'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.fling(
+      find.byKey(const ValueKey('notification-banner')),
+      const Offset(0, -80),
+      800,
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('notification-banner')), findsNothing);
+    expect(
+      app.current,
+      isNot(const VendorLocation(VRoute.orderDetail, entityId: 'o1')),
+    );
+
+    repo.push!('INSERT', _row('n13', priority: 'urgent'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 4));
+    expect(find.byKey(const ValueKey('notification-banner')), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 1100));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('notification-banner')), findsNothing);
 
@@ -297,7 +323,7 @@ void main() {
       _row('n10', key: 'delivery.issue', priority: 'urgent'),
     );
     await tester.pump();
-    await tester.pump(const Duration(seconds: 10));
+    await tester.pump(const Duration(seconds: 2));
     expect(find.text('Server body n10'), findsOneWidget, reason: 'rider note');
     await tester.tap(find.text('Server body n10'));
     await tester.pumpAndSettle();
