@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:qr/qr.dart';
@@ -1771,11 +1772,7 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
     return PageBody(
       bottom: link == null
           ? CefButton(L.generateInviteLink, busy: busy, onTap: _generate)
-          : CefButton(
-              L.copyLink,
-              icon: LucideIcons.copy,
-              onTap: () => _copyLink(link),
-            ),
+          : null,
       children: [
         Row(
           children: [
@@ -1864,85 +1861,146 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
     ),
   ];
 
-  List<Widget> _result(TextTheme text, String link) => [
-    HeroSurface(
-      padding: const EdgeInsets.all(Gap.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                LucideIcons.link,
-                size: Sizes.icon,
-                color: Colors.white,
+  String _message(String link) {
+    final business = AppScope.read(context).business?.name ?? 'Cefflo';
+    return rider
+        ? L.inviteMsgRider(business, link)
+        : L.inviteMsgTeam(business, link);
+  }
+
+  void _copyMessage(String link) {
+    Clipboard.setData(ClipboardData(text: _message(link)));
+    showCefToast(context, L.messageCopied);
+  }
+
+  Future<void> _share(String target, Uri uri) async {
+    var opened = false;
+    try {
+      opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
+    if (!opened && mounted) {
+      showCefToast(context, L.couldNotOpen(target), error: true);
+    }
+  }
+
+  /// Founder reference (2026-09-30): the link with QR and Copy, the ready
+  /// share message with Copy, then one-tap share targets. QR opens as a
+  /// centred pop-up, never a bottom sheet.
+  List<Widget> _result(TextTheme text, String link) {
+    final c = context.c;
+    final message = _message(link);
+    BoxDecoration box() => BoxDecoration(
+      color: c.card,
+      border: Border.all(color: c.border),
+      borderRadius: BorderRadius.circular(Sizes.inputRadius),
+    );
+    Widget copyButton(VoidCallback onTap) => TextButton.icon(
+      onPressed: onTap,
+      icon: Icon(LucideIcons.copy, size: 18, color: c.textPrimary),
+      label: Text(L.copyText, style: text.labelLarge),
+    );
+    final targets = <(Widget, String, Uri)>[
+      (
+        const WhatsAppGlyph(),
+        'WhatsApp',
+        Uri.parse('https://wa.me/?text=${Uri.encodeComponent(message)}'),
+      ),
+      (
+        const Icon(LucideIcons.send, color: Color(0xFF229ED9), size: 28),
+        'Telegram',
+        Uri.parse(
+          'https://t.me/share/url?url=${Uri.encodeComponent(link)}'
+          '&text=${Uri.encodeComponent(message)}',
+        ),
+      ),
+      (
+        const Icon(
+          LucideIcons.messageCircle,
+          color: Color(0xFF12A150),
+          size: 28,
+        ),
+        'SMS',
+        Uri.parse('sms:?body=${Uri.encodeComponent(message)}'),
+      ),
+      (
+        Icon(LucideIcons.mail, color: c.iconColor, size: 28),
+        L.email,
+        Uri.parse('mailto:?body=${Uri.encodeComponent(message)}'),
+      ),
+    ];
+    return [
+      Text(L.yourInviteLink, style: text.titleSmall),
+      const SizedBox(height: Gap.sm),
+      Container(
+        padding: const EdgeInsets.only(left: Gap.md),
+        decoration: box(),
+        child: Row(
+          children: [
+            Icon(LucideIcons.link, size: 20, color: c.iconColor),
+            const SizedBox(width: Gap.sm),
+            Expanded(
+              child: Text(
+                link,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: text.bodyMedium,
               ),
-              const SizedBox(width: Gap.sm),
-              Text(
-                L.invitationLink,
-                style: text.titleSmall?.copyWith(color: Colors.white),
-              ),
-            ],
-          ),
-          const SizedBox(height: Gap.sm),
-          Container(
-            padding: const EdgeInsets.only(left: Gap.md),
-            decoration: BoxDecoration(
-              color: context.c.card,
-              borderRadius: BorderRadius.circular(Sizes.inputRadius),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    link,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: text.bodyMedium,
+            IconAction(
+              icon: LucideIcons.qrCode,
+              tooltip: L.showQrCode,
+              onTap: () => _showQrModal(link),
+            ),
+            copyButton(() => _copyLink(link)),
+          ],
+        ),
+      ),
+      const SizedBox(height: Gap.lg),
+      Text(L.shareMessage, style: text.titleSmall),
+      const SizedBox(height: Gap.sm),
+      Container(
+        padding: const EdgeInsets.fromLTRB(Gap.md, Gap.md, 0, Gap.md),
+        decoration: box(),
+        child: Row(
+          children: [
+            Icon(LucideIcons.messageSquareText, size: 20, color: c.iconColor),
+            const SizedBox(width: Gap.sm),
+            Expanded(child: Text(message, style: text.bodyMedium)),
+            copyButton(() => _copyMessage(link)),
+          ],
+        ),
+      ),
+      const SizedBox(height: Gap.lg),
+      Text(L.shareVia, style: text.titleSmall),
+      const SizedBox(height: Gap.md),
+      Row(
+        children: [
+          for (final (icon, label, uri) in targets)
+            Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(Sizes.cardRadius),
+                onTap: () => _share(label, uri),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: Gap.sm),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 32, child: Center(child: icon)),
+                      const SizedBox(height: Gap.xs),
+                      Text(label, style: text.labelMedium),
+                    ],
                   ),
                 ),
-                IconAction(
-                  icon: LucideIcons.copy,
-                  tooltip: L.copyLink,
-                  onTap: () => _copyLink(link),
-                ),
-              ],
+              ),
             ),
-          ),
         ],
       ),
-    ),
-    const SizedBox(height: Gap.sm),
-    CefActionRow(
-      icon: LucideIcons.qrCode,
-      label: L.showQrCode,
-      subtitle: L.scanOpenInvitation,
-      onTap: () => _showQrModal(link),
-    ),
-    const SizedBox(height: Gap.sm),
-    Container(
-      padding: const EdgeInsets.all(Gap.md),
-      decoration: BoxDecoration(
-        color: CefColors.brandTint,
-        borderRadius: BorderRadius.circular(Sizes.inputRadius),
+      const SizedBox(height: Gap.lg),
+      Text(
+        rider ? L.linkShownOnlyOnceExpires7 : L.linkShownOnlyOnceExpires72,
+        style: text.bodySmall,
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(LucideIcons.info, size: Sizes.icon, color: context.c.iconColor),
-          const SizedBox(width: Gap.sm),
-          Expanded(
-            child: Text(
-              rider
-                  ? L.linkShownOnlyOnceExpires7
-                  : L.linkShownOnlyOnceExpires72,
-              style: text.bodySmall,
-            ),
-          ),
-        ],
-      ),
-    ),
-  ];
+    ];
+  }
 }
 
 /// A scannable QR code for [data], painted module by module in the text

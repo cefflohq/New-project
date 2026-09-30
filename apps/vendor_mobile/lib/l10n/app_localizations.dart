@@ -6044,6 +6044,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Purple'**
   String get purple;
+
+  /// No description provided for @yourInviteLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Your invite link'**
+  String get yourInviteLink;
+
+  /// No description provided for @shareMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Share message'**
+  String get shareMessage;
+
+  /// No description provided for @shareVia.
+  ///
+  /// In en, this message translates to:
+  /// **'Share via'**
+  String get shareVia;
+
+  /// No description provided for @copyText.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copyText;
+
+  /// No description provided for @messageCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Message copied'**
+  String get messageCopied;
+
+  /// No description provided for @inviteMsgRider.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi, you\'re invited to join {business} as a rider. Register here: {link}'**
+  String inviteMsgRider(Object business, Object link);
+
+  /// No description provided for @inviteMsgTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi, you\'re invited to join {business} on Cefflo. Open this link: {link}'**
+  String inviteMsgTeam(Object business, Object link);
 }
 
 class _AppLocalizationsDelegate

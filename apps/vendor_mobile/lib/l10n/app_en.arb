@@ -1608,5 +1608,32 @@
   "appearanceGradient": "Gradient",
   "appearanceSaved": "Appearance saved on this device.",
   "appearanceDeviceOnly": "Applies to this device only. Tap Save to keep it.",
-  "purple": "Purple"
+  "purple": "Purple",
+  "yourInviteLink": "Your invite link",
+  "shareMessage": "Share message",
+  "shareVia": "Share via",
+  "copyText": "Copy",
+  "messageCopied": "Message copied",
+  "inviteMsgRider": "Hi, you're invited to join {business} as a rider. Register here: {link}",
+  "@inviteMsgRider": {
+    "placeholders": {
+      "business": {
+        "type": "Object"
+      },
+      "link": {
+        "type": "Object"
+      }
+    }
+  },
+  "inviteMsgTeam": "Hi, you're invited to join {business} on Cefflo. Open this link: {link}",
+  "@inviteMsgTeam": {
+    "placeholders": {
+      "business": {
+        "type": "Object"
+      },
+      "link": {
+        "type": "Object"
+      }
+    }
+  }
 }

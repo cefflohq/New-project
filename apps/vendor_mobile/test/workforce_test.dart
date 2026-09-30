@@ -68,7 +68,7 @@ void main() {
     await tester.enterText(find.byType(TextField).first, 'aina@example.com');
     await tester.tap(find.text('Generate invite link'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('?type=team&token='), findsOneWidget);
+    expect(find.textContaining('?type=team&token='), findsWidgets);
     expect(find.textContaining('type=helper'), findsNothing);
   });
 

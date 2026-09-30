@@ -989,5 +989,12 @@
   "appearanceGradient": "Gradien",
   "appearanceSaved": "Penampilan disimpan pada peranti ini.",
   "appearanceDeviceOnly": "Hanya untuk peranti ini. Tekan Simpan untuk kekalkan.",
-  "purple": "Ungu"
+  "purple": "Ungu",
+  "yourInviteLink": "Pautan jemputan anda",
+  "shareMessage": "Mesej untuk dikongsi",
+  "shareVia": "Kongsi melalui",
+  "copyText": "Salin",
+  "messageCopied": "Mesej disalin",
+  "inviteMsgRider": "Hai, anda dijemput menyertai {business} sebagai rider. Daftar di sini: {link}",
+  "inviteMsgTeam": "Hai, anda dijemput menyertai {business} di Cefflo. Buka pautan ini: {link}"
 }

@@ -1128,9 +1128,13 @@ class RidersScreen extends StatefulWidget {
 }
 
 class _RidersScreenState extends State<RidersScreen> {
-  /// Selected filter: 0 All, 1 Active, 2 Offline, 3 Pending (index, never
-  /// display text, so filtering works in every language).
+  /// Selected filter: 0 All, 1 Active (on a run now), 2 Pending (registered,
+  /// waiting for the vendor's approval). Index, never display text, so
+  /// filtering works in every language.
   int tab = 0;
+
+  /// A run the rider is working right now (accepted through delivering).
+  static const _onRun = {'accepted', 'picking_up', 'delivering'};
 
   @override
   Widget build(BuildContext context) {
@@ -1139,17 +1143,27 @@ class _RidersScreenState extends State<RidersScreen> {
     if (business == null) {
       return PageBody(children: [StateBlock.empty(L.noBusinessLinked)]);
     }
-    return AsyncView<List<RiderRow>>(
+    return AsyncView<(List<RiderRow>, Set<String>)>(
       key: ValueKey('riders-${business.id}'),
-      load: () => app.repo.riders(business.id),
-      builder: (context, riders, reload) {
+      load: () async {
+        final riders = await app.repo.riders(business.id);
+        final runs = await app.repo.runs(business.id);
+        return (
+          riders,
+          {
+            for (final r in runs)
+              if (_onRun.contains(r.status)) r.riderId,
+          },
+        );
+      },
+      builder: (context, data, reload) {
+        final (riders, onRun) = data;
         final visible = switch (tab) {
-          1 => riders.where((r) => r.isActive).toList(),
-          2 => riders.where((r) => r.isOffline).toList(),
-          3 => riders.where((r) => r.status == 'pending').toList(),
+          1 => riders.where((r) => onRun.contains(r.id)).toList(),
+          2 => riders.where((r) => r.isPending).toList(),
           _ => riders,
         };
-        final tabLabels = [L.all, L.active, L.offline, L.pending];
+        final tabLabels = [L.all, L.active, L.pending];
         return PageBody(
           onRefresh: reload,
           children: [
@@ -1170,15 +1184,11 @@ class _RidersScreenState extends State<RidersScreen> {
                     if (r.plate != null) r.plate!,
                   ].join(' · '),
                   leading: CefAvatar(r.name, filled: true),
-                  trailing: StatusChip(
-                    r.isActive
-                        ? L.active
-                        : r.isPending
-                        ? L.pending
-                        : L.offline,
-                    success: r.isActive,
-                    warning: r.isPending,
-                  ),
+                  trailing: onRun.contains(r.id)
+                      ? StatusChip(L.active, success: true)
+                      : r.isPending
+                      ? StatusChip(L.pending, warning: true)
+                      : null,
                   // Audit fix 2: bound to this rider's id.
                   onTap: () => app.go(VRoute.riderDetail, entityId: r.id),
                 ),

@@ -3295,4 +3295,29 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get purple => 'Ungu';
+
+  @override
+  String get yourInviteLink => 'Pautan jemputan anda';
+
+  @override
+  String get shareMessage => 'Mesej untuk dikongsi';
+
+  @override
+  String get shareVia => 'Kongsi melalui';
+
+  @override
+  String get copyText => 'Salin';
+
+  @override
+  String get messageCopied => 'Mesej disalin';
+
+  @override
+  String inviteMsgRider(Object business, Object link) {
+    return 'Hai, anda dijemput menyertai $business sebagai rider. Daftar di sini: $link';
+  }
+
+  @override
+  String inviteMsgTeam(Object business, Object link) {
+    return 'Hai, anda dijemput menyertai $business di Cefflo. Buka pautan ini: $link';
+  }
 }

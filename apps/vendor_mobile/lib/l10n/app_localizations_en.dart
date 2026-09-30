@@ -3292,4 +3292,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get purple => 'Purple';
+
+  @override
+  String get yourInviteLink => 'Your invite link';
+
+  @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareVia => 'Share via';
+
+  @override
+  String get copyText => 'Copy';
+
+  @override
+  String get messageCopied => 'Message copied';
+
+  @override
+  String inviteMsgRider(Object business, Object link) {
+    return 'Hi, you\'re invited to join $business as a rider. Register here: $link';
+  }
+
+  @override
+  String inviteMsgTeam(Object business, Object link) {
+    return 'Hi, you\'re invited to join $business on Cefflo. Open this link: $link';
+  }
 }
