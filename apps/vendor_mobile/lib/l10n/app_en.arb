@@ -1757,5 +1757,9 @@
   "subActive": "Active",
   "subPastDue": "Payment overdue",
   "subSuspended": "Suspended",
-  "subCancelled": "Cancelled"
+  "subCancelled": "Cancelled",
+  "signOutConfirmTitle": "Sign out?",
+  "signOutConfirmBody": "You'll need to sign in again to manage your business.",
+  "yesSignOut": "Yes, sign out",
+  "heroTooLarge": "This image is larger than 5 MB. Choose a smaller one."
 }

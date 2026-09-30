@@ -1757,7 +1757,8 @@ class SettingsScreen extends StatelessWidget {
       children: [
         label(L.account),
         row(L.profile, LucideIcons.user, VRoute.editProfile),
-        row(L.security, LucideIcons.lock, VRoute.security),
+        // Password opens Change Password directly (Founder, 2026-10-01).
+        row(L.password, LucideIcons.lock, VRoute.changePassword),
         row(L.notifications, LucideIcons.bell, VRoute.notificationSettings),
         CefListRow(
           title: L.language,
@@ -1792,19 +1793,19 @@ class SettingsScreen extends StatelessWidget {
           ),
         label(L.support),
         row(L.helpSupport2, LucideIcons.circleHelp, VRoute.helpSupport),
-        row(L.privacy, LucideIcons.shieldCheck, VRoute.privacyPolicy),
         row(L.aboutCefflo, LucideIcons.info, VRoute.about),
         const SizedBox(height: Gap.sm),
-        CefListRow(
-          title: L.signOut,
-          leading: IconTile(LucideIcons.logOut, color: c.attention),
-          titleColor: c.attention,
-          showChevron: false,
-          showDivider: false,
-          onTap: () async {
-            await app.repo.signOut();
-            app.clearSession();
-          },
+        // Centred, and confirmed in a bottom sheet before signing out
+        // (Founder, 2026-10-01); Yes returns to the sign-in screen.
+        Center(
+          child: TextButton.icon(
+            onPressed: () => _confirmSignOut(context),
+            icon: Icon(LucideIcons.logOut, color: c.attention),
+            label: Text(
+              L.signOut,
+              style: text.titleSmall?.copyWith(color: c.attention),
+            ),
+          ),
         ),
         const SizedBox(height: Gap.sm),
         Center(child: AppVersionText(style: text.labelSmall, prefix: true)),
@@ -2048,4 +2049,60 @@ class _TeamRequestRowState extends State<_TeamRequestRow> {
       ),
     );
   }
+}
+
+Future<void> _confirmSignOut(BuildContext context) async {
+  final app = AppScope.read(context);
+  final text = Theme.of(context).textTheme;
+  final yes = await showModalBottomSheet<bool>(
+    context: context,
+    backgroundColor: context.c.card,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(Sizes.cardRadius),
+      ),
+    ),
+    builder: (sheet) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          Gap.gutter,
+          Gap.xl,
+          Gap.gutter,
+          Gap.lg,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              L.signOutConfirmTitle,
+              textAlign: TextAlign.center,
+              style: text.titleMedium,
+            ),
+            const SizedBox(height: Gap.xs),
+            Text(
+              L.signOutConfirmBody,
+              textAlign: TextAlign.center,
+              style: text.bodySmall,
+            ),
+            const SizedBox(height: Gap.xl),
+            CefButton(
+              L.yesSignOut,
+              destructive: true,
+              onTap: () => Navigator.of(sheet).pop(true),
+            ),
+            const SizedBox(height: Gap.sm),
+            CefButton(
+              L.cancel,
+              secondary: true,
+              onTap: () => Navigator.of(sheet).pop(false),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+  if (yes != true) return;
+  await app.repo.signOut();
+  app.clearSession();
 }

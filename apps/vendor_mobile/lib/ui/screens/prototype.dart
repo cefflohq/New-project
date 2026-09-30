@@ -200,30 +200,10 @@ class _BusinessProfileScreen extends StatelessWidget {
             ],
           ),
         ),
+        // Details (information + address) open from Edit; the week sits
+        // right here (Founder, 2026-10-01).
         const SizedBox(height: Gap.lg),
-        CefListGroup(
-          label: L.business,
-          children: [
-            CefListRow(
-              title: L.businessInformation2,
-              subtitle: L.nameContactDescription,
-              icon: LucideIcons.fileText,
-              onTap: () => app.go(VRoute.businessInformation),
-            ),
-            CefListRow(
-              title: L.businessAddress2,
-              subtitle: L.storeAddressServiceArea,
-              icon: LucideIcons.mapPin,
-              onTap: () => app.go(VRoute.businessAddress),
-            ),
-            CefListRow(
-              title: L.businessHours2,
-              subtitle: L.setOperatingHours,
-              icon: LucideIcons.clock,
-              onTap: () => app.go(VRoute.businessHours),
-            ),
-          ],
-        ),
+        CefCard(child: _BusinessHoursSection()),
       ],
     );
   }
@@ -250,6 +230,13 @@ class _BusinessInformationScreen extends StatelessWidget {
         L.businessEmail,
         LucideIcons.mail,
         keyboard: TextInputType.emailAddress,
+      ),
+      _BizField('address', L.address, LucideIcons.mapPin, maxLines: 3),
+      _BizField(
+        'operating_area',
+        L.operatingAreaLabel,
+        LucideIcons.map,
+        hint: L.operatingAreaHint,
       ),
     ],
   );
@@ -436,14 +423,24 @@ class _DayHours {
 
 /// Business Hours on the real backend (20260930090613): Owner-only, the
 /// whole week saved at once through set_business_hours.
-class _BusinessHoursScreen extends StatefulWidget {
+class _BusinessHoursScreen extends StatelessWidget {
   const _BusinessHoursScreen();
 
   @override
-  State<_BusinessHoursScreen> createState() => _BusinessHoursScreenState();
+  Widget build(BuildContext context) =>
+      const PageBody(children: [_BusinessHoursSection()]);
 }
 
-class _BusinessHoursScreenState extends State<_BusinessHoursScreen> {
+/// The week editor, shown inside Business Profile (Founder, 2026-10-01)
+/// with its own Save.
+class _BusinessHoursSection extends StatefulWidget {
+  const _BusinessHoursSection();
+
+  @override
+  State<_BusinessHoursSection> createState() => _BusinessHoursSectionState();
+}
+
+class _BusinessHoursSectionState extends State<_BusinessHoursSection> {
   List<_DayHours>? _days;
   bool _saving = false;
   String? _error;
@@ -528,7 +525,6 @@ class _BusinessHoursScreenState extends State<_BusinessHoursScreen> {
       ]);
       if (!mounted) return;
       showCefToast(context, L.hoursSaved);
-      app.back();
     } on RepositoryError catch (e) {
       if (mounted) setState(() => _error = e.message);
     } finally {
@@ -539,10 +535,8 @@ class _BusinessHoursScreenState extends State<_BusinessHoursScreen> {
   @override
   Widget build(BuildContext context) {
     final days = _days;
-    if (days == null && _error == null) {
-      return const PageBody(children: [StateBlock.loading()]);
-    }
-    if (days == null) return PageBody(children: [StateBlock.error(_error!)]);
+    if (days == null && _error == null) return const StateBlock.loading();
+    if (days == null) return StateBlock.error(_error!);
     final text = Theme.of(context).textTheme;
     final names = [
       L.monday,
@@ -564,8 +558,8 @@ class _BusinessHoursScreenState extends State<_BusinessHoursScreen> {
       ),
       child: Text(_fmt(opening ? d.opens : d.closes), style: text.bodyMedium),
     );
-    return PageBody(
-      bottom: CefButton(L.saveHours, busy: _saving, onTap: _save),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SectionHeading(
           L.operatingHours,
@@ -635,6 +629,8 @@ class _BusinessHoursScreenState extends State<_BusinessHoursScreen> {
               style: text.bodySmall?.copyWith(color: context.c.attention),
             ),
           ),
+        const SizedBox(height: Gap.md),
+        CefButton(L.saveHours, busy: _saving, onTap: _save),
       ],
     );
   }

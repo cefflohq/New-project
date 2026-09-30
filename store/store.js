@@ -130,6 +130,11 @@
     const theme = store.theme || {};
     if (theme.accent) document.documentElement.style.setProperty('--accent', theme.accent);
     if (theme.style === 'gradient') $('top').classList.add('gradient');
+    // The current hero only (hero_url is null when none is set).
+    if (store.hero_url) {
+      $('top').style.backgroundImage = `linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.35)), url("${cfg.supabaseUrl}${store.hero_url}")`;
+      $('top').classList.add('hero');
+    }
     document.title = store.business.name;
     $('bizName').textContent = store.business.name;
     const meta = [];

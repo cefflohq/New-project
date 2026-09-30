@@ -101,6 +101,7 @@ class AppState extends ChangeNotifier {
         backgroundId: theme['background'] as String?,
         customBackground: hex('background_color'),
         tagline: theme['tagline'] as String?,
+        heroPath: theme['hero_path'] as String?,
       );
     }
     notifyListeners();
@@ -122,6 +123,29 @@ class AppState extends ChangeNotifier {
   ) async {
     final b = business;
     if (!repo.isDemo && b != null) {
+      // Upload a newly picked hero FIRST; hero_path changes only after the
+      // upload succeeded, so the storefront never points at a missing file.
+      if (branding.hasUnsavedHero) {
+        final path = await repo.uploadStorefrontHero(
+          b.id,
+          branding.heroImage!,
+          branding.heroContentType!,
+        );
+        branding = StorefrontBranding(
+          primary: branding.primary,
+          secondary: branding.secondary,
+          mode: branding.mode,
+          storeName: branding.storeName,
+          tagline: branding.tagline,
+          logoText: branding.logoText,
+          hasLogo: branding.hasLogo,
+          font: branding.font,
+          backgroundId: branding.backgroundId,
+          customBackground: branding.customBackground,
+          heroImage: branding.heroImage,
+          heroPath: path,
+        );
+      }
       await repo.saveStorefrontAppearance(b.id, templateId, {
         'accent': branding.primary.hex,
         if (branding.secondary != null) 'secondary': branding.secondary!.hex,
@@ -131,6 +155,7 @@ class AppState extends ChangeNotifier {
         if (branding.customBackground != null)
           'background_color': branding.customBackground!.hex,
         if (branding.tagline.isNotEmpty) 'tagline': branding.tagline,
+        if (branding.heroPath != null) 'hero_path': branding.heroPath!,
       });
     }
     activeStorefrontTemplateId = templateId;
@@ -187,7 +212,8 @@ class AppState extends ChangeNotifier {
 
   // ---- Vendor availability (Today header toggle). Session state only: no
   // availability contract exists on the backend yet.
-  bool vendorOnline = true;
+  // Starts Offline (Founder, 2026-10-01): the vendor goes Online on purpose.
+  bool vendorOnline = false;
 
   void setVendorOnline(bool value) {
     vendorOnline = value;

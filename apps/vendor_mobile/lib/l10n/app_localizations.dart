@@ -6524,6 +6524,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancelled'**
   String get subCancelled;
+
+  /// No description provided for @signOutConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out?'**
+  String get signOutConfirmTitle;
+
+  /// No description provided for @signOutConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll need to sign in again to manage your business.'**
+  String get signOutConfirmBody;
+
+  /// No description provided for @yesSignOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, sign out'**
+  String get yesSignOut;
+
+  /// No description provided for @heroTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'This image is larger than 5 MB. Choose a smaller one.'**
+  String get heroTooLarge;
 }
 
 class _AppLocalizationsDelegate

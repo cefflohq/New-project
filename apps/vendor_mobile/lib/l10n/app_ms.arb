@@ -1069,5 +1069,9 @@
   "subActive": "Aktif",
   "subPastDue": "Bayaran tertunggak",
   "subSuspended": "Digantung",
-  "subCancelled": "Dibatalkan"
+  "subCancelled": "Dibatalkan",
+  "signOutConfirmTitle": "Log keluar?",
+  "signOutConfirmBody": "Anda perlu log masuk semula untuk mengurus bisnes anda.",
+  "yesSignOut": "Ya, log keluar",
+  "heroTooLarge": "Imej ini lebih besar daripada 5 MB. Pilih yang lebih kecil."
 }

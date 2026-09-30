@@ -893,26 +893,35 @@ class PageBody extends StatelessWidget {
       bottom == null ? Gap.xxl : Gap.lg,
     );
     final Widget list = _endsInState
-        ? CustomScrollView(
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            physics: onRefresh == null
-                ? null
-                : const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverPadding(
-                padding: padding.copyWith(bottom: 0),
-                sliver: SliverList.list(
-                  children: children.sublist(0, children.length - 1),
+        // At least the viewport tall; the state takes the space left under
+        // the page's controls and centres itself in it (IntrinsicHeight
+        // lets Expanded work inside the scroll view). Still scrolls for
+        // pull-to-refresh and when content is taller than the screen.
+        ? LayoutBuilder(
+            builder: (context, box) => SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              physics: onRefresh == null
+                  ? null
+                  : const AlwaysScrollableScrollPhysics(),
+              padding: padding,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: (box.maxHeight - padding.vertical).clamp(
+                    0,
+                    double.infinity,
+                  ),
+                ),
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ...children.sublist(0, children.length - 1),
+                      Expanded(child: Center(child: children.last)),
+                    ],
+                  ),
                 ),
               ),
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Padding(
-                  padding: padding.copyWith(top: 0),
-                  child: Center(child: children.last),
-                ),
-              ),
-            ],
+            ),
           )
         : ListView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,

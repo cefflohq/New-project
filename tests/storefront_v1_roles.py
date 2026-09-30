@@ -163,6 +163,37 @@ with psycopg.connect(target.database_url) as conn:
         cur.execute("select origin, items->0->>'line_subtotal_snapshot' from orders where submission_idempotency_key=%s", (key,))
         assert cur.fetchone() == ("public", "25.00")
 
+        # Hero assets (20260930110132): Owner/Operator of THIS business only,
+        # exact '{business}/hero-{uuid}.{ext}' path; current hero_url only.
+        cur.execute("reset role")
+        cur.execute("insert into businesses(name) values('SF V1 Other') returning id")
+        other = cur.fetchone()[0]
+        hero = f"{business}/hero-{uuid.uuid4()}.jpg"
+        insert_hero = "insert into storage.objects(bucket_id,name) values('cefflo-storefront-assets',%s)"
+        actor(outsider, "anon")
+        rejected(cur, insert_hero, (f"{business}/hero-{uuid.uuid4()}.jpg",))
+        actor(helper)
+        rejected(cur, insert_hero, (f"{business}/hero-{uuid.uuid4()}.jpg",))
+        actor(owner)
+        rejected(cur, insert_hero, (f"{other}/hero-{uuid.uuid4()}.jpg",))
+        rejected(cur, insert_hero, (f"{business}/anything.jpg",))
+        cur.execute(insert_hero, (hero,))
+        actor(operator)
+        cur.execute(insert_hero, (f"{business}/hero-{uuid.uuid4()}.png",))
+        rejected(cur, "select save_storefront_appearance(%s,'arena',%s::jsonb)",
+                 (business, f'{{"hero_path":"{business}/hero-{uuid.uuid4()}.jpg"}}'), contains="invalid hero image")
+        cur.execute("select save_storefront_appearance(%s,'arena',%s::jsonb)", (business, f'{{"hero_path":"{hero}"}}'))
+        actor(outsider, "anon")
+        cur.execute("select public_storefront('nari-kitchen')")
+        store = cur.fetchone()[0]
+        assert store["hero_url"].endswith(hero) and "hero_path" not in store["theme"]
+        actor(owner)
+        cur.execute("select save_storefront_appearance(%s,'arena','{}')", (business,))
+        actor(outsider, "anon")
+        cur.execute("select public_storefront('nari-kitchen')->>'hero_url'")
+        assert cur.fetchone()[0] is None
+        cur.execute("reset role")
+
         # Subscription: Owner reads own row, Operator does not.
         cur.execute("insert into business_subscriptions(business_id,plan_key,status) values(%s,'operate','trial')", (business,))
         actor(owner)

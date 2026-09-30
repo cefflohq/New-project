@@ -471,12 +471,15 @@ void main() {
     tester,
   ) async {
     await pumpAt(tester, const VendorLocation(VRoute.today));
+    // Starts Offline (Founder, 2026-10-01): operational screens greyed.
+    expect(find.text('Offline'), findsOneWidget);
+    expect(find.byType(ColorFiltered), findsOneWidget);
+    await tester.tap(find.text('Offline'));
+    await tester.pumpAndSettle();
     expect(find.text('Online'), findsOneWidget);
     expect(find.byType(ColorFiltered), findsNothing);
     await tester.tap(find.text('Online'));
     await tester.pumpAndSettle();
-    expect(find.text('Offline'), findsOneWidget);
-    expect(find.byType(ColorFiltered), findsOneWidget);
     // More stays in colour.
     await tester.tap(find.text('More'));
     await tester.pumpAndSettle();

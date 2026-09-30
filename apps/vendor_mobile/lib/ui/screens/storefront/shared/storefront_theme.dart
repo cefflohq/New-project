@@ -9,6 +9,8 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/env.dart';
+
 import '../../../../data/storefront_config.dart';
 
 class StorefrontThemeTokens {
@@ -26,8 +28,18 @@ class StorefrontThemeTokens {
 
   /// Vendor hero/banner photo, when the template supports one and the
   /// vendor supplied it.
-  ImageProvider? get heroImage =>
-      branding.heroImage == null ? null : MemoryImage(branding.heroImage!);
+  ImageProvider? get heroImage => branding.heroImage != null
+      ? MemoryImage(branding.heroImage!)
+      : heroProviderFor(branding.heroPath);
+
+  /// The saved hero in the public cefflo-storefront-assets bucket.
+  static ImageProvider? heroProviderFor(String? path) =>
+      path == null || !Env.isConfigured
+      ? null
+      : NetworkImage(
+          '${Env.supabaseUrl}/storage/v1/object/public/'
+          'cefflo-storefront-assets/$path',
+        );
 
   /// Store name and tagline come from the vendor, never from the template.
   String get storeName => branding.storeName;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/vendor_repository.dart';
+import 'shell.dart';
 import 'widgets.dart';
 
 /// Loads once per key and renders explicit loading / error / blocked / data
@@ -74,14 +75,16 @@ class AsyncViewState<T> extends State<AsyncView<T>> {
     }
     if (_error != null && _data == null) {
       final err = _error;
+      // Page-level states sit centred in the free content area like every
+      // other empty state (PageBody's rule), never pinned to the top.
       if (err is RepositoryError && err.isMissingContract) {
-        return StateBlock.blocked(err.message);
+        return PageBody(children: [StateBlock.blocked(err.message)]);
       }
-      return StateBlock.error('$err', onRetry: _load);
+      return PageBody(children: [StateBlock.error('$err', onRetry: _load)]);
     }
     final data = _data as T;
     if (widget.isEmpty?.call(data) == true && widget.emptyMessage != null) {
-      return StateBlock.empty(widget.emptyMessage!);
+      return PageBody(children: [StateBlock.empty(widget.emptyMessage!)]);
     }
     return widget.builder(context, data, _load);
   }

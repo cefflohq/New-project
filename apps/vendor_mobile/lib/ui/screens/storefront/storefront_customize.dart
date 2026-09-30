@@ -18,6 +18,7 @@ import '../../../data/storefront_config.dart';
 import '../../system_bars.dart';
 import '../../widgets.dart';
 import 'shared/storefront_surface.dart';
+import 'shared/storefront_theme.dart';
 import 'shared/template_definition.dart';
 import 'storefront_screens.dart';
 import 'templates/template_registry.dart';
@@ -153,8 +154,27 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
         imageQuality: 85,
       );
       if (file == null) return;
+      final name = file.name.toLowerCase();
+      final type = name.endsWith('.png')
+          ? 'image/png'
+          : name.endsWith('.webp')
+          ? 'image/webp'
+          : (name.endsWith('.jpg') || name.endsWith('.jpeg'))
+          ? 'image/jpeg'
+          : file.mimeType;
+      if (!const {'image/jpeg', 'image/png', 'image/webp'}.contains(type)) {
+        if (mounted) showCefToast(context, L.photoFormat, error: true);
+        return;
+      }
       final bytes = await file.readAsBytes();
-      if (mounted) _update(draft.copyWith(heroImage: bytes));
+      if (bytes.length > 5 * 1024 * 1024) {
+        if (mounted) showCefToast(context, L.heroTooLarge, error: true);
+        return;
+      }
+      // Uploaded on Save; the preview shows it now.
+      if (mounted) {
+        _update(draft.copyWith(heroImage: bytes, heroContentType: type));
+      }
     } catch (_) {
       if (mounted) {
         showCefToast(context, L.couldntOpenPhotosPleaseTryAgain);
@@ -370,6 +390,8 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
 
   List<Widget> _heroImage() {
     final image = draft.heroImage;
+    final saved = draft.heroPath;
+    final hasHero = image != null || saved != null;
     final c = context.c;
     return [
       _label(L.heroImage, hint: L.shownBehindStorefrontBanner),
@@ -381,9 +403,16 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
               width: 72,
               height: 72,
               color: c.subtle,
-              child: image == null
-                  ? Icon(LucideIcons.image, color: c.textSecondary)
-                  : Image.memory(image, fit: BoxFit.cover),
+              child: image != null
+                  ? Image.memory(image, fit: BoxFit.cover)
+                  : saved != null
+                  ? Image(
+                      image: StorefrontThemeTokens.heroProviderFor(saved)!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) =>
+                          Icon(LucideIcons.image, color: c.textSecondary),
+                    )
+                  : Icon(LucideIcons.image, color: c.textSecondary),
             ),
           ),
           const SizedBox(width: Gap.lg),
@@ -395,13 +424,13 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
                 SizedBox(
                   width: 120,
                   child: CefButton(
-                    image == null ? L.upload : L.change,
+                    hasHero ? L.change : L.upload,
                     secondary: true,
                     compact: true,
                     onTap: _pickHeroImage,
                   ),
                 ),
-                if (image != null)
+                if (hasHero)
                   TextButton(
                     onPressed: () =>
                         _update(draft.copyWith(clearHeroImage: true)),

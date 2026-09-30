@@ -30,3 +30,4 @@ h2 { font-size: 18px; margin: 20px 0 10px; }
 .product { flex-wrap: wrap; }
 .gallery { display: flex; gap: 6px; overflow-x: auto; scroll-snap-type: x mandatory; flex: 1 1 100%; }
 .gallery img { width: 120px; height: 120px; border-radius: 10px; object-fit: cover; flex: none; scroll-snap-align: start; }
+.top.hero { background-size: cover; background-position: center; padding: 72px 16px 28px; }

@@ -3564,4 +3564,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get subCancelled => 'Cancelled';
+
+  @override
+  String get signOutConfirmTitle => 'Sign out?';
+
+  @override
+  String get signOutConfirmBody =>
+      'You\'ll need to sign in again to manage your business.';
+
+  @override
+  String get yesSignOut => 'Yes, sign out';
+
+  @override
+  String get heroTooLarge =>
+      'This image is larger than 5 MB. Choose a smaller one.';
 }

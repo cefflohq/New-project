@@ -3567,4 +3567,18 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get subCancelled => 'Dibatalkan';
+
+  @override
+  String get signOutConfirmTitle => 'Log keluar?';
+
+  @override
+  String get signOutConfirmBody =>
+      'Anda perlu log masuk semula untuk mengurus bisnes anda.';
+
+  @override
+  String get yesSignOut => 'Ya, log keluar';
+
+  @override
+  String get heroTooLarge =>
+      'Imej ini lebih besar daripada 5 MB. Pilih yang lebih kecil.';
 }

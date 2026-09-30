@@ -87,7 +87,19 @@ class StorefrontBranding {
     this.backgroundId = kTemplateBackgroundId,
     this.customBackground,
     this.heroImage,
+    this.heroContentType,
+    this.heroPath,
   });
+
+  /// Saved hero on the server: '{business}/hero-{uuid}.{ext}' in the
+  /// public cefflo-storefront-assets bucket (20260930110132).
+  final String? heroPath;
+
+  /// MIME type of a newly picked [heroImage], not yet uploaded.
+  final String? heroContentType;
+
+  /// A picked hero that still has to be uploaded on Save.
+  bool get hasUnsavedHero => heroImage != null && heroContentType != null;
 
   /// Id of one of the template's own background treatments
   /// (`StorefrontTemplateDef.backgrounds`), or [kCustomBackgroundId].
@@ -144,6 +156,8 @@ class StorefrontBranding {
     String? backgroundId,
     Color? customBackground,
     Uint8List? heroImage,
+    String? heroContentType,
+    String? heroPath,
     bool clearSecondary = false,
     bool clearHeroImage = false,
   }) => StorefrontBranding(
@@ -158,6 +172,10 @@ class StorefrontBranding {
     backgroundId: backgroundId ?? this.backgroundId,
     customBackground: customBackground ?? this.customBackground,
     heroImage: clearHeroImage ? null : (heroImage ?? this.heroImage),
+    heroContentType: clearHeroImage
+        ? null
+        : (heroContentType ?? this.heroContentType),
+    heroPath: clearHeroImage ? null : (heroPath ?? this.heroPath),
   );
 }
 

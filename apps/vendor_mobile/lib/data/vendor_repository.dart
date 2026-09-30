@@ -437,6 +437,36 @@ class VendorRepository {
     return _single(res);
   }
 
+  /// Uploads a storefront hero as a NEW object (no overwrite) at
+  /// '{business}/hero-{uuid}.{ext}' (20260930110132: Owner/Operator of that
+  /// business only). Returns the path to save as hero_path.
+  Future<String> uploadStorefrontHero(
+    String businessId,
+    Uint8List bytes,
+    String contentType,
+  ) async {
+    final ext = switch (contentType) {
+      'image/png' => 'png',
+      'image/webp' => 'webp',
+      _ => 'jpg',
+    };
+    final path = '$businessId/hero-${newIdempotencyKey()}.$ext';
+    await _run(
+      () => _db!.storage
+          .from('cefflo-storefront-assets')
+          .uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(contentType: contentType),
+          ),
+    );
+    return path;
+  }
+
+  /// Public URL of a storefront asset (public bucket).
+  String storefrontAssetUrl(String path) =>
+      _db!.storage.from('cefflo-storefront-assets').getPublicUrl(path);
+
   Future<void> setStorefrontPublished(String businessId, bool published) =>
       _run(
         () => _db!.rpc(

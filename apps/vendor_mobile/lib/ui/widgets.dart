@@ -1936,6 +1936,8 @@ class StateBlock extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Gap.xxl),
       child: Column(
+        // Content-sized, so the page can centre it in the free space.
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 26, color: color),
           const SizedBox(height: Gap.md),
