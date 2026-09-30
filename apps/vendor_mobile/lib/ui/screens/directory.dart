@@ -1817,26 +1817,14 @@ final ValueNotifier<int> zonesRevision = ValueNotifier(0);
 /// map, the mustard primary action. Creates through the existing
 /// create_zone RPC; the pop-up closes only after the server accepts.
 Future<void> showCreateZoneDialog(BuildContext context) =>
-    showGeneralDialog<void>(
+    // Slides up from the bottom (Founder, 2026-10-01); lifts above the
+    // keyboard while typing.
+    showModalBottomSheet<void>(
       context: context,
-      barrierLabel: L.createZone,
-      barrierDismissible: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .35),
-      transitionDuration: const Duration(milliseconds: 200),
-      transitionBuilder: (context, animation, _, child) {
-        final curved = CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOut,
-        );
-        return FadeTransition(
-          opacity: curved,
-          child: ScaleTransition(
-            scale: Tween(begin: .96, end: 1.0).animate(curved),
-            child: child,
-          ),
-        );
-      },
-      pageBuilder: (context, _, _) => const _CreateZoneDialog(),
+      builder: (_) => const _CreateZoneDialog(),
     );
 
 class _CreateZoneDialog extends StatefulWidget {
@@ -1887,25 +1875,23 @@ class _CreateZoneDialogState extends State<_CreateZoneDialog> {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          Gap.gutter,
-          0,
-          Gap.gutter,
-          MediaQuery.viewInsetsOf(context).bottom,
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: Material(
+        color: context.c.card,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(Sizes.cardRadius + 6),
         ),
-        child: Material(
-          color: context.c.card,
-          borderRadius: BorderRadius.circular(Sizes.cardRadius + 6),
+        child: SafeArea(
+          top: false,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
+            constraints: const BoxConstraints(maxWidth: 600),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
                 Gap.xxl,
-                Gap.xxl,
-                Gap.xxl,
                 Gap.xl,
+                Gap.xxl,
+                Gap.lg,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
