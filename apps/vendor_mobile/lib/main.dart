@@ -124,6 +124,7 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
     super.initState();
     applyUiLocale(app.uiLocale);
     app.restoreUiLocale();
+    app.restoreAppearance();
     app.access = widget.access;
     // Sign Out calls app.clearSession(), which lives in AppState -- but the
     // "is a prototype session authenticated" flag below has to live here

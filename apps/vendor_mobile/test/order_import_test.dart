@@ -6,7 +6,6 @@ import 'package:cefflo_vendor_mobile/core/routes.dart';
 import 'package:cefflo_vendor_mobile/data/vendor_repository.dart';
 import 'package:cefflo_vendor_mobile/main.dart';
 import 'package:cefflo_vendor_mobile/ui/screens/import_flow.dart';
-import 'package:cefflo_vendor_mobile/ui/shell.dart';
 import 'package:excel/excel.dart' as xl;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

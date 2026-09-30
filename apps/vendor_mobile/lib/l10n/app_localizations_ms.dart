@@ -3273,4 +3273,26 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get importKpiNotSent => 'Tidak dihantar';
+
+  @override
+  String get appearanceStandard => 'Standard Cefflo';
+
+  @override
+  String get appearanceBackground => 'Latar belakang';
+
+  @override
+  String get appearancePlain => 'Biasa';
+
+  @override
+  String get appearanceGradient => 'Gradien';
+
+  @override
+  String get appearanceSaved => 'Penampilan disimpan pada peranti ini.';
+
+  @override
+  String get appearanceDeviceOnly =>
+      'Hanya untuk peranti ini. Tekan Simpan untuk kekalkan.';
+
+  @override
+  String get purple => 'Ungu';
 }

@@ -6002,6 +6002,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not sent'**
   String get importKpiNotSent;
+
+  /// No description provided for @appearanceStandard.
+  ///
+  /// In en, this message translates to:
+  /// **'Cefflo standard'**
+  String get appearanceStandard;
+
+  /// No description provided for @appearanceBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Background'**
+  String get appearanceBackground;
+
+  /// No description provided for @appearancePlain.
+  ///
+  /// In en, this message translates to:
+  /// **'Plain'**
+  String get appearancePlain;
+
+  /// No description provided for @appearanceGradient.
+  ///
+  /// In en, this message translates to:
+  /// **'Gradient'**
+  String get appearanceGradient;
+
+  /// No description provided for @appearanceSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance saved on this device.'**
+  String get appearanceSaved;
+
+  /// No description provided for @appearanceDeviceOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to this device only. Tap Save to keep it.'**
+  String get appearanceDeviceOnly;
+
+  /// No description provided for @purple.
+  ///
+  /// In en, this message translates to:
+  /// **'Purple'**
+  String get purple;
 }
 
 class _AppLocalizationsDelegate

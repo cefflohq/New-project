@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'appearance.dart';
 import 'auth_access.dart';
 import 'notification_alerts.dart';
 
@@ -129,11 +130,27 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ---- Accent colour (Appearance). Session preference only.
-  int? accentColorValue;
+  // ---- Appearance: device-local only (never synced, no DB column).
+  // [appearance] is what is saved on this device; a preview paints the
+  // whole app through [liveAppearance] until it is saved or rolled back.
+  Appearance appearance = Appearance.standard;
+  final AppearanceStore _appearanceStore = AppearanceStore();
 
-  void setAccent(int? value) {
-    accentColorValue = value;
+  Future<void> restoreAppearance() async {
+    appearance = await _appearanceStore.read();
+    liveAppearance.value = appearance;
+    notifyListeners();
+  }
+
+  void previewAppearance(Appearance next) => liveAppearance.value = next;
+
+  /// Back / cancel: the saved appearance returns.
+  void discardAppearancePreview() => liveAppearance.value = appearance;
+
+  Future<void> saveAppearance(Appearance next) async {
+    appearance = next;
+    liveAppearance.value = next;
+    await _appearanceStore.write(next);
     notifyListeners();
   }
 

@@ -982,5 +982,12 @@
   "importFieldNotes": "Nota",
   "importKpiCreated": "Dicipta",
   "importKpiRejected": "Ditolak",
-  "importKpiNotSent": "Tidak dihantar"
+  "importKpiNotSent": "Tidak dihantar",
+  "appearanceStandard": "Standard Cefflo",
+  "appearanceBackground": "Latar belakang",
+  "appearancePlain": "Biasa",
+  "appearanceGradient": "Gradien",
+  "appearanceSaved": "Penampilan disimpan pada peranti ini.",
+  "appearanceDeviceOnly": "Hanya untuk peranti ini. Tekan Simpan untuk kekalkan.",
+  "purple": "Ungu"
 }

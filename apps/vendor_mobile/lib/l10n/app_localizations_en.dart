@@ -3270,4 +3270,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importKpiNotSent => 'Not sent';
+
+  @override
+  String get appearanceStandard => 'Cefflo standard';
+
+  @override
+  String get appearanceBackground => 'Background';
+
+  @override
+  String get appearancePlain => 'Plain';
+
+  @override
+  String get appearanceGradient => 'Gradient';
+
+  @override
+  String get appearanceSaved => 'Appearance saved on this device.';
+
+  @override
+  String get appearanceDeviceOnly =>
+      'Applies to this device only. Tap Save to keep it.';
+
+  @override
+  String get purple => 'Purple';
 }

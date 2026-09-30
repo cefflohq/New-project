@@ -1601,5 +1601,12 @@
   "importFieldNotes": "Notes",
   "importKpiCreated": "Created",
   "importKpiRejected": "Rejected",
-  "importKpiNotSent": "Not sent"
+  "importKpiNotSent": "Not sent",
+  "appearanceStandard": "Cefflo standard",
+  "appearanceBackground": "Background",
+  "appearancePlain": "Plain",
+  "appearanceGradient": "Gradient",
+  "appearanceSaved": "Appearance saved on this device.",
+  "appearanceDeviceOnly": "Applies to this device only. Tap Save to keep it.",
+  "purple": "Purple"
 }

@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../core/appearance.dart';
 import '../core/theme.dart';
 import '../data/models.dart';
 
@@ -195,7 +196,8 @@ class SectionHeading extends StatelessWidget {
   }
 }
 
-/// The one brand backdrop: [CefGradients.brand]. The shell's chrome, Splash
+/// The one brand backdrop: [CefGradients.brand], or the device-local
+/// Appearance choice ([liveAppearance]). The shell's chrome, Splash
 /// and every [HeroSurface] paint through this, so the gradient is identical
 /// everywhere.
 class BrandBackdrop extends StatelessWidget {
@@ -204,12 +206,16 @@ class BrandBackdrop extends StatelessWidget {
   final BorderRadius? borderRadius;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-    decoration: BoxDecoration(
-      gradient: CefGradients.brand,
-      borderRadius: borderRadius,
-    ),
+  Widget build(BuildContext context) => ValueListenableBuilder<Appearance>(
+    valueListenable: liveAppearance,
     child: child,
+    builder: (context, look, child) => DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: look.backdrop,
+        borderRadius: borderRadius,
+      ),
+      child: child,
+    ),
   );
 }
 

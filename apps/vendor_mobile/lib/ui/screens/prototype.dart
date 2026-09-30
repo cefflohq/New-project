@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:qr/qr.dart';
 
 import '../../core/app_state.dart';
+import '../../core/appearance.dart';
 import '../../core/env.dart';
 import '../../core/notification_alerts.dart';
 import '../../core/routes.dart';
@@ -681,60 +682,64 @@ class _NotificationPreferencesScreenState
   }
 }
 
-/// V-49 — Appearance (D-54): the app accent colour only (no light/dark
-/// mode). Plain names, small swatches; Custom opens a colour picker sheet.
-/// The accent never recolours semantic colours, the Cefflo gradient or the
-/// mustard CTA.
-class _AppearanceScreen extends StatelessWidget {
+/// V-49 — Appearance (Founder, 2026-09-30): the app backdrop colour, one
+/// named colour per row, Plain or Gradient, and Custom. Choosing previews
+/// app-wide at once; only Save keeps it, on this device only (never
+/// synced). Leaving without saving restores the saved appearance. The
+/// white content surface, semantic status colours and the mustard CTA
+/// never change.
+class _AppearanceScreen extends StatefulWidget {
   const _AppearanceScreen();
 
-  static List<(String, int)> get accents => [
+  @override
+  State<_AppearanceScreen> createState() => _AppearanceScreenState();
+}
+
+class _AppearanceScreenState extends State<_AppearanceScreen> {
+  static List<(String, int?)> get colours => [
+    (L.appearanceStandard, null),
     (L.blue, 0xFF0060FE),
     (L.navy, 0xFF0B1220),
-    (L.red, 0xFFE5484D),
     (L.green, 0xFF12A150),
-    (L.yellow, 0xFFFFC93C),
+    (L.red, 0xFFE5484D),
     (L.orange, 0xFFF97316),
-    (L.black, 0xFF000000),
-    (L.white, 0xFFFFFFFF),
+    (L.purple, 0xFF7C3AED),
+    (L.black, 0xFF1C1D20),
   ];
 
+  late AppState _app;
+  late Appearance _draft;
+  bool _saving = false;
+
   @override
-  Widget build(BuildContext context) {
-    final app = AppScope.of(context);
-    final text = Theme.of(context).textTheme;
-    final selected = app.accentColorValue ?? accents.first.$2;
-    final isCustom = !accents.any((a) => a.$2 == selected);
-    return PageBody(
-      children: [
-        SectionHeading(L.accentColour),
-        Text(L.chooseAccentColourApp, style: text.bodySmall),
-        const SizedBox(height: Gap.lg),
-        Wrap(
-          spacing: Gap.lg,
-          runSpacing: Gap.lg,
-          children: [
-            for (final (name, value) in accents)
-              _Swatch(
-                label: name,
-                color: Color(value),
-                selected: value == selected,
-                onTap: () => app.setAccent(value),
-              ),
-            _Swatch(
-              label: L.custom,
-              color: isCustom ? Color(selected) : null,
-              selected: isCustom,
-              onTap: () => _pickCustom(context, Color(selected)),
-            ),
-          ],
-        ),
-      ],
-    );
+  void initState() {
+    super.initState();
+    _app = AppScope.read(context);
+    _draft = _app.appearance;
   }
 
-  Future<void> _pickCustom(BuildContext context, Color start) async {
-    final app = AppScope.read(context);
+  @override
+  void dispose() {
+    // Back / cancel: an unsaved preview never outlives the screen.
+    final app = _app;
+    Future.microtask(app.discardAppearancePreview);
+    super.dispose();
+  }
+
+  void _choose(Appearance next) {
+    setState(() => _draft = next);
+    _app.previewAppearance(next);
+  }
+
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    await _app.saveAppearance(_draft);
+    if (!mounted) return;
+    setState(() => _saving = false);
+    showCefToast(context, L.appearanceSaved);
+  }
+
+  Future<void> _pickCustom() async {
     final picked = await showModalBottomSheet<Color>(
       context: context,
       backgroundColor: context.c.card,
@@ -743,86 +748,104 @@ class _AppearanceScreen extends StatelessWidget {
           top: Radius.circular(Sizes.cardRadius),
         ),
       ),
-      builder: (_) => _ColourPickerSheet(initial: start),
+      builder: (_) =>
+          _ColourPickerSheet(initial: Color(_draft.color ?? 0xFF0060FE)),
     );
-    if (picked != null) app.setAccent(picked.toARGB32());
+    if (picked != null) {
+      _choose(Appearance(color: picked.toARGB32(), gradient: _draft.gradient));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final isCustom =
+        _draft.color != null && !colours.any((c) => c.$2 == _draft.color);
+    final plain = L.appearancePlain, gradient = L.appearanceGradient;
+    return PageBody(
+      bottom: CefButton(
+        L.save,
+        busy: _saving,
+        onTap: _draft == _app.appearance ? null : _save,
+      ),
+      children: [
+        SectionHeading(L.appearanceBackground, icon: LucideIcons.palette),
+        Text(L.appearanceDeviceOnly, style: text.bodySmall),
+        const SizedBox(height: Gap.md),
+        SegmentedTabs(
+          labels: [plain, gradient],
+          active: _draft.gradient ? gradient : plain,
+          onChange: (l) =>
+              _choose(Appearance(color: _draft.color, gradient: l == gradient)),
+        ),
+        const SizedBox(height: Gap.md),
+        for (final (name, value) in colours)
+          _ColourRow(
+            label: name,
+            look: Appearance(color: value, gradient: _draft.gradient),
+            selected: _draft.color == value,
+            onTap: () =>
+                _choose(Appearance(color: value, gradient: _draft.gradient)),
+          ),
+        _ColourRow(
+          label: L.custom,
+          look: isCustom ? _draft : null,
+          selected: isCustom,
+          onTap: _pickCustom,
+        ),
+      ],
+    );
   }
 }
 
-class _Swatch extends StatelessWidget {
-  const _Swatch({
+/// One colour choice: a swatch painted exactly as the backdrop would be,
+/// the colour name, and a check when selected.
+class _ColourRow extends StatelessWidget {
+  const _ColourRow({
     required this.label,
-    required this.color,
+    required this.look,
     required this.selected,
     required this.onTap,
   });
   final String label;
-  final Color? color;
+  final Appearance? look;
   final bool selected;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: label,
-      child: GestureDetector(
-        onTap: onTap,
-        child: SizedBox(
-          width: 56,
-          child: Column(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: selected ? c.textPrimary : Colors.transparent,
-                    width: 2,
-                  ),
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: color,
-                    gradient: color == null
-                        ? const SweepGradient(
-                            colors: [
-                              Colors.red,
-                              Colors.yellow,
-                              Colors.green,
-                              Colors.cyan,
-                              Colors.blue,
-                              Colors.purple,
-                              Colors.red,
-                            ],
-                          )
-                        : null,
-                    border: Border.all(color: c.border),
-                  ),
-                  child: selected
-                      ? Icon(
-                          LucideIcons.check,
-                          size: 16,
-                          color: (color ?? Colors.white).computeLuminance() > .6
-                              ? Colors.black
-                              : Colors.white,
-                        )
-                      : null,
-                ),
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    selected: selected,
+    child: CefListRow(
+      title: label,
+      showChevron: look == null,
+      leading: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient:
+              look?.backdrop ??
+              const SweepGradient(
+                colors: [
+                  Colors.red,
+                  Colors.yellow,
+                  Colors.green,
+                  Colors.cyan,
+                  Colors.blue,
+                  Colors.purple,
+                  Colors.red,
+                ],
               ),
-              const SizedBox(height: Gap.xs),
-              Text(label, style: Theme.of(context).textTheme.labelSmall),
-            ],
-          ),
+          border: Border.all(color: context.c.border),
         ),
       ),
-    );
-  }
+      trailing: selected
+          ? const Icon(LucideIcons.check, color: CefColors.brand)
+          : null,
+      onTap: onTap,
+    ),
+  );
 }
 
 /// Small custom colour picker: hue and lightness sliders over a preview.
