@@ -1273,7 +1273,9 @@ class RiderDetailScreen extends StatelessWidget {
                 HeroLine(plate, icon: _vehicleIcon(rider.vehicleType)),
             ],
           ),
-          bottomAction: pending
+          // Rider approval/rejection is Owner-only (enforced server-side by
+          // approve_pending_rider / deactivate_rider); Operators see none.
+          bottomAction: pending && app.business?.isOwner == true
               ? Row(
                   children: [
                     Expanded(

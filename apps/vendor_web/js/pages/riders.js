@@ -95,9 +95,12 @@ export default function riders({ el, params, setHeader }) {
       </div>`;
     const history = s.mine.length ? `<div>${s.mine.slice(0, 30).map(o => `<a class="list-row" href="#/orders/${esc(o.id)}" style="color:inherit;text-decoration:none"><div class="grow"><b>${esc(orderNo(o))}</b><small>${esc(o.customer_name)} · ${esc(fmtDate(o.created_at))} ${esc(fmtTime(o.created_at))}</small></div>${chip(orderStatus(o))}</a>`).join('')}</div>` : emptyState(t('riders.noHistory'));
     const TABS = { ov: overview, docs: gatedNote(t('riders.docsGated')), earn: gatedNote(t('riders.earningsGated')), hist: history };
+    // Approve / reject / deactivate are Owner-only (enforced server-side by
+    // approve_pending_rider and deactivate_rider); Operators see none.
+    const owner = ctx.isOwner;
     const footer = r.status === 'pending'
-      ? `<button class="btn" data-reject>${esc(t('riders.reject'))}</button><button class="btn primary" data-approve>${esc(t('riders.approve'))}</button>`
-      : `<button class="link-btn rd-deactivate" data-deactivate>${esc(t('riders.deactivate'))}</button>${digits ? `<a class="btn" href="tel:${esc(r.phone)}">${icon('phone')}${esc(t('c.call'))}</a><a class="btn" href="${wa}" target="_blank" rel="noopener">${icon('wa')}WhatsApp</a>` : ''}`;
+      ? (owner ? `<button class="btn" data-reject>${esc(t('riders.reject'))}</button><button class="btn primary" data-approve>${esc(t('riders.approve'))}</button>` : '')
+      : `${owner ? `<button class="link-btn rd-deactivate" data-deactivate>${esc(t('riders.deactivate'))}</button>` : ''}${digits ? `<a class="btn" href="tel:${esc(r.phone)}">${icon('phone')}${esc(t('c.call'))}</a><a class="btn" href="${wa}" target="_blank" rel="noopener">${icon('wa')}WhatsApp</a>` : ''}`;
     const m = modal({
       title: r.name, head, cls: 'rider-modal', footer,
       body: `<div class="tabs rd-tabs" role="tablist">${[['ov', 'riders.overview'], ['docs', 'riders.documents'], ['earn', 'riders.earnings'], ['hist', 'riders.history']]
@@ -116,7 +119,7 @@ export default function riders({ el, params, setHeader }) {
       if (rj) {
         const reject = rj.hasAttribute('data-reject');
         if (!await confirmDialog({ title: reject ? t('riders.reject') : t('riders.deactivate'), body: r.name, confirmLabel: reject ? t('riders.reject') : t('riders.deactivate'), danger: true })) return;
-        try { await api.rpc('deactivate_rider', { p_rider_id: r.id }); toast(reject ? t('riders.rejected') : t('riders.deactivated')); m.close(); } catch (ex) { toast(ex.message, 'error'); }
+        try { await api.rpc('deactivate_rider', { p_rider_id: r.id }); toast(reject ? t('riders.rejected') : t('riders.deactivated')); m.close(); } catch (ex) { toast(ex.message === 'rider has active work' ? t('riders.activeWork') : ex.message, 'error'); }
       }
     });
   }
