@@ -118,10 +118,16 @@ test('FOUNDR hard-codes no host or localhost for auth links', () => {
   assert.doesNotMatch(src, /redirect_to=https?:|localhost:3000|vercel\.app/);
 });
 
-test('app opens Set New Password for a recovery link before the admin gate', () => {
+test('a recovery link opens Set New Password, behind the MFA step for an enrolled admin', () => {
   const app = readFileSync(new URL('../foundr/app.js', import.meta.url), 'utf8');
-  assert.match(app, /consumeAuthFragment\(\) === 'recovery'\) return renderSetPassword\(\)/);
-  assert.match(app, /await F\.updatePassword\(p1\); await boot\(\)/);
+  // Recovery is recognised first; an admin with a verified authenticator on
+  // an aal1 recovery session proves the second step before the password
+  // changes; everyone else goes straight to Set New Password.
+  assert.match(app, /if \(F\.consumeAuthFragment\(\) === 'recovery'\) \{/);
+  assert.match(app, /if \(st\?\.admin && st\.verified_factors > 0 && st\.aal !== 'aal2'\) return renderMfaVerify\(renderSetPassword\);/);
+  assert.match(app, /return renderSetPassword\(\);\n  \}\n  return boot\(\);/);
+  // The admin gate still runs after the new password is saved.
+  assert.match(app, /await F\.updatePassword\(p1\); toastSoon\('Password updated'\); await boot\(\)/);
 });
 
 test('Continue with Google goes to GoTrue authorize and returns to this FOUNDR', () => {

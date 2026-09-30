@@ -102,10 +102,58 @@
       return data;
     });
   }
+  // ----- MFA (GoTrue TOTP) -----
+  // Calls GoTrue with the signed-in user's own access token. The server
+  // decides everything: GoTrue requires aal2 to add a factor or remove one
+  // once a verified factor exists, and verify only succeeds for a valid code.
+  async function userAuth(method, path, body) {
+    return call(async () => {
+      const res = await fetch(`${cfg.supabaseUrl}${path}`, {
+        method,
+        headers: { apikey: cfg.supabaseAnonKey, Authorization: `Bearer ${base.session()?.access_token}`, 'Content-Type': 'application/json' },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      });
+      const text = await res.text();
+      const data = text ? JSON.parse(text) : null;
+      if (!res.ok) throw Object.assign(new Error(data?.msg || data?.message || data?.error_description || `Request failed (${res.status})`), { status: res.status, code: data?.error_code || data?.code });
+      return data;
+    });
+  }
+  // The AAL of the stored access token ('aal1' | 'aal2'), read from its own
+  // claims for display/routing only; the server re-reads the same JWT.
+  function sessionAal() {
+    const token = base.session()?.access_token;
+    if (!token) return null;
+    try {
+      const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(atob(part.padEnd(part.length + (4 - part.length % 4) % 4, '='))).aal || 'aal1';
+    } catch { return null; }
+  }
+  // The caller's own admin + MFA state (platform_admin_status, self-context).
+  const platformAdminStatus = () => rpc('platform_admin_status');
+  async function listFactors() {
+    const user = await currentUser();
+    return (user?.factors || []).filter(f => f.factor_type === 'totp');
+  }
+  const enrollTotp = friendlyName =>
+    userAuth('POST', '/auth/v1/factors', { factor_type: 'totp', friendly_name: friendlyName, issuer: 'Cefflo FOUNDR' });
+  const unenrollFactor = factorId => userAuth('DELETE', `/auth/v1/factors/${encodeURIComponent(factorId)}`);
+  const challengeFactor = factorId => userAuth('POST', `/auth/v1/factors/${encodeURIComponent(factorId)}/challenge`, {});
+  // A correct code upgrades this session to aal2: GoTrue returns a new
+  // session, which replaces the stored one.
+  async function verifyFactor(factorId, challengeId, code) {
+    const s = await userAuth('POST', `/auth/v1/factors/${encodeURIComponent(factorId)}/verify`, { challenge_id: challengeId, code: String(code).trim() });
+    if (s?.access_token) base.setSession({ ...s, expires_at: s.expires_at || Math.floor(Date.now() / 1000) + (s.expires_in || 3600) });
+    return s;
+  }
+
   function currentUser() {
     return call(async () => {
       const res = await fetch(`${cfg.supabaseUrl}/auth/v1/user`, { headers: { apikey: cfg.supabaseAnonKey, Authorization: `Bearer ${base.session()?.access_token}` } });
-      if (!res.ok) throw Object.assign(new Error(`Request failed (${res.status})`), { status: res.status });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw Object.assign(new Error(data?.msg || `Request failed (${res.status})`), { status: res.status, code: data?.error_code || data?.code });
+      }
       return res.json();
     });
   }
@@ -160,6 +208,7 @@
 
   window.CEFFLO_FOUNDR = Object.freeze({
     session: () => base.session(), signIn, signOut, googleSignInUrl, recover, consumeAuthFragment, consumeAuthError, updatePassword, currentUser, isPlatformAdmin, listPlatformAdmins, probe,
+    sessionAal, platformAdminStatus, listFactors, enrollTotp, unenrollFactor, challengeFactor, verifyFactor,
     stuckRiders, listVendors, getVendor, listRiders, deliveryOperations,
     listAuditLog, listFeatureFlags, setFeatureFlag, activeMaintenance, listMaintenanceWindows, startMaintenance, endMaintenance,
     listSubscriptions, setSubscription, listAppVersions, recordAppVersion,

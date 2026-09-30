@@ -122,3 +122,11 @@ code{font-size:12.5px;background:#f4f6f9;padding:1px 5px;border-radius:4px}
 @media(max-width:1050px){.version-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:720px){.date-control span{display:none}.global-search input{font-size:14px}.version-grid{grid-template-columns:1fr 1fr}.banner{padding:9px 13px}.metrics-cards{display:flex}.pop{right:-40px}.page-head{flex-wrap:wrap;gap:10px}}
 .preview-note{margin-bottom:12px}.notif-preview{display:grid;gap:3px;margin-top:6px;padding:10px 12px;border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:6px;background:#f8fafc;font-size:13.5px}.notif-preview span{color:var(--muted);white-space:pre-wrap}
+/* ---- MFA: set up, verify, security (security batch 2A) ---- */
+.mfa-qr{display:grid;place-items:center;margin:4px 0 2px}.mfa-qr img{width:180px;height:180px;background:#fff;border-radius:12px;padding:10px}
+.mfa-secret{font-size:13px;color:#c9d2e0}.mfa-secret summary{cursor:pointer;color:#8fbaff}.mfa-secret code{display:block;margin-top:6px;padding:8px 10px;border-radius:8px;background:#0a0f1a99;border:1px solid #ffffff33;color:#fff;word-break:break-all;font-size:13px;letter-spacing:.06em}
+.auth-box .field select{height:48px;border-radius:10px;border:1px solid #ffffff33;background:#0a0f1a99;color:#fff;font-size:16px;padding:0 12px;width:100%}
+.auth-box #code{letter-spacing:.3em;font-size:20px;text-align:center}
+.mfa-list{display:grid;gap:8px;margin:6px 0 4px}.mfa-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid #ffffff26;border-radius:10px;background:#0a0f1a66}.mfa-row b{display:block;font-size:15px}.mfa-row small{color:#aeb8c5;font-size:12.5px}
+.auth-link.danger{color:#ff8a98}.auth-link:disabled{opacity:.45;cursor:not-allowed;text-decoration:none}
+.auth-submit.danger{background:#ef4758;color:#fff;box-shadow:none}.auth-submit.danger:hover{background:#d93a4b}.auth-submit.danger:disabled{opacity:.45;cursor:not-allowed}

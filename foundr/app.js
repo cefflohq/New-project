@@ -728,7 +728,7 @@ function menus() {
     const loading = ['windows', 'activeAnns', 'stuck'].some(k => pending[k]);
     return `<div class="pop pop-notify" role="menu">${items.length ? items.map(([t, r, tab]) => `<button role="menuitem" data-go="${r}" data-go-tab="${tab}">${esc(t)}</button>`).join('') : `<p class="sub" style="padding:10px">${loading ? 'Checking…' : 'Nothing needs attention.'}</p>`}</div>`;
   }
-  if (state.menu === 'admin') return `<div class="pop pop-admin" role="menu"><div style="padding:10px"><b>${esc(me.user?.email || '')}</b><span class="sub">Platform admin</span></div><button role="menuitem" data-go="settings">Account & access</button><button role="menuitem" data-signout>Sign out</button></div>`;
+  if (state.menu === 'admin') return `<div class="pop pop-admin" role="menu"><div style="padding:10px"><b>${esc(me.user?.email || '')}</b><span class="sub">Platform admin</span></div><button role="menuitem" data-go="settings">Account & access</button><button role="menuitem" data-security>Security</button><button role="menuitem" data-signout>Sign out</button></div>`;
   if (state.menu === 'search' && state.gq.trim().length >= 2) {
     const q = state.gq.trim();
     const hits = [
@@ -820,6 +820,7 @@ root.addEventListener('click', e => {
   if (el('[data-notify]')) { state.menu = state.menu === 'notify' ? null : 'notify'; ensure(['windows', 'activeAnns', 'stuck']); return render(); }
   if (el('[data-admin]')) { state.menu = state.menu === 'admin' ? null : 'admin'; return render(); }
   if (el('[data-signout]')) return signOut();
+  if (el('[data-security]')) { state.menu = null; return renderSecurity(); }
   if (el('[data-menu]')) { document.getElementById('sidebar').classList.add('open'); document.getElementById('nav-scrim').classList.add('show'); return; }
   if (el('#nav-scrim')) { document.getElementById('sidebar').classList.remove('open'); document.getElementById('nav-scrim').classList.remove('show'); return; }
   if (el('[data-modal]')) { const b = el('[data-modal]'); if (b.disabled) return; return openModal(b.dataset.modal, b.dataset.id ? { id: b.dataset.id } : {}); }
@@ -954,7 +955,7 @@ function renderSetPassword() {
     if (p1 !== p2) { err.textContent = 'Passwords do not match.'; err.hidden = false; return; }
     const btn = form.querySelector('[type=submit]');
     btn.disabled = true; btn.textContent = 'Saving…'; err.hidden = true;
-    try { await F.updatePassword(p1); await boot(); } catch (ex) {
+    try { await F.updatePassword(p1); toastSoon('Password updated'); await boot(); } catch (ex) {
       if (ex.status === 401) { await F.signOut().catch(() => {}); return renderSignIn('That reset link has expired. Request a new one.'); }
       err.textContent = ex.message; err.hidden = false;
       btn.disabled = false; btn.textContent = 'Save password';
@@ -976,9 +977,10 @@ function handleAuthError(e) {
   if (e?.status === 401 || /JWT|session expired/i.test(msg)) {
     bouncing = true;
     F.signOut().catch(() => {}).finally(() => { bouncing = false; reset(); renderSignIn('Your session ended. Sign in again.'); });
-  } else if (/forbidden/i.test(msg)) {
-    // The allowlist changed under an open session: the server now refuses.
-    renderDenied(me.user?.email);
+  } else if (e?.status === 403 || /forbidden/i.test(msg)) {
+    // A permission refusal is not a dead session: never sign out here.
+    // Re-read this account's admin/MFA state and route from it.
+    recheckAccess();
   }
 }
 function reset() {
@@ -987,34 +989,224 @@ function reset() {
   Object.assign(state, { modal: null, drawer: null, menu: null, gq: '', query: '', filters: {}, page: 1 });
 }
 async function signOut() { await F.signOut().catch(() => {}); reset(); renderSignIn(); }
-async function boot() {
-  if (!F.session()?.access_token) return renderSignIn();
-  authFrame('<div class="skel"></div><div class="skel"></div>');
-  try {
-    // A stored session whose access token expired and whose refresh token is
-    // gone answers /auth/v1/user with 403 bad_jwt: that is a session that
-    // ended, not an outage — back to Sign In.
-    try { me.user = await F.currentUser(); } catch (e) {
-      if (e?.status === 401 || e?.status === 403) { await F.signOut().catch(() => {}); return renderSignIn('Your session ended. Sign in again.'); }
-      throw e;
-    }
-    if (await F.isPlatformAdmin() !== true) return renderDenied(me.user?.email);
-  } catch (e) {
-    if (e?.status === 401 || /JWT|session/i.test(String(e?.message))) { await F.signOut().catch(() => {}); return renderSignIn('Your session ended. Sign in again.'); }
-    return renderBootError(e);
-  }
+// A GoTrue refusal that means the session itself is gone (not a permission
+// denial): expired/invalid JWT, or a session that no longer exists.
+const deadSession = e => e?.status === 401 || /^(bad_jwt|session_not_found|session_expired|refresh_token_not_found)$/.test(String(e?.code || '')) || /JWT expired|invalid JWT/i.test(String(e?.message || ''));
+async function endSession(message = 'Your session ended. Sign in again.') {
+  await F.signOut().catch(() => {}); reset(); renderSignIn(message);
+}
+
+// Route a signed-in account from its own server-side state
+// (platform_admin_status): not an admin → Access denied; an admin with no
+// authenticator → Set up; an admin with one but still aal1 → Verify.
+// `next` runs once the account is allowed through (default: open FOUNDR).
+async function routeAccess(next = enterApp) {
+  const st = await F.platformAdminStatus();
+  if (!st?.admin) return renderDenied(me.user?.email);
+  if (st.verified_factors > 0 && st.aal !== 'aal2') return renderMfaVerify(next);
+  if (st.verified_factors === 0) return renderMfaSetup(next, { optional: true });
+  return next();
+}
+let rechecking = false, lastRecheck = 0;
+async function recheckAccess() {
+  if (rechecking) return;
+  // A refusal right after a re-check means the server still says no for
+  // this session: show Access denied instead of looping.
+  if (Date.now() - lastRecheck < 10_000) { authScreen = false; return renderDenied(me.user?.email); }
+  lastRecheck = Date.now();
+  rechecking = true;
+  try { await routeAccess(); } catch (e) {
+    if (deadSession(e)) return endSession();
+    renderBootError(e);
+  } finally { rechecking = false; }
+}
+async function enterApp() {
+  // The canonical allowlist decides entry; MFA state only changes the route.
+  if (await F.isPlatformAdmin() !== true) return renderDenied(me.user?.email);
   authScreen = false;
   ensure(['admins', 'windows', 'activeAnns', 'stuck']);
   ensure(NEEDS[state.route]);
   render();
 }
+async function boot() {
+  if (!F.session()?.access_token) return renderSignIn();
+  authFrame('<div class="skel"></div><div class="skel"></div>');
+  try {
+    try { me.user = await F.currentUser(); } catch (e) {
+      if (deadSession(e)) return endSession();
+      throw e;
+    }
+    await routeAccess();
+  } catch (e) {
+    if (deadSession(e)) return endSession();
+    return renderBootError(e);
+  }
+}
+
+// ------------------------------------------------------------------ MFA
+const CODE_INPUT = '<input id="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="6" placeholder="6-digit code" aria-label="6-digit code" required>';
+const mfaError = ex => ex?.code === 'mfa_verification_failed' || /invalid|expired/i.test(String(ex?.message))
+  ? 'That code is not valid. Check your authenticator app and try again.'
+  : (ex?.message || 'Something went wrong. Try again.');
+
+// Set up authenticator: GoTrue creates an unverified TOTP factor and its QR;
+// only a correct code verifies it (and upgrades this session to aal2).
+async function renderMfaSetup(next = enterApp, { optional = false, back = null } = {}) {
+  authFrame('<div class="skel"></div><div class="skel"></div>', { back });
+  let factor;
+  try {
+    // Abandoned earlier set-ups leave unverified factors that GoTrue still
+    // counts; clear only this account's own unverified ones.
+    for (const f of await F.listFactors()) if (f.status !== 'verified') await F.unenrollFactor(f.id).catch(() => {});
+    factor = await F.enrollTotp(`FOUNDR ${new Date().toISOString().slice(0, 16).replace('T', ' ')}`);
+  } catch (ex) {
+    if (deadSession(ex)) return endSession();
+    authFrame(`<h1>Set up authenticator</h1><p class="sub">${esc(ex.message)}</p><button class="auth-submit" data-mfa-retry>Try again</button>`, { back });
+    root.querySelector('[data-mfa-retry]').addEventListener('click', () => renderMfaSetup(next, { optional, back }));
+    return;
+  }
+  const qr = String(factor?.totp?.qr_code || '');
+  const qrSrc = qr.startsWith('data:image/svg+xml') ? qr : `data:image/svg+xml;utf-8,${encodeURIComponent(qr)}`;
+  authFrame(`<form data-mfa-setup novalidate><h1>Set up authenticator</h1>
+    <p class="sub">FOUNDR protects platform access with a second step. Scan this code with an authenticator app (Google Authenticator, 1Password, Authy…), then enter the 6-digit code it shows.</p>
+    <div class="mfa-qr"><img alt="Authenticator QR code" src="${esc(qrSrc)}" width="180" height="180"></div>
+    <details class="mfa-secret"><summary>Can't scan? Enter this key</summary><code>${esc(factor.totp?.secret || '')}</code></details>
+    <div class="field"><label for="code">Code from your app</label>${CODE_INPUT}</div>
+    <div class="field-err" data-err hidden role="alert"></div>
+    <button class="auth-submit" type="submit">Verify and turn on</button>
+    ${optional ? '<button class="auth-link" type="button" data-mfa-later>Not now</button>' : ''}
+    <p class="auth-foot">Keep this key private. Anyone with it can generate your codes.</p></form>`, { back });
+  const form = root.querySelector('[data-mfa-setup]'), err = form.querySelector('[data-err]');
+  form.querySelector('#code').focus();
+  form.querySelector('[data-mfa-later]')?.addEventListener('click', () => next());
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const code = form.querySelector('#code').value.replace(/\D/g, '');
+    if (code.length !== 6) { err.textContent = 'Enter the 6-digit code.'; err.hidden = false; return; }
+    const btn = form.querySelector('[type=submit]');
+    btn.disabled = true; btn.textContent = 'Verifying…'; err.hidden = true;
+    try {
+      const ch = await F.challengeFactor(factor.id);
+      await F.verifyFactor(factor.id, ch.id, code);
+      toastSoon('Authenticator turned on');
+      await next();
+    } catch (ex) {
+      if (deadSession(ex)) return endSession();
+      err.textContent = mfaError(ex); err.hidden = false;
+      btn.disabled = false; btn.textContent = 'Verify and turn on';
+    }
+  });
+}
+
+// Verify: an aal1 session with a verified factor proves the second step.
+async function renderMfaVerify(next = enterApp) {
+  let factors;
+  try { factors = (await F.listFactors()).filter(f => f.status === 'verified'); } catch (ex) {
+    if (deadSession(ex)) return endSession();
+    return renderBootError(ex);
+  }
+  if (!factors.length) return renderMfaSetup(next, { optional: true });
+  const pick = factors.length > 1
+    ? `<div class="field"><label for="factor">Authenticator</label><select id="factor">${factors.map(f => `<option value="${esc(f.id)}">${esc(f.friendly_name || 'Authenticator')}</option>`).join('')}</select></div>`
+    : '';
+  authFrame(`<form data-mfa-verify novalidate><h1>Verify it's you</h1>
+    <p class="sub">Enter the 6-digit code from your authenticator app for ${esc(me.user?.email || 'this account')}.</p>
+    ${pick}<div class="field"><label for="code">Code</label>${CODE_INPUT}</div>
+    <div class="field-err" data-err hidden role="alert"></div>
+    <button class="auth-submit" type="submit">Verify</button>
+    <button class="auth-link" type="button" data-mfa-signout>Sign out</button></form>`);
+  const form = root.querySelector('[data-mfa-verify]'), err = form.querySelector('[data-err]');
+  form.querySelector('#code').focus();
+  form.querySelector('[data-mfa-signout]').addEventListener('click', signOut);
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const code = form.querySelector('#code').value.replace(/\D/g, '');
+    if (code.length !== 6) { err.textContent = 'Enter the 6-digit code.'; err.hidden = false; return; }
+    const factorId = form.querySelector('#factor')?.value || factors[0].id;
+    const btn = form.querySelector('[type=submit]');
+    btn.disabled = true; btn.textContent = 'Verifying…'; err.hidden = true;
+    try {
+      const ch = await F.challengeFactor(factorId);
+      await F.verifyFactor(factorId, ch.id, code);
+      await next();
+    } catch (ex) {
+      if (deadSession(ex)) return endSession();
+      err.textContent = mfaError(ex); err.hidden = false;
+      btn.disabled = false; btn.textContent = 'Verify';
+      form.querySelector('#code').select();
+    }
+  });
+}
+
+// Security: this account's authenticators. Adding or removing one needs an
+// aal2 session (GoTrue enforces it); removal also asks for typed CONFIRM.
+async function renderSecurity() {
+  const back = () => { authScreen = false; render(); };
+  authFrame('<div class="skel"></div><div class="skel"></div>', { back });
+  let factors;
+  try { factors = (await F.listFactors()).filter(f => f.status === 'verified'); } catch (ex) {
+    if (deadSession(ex)) return endSession();
+    return renderBootError(ex);
+  }
+  const aal = F.sessionAal();
+  const rows = factors.length
+    ? factors.map(f => `<div class="mfa-row"><div><b>${esc(f.friendly_name || 'Authenticator')}</b><small>Added ${esc(fmtDate(f.created_at))}</small></div>
+        <button class="auth-link danger" type="button" data-mfa-remove="${esc(f.id)}" data-name="${esc(f.friendly_name || 'Authenticator')}"${aal === 'aal2' ? '' : ' disabled'}>Remove</button></div>`).join('')
+    : '<p class="sub">No authenticator yet.</p>';
+  authFrame(`<div data-security-page><h1>Security</h1>
+    <p class="sub">Two-step sign-in for ${esc(me.user?.email || 'this account')}. This session: <b>${aal === 'aal2' ? 'verified with authenticator (AAL2)' : 'password only (AAL1)'}</b>.</p>
+    <div class="mfa-list">${rows}</div>
+    ${aal === 'aal2' || !factors.length ? `<button class="auth-submit" type="button" data-mfa-add>${factors.length ? 'Add another authenticator' : 'Set up authenticator'}</button>` : '<button class="auth-submit" type="button" data-mfa-step>Verify to manage authenticators</button>'}
+    ${factors.length === 1 ? '<p class="auth-foot">Add a second authenticator (another phone or a password manager) so losing one device does not lock you out.</p>' : ''}
+    <div class="field-err" data-err hidden role="alert"></div></div>`, { back });
+  const page = root.querySelector('[data-security-page]'), err = page.querySelector('[data-err]');
+  page.querySelector('[data-mfa-add]')?.addEventListener('click', () => renderMfaSetup(renderSecurity, { back: renderSecurity }));
+  page.querySelector('[data-mfa-step]')?.addEventListener('click', () => renderMfaVerify(renderSecurity));
+  page.querySelectorAll('[data-mfa-remove]').forEach(b => b.addEventListener('click', () => renderRemoveFactor(b.dataset.mfaRemove, b.dataset.name, factors.length)));
+}
+function renderRemoveFactor(factorId, name, total) {
+  authFrame(`<form data-mfa-remove-form novalidate><h1>Remove ${esc(name)}?</h1>
+    <p class="sub">${total === 1 ? 'This is your only authenticator. Without it, FOUNDR sign-in falls back to password only until you set one up again.' : 'You will no longer be able to sign in with this authenticator.'}</p>
+    <div class="field"><label for="confirm">Type CONFIRM to continue</label><input id="confirm" autocomplete="off" required></div>
+    <div class="field-err" data-err hidden role="alert"></div>
+    <button class="auth-submit danger" type="submit" disabled>Remove authenticator</button></form>`, { back: renderSecurity });
+  const form = root.querySelector('[data-mfa-remove-form]'), err = form.querySelector('[data-err]'), btn = form.querySelector('[type=submit]');
+  form.querySelector('#confirm').addEventListener('input', e => { btn.disabled = e.target.value !== 'CONFIRM'; });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (form.querySelector('#confirm').value !== 'CONFIRM') return;
+    btn.disabled = true; btn.textContent = 'Removing…'; err.hidden = true;
+    try { await F.unenrollFactor(factorId); toastSoon('Authenticator removed'); renderSecurity(); } catch (ex) {
+      if (deadSession(ex)) return endSession();
+      err.textContent = ex.status === 403 || /aal2|AAL2/.test(ex.message) ? 'Verify with your authenticator first, then remove it.' : ex.message; err.hidden = false;
+      btn.disabled = false; btn.textContent = 'Remove authenticator';
+    }
+  });
+}
+function toastSoon(message) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = message; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
 
 // An emailed recovery link lands here first: open Set New Password with its
-// session, or explain a link that has expired or was already used.
-function start() {
+// session, or explain a link that has expired or was already used. A
+// recovery session is aal1: an admin with an authenticator proves the second
+// step before the password can change.
+async function start() {
   const linkError = F.consumeAuthError();
   if (linkError) return renderSignIn(linkError.code === 'otp_expired' ? 'That reset link has expired or was already used. Request a new one.' : (linkError.description || 'That link could not be used.'));
-  if (F.consumeAuthFragment() === 'recovery') return renderSetPassword();
+  if (F.consumeAuthFragment() === 'recovery') {
+    try {
+      me.user = await F.currentUser();
+      const st = await F.platformAdminStatus();
+      if (st?.admin && st.verified_factors > 0 && st.aal !== 'aal2') return renderMfaVerify(renderSetPassword);
+    } catch (e) {
+      if (deadSession(e)) return endSession('That reset link has expired. Request a new one.');
+    }
+    return renderSetPassword();
+  }
   return boot();
 }
 start();
