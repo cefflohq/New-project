@@ -292,9 +292,12 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
         address: parts.join(', '),
       );
       app.setupDraft = null;
-      await app.loadSession();
-      if (!mounted) return;
+      // Route first, then reload: loadSession swaps the whole app to a
+      // loading screen (this screen unmounts), so a mounted-check after it
+      // used to drop the navigation and leave the vendor on this step --
+      // where a second tap created a second business.
       app.resetTo(VRoute.setupComplete);
+      await app.loadSession();
     } catch (e) {
       if (mounted) setState(() => error = '$e');
     } finally {
