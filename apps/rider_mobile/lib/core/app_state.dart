@@ -8,6 +8,7 @@ import '../data/models.dart';
 import '../data/rider_repository.dart';
 import 'live_location.dart';
 import 'notification_alerts.dart';
+import 'browser_history.dart';
 import 'join_link.dart';
 import 'ui_locale.dart';
 import 'routes.dart';
@@ -171,10 +172,36 @@ class AppState extends ChangeNotifier {
     final next = RiderLocation(route, entityId: entityId);
     if (next == current) return;
     _stack.add(next);
+    // One browser entry per in-app step: the Android edge-swipe / browser
+    // Back returns here instead of leaving the app for a blank page.
+    if (hasBrowserHistory) {
+      pushBrowserHistoryEntry();
+      _historyDepth++;
+    }
     notifyListeners();
   }
 
+  int _historyDepth = 0;
+
+  /// Set by the auth screens while shown; handles Back inside their stack.
+  bool Function()? authBrowserBack;
+
+  /// The browser's Back (swipe or button).
+  void onBrowserBack() {
+    if (authBrowserBack?.call() ?? false) return;
+    if (_historyDepth > 0) _historyDepth--;
+    if (_stack.length > 1 || current.spec.parent != null) _back();
+  }
+
   void back() {
+    if (hasBrowserHistory && _historyDepth > 0) {
+      browserHistoryBack();
+      return;
+    }
+    _back();
+  }
+
+  void _back() {
     if (_stack.length > 1) {
       _stack.removeLast();
     } else {

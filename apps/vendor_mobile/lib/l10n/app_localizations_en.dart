@@ -3619,4 +3619,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unnamedTeamMember => 'Team member';
+
+  @override
+  String get emailAlreadyRegistered => 'This email is already registered.';
 }

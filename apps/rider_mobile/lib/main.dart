@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/app_state.dart';
+import 'core/browser_history.dart';
 import 'core/env.dart';
 import 'core/live_location.dart';
 import 'core/responsive.dart';
@@ -174,6 +175,7 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
     applyUiLocale(app.uiLocale);
     app.restoreUiLocale();
     if (!app.repo.isDemo) app.restoreJoinToken(Uri.base);
+    listenBrowserBack(app.onBrowserBack);
     app.onPrototypeSignOut = () {
       if (mounted) setState(() => _prototypeAuthenticated = false);
     };

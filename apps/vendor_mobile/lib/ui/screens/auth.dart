@@ -23,6 +23,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/browser_history.dart';
 import '../../core/auth_access.dart';
 import '../../core/theme.dart';
 import '../../data/vendor_repository.dart';
@@ -202,6 +203,36 @@ class _AuthFlowState extends State<AuthFlow> {
       if (email != null) _email = email;
       _stack.add(next);
     });
+    // One browser entry per auth step: the Android edge-swipe / browser
+    // Back steps back here instead of leaving the app for a blank page.
+    if (hasBrowserHistory) {
+      pushBrowserHistoryEntry();
+      _browserDepth++;
+    }
+  }
+
+  int _browserDepth = 0;
+  AppState? _app;
+
+  /// Browser Back inside the auth screens (see AppState.onBrowserBack).
+  bool _onBrowserBack() {
+    if (!mounted) return false;
+    if (_browserDepth > 0) _browserDepth--;
+    if (_stack.length <= 1) return false;
+    setState(() => _stack.removeLast());
+    return true;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _app ??= AppScope.read(context)..authBrowserBack = _onBrowserBack;
+  }
+
+  @override
+  void dispose() {
+    if (_app?.authBrowserBack == _onBrowserBack) _app!.authBrowserBack = null;
+    super.dispose();
   }
 
   void _replace(_Stage next, {String? email}) {
@@ -214,6 +245,11 @@ class _AuthFlowState extends State<AuthFlow> {
   }
 
   void _back() {
+    // In the browser, in-app Back goes through history so both stay in step.
+    if (hasBrowserHistory && _browserDepth > 0 && _stack.length > 1) {
+      browserHistoryBack();
+      return;
+    }
     setState(() {
       if (_stack.length > 1) {
         _stack.removeLast();
@@ -313,6 +349,7 @@ class _AuthFlowState extends State<AuthFlow> {
         onContinue: () => widget.onCodeHold?.call(false),
         onBack: _back,
         onUseDifferentEmail: () => _replace(_Stage.signUp),
+        onSignIn: () => _replace(_Stage.emailSignIn),
       ),
       _Stage.recoveryCode => VerifyEmailCodeScreen(
         key: ValueKey(('recovery', _email)),
@@ -1530,6 +1567,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _confirm = TextEditingController();
   bool _busy = false;
   String? _error;
+  bool _alreadyRegistered = false;
   String? _confirmError;
 
   @override
@@ -1566,6 +1604,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
       } else {
         await app.loadSession();
       }
+    } on EmailAlreadyRegistered {
+      if (mounted) setState(() => _alreadyRegistered = true);
     } on RepositoryError catch (e) {
       if (mounted) setState(() => _error = authErrorText(e));
     } finally {
@@ -1589,6 +1629,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
           keyboardType: TextInputType.emailAddress,
           enabled: !_busy,
           errorText: _error,
+          onChanged: (_) {
+            if (_alreadyRegistered) setState(() => _alreadyRegistered = false);
+          },
         ),
         CefField(
           controller: _password,
@@ -1612,6 +1655,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
           },
         ),
         const SizedBox(height: Gap.md),
+        if (_alreadyRegistered) ...[
+          Text(
+            L.emailAlreadyRegistered,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleSmall
+                ?.copyWith(color: context.c.attention),
+          ),
+          const SizedBox(height: Gap.xs),
+          _FooterPrompt(
+            L.alreadyHaveAccount,
+            _TextLink(L.sign, onTap: widget.onSignIn),
+          ),
+          const SizedBox(height: Gap.md),
+        ],
         CefButton(
           L.createAccount,
           busy: _busy,
@@ -1869,7 +1926,12 @@ class VerifyEmailCodeScreen extends StatefulWidget {
     this.resendCooldown = 60,
     this.title,
     this.showVerifiedState = true,
+    this.onSignIn,
   });
+
+  /// Sign-up only: an escape route to Sign In ("Already have an
+  /// account?"). Any pending invite stays on the device.
+  final VoidCallback? onSignIn;
 
   final String email;
   final Future<void> Function(String code) onVerify;
@@ -2118,6 +2180,13 @@ class _VerifyEmailCodeScreenState extends State<VerifyEmailCodeScreen> {
           ),
           const SizedBox(height: Gap.lg),
           _CenteredNote(L.checkSpamFolderToo, muted: true),
+          if (widget.onSignIn != null) ...[
+            const SizedBox(height: Gap.md),
+            _FooterPrompt(
+              L.alreadyHaveAccount,
+              _TextLink(L.sign, onTap: _verifying ? null : widget.onSignIn),
+            ),
+          ],
         ],
       ),
     );

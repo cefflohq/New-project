@@ -3622,4 +3622,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get unnamedTeamMember => 'Ahli pasukan';
+
+  @override
+  String get emailAlreadyRegistered => 'Emel ini sudah didaftarkan.';
 }

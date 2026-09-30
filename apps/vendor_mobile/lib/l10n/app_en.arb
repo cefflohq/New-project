@@ -1793,5 +1793,6 @@
       }
     }
   },
-  "unnamedTeamMember": "Team member"
+  "unnamedTeamMember": "Team member",
+  "emailAlreadyRegistered": "This email is already registered."
 }

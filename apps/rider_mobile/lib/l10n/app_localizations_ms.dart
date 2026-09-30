@@ -1529,4 +1529,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get continueText3 => 'Teruskan';
+
+  @override
+  String get emailAlreadyRegistered => 'Emel ini sudah didaftarkan.';
 }

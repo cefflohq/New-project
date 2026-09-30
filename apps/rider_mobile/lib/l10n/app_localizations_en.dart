@@ -1518,4 +1518,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get continueText3 => 'Continue';
+
+  @override
+  String get emailAlreadyRegistered => 'This email is already registered.';
 }

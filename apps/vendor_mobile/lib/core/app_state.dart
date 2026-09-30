@@ -528,12 +528,18 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Set by the auth screens while they are shown: handles the browser's
+  /// Back inside the auth stack; returns false when there is nothing to pop.
+  bool Function()? authBrowserBack;
+
   /// Browser entries pushed by [go] that have not been popped yet.
   int _historyDepth = 0;
 
   /// The browser's Back (swipe or button): pops the app's stack. Called
   /// from the popstate listener set up at startup.
   void onBrowserBack() {
+    // The sign-in / sign-up screens keep their own stack: they go first.
+    if (authBrowserBack?.call() ?? false) return;
     if (_historyDepth > 0) _historyDepth--;
     if (canGoBack) _back();
   }

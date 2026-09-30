@@ -35,6 +35,9 @@ String webAuthRedirectUrl(Uri base) {
   ).toString();
 }
 
+/// Sign-up with an email that already has a Cefflo account.
+class EmailAlreadyRegistered implements Exception {}
+
 class RepositoryError implements Exception {
   RepositoryError(this.message, {this.isMissingContract = false, this.code});
   final String message;
@@ -118,6 +121,13 @@ class VendorRepository {
         emailRedirectTo: authRedirectUrl,
       ),
     );
+    // GoTrue answers a sign-up for an existing account with a user that has
+    // no identities and sends no code (enumeration protection). Say so
+    // instead of sending the person to a code that never arrives.
+    final identities = res.user?.identities;
+    if (res.session == null && identities != null && identities.isEmpty) {
+      throw EmailAlreadyRegistered();
+    }
     return res.session == null; // true => verification step is required
   }
 

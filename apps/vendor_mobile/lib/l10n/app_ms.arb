@@ -1084,5 +1084,6 @@
   "categoryHint": "cth. Donut, Minuman",
   "categoryRequired": "Pilih atau taip kategori.",
   "newCategoryChip": "Baharu: {name}",
-  "unnamedTeamMember": "Ahli pasukan"
+  "unnamedTeamMember": "Ahli pasukan",
+  "emailAlreadyRegistered": "Emel ini sudah didaftarkan."
 }

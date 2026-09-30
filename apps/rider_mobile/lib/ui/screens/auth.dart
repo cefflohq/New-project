@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/browser_history.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/rider_repository.dart';
@@ -54,12 +55,50 @@ class _AuthFlowState extends State<AuthFlow> {
   /// Driver actually typed.
   String _email = '';
 
-  void _go(DRoute route, {String? email}) => setState(() {
-    if (email != null) _email = email;
-    _stack.add(route);
-  });
+  void _go(DRoute route, {String? email}) {
+    setState(() {
+      if (email != null) _email = email;
+      _stack.add(route);
+    });
+    // One browser entry per auth step (edge-swipe / browser Back).
+    if (hasBrowserHistory) {
+      pushBrowserHistoryEntry();
+      _browserDepth++;
+    }
+  }
 
-  void _back() => setState(() {
+  int _browserDepth = 0;
+  AppState? _app;
+
+  bool _onBrowserBack() {
+    if (!mounted) return false;
+    if (_browserDepth > 0) _browserDepth--;
+    if (_stack.length <= 1) return false;
+    setState(() => _stack.removeLast());
+    return true;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _app ??= AppScope.read(context)..authBrowserBack = _onBrowserBack;
+  }
+
+  @override
+  void dispose() {
+    if (_app?.authBrowserBack == _onBrowserBack) _app!.authBrowserBack = null;
+    super.dispose();
+  }
+
+  void _back() {
+    if (hasBrowserHistory && _browserDepth > 0 && _stack.length > 1) {
+      browserHistoryBack();
+      return;
+    }
+    _backNow();
+  }
+
+  void _backNow() => setState(() {
     if (_stack.length > 1) {
       _stack.removeLast();
     } else {
@@ -533,6 +572,7 @@ class CreateAccountScreen extends StatefulWidget {
 }
 
 class _CreateAccountScreenState extends State<CreateAccountScreen> {
+  bool _alreadyRegistered = false;
   final _name = TextEditingController();
   final _email = TextEditingController();
   final _phone = TextEditingController();
@@ -573,6 +613,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         await app.loadSession();
         if (mounted) widget.onCreated();
       }
+    } on EmailAlreadyRegistered {
+      if (mounted) setState(() => _alreadyRegistered = true);
     } on RepositoryError catch (error) {
       if (mounted) setState(() => _error = driverAuthErrorText(error));
     } finally {
@@ -630,6 +672,26 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               fontWeight: FontWeight.w600,
               color: Color(0xFFC83D4B),
             ),
+          ),
+        ],
+        if (_alreadyRegistered) ...[
+          const SizedBox(height: Gap.md),
+          Text(
+            L.emailAlreadyRegistered,
+            key: const Key('driver-email-registered'),
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFFC83D4B),
+            ),
+          ),
+          const SizedBox(height: Gap.xs),
+          CeffloInlinePrompt(
+            prompt: L.alreadyHaveAccount,
+            action: L.sign,
+            onTap: widget.onSignIn,
           ),
         ],
         const SizedBox(height: Gap.lg),
@@ -1487,14 +1549,25 @@ class _VerifyEmailCodeScreenState extends State<VerifyEmailCodeScreen> {
                     ),
             ),
           const SizedBox(height: Gap.md),
-          Center(
-            child: CeffloTextLink(
-              L.backSign,
+          // Sign-up: an escape route for an existing account; any pending
+          // invite stays on the device. Recovery keeps "Back to Sign In".
+          if (widget.showVerifiedState)
+            CeffloInlinePrompt(
+              prompt: L.alreadyHaveAccount,
+              action: L.sign,
               onTap: () {
                 if (!_verifying) widget.onBackToSignIn();
               },
+            )
+          else
+            Center(
+              child: CeffloTextLink(
+                L.backSign,
+                onTap: () {
+                  if (!_verifying) widget.onBackToSignIn();
+                },
+              ),
             ),
-          ),
         ],
       ),
     );

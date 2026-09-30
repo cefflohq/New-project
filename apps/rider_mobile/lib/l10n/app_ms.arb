@@ -450,5 +450,6 @@
   "alreadyPartOf": "Anda sudah menjadi sebahagian daripada {business}.",
   "joinRequestSentTo": "Permintaan dihantar kepada {business}. Anda akan mendapat akses setelah diluluskan.",
   "joiningBusiness": "Menyertai {business}",
-  "continueText3": "Teruskan"
+  "continueText3": "Teruskan",
+  "emailAlreadyRegistered": "Emel ini sudah didaftarkan."
 }

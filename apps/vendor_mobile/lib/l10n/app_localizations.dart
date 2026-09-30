@@ -6614,6 +6614,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Team member'**
   String get unnamedTeamMember;
+
+  /// No description provided for @emailAlreadyRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already registered.'**
+  String get emailAlreadyRegistered;
 }
 
 class _AppLocalizationsDelegate
