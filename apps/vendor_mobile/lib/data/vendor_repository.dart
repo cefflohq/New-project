@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart' show VoidCallback, kIsWeb;
@@ -196,6 +197,124 @@ class VendorRepository {
   Future<void> signOut() {
     if (_demo) return Future.value();
     return _run(() => _db!.auth.signOut());
+  }
+
+  // --------------------------------------------------------------- profile
+  // The same contracts Vendor Web uses: public.profiles (own row only,
+  // profiles_self), the private cefflo-avatars bucket at '<uid>/avatar',
+  // and GoTrue Secure Email Change with 6-digit codes.
+
+  /// The signed-in user's own profile row, or null before it exists.
+  Future<Map<String, dynamic>?> myProfile() async {
+    if (_demo) return null;
+    final uid = currentUser!.id;
+    final row = await _run(
+      () => _db!
+          .from('profiles')
+          .select('display_name, phone, avatar_url')
+          .eq('id', uid)
+          .maybeSingle(),
+    );
+    return row == null ? null : Map<String, dynamic>.from(row);
+  }
+
+  Future<void> _upsertProfile(Map<String, dynamic> values) async {
+    final uid = currentUser!.id;
+    await _run(
+      () => _db!.from('profiles').upsert({
+        'id': uid,
+        ...values,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      }),
+    );
+  }
+
+  /// Saves name and phone to the profile and mirrors the name into the
+  /// auth metadata (as Vendor Web does), so every surface shows it.
+  Future<void> saveProfile({required String name, String? phone}) async {
+    if (_demo) return;
+    await _upsertProfile({'display_name': name, 'phone': phone});
+    await _run(
+      () => _db!.auth.updateUser(UserAttributes(data: {'full_name': name})),
+    );
+  }
+
+  String get _avatarPath => '${currentUser!.id}/avatar';
+
+  /// Replaces the photo in place, then records the path on the profile.
+  /// Returns the stored path as the server reports it.
+  Future<String?> uploadAvatar(Uint8List bytes, String contentType) async {
+    await _run(
+      () => _db!.storage
+          .from('cefflo-avatars')
+          .uploadBinary(
+            _avatarPath,
+            bytes,
+            fileOptions: FileOptions(contentType: contentType, upsert: true),
+          ),
+    );
+    await _upsertProfile({'avatar_url': _avatarPath});
+    return (await myProfile())?['avatar_url'] as String?;
+  }
+
+  Future<void> removeAvatar() async {
+    try {
+      await _run(
+        () => _db!.storage.from('cefflo-avatars').remove([_avatarPath]),
+      );
+    } on RepositoryError catch (_) {
+      // Already gone: clearing the profile below is still correct.
+    }
+    await _upsertProfile({'avatar_url': null});
+  }
+
+  /// A short-lived signed URL for the private photo.
+  Future<String?> avatarUrl(String? path) async {
+    if (_demo || path == null || path.isEmpty) return null;
+    try {
+      return await _db!.storage
+          .from('cefflo-avatars')
+          .createSignedUrl(path, 3600);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Starts Secure Email Change: GoTrue sends a code to the current and to
+  /// the new address. Nothing changes until both codes are accepted.
+  Future<void> requestEmailChange(String newEmail) =>
+      _run(() => _db!.auth.updateUser(UserAttributes(email: newEmail.trim())));
+
+  Future<void> verifyEmailChange(String email, String code) => _run(
+    () => _db!.auth.verifyOTP(
+      email: email.trim(),
+      token: code,
+      type: OtpType.emailChange,
+    ),
+  );
+
+  Future<void> resendEmailChange(String newEmail) => _run(
+    () => _db!.auth.resend(type: OtpType.emailChange, email: newEmail.trim()),
+  );
+
+  /// The account's confirmed email as the server now reports it.
+  Future<String?> confirmedEmail() async {
+    final res = await _run(() => _db!.auth.getUser());
+    return res.user?.email;
+  }
+
+  /// The business's subscription row, or null when none is visible to this
+  /// account (FOUNDR administers subscriptions).
+  Future<Map<String, dynamic>?> businessSubscription(String businessId) async {
+    if (_demo) return null;
+    final row = await _run(
+      () => _db!
+          .from('business_subscriptions')
+          .select('plan_key, status, trial_ends_at')
+          .eq('business_id', businessId)
+          .maybeSingle(),
+    );
+    return row == null ? null : Map<String, dynamic>.from(row);
   }
 
   /// Creates the signed-in user's business with them as owner (the same

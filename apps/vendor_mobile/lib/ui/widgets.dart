@@ -7,6 +7,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/appearance.dart';
@@ -2255,5 +2256,30 @@ class _StatusMark extends StatelessWidget {
       ),
       child: Icon(icon, size: 22, color: solid ? Colors.white : color),
     ),
+  );
+}
+
+/// The app's real version and build number, read from the installed
+/// package (never a hard-coded string).
+class AppVersionText extends StatelessWidget {
+  const AppVersionText({super.key, this.style, this.prefix = false});
+  final TextStyle? style;
+
+  /// "Version 0.1.0 (1)" instead of "0.1.0 (1)".
+  final bool prefix;
+
+  static final Future<PackageInfo> _info = PackageInfo.fromPlatform();
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<PackageInfo>(
+    future: _info,
+    builder: (context, snap) {
+      final info = snap.data;
+      if (info == null) return const SizedBox.shrink();
+      final v = info.buildNumber.isEmpty
+          ? info.version
+          : '${info.version} (${info.buildNumber})';
+      return Text(prefix ? '${L.version} $v' : v, style: style);
+    },
   );
 }

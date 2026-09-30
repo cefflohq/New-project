@@ -966,7 +966,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get other => 'Lain-lain';
 
   @override
-  String get businessNameRequired => 'Nama perniagaan diperlukan.';
+  String get businessNameRequired => 'Nama bisnes diperlukan.';
 
   @override
   String get enterValidPhoneNumber => 'Masukkan nombor telefon yang sah.';
@@ -3402,4 +3402,85 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get shareInviteLink => 'Kongsi pautan jemputan';
+
+  @override
+  String get operatingAreaLabel => 'Kawasan operasi';
+
+  @override
+  String get operatingAreaHint =>
+      'Kawasan penghantaran anda, cth. Bangsar, Mont Kiara';
+
+  @override
+  String get businessSaved => 'Butiran bisnes disimpan.';
+
+  @override
+  String get profileSaved => 'Profil disimpan.';
+
+  @override
+  String get photoFormat => 'Pilih foto JPG, PNG atau WebP.';
+
+  @override
+  String get photoTooLarge =>
+      'Foto ini lebih besar daripada 2 MB. Pilih yang lebih kecil.';
+
+  @override
+  String get photoUpdated => 'Foto profil dikemas kini.';
+
+  @override
+  String get photoRemoved => 'Foto profil dibuang.';
+
+  @override
+  String get addPhoto => 'Tambah foto';
+
+  @override
+  String get changePhoto => 'Tukar foto';
+
+  @override
+  String get removePhoto => 'Buang';
+
+  @override
+  String get emailChanged => 'Emel log masuk anda telah ditukar.';
+
+  @override
+  String get confirmCurrentEmail => 'Sahkan emel semasa anda';
+
+  @override
+  String get confirmNewEmail => 'Sahkan emel baharu anda';
+
+  @override
+  String get changeEmail => 'Tukar emel';
+
+  @override
+  String get changeEmailBody =>
+      'Kami akan hantar kod ke emel semasa dan emel baharu anda. Emel anda hanya bertukar selepas kedua-duanya disahkan.';
+
+  @override
+  String get newEmail => 'Emel baharu';
+
+  @override
+  String get sendCodes => 'Hantar kod';
+
+  @override
+  String get sameEmail => 'Ini sudah emel anda.';
+
+  @override
+  String get subscriptionManagedTitle => 'Diurus oleh Cefflo';
+
+  @override
+  String get subscriptionUnavailable =>
+      'Butiran pelan anda belum tersedia dalam app. Hubungi sokongan Cefflo untuk pelan semasa anda.';
+
+  @override
+  String get subscriptionStatus => 'Status';
+
+  @override
+  String trialEnds(Object date) {
+    return 'Percubaan tamat $date';
+  }
+
+  @override
+  String get planQuestionSubject => 'Soalan langganan';
+
+  @override
+  String get emailSupportTeam => 'E-mel pasukan sokongan Cefflo';
 }

@@ -1785,7 +1785,10 @@ class SettingsScreen extends StatelessWidget {
             L.subscription,
             LucideIcons.creditCard,
             VRoute.subscription,
-            trailing: StatusChip(app.currentPlan.name, info: true),
+            // The plan chip only where the plan is real (demo prototype).
+            trailing: app.repo.isDemo
+                ? StatusChip(app.currentPlan.name, info: true)
+                : null,
           ),
         label(L.support),
         row(L.helpSupport2, LucideIcons.circleHelp, VRoute.helpSupport),
@@ -1804,7 +1807,7 @@ class SettingsScreen extends StatelessWidget {
           },
         ),
         const SizedBox(height: Gap.sm),
-        Center(child: Text(L.version100, style: text.labelSmall)),
+        Center(child: AppVersionText(style: text.labelSmall, prefix: true)),
       ],
     );
   }

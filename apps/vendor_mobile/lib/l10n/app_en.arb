@@ -1686,5 +1686,37 @@
       }
     }
   },
-  "shareInviteLink": "Share invite link"
+  "shareInviteLink": "Share invite link",
+  "operatingAreaLabel": "Operating area",
+  "operatingAreaHint": "Areas you deliver to, e.g. Bangsar, Mont Kiara",
+  "businessSaved": "Business details saved.",
+  "profileSaved": "Profile saved.",
+  "photoFormat": "Choose a JPG, PNG or WebP photo.",
+  "photoTooLarge": "This photo is larger than 2 MB. Choose a smaller one.",
+  "photoUpdated": "Profile photo updated.",
+  "photoRemoved": "Profile photo removed.",
+  "addPhoto": "Add photo",
+  "changePhoto": "Change photo",
+  "removePhoto": "Remove",
+  "emailChanged": "Your sign-in email has changed.",
+  "confirmCurrentEmail": "Confirm your current email",
+  "confirmNewEmail": "Confirm your new email",
+  "changeEmail": "Change email",
+  "changeEmailBody": "We'll send a code to your current email and to the new one. Your email changes only after both are confirmed.",
+  "newEmail": "New email",
+  "sendCodes": "Send codes",
+  "sameEmail": "This is already your email.",
+  "subscriptionManagedTitle": "Managed by Cefflo",
+  "subscriptionUnavailable": "Your plan details aren't available in the app yet. Contact Cefflo support for your current plan.",
+  "subscriptionStatus": "Status",
+  "trialEnds": "Trial ends {date}",
+  "@trialEnds": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "planQuestionSubject": "Subscription question",
+  "emailSupportTeam": "Email the Cefflo support team"
 }

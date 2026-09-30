@@ -3399,4 +3399,85 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareInviteLink => 'Share invite link';
+
+  @override
+  String get operatingAreaLabel => 'Operating area';
+
+  @override
+  String get operatingAreaHint =>
+      'Areas you deliver to, e.g. Bangsar, Mont Kiara';
+
+  @override
+  String get businessSaved => 'Business details saved.';
+
+  @override
+  String get profileSaved => 'Profile saved.';
+
+  @override
+  String get photoFormat => 'Choose a JPG, PNG or WebP photo.';
+
+  @override
+  String get photoTooLarge =>
+      'This photo is larger than 2 MB. Choose a smaller one.';
+
+  @override
+  String get photoUpdated => 'Profile photo updated.';
+
+  @override
+  String get photoRemoved => 'Profile photo removed.';
+
+  @override
+  String get addPhoto => 'Add photo';
+
+  @override
+  String get changePhoto => 'Change photo';
+
+  @override
+  String get removePhoto => 'Remove';
+
+  @override
+  String get emailChanged => 'Your sign-in email has changed.';
+
+  @override
+  String get confirmCurrentEmail => 'Confirm your current email';
+
+  @override
+  String get confirmNewEmail => 'Confirm your new email';
+
+  @override
+  String get changeEmail => 'Change email';
+
+  @override
+  String get changeEmailBody =>
+      'We\'ll send a code to your current email and to the new one. Your email changes only after both are confirmed.';
+
+  @override
+  String get newEmail => 'New email';
+
+  @override
+  String get sendCodes => 'Send codes';
+
+  @override
+  String get sameEmail => 'This is already your email.';
+
+  @override
+  String get subscriptionManagedTitle => 'Managed by Cefflo';
+
+  @override
+  String get subscriptionUnavailable =>
+      'Your plan details aren\'t available in the app yet. Contact Cefflo support for your current plan.';
+
+  @override
+  String get subscriptionStatus => 'Status';
+
+  @override
+  String trialEnds(Object date) {
+    return 'Trial ends $date';
+  }
+
+  @override
+  String get planQuestionSubject => 'Subscription question';
+
+  @override
+  String get emailSupportTeam => 'Email the Cefflo support team';
 }

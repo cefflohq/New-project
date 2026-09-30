@@ -145,6 +145,21 @@ class AppState extends ChangeNotifier {
 
   void previewAppearance(Appearance next) => liveAppearance.value = next;
 
+  /// Reflects a saved business name without reloading the session.
+  void renameBusiness(String name) {
+    final b = business;
+    if (b == null) return;
+    business = Business(
+      id: b.id,
+      name: name,
+      role: b.role,
+      timezone: b.timezone,
+      currency: b.currency,
+    );
+    businesses = [for (final x in businesses) x.id == b.id ? business! : x];
+    notifyListeners();
+  }
+
   // ---- Permanent invite link join (Operator / Helper). Kept on the device
   // until the request is submitted; grants nothing by itself.
   String? joinToken;

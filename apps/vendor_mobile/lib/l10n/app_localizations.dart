@@ -6224,6 +6224,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share invite link'**
   String get shareInviteLink;
+
+  /// No description provided for @operatingAreaLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Operating area'**
+  String get operatingAreaLabel;
+
+  /// No description provided for @operatingAreaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Areas you deliver to, e.g. Bangsar, Mont Kiara'**
+  String get operatingAreaHint;
+
+  /// No description provided for @businessSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Business details saved.'**
+  String get businessSaved;
+
+  /// No description provided for @profileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile saved.'**
+  String get profileSaved;
+
+  /// No description provided for @photoFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a JPG, PNG or WebP photo.'**
+  String get photoFormat;
+
+  /// No description provided for @photoTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'This photo is larger than 2 MB. Choose a smaller one.'**
+  String get photoTooLarge;
+
+  /// No description provided for @photoUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile photo updated.'**
+  String get photoUpdated;
+
+  /// No description provided for @photoRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile photo removed.'**
+  String get photoRemoved;
+
+  /// No description provided for @addPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get addPhoto;
+
+  /// No description provided for @changePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get changePhoto;
+
+  /// No description provided for @removePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removePhoto;
+
+  /// No description provided for @emailChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Your sign-in email has changed.'**
+  String get emailChanged;
+
+  /// No description provided for @confirmCurrentEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your current email'**
+  String get confirmCurrentEmail;
+
+  /// No description provided for @confirmNewEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your new email'**
+  String get confirmNewEmail;
+
+  /// No description provided for @changeEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Change email'**
+  String get changeEmail;
+
+  /// No description provided for @changeEmailBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll send a code to your current email and to the new one. Your email changes only after both are confirmed.'**
+  String get changeEmailBody;
+
+  /// No description provided for @newEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'New email'**
+  String get newEmail;
+
+  /// No description provided for @sendCodes.
+  ///
+  /// In en, this message translates to:
+  /// **'Send codes'**
+  String get sendCodes;
+
+  /// No description provided for @sameEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'This is already your email.'**
+  String get sameEmail;
+
+  /// No description provided for @subscriptionManagedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Managed by Cefflo'**
+  String get subscriptionManagedTitle;
+
+  /// No description provided for @subscriptionUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan details aren\'t available in the app yet. Contact Cefflo support for your current plan.'**
+  String get subscriptionUnavailable;
+
+  /// No description provided for @subscriptionStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get subscriptionStatus;
+
+  /// No description provided for @trialEnds.
+  ///
+  /// In en, this message translates to:
+  /// **'Trial ends {date}'**
+  String trialEnds(Object date);
+
+  /// No description provided for @planQuestionSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription question'**
+  String get planQuestionSubject;
+
+  /// No description provided for @emailSupportTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'Email the Cefflo support team'**
+  String get emailSupportTeam;
 }
 
 class _AppLocalizationsDelegate

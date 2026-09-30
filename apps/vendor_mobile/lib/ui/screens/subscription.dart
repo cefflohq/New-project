@@ -5,6 +5,7 @@ import '../../core/app_state.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/plans.dart';
+import '../async_view.dart';
 import '../shell.dart';
 import '../widgets.dart';
 
@@ -99,6 +100,10 @@ class SubscriptionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
+    // Live: only what business_subscriptions says (FOUNDR administers it).
+    // No plan picker, payment or invoices until a payment architecture
+    // exists (Founder, 2026-10-01). The designed flow stays for the demo.
+    if (!app.repo.isDemo) return const _LiveSubscription();
     final text = Theme.of(context).textTheme;
     final plan = app.currentPlan;
     // Demo usage for this cycle; riders / zones / team mirror the demo data.
@@ -640,6 +645,82 @@ class BillingHistoryScreen extends StatelessWidget {
               ),
             ),
       ],
+    );
+  }
+}
+
+class _LiveSubscription extends StatelessWidget {
+  const _LiveSubscription();
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final text = Theme.of(context).textTheme;
+    return AsyncView<Map<String, dynamic>?>(
+      key: ValueKey('subscription-${app.business?.id}'),
+      load: () => app.repo.businessSubscription(app.business!.id),
+      builder: (context, sub, reload) {
+        final key = sub?['plan_key'] as String?;
+        final known = subscriptionPlans.where((p) => p.id == key);
+        final trial = DateTime.tryParse('${sub?['trial_ends_at'] ?? ''}');
+        return PageBody(
+          onRefresh: reload,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(Gap.xl),
+              decoration: BoxDecoration(
+                color: CefColors.brandTint,
+                borderRadius: BorderRadius.circular(Sizes.cardRadius),
+              ),
+              child: sub == null
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          L.subscriptionManagedTitle,
+                          style: text.titleMedium,
+                        ),
+                        const SizedBox(height: Gap.xs),
+                        Text(L.subscriptionUnavailable, style: text.bodySmall),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          L.plan(
+                            known.isEmpty ? (key ?? '—') : known.first.name,
+                          ),
+                          style: text.titleMedium,
+                        ),
+                        const SizedBox(height: Gap.sm),
+                        Text(
+                          '${L.subscriptionStatus}: ${sub['status'] ?? '—'}',
+                          style: text.bodySmall,
+                        ),
+                        if (trial != null) ...[
+                          const SizedBox(height: Gap.xs),
+                          Text(
+                            L.trialEnds(_date(trial.toLocal())),
+                            style: text.bodySmall,
+                          ),
+                        ],
+                      ],
+                    ),
+            ),
+            const SizedBox(height: Gap.lg),
+            CefListRow(
+              title: L.contactSupport2,
+              icon: LucideIcons.mail,
+              onTap: () => launchSupportEmail(
+                context,
+                subject: L.planQuestionSubject,
+                body: '',
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

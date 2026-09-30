@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:qr/qr.dart';
 import 'package:share_plus/share_plus.dart';
@@ -15,6 +16,7 @@ import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../data/vendor_repository.dart';
 import '../shell.dart';
+import 'auth.dart' show VerifyEmailCodeScreen, otpFailureFrom;
 import '../widgets.dart';
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
@@ -218,17 +220,16 @@ class _BusinessProfileScreen extends StatelessWidget {
               icon: LucideIcons.mapPin,
               onTap: () => app.go(VRoute.businessAddress),
             ),
-            CefListRow(
-              title: L.businessHours2,
-              subtitle: L.setOperatingHours,
-              icon: LucideIcons.clock,
-              onTap: () => app.go(VRoute.businessHours),
-            ),
+            // Business Hours returns when its backend exists (migration
+            // drafted, awaiting approval); never a dead row.
+            if (demo)
+              CefListRow(
+                title: L.businessHours2,
+                subtitle: L.setOperatingHours,
+                icon: LucideIcons.clock,
+                onTap: () => app.go(VRoute.businessHours),
+              ),
           ],
-        ),
-        _HeroPanel(
-          kicker: L.storeReady,
-          title: L.keepBusinessInformationUpDate,
         ),
       ],
     );
@@ -239,140 +240,192 @@ class _BusinessInformationScreen extends StatelessWidget {
   const _BusinessInformationScreen();
 
   @override
-  Widget build(BuildContext context) {
-    if (!AppScope.read(context).repo.isDemo) {
-      return _ComingSoonScreen(
-        title: '',
-        message: L.editingBusinessDetailsAppNotConnected,
-      );
-    }
-    return PageBody(
-      bottom: CefButton(L.saveChanges, onTap: () {}),
-      // Archetype G (multi-section form).
-      children: [
-        const _EditableAvatar(name: 'Kopi Kita'),
-        SectionHeading(
-          L.businessDetails,
-          icon: LucideIcons.store,
-          subtitle: L.howCustomersRidersSeeBusiness,
-        ),
-        CefField(
-          label: L.businessName,
-          initialValue: 'Kopi Kita',
-          prefixIcon: LucideIcons.store,
-        ),
-        CefField(
-          label: L.taglineOptional2,
-          initialValue: 'A better delivery day. Today.',
-        ),
-        CefField(
-          label: L.businessType,
-          initialValue: 'Food & Beverage',
-          prefixIcon: LucideIcons.package,
-          suffixIcon: LucideIcons.chevronDown,
-        ),
-        CefField(
-          label: L.shortDescription,
-          initialValue: 'Handcrafted coffee and light bites, delivered fresh across Kuala Lumpur.',
-          maxLines: 3,
-          maxLength: 160,
-        ),
-        SectionHeading(
-          L.contact,
-          icon: LucideIcons.phone,
-          subtitle: L.whereCustomersRidersCanReach,
-        ),
-        _SplitFields(
-          leftLabel: L.code,
-          left: '+60',
-          rightLabel: L.contactPhone,
-          right: '12 345 6789',
-          keyboardType: TextInputType.phone,
-        ),
-        CefField(
-          label: L.businessEmail,
-          initialValue: 'hello@kopikita.my',
-          prefixIcon: LucideIcons.mail,
-          keyboardType: TextInputType.emailAddress,
-        ),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => _BusinessFieldsForm(
+    heading: L.businessDetails,
+    icon: LucideIcons.store,
+    subtitle: L.howCustomersRidersSeeBusiness,
+    fields: [
+      _BizField('name', L.businessName, LucideIcons.store, required: true),
+      _BizField(
+        'phone',
+        L.contactPhone,
+        LucideIcons.phone,
+        keyboard: TextInputType.phone,
+      ),
+      _BizField(
+        'email',
+        L.businessEmail,
+        LucideIcons.mail,
+        keyboard: TextInputType.emailAddress,
+      ),
+    ],
+  );
 }
 
 class _BusinessAddressScreen extends StatelessWidget {
   const _BusinessAddressScreen();
 
   @override
-  Widget build(BuildContext context) {
-    if (!AppScope.read(context).repo.isDemo) {
-      return _ComingSoonScreen(
-        title: '',
-        message: L.editingBusinessAddressAppNotConnected,
-      );
+  Widget build(BuildContext context) => _BusinessFieldsForm(
+    heading: L.addressDetails,
+    icon: LucideIcons.mapPin,
+    subtitle: L.storeAddressServiceArea,
+    fields: [
+      _BizField('address', L.address, LucideIcons.mapPin, maxLines: 3),
+      _BizField(
+        'operating_area',
+        L.operatingAreaLabel,
+        LucideIcons.map,
+        hint: L.operatingAreaHint,
+      ),
+    ],
+  );
+}
+
+class _BizField {
+  const _BizField(
+    this.key,
+    this.label,
+    this.icon, {
+    this.required = false,
+    this.keyboard,
+    this.maxLines = 1,
+    this.hint,
+  });
+  final String key, label;
+  final IconData icon;
+  final bool required;
+  final TextInputType? keyboard;
+  final int maxLines;
+  final String? hint;
+}
+
+/// Business details form on the real businesses row: hydrated from the
+/// server, saved through the Owner-only update_business_profile. Only the
+/// fields that changed are sent.
+class _BusinessFieldsForm extends StatefulWidget {
+  const _BusinessFieldsForm({
+    required this.heading,
+    required this.icon,
+    required this.subtitle,
+    required this.fields,
+  });
+  final String heading, subtitle;
+  final IconData icon;
+  final List<_BizField> fields;
+
+  @override
+  State<_BusinessFieldsForm> createState() => _BusinessFieldsFormState();
+}
+
+class _BusinessFieldsFormState extends State<_BusinessFieldsForm> {
+  late final Map<String, TextEditingController> _c = {
+    for (final f in widget.fields) f.key: TextEditingController(),
+  };
+  Map<String, String> _loaded = {};
+  bool _loading = true, _saving = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void dispose() {
+    for (final c in _c.values) {
+      c.dispose();
     }
-    final c = context.c;
-    // Archetype G (multi-section form).
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    final app = AppScope.read(context);
+    try {
+      final row = await app.repo.business(app.business!.id);
+      _loaded = {
+        for (final f in widget.fields) f.key: (row[f.key] ?? '').toString(),
+      };
+      for (final e in _loaded.entries) {
+        _c[e.key]!.text = e.value;
+      }
+    } on RepositoryError catch (e) {
+      _error = e.message;
+    }
+    if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _save() async {
+    for (final f in widget.fields) {
+      if (f.required && _c[f.key]!.text.trim().isEmpty) {
+        setState(() => _error = L.businessNameRequired);
+        return;
+      }
+    }
+    final changed = {
+      for (final f in widget.fields)
+        if (_c[f.key]!.text.trim() != _loaded[f.key])
+          f.key: _c[f.key]!.text.trim(),
+    };
+    if (changed.isEmpty) return AppScope.read(context).back();
+    final app = AppScope.read(context);
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      if (!app.repo.isDemo) {
+        await app.repo.updateBusinessProfile(
+          businessId: app.business!.id,
+          name: changed['name'],
+          phone: changed['phone'],
+          email: changed['email'],
+          address: changed['address'],
+          operatingArea: changed['operating_area'],
+        );
+      }
+      if (changed['name'] != null) app.renameBusiness(changed['name']!);
+      if (!mounted) return;
+      showCefToast(context, L.businessSaved);
+      app.back();
+    } on RepositoryError catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const PageBody(children: [StateBlock.loading()]);
+    final text = Theme.of(context).textTheme;
     return PageBody(
-      bottom: CefButton(L.saveAddress, onTap: () {}),
+      bottom: CefButton(L.saveChanges, busy: _saving, onTap: _save),
       children: [
-        CefSearchField(hint: L.searchEnterAddress),
-        const SizedBox(height: Gap.md),
-        Container(
-          height: 210,
-          decoration: BoxDecoration(
-            color: c.grouped,
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-            border: Border.all(color: c.border),
-          ),
-          child: Stack(
-            children: [
-              Center(
-                child: Icon(
-                  LucideIcons.mapPin,
-                  size: 52,
-                  color: CefColors.brand,
-                ),
-              ),
-              Positioned(
-                right: Gap.md,
-                bottom: Gap.md,
-                child: Container(
-                  width: Sizes.tapTarget,
-                  height: Sizes.tapTarget,
-                  decoration: BoxDecoration(
-                    color: c.card,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: c.border),
-                  ),
-                  child: Icon(
-                    LucideIcons.locateFixed,
-                    size: Sizes.icon,
-                    color: c.iconColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
         SectionHeading(
-          L.addressDetails,
-          icon: LucideIcons.mapPin,
-          subtitle: L.storeAddressServiceArea,
+          widget.heading,
+          icon: widget.icon,
+          subtitle: widget.subtitle,
         ),
-        CefField(label: L.addressLine1, initialValue: 'No. 12, Jalan Damai 3'),
-        CefField(label: L.addressLine2Optional, initialValue: 'Taman Melati'),
-        _SplitFields(
-          leftLabel: L.postcode,
-          left: '53100',
-          rightLabel: L.city,
-          right: 'Kuala Lumpur',
-        ),
-        CefField(
-          label: L.state,
-          initialValue: 'Wilayah Persekutuan Kuala Lumpur',
-          suffixIcon: LucideIcons.chevronDown,
-        ),
+        for (final f in widget.fields)
+          CefField(
+            label: f.label,
+            controller: _c[f.key],
+            prefixIcon: f.icon,
+            keyboardType: f.keyboard,
+            maxLines: f.maxLines,
+            hint: f.hint,
+            enabled: !_saving,
+          ),
+        if (_error != null)
+          Padding(
+            padding: const EdgeInsets.only(top: Gap.md),
+            child: Text(
+              _error!,
+              style: text.bodySmall?.copyWith(color: context.c.attention),
+            ),
+          ),
       ],
     );
   }
@@ -431,22 +484,218 @@ class _BusinessHoursScreen extends StatelessWidget {
 // Account
 // ---------------------------------------------------------------------------
 
-class _EditProfileScreen extends StatelessWidget {
+/// V-43 — Profile (Founder, 2026-10-01): the same backend Vendor Web uses.
+/// Name and phone save to public.profiles (own row only); the photo lives
+/// in the private cefflo-avatars bucket at `<uid>/avatar`; email changes
+/// only through Secure Email Change codes. Role is read-only.
+class _EditProfileScreen extends StatefulWidget {
   const _EditProfileScreen();
 
   @override
+  State<_EditProfileScreen> createState() => _EditProfileScreenState();
+}
+
+class _EditProfileScreenState extends State<_EditProfileScreen> {
+  final _name = TextEditingController();
+  final _phone = TextEditingController();
+  String _savedName = '', _savedPhone = '';
+  String? _avatarPath, _avatarUrl, _email, _error;
+  bool _loading = true, _saving = false, _photoBusy = false;
+
+  static const _maxPhotoBytes = 2 * 1024 * 1024; // cefflo-avatars limit
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _phone.dispose();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    final app = AppScope.read(context);
+    try {
+      final row = await app.repo.myProfile();
+      _savedName = (row?['display_name'] as String?) ?? app.userDisplayName;
+      _savedPhone = (row?['phone'] as String?) ?? '';
+      _avatarPath = row?['avatar_url'] as String?;
+      _avatarUrl = await app.repo.avatarUrl(_avatarPath);
+      _email = app.repo.isDemo ? null : app.repo.currentUser?.email;
+      _name.text = _savedName;
+      _phone.text = _savedPhone;
+    } on RepositoryError catch (e) {
+      _error = e.message;
+    }
+    if (mounted) setState(() => _loading = false);
+  }
+
+  bool get _dirty =>
+      _name.text.trim() != _savedName || _phone.text.trim() != _savedPhone;
+
+  Future<void> _save() async {
+    final name = _name.text.trim();
+    if (name.isEmpty) {
+      setState(() => _error = L.nameRequired);
+      return;
+    }
+    final app = AppScope.read(context);
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      final phone = _phone.text.trim();
+      await app.repo.saveProfile(
+        name: name,
+        phone: phone.isEmpty ? null : phone,
+      );
+      _savedName = name;
+      _savedPhone = phone;
+      app.dataChanged();
+      if (mounted) showCefToast(context, L.profileSaved);
+    } on RepositoryError catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _pickPhoto() async {
+    final app = AppScope.read(context);
+    final file = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+    if (file == null || !mounted) return;
+    final name = file.name.toLowerCase();
+    final type = name.endsWith('.png')
+        ? 'image/png'
+        : name.endsWith('.webp')
+        ? 'image/webp'
+        : (name.endsWith('.jpg') || name.endsWith('.jpeg'))
+        ? 'image/jpeg'
+        : file.mimeType;
+    if (!const {'image/jpeg', 'image/png', 'image/webp'}.contains(type)) {
+      showCefToast(context, L.photoFormat, error: true);
+      return;
+    }
+    final bytes = await file.readAsBytes();
+    if (!mounted) return;
+    if (bytes.length > _maxPhotoBytes) {
+      showCefToast(context, L.photoTooLarge, error: true);
+      return;
+    }
+    setState(() => _photoBusy = true);
+    try {
+      final saved = await app.repo.uploadAvatar(bytes, type!);
+      // Shown only once the server has the photo and the profile says so.
+      _avatarPath = saved;
+      _avatarUrl = await app.repo.avatarUrl(saved);
+      if (mounted) showCefToast(context, L.photoUpdated);
+    } on RepositoryError catch (e) {
+      if (mounted) showCefToast(context, e.message, error: true);
+    } finally {
+      if (mounted) setState(() => _photoBusy = false);
+    }
+  }
+
+  Future<void> _removePhoto() async {
+    final app = AppScope.read(context);
+    setState(() => _photoBusy = true);
+    try {
+      await app.repo.removeAvatar();
+      _avatarPath = null;
+      _avatarUrl = null;
+      if (mounted) showCefToast(context, L.photoRemoved);
+    } on RepositoryError catch (e) {
+      if (mounted) showCefToast(context, e.message, error: true);
+    } finally {
+      if (mounted) setState(() => _photoBusy = false);
+    }
+  }
+
+  Future<void> _changeEmail() async {
+    final current = _email;
+    if (current == null) return;
+    final changed = await startEmailChange(context, current);
+    if (changed != null && mounted) {
+      setState(() => _email = changed);
+      showCefToast(context, L.emailChanged);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_loading) return const PageBody(children: [StateBlock.loading()]);
     final app = AppScope.of(context);
-    final demo = app.repo.isDemo;
-    final name = app.userDisplayName;
-    final email = demo
-        ? 'yusuf@kopikita.my'
-        : (app.repo.currentUser?.email ?? '');
-    // Read-only: profile editing has no backend contract yet, so there is no
-    // Save action that would pretend to store changes.
+    final text = Theme.of(context).textTheme;
+    final live = !app.repo.isDemo;
+    final name = _name.text.trim().isEmpty ? app.userDisplayName : _name.text;
     return PageBody(
+      bottom: live
+          ? CefButton(
+              L.saveChanges,
+              busy: _saving,
+              onTap: _dirty ? _save : null,
+            )
+          : null,
       children: [
-        if (name.isNotEmpty) _EditableAvatar(name: name),
+        Center(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              ClipOval(
+                child: SizedBox.square(
+                  dimension: 88,
+                  child: _avatarUrl != null
+                      ? Image.network(
+                          _avatarUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => CefAvatar(name, size: 88),
+                        )
+                      : CefAvatar(name, size: 88),
+                ),
+              ),
+              if (_photoBusy)
+                const SizedBox.square(
+                  dimension: 88,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+            ],
+          ),
+        ),
+        // Photo actions only where the backend can perform them.
+        if (live)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton.icon(
+                onPressed: _photoBusy ? null : _pickPhoto,
+                icon: const Icon(LucideIcons.imagePlus, size: 18),
+                label: Text(_avatarPath == null ? L.addPhoto : L.changePhoto),
+              ),
+              if (_avatarPath != null)
+                TextButton.icon(
+                  onPressed: _photoBusy ? null : _removePhoto,
+                  icon: Icon(
+                    LucideIcons.trash2,
+                    size: 18,
+                    color: context.c.attention,
+                  ),
+                  label: Text(
+                    L.removePhoto,
+                    style: TextStyle(color: context.c.attention),
+                  ),
+                ),
+            ],
+          ),
         SectionHeading(
           L.personalDetails,
           icon: LucideIcons.user,
@@ -454,21 +703,36 @@ class _EditProfileScreen extends StatelessWidget {
         ),
         CefField(
           label: L.fullName2,
-          initialValue: name.isEmpty ? '—' : name,
+          controller: _name,
           prefixIcon: LucideIcons.user,
-          enabled: false,
+          enabled: live && !_saving,
+          onChanged: (_) => setState(() {}),
+        ),
+        CefField(
+          label: L.phoneNumber,
+          controller: _phone,
+          prefixIcon: LucideIcons.phone,
+          keyboardType: TextInputType.phone,
+          enabled: live && !_saving,
+          onChanged: (_) => setState(() {}),
         ),
         SectionHeading(
           L.account,
           icon: LucideIcons.briefcase,
           subtitle: L.signEmailRole,
         ),
-        CefField(
-          label: L.emailAddress,
-          initialValue: email,
-          prefixIcon: LucideIcons.mail,
-          enabled: false,
-          helperText: L.emailCannotChangedApp,
+        CefListRow(
+          icon: LucideIcons.mail,
+          title: L.emailAddress,
+          subtitle: _email ?? 'yusuf@kopikita.my',
+          showChevron: live,
+          trailing: live
+              ? Text(
+                  L.change,
+                  style: text.labelLarge?.copyWith(color: CefColors.brand),
+                )
+              : null,
+          onTap: live ? _changeEmail : null,
         ),
         CefField(
           label: L.role,
@@ -477,7 +741,154 @@ class _EditProfileScreen extends StatelessWidget {
           enabled: false,
           helperText: L.managedByBusiness,
         ),
+        if (_error != null)
+          Padding(
+            padding: const EdgeInsets.only(top: Gap.md),
+            child: Text(
+              _error!,
+              style: text.bodySmall?.copyWith(color: context.c.attention),
+            ),
+          ),
       ],
+    );
+  }
+}
+
+/// Secure Email Change (Founder-approved P1-B): ask for the new address,
+/// then one 6-digit code per address (current, then new). The email is
+/// shown as changed only when the server reports the new address.
+/// Returns the new confirmed email, or null when not completed.
+Future<String?> startEmailChange(BuildContext context, String current) async {
+  final app = AppScope.read(context);
+  final navigator = Navigator.of(context);
+  final next = await showDialog<String>(
+    context: context,
+    builder: (_) => _NewEmailDialog(current: current),
+  );
+  if (next == null) return null;
+
+  Future<bool> done() async =>
+      (await app.repo.confirmedEmail())?.toLowerCase() == next.toLowerCase();
+
+  Future<bool> step(String email, String title) async {
+    var verified = false;
+    await navigator.push(
+      MaterialPageRoute<void>(
+        builder: (routeContext) => VerifyEmailCodeScreen(
+          email: email,
+          title: title,
+          showVerifiedState: false,
+          onVerify: (code) async {
+            try {
+              await app.repo.verifyEmailChange(email, code);
+            } on RepositoryError catch (e) {
+              throw otpFailureFrom(e);
+            }
+          },
+          onResend: () async {
+            try {
+              await app.repo.resendEmailChange(next);
+            } on RepositoryError catch (e) {
+              throw otpFailureFrom(e);
+            }
+          },
+          onContinue: () {
+            verified = true;
+            Navigator.of(routeContext).pop();
+          },
+          onBack: () => Navigator.of(routeContext).pop(),
+          onUseDifferentEmail: () => Navigator.of(routeContext).pop(),
+        ),
+      ),
+    );
+    return verified;
+  }
+
+  if (!await step(current, L.confirmCurrentEmail)) return null;
+  if (await done()) return next;
+  if (!await step(next, L.confirmNewEmail)) return null;
+  return await done() ? next : null;
+}
+
+class _NewEmailDialog extends StatefulWidget {
+  const _NewEmailDialog({required this.current});
+  final String current;
+
+  @override
+  State<_NewEmailDialog> createState() => _NewEmailDialogState();
+}
+
+class _NewEmailDialogState extends State<_NewEmailDialog> {
+  final _email = TextEditingController();
+  bool _busy = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _email.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    final next = _email.text.trim();
+    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(next)) {
+      setState(() => _error = L.enterValidEmailAddress);
+      return;
+    }
+    if (next.toLowerCase() == widget.current.toLowerCase()) {
+      setState(() => _error = L.sameEmail);
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await AppScope.read(context).repo.requestEmailChange(next);
+      if (mounted) Navigator.of(context).pop(next);
+    } on RepositoryError catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Dialog(
+      backgroundColor: context.c.card,
+      insetPadding: const EdgeInsets.symmetric(horizontal: Gap.xl),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(Gap.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(L.changeEmail, style: text.titleMedium),
+            const SizedBox(height: Gap.xs),
+            Text(L.changeEmailBody, style: text.bodySmall),
+            const SizedBox(height: Gap.lg),
+            CefField(
+              controller: _email,
+              label: L.newEmail,
+              prefixIcon: LucideIcons.mail,
+              keyboardType: TextInputType.emailAddress,
+              errorText: _error,
+              enabled: !_busy,
+            ),
+            const SizedBox(height: Gap.md),
+            CefButton(L.sendCodes, busy: _busy, onTap: _send),
+            TextButton(
+              onPressed: _busy ? null : () => Navigator.of(context).pop(),
+              child: Text(L.cancel),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -505,14 +916,6 @@ class _SecurityScreen extends StatelessWidget {
               subtitleMaxLines: 2,
               icon: LucideIcons.lock,
               onTap: () => app.go(VRoute.changePassword),
-            ),
-            // Unavailable feature: no switch or on/off state, just an honest
-            // "Coming soon" subtitle on a non-tappable row.
-            CefListRow(
-              title: L.twoFactorAuthentication,
-              subtitle: L.comingSoon,
-              subtitleMaxLines: 2,
-              icon: LucideIcons.smartphone,
             ),
           ],
         ),
@@ -916,78 +1319,6 @@ class _ColourPickerSheetState extends State<_ColourPickerSheet> {
   }
 }
 
-/// Profile photo placeholder on a form: the standard initials avatar with a
-/// camera badge signalling the photo can be changed.
-class _EditableAvatar extends StatelessWidget {
-  const _EditableAvatar({required this.name});
-  final String name;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return Center(
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          CefAvatar(name, size: 84),
-          Positioned(
-            right: -Gap.xs,
-            bottom: 0,
-            child: Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                color: c.card,
-                shape: BoxShape.circle,
-                border: Border.all(color: c.border),
-              ),
-              child: Icon(LucideIcons.camera, size: 16, color: c.iconColor),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Two labelled fields side by side (e.g. country code + number,
-/// postcode + city) at a 2:4 split.
-class _SplitFields extends StatelessWidget {
-  const _SplitFields({
-    required this.leftLabel,
-    required this.left,
-    required this.rightLabel,
-    required this.right,
-    this.keyboardType,
-  });
-  final String leftLabel, left, rightLabel, right;
-  final TextInputType? keyboardType;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Expanded(
-        flex: 2,
-        child: CefField(
-          label: leftLabel,
-          initialValue: left,
-          keyboardType: keyboardType,
-        ),
-      ),
-      const SizedBox(width: Gap.md),
-      Expanded(
-        flex: 4,
-        child: CefField(
-          label: rightLabel,
-          initialValue: right,
-          keyboardType: keyboardType,
-        ),
-      ),
-    ],
-  );
-}
-
 class _BusinessHourRow extends StatelessWidget {
   const _BusinessHourRow({
     required this.day,
@@ -1106,73 +1437,19 @@ class _HelpSupportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    // Archetype F: hero, search, support tiles, grouped topics.
+    // Honest interim (Founder, 2026-10-01): only what works today. Help
+    // articles and KIM (Cefflo AI support) arrive here as their own
+    // workstream -- no search or topics that open nothing.
     return PageBody(
       grouped: true,
       children: [
         _HeroPanel(kicker: L.wereHereHelp, title: L.howCanWeHelp),
         const SizedBox(height: Gap.md),
-        CefSearchField(hint: L.searchHelpArticlesTopics, onFilter: () {}),
-        const SizedBox(height: Gap.md),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: _SupportTile(
-                  icon: LucideIcons.bookOpen,
-                  title: L.helpCentre2,
-                  subtitle: L.browseArticlesGuidesFaqs,
-                  onTap: () => app.go(VRoute.faq),
-                ),
-              ),
-              const SizedBox(width: Gap.md),
-              Expanded(
-                child: _SupportTile(
-                  icon: LucideIcons.messageCircle,
-                  title: L.contactSupport2,
-                  subtitle: L.chatSendSupportRequest,
-                  onTap: () => app.go(VRoute.contactSupport),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: Gap.xl),
-        CefListGroup(
-          label: L.popularTopics,
-          children: [
-            CefListRow(
-              title: L.accountSecurity2,
-              subtitle: L.loginProfileSecuritySettings,
-              subtitleMaxLines: 2,
-              icon: LucideIcons.circleUserRound,
-            ),
-            CefListRow(
-              title: L.ordersDelivery,
-              subtitle: L.orderManagementDeliveryIssues,
-              subtitleMaxLines: 2,
-              icon: LucideIcons.truck,
-            ),
-            CefListRow(
-              title: L.ridersTeam,
-              subtitle: L.riderInvitesApprovalsTeamAccess,
-              subtitleMaxLines: 2,
-              icon: LucideIcons.users,
-            ),
-            CefListRow(
-              title: L.subscriptionBilling,
-              subtitle: L.plansPaymentsInvoices,
-              subtitleMaxLines: 2,
-              icon: LucideIcons.calendarDays,
-            ),
-            CefListRow(
-              title: L.appGuides,
-              subtitle: L.stepByStepTutorials,
-              subtitleMaxLines: 2,
-              icon: LucideIcons.bookOpen,
-            ),
-          ],
+        _SupportTile(
+          icon: LucideIcons.mail,
+          title: L.contactSupport2,
+          subtitle: L.emailSupportTeam,
+          onTap: () => app.go(VRoute.contactSupport),
         ),
       ],
     );
@@ -1418,17 +1695,19 @@ class _AboutScreen extends StatelessWidget {
             CefListRow(
               title: L.version,
               icon: LucideIcons.smartphone,
-              trailing: Text('1.0.0', style: text.bodyMedium),
+              trailing: AppVersionText(style: text.bodyMedium),
             ),
             CefListRow(
               title: L.privacyPolicy2,
               subtitle: L.readPolicy,
               icon: LucideIcons.shieldCheck,
+              onTap: () => AppScope.read(context).go(VRoute.privacyPolicy),
             ),
             CefListRow(
               title: L.termsService2,
               subtitle: L.readTerms,
               icon: LucideIcons.fileText,
+              onTap: () => AppScope.read(context).go(VRoute.termsOfService),
             ),
           ],
         ),
