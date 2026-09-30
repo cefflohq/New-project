@@ -11,13 +11,15 @@ import { operatorEntry } from '../access.js';
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
-// Branded frame shared by every auth screen, matching Cefflo Vendor mobile
-// sign-in: the brand backdrop, the Cefflo lockup, the spaced VENDOR label,
-// a language menu at the top and the actions below the hero.
-function frame(root, bottom, rerender, { hero = '', langRight = false, brand = true } = {}) {
+// Branded frame shared by every auth screen. The full logo belongs to the
+// Splash only (Founder, 2026-09-30): after it, every screen carries the
+// Cefflo wordmark alone so its card or actions stay the focus. Top row: the
+// back chevron (icon only) at the left, the language control at the right.
+function frame(root, bottom, rerender, { hero = '', product = false, back = null } = {}) {
   setChromeColor('#061F5C');
   root.innerHTML = `<div class="auth">
-    <div class="auth-top right">
+    <div class="auth-top">
+      ${back ? `<button type="button" class="auth-back" data-topback aria-label="${esc(t('c.back'))}">${icon('chevl')}</button>` : ''}
       <div class="auth-lang">
         <button type="button" class="auth-lang-btn" data-langmenu aria-haspopup="menu" aria-expanded="false" aria-label="${prefs.lang === 'ms' ? 'Bahasa Melayu' : 'English'}">${icon('globe')}<span>${prefs.lang === 'ms' ? 'BM' : 'EN'}</span></button>
         <div class="auth-lang-menu" role="menu" hidden>
@@ -26,19 +28,31 @@ function frame(root, bottom, rerender, { hero = '', langRight = false, brand = t
         </div>
       </div>
     </div>
-    ${brand ? `<div class="auth-hero${hero ? ' op' : ''}">
-      <img class="auth-logo" src="img/cefflo-logo.png" alt="Cefflo" width="150" height="234">
-      <span class="auth-product">VENDOR</span>
+    <div class="auth-hero${hero ? ' op' : ''}">
+      <img class="auth-word" src="img/cefflo-wordmark-white.png" alt="Cefflo" width="555" height="142">
+      ${product ? '<span class="auth-product">VENDOR</span>' : ''}
       ${hero}
-    </div>` : '<div class="auth-hero bare"></div>'}
+    </div>
     <div class="auth-bottom">${bottom}</div>
   </div>`;
+  if (back) root.querySelector('[data-topback]').addEventListener('click', back);
   const btn = root.querySelector('[data-langmenu]'), menu = root.querySelector('.auth-lang-menu');
   btn.addEventListener('click', () => { menu.hidden = !menu.hidden; btn.setAttribute('aria-expanded', String(!menu.hidden)); });
   root.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => {
     menu.hidden = true;
     if (prefs.lang !== b.dataset.lang) { savePrefs({ lang: b.dataset.lang }); rerender(); }
   }));
+}
+
+// Splash, every time the Web App opens: the full logo, centred, and which
+// entry this is (VENDOR or OPERATOR ACCESS). Brief; the session check runs
+// behind it.
+export function renderSplash(root) {
+  setChromeColor('#061F5C');
+  const label = operatorEntry() ? t('auth.opAccess').toUpperCase() : 'VENDOR';
+  root.innerHTML = `<div class="auth splash" role="status" aria-label="Cefflo">
+    <div class="auth-hero"><img class="auth-logo" src="img/cefflo-logo.png" alt="Cefflo" width="150" height="234"><span class="auth-product">${esc(label)}</span></div>
+  </div>`;
 }
 
 // Google's multicolour "G" (brand mark, drawn from its official outline).
@@ -104,7 +118,7 @@ export function renderSignIn(root, opts, mode = 'choose') {
       <button class="auth-pill" type="button" data-google>${GOOGLE_G}<span>${esc(t('auth.withGoogle'))}</span></button>
       <button class="auth-pill" type="button" data-email>${icon('mail')}<span>${esc(t('auth.withEmail'))}</span></button>
       <p class="auth-invite">${esc(t('auth.haveInvite'))} <button type="button" class="auth-link" data-invite>${esc(t('auth.getStarted'))}</button></p>`,
-    () => again('choose'), { hero, langRight: op });
+    () => again('choose'), { hero, product: true });
     root.querySelector('[data-google]').addEventListener('click', () => { location.assign(api.googleSignInUrl()); });
     root.querySelector('[data-email]').addEventListener('click', () => again('email'));
     root.querySelector('[data-invite]').addEventListener('click', () => renderSignUp(root, opts));
@@ -117,9 +131,9 @@ export function renderSignIn(root, opts, mode = 'choose') {
     <div class="field"><label for="pw">${esc(t('auth.password'))}</label><input class="input" id="pw" type="password" autocomplete="current-password" required></div>
     <div class="err" data-err hidden role="alert"></div>
     <button class="btn primary" type="submit" style="width:100%">${esc(t('auth.signIn'))}</button>
-    <div class="auth-card-links"><button class="link-btn" type="button" data-back>${esc(t('c.back'))}</button><button class="link-btn" type="button" data-forgot>${esc(t('auth.forgot'))}</button></div>
+    <div class="auth-card-links end"><button class="link-btn" type="button" data-forgot>${esc(t('auth.forgot'))}</button></div>
     <p class="auth-foot">${esc(t('auth.noAccount'))} <button class="link-btn" type="button" data-signup>${esc(t('auth.signUp'))}</button></p>
-  </form>`, () => again('email'));
+  </form>`, () => again('email'), { back: () => again('choose') });
   const form = root.querySelector('[data-form]'), err = root.querySelector('[data-err]');
   root.querySelector('#em').focus();
   form.addEventListener('submit', async e => {
@@ -141,7 +155,6 @@ export function renderSignIn(root, opts, mode = 'choose') {
       showErr(err, /invalid/i.test(ex.message) ? t('auth.bad') : ex.message);
     }
   });
-  root.querySelector('[data-back]').addEventListener('click', () => again('choose'));
   root.querySelector('[data-forgot]').addEventListener('click', () => renderForgot(root, opts));
   root.querySelector('[data-signup]').addEventListener('click', () => renderSignUp(root, opts));
 }
@@ -156,9 +169,8 @@ function renderSignUp(root, opts) {
     <div class="field"><label for="p2">${esc(t('auth.confirmPw'))}</label><input class="input" id="p2" type="password" autocomplete="new-password"></div>
     <div class="err" data-err hidden role="alert"></div>
     <button class="btn primary" type="submit" style="width:100%">${esc(t('auth.create'))}</button>
-    <div class="auth-card-links"><button class="link-btn" type="button" data-back>${esc(t('c.back'))}</button></div>
     <p class="auth-foot">${esc(t('auth.haveAccount'))} <button class="link-btn" type="button" data-signin>${esc(t('auth.signIn'))}</button></p>
-  </form>`, () => renderSignUp(root, opts));
+  </form>`, () => renderSignUp(root, opts), { back: () => renderSignIn(root, opts, 'choose') });
   const form = root.querySelector('[data-form]'), err = root.querySelector('[data-err]');
   root.querySelector('#em').focus();
   form.addEventListener('submit', async e => {
@@ -174,7 +186,6 @@ function renderSignUp(root, opts) {
       else opts.onSignedIn();
     } catch (ex) { showErr(err, ex.message); }
   });
-  root.querySelector('[data-back]').addEventListener('click', () => renderSignIn(root, opts, 'choose'));
   root.querySelector('[data-signin]').addEventListener('click', () => renderSignIn(root, opts, 'email'));
 }
 
@@ -233,8 +244,7 @@ function renderForgot(root, opts) {
     <h1>${esc(t('auth.forgot'))}</h1><p>${esc(t('auth.resetLead'))}</p>
     <div class="field"><label for="em">${esc(t('auth.email'))}</label><input class="input" id="em" type="email" autocomplete="username"></div>
     <div class="err" data-err hidden role="alert"></div>
-    <button class="btn primary" type="submit" style="width:100%">${esc(t('auth.sendReset'))}</button>
-    <button class="link-btn" type="button" data-back style="justify-self:center">${esc(t('auth.backToSignIn'))}</button></form>`, () => renderForgot(root, opts));
+    <button class="btn primary" type="submit" style="width:100%">${esc(t('auth.sendReset'))}</button></form>`, () => renderForgot(root, opts), { back: () => renderSignIn(root, opts, 'email') });
   const form = root.querySelector('[data-form]'), err = root.querySelector('[data-err]');
   form.addEventListener('submit', async e => {
     e.preventDefault();
@@ -246,7 +256,6 @@ function renderForgot(root, opts) {
       renderRecoveryCode(root, opts, email);
     } catch (ex) { showErr(err, ex.message); }
   });
-  root.querySelector('[data-back]').addEventListener('click', () => renderSignIn(root, opts, 'email'));
 }
 
 // Check your email (after Forgot Password). GoTrue never reveals whether
@@ -273,7 +282,7 @@ export function renderNoOperatorAccess(root, { onRetry, onSignOut }) {
     <h1>${esc(t('auth.noOpTitle'))}</h1><p>${esc(t('auth.noOpBody'))}</p>
     <button class="btn primary" type="button" data-retry style="width:100%">${esc(t('c.retry'))}</button>
     <button class="btn" type="button" data-signout style="width:100%">${esc(t('shell.signOut'))}</button>
-  </div>`, () => renderNoOperatorAccess(root, { onRetry, onSignOut }), { langRight: true });
+  </div>`, () => renderNoOperatorAccess(root, { onRetry, onSignOut }));
   root.querySelector('[data-retry]').addEventListener('click', onRetry);
   root.querySelector('[data-signout]').addEventListener('click', onSignOut);
 }
@@ -367,7 +376,7 @@ export function renderVerifyCode(root, opts, args) {
     <p class="otp-resend" data-resendline></p>
     <button class="link-btn" type="button" data-back>${esc(t(purpose === 'signup' ? 'auth.differentEmail' : 'auth.backToSignIn'))}</button>
     <p class="auth-muted">${esc(t('auth.spam'))}</p>
-  </form>`, () => renderVerifyCode(root, opts, args), { brand: false });
+  </form>`, () => renderVerifyCode(root, opts, args), { back: () => { clearInterval(timer); onBack(); } });
   draw();
   const $ = s => root.querySelector(s);
   const err = $('[data-err]'), ok = $('[data-ok]'), verifyBtn = $('[data-verify]'), line = $('[data-resendline]');
@@ -446,7 +455,7 @@ export function renderVerifyCode(root, opts, args) {
       ${status('check')}
       <h1>${esc(t('otp.verifiedTitle'))}</h1><p>${esc(t('otp.verifiedLead'))}</p>
       <button class="btn primary" type="button" data-continue style="width:100%">${esc(t('otp.continue'))}</button>
-    </div>`, renderVerified, { brand: false });
+    </div>`, renderVerified);
     root.querySelector('[data-continue]').addEventListener('click', () => onContinue());
   }
   $('[data-form]').addEventListener('submit', e => { e.preventDefault(); if (failed === 'expired') resend(); else verify(); });

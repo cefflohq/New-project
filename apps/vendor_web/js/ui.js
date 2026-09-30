@@ -40,7 +40,7 @@ const P = {
   mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>', invite: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M19 8v6M16 11h6"/>',
   csv: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h1M9 17h6"/>',
   pkg: '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>',
-  menu: '<path d="M4 6h16M4 12h16M4 18h16"/>', updown: '<path d="M8 9l4-4 4 4M8 15l4 4 4-4"/>',
+  chevl: '<path d="M15 5l-7 7 7 7"/>', menu: '<path d="M4 6h16M4 12h16M4 18h16"/>', updown: '<path d="M8 9l4-4 4 4M8 15l4 4 4-4"/>',
   moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>',
 };
 export const icon = (name, cls = 'i') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${P[name] || ''}</svg>`;

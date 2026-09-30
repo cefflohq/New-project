@@ -113,7 +113,7 @@ void main() {
       expect(find.text('Continue with Email'), findsOneWidget);
       expect(find.text('Have an invite? '), findsOneWidget);
       expect(find.text('Get started'), findsOneWidget);
-      expect(find.text('English'), findsOneWidget);
+      expect(find.text('EN'), findsOneWidget);
     });
 
     testWidgets('02 Sign In on iOS is Email only (no Apple, no Google)', (

@@ -249,7 +249,10 @@ class _AuthFlowState extends State<AuthFlow> {
   @override
   Widget build(BuildContext context) {
     return switch (_stage) {
-      _Stage.splash => SplashScreen(onReady: () => _replace(_Stage.signIn)),
+      _Stage.splash => SplashScreen(
+        access: widget.access,
+        onReady: () => _replace(_Stage.signIn),
+      ),
       _Stage.signIn => SignInScreen(
         access: widget.access,
         onEmail: () => _go(_Stage.emailSignIn),
@@ -413,6 +416,23 @@ class _BrandLockup extends StatelessWidget {
   }
 }
 
+/// The Cefflo wordmark alone (white). After Splash, the auth screens carry
+/// only this — the full logo is Splash's (Founder, 2026-09-30), so the
+/// sheet or form stays the screen's focus.
+class _Wordmark extends StatelessWidget {
+  const _Wordmark({this.height = 30});
+  final double height;
+
+  @override
+  Widget build(BuildContext context) => Image.asset(
+    'assets/brand/cefflo-wordmark-white.png',
+    height: height,
+    fit: BoxFit.contain,
+    filterQuality: FilterQuality.high,
+    semanticLabel: 'Cefflo',
+  );
+}
+
 class _Tagline extends StatelessWidget {
   const _Tagline();
 
@@ -447,9 +467,6 @@ class _SheetScaffold extends StatelessWidget {
   /// 2026-09-30) so the sheet sits higher and the task stays uncluttered.
   final bool showBrand;
 
-  /// Visible height of the header lockup.
-  static const _headerLockup = 96.0;
-
   @override
   Widget build(BuildContext context) {
     final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
@@ -470,11 +487,17 @@ class _SheetScaffold extends StatelessWidget {
                     children: [
                       SizedBox(
                         height: Sizes.tapTarget,
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: onBack == null
-                              ? null
-                              : _BackButton(onTap: onBack!),
+                        child: Row(
+                          children: [
+                            if (onBack != null) _BackButton(onTap: onBack!),
+                            const Spacer(),
+                            Padding(
+                              padding: const EdgeInsets.only(right: Gap.sm),
+                              child: _LanguagePill(
+                                onTap: () => openAuthLanguageSheet(context),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       AnimatedSize(
@@ -487,7 +510,7 @@ class _SheetScaffold extends StatelessWidget {
                               )
                             : const Padding(
                                 padding: EdgeInsets.only(bottom: Gap.xxl),
-                                child: _BrandLockup(height: _headerLockup),
+                                child: _Wordmark(height: 28),
                               ),
                       ),
                     ],
@@ -525,42 +548,25 @@ class _SheetScaffold extends StatelessWidget {
   }
 }
 
+/// Back: the chevron alone, in a standard 44px target set against the
+/// screen edge — no "Back" label (Founder, 2026-09-30).
 class _BackButton extends StatelessWidget {
   const _BackButton({required this.onTap});
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(left: Gap.sm),
-    child: Semantics(
-      button: true,
-      label: L.back,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Gap.md,
-            vertical: Gap.sm,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                LucideIcons.chevronLeft,
-                color: Colors.white,
-                size: Sizes.icon,
-              ),
-              const SizedBox(width: Gap.xs),
-              Text(
-                L.back,
-                style: Theme.of(context).textTheme.titleSmall
-                    ?.copyWith(color: Colors.white),
-              ),
-            ],
-          ),
-        ),
+    padding: const EdgeInsets.only(left: Gap.xs),
+    child: IconButton(
+      onPressed: onTap,
+      tooltip: L.back,
+      icon: const Icon(LucideIcons.chevronLeft, size: 26),
+      color: Colors.white,
+      constraints: const BoxConstraints.tightFor(
+        width: Sizes.tapTarget,
+        height: Sizes.tapTarget,
       ),
+      padding: EdgeInsets.zero,
     ),
   );
 }
@@ -774,8 +780,15 @@ bool _isRateLimited(String text) => text.startsWith(L.tooManyAttempts);
 // ------------------------------------------------------------ 01 Splash
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key, required this.onReady});
+  const SplashScreen({
+    super.key,
+    required this.onReady,
+    this.access = AuthAccess.vendor,
+  });
   final VoidCallback onReady;
+
+  /// Which entry opened the app: the label under the logo names it.
+  final AuthAccess access;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -829,6 +842,21 @@ class _SplashScreenState extends State<SplashScreen>
             children: [
               const Spacer(flex: 5),
               const _BrandLockup(height: 200),
+              const SizedBox(height: Gap.lg),
+              Text(
+                switch (widget.access) {
+                  AuthAccess.vendor => 'VENDOR',
+                  AuthAccess.operator => L.operatorAccess.toUpperCase(),
+                  AuthAccess.helper => L.helperAccess.toUpperCase(),
+                },
+                key: const Key('splash-access'),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 6,
+                ),
+              ),
               const Spacer(flex: 5),
               const _Tagline(),
               const SizedBox(height: Gap.section),
@@ -926,16 +954,7 @@ class _SignInScreenState extends State<SignInScreen> {
     }
   }
 
-  void _openLanguageSheet() {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: context.c.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(_sheetRadius)),
-      ),
-      builder: (context) => const _LanguageSheet(),
-    );
-  }
+  void _openLanguageSheet() => openAuthLanguageSheet(context);
 
   /// Operator / Helper Sign-In variants (Founder boards, D-74).
   bool get operator => widget.access != AuthAccess.vendor;
@@ -986,17 +1005,16 @@ class _SignInScreenState extends State<SignInScreen> {
                           children: [
                             SizedBox(height: fit(Gap.xs, Gap.md)),
                             Align(
-                              alignment: operator
-                                  ? Alignment.centerRight
-                                  : Alignment.centerLeft,
+                              alignment: Alignment.centerRight,
                               child: _LanguagePill(onTap: _openLanguageSheet),
                             ),
                             const Spacer(flex: 3),
                             Center(
-                              child: _BrandLockup(
-                                height: fit(operator ? 76 : 92, 128),
+                              child: _Wordmark(
+                                height: fit(operator ? 30 : 34, 42),
                               ),
                             ),
+                            SizedBox(height: fit(Gap.sm, Gap.md)),
                             Text(
                               'VENDOR',
                               textAlign: TextAlign.center,
@@ -1152,32 +1170,57 @@ class _AccessChip extends StatelessWidget {
   );
 }
 
+/// English / Bahasa Melayu picker, from any auth screen.
+void openAuthLanguageSheet(BuildContext context) {
+  showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: context.c.card,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(_sheetRadius)),
+    ),
+    builder: (context) => const _LanguageSheet(),
+  );
+}
+
+/// Language control, top right on every auth screen: the globe and the
+/// language code (EN / BM) — no pill, no chevron (Founder, 2026-09-30).
 class _LanguagePill extends StatelessWidget {
   const _LanguagePill({required this.onTap});
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: Gap.sm, horizontal: 2),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(LucideIcons.globe, color: Colors.white, size: 20),
-          const SizedBox(width: Gap.sm),
-          Text(
-            uiLanguageNames[AppScope.of(context).uiLocale.languageCode]!,
-            style: Theme.of(context).textTheme.titleSmall
-                ?.copyWith(color: Colors.white),
+  Widget build(BuildContext context) {
+    final code = AppScope.of(context).uiLocale.languageCode;
+    return Semantics(
+      button: true,
+      label: uiLanguageNames[code],
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+        child: SizedBox(
+          height: Sizes.tapTarget,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Gap.sm),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(LucideIcons.globe, color: Colors.white, size: 20),
+                const SizedBox(width: 6),
+                Text(
+                  code == 'ms' ? 'BM' : 'EN',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: .5,
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(width: Gap.xs),
-          const Icon(LucideIcons.chevronDown, color: Colors.white, size: 18),
-        ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 /// Language picker on the sign-in screen: English and Bahasa Melayu, by

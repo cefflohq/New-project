@@ -8,7 +8,7 @@ import { loadContext, clearContext, HelperOnlyError, NoBusinessError } from './s
 import { mountShell } from './shell.js';
 import { stopNotifications } from './notifications.js';
 import { errorState } from './ui.js';
-import { renderSignIn, renderSetPassword, renderExpired, renderNoOperatorAccess } from './pages/auth.js';
+import { renderSignIn, renderSetPassword, renderExpired, renderNoOperatorAccess, renderSplash } from './pages/auth.js';
 import { renderBusinessSetup } from './pages/setup.js';
 import { openAddOrder } from './pages/order_actions.js';
 import { openAddRider } from './pages/riders.js';
@@ -87,4 +87,7 @@ async function start(message = '') {
   }
 }
 
-start();
+// Splash each time the Web App opens (Founder, 2026-09-30): a brief brand
+// moment, then the normal start.
+renderSplash(root);
+setTimeout(() => start(), 1100);
