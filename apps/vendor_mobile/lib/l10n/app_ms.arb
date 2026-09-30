@@ -936,5 +936,12 @@
   "otpVerifiedLead": "E-mel anda telah disahkan. Anda boleh teruskan.",
   "otpContinue": "Teruskan",
   "otpCodeLabel": "Kod pengesahan 6 digit",
-  "otpRecoveryTitle": "Tetapkan semula kata laluan"
+  "otpRecoveryTitle": "Tetapkan semula kata laluan",
+  "connectedSources": "Sumber bersambung",
+  "noConnectedSourcesYet": "Belum ada sumber bersambung. Google Sheets dan fail Drive yang disambung akan dipaparkan di sini.",
+  "createOrder": "Cipta pesanan",
+  "howStepSource": "Pilih sumber",
+  "howStepFile": "Pilih fail",
+  "howStepMap": "Padankan lajur",
+  "howStepImport": "Import"
 }

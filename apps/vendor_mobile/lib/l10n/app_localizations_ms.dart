@@ -3115,4 +3115,26 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get otpRecoveryTitle => 'Tetapkan semula kata laluan';
+
+  @override
+  String get connectedSources => 'Sumber bersambung';
+
+  @override
+  String get noConnectedSourcesYet =>
+      'Belum ada sumber bersambung. Google Sheets dan fail Drive yang disambung akan dipaparkan di sini.';
+
+  @override
+  String get createOrder => 'Cipta pesanan';
+
+  @override
+  String get howStepSource => 'Pilih sumber';
+
+  @override
+  String get howStepFile => 'Pilih fail';
+
+  @override
+  String get howStepMap => 'Padankan lajur';
+
+  @override
+  String get howStepImport => 'Import';
 }

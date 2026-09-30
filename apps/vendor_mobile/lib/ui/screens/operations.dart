@@ -889,8 +889,14 @@ class NewOrderEntryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
+    // Connected sources first (quickest repeat path), then the two ways to
+    // create orders. There is no import-connection record in the backend
+    // yet, so the list shows its honest empty state -- never sample rows.
     return PageBody(
       children: [
+        SectionHeading(L.connectedSources, icon: LucideIcons.link),
+        StateBlock.empty(L.noConnectedSourcesYet),
+        SectionHeading(L.createOrder, icon: LucideIcons.plus),
         CefListRow(
           icon: LucideIcons.filePlus,
           title: L.manualEntry,
@@ -905,28 +911,6 @@ class NewOrderEntryScreen extends StatelessWidget {
           subtitleMaxLines: 2,
           onTap: () => app.go(VRoute.importOrders),
         ),
-        SectionHeading(
-          L.recentImports,
-          trailing: CefLink(
-            L.viewAll,
-            chevron: true,
-            onTap: () => showNotWiredYetSnackBar(context, L.importHistory),
-          ),
-        ),
-        for (final source in _ImportSource.values)
-          CefListRow(
-            leading: _ImportSourceMark(source: source),
-            title: source.sampleBatch,
-            subtitle: L.importSampleSubtitle(
-              source.label,
-              source.sampleCount,
-              source.sampleDate,
-            ),
-            subtitleMaxLines: 2,
-            trailing: StatusChip(L.connected, success: true),
-            showChevron: false,
-            onTap: () => showNotWiredYetSnackBar(context, L.openingImport),
-          ),
       ],
     );
   }
@@ -935,14 +919,13 @@ class NewOrderEntryScreen extends StatelessWidget {
 /// The three file sources the import flow accepts. Each source uses the
 /// provider's official product mark bundled locally for deterministic render.
 enum _ImportSource {
-  googleSheets('assets/brand/google-sheets-logo.png', 32),
-  excel('assets/brand/microsoft-excel-logo.png', 24),
-  googleDrive('assets/brand/google-drive-logo.png', 18);
+  googleSheets('assets/brand/google-sheets-logo.png'),
+  excel('assets/brand/microsoft-excel-logo.png'),
+  googleDrive('assets/brand/google-drive-logo.png');
 
-  const _ImportSource(this.assetPath, this.sampleCount);
+  const _ImportSource(this.assetPath);
 
   final String assetPath;
-  final int sampleCount;
 
   String get label => switch (this) {
     _ImportSource.googleSheets => L.googleSheets,
@@ -954,18 +937,6 @@ enum _ImportSource {
     _ImportSource.googleSheets => L.importFromGoogleSheets,
     _ImportSource.excel => L.uploadExcelFileXlsxXls,
     _ImportSource.googleDrive => L.importFromFilesGoogleDrive,
-  };
-
-  String get sampleBatch => switch (this) {
-    _ImportSource.googleSheets => L.mealPrepOrders,
-    _ImportSource.excel => L.cateringSept,
-    _ImportSource.googleDrive => L.hamperOrders,
-  };
-
-  String get sampleDate => switch (this) {
-    _ImportSource.googleSheets => L.t16Sep2026,
-    _ImportSource.excel => L.t14Sep2026,
-    _ImportSource.googleDrive => L.t12Sep2026,
   };
 }
 
@@ -994,28 +965,26 @@ class _ImportSourceMark extends StatelessWidget {
 class ImportOrdersScreen extends StatelessWidget {
   const ImportOrdersScreen({super.key});
 
-  static List<(String, String)> get _steps => [
-    (L.selectSource, L.googleSheetsExcelGoogleDrive),
-    (L.chooseFile, L.pickConnectedSheet),
-    (L.mapColumns, L.previewOrders),
-    (L.importText, L.reviewOrders),
+  static List<(IconData, String)> get _steps => [
+    (LucideIcons.layers, L.howStepSource),
+    (LucideIcons.fileSpreadsheet, L.howStepFile),
+    (LucideIcons.columns3, L.howStepMap),
+    (LucideIcons.circleCheck, L.howStepImport),
   ];
 
   @override
   Widget build(BuildContext context) => PageBody(
     children: [
-      Text(
-        L.chooseSourceImportMultipleOrders,
-        style: Theme.of(context).textTheme.bodyMedium,
+      // How it works, at a glance: four icons in a row, a word each.
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final (index, step) in _steps.indexed)
+            Expanded(
+              child: _HowStep(icon: step.$1, label: step.$2, n: index + 1),
+            ),
+        ],
       ),
-      SectionHeading(L.howWorks, icon: LucideIcons.info),
-      for (final (index, step) in _steps.indexed)
-        CefListRow(
-          leading: CefAvatar('${index + 1}'),
-          title: step.$1,
-          subtitle: step.$2,
-          subtitleMaxLines: 2,
-        ),
       SectionHeading(L.sources, icon: LucideIcons.cloudUpload),
       for (final source in _ImportSource.values)
         CefListRow(
@@ -1026,6 +995,34 @@ class ImportOrdersScreen extends StatelessWidget {
           onTap: () =>
               showNotWiredYetSnackBar(context, L.importingFrom(source.label)),
         ),
+    ],
+  );
+}
+
+class _HowStep extends StatelessWidget {
+  const _HowStep({required this.icon, required this.label, required this.n});
+  final IconData icon;
+  final String label;
+  final int n;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: context.c.subtle,
+          borderRadius: BorderRadius.circular(Sizes.cardRadius),
+        ),
+        child: Icon(icon, size: 24, color: CefColors.navy),
+      ),
+      const SizedBox(height: Gap.sm),
+      Text(
+        '$n. $label',
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.labelMedium,
+      ),
     ],
   );
 }

@@ -5726,6 +5726,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reset your password'**
   String get otpRecoveryTitle;
+
+  /// No description provided for @connectedSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected sources'**
+  String get connectedSources;
+
+  /// No description provided for @noConnectedSourcesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No connected sources yet. Your connected Google Sheets and Drive files will appear here.'**
+  String get noConnectedSourcesYet;
+
+  /// No description provided for @createOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an order'**
+  String get createOrder;
+
+  /// No description provided for @howStepSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a source'**
+  String get howStepSource;
+
+  /// No description provided for @howStepFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a file'**
+  String get howStepFile;
+
+  /// No description provided for @howStepMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Match columns'**
+  String get howStepMap;
+
+  /// No description provided for @howStepImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get howStepImport;
 }
 
 class _AppLocalizationsDelegate

@@ -1500,5 +1500,12 @@
   "otpVerifiedLead": "Your email is confirmed. You can continue.",
   "otpContinue": "Continue",
   "otpCodeLabel": "6-digit verification code",
-  "otpRecoveryTitle": "Reset your password"
+  "otpRecoveryTitle": "Reset your password",
+  "connectedSources": "Connected sources",
+  "noConnectedSourcesYet": "No connected sources yet. Your connected Google Sheets and Drive files will appear here.",
+  "createOrder": "Create an order",
+  "howStepSource": "Pick a source",
+  "howStepFile": "Choose a file",
+  "howStepMap": "Match columns",
+  "howStepImport": "Import"
 }

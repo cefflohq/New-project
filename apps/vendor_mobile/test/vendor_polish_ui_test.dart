@@ -65,10 +65,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+    // How it works is four icon steps above the source cards.
     expect(
-      tester.getTopLeft(find.text('How it works?')).dy,
+      tester.getTopLeft(find.text('1. Pick a source')).dy,
       lessThan(tester.getTopLeft(find.text('Google Sheets')).dy),
     );
+    expect(find.text('4. Import'), findsOneWidget);
     expect(find.text('Excel'), findsOneWidget);
     expect(find.text('Google Drive'), findsOneWidget);
   });

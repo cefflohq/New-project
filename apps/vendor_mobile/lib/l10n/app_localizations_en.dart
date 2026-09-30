@@ -3113,4 +3113,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get otpRecoveryTitle => 'Reset your password';
+
+  @override
+  String get connectedSources => 'Connected sources';
+
+  @override
+  String get noConnectedSourcesYet =>
+      'No connected sources yet. Your connected Google Sheets and Drive files will appear here.';
+
+  @override
+  String get createOrder => 'Create an order';
+
+  @override
+  String get howStepSource => 'Pick a source';
+
+  @override
+  String get howStepFile => 'Choose a file';
+
+  @override
+  String get howStepMap => 'Match columns';
+
+  @override
+  String get howStepImport => 'Import';
 }
