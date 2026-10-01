@@ -931,10 +931,49 @@ function renderForgot(prefill = '') {
     btn.disabled = true; btn.textContent = 'Sending…'; err.hidden = true;
     try {
       await F.recover(email);
-      renderSignIn(`If ${email} has an account, a reset link is on its way. Open it on this device.`);
+      renderRecoveryCode(email);
     } catch (ex) {
       err.textContent = ex.status === 429 ? 'Too many emails sent. Wait a while and try again.' : ex.message; err.hidden = false;
       btn.disabled = false; btn.textContent = 'Send reset link';
+    }
+  });
+}
+// Reset code: the email carries a 6-digit code. It opens a recovery session;
+// an admin with an authenticator then proves the second step (Verify)
+// before Set New Password. The emailed link remains an alternative.
+function renderRecoveryCode(email) {
+  authFrame(`<form data-recovery-code novalidate><h1>Enter reset code</h1>
+    <p class="sub">If ${esc(email)} has an account, we've emailed a 6-digit code. Enter it here to set a new password.</p>
+    <div class="field"><label for="code">Reset code</label>${CODE_INPUT}</div>
+    <div class="field-err" data-err hidden role="alert"></div>
+    <button class="auth-submit" type="submit">Continue</button>
+    <button class="auth-link" type="button" data-resend>Send a new code</button></form>`, { back: () => renderForgot(email) });
+  const form = root.querySelector('[data-recovery-code]'), err = form.querySelector('[data-err]');
+  form.querySelector('#code').focus();
+  form.querySelector('[data-resend]').addEventListener('click', async e => {
+    const b = e.currentTarget; b.disabled = true;
+    try { await F.recover(email); toastSoon('A new code is on its way'); } catch (ex) {
+      err.textContent = ex.status === 429 ? 'Too many emails sent. Wait a while and try again.' : ex.message; err.hidden = false;
+    } finally { b.disabled = false; }
+  });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const code = form.querySelector('#code').value.replace(/\D/g, '');
+    if (code.length !== 6) { err.textContent = 'Enter the 6-digit code.'; err.hidden = false; return; }
+    const btn = form.querySelector('[type=submit]');
+    btn.disabled = true; btn.textContent = 'Checking…'; err.hidden = true;
+    try {
+      await F.verifyRecoveryCode(email, code);
+      me.user = await F.currentUser();
+      const st = await F.platformAdminStatus();
+      if (st?.admin && st.verified_factors > 0 && st.aal !== 'aal2') return renderMfaVerify(renderSetPassword);
+      return renderSetPassword();
+    } catch (ex) {
+      err.textContent = ex.status === 429 ? 'Too many attempts. Wait a while and try again.'
+        : /expired|invalid|otp/i.test(`${ex.code} ${ex.message}`) ? 'That code is not valid or has expired. Check the latest email or send a new code.'
+        : ex.message;
+      err.hidden = false;
+      btn.disabled = false; btn.textContent = 'Continue';
     }
   });
 }
@@ -957,7 +996,7 @@ function renderSetPassword() {
     btn.disabled = true; btn.textContent = 'Saving…'; err.hidden = true;
     try { await F.updatePassword(p1); toastSoon('Password updated'); await boot(); } catch (ex) {
       if (ex.status === 401) { await F.signOut().catch(() => {}); return renderSignIn('That reset link has expired. Request a new one.'); }
-      err.textContent = ex.message; err.hidden = false;
+      err.textContent = ex.code === 'insufficient_aal' ? 'Verify with your authenticator first, then set the new password.' : ex.message; err.hidden = false;
       btn.disabled = false; btn.textContent = 'Save password';
     }
   });

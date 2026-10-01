@@ -63,6 +63,15 @@
   function recover(email) {
     return authFetch(`/auth/v1/recover?redirect_to=${encodeURIComponent(authRedirect())}`, { email: email.trim() });
   }
+  // The reset email carries a 6-digit code (and a link). The code signs in
+  // with a recovery session (aal1), stored like any session; an admin with
+  // an authenticator still proves the second step before the password
+  // changes (GoTrue itself requires aal2 to update it).
+  async function verifyRecoveryCode(email, code) {
+    const s = await authFetch('/auth/v1/verify', { type: 'recovery', email: email.trim(), token: String(code).trim() });
+    if (!s?.access_token) throw Object.assign(new Error('That code could not be used. Request a new one.'), { status: 400 });
+    return base.setSession({ ...s, expires_at: s.expires_at || Math.floor(Date.now() / 1000) + (s.expires_in || 3600) });
+  }
   // A recovery link lands with #access_token=...&type=recovery. Stores the
   // session, clears the tokens from the address bar and returns the type.
   function consumeAuthFragment() {
@@ -207,7 +216,7 @@
   }
 
   window.CEFFLO_FOUNDR = Object.freeze({
-    session: () => base.session(), signIn, signOut, googleSignInUrl, recover, consumeAuthFragment, consumeAuthError, updatePassword, currentUser, isPlatformAdmin, listPlatformAdmins, probe,
+    session: () => base.session(), signIn, signOut, googleSignInUrl, recover, verifyRecoveryCode, consumeAuthFragment, consumeAuthError, updatePassword, currentUser, isPlatformAdmin, listPlatformAdmins, probe,
     sessionAal, platformAdminStatus, listFactors, enrollTotp, unenrollFactor, challengeFactor, verifyFactor,
     stuckRiders, listVendors, getVendor, listRiders, deliveryOperations,
     listAuditLog, listFeatureFlags, setFeatureFlag, activeMaintenance, listMaintenanceWindows, startMaintenance, endMaintenance,

@@ -127,3 +127,29 @@ test('removing an authenticator requires typed CONFIRM', () => {
   assert.match(rm, /btn\.disabled = e\.target\.value !== 'CONFIRM'/);
   assert.match(rm, /if \(form\.querySelector\('#confirm'\)\.value !== 'CONFIRM'\) return;/);
 });
+
+test('reset code: /auth/v1/verify type=recovery stores the recovery session (aal1)', async () => {
+  session = null;
+  const rec = jwt({ sub: 'u1', aal: 'aal1' });
+  next.fetch = { 'POST /auth/v1/verify': [200, { access_token: rec, refresh_token: 'rr', expires_in: 3600 }] };
+  await F.verifyRecoveryCode(' admin@example.test ', ' 532912 ');
+  const v = calls.find(c => c.path === '/auth/v1/verify');
+  assert.deepEqual(v.body, { type: 'recovery', email: 'admin@example.test', token: '532912' });
+  assert.equal(session.access_token, rec);
+  assert.equal(F.sessionAal(), 'aal1');
+});
+
+test('reset code: a wrong code stores nothing', async () => {
+  session = null;
+  next.fetch = { 'POST /auth/v1/verify': [403, { error_code: 'otp_expired', msg: 'Token has expired or is invalid' }] };
+  await assert.rejects(F.verifyRecoveryCode('admin@example.test', '000000'), e => e.code === 'otp_expired');
+  assert.equal(session, null);
+});
+
+test('reset code screen: Forgot → code → (MFA Verify when enrolled) → Set New Password', () => {
+  assert.match(APP, /await F\.recover\(email\);\n      renderRecoveryCode\(email\);/);
+  const rc = APP.slice(APP.indexOf('function renderRecoveryCode'), APP.indexOf('// After a recovery link'));
+  assert.match(rc, /await F\.verifyRecoveryCode\(email, code\);/);
+  assert.match(rc, /if \(st\?\.admin && st\.verified_factors > 0 && st\.aal !== 'aal2'\) return renderMfaVerify\(renderSetPassword\);/);
+  assert.match(rc, /return renderSetPassword\(\);/);
+});
