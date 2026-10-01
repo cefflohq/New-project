@@ -856,157 +856,292 @@ window.addEventListener('popstate', () => { if (!authScreen) { const r = route0(
 // FOUNDR opens only for a signed-in identity on the platform_admins
 // allowlist (is_platform_admin()). The server re-checks the same condition
 // on every admin RPC, so this gate is the UX of the boundary, not the
-// boundary itself.
-// Sign In carries the full logo; every other auth screen (reset, set new
-// password, access states) only the Cefflo wordmark, so the form is the
-// focus (Founder, 2026-09-30). Back is the chevron alone, top left.
-function authFrame(inner, { logo = false, back = null } = {}) {
-  authScreen = true;
-  root.innerHTML = `<div class="auth-screen">
-    ${back ? '<button type="button" class="auth-back" data-auth-back aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>' : ''}
-    <main class="auth-stage">
-    <div class="auth-brand${logo ? '' : ' word'}">${logo
-      ? '<img src="./img/cefflo-logo.png" alt="Cefflo" width="120" height="187">'
-      : '<img src="./img/cefflo-wordmark-white.png" alt="Cefflo" width="555" height="142">'}<span>FOUNDR</span></div>
-    <div class="auth-box">${inner}</div></main></div>`;
-  if (back) root.querySelector('[data-auth-back]').addEventListener('click', back);
-}
-const AUTH_ICON = {
-  mail: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>',
-  lock: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.2"/></svg>',
-  eye: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
-  google: '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>',
-  eyeOff: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/><path d="m4 4 16 16"/></svg>',
+// boundary itself. Screens follow the Founder FOUNDR auth design
+// (2026-10-01): blue glass, the Cefflo mark, pill actions.
+const AI = {
+  back: '<path d="M19 12H5m6-6-6 6 6 6"/>',
+  arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>',
+  chev: '<path d="m9 6 6 6-6 6"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>',
+  lock: '<rect x="5" y="10.5" width="14" height="10" rx="2.2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/>',
+  eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/>',
+  eyeOff: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/><path d="m4 4 16 16"/>',
+  send: '<path d="M21 3 10.5 13.5M21 3l-6.5 18-4-7.5L3 9.5z"/>',
+  check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  ext: '<path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/>',
+  key: '<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9m-3 3 3 3m-6 0 2 2"/>',
+  shield: '<path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6z"/>',
 };
-function renderSignIn(message = '') {
-  authFrame(`<form data-signin novalidate><p class="auth-eyebrow">Admin dashboard</p>
-    <h1 class="auth-title">Sign in to <span>FOUNDR</span></h1>
-    ${message ? `<div class="auth-msg" role="status">${esc(message)}</div>` : ''}
-    <button class="auth-google" type="button" data-google>${AUTH_ICON.google}<span>Continue with Google</span></button>
-    <div class="auth-or"><span>or sign in with email</span></div>
-    <label class="auth-input">${AUTH_ICON.mail}<input id="em" type="email" autocomplete="username" placeholder="name@company.com" aria-label="Email" required></label>
-    <label class="auth-input">${AUTH_ICON.lock}<input id="pw" type="password" autocomplete="current-password" placeholder="Enter your password" aria-label="Password" required>
-      <button class="auth-eye" type="button" data-eye aria-label="Show password" aria-pressed="false">${AUTH_ICON.eyeOff}</button></label>
-    <div class="field-err" data-err hidden role="alert"></div>
-    <button class="auth-submit" type="submit">Sign in <svg class="auth-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
-    <button class="auth-link" type="button" data-forgot>Forgot password?</button>
-    <p class="auth-foot">Only authorised admins can access FOUNDR.</p></form>`, { logo: true });
-  root.querySelector('[data-google]').addEventListener('click', () => location.assign(F.googleSignInUrl()));
-  const eye = root.querySelector('[data-eye]'), pwIn = root.querySelector('#pw');
-  eye.addEventListener('click', () => {
-    const show = pwIn.type === 'password';
-    pwIn.type = show ? 'text' : 'password';
+const ai = (k, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${AI[k]}</svg>`;
+const GOOGLE = '<svg class="fa-g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
+const SECURE_FOOT = `<p class="fa-foot">${ai('lock')}<span>Secure • Only Authorized</span></p>`;
+const BRAND = (big = false) => `<div class="fa-brand${big ? ' big' : ''}"><span class="fa-mark"><img src="./img/cefflo-mark.png" alt="Cefflo"></span><b>FOUNDR</b><small>Admin Dashboard</small></div>`;
+const ORB = icon => `<div class="fa-orb">${ai(icon)}</div>`;
+const btn = (label, attrs = 'type="submit"', cls = 'fa-btn') => `<button class="${cls}" ${attrs}><span>${label}</span>${ai('arrow', 'fa-btn-ic')}</button>`;
+const field = (icon, input, extra = '') => `<label class="fa-field">${ai(icon)}${input}${extra}</label>`;
+const EYE = '<button class="fa-eye" type="button" data-eye aria-label="Show password" aria-pressed="false">' + `<svg viewBox="0 0 24 24" aria-hidden="true">${AI.eyeOff}</svg></button>`;
+
+// One frame for every auth screen: optional back, the brand block (or an
+// icon orb), the screen body and the "Secure • Only Authorized" foot.
+function authFrame(inner, { back = null, top = 'brand', foot = true } = {}) {
+  authScreen = true;
+  root.innerHTML = `<div class="fa-screen"><main class="fa-stage">
+    ${back ? `<button type="button" class="fa-back" data-auth-back aria-label="Back">${ai('back')}</button>` : ''}
+    ${top === 'brand' ? BRAND() : top === 'brand-big' ? BRAND(true) : top ? ORB(top) : ''}
+    <div class="fa-body">${inner}</div>
+    ${foot ? SECURE_FOOT : ''}</main></div>`;
+  if (back) root.querySelector('[data-auth-back]').addEventListener('click', back);
+  root.querySelectorAll('[data-eye]').forEach(eye => eye.addEventListener('click', () => {
+    const input = eye.parentElement.querySelector('input');
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
     eye.setAttribute('aria-pressed', String(show)); eye.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
-    eye.innerHTML = show ? AUTH_ICON.eye : AUTH_ICON.eyeOff;
+    eye.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${show ? AI.eye : AI.eyeOff}</svg>`;
+  }));
+}
+const busyBtn = (b, label) => { b.disabled = true; b.dataset.label = b.querySelector('span').textContent; b.querySelector('span').textContent = label; };
+const freeBtn = b => { b.disabled = false; b.querySelector('span').textContent = b.dataset.label || b.querySelector('span').textContent; };
+const showErr = (el, text) => { el.textContent = text; el.hidden = false; };
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+// Open the mail app: Gmail's inbox for Gmail addresses, the system mail
+// handler otherwise.
+const mailAppUrl = email => /@(gmail|googlemail)\.com$/i.test(email || '') ? 'https://mail.google.com/mail/u/0/#inbox' : 'mailto:';
+
+// Six single-digit boxes that behave as one code field (typing advances,
+// backspace returns, a pasted or autofilled code fills every box).
+const OTP_BOXES = `<div class="fa-otp" data-otp>${Array.from({ length: 6 }, (_, i) => `<input inputmode="numeric" pattern="[0-9]*" maxlength="1" ${i === 0 ? 'autocomplete="one-time-code"' : 'autocomplete="off"'} aria-label="Digit ${i + 1}">`).join('')}</div>`;
+function wireOtp(box, onComplete) {
+  const cells = [...box.querySelectorAll('input')];
+  const fill = (from, digits) => { digits.split('').forEach((d, i) => { if (cells[from + i]) cells[from + i].value = d; }); const nextEmpty = cells.find(c => !c.value); (nextEmpty || cells[5]).focus(); };
+  cells.forEach((c, i) => {
+    c.addEventListener('input', () => {
+      const d = c.value.replace(/\D/g, '');
+      if (d.length > 1) { fill(i, d.slice(0, 6 - i)); } else { c.value = d; if (d && cells[i + 1]) cells[i + 1].focus(); }
+      if (cells.every(x => x.value)) onComplete?.();
+    });
+    c.addEventListener('keydown', e => { if (e.key === 'Backspace' && !c.value && cells[i - 1]) { cells[i - 1].value = ''; cells[i - 1].focus(); } });
+    c.addEventListener('paste', e => { const d = (e.clipboardData?.getData('text') || '').replace(/\D/g, ''); if (d) { e.preventDefault(); fill(i, d.slice(0, 6 - i)); if (cells.every(x => x.value)) onComplete?.(); } });
   });
+  cells[0].focus();
+  return { value: () => cells.map(c => c.value).join(''), clear: () => { cells.forEach(c => { c.value = ''; }); cells[0].focus(); } };
+}
+// "Resend (00:30)": a countdown before another code can be requested.
+function wireResend(link, send, seconds = 30) {
+  let left = seconds, t = null;
+  const paint = () => { link.disabled = left > 0; link.textContent = left > 0 ? `Resend (00:${String(left).padStart(2, '0')})` : 'Resend'; };
+  const tick = () => { left -= 1; paint(); if (left <= 0) clearInterval(t); };
+  paint(); t = setInterval(tick, 1000);
+  link.addEventListener('click', async () => {
+    if (left > 0) return;
+    try { await send(); toastSoon('A new code is on its way'); left = seconds; paint(); t = setInterval(tick, 1000); }
+    catch (ex) { toastSoon(ex.status === 429 ? 'Too many emails sent. Wait a while and try again.' : ex.message); }
+  });
+}
+
+// "Keep me signed in": off means the session ends with this browser session.
+const KEEP_KEY = 'cefflo_foundr_ephemeral', ALIVE_KEY = 'cefflo_foundr_alive';
+function rememberChoice(keep) {
+  try { if (keep) localStorage.removeItem(KEEP_KEY); else { localStorage.setItem(KEEP_KEY, '1'); sessionStorage.setItem(ALIVE_KEY, '1'); } } catch {}
+}
+function ephemeralSessionEnded() {
+  try { return localStorage.getItem(KEEP_KEY) === '1' && sessionStorage.getItem(ALIVE_KEY) !== '1'; } catch { return false; }
+}
+
+// 1. Landing
+function renderLanding(message = '') {
+  authFrame(`${message ? `<div class="fa-msg" role="status">${esc(message)}</div>` : ''}
+    <p class="fa-tag">Secure control<br>for a growing tomorrow.</p>
+    <div class="fa-choices">
+      <button class="fa-choice" type="button" data-google>${GOOGLE}<span>Continue with Google</span>${ai('chev', 'fa-chev')}</button>
+      <button class="fa-choice" type="button" data-email>${ai('mail')}<span>Sign in with Email</span>${ai('chev', 'fa-chev')}</button>
+    </div>`, { top: 'brand-big' });
+  // Google sign-in is on HOLD (Founder): the button is design only until it
+  // is wired; it never starts an OAuth redirect today.
+  root.querySelector('[data-google]').addEventListener('click', () => toastSoon('Google sign-in is coming soon. Sign in with email for now.'));
+  root.querySelector('[data-email]').addEventListener('click', () => renderSignIn());
+}
+
+// 2. Sign in with Email
+function renderSignIn(message = '', prefill = '') {
+  authFrame(`<form data-signin novalidate>
+    <h1 class="fa-title">Sign in with Email</h1><p class="fa-sub">Enter your credentials to continue.</p>
+    ${message ? `<div class="fa-msg" role="status">${esc(message)}</div>` : ''}
+    ${field('mail', `<input id="em" type="email" autocomplete="username" placeholder="Email address" aria-label="Email address" value="${esc(prefill)}" required>`)}
+    ${field('lock', '<input id="pw" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password" required>', EYE)}
+    <div class="fa-row"><label class="fa-check"><input type="checkbox" id="keep" checked><span></span>Keep me signed in</label>
+      <button class="fa-link" type="button" data-forgot>Forgot password?</button></div>
+    <div class="fa-err" data-err hidden role="alert"></div>
+    ${btn('Sign In')}
+    <p class="fa-alt">Don't have an account? <button class="fa-link" type="button" data-signup-link>Create one</button></p></form>`, { back: () => renderLanding() });
   const form = root.querySelector('[data-signin]'), err = form.querySelector('[data-err]');
-  form.querySelector('#em').focus();
+  (prefill ? form.querySelector('#pw') : form.querySelector('#em')).focus();
   form.querySelector('[data-forgot]').addEventListener('click', () => renderForgot(form.querySelector('#em').value.trim()));
+  form.querySelector('[data-signup-link]').addEventListener('click', () => renderSignUp());
   form.addEventListener('submit', async e => {
     e.preventDefault();
     const email = form.querySelector('#em').value.trim(), pw = form.querySelector('#pw').value;
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { err.textContent = 'Enter a valid email address.'; err.hidden = false; return; }
-    if (!pw) { err.textContent = 'Enter your password.'; err.hidden = false; return; }
-    const btn = form.querySelector('[type=submit]');
-    btn.disabled = true; btn.textContent = 'Signing in…'; err.hidden = true;
-    try { await F.signIn(email, pw); await boot(); } catch (ex) {
-      err.textContent = /invalid/i.test(ex.message) ? 'Incorrect email or password.' : ex.message; err.hidden = false;
-      btn.disabled = false; btn.innerHTML = 'Sign in <svg class="auth-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>';
+    if (!EMAIL_RE.test(email)) return showErr(err, 'Enter a valid email address.');
+    if (!pw) return showErr(err, 'Enter your password.');
+    const b = form.querySelector('[type=submit]'); busyBtn(b, 'Signing in…'); err.hidden = true;
+    try { await F.signIn(email, pw); rememberChoice(form.querySelector('#keep').checked); await boot(); } catch (ex) {
+      showErr(err, /invalid/i.test(ex.message) ? 'Incorrect email or password.' : /not confirmed/i.test(ex.message) ? 'Confirm your email first: enter the code we sent you.' : ex.message);
+      freeBtn(b);
     }
   });
 }
-const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+// 3. Create Your Account → Check Your Email → Verify Your Email.
+// An account alone grants nothing: FOUNDR still needs the allowlist.
+function renderSignUp() {
+  authFrame(`<form data-signup novalidate>
+    <h1 class="fa-title">Create Your Account</h1><p class="fa-sub">Get access to the Founder dashboard.</p>
+    ${field('user', '<input id="nm" autocomplete="name" placeholder="Full name" aria-label="Full name" required>')}
+    ${field('mail', '<input id="em" type="email" autocomplete="username" placeholder="Email address" aria-label="Email address" required>')}
+    ${field('lock', '<input id="pw" type="password" autocomplete="new-password" placeholder="Password" aria-label="Password" required>', EYE)}
+    <div class="fa-err" data-err hidden role="alert"></div>
+    ${btn('Create Account')}
+    <p class="fa-alt">Already have an account? <button class="fa-link" type="button" data-signin-link>Sign in</button></p></form>`, { back: () => renderSignIn() });
+  const form = root.querySelector('[data-signup]'), err = form.querySelector('[data-err]');
+  form.querySelector('#nm').focus();
+  form.querySelector('[data-signin-link]').addEventListener('click', () => renderSignIn());
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = form.querySelector('#nm').value.trim(), email = form.querySelector('#em').value.trim(), pw = form.querySelector('#pw').value;
+    if (!name) return showErr(err, 'Enter your full name.');
+    if (!EMAIL_RE.test(email)) return showErr(err, 'Enter a valid email address.');
+    if (pw.length < 8) return showErr(err, 'Use at least 8 characters for the password.');
+    const b = form.querySelector('[type=submit]'); busyBtn(b, 'Creating…'); err.hidden = true;
+    try { await F.signUp(name, email, pw); renderCheckEmail(email); } catch (ex) {
+      showErr(err, ex.status === 429 ? 'Too many attempts. Wait a while and try again.' : ex.message); freeBtn(b);
+    }
+  });
+}
+function renderCheckEmail(email) {
+  authFrame(`<h1 class="fa-title c">Check Your Email</h1>
+    <p class="fa-sub c">We've sent a 6-digit verification code to<br><b>${esc(email)}</b></p>
+    <ol class="fa-steps num"><li><i>1</i>Open your email inbox</li><li><i>2</i>Find the code from FOUNDR</li><li><i>3</i>Enter the code to continue</li></ol>
+    <a class="fa-btn" href="${esc(mailAppUrl(email))}" target="_blank" rel="noopener"><span>Open Email App</span>${ai('ext', 'fa-btn-ic')}</a>
+    <button class="fa-link c" type="button" data-enter-code>Enter the code</button>
+    <button class="fa-link c" type="button" data-back-signin>Back to Sign In</button>`, { top: 'mail', foot: false });
+  root.querySelector('[data-enter-code]').addEventListener('click', () => renderVerifyEmail(email, 'signup'));
+  root.querySelector('[data-back-signin]').addEventListener('click', () => renderSignIn('', email));
+}
+
+// Verify Your Email: the 6-digit email code, for sign-up or password reset.
+// A reset code opens a recovery session (aal1); an admin with an
+// authenticator proves the second step before choosing a new password.
+function renderVerifyEmail(email, kind) {
+  const reset = kind === 'recovery';
+  authFrame(`<form data-verify-email novalidate>
+    <h1 class="fa-title">${reset ? 'Enter Reset Code' : 'Verify Your Email'}</h1>
+    <p class="fa-sub">We've sent a 6-digit code to<br><b>${esc(email)}</b></p>
+    ${OTP_BOXES}
+    <div class="fa-row"><span class="fa-muted">Didn't receive the code?</span><button class="fa-link" type="button" data-resend></button></div>
+    <div class="fa-err" data-err hidden role="alert"></div>
+    ${btn('Verify')}</form>`, { back: () => (reset ? renderResetSent(email) : renderCheckEmail(email)) });
+  const form = root.querySelector('[data-verify-email]'), err = form.querySelector('[data-err]');
+  const otp = wireOtp(form.querySelector('[data-otp]'), () => form.requestSubmit());
+  wireResend(form.querySelector('[data-resend]'), () => (reset ? F.recover(email) : F.resendSignUpCode(email)));
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const code = otp.value();
+    if (code.length !== 6) return showErr(err, 'Enter the 6-digit code.');
+    const b = form.querySelector('[type=submit]'); if (b.disabled) return; busyBtn(b, 'Verifying…'); err.hidden = true;
+    try {
+      if (reset) {
+        await F.verifyRecoveryCode(email, code);
+        me.user = await F.currentUser();
+        const st = await F.platformAdminStatus();
+        if (st?.admin && st.verified_factors > 0 && st.aal !== 'aal2') return renderMfaVerify(renderSetPassword, { afterEmail: true });
+        return renderSetPassword();
+      }
+      await F.verifySignUpCode(email, code);
+      await boot();
+    } catch (ex) {
+      showErr(err, ex.status === 429 ? 'Too many attempts. Wait a while and try again.'
+        : /expired|invalid|otp/i.test(`${ex.code} ${ex.message}`) ? 'That code is not valid or has expired. Use the latest email or resend a new code.' : ex.message);
+      freeBtn(b); otp.clear();
+    }
+  });
+}
+
+// 4. Reset Your Password → Reset Link Sent (link, or enter the code).
 function renderForgot(prefill = '') {
-  authFrame(`<form data-forgot-form novalidate><h1>Reset password</h1><p class="sub">We'll email you a link to set a new password.</p>
-    <div class="field"><label for="em">Email</label><input id="em" type="email" autocomplete="username" required value="${esc(prefill)}"></div>
-    <div class="field-err" data-err hidden role="alert"></div>
-    <button class="auth-submit" type="submit">Send reset link</button></form>`, { back: () => renderSignIn() });
+  authFrame(`<form data-forgot-form novalidate>
+    <h1 class="fa-title">Reset Your Password</h1><p class="fa-sub">Enter your email address and we'll send you a reset link.</p>
+    ${field('mail', `<input id="em" type="email" autocomplete="username" placeholder="Email address" aria-label="Email address" value="${esc(prefill)}" required>`)}
+    <div class="fa-err" data-err hidden role="alert"></div>
+    ${btn('Send Reset Link')}
+    <button class="fa-link c" type="button" data-back-signin>Back to Sign In</button></form>`, { back: () => renderSignIn('', prefill) });
   const form = root.querySelector('[data-forgot-form]'), err = form.querySelector('[data-err]');
   form.querySelector('#em').focus();
+  form.querySelector('[data-back-signin]').addEventListener('click', () => renderSignIn('', form.querySelector('#em').value.trim()));
   form.addEventListener('submit', async e => {
     e.preventDefault();
     const email = form.querySelector('#em').value.trim();
-    if (!EMAIL_RE.test(email)) { err.textContent = 'Enter a valid email address.'; err.hidden = false; return; }
-    const btn = form.querySelector('[type=submit]');
-    btn.disabled = true; btn.textContent = 'Sending…'; err.hidden = true;
-    try {
-      await F.recover(email);
-      renderRecoveryCode(email);
-    } catch (ex) {
-      err.textContent = ex.status === 429 ? 'Too many emails sent. Wait a while and try again.' : ex.message; err.hidden = false;
-      btn.disabled = false; btn.textContent = 'Send reset link';
+    if (!EMAIL_RE.test(email)) return showErr(err, 'Enter a valid email address.');
+    const b = form.querySelector('[type=submit]'); busyBtn(b, 'Sending…'); err.hidden = true;
+    try { await F.recover(email); renderResetSent(email); } catch (ex) {
+      showErr(err, ex.status === 429 ? 'Too many emails sent. Wait a while and try again.' : ex.message); freeBtn(b);
     }
   });
 }
-// Reset code: the email carries a 6-digit code. It opens a recovery session;
-// an admin with an authenticator then proves the second step (Verify)
-// before Set New Password. The emailed link remains an alternative.
-function renderRecoveryCode(email) {
-  authFrame(`<form data-recovery-code novalidate><h1>Enter reset code</h1>
-    <p class="sub">If ${esc(email)} has an account, we've emailed a 6-digit code. Enter it here to set a new password.</p>
-    <div class="field"><label for="code">Reset code</label>${CODE_INPUT}</div>
-    <div class="field-err" data-err hidden role="alert"></div>
-    <button class="auth-submit" type="submit">Continue</button>
-    <button class="auth-link" type="button" data-resend>Send a new code</button></form>`, { back: () => renderForgot(email) });
-  const form = root.querySelector('[data-recovery-code]'), err = form.querySelector('[data-err]');
-  form.querySelector('#code').focus();
-  form.querySelector('[data-resend]').addEventListener('click', async e => {
-    const b = e.currentTarget; b.disabled = true;
-    try { await F.recover(email); toastSoon('A new code is on its way'); } catch (ex) {
-      err.textContent = ex.status === 429 ? 'Too many emails sent. Wait a while and try again.' : ex.message; err.hidden = false;
-    } finally { b.disabled = false; }
-  });
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const code = form.querySelector('#code').value.replace(/\D/g, '');
-    if (code.length !== 6) { err.textContent = 'Enter the 6-digit code.'; err.hidden = false; return; }
-    const btn = form.querySelector('[type=submit]');
-    btn.disabled = true; btn.textContent = 'Checking…'; err.hidden = true;
-    try {
-      await F.verifyRecoveryCode(email, code);
-      me.user = await F.currentUser();
-      const st = await F.platformAdminStatus();
-      if (st?.admin && st.verified_factors > 0 && st.aal !== 'aal2') return renderMfaVerify(renderSetPassword);
-      return renderSetPassword();
-    } catch (ex) {
-      err.textContent = ex.status === 429 ? 'Too many attempts. Wait a while and try again.'
-        : /expired|invalid|otp/i.test(`${ex.code} ${ex.message}`) ? 'That code is not valid or has expired. Check the latest email or send a new code.'
-        : ex.message;
-      err.hidden = false;
-      btn.disabled = false; btn.textContent = 'Continue';
-    }
-  });
+function renderResetSent(email) {
+  authFrame(`<h1 class="fa-title c">Reset Link Sent</h1>
+    <p class="fa-sub c">We've sent a password reset link to<br><b>${esc(email)}</b></p>
+    <ol class="fa-steps"><li><i>${ai('check')}</i>Check your email inbox</li><li><i>${ai('check')}</i>Click the reset link</li><li><i>${ai('check')}</i>Create a new password</li></ol>
+    <a class="fa-btn" href="${esc(mailAppUrl(email))}" target="_blank" rel="noopener"><span>Open Email App</span>${ai('ext', 'fa-btn-ic')}</a>
+    <button class="fa-link c" type="button" data-enter-code>Have the 6-digit code? Enter it</button>
+    <button class="fa-link c" type="button" data-back-signin>Back to Sign In</button>`, { top: 'send' });
+  root.querySelector('[data-enter-code]').addEventListener('click', () => renderVerifyEmail(email, 'recovery'));
+  root.querySelector('[data-back-signin]').addEventListener('click', () => renderSignIn('', email));
 }
-// After a recovery link: the recovery session is stored; set a new password
-// before the admin gate runs.
+// Kept for the code entry reached straight after a reset request.
+function renderRecoveryCode(email) { return renderVerifyEmail(email, 'recovery'); }
+
+// 5. Create New Password → Password Updated → Go to Sign In.
 function renderSetPassword() {
-  authFrame(`<form data-setpw novalidate><h1>Set new password</h1><p class="sub">Choose a new password for your FOUNDR sign-in.</p>
-    <div class="field"><label for="p1">New password</label><input id="p1" type="password" autocomplete="new-password" required></div>
-    <div class="field"><label for="p2">Confirm password</label><input id="p2" type="password" autocomplete="new-password" required></div>
-    <div class="field-err" data-err hidden role="alert"></div>
-    <button class="auth-submit" type="submit">Save password</button></form>`);
+  authFrame(`<form data-setpw novalidate>
+    <h1 class="fa-title">Create New Password</h1><p class="fa-sub">Enter a new password for your account.</p>
+    ${field('lock', '<input id="p1" type="password" autocomplete="new-password" placeholder="New password" aria-label="New password" required>', EYE)}
+    ${field('lock', '<input id="p2" type="password" autocomplete="new-password" placeholder="Confirm new password" aria-label="Confirm new password" required>', EYE)}
+    <div class="fa-err" data-err hidden role="alert"></div>
+    ${btn('Update Password')}</form>`);
   const form = root.querySelector('[data-setpw]'), err = form.querySelector('[data-err]');
   form.querySelector('#p1').focus();
   form.addEventListener('submit', async e => {
     e.preventDefault();
     const p1 = form.querySelector('#p1').value, p2 = form.querySelector('#p2').value;
-    if (p1.length < 8) { err.textContent = 'Use at least 8 characters.'; err.hidden = false; return; }
-    if (p1 !== p2) { err.textContent = 'Passwords do not match.'; err.hidden = false; return; }
-    const btn = form.querySelector('[type=submit]');
-    btn.disabled = true; btn.textContent = 'Saving…'; err.hidden = true;
-    try { await F.updatePassword(p1); toastSoon('Password updated'); await boot(); } catch (ex) {
+    if (p1.length < 8) return showErr(err, 'Use at least 8 characters.');
+    if (p1 !== p2) return showErr(err, 'Passwords do not match.');
+    const b = form.querySelector('[type=submit]'); busyBtn(b, 'Updating…'); err.hidden = true;
+    try { await F.updatePassword(p1); renderPasswordUpdated(); } catch (ex) {
       if (ex.status === 401) { await F.signOut().catch(() => {}); return renderSignIn('That reset link has expired. Request a new one.'); }
-      err.textContent = ex.code === 'insufficient_aal' ? 'Verify with your authenticator first, then set the new password.' : ex.message; err.hidden = false;
-      btn.disabled = false; btn.textContent = 'Save password';
+      showErr(err, ex.code === 'insufficient_aal' ? 'Verify with your authenticator app first, then set the new password.' : ex.code === 'same_password' ? 'Choose a password you have not used before.' : ex.message);
+      freeBtn(b);
     }
   });
 }
+function renderPasswordUpdated() {
+  const email = me.user?.email || '';
+  authFrame(`<div class="fa-done">${ORB('check')}<h1 class="fa-title c">Password Updated</h1>
+    <p class="fa-sub c">Your password has been successfully updated. You can now sign in.</p>
+    ${btn('Go to Sign In', 'type="button" data-go-signin')}</div>`, { top: 'brand', foot: false });
+  // The recovery session is not kept: sign in again with the new password.
+  root.querySelector('[data-go-signin]').addEventListener('click', async () => { await F.signOut().catch(() => {}); reset(); renderSignIn('', email); });
+}
+
+// Access states
 function renderDenied(email) {
-  authFrame(`<h1>Access denied</h1><p class="sub">${esc(email || 'This account')} is signed in but is not a platform admin. Access is granted directly in the database by an existing admin.</p><button class="auth-submit" data-signout-denied>Sign out</button>`);
+  authFrame(`<h1 class="fa-title c">Access denied</h1>
+    <p class="fa-sub c"><b>${esc(email || 'This account')}</b> is signed in but is not a platform admin. Access is granted directly in the database by an existing admin.</p>
+    ${btn('Sign Out', 'type="button" data-signout-denied')}`, { top: 'shield' });
   root.querySelector('[data-signout-denied]').addEventListener('click', signOut);
 }
 function renderBootError(e) {
-  authFrame(`<h1>Could not reach Cefflo</h1><p class="sub">${esc(e.message)}</p><button class="auth-submit" data-boot-retry>Try again</button>`);
+  authFrame(`<h1 class="fa-title c">Could not reach Cefflo</h1><p class="fa-sub c">${esc(e.message)}</p>
+    ${btn('Try Again', 'type="button" data-boot-retry')}`);
   root.querySelector('[data-boot-retry]').addEventListener('click', boot);
 }
 let bouncing = false;
@@ -1027,7 +1162,7 @@ function reset() {
   me = { user: null }; health = null; updatedAt = null;
   Object.assign(state, { modal: null, drawer: null, menu: null, gq: '', query: '', filters: {}, page: 1 });
 }
-async function signOut() { await F.signOut().catch(() => {}); reset(); renderSignIn(); }
+async function signOut() { await F.signOut().catch(() => {}); reset(); renderLanding(); }
 // A GoTrue refusal that means the session itself is gone (not a permission
 // denial): expired/invalid JWT, or a session that no longer exists.
 const deadSession = e => e?.status === 401 || /^(bad_jwt|session_not_found|session_expired|refresh_token_not_found)$/.test(String(e?.code || '')) || /JWT expired|invalid JWT/i.test(String(e?.message || ''));
@@ -1068,8 +1203,8 @@ async function enterApp() {
   render();
 }
 async function boot() {
-  if (!F.session()?.access_token) return renderSignIn();
-  authFrame('<div class="skel"></div><div class="skel"></div>');
+  if (!F.session()?.access_token) return renderLanding();
+  authFrame('<div class="fa-skel"></div><div class="fa-skel"></div>', { foot: false });
   try {
     try { me.user = await F.currentUser(); } catch (e) {
       if (deadSession(e)) return endSession();
@@ -1083,15 +1218,16 @@ async function boot() {
 }
 
 // ------------------------------------------------------------------ MFA
-const CODE_INPUT = '<input id="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="6" placeholder="6-digit code" aria-label="6-digit code" required>';
+// Authenticator (TOTP) screens in the same design. The code here is always
+// the one in the authenticator app, never the email code.
 const mfaError = ex => ex?.code === 'mfa_verification_failed' || /invalid|expired/i.test(String(ex?.message))
-  ? 'That code is not valid. Check your authenticator app and try again.'
+  ? 'That code is not valid. Use the current code in your authenticator app (it changes every 30 seconds).'
   : (ex?.message || 'Something went wrong. Try again.');
 
 // Set up authenticator: GoTrue creates an unverified TOTP factor and its QR;
 // only a correct code verifies it (and upgrades this session to aal2).
 async function renderMfaSetup(next = enterApp, { optional = false, back = null } = {}) {
-  authFrame('<div class="skel"></div><div class="skel"></div>', { back });
+  authFrame('<div class="fa-skel"></div><div class="fa-skel"></div>', { back, foot: false });
   let factor;
   try {
     // Abandoned earlier set-ups leave unverified factors that GoTrue still
@@ -1100,30 +1236,31 @@ async function renderMfaSetup(next = enterApp, { optional = false, back = null }
     factor = await F.enrollTotp(`FOUNDR ${new Date().toISOString().slice(0, 16).replace('T', ' ')}`);
   } catch (ex) {
     if (deadSession(ex)) return endSession();
-    authFrame(`<h1>Set up authenticator</h1><p class="sub">${esc(ex.message)}</p><button class="auth-submit" data-mfa-retry>Try again</button>`, { back });
+    authFrame(`<h1 class="fa-title c">Set Up Authenticator</h1><p class="fa-sub c">${esc(ex.message)}</p>${btn('Try Again', 'type="button" data-mfa-retry')}`, { back, top: 'key' });
     root.querySelector('[data-mfa-retry]').addEventListener('click', () => renderMfaSetup(next, { optional, back }));
     return;
   }
   const qr = String(factor?.totp?.qr_code || '');
   const qrSrc = qr.startsWith('data:image/svg+xml') ? qr : `data:image/svg+xml;utf-8,${encodeURIComponent(qr)}`;
-  authFrame(`<form data-mfa-setup novalidate><h1>Set up authenticator</h1>
-    <p class="sub">FOUNDR protects platform access with a second step. Scan this code with an authenticator app (Google Authenticator, 1Password, Authy…), then enter the 6-digit code it shows.</p>
-    <div class="mfa-qr"><img alt="Authenticator QR code" src="${esc(qrSrc)}" width="180" height="180"></div>
-    <details class="mfa-secret"><summary>Can't scan? Enter this key</summary><code>${esc(factor.totp?.secret || '')}</code></details>
-    <div class="field"><label for="code">Code from your app</label>${CODE_INPUT}</div>
-    <div class="field-err" data-err hidden role="alert"></div>
-    <button class="auth-submit" type="submit">Verify and turn on</button>
-    ${optional ? '<button class="auth-link" type="button" data-mfa-later>Not now</button>' : ''}
-    <p class="auth-foot">Keep this key private. Anyone with it can generate your codes.</p></form>`, { back });
+  authFrame(`<form data-mfa-setup novalidate>
+    <h1 class="fa-title">Set Up Authenticator</h1>
+    <p class="fa-sub">Protect FOUNDR with a second step. Scan this QR with an authenticator app (Google Authenticator, 1Password, Authy…), then enter the 6-digit code the app shows.</p>
+    <div class="fa-qr"><img alt="Authenticator QR code" src="${esc(qrSrc)}" width="176" height="176"></div>
+    <details class="fa-secret"><summary>Can't scan? Enter this key</summary><code>${esc(factor.totp?.secret || '')}</code></details>
+    <p class="fa-label">Code from your authenticator app</p>
+    ${OTP_BOXES}
+    <div class="fa-err" data-err hidden role="alert"></div>
+    ${btn('Verify and Turn On')}
+    ${optional ? '<button class="fa-link c" type="button" data-mfa-later>Not now</button>' : ''}
+    <p class="fa-note">Keep this key private. Anyone with it can generate your codes.</p></form>`, { back, foot: false });
   const form = root.querySelector('[data-mfa-setup]'), err = form.querySelector('[data-err]');
-  form.querySelector('#code').focus();
+  const otp = wireOtp(form.querySelector('[data-otp]'), () => form.requestSubmit());
   form.querySelector('[data-mfa-later]')?.addEventListener('click', () => next());
   form.addEventListener('submit', async e => {
     e.preventDefault();
-    const code = form.querySelector('#code').value.replace(/\D/g, '');
-    if (code.length !== 6) { err.textContent = 'Enter the 6-digit code.'; err.hidden = false; return; }
-    const btn = form.querySelector('[type=submit]');
-    btn.disabled = true; btn.textContent = 'Verifying…'; err.hidden = true;
+    const code = otp.value();
+    if (code.length !== 6) return showErr(err, 'Enter the 6-digit code.');
+    const b = form.querySelector('[type=submit]'); if (b.disabled) return; busyBtn(b, 'Verifying…'); err.hidden = true;
     try {
       const ch = await F.challengeFactor(factor.id);
       await F.verifyFactor(factor.id, ch.id, code);
@@ -1131,14 +1268,13 @@ async function renderMfaSetup(next = enterApp, { optional = false, back = null }
       await next();
     } catch (ex) {
       if (deadSession(ex)) return endSession();
-      err.textContent = mfaError(ex); err.hidden = false;
-      btn.disabled = false; btn.textContent = 'Verify and turn on';
+      showErr(err, mfaError(ex)); freeBtn(b); otp.clear();
     }
   });
 }
 
 // Verify: an aal1 session with a verified factor proves the second step.
-async function renderMfaVerify(next = enterApp) {
+async function renderMfaVerify(next = enterApp, { afterEmail = false } = {}) {
   let factors;
   try { factors = (await F.listFactors()).filter(f => f.status === 'verified'); } catch (ex) {
     if (deadSession(ex)) return endSession();
@@ -1146,33 +1282,32 @@ async function renderMfaVerify(next = enterApp) {
   }
   if (!factors.length) return renderMfaSetup(next, { optional: true });
   const pick = factors.length > 1
-    ? `<div class="field"><label for="factor">Authenticator</label><select id="factor">${factors.map(f => `<option value="${esc(f.id)}">${esc(f.friendly_name || 'Authenticator')}</option>`).join('')}</select></div>`
+    ? `<label class="fa-field select">${ai('key')}<select id="factor" aria-label="Authenticator">${factors.map(f => `<option value="${esc(f.id)}">${esc(f.friendly_name || 'Authenticator')}</option>`).join('')}</select></label>`
     : '';
-  authFrame(`<form data-mfa-verify novalidate><h1>Verify it's you</h1>
-    <p class="sub">Enter the 6-digit code from your authenticator app for ${esc(me.user?.email || 'this account')}.</p>
-    ${pick}<div class="field"><label for="code">Code</label>${CODE_INPUT}</div>
-    <div class="field-err" data-err hidden role="alert"></div>
-    <button class="auth-submit" type="submit">Verify</button>
-    <button class="auth-link" type="button" data-mfa-signout>Sign out</button></form>`);
+  authFrame(`<form data-mfa-verify novalidate>
+    ${afterEmail ? `<div class="fa-msg ok" role="status">${ai('check')}<span>Email code accepted.</span></div>` : ''}
+    <h1 class="fa-title">Verify It's You</h1>
+    <p class="fa-sub">Open your <b>authenticator app</b> and enter the 6-digit code for ${esc(me.user?.email || 'this account')}${afterEmail ? ' (not the email code)' : ''}.</p>
+    ${pick}${OTP_BOXES}
+    <div class="fa-err" data-err hidden role="alert"></div>
+    ${btn('Verify')}
+    <button class="fa-link c" type="button" data-mfa-signout>Sign out</button></form>`, { top: 'key' });
   const form = root.querySelector('[data-mfa-verify]'), err = form.querySelector('[data-err]');
-  form.querySelector('#code').focus();
+  const otp = wireOtp(form.querySelector('[data-otp]'), () => form.requestSubmit());
   form.querySelector('[data-mfa-signout]').addEventListener('click', signOut);
   form.addEventListener('submit', async e => {
     e.preventDefault();
-    const code = form.querySelector('#code').value.replace(/\D/g, '');
-    if (code.length !== 6) { err.textContent = 'Enter the 6-digit code.'; err.hidden = false; return; }
+    const code = otp.value();
+    if (code.length !== 6) return showErr(err, 'Enter the 6-digit code.');
     const factorId = form.querySelector('#factor')?.value || factors[0].id;
-    const btn = form.querySelector('[type=submit]');
-    btn.disabled = true; btn.textContent = 'Verifying…'; err.hidden = true;
+    const b = form.querySelector('[type=submit]'); if (b.disabled) return; busyBtn(b, 'Verifying…'); err.hidden = true;
     try {
       const ch = await F.challengeFactor(factorId);
       await F.verifyFactor(factorId, ch.id, code);
       await next();
     } catch (ex) {
       if (deadSession(ex)) return endSession();
-      err.textContent = mfaError(ex); err.hidden = false;
-      btn.disabled = false; btn.textContent = 'Verify';
-      form.querySelector('#code').select();
+      showErr(err, mfaError(ex)); freeBtn(b); otp.clear();
     }
   });
 }
@@ -1181,7 +1316,7 @@ async function renderMfaVerify(next = enterApp) {
 // aal2 session (GoTrue enforces it); removal also asks for typed CONFIRM.
 async function renderSecurity() {
   const back = () => { authScreen = false; render(); };
-  authFrame('<div class="skel"></div><div class="skel"></div>', { back });
+  authFrame('<div class="fa-skel"></div><div class="fa-skel"></div>', { back, foot: false });
   let factors;
   try { factors = (await F.listFactors()).filter(f => f.status === 'verified'); } catch (ex) {
     if (deadSession(ex)) return endSession();
@@ -1189,36 +1324,39 @@ async function renderSecurity() {
   }
   const aal = F.sessionAal();
   const rows = factors.length
-    ? factors.map(f => `<div class="mfa-row"><div><b>${esc(f.friendly_name || 'Authenticator')}</b><small>Added ${esc(fmtDate(f.created_at))}</small></div>
-        <button class="auth-link danger" type="button" data-mfa-remove="${esc(f.id)}" data-name="${esc(f.friendly_name || 'Authenticator')}"${aal === 'aal2' ? '' : ' disabled'}>Remove</button></div>`).join('')
-    : '<p class="sub">No authenticator yet.</p>';
-  authFrame(`<div data-security-page><h1>Security</h1>
-    <p class="sub">Two-step sign-in for ${esc(me.user?.email || 'this account')}. This session: <b>${aal === 'aal2' ? 'verified with authenticator (AAL2)' : 'password only (AAL1)'}</b>.</p>
-    <div class="mfa-list">${rows}</div>
-    ${aal === 'aal2' || !factors.length ? `<button class="auth-submit" type="button" data-mfa-add>${factors.length ? 'Add another authenticator' : 'Set up authenticator'}</button>` : '<button class="auth-submit" type="button" data-mfa-step>Verify to manage authenticators</button>'}
-    ${factors.length === 1 ? '<p class="auth-foot">Add a second authenticator (another phone or a password manager) so losing one device does not lock you out.</p>' : ''}
-    <div class="field-err" data-err hidden role="alert"></div></div>`, { back });
-  const page = root.querySelector('[data-security-page]'), err = page.querySelector('[data-err]');
+    ? factors.map(f => `<div class="fa-item"><div><b>${esc(f.friendly_name || 'Authenticator')}</b><small>Added ${esc(fmtDate(f.created_at))}</small></div>
+        <button class="fa-link danger" type="button" data-mfa-remove="${esc(f.id)}" data-name="${esc(f.friendly_name || 'Authenticator')}"${aal === 'aal2' ? '' : ' disabled'}>Remove</button></div>`).join('')
+    : '<p class="fa-sub">No authenticator yet.</p>';
+  authFrame(`<div data-security-page>
+    <h1 class="fa-title">Security</h1>
+    <p class="fa-sub">Two-step sign-in for ${esc(me.user?.email || 'this account')}. This session: <b>${aal === 'aal2' ? 'verified with authenticator (AAL2)' : 'password only (AAL1)'}</b>.</p>
+    <div class="fa-list">${rows}</div>
+    ${aal === 'aal2' || !factors.length ? btn(factors.length ? 'Add Another Authenticator' : 'Set Up Authenticator', 'type="button" data-mfa-add') : btn('Verify to Manage', 'type="button" data-mfa-step')}
+    ${factors.length === 1 ? '<p class="fa-note">Add a second authenticator (another phone or a password manager) so losing one device does not lock you out.</p>' : ''}
+    <div class="fa-err" data-err hidden role="alert"></div></div>`, { back, top: 'shield', foot: false });
+  const page = root.querySelector('[data-security-page]');
   page.querySelector('[data-mfa-add]')?.addEventListener('click', () => renderMfaSetup(renderSecurity, { back: renderSecurity }));
   page.querySelector('[data-mfa-step]')?.addEventListener('click', () => renderMfaVerify(renderSecurity));
   page.querySelectorAll('[data-mfa-remove]').forEach(b => b.addEventListener('click', () => renderRemoveFactor(b.dataset.mfaRemove, b.dataset.name, factors.length)));
 }
 function renderRemoveFactor(factorId, name, total) {
-  authFrame(`<form data-mfa-remove-form novalidate><h1>Remove ${esc(name)}?</h1>
-    <p class="sub">${total === 1 ? 'This is your only authenticator. Without it, FOUNDR sign-in falls back to password only until you set one up again.' : 'You will no longer be able to sign in with this authenticator.'}</p>
-    <div class="field"><label for="confirm">Type CONFIRM to continue</label><input id="confirm" autocomplete="off" required></div>
-    <div class="field-err" data-err hidden role="alert"></div>
-    <button class="auth-submit danger" type="submit" disabled>Remove authenticator</button></form>`, { back: renderSecurity });
-  const form = root.querySelector('[data-mfa-remove-form]'), err = form.querySelector('[data-err]'), btn = form.querySelector('[type=submit]');
-  form.querySelector('#confirm').addEventListener('input', e => { btn.disabled = e.target.value !== 'CONFIRM'; });
+  authFrame(`<form data-mfa-remove-form novalidate>
+    <h1 class="fa-title">Remove ${esc(name)}?</h1>
+    <p class="fa-sub">${total === 1 ? 'This is your only authenticator. Without it, FOUNDR sign-in falls back to password only until you set one up again.' : 'You will no longer be able to sign in with this authenticator.'}</p>
+    <p class="fa-label">Type CONFIRM to continue</p>
+    ${field('shield', '<input id="confirm" autocomplete="off" placeholder="CONFIRM" aria-label="Type CONFIRM" required>')}
+    <div class="fa-err" data-err hidden role="alert"></div>
+    <button class="fa-btn danger" type="submit" disabled><span>Remove Authenticator</span></button></form>`, { back: renderSecurity, top: 'shield', foot: false });
+  const form = root.querySelector('[data-mfa-remove-form]'), err = form.querySelector('[data-err]'), btnEl = form.querySelector('[type=submit]');
+  form.querySelector('#confirm').addEventListener('input', e => { btnEl.disabled = e.target.value !== 'CONFIRM'; });
   form.addEventListener('submit', async e => {
     e.preventDefault();
     if (form.querySelector('#confirm').value !== 'CONFIRM') return;
-    btn.disabled = true; btn.textContent = 'Removing…'; err.hidden = true;
+    btnEl.disabled = true; btnEl.querySelector('span').textContent = 'Removing…'; err.hidden = true;
     try { await F.unenrollFactor(factorId); toastSoon('Authenticator removed'); renderSecurity(); } catch (ex) {
       if (deadSession(ex)) return endSession();
-      err.textContent = ex.status === 403 || /aal2|AAL2/.test(ex.message) ? 'Verify with your authenticator first, then remove it.' : ex.message; err.hidden = false;
-      btn.disabled = false; btn.textContent = 'Remove authenticator';
+      showErr(err, ex.status === 403 || /aal2|AAL2/.test(ex.message) ? 'Verify with your authenticator first, then remove it.' : ex.message);
+      btnEl.disabled = false; btnEl.querySelector('span').textContent = 'Remove Authenticator';
     }
   });
 }
@@ -1234,6 +1372,7 @@ function toastSoon(message) {
 // recovery session is aal1: an admin with an authenticator proves the second
 // step before the password can change.
 async function start() {
+  if (ephemeralSessionEnded()) await F.signOut().catch(() => {});
   const linkError = F.consumeAuthError();
   if (linkError) return renderSignIn(linkError.code === 'otp_expired' ? 'That reset link has expired or was already used. Request a new one.' : (linkError.description || 'That link could not be used.'));
   if (F.consumeAuthFragment() === 'recovery') {
@@ -1248,6 +1387,7 @@ async function start() {
   }
   return boot();
 }
+
 start();
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
 })();

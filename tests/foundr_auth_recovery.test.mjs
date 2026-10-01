@@ -126,8 +126,11 @@ test('a recovery link opens Set New Password, behind the MFA step for an enrolle
   assert.match(app, /if \(F\.consumeAuthFragment\(\) === 'recovery'\) \{/);
   assert.match(app, /if \(st\?\.admin && st\.verified_factors > 0 && st\.aal !== 'aal2'\) return renderMfaVerify\(renderSetPassword\);/);
   assert.match(app, /return renderSetPassword\(\);\n  \}\n  return boot\(\);/);
-  // The admin gate still runs after the new password is saved.
-  assert.match(app, /await F\.updatePassword\(p1\); toastSoon\('Password updated'\); await boot\(\)/);
+  // After the new password is saved: Password Updated, then a fresh sign-in
+  // (the recovery session is not kept), so the admin + MFA gate runs again.
+  assert.match(app, /await F\.updatePassword\(p1\); renderPasswordUpdated\(\);/);
+  const done = app.slice(app.indexOf('function renderPasswordUpdated'), app.indexOf('// Access states'));
+  assert.match(done, /await F\.signOut\(\)\.catch\(\(\) => \{\}\); reset\(\); renderSignIn\('', email\);/);
 });
 
 test('Continue with Google goes to GoTrue authorize and returns to this FOUNDR', () => {

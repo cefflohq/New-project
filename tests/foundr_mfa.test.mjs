@@ -124,7 +124,7 @@ test('entering FOUNDR still requires the canonical allowlist check', () => {
 
 test('removing an authenticator requires typed CONFIRM', () => {
   const rm = APP.slice(APP.indexOf('function renderRemoveFactor'), APP.indexOf('function toastSoon'));
-  assert.match(rm, /btn\.disabled = e\.target\.value !== 'CONFIRM'/);
+  assert.match(rm, /btnEl\.disabled = e\.target\.value !== 'CONFIRM'/);
   assert.match(rm, /if \(form\.querySelector\('#confirm'\)\.value !== 'CONFIRM'\) return;/);
 });
 
@@ -146,10 +146,18 @@ test('reset code: a wrong code stores nothing', async () => {
   assert.equal(session, null);
 });
 
-test('reset code screen: Forgot → code → (MFA Verify when enrolled) → Set New Password', () => {
-  assert.match(APP, /await F\.recover\(email\);\n      renderRecoveryCode\(email\);/);
-  const rc = APP.slice(APP.indexOf('function renderRecoveryCode'), APP.indexOf('// After a recovery link'));
-  assert.match(rc, /await F\.verifyRecoveryCode\(email, code\);/);
-  assert.match(rc, /if \(st\?\.admin && st\.verified_factors > 0 && st\.aal !== 'aal2'\) return renderMfaVerify\(renderSetPassword\);/);
-  assert.match(rc, /return renderSetPassword\(\);/);
+test('reset code screen: Forgot → Reset Link Sent → code → (MFA Verify when enrolled) → Set New Password', () => {
+  assert.match(APP, /await F\.recover\(email\); renderResetSent\(email\);/);
+  const sent = APP.slice(APP.indexOf('function renderResetSent'), APP.indexOf('// Kept for the code entry'));
+  assert.match(sent, /renderVerifyEmail\(email, 'recovery'\)/);
+  const ve = APP.slice(APP.indexOf('function renderVerifyEmail'), APP.indexOf('// 4. Reset Your Password'));
+  assert.match(ve, /await F\.verifyRecoveryCode\(email, code\);/);
+  assert.match(ve, /if \(st\?\.admin && st\.verified_factors > 0 && st\.aal !== 'aal2'\) return renderMfaVerify\(renderSetPassword, \{ afterEmail: true \}\);/);
+  assert.match(ve, /return renderSetPassword\(\);/);
+});
+
+test('the authenticator step says it is not the email code', () => {
+  const v = APP.slice(APP.indexOf('async function renderMfaVerify'), APP.indexOf('// Security:'));
+  assert.match(v, /authenticator app/);
+  assert.match(v, /\(not the email code\)/);
 });

@@ -63,6 +63,21 @@
   function recover(email) {
     return authFetch(`/auth/v1/recover?redirect_to=${encodeURIComponent(authRedirect())}`, { email: email.trim() });
   }
+  // Create Your Account: GoTrue sign-up (confirmation by 6-digit email code).
+  // An account grants nothing in FOUNDR: entry still needs the
+  // platform_admins allowlist (and, later, aal2).
+  function signUp(fullName, email, password) {
+    return authFetch(`/auth/v1/signup?redirect_to=${encodeURIComponent(authRedirect())}`, { email: email.trim(), password, data: { full_name: fullName.trim() } });
+  }
+  function resendSignUpCode(email) {
+    return authFetch(`/auth/v1/resend?redirect_to=${encodeURIComponent(authRedirect())}`, { type: 'signup', email: email.trim() });
+  }
+  async function verifySignUpCode(email, code) {
+    const s = await authFetch('/auth/v1/verify', { type: 'signup', email: email.trim(), token: String(code).trim() });
+    if (!s?.access_token) throw Object.assign(new Error('That code could not be used. Request a new one.'), { status: 400 });
+    return base.setSession({ ...s, expires_at: s.expires_at || Math.floor(Date.now() / 1000) + (s.expires_in || 3600) });
+  }
+
   // The reset email carries a 6-digit code (and a link). The code signs in
   // with a recovery session (aal1), stored like any session; an admin with
   // an authenticator still proves the second step before the password
@@ -216,7 +231,7 @@
   }
 
   window.CEFFLO_FOUNDR = Object.freeze({
-    session: () => base.session(), signIn, signOut, googleSignInUrl, recover, verifyRecoveryCode, consumeAuthFragment, consumeAuthError, updatePassword, currentUser, isPlatformAdmin, listPlatformAdmins, probe,
+    session: () => base.session(), signIn, signOut, googleSignInUrl, recover, verifyRecoveryCode, signUp, resendSignUpCode, verifySignUpCode, consumeAuthFragment, consumeAuthError, updatePassword, currentUser, isPlatformAdmin, listPlatformAdmins, probe,
     sessionAal, platformAdminStatus, listFactors, enrollTotp, unenrollFactor, challengeFactor, verifyFactor,
     stuckRiders, listVendors, getVendor, listRiders, deliveryOperations,
     listAuditLog, listFeatureFlags, setFeatureFlag, activeMaintenance, listMaintenanceWindows, startMaintenance, endMaintenance,
