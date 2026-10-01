@@ -1,7 +1,7 @@
 # CEFFLO --- CODEX OPERATING MD
 
 **Role:** BOUNDED IMPLEMENTER / FINISHER\
-**Required:** `docs/cefflo/sot/05_BRAND_BRAIN.md` (D-68) + `CEFFLO_AGENT_OS_CORE.md`\
+**Required:** `CEFFLO_BRAND_BRAIN.md` + `CEFFLO_AGENT_OS_CORE.md`\
 **Version:** 2026-09-03
 
 ------------------------------------------------------------------------
@@ -22,7 +22,7 @@ Primary loop:
 
 For an assigned task:
 
-1.  `docs/cefflo/sot/05_BRAND_BRAIN.md`
+1.  `CEFFLO_BRAND_BRAIN.md`
 2.  `CEFFLO_AGENT_OS_CORE.md`
 3.  `CODEX_OPERATING.md`
 4.  current Codex Task MD
@@ -99,7 +99,7 @@ visual baseline cleanup.**
 **Superseded 2026-09-11 (legacy visual baseline cleanup):** this section
 described the Black/White/Graphite/Signal Lime system, now retired (D-33).
 Current authority is `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — CEFFLO
-Yellow `#FEC819`/Navy `#12213E`, canonical semantic palette, Inter (D-40),
+Yellow `#FEC819`/Navy `#12213E`, canonical semantic palette, Manrope,
 locked surface/shadow system. Use it, not the line below.
 
 When polishing Cefflo UI: - preserve the approved

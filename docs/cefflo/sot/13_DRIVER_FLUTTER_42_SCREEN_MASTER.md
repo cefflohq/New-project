@@ -1,4 +1,4 @@
-**Status:** ACTIVE MASTER — the sole canonical Driver Flutter UI/UX screen-inventory authority, effective 2026-09-14 (see `docs/cefflo/05_DECISIONS.md` D-37). Supplied verbatim by the Founder as `CEFFLO_DRIVER_FLUTTER_UI_UX_MASTER_SOT_v2.md`; content below is unedited except for this provenance header. Like its predecessor, this document is a "WORKING MASTER BASELINE" per its own §0 — it is NOT YET Founder-locked and NOT YET IMPLEMENTED. **D-40 correction:** any Manrope references retained in the supplied body are superseded; Inter is the active typography direction for future Driver Mobile implementation. Do not treat this file as authorizing Driver Flutter implementation to begin.
+**Status:** ACTIVE MASTER — the sole canonical Driver Flutter UI/UX screen-inventory authority, effective 2026-09-14 (see `docs/cefflo/05_DECISIONS.md` D-37). Supplied verbatim by the Founder as `CEFFLO_DRIVER_FLUTTER_UI_UX_MASTER_SOT_v2.md`; content below is unedited except for this provenance header. Like its predecessor, this document is a "WORKING MASTER BASELINE" per its own §0 — it is NOT YET Founder-locked (Definition of Done in §23 is unchecked) and NOT YET IMPLEMENTED (no `pubspec.yaml` for a Driver Flutter app exists anywhere in this repository as of this status line). Do not treat this file as authorizing Driver Flutter implementation to begin.
 
 **Supersession note (2026-09-14, D-37):** this file replaces `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md` (33 screens, R-01–R-33) as the active Driver/Rider Flutter UI/UX screen-inventory master. That file is now marked SUPERSEDED/HISTORICAL — see its own status line — and remains in the repo for traceability, not deleted. The two documents describe different screen architectures (33 vs 42 screens, `R-##` vs `D##` IDs, different screen lists) — this is a full replacement of the UI/UX authority, not a renumbering of the same inventory. This file's own §21 provides an "Old 36-screen → v2" reconciliation table; that table does not map onto `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`'s R-01–R-33 register (no matching 36-screen `D01`–`D36` document exists anywhere in this repository's git history, any branch, or any prior session's uploads — this was verified by repo-wide search before this supersession, and confirmed by the Founder as the intended predecessor despite the mismatch).
 
@@ -74,15 +74,6 @@ The UI must not force these four cases through one fake linear flow.
 ## 2.1 Invited new driver
 
 **Vendor invitation → Invitation Landing → Create Account → Accept Business Invitation → Complete Driver Setup → Review & Submit → Pending Vendor Review → Approved → Today**
-
-> **Superseded by D-72 (2026-09-28).** The invitation decision now happens
-> once, in the Invitation PWA (`invite/`): validate → You're Invited →
-> Accept (consent) → download Cefflo Driver. The app has no invitation
-> screen. After Create Account or Sign In with the invited email it claims
-> the consent server-side (`claim_my_rider_invitations`) and continues at
-> Pending Vendor Review. D09 Invitation Landing and D10 Accept Business
-> Invitation are removed from the app; D17 Join Business remains for an
-> existing account joining by link.
 
 Rules:
 

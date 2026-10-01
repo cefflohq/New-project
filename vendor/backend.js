@@ -8,15 +8,7 @@
     issue: 'issue', cancelled: 'cancelled'
   };
 
-  // D-73: an Operator who accepted a team invitation in the Invitation PWA
-  // becomes a member only here, after signing in with the invited, confirmed
-  // email. Claim runs before the business list so the new membership shows.
-  async function businesses() {
-    try { await api.rpc('claim_my_team_invitations', {}); } catch (_) { /* nothing to claim or offline */ }
-    // D-74: Helpers work in the Cefflo Vendor mobile app, not Vendor Web.
-    const rows = await api.rpc('get_my_businesses', {});
-    return (Array.isArray(rows) ? rows : []).filter(row => row.member_role !== 'helper');
-  }
+  async function businesses() { return api.rpc('get_my_businesses', {}); }
   async function createDelivery(input) {
     return api.rpc('create_delivery', {
       p_business_id: input.businessId, p_customer_name: input.customerName,
@@ -53,13 +45,6 @@
   const proposeDeliveryPlan = businessId => api.rpc('propose_delivery_plan', { p_business_id: businessId });
   const importOrdersBatch = (businessId, rows, idempotencyKey) => api.rpc('import_orders_batch', {
     p_business_id: businessId, p_rows: rows, p_idempotency_key: idempotencyKey
-  });
-  // D-74 Sorting: group checkpoints (server derives the group's orders).
-  const confirmPacking = (zoneId, orderDate) => api.rpc('confirm_packing', {
-    p_business_id: state.businessId, p_zone_id: zoneId || null, p_order_date: orderDate || null
-  });
-  const confirmSorting = (zoneId, sessionId, orderDate) => api.rpc('confirm_sorting', {
-    p_business_id: state.businessId, p_zone_id: zoneId || null, p_delivery_session_id: sessionId || null, p_order_date: orderDate || null
   });
   const advancePreparation = (orderId, next) => api.rpc('advance_preparation', {
     p_order_id: orderId, p_next: next
@@ -177,7 +162,7 @@
   // Ready is upstream of assignment (a Helper works on an order before a
   // Vendor ever builds a run for it), so listRiderAssignments' assignment-
   // scoped join above cannot carry preparation truth for unassigned orders.
-  const listDeliveryStops = businessId => api.request(`/rest/v1/delivery_stops?business_id=eq.${encodeURIComponent(businessId)}&select=id,order_id,preparation_status,preparation_updated_at,packing_confirmed_at&order=created_at.asc`);
+  const listDeliveryStops = businessId => api.request(`/rest/v1/delivery_stops?business_id=eq.${encodeURIComponent(businessId)}&select=id,order_id,preparation_status,preparation_updated_at&order=created_at.asc`);
   // Grow V1 Flow 2 (A2): the business's own service-area columns.
   // get_my_businesses() is a curated cross-membership view that doesn't
   // carry them; a direct, RLS-scoped single-row fetch is the smallest
@@ -192,10 +177,10 @@
 
   function mapOrder(row) {
     return {
-      id: row.public_ref, backendId: row.id, publicRef: row.public_ref, number: row.order_number, customer: row.customer_name, customerName: row.customer_name,
+      id: row.public_ref, backendId: row.id, publicRef: row.public_ref, customer: row.customer_name, customerName: row.customer_name,
       phone: row.customer_phone, customerPhone: row.customer_phone, address: row.delivery_address,
       note: row.notes || '', notes: row.notes || '', items: row.items || [], riderId: row.assigned_rider_id,
-      zoneId: row.zone_id, deliverySessionId: row.delivery_session_id, orderDate: row.order_date,
+      zoneId: row.zone_id, deliverySessionId: row.delivery_session_id,
       status: statusToUi[row.delivery_status] || row.delivery_status, backendStatus: row.delivery_status,
       total: '0.00', payment: row.payment_status || 'Pending',
       trackingToken: localStorage.getItem(`cefflo_tracking_token_${row.id}`),
@@ -292,7 +277,6 @@
       const stop = stopByOrderId.get(order.backendId);
       order.preparationStatus = stop ? stop.preparation_status : 'not_started';
       order.deliveryStopId = stop ? stop.id : null;
-      order.packingConfirmed = !!stop?.packing_confirmed_at;
     });
     const ratingOrderIds = new Set(ratings.map(item => item.order_id));
     state.orders.forEach(order => { order.ratingSubmitted = ratingOrderIds.has(order.backendId); order.riderName = state.riders.find(r => r.id === order.riderId)?.name || null; });
@@ -426,7 +410,7 @@
         vehicleRequirement: wizardState.data.vehicleRequirement || 'any' });
       localStorage.setItem(`cefflo_tracking_token_${created.order.id}`, created.tracking_token);
       await hydrateCanonicalWorkspace();
-      toast(tf('orderCreatedSuccess', { id: created.order.order_number || created.order.public_ref }), 'success');
+      toast(tf('orderCreatedSuccess', { id: created.order.public_ref }), 'success');
       navigate('orders', { tab: 'ongoing' }, false);
       // Fire-and-forget: geocoding failure/slowness must never block or
       // undo a successful order creation -- the order exists either way,
@@ -683,19 +667,6 @@
     }
   };
   ACTIONS.advancePreparationAction = advancePreparationAction;
-  const groupAction = (fn, done) => async function (el) {
-    const d = el.dataset;
-    if (el.disabled) return;
-    el.disabled = true;
-    try {
-      await fn(d.zone || null, d.run || null, d.date || null);
-      await hydrateCanonicalWorkspace(); toast(done, 'success'); render();
-    } catch (error) {
-      toast(error.message || 'Unable to confirm', 'error'); el.disabled = false;
-    }
-  };
-  ACTIONS.confirmPackingAction = groupAction((zone, _run, date) => confirmPacking(zone, date), 'Packing confirmed');
-  ACTIONS.confirmSortingAction = groupAction((zone, run, date) => confirmSorting(zone, run, date), 'Sorting confirmed · Ready for Pickup');
 
   confirmEditRiderVehicle = async function (el) {
     try {
@@ -833,16 +804,13 @@
   };
   ACTIONS.confirmInviteTeamMember = async function () {
     try {
-      // D-74: Operator or Helper only; Owner is never invited. Both are
-      // authenticated Vendor users, invited by email and claimed on sign-in.
-      const role = document.querySelector('input[name="tim_role"]:checked')?.value;
       const email = document.getElementById('tim_email')?.value.trim();
-      if (!['operator', 'helper'].includes(role) || !email) throw new Error(t('completeRequiredFields'));
+      const role = document.getElementById('tim_role')?.value;
+      if (!email || !role) throw new Error(t('completeRequiredFields'));
       const result = await createTeamInvitation({ businessId: state.businessId, email, role });
       const link = `${inviteBaseUrl()}?type=team&token=${encodeURIComponent(result.token)}`;
-      const title = role === 'helper' ? 'Helper invite link ready' : 'Operator invite link ready';
       await hydrateTeamWorkspace();
-      openSheet(renderInviteLinkSheet(title, link));
+      openSheet(renderInviteLinkSheet('Invite link ready', link));
       render();
     } catch (error) { toast(error.message || 'Unable to create invitation', 'error'); }
   };

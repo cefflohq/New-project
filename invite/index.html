@@ -3,90 +3,95 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#01265E">
-<meta name="robots" content="noindex">
-<title>Cefflo — Invitation</title>
+<title>CEFFLO — Invitation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./invite.css?v=20260928b">
+<style>
+  :root{
+    --page:#F6F7F9; --card:#FFFFFF; --border:#E9EBF1; --ink:#0D0E0D; --muted:#8A8FA3;
+    --action:#C7F000; --on-action:#0D0E0D; --info-tint:#F1F2EE;
+    --danger:#E5484D; --danger-tint:#FCEBEC;
+    --success:#1EBE71; --success-tint:#E7F9EF;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--page);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .card{width:100%;max-width:400px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 24px;box-shadow:0 4px 24px rgba(20,20,40,.06);}
+  .brand{font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--ink);text-transform:uppercase;margin-bottom:14px;}
+  h1{font-size:20px;margin:0 0 6px;font-weight:800;}
+  p.sub{font-size:13px;color:var(--muted);margin:0 0 20px;line-height:1.5;}
+  .invite-summary{background:var(--info-tint);border-radius:14px;padding:14px 16px;margin-bottom:20px;}
+  .invite-summary b{display:block;font-size:15px;margin-bottom:2px;}
+  .invite-summary span{font-size:12px;color:var(--muted);}
+  .tabs{display:flex;gap:6px;margin-bottom:16px;background:var(--page);border-radius:12px;padding:4px;}
+  .tab-btn{flex:1;border:none;background:none;padding:9px;border-radius:9px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;}
+  .tab-btn.active{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:var(--muted);}
+  .field input{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;}
+  .btn{width:100%;padding:12px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer;background:var(--action);color:var(--on-action);margin-top:6px;}
+  .btn:disabled{opacity:.5;cursor:default;}
+  .btn-link{background:none;color:var(--ink);font-weight:600;font-size:12px;padding:8px;margin-top:4px;}
+  .status{font-size:12.5px;border-radius:10px;padding:10px 12px;margin-bottom:14px;line-height:1.5;}
+  .status.error{background:var(--danger-tint);color:var(--danger);}
+  .status.success{background:var(--success-tint);color:#1a8f57;}
+  .status.warn{background:#FFF6E5;color:#9A6700;}
+  .hidden{display:none !important;}
+  .owner-warning{font-size:11.5px;background:#FFF6E5;color:#9A6700;border-radius:10px;padding:9px 11px;margin-bottom:14px;line-height:1.5;}
+  .spinner{width:28px;height:28px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--ink);animation:spin .8s linear infinite;margin:24px auto;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .pending-icon{width:56px;height:56px;border-radius:16px;background:#FFF6E5;color:#9A6700;display:grid;place-items:center;margin:0 auto 14px;}
+</style>
 </head>
 <body>
-<!-- Invitation PWA (D-72 / D-74). One decision, four states:
-     validating -> invited -> accepted | unavailable, for two invitations:
-       rider -> download Cefflo Driver (account in the app, claim there)
-       team  -> Operator or Helper: download Cefflo Vendor (account, claim there) -->
-<main id="inviteApp" class="rider" hidden>
-  <header class="rider-header">
-    <!-- The inviting business's name (from resolve), centred; the Cefflo
-         wordmark while validating and for a link with no business. -->
-    <div class="header-name" id="headerName"></div>
-    <div class="rider-hero" id="inviteHero"></div>
-  </header>
-  <section class="rider-sheet">
-    <!-- Screen 1: validating -->
-    <div id="scrValidating" class="screen centered" hidden>
-      <div class="ring" aria-hidden="true"></div>
-      <h1>Checking invitation…</h1>
-      <p class="lede">Please wait while we verify your invitation link.</p>
-      <ul class="checks" id="checks">
-        <li data-check="link">Validating invitation link</li>
-        <li data-check="business">Checking business details</li>
-        <li data-check="info">Getting invitation info</li>
-      </ul>
-      <div class="secure-note">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6l7-3z"/></svg>
-        <span>This link is secure and provided by your delivery partner through Cefflo.</span>
-      </div>
+<div class="card" id="app">
+  <div class="brand">CEFFLO</div>
+  <div id="loadingState">
+    <div class="spinner"></div>
+  </div>
+  <div id="invalidState" class="hidden">
+    <h1>Invitation unavailable</h1>
+    <p class="sub" id="invalidReason">This invitation link is invalid, expired, or has already been used.</p>
+  </div>
+  <div id="mainState" class="hidden">
+    <h1 id="headline">You're invited</h1>
+    <p class="sub" id="subheadline"></p>
+    <div class="invite-summary">
+      <b id="summaryBusiness"></b>
+      <span id="summaryRole"></span>
     </div>
-
-    <!-- Screen 2: invited (decision) -->
-    <div id="scrInvited" class="screen decision" hidden>
-      <div class="biz">
-        <div class="biz-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10h16v10H4zM3 10l2-6h14l2 6M9 20v-5h6v5"/></svg></div>
-        <div>
-          <b id="bizName"></b>
-          <span id="bizLocation" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></svg><em></em></span>
-        </div>
-      </div>
-      <ul class="features" id="features"></ul>
-      <div class="actions">
-        <div class="status" id="decisionStatus" role="status" aria-live="polite" hidden></div>
-        <button class="cta" id="acceptBtn" type="button">Accept Invitation</button>
-        <button class="text-btn" id="declineBtn" type="button">Decline</button>
-      </div>
+    <div id="ownerWarning" class="owner-warning hidden">Accepting this invitation grants full Owner access to this business — including billing, team management, and every operational capability.</div>
+    <div id="formStatus"></div>
+    <div class="tabs" id="authTabs">
+      <button class="tab-btn active" data-tab="login" type="button">Log In</button>
+      <button class="tab-btn" data-tab="signup" type="button">Sign Up</button>
     </div>
-
-    <!-- Screen 3: accepted -> download Cefflo Driver (rider) or Cefflo Vendor (team) -->
-    <div id="scrAccepted" class="screen centered" hidden>
-      <div class="success" aria-hidden="true"><div><svg viewBox="0 0 24 24"><path d="M6 12.5l4 4 8-9"/></svg></div></div>
-      <h1>You’re in!</h1>
-      <p class="lede" id="acceptedBody"></p>
-      <p class="next" id="acceptedNext"></p>
-      <div class="stores" id="stores" hidden>
-        <a class="badge" id="storeIos" rel="noopener" aria-label="Download on the App Store">
-          <svg class="badge-logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.2 0 2-1.1 2.8-2.3.9-1.3 1.2-2.5 1.2-2.6 0 0-2.4-.9-2.4-3.8zM14.1 5.8c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.7-1.3z"/></svg>
-          <span class="badge-text"><small>Download on the</small><b>App Store</b></span>
-        </a>
-        <a class="badge" id="storeAndroid" rel="noopener" aria-label="Get it on Google Play">
-          <svg class="badge-logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="#00D2FF" d="M4.2 2.6c-.3.3-.4.7-.4 1.3v16.2c0 .6.1 1 .4 1.3l.1.1 9.1-9.1v-.2L4.3 2.5z"/><path fill="#00F076" d="M16.4 15.4l-3-3v-.2l3-3 .1.1 3.6 2c1 .6 1 1.5 0 2.1l-3.6 2z"/><path fill="#FF3A44" d="M16.5 15.3L13.4 12.3 4.2 21.4c.3.4.9.4 1.6.1l10.7-6.2"/><path fill="#FFC800" d="M16.5 9.1L5.8 3c-.7-.4-1.3-.3-1.6.1l9.2 9.1z"/></svg>
-          <span class="badge-text"><small>GET IT ON</small><b>Google Play</b></span>
-        </a>
-      </div>
+    <div id="loginForm">
+      <div class="field"><label>Email</label><input id="li-email" type="email" autocomplete="email"></div>
+      <div class="field"><label>Password</label><input id="li-pass" type="password" autocomplete="current-password"></div>
+      <button class="btn" id="loginBtn" type="button">Log In &amp; Accept</button>
     </div>
-
-    <!-- Screen 4: unavailable -->
-    <div id="scrUnavailable" class="screen centered" hidden>
-      <div class="warn" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/></svg></div>
-      <h1>Invitation unavailable</h1>
-      <p class="lede" id="unavailableBody">This invitation link is not valid.</p>
-      <p class="next" id="unavailableNext">Ask the business to send you a new invitation.</p>
+    <div id="signupForm" class="hidden">
+      <div class="field"><label>Email</label><input id="su-email" type="email" autocomplete="email"></div>
+      <div class="field"><label>Password</label><input id="su-pass" type="password" autocomplete="new-password" minlength="8"></div>
+      <button class="btn" id="signupBtn" type="button">Create Account &amp; Accept</button>
     </div>
-  </section>
-</main>
-
-<script src="../shared/config.js?v=20260928b"></script>
+  </div>
+  <div id="successState" class="hidden">
+    <h1 id="successHeadline">You're in</h1>
+    <p class="sub" id="successBody"></p>
+  </div>
+  <div id="pendingState" class="hidden">
+    <div class="pending-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    </div>
+    <h1>Request sent</h1>
+    <p class="sub" id="pendingBody">You're linked to this business as a Rider. The Owner needs to approve your account before you can start receiving deliveries.</p>
+  </div>
+</div>
+<script>window.CEFFLO_SESSION_KEY='cefflo_invite_session';</script>
+<script src="../shared/config.js?v=20260829a"></script>
 <script src="../shared/client.js?v=20260829a"></script>
-<script src="./backend.js?v=20260928b"></script>
+<script src="./backend.js?v=20260829a"></script>
 </body>
 </html>

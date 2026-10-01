@@ -99,62 +99,6 @@ function safeError(status, publicMessage) {
 }
 
 // ============================================================================
-// Business pickup origin: { business_id } mode
-// ============================================================================
-// Resolves the caller's own business address to the operational pickup
-// origin. Read-only: it returns coordinates and stores nothing. The Vendor
-// saves them through set_business_service_area (member-checked), so there
-// is one write path for the origin. Authorization is RLS on the caller's
-// own session: a non-member cannot read the business, so gets nothing.
-async function geocodeBusinessAddress(request, businessId) {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const mapboxToken = Deno.env.get('CEFFLO_MAPBOX_ACCESS_TOKEN');
-  const callerClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY') || '', {
-    global: { headers: { Authorization: request.headers.get('authorization') || '' } },
-    auth: { persistSession: false },
-  });
-  const { data: business, error } = await callerClient
-    .from('businesses')
-    .select('id, address')
-    .eq('id', businessId)
-    .maybeSingle();
-  if (error || !business) return safeError(403, 'Business not found or not accessible');
-
-  const addressCheck = validateAddressInput(business.address);
-  if (!addressCheck.valid) {
-    return Response.json({ business_id: businessId, status: 'failed', reason: addressCheck.reason });
-  }
-  if (!mapboxToken) return safeError(502, 'Geocoding provider is not configured');
-
-  const adminClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'), {
-    auth: { persistSession: false },
-  });
-  const { data: allowed } = await adminClient.rpc('check_rate_limit', {
-    p_key_hash: businessId, p_action: 'geocode_business', p_window_seconds: 60, p_max_requests: 5,
-  });
-  if (allowed === false) {
-    return safeError(429, 'Geocoding rate limit reached for this business, try again shortly');
-  }
-
-  let httpStatus;
-  let bodyJson;
-  try {
-    const response = await fetch(buildMapboxRequestUrl(addressCheck.address, mapboxToken));
-    httpStatus = response.status;
-    bodyJson = await response.json().catch(() => null);
-  } catch (_) {
-    return safeError(502, 'Unable to reach geocoding provider');
-  }
-  const result = classifyMapboxResult(httpStatus, bodyJson);
-  if (result.status === 'resolved') {
-    return Response.json({
-      business_id: businessId, status: 'resolved', latitude: result.latitude, longitude: result.longitude,
-    });
-  }
-  return Response.json({ business_id: businessId, status: result.status, reason: result.reason });
-}
-
-// ============================================================================
 // Deno HTTP entry point
 // ============================================================================
 
@@ -164,8 +108,6 @@ Deno.serve(async (request) => {
   }
 
   const body = await request.json().catch(() => null);
-  const businessId = body && typeof body.business_id === 'string' ? body.business_id : null;
-  if (businessId) return geocodeBusinessAddress(request, businessId);
   const orderId = body && typeof body.order_id === 'string' ? body.order_id : null;
   if (!orderId) return safeError(400, 'order_id is required');
 

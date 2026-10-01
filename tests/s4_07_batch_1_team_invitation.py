@@ -175,17 +175,27 @@ with psycopg.connect(target.database_url) as conn:
         assert cur.fetchone()[0] == "revoked"
 
         # =====================================================================
-        # D-74: team invitations are Operator or Helper only. No Owner /
-        # co-owner invitation exists for anyone; an Operator cannot invite.
+        # Owner-role invitation: only Owner may create it; Operator denied;
+        # accepted correctly grants owner.
         # =====================================================================
         actor(operator_a)
         rejected(cur, "select create_team_invitation(%s,'owner','coowner@test.invalid')", (business_a,), "forbidden")
-        rejected(cur, "select create_team_invitation(%s,'helper','helper@test.invalid')", (business_a,), "forbidden")
 
         actor(owner_a)
-        rejected(cur, "select create_team_invitation(%s,'owner','coowner@test.invalid')", (business_a,), "only operators and helpers are invited")
-        cur.execute("select create_team_invitation(%s,'helper','helper@test.invalid')", (business_a,))
-        assert cur.fetchone()[0]["role"] == "helper"
+        cur.execute("select create_team_invitation(%s,'owner','coowner@test.invalid')", (business_a,))
+        owner_invite_token = cur.fetchone()[0]["token"]
+        coowner_user = uuid.uuid4()
+        cur.execute("reset role")
+        cur.execute(
+            "insert into auth.users(id,aud,role,email,created_at,updated_at) values(%s,'authenticated','authenticated','coowner@test.invalid',now(),now())",
+            (coowner_user,),
+        )
+        actor(coowner_user)
+        cur.execute("select accept_team_invitation(%s)", (owner_invite_token,))
+        assert cur.fetchone()[0]["role"] == "owner"
+        cur.execute("reset role")
+        cur.execute("select role from business_members where business_id=%s and user_id=%s", (business_a, coowner_user))
+        assert cur.fetchone()[0] == "owner"
 
         # =====================================================================
         # Multi-business membership: Aisyah, already Operator of Business A,

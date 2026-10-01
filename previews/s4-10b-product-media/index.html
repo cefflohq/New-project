@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+  <title>S4-10B Product Media Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--purple:#7C6CF0;--purple-dark:#6552D8;--purple-tint:#F2F0FF;--text:#17151D;--muted:#76737D;--soft:#A29FA8;--line:#ECEAF0;--surface:#FFF;--danger:#C84949;--good:#3C8A5A}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Poppins,system-ui;color:var(--text)}body{background:#EEEDEF}.shell{width:100%;max-width:430px;min-height:100dvh;margin:auto;background:var(--surface)}button,input,textarea,select{font:inherit}.preview-label{position:fixed;z-index:20;top:6px;left:50%;transform:translateX(-50%);padding:5px 10px;border-radius:99px;background:#211E29;color:#fff;font-size:9px;font-weight:700;letter-spacing:.05em}.app{padding-top:32px}
+    .header{position:sticky;top:0;z-index:10;min-height:64px;padding:10px 16px;display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}.back{width:40px;height:40px;flex:0 0 auto;border:0;background:transparent;color:var(--text);display:grid;place-items:center;visibility:hidden}.back.show{visibility:visible}.back svg{width:20px;height:20px}.header h1{margin:0;font-size:16px;font-weight:600;letter-spacing:-.01em}
+    .content{padding:16px 16px 40px}
+    .field{margin-top:16px}.field label{display:block;margin-bottom:6px;color:#65636C;font-size:11px;font-weight:600}.field input,.field textarea,.field select{width:100%;min-height:46px;padding:12px 13px;border:1px solid #DFDDE4;border-radius:10px;background:#fff;color:var(--text);font-size:12.5px;outline:0}.field textarea{height:60px;resize:none}.field input:focus,.field textarea:focus{border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-tint)}
+    .section-label{margin:22px 0 8px;color:#65636C;font-size:11px;font-weight:600}
+    .photo-card{position:relative;padding:16px;display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:14px;background:#fff}
+    .photo-thumb{width:56px;height:56px;flex:0 0 auto;border-radius:11px;overflow:hidden;background:#F4F3F6;display:grid;place-items:center;color:#B4B0BB}
+    .photo-thumb img,.visual img,.approved-visual img,.selected-visual img,.processing-preview img{width:100%;height:100%;display:block;object-fit:contain}
+    .photo-thumb svg{width:24px;height:24px}
+    .photo-copy{min-width:0;flex:1}.photo-title{font-size:12.5px;font-weight:600}.photo-sub{margin-top:2px;font-size:10.5px;color:var(--muted)}
+    .status-dot{display:inline-block;width:6px;height:6px;margin-right:5px;border-radius:99px;background:var(--soft)}
+    .status-row.reviewing .status-dot{background:var(--purple)}.status-row.approved .status-dot{background:var(--good)}.status-row.failed .status-dot{background:var(--danger)}
+    .chev{width:16px;height:16px;flex:0 0 auto;color:#B4B0BB}
+    .save{width:100%;height:50px;margin-top:24px;border:0;border-radius:12px;background:var(--purple);color:#fff;font-size:13px;font-weight:600}
+    .save:disabled{background:#DAD6EA;color:#fff}
+    .sheet-shade{position:fixed;z-index:30;inset:0;background:rgba(24,21,31,.34);display:flex;align-items:flex-end;justify-content:center}
+    .sheet{width:min(100%,430px);max-height:92dvh;padding:8px 20px calc(20px + env(safe-area-inset-bottom));overflow:auto;border-radius:24px 24px 0 0;background:#fff}
+    .grabber{width:40px;height:4px;margin:3px auto 20px;border-radius:99px;background:#E5E2EA}
+    .sheet-head{display:flex;align-items:center;justify-content:space-between}.sheet h2{margin:0;font-size:17px;font-weight:600}
+    .close{width:44px;height:44px;padding:0;border:0;border-radius:50%;background:transparent;color:#77737D;display:grid;place-items:center}.close svg{width:20px;height:20px}
+    .caption{margin:2px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
+    .demo-note{margin:10px 0 0;padding:9px 11px;border-radius:9px;background:#FAF9FB;color:#8B8892;font-size:10px;line-height:1.5}
+    .photo-entry{margin-top:14px;padding:26px 18px;text-align:center;border:1px dashed #DBD8E0;border-radius:14px}
+    .photo-entry .icon{width:38px;height:38px;margin:0 auto 10px;color:#B4B0BB}
+    .btn-row{margin-top:16px;display:flex;gap:10px}.btn-row .btn{flex:1}
+    .btn{height:46px;padding:0 14px;border-radius:11px;font-size:12px;font-weight:600;border:0}
+    .btn.primary{background:var(--purple);color:#fff}.btn.secondary{background:#F4F3F6;color:var(--text)}
+    .processing{margin-top:18px;padding:22px 16px;border:1px solid var(--line);border-radius:14px;text-align:center}
+    .processing-preview,.selected-visual{width:100%;aspect-ratio:16/10;margin-bottom:16px;overflow:hidden;border-radius:11px;background:#F4F3F6}
+    .spinner{width:30px;height:30px;margin:0 auto 14px;border-radius:50%;border:3px solid var(--purple-tint);border-top-color:var(--purple);animation:spin 900ms linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .steps{margin-top:16px;text-align:left;display:flex;flex-direction:column;gap:9px}
+    .step{display:flex;align-items:center;gap:9px;font-size:11.5px;color:#B4B0BB}
+    .step.done{color:var(--text)}.step i{width:16px;height:16px;flex:0 0 auto;border-radius:50%;border:1.5px solid #DBD8E0;display:grid;place-items:center;font-style:normal;font-size:9px}
+    .step.done i{border-color:var(--good);background:var(--good);color:#fff}
+    .compare{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .compare .photo{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+    .compare .visual{aspect-ratio:1;background:#F4F3F6;display:grid;place-items:center;color:#B4B0BB;overflow:hidden}
+    .compare .visual.prepared{background:var(--purple-tint);color:var(--purple-dark)}
+    .compare .visual svg{width:34px;height:34px}
+    .compare label{display:block;padding:7px 0;text-align:center;font-size:10px;font-weight:600;color:var(--muted)}
+    .fail-card{margin-top:18px;padding:20px 16px;border:1px solid #F1D9D9;border-radius:14px;background:#FDF6F6;text-align:center}
+    .fail-card .icon{width:30px;height:30px;margin:0 auto 10px;color:var(--danger)}
+    .fail-title{font-size:12.5px;font-weight:600;color:var(--text)}
+    .approved-card{margin-top:14px;padding:16px;border:1px solid var(--line);border-radius:14px;background:#fff}
+    .approved-visual{aspect-ratio:16/10;border-radius:11px;overflow:hidden;background:var(--purple-tint);display:grid;place-items:center;color:var(--purple-dark)}
+    .approved-visual svg{width:40px;height:40px}
+    .badge-row{margin-top:12px;display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--good);font-weight:600}
+    .badge-row svg{width:14px;height:14px}
+    .original-note{margin-top:8px;font-size:10px;color:var(--muted)}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .announcement{position:fixed;z-index:50;left:50%;bottom:20px;transform:translateX(-50%);padding:9px 13px;border-radius:99px;background:#211E29;color:#fff;font-size:10px;white-space:nowrap}
+    @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="preview-label">S4-10B UI Preview · Local Demo</div>
+  <main class="shell"><div class="app" id="app"></div></main>
+  <div id="overlay"></div><div class="sr-only" aria-live="polite" id="live"></div>
+  <input class="sr-only" id="photoInput" type="file" accept="image/*" aria-label="Choose a product photo">
+  <script>
+    // Browser-local photo selection only -- no upload, no processing, no
+    // network call. Matches the already-approved S4-10A visual language
+    // (same tokens/components); this file is new and does not modify the
+    // S4-10A preview. Story: V1 upload -> prepared -> approved, then a
+    // Replace Photo (V2) walkthrough that fails once and retries into
+    // approval, so every required state is directly reachable in one pass.
+    const product = { name: 'Chicken Nasi Lemak', category: 'Food', description: 'House sambal · crispy chicken', price: 12 };
+    let media = null; // currently approved photo: { version, url, name }
+    let candidate = null; // selected replacement: { version, url, name, status, step, failReason }
+    let screen = 'edit';
+    let sheetOpen = false;
+    let hasFailedOnce = false;
+    const app = document.querySelector('#app'), overlay = document.querySelector('#overlay'), live = document.querySelector('#live'), photoInput = document.querySelector('#photoInput');
+    const icon = {
+      photo: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="8.5" cy="10" r="1.5" fill="currentColor"/><path d="m4 17 5-5 3 3 4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      dish: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.2" fill="currentColor" opacity=".5"/></svg>',
+      warn: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 2 20h20L12 4Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 10v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="16.6" r="1" fill="currentColor"/></svg>',
+      check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      chev: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    };
+    function money(n){return `RM${Number(n).toFixed(2)}`}
+    function announce(text){live.textContent=text;document.querySelector('.announcement')?.remove();document.body.insertAdjacentHTML('beforeend',`<div class="announcement">${text}</div>`);setTimeout(()=>document.querySelector('.announcement')?.remove(),1300)}
+
+    function photoStatusLine(){
+      if(!media) return {cls:'', text:'No photo yet'};
+      return {cls:'approved', text:`Live photo · v${media.version}`};
+    }
+
+    function renderEdit(){
+      const line = photoStatusLine();
+      app.innerHTML = `
+        <header class="header"><button class="back" aria-hidden="true"></button><h1>Edit Product</h1></header>
+        <div class="content">
+          <div class="section-label">Product photo</div>
+          <button class="photo-card" id="openPhoto" style="width:100%;text-align:left;cursor:pointer">
+            <div class="photo-thumb">${media ? `<img src="${media.url}" alt="Approved product photo">` : icon.photo}</div>
+            <div class="photo-copy">
+              <div class="photo-title">${media ? 'Product photo' : 'Add a product photo'}</div>
+              <div class="photo-sub status-row ${line.cls}"><span class="status-dot"></span>${line.text}</div>
+            </div>
+            <span class="chev">${icon.chev}</span>
+          </button>
+          <div class="field"><label>Product name</label><input value="${product.name}" readonly></div>
+          <div class="field"><label>Category</label><input value="${product.category}" readonly></div>
+          <div class="field"><label>Description</label><textarea readonly>${product.description}</textarea></div>
+          <div class="field"><label>Display price</label><input value="${money(product.price)}" readonly></div>
+          <p class="demo-note">Structure/behavior preview only. Name, category, description and price are shown for context and are read-only here -- Product Catalog itself is the already-approved S4-10A surface.</p>
+        </div>`;
+      document.querySelector('#openPhoto').onclick = () => openPhotoSheet();
+    }
+
+    function openPhotoSheet(){
+      sheetOpen = true;
+      renderSheet();
+    }
+    function closeSheet(){ sheetOpen=false; overlay.innerHTML=''; }
+
+    function sheetShell(title, body){
+      return `<div class="sheet-shade"><section class="sheet" role="dialog" aria-modal="true" aria-label="${title}">
+        <div class="grabber"></div>
+        <div class="sheet-head"><h2>${title}</h2><button class="close" id="closeSheet" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
+        ${body}
+      </section></div>`;
+    }
+
+    function renderSheet(){
+      if(!sheetOpen){ overlay.innerHTML=''; return; }
+      let body;
+      if(candidate?.status==='selected'){
+        body = selectedPhotoBody();
+      } else if(candidate?.status==='queued' || candidate?.status==='processing'){
+        body = processingBody();
+      } else if(candidate?.status==='failed'){
+        body = failedBody();
+      } else if(candidate?.status==='prepared'){
+        body = reviewBody();
+      } else if(!media){
+        body = emptyUploadBody();
+      } else {
+        body = approvedBody();
+      }
+      overlay.innerHTML = sheetShell(sheetTitle(), body);
+      document.querySelector('#closeSheet').onclick = closeSheet;
+      bindSheetActions();
+      if(candidate?.status==='processing') advanceProcessing();
+    }
+
+    function sheetTitle(){
+      if(candidate?.status==='selected') return 'Selected Photo';
+      if(candidate?.status==='failed') return 'Preparation Failed';
+      if(candidate?.status==='prepared') return 'Review Photo';
+      if(candidate) return 'Preparing Photo';
+      if(media) return 'Product Photo';
+      if(!media) return 'Add Product Photo';
+      return 'Preparing Photo';
+    }
+
+    function emptyUploadBody(){
+      return `
+        <p class="caption">Take or upload a real photo of this product. Cefflo will prepare it for your Order Page without changing what you're actually selling.</p>
+        <div class="photo-entry">
+          <div class="icon">${icon.photo}</div>
+          <div class="photo-title">Add a real product photo</div>
+          <div class="btn-row">
+            <button class="btn secondary" id="takePhoto">Take Photo</button>
+            <button class="btn primary" id="uploadPhoto">Upload Photo</button>
+          </div>
+        </div>
+        <p class="demo-note">Your selected photo stays on this device. Nothing is uploaded in this preview.</p>`;
+    }
+
+    function selectedPhotoBody(){
+      return `
+        <p class="caption">This is the photo selected from your device. Check it before starting the simulated preparation.</p>
+        <div class="selected-visual"><img src="${candidate.url}" alt="Selected original product photo"></div>
+        <button class="btn primary save" id="preparePhoto">Use This Photo</button>
+        <button class="btn secondary save" id="replaceSelected" style="background:#F4F3F6;color:var(--text);margin-top:8px">Choose a Different Photo</button>
+        <p class="demo-note">Local preview only -- choosing this photo does not upload it.</p>`;
+    }
+
+    function processingBody(){
+      const step = candidate.step || 0;
+      const labels = ['Original received','Removing background','Balancing lighting & colour','Preparing product image'];
+      return `
+        <div class="processing">
+          <div class="processing-preview"><img src="${candidate.url}" alt="Selected original product photo"></div>
+          <div class="spinner"></div>
+          <div class="photo-title">Preparing your photo…</div>
+          <div class="steps">${labels.map((l,i)=>`<div class="step ${step>i?'done':''}"><i>${step>i?'✓':''}</i>${l}</div>`).join('')}</div>
+        </div>
+        <p class="demo-note">Simulated preview only -- the selected photo stays local and no processing provider is called.</p>`;
+    }
+
+    function reviewBody(){
+      return `
+        <p class="caption">The product stays truthful -- only presentation is prepared. Compare before approving.</p>
+        <div class="compare">
+          <div class="photo"><div class="visual"><img src="${candidate.url}" alt="Original selected photo"></div><label>Original</label></div>
+          <div class="photo"><div class="visual prepared"><img src="${candidate.url}" alt="Prepared layout preview of the same photo"></div><label>Prepared</label></div>
+        </div>
+        <p class="demo-note">Both sides intentionally use the same local image. Real preparation is not part of S4-10B.</p>
+        <button class="btn primary save" id="approvePhoto">Use Prepared Photo</button>
+        <button class="btn secondary save" id="replaceFromReview" style="background:#F4F3F6;color:var(--text);margin-top:8px">Replace Photo</button>`;
+    }
+
+    function failedBody(){
+      return `
+        <div class="fail-card">
+          <div class="icon">${icon.warn}</div>
+          <div class="fail-title">We couldn't prepare this photo</div>
+          <p class="caption">${candidate.failReason || 'Something interrupted preparation.'} Your original photo is safe and nothing has changed on your live Order Page.</p>
+        </div>
+        <button class="btn primary save" id="retryPhoto">Retry Preparation</button>
+        <button class="btn secondary save" id="replaceFromFailed" style="background:#F4F3F6;color:var(--text);margin-top:8px">Upload a Different Photo</button>`;
+    }
+
+    function approvedBody(){
+      return `
+        <div class="approved-card">
+          <div class="approved-visual"><img src="${media.url}" alt="Approved product photo"></div>
+          <div class="badge-row">${icon.check} Approved · live on your Order Page · v${media.version}</div>
+          <p class="original-note">Your original photo stays stored privately and is never shown to customers.</p>
+        </div>
+        <button class="btn primary save" id="replacePhoto" style="margin-top:16px">Replace Photo</button>`;
+    }
+
+    function bindSheetActions(){
+      const takePhoto = document.querySelector('#takePhoto'), uploadPhoto = document.querySelector('#uploadPhoto');
+      if(takePhoto) takePhoto.onclick = openPhotoPicker;
+      if(uploadPhoto) uploadPhoto.onclick = openPhotoPicker;
+      const prepare = document.querySelector('#preparePhoto');
+      if(prepare) prepare.onclick = startPreparation;
+      const approve = document.querySelector('#approvePhoto');
+      if(approve) approve.onclick = () => approveCurrent();
+      const retry = document.querySelector('#retryPhoto');
+      if(retry) retry.onclick = () => retryCurrent();
+      const replace = document.querySelector('#replacePhoto') || document.querySelector('#replaceFromReview') || document.querySelector('#replaceFromFailed') || document.querySelector('#replaceSelected');
+      if(replace) replace.onclick = openPhotoPicker;
+    }
+
+    function openPhotoPicker(){
+      photoInput.value = '';
+      photoInput.click();
+    }
+
+    function acceptSelectedFile(file){
+      if(!file) return;
+      if(!file.type || !file.type.startsWith('image/')){
+        announce('Please choose an image file');
+        return;
+      }
+      const version = (media && media.version) ? media.version + 1 : 1;
+      if(candidate?.url) URL.revokeObjectURL(candidate.url);
+      candidate = { version, status: 'selected', step: 0, url: URL.createObjectURL(file), name: file.name };
+      announce(`Photo v${version} selected`);
+      renderSheet();
+    }
+
+    photoInput.addEventListener('change', () => acceptSelectedFile(photoInput.files?.[0]));
+
+    function startPreparation(){
+      if(!candidate?.url || candidate.status!=='selected') return;
+      const version = candidate.version;
+      candidate.status = 'queued';
+      announce(`Preparing photo v${version}`);
+      renderSheet();
+      setTimeout(() => { if(candidate && candidate.version===version && candidate.status==='queued'){ candidate.status='processing'; renderSheet(); } }, 260);
+    }
+
+    function advanceProcessing(){
+      const version = candidate.version;
+      const tick = () => {
+        if(!candidate || candidate.version!==version || candidate.status!=='processing') return;
+        candidate.step = (candidate.step||0) + 1;
+        if(candidate.step >= 4){
+          // V1 always succeeds; the first replacement (v2) deterministically
+          // demonstrates the failure -> retry path once, then succeeds.
+          if(version===2 && !hasFailedOnce){
+            hasFailedOnce = true;
+            candidate.status = 'failed';
+            candidate.failReason = 'The selected photo was too dark to prepare reliably.';
+          } else {
+            candidate.status = 'prepared';
+          }
+          renderSheet();
+          return;
+        }
+        renderSheet();
+        setTimeout(tick, 420);
+      };
+      setTimeout(tick, 420);
+    }
+
+    function approveCurrent(){
+      if(!candidate || candidate.status!=='prepared') return;
+      const previousUrl = media?.url;
+      media = { version:candidate.version, url:candidate.url, name:candidate.name };
+      candidate = null;
+      if(previousUrl && previousUrl!==media.url) URL.revokeObjectURL(previousUrl);
+      announce(`Photo v${media.version} approved`);
+      closeSheet();
+      renderEdit();
+    }
+    function retryCurrent(){
+      if(!candidate) return;
+      candidate.status = 'queued'; candidate.failReason = null; candidate.step = 0;
+      announce('Retrying preparation');
+      renderSheet();
+      setTimeout(() => { if(candidate && candidate.status==='queued'){ candidate.status='processing'; renderSheet(); } }, 260);
+    }
+
+    renderEdit();
+  </script>
+</body></html>
