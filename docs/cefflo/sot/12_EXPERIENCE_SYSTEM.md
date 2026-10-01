@@ -1,66 +1,18 @@
-**Status:** CANONICAL — v1.8, amended 2026-09-27 by Founder decision D-70. This file is the **single canonical authority for exact Cefflo implementation tokens**. The Cefflo Flow Palette in §0A overrides every conflicting value elsewhere in this file, in the Website Master, in the Brand Brain, and in older decisions.
-**Status:** CANONICAL — v1.7, amended 2026-09-24 by Founder decision D-48 (Cefflo Icon Family sheet is the canonical icon design and palette: Anchor Blue #2563B3 gradient family, CTA #F5C400, status colours, 24px bare navy outline icons (round outline only on Call/WhatsApp), only bottom-nav icons coloured, hamburger Settings, 20px header title). v1.6 amended 2026-09-23 by Founder decision D-47 (Splash navy is the one Anchor Blue; outline-only cards; spacing-first dividers; 22/28/20/16/15/14 Inter type scale; one outline icon family; notification centre; QR modal). v1.5 amended 2026-09-23 by Founder decision D-46 (Vendor Mobile normalization: one centred header row, four-tab navigation with Settings in the Today header, single Settings directory, contact-action standard, pinned primary actions, semantic delivery pills; amends D-45 where they differ). v1.4 amended 2026-09-23 by Founder decision D-45 (Vendor Mobile gradient-header visual system; supersedes §8's flat-white header and Yellow active navigation, and the Yellow "active navigation state" use in §1.1). Previously v1.3, amended 2026-09-19 by Founder decision D-40. D-33/D-34/D-35 remain the palette, semantic-colour, surface-principle and production-logo authorities; D-40 supersedes D-33 only for app typography and the mandatory status of its historical exact compact-token values.
-**Implementation boundary:** FG-ENG-02 authorizes the isolated DEV/STAGING baseline integration recorded by D-40. It does not authorize visual retuning, Driver build-out, Vendor V11 execution, production deployment, or any later Engineering gate.
+**Status:** CANONICAL — v1.2, locked 2026-09-11 by Founder decision `docs/cefflo/05_DECISIONS.md` D-33 (palette/typography/surface system), D-34 (Warning semantic token, Founder Gate 0), and D-35 (master logo production asset set updated to CEFFLO Yellow/Navy). This is the single visual implementation authority for Vendor Web/Desktop, Vendor Flutter, Rider Flutter, and future CEFFLO product surfaces. It supersedes `docs/cefflo/05_DECISIONS.md` D-30 **only where D-30 named Signal Lime as the current primary/signature colour** — D-30 itself is preserved unedited as the historical record of that earlier decision; nothing here rewrites it.
+**Implementation boundary — read this before doing anything with it:** this document is documentation/SOT canonicalization only. It does **not** authorize Flutter palette migration, Vendor screen redesign, Rider Flutter build-out, backend changes, or merging `claude/vendor-mobile-backend-integration`. Those are separate, later, not-yet-authorized execution stages.
 
 ---
 
 # CEFFLO — EXPERIENCE SYSTEM (VISUAL DNA)
-**Version:** 1.3 — 2026-09-19 (FG-ENG-02 amendments, D-40)
+**Version:** 1.2 — 2026-09-11 (master logo production asset set updated, D-35)
 **Owner:** Founder
 **Scope:** How CEFFLO products look. Product/behaviour truth remains governed separately by `01_PRODUCT_TRUTH.md`, `02_ARCHITECTURE.md`, and the relevant product SOT.
-
-## 0A. Cefflo Flow Palette — CANONICAL CROSS-PRODUCT TOKENS (D-70)
-
-D-70 promotes the Vendor Mobile palette of D-51/D-53 (source:
-`apps/vendor_mobile/lib/core/theme.dart`) from Vendor-Mobile-specific scope
-to the **cross-product Cefflo standard**.
-
-| Token | Exact value | Use |
-|---|---|---|
-| **Brand Blue (interactive)** | `#0060FE` | Active navigation/tabs, links, selection, map boundaries/pins, progress |
-| Brand Blue tint | `#E6EFFF` | Tinted action rows, info notes (D-51) |
-| **Brand Gradient** | `#01265E → #00378F → #005CC4 → #0592EB` (stops 0 / .35 / .7 / 1) | Splash, auth, app chrome/header, hero surfaces |
-| **Deep / Chrome** | `#01265E` | Browser/PWA chrome, status bar, single-colour stand-in for the gradient |
-| **Mustard / Action Accent** | `#FFC93C` | Primary CTA and intentional highlights. Always with dark text (`#181818`). Never a surface. |
-| **Navy / Dark Neutral** | `#0B1220` | Icons, dark text/neutral, raised dark surfaces |
-| Primary canvas | Cool White | App/page canvas, with white surfaces |
-| Typography | Inter | All Cefflo-owned surfaces (§4) |
-
-**Superseded, historical only (not current authority):**
-- Anchor Blue `#2563B3`, `#1C3F7A`, `#0A1F44` (D-48);
-- the D-47 Splash gradient and `#1E4585`;
-- CTA `#F5C400` (D-48);
-- Yellow `#FEC819` and Navy `#12213E` as locked brand values (§1, D-33);
-- Website Master `#0B5FE3` and the `#0633A8 → #0848CC → #0A6BE6` gradient.
-
-Values of these kinds that remain further down in this file are historical
-records. Where they differ from this table, this table wins. Signal Lime and
-the purple-era identity remain **RETIRED**.
-
-**Scope:**
-- **Applies to** every Cefflo-owned surface: Vendor Mobile, Driver Mobile,
-  Vendor Web/Desktop, Public Website, and Founder Admin where the Cefflo brand
-  system applies.
-- **Implemented today** on Vendor Mobile only.
-- **Not yet aligned:** Driver Mobile, Vendor Web, the Public Website draft and
-  Founder Admin still use older values. That is implementation alignment debt,
-  not an alternative authority. Converging them is separate future work; D-70
-  changes no runtime.
-- **Customer Tracking exception:** its accent and header colours are
-  vendor-configurable white-label theme tokens by design
-  (`customer/fixtures.js` vendor theme). The Cefflo palette is not forced onto
-  vendor-branded tracking surfaces.
-
-**Other documents:** `05_BRAND_BRAIN.md` owns positioning, meaning, voice and
-the broad Flow Palette direction (blue family anchor, mustard action accent,
-cool white canvas, Inter). `website/CEFFLO_PUBLIC_WEBSITE_MASTER.md` inherits
-exact values from this section. Neither is an exact-token authority.
 
 ## 0. Relationship to prior brand doctrine
 
 Extends `05_BRAND_BRAIN.md` and `06_BRAND_ASSETS_GOVERNANCE.md` with implementation-level detail. Supersedes `06_BRAND_ASSETS_GOVERNANCE.md` §2's Signal Lime lock specifically — see that file's own in-place annotation. Brand character, voice, logo geometry, and the "near-black text on bright accent" accessibility principle from those documents remain in force, carried forward here.
 
-## 1. Brand palette — HISTORICAL (exact values superseded by §0A, D-70)
+## 1. Brand palette — LOCKED
 
 | Token | Hex | Status |
 |---|---|---|
@@ -71,7 +23,7 @@ Extends `05_BRAND_BRAIN.md` and `06_BRAND_ASSETS_GOVERNANCE.md` with implementat
 | ~~Signal Lime~~ | ~~`#C7F000`~~ | **RETIRED as current primary/signature colour** (superseded, D-33). Historical record preserved at D-30 and in `06_BRAND_ASSETS_GOVERNANCE.md`'s own annotated history — not deleted, no longer current authority. |
 
 ### 1.1 Usage principle
-CEFFLO Yellow is a controlled brand/action signal, never a surface colour. Used for: primary CTA, selected state, small brand accent, important action emphasis. (Active navigation state is CEFFLO Blue since D-45 — see §8; Yellow is an ACTION colour, not a navigation colour.) Never: permanent background chrome, a card background, decorative scatter, or a semantic-status substitute.
+CEFFLO Yellow is a controlled brand/action signal, never a surface colour. Used for: primary CTA, active navigation state, selected state, small brand accent, important action emphasis. Never: permanent background chrome, a card background, decorative scatter, or a semantic-status substitute.
 
 ### 1.2 Accessibility
 Near-black foreground text (`#181818` or `#000000`, both verified — §13) on CEFFLO Yellow controls. Never white text on the accent.
@@ -86,7 +38,7 @@ The Founder-confirmed candidates from the prior review round were contrast-check
 | **Success** | `#2FAE5E` (2.86:1 on white — real failure, below even the lenient UI/large-text threshold) | **`#248648`** | Deepened — 10% lightness reduction, same hue family (still unambiguously the same green). Now 4.59:1. This was the one candidate that genuinely needed a visible shift; bright mint-greens are a well-known contrast failure mode on white and a deeper green is the standard fix, not a novel choice. |
 | **Route / Info** | `#3D7BEE` (3.99:1 on white — under AA) | **`#2A6EEC`** | Moderate — 4% lightness reduction, same hue/saturation. Now 4.63:1. |
 
-**Constraint carried forward unchanged from the Founder's own instruction:** these are semantic operational colours only, never secondary CEFFLO brand colours. Route/Info in particular must never be used for emphasis, selection, or CTA purposes. CTAs belong to CEFFLO Yellow; navigation/selection emphasis belongs to the separate **CEFFLO Blue** brand token (§8, D-45), never to Route/Info.
+**Constraint carried forward unchanged from the Founder's own instruction:** these are semantic operational colours only, never secondary CEFFLO brand colours. Route/Info in particular must never be used for emphasis, selection, or CTA purposes — those belong to CEFFLO Yellow alone.
 
 **One narrow, disclosed residual gap:** on the low-opacity status-chip tint background (§7.2) these three land at 3.97–4.03:1 — short of the strict 4.5:1 normal-text threshold, though above the 3:1 UI-component/large-text threshold that applies to small bold chip labels under WCAG 1.4.11. Judged acceptable for chip use as-is; flagged rather than silently accepted. On dark surfaces specifically, all three land near 3.5:1 (§13) — acceptable for the UI-component threshold, not yet at full text-contrast — this is called out again in §3 as part of the still-open dark-mode fine-tuning, not blocking this light-mode-focused lock.
 
@@ -108,7 +60,7 @@ Closes the gap the implementation reconciliation audit found: no canonical Warni
 ### 3.1 Light Mode surface hierarchy (bottom → top) — LOCKED
 1. Workspace `#F7F8FA` — base canvas.
 2. Surface `#FFFFFF` (cards) — separated via a restrained hairline border + subtle two-layer soft shadow (§5A).
-3. Navy `#12213E` — selective raised surface (filled people avatars, dark accents). The raised brand surface for chrome, heroes and in-body hero panels is the Brand gradient (§8, D-45).
+3. Navy `#12213E` — selective raised surface (status/hero cards, auth screen).
 4. CEFFLO Yellow — top-layer accent only, never a surface.
 
 ### 3.2 Dark Mode — architecture APPROVED, exact values remain a follow-up pass
@@ -123,39 +75,24 @@ Three-level stack approved as the basis: **Dark Canvas → Dark/Tinted Surface �
 
 **What is NOT yet final, and why this doesn't block the rest of this lock:** the semantic colours (§2) land around 3.5:1 against the dark surface — acceptable for UI components, not yet at full text contrast. Dark mode itself has no shipped screens to apply this to yet (§10) — this is flagged as the one specific, narrow follow-up item for whoever does the first real dark-mode implementation pass, not a reason to withhold the rest of this canonicalization. **Do not treat the dark-mode numbers above as final production values** — they are the approved *relationship*, contrast-checked for the core surface/text/accent combinations, with one disclosed semantic-on-dark gap still open.
 
-## 4. Typography — LOCKED BY D-40
+## 4. Typography — LOCKED
 
-**Inter is the primary CEFFLO app UI typeface**, including Vendor Mobile and
-future Driver Mobile work. The Vendor implementation bundles Inter locally and
-retains Noto Sans SC/Tamil for validated multilingual fallback coverage.
-Manrope is historical direction from D-33 and is no longer active runtime
-truth. Tabular numerals should use the active font's numeral features rather
-than introducing a separate default monospace family.
+**Manrope is the primary CEFFLO product typeface**, for both display and body use. No separate monospace family is used as a default — tabular (lining) numerals come from Manrope's own numeral set wherever digits stack in a column (KPI tiles, earnings, distance/duration/time fields, order counts), enabled via font-feature settings, not a second typeface.
 
 IBM Plex Sans and Public Sans remain documented alternatives from the evaluation (§4, prior revision) — not rejected, not canonical, retained for reference only.
 
-### 4.1 Scale
-Preserve the latest valid implementation during baseline integration. Exact
-sizes, weights and tracking remain subject to reference-based validation at
-FG-ENG-03; do not force the historical D-33 scale across the product without
-that evidence.
+### 4.1 Scale (unchanged from prior revision)
+Page/section title 18/600 (−0.2 tracking) · Card primary 16/600 · Card secondary 15/600 · Body/supporting 14/500 · Small body 13/500 · Label 14/600 · KPI/display 29/600 (−0.8 tracking).
 
 ### 4.2 Line heights
 1.2 titles/display, 1.4–1.5 body/secondary text, 1.3 labels/chips.
 
-## 5. Surface system — PRINCIPLES LOCKED; EXACT COMPACT VALUES PENDING FG-ENG-03
+## 5. Surface system — LOCKED
 
-Keep compact operational surfaces and accessible tap targets. D-40 removes the
-historical `12 / 13 / 11 / 20 / 60 / 14` sequence as mandatory current truth.
-The selected Vendor baseline currently uses a 20px gutter, 16px card padding,
-12px card gap, 22px section gap and 64px chrome; these are implementation
-evidence, not a new global lock. Preserve them safely until exact values are
-validated against a Founder-approved reference at FG-ENG-03.
+Compact operational surfaces. Spacing values preserved from the validated Founder Gate Matrix where they form part of the coherent system (screen gutter 12px, card padding 13px, card-to-card gap 11px, section gap 20px, base steps 4/8/12/16px, header/bottom-nav height 60px, icon 22px visual in a 44px tap target) — these are accessibility-driven or industry-standard 4pt-grid choices with no dependency on the retired Lime palette, re-justified independently rather than defaulted.
 
-### 5.1 Radius
-Buttons remain pill-shaped. The selected Vendor implementation's 18px
-card/input radius is retained as baseline evidence. Exact card/input radius is
-not visually locked until FG-ENG-03.
+### 5.1 Radius — LOCKED
+Card radius **14px**. Buttons **pill (999px)** — reference-informed, validated visually. Inputs **14px** (rectangular, matches card radius — not pill, reads more precise/operational).
 
 ## 5A. Shadow/elevation — LOCKED
 
@@ -168,80 +105,26 @@ Lucide, outline style, 22px visual size in a 44px tap target. No icon containers
 ## 7. Components
 
 ### 7.1 Cards — LOCKED
-White surface (dark: navy-tinted dark surface, §3.2), current implementation
-radius, lightened border + soft shadow (§5A), accent-colour border when selected.
+White surface (dark: navy-tinted dark surface, §3.2), 14px radius, lightened border + soft shadow (§5A), accent-colour border when selected.
 
-### 7.2 Status chips — LOCKED pattern (amended D-45)
-Small pill, never solid fill. Default: neutral grey label on a light grey fill (ordinary list statuses). Semantic: semantic-coloured text (§2 locked values) on a ~12% tint where the state must stand out. Never the Yellow accent. See §8 for the hero variant.
+### 7.2 Status chips — LOCKED pattern
+Small pill, semantic-coloured text (§2 locked values) on a ~12% tint of the same colour, never solid fill. Semantic palette only, never the brand accent.
 
 ### 7.3 Buttons — LOCKED pattern
 Pill radius. Primary: solid CEFFLO Yellow fill, near-black text. Secondary: outline/neutral fill, same pill radius. Only one Yellow-filled primary action per screen.
 
 ### 7.4 Inputs — LOCKED pattern, component itself still to be built
-Rectangular and matching cards; exact radius pending FG-ENG-03.
+14px radius, matching cards.
 
 ### 7.5 Sheets/dialogs, list rows, loading/empty/error/blocked/retry/offline states
 Still genuinely missing from any audited implementation — not proposed here, real unfilled scope for the next execution stage.
 
-### 7.6 KPI blocks — LOCKED (amended D-45)
-One `KpiStrip`: equal columns of value + label (optional CEFFLO Blue icon) separated by hairline dividers, drawn directly on the white surface. The former navy summary panel and `KpiTile` are retired.
+### 7.6 KPI blocks — LOCKED (unchanged)
+Existing `KpiTile` pattern, 29/600 display size.
 
-## 8. App chrome and navigation — LOCKED BY D-45, AMENDED BY D-46 (Vendor Mobile)
+## 8. Navigation — LOCKED
 
-~~Bottom navigation … CEFFLO Yellow marks the active tab only. Header: flat white/chrome, no accent underline.~~ **RETIRED by D-45 (2026-09-23).** There is no longer a flat-white authenticated header and Yellow is no longer the active-navigation colour. The Founder's gradient-header reference set is the canonical visual source; this section is its written form.
-
-**Brand tokens added by D-45** — *historical; exact values superseded by §0A (D-70)*
-| Token | Value | Use |
-|---|---|---|
-| **Anchor Blue (interactive)** — D-47 | `#1E4585` (Splash lift) | Active bottom-nav item + indicator, active tab, section icons, inline links, selected states, map accents, semantic info. Replaces `#0B5FE3` / `#2A6EEC`. |
-| Anchor Blue tint — D-47 | `#E8ECF3` | Accent icon discs, tinted secondary action rows, info notes. |
-| **Brand gradient** — D-47 | the locked Splash backdrop: linear top-left → bottom-right `#0A1730 · #12213E · #1E4585 · #12213E` (0/.34/.66/1) + radial lift `#2F6BD0` @ 20% | The ONE gradient: Splash, app chrome behind header and status bar (one surface), detail heroes, in-body hero panels. Implemented once (`BrandBackdrop`). Browser/PWA chrome `#0A1730`. |
-| Grouped page tone | `#F4F6FA` | Page behind grouped settings cards. |
-| Text | primary `#0F1A36` (dark navy), secondary `#6B7489` (cool grey) | All app text on white. |
-
-**Edge-to-edge system UI (mandatory)**
-- Status bar and system navigation/gesture bar are always transparent; the app never paints its own status-bar or gesture-area strip.
-- On gradient-header screens the same gradient continues behind the clock/signal/battery area — no seam.
-- At the bottom, whatever app surface is underneath continues behind the gesture area: the white bottom navigation, or (without nav) the white content surface.
-- Implemented once at the root (shell + `CefSystemBars`), never per screen.
-
-**Header system** (D-46: one `AppHeader`, every route)
-- `[leading] [title] [trailing]` in one 56px row. The title (20/700 white) is centred on the SCREEN: both side slots take the width of the wider side, so a back arrow or extra action never shifts it. Long titles scale down to fit rather than ellipsize.
-- Leading: back arrow on sub-pages; on Today, the Settings gear. Trailing: the route's actions (notifications on Today; search / filter / add on lists).
-- Today's title is the business name. Detail-hero screens use the same row; their identity (large avatar, name, status pill, meta lines) sits on the gradient below it.
-
-**Content surface**: white surface enters below the gradient with 24px rounded top corners and runs to the bottom edge. Spacing first, dividers second (D-47): no rules between page or form sections; list separators light and inset past the leading icon. Cards only where a group genuinely needs a container, and **outline-only** — white, 1px cool-grey border, 18px radius, no shadow (elevation is for dialogs and sheets).
-
-**Type scale (D-47, Inter, theme roles only)**: page title 20/600 · entity name 28/700 · section heading 20/600 · row title 16/600 · body 15/400 · secondary 14/400 · pill 13/600 · caption 12/500.
-
-**Icons (D-48 — canonical: `docs/cefflo/brand/icon-family/cefflo-vendor-icon-family.png`)**: one outline family (Lucide), 24px everywhere. Every non-navigation icon is navy `#0B1220` and bare (no container), centred in the 44px `IconTile` slot — rows, detail rows, settings, Directions, share channels. The round 1px outline is reserved for the Call and WhatsApp contact actions only (`ContactActions`). Only bottom-navigation icons are coloured: active = filled Anchor Blue `#2563B3`, default = navy outline. Status indicators (issue, completion, selection) and map markers are the only other exceptions. Settings = hamburger; More = horizontal ellipsis. Palette per D-48: gradient `#0B1220 · #1C3F7A · #2563B3 · #0A1F44`, CTA `#F5C400`, Success `#10B981`, Warning `#F59E0B`, Error `#EF4444`.
-
-**Bottom navigation** (D-46): Today · Orders · Zones · Riders. Menu is not a tab; Settings opens from the Today header and its routes belong to Today. White surface, hairline top border. Active = CEFFLO Blue filled icon + blue label + short blue indicator bar. Inactive = cool-grey outline icon + label. Page content never scrolls beneath it; it hides while the keyboard is open and on focused flows / detail heroes.
-
-**Status pills** (D-46): one pill; delivery states are semantic everywhere through `DeliveryStatusChip` — Ready / Delivered green, picked up / on the way / arrived CEFFLO Blue, awaiting approval amber, Issue red, Cancelled neutral. Active entities (zones, riders, team) green; inactive neutral. On a detail hero: white pill with a semantic dot.
-
-**Primary actions and density** (D-46): a screen's yellow CTA is pinned in the shared `StickyActionBar` (via `PageBody.bottom` / `HeroPage.bottomAction`) above the nav or gesture area, so content length never pushes it off screen. Long collections show a compact preview (Today: 4 recent deliveries; order items: 3; zone orders: 4) with "View all". List rows 60 (grouped 56), avatar / icon disc 40. Cards: white, hairline border, subtle shadow, compact padding; no card-in-card.
-
-**Contact actions** (D-46): every person/entity detail with a usable phone number uses `ContactActions` — neutral outlined circular Call (`tel:`) and WhatsApp (`wa.me`) buttons with labels underneath (inside `ContactCard` on detail screens). No number → "Not provided" and no actions.
-
-## 8A. Vendor Mobile screen archetypes — LOCKED BY D-45
-
-Every Vendor Mobile screen is derived from one of these; no screen invents another visual system.
-
-| | Archetype | Canonical reference | Composition |
-|---|---|---|---|
-| A | Today / Overview | Overview | Header: Settings gear · business name · bell; KPI strip (value + label, hairline column dividers) on white; Recent Delivery rows (avatar, green Delivered pill + time, chevron); Need Attention row. |
-| B | Operational tabbed list | Orders | Top-level header with search/add; blue underline tabs; rows with grey icon disc, title, one-line subtitle, neutral pill, no chevron. |
-| C | Zones overview + Zone detail (D-49) | Zones flow | Overview: all-zones map, then zone rows (name, status, orders · riders). Zone detail: zone-name header with ⋮ (Edit zone name / Delete zone); map; three uncarded figures (Total distance · Total orders · Delivered); Today's deliveries — rider header with neutral count pill, cardless numbered stops, swipe to delete. |
-| D | People list | Riders | As B with navy filled initials avatar. |
-| E | Detail hero | Rider Detail | Gradient hero: large avatar, name, status pill, meta lines (role; vehicle plate with icon). White surface: stats card (rider: Total orders · Customer rating · Joined), Contact card, information cards. Primary action pinned. No bottom nav. |
-| F | Settings | Settings | Opened from the Today header. Groups Account · Business · Support, then Sign out; grouped page tone; white bordered group cards; grey icon discs; inset dividers; chevrons. The only directory of these destinations. |
-| G | Multi-section operational form | New Order | Back-nav header; sections with a blue icon + title + subtitle, divided by hairlines; shared fields; tinted blue secondary action rows; one yellow CTA. |
-| H | Product / content form | Add Product | Back-nav header; dashed upload area; sectioned fields; availability switch row; yellow CTA; bottom nav. |
-
-Authentication keeps its full-screen blue Sign In composition (also in the reference set); secondary auth screens use the same backdrop with a white sheet.
-
-**Shared component rule**: one concept = one component (Flutter `lib/ui/widgets.dart` + `lib/ui/shell.dart`): `BrandBackdrop`, `ContentSurface`, `HeroPage`/`DetailHero`/`HeroStatusPill`, `KpiStrip`, `SegmentedTabs`, `CefListRow` (+`IconDisc`, `CefAvatar`), `CefListGroup`, `SectionHeading`, `CefField`, `CefSearchField`, `CefButton`, `CefActionRow`, `StatusChip`/`DeliveryStatusChip`, `CefChoiceChip`, `CefSwitch`, and (D-46) `AppHeader`, `StickyActionBar`, `StatsCard`, `ContactActions`/`ContactCard`, `showListSheet`. Screens never declare their own gradients, headers, colours or type sizes.
+Bottom navigation: white background, neutral inactive icon/label, CEFFLO Yellow marks the active tab only. Header: flat white/chrome, no accent underline.
 
 ## 9. Brand mark and header text usage — LOCKED
 
@@ -251,24 +134,17 @@ Authentication keeps its full-screen blue Sign In composition (also in the refer
 
 **Master logo geometry does not change.** Its presentation context with Navy is resolved 2026-09-11 (D-35): the Founder supplied an updated production asset set with the arrow recoloured to CEFFLO Yellow and the icon's background moved to Navy — `docs/cefflo/brand/assets/logo/cefflo-logo-icon-navy.png` (app/icon), `cefflo-logo-mark.png` (standalone, transparent), `cefflo-logo-primary.png` (mark + wordmark, transparent), `cefflo-logo-wordmark.png` (wordmark-only, transparent). Full detail: `06_BRAND_ASSETS_GOVERNANCE.md` §5/§15.
 
-## 10. Flutter implementation baseline — D-40
+## 10. Flutter implementation baseline — evidence status only, no migration authorized
 
-`apps/vendor_mobile/` is now part of the isolated Engineering baseline. Its
-lifecycle state is **IMPLEMENTED / INTEGRATION IN PROGRESS / UI NOT YET LOCKED /
-DEV-STAGING**. It is substantial working implementation evidence, not a
-production-ready claim. V-50–V-54 remain HOLD and are excluded from active
-routes/navigation.
+`claude/vendor-mobile-backend-integration` (`apps/vendor_mobile/`) remains the confirmed leading Vendor Flutter implementation evidence. **This canonicalization does not authorize merging that branch, migrating its tokens, or any other implementation change to it.** Token migration is a distinct, separately-authorized future execution stage.
 
 `codex/cefflo-vendor-flutter-prototype` remains de-prioritized as forward evidence (heavier Lime usage, older naming scheme) — not deleted, not acted on here.
 
-No active Driver Flutter implementation exists in this baseline. The obsolete
-R-01–R-33 scaffold is excluded; the newer D-series authority governs future
-Driver work under a separate gate.
+**No Rider Flutter implementation exists anywhere in the repository.** This document is now the visual authority Rider Flutter will build against once that work is authorized — nothing has been built yet.
 
 ## 11. Vendor / Rider scoping
 
-Shared principles (§1–§9) apply to both surfaces. Vendor has the DEV/STAGING
-implementation described in §10; Driver remains unimplemented in this baseline.
+Shared rules (§1–§9) apply to both surfaces. Vendor has real implementation evidence to reconcile against later (§10); Rider has none yet.
 
 ## 12. Preview / evidence format
 
@@ -312,14 +188,8 @@ No adjustment materially changed any hue's identity — every adjustment was a l
 **LOCKED.** Remaining open items, none of which block this canonicalization:
 1. Semantic colour legibility on dark surfaces specifically (§2, §3.2) — narrow, disclosed, deferred to the first real dark-mode implementation pass.
 2. Exact final dark-mode production values — architecture and relationship approved; final numbers get one more look when dark-mode screens are actually built.
-3. Exact Vendor typography scale, compact spacing and radius values — pending
-   reference-based validation at FG-ENG-03. Driver Flutter build-out remains a
-   separately authorized future stage.
+3. Flutter token migration, Vendor screen work, Rider Flutter build-out — all explicitly out of scope for this canonicalization, belong to the next authorized execution stage.
 
 Resolved by v1.1 (D-34): the Warning semantic token gap is closed (§2.1).
 
 Resolved by v1.2 (D-35): §9's deferred "presentation context with Navy" item is closed — the master logo production asset set now includes a Navy-background icon variant and Yellow-arrow transparent variants.
-
-Resolved by v1.3 (D-40): Inter is current app UI typography; historical exact
-compact-token values are no longer mandatory; Vendor Mobile is integrated as a
-DEV/STAGING baseline with UI lock deferred to FG-ENG-03.

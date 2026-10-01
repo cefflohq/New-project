@@ -1,66 +1,68 @@
-# CEFFLO — DEVELOPMENT AI WORKFLOW
+# CEFFLO --- AI WORKFLOW
 
-**Status:** ACTIVE — development collaboration only
-**Company runtime authority:** `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`
+## AI-00 Objective
 
-## AI-00 Scope
-
-This document governs human-led repository work performed with ChatGPT, Claude
-and Codex. It does not define the CEFFLO company runtime, cross-department
-orchestration, model-provider architecture or autonomous department execution.
-
-The company boundary is:
-
-```text
-Founder → CEFFLO Control Layer → n8n → departments → approved tools
-```
-
-Cyber Security is a cross-company guardrail. Department masters govern their
-internal roles and workflows.
+Use AI to increase execution speed without creating duplicate ownership,
+context waste or conflicting code.
 
 ## AI-01 Founder
 
-The Founder sets priorities, resolves doctrine conflicts, approves protected
-actions and phase gates, reviews evidence and authorizes Production.
+Founder: - sets product priorities; - approves protected actions; -
+approves phase gates; - may direct Codex remotely from Android.
 
-## AI-02 Development Collaboration
+## AI-02 through AI-04 --- SUPERSEDED
 
-Use `docs/cefflo/agent-os/CEFFLO_AGENT_OS_CORE.md` and the relevant role
-Operating MD for repository collaboration. Agent selection is a development
-workflow choice, not company runtime routing authority.
+**STATUS: SUPERSEDED.** These sections previously fixed Codex as sole
+primary executor and Claude as an occasional optional specialist. That
+single-executor model is superseded by the current multi-agent Agent
+OS, which routes substantial work (repo-wide audits,
+architecture/reconciliation, multi-file implementation, large UI/product
+rollouts) to Claude as primary heavy implementer, and small/bounded
+finishing work to Codex — see `docs/cefflo/agent-os/CEFFLO_AGENT_OS_CORE.md`
+§3, §6 and the relevant `docs/cefflo/agent-os/*_OPERATING.md` file for
+the assigned agent. Founder instruction overrides normal routing.
 
-Founder instruction overrides normal development routing. Do not ask multiple
-agents to duplicate the same substantial analysis without a stated verification
-purpose.
+Still valid from the superseded sections: avoid asking two agents to
+duplicate the same heavy analysis without reason; use a compact handoff
+rather than re-explaining Cefflo context every session (Agent OS Core
+§8, §18).
 
-## AI-03 Context and Handoffs
+## AI-05 No Duplicate Implementation
 
-Load only the canonical documents required for the task. Use compact handoffs
-that preserve branch, SHA, scope, evidence, blockers and Founder-gate state.
-Repository presence alone does not establish current authority.
+Do not ask two agents to independently build the same production
+feature unless intentionally comparing prototypes. One assigned
+implementer per task prevents conflict and wasted usage (Agent OS Core
+§6).
 
-## AI-04 Implementation Ownership
+## AI-06 Usage Efficiency
 
-Assign one implementer to a change unless an independent review, verification
-role or deliberate prototype comparison is part of the task. Keep branch and
-worktree ownership explicit and preserve a clean review boundary.
+-   Route substantial work to Claude, bounded finishing to Codex (Agent
+    OS Core §6), unless Founder instructs otherwise.
+-   Avoid repeated full-repo prompts.
+-   Use canonical MDs (Brand Brain, Agent OS Core, role Operating MD,
+    Task MD) and section IDs rather than re-deriving context.
+-   Continue current phase/sprint instead of re-explaining Cefflo every
+    session.
 
-## AI-05 Autonomy and Founder Gates
+## AI-07 VPS
 
-Agents may execute approved normal development within the repository rules.
-Credentials, production access, destructive changes, security exceptions,
-spend and other protected actions remain Founder-gated.
+Contabo Ubuntu VPS is the current persistent AI workstation. Repository
+workspace: `New-project` as verified during setup; re-verify path/state
+when needed.
 
-## AI-06 Runtime Boundary
+## AI-08 Remote
 
-Do not use this document to create company runtime agents, routes, permissions,
-events, cost policy or n8n workflows. Those contracts belong to the Control
-Layer Master and the applicable department and Cyber Security masters.
+ChatGPT Desktop on VPS + ChatGPT Android Remote allows Founder to steer
+the connected workspace from phone. Remote does not replace
+Git/source-control discipline.
 
-Jev is **CANDIDATE JUDGMENT ENGINE — NOT QUALIFIED / NOT REQUIRED / NO ACTIVE
-DEPENDENCY**. Development tooling must not treat it as required infrastructure.
+## AI-09 Autonomy
 
-## AI-07 Remote and Source Control
+Codex may autonomously execute approved normal development. Protected
+actions remain Founder-gated under `00_AGENTS.md`.
 
-Remote steering does not replace Git discipline, verified repository truth,
-scoped context, reviewable evidence or Founder approval.
+## AI-10 Future Orchestration
+
+Do not build a complex autonomous multi-agent orchestrator before Stage
+4 unless Founder explicitly reprioritizes it. Principle: **Design now →
+Build when needed → Automate when proven → Scale when valuable.**

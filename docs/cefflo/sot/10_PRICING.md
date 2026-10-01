@@ -145,9 +145,6 @@ Malaysia uses MYR pricing.
 
 Future Asian markets should receive their own regional price books based on local willingness-to-pay and economics rather than simple currency conversion.
 
-Conceptual price-book model (versioned per market/currency, no FX
-conversion, no non-MY prices): see the D-71 study §T. Architecture only.
-
 ---
 
 ## 4. CURRENT PRICING CANDIDATE
@@ -397,13 +394,6 @@ Campaigns need:
 ---
 
 ## 13. COST / COGS AUDIT REQUIRED
-
-> **Study in progress (D-71):**
-> `docs/cefflo/commercial/CEFFLO_GLOBAL_UNIT_ECONOMICS_PRICING_AND_MARKET_EXPANSION_STUDY.md`.
-> It maps every metered unit per delivery, run and rider, and gives the
-> margin thresholds implied by the candidates. Provider prices are still
-> UNKNOWN, so the COGS figures below are not yet available. The study
-> changes no price, allowance or principle here.
 
 Before Founder lock, estimate COGS by plan for:
 

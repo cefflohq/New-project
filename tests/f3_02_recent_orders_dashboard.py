@@ -48,10 +48,7 @@ class RecentOrdersDashboardTests(unittest.TestCase):
 
     def test_each_row_shows_order_id_context_status_and_navigates_to_detail(self):
         self.assertIn('data-nav="orderDetail" data-navparams=\'{"id":"${o.id}"}\'', self.fn)
-        # D-64: the row label is the human-facing order number (#CF-001), never
-        # the raw UUID; the UUID stays only in the navigation params.
-        self.assertIn("<b>${orderNo(o)}</b>", self.fn)
-        self.assertNotIn("<b>${o.id}</b>", self.fn)
+        self.assertIn("<b>${o.id}</b>", self.fn)
         self.assertIn("statusChip(o.status==='issue'?'issue':(o.status==='completed'?'completed':'ongoing'))", self.fn)
 
     def test_honest_empty_state(self):

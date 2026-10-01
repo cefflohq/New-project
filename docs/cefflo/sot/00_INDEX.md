@@ -1,10 +1,7 @@
 **Status:** CANONICAL — Founder-approved, merged into repo 2026-09-04
 **Repo-reconciliation note:** This is the current canonical Founder-approved knowledge-base root. It supersedes `docs/cefflo/CEFFLO_BRAND_BRAIN.md` for brand/product/architecture doctrine and extends the same "newer canonical layer above the numbered pack" pattern already established by `docs/cefflo/00_AGENTS.md`. Each domain below is resolved to its actual repo path (or flagged as a genuine gap) rather than left as a bare filename placeholder.
 
-**Company AI governance authority added 2026-09-20 (D-43):**
-- `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md` — canonical company AI governance and cross-department orchestration architecture. n8n is its primary technical execution/control-plane engine. Departments retain their internal authority; Cyber Security remains a cross-company guardrail.
-
-**Engineering and security authorities added 2026-09-19 (D-39; baseline selection amended by D-40):**
+**Engineering and security authorities added 2026-09-19 (D-39):**
 - `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md` — canonical Engineering Department E1–E5 architecture.
 - `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md` — canonical cross-company security architecture. During Engineering Bootstrap Phase 01 it constrains only the approved Engineering attack surface; it does not authorize building the wider Cyber Security system.
 
@@ -40,20 +37,20 @@ Full Phase 01+02 execution report: `docs/cefflo/05_DECISIONS.md` D-29.
 
 ## 1. Vendor Flutter
 Primary:
-- `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md` — WORKING MASTER BASELINE, Founder Review Required; **IMPLEMENTED / INTEGRATION IN PROGRESS / UI NOT YET LOCKED / DEV-STAGING** under D-40. V-50–V-54 remain HOLD and excluded from active routes; V-41 remains RECONCILIATION REQUIRED.
-- `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — **CANONICAL v1.3 under D-33–D-35 and D-40**. Inter is active app UI typography; exact compact values await FG-ENG-03 reference validation.
+- `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md` — status: WORKING MASTER BASELINE, "Founder Review Required," NOT YET IMPLEMENTED. Subscription/billing screens V-50–V-54 remain HOLD; V-41 Delivery Settings remains RECONCILIATION REQUIRED.
+- `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — **CANONICAL as of 2026-09-11 (D-33)**, the approved Visual DNA/Experience System. Fills the previously-empty "approved Design Lab/DNA outputs" slot.
 
 Authority:
 Product Truth → Architecture → Flow 3 Behavioural Contract → approved Visual DNA (`docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md`) → Flutter implementation.
 
-Reference: `docs/cefflo/flow3/VENDOR_BEHAVIOURAL_CONTRACT_PACK.md` (the Flow 3 Vendor Web exit contract). Vendor Web/Desktop remains the current LIVE Vendor client. D-40 authorizes the isolated Vendor Flutter DEV/STAGING baseline integration only; visual lock and later operation remain gated.
+Reference: `docs/cefflo/flow3/VENDOR_BEHAVIOURAL_CONTRACT_PACK.md` (the Flow 3 Vendor Web exit contract Flow 4 must build against). The current LIVE Vendor client remains Vendor Web/Desktop (`docs/cefflo/06_VENDOR.md`) — neither this master nor the now-canonical Experience System authorizes starting Flutter implementation or migrating existing Flutter code; that remains a separate, not-yet-authorized execution stage.
 
 ## 2. Driver Flutter ("Cefflo Driver" = LOCKED product name; "Rider" = LOCKED backend/schema/API role — D-38)
 Primary:
 - `docs/cefflo/sot/13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` — status: **ACTIVE MASTER** (2026-09-14, D-37), 42 screens (D01–D42), "WORKING MASTER BASELINE," NOT YET Founder-locked, NOT YET IMPLEMENTED. The sole active Driver/Rider Flutter UI/UX screen-inventory authority.
 - `docs/cefflo/sot/08_RIDER_FLUTTER_33_SCREEN_MASTER.md` — **SUPERSEDED / HISTORICAL** (2026-09-14, D-37). 33 screens, `R-01`–`R-33`. Retained for traceability only; do not implement against it.
 - `docs/cefflo/sot/12_EXPERIENCE_SYSTEM.md` — **CANONICAL as of 2026-09-11 (D-33)**, the same shared Visual DNA authority as Vendor Flutter. No Driver Flutter implementation exists in the repository yet — this is the visual authority it will build against once authorized.
-- Rider execution behavior — the static Rider PWA was retired (D-62); canonical Driver UI is Flutter (`apps/rider_mobile`). `docs/cefflo/07_RIDER.md` keeps the historical behaviour and the Driver execution contracts.
+- Rider execution behavior — see `docs/cefflo/07_RIDER.md` for the current LIVE Rider PWA (the actual live client today).
 - shared canonical backend contracts — see `docs/cefflo/sot/02_ARCHITECTURE.md` and `docs/cefflo/11_SUPABASE.md`.
 
 ## 3. Customer
@@ -79,33 +76,32 @@ Primary:
 - "Flow 2 Canonical Backend Completion Master" — no separate master doc exists in this repo; its outcomes are reflected in the current migrations/RPCs/tests.
 - migrations/RPC/security architecture references — see `docs/cefflo/11_SUPABASE.md`, `docs/cefflo/12_SECURITY.md`.
 
-## 6. CEFFLO Marketing Department
-
-Canonical authority:
-- `docs/cefflo/marketing/CEFFLO_MARKETING_MASTER.md` — sole active Marketing
-  architecture; M1 Lead, M2 Radar, M3 Story, M4 Studio, M5 Guard and M6 Growth.
-
-Parent governance:
-- `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md` — company governance,
-  including Founder Gate, cross-department event, model/tool/cost/audit and
-  system-guard contracts.
-
-The previous Marketing knowledge pack, Teams 1–5, `WF-01..08`,
-`CEFFLO - 00..12,99`, their reconciliation addenda and
-`automation/n8n/content-engine/**` are **LEGACY MIGRATION SOURCE / REPLACEMENT
-CANDIDATE**. They are excluded from normal Marketing runtime retrieval. Existing
-workflows, schemas, data and credentials remain untouched pending replacement
-validation and a later Founder decision.
+## 6. Marketing Engine
+Primary hierarchy:
+1. `docs/cefflo/sot/01_PRODUCT_TRUTH.md`
+2. `docs/cefflo/sot/05_BRAND_BRAIN.md`
+3. `docs/cefflo/sot/marketing/07_MARKETING_MEMORY.md` — schema initialized; performance memory intentionally EMPTY, no real campaign data exists yet.
+4. `docs/cefflo/sot/marketing/01_AUDIENCE_ICP.md`
+5. `docs/cefflo/sot/marketing/02_CLAIMS_REGISTRY.md`
+6. `docs/cefflo/sot/marketing/03_CONTENT_PHILOSOPHY.md`
+7. `docs/cefflo/sot/marketing/04_CREATIVE_PLAYBOOK.md`
+8. `docs/cefflo/sot/marketing/05_PAID_GROWTH_PLAYBOOK.md`
+9. `docs/cefflo/sot/marketing/06_AI_MARKETING_ENGINE_MASTER.md`
+10. `docs/cefflo/sot/marketing/08_AI_CONTENT_ENGINE_ORCHESTRATOR.md` — Founder-approved v1.1 (2026-09-10), n8n orchestration blueprint for item 9's daily pipeline; see `docs/cefflo/05_DECISIONS.md` D-25.
+11. `docs/cefflo/sot/marketing/09_CONTENT_WORLD_PRODUCTION_DOCTRINE.md` — Founder-approved FG-1 reconciliation (2026-09-10); FG-2 (Content World Baseline) not yet granted. See `docs/cefflo/05_DECISIONS.md` D-26.
+12. `docs/cefflo/sot/marketing/10_BRAND_VOICE_LANGUAGE_SYSTEM.md` — Founder-approved FG-1-equivalent reconciliation (2026-09-10), Malaysian Malay brand-voice doctrine; FG-V1–V4 not yet granted. See `docs/cefflo/05_DECISIONS.md` D-26.
+13. `docs/cefflo/sot/marketing/11_CREATIVE_INTELLIGENCE_LAYER.md` — reconciled and implemented (2026-09-11): taxonomy, scenario contract/engine/validator, tested. GATE B (Rider/Driver terminology) RESOLVED — product/schema stays "Rider"; display terms are vehicle-contextual (Motorcycle=Rider, Car/Van=Driver, mixed=Delivery Team). See `docs/cefflo/05_DECISIONS.md` D-27.
 
 ## 7. Marketing Performance
+Runtime evidence only:
+- Marketing Memory schema exists (`docs/cefflo/sot/marketing/07_MARKETING_MEMORY.md`) but its data/exports are empty — no experiments have run yet.
+- weekly reports — none exist yet.
+- experiment performance — none exist yet.
+- organic/paid learnings — none exist yet.
 
-Marketing performance truth must come from verified operational records and
-the canonical Marketing context/memory contracts. Legacy memory tables and
-reports are migration evidence only until reconciled. Do not invent performance,
-winner or learning data.
+Do not store invented winner data here. This domain is N/A until real campaign data exists — no AI Marketing Engine implementation exists in this repo yet (see `docs/cefflo/sot/marketing/00_MARKETING_KNOWLEDGE_PACK_INDEX.md`).
 
 ## 8. Brand Assets
-**Brand Brain (D-68):** `docs/cefflo/sot/05_BRAND_BRAIN.md` is the single current canonical Brand Brain (positioning, story, voice, marketing doctrine). `docs/cefflo/CEFFLO_BRAND_BRAIN.md` is historical only.
 **Updated 2026-09-12 (Founder baseline closeout, D-30):** logo and Signal Lime are now Founder-locked.
 **Updated 2026-09-11 (Experience System canonicalization, D-33):** Signal Lime's primary/signature-colour status is **superseded** — see below. Logo lock from D-30 is unaffected.
 Primary:
@@ -131,21 +127,7 @@ Primary:
 - Curlec subscription implementation/onboarding artifacts — none exist yet.
 - legal/support/commercial launch decisions — see `docs/cefflo/05_DECISIONS.md`.
 
-## 11. AI Governance and Development Agent Rules
-Company governance authority:
-- `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md` (§2A: department register and activation state)
-- Department Masters (MASTER BASELINE; a Master's presence does not activate a department, D-71):
-  - `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md`
-  - `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md`
-  - `docs/cefflo/marketing/CEFFLO_MARKETING_MASTER.md`
-  - `docs/cefflo/customer-service/CEFFLO_CUSTOMER_SERVICE_MASTER.md`
-  - `docs/cefflo/sales-crm/CEFFLO_SALES_CRM_MASTER.md`
-  - `docs/cefflo/product-intelligence/CEFFLO_PRODUCT_INTELLIGENCE_MASTER.md`
-- `docs/cefflo/control/CEFFLO_AI_COMPANY_OPERATING_PRINCIPLES.md` (CANONICAL
-  operating principles — complements the Control Layer Master, does not
-  replace it; D-67)
-
-Development collaboration rules:
+## 11. AI Agent Rules
 Primary:
 - `docs/cefflo/agent-os/CEFFLO_AGENT_OS_CORE.md`
 - `docs/cefflo/agent-os/CHATGPT_OPERATING.md`
@@ -155,11 +137,7 @@ Primary:
 - `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md` (Engineering Department roles, orchestration, gates and evidence)
 - `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md` (security boundaries for agents, tools, credentials and Crown Jewels)
 
-Development agent rules govern how repository work is performed; they do not
-override Product Truth, department masters, the Control Layer Master, or Founder
-decisions. The Control Layer is governance architecture, not a sixth department.
-Jev is recorded only as **CANDIDATE JUDGMENT ENGINE — NOT QUALIFIED / NOT
-REQUIRED / NO ACTIVE DEPENDENCY**.
+Agent rules govern how work is performed; they do not override Product Truth or Founder decisions.
 
 ## 12. Global Authority Order
 1. Latest explicit Founder decision
@@ -197,7 +175,7 @@ The knowledge base is healthy when an agent can locate the correct domain SOT, r
 
 ## 16. Open gaps / pending Founder decisions (updated 2026-09-04, second pass)
 - `docs/cefflo/sot/10_PRICING.md` exists but is a CANDIDATE, not Founder-locked — no final price may be published (domain 9 above).
-- `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md` remains "Founder Review Required" while its DEV/STAGING implementation is integrated and awaits UI lock. Subscription/billing V-50–V-54 are HOLD and excluded from active routes pending separate Founder approval; V-41 Delivery Settings still needs reconciliation against Service Area/Zones (domain 1 above).
+- `docs/cefflo/sot/09_VENDOR_FLUTTER_60_SCREEN_MASTER.md` exists but is "Founder Review Required," not implemented; its Subscription/billing screens V-50–V-54 are HOLD pending a separate Founder-approved payment architecture, and V-41 Delivery Settings needs reconciliation against Service Area/Zones (domain 1 above).
 - `docs/cefflo/sot/marketing/07_MARKETING_MEMORY.md` exists but its performance memory is intentionally empty — no AI Marketing Engine implementation or real campaign data exists yet (domain 6/7 above).
 - `docs/cefflo/sot/13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` (active master as of 2026-09-14, D-37, superseding `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`) remains a "WORKING MASTER BASELINE" — not yet Founder-locked, not yet implemented; the current live Rider client is the PWA at `docs/cefflo/07_RIDER.md`.
 
@@ -206,15 +184,6 @@ See `docs/cefflo/05_DECISIONS.md` D-23 and D-24 for the full reconciliation reco
 ## 17. CEFFLO Website (added 2026-09-12, Founder baseline closeout — D-30)
 Primary:
 - `docs/cefflo/sot/11_CEFFLO_WEBSITE.md` — the fifth canonical product surface (§0 above / `02_ARCHITECTURE.md` §0). Public Web, acquisition/commercial surface only, not operational.
-- `docs/cefflo/website/CEFFLO_PUBLIC_WEBSITE_MASTER.md` — ACTIVE MASTER, the single maintained Public Website master (visual direction + commercial/product-truth rules; incorporates Visual Spec V2 Final; D-67). Does not by itself approve publication.
-- `docs/cefflo/website/reports/CEFFLO_PUBLIC_WEBSITE_POLISH_REPORT.md` — HISTORICAL report / input to the Master; not Product Truth.
-- current implementation: none published (D-62, Public Website NOT IMPLEMENTED); held draft in `docs/cefflo/website/drafts/` (NOT APPROVED).
+- current implementation: `marketing/index.html` (built public site) — Phase 03 pre-launch landing and Phase 06 full commercial site are both not yet built.
 
 This closes the gap originally flagged when the five-canonical-product-surface architecture was frozen (2026-09-12, D-29).
-
-## 18. Strategy (FUTURE — added 2026-09-26, D-67)
-- `docs/cefflo/strategy/CEFFLO_RIDER_NETWORK_STRATEGY.md` — FUTURE: Founder-approved direction (Rider Hub, portable rider identity, capacity network). Not current scope; design-now/build-later, gated by production stability and real usage.
-
-## 19. Commercial study (added 2026-09-27, D-71)
-- `docs/cefflo/commercial/CEFFLO_GLOBAL_UNIT_ECONOMICS_PRICING_AND_MARKET_EXPANSION_MASTER.md`: FOUNDER DIRECTION / study brief. Authorizes audit and documentation only.
-- `docs/cefflo/commercial/CEFFLO_GLOBAL_UNIT_ECONOMICS_PRICING_AND_MARKET_EXPANSION_STUDY.md`: STUDY. Unit-cost model, pricing stress thresholds and worldwide-readiness audit. Not a pricing decision; `sot/10_PRICING.md` remains the pricing authority.

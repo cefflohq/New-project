@@ -2,7 +2,8 @@
   "name": "cefflo-frontends",
   "private": true,
   "devDependencies": {
-    "supabase": "2.116.0"
+    "supabase": "2.116.0",
+    "wrangler": "^4.143.0"
   },
   "scripts": {
     "build": "node scripts/build-static.mjs",
@@ -11,6 +12,8 @@
     "supabase:start": "supabase start",
     "supabase:status": "supabase status",
     "supabase:stop": "supabase stop",
-    "supabase:reset": "python3 tests/guarded_supabase_reset.py"
+    "supabase:reset": "python3 tests/guarded_supabase_reset.py",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
   }
 }

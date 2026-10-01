@@ -2,10 +2,13 @@
   const api = window.CEFFLO;
   const token = new URLSearchParams(location.search).get('token');
 
-  // D-66 supersedes the 2B.3 "never on a timer" rule only while the page is
-  // visible and the order is trackable (see the coalescing gate below).
+  // CEFFLO Customer Tracking is "latest known location on demand," not
+  // continuous live tracking (Founder policy). Fetch on initial open,
+  // return/refocus, bfcache restore, and manual refresh only -- never on a
+  // timer.
+  const REFRESH_COOLDOWN_MS = 3000;
   let isRefreshing = false;
-  let lastRefreshAt = -Infinity;
+  let lastRefreshAt = 0;
 
   // Grow V1 Flow 2 (A5): public_tracking's `eta` field is now a truthful
   // range/state object, not a single timestamp -- never a fabricated
@@ -37,16 +40,13 @@
       issue: 'issue', cancelled: 'cancelled'
     };
     window.CEFFLOTracking.setStatus(statusMap[snapshot.status] || 'order_confirmed', {
-      orderId: snapshot.order_number ?? snapshot.order_id,
+      orderId: snapshot.order_id,
       storeName: snapshot.store_name,
       riderName: snapshot.rider_name || 'Your rider',
       estimatedArrival: formatEta(snapshot.eta) || '—',
       deliveredAt: snapshot.completed_at ? new Date(snapshot.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
-      podPhoto: snapshot.status === 'delivered' && snapshot.pod_available ? await podUrl().catch(() => null) : null,
-      riderLocation: snapshot.rider_location || null,
-      stopsAhead: typeof snapshot.stops_ahead === 'number' ? snapshot.stops_ahead : null
+      podPhoto: snapshot.status === 'delivered' && snapshot.pod_available ? await podUrl().catch(() => null) : null
     });
-    syncLive(snapshot);
     if (snapshot.rating_submitted) {
       const form = document.getElementById('ratingForm');
       const thanks = document.getElementById('ratingThanks');
@@ -59,81 +59,23 @@
     return snapshot;
   }
 
-  // Phase 2B.4 / D-66: one coalescing gate for every fetch trigger (open,
-  // visible-again, bfcache, `loc` hint, safety fallback). Never two parallel
-  // public_tracking reads; at least MIN_GAP_MS between fetch starts; hints
-  // arriving sooner collapse into one follow-up fetch.
-  const MIN_GAP_MS = 10000;
-  let pending = false;
-  let spacingTimer = null;
-  let fallbackTimer = null;
-  let live = null;
-  let lastSnapshot = null;
-  let loadRetries = 0;
-
-  async function runRefresh() {
+  // Single shared entry point for every refresh trigger (initial load,
+  // visibility/focus return, bfcache restore, manual button). An in-flight
+  // guard collapses trigger events that fire together (e.g. visibilitychange
+  // and pageshow on the same real tab return) into one request; the cooldown
+  // absorbs rapid repeats (e.g. button mashing) without a second round trip.
+  async function guardedRefresh() {
+    if (isRefreshing) return;
+    if (Date.now() - lastRefreshAt < REFRESH_COOLDOWN_MS) return;
     isRefreshing = true;
     lastRefreshAt = Date.now();
     try {
-      lastSnapshot = await refresh();
+      await refresh();
     } catch (error) {
-      // Invalid/expired token, or no snapshot yet: the generic customer-safe
-      // template (no internals). A failed re-check keeps the last real state.
-      const phase = window.CEFFLOTracking.getSnapshot?.()?.phase;
-      if (error.message === 'Invalid tracking reference') window.CEFFLOTracking.fail();
-      else if (phase === 'loading') {
-        // Transient (e.g. rate limit, network): retry through the gate twice,
-        // then show the generic unavailable template.
-        loadRetries += 1;
-        if (loadRetries <= 2) pending = true; else window.CEFFLOTracking.fail();
-      }
+      document.getElementById('heroStatus').textContent = error.message;
     } finally {
       isRefreshing = false;
-      armFallback();
-      if (pending) { pending = false; guardedRefresh(); }
     }
-  }
-
-  function guardedRefresh() {
-    if (document.visibilityState === 'hidden') return;
-    if (isRefreshing) { pending = true; return; }
-    const wait = MIN_GAP_MS - (Date.now() - lastRefreshAt);
-    if (wait > 0) {
-      if (!spacingTimer) spacingTimer = setTimeout(() => { spacingTimer = null; guardedRefresh(); }, wait);
-      return;
-    }
-    runRefresh();
-  }
-
-  const TRACKABLE = ['picked_up', 'out_for_delivery', 'arrived'];
-
-  // Safety fallback only while visible and trackable: one fetch per staleness
-  // limit (HIGH 60 s for the next stop / arrived, otherwise 3 min). Never
-  // short-interval polling.
-  function armFallback() {
-    clearTimeout(fallbackTimer);
-    const s = lastSnapshot;
-    if (!s || !TRACKABLE.includes(s.status) || document.visibilityState === 'hidden') return;
-    const high = s.status === 'arrived' || s.stops_ahead === 0;
-    fallbackTimer = setTimeout(guardedRefresh, high ? 60000 : 180000);
-  }
-
-  function syncLive(snapshot) {
-    const want = snapshot.live && TRACKABLE.includes(snapshot.status) && document.visibilityState !== 'hidden';
-    if (!want) { live && live.leave(); return; }
-    if (!live && window.CEFFLOLive) {
-      live = window.CEFFLOLive.createLiveChannel({
-        url: api.config.supabaseUrl, apiKey: api.config.supabaseAnonKey, onHint: guardedRefresh
-      });
-    }
-    if (live) live.join(snapshot.live.topic, snapshot.live.key);
-  }
-
-  function goHidden() {
-    clearTimeout(fallbackTimer); fallbackTimer = null;
-    clearTimeout(spacingTimer); spacingTimer = null;
-    pending = false;
-    live && live.leave();
   }
 
   const submitRating = (rating, feedback) => api.rpc('submit_rating', { p_token: token, p_rating: rating, p_feedback: feedback }, { token: null });
@@ -152,10 +94,7 @@
   window.addEventListener('load', guardedRefresh);
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') guardedRefresh();
-    else goHidden();
   });
-  window.addEventListener('online', guardedRefresh);
-  window.addEventListener('pagehide', goHidden);
   window.addEventListener('pageshow', (event) => {
     if (event.persisted) guardedRefresh();
   });

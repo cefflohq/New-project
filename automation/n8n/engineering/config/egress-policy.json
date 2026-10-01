@@ -3,17 +3,11 @@
   "default": "deny",
   "arbitraryDestinations": false,
   "validateRedirectTargets": true,
-  "allowlistedDestinations": [
-    "https://api.openai.com/v1/responses",
-    "https://api.deepseek.com/responses"
-  ],
+  "allowlistedDestinations": [],
   "profiles": {
     "build_default": [],
     "dependency_install": [],
-    "model_adapter": [
-      "https://api.openai.com/v1/responses",
-      "https://api.deepseek.com/responses"
-    ],
+    "model_adapter": [],
     "git_task_branch": [],
     "staging_preview": []
   },

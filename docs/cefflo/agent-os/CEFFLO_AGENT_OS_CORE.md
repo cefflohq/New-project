@@ -1,19 +1,16 @@
 # CEFFLO AGENT OS --- CORE
 
-**Status:** CANONICAL DEVELOPMENT COLLABORATION SYSTEM\
-**Applies to:** Founder, ChatGPT, Claude, Codex during human-led repository work\
-**Required companions:** `docs/cefflo/sot/00_INDEX.md` and the relevant domain master\
-**Company runtime authority:** `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`\
-**Version:** 2026-09-20
+**Status:** CANONICAL SHARED OPERATING SYSTEM\
+**Applies to:** Founder, ChatGPT, Claude, Codex\
+**Required companion:** `CEFFLO_BRAND_BRAIN.md`\
+**Version:** 2026-09-03
 
 ------------------------------------------------------------------------
 
 ## 1. PURPOSE
 
-This document defines how the Founder, ChatGPT, Claude and Codex collaborate
-on human-led repository and development work. It does not define company
-runtime orchestration, cross-department governance or model-provider routing.
-Those belong to the CEFFLO Control Layer Master and department masters.
+This document defines how the Founder, ChatGPT, Claude and Codex work
+together on Cefflo.
 
 It exists to: - prevent context and doctrine drift; - make agent usage
 efficient; - prevent duplicated analysis; - keep prompts short by moving
@@ -23,7 +20,7 @@ from silently becoming current truth.
 
 This document defines **HOW WE WORK**.
 
-`docs/cefflo/sot/05_BRAND_BRAIN.md` (D-68) defines **WHAT CEFFLO IS**.
+`CEFFLO_BRAND_BRAIN.md` defines **WHAT CEFFLO IS**.
 
 ------------------------------------------------------------------------
 
@@ -32,17 +29,16 @@ This document defines **HOW WE WORK**.
 When information conflicts, use this order:
 
 1.  Explicit current Founder instruction.
-2.  The canonical domain authority: Product Truth, Control Layer Master,
-    department master or Cyber Security Master, according to task scope.
-3.  `docs/cefflo/sot/00_INDEX.md` and current Founder decisions.
-4.  This `CEFFLO_AGENT_OS_CORE.md` for development collaboration only.
-5.  The active agent-specific Operating MD.
-6.  The current Task Master MD.
-7.  Verified current repository/runtime truth for implementation facts.
-8.  Current task handoff/evidence.
-9.  Older task documents and implementation reports.
-10. Legacy repository documentation, comments, screenshots, historical
-    prompts and conversation memory.
+2.  Latest Founder-approved `CEFFLO_BRAND_BRAIN.md`.
+3.  This `CEFFLO_AGENT_OS_CORE.md`.
+4.  The active agent-specific Operating MD.
+5.  The current Task Master MD.
+6.  Verified current repository/runtime truth for implementation facts.
+7.  Current task handoff/evidence.
+8.  Older task documents and implementation reports.
+9.  Legacy repository documentation, comments, screenshots and
+    historical prompts.
+10. Conversation memory.
 
 Important distinction: - Brand/product doctrine comes from Founder +
 Brand Brain. - Implementation facts must still be verified against the
@@ -66,14 +62,13 @@ opens Founder gates; - authorizes Production.
 Founder should not have to manually transfer large context between
 agents.
 
-### ChatGPT --- PLAN DEVELOPMENT WORK
+### ChatGPT --- ORCHESTRATE / PLAN
 
-ChatGPT: - understands Founder intent; - reconciles it with canonical domain
-truth; - designs a development approach; - creates complete Task Master MDs
-for substantial repository work; - selects Claude or Codex according to task
-shape; - produces short launcher prompts; - reviews returned evidence and
-advises Founder. This role does not make ChatGPT the CEFFLO company
-orchestrator; company governance belongs to the Control Layer.
+ChatGPT: - understands Founder intent; - reconciles it with Brand Brain
+and current known truth; - designs the end-to-end approach; - creates
+complete Task Master MDs for substantial work; - selects Claude or Codex
+according to task shape; - produces short launcher prompts; - reviews
+returned evidence and advises Founder.
 
 ### Claude --- PRIMARY HEAVY IMPLEMENTER / AUDITOR
 
@@ -99,7 +94,7 @@ Do not load every Cefflo document for every task.
 
 ### Layer A --- Persistent mandatory context
 
-Every working agent reads: 1. `docs/cefflo/sot/05_BRAND_BRAIN.md` 2.
+Every working agent reads: 1. `CEFFLO_BRAND_BRAIN.md` 2.
 `CEFFLO_AGENT_OS_CORE.md` 3. its own role MD
 
 ### Layer B --- Current task context

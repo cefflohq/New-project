@@ -1,5 +1,5 @@
 **Status:** CANONICAL — Founder-approved, merged into repo 2026-09-04
-**Repo-reconciliation note:** Describes the target multi-client architecture. Vendor Flutter now has a substantial DEV/STAGING implementation in the isolated Engineering baseline (D-40): integration is in progress and UI is not yet locked. Vendor Web and Rider PWA remain the live operational clients. Driver Flutter remains a future gated capability; this file does not authorize its build.
+**Repo-reconciliation note:** Describes the TARGET multi-client architecture (Vendor Web/Desktop, Vendor Flutter, Rider Flutter, Customer Tracking, Operations/Helper, FOUNDR → cefflo_api → Supabase). Current live stack remains PWA-first for Vendor Web and Rider (see `docs/cefflo/02_ARCHITECTURE.md` AR-01/AR-02). Vendor Flutter and Rider Flutter are FUTURE capabilities per the Capability Truth States in `docs/cefflo/sot/01_PRODUCT_TRUTH.md` §10 — `docs/cefflo/05_DECISIONS.md` D-13's stage-gating for native Rider Flutter build sequencing remains in force until the Founder explicitly authorizes that build stage; this file does not itself authorize starting that work.
 
 ---
 
@@ -12,7 +12,7 @@
 
 | # | Surface | Presentation | Maps to existing client topology (§4 below) |
 |---|---|---|---|
-| 1 | **Vendor Product** | Web/Desktop + Flutter Mobile — **one product, two presentation surfaces**, not two products | "Vendor Web/Desktop" (LIVE) + "Vendor Flutter" (IMPLEMENTED / INTEGRATION IN PROGRESS / UI NOT YET LOCKED / DEV-STAGING, `09_VENDOR_FLUTTER_60_SCREEN_MASTER.md`) |
+| 1 | **Vendor Product** | Web/Desktop + Flutter Mobile — **one product, two presentation surfaces**, not two products | "Vendor Web/Desktop" (LIVE) + "Vendor Flutter" (FUTURE, `09_VENDOR_FLUTTER_60_SCREEN_MASTER.md`) |
 | 2 | **Driver Product** — "Cefflo Driver" LOCKED as the user-facing product name (D-38); "Rider" LOCKED as the internal/backend/schema/API role | Flutter Mobile | "Driver Flutter" (FUTURE, `13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` — active master as of 2026-09-14, D-37, superseding `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`) — target-state name; live today as the Rider PWA (`docs/cefflo/07_RIDER.md`) |
 | 3 | **Customer Tracking** | Web/PWA | "Customer Tracking" — native app not required unless a future Founder decision changes this |
 | 4 | **CEFFLO Website** | Public Web | `docs/cefflo/sot/11_CEFFLO_WEBSITE.md` (added 2026-09-12, closing the gap flagged at initial freeze). Phase 03 = lightweight pre-launch landing; Phase 06 = full commercial site. Not yet implemented — `marketing/index.html` remains the current built public site. |
@@ -20,13 +20,9 @@
 
 Operations/Helper is a permission-scoped role within Vendor Product's team system (D-22; `docs/cefflo/launch/CEFFLO_GROW_V1_SCOPE_LOCK.md` §15 — "reuse existing Core Team/auth/invitation plumbing... not a competing identity system"), not a sixth surface.
 
-**D-74 (2026-09-28, supersedes D-73):** the Helper is an **authenticated** Vendor member (`business_members.role = helper`) who uses the **Vendor Flutter app**, which routes the role into a narrow fulfilment workspace. The accountless Helper PWA and its token model are retired. The **Invitation PWA** (`invite/`) handles rider and team (Operator / Helper) invitations. Helpers pass no Vendor RLS or RPC; they read only `my_fulfilment_tasks` and write only `advance_preparation`.
-
 **Workforce terminology — LOCKED (2026-09-14, D-38):** "Cefflo Driver" is the locked user-facing product name; "Rider" is the locked internal/backend/schema/API role and is unchanged (see `docs/cefflo/sot/01_PRODUCT_TRUTH.md` §4). "Driver Product" in this freeze is that locked product name applied to the Flutter Mobile surface described by `13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` (formerly `08_RIDER_FLUTTER_33_SCREEN_MASTER.md`, superseded 2026-09-14 per D-37) — no schema is touched, and none is authorized to be touched merely to match the product label. The terminology-scope question this freeze originally left open (whether "Driver Product" was a surface label or a broader reopening) was closed by D-38: it is a permanent, intentional dual-namespace — product name "Driver," schema/backend role "Rider" — not a migration in either direction.
 
-D-40 authorizes only the isolated Vendor Flutter baseline integration and
-technical validation. Driver Product (Driver Flutter), Customer Tracking
-rebuild, FOUNDR build and CEFFLO Website work remain gated separately.
+This freeze does not authorize starting Vendor Flutter, Driver Product (Driver Flutter), Customer Tracking rebuild, FOUNDR build, or CEFFLO Website work — each remains gated by its own existing stage-gating decisions (D-13 etc.).
 
 ## 1. Architecture Principle
 Cefflo has one canonical operational truth.
@@ -88,36 +84,7 @@ Clients must not recreate backend business rules in Dart/JS.
 First-class broad operational/configuration client.
 
 ### Vendor Flutter
-Separate mobile app; companion, not replacement. Its selected baseline is
-DEV/STAGING, integration in progress, and not yet visually locked or production
-ready.
-
-### Mobile delivery target (Founder, 2026-09-27)
-Vendor Mobile and Driver Mobile ship as installed **Android and iOS**
-applications built from their Flutter codebases. Their Flutter Web builds are
-preview/QA artifacts only and are never production surfaces.
-`rider.cefflo.com` is not the Driver app. Vendor Web/Desktop, Customer
-Tracking, the Public Website and Founder Admin remain web surfaces.
-
-### Country / market and language (Founder, 2026-09-27)
-Country/market and UI language are **independent settings**. Authority:
-`docs/cefflo/founder/CEFFLO_2026-09-27_FOUNDER_DECISIONS_EXECUTION.md`,
-Part A.
-- **Country/market** governs phone format, currency, timezone defaults,
-  address format, availability and regional commercial configuration. It
-  never sets the UI language.
-- **Language** is per user, not per business.
-  - First launch uses the device language if Cefflo supports it, otherwise
-    English.
-  - An explicit user choice persists and overrides device detection until it
-    is reset.
-  - Language never changes operational data or business logic.
-- **Malaysia launch scope:** production-quality Bahasa Melayu and English in
-  Vendor Mobile, Driver Mobile, and Vendor Web/Desktop where its architecture
-  supports it. More languages come only after translation QA. Core flows must
-  not ship partially translated.
-- Customer Tracking and the Public Website use their own localization
-  strategy, not the authenticated-user preference.
+Separate mobile app; companion, not replacement.
 
 ### Driver Flutter (formerly "Rider Flutter")
 Separate execution app with Rider-specific state/authorization. **"Cefflo Driver" is the LOCKED user-facing product name (D-38, 2026-09-14)** — not merely a freeze-era architectural label. The app's internal role/state/authorization remains "Rider," unchanged — also locked, permanently, at the backend/schema/API layer. UI/UX screen-inventory authority: `13_DRIVER_FLUTTER_42_SCREEN_MASTER.md` (D-37, 2026-09-14).

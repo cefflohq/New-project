@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Cefflo — Local Same-Day Delivery, Organized</title>
+<meta name="description" content="Cefflo helps businesses running their own local same-day delivery turn today's orders into a clear, controlled operation. Join Early Access.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#0D0E0D; --white:#FFFFFF; --graphite:#3A3D3F; --lightgrey:#F1F2EE;
+    --lime:#C7F000; --on-lime:#0D0E0D; --muted:#6B6F73; --border:#26282A;
+    --danger:#E5484D; --danger-tint:#2A1416; --success:#1EBE71; --success-tint:#0F241A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--black);color:var(--white);line-height:1.5;}
+  .wrap{max-width:680px;margin:0 auto;padding:0 20px;}
+  header{padding:28px 0 8px;}
+  .brand{font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;}
+  .brand .dot{color:var(--lime);}
+  section.hero{padding:56px 0 40px;}
+  h1{font-size:34px;line-height:1.2;font-weight:800;margin:0 0 16px;}
+  h1 .lime{color:var(--lime);}
+  p.lede{font-size:16px;color:#C7CACC;margin:0 0 28px;max-width:52ch;}
+  .cta-btn{display:inline-block;background:var(--lime);color:var(--on-lime);font-weight:800;font-size:15px;border:none;border-radius:12px;padding:14px 24px;cursor:pointer;text-decoration:none;}
+  section{padding:36px 0;border-top:1px solid var(--border);}
+  h2{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--lime);margin:0 0 14px;}
+  h3{font-size:20px;font-weight:800;margin:0 0 10px;}
+  p{color:#C7CACC;font-size:15px;margin:0 0 12px;}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;font-size:13px;color:#C7CACC;margin:16px 0;}
+  .flow span{background:var(--graphite);border-radius:999px;padding:6px 12px;}
+  .flow span.active{background:var(--lime);color:var(--on-lime);font-weight:700;}
+  .examples{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:8px;}
+  .examples div{background:var(--graphite);border-radius:12px;padding:12px 14px;font-size:13.5px;}
+  .examples div b{display:block;font-size:14px;margin-bottom:2px;}
+  form{background:var(--graphite);border-radius:16px;padding:22px;margin-top:18px;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12px;font-weight:700;color:#C7CACC;margin-bottom:5px;}
+  .field input,.field select{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:var(--black);color:var(--white);}
+  .consent{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#9DA1A4;margin:14px 0;}
+  .consent input{margin-top:3px;}
+  .submit-btn{width:100%;padding:13px;border-radius:12px;border:none;font-size:14px;font-weight:800;cursor:pointer;background:var(--lime);color:var(--on-lime);}
+  .submit-btn:disabled{opacity:.5;cursor:default;}
+  .status{font-size:13px;border-radius:10px;padding:11px 13px;margin-top:12px;line-height:1.5;}
+  .status.error{background:var(--danger-tint);color:#FF8A8F;}
+  .status.success{background:var(--success-tint);color:#5FE0A0;}
+  .hidden{display:none !important;}
+  footer{padding:28px 0 44px;font-size:12px;color:#6B6F73;}
+  .disclaimer{font-size:12px;color:#6B6F73;margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">Cefflo<span class="dot">.</span></div>
+  </header>
+
+  <section class="hero">
+    <h1>Today's local orders. <span class="lime">One controlled operation.</span></h1>
+    <p class="lede">Cefflo is a local same-day delivery operating system for businesses that manage deliveries within their own service area — not a rider marketplace, not a courier company. Your team, your riders, your customers, run clearly.</p>
+    <a class="cta-btn" href="#waitlist">Join Early Access</a>
+  </section>
+
+  <section>
+    <h2>The Problem</h2>
+    <h3>Orders multiply. Coordination doesn't scale with them.</h3>
+    <p>WhatsApp overload. Spreadsheet chaos. Manually deciding which rider, driver, or van takes which drop. Customers asking "order dah keluar ke?" while you're still dividing today's orders in your head.</p>
+  </section>
+
+  <section>
+    <h2>What Cefflo Helps Organize</h2>
+    <div class="flow">
+      <span>Orders</span><span>Coverage</span><span>Zones</span><span class="active">Delivery Plan</span><span>Multi-Drop Runs</span><span>Delivery Team</span><span>Dispatch</span><span>Customer Tracking</span><span>Delivered Today</span>
+    </div>
+    <p>Cefflo turns today's scattered order activity into one visible operating flow — for a delivery team that may run motorcycles, cars, vans, or a mix, depending on what the day's orders actually need.</p>
+  </section>
+
+  <section>
+    <h2>Built For</h2>
+    <div class="examples">
+      <div><b>Meal Prep &amp; Catering</b>Lunch-window multi-drop runs</div>
+      <div><b>Bakery, Gifts &amp; Florist</b>Time-sensitive, fragile drops</div>
+      <div><b>Local Online Sellers</b>Orders from scattered channels</div>
+      <div><b>Distributors &amp; B2B</b>Recurring multi-stop routes</div>
+    </div>
+    <p class="disclaimer">Illustrative examples of the operating pattern Cefflo fits — not an exhaustive or exclusive list.</p>
+  </section>
+
+  <section id="waitlist">
+    <h2>Early Access</h2>
+    <h3>Be first when Cefflo opens.</h3>
+    <p>We're building Cefflo before opening it up. Join the waitlist and we'll reach out as early access becomes available for your area.</p>
+    <form id="waitlistForm" novalidate>
+      <div class="field"><label for="wl-name">Name</label><input id="wl-name" name="name" type="text" autocomplete="name"></div>
+      <div class="field"><label for="wl-business">Business name</label><input id="wl-business" name="business_name" type="text" autocomplete="organization"></div>
+      <div class="field"><label for="wl-email">Email</label><input id="wl-email" name="contact_email" type="email" autocomplete="email"></div>
+      <div class="field"><label for="wl-phone">Phone (optional if email given)</label><input id="wl-phone" name="contact_phone" type="tel" autocomplete="tel"></div>
+      <div class="field"><label for="wl-type">Business type</label>
+        <select id="wl-type" name="business_type">
+          <option value="">Select one</option>
+          <option value="meal_prep">Meal prep / prepared food</option>
+          <option value="bakery">Bakery / cakes</option>
+          <option value="florist">Florist / gifts / hampers</option>
+          <option value="catering">Catering</option>
+          <option value="online_seller">Online seller / ecommerce</option>
+          <option value="distributor">Distributor / B2B</option>
+          <option value="other">Other local delivery business</option>
+        </select>
+      </div>
+      <div class="field"><label for="wl-volume">Approximate daily deliveries</label>
+        <select id="wl-volume" name="approximate_delivery_volume">
+          <option value="">Select one</option>
+          <option value="under_20">Under 20</option>
+          <option value="20_50">20–50</option>
+          <option value="50_100">50–100</option>
+          <option value="over_100">Over 100</option>
+        </select>
+      </div>
+      <label class="consent"><input type="checkbox" id="wl-consent" required> I agree Cefflo may contact me about early access. No spam, unsubscribe anytime.</label>
+      <button class="submit-btn" type="submit" id="wl-submit">Join Early Access</button>
+      <div class="status hidden" id="wl-status"></div>
+    </form>
+  </section>
+
+  <footer>
+    &copy; Cefflo. Not yet publicly launched — this is a pre-launch early access page. Cefflo is not a rider marketplace and does not supply its own delivery workforce.
+  </footer>
+</div>
+<script src="./backend.js"></script>
+</body>
+</html>
