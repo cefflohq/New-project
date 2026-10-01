@@ -76,9 +76,9 @@ code{font-size:12.5px;background:#f4f6f9;padding:1px 5px;border-radius:4px}
   min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:0;color:var(--fa-text);
   background:radial-gradient(120% 70% at 50% -10%,#1f6dff 0%,#0d3fae 32%,#061a4d 62%,#030b22 100%) fixed,#030b22}
 .fa-stage{position:relative;width:100%;max-width:440px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;
-  padding:calc(28px + env(safe-area-inset-top,0px)) 24px calc(22px + env(safe-area-inset-bottom,0px));gap:26px}
+  padding:calc(22px + env(safe-area-inset-top,0px)) 24px calc(18px + env(safe-area-inset-bottom,0px));gap:20px}
 @media(min-width:560px){.fa-stage{min-height:auto;margin:40px 0;border-radius:30px;border:1px solid #ffffff26;
-  background:linear-gradient(180deg,#1557e633,#04102a99 55%);box-shadow:0 30px 90px #000a,inset 0 1px 0 #ffffff1a;padding:34px 30px 26px}}
+  background:linear-gradient(180deg,#1557e633,#04102a99 55%);box-shadow:0 30px 90px #000a,inset 0 1px 0 #ffffff1a;padding:24px 28px 20px}}
 .fa-back{position:absolute;top:calc(18px + env(safe-area-inset-top,0px));left:12px;width:44px;height:44px;border:0;border-radius:999px;background:transparent;color:#fff;display:grid;place-items:center}
 .fa-back:hover{background:#ffffff14}
 .fa-screen svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
@@ -93,13 +93,13 @@ code{font-size:12.5px;background:#f4f6f9;padding:1px 5px;border-radius:4px}
 .fa-orb{width:96px;height:96px;margin:18px auto 0;border-radius:50%;display:grid;place-items:center;color:#fff;
   background:radial-gradient(circle at 35% 30%,#4aa0ff,#1662f0 55%,#0c3fb3);box-shadow:0 0 0 8px #2f7bff26,0 0 50px #2f7bffaa,inset 0 1px 1px #ffffff55}
 .fa-orb svg{width:40px;height:40px;stroke-width:1.6}
-.fa-body{display:grid;gap:16px;min-width:0}
-.fa-body form,.fa-body>div{display:grid;gap:16px;min-width:0}
-.fa-title{margin:0;font-size:27px;font-weight:600;letter-spacing:-.01em;line-height:1.2}
-.fa-sub{margin:-8px 0 2px;color:var(--fa-sub);font-size:15px;line-height:1.5}.fa-sub b{color:#fff;font-weight:500}
+.fa-body{display:grid;gap:13px;min-width:0}
+.fa-body form,.fa-body>div{display:grid;gap:13px;min-width:0}
+.fa-title{margin:0;text-align:center;font-size:27px;font-weight:600;letter-spacing:-.01em;line-height:1.2}
+.fa-sub{margin:-8px 0 2px;text-align:center;color:var(--fa-sub);font-size:15px;line-height:1.5}.fa-sub b{color:#fff;font-weight:500}
 .fa-title.c,.fa-sub.c{text-align:center}
 .fa-tag{margin:6px 0 34px;text-align:center;color:#c3cde0;font-size:15.5px;line-height:1.55}
-.fa-field{display:flex;align-items:center;gap:14px;height:56px;padding:0 16px;border-radius:12px;border:1px solid var(--fa-line);background:var(--fa-fill);transition:border-color .15s,box-shadow .15s}
+.fa-field{display:flex;align-items:center;gap:12px;height:48px;padding:0 17px;border-radius:999px;border:1px solid var(--fa-line);background:var(--fa-fill);transition:border-color .15s,box-shadow .15s}
 .fa-field:focus-within{border-color:var(--fa-blue);box-shadow:0 0 0 3px #1e7bff38}
 .fa-field>svg{color:#dbe4f3}
 .fa-field input,.fa-field select{flex:1;width:0;min-width:0;height:100%;border:0;background:transparent;color:#fff;font-size:16px;outline:0}
@@ -116,16 +116,16 @@ code{font-size:12.5px;background:#f4f6f9;padding:1px 5px;border-radius:4px}
 .fa-link{border:0;background:transparent;color:var(--fa-link);font-size:14.5px;padding:4px;cursor:pointer}
 .fa-link:hover{text-decoration:underline}.fa-link.c{justify-self:center}.fa-link:disabled{color:#7f8fab;cursor:default;text-decoration:none}
 .fa-link.danger{color:#ff8a98}
-.fa-btn{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:58px;border:1px solid #ffffff2e;border-radius:999px;
-  background:linear-gradient(180deg,#7c8aa8,#4d5b7b);color:#fff;font-size:16.5px;font-weight:500;text-decoration:none;cursor:pointer;
-  box-shadow:inset 0 1px 0 #ffffff40,0 12px 30px #00000059;transition:filter .15s}
-.fa-btn:hover{filter:brightness(1.08)}.fa-btn:disabled{opacity:.6;cursor:progress}
+.fa-btn{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:50px;border:1px solid #ffffffb8;border-radius:999px;
+  background:linear-gradient(180deg,#fffffff2,#ffffffc9);color:#0b2457;font-size:16px;font-weight:600;text-decoration:none;cursor:pointer;
+  box-shadow:inset 0 1px 0 #fff,0 10px 26px #0000003d,0 0 22px #ffffff1f;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);transition:filter .15s,transform .15s,box-shadow .15s}
+.fa-btn:hover{filter:brightness(1.04);transform:translateY(-1px);box-shadow:inset 0 1px 0 #fff,0 13px 30px #00000047,0 0 26px #ffffff29}.fa-btn:disabled{opacity:.6;cursor:progress;transform:none}
 .fa-btn-ic{position:absolute;right:22px}
-.fa-btn.danger{background:linear-gradient(180deg,#f0566a,#c8344a)}.fa-btn.danger:disabled{cursor:not-allowed}
-.fa-choices{display:grid;gap:16px}
-.fa-choice{display:flex;align-items:center;gap:16px;height:62px;padding:0 20px;border-radius:999px;border:1px solid #ffffff2e;color:#fff;font-size:16px;text-align:left;cursor:pointer;
-  background:linear-gradient(180deg,#ffffff24,#ffffff0d);box-shadow:inset 0 1px 0 #ffffff33,0 10px 28px #0000004d;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.fa-choice:hover{background:linear-gradient(180deg,#ffffff30,#ffffff14)}
+.fa-btn.danger{background:linear-gradient(180deg,#f0566a,#c8344a);color:#fff;border-color:#ff8a98}.fa-btn.danger:disabled{cursor:not-allowed}
+.fa-choices{display:grid;gap:12px}
+.fa-choice{display:flex;align-items:center;gap:14px;height:50px;padding:0 18px;border-radius:999px;border:1px solid #ffffffb8;color:#0b2457;font-size:15.5px;font-weight:600;text-align:left;cursor:pointer;
+  background:linear-gradient(180deg,#fffffff2,#ffffffc9);box-shadow:inset 0 1px 0 #fff,0 10px 26px #0000003d,0 0 22px #ffffff1f;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);transition:filter .15s,transform .15s,box-shadow .15s}
+.fa-choice:hover{filter:brightness(1.04);transform:translateY(-1px);box-shadow:inset 0 1px 0 #fff,0 13px 30px #00000047,0 0 26px #ffffff29}
 .fa-choice span{flex:1}.fa-g{width:24px!important;height:24px!important}.fa-chev{opacity:.8}
 .fa-alt{margin:0;text-align:center;font-size:14px;color:#c3cde0}
 .fa-foot{margin:auto 0 0;padding-top:18px;display:flex;align-items:center;justify-content:center;gap:8px;color:#aab6ca;font-size:13.5px}
