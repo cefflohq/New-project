@@ -57,7 +57,7 @@ class CanonicalSurfaceTests(unittest.TestCase):
         self.assertNotRegex(build, r"\[\s*'vendor'")
         surfaces = read("scripts/canonical-surfaces.mjs")
         listed = re.findall(r"^\s+(\w+): '", surfaces.split("FORBIDDEN_OUTPUT_DIRS")[0], re.M)
-        self.assertEqual(sorted(listed), sorted(["vendor", "customer", "foundr", "invite", "retired", "shared"]))
+        self.assertEqual(sorted(listed), sorted(["vendor", "customer", "foundr", "invite", "helper", "retired", "shared"]))
         self.assertNotIn("marketing", read("scripts/build-static.mjs").split("FORBIDDEN")[0].replace("marketing site", ""))
 
 
@@ -151,7 +151,7 @@ class BuildOutputTests(unittest.TestCase):
         subprocess.run(["node", "scripts/build-static.mjs"], cwd=ROOT, env=env, check=True, capture_output=True)
         dist = ROOT / "dist"
         published = sorted(p.name for p in dist.iterdir())
-        self.assertEqual(published, sorted([".openai", "customer", "foundr", "index.html", "invite", "retired", "server", "shared", "vendor", "web"]))
+        self.assertEqual(published, sorted([".openai", "customer", "foundr", "helper", "index.html", "invite", "retired", "server", "shared", "vendor", "web"]))
         # /web/ = the new Vendor Web App (apps/vendor_web); its demo mode is gated off in Production.
         self.assertIn("<title>Cefflo Vendor</title>", (dist / "web" / "index.html").read_text(encoding="utf-8"))
         self.assertIn("environment !== 'production'", (dist / "web" / "js" / "demo.js").read_text(encoding="utf-8"))

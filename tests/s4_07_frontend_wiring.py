@@ -104,13 +104,13 @@ class SharedInvitePageTests(unittest.TestCase):
             self.assertIn(f"'{name}'", INVITE_JS)
 
     def test_retired_accountless_helper_token_model_is_gone(self):
-        # D-74: Helpers are authenticated Vendor members; no access secret,
-        # Helper PWA link or token RPC remains, and nothing is stored locally.
+        # The Invitation PWA keeps no Helper token flow; the Helper PWA UI itself
+        # is restored (Founder decision 2026-10-01).
         for retired in ("accept_helper_invitation", "resolve_helper_invitation", "decline_helper_invitation",
                         "helper_tasks", "../helper/", "access_token"):
             self.assertNotIn(retired, INVITE_JS)
         self.assertNotIn("localStorage", INVITE_JS)
-        self.assertFalse((ROOT / "helper").exists())
+        self.assertTrue((ROOT / "helper" / "index.html").exists())
 
     def test_raw_token_never_sent_to_a_non_invite_rpc(self):
         # Only invitation RPCs may receive the raw token, and always anonymously.
