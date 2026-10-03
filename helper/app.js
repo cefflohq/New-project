@@ -1,166 +1,23 @@
-(function () {
-  // Cefflo Helper PWA (D-73). Prepare -> Pack -> Ready for one business,
-  // without a Vendor account. The access secret arrives once in the link
-  // fragment (#<64 hex>), is kept on this device only, and is sent solely
-  // to helper_tasks / helper_advance_preparation. The server returns only
-  // what preparation needs; nothing else exists on this surface.
-  const api = window.CEFFLO;
-  const $ = id => document.getElementById(id);
-  const KEY = 'cefflo_helper_access';
-  const STAGES = [
-    ['not_started', 'To prepare', 'Start preparing', 'preparing'],
-    ['preparing', 'Preparing', 'Mark packed', 'packed'],
-    ['packed', 'Packed', 'Mark ready', 'ready'],
-    ['ready', 'Ready', null, null],
-  ];
-  let tasks = [];
-  let tab = 'not_started';
-  let busy = new Set();
-  let errors = {};
-
-  const store = {
-    get() { try { return localStorage.getItem(KEY); } catch (_) { return null; } },
-    set(v) { try { localStorage.setItem(KEY, v); } catch (_) {} },
-    clear() { try { localStorage.removeItem(KEY); } catch (_) {} },
-  };
-  // Take the secret out of the address bar as soon as it is read.
-  const fromLink = location.hash.slice(1);
-  if (/^[0-9a-f]{64}$/i.test(fromLink)) {
-    store.set(fromLink.toLowerCase());
-  }
-  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
-  const token = store.get();
-
-  function show(id) {
-    ['stLoading', 'stTasks', 'stNoAccess', 'stError'].forEach(s => { $(s).hidden = s !== id; });
-  }
-  function header(business, helper) {
-    const bar = $('barName');
-    if (business) { bar.textContent = business; }
-    $('barSub').textContent = helper ? `Helper · ${helper}` : '';
-  }
-  function noAccess(kind) {
-    store.clear();
-    header('', '');
-    $('noAccessTitle').textContent = kind === 'missing' ? 'No Helper access' : 'Access removed';
-    $('noAccessBody').textContent = kind === 'missing'
-      ? 'Open the Helper workspace link the business owner shared with you.'
-      : 'This Helper workspace link no longer works. Ask the business owner to share a new link.';
-    show('stNoAccess');
-  }
-  const denied = error => /invalid access/.test(String(error?.message || ''));
-
-  function time(iso) {
-    try { return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } catch (_) { return ''; }
-  }
-  function itemRows(items) {
-    return (Array.isArray(items) ? items : []).map(it => {
-      if (typeof it === 'string') return [null, it];
-      const qty = it.quantity ?? it.qty ?? null;
-      return [qty, it.name || it.title || ''];
-    }).filter(([, name]) => name);
-  }
-
-  function render() {
-    const counts = Object.fromEntries(STAGES.map(([k]) => [k, tasks.filter(t => t.preparation_status === k).length]));
-    const tabs = $('tabs');
-    tabs.textContent = '';
-    for (const [key, label] of STAGES) {
-      const b = document.createElement('button');
-      b.className = 'tab'; b.type = 'button'; b.setAttribute('role', 'tab');
-      b.setAttribute('aria-selected', String(tab === key));
-      b.innerHTML = '<b></b><span></span>';
-      b.querySelector('b').textContent = counts[key];
-      b.querySelector('span').textContent = label;
-      b.addEventListener('click', () => { tab = key; render(); });
-      tabs.appendChild(b);
-    }
-    const list = $('taskList');
-    list.textContent = '';
-    const stage = STAGES.find(s => s[0] === tab);
-    const rows = tasks.filter(t => t.preparation_status === tab);
-    $('stEmpty').hidden = rows.length > 0;
-    $('emptyText').textContent = tasks.length ? `No orders in ${stage[1]}.` : 'New orders will appear here.';
-    for (const t of rows) {
-      const li = document.createElement('li');
-      li.className = 'task';
-      li.innerHTML = '<div class="task-head"><span class="task-no"></span><span class="task-time"></span></div><div class="task-name"></div><ul class="items"></ul>';
-      li.querySelector('.task-no').textContent = t.order_number || 'Order';
-      li.querySelector('.task-time').textContent = time(t.created_at);
-      li.querySelector('.task-name').textContent = t.customer_name || '';
-      const ul = li.querySelector('.items');
-      for (const [qty, name] of itemRows(t.items)) {
-        const row = document.createElement('li');
-        row.innerHTML = '<span class="qty"></span><span></span>';
-        row.firstChild.textContent = qty != null ? `${qty}×` : '•';
-        row.lastChild.textContent = name;
-        ul.appendChild(row);
-      }
-      if (t.notes) {
-        const n = document.createElement('div'); n.className = 'note'; n.textContent = t.notes; li.appendChild(n);
-      }
-      if (errors[t.order_id]) {
-        const e = document.createElement('div'); e.className = 'task-err'; e.textContent = errors[t.order_id]; li.appendChild(e);
-      }
-      if (stage[2]) {
-        const btn = document.createElement('button');
-        btn.className = 'next'; btn.type = 'button';
-        btn.disabled = busy.has(t.order_id);
-        btn.textContent = busy.has(t.order_id) ? 'Saving…' : stage[2];
-        btn.addEventListener('click', () => advance(t, stage[3]));
-        li.appendChild(btn);
-      } else {
-        const d = document.createElement('div'); d.className = 'done';
-        d.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12.5l4 4 8-9"/></svg><span>Ready for pickup</span>';
-        li.appendChild(d);
-      }
-      list.appendChild(li);
-    }
-  }
-
-  function toast(text, isError) {
-    const el = $('toast');
-    el.textContent = text; el.className = isError ? 'toast err' : 'toast'; el.hidden = false;
-    clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 2500);
-  }
-
-  async function load(quiet) {
-    if (!token) return noAccess('missing');
-    if (!quiet) show('stLoading');
-    try {
-      const data = await api.rpc('helper_tasks', { p_token: token }, { token: null });
-      header(data.business_name, data.helper_name);
-      tasks = data.tasks || [];
-      show('stTasks');
-      render();
-    } catch (error) {
-      if (denied(error)) return noAccess('removed');
-      if (!quiet) show('stError');
-    }
-  }
-
-  async function advance(task, next) {
-    busy.add(task.order_id); delete errors[task.order_id]; render();
-    try {
-      const res = await api.rpc('helper_advance_preparation', { p_token: token, p_order_id: task.order_id, p_next: next }, { token: null });
-      task.preparation_status = res.preparation_status;
-      toast(`${task.order_number || 'Order'} moved to ${STAGES.find(s => s[0] === res.preparation_status)[1]}.`);
-    } catch (error) {
-      if (denied(error)) return noAccess('removed');
-      const raw = String(error?.message || '');
-      errors[task.order_id] = /task not available/.test(raw)
-        ? 'This order is no longer being prepared.'
-        : /invalid preparation transition/.test(raw) ? 'This order was already updated. Refreshing…' : 'Could not save. Try again.';
-      if (!/Try again/.test(errors[task.order_id])) load(true);
-    } finally {
-      busy.delete(task.order_id); render();
-    }
-  }
-
-  $('refreshBtn').addEventListener('click', () => load(true).then(() => toast('Updated.')));
-  $('retryBtn').addEventListener('click', () => load(false));
-  // Gentle refresh while the page is visible (no background polling).
-  setInterval(() => { if (document.visibilityState === 'visible' && !$('stTasks').hidden) load(true); }, 60000);
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !$('stTasks').hidden) load(true); });
-  load(false);
+(()=>{
+const app=document.getElementById('app'),mark='../foundr/img/cefflo-mark.png',word='../shared/brand/cefflo-logo-wordmark.png';
+const orders=[['CF1001','3 items','2× Nasi Ayam, 1× Air Teh'],['CF1002','2 items','1× Nasi Daging, 1× Air Oren'],['CF1003','1 item','1× Nasi Ayam'],['CF1004','4 items','1× Nasi Lemak, 1× Ayam Goreng, 1× Teh Ais, 1× Kuih'],['CF1005','2 items','1× Nasi Daging, 1× Air Teh'],['CF1006','3 items','2× Nasi Ayam, 1× Air Oren'],['CF1007','1 item','1× Nasi Lemak'],['CF1008','2 items','1× Nasi Ayam, 1× Air Teh']];let packed=new Set,sorted=new Set;
+const set=h=>{app.innerHTML=h;scrollTo(0,0)},brand=()=>`<div class="brand-lockup"><img class="brand-mark" src="${mark}" alt="Cefflo"><img class="wordmark" src="${word}" alt="Cefflo"></div>`,go=(n,p=true)=>{if(p)history.pushState({n},'',`#${n}`);routes[n]?.()},field=(l,t,p)=>`<div class="field"><label>${l}</label><input type="${t}" placeholder="${p}" autocomplete="${t==='password'?'current-password':'email'}"></div>`;
+function sheet(title,lead,body,back='welcome'){set(`<main class="screen sheet-bg"><div class="sheet-shell"><div class="sheet-brand"><img class="wordmark" src="${word}" alt="Cefflo"></div><section class="sheet"><button class="back" data-go="${back}" aria-label="Back">‹</button><h1>${title}</h1><p class="lead">${lead}</p>${body}</section></div></main>`)}
+const submit=next=>document.querySelector('form')?.addEventListener('submit',e=>{e.preventDefault();go(next)});
+function splash(){set(`<main class="screen brand-bg"><div class="auth-shell splash">${brand()}<div class="access-label">HELPER ACCESS</div><p class="tagline">Deliver better. Grow together.</p><div class="progress"><i></i><i></i><i></i></div></div></main>`);setTimeout(()=>{if(location.hash==='#splash'||!location.hash)go('welcome')},1600)}
+const google=`<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.15v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1A6.6 6.6 0 0 1 5.5 12c0-.73.13-1.43.34-2.1V7.06H2.15A11 11 0 0 0 1 12c0 1.78.43 3.46 1.15 4.94l3.69-2.84z"/><path fill="#EA4335" d="M12 5.37c1.62 0 3.06.56 4.21 1.64l3.15-3.15A10.6 10.6 0 0 0 12 1 11 11 0 0 0 2.15 7.06L5.84 9.9C6.71 7.3 9.14 5.37 12 5.37z"/></svg>`;
+function welcome(){set(`<main class="screen brand-bg"><div class="auth-shell"><div class="auth-top"><button class="lang">◎ EN</button></div><div class="hero">${brand()}<div class="access-label">VENDOR</div><div class="access-chip">▣ Helper Access</div><h1>Welcome back</h1><p>Sign in to your preparation tasks</p></div><div class="auth-actions"><button class="provider" data-go="preparation"><span class="mail">${google}</span>Continue with Google</button><button class="provider" data-go="signin"><span class="mail">✉</span>Continue with Email</button><p class="invite">Have an invite? <button class="link" data-go="signup">Get started</button></p></div></div></main>`)}
+function signin(){sheet('Sign in with email','Enter your email and password to continue.',`<form>${field('Email','email','you@yourbusiness.com')}${field('Password','password','Enter password')}<p class="form-link"><button type="button" class="link" data-go="reset">Forgot password?</button></p><button class="primary">Sign in</button></form><p class="footer-prompt">Don’t have an account? <button class="link" data-go="signup">Sign up</button></p>`);submit('preparation')}
+function signup(){sheet('Create your account','Use the email address from your Helper invitation.',`<form>${field('Email','email','you@yourbusiness.com')}${field('Password','password','Create password')}${field('Confirm password','password','Confirm password')}<button class="primary">Create account</button></form><p class="footer-prompt">Already have an account? <button class="link" data-go="signin">Sign in</button></p>`);submit('verify')}
+function reset(){sheet('Reset password',`Enter your email and we’ll send a reset code.`,`<form>${field('Email','email','you@yourbusiness.com')}<button class="primary">Send reset code</button></form><p class="center-link"><button class="link" data-go="signin">Back to sign in</button></p>`,'signin');submit('verify')}
+function verify(){sheet('Verify 6-digit code','Enter the code sent to your email.',`<div class="status-icon">✉</div><form><div class="otp">${Array.from({length:6},(_,i)=>`<input inputmode="numeric" maxlength="1" aria-label="Digit ${i+1}">`).join('')}</div><button class="primary">Verify code</button></form><p class="center-link">Didn’t get the code? <button class="link" type="button">Resend code</button></p><p class="hint">Check your spam folder too.</p>`,'signup');const b=[...document.querySelectorAll('.otp input')];b.forEach((x,i)=>x.oninput=()=>{x.value=x.value.replace(/\D/g,'');if(x.value)b[i+1]?.focus()});submit('preparation')}
+const nav=a=>`<nav class="bottom-nav">${[['preparation','♜','Preparation'],['zones','▧','Zones'],['packing','◇','Packing'],['sorting','▱','Sorting'],['welcome','☰','More']].map(([r,i,l])=>`<button class="nav ${a===r?'active':''}" data-go="${r}"><i>${i}</i>${l}</button>`).join('')}</nav>`,header=(t,s='',back=false,count='')=>`<header class="work-head">${back?`<button class="back-work" data-go="zones">‹</button>`:''}<h1>${t}</h1><p>${s}</p>${count?`<span class="count-pill">${count}</span>`:''}</header>`,work=(t,b,a,o={})=>set(`<main class="screen work">${header(t,o.sub||'',o.back,o.count)}<section class="work-sheet">${b}</section>${nav(a)}</main>`);
+function preparation(){const items=[['🍗','Nasi Ayam','72'],['🍛','Nasi Daging','38'],['🍫','Brownies','27'],['🥤','Air Teh','12'],['🧃','Air Oren','8']];work('Kak Lina Kitchen',`<h2 class="section-title">Preparation</h2><div class="summary"><div class="metric"><b>68</b><span>orders</span></div><div class="metric"><b>157</b><span>items</span></div></div><h2 class="section-title">Required Items</h2><div class="item-list">${items.map(x=>`<div class="item-row"><span class="food">${x[0]}</span><b>${x[1]}</b><span class="qty">${x[2]}<small>items</small></span></div>`).join('')}</div>`,'preparation',{sub:'Sat, 28 Sep 2024'})}
+function zones(){const z=[['Shah Alam','18 orders · 42 items','12 / 18 packed','67%'],['Klang','14 orders · 36 items','0 / 14 packed','0%'],['Petaling Jaya','11 orders · 28 items','0 / 11 packed','0%'],['Subang','9 orders · 21 items','0 / 9 packed','0%']];work('Zones',`<div class="zones">${z.map((x,i)=>`<button class="zone" data-go="packing" style="text-align:left;background:#fff"><div class="zone-top"><h2>${x[0]}</h2><span>›</span></div><p>${x[1]}</p><div class="zone-top"><span class="chip">${i?'Pending':'Packing'}</span><b>${x[2]}</b></div><div class="progressbar"><i style="width:${x[3]}"></i></div></button>`).join('')}</div>`,'zones',{sub:'Kak Lina Kitchen'})}
+const rows=(mode)=>orders.map((o,i)=>{const done=(mode==='packing'?packed:sorted).has(i);return `<button class="order-row" data-order="${i}" style="border-width:0 0 1px;background:#fff;text-align:left"><span class="circle ${done?'done':''}">${done?'✓':''}</span><span><b>#${o[0]}</b><small>${o[1]}<br>${o[2]}</small></span><span class="status ${done?'sorted':''}">${done?(mode==='packing'?'Packed':'Sorted'):'Pending'}</span></button>`}).join('');
+function packing(){work('Packing',`${rows('packing')}<button class="slider ${packed.size===8?'ready':''}" id="slide"><span class="handle">›</span>Slide to Confirm Packing</button>`,'packing',{sub:'Shah Alam',back:true,count:`${packed.size} / 8`});bind(packed,'packing')}
+function sorting(){work('Sorting',`<div class="pickup-card"><div><span>Pickup Time</span><b>10:30 AM</b></div><div><b>18</b><span>orders</span></div><div><b>42</b><span>items</span></div></div>${rows('sorting')}<button class="slider ${sorted.size===8?'ready':''}" id="slide"><span class="handle">›</span>Slide to Confirm Pickup</button>`,'sorting',{sub:'Shah Alam',back:true,count:`${sorted.size} / 8`});bind(sorted,'sorting')}
+function bind(store,mode){document.querySelectorAll('[data-order]').forEach(b=>b.onclick=()=>{store.add(+b.dataset.order);routes[mode]()});document.getElementById('slide').onclick=()=>{if(store.size!==8)return;go(mode==='packing'?'sorting':'ready')}}
+function ready(){work('Ready for Pickup',`<div class="ready-icon">✓</div><h1 class="ready-title">Ready for Pickup</h1><p class="ready-sub">This zone is ready for rider pickup.</p><div class="pickup-card"><div><span>Pickup Time</span><b>10:30 AM</b></div><div><b>18</b><span>orders</span></div><div><b>42</b><span>items</span></div></div><div class="rider-card"><small>PICKUP RIDER</small><div class="rider"><div class="avatar">🪖</div><div><h2>Amir Hakim</h2><p>🏍 Motorcycle</p><p>VMC 4312</p></div></div></div>`,'sorting',{back:true})}
+const routes={splash,welcome,signin,signup,reset,verify,preparation,zones,packing,sorting,ready};app.onclick=e=>{const b=e.target.closest('[data-go]');if(b)go(b.dataset.go)};onpopstate=()=>go(location.hash.slice(1)||'welcome',false);if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js').catch(()=>{});go(location.hash.slice(1)||'splash',false);
 })();

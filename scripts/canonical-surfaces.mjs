@@ -12,7 +12,7 @@ export const CANONICAL_SURFACES = Object.freeze({
   foundr: 'Founder Web/PWA',
   // Invitation PWA: rider and team (Operator / Helper) invitations (D-72/D-74).
   invite: 'Invitation PWA',
-  // Helper PWA (D-73), restored by Founder decision 2026-10-01.
+  // Authenticated Helper PWA, separated from Vendor by Founder 2026-10-02.
   helper: 'Helper PWA',
   // Not a product: kill-switch worker for retired web surfaces.
   retired: 'Retirement worker',

@@ -1,7 +1,7 @@
 """Canonical CEFFLO UI baseline guard (D-62).
 
-Canonical UI products: Vendor (Mobile + Web/Desktop), Driver (Flutter Mobile),
-Customer Tracking (PWA), Founder (Web/PWA). Public Website: NOT IMPLEMENTED.
+Canonical UI products: Vendor (Mobile + Web/Desktop), authenticated Helper
+(PWA), Driver (Flutter Mobile), Customer Tracking (PWA), Founder (Web/PWA).
 Invitation is a temporary supporting route, not a product.
 
 These checks stop a removed UI from quietly returning to the active baseline,
@@ -104,6 +104,35 @@ class VendorWebAuthEntryTests(unittest.TestCase):
 
     def test_vendor_shell_cache_was_rotated(self):
         self.assertNotIn("cefflo-vendor-shell-v1'", read("vendor/sw.js"))
+
+
+class HelperPwaTests(unittest.TestCase):
+    def test_helper_is_standalone_html_pwa(self):
+        html = read("helper/index.html")
+        manifest = json.loads(read("helper/manifest.json"))
+        self.assertIn('<div id="app"', html)
+        self.assertEqual(manifest["name"], "Cefflo Helper")
+        self.assertEqual(manifest["display"], "standalone")
+        self.assertTrue((ROOT / "helper/service-worker.js").is_file())
+
+    def test_helper_contains_shared_auth_and_five_work_screens(self):
+        app = read("helper/app.js")
+        for marker in (
+            "function splash()",
+            "function welcome()",
+            "function signin()",
+            "function signup()",
+            "function reset()",
+            "function verify()",
+            "function preparation()",
+            "function zones()",
+            "function packing()",
+            "function sorting()",
+            "function ready()",
+        ):
+            self.assertIn(marker, app)
+        self.assertNotIn("helper_access", app)
+        self.assertNotIn("helper_tasks", app)
 
 
 class LegacyPurpleUiTests(unittest.TestCase):
