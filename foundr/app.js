@@ -875,18 +875,19 @@ const AI = {
 };
 const ai = (k, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${AI[k]}</svg>`;
 const GOOGLE = '<svg class="fa-g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
+const GMAIL = '<svg class="fa-gmail" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M6 10.8v26.4h7.2V20.9L24 29l10.8-8.1v16.3H42V10.8L24 24.3z"/><path fill="#34A853" d="M6 37.2h7.2V20.9L6 15.5z"/><path fill="#FBBC04" d="M34.8 37.2H42V15.5l-7.2 5.4z"/><path fill="#EA4335" d="M6 10.8v4.7l18 13.5 18-13.5v-4.7c0-3.3-3.8-5.2-6.4-3.2L24 16.3 12.4 7.6C9.8 5.6 6 7.5 6 10.8z"/></svg>';
 const SECURE_FOOT = `<p class="fa-foot">${ai('lock')}<span>Secure • Only Authorized</span></p>`;
 const BRAND = (big = false) => `<div class="fa-brand${big ? ' big' : ''}"><span class="fa-mark"><img src="./img/cefflo-mark.png" alt="Cefflo"></span><b>FOUNDR</b><small>Admin Dashboard</small></div>`;
 const ORB = icon => `<div class="fa-orb">${ai(icon)}</div>`;
-const btn = (label, attrs = 'type="submit"', cls = 'fa-btn') => `<button class="${cls}" ${attrs}><span>${label}</span>${ai('arrow', 'fa-btn-ic')}</button>`;
+const btn = (label, attrs = 'type="submit"', cls = 'fa-btn') => `<button class="${cls}" ${attrs}><span>${label}</span></button>`;
 const field = (icon, input, extra = '') => `<label class="fa-field">${ai(icon)}${input}${extra}</label>`;
 const EYE = '<button class="fa-eye" type="button" data-eye aria-label="Show password" aria-pressed="false">' + `<svg viewBox="0 0 24 24" aria-hidden="true">${AI.eyeOff}</svg></button>`;
 
 // One frame for every auth screen: optional back, the brand block (or an
 // icon orb), the screen body and the "Secure • Only Authorized" foot.
-function authFrame(inner, { back = null, top = 'brand', foot = true } = {}) {
+function authFrame(inner, { back = null, top = null, foot = true } = {}) {
   authScreen = true;
-  root.innerHTML = `<div class="fa-screen"><main class="fa-stage">
+  root.innerHTML = `<div class="fa-screen"><main class="fa-stage${top ? '' : ' fa-stage-content'}">
     ${back ? `<button type="button" class="fa-back" data-auth-back aria-label="Back">${ai('back')}</button>` : ''}
     ${top === 'brand' ? BRAND() : top === 'brand-big' ? BRAND(true) : top ? ORB(top) : ''}
     <div class="fa-body">${inner}</div>
@@ -953,8 +954,8 @@ function renderLanding(message = '') {
   authFrame(`${message ? `<div class="fa-msg" role="status">${esc(message)}</div>` : ''}
     <p class="fa-tag">Secure control<br>for a growing tomorrow.</p>
     <div class="fa-choices">
-      <button class="fa-choice" type="button" data-google>${GOOGLE}<span>Continue with Google</span>${ai('chev', 'fa-chev')}</button>
-      <button class="fa-choice" type="button" data-email>${ai('mail')}<span>Sign in with Email</span>${ai('chev', 'fa-chev')}</button>
+      <button class="fa-choice" type="button" data-google>${GOOGLE}<span>Continue with Google</span></button>
+      <button class="fa-choice" type="button" data-email>${GMAIL}<span>Sign in with Email</span></button>
     </div>`, { top: 'brand-big' });
   // Google sign-in is on HOLD (Founder): the button is design only until it
   // is wired; it never starts an OAuth redirect today.
@@ -1021,7 +1022,7 @@ function renderCheckEmail(email) {
   authFrame(`<h1 class="fa-title c">Check Your Email</h1>
     <p class="fa-sub c">We've sent a 6-digit verification code to<br><b>${esc(email)}</b></p>
     <ol class="fa-steps num"><li><i>1</i>Open your email inbox</li><li><i>2</i>Find the code from FOUNDR</li><li><i>3</i>Enter the code to continue</li></ol>
-    <a class="fa-btn" href="${esc(mailAppUrl(email))}" target="_blank" rel="noopener"><span>Open Email App</span>${ai('ext', 'fa-btn-ic')}</a>
+    <a class="fa-btn" href="${esc(mailAppUrl(email))}" target="_blank" rel="noopener"><span>Open Email App</span></a>
     <button class="fa-link c" type="button" data-enter-code>Enter the code</button>
     <button class="fa-link c" type="button" data-back-signin>Back to Sign In</button>`, { top: 'mail', foot: false });
   root.querySelector('[data-enter-code]').addEventListener('click', () => renderVerifyEmail(email, 'signup'));
@@ -1091,7 +1092,7 @@ function renderResetSent(email) {
   authFrame(`<h1 class="fa-title c">Reset Link Sent</h1>
     <p class="fa-sub c">We've sent a password reset link to<br><b>${esc(email)}</b></p>
     <ol class="fa-steps"><li><i>${ai('check')}</i>Check your email inbox</li><li><i>${ai('check')}</i>Click the reset link</li><li><i>${ai('check')}</i>Create a new password</li></ol>
-    <a class="fa-btn" href="${esc(mailAppUrl(email))}" target="_blank" rel="noopener"><span>Open Email App</span>${ai('ext', 'fa-btn-ic')}</a>
+    <a class="fa-btn" href="${esc(mailAppUrl(email))}" target="_blank" rel="noopener"><span>Open Email App</span></a>
     <button class="fa-link c" type="button" data-enter-code>Have the 6-digit code? Enter it</button>
     <button class="fa-link c" type="button" data-back-signin>Back to Sign In</button>`, { top: 'send' });
   root.querySelector('[data-enter-code]').addEventListener('click', () => renderVerifyEmail(email, 'recovery'));
@@ -1127,7 +1128,7 @@ function renderPasswordUpdated() {
   const email = me.user?.email || '';
   authFrame(`<div class="fa-done">${ORB('check')}<h1 class="fa-title c">Password Updated</h1>
     <p class="fa-sub c">Your password has been successfully updated. You can now sign in.</p>
-    ${btn('Go to Sign In', 'type="button" data-go-signin')}</div>`, { top: 'brand', foot: false });
+    ${btn('Go to Sign In', 'type="button" data-go-signin')}</div>`, { foot: false });
   // The recovery session is not kept: sign in again with the new password.
   root.querySelector('[data-go-signin]').addEventListener('click', async () => { await F.signOut().catch(() => {}); reset(); renderSignIn('', email); });
 }

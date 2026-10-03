@@ -78,7 +78,11 @@ code{font-size:12.5px;background:#f4f6f9;padding:1px 5px;border-radius:4px}
 .fa-stage{position:relative;width:100%;max-width:440px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;
   padding:calc(22px + env(safe-area-inset-top,0px)) 24px calc(18px + env(safe-area-inset-bottom,0px));gap:20px}
 @media(min-width:560px){.fa-stage{min-height:auto;margin:40px 0;border-radius:30px;border:1px solid #ffffff26;
-  background:linear-gradient(180deg,#1557e633,#04102a99 55%);box-shadow:0 30px 90px #000a,inset 0 1px 0 #ffffff1a;padding:24px 28px 20px}}
+  background:linear-gradient(180deg,#1557e633,#04102a99 55%);box-shadow:0 30px 90px #000a,inset 0 1px 0 #ffffff1a;padding:24px 28px 20px}
+  .fa-stage-content{min-height:560px}}
+.fa-stage-content{justify-content:center}
+.fa-stage-content .fa-body{width:100%}
+.fa-stage-content .fa-foot{position:absolute;right:24px;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:24px;margin:0;padding:0}
 .fa-back{position:absolute;top:calc(18px + env(safe-area-inset-top,0px));left:12px;width:44px;height:44px;border:0;border-radius:999px;background:transparent;color:#fff;display:grid;place-items:center}
 .fa-back:hover{background:#ffffff14}
 .fa-screen svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
@@ -117,19 +121,22 @@ code{font-size:12.5px;background:#f4f6f9;padding:1px 5px;border-radius:4px}
 .fa-link:hover{text-decoration:underline}.fa-link.c{justify-self:center}.fa-link:disabled{color:#7f8fab;cursor:default;text-decoration:none}
 .fa-link.danger{color:#ff8a98}
 .fa-btn{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:50px;border:1px solid #ffffffb8;border-radius:999px;
-  background:linear-gradient(180deg,#fffffff2,#ffffffc9);color:#0b2457;font-size:16px;font-weight:600;text-decoration:none;cursor:pointer;
+  background:#ffffffe6;color:#0b2457;font-size:16px;font-weight:600;text-align:center;text-decoration:none;cursor:pointer;
   box-shadow:inset 0 1px 0 #fff,0 10px 26px #0000003d,0 0 22px #ffffff1f;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);transition:filter .15s,transform .15s,box-shadow .15s}
 .fa-btn:hover{filter:brightness(1.04);transform:translateY(-1px);box-shadow:inset 0 1px 0 #fff,0 13px 30px #00000047,0 0 26px #ffffff29}.fa-btn:disabled{opacity:.6;cursor:progress;transform:none}
-.fa-btn-ic{position:absolute;right:22px}
 .fa-btn.danger{background:linear-gradient(180deg,#f0566a,#c8344a);color:#fff;border-color:#ff8a98}.fa-btn.danger:disabled{cursor:not-allowed}
 .fa-choices{display:grid;gap:12px}
-.fa-choice{display:flex;align-items:center;gap:14px;height:50px;padding:0 18px;border-radius:999px;border:1px solid #ffffffb8;color:#0b2457;font-size:15.5px;font-weight:600;text-align:left;cursor:pointer;
-  background:linear-gradient(180deg,#fffffff2,#ffffffc9);box-shadow:inset 0 1px 0 #fff,0 10px 26px #0000003d,0 0 22px #ffffff1f;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);transition:filter .15s,transform .15s,box-shadow .15s}
+.fa-choice{position:relative;display:flex;align-items:center;justify-content:center;height:50px;padding:0 54px;border-radius:999px;border:1px solid #ffffffb8;color:#0b2457;font-size:15.5px;font-weight:600;text-align:center;cursor:pointer;
+  background:#ffffffe6;box-shadow:inset 0 1px 0 #fff,0 10px 26px #0000003d,0 0 22px #ffffff1f;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);transition:filter .15s,transform .15s,box-shadow .15s}
 .fa-choice:hover{filter:brightness(1.04);transform:translateY(-1px);box-shadow:inset 0 1px 0 #fff,0 13px 30px #00000047,0 0 26px #ffffff29}
-.fa-choice span{flex:1}.fa-g{width:24px!important;height:24px!important}.fa-chev{opacity:.8}
+.fa-choice>svg:first-child{position:absolute;left:18px}.fa-choice span{display:block}.fa-g,.fa-gmail{width:24px!important;height:24px!important}
 .fa-alt{margin:0;text-align:center;font-size:14px;color:#c3cde0}
 .fa-foot{margin:auto 0 0;padding-top:18px;display:flex;align-items:center;justify-content:center;gap:8px;color:#aab6ca;font-size:13.5px}
 .fa-foot svg{width:16px;height:16px}
+@media(max-width:559px){
+  .fa-stage:has(.fa-choices) .fa-body{margin-top:auto;margin-bottom:clamp(52px,8vh,76px)}
+  .fa-stage:has(.fa-choices) .fa-foot{margin-top:0;padding-top:0}
+}
 .fa-msg{display:flex;align-items:center;gap:8px;padding:12px 14px;border-radius:12px;background:#1e7bff26;border:1px solid #4d9cff59;color:#d6e6ff;font-size:14px}
 .fa-msg.ok{background:#12a67526;border-color:#3ad3a066;color:#c8f5e3}.fa-msg svg{width:18px;height:18px}
 .fa-err{color:#ff9aa8;font-size:14px;margin:-4px 0}
