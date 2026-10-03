@@ -1,0 +1,58 @@
+{
+  "id": "10000000-0000-4000-8000-000000000002",
+  "name": "CEFFLO - 02 - Research & Angle Miner",
+  "description": "Research-only boundary. Produces ranked angle contracts and checks Marketing Memory; it does not write platform copy.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "43c7b3a8-0000-4000-8000-17fa6a5a1b3e",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nif (!input.context_pack || input.context_pack.status !== 'CONTEXT_READY') throw new Error('ERROR_SOT: Context Pack required');\nconst memory = Array.isArray(input.marketing_memory) ? input.marketing_memory : [];\nconst angle = { angle_id: 'angle-roi-001', topic: 'Local delivery operational clarity', audience: input.target_audience || 'Local business operator', pain_or_desire: 'Multiple local orders become hard to coordinate', angle: 'Turn scattered delivery activity into one visible operating flow', hook_direction: 'Show the operational contrast without unsupported claims', priority_score: 90, duplication_score: memory.some((m) => m.angle === 'Turn scattered delivery activity into one visible operating flow') ? 100 : 0, source_basis: input.context_pack.source_references };\nreturn [{ json: { ...input, candidate_angles: [angle], selected_angles: [angle], stage: 'RESEARCH', status: 'ANGLES_READY', updated_at: new Date().toISOString() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "e68d0b3f-0000-4000-8000-a3943d79a6b9",
+      "name": "Mine Deterministic Angles"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Mine Deterministic Angles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloRoi": true,
+    "providerMode": "stub",
+    "activationProhibited": true
+  },
+  "pinData": {},
+  "tags": []
+}

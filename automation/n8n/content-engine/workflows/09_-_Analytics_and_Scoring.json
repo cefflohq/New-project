@@ -1,0 +1,58 @@
+{
+  "id": "10000000-0000-4000-8000-000000000011",
+  "name": "CEFFLO - 09 - Analytics & Scoring",
+  "description": "Deterministic platform-aware analytics/scoring stub; no live analytics credential is required.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4d82866c-0000-4000-8000-00f07dab4fff",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nconst baselines = { instagram: 72, facebook: 68, tiktok: 75, threads: 64 };\nconst analytics_records = (input.publish_records || []).map((r) => ({ content_id: r.content_id, platform: r.platform, views: 0, reach: 0, watch_time: 0, completion_rate: 0, likes: 0, comments: 0, shares: 0, saves: 0, clicks: 0, performance_score: baselines[r.platform], scoring_basis: 'deterministic_roi_platform_baseline', collected_at: new Date().toISOString() }));\nreturn [{ json: { ...input, analytics_records, stage: 'ANALYTICS', status: 'ANALYZED', updated_at: new Date().toISOString() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "9b216627-0000-4000-8000-6f0b3d88ea85",
+      "name": "Create Platform-Aware Stub Metrics"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Create Platform-Aware Stub Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloRoi": true,
+    "providerMode": "stub",
+    "activationProhibited": true
+  },
+  "pinData": {},
+  "tags": []
+}

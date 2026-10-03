@@ -1,0 +1,58 @@
+{
+  "id": "10000000-0000-4000-8000-000000000008",
+  "name": "CEFFLO - 06 - AI QA",
+  "description": "Automated Product Truth, brand, claim and platform-fit gate with bounded targeted revision.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "91b03d55-0000-4000-8000-627e0409c94d",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nconst packages = input.creative_packages || [];\nconst expected = ['meta','tiktok','threads'];\nconst missing = expected.filter((lane) => !packages.some((p) => p.lane === lane));\nconst fake = packages.some((p) => JSON.stringify(p).match(/guaranteed|live gps|automatic route optimization/i));\nlet qa_status = missing.length || fake ? 'REVISE' : 'PASS';\nconst revision = input.qa_fixture?.revision_target || (missing.length ? { stage: 'CREATIVE', lane: missing[0] } : { stage: null, lane: null });\nif (input.qa_fixture?.force_status) qa_status = input.qa_fixture.force_status;\nconst retry = Number(input.retry_count || 0);\nif (qa_status === 'REVISE' && retry >= Number(input.max_retries ?? 2)) throw new Error('ERROR_VALIDATION: targeted retry limit exhausted');\nreturn [{ json: { ...input, qa_status, qa_score: qa_status === 'PASS' ? 100 : 60, failed_rules: missing.map((x) => 'missing_' + x), qa_feedback: fake ? ['Unsupported claim detected'] : [], revision_target: revision, stage: 'AI_QA', status: qa_status === 'PASS' ? 'FOUNDER_REVIEW' : qa_status === 'REJECT' ? 'REJECTED' : 'REVISION_REQUIRED', updated_at: new Date().toISOString() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "23a06efc-0000-4000-8000-ec58c66420db",
+      "name": "Run Deterministic QA"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Run Deterministic QA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloRoi": true,
+    "providerMode": "stub",
+    "activationProhibited": true
+  },
+  "pinData": {},
+  "tags": []
+}

@@ -1,0 +1,58 @@
+{
+  "id": "10000000-0000-4000-8000-000000000003",
+  "name": "CEFFLO - 03 - Master Concept Builder",
+  "description": "Transforms one selected Research angle into a Core Experiment. master_concept_id is the canonical Core Experiment ID.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a83a6296-0000-4000-8000-370d5ce4f246",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nconst angle = input.selected_angle || input.selected_angles?.[0];\nif (!angle?.angle_id) throw new Error('ERROR_VALIDATION: selected internal angle required');\nconst id = input.master_concept_id;\nif (!/^CEFFLO-\\d{4}-W\\d{2}-E\\d{3}$/.test(id || '')) throw new Error('ERROR_VALIDATION: master_concept_id must be CEFFLO-YYYY-Wxx-E###');\nconst concept = { master_concept_id: id, angle_id: angle.angle_id, core_message: 'Cefflo helps operators see and coordinate today’s local delivery operation.', problem: angle.pain_or_desire, insight: 'The coordination problem is operational visibility, not merely rider availability.', cefflo_relevance: 'Cefflo structures orders, coverage, zones, delivery planning, runs and delivery completion.', truth_basis: angle.source_basis, hook_direction: angle.hook_direction, cta: 'See how the delivery operation fits together.', creative_direction: 'Use only real product UI or clearly labelled illustration.', allowed_claims: ['Cefflo is built for businesses operating their own local same-day delivery.'], prohibited_claims: ['automatic route optimization','live GPS','guaranteed savings'], source_references: input.context_pack.source_references, status: 'CONCEPT_READY' };\nreturn [{ json: { ...input, ...concept, stage: 'MASTER_CONCEPT', status: 'CONCEPT_READY', updated_at: new Date().toISOString() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "a4562000-0000-4000-8000-d4ac75832b95",
+      "name": "Build Core Experiment"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Core Experiment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloRoi": true,
+    "providerMode": "stub",
+    "activationProhibited": true
+  },
+  "pinData": {},
+  "tags": []
+}

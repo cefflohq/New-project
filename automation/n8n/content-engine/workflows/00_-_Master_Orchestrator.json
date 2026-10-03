@@ -1,0 +1,475 @@
+{
+  "id": "10000000-0000-4000-8000-000000000000",
+  "name": "CEFFLO - 00 - Master Orchestrator",
+  "description": "Inactive ROI master chain. Manual trigger only; disabled schedule is included as a visible production boundary.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a47a6887-0000-4000-8000-4df38602393f",
+      "name": "Manual ROI Trigger"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        180
+      ],
+      "id": "b49ba7b2-0000-4000-8000-12179fb99792",
+      "name": "Production Schedule (DISABLED)",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $input.first().json; const now = new Date().toISOString();\nconst run = source.run_id || '00000000-0000-4000-8000-000000000001';\nreturn [{ json: { run_id: run, task_id: source.task_id || '00000000-0000-4000-8000-000000000002', campaign_id: source.campaign_id ?? null, concept_id: null, master_concept_id: source.master_concept_id || 'CEFFLO-2026-W37-E001', stage: 'ORCHESTRATOR', status: 'NEW', market: source.market || 'Malaysia', language: source.language || 'English', objective: source.objective || 'ROI architecture smoke test', target_audience: source.target_audience || 'Local business operator', priority: 'NORMAL', retry_count: Number(source.retry_count || 0), max_retries: 2, concepts_required: Number(source.concepts_required || 1), founder_status: source.founder_status || 'HOLD', publish_mode: 'stub', paid_growth_mode: 'stub', created_at: source.created_at || now, updated_at: now, sot_documents: source.sot_documents || [], marketing_memory: source.marketing_memory || [] } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "238081d3-0000-4000-8000-3a3f6e34841f",
+      "name": "Build Run Envelope"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "10000000-0000-4000-8000-000000000001",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        500,
+        0
+      ],
+      "id": "e65ef999-0000-4000-8000-46f7a69e7f8c",
+      "name": "Execute CEFFLO - 01 - SOT Retrieval"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "10000000-0000-4000-8000-000000000002",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        750,
+        0
+      ],
+      "id": "d8e3398c-0000-4000-8000-45cf3aab57be",
+      "name": "Execute CEFFLO - 02 - Research & Angle Miner"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "10000000-0000-4000-8000-000000000003",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1000,
+        0
+      ],
+      "id": "ec312d52-0000-4000-8000-7f84e5076c47",
+      "name": "Execute CEFFLO - 03 - Master Concept Builder"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "10000000-0000-4000-8000-000000000004",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1250,
+        0
+      ],
+      "id": "461b34a4-0000-4000-8000-dadb4ab57e71",
+      "name": "Execute CEFFLO - 04 - Creative Router"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "10000000-0000-4000-8000-000000000005",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1500,
+        0
+      ],
+      "id": "b1a0033b-0000-4000-8000-ed87def4053b",
+      "name": "Execute CEFFLO - 05A - Meta Creator"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "10000000-0000-4000-8000-000000000006",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1750,
+        0
+      ],
+      "id": "170b4afe-0000-4000-8000-e88b66bfcad9",
+      "name": "Execute CEFFLO - 05B - TikTok Creator"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "10000000-0000-4000-8000-000000000007",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        2000,
+        0
+      ],
+      "id": "9d453e53-0000-4000-8000-fd69518d5e68",
+      "name": "Execute CEFFLO - 05C - Threads Writer"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "10000000-0000-4000-8000-000000000008",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        2250,
+        0
+      ],
+      "id": "a587cd11-0000-4000-8000-687f10f27aae",
+      "name": "Execute CEFFLO - 06 - AI QA"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "10000000-0000-4000-8000-000000000009",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        2500,
+        0
+      ],
+      "id": "30c8aa70-0000-4000-8000-2f5c587ef8aa",
+      "name": "Execute CEFFLO - 07 - Founder Approval"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "10000000-0000-4000-8000-000000000010",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        2750,
+        0
+      ],
+      "id": "486c8058-0000-4000-8000-18475ceb0043",
+      "name": "Execute CEFFLO - 08 - Publisher"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "10000000-0000-4000-8000-000000000011",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        3000,
+        0
+      ],
+      "id": "6c151b7e-0000-4000-8000-caf64778dc41",
+      "name": "Execute CEFFLO - 09 - Analytics & Scoring"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "10000000-0000-4000-8000-000000000012",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        3250,
+        0
+      ],
+      "id": "c10a88d3-0000-4000-8000-2ea64b694af6",
+      "name": "Execute CEFFLO - 10 - Marketing Memory"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json; return [{ json: { ...input, roi_summary: { status: input.status, paid_calls: 0, live_posts: 0, schedules_active: false, destinations: (input.publish_records || []).map((r) => r.platform) } } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3500,
+        0
+      ],
+      "id": "5d7d099c-0000-4000-8000-46e13feeab70",
+      "name": "Run Summary"
+    }
+  ],
+  "connections": {
+    "Manual ROI Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Run Envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Run Envelope": {
+      "main": [
+        [
+          {
+            "node": "Execute CEFFLO - 01 - SOT Retrieval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute CEFFLO - 01 - SOT Retrieval": {
+      "main": [
+        [
+          {
+            "node": "Execute CEFFLO - 02 - Research & Angle Miner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute CEFFLO - 02 - Research & Angle Miner": {
+      "main": [
+        [
+          {
+            "node": "Execute CEFFLO - 03 - Master Concept Builder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute CEFFLO - 03 - Master Concept Builder": {
+      "main": [
+        [
+          {
+            "node": "Execute CEFFLO - 04 - Creative Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute CEFFLO - 04 - Creative Router": {
+      "main": [
+        [
+          {
+            "node": "Execute CEFFLO - 05A - Meta Creator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute CEFFLO - 05A - Meta Creator": {
+      "main": [
+        [
+          {
+            "node": "Execute CEFFLO - 05B - TikTok Creator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute CEFFLO - 05B - TikTok Creator": {
+      "main": [
+        [
+          {
+            "node": "Execute CEFFLO - 05C - Threads Writer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute CEFFLO - 05C - Threads Writer": {
+      "main": [
+        [
+          {
+            "node": "Execute CEFFLO - 06 - AI QA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute CEFFLO - 06 - AI QA": {
+      "main": [
+        [
+          {
+            "node": "Execute CEFFLO - 07 - Founder Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute CEFFLO - 07 - Founder Approval": {
+      "main": [
+        [
+          {
+            "node": "Execute CEFFLO - 08 - Publisher",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute CEFFLO - 08 - Publisher": {
+      "main": [
+        [
+          {
+            "node": "Execute CEFFLO - 09 - Analytics & Scoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute CEFFLO - 09 - Analytics & Scoring": {
+      "main": [
+        [
+          {
+            "node": "Execute CEFFLO - 10 - Marketing Memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute CEFFLO - 10 - Marketing Memory": {
+      "main": [
+        [
+          {
+            "node": "Run Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloRoi": true,
+    "providerMode": "stub",
+    "activationProhibited": true
+  },
+  "pinData": {},
+  "tags": []
+}

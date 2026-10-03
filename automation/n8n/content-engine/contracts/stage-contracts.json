@@ -1,0 +1,37 @@
+{
+  "contract_version": "roi-1",
+  "canonical_workflows": ["00", "01", "02", "03", "04", "05A", "05B", "05C", "06", "07", "08", "09", "10", "11", "12", "99"],
+  "identifiers": {
+    "master_concept_id": "^CEFFLO-[0-9]{4}-W[0-9]{2}-E[0-9]{3}$",
+    "angle_id": "internal Research working identifier only"
+  },
+  "creative_lanes": {
+    "meta": ["instagram", "facebook"],
+    "tiktok": ["tiktok"],
+    "threads": ["threads"]
+  },
+  "qa": {
+    "statuses": ["PASS", "REVISE", "REJECT"],
+    "revision_targets": ["MASTER_CONCEPT", "meta", "tiktok", "threads"],
+    "max_retries_default": 2
+  },
+  "founder_gate": {
+    "decisions": ["APPROVE", "REVISE", "REJECT", "HOLD"],
+    "publisher_required_decision": "APPROVE"
+  },
+  "publisher": {
+    "roi_mode": "stub",
+    "destinations": ["instagram", "facebook", "tiktok", "threads"],
+    "idempotency_scope": ["master_concept_id", "platform"]
+  },
+  "paid_growth": {
+    "roi_mode": "stub",
+    "schedule_active": false,
+    "spend": 0,
+    "advertising_api_called": false
+  },
+  "errors": {
+    "codes": ["ERROR_SOT", "ERROR_VALIDATION", "ERROR_AI", "ERROR_MEDIA", "ERROR_PUBLISH", "ERROR_ANALYTICS", "ERROR_TIMEOUT", "ERROR_UNKNOWN"],
+    "manual_recovery_preserves_ids": true
+  }
+}

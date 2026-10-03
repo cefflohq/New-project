@@ -1,0 +1,7 @@
+[
+  { "domain": "product", "source": "docs/cefflo/sot/01_PRODUCT_TRUTH.md", "section": "Canonical Definition" },
+  { "domain": "brand", "source": "docs/cefflo/sot/05_BRAND_BRAIN.md", "section": "Brand Core" },
+  { "domain": "audience", "source": "docs/cefflo/sot/marketing/01_AUDIENCE_ICP.md", "section": "Audience" },
+  { "domain": "claims", "source": "docs/cefflo/sot/marketing/02_CLAIMS_REGISTRY.md", "section": "Claims" },
+  { "domain": "content", "source": "docs/cefflo/sot/marketing/03_CONTENT_PHILOSOPHY.md", "section": "Content Philosophy" }
+]

@@ -1,0 +1,92 @@
+{
+  "id": "10000000-0000-4000-8000-000000000012",
+  "name": "CEFFLO - 10 - Marketing Memory",
+  "description": "Builds dynamic evidence records for PostgreSQL. Marketing Memory remains subordinate to canonical SOT.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2ec18451-0000-4000-8000-f273431151cd",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nconst angle = input.selected_angle || input.selected_angles?.[0] || {};\nconst byLane = Object.fromEntries((input.creative_packages || []).map((p) => [p.lane,p]));\nconst memories = (input.analytics_records || []).map((a) => { const lane = ['instagram','facebook'].includes(a.platform) ? 'meta' : a.platform; const p = byLane[lane] || {}; return { content_id: a.content_id, master_concept_id: input.master_concept_id, angle: angle.angle, hook: p.hook || p.opening_line || '', audience: angle.audience, content_pillar: null, platform: a.platform, format: p.format, publish_date: null, performance_score: a.performance_score, qa_feedback: input.qa_feedback || [], founder_feedback: input.founder_feedback ?? null, winner_or_loser: null, lessons: [], reuse_recommendation: null }; });\nreturn [{ json: { ...input, marketing_memory_records: memories, stage: 'MARKETING_MEMORY', status: 'ARCHIVED', updated_at: new Date().toISOString() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "b54ae4b0-0000-4000-8000-aab3c42b9a69",
+      "name": "Build Marketing Memory Records"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT cefflo_content_engine.persist_marketing_memory($1::jsonb) AS result",
+        "options": {
+          "queryReplacement": "={{ [JSON.stringify($json)] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        520,
+        0
+      ],
+      "id": "1d5090ad-0000-4000-8000-a9b0725f1c44",
+      "name": "Persist Marketing Memory",
+      "credentials": {
+        "postgres": {
+          "id": "CEFFLO_CONTENT_ENGINE_POSTGRES",
+          "name": "CEFFLO Content Engine PostgreSQL"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Marketing Memory Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Marketing Memory Records": {
+      "main": [
+        [
+          {
+            "node": "Persist Marketing Memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloRoi": true,
+    "providerMode": "stub",
+    "activationProhibited": true
+  },
+  "pinData": {},
+  "tags": []
+}

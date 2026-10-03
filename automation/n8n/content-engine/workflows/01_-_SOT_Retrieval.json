@@ -1,0 +1,178 @@
+{
+  "id": "10000000-0000-4000-8000-000000000001",
+  "name": "CEFFLO - 01 - SOT Retrieval",
+  "description": "Builds a task-specific Context Pack through the explicit GitHub adapter boundary. The offline fixture resolves canonical repository files at a Git revision; missing sources fail with ERROR_SOT.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ef0ef2c2-0000-4000-8000-798f0b781513",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\nreturn [{ json: input }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "9fbb0065-0000-4000-8000-3b43d7ae48f7",
+      "name": "Validate Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nif (!Array.isArray(input.sot_documents) || input.sot_documents.length === 0) throw new Error('ERROR_SOT: canonical GitHub SOT source list is missing');\nreturn [{ json: input }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ],
+      "id": "2afe1301-0000-4000-8000-7e1488f00eed",
+      "name": "Resolve Canonical SOT Sources"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst invalid = input.sot_documents.filter((doc) => !doc.source || !doc.content || !doc.source_revision);\nif (invalid.length) throw new Error('ERROR_SOT: canonical source could not be resolved');\nreturn [{ json: input }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        0
+      ],
+      "id": "8fc00cc7-0000-4000-8000-7f4198a0fceb",
+      "name": "Fetch GitHub Content"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst selected = input.sot_documents.filter((doc) => doc.section && ['product','brand','audience','content','claims'].includes(doc.domain));\nif (!selected.length) throw new Error('ERROR_SOT: no relevant canonical sections resolved');\nreturn [{ json: { ...input, sot_documents: selected } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        0
+      ],
+      "id": "e9e89af2-0000-4000-8000-6e0372a330e5",
+      "name": "Select Relevant Sections"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nreturn [{ json: { ...input, context_pack: {\n  product_truth_context: input.sot_documents.filter((d) => d.domain === 'product'),\n  brand_context: input.sot_documents.filter((d) => d.domain === 'brand'),\n  audience_context: input.sot_documents.filter((d) => d.domain === 'audience'),\n  content_rules: input.sot_documents.filter((d) => d.domain === 'content'),\n  claim_guardrails: input.sot_documents.filter((d) => d.domain === 'claims'),\n  source_references: input.sot_documents.map((d) => ({ source: d.source, section: d.section, source_revision: d.source_revision })),\n  retrieved_at: new Date().toISOString(), status: 'CONTEXT_READY'\n}, stage: 'SOT_RETRIEVAL', status: 'CONTEXT_READY', updated_at: new Date().toISOString() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ],
+      "id": "e350502f-0000-4000-8000-ca935f954b93",
+      "name": "Build Context Pack"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nif (input.context_pack?.status !== 'CONTEXT_READY' || !input.context_pack.source_references?.length) throw new Error('ERROR_SOT: Context Pack validation failed');\nreturn [{ json: input }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        0
+      ],
+      "id": "326ee1a1-0000-4000-8000-eaf629d1259d",
+      "name": "Validate Context Pack"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Request": {
+      "main": [
+        [
+          {
+            "node": "Resolve Canonical SOT Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve Canonical SOT Sources": {
+      "main": [
+        [
+          {
+            "node": "Fetch GitHub Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch GitHub Content": {
+      "main": [
+        [
+          {
+            "node": "Select Relevant Sections",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Relevant Sections": {
+      "main": [
+        [
+          {
+            "node": "Build Context Pack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Context Pack": {
+      "main": [
+        [
+          {
+            "node": "Validate Context Pack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloRoi": true,
+    "providerMode": "stub",
+    "activationProhibited": true
+  },
+  "pinData": {},
+  "tags": []
+}

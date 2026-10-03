@@ -1,0 +1,58 @@
+{
+  "id": "10000000-0000-4000-8000-000000000010",
+  "name": "CEFFLO - 08 - Publisher",
+  "description": "Idempotent ROI publisher boundary. It creates four STUBBED destination records and cannot call live social APIs.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "255a3368-0000-4000-8000-74d67721d581",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst input = $input.first().json;\nconst required = ['run_id','task_id','stage','status','market','language','objective','retry_count','created_at','updated_at'];\nconst missingEnvelopeFields = required.filter((key) => input[key] === undefined || input[key] === null || input[key] === '');\nif (missingEnvelopeFields.length) throw new Error('ERROR_VALIDATION: missing envelope fields: ' + missingEnvelopeFields.join(','));\n\nif (input.founder_status !== 'APPROVE' || !['APPROVED','PUBLISHED'].includes(input.status)) throw new Error('ERROR_VALIDATION: Founder APPROVE required before publishing');\nif ((input.publish_mode || 'stub') !== 'stub') throw new Error('ERROR_PUBLISH: live publishing is prohibited in ROI');\nconst platforms = ['instagram','facebook','tiktok','threads'];\nconst previous = input.publish_records || [];\nconst records = [...previous];\nfor (const platform of platforms) if (!records.some((r) => r.master_concept_id === input.master_concept_id && r.platform === platform && ['STUBBED','PUBLISHED'].includes(r.publish_status))) records.push({ content_id: input.master_concept_id + '-' + platform, master_concept_id: input.master_concept_id, platform, scheduled_time: null, published_time: null, publish_status: 'STUBBED', external_post_id: null, error_code: null });\nreturn [{ json: { ...input, publish_records: records, stage: 'PUBLISHER', status: 'PUBLISHED', updated_at: new Date().toISOString() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "2a6d161c-0000-4000-8000-327bf424383e",
+      "name": "Create Stub Publish Records"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Create Stub Publish Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "ceffloRoi": true,
+    "providerMode": "stub",
+    "activationProhibited": true
+  },
+  "pinData": {},
+  "tags": []
+}
