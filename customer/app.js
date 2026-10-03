@@ -65,7 +65,6 @@ const ui = {
   ratingValue: 0,
   ratingByPointer: false,
   sheetState: 'idle', // 'idle' | 'submitting' | 'success' | 'error'
-  detailsOpen: false,
   mapOpen: false,
   lastFocused: null
 };
@@ -220,7 +219,7 @@ function detailRow(label, value) {
   return known(value) ? `<div class="details__row"><small>${esc(label)}</small><strong>${esc(value)}</strong></div>` : '';
 }
 
-/** Collapsed by default; expands in place (no navigation). Customer-relevant fields only. */
+/** Always open on every state. Customer-relevant fields only. */
 function detailsCard(vm) {
   const ref = String(vm.reference ?? '').replace(/^#/, '');
   const rows = [];
@@ -235,13 +234,10 @@ function detailsCard(vm) {
   if (vm.status === CUSTOMER_STATUS.DELIVERED) {
     rows.push(detailRow('Delivered to', vm.delivery?.address), detailRow('Received by', vm.delivery?.receivedBy));
   }
-  const open = ui.detailsOpen;
   return `
-    <section class="details${open ? ' is-open' : ''}">
-      <button class="details__toggle" type="button" data-action="toggle-details" aria-expanded="${open}" aria-controls="detailsBody">
-        ${icon('note', { size: 22 })}<span>Delivery details</span><span class="details__chev">${icon('chevronRight', { size: 20 })}</span>
-      </button>
-      <div class="details__body" id="detailsBody"${open ? '' : ' inert'}><div class="details__inner">${rows.join('')}</div></div>
+    <section class="details" aria-labelledby="detailsTitle">
+      <h2 class="details__head" id="detailsTitle">${icon('note', { size: 22 })}<span>Delivery details</span></h2>
+      <div class="details__inner">${rows.join('')}</div>
     </section>`;
 }
 
@@ -355,20 +351,10 @@ sheet.addEventListener('click', (event) => {
   if (action === 'open-fullscreen') openFullscreen();
   if (action === 'contact-call') contact('call', trigger);
   if (action === 'contact-chat') contact('chat', trigger);
-  if (action === 'toggle-details') toggleDetails(trigger);
   if (action === 'toggle-map') { ui.mapOpen = !ui.mapOpen; render(); }
   if (action === 'retry-rating') submitRating(ui.ratingValue);
   if (action === 'retry-tracking') retryTracking(trigger);
 });
-
-/** Smooth in-place expand/collapse; no re-render, no navigation. */
-function toggleDetails(trigger) {
-  ui.detailsOpen = !ui.detailsOpen;
-  const card = trigger.closest('.details');
-  card.classList.toggle('is-open', ui.detailsOpen);
-  trigger.setAttribute('aria-expanded', String(ui.detailsOpen));
-  card.querySelector('.details__body').toggleAttribute('inert', !ui.detailsOpen);
-}
 
 /**
  * Try Again reloads the link, which re-runs the one real public_tracking
