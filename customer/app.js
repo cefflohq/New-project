@@ -327,6 +327,7 @@ function render() {
       requestAnimationFrame(() => requestAnimationFrame(() => screen.classList.remove('is-entering')));
     }
   }
+  scheduleRating(vm);
   renderSheet(vm);
   if (vm.pod && !ui.podImageUrl) resolvePod(vm);
 }
@@ -415,7 +416,6 @@ function flash(anchor, message) {
 function openPod() {
   if (ui.view === 'pod') return;
   ui.view = 'pod';
-  markPodSeen();
   history.pushState({ view: 'pod' }, '', '#proof-of-delivery');
   render();
   sheet.querySelector('.topbar__back')?.focus({ preventScroll: true });
@@ -535,21 +535,39 @@ function attachZoom(stage, image) {
 
 /* ------------------------------------------------ rating bottom sheet */
 
-// Delivered only. The rating sheet slides up from the bottom only after the
-// customer has opened the proof-of-delivery photo (at once when no POD exists).
+// Delivered only. The rating sheet slides up from the bottom once the customer
+// has stayed three seconds on the Delivered screen or the POD screen (either;
+// switching screens restarts the count).
 // Choosing a star IS the submission (tap, or drag across and release); the
 // sheet shows submitting, and only after the server confirmed does it slide
 // down and a "Thank you!" sheet slide up, then retire. A failure keeps the
 // chosen rating and offers a retry — never a fake success.
 
 const SHEET_SLIDE_MS = 420;
-const podSeenKey = `cefflo.customer.podSeen.v1:${TRACKING_FIXTURE.reference}`;
-ui.podSeen = (() => { try { return localStorage.getItem(podSeenKey) === '1'; } catch { return false; } })();
+const RATING_DWELL_MS = 3000;
+ui.ratingReady = false;
 ui.thanksDone = false;
+let dwellTimer = null;
+let dwellView = null;
 
-function markPodSeen() {
-  ui.podSeen = true;
-  try { localStorage.setItem(podSeenKey, '1'); } catch { /* private mode: in-memory only */ }
+const onDeliveredScreens = (vm) => vm.phase === TRACKING_PHASE.READY && vm.ratingEligible && (ui.view === 'tracking' || ui.view === 'pod');
+
+/** Starts (or restarts, on a screen change) the three-second stay before the rating sheet. */
+function scheduleRating(vm) {
+  if (!onDeliveredScreens(vm)) {
+    clearTimeout(dwellTimer);
+    dwellTimer = null;
+    dwellView = null;
+    return;
+  }
+  if (ui.ratingReady || (dwellTimer && dwellView === ui.view)) return;
+  clearTimeout(dwellTimer);
+  dwellView = ui.view;
+  dwellTimer = setTimeout(() => {
+    dwellTimer = null;
+    ui.ratingReady = true;
+    renderSheet(provider.store.getState());
+  }, RATING_DWELL_MS);
 }
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, prefersReducedMotion() ? 0 : ms));
@@ -584,10 +602,10 @@ function sheetBody(state) {
 }
 
 function sheetWanted(vm) {
-  if (vm.phase !== TRACKING_PHASE.READY || !vm.ratingEligible || ui.view !== 'tracking') return false;
+  if (!onDeliveredScreens(vm)) return false;
   if (ui.sheetState === 'success') return !ui.thanksDone;
   if (rating.getState().submitted) return false;
-  return ui.podSeen || !vm.pod;
+  return ui.ratingReady;
 }
 
 /** Slides a sheet down and removes it; the id is dropped at once so a new sheet can mount. */
@@ -734,7 +752,6 @@ window.CEFFLO_CUSTOMER_DEV = Object.freeze({
   fail: (copy) => provider.fail(copy),
   resetRating: () => {
     localStorage.removeItem(`cefflo.customer.rating.v1:${TRACKING_FIXTURE.reference}`);
-    localStorage.removeItem(podSeenKey);
     location.reload();
   }
 });
