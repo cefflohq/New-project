@@ -126,7 +126,9 @@ void main() {
   });
 
   test('new row: centre + badge + banner + sound, once per id', () {
+    final before = app.liveRevision.value;
     repo.push!('INSERT', _row('n3'));
+    expect(app.liveRevision.value, before + 1, reason: 'open screens re-read');
     expect(app.notifications.first.id, 'n3');
     expect(app.unreadNotifications, 2);
     expect(app.foregroundAlert.value?.id, 'n3');
@@ -134,6 +136,7 @@ void main() {
     repo.push!('INSERT', _row('n3'));
     expect(app.notifications.where((n) => n.id == 'n3'), hasLength(1));
     expect(effects, hasLength(1));
+    expect(app.liveRevision.value, before + 1, reason: 'duplicate ignored');
   });
 
   test('urgent rows vibrate; run.completed has no sound', () {

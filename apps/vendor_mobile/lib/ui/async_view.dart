@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/app_state.dart';
 import '../data/vendor_repository.dart';
 import 'shell.dart';
 import 'widgets.dart';
@@ -40,10 +41,31 @@ class AsyncViewState<T> extends State<AsyncView<T>> {
   bool _loading = true;
   int _generation = 0;
 
+  ValueNotifier<int>? _live;
+
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Re-read the backend when a live notification lands (a new order, a
+    // run update...). The current data stays on screen while it reloads.
+    final scope = context.getElementForInheritedWidgetOfExactType<AppScope>();
+    final live = scope == null ? null : AppScope.read(context).liveRevision;
+    if (!identical(live, _live)) {
+      _live?.removeListener(_load);
+      _live = live?..addListener(_load);
+    }
+  }
+
+  @override
+  void dispose() {
+    _live?.removeListener(_load);
+    super.dispose();
   }
 
   Future<void> _load() async {

@@ -296,6 +296,11 @@ class AppState extends ChangeNotifier {
   /// The foreground alert currently shown over the app (banner), if any.
   final ValueNotifier<AppNotification?> foregroundAlert = ValueNotifier(null);
 
+  /// Bumped when a new vendor notification row arrives over realtime. Every
+  /// notification is written by the server from a persisted event, so open
+  /// data screens re-read the backend (never patch local state from it).
+  final ValueNotifier<int> liveRevision = ValueNotifier(0);
+
   /// Sound/vibration side effects of an alert (replaceable in tests).
   NotificationAlertEffects alertEffects = const NotificationAlertEffects();
 
@@ -367,6 +372,7 @@ class AppState extends ChangeNotifier {
     if (type == 'INSERT') {
       if (row['app'] != 'vendor') return;
       if (_notifications.any((n) => n.id == id)) return;
+      liveRevision.value++;
       final n = AppNotification.fromRow(row);
       _notifications = [n, ..._notifications].take(50).toList();
       if (!n.read) _unreadLive++;

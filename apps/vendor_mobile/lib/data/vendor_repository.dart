@@ -1241,12 +1241,17 @@ class VendorRepository {
   Future<Map<String, dynamic>> createDeliverySession({
     required String businessId,
     String? name,
+    String? deliveryDate,
   }) async {
     if (_demo) return {'id': 'session-demo'};
     final row = await _run(
       () => _db!.rpc(
         'create_delivery_session',
-        params: {'p_business_id': businessId, 'p_name': ?name},
+        params: {
+          'p_business_id': businessId,
+          'p_name': ?name,
+          'p_delivery_date': ?deliveryDate,
+        },
       ),
     );
     return _single(row);
@@ -1318,11 +1323,22 @@ class VendorRepository {
     required List<String> orderIds,
     required String idempotencyKey,
   }) async {
+    // Reuse only today's session whose plan is still open: an earlier day's
+    // session, or one where sorting has started (plan locked server-side),
+    // must never receive today's run. The date is the device's local day,
+    // sent explicitly so the server's UTC CURRENT_DATE never decides it.
+    final now = DateTime.now();
+    final today =
+        '${now.year.toString().padLeft(4, '0')}-'
+        '${now.month.toString().padLeft(2, '0')}-'
+        '${now.day.toString().padLeft(2, '0')}';
     final open = await _run(
       () => _db!
           .from('delivery_sessions')
           .select('id')
           .eq('business_id', businessId)
+          .eq('delivery_date', today)
+          .isFilter('sorting_started_at', null)
           .inFilter('status', ['planned', 'active'])
           .order('created_at', ascending: false)
           .limit(1),
@@ -1333,6 +1349,7 @@ class VendorRepository {
         : (await createDeliverySession(
                 businessId: businessId,
                 name: sessionName,
+                deliveryDate: today,
               ))['id']
               as String;
     return buildRiderRun(
