@@ -262,6 +262,13 @@ function poweredByCefflo() {
   return '<footer class="powered">Powered by <strong>Cefflo</strong></footer>';
 }
 
+/** The vendor owns the customer relationship, so its name heads the page. */
+function headerTitle(vm) {
+  const name = known(vm.vendor?.name);
+  // The token-mode placeholder ("Delivery tracking") is not a vendor identity.
+  return name && name !== 'Delivery tracking' ? name : 'Delivery check';
+}
+
 function shell(body, { title = 'Delivery check', back = false, modifier = '' } = {}) {
   return `
     <div class="screen${modifier ? ` ${modifier}` : ''}">
@@ -271,8 +278,8 @@ function shell(body, { title = 'Delivery check', back = false, modifier = '' } =
 }
 
 function trackingScreen(vm) {
-  if (vm.phase === TRACKING_PHASE.UNAVAILABLE) return shell(unavailableScreen(vm), { modifier: 'screen--unavailable' });
-  if (vm.phase === TRACKING_PHASE.LOADING) return shell(loadingScreen(vm));
+  if (vm.phase === TRACKING_PHASE.UNAVAILABLE) return shell(unavailableScreen(vm), { title: headerTitle(vm), modifier: 'screen--unavailable' });
+  if (vm.phase === TRACKING_PHASE.LOADING) return shell(loadingScreen(vm), { title: headerTitle(vm) });
   const delivered = vm.status === CUSTOMER_STATUS.DELIVERED;
   return shell(`
     <div class="panel__main">
@@ -282,7 +289,7 @@ function trackingScreen(vm) {
       ${actions(vm)}
       ${delivered ? '' : riderCard(vm)}
       ${detailsCard(vm)}
-    </div>`, { modifier: `screen--${vm.status}` });
+    </div>`, { title: headerTitle(vm), modifier: `screen--${vm.status}` });
 }
 
 /** C4 — POD detail. Deliberately contains nothing else (no tracking id, no address). */

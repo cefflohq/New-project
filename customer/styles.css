@@ -103,7 +103,7 @@ img { display: block; max-width: 100%; }
   background: transparent;
   color: #FFFFFF;
 }
-.topbar__title { margin: 0; font-size: calc(20 * var(--u)); line-height: calc(28 * var(--u)); font-weight: 600; letter-spacing: -0.01em; }
+.topbar__title { max-width: 100%; margin: 0; overflow: hidden; font-size: calc(20 * var(--u)); line-height: calc(28 * var(--u)); font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; text-overflow: ellipsis; }
 .topbar__back {
   position: absolute;
   left: 12px;
