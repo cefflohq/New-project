@@ -1,6 +1,6 @@
 # CEFFLO Engineering Bootstrap Security Boundary
 
-**Authority:** `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md`  
+**Authority:** `docs/cefflo/security/CEFFLO_SECURITY_AND_ACCESS_MASTER_SPEC.md`  
 **Applied scope:** Engineering Bootstrap Phase 01 only
 
 ## Crown Jewels excluded

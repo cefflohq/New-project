@@ -127,7 +127,7 @@ is product / production readiness.
 |---|---|---|---|
 | Control Layer (company control plane, not a department) | this document | `control/CEFFLO_CONTROL_LAYER_MASTER.md` + `control/CEFFLO_AI_COMPANY_OPERATING_PRINCIPLES.md` | Governance ACTIVE (rules); no autonomous runtime |
 | Engineering | YES (E1–E5) | `engineering/CEFFLO_ENGINEERING_MASTER.md` | Human-led development; FG-ENG-04 autonomous pilot NOT ACTIVATED (`automation/n8n/engineering`, pilot prohibited) |
-| Cyber Security (cross-company guardrail) | guardrail | `security/CEFFLO_CYBER_SECURITY_MASTER.md` | Guardrail rules applied; no autonomous agent |
+| Cyber Security (cross-company guardrail) | guardrail | `security/CEFFLO_SECURITY_AND_ACCESS_MASTER_SPEC.md` | Guardrail rules applied; no autonomous agent |
 | Marketing | YES (M1–M6) | `marketing/CEFFLO_MARKETING_MASTER.md` | NOT ACTIVATED (`automation/n8n/content-engine`: all workflows inactive) |
 | Customer Service | YES (CS1–CS6) | `customer-service/CEFFLO_CUSTOMER_SERVICE_MASTER.md` (MASTER BASELINE 2026-09-19; supplied 2026-09-27) | NOT ACTIVATED (no schema, workflow or agent exists) |
 | Sales & CRM | YES (S1–S6) | `sales-crm/CEFFLO_SALES_CRM_MASTER.md` (MASTER BASELINE 2026-09-19; supplied 2026-09-27) | NOT ACTIVATED (no schema, workflow or agent exists) |

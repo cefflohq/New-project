@@ -6,7 +6,7 @@
 
 **Engineering and security authorities added 2026-09-19 (D-39; baseline selection amended by D-40):**
 - `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md` — canonical Engineering Department E1–E5 architecture.
-- `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md` — canonical cross-company security architecture. During Engineering Bootstrap Phase 01 it constrains only the approved Engineering attack surface; it does not authorize building the wider Cyber Security system.
+- `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md` — SUPERSEDED on 2026-10-03 by `docs/cefflo/security/CEFFLO_SECURITY_AND_ACCESS_MASTER_SPEC.md` (the single canonical Security & Access SOT); kept for provenance only.
 
 ---
 
@@ -136,7 +136,7 @@ Company governance authority:
 - `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md` (§2A: department register and activation state)
 - Department Masters (MASTER BASELINE; a Master's presence does not activate a department, D-71):
   - `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md`
-  - `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md`
+  - `docs/cefflo/security/CEFFLO_SECURITY_AND_ACCESS_MASTER_SPEC.md`
   - `docs/cefflo/marketing/CEFFLO_MARKETING_MASTER.md`
   - `docs/cefflo/customer-service/CEFFLO_CUSTOMER_SERVICE_MASTER.md`
   - `docs/cefflo/sales-crm/CEFFLO_SALES_CRM_MASTER.md`
@@ -153,7 +153,7 @@ Primary:
 - `docs/cefflo/agent-os/CODEX_OPERATING.md`
 - `docs/CODEX_WORKING_RULES.md` (repo-root `docs/`, not `docs/cefflo/`)
 - `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md` (Engineering Department roles, orchestration, gates and evidence)
-- `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md` (security boundaries for agents, tools, credentials and Crown Jewels)
+- `docs/cefflo/security/CEFFLO_SECURITY_AND_ACCESS_MASTER_SPEC.md` (canonical security SOT: authorization, roles/surfaces, invites/membership, agent/tool boundaries, Crown Jewels, production security gate)
 
 Development agent rules govern how repository work is performed; they do not
 override Product Truth, department masters, the Control Layer Master, or Founder

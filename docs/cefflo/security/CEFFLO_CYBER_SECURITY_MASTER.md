@@ -1,3 +1,9 @@
+> **SUPERSEDED — 2026-10-03.** This document is no longer an active
+> authority. The single canonical Security & Access Source of Truth is
+> `docs/cefflo/security/CEFFLO_SECURITY_AND_ACCESS_MASTER_SPEC.md`, which consolidates this master (as its Part II) together with the
+> security/privacy, surface/role/invite/membership and reconciliation
+> specifications. Kept for provenance only.
+
 # CEFFLO CYBER SECURITY — MASTER SPECIFICATION
 
 **Status:** MASTER BASELINE  

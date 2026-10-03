@@ -84,8 +84,10 @@ acceptance criteria.
     `docs/cefflo/marketing/CEFFLO_MARKETING_MASTER.md`
 -   Engineering Department architecture and E1–E5 doctrine →
     `docs/cefflo/engineering/CEFFLO_ENGINEERING_MASTER.md`
--   Cross-company security architecture and AI/tool boundaries →
-    `docs/cefflo/security/CEFFLO_CYBER_SECURITY_MASTER.md`
+-   Security, privacy, roles/surfaces, invites, membership and the
+    production security gate (canonical security SOT, Founder-adopted
+    2026-10-03) →
+    `docs/cefflo/security/CEFFLO_SECURITY_AND_ACCESS_MASTER_SPEC.md`
 -   Company AI governance, cross-department routing and n8n control-plane
     contracts → `docs/cefflo/control/CEFFLO_CONTROL_LAYER_MASTER.md`
 -   Production Readiness execution control (P1–P8 packages, fleet rule,
