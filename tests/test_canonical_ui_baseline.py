@@ -155,8 +155,8 @@ class BuildOutputTests(unittest.TestCase):
         # /web/ = the new Vendor Web App (apps/vendor_web); its demo mode is gated off in Production.
         self.assertIn("<title>Cefflo Vendor</title>", (dist / "web" / "index.html").read_text(encoding="utf-8"))
         self.assertIn("environment !== 'production'", (dist / "web" / "js" / "demo.js").read_text(encoding="utf-8"))
-        # Root is the Public Website (from main @ 15efffe), not a product UI.
-        self.assertIn("Local Same-Day Delivery Operating System", (dist / "index.html").read_text(encoding="utf-8"))
+        # Root is the Public Website (claude/public-website @ 810a628), not a product UI.
+        self.assertIn("Cefflo — Same-Day Delivery Operating System", (dist / "index.html").read_text(encoding="utf-8"))
         vendor = (dist / "vendor" / "index.html").read_text(encoding="utf-8")
         for marker in WELCOME_MARKERS:
             self.assertNotIn(marker, vendor)
