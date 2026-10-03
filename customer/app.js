@@ -282,7 +282,6 @@ function trackingScreen(vm) {
       ${actions(vm)}
       ${delivered ? '' : riderCard(vm)}
       ${detailsCard(vm)}
-      ${vm.ratingEligible ? '<div id="ratingSlot"></div>' : ''}
     </div>`, { modifier: `screen--${vm.status}` });
 }
 
@@ -352,7 +351,6 @@ sheet.addEventListener('click', (event) => {
   if (action === 'contact-call') contact('call', trigger);
   if (action === 'contact-chat') contact('chat', trigger);
   if (action === 'toggle-map') { ui.mapOpen = !ui.mapOpen; render(); }
-  if (action === 'retry-rating') submitRating(ui.ratingValue);
   if (action === 'retry-tracking') retryTracking(trigger);
 });
 
@@ -417,6 +415,7 @@ function flash(anchor, message) {
 function openPod() {
   if (ui.view === 'pod') return;
   ui.view = 'pod';
+  markPodSeen();
   history.pushState({ view: 'pod' }, '', '#proof-of-delivery');
   render();
   sheet.querySelector('.topbar__back')?.focus({ preventScroll: true });
@@ -534,12 +533,26 @@ function attachZoom(stage, image) {
   stage.addEventListener('pointercancel', release);
 }
 
-/* ------------------------------------------------------ inline rating */
+/* ------------------------------------------------ rating bottom sheet */
 
-// Delivered only. Choosing a star IS the submission (tap, or drag across the
-// stars and release). The same card then shows submitting (blue spinner) and,
-// only after the server confirmed, success (green check). A failure keeps the
+// Delivered only. The rating sheet slides up from the bottom only after the
+// customer has opened the proof-of-delivery photo (at once when no POD exists).
+// Choosing a star IS the submission (tap, or drag across and release); the
+// sheet shows submitting, and only after the server confirmed does it slide
+// down and a "Thank you!" sheet slide up, then retire. A failure keeps the
 // chosen rating and offers a retry — never a fake success.
+
+const SHEET_SLIDE_MS = 420;
+const podSeenKey = `cefflo.customer.podSeen.v1:${TRACKING_FIXTURE.reference}`;
+ui.podSeen = (() => { try { return localStorage.getItem(podSeenKey) === '1'; } catch { return false; } })();
+ui.thanksDone = false;
+
+function markPodSeen() {
+  ui.podSeen = true;
+  try { localStorage.setItem(podSeenKey, '1'); } catch { /* private mode: in-memory only */ }
+}
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, prefersReducedMotion() ? 0 : ms));
 
 function sheetBody(state) {
   if (state === 'submitting') {
@@ -557,6 +570,7 @@ function sheetBody(state) {
   const value = state === 'error' ? ui.ratingValue : 0;
   return `<div class="sheet-state">
       <h2 class="sheet-title" id="ratingTitle">Rate your delivery</h2>
+      <p class="sheet-sub">How was your experience?</p>
       <div class="stars" id="starGroup" role="group" aria-labelledby="ratingTitle">
         ${[1, 2, 3, 4, 5].map((n) => `
           <button class="star${n <= value ? ' is-selected' : ''}" type="button" data-value="${n}" tabindex="${n === Math.max(1, value) ? '0' : '-1'}" aria-label="Rate ${n} out of 5 stars">
@@ -569,19 +583,37 @@ function sheetBody(state) {
     </div>`;
 }
 
+function sheetWanted(vm) {
+  if (vm.phase !== TRACKING_PHASE.READY || !vm.ratingEligible || ui.view !== 'tracking') return false;
+  if (ui.sheetState === 'success') return !ui.thanksDone;
+  if (rating.getState().submitted) return false;
+  return ui.podSeen || !vm.pod;
+}
+
+/** Slides a sheet down and removes it; the id is dropped at once so a new sheet can mount. */
+function retireSheet(node) {
+  node.removeAttribute('id');
+  node.classList.remove('is-open');
+  setTimeout(() => node.remove(), prefersReducedMotion() ? 0 : SHEET_SLIDE_MS);
+}
+
 function renderSheet(vm) {
-  const slot = document.getElementById('ratingSlot');
-  const wanted = vm.phase === TRACKING_PHASE.READY && vm.ratingEligible && ui.view === 'tracking';
-  if (!wanted || !slot) return;
-  const state = rating.getState().submitted ? 'success' : ui.sheetState;
   let node = document.getElementById('ratingSheet');
+  if (!sheetWanted(vm)) {
+    if (node) retireSheet(node);
+    return;
+  }
+  const state = ui.sheetState;
   if (!node) {
     node = document.createElement('section');
     node.id = 'ratingSheet';
-    node.className = 'rate-card';
-    node.setAttribute('aria-label', 'Rate your delivery');
-    node.innerHTML = '<div class="rate-sheet__body"></div>';
-    slot.appendChild(node);
+    node.className = 'rate-sheet';
+    node.setAttribute('aria-label', state === 'success' ? 'Thank you' : 'Rate your delivery');
+    node.innerHTML = `<span class="rate-sheet__handle" aria-hidden="true"></span><div class="rate-sheet__body">${sheetBody(state)}</div>`;
+    node.dataset.state = state;
+    overlayRoot.appendChild(node);
+    requestAnimationFrame(() => requestAnimationFrame(() => node.classList.add('is-open')));
+    return;
   }
   if (node.dataset.state === state && state !== 'error') return;
   node.dataset.state = state;
@@ -602,7 +634,7 @@ function paintStars(value) {
 
 const starAt = (event) => document.elementFromPoint(event.clientX, event.clientY)?.closest?.('#starGroup .star');
 
-sheet.addEventListener('pointerdown', (event) => {
+overlayRoot.addEventListener('pointerdown', (event) => {
   const star = event.target.closest('#starGroup .star');
   if (!star) return;
   event.preventDefault();
@@ -634,7 +666,7 @@ window.addEventListener('pointercancel', () => {
 });
 
 // Keyboard: arrows move focus and preview, Enter/Space (native click) commits.
-sheet.addEventListener('keydown', (event) => {
+overlayRoot.addEventListener('keydown', (event) => {
   const star = event.target.closest?.('#starGroup .star');
   if (!star) return;
   const buttons = starButtons();
@@ -651,7 +683,8 @@ sheet.addEventListener('keydown', (event) => {
   paintStars(next + 1);
 });
 
-sheet.addEventListener('click', (event) => {
+overlayRoot.addEventListener('click', (event) => {
+  if (event.target.closest('[data-action="retry-rating"]')) { submitRating(ui.ratingValue); return; }
   const star = event.target.closest('#starGroup .star');
   if (!star) return;
   // A pointer release already submitted; the click that follows is ignored.
@@ -664,16 +697,27 @@ async function submitRating(value) {
   if (state.submitted || state.pending || !value) return;
   ui.ratingValue = value;
   paintStars(value);
-  await new Promise((resolve) => setTimeout(resolve, prefersReducedMotion() ? 0 : 180)); // let the fill land
+  await wait(180); // let the fill land
   ui.sheetState = 'submitting';
   renderSheet(provider.store.getState());
   const shownAt = Date.now();
   const result = await rating.submit(value);
   // Keep the submitting state readable instead of flashing past it.
   const rest = 650 - (Date.now() - shownAt);
-  if (rest > 0 && !prefersReducedMotion()) await new Promise((resolve) => setTimeout(resolve, rest));
-  ui.sheetState = result.ok ? 'success' : 'error';
-  if (result.ok) rating.acknowledgePopup();
+  if (rest > 0) await wait(rest);
+  if (!result.ok) {
+    ui.sheetState = 'error';
+    renderSheet(provider.store.getState());
+    return;
+  }
+  rating.acknowledgePopup();
+  const node = document.getElementById('ratingSheet');
+  if (node) retireSheet(node);
+  await wait(SHEET_SLIDE_MS);
+  ui.sheetState = 'success';
+  renderSheet(provider.store.getState());
+  await wait(POPUP_DWELL_MS);
+  ui.thanksDone = true;
   renderSheet(provider.store.getState());
 }
 
@@ -690,6 +734,7 @@ window.CEFFLO_CUSTOMER_DEV = Object.freeze({
   fail: (copy) => provider.fail(copy),
   resetRating: () => {
     localStorage.removeItem(`cefflo.customer.rating.v1:${TRACKING_FIXTURE.reference}`);
+    localStorage.removeItem(podSeenKey);
     location.reload();
   }
 });
