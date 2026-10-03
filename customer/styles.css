@@ -44,11 +44,13 @@
 
 * { box-sizing: border-box; }
 
-html { height: 100%; background: var(--cef-blue-top); }
+/* Top half blue behind the header, bottom half white like the panel, so the
+   home-indicator area and any overscroll at the bottom stay white. */
+html { height: 100%; background: linear-gradient(180deg, var(--cef-blue-top) 50%, var(--surface) 50%); }
 
 body {
   margin: 0;
-  background: linear-gradient(180deg, var(--cef-blue-top) 0%, var(--cef-blue-bottom) 100%) fixed;
+  background: transparent;
   color: var(--ink);
   font-family: Inter, "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
   font-size: 15px;
