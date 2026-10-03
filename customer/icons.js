@@ -20,6 +20,8 @@ const PATHS = {
   person: `<g ${STROKE}><circle cx="12" cy="8.2" r="3.7"/><path d="M4.9 20.2a7.6 7.6 0 0 1 14.2 0"/></g>`,
   note: `<g ${STROKE}><rect x="4.6" y="3.4" width="14.8" height="17.2" rx="3"/><path d="M8.6 9h6.8M8.6 12.6h6.8M8.6 16.2h4.2"/></g>`,
   refresh: `<g ${STROKE}><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20.4 4.3v4.4H16"/></g>`,
+  map: `<g ${STROKE}><path d="M3.6 6.4 8.8 4.2l6.4 2.6 5.2-2.2v13.2l-5.2 2.2-6.4-2.6-5.2 2.2Z"/><path d="M8.8 4.2v13.2M15.2 6.8V20"/></g>`,
+  photo: `<g ${STROKE}><rect x="3.4" y="4.6" width="17.2" height="14.8" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="m4 17.4 4.6-4.4 3.4 3 3-2.6 5.2 4.6"/></g>`,
   // Filled status glyphs (drawn on a pale vendor-tinted disc).
   store: `<g fill="currentColor"><path d="M2.6 4.2a1 1 0 0 1 1-1h16.8a1 1 0 0 1 1 1v.7a2.9 2.9 0 0 1-5.1 1.9 2.9 2.9 0 0 1-4.3.3 2.9 2.9 0 0 1-4.3-.3A2.9 2.9 0 0 1 2.6 4.9Z"/><path d="M4.6 9.9v9.4a1.5 1.5 0 0 0 1.5 1.5h11.8a1.5 1.5 0 0 0 1.5-1.5V9.9a4.4 4.4 0 0 1-3.3-.6 4.4 4.4 0 0 1-4.1.4 4.4 4.4 0 0 1-4.1-.4 4.4 4.4 0 0 1-3.3.6Z"/><rect x="9.4" y="13.4" width="5.2" height="7.4" rx="1" fill="var(--status-glyph-cutout, #E8F1FE)"/></g>`,
   truck: `<g fill="currentColor"><path d="M2.4 7.2a1.6 1.6 0 0 1 1.6-1.6h8.2a1.6 1.6 0 0 1 1.6 1.6v9H4a1.6 1.6 0 0 1-1.6-1.6Z"/><path d="M15.2 9.1h2.9a1.6 1.6 0 0 1 1.32.7l1.9 2.8a1.6 1.6 0 0 1 .28.9v2.5h-6.4Z"/><circle cx="7.4" cy="17.7" r="2.4"/><circle cx="17.4" cy="17.7" r="2.4"/></g>`,

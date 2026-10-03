@@ -61,7 +61,8 @@ export function buildTrackingViewModel(source, status) {
     // A provider that returns no route or no ETA must degrade gracefully
     // rather than have the UI invent one.
     route: onTheWay ? source.route ?? null : null,
-    eta: onTheWay ? source.eta ?? null : null,
+    eta: delivered ? null : source.eta ?? null,
+    timeline: source.timeline ?? null,
     rider: onTheWay ? source.rider ?? null : null,
     // D-66: live rider context also while the order is picked up.
     liveRider: (onTheWay || status === CUSTOMER_STATUS.PICKED_UP) ? source.rider ?? null : null,

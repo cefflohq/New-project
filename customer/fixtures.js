@@ -44,6 +44,12 @@ export const TRACKING_FIXTURE = Object.freeze({
   pickup: {
     atLabel: 'Today, 10:24 AM'
   },
+  // Prototype-only event times for the delivery timeline. Live orders carry
+  // none of these (public_tracking has no per-event times), so they stay blank.
+  timeline: {
+    startedAtLabel: '10:28 AM',
+    onTheWayAtLabel: '10:35 AM'
+  },
   // ETA is optional by design. A null `eta` must render a map area with no
   // arrival claim rather than an invented time (Final Master §7 C2).
   eta: {
@@ -100,11 +106,11 @@ export const STATUS_COPY = Object.freeze({
   picked_up: {
     title: 'Picked Up',
     // Customer-facing wording, never first-person rider wording.
-    body: 'Your rider has picked up your order.'
+    body: 'Your order has been picked up.'
   },
   on_the_way: {
     title: 'On the Way',
-    body: 'Your order is on the way to you.'
+    body: 'Your rider is on the way.'
   },
   delivered: {
     title: 'Delivered',

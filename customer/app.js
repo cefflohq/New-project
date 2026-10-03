@@ -1,7 +1,7 @@
 // CEFFLO Customer Tracking PWA — application shell and screens.
 //
-// Screens: C1 Pickup, C2 On the Way, C3 Delivered, C4 Proof of Delivery,
-// plus the C3-R1 Thank You popup (a modal over C3, never a separate page).
+// Screens: C1 Picked Up, C2 On the Way, C3 Delivered (with inline rating),
+// C4 Proof of Delivery.
 //
 // The UI is state-driven and reads only the customer-safe view model produced
 // by tracking-adapter.js. No business truth is hardwired into the markup.
@@ -66,6 +66,7 @@ const ui = {
   ratingByPointer: false,
   sheetState: 'idle', // 'idle' | 'submitting' | 'success' | 'error'
   detailsOpen: false,
+  mapOpen: false,
   lastFocused: null
 };
 
@@ -81,25 +82,15 @@ function normaliseStatusParam(value) {
 
 /* --------------------------------------------------------------- components */
 
-// Founder-approved Customer Tracking polish (2026-09-29): white page, near-
-// black headings, blue for identity/navigation, yellow for the live signal
-// and rating, green for completion, red for errors, grey footer.
+// Founder reference (2026-10-03): blue "Delivery check" bar, white rounded
+// panel, yellow progress + timeline, neutral ETA card, outlined action row,
+// rider row, Delivery details, inline rating. Blue = identity/navigation,
+// yellow = progress and rating, green = success, red = error, grey footer.
 
 const DASH = '—';
 const known = (value) => (value !== undefined && value !== null && value !== '' && value !== DASH ? value : null);
-
-const PARCEL_ART = `<svg viewBox="0 0 240 150" aria-hidden="true" focusable="false">
-  <defs><linearGradient id="bxTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3D9AE"/><stop offset="1" stop-color="#E4BF86"/></linearGradient>
-  <linearGradient id="bxL" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#E2B878"/><stop offset="1" stop-color="#D5A65F"/></linearGradient></defs>
-  <g fill="#EAF1FF"><ellipse cx="46" cy="72" rx="20" ry="13"/><ellipse cx="62" cy="66" rx="16" ry="14"/><ellipse cx="190" cy="60" rx="18" ry="14"/><ellipse cx="206" cy="66" rx="16" ry="11"/></g>
-  <ellipse cx="120" cy="134" rx="70" ry="6" fill="#E3EBF8"/>
-  <path d="M84 52 120 40l36 12-36 12z" fill="url(#bxTop)"/>
-  <path d="M84 52v58l36 22V64z" fill="url(#bxL)"/>
-  <path d="M156 52v58l-36 22V64z" fill="#C99555"/>
-  <path d="M104 45.5 140 57.5v14l-8-3v-12L96 44.5z" fill="#fff" opacity=".75"/>
-  <circle cx="160" cy="112" r="20" fill="#22A559"/><circle cx="160" cy="112" r="20" fill="none" stroke="#fff" stroke-width="3"/>
-  <path d="m151 112 6 6 12-12" fill="none" stroke="#fff" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>`;
+/** "Today, 10:24 AM" → "10:24 AM" for the timeline's time column. */
+const timeOnly = (label) => (known(label) ? String(label).replace(/^[^,]*,\s*/, '') : '');
 
 const ERROR_ART = `<svg viewBox="0 0 240 150" aria-hidden="true" focusable="false">
   <g fill="#EEF3FB"><ellipse cx="44" cy="80" rx="20" ry="13"/><ellipse cx="60" cy="74" rx="15" ry="13"/><ellipse cx="196" cy="68" rx="17" ry="13"/><ellipse cx="210" cy="74" rx="14" ry="10"/></g>
@@ -111,11 +102,12 @@ const ERROR_ART = `<svg viewBox="0 0 240 150" aria-hidden="true" focusable="fals
   <path d="M160 92v14" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="160" cy="116" r="3.2" fill="#fff"/>
 </svg>`;
 
-function vendorName(vm) {
-  const name = known(vm.vendor?.name);
-  // The token-mode placeholder ("Delivery tracking") is not a vendor identity.
-  if (!name || name === 'Delivery tracking') return '<div class="vendor-name vendor-name--empty" aria-hidden="true"></div>';
-  return `<p class="vendor-name">${esc(name)}</p>`;
+function topbar(title, { back = false } = {}) {
+  return `
+    <header class="topbar">
+      ${back ? `<button class="topbar__back" type="button" data-action="back-to-tracking" aria-label="Back to delivery tracking">${icon('chevronLeft', { size: 22 })}</button>` : ''}
+      <p class="topbar__title">${esc(title)}</p>
+    </header>`;
 }
 
 function statusHead(vm) {
@@ -126,60 +118,103 @@ function statusHead(vm) {
     </section>`;
 }
 
-function etaCard(vm) {
-  if (!vm.eta) return '';
-  return `
-    <div class="fact fact--blue">
-      <small>${icon('clock', { size: 16 })}Estimated arrival</small>
-      <strong>${esc(vm.eta.valueLabel)}</strong>
-    </div>`;
-}
-
-function deliveredCard(vm) {
-  const at = known(vm.delivery?.atLabel);
-  if (!at) return '';
-  return `
-    <div class="fact fact--green">
-      <small><span class="fact__tick">${icon('check', { size: 11 })}</span>Delivered at</small>
-      <strong>${esc(at)}</strong>
-    </div>`;
-}
-
-/**
- * On the Way visual. The prototype (no token) shows the illustrative route
- * and says so; a real order shows the rider scene plus, when the backend has
- * one, the latest authorised rider point as a map link. No map is faked.
- */
-function trackingVisual(vm) {
-  if (vm.route) {
-    return `
-      <section class="map" aria-label="Delivery route illustration">
-        ${routeMapSvg()}
-        ${vm.route.live ? '' : '<span class="map__tag">Illustrative route</span>'}
-      </section>`;
-  }
-  return `<div class="scene scene--on_the_way"><img src="./assets/rider-on-the-way.webp" alt="Your rider on the way" width="820" height="479"></div>`;
-}
-
-function visual(vm) {
-  if (vm.status === CUSTOMER_STATUS.PICKED_UP) {
-    return '<div class="scene"><img src="./assets/order-arriving.webp" alt="Your order has been picked up" width="820" height="479"></div>';
-  }
-  if (vm.status === CUSTOMER_STATUS.ON_THE_WAY) return trackingVisual(vm);
-  return `<div class="scene scene--art">${PARCEL_ART}</div>`;
-}
-
-/** One progress component for every state; only the reached flags change. */
+/** Three steps: done = yellow check, current = yellow number, next = grey number. */
 function deliveryProgress(vm) {
   const labels = ['Picked Up', 'On the Way', 'Delivered'];
   const reached = vm.milestones.filter((m) => m.reached).length;
-  const steps = vm.milestones.map((milestone, index) => `
-      <li class="steps__item${milestone.reached ? ' is-reached' : ''}">
-        <span class="steps__dot">${milestone.reached ? icon('check', { size: 14 }) : index + 1}</span>
-        <span class="steps__label" aria-hidden="true">${esc(labels[index] || milestone.label)}</span>
-        <span class="sr-only">${esc(labels[index] || milestone.label)}: ${milestone.reached ? 'completed' : 'not reached yet'}</span>
-      </li>`).join('');
+  const delivered = vm.status === CUSTOMER_STATUS.DELIVERED;
+  const steps = vm.milestones.map((milestone, index) => {
+    const current = milestone.reached && index === reached - 1 && !delivered;
+    const done = milestone.reached && !current;
+    const state = done ? 'is-done' : current ? 'is-current' : '';
+    return `
+      <li class="steps__item ${state}">
+        <span class="steps__dot">${done ? icon('check', { size: 15 }) : index + 1}</span>
+        <span class="steps__label" aria-hidden="true">${esc(labels[index])}</span>
+        <span class="sr-only">${esc(labels[index])}: ${done ? 'completed' : current ? 'current step' : 'not reached yet'}</span>
+      </li>`;
+  }).join('');
   return `<ol class="steps" style="--fill:${Math.max(0, reached - 1) / (vm.milestones.length - 1)}" aria-label="Delivery progress">${steps}</ol>`;
+}
+
+/** Event timeline. Times appear only when the source actually carries them. */
+function timeline(vm) {
+  const delivered = vm.status === CUSTOMER_STATUS.DELIVERED;
+  const onTheWay = vm.status === CUSTOMER_STATUS.ON_THE_WAY;
+  const states = delivered ? ['done', 'done', 'done', 'done']
+    : onTheWay ? ['done', 'done', 'current', 'next']
+      : ['current', 'next', 'next', 'next'];
+  const rows = [
+    { title: 'Picked Up', body: 'Your order has been picked up.', time: timeOnly(vm.pickup?.atLabel) },
+    {
+      title: 'Delivery started',
+      body: states[1] === 'done' ? 'Your rider has started the delivery run.' : 'Waiting for rider to start the delivery run.',
+      time: timeOnly(vm.timeline?.startedAtLabel)
+    },
+    { title: 'On the Way', body: 'Your rider is on the way.', time: timeOnly(vm.timeline?.onTheWayAtLabel) },
+    delivered
+      ? { title: 'Delivered', body: 'Your order has been delivered.', time: timeOnly(vm.delivery?.atLabel) }
+      : { title: 'Your delivery', body: 'Estimated arrival', time: '' }
+  ];
+  return `
+    <ol class="timeline" aria-label="Delivery timeline">
+      ${rows.map((row, index) => `
+        <li class="timeline__row is-${states[index]}">
+          <span class="timeline__time">${states[index] === 'next' ? '' : esc(row.time)}</span>
+          <span class="timeline__dot" aria-hidden="true">${states[index] === 'done' ? icon('check', { size: 12 }) : ''}</span>
+          <span class="timeline__text"><strong>${esc(row.title)}</strong><small>${esc(row.body)}</small></span>
+        </li>`).join('')}
+    </ol>`;
+}
+
+function factCard(vm) {
+  const delivered = vm.status === CUSTOMER_STATUS.DELIVERED;
+  const label = delivered ? 'Delivered at' : 'Estimated arrival';
+  const value = delivered ? known(vm.delivery?.atLabel) : vm.eta?.valueLabel;
+  if (!value) return '';
+  return `
+    <div class="fact">
+      <span class="fact__icon">${icon('clock', { size: 30 })}</span>
+      <span class="fact__text"><small>${label}</small><strong>${esc(value)}</strong></span>
+    </div>`;
+}
+
+function actionRow(glyph, label, attrs, sub = '') {
+  return `
+    <${attrs.href ? 'a' : 'button'} class="action-row" ${attrs.href ? `href="${esc(attrs.href)}" target="_blank" rel="noopener"` : 'type="button"'} ${attrs.data || ''}>
+      <span class="action-row__icon">${glyph}</span>
+      <span class="action-row__text"><strong>${esc(label)}</strong>${sub ? `<small>${esc(sub)}</small>` : ''}</span>
+      ${icon('chevronRight', { size: 20 })}
+    </${attrs.href ? 'a' : 'button'}>`;
+}
+
+/**
+ * On the Way: the prototype opens the illustrative route in place (and says
+ * so); a real order links to the latest authorised rider point. No map is faked.
+ * Delivered: the proof-of-delivery photo replaces the map.
+ */
+function actions(vm) {
+  if (vm.status === CUSTOMER_STATUS.DELIVERED) {
+    if (!vm.pod) return '';
+    const thumb = ui.podImageUrl ? `<img src="${esc(ui.podImageUrl)}" alt="">` : icon('photo', { size: 22 });
+    return actionRow(thumb, 'View proof of delivery', { data: 'data-action="open-pod"' }, 'Delivery photo');
+  }
+  if (vm.status !== CUSTOMER_STATUS.ON_THE_WAY) return '';
+  const loc = vm.rider?.location;
+  if (loc) {
+    const mins = Math.max(0, Math.round((Date.now() - new Date(loc.recordedAt).getTime()) / 60000));
+    return actionRow(icon('map', { size: 22 }), 'View live map',
+      { href: `https://www.google.com/maps?q=${encodeURIComponent(`${loc.lat},${loc.lng}`)}` },
+      `Location updated ${mins < 1 ? 'just now' : `${mins} min ago`}`);
+  }
+  if (!vm.route) return '';
+  return `
+    ${actionRow(icon('map', { size: 22 }), ui.mapOpen ? 'Hide map' : 'View live map', { data: `data-action="toggle-map" aria-expanded="${ui.mapOpen}"` })}
+    ${ui.mapOpen ? `
+      <section class="map" aria-label="Delivery route illustration">
+        ${routeMapSvg()}
+        ${vm.route.live ? '' : '<span class="map__tag">Illustrative route</span>'}
+      </section>` : ''}`;
 }
 
 function riderCard(vm) {
@@ -187,6 +222,9 @@ function riderCard(vm) {
   if (!rider) return '';
   const initial = esc((rider.name || 'R').trim().charAt(0).toUpperCase() || 'R');
   const meta = [known(rider.vehicle), known(rider.plate)].filter(Boolean).join(' · ');
+  const stops = Number.isInteger(rider.stopsAhead)
+    ? `<span class="live-chip">${esc(rider.stopsAhead === 0 ? 'Your delivery is next' : `${rider.stopsAhead} ${rider.stopsAhead === 1 ? 'stop' : 'stops'} before yours`)}</span>`
+    : '';
   return `
     <section class="rider-card" aria-label="Your rider">
       ${rider.photo
@@ -195,7 +233,7 @@ function riderCard(vm) {
       <div class="rider-card__text">
         <strong>${esc(rider.name)}</strong>
         ${meta ? `<small>${esc(meta)}</small>` : ''}
-        ${riderLive(rider)}
+        ${stops}
       </div>
       <div class="contact-actions">
         ${contactAction('call', 'phone', 'Call', rider)}
@@ -204,25 +242,10 @@ function riderCard(vm) {
     </section>`;
 }
 
-/** D-66: truthful last known rider point + stops before this order. */
-function riderLive(rider) {
-  const parts = [];
-  if (Number.isInteger(rider.stopsAhead)) {
-    parts.push(`<span class="live-chip">${esc(rider.stopsAhead === 0 ? 'Your delivery is next' : `${rider.stopsAhead} ${rider.stopsAhead === 1 ? 'stop' : 'stops'} before yours`)}</span>`);
-  }
-  const loc = rider.location;
-  if (loc) {
-    const mins = Math.max(0, Math.round((Date.now() - new Date(loc.recordedAt).getTime()) / 60000));
-    const when = mins < 1 ? 'just now' : `${mins} min ago`;
-    parts.push(`<a class="rider__loc" href="https://www.google.com/maps?q=${encodeURIComponent(`${loc.lat},${loc.lng}`)}" target="_blank" rel="noopener">Location updated ${esc(when)}</a>`);
-  }
-  return parts.length ? `<span class="rider-card__live">${parts.join('')}</span>` : '';
-}
-
 function contactAction(kind, glyph, label, rider) {
   if (!rider?.contact?.[kind]?.available) return '';
   return `<button class="contact-btn" type="button" data-action="contact-${kind}"
-    aria-label="${esc(label)} ${esc(rider.name)}, your rider">${icon(glyph, { size: 19 })}</button>`;
+    aria-label="${esc(label)} ${esc(rider.name)}, your rider">${icon(glyph, { size: 21 })}</button>`;
 }
 
 function detailRow(label, value) {
@@ -239,21 +262,16 @@ function detailsCard(vm) {
   }
   rows.push(detailRow('From', vm.vendor?.name), detailRow('Pickup address', vm.vendor?.address));
   if (vm.status === CUSTOMER_STATUS.PICKED_UP) {
-    rows.push(detailRow('Picked up at', vm.pickup?.atLabel), detailRow('Items', vm.order?.itemsLabel), detailRow('Note', vm.order?.note));
+    rows.push(detailRow('Items', vm.order?.itemsLabel), detailRow('Note', vm.order?.note));
   }
   if (vm.status === CUSTOMER_STATUS.DELIVERED) {
     rows.push(detailRow('Delivered to', vm.delivery?.address), detailRow('Received by', vm.delivery?.receivedBy));
-    if (vm.pod) {
-      rows.push(`<button class="pod-row" type="button" data-action="open-pod">
-        <span class="pod-row__thumb">${ui.podImageUrl ? `<img src="${esc(ui.podImageUrl)}" alt="">` : icon('expand', { size: 15 })}</span>
-        <span class="pod-row__text"><strong>Proof of Delivery</strong><small>View the delivery photo</small></span>${icon('chevronRight', { size: 18 })}</button>`);
-    }
   }
   const open = ui.detailsOpen;
   return `
     <section class="details${open ? ' is-open' : ''}">
       <button class="details__toggle" type="button" data-action="toggle-details" aria-expanded="${open}" aria-controls="detailsBody">
-        ${icon('note', { size: 20 })}<span>Delivery details</span><span class="details__chev">${icon('chevronRight', { size: 18 })}</span>
+        ${icon('note', { size: 22 })}<span>Delivery details</span><span class="details__chev">${icon('chevronRight', { size: 20 })}</span>
       </button>
       <div class="details__body" id="detailsBody"${open ? '' : ' inert'}><div class="details__inner">${rows.join('')}</div></div>
     </section>`;
@@ -262,9 +280,8 @@ function detailsCard(vm) {
 function unavailableScreen(vm) {
   return `
     <section class="unavailable${vm.quiet ? ' unavailable--quiet' : ''}">
-      <h1 class="hero__title" id="heroStatus">${esc(vm.statusTitle)}</h1>
-      <p class="hero__body">${esc(vm.statusBody)}</p>
-      ${vm.quiet ? '' : `<div class="scene scene--art scene--error">${ERROR_ART}</div>`}
+      ${statusHead(vm)}
+      ${vm.quiet ? '' : `<div class="scene-error">${ERROR_ART}</div>`}
     </section>
     <button class="btn-yellow" type="button" data-action="retry-tracking">${icon('refresh', { size: 19 })}Try Again</button>`;
 }
@@ -273,8 +290,7 @@ function loadingScreen(vm) {
   return `
     <section class="unavailable" aria-busy="true">
       <span class="spinner" aria-hidden="true"></span>
-      <h1 class="hero__title" id="heroStatus">${esc(vm.statusTitle)}</h1>
-      <p class="hero__body">${esc(vm.statusBody)}</p>
+      ${statusHead(vm)}
     </section>`;
 }
 
@@ -282,55 +298,47 @@ function poweredByCefflo() {
   return '<footer class="powered">Powered by <strong>Cefflo</strong></footer>';
 }
 
-function trackingScreen(vm) {
-  if (vm.phase === TRACKING_PHASE.UNAVAILABLE) {
-    return `<div class="screen screen--unavailable">${vendorName(vm)}<div class="screen__main">${unavailableScreen(vm)}</div>${poweredByCefflo()}</div>`;
-  }
-  if (vm.phase === TRACKING_PHASE.LOADING) {
-    return `<div class="screen">${vendorName(vm)}<div class="screen__main">${loadingScreen(vm)}</div>${poweredByCefflo()}</div>`;
-  }
-  const facts = vm.status === CUSTOMER_STATUS.ON_THE_WAY ? etaCard(vm) : vm.status === CUSTOMER_STATUS.DELIVERED ? deliveredCard(vm) : '';
+function shell(body, { title = 'Delivery check', back = false, modifier = '' } = {}) {
   return `
-    <div class="screen screen--${vm.status}${vm.ratingEligible ? ' has-sheet' : ''}">
-      ${vendorName(vm)}
-      <div class="screen__main">
-        ${statusHead(vm)}
-        ${facts}
-        ${visual(vm)}
-        ${deliveryProgress(vm)}
-        ${vm.status === CUSTOMER_STATUS.DELIVERED ? '' : riderCard(vm)}
-        ${detailsCard(vm)}
-      </div>
-      ${poweredByCefflo()}
+    <div class="screen${modifier ? ` ${modifier}` : ''}">
+      ${topbar(title, { back })}
+      <div class="panel">${body}${poweredByCefflo()}</div>
     </div>`;
+}
+
+function trackingScreen(vm) {
+  if (vm.phase === TRACKING_PHASE.UNAVAILABLE) return shell(unavailableScreen(vm), { modifier: 'screen--unavailable' });
+  if (vm.phase === TRACKING_PHASE.LOADING) return shell(loadingScreen(vm));
+  const delivered = vm.status === CUSTOMER_STATUS.DELIVERED;
+  return shell(`
+    ${statusHead(vm)}
+    ${deliveryProgress(vm)}
+    ${timeline(vm)}
+    ${factCard(vm)}
+    ${actions(vm)}
+    ${delivered ? '' : riderCard(vm)}
+    ${detailsCard(vm)}
+    ${vm.ratingEligible ? '<div id="ratingSlot"></div>' : ''}`, { modifier: `screen--${vm.status}` });
 }
 
 /** C4 — POD detail. Deliberately contains nothing else (no tracking id, no address). */
 function podScreen(vm) {
-  return `
-    <div class="screen screen--pod">
-      <div class="pod-head">
-        <button class="icon-btn" type="button" data-action="back-to-tracking" aria-label="Back to delivery tracking">
-          ${icon('chevronLeft', { size: 24 })}
-        </button>
-        <h1 class="pod-head__title">Proof of Delivery</h1>
-      </div>
-      <button class="pod-figure" type="button" data-action="open-fullscreen"
-        aria-label="View proof of delivery photo full screen">
-        ${ui.podImageUrl
-          ? `<img src="${esc(ui.podImageUrl)}" alt="${esc(vm.pod.alt)}">`
-          : '<span class="pod-figure__placeholder">Photo unavailable</span>'}
-      </button>
-      <section class="card pod-meta">
-        ${podMetaRow('calendar', 'Delivered at', vm.delivery.atLabel)}
-        ${podMetaRow('person', 'Received by', vm.delivery.receivedBy)}
-        ${podMetaRow('note', 'Rider note', vm.pod.riderNote)}
-      </section>
-      ${poweredByCefflo()}
-    </div>`;
+  return shell(`
+    <button class="pod-figure" type="button" data-action="open-fullscreen"
+      aria-label="View proof of delivery photo full screen">
+      ${ui.podImageUrl
+        ? `<img src="${esc(ui.podImageUrl)}" alt="${esc(vm.pod.alt)}">`
+        : '<span class="pod-figure__placeholder">Photo unavailable</span>'}
+    </button>
+    <section class="pod-meta">
+      ${podMetaRow('calendar', 'Delivered at', vm.delivery.atLabel)}
+      ${podMetaRow('person', 'Received by', vm.delivery.receivedBy)}
+      ${podMetaRow('note', 'Rider note', vm.pod.riderNote)}
+    </section>`, { title: 'Proof of Delivery', back: true, modifier: 'screen--pod' });
 }
 
 function podMetaRow(glyph, label, value) {
+  if (!known(value)) return '';
   return `
     <div class="pod-meta__row">
       <span class="pod-meta__icon" aria-hidden="true">${icon(glyph, { size: 21 })}</span>
@@ -379,6 +387,8 @@ sheet.addEventListener('click', (event) => {
   if (action === 'contact-call') contact('call', trigger);
   if (action === 'contact-chat') contact('chat', trigger);
   if (action === 'toggle-details') toggleDetails(trigger);
+  if (action === 'toggle-map') { ui.mapOpen = !ui.mapOpen; render(); }
+  if (action === 'retry-rating') submitRating(ui.ratingValue);
   if (action === 'retry-tracking') retryTracking(trigger);
 });
 
@@ -454,7 +464,7 @@ function openPod() {
   ui.view = 'pod';
   history.pushState({ view: 'pod' }, '', '#proof-of-delivery');
   render();
-  sheet.querySelector('.pod-head .icon-btn')?.focus({ preventScroll: true });
+  sheet.querySelector('.topbar__back')?.focus({ preventScroll: true });
 }
 
 function closePod({ fromHistory = false } = {}) {
@@ -569,10 +579,10 @@ function attachZoom(stage, image) {
   stage.addEventListener('pointercancel', release);
 }
 
-/* ------------------------------------------------ rating bottom sheet */
+/* ------------------------------------------------------ inline rating */
 
 // Delivered only. Choosing a star IS the submission (tap, or drag across the
-// stars and release). The same sheet then shows submitting (blue spinner) and,
+// stars and release). The same card then shows submitting (blue spinner) and,
 // only after the server confirmed, success (green check). A failure keeps the
 // chosen rating and offers a retry — never a fake success.
 
@@ -592,12 +602,11 @@ function sheetBody(state) {
   const value = state === 'error' ? ui.ratingValue : 0;
   return `<div class="sheet-state">
       <h2 class="sheet-title" id="ratingTitle">Rate your delivery</h2>
-      <p class="sheet-sub">How was your experience?</p>
       <div class="stars" id="starGroup" role="group" aria-labelledby="ratingTitle">
         ${[1, 2, 3, 4, 5].map((n) => `
           <button class="star${n <= value ? ' is-selected' : ''}" type="button" data-value="${n}" tabindex="${n === Math.max(1, value) ? '0' : '-1'}" aria-label="Rate ${n} out of 5 stars">
-            <span class="star__outline">${icon('starOutline', { size: 38 })}</span>
-            <span class="star__filled">${icon('starFilled', { size: 38 })}</span>
+            <span class="star__outline">${icon('starOutline', { size: 36 })}</span>
+            <span class="star__filled">${icon('starFilled', { size: 36 })}</span>
           </button>`).join('')}
       </div>
       ${state === 'error' ? `<div class="sheet-error" role="alert"><span>We couldn't save your rating. Please try again.</span>
@@ -606,18 +615,18 @@ function sheetBody(state) {
 }
 
 function renderSheet(vm) {
-  let node = document.getElementById('ratingSheet');
+  const slot = document.getElementById('ratingSlot');
   const wanted = vm.phase === TRACKING_PHASE.READY && vm.ratingEligible && ui.view === 'tracking';
-  if (!wanted) { node?.remove(); return; }
+  if (!wanted || !slot) return;
   const state = rating.getState().submitted ? 'success' : ui.sheetState;
+  let node = document.getElementById('ratingSheet');
   if (!node) {
     node = document.createElement('section');
     node.id = 'ratingSheet';
-    node.className = 'rate-sheet';
+    node.className = 'rate-card';
     node.setAttribute('aria-label', 'Rate your delivery');
-    node.innerHTML = '<span class="rate-sheet__handle" aria-hidden="true"></span><div class="rate-sheet__body"></div>';
-    overlayRoot.appendChild(node);
-    requestAnimationFrame(() => requestAnimationFrame(() => node.classList.add('is-open')));
+    node.innerHTML = '<div class="rate-sheet__body"></div>';
+    slot.appendChild(node);
   }
   if (node.dataset.state === state && state !== 'error') return;
   node.dataset.state = state;
@@ -638,7 +647,7 @@ function paintStars(value) {
 
 const starAt = (event) => document.elementFromPoint(event.clientX, event.clientY)?.closest?.('#starGroup .star');
 
-overlayRoot.addEventListener('pointerdown', (event) => {
+sheet.addEventListener('pointerdown', (event) => {
   const star = event.target.closest('#starGroup .star');
   if (!star) return;
   event.preventDefault();
@@ -670,7 +679,7 @@ window.addEventListener('pointercancel', () => {
 });
 
 // Keyboard: arrows move focus and preview, Enter/Space (native click) commits.
-overlayRoot.addEventListener('keydown', (event) => {
+sheet.addEventListener('keydown', (event) => {
   const star = event.target.closest?.('#starGroup .star');
   if (!star) return;
   const buttons = starButtons();
@@ -687,8 +696,7 @@ overlayRoot.addEventListener('keydown', (event) => {
   paintStars(next + 1);
 });
 
-overlayRoot.addEventListener('click', (event) => {
-  if (event.target.closest('[data-action="retry-rating"]')) { submitRating(ui.ratingValue); return; }
+sheet.addEventListener('click', (event) => {
   const star = event.target.closest('#starGroup .star');
   if (!star) return;
   // A pointer release already submitted; the click that follows is ignored.
