@@ -174,7 +174,7 @@ function factCard(vm) {
   if (!value) return '';
   return `
     <div class="fact">
-      <span class="fact__icon">${icon('clock', { size: 30 })}</span>
+      <span class="fact__icon">${icon('clock', { size: 26 })}</span>
       <span class="fact__text"><small>${label}</small><strong>${esc(value)}</strong></span>
     </div>`;
 }
@@ -605,8 +605,8 @@ function sheetBody(state) {
       <div class="stars" id="starGroup" role="group" aria-labelledby="ratingTitle">
         ${[1, 2, 3, 4, 5].map((n) => `
           <button class="star${n <= value ? ' is-selected' : ''}" type="button" data-value="${n}" tabindex="${n === Math.max(1, value) ? '0' : '-1'}" aria-label="Rate ${n} out of 5 stars">
-            <span class="star__outline">${icon('starOutline', { size: 36 })}</span>
-            <span class="star__filled">${icon('starFilled', { size: 36 })}</span>
+            <span class="star__outline">${icon('starOutline', { size: 32 })}</span>
+            <span class="star__filled">${icon('starFilled', { size: 32 })}</span>
           </button>`).join('')}
       </div>
       ${state === 'error' ? `<div class="sheet-error" role="alert"><span>We couldn't save your rating. Please try again.</span>
