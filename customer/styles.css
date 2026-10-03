@@ -77,7 +77,7 @@ img { display: block; max-width: 100%; }
 
 /* One design point (iPhone 15/16, 393x852 pt) scaled to the viewport so a
    whole state fits one screen: --u is 1pt of the Founder reference. */
-:root { --u: min(calc(100vh / 852), calc(100vw / 393), 1.12px); }
+:root { --u: min(calc(100vh / 852), calc(100vw / 393), 1.12px); --gap: calc(18 * var(--u)); }
 @supports (height: 100dvh) { :root { --u: min(calc(100dvh / 852), calc(100vw / 393), 1.12px); } }
 
 .app { width: 100%; max-width: 440px; height: 100vh; height: 100dvh; margin: 0 auto; background: linear-gradient(180deg, var(--cef-blue-top) 0%, var(--cef-blue-bottom) 100%); }
@@ -145,7 +145,7 @@ img { display: block; max-width: 100%; }
 
 /* -------------------------------------------------------------- progress */
 
-.steps { position: relative; flex: 0 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); margin: calc(16 * var(--u)) 0 0; padding: 0; list-style: none; }
+.steps { position: relative; flex: 0 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); margin: calc(22 * var(--u)) 0 calc(6 * var(--u)); padding: 0; list-style: none; }
 .steps::before, .steps::after { content: ""; position: absolute; top: calc(17.5 * var(--u) - 1.5px); left: 16.66%; height: 3px; border-radius: 3px; }
 .steps::before { right: 16.66%; background: #E1E5EC; }
 .steps::after { width: calc(66.66% * var(--fill, 0)); background: var(--cef-yellow); transition: width 400ms var(--ease); }
@@ -171,7 +171,7 @@ img { display: block; max-width: 100%; }
 
 /* --------------------------------------------------- ETA / delivered card */
 
-.fact { flex: 0 0 auto; display: flex; align-items: center; gap: calc(18 * var(--u)); min-height: calc(62 * var(--u)); margin-top: calc(12 * var(--u)); padding: calc(8 * var(--u)) calc(20 * var(--u)); border-radius: var(--radius-card); background: var(--surface-soft); }
+.fact { flex: 0 0 auto; display: flex; align-items: center; gap: calc(18 * var(--u)); min-height: calc(62 * var(--u)); margin-top: var(--gap); padding: calc(8 * var(--u)) calc(20 * var(--u)); border-radius: var(--radius-card); background: var(--surface-soft); }
 .fact__icon { display: grid; place-items: center; color: #3F4754; }
 .fact__icon svg { width: calc(32 * var(--u)); height: calc(32 * var(--u)); }
 .fact__text small { display: block; color: var(--ink-soft); font-size: max(11px, calc(13 * var(--u))); font-weight: 500; }
@@ -186,7 +186,7 @@ img { display: block; max-width: 100%; }
   gap: calc(16 * var(--u));
   width: 100%;
   min-height: calc(50 * var(--u));
-  margin-top: calc(12 * var(--u));
+  margin-top: var(--gap);
   padding: calc(4 * var(--u)) calc(18 * var(--u));
   border: 1.5px solid #D5DBE5;
   border-radius: 14px;
@@ -211,7 +211,7 @@ img { display: block; max-width: 100%; }
 
 /* ------------------------------------------------------------------ rider */
 
-.rider-card { flex: 0 0 auto; display: flex; align-items: center; gap: calc(12 * var(--u)); margin-top: calc(14 * var(--u)); padding: 0 2px; }
+.rider-card { flex: 0 0 auto; display: flex; align-items: center; gap: calc(12 * var(--u)); margin-top: var(--gap); padding: 0 2px; }
 .rider-card__avatar { flex: 0 0 auto; width: calc(56 * var(--u)); height: calc(56 * var(--u)); border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--cef-yellow); }
 .rider-card__avatar--initial { display: grid; place-items: center; background: var(--cef-tint); color: var(--cef-blue); font-size: calc(22 * var(--u)); font-weight: 800; }
 .rider-card__text { flex: 1; min-width: 0; }
@@ -236,7 +236,7 @@ img { display: block; max-width: 100%; }
 
 /* --------------------------------------------------------- delivery details */
 
-.details { flex: 0 0 auto; margin-top: calc(12 * var(--u)); border: 1px solid var(--line-soft); border-radius: var(--radius-card); background: #FFFFFF; box-shadow: 0 6px 22px rgba(15, 23, 42, 0.06); }
+.details { flex: 0 0 auto; margin-top: var(--gap); border: 1px solid var(--line-soft); border-radius: var(--radius-card); background: #FFFFFF; box-shadow: 0 6px 22px rgba(15, 23, 42, 0.06); }
 .details__head { display: flex; align-items: center; gap: calc(12 * var(--u)); margin: 0; padding: calc(12 * var(--u)) calc(16 * var(--u)) calc(4 * var(--u)); color: var(--heading); font-size: max(13px, calc(16 * var(--u))); font-weight: 600; }
 .details__head svg { width: calc(22 * var(--u)); height: calc(22 * var(--u)); }
 .details__inner { padding: 0 calc(16 * var(--u)) calc(6 * var(--u)); }
@@ -249,7 +249,7 @@ img { display: block; max-width: 100%; }
 
 /* ---------------------------------------------------------- inline rating */
 
-.rate-card { flex: 0 0 auto; margin-top: calc(12 * var(--u)); padding: calc(12 * var(--u)) calc(14 * var(--u)) calc(8 * var(--u)); border: 1px solid var(--line-soft); border-radius: var(--radius-card); background: #FFFFFF; box-shadow: 0 6px 22px rgba(15, 23, 42, 0.06); text-align: center; }
+.rate-card { flex: 0 0 auto; margin-top: var(--gap); padding: calc(12 * var(--u)) calc(14 * var(--u)) calc(8 * var(--u)); border: 1px solid var(--line-soft); border-radius: var(--radius-card); background: #FFFFFF; box-shadow: 0 6px 22px rgba(15, 23, 42, 0.06); text-align: center; }
 .rate-sheet__body.is-swapping .sheet-state { animation: sheetIn 280ms var(--ease) both; }
 .sheet-state { display: flex; flex-direction: column; align-items: center; }
 .sheet-title { margin: 0; color: var(--heading); font-size: max(13.5px, calc(16 * var(--u))); font-weight: 600; letter-spacing: -0.01em; }
