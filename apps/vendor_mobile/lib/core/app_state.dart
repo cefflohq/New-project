@@ -66,8 +66,9 @@ class AppState extends ChangeNotifier {
   StorefrontBranding? savedStorefrontBranding(String templateId) =>
       _storefrontBranding[templateId];
 
-  /// The business's real storefront (slug, published) once loaded; null in
-  /// the demo and before [loadStorefront].
+  /// The business's real storefront (slug, published) once loaded. The UI
+  /// prototype receives a representative storefront so the approved public
+  /// link, copy, QR and share controls remain reviewable without a backend.
   ({String slug, bool published})? storefront;
 
   /// Loads the storefront and its saved appearance from the server
@@ -78,7 +79,12 @@ class AppState extends ChangeNotifier {
     StorefrontBranding Function(String templateId) defaultsFor,
   ) async {
     final b = business;
-    if (repo.isDemo || b == null) return;
+    if (b == null) return;
+    if (repo.isDemo) {
+      storefront = (slug: 'kak-lina-kitchen', published: true);
+      notifyListeners();
+      return;
+    }
     final m = await repo.getStorefront(b.id);
     storefront = (slug: m['slug'] as String, published: m['published'] == true);
     final key = (m['template_key'] as String?) ?? activeStorefrontTemplateId;
@@ -111,7 +117,7 @@ class AppState extends ChangeNotifier {
   Future<void> setStorefrontPublished(bool published) async {
     final b = business, s = storefront;
     if (b == null || s == null) return;
-    await repo.setStorefrontPublished(b.id, published);
+    if (!repo.isDemo) await repo.setStorefrontPublished(b.id, published);
     storefront = (slug: s.slug, published: published);
     notifyListeners();
   }
