@@ -230,7 +230,8 @@ export function buildLiveSource(payload = {}) {
     },
     delivery: { address: DASH, atLabel: known(payload.deliveredAt) ?? DASH, receivedBy: DASH },
     pod: payload.podPhoto ? { available: true, url: payload.podPhoto, alt: 'Proof of delivery photo', riderNote: DASH } : null,
-    rating: { eligible: true }
+    // A rating the server already holds (any device) is not offered again.
+    rating: { eligible: !payload.ratingSubmitted }
   };
 }
 

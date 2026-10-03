@@ -45,7 +45,10 @@ if (hasBackendToken) {
   provider.store.set(buildLoadingViewModel());
 }
 
-const rating = createRatingAdapter({ reference: TRACKING_FIXTURE.reference });
+// Live orders key their local rating record by their own order reference.
+const rating = createRatingAdapter({
+  reference: hasBackendToken ? () => provider.store.getState().reference : TRACKING_FIXTURE.reference
+});
 const podAdapter = createPodAdapter();
 
 // QA/demo helper: `?rated=1` boots straight into the already-rated C3 state.
@@ -730,6 +733,11 @@ async function submitRating(value) {
   // Keep the submitting state readable instead of flashing past it.
   const rest = 650 - (Date.now() - shownAt);
   if (rest > 0) await wait(rest);
+  if (!result.ok && result.reason === 'already-submitted') {
+    const node = document.getElementById('ratingSheet');
+    if (node) retireSheet(node);
+    return;
+  }
   if (!result.ok) {
     ui.sheetState = 'error';
     renderSheet(provider.store.getState());

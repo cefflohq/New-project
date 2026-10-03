@@ -44,17 +44,10 @@
       deliveredAt: snapshot.completed_at ? new Date(snapshot.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
       podPhoto: snapshot.status === 'delivered' && snapshot.pod_available ? await podUrl().catch(() => null) : null,
       riderLocation: snapshot.rider_location || null,
-      stopsAhead: typeof snapshot.stops_ahead === 'number' ? snapshot.stops_ahead : null
+      stopsAhead: typeof snapshot.stops_ahead === 'number' ? snapshot.stops_ahead : null,
+      ratingSubmitted: Boolean(snapshot.rating_submitted)
     });
     syncLive(snapshot);
-    if (snapshot.rating_submitted) {
-      const form = document.getElementById('ratingForm');
-      const thanks = document.getElementById('ratingThanks');
-      const copy = document.getElementById('ratingThanksCopy');
-      if (form) form.hidden = true;
-      if (thanks) thanks.classList.add('is-visible');
-      if (copy && !copy.textContent.trim()) copy.textContent = 'Your rating was submitted successfully.';
-    }
     if (window.CEFFLOTracking.setFreshness) window.CEFFLOTracking.setFreshness(Date.now());
     return snapshot;
   }
@@ -145,9 +138,6 @@
     return (await response.json()).url;
   }
   window.CEFFLO_CUSTOMER = Object.freeze({ refresh: guardedRefresh, submitRating, podUrl });
-  window.addEventListener('cefflo:delivery-rated', event => {
-    submitRating(event.detail.rating, event.detail.feedback).catch(error => console.error('Rating persistence failed', error));
-  });
 
   window.addEventListener('load', guardedRefresh);
   document.addEventListener('visibilitychange', () => {

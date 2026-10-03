@@ -40,18 +40,28 @@ function writeStored(reference, record) {
  * server round trip would behave.
  */
 export function createRatingAdapter({ reference, latencyMs = 260 } = {}) {
-  const stored = readStored(reference);
+  // `reference` may be a function: a live order's reference is known only
+  // once public_tracking answers, and each order keeps its own local record.
+  const refOf = typeof reference === 'function' ? reference : () => reference;
   let state = {
-    submitted: Boolean(stored),
-    value: stored?.value ?? 0,
+    submitted: false,
+    value: 0,
     /** True only for a rating submitted in THIS session (drives the popup). */
     justSubmitted: false,
     pending: false
   };
+  const syncStored = () => {
+    const stored = readStored(refOf());
+    if (stored && !state.submitted) state = { ...state, submitted: true, value: stored.value };
+  };
 
   return {
-    getState: () => ({ ...state }),
+    getState: () => {
+      syncStored();
+      return { ...state };
+    },
     async submit(value) {
+      syncStored();
       if (state.submitted || state.pending) return { ok: false, reason: 'already-submitted' };
       if (!Number.isInteger(value) || value < 1 || value > 5) return { ok: false, reason: 'invalid' };
       state = { ...state, pending: true, value };
@@ -63,11 +73,17 @@ export function createRatingAdapter({ reference, latencyMs = 260 } = {}) {
         if (persist) await persist(value, null);
         else await new Promise((resolve) => setTimeout(resolve, latencyMs)); // prototype only
       } catch (error) {
+        // The server already holds a rating for this order (e.g. another
+        // device): that is a settled state, not a customer-facing error.
+        if (/already submitted/i.test(String(error?.message ?? error))) {
+          state = { ...state, submitted: true, pending: false };
+          return { ok: false, reason: 'already-submitted' };
+        }
         state = { ...state, pending: false };
         return { ok: false, reason: 'failed', error };
       }
       state = { submitted: true, value, justSubmitted: true, pending: false };
-      writeStored(reference, { value, at: new Date().toISOString() });
+      writeStored(refOf(), { value, at: new Date().toISOString() });
       return { ok: true, value };
     },
     /** Clears the one-shot popup flag so a refresh never replays it. */

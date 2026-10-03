@@ -25,6 +25,7 @@ const out = {};
 for (const s of ['order_confirmed', 'preparing', 'picked_up', 'on_the_way', 'delivered', 'issue', 'cancelled']) out[s] = snap(s);
 out.live = snap('on_the_way', { riderLocation: { lat: 3.1234, lng: 101.5678, recorded_at: '2026-09-27T10:00:00Z' }, stopsAhead: 0 });
 out.delivered_pod = snap('delivered', { deliveredAt: '09:15 PM', podPhoto: 'https://signed.example/pod' });
+out.delivered_rated = snap('delivered', { ratingSubmitted: true });
 bridge.fail(); out.fail = provider.store.getState();
 out.fixtureStrings = [f.TRACKING_FIXTURE.vendor.tagline, f.TRACKING_FIXTURE.vendor.address, f.TRACKING_FIXTURE.rider.name,
   f.TRACKING_FIXTURE.rider.vehicle, f.TRACKING_FIXTURE.rider.plate, f.TRACKING_FIXTURE.delivery.address,
@@ -47,6 +48,11 @@ class CustomerTrackingLiveTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.out = run_bridge()
+
+    def test_server_side_rating_is_not_offered_again(self):
+        # rating_submitted from public_tracking (any device) closes the rating offer.
+        self.assertTrue(self.out["delivered"]["ratingEligible"])
+        self.assertFalse(self.out["delivered_rated"]["ratingEligible"])
 
     def test_pre_activation_is_neutral_no_order_yet(self):
         for status in ("order_confirmed", "preparing"):
