@@ -1,6 +1,6 @@
 /* CEFFLO Customer Tracking PWA — visual system (Founder reference 2026-10-03).
  *
- * Blue "Delivery check" bar, white rounded panel, yellow progress + timeline,
+ * Blue "Delivery check" bar, white rounded panel, yellow progress,
  * neutral ETA card, outlined action rows, rider row, Delivery details and an
  * inline rating card. Blue = identity/navigation, yellow = progress and
  * rating, green = success, red = error, grey = supporting text and footer.
@@ -125,7 +125,6 @@ img { display: block; max-width: 100%; }
   min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   padding: calc(24 * var(--u)) calc(18 * var(--u)) calc(env(safe-area-inset-bottom) + 6 * var(--u));
   border-radius: calc(24 * var(--u)) calc(24 * var(--u)) 0 0;
   background: var(--surface);
@@ -133,7 +132,9 @@ img { display: block; max-width: 100%; }
   overscroll-behavior: contain;
 }
 
-.powered { padding-top: calc(8 * var(--u)); text-align: center; color: #9AA1AE; font-size: max(10px, calc(12 * var(--u))); }
+/* The state group sits centred in the free height; the footer stays at the bottom. */
+.panel__main { display: flex; flex-direction: column; margin: auto 0; }
+.powered { margin-top: auto; padding-top: calc(8 * var(--u)); text-align: center; color: #9AA1AE; font-size: max(10px, calc(12 * var(--u))); }
 .powered strong { color: #9AA1AE; font-weight: 700; }
 
 /* ------------------------------------------------------------ status head */
@@ -167,50 +168,6 @@ img { display: block; max-width: 100%; }
 .steps__item.is-current .steps__dot { border-color: var(--cef-yellow); background: var(--cef-yellow); color: var(--cef-yellow-ink); box-shadow: 0 3px 10px rgba(255, 198, 41, 0.35); }
 .steps__item.is-done .steps__label,
 .steps__item.is-current .steps__label { color: var(--heading); font-weight: 600; }
-
-/* -------------------------------------------------------------- timeline */
-
-.timeline {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  margin: calc(16 * var(--u)) 0 0;
-  padding: calc(10 * var(--u)) calc(12 * var(--u));
-  list-style: none;
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-card);
-  background: #FCFCFE;
-  box-shadow: 0 6px 22px rgba(15, 23, 42, 0.04);
-}
-.timeline__row { position: relative; flex: 0 0 auto; display: grid; grid-template-columns: calc(62 * var(--u)) calc(21 * var(--u)) 1fr; column-gap: calc(10 * var(--u)); align-content: start; padding: calc(7 * var(--u)) 0; }
-.timeline__time { padding-top: 1px; color: var(--ink-soft); font-size: max(10.5px, calc(13 * var(--u))); font-weight: 500; font-variant-numeric: tabular-nums; }
-.timeline__dot {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  width: calc(21 * var(--u)); height: calc(21 * var(--u));
-  margin-top: 1px;
-  border-radius: 50%;
-  border: 2px solid #CDD4DE;
-  background: #FFFFFF;
-  color: var(--cef-yellow-ink);
-}
-.timeline__dot svg { width: calc(12 * var(--u)); height: calc(12 * var(--u)); }
-.timeline__row.is-done .timeline__dot,
-.timeline__row.is-current .timeline__dot { border-color: var(--cef-yellow); background: var(--cef-yellow); }
-.timeline__row:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  top: calc(7 * var(--u) + 24 * var(--u));
-  bottom: calc(-7 * var(--u));
-  left: calc(62 * var(--u) + 10 * var(--u) + 10.5 * var(--u) - 1px);
-  border-left: 2px dashed #D6DCE5;
-}
-.timeline__row.is-done:not(:last-child)::after { border-left-color: var(--cef-yellow); }
-.timeline__text strong { display: block; color: var(--heading); font-size: max(12.5px, calc(15 * var(--u))); font-weight: 600; line-height: 1.3; }
-.timeline__text small { display: block; margin-top: 1px; color: var(--ink-soft); font-size: max(10.5px, calc(13 * var(--u))); line-height: 1.35; }
-.timeline__row.is-next .timeline__text strong { color: #344054; font-weight: 500; }
 
 /* --------------------------------------------------- ETA / delivered card */
 
@@ -392,11 +349,6 @@ img { display: block; max-width: 100%; }
   body { display: flex; align-items: center; justify-content: center; padding: 20px 0; background: #F3F5F9; }
   :root { --u: min(calc(min(880px, 100vh - 40px) / 852), 1.12px); }
   .app { height: min(880px, calc(100vh - 40px)); border-radius: 28px; overflow: hidden; box-shadow: 0 26px 70px rgba(15, 23, 42, 0.10); }
-}
-
-/* Short phones: captions go first so the state still fits one screen. */
-@media (max-height: 700px) {
-  .timeline__text small { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

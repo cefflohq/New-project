@@ -83,14 +83,12 @@ function normaliseStatusParam(value) {
 /* --------------------------------------------------------------- components */
 
 // Founder reference (2026-10-03): blue "Delivery check" bar, white rounded
-// panel, yellow progress + timeline, neutral ETA card, outlined action row,
+// panel, yellow progress, neutral ETA card, outlined action row,
 // rider row, Delivery details, inline rating. Blue = identity/navigation,
 // yellow = progress and rating, green = success, red = error, grey footer.
 
 const DASH = '—';
 const known = (value) => (value !== undefined && value !== null && value !== '' && value !== DASH ? value : null);
-/** "Today, 10:24 AM" → "10:24 AM" for the timeline's time column. */
-const timeOnly = (label) => (known(label) ? String(label).replace(/^[^,]*,\s*/, '') : '');
 
 const ERROR_ART = `<svg viewBox="0 0 240 150" aria-hidden="true" focusable="false">
   <g fill="#EEF3FB"><ellipse cx="44" cy="80" rx="20" ry="13"/><ellipse cx="60" cy="74" rx="15" ry="13"/><ellipse cx="196" cy="68" rx="17" ry="13"/><ellipse cx="210" cy="74" rx="14" ry="10"/></g>
@@ -135,36 +133,6 @@ function deliveryProgress(vm) {
       </li>`;
   }).join('');
   return `<ol class="steps" style="--fill:${Math.max(0, reached - 1) / (vm.milestones.length - 1)}" aria-label="Delivery progress">${steps}</ol>`;
-}
-
-/** Event timeline. Times appear only when the source actually carries them. */
-function timeline(vm) {
-  const delivered = vm.status === CUSTOMER_STATUS.DELIVERED;
-  const onTheWay = vm.status === CUSTOMER_STATUS.ON_THE_WAY;
-  const states = delivered ? ['done', 'done', 'done', 'done']
-    : onTheWay ? ['done', 'done', 'current', 'next']
-      : ['current', 'next', 'next', 'next'];
-  const rows = [
-    { title: 'Picked Up', body: 'Your order has been picked up.', time: timeOnly(vm.pickup?.atLabel) },
-    {
-      title: 'Delivery started',
-      body: states[1] === 'done' ? 'Your rider has started the delivery run.' : 'Waiting for rider to start the delivery run.',
-      time: timeOnly(vm.timeline?.startedAtLabel)
-    },
-    { title: 'On the Way', body: 'Your rider is on the way.', time: timeOnly(vm.timeline?.onTheWayAtLabel) },
-    delivered
-      ? { title: 'Delivered', body: 'Your order has been delivered.', time: timeOnly(vm.delivery?.atLabel) }
-      : { title: 'Your delivery', body: 'Estimated arrival', time: '' }
-  ];
-  return `
-    <ol class="timeline" aria-label="Delivery timeline">
-      ${rows.map((row, index) => `
-        <li class="timeline__row is-${states[index]}">
-          <span class="timeline__time">${states[index] === 'next' ? '' : esc(row.time)}</span>
-          <span class="timeline__dot" aria-hidden="true">${states[index] === 'done' ? icon('check', { size: 12 }) : ''}</span>
-          <span class="timeline__text"><strong>${esc(row.title)}</strong><small>${esc(row.body)}</small></span>
-        </li>`).join('')}
-    </ol>`;
 }
 
 function factCard(vm) {
@@ -311,14 +279,15 @@ function trackingScreen(vm) {
   if (vm.phase === TRACKING_PHASE.LOADING) return shell(loadingScreen(vm));
   const delivered = vm.status === CUSTOMER_STATUS.DELIVERED;
   return shell(`
-    ${statusHead(vm)}
-    ${deliveryProgress(vm)}
-    ${timeline(vm)}
-    ${factCard(vm)}
-    ${actions(vm)}
-    ${delivered ? '' : riderCard(vm)}
-    ${detailsCard(vm)}
-    ${vm.ratingEligible ? '<div id="ratingSlot"></div>' : ''}`, { modifier: `screen--${vm.status}` });
+    <div class="panel__main">
+      ${statusHead(vm)}
+      ${deliveryProgress(vm)}
+      ${factCard(vm)}
+      ${actions(vm)}
+      ${delivered ? '' : riderCard(vm)}
+      ${detailsCard(vm)}
+      ${vm.ratingEligible ? '<div id="ratingSlot"></div>' : ''}
+    </div>`, { modifier: `screen--${vm.status}` });
 }
 
 /** C4 — POD detail. Deliberately contains nothing else (no tracking id, no address). */
