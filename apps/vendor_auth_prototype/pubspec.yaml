@@ -1,0 +1,31 @@
+name: cefflo_vendor_auth_prototype
+description: >
+  CEFFLO Vendor Auth — UI prototype of the Founder-locked boards.
+
+  Standalone and deliberately backend-free: every interaction is local demo
+  state, so nothing here can reach Supabase, auth truth, or the shipped
+  implementation in apps/vendor_mobile. This renders the locked screens and
+  nothing else.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_fonts: ^8.2.1
+  lucide_icons_flutter: ^3.1.18
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    # D-35 canonical logo, byte-identical to docs/cefflo/brand/assets/logo/
+    # (SHA-256 verified on copy). Never redrawn or recoloured.
+    - assets/brand/

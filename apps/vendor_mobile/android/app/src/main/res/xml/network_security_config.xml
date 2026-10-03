@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Dev-only allowance for the self-hosted Supabase stack, which serves plain
+  HTTP on :54321. Android blocks cleartext by default from API 28, so without
+  this every auth call from the APK fails before it leaves the device.
+
+  Scoped to the single host deliberately: cleartext stays forbidden
+  everywhere else, so this cannot quietly become an app-wide downgrade.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">46.250.232.181</domain>
+    </domain-config>
+</network-security-config>
