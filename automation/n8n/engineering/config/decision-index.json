@@ -30,8 +30,13 @@
     },
     {
       "id": "D-44",
+      "status": "SUPERSEDED",
+      "summary": "Former canonical Engineering DEV OpenAI project proj_mQtcb9RRJj5euIafLwn8GICr was archived and is no longer usable"
+    },
+    {
+      "id": "D-45",
       "status": "ACTIVE",
-      "summary": "Canonical Engineering DEV OpenAI project is proj_mQtcb9RRJj5euIafLwn8GICr; the prior shared credential/project is prohibited for Engineering"
+      "summary": "Canonical Engineering DEV OpenAI project is proj_DyMNChgDKCjLX2wsLlNZOoct (CEFFLO Engineering DEV 2); superseded Engineering OpenAI projects and shared credentials are prohibited for active Engineering use"
     }
   ],
   "gates": {

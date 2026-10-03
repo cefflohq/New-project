@@ -58,6 +58,27 @@
       },
       "outcome": "insufficient_quota_pre_inference",
       "settledAt": "2026-09-20T01:42:30.411Z"
+    },
+    {
+      "id": "db43b7a2-08d5-4e66-b356-56c463a98d9c",
+      "taskId": "ENG-TASK-V11-ACCEPTANCE-PILOT",
+      "role": "E1-E4-QUALIFICATION",
+      "routeId": "openai-gpt-5.4-mini",
+      "attempt": 2,
+      "retry": 0,
+      "kind": "qualification",
+      "status": "settled",
+      "amountMicros": 0,
+      "createdAt": "2026-09-20T17:31:18.980Z",
+      "usage": {
+        "providerDispatched": true,
+        "httpStatus": 429,
+        "inputTokens": 0,
+        "cachedTokens": 0,
+        "outputTokens": 0
+      },
+      "outcome": "credit_balance_exhausted_pre_inference",
+      "settledAt": "2026-09-20T17:38:31.948Z"
     }
   ]
 }

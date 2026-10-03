@@ -8,5 +8,5 @@
   "previewPublishEnabled": false,
   "roles": {"E1": true, "E2": true, "E3": true, "E4": true, "E5": true},
   "providers": {"openai": false, "deepseek": true, "cli": false},
-  "reason": "Dedicated Engineering DEV OpenAI credential pending for project proj_mQtcb9RRJj5euIafLwn8GICr; qualification and FG-ENG-07 remain closed"
+  "reason": "Dedicated Engineering DEV OpenAI credential is configured for project proj_DyMNChgDKCjLX2wsLlNZOoct but qualification failed before inference because the project credit balance is exhausted; qualification authorization, pilot, and FG-ENG-07 remain closed"
 }

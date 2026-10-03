@@ -30,11 +30,17 @@
       "cost_usd": 0
     },
     "openai_gpt_5_4_mini": {
+      "attempt": 2,
+      "credential_ref": "n8n:xKhKNxSnlZjzSiDo",
+      "project_id": "proj_DyMNChgDKCjLX2wsLlNZOoct",
       "request_contained_both_images": true,
       "http_status": 429,
-      "result": "NOT_QUALIFIED_INSUFFICIENT_QUOTA",
+      "error_type": "insufficient_quota",
+      "error_code": "credit_balance_exhausted",
+      "result": "NOT_QUALIFIED_CREDIT_BALANCE_EXHAUSTED",
       "model_inference_occurred": false,
       "input_tokens": 0,
+      "cached_tokens": 0,
       "output_tokens": 0,
       "cost_usd": 0
     },
