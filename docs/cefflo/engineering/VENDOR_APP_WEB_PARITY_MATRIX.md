@@ -37,6 +37,7 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Delivery recovery (`initiate_delivery_recovery`: release an assigned order back to unassigned, Owner/Operator only, idempotent) | Web SOT §2/§10, F2-09 | ✅ (#4) | ✅ (#4) |
 | Edit order before dispatch (`update_order_details`: customer, phone, address, zone, items, notes; re-geocode on address change) | V-15, D-61 | ✅ | ✅ (#5) |
 | Order coverage status on Order detail (`order_coverage_status`: unconfigured / awaiting location / in / outside). App had the repository call only — wired in both. `is_within_coverage` (coordinate check) has no caller: neither surface takes typed coordinates | V-26/V-27, Web SOT §2 | ✅ (#6) | ✅ (#6) |
+| Delivery events on Order detail (`delivery_events`, oldest first) | Web SOT §2 + §5.8 | ✅ (#7) | ✅ |
 | Service Area / coverage configuration | V-26–V-27 | ✅ | ✅ |
 | Business Profile, information, address | V-37–V-39 | ✅ | ✅ |
 | Profile, edit profile, profile photo | V-42–V-43 | ✅ | ✅ |
@@ -53,7 +54,6 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Products: list, add, edit, categories, up to 5 photos | V-34–V-36, product media multi (Founder 2026-10-01) | ✅ | ❌ | Web: catalogue |
 | Subscription: current plan, choose plan, billing history (payments demo-only) | V-50–V-54, D-54 | ✅ | ❌ | Web: subscription surfaces |
 | Help & Support, FAQ, Contact Support | V-55–V-57 | ✅ | ❌ (help marked "not connected") | Web: real FAQ + contact |
-| Order delivery events / timeline on order detail | Web SOT §2 + §5.8 "runs/stops/events" | ❌ | ✅ | App: show events on Order detail |
 
 ## Verification debt (clear before production qualification)
 

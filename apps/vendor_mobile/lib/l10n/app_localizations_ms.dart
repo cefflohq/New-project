@@ -3702,4 +3702,10 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get deliveryRecovered => 'Pesanan dilepaskan untuk dirancang semula.';
+
+  @override
+  String get deliveryActivity => 'Aktiviti penghantaran';
+
+  @override
+  String get noDeliveryActivity => 'Belum ada aktiviti penghantaran.';
 }

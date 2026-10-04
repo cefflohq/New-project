@@ -6752,6 +6752,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Order released for re-planning.'**
   String get deliveryRecovered;
+
+  /// No description provided for @deliveryActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery activity'**
+  String get deliveryActivity;
+
+  /// No description provided for @noDeliveryActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'No delivery activity yet.'**
+  String get noDeliveryActivity;
 }
 
 class _AppLocalizationsDelegate

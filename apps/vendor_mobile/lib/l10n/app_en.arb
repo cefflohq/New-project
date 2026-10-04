@@ -1844,5 +1844,7 @@
   "issueRiderUnableToProceed": "Rider unable to proceed",
   "recoverDelivery": "Recover delivery",
   "recoverDeliveryLead": "Release the order from its rider so it can be planned again.",
-  "deliveryRecovered": "Order released for re-planning."
+  "deliveryRecovered": "Order released for re-planning.",
+  "deliveryActivity": "Delivery activity",
+  "noDeliveryActivity": "No delivery activity yet."
 }

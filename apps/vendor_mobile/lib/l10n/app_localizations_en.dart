@@ -3699,4 +3699,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deliveryRecovered => 'Order released for re-planning.';
+
+  @override
+  String get deliveryActivity => 'Delivery activity';
+
+  @override
+  String get noDeliveryActivity => 'No delivery activity yet.';
 }

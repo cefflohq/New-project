@@ -697,6 +697,20 @@ class VendorRepository {
     return VendorOrder.fromRow(_single(row));
   }
 
+  /// Delivery events for one order, oldest first -- the same
+  /// `delivery_events` rows Vendor Web shows (RLS: business members).
+  Future<List<Map<String, dynamic>>> orderEvents(String orderId) async {
+    if (_demo) return const [];
+    final rows = await _run(
+      () => _db!
+          .from('delivery_events')
+          .select('event_type,from_status,to_status,created_at,actor_role')
+          .eq('order_id', orderId)
+          .order('created_at'),
+    );
+    return _rows(rows);
+  }
+
   // ----------------------------------------------------------------- zones
 
   Future<List<Zone>> zones(String businessId) async {

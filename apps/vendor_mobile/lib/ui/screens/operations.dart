@@ -648,7 +648,9 @@ class OrderDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    return AsyncView<(VendorOrder, List<Zone>, CoverageStatus)>(
+    return AsyncView<
+      (VendorOrder, List<Zone>, CoverageStatus, List<Map<String, dynamic>>)
+    >(
       loading: const SkeletonHeroPage(),
       key: ValueKey('order-$orderId'),
       load: () async => (
@@ -660,9 +662,10 @@ class OrderDetailScreen extends StatelessWidget {
             .orderCoverageStatus(orderId)
             .then(CoverageStatus.parse)
             .catchError((_) => CoverageStatus.unknown),
+        await app.repo.orderEvents(orderId),
       ),
       builder: (context, data, reload) {
-        final (order, zones, coverage) = data;
+        final (order, zones, coverage, events) = data;
         final items = order.items;
         // Pre-dispatch only: approval and zone are planning inputs the
         // server rejects once a rider holds the order.
@@ -810,6 +813,19 @@ class OrderDetailScreen extends StatelessWidget {
                 subtitleMaxLines: 3,
                 icon: LucideIcons.fileText,
               ),
+            SectionHeading(L.deliveryActivity),
+            if (events.isEmpty)
+              StateBlock.empty(L.noDeliveryActivity)
+            else
+              for (final e in events)
+                CefListRow(
+                  title: _eventLabel(e),
+                  subtitle: _formatTime(
+                    DateTime.parse(e['created_at'] as String).toLocal(),
+                  ),
+                  icon: LucideIcons.history,
+                  showChevron: false,
+                ),
             SectionHeading(
               L.items(items.length),
               trailing: CefLink(
@@ -843,6 +859,15 @@ class OrderDetailScreen extends StatelessWidget {
     );
   }
 }
+
+/// One `delivery_events` row in Vendor wording (Web SOT §2/§5.8).
+String _eventLabel(Map<String, dynamic> e) =>
+    switch (e['event_type'] as String?) {
+      'delivery.issue_reported' => L.issue,
+      'delivery.recovery_initiated' => L.recoverDelivery,
+      'order.declined' => L.cancelled,
+      _ => DeliveryStatus.parse(e['to_status'] as String?).label,
+    };
 
 /// Statuses `vendor_report_delivery_issue` accepts (S4-08).
 const _issueFrom = {
