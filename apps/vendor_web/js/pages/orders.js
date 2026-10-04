@@ -169,7 +169,6 @@ export async function renderDetail(box, id, onChange) {
           <span style="color:var(--primary)">${icon('pin')}</span><div style="flex:1"><b style="margin:0">${esc(o.delivery_address)}</b></div>${icon('right', 'i chev')}</a>
         <div class="sec kv" style="border-bottom:0"><span style="color:var(--primary)">${icon('map')}</span><div style="flex:1"><b style="margin:0">${esc(t('cov.title'))}</b></div><span class="chip ${COV_ATTN.includes(cov) ? 'issue' : cov === 'covered' ? 'active' : 'neutral'}">${esc(t(`cov.${COV_KEYS.includes(cov) ? cov : 'unknown'}`))}</span></div>
         ${o.delivery_status === 'created' && !o.assigned_rider_id ? `<div class="sec" style="display:flex;gap:10px"><button class="btn sm" data-edit>${esc(t('edit.action'))}</button>${!o.approved_at ? `<button class="btn primary sm" data-approve>${esc(t('orders.approve'))}</button>` : ''}</div>` : ''}
-        ${o.approved_at && !o.assigned_rider_id && ['created', 'ready_for_pickup'].includes(o.delivery_status) ? `<div class="sec" style="display:flex;gap:10px"><select class="select" data-rider-pick style="flex:1"><option value="">${esc(t('orders.selectRider'))}</option>${(rs || []).filter(r => r.status === 'active').map(r => `<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('')}</select><button class="btn primary sm" data-assign>${esc(t('orders.assign'))}</button></div>` : ''}
         ${ISSUE_FROM.includes(o.delivery_status) || recoverable(o) ? `<div class="sec" style="display:flex;gap:10px;flex-wrap:wrap">
           ${ISSUE_FROM.includes(o.delivery_status) ? `<button class="btn sm" data-report-issue>${icon('alert')}${esc(t('issue.report'))}</button>` : ''}
           ${recoverable(o) ? `<button class="btn sm" data-recover>${esc(t('recover.action'))}</button>` : ''}</div>` : ''}
@@ -199,12 +198,6 @@ export async function renderDetail(box, id, onChange) {
     if (e.target.closest('[data-edit]')) { fetchOrder(id).then(o => o && openAddOrder(() => { onChange?.(); paint(); }, o)); return; }
     if (e.target.closest('[data-recover]')) { openReportIssue(id, () => { onChange?.(); paint(); }, true); return; }
     if (e.target.closest('[data-report-issue]')) { openReportIssue(id, () => { onChange?.(); paint(); }); return; }
-    const as = e.target.closest('[data-assign]');
-    if (as) {
-      const rid = box.querySelector('[data-rider-pick]').value;
-      if (!rid) { toast(t('orders.selectRider'), 'error'); return; }
-      try { await busy(as, () => api.rpc('assign_rider', { p_order_id: id, p_rider_id: rid })); toast(t('orders.assigned')); onChange?.(); paint(); } catch (ex) { toast(ex.message, 'error'); }
-    }
   });
   void ctx; void modal;
   await paint();
