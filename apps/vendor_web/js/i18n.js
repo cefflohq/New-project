@@ -5,6 +5,7 @@ import { prefs } from './prefs.js';
 
 const en = {
   // permanent invite link + QR
+  'plan.checking': 'Checking vehicle and capacity…', 'plan.capOk': 'Vehicle and capacity OK.', 'plan.capExceeded': 'Capacity exceeded: {load} active + {req} requested exceeds {cap}.', 'plan.vehicleBad': 'Vehicle incompatible: needs {need}, rider has {has}.',
   'invite.teamTitle': 'Invite to your team', 'invite.riderTitle': 'Invite a rider', 'invite.lead': 'Share this link or QR code. Joining needs your approval before access starts.',
   'invite.linkLabel': 'Invite link', 'invite.pendingNote': 'People who join appear in Pending. They get access only after you approve them.',
   'invite.share': 'Share', 'invite.shareTitle': 'Join my team on Cefflo', 'invite.unavailable': 'The invite link is not available right now.',
@@ -278,6 +279,7 @@ const en = {
 
 const ms = {
   // pautan jemputan kekal + QR
+  'plan.checking': 'Menyemak kenderaan dan kapasiti…', 'plan.capOk': 'Kenderaan dan kapasiti OK.', 'plan.capExceeded': 'Kapasiti melebihi had: {load} aktif + {req} diminta melebihi {cap}.', 'plan.vehicleBad': 'Kenderaan tidak sesuai: perlu {need}, rider ada {has}.',
   'invite.teamTitle': 'Jemput ke pasukan anda', 'invite.riderTitle': 'Jemput rider', 'invite.lead': 'Kongsi pautan atau kod QR ini. Penyertaan perlu kelulusan anda sebelum akses bermula.',
   'invite.linkLabel': 'Pautan jemputan', 'invite.pendingNote': 'Mereka yang menyertai akan muncul dalam Menunggu. Mereka hanya dapat akses selepas anda luluskan.',
   'invite.share': 'Kongsi', 'invite.shareTitle': 'Sertai pasukan saya di Cefflo', 'invite.unavailable': 'Pautan jemputan tidak tersedia buat masa ini.',

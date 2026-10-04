@@ -147,6 +147,7 @@ export async function demoRpc(name, body = {}) {
     case 'get_my_businesses': return [{ business_id: BIZ, business_name: business.name, member_role: 'owner', timezone: business.timezone }];
     case 'get_invite_link': return { token: `demo-${body.p_kind}-link` };
     case 'latest_rider_locations': return [];
+    case 'check_run_vehicle_capacity': return { compatible: true, violations: [] };
     case 'propose_delivery_plan': {
       const waiting = orders.filter(o => o.approved_at && !o.assigned_rider_id && o.delivery_status === 'created');
       const byZone = new Map();

@@ -150,8 +150,31 @@ export async function openPlanDelivery(onDone) {
       <div style="display:flex;align-items:center;gap:10px"><b>${esc(t('plan.run', { n: i + 1 }))}</b><span class="chip neutral">${esc(zones.get(g.zone_id) || t('add.noZone'))}</span>
       <span class="hint" style="margin-left:auto">${esc(t('runs.orders', { n: (g.stops || []).length }))}${g.total_distance_km ? ` · ${Number(g.total_distance_km).toFixed(1)} km` : ''}</span></div>
       <div class="field" style="margin-top:10px"><label>${esc(t('plan.rider'))}</label>
-      <select class="select" data-rider="${i}">${riders.map(r => `<option value="${esc(r.id)}" ${r.id === g.candidate_rider_id ? 'selected' : ''}>${esc(r.name)}</option>`).join('')}</select></div></div>`).join('');
-  submit.disabled = false;
+      <select class="select" data-rider="${i}">${riders.map(r => `<option value="${esc(r.id)}" ${r.id === g.candidate_rider_id ? 'selected' : ''}>${esc(r.name)}</option>`).join('')}</select></div>
+      <div class="hint" data-cap="${i}" style="margin-top:6px"></div></div>`).join('');
+  // D-61: rider selection -> check_run_vehicle_capacity -> confirmation. A run
+  // is dispatched only when every group is compatible (no override, as App).
+  const ok = groups.map(() => false);
+  const orderIdsOf = g => (g.stops || []).map(s => s.order_id).filter(Boolean);
+  const refresh = () => { submit.disabled = !ok.every(Boolean); };
+  async function check(i) {
+    const out = m.el.querySelector(`[data-cap="${i}"]`), rider = m.el.querySelector(`[data-rider="${i}"]`).value;
+    ok[i] = false; refresh();
+    if (!rider) { out.textContent = t('plan.noRider'); return; }
+    out.textContent = t('plan.checking');
+    try {
+      const res = await api.rpc('check_run_vehicle_capacity', { p_rider_id: rider, p_order_ids: orderIdsOf(groups[i]) });
+      const r = Array.isArray(res) ? res[0] : res;
+      if (m.el.querySelector(`[data-rider="${i}"]`).value !== rider) return;
+      ok[i] = r?.compatible === true;
+      out.innerHTML = ok[i] ? esc(t('plan.capOk')) : (r?.violations || []).map(v => `<div class="err" style="margin:2px 0">${esc(v.reason === 'capacity_exceeded'
+        ? t('plan.capExceeded', { load: v.current_load, req: v.requested, cap: v.effective_capacity })
+        : t('plan.vehicleBad', { need: v.vehicle_requirement, has: v.rider_vehicle_type }))}</div>`).join('');
+    } catch (ex) { out.innerHTML = `<div class="err">${esc(ex.message)}</div>`; }
+    refresh();
+  }
+  m.el.addEventListener('change', e => { const sel = e.target.closest('[data-rider]'); if (sel) check(Number(sel.dataset.rider)); });
+  groups.forEach((_, i) => check(i));
   const keys = groups.map(() => uuid());
   let sessionId = null;
   submit.addEventListener('click', async e => {
@@ -166,7 +189,7 @@ export async function openPlanDelivery(onDone) {
           sessionId = s.id;
         }
         for (const [i, g] of groups.entries()) {
-          const orderIds = (g.stops || []).map(s => s.order_id).filter(Boolean);
+          const orderIds = orderIdsOf(g);
           if (!orderIds.length) continue;
           await api.rpc('build_rider_run', { p_delivery_session_id: sessionId, p_rider_id: picks[i], p_order_ids: orderIds, p_idempotency_key: keys[i], p_override_capacity: false });
           made++;

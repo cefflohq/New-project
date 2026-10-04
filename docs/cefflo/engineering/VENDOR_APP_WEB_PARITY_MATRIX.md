@@ -32,6 +32,7 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Team list, Team → Pending approve / reject (Owner-only) | Master Part III §12 | ✅ | ✅ |
 | Remove member (typed CONFIRM, read-back) | Master Part III §19 | ✅ | ✅ |
 | Permanent invite link + QR for Rider, Operator, Helper (`get_invite_link`; email invites retired in both) | Founder 2026-10-04; Master Part III §9–11 | ✅ | ✅ (#1) |
+| Vehicle capacity check before dispatch (`check_run_vehicle_capacity` per run; dispatch blocked until compatible, no override) | D-61 | ✅ | ✅ (#2) |
 | Service Area / coverage configuration | V-26–V-27 | ✅ | ✅ |
 | Business Profile, information, address | V-37–V-39 | ✅ | ✅ |
 | Profile, edit profile, profile photo | V-42–V-43 | ✅ | ✅ |
@@ -46,7 +47,6 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Edit order (permitted fields only) | V-15, D-61 | ✅ | ❌ | Web: `update_order_details` |
 | Report delivery issue | Web SOT §10, S4-08 | ✅ | ❌ | Web: `vendor_report_delivery_issue` |
 | Order coverage status / within-coverage check | V-26/V-27, Web SOT §2 "location/coverage visibility" | ✅ | ❌ | Web: `order_coverage_status`, `is_within_coverage` |
-| Vehicle capacity check before dispatch | D-61 (rider selection → `check_run_vehicle_capacity` → confirmation) | ✅ | ❌ | Web: add to dispatch |
 | Business hours | V-40 | ✅ | ❌ | Web: `set_business_hours` |
 | Storefront / Appearance / Preview (publish, link, QR, share, templates) | V-31–V-33, D-55, Storefront V1 (Founder 2026-10-01) | ✅ | ❌ | Web: storefront management |
 | Products: list, add, edit, categories, up to 5 photos | V-34–V-36, product media multi (Founder 2026-10-01) | ✅ | ❌ | Web: catalogue |
