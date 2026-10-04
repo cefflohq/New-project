@@ -2071,7 +2071,7 @@ class _ReadOnlyField extends StatelessWidget {
         const SizedBox(height: 6),
         Container(
           height: Sizes.inputHeight,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+          padding: const EdgeInsets.symmetric(horizontal: Sizes.inputPadding),
           decoration: BoxDecoration(
             color: CefColors.tintNeutral,
             borderRadius: BorderRadius.circular(Sizes.inputRadius),

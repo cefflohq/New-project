@@ -789,7 +789,7 @@ class CeffloTextField extends StatelessWidget {
             borderRadius: BorderRadius.circular(Sizes.inputRadius),
             border: Border.all(color: c.border),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+          padding: const EdgeInsets.symmetric(horizontal: Sizes.inputPadding),
           child: Row(
             crossAxisAlignment: maxLines > 1
                 ? CrossAxisAlignment.start
@@ -1025,7 +1025,7 @@ class CeffloSelectField<T> extends StatelessWidget {
             borderRadius: BorderRadius.circular(Sizes.inputRadius),
             border: Border.all(color: c.border),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+          padding: const EdgeInsets.symmetric(horizontal: Sizes.inputPadding),
           child: Row(
             children: [
               if (icon != null) ...[

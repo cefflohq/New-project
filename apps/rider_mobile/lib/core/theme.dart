@@ -39,8 +39,11 @@ class Sizes {
   /// Every button is a full pill (Founder, 2026-09-24): fully rounded ends,
   /// never a rounded rectangle -- Splash/Sign In through every screen.
   static const buttonRadius = 999.0;
-  static const inputRadius = 12.0;
-  static const inputHeight = 52.0;
+  // Fields follow FOUNDR sign-in (all surfaces, Founder 2026-10-04): 48px
+  // pill, 17px side padding.
+  static const inputRadius = 24.0;
+  static const inputHeight = 48.0;
+  static const inputPadding = 17.0;
   static const buttonHeight = 56.0;
 
   /// Critical Slide Action (D21.1/D21.2 Slide to Confirm Route, D22 Slide to

@@ -72,7 +72,7 @@ html:has(.onb), html:has(.onb) body { background: var(--surface); }
 .auth-card h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.2px; }
 .auth-card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
 .auth-card .field label { font-size: 13px; }
-.auth-card .input, .auth-card .select { height: 40px; border-radius: 8px; font-size: 14.5px; padding: 0 12px; }
+.auth-card .input, .auth-card .select { height: 48px; border-radius: 999px; font-size: 14.5px; padding: 0 17px; } /* FOUNDR field: 48px pill, 17px sides */
 .auth-card .btn { height: 40px; padding: 0 16px; border-radius: 999px; font-size: 14.5px; font-weight: 600; }
 /* Primary action: Cefflo mustard with dark text (blue, white, mustard). */
 .auth-card .btn.primary { background: var(--mustard); border-color: var(--mustard); color: var(--cta-ink); }
@@ -133,7 +133,7 @@ html:has(.onb), html:has(.onb) body { background: var(--surface); }
 .onb-card h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.2px; }
 .onb-lead { margin: -6px 0 2px; color: var(--muted); font-size: 14px; line-height: 1.5; }
 .onb-card .field label { font-size: 13px; }
-.onb-card .input, .onb-card .select { height: 40px; border-radius: 8px; font-size: 14.5px; padding: 0 12px; }
+.onb-card .input, .onb-card .select { height: 48px; border-radius: 999px; font-size: 14.5px; padding: 0 17px; }
 .onb-card .btn { height: 40px; padding: 0 16px; border-radius: 999px; font-size: 14.5px; font-weight: 600; }
 .onb-card .btn.primary { background: var(--mustard); border-color: var(--mustard); color: var(--cta-ink); }
 .onb-card .btn.primary:hover { background: #F5BD2A; border-color: #F5BD2A; }

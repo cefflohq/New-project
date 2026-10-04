@@ -44,7 +44,9 @@ class Sizes {
   static const cardRadius = 18.0;
   static const surfaceRadius = 24.0; // white surface entering the gradient
   static const buttonRadius = 999.0; // pill
-  static const inputRadius = 18.0;
+  // Fields follow FOUNDR sign-in (all surfaces, Founder 2026-10-04): pill
+  // (radius = half the 48px height), 17px side padding.
+  static const inputRadius = 24.0;
 }
 
 /// The one Vendor brand surface (D-51/D-52): the canonical Vendor blue,
@@ -223,7 +225,7 @@ ThemeData buildVendorTheme(Brightness brightness) {
       filled: true,
       fillColor: c.card,
       hintStyle: t(15, FontWeight.w500, c.textSecondary),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 17, vertical: 14),
       prefixIconColor: c.textSecondary,
       suffixIconColor: c.textSecondary,
       prefixIconConstraints: const BoxConstraints(minWidth: 44, minHeight: 44),
