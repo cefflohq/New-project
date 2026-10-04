@@ -6,6 +6,7 @@ import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/demo_data.dart';
 import '../../data/driver_models.dart';
+import '../../data/rider_repository.dart' show RepositoryError;
 import '../brand.dart';
 import '../widgets.dart';
 import 'auth.dart' show BusinessIdentityRow;
@@ -1624,6 +1625,511 @@ class BusinessJoinedScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// V2 Choose Your Vehicle / V3 Your Driver Details (Founder reference,
+// 2026-10-04). Registration steps 2/4 and 3/4 (V1 Splash, V4 Documents).
+// Vehicle values are the stored `rider_vehicle_type` enum.
+// ---------------------------------------------------------------------------
+const _vehicles = [
+  ('motorcycle', 'assets/vehicles/motorbike.png'),
+  ('car', 'assets/vehicles/car.png'),
+  ('van', 'assets/vehicles/van.png'),
+];
+
+String _vehicleName(String v) => switch (v) {
+  'car' => L.vehicleCar,
+  'van' => L.vehicleVan,
+  _ => L.vehicleMotorbike,
+};
+
+String _vehicleSub(String v) => switch (v) {
+  'car' => L.vehicleCarSub,
+  'van' => L.vehicleVanSub,
+  _ => L.vehicleMotorbikeSub,
+};
+
+String _vehicleImage(String v) =>
+    _vehicles.firstWhere((e) => e.$1 == v, orElse: () => _vehicles.first).$2;
+
+/// White registration page: back (and an optional action), centred title
+/// and subtitle, content, and the step indicator at the bottom.
+class _RegistrationPage extends StatelessWidget {
+  const _RegistrationPage({
+    required this.title,
+    required this.subtitle,
+    required this.step,
+    required this.children,
+    required this.onBack,
+    this.action,
+  });
+  final String title, subtitle;
+  final int step;
+  final List<Widget> children;
+  final VoidCallback onBack;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: context.c.card,
+    body: SafeArea(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 4, Gap.gutter, 0),
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: onBack,
+                  icon: Icon(
+                    LucideIcons.chevronLeft,
+                    color: context.c.textPrimary,
+                  ),
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                ),
+                const Spacer(),
+                ?action,
+              ],
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(
+                Gap.gutter,
+                0,
+                Gap.gutter,
+                Gap.lg,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 28,
+                      height: 1.15,
+                      fontWeight: FontWeight.w800,
+                      color: CefColors.navy,
+                    ),
+                  ),
+                  const SizedBox(height: Gap.sm),
+                  Text(
+                    subtitle,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 15,
+                      height: 1.35,
+                      fontWeight: FontWeight.w500,
+                      color: context.c.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: Gap.xl),
+                  ...children,
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              Gap.gutter,
+              0,
+              Gap.gutter,
+              Gap.lg,
+            ),
+            child: _StepDots(step: step, total: 4),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _StepDots extends StatelessWidget {
+  const _StepDots({required this.step, required this.total});
+  final int step, total;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      const Spacer(),
+      for (var i = 2; i <= total; i++)
+        Container(
+          width: 36,
+          height: 5,
+          margin: const EdgeInsets.symmetric(horizontal: 3),
+          decoration: BoxDecoration(
+            color: i <= step ? CefColors.accent : context.c.border,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+      Expanded(
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: Text(
+            L.stepOf(step, total),
+            style: TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: context.c.textSecondary,
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+class ChooseVehicleScreen extends StatefulWidget {
+  const ChooseVehicleScreen({super.key});
+
+  @override
+  State<ChooseVehicleScreen> createState() => _ChooseVehicleScreenState();
+}
+
+class _ChooseVehicleScreenState extends State<ChooseVehicleScreen> {
+  late String _selected = AppScope.read(context).registrationVehicle;
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    return _RegistrationPage(
+      title: L.chooseYourVehicle,
+      subtitle: L.selectVehicleUseDelivery,
+      step: 2,
+      onBack: app.back,
+      // Skip leaves registration for later; it is offered again next time.
+      action: TextButton(
+        onPressed: () => app.resetTo(app.homeRoute),
+        child: Text(
+          L.skip,
+          style: const TextStyle(
+            fontFamily: 'Manrope',
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: CefColors.navy,
+          ),
+        ),
+      ),
+      children: [
+        for (final (v, img) in _vehicles) ...[
+          _VehicleOption(
+            value: v,
+            image: img,
+            selected: v == _selected,
+            onTap: () => setState(() => _selected = v),
+          ),
+          const SizedBox(height: Gap.md),
+        ],
+        const SizedBox(height: Gap.sm),
+        CeffloPrimaryButton(
+          L.next,
+          onTap: () {
+            app.registrationVehicle = _selected;
+            app.go(DRoute.yourDriverDetails);
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _VehicleOption extends StatelessWidget {
+  const _VehicleOption({
+    required this.value,
+    required this.image,
+    required this.selected,
+    required this.onTap,
+  });
+  final String value, image;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    selected: selected,
+    button: true,
+    label: _vehicleName(value),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(Sizes.cardRadius),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.md, Gap.md, Gap.md),
+        decoration: BoxDecoration(
+          color: selected ? CefColors.tintInfo : context.c.card,
+          borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          border: Border.all(
+            color: selected
+                ? context.c.info.withValues(alpha: .45)
+                : context.c.border,
+          ),
+          boxShadow: selected
+              ? null
+              : const [
+                  BoxShadow(
+                    color: Color(0x0F101C33),
+                    blurRadius: 12,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+        ),
+        child: Row(
+          children: [
+            Icon(
+              selected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+              color: selected ? context.c.info : context.c.textSecondary,
+              size: 24,
+            ),
+            const SizedBox(width: Gap.md),
+            Image.asset(image, width: 96, height: 68, fit: BoxFit.contain),
+            const SizedBox(width: Gap.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _vehicleName(value),
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: context.c.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _vehicleSub(value),
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 13,
+                      height: 1.3,
+                      fontWeight: FontWeight.w500,
+                      color: context.c.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class YourDriverDetailsScreen extends StatefulWidget {
+  const YourDriverDetailsScreen({super.key});
+
+  @override
+  State<YourDriverDetailsScreen> createState() =>
+      _YourDriverDetailsScreenState();
+}
+
+class _YourDriverDetailsScreenState extends State<YourDriverDetailsScreen> {
+  late final _app = AppScope.read(context);
+  late final _saved = _app.repo.registration;
+  late final _name = TextEditingController(
+    text: _app.repo.isDemo
+        ? ''
+        : (_saved['full_name'] ?? _app.profile.fullName)?.toString(),
+  );
+  late final _phone = TextEditingController(
+    text: _app.repo.isDemo
+        ? ''
+        : (_saved['phone'] ?? _app.profile.phone)?.toString(),
+  );
+  late final _plate = TextEditingController(
+    text: _saved['vehicle_plate']?.toString() ?? '',
+  );
+  bool _busy = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _phone.dispose();
+    _plate.dispose();
+    super.dispose();
+  }
+
+  Future<void> _continue() async {
+    final name = _name.text.trim(),
+        phone = _phone.text.trim(),
+        plate = _plate.text.trim();
+    if (name.isEmpty || phone.isEmpty || plate.isEmpty) {
+      setState(() => _error = L.enterNamePhonePlate);
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await _app.repo.saveRegistration(
+        vehicleType: _app.registrationVehicle,
+        fullName: name,
+        phone: phone,
+        plate: plate,
+      );
+      if (!mounted) return;
+      // Prototype walks on to the designed documents step (V4 / D12.2);
+      // live, the rider joins a business next.
+      if (_app.repo.isDemo) {
+        _app.go(DRoute.vehicleAndDocuments);
+      } else {
+        _app.resetTo(_app.homeRoute);
+      }
+    } on RepositoryError catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final v = app.registrationVehicle;
+    return _RegistrationPage(
+      title: L.yourDriverDetails,
+      subtitle: L.infoSharedDeliveryPartner,
+      step: 3,
+      onBack: app.back,
+      children: [
+        const Center(child: AvatarPicker(size: 84)),
+        const SizedBox(height: 6),
+        Text(
+          L.addPhoto,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: 'Manrope',
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: context.c.textSecondary,
+          ),
+        ),
+        const SizedBox(height: Gap.lg),
+        CeffloTextField(
+          label: L.fullName,
+          controller: _name,
+          hint: L.enterFullName,
+          icon: LucideIcons.user,
+        ),
+        const SizedBox(height: Gap.md),
+        CeffloPhoneField(label: L.phoneNumber, controller: _phone),
+        const SizedBox(height: Gap.md),
+        CeffloTextField(
+          label: L.vehicleNumberPlate,
+          controller: _plate,
+          hint: L.eGVaa1234,
+          icon: LucideIcons.car,
+        ),
+        const SizedBox(height: Gap.lg),
+        // Selected vehicle (from V2), with Change back to V2.
+        Container(
+          padding: const EdgeInsets.fromLTRB(Gap.md, Gap.md, Gap.md, Gap.md),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [CefColors.gradientBright, Color(0xFF3C8DF0)],
+            ),
+            borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 96,
+                height: 70,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: .92),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(4),
+                child: Image.asset(_vehicleImage(v), fit: BoxFit.contain),
+              ),
+              const SizedBox(width: Gap.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      L.selectedVehicle,
+                      style: const TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: CefColors.onNavyMuted,
+                      ),
+                    ),
+                    Text(
+                      _vehicleName(v),
+                      style: const TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: CefColors.onNavy,
+                      ),
+                    ),
+                    Text(
+                      _vehicleSub(v),
+                      style: const TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 13,
+                        height: 1.3,
+                        fontWeight: FontWeight.w500,
+                        color: CefColors.onNavy,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Align(
+                alignment: Alignment.topRight,
+                child: InkWell(
+                  onTap: () => app.back(),
+                  child: Text(
+                    L.change,
+                    style: const TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: CefColors.onNavy,
+                      decoration: TextDecoration.underline,
+                      decorationColor: CefColors.onNavy,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (_error != null) ...[
+          const SizedBox(height: Gap.sm),
+          Text(
+            _error!,
+            style: TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: context.c.attention,
+            ),
+          ),
+        ],
+        const SizedBox(height: Gap.lg),
+        CeffloPrimaryButton(
+          L.continueText2,
+          busy: _busy,
+          onTap: _busy ? null : _continue,
+        ),
+      ],
     );
   }
 }

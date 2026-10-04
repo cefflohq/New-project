@@ -452,5 +452,20 @@
   "joiningBusiness": "Menyertai {business}",
   "continueText3": "Teruskan",
   "emailAlreadyRegistered": "Emel ini sudah didaftarkan.",
-  "continueWithEmail": "Teruskan dengan E-mel"
+  "continueWithEmail": "Teruskan dengan E-mel",
+  "chooseYourVehicle": "Pilih Kenderaan Anda",
+  "selectVehicleUseDelivery": "Pilih kenderaan yang anda gunakan untuk penghantaran.",
+  "skip": "Langkau",
+  "vehicleMotorbike": "Motosikal",
+  "vehicleCar": "Kereta",
+  "vehicleVan": "Van",
+  "vehicleMotorbikeSub": "Terbaik untuk jarak dekat dan penghantaran pantas.",
+  "vehicleCarSub": "Lebih ruang untuk pesanan besar.",
+  "vehicleVanSub": "Sesuai untuk pesanan pukal dan penghantaran perniagaan.",
+  "yourDriverDetails": "Butiran Pemandu Anda",
+  "infoSharedDeliveryPartner": "Maklumat ini akan dikongsi dengan rakan penghantaran anda.",
+  "selectedVehicle": "Kenderaan Dipilih",
+  "change": "Tukar",
+  "stepOf": "{step} / {total}",
+  "enterNamePhonePlate": "Masukkan nama penuh, nombor telefon dan nombor plat kenderaan."
 }

@@ -2815,6 +2815,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue with Email'**
   String get continueWithEmail;
+
+  /// No description provided for @chooseYourVehicle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Your Vehicle'**
+  String get chooseYourVehicle;
+
+  /// No description provided for @selectVehicleUseDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the vehicle you will use for delivery.'**
+  String get selectVehicleUseDelivery;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// No description provided for @vehicleMotorbike.
+  ///
+  /// In en, this message translates to:
+  /// **'Motorbike'**
+  String get vehicleMotorbike;
+
+  /// No description provided for @vehicleCar.
+  ///
+  /// In en, this message translates to:
+  /// **'Car'**
+  String get vehicleCar;
+
+  /// No description provided for @vehicleVan.
+  ///
+  /// In en, this message translates to:
+  /// **'Van'**
+  String get vehicleVan;
+
+  /// No description provided for @vehicleMotorbikeSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Best for short distance and fast delivery.'**
+  String get vehicleMotorbikeSub;
+
+  /// No description provided for @vehicleCarSub.
+  ///
+  /// In en, this message translates to:
+  /// **'More space for larger orders.'**
+  String get vehicleCarSub;
+
+  /// No description provided for @vehicleVanSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Ideal for bulk orders and business delivery.'**
+  String get vehicleVanSub;
+
+  /// No description provided for @yourDriverDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Driver Details'**
+  String get yourDriverDetails;
+
+  /// No description provided for @infoSharedDeliveryPartner.
+  ///
+  /// In en, this message translates to:
+  /// **'This information will be shared with your delivery partner.'**
+  String get infoSharedDeliveryPartner;
+
+  /// No description provided for @selectedVehicle.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected Vehicle'**
+  String get selectedVehicle;
+
+  /// No description provided for @change.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get change;
+
+  /// No description provided for @stepOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{step} / {total}'**
+  String stepOf(int step, int total);
+
+  /// No description provided for @enterNamePhonePlate.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your full name, phone number and vehicle number plate.'**
+  String get enterNamePhonePlate;
 }
 
 class _AppLocalizationsDelegate

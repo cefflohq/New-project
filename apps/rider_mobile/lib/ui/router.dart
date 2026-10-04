@@ -28,6 +28,8 @@ Widget buildScreen(BuildContext context, RiderLocation loc) {
     DRoute.vehicleAndDocuments when live => const JoinBusinessScreen(),
     DRoute.businessJoined when live && AppScope.of(context).business == null =>
       const JoinBusinessScreen(),
+    DRoute.chooseVehicle => const ChooseVehicleScreen(),
+    DRoute.yourDriverDetails => const YourDriverDetailsScreen(),
     DRoute.noBusinessConnectedHome => const NoBusinessConnectedHomeScreen(),
     DRoute.driverDetails => const DriverDetailsScreen(),
     DRoute.personalDetails => const PersonalDetailsScreen(),

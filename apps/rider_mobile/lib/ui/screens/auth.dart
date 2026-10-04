@@ -164,7 +164,7 @@ class _AuthFlowState extends State<AuthFlow> {
       // and lands on the stage it produces. The prototype walks the
       // designed onboarding forms instead.
       onCreated: () => widget.onAuthenticated(
-        AppScope.read(context).repo.isDemo ? DRoute.driverDetails : null,
+        AppScope.read(context).repo.isDemo ? DRoute.chooseVehicle : null,
       ),
       onVerify: (email) => _go(DRoute.verifyEmail, email: email),
       onSignIn: () => _resetTo(DRoute.signIn),

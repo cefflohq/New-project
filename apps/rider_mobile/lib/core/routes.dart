@@ -37,6 +37,8 @@ enum DRoute {
   verifyEmail, // D04.1
   linkExpired, // D09
   // --- Onboarding / business join (D10–D18) ----------------------------
+  chooseVehicle, // V2 Choose Your Vehicle (registration)
+  yourDriverDetails, // V3 Your Driver Details (registration)
   noBusinessConnectedHome, // D11 (home-shell variant, pre-details)
   driverDetails, // D12
   personalDetails, // D12.1
@@ -151,6 +153,17 @@ Map<DRoute, RouteSpec> get routeSpecs => <DRoute, RouteSpec>{
     id: 'D11',
     title: L.noBusinessConnected,
     tab: NavTab.home,
+  ),
+  DRoute.chooseVehicle: RouteSpec(
+    route: DRoute.chooseVehicle,
+    id: 'V2',
+    title: L.chooseYourVehicle,
+  ),
+  DRoute.yourDriverDetails: RouteSpec(
+    route: DRoute.yourDriverDetails,
+    id: 'V3',
+    title: L.yourDriverDetails,
+    parent: DRoute.chooseVehicle,
   ),
   DRoute.driverDetails: RouteSpec(
     route: DRoute.driverDetails,

@@ -58,6 +58,9 @@ class AppState extends ChangeNotifier {
 
   // --- canonical backend session ----------------------------------------
   List<RiderRelationship> relationships = const [];
+
+  /// Vehicle chosen on V2, carried to V3 (stored `rider_vehicle_type`).
+  String registrationVehicle = 'motorcycle';
   RiderRelationship? active;
   List<RiderOrder> orders = const [];
   Map<String, String> sessionNames = const {};
@@ -563,6 +566,13 @@ class AppState extends ChangeNotifier {
       _stack
         ..clear()
         ..add(RiderLocation(homeRoute));
+      // Registration (V2 Choose Your Vehicle -> V3 Your Driver Details)
+      // comes first for a rider with no business who has not chosen a
+      // vehicle yet.
+      if (stage == DriverStage.noBusiness &&
+          repo.registration['vehicle_type'] == null) {
+        _stack.add(const RiderLocation(DRoute.chooseVehicle));
+      }
       // Opened from a business's permanent invite link: go straight to
       // Join Business with the link filled in.
       // Any stage: a rider may belong to several businesses, so an

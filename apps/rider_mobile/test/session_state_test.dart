@@ -53,9 +53,13 @@ void main() {
     return app;
   }
 
-  test('no relationship lands on No Business Connected, not Today', () async {
+  test('no relationship registers first (V2), then No Business Connected, not Today', () async {
     final app = await hydrate(const []);
     expect(app.stage, DriverStage.noBusiness);
+    // A rider who has not registered a vehicle starts on V2 Choose Your
+    // Vehicle; going back (or finishing V3) lands on No Business Connected.
+    expect(app.current.route, DRoute.chooseVehicle);
+    app.back();
     expect(app.current.route, DRoute.noBusinessConnected);
     expect(app.active, isNull);
   });
@@ -143,6 +147,7 @@ void main() {
     final app = AppState(repo);
     await app.loadSession();
     expect(app.sessionError, isNull);
-    expect(app.current.route, DRoute.noBusinessConnected);
+    // Signed in normally: an unregistered rider starts on V2.
+    expect(app.current.route, DRoute.chooseVehicle);
   });
 }

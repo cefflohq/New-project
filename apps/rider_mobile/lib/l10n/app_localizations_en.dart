@@ -1524,4 +1524,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get continueWithEmail => 'Continue with Email';
+
+  @override
+  String get chooseYourVehicle => 'Choose Your Vehicle';
+
+  @override
+  String get selectVehicleUseDelivery =>
+      'Select the vehicle you will use for delivery.';
+
+  @override
+  String get skip => 'Skip';
+
+  @override
+  String get vehicleMotorbike => 'Motorbike';
+
+  @override
+  String get vehicleCar => 'Car';
+
+  @override
+  String get vehicleVan => 'Van';
+
+  @override
+  String get vehicleMotorbikeSub =>
+      'Best for short distance and fast delivery.';
+
+  @override
+  String get vehicleCarSub => 'More space for larger orders.';
+
+  @override
+  String get vehicleVanSub => 'Ideal for bulk orders and business delivery.';
+
+  @override
+  String get yourDriverDetails => 'Your Driver Details';
+
+  @override
+  String get infoSharedDeliveryPartner =>
+      'This information will be shared with your delivery partner.';
+
+  @override
+  String get selectedVehicle => 'Selected Vehicle';
+
+  @override
+  String get change => 'Change';
+
+  @override
+  String stepOf(int step, int total) {
+    return '$step / $total';
+  }
+
+  @override
+  String get enterNamePhonePlate =>
+      'Enter your full name, phone number and vehicle number plate.';
 }

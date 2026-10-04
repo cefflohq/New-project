@@ -30,6 +30,8 @@ flutter:
     # D-35 canonical logo assets, copied byte-identical from
     # docs/cefflo/brand/assets/logo/. The mark is never redrawn in code.
     - assets/brand/
+    # V2 Choose Your Vehicle pictures (Founder reference, 2026-10-04).
+    - assets/vehicles/
   fonts:
     # Manrope, bundled locally rather than fetched at runtime (the previous
     # google_fonts dependency), so the app renders identically offline and in

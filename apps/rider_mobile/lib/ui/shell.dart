@@ -14,6 +14,8 @@ import 'widgets.dart';
 /// every one of them renders the full-bleed `CeffloAuthScaffold` — and D22
 /// Navigation to Stop, whose reference is edge-to-edge map with no tab bar.
 const _fullBleedRoutes = <DRoute>{
+  DRoute.chooseVehicle,
+  DRoute.yourDriverDetails,
   DRoute.driverDetails,
   DRoute.personalDetails,
   DRoute.vehicleAndDocuments,

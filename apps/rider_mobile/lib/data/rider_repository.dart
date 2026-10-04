@@ -80,6 +80,38 @@ class RiderRepository {
   }
 
   User? get currentUser => isDemo ? null : _db.auth.currentUser;
+
+  /// Registration choices (V2/V3) saved on the rider's own account. The
+  /// business-side rider row is created only when they join a business
+  /// (name and phone travel with the join request).
+  Map<String, dynamic> get registration => Map<String, dynamic>.from(
+    (currentUser?.userMetadata?['driver_registration'] as Map?) ?? const {},
+  );
+
+  Future<void> saveRegistration({
+    required String vehicleType,
+    required String fullName,
+    required String phone,
+    required String plate,
+  }) async {
+    if (isDemo) return;
+    await _run(
+      () => _db.auth.updateUser(
+        UserAttributes(
+          data: {
+            'full_name': fullName,
+            'driver_registration': {
+              'vehicle_type': vehicleType,
+              'full_name': fullName,
+              'phone': phone,
+              'vehicle_plate': plate,
+            },
+          },
+        ),
+      ),
+    );
+  }
+
   Stream<AuthState> get authChanges =>
       isDemo ? const Stream<AuthState>.empty() : _db.auth.onAuthStateChange;
 

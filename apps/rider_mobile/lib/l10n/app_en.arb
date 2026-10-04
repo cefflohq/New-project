@@ -698,5 +698,30 @@
   },
   "continueText3": "Continue",
   "emailAlreadyRegistered": "This email is already registered.",
-  "continueWithEmail": "Continue with Email"
+  "continueWithEmail": "Continue with Email",
+  "chooseYourVehicle": "Choose Your Vehicle",
+  "selectVehicleUseDelivery": "Select the vehicle you will use for delivery.",
+  "skip": "Skip",
+  "vehicleMotorbike": "Motorbike",
+  "vehicleCar": "Car",
+  "vehicleVan": "Van",
+  "vehicleMotorbikeSub": "Best for short distance and fast delivery.",
+  "vehicleCarSub": "More space for larger orders.",
+  "vehicleVanSub": "Ideal for bulk orders and business delivery.",
+  "yourDriverDetails": "Your Driver Details",
+  "infoSharedDeliveryPartner": "This information will be shared with your delivery partner.",
+  "selectedVehicle": "Selected Vehicle",
+  "change": "Change",
+  "stepOf": "{step} / {total}",
+  "@stepOf": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "enterNamePhonePlate": "Enter your full name, phone number and vehicle number plate."
 }

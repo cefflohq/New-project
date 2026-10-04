@@ -1535,4 +1535,56 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get continueWithEmail => 'Teruskan dengan E-mel';
+
+  @override
+  String get chooseYourVehicle => 'Pilih Kenderaan Anda';
+
+  @override
+  String get selectVehicleUseDelivery =>
+      'Pilih kenderaan yang anda gunakan untuk penghantaran.';
+
+  @override
+  String get skip => 'Langkau';
+
+  @override
+  String get vehicleMotorbike => 'Motosikal';
+
+  @override
+  String get vehicleCar => 'Kereta';
+
+  @override
+  String get vehicleVan => 'Van';
+
+  @override
+  String get vehicleMotorbikeSub =>
+      'Terbaik untuk jarak dekat dan penghantaran pantas.';
+
+  @override
+  String get vehicleCarSub => 'Lebih ruang untuk pesanan besar.';
+
+  @override
+  String get vehicleVanSub =>
+      'Sesuai untuk pesanan pukal dan penghantaran perniagaan.';
+
+  @override
+  String get yourDriverDetails => 'Butiran Pemandu Anda';
+
+  @override
+  String get infoSharedDeliveryPartner =>
+      'Maklumat ini akan dikongsi dengan rakan penghantaran anda.';
+
+  @override
+  String get selectedVehicle => 'Kenderaan Dipilih';
+
+  @override
+  String get change => 'Tukar';
+
+  @override
+  String stepOf(int step, int total) {
+    return '$step / $total';
+  }
+
+  @override
+  String get enterNamePhonePlate =>
+      'Masukkan nama penuh, nombor telefon dan nombor plat kenderaan.';
 }

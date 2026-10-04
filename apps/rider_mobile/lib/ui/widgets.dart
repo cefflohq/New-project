@@ -744,12 +744,16 @@ class CeffloTextField extends StatelessWidget {
     this.readOnly = false,
     this.maxLines = 1,
     this.onTap,
+    this.prefix,
   });
 
   final String label;
   final TextEditingController controller;
   final String? hint;
   final IconData? icon;
+
+  /// Fixed lead-in after the icon, e.g. the phone field's MY flag + "+60".
+  final Widget? prefix;
   final TextInputType? keyboardType;
   final bool obscure;
   final Widget? suffix;
@@ -787,6 +791,7 @@ class CeffloTextField extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
               ],
+              if (prefix != null) ...[prefix!, const SizedBox(width: 10)],
               Expanded(
                 child: TextField(
                   controller: controller,
@@ -908,10 +913,68 @@ class CeffloPhoneField extends StatelessWidget {
   Widget build(BuildContext context) => CeffloTextField(
     label: label,
     controller: controller,
-    hint: hint,
+    hint: hint ?? L.enterPhoneNumber,
     icon: LucideIcons.phone,
     keyboardType: TextInputType.phone,
+    // Malaysia launch: every reference phone field leads with the MY flag
+    // and +60.
+    prefix: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const _MalaysiaFlag(),
+        const SizedBox(width: 8),
+        Text(
+          '+60',
+          style: TextStyle(
+            fontFamily: 'Manrope',
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: context.c.textPrimary,
+          ),
+        ),
+      ],
+    ),
   );
+}
+
+/// Small Malaysia flag (Jalur Gemilang), drawn so no image or emoji font is
+/// needed: red/white stripes, a blue canton with a yellow crescent and star.
+class _MalaysiaFlag extends StatelessWidget {
+  const _MalaysiaFlag();
+
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: BorderRadius.circular(2),
+    child: CustomPaint(size: const Size(26, 13), painter: _MyFlagPainter()),
+  );
+}
+
+class _MyFlagPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final stripe = size.height / 14;
+    for (var i = 0; i < 14; i++) {
+      canvas.drawRect(
+        Rect.fromLTWH(0, i * stripe, size.width, stripe + .2),
+        Paint()..color = i.isEven ? const Color(0xFFCC0001) : Colors.white,
+      );
+    }
+    final canton = Rect.fromLTWH(0, 0, size.width / 2, stripe * 8);
+    canvas.drawRect(canton, Paint()..color = const Color(0xFF010066));
+    final yellow = Paint()..color = const Color(0xFFFFCC00);
+    final c = canton.center;
+    final r = canton.height * .36;
+    canvas.drawCircle(c.translate(-r * .25, 0), r, yellow);
+    canvas.drawCircle(
+      c.translate(-r * .05, 0),
+      r * .82,
+      Paint()..color = const Color(0xFF010066),
+    );
+    canvas.drawCircle(c.translate(r * .95, 0), r * .32, yellow);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Select-style control with a trailing chevron (Vehicle Type in D12/D12.2/
