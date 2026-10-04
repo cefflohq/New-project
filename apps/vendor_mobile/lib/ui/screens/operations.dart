@@ -777,6 +777,17 @@ class OrderDetailScreen extends StatelessWidget {
                 icon: LucideIcons.triangleAlert,
                 onTap: () => _reportIssue(context, order, reload),
               ),
+            if (order.assignedRiderId != null &&
+                (_issueFrom.contains(order.status) ||
+                    order.status == DeliveryStatus.issue))
+              CefListRow(
+                title: L.recoverDelivery,
+                subtitle: L.recoverDeliveryLead,
+                subtitleMaxLines: 2,
+                icon: LucideIcons.rotateCcw,
+                onTap: () =>
+                    _reportIssue(context, order, reload, recover: true),
+              ),
             if ((order.notes ?? '').isNotEmpty)
               CefListRow(
                 title: L.deliveryInstruction,
@@ -830,43 +841,64 @@ const _issueFrom = {
 /// Report delivery issue (Web SOT §10, S4-08) through the canonical
 /// `vendor_report_delivery_issue` contract; reasons are the
 /// `delivery_issue_reason` enum.
+///
+/// With [recover], the chosen reason instead drives
+/// `initiate_delivery_recovery` (F2-09): the order leaves its rider and
+/// returns to unassigned for re-planning.
 Future<void> _reportIssue(
   BuildContext context,
   VendorOrder order,
-  Future<void> Function() reload,
-) => showListSheet(
-  context,
-  title: L.reportIssue,
-  children: [
-    for (final (wire, label) in [
-      ('customer_unreachable', L.issueCustomerUnreachable),
-      ('address_problem', L.issueAddressProblem),
-      ('access_problem', L.issueAccessProblem),
-      ('vendor_not_ready', L.issueVendorNotReady),
-      ('rider_unable_to_proceed', L.issueRiderUnableToProceed),
-    ])
-      Builder(
-        builder: (sheet) => CefListRow(
-          title: label,
-          icon: LucideIcons.triangleAlert,
-          showChevron: false,
-          onTap: () async {
-            Navigator.of(sheet).pop();
-            try {
-              await AppScope.read(context).repo
-                  .reportIssue(orderId: order.id, reasonType: wire);
-              if (context.mounted) showCefToast(context, L.issueReported);
-              await reload();
-            } catch (e) {
-              if (context.mounted) {
-                showCefToast(context, L.couldNotReportIssue(e), error: true);
+  Future<void> Function() reload, {
+  bool recover = false,
+}) {
+  final key = VendorRepository.newIdempotencyKey();
+  return showListSheet(
+    context,
+    title: recover ? L.recoverDelivery : L.reportIssue,
+    children: [
+      for (final (wire, label) in [
+        ('customer_unreachable', L.issueCustomerUnreachable),
+        ('address_problem', L.issueAddressProblem),
+        ('access_problem', L.issueAccessProblem),
+        ('vendor_not_ready', L.issueVendorNotReady),
+        ('rider_unable_to_proceed', L.issueRiderUnableToProceed),
+      ])
+        Builder(
+          builder: (sheet) => CefListRow(
+            title: label,
+            icon: LucideIcons.triangleAlert,
+            showChevron: false,
+            onTap: () async {
+              Navigator.of(sheet).pop();
+              try {
+                final repo = AppScope.read(context).repo;
+                if (recover) {
+                  await repo.recoverDelivery(
+                    orderId: order.id,
+                    reason: wire,
+                    idempotencyKey: key,
+                  );
+                } else {
+                  await repo.reportIssue(orderId: order.id, reasonType: wire);
+                }
+                if (context.mounted) {
+                  showCefToast(
+                    context,
+                    recover ? L.deliveryRecovered : L.issueReported,
+                  );
+                }
+                await reload();
+              } catch (e) {
+                if (context.mounted) {
+                  showCefToast(context, L.couldNotReportIssue(e), error: true);
+                }
               }
-            }
-          },
+            },
+          ),
         ),
-      ),
-  ],
-);
+    ],
+  );
+}
 
 /// Order → Zone through the canonical `update_order_details` contract.
 Future<void> _pickZone(

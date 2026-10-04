@@ -6734,6 +6734,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rider unable to proceed'**
   String get issueRiderUnableToProceed;
+
+  /// No description provided for @recoverDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Recover delivery'**
+  String get recoverDelivery;
+
+  /// No description provided for @recoverDeliveryLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Release the order from its rider so it can be planned again.'**
+  String get recoverDeliveryLead;
+
+  /// No description provided for @deliveryRecovered.
+  ///
+  /// In en, this message translates to:
+  /// **'Order released for re-planning.'**
+  String get deliveryRecovered;
 }
 
 class _AppLocalizationsDelegate

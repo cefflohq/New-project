@@ -677,6 +677,26 @@ class VendorRepository {
     return VendorOrder.fromRow(_single(row));
   }
 
+  /// `initiate_delivery_recovery` (F2-09, Owner/Operator only): releases the
+  /// order from its rider back to unassigned. Reuse [idempotencyKey] on retry.
+  Future<VendorOrder> recoverDelivery({
+    required String orderId,
+    required String reason,
+    required String idempotencyKey,
+  }) async {
+    final row = await _run(
+      () => _db!.rpc(
+        'initiate_delivery_recovery',
+        params: {
+          'p_order_id': orderId,
+          'p_reason': reason,
+          'p_idempotency_key': idempotencyKey,
+        },
+      ),
+    );
+    return VendorOrder.fromRow(_single(row));
+  }
+
   // ----------------------------------------------------------------- zones
 
   Future<List<Zone>> zones(String businessId) async {

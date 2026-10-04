@@ -1104,5 +1104,8 @@
   "issueAddressProblem": "Masalah alamat",
   "issueAccessProblem": "Masalah akses",
   "issueVendorNotReady": "Pesanan belum siap",
-  "issueRiderUnableToProceed": "Rider tidak dapat meneruskan"
+  "issueRiderUnableToProceed": "Rider tidak dapat meneruskan",
+  "recoverDelivery": "Pulihkan penghantaran",
+  "recoverDeliveryLead": "Lepaskan pesanan daripada rider supaya boleh dirancang semula.",
+  "deliveryRecovered": "Pesanan dilepaskan untuk dirancang semula."
 }

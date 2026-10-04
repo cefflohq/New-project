@@ -1841,5 +1841,8 @@
   "issueAddressProblem": "Address problem",
   "issueAccessProblem": "Access problem",
   "issueVendorNotReady": "Order not ready",
-  "issueRiderUnableToProceed": "Rider unable to proceed"
+  "issueRiderUnableToProceed": "Rider unable to proceed",
+  "recoverDelivery": "Recover delivery",
+  "recoverDeliveryLead": "Release the order from its rider so it can be planned again.",
+  "deliveryRecovered": "Order released for re-planning."
 }

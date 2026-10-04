@@ -12,14 +12,19 @@ const PAGE = 12;
 const ISSUE_FROM = ['created', 'ready_for_pickup', 'picked_up', 'out_for_delivery', 'arrived'];
 const ISSUE_REASONS = ['customer_unreachable', 'address_problem', 'access_problem', 'vendor_not_ready', 'rider_unable_to_proceed'];
 
-function openReportIssue(orderId, onDone) {
+// initiate_delivery_recovery (Web SOT §2/§10, F2-09): Owner/Operator only;
+// releases the order from its rider back to unassigned for re-planning.
+const recoverable = o => !!o.assigned_rider_id && [...ISSUE_FROM, 'issue'].includes(o.delivery_status) && ctx.role !== 'helper';
+
+function openReportIssue(orderId, onDone, recover = false) {
   let reason = '';
+  const key = crypto.randomUUID();
   const m = modal({
-    title: t('issue.title'), lead: t('issue.lead'),
+    title: t(recover ? 'recover.title' : 'issue.title'), lead: t(recover ? 'recover.lead' : 'issue.lead'),
     body: `${ISSUE_REASONS.map(r => `<button class="opt" data-reason="${r}"><div><b>${esc(t(`issue.${r}`))}</b></div><span class="radio"></span></button>`).join('')}
       <div class="field"><label>${esc(t('issue.note'))}</label><textarea class="input" data-note rows="3" maxlength="500"></textarea></div>
       <div class="err" data-err hidden></div>`,
-    footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit disabled>${esc(t('issue.submit'))}</button>`,
+    footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit disabled>${esc(t(recover ? 'recover.submit' : 'issue.submit'))}</button>`,
   });
   const submit = m.el.querySelector('[data-submit]'), err = m.el.querySelector('[data-err]');
   m.el.addEventListener('click', async e => {
@@ -29,8 +34,10 @@ function openReportIssue(orderId, onDone) {
       err.hidden = true;
       const note = m.el.querySelector('[data-note]').value.trim();
       try {
-        await busy(submit, () => api.rpc('vendor_report_delivery_issue', { p_order_id: orderId, p_reason_type: reason, ...(note ? { p_note: note } : {}) }));
-        m.close(); toast(t('issue.done')); onDone?.();
+        await busy(submit, () => recover
+          ? api.rpc('initiate_delivery_recovery', { p_order_id: orderId, p_reason: reason, p_note: note, p_idempotency_key: key })
+          : api.rpc('vendor_report_delivery_issue', { p_order_id: orderId, p_reason_type: reason, ...(note ? { p_note: note } : {}) }));
+        m.close(); toast(t(recover ? 'recover.done' : 'issue.done')); onDone?.();
       } catch (ex) { err.textContent = ex.message; err.hidden = false; }
     }
   });
@@ -158,7 +165,9 @@ export async function renderDetail(box, id, onChange) {
           <span style="color:var(--primary)">${icon('pin')}</span><div style="flex:1"><b style="margin:0">${esc(o.delivery_address)}</b></div>${icon('right', 'i chev')}</a>
         ${!o.approved_at && o.delivery_status === 'created' ? `<div class="sec"><button class="btn primary sm" data-approve>${esc(t('orders.approve'))}</button></div>` : ''}
         ${o.approved_at && !o.assigned_rider_id && ['created', 'ready_for_pickup'].includes(o.delivery_status) ? `<div class="sec" style="display:flex;gap:10px"><select class="select" data-rider-pick style="flex:1"><option value="">${esc(t('orders.selectRider'))}</option>${(rs || []).filter(r => r.status === 'active').map(r => `<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('')}</select><button class="btn primary sm" data-assign>${esc(t('orders.assign'))}</button></div>` : ''}
-        ${ISSUE_FROM.includes(o.delivery_status) ? `<div class="sec"><button class="btn sm" data-report-issue>${icon('alert')}${esc(t('issue.report'))}</button></div>` : ''}
+        ${ISSUE_FROM.includes(o.delivery_status) || recoverable(o) ? `<div class="sec" style="display:flex;gap:10px;flex-wrap:wrap">
+          ${ISSUE_FROM.includes(o.delivery_status) ? `<button class="btn sm" data-report-issue>${icon('alert')}${esc(t('issue.report'))}</button>` : ''}
+          ${recoverable(o) ? `<button class="btn sm" data-recover>${esc(t('recover.action'))}</button>` : ''}</div>` : ''}
         <div class="sec"><h3>${esc(t('orders.liveStatus'))}</h3><div class="timeline">
           ${steps.map(([k, label], i) => {
             const idx = order.indexOf(k);
@@ -182,6 +191,7 @@ export async function renderDetail(box, id, onChange) {
     if (ap) {
       try { await busy(ap, () => api.rpc('approve_order', { p_order_id: id })); toast(t('orders.approved')); onChange?.(); paint(); } catch (ex) { toast(ex.message, 'error'); }
     }
+    if (e.target.closest('[data-recover]')) { openReportIssue(id, () => { onChange?.(); paint(); }, true); return; }
     if (e.target.closest('[data-report-issue]')) { openReportIssue(id, () => { onChange?.(); paint(); }); return; }
     const as = e.target.closest('[data-assign]');
     if (as) {

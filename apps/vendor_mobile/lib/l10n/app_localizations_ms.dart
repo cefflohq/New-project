@@ -3692,4 +3692,14 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get issueRiderUnableToProceed => 'Rider tidak dapat meneruskan';
+
+  @override
+  String get recoverDelivery => 'Pulihkan penghantaran';
+
+  @override
+  String get recoverDeliveryLead =>
+      'Lepaskan pesanan daripada rider supaya boleh dirancang semula.';
+
+  @override
+  String get deliveryRecovered => 'Pesanan dilepaskan untuk dirancang semula.';
 }

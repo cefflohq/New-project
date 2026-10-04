@@ -34,6 +34,7 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Permanent invite link + QR for Rider, Operator, Helper (`get_invite_link`; email invites retired in both) | Founder 2026-10-04; Master Part III §9–11 | ✅ | ✅ (#1) |
 | Vehicle capacity check before dispatch (`check_run_vehicle_capacity` per run; dispatch blocked until compatible, no override) | D-61 | ✅ | ✅ (#2) |
 | Report delivery issue (`vendor_report_delivery_issue`, 5 enum reasons; App had the repository call but no UI — wired in both) | Web SOT §10, S4-08 | ✅ (#3) | ✅ (#3) |
+| Delivery recovery (`initiate_delivery_recovery`: release an assigned order back to unassigned, Owner/Operator only, idempotent) | Web SOT §2/§10, F2-09 | ✅ (#4) | ✅ (#4) |
 | Service Area / coverage configuration | V-26–V-27 | ✅ | ✅ |
 | Business Profile, information, address | V-37–V-39 | ✅ | ✅ |
 | Profile, edit profile, profile photo | V-42–V-43 | ✅ | ✅ |
@@ -53,7 +54,6 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Subscription: current plan, choose plan, billing history (payments demo-only) | V-50–V-54, D-54 | ✅ | ❌ | Web: subscription surfaces |
 | Help & Support, FAQ, Contact Support | V-55–V-57 | ✅ | ❌ (help marked "not connected") | Web: real FAQ + contact |
 | Order delivery events / timeline on order detail | Web SOT §2 + §5.8 "runs/stops/events" | ❌ | ✅ | App: show events on Order detail |
-| Delivery recovery action (`initiate_delivery_recovery`) | Web SOT §2/§10 "Need Attention/recovery" | ❌ | ❌ | Both: wire the canonical recovery contract |
 
 ## Verification debt (clear before production qualification)
 

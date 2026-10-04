@@ -3689,4 +3689,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get issueRiderUnableToProceed => 'Rider unable to proceed';
+
+  @override
+  String get recoverDelivery => 'Recover delivery';
+
+  @override
+  String get recoverDeliveryLead =>
+      'Release the order from its rider so it can be planned again.';
+
+  @override
+  String get deliveryRecovered => 'Order released for re-planning.';
 }
