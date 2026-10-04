@@ -769,6 +769,14 @@ class OrderDetailScreen extends StatelessWidget {
                   ? () => _pickZone(context, order, zones, reload)
                   : null,
             ),
+            if (_issueFrom.contains(order.status))
+              CefListRow(
+                title: L.reportIssue,
+                subtitle: L.reportIssueLead,
+                subtitleMaxLines: 2,
+                icon: LucideIcons.triangleAlert,
+                onTap: () => _reportIssue(context, order, reload),
+              ),
             if ((order.notes ?? '').isNotEmpty)
               CefListRow(
                 title: L.deliveryInstruction,
@@ -809,6 +817,56 @@ class OrderDetailScreen extends StatelessWidget {
     );
   }
 }
+
+/// Statuses `vendor_report_delivery_issue` accepts (S4-08).
+const _issueFrom = {
+  DeliveryStatus.created,
+  DeliveryStatus.readyForPickup,
+  DeliveryStatus.pickedUp,
+  DeliveryStatus.outForDelivery,
+  DeliveryStatus.arrived,
+};
+
+/// Report delivery issue (Web SOT §10, S4-08) through the canonical
+/// `vendor_report_delivery_issue` contract; reasons are the
+/// `delivery_issue_reason` enum.
+Future<void> _reportIssue(
+  BuildContext context,
+  VendorOrder order,
+  Future<void> Function() reload,
+) => showListSheet(
+  context,
+  title: L.reportIssue,
+  children: [
+    for (final (wire, label) in [
+      ('customer_unreachable', L.issueCustomerUnreachable),
+      ('address_problem', L.issueAddressProblem),
+      ('access_problem', L.issueAccessProblem),
+      ('vendor_not_ready', L.issueVendorNotReady),
+      ('rider_unable_to_proceed', L.issueRiderUnableToProceed),
+    ])
+      Builder(
+        builder: (sheet) => CefListRow(
+          title: label,
+          icon: LucideIcons.triangleAlert,
+          showChevron: false,
+          onTap: () async {
+            Navigator.of(sheet).pop();
+            try {
+              await AppScope.read(context).repo
+                  .reportIssue(orderId: order.id, reasonType: wire);
+              if (context.mounted) showCefToast(context, L.issueReported);
+              await reload();
+            } catch (e) {
+              if (context.mounted) {
+                showCefToast(context, L.couldNotReportIssue(e), error: true);
+              }
+            }
+          },
+        ),
+      ),
+  ],
+);
 
 /// Order → Zone through the canonical `update_order_details` contract.
 Future<void> _pickZone(

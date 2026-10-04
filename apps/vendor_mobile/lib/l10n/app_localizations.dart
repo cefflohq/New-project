@@ -6680,6 +6680,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'We couldn\'t confirm the removal. Refresh and try again.'**
   String get removalNotConfirmed;
+
+  /// No description provided for @reportIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Report issue'**
+  String get reportIssue;
+
+  /// No description provided for @reportIssueLead.
+  ///
+  /// In en, this message translates to:
+  /// **'The order moves to Issue and appears in Need Attention.'**
+  String get reportIssueLead;
+
+  /// No description provided for @issueReported.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue reported.'**
+  String get issueReported;
+
+  /// No description provided for @couldNotReportIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not report issue: {error}'**
+  String couldNotReportIssue(Object error);
+
+  /// No description provided for @issueCustomerUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer unreachable'**
+  String get issueCustomerUnreachable;
+
+  /// No description provided for @issueAddressProblem.
+  ///
+  /// In en, this message translates to:
+  /// **'Address problem'**
+  String get issueAddressProblem;
+
+  /// No description provided for @issueAccessProblem.
+  ///
+  /// In en, this message translates to:
+  /// **'Access problem'**
+  String get issueAccessProblem;
+
+  /// No description provided for @issueVendorNotReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Order not ready'**
+  String get issueVendorNotReady;
+
+  /// No description provided for @issueRiderUnableToProceed.
+  ///
+  /// In en, this message translates to:
+  /// **'Rider unable to proceed'**
+  String get issueRiderUnableToProceed;
 }
 
 class _AppLocalizationsDelegate

@@ -1825,5 +1825,21 @@
   "memberRemoved": "Member removed",
   "riderRemoved": "Rider removed",
   "riderHasActiveWorkCannotRemove": "This rider still has active deliveries. Finish or reassign them, then try again.",
-  "removalNotConfirmed": "We couldn't confirm the removal. Refresh and try again."
+  "removalNotConfirmed": "We couldn't confirm the removal. Refresh and try again.",
+  "reportIssue": "Report issue",
+  "reportIssueLead": "The order moves to Issue and appears in Need Attention.",
+  "issueReported": "Issue reported.",
+  "couldNotReportIssue": "Could not report issue: {error}",
+  "@couldNotReportIssue": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "issueCustomerUnreachable": "Customer unreachable",
+  "issueAddressProblem": "Address problem",
+  "issueAccessProblem": "Access problem",
+  "issueVendorNotReady": "Order not ready",
+  "issueRiderUnableToProceed": "Rider unable to proceed"
 }

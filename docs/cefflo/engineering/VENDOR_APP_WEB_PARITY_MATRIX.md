@@ -33,6 +33,7 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Remove member (typed CONFIRM, read-back) | Master Part III §19 | ✅ | ✅ |
 | Permanent invite link + QR for Rider, Operator, Helper (`get_invite_link`; email invites retired in both) | Founder 2026-10-04; Master Part III §9–11 | ✅ | ✅ (#1) |
 | Vehicle capacity check before dispatch (`check_run_vehicle_capacity` per run; dispatch blocked until compatible, no override) | D-61 | ✅ | ✅ (#2) |
+| Report delivery issue (`vendor_report_delivery_issue`, 5 enum reasons; App had the repository call but no UI — wired in both) | Web SOT §10, S4-08 | ✅ (#3) | ✅ (#3) |
 | Service Area / coverage configuration | V-26–V-27 | ✅ | ✅ |
 | Business Profile, information, address | V-37–V-39 | ✅ | ✅ |
 | Profile, edit profile, profile photo | V-42–V-43 | ✅ | ✅ |
@@ -45,7 +46,6 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Capability | Source | App | Web | Work |
 |---|---|---|---|---|
 | Edit order (permitted fields only) | V-15, D-61 | ✅ | ❌ | Web: `update_order_details` |
-| Report delivery issue | Web SOT §10, S4-08 | ✅ | ❌ | Web: `vendor_report_delivery_issue` |
 | Order coverage status / within-coverage check | V-26/V-27, Web SOT §2 "location/coverage visibility" | ✅ | ❌ | Web: `order_coverage_status`, `is_within_coverage` |
 | Business hours | V-40 | ✅ | ❌ | Web: `set_business_hours` |
 | Storefront / Appearance / Preview (publish, link, QR, share, templates) | V-31–V-33, D-55, Storefront V1 (Founder 2026-10-01) | ✅ | ❌ | Web: storefront management |
@@ -54,6 +54,13 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Help & Support, FAQ, Contact Support | V-55–V-57 | ✅ | ❌ (help marked "not connected") | Web: real FAQ + contact |
 | Order delivery events / timeline on order detail | Web SOT §2 + §5.8 "runs/stops/events" | ❌ | ✅ | App: show events on Order detail |
 | Delivery recovery action (`initiate_delivery_recovery`) | Web SOT §2/§10 "Need Attention/recovery" | ❌ | ❌ | Both: wire the canonical recovery contract |
+
+## Verification debt (clear before production qualification)
+
+| Item | Debt |
+|---|---|
+| #2 capacity check | Browser QA of the failure path (violations listed, Create runs blocked) — demo mode always returns compatible; verify on staging data |
+| Email-invite backend RPCs | `create_team_invitation`, `create_rider_invitation`, `claim_my_team_invitations`, `revoke_*` still granted; retire in the final production/security cleanup after a dependency audit |
 
 ## C. Helper PWA only (must not appear in Owner/Operator surfaces)
 

@@ -7,6 +7,34 @@ import { esc, icon, chip, orderStatus, itemsText, itemsLines, avatar, loadingRow
 import { openAddOrder } from './order_actions.js';
 
 const PAGE = 12;
+// vendor_report_delivery_issue (Web SOT §10, S4-08): any operational member,
+// from these statuses only; reasons are the delivery_issue_reason enum.
+const ISSUE_FROM = ['created', 'ready_for_pickup', 'picked_up', 'out_for_delivery', 'arrived'];
+const ISSUE_REASONS = ['customer_unreachable', 'address_problem', 'access_problem', 'vendor_not_ready', 'rider_unable_to_proceed'];
+
+function openReportIssue(orderId, onDone) {
+  let reason = '';
+  const m = modal({
+    title: t('issue.title'), lead: t('issue.lead'),
+    body: `${ISSUE_REASONS.map(r => `<button class="opt" data-reason="${r}"><div><b>${esc(t(`issue.${r}`))}</b></div><span class="radio"></span></button>`).join('')}
+      <div class="field"><label>${esc(t('issue.note'))}</label><textarea class="input" data-note rows="3" maxlength="500"></textarea></div>
+      <div class="err" data-err hidden></div>`,
+    footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit disabled>${esc(t('issue.submit'))}</button>`,
+  });
+  const submit = m.el.querySelector('[data-submit]'), err = m.el.querySelector('[data-err]');
+  m.el.addEventListener('click', async e => {
+    const o = e.target.closest('[data-reason]');
+    if (o) { reason = o.dataset.reason; m.el.querySelectorAll('[data-reason]').forEach(b => b.classList.toggle('on', b === o)); submit.disabled = false; return; }
+    if (e.target.closest('[data-submit]') && reason) {
+      err.hidden = true;
+      const note = m.el.querySelector('[data-note]').value.trim();
+      try {
+        await busy(submit, () => api.rpc('vendor_report_delivery_issue', { p_order_id: orderId, p_reason_type: reason, ...(note ? { p_note: note } : {}) }));
+        m.close(); toast(t('issue.done')); onDone?.();
+      } catch (ex) { err.textContent = ex.message; err.hidden = false; }
+    }
+  });
+}
 
 export default function orders({ el, params, setHeader }) {
   setHeader(t('orders.title'));
@@ -130,6 +158,7 @@ export async function renderDetail(box, id, onChange) {
           <span style="color:var(--primary)">${icon('pin')}</span><div style="flex:1"><b style="margin:0">${esc(o.delivery_address)}</b></div>${icon('right', 'i chev')}</a>
         ${!o.approved_at && o.delivery_status === 'created' ? `<div class="sec"><button class="btn primary sm" data-approve>${esc(t('orders.approve'))}</button></div>` : ''}
         ${o.approved_at && !o.assigned_rider_id && ['created', 'ready_for_pickup'].includes(o.delivery_status) ? `<div class="sec" style="display:flex;gap:10px"><select class="select" data-rider-pick style="flex:1"><option value="">${esc(t('orders.selectRider'))}</option>${(rs || []).filter(r => r.status === 'active').map(r => `<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('')}</select><button class="btn primary sm" data-assign>${esc(t('orders.assign'))}</button></div>` : ''}
+        ${ISSUE_FROM.includes(o.delivery_status) ? `<div class="sec"><button class="btn sm" data-report-issue>${icon('alert')}${esc(t('issue.report'))}</button></div>` : ''}
         <div class="sec"><h3>${esc(t('orders.liveStatus'))}</h3><div class="timeline">
           ${steps.map(([k, label], i) => {
             const idx = order.indexOf(k);
@@ -153,6 +182,7 @@ export async function renderDetail(box, id, onChange) {
     if (ap) {
       try { await busy(ap, () => api.rpc('approve_order', { p_order_id: id })); toast(t('orders.approved')); onChange?.(); paint(); } catch (ex) { toast(ex.message, 'error'); }
     }
+    if (e.target.closest('[data-report-issue]')) { openReportIssue(id, () => { onChange?.(); paint(); }); return; }
     const as = e.target.closest('[data-assign]');
     if (as) {
       const rid = box.querySelector('[data-rider-pick]').value;

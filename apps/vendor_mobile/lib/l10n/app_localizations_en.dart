@@ -3659,4 +3659,34 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get removalNotConfirmed =>
       'We couldn\'t confirm the removal. Refresh and try again.';
+
+  @override
+  String get reportIssue => 'Report issue';
+
+  @override
+  String get reportIssueLead =>
+      'The order moves to Issue and appears in Need Attention.';
+
+  @override
+  String get issueReported => 'Issue reported.';
+
+  @override
+  String couldNotReportIssue(Object error) {
+    return 'Could not report issue: $error';
+  }
+
+  @override
+  String get issueCustomerUnreachable => 'Customer unreachable';
+
+  @override
+  String get issueAddressProblem => 'Address problem';
+
+  @override
+  String get issueAccessProblem => 'Access problem';
+
+  @override
+  String get issueVendorNotReady => 'Order not ready';
+
+  @override
+  String get issueRiderUnableToProceed => 'Rider unable to proceed';
 }

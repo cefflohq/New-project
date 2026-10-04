@@ -1095,5 +1095,14 @@
   "memberRemoved": "Ahli dibuang",
   "riderRemoved": "Rider dibuang",
   "riderHasActiveWorkCannotRemove": "Rider ini masih ada penghantaran aktif. Selesaikan atau agihkan semula dahulu, kemudian cuba lagi.",
-  "removalNotConfirmed": "Kami tidak dapat mengesahkan pembuangan. Muat semula dan cuba lagi."
+  "removalNotConfirmed": "Kami tidak dapat mengesahkan pembuangan. Muat semula dan cuba lagi.",
+  "reportIssue": "Lapor isu",
+  "reportIssueLead": "Pesanan bertukar ke Isu dan dipaparkan dalam Perlu Perhatian.",
+  "issueReported": "Isu dilaporkan.",
+  "couldNotReportIssue": "Tidak dapat melapor isu: {error}",
+  "issueCustomerUnreachable": "Pelanggan tidak dapat dihubungi",
+  "issueAddressProblem": "Masalah alamat",
+  "issueAccessProblem": "Masalah akses",
+  "issueVendorNotReady": "Pesanan belum siap",
+  "issueRiderUnableToProceed": "Rider tidak dapat meneruskan"
 }

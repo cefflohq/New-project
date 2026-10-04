@@ -3662,4 +3662,34 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get removalNotConfirmed =>
       'Kami tidak dapat mengesahkan pembuangan. Muat semula dan cuba lagi.';
+
+  @override
+  String get reportIssue => 'Lapor isu';
+
+  @override
+  String get reportIssueLead =>
+      'Pesanan bertukar ke Isu dan dipaparkan dalam Perlu Perhatian.';
+
+  @override
+  String get issueReported => 'Isu dilaporkan.';
+
+  @override
+  String couldNotReportIssue(Object error) {
+    return 'Tidak dapat melapor isu: $error';
+  }
+
+  @override
+  String get issueCustomerUnreachable => 'Pelanggan tidak dapat dihubungi';
+
+  @override
+  String get issueAddressProblem => 'Masalah alamat';
+
+  @override
+  String get issueAccessProblem => 'Masalah akses';
+
+  @override
+  String get issueVendorNotReady => 'Pesanan belum siap';
+
+  @override
+  String get issueRiderUnableToProceed => 'Rider tidak dapat meneruskan';
 }
