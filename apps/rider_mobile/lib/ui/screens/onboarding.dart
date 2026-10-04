@@ -162,7 +162,6 @@ class _DriverDetailsScreenState extends State<DriverDetailsScreen> {
     text: _app.repo.isDemo ? '12 345 6789' : _app.profile.phone,
   );
   final _plate = TextEditingController();
-  String _vehicle = DemoData.vehicleTypes.first;
 
   @override
   void dispose() {
@@ -220,13 +219,12 @@ class _DriverDetailsScreenState extends State<DriverDetailsScreen> {
           const SizedBox(height: Gap.section),
           SectionRow(icon: LucideIcons.bike, label: L.vehicleInformation),
           const SizedBox(height: Gap.lg),
-          CeffloSelectField<String>(
+          // Vehicle type follows V2 Choose Your Vehicle (mandatory there);
+          // shown here read-only, changed only by going back to V2.
+          _ReadOnlyField(
             label: L.vehicleType,
-            value: _vehicle,
-            options: DemoData.vehicleTypes,
-            optionLabel: vehicleTypeLabel,
+            value: vehicleTypeLabel(app.registrationVehicle),
             icon: LucideIcons.bike,
-            onChanged: (v) => setState(() => _vehicle = v),
           ),
           const SizedBox(height: Gap.md),
           CeffloTextField(
@@ -443,8 +441,13 @@ class VehicleAndDocumentsScreen extends StatefulWidget {
 }
 
 class _VehicleAndDocumentsScreenState extends State<VehicleAndDocumentsScreen> {
-  final _plate = TextEditingController(text: L.vaa1234);
-  String _vehicle = DemoData.vehicleTypes.first;
+  late final _app = AppScope.read(context);
+  // Carried from V3 Your Driver Details (not asked twice).
+  late final _plate = TextEditingController(
+    text: _app.registrationPlate.isNotEmpty
+        ? _app.registrationPlate
+        : (_app.repo.registration['vehicle_plate']?.toString() ?? ''),
+  );
 
   @override
   void dispose() {
@@ -490,13 +493,11 @@ class _VehicleAndDocumentsScreenState extends State<VehicleAndDocumentsScreen> {
         children: [
           SectionRow(icon: LucideIcons.bike, label: L.vehicleInformation),
           const SizedBox(height: Gap.lg),
-          CeffloSelectField<String>(
+          // Vehicle type follows V2 Choose Your Vehicle (read-only here).
+          _ReadOnlyField(
             label: L.vehicleType,
-            value: _vehicle,
-            options: DemoData.vehicleTypes,
-            optionLabel: vehicleTypeLabel,
+            value: vehicleTypeLabel(app.registrationVehicle),
             icon: LucideIcons.bike,
-            onChanged: (v) => setState(() => _vehicle = v),
           ),
           const SizedBox(height: Gap.md),
           CeffloTextField(
@@ -1889,6 +1890,7 @@ class _YourDriverDetailsScreenState extends State<YourDriverDetailsScreen> {
       _error = null;
     });
     try {
+      _app.registrationPlate = plate;
       await _app.repo.saveRegistration(
         vehicleType: _app.registrationVehicle,
         fullName: name,
@@ -2046,4 +2048,52 @@ class _YourDriverDetailsScreenState extends State<YourDriverDetailsScreen> {
       ],
     );
   }
+}
+
+/// A filled, non-editable field in the form style (no chevron, no cursor).
+class _ReadOnlyField extends StatelessWidget {
+  const _ReadOnlyField({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+  final String label, value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    readOnly: true,
+    label: '$label: $value',
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CeffloFieldLabel(label),
+        const SizedBox(height: 6),
+        Container(
+          height: Sizes.inputHeight,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: CefColors.tintNeutral,
+            borderRadius: BorderRadius.circular(Sizes.inputRadius),
+            border: Border.all(color: context.c.border),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: context.c.textSecondary),
+              const SizedBox(width: 10),
+              Text(
+                value,
+                style: TextStyle(
+                  fontFamily: 'Manrope',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: context.c.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
 }

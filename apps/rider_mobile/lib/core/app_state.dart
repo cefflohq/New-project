@@ -61,6 +61,9 @@ class AppState extends ChangeNotifier {
 
   /// Vehicle chosen on V2, carried to V3 (stored `rider_vehicle_type`).
   String registrationVehicle = 'motorcycle';
+
+  /// Number plate typed on V3, carried to D12.2.
+  String registrationPlate = '';
   RiderRelationship? active;
   List<RiderOrder> orders = const [];
   Map<String, String> sessionNames = const {};
