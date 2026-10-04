@@ -82,7 +82,7 @@ export async function openAddOrder(onDone, existing = null) {
       const created = await busy(e.currentTarget, () => api.rpc('create_delivery', {
         p_business_id: ctx.bid, p_customer_name: name, p_customer_phone: phone, p_delivery_address: address,
         p_notes: f('notes').value.trim(), p_latitude: null, p_longitude: null, p_items: lines,
-        p_zone_id: f('zone').value || null, p_vehicle_requirement: null,
+        p_zone_id: f('zone').value || null, p_vehicle_requirement: 'any',
       }));
       // Same fire-and-forget step as Vendor App: resolve the location planning
       // needs. The order exists either way; a failure leaves it unresolved
