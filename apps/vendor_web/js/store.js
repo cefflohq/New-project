@@ -1,6 +1,6 @@
 // Session context: the signed-in user, their business memberships and the
 // active business + role. Role always comes from the server
-// (claim_my_team_invitations, then get_my_businesses); the UI only uses it
+// (get_my_businesses); the UI only uses it
 // to decide what to show — the server independently enforces every action.
 import { api } from './api.js';
 
@@ -20,7 +20,6 @@ export class NoBusinessError extends Error {}
 
 export async function loadContext() {
   ctx.user = await api.user();
-  try { await api.rpc('claim_my_team_invitations'); } catch { /* nothing to claim */ }
   const rows = await api.rpc('get_my_businesses');
   const all = Array.isArray(rows) ? rows : [];
   ctx.businesses = all.filter(b => b.member_role !== 'helper');

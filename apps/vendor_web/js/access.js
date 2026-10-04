@@ -1,7 +1,7 @@
 // Which Sign-In variant the Vendor Web App shows (D-74), matching Vendor
 // Mobile's `?access=operator`. Presentation only: it never grants a role.
 // After sign-in the role always comes from the server
-// (claim_my_team_invitations, then get_my_businesses).
+// (get_my_businesses).
 //
 // The variant survives an emailed auth link (verification, recovery),
 // which returns to the app without the query string, by remembering the

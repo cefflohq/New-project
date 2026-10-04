@@ -31,6 +31,7 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Remove rider (typed CONFIRM, active-work guard, read-back) | Master Part III §20–23 | ✅ | ✅ |
 | Team list, Team → Pending approve / reject (Owner-only) | Master Part III §12 | ✅ | ✅ |
 | Remove member (typed CONFIRM, read-back) | Master Part III §19 | ✅ | ✅ |
+| Permanent invite link + QR for Rider, Operator, Helper (`get_invite_link`; email invites retired in both) | Founder 2026-10-04; Master Part III §9–11 | ✅ | ✅ (#1) |
 | Service Area / coverage configuration | V-26–V-27 | ✅ | ✅ |
 | Business Profile, information, address | V-37–V-39 | ✅ | ✅ |
 | Profile, edit profile, profile photo | V-42–V-43 | ✅ | ✅ |
@@ -42,7 +43,6 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 
 | Capability | Source | App | Web | Work |
 |---|---|---|---|---|
-| Permanent invite link + QR for Rider, Operator, Helper (replaces email invites) | Founder 2026-10-04; Master Part III §9–11 | ✅ | ❌ | Web: add `get_invite_link` / `reset_invite_link` + QR; retire `create_team_invitation`, `create_rider_invitation`, `revoke_*` UI |
 | Edit order (permitted fields only) | V-15, D-61 | ✅ | ❌ | Web: `update_order_details` |
 | Report delivery issue | Web SOT §10, S4-08 | ✅ | ❌ | Web: `vendor_report_delivery_issue` |
 | Order coverage status / within-coverage check | V-26/V-27, Web SOT §2 "location/coverage visibility" | ✅ | ❌ | Web: `order_coverage_status`, `is_within_coverage` |

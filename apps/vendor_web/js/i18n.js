@@ -4,6 +4,10 @@
 import { prefs } from './prefs.js';
 
 const en = {
+  // permanent invite link + QR
+  'invite.teamTitle': 'Invite to your team', 'invite.riderTitle': 'Invite a rider', 'invite.lead': 'Share this link or QR code. Joining needs your approval before access starts.',
+  'invite.linkLabel': 'Invite link', 'invite.pendingNote': 'People who join appear in Pending. They get access only after you approve them.',
+  'invite.share': 'Share', 'invite.shareTitle': 'Join my team on Cefflo', 'invite.unavailable': 'The invite link is not available right now.',
   // membership removal and team approvals (Security & Access Master Part III)
   'c.typeConfirm': 'Type CONFIRM to continue.', 'c.removalNotConfirmed': "We couldn't confirm the removal. Refresh and try again.",
   'team.members': 'Members', 'team.pending': 'Pending requests', 'team.pendingLead': 'People who joined through your invite link. They have no access until you approve.',
@@ -96,8 +100,8 @@ const en = {
   'riders.issues': 'Issues', 'riders.name': 'Name', 'riders.phone': 'Phone', 'riders.vehicleNumber': 'Vehicle Number',
   'riders.vehicleType': 'Vehicle Type', 'riders.availability': 'Availability', 'riders.approve': 'Approve',
   'riders.reject': 'Reject', 'riders.approved': 'Rider approved', 'riders.rejected': 'Rider request rejected', 'riders.activeWork': 'This rider still has active runs or orders. Reassign or finish them first, then remove the rider.', 'riders.none': 'No riders yet',
-  'riders.noneBody': 'Invite a rider with Add Rider.', 'riders.inviteLead': 'The rider receives a link to join your delivery team.',
-  'riders.invite': 'Create invite link', 'riders.linkReady': 'Invite link ready', 'riders.linkLead': 'Share this link with the rider. It is shown only once.',
+  'riders.noneBody': 'Invite a rider with Add Rider.', 
+  
   'riders.copy': 'Copy link', 'riders.copied': 'Link copied', 'riders.noHistory': 'No orders yet.',
   'veh.motorcycle': 'Motorcycle', 'veh.car': 'Car', 'veh.van': 'Van',
   // zones
@@ -222,13 +226,13 @@ const en = {
   'bp.gatedFields': 'Operating schedule, description and social links need new business fields, which are not in the backend yet.',
   'bp.mapGated': 'The coverage map needs a map provider.', 'bp.km': '{n} km', 'bp.zonesN': '{n} zones',
   'team.lead': 'Manage your team members who help run deliveries and manage orders.', 'team.invite': 'Invite Member',
-  'team.invitations': 'Invitations', 'team.invitationsLead': 'Pending invitations will appear here until they are accepted.',
-  'team.expiresIn': 'Expires in', 'team.days': '{n} days', 'team.revoke': 'Revoke', 'team.revoked': 'Invitation revoked',
+  
+  
   'team.role': 'Role', 'team.operator': 'Operator', 'team.helper': 'Helper', 'team.owner': 'Owner',
   'team.operatorSub': 'Help manage daily delivery operations. Requires a Vendor account.',
   'team.helperSub': 'Help prepare, pack and hand over orders. Uses the Cefflo Vendor app.',
   'team.memberNameGated': 'Member names and emails need a team directory, which is not in the backend yet.',
-  'team.you': 'You', 'team.member': 'Team member', 'team.linkReady': 'Invite link ready',
+  'team.you': 'You', 'team.member': 'Team member', 
   'int.lead': 'Bring your orders into Cefflo.', 'int.csv': 'CSV Upload', 'int.csvSub': 'Upload orders in bulk via CSV file.',
   'int.available': 'Connected', 'int.planned': 'Connect',
   'about.lead': 'Local same-day delivery operating system.', 'help.lead': 'Find guides, answers and support for your CEFFLO workspace.',
@@ -273,6 +277,10 @@ const en = {
 };
 
 const ms = {
+  // pautan jemputan kekal + QR
+  'invite.teamTitle': 'Jemput ke pasukan anda', 'invite.riderTitle': 'Jemput rider', 'invite.lead': 'Kongsi pautan atau kod QR ini. Penyertaan perlu kelulusan anda sebelum akses bermula.',
+  'invite.linkLabel': 'Pautan jemputan', 'invite.pendingNote': 'Mereka yang menyertai akan muncul dalam Menunggu. Mereka hanya dapat akses selepas anda luluskan.',
+  'invite.share': 'Kongsi', 'invite.shareTitle': 'Sertai pasukan saya di Cefflo', 'invite.unavailable': 'Pautan jemputan tidak tersedia buat masa ini.',
   // pembuangan keahlian dan kelulusan pasukan
   'c.typeConfirm': 'Taip CONFIRM untuk teruskan.', 'c.removalNotConfirmed': 'Kami tidak dapat mengesahkan pembuangan. Muat semula dan cuba lagi.',
   'team.members': 'Ahli', 'team.pending': 'Permohonan menunggu', 'team.pendingLead': 'Mereka yang menyertai melalui pautan jemputan anda. Tiada akses sehingga anda luluskan.',
@@ -350,8 +358,8 @@ const ms = {
   'riders.availability': 'Ketersediaan', 'riders.approve': 'Luluskan', 'riders.reject': 'Tolak', 'riders.approved': 'Rider diluluskan',
   'riders.rejected': 'Permohonan rider ditolak', 'riders.activeWork': 'Rider ini masih ada run atau pesanan aktif. Pindahkan atau selesaikan dahulu, kemudian buang rider.',
   'riders.none': 'Belum ada rider', 'riders.noneBody': 'Jemput rider dengan Tambah Rider.',
-  'riders.inviteLead': 'Rider akan menerima pautan untuk menyertai pasukan penghantaran anda.', 'riders.invite': 'Cipta pautan jemputan',
-  'riders.linkReady': 'Pautan jemputan sedia', 'riders.linkLead': 'Kongsi pautan ini dengan rider. Ia dipaparkan sekali sahaja.',
+  
+  
   'riders.copy': 'Salin pautan', 'riders.copied': 'Pautan disalin', 'riders.noHistory': 'Belum ada pesanan.',
   'veh.motorcycle': 'Motosikal', 'veh.car': 'Kereta', 'veh.van': 'Van',
   'zones.title': 'Zon', 'zones.zone': 'Zon', 'zones.search': 'Cari zon…', 'zones.total': 'Jumlah Pesanan', 'zones.completed': 'Selesai',
@@ -471,12 +479,12 @@ const ms = {
   'bp.gatedFields': 'Jadual operasi, penerangan dan pautan sosial memerlukan medan perniagaan baharu, yang belum ada di backend.',
   'bp.mapGated': 'Peta liputan memerlukan penyedia peta.', 'bp.km': '{n} km', 'bp.zonesN': '{n} zon',
   'team.lead': 'Urus ahli pasukan yang membantu menjalankan penghantaran dan mengurus pesanan.', 'team.invite': 'Jemput Ahli',
-  'team.invitations': 'Jemputan', 'team.invitationsLead': 'Jemputan tertunda dipaparkan di sini sehingga diterima.', 'team.expiresIn': 'Tamat dalam',
-  'team.days': '{n} hari', 'team.revoke': 'Batalkan', 'team.revoked': 'Jemputan dibatalkan', 'team.role': 'Peranan', 'team.operator': 'Operator',
+  
+  'team.role': 'Peranan', 'team.operator': 'Operator',
   'team.helper': 'Pembantu', 'team.owner': 'Pemilik', 'team.operatorSub': 'Bantu urus operasi penghantaran harian. Memerlukan akaun Vendor.',
   'team.helperSub': 'Bantu sediakan, bungkus dan serahkan pesanan. Guna aplikasi Cefflo Vendor.',
   'team.memberNameGated': 'Nama dan e-mel ahli memerlukan direktori pasukan, yang belum ada di backend.', 'team.you': 'Anda',
-  'team.member': 'Ahli pasukan', 'team.linkReady': 'Pautan jemputan sedia',
+  'team.member': 'Ahli pasukan', 
   'int.lead': 'Bawa pesanan anda masuk ke Cefflo.', 'int.csv': 'Muat Naik CSV', 'int.csvSub': 'Muat naik pesanan secara pukal melalui fail CSV.',
   'int.available': 'Disambungkan', 'int.planned': 'Sambung',
   'about.lead': 'Sistem operasi penghantaran tempatan hari yang sama.', 'help.lead': 'Cari panduan, jawapan dan sokongan untuk ruang kerja CEFFLO anda.',

@@ -4,8 +4,9 @@
 import { t, fmtDate, fmtTime } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
+import { showInviteLink } from '../invite_link.js';
 import { fetchRiders, fetchOrders, fetchRatings, fetchLocations, orderNo } from '../data.js';
-import { esc, icon, chip, avatar, loadingRows, emptyState, errorState, toast, busy, modal, confirmDialog, typedConfirmDialog, copyText, phoneDigits, orderStatus, gatedNote } from '../ui.js';
+import { esc, icon, chip, avatar, loadingRows, emptyState, errorState, toast, busy, modal, confirmDialog, typedConfirmDialog, phoneDigits, orderStatus, gatedNote } from '../ui.js';
 
 export default function riders({ el, params, setHeader }) {
   setHeader(t('riders.title'));
@@ -138,46 +139,15 @@ export default function riders({ el, params, setHeader }) {
   el.addEventListener('click', async e => {
     const tb = e.target.closest('[data-tab]'); if (tb) { tab = tb.dataset.tab; paint(); return; }
     const row = e.target.closest('tr[data-id]'); if (row) { location.hash = `#/riders/${row.dataset.id}`; return; }
-    if (e.target.closest('[data-add]')) { openAddRider(load); return; }
+    if (e.target.closest('[data-add]')) { openAddRider(); return; }
     if (e.target.closest('[data-retry]')) { load(); return; }
   });
   $('[data-q]').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); paint(); });
   load();
 }
 
-export function openAddRider(onDone) {
-  const m = modal({
-    title: t('riders.add'), lead: t('riders.inviteLead'),
-    body: `<div class="field"><label>${esc(t('riders.name'))}</label><input class="input" name="name" maxlength="80"></div>
-      <div class="field"><label>${esc(t('riders.phone'))}</label><input class="input" name="phone" inputmode="tel" placeholder="+60 12-345 6789"></div>
-      <div class="field"><label>${esc(t('prof.email'))}</label><input class="input" name="email" type="email" placeholder="name@example.com"></div>
-      <div class="err" data-err hidden></div>`,
-    footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit>${esc(t('riders.invite'))}</button>`,
-  });
-  m.el.querySelector('[data-submit]').addEventListener('click', async e => {
-    const f = n => m.el.querySelector(`[name=${n}]`).value.trim();
-    const err = m.el.querySelector('[data-err]');
-    const name = f('name'), phone = f('phone'), email = f('email');
-    if (!name || !phone || !email) { err.textContent = t('c.required'); err.hidden = false; return; }
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { err.textContent = t('c.invalidEmail'); err.hidden = false; return; }
-    try {
-      const res = await busy(e.currentTarget, () => api.rpc('create_rider_invitation', { p_business_id: ctx.bid, p_invited_email: email, p_invited_name: name, p_invited_phone: phone }));
-      m.close();
-      showLink(t('riders.linkReady'), new URL(`../invite/?type=rider&token=${encodeURIComponent(res.token)}`, location.href).href);
-      onDone?.();
-    } catch (ex) { err.textContent = ex.message; err.hidden = false; }
-  });
-}
-
-export function showLink(title, link) {
-  const m = modal({
-    title, lead: t('riders.linkLead'),
-    body: `<input class="input" readonly value="${esc(link)}" data-link>`,
-    footer: `<button class="btn" data-close>${esc(t('c.close'))}</button><button class="btn primary" data-copy>${esc(t('riders.copy'))}</button>`,
-  });
-  m.el.querySelector('[data-copy]').addEventListener('click', async () => {
-    const ok = await copyText(link);
-    if (!ok) m.el.querySelector('[data-link]').select();
-    toast(ok ? t('riders.copied') : link);
-  });
+// Riders join through the business's permanent invite link + QR; the request
+// then waits in Pending for the Owner (no email invitations).
+export function openAddRider() {
+  showInviteLink('rider');
 }

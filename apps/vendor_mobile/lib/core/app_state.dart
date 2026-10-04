@@ -642,11 +642,8 @@ class AppState extends ChangeNotifier {
         _applyUiLocale(own);
         await _localeStore.write(own);
       }
-      // D-73: claim accepted Operator invitations first so the new
-      // membership is in the list. Nothing to claim is not an error.
-      try {
-        await repo.claimMyTeamInvitations();
-      } on RepositoryError catch (_) {}
+      // Memberships come only from the permanent invite link flow: join
+      // request → Pending → Owner approval (no email-invitation claim).
       businesses = await repo.myBusinesses();
       business = businesses.isEmpty ? null : businesses.first;
       // Signed in through the Operator Sign-In but no membership was

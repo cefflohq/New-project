@@ -102,12 +102,6 @@ const members = [
   { user_id: 'demo-operator-2', role: 'operator', status: 'active', created_at: '2026-08-20T02:00:00Z' },
 ];
 const inDays = n => new Date(Date.now() + n * 86400000).toISOString();
-const teamInvites = [
-  { id: 'ti-1', role: 'helper', invited_email: 'packing@kopikita.my', status: 'pending', expires_at: inDays(5), created_at: minsAgo(60 * 30) },
-];
-const riderInvites = [
-  { id: 'ri-1', invited_email: 'farid.h@gmail.com', invited_name: 'Farid Hakim', status: 'consented', expires_at: inDays(4), created_at: minsAgo(60 * 20) },
-];
 const ratings = [['r-ahmad', 5], ['r-ahmad', 5], ['r-ahmad', 4], ['r-siti', 5], ['r-siti', 4], ['r-jason', 5], ['r-nur', 4]]
   .map(([rider_id, rating], i) => ({ rider_id, rating, order_id: `o-r${i}` }));
 
@@ -135,8 +129,6 @@ const TABLES = {
   ratings: () => ratings,
   businesses: () => [business],
   business_members: () => members,
-  team_invitations: () => teamInvites,
-  rider_invitations: () => riderInvites,
   profiles: () => [{ id: USER.id, display_name: 'Yusuf Sazali', phone: '+60 12-600 1122' }],
 };
 
@@ -150,10 +142,10 @@ export async function demoGet(path) {
   return clone(rows.filter(r => Object.entries(eq).every(([k, v]) => String(r[k]) === v)));
 }
 
-export async function demoRpc(name) {
+export async function demoRpc(name, body = {}) {
   switch (name) {
     case 'get_my_businesses': return [{ business_id: BIZ, business_name: business.name, member_role: 'owner', timezone: business.timezone }];
-    case 'claim_my_team_invitations': return null;
+    case 'get_invite_link': return { token: `demo-${body.p_kind}-link` };
     case 'latest_rider_locations': return [];
     case 'propose_delivery_plan': {
       const waiting = orders.filter(o => o.approved_at && !o.assigned_rider_id && o.delivery_status === 'created');

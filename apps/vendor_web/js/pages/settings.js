@@ -5,9 +5,9 @@ import { t, fmtDate } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { prefs, savePrefs } from '../prefs.js';
-import { fetchBusiness, fetchZones, fetchMembers, fetchTeamInvites, fetchJoinRequests } from '../data.js';
-import { esc, icon, avatar, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal, confirmDialog, typedConfirmDialog } from '../ui.js';
-import { showLink } from './riders.js';
+import { fetchBusiness, fetchZones, fetchMembers, fetchJoinRequests } from '../data.js';
+import { esc, icon, avatar, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal, typedConfirmDialog } from '../ui.js';
+import { showInviteLink } from '../invite_link.js';
 import { rerenderShell, signOutHandler } from '../shell.js';
 import { otpBoxesHtml, wireOtpBoxes, otpFailure } from './auth.js';
 import { openNotificationPrefs } from '../notifications.js';
@@ -237,8 +237,8 @@ async function business(page) {
 }
 
 // Team (Owner-only page): active members with Owner-only Remove member
-// (typed CONFIRM + fresh read-back), invite-link join requests awaiting the
-// Owner's decision, and email invitations. Security & Access Master Part III
+// (typed CONFIRM + fresh read-back) and invite-link join requests awaiting the
+// Owner's decision. Invitations use the permanent link + QR only. Security & Access Master Part III
 // §12, §17-24; the server authorises every action.
 async function team(page) {
   const body = header(page, 'set.team', 'team.lead');
@@ -248,11 +248,10 @@ async function team(page) {
     : (names.get(m.user_id) || t('team.member'));
   const paint = async () => {
     try {
-      const [members, invites, requests, approved] = await Promise.all([
-        fetchMembers(), fetchTeamInvites(), fetchJoinRequests('pending'), fetchJoinRequests('approved').catch(() => []),
+      const [members, requests, approved] = await Promise.all([
+        fetchMembers(), fetchJoinRequests('pending'), fetchJoinRequests('approved').catch(() => []),
       ]);
       names = new Map((approved || []).filter(r => r.user_id && r.name).map(r => [r.user_id, r.name]));
-      const pendingInvites = (invites || []).filter(i => ['pending', 'consented'].includes(i.status));
       const unnamed = (members || []).some(m => m.user_id !== ctx.user.id && !names.has(m.user_id));
       body.innerHTML = `
         <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn cta" data-invite>${icon('plus')}${esc(t('team.invite'))}</button></div>
@@ -265,25 +264,11 @@ async function team(page) {
               <div class="grow"><b>${esc(r.name || t('team.member'))}</b><small>${esc(t(`team.${r.role}`))} · ${esc(t('team.requested'))} ${esc(fmtDate(r.created_at))}</small></div>
               <button class="btn sm" data-decide="${esc(r.id)}" data-approve="0">${esc(t('team.reject'))}</button>
               <button class="btn sm primary" data-decide="${esc(r.id)}" data-approve="1">${esc(t('team.approve'))}</button></div>`).join('')
-            : `<div class="hint" style="padding:10px 0">${esc(t('c.none'))}</div>`}</div>
-        <div class="sub-card"><div style="display:flex;align-items:center;gap:12px"><div style="flex:1"><h3>${esc(t('team.invitations'))}</h3><p class="desc" style="margin:0">${esc(t('team.invitationsLead'))}</p></div></div>
-          ${pendingInvites.length ? pendingInvites.map(i => {
-            const days = Math.max(0, Math.ceil((new Date(i.expires_at) - Date.now()) / 86400000));
-            return `<div class="list-row" style="cursor:default">${avatar(i.invited_email)}<div class="grow"><b>${esc(i.invited_email)}</b></div>
-              <span class="chip ${i.role === 'helper' ? 'neutral' : 'delivery'}">${esc(t(`team.${i.role}`))}</span>${chip('pending', true)}
-              <div style="min-width:90px"><small>${esc(t('team.expiresIn'))}</small><b style="font-size:14px">${esc(t('team.days', { n: days }))}</b></div>
-              <button class="btn sm" data-revoke="${esc(i.id)}">${esc(t('team.revoke'))}</button></div>`;
-          }).join('') : `<div class="hint" style="padding:10px 0">${esc(t('c.none'))}</div>`}</div>`;
+            : `<div class="hint" style="padding:10px 0">${esc(t('c.none'))}</div>`}</div>`;
     } catch (e) { body.innerHTML = errorState(e); }
   };
   body.addEventListener('click', async e => {
-    if (e.target.closest('[data-invite]')) return inviteMember(paint);
-    const rv = e.target.closest('[data-revoke]');
-    if (rv) {
-      if (!await confirmDialog({ title: t('team.revoke'), confirmLabel: t('team.revoke'), danger: true })) return;
-      try { await api.rpc('revoke_team_invitation', { p_invitation_id: rv.dataset.revoke }); toast(t('team.revoked')); paint(); } catch (ex) { toast(ex.message, 'error'); }
-      return;
-    }
+    if (e.target.closest('[data-invite]')) return showInviteLink('team');
     // Pending requests: Approve / Reject; rejecting never needs typed CONFIRM.
     const dc = e.target.closest('[data-decide]');
     if (dc) {
@@ -307,29 +292,6 @@ async function team(page) {
     }
   });
   paint();
-}
-
-function inviteMember(onDone) {
-  let role = 'operator';
-  const opt = (v, key, subKey) => `<button class="opt ${role === v ? 'on' : ''}" data-v="${v}"><div><b>${esc(t(key))}</b><small>${esc(t(subKey))}</small></div><span class="radio"></span></button>`;
-  const m = modal({ title: t('team.invite'),
-    body: `${opt('operator', 'team.operator', 'team.operatorSub')}${opt('helper', 'team.helper', 'team.helperSub')}
-      <div class="field"><label>${esc(t('prof.email'))}</label><input class="input" name="email" type="email" placeholder="name@example.com"></div><div class="err" data-err hidden></div>`,
-    footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit>${esc(t('riders.invite'))}</button>` });
-  m.el.addEventListener('click', async e => {
-    const o = e.target.closest('[data-v]');
-    if (o) { role = o.dataset.v; m.el.querySelectorAll('[data-v]').forEach(b => b.classList.toggle('on', b === o)); return; }
-    const sb = e.target.closest('[data-submit]');
-    if (!sb) return;
-    const email = m.el.querySelector('[name=email]').value.trim(), err = m.el.querySelector('[data-err]');
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { err.textContent = t('c.invalidEmail'); err.hidden = false; return; }
-    try {
-      const res = await busy(sb, () => api.rpc('create_team_invitation', { p_business_id: ctx.bid, p_role: role, p_invited_email: email }));
-      m.close();
-      showLink(t('team.linkReady'), new URL(`../invite/?type=team&token=${encodeURIComponent(res.token)}`, location.href).href);
-      onDone();
-    } catch (ex) { err.textContent = ex.message; err.hidden = false; }
-  });
 }
 
 // Integrations: master list + detail panel (Founder reference). Only what the

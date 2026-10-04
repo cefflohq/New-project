@@ -19,8 +19,6 @@ export const fetchBusiness = () => api.get(`/rest/v1/businesses?id=eq.${q(ctx.bi
 export const fetchMembers = () => api.get(`/rest/v1/business_members?${bizFilter()}&status=eq.active&select=user_id,role,status,created_at&order=created_at.asc`);
 // Invite-link join requests (Owner-only by RLS): pending to decide, approved to name members.
 export const fetchJoinRequests = status => api.get(`/rest/v1/team_join_requests?${bizFilter()}&status=eq.${status}&select=id,user_id,role,name,phone,created_at&order=created_at.asc`);
-export const fetchTeamInvites = () => api.get(`/rest/v1/team_invitations?${bizFilter()}&select=id,role,invited_email,status,expires_at,created_at&order=created_at.desc`);
-export const fetchRiderInvites = () => api.get(`/rest/v1/rider_invitations?${bizFilter()}&select=id,invited_email,invited_name,status,expires_at,created_at&order=created_at.desc`);
 
 export const byId = rows => new Map((rows || []).map(r => [r.id, r]));
 

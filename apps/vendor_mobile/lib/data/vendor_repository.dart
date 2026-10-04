@@ -794,28 +794,6 @@ class VendorRepository {
     return _rows(rows).map(RiderRow.fromRow).toList();
   }
 
-  Future<Map<String, dynamic>> createRiderInvitation({
-    required String businessId,
-    required String email,
-    required String name,
-    required String phone,
-  }) async {
-    // Demo token: the prototype shows the link UI without a backend.
-    if (_demo) return {'token': 'demo-invite-token'};
-    final row = await _run(
-      () => _db!.rpc(
-        'create_rider_invitation',
-        params: {
-          'p_business_id': businessId,
-          'p_invited_email': email,
-          'p_invited_name': name,
-          'p_invited_phone': phone,
-        },
-      ),
-    );
-    return _single(row);
-  }
-
   /// The business's one permanent invite link for [kind] ('rider',
   /// 'operator', 'helper'), created server-side on first use.
   Future<String> inviteLinkToken(String businessId, String kind) async {
@@ -982,33 +960,6 @@ class VendorRepository {
           email: m.userId == me?.id ? me?.email : m.email,
         ),
     ];
-  }
-
-  Future<Map<String, dynamic>> createTeamInvitation({
-    required String businessId,
-    required String email,
-    required String role,
-  }) async {
-    // Demo token: the prototype shows the link UI without a backend.
-    if (_demo) return {'token': 'demo-invite-token'};
-    final row = await _run(
-      () => _db!.rpc(
-        'create_team_invitation',
-        params: {
-          'p_business_id': businessId,
-          'p_role': role,
-          'p_invited_email': email,
-        },
-      ),
-    );
-    return _single(row);
-  }
-
-  /// D-73: an Operator who accepted in the Invitation PWA becomes a member
-  /// here, bound server-side to the signed-in, confirmed email.
-  Future<void> claimMyTeamInvitations() async {
-    if (_demo) return;
-    await _run(() => _db!.rpc('claim_my_team_invitations'));
   }
 
   // D-74 fulfilment (Owner, Operator or Helper; enforced server-side).
