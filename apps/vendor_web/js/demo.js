@@ -128,6 +128,12 @@ const TABLES = {
   delivery_sessions: () => [session],
   ratings: () => ratings,
   businesses: () => [business],
+  product_categories: () => [{ id: 'cat-1', name: 'Hampers' }, { id: 'cat-2', name: 'Cookies' }],
+  products: () => [
+    { id: 'p-1', name: 'Hamper Raya', description: 'Festive hamper', display_price: 129, status: 'active', category_id: 'cat-1', business_id: BIZ },
+    { id: 'p-2', name: 'Cookies Box', description: 'Assorted cookies', display_price: 35, status: 'active', category_id: 'cat-2', business_id: BIZ },
+    { id: 'p-3', name: 'Mini Tart Set', description: '', display_price: 28, status: 'hidden', category_id: 'cat-2', business_id: BIZ },
+  ],
   business_members: () => members,
   profiles: () => [{ id: USER.id, display_name: 'Yusuf Sazali', phone: '+60 12-600 1122' }],
 };

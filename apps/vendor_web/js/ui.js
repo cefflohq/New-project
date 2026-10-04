@@ -72,7 +72,7 @@ const CHIP = {
   ready: ['ready', 'st.ready'], delivery: ['delivery', 'st.onDelivery'], issue: ['issue', 'st.issue'],
   delivered: ['delivered', 'st.delivered'], preparing: ['preparing', 'st.preparing'], cancelled: ['neutral', 'st.cancelled'],
   active: ['active', 'st.active'], inactive: ['neutral', 'st.inactive'], pending: ['pending', 'st.pending'],
-  unassigned: ['neutral', 'st.unassigned'],
+  unassigned: ['neutral', 'st.unassigned'], hidden: ['neutral', 'prod.hidden'],
 };
 export const chip = (s, dot = false) => {
   const [cls, key] = CHIP[s] || ['neutral', s];

@@ -159,6 +159,23 @@ export const api = {
       return data?.signedURL ? `${cfg.supabaseUrl}/storage/v1${data.signedURL}` : '';
     });
   },
+  // New storage object (never overwrites), e.g. product photos and storefront
+  // heroes; the bucket's own policies decide who may write the path.
+  async upload(bucket, path, file) {
+    if (isDemo()) throw readOnly();
+    return call(async () => {
+      const res = await fetch(`${cfg.supabaseUrl}/storage/v1/object/${bucket}/${path}`, {
+        method: 'POST',
+        headers: { apikey: cfg.supabaseAnonKey, Authorization: `Bearer ${base.session()?.access_token}`, 'Content-Type': file.type },
+        body: file,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw Object.assign(new Error(data?.message || data?.error || `Upload failed (${res.status})`), { status: res.status });
+      }
+    });
+  },
+  publicUrl: (bucket, path) => `${cfg.supabaseUrl}/storage/v1/object/public/${bucket}/${path}`,
   // Supabase Edge Function with the signed-in user's JWT (e.g. geocode-order).
   fn: (name, body) => call(() => authFetch(`/functions/v1/${name}`, { body, token: base.session()?.access_token })),
   refreshSession,

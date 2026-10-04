@@ -18,9 +18,10 @@ import zones from './pages/zones.js';
 import runs from './pages/runs.js';
 import riders from './pages/riders.js';
 import settings from './pages/settings.js';
+import products from './pages/products.js';
 
 const root = document.getElementById('app');
-const PAGES = { today, orders, zones, runs, riders, settings };
+const PAGES = { today, orders, zones, runs, riders, products, settings };
 
 async function signOut() {
   stopNotifications();

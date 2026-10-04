@@ -15,6 +15,7 @@ const NAV = [
   ['zones', 'pin', 'nav.zones'],
   ['runs', 'route', 'nav.runs'],
   ['riders', 'users', 'nav.riders'],
+  ['products', 'pkg', 'nav.products'],
 ];
 
 let root, content, pages, cleanup = null, onSignOut;
