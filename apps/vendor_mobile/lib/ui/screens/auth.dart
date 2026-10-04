@@ -1518,23 +1518,26 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             enabled: !_busy,
             errorText: _error,
           ),
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
+          SizedBox(
+            width: double.infinity,
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
 
-            children: [
-              KeepLoggedInCheck(
-                value: _keep,
-                label: L.keepLoggedIn,
-                onChanged: (v) => setState(() => _keep = v),
-              ),
+              children: [
+                KeepLoggedInCheck(
+                  value: _keep,
+                  label: L.keepLoggedIn,
+                  onChanged: (v) => setState(() => _keep = v),
+                ),
 
-              _TextLink(
-                L.forgotPassword,
-                onTap: _busy ? null : widget.onForgotPassword,
-                align: TextAlign.right,
-              ),
-            ],
+                _TextLink(
+                  L.forgotPassword,
+                  onTap: _busy ? null : widget.onForgotPassword,
+                  align: TextAlign.right,
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: Gap.xxl),
           CefButton(

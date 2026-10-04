@@ -679,24 +679,27 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           ),
         ],
         const SizedBox(height: Gap.sm),
-        Wrap(
-          alignment: WrapAlignment.spaceBetween,
-          crossAxisAlignment: WrapCrossAlignment.center,
+        SizedBox(
+          width: double.infinity,
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
 
-          children: [
-            KeepLoggedInCheck(
-              value: _keep,
-              label: L.keepLoggedIn,
-              onChanged: (v) => setState(() => _keep = v),
-            ),
+            children: [
+              KeepLoggedInCheck(
+                value: _keep,
+                label: L.keepLoggedIn,
+                onChanged: (v) => setState(() => _keep = v),
+              ),
 
-            CeffloTextLink(
-              L.forgotPassword,
-              onTap: widget.onForgotPassword,
-              fontSize: 14,
-              color: CefColors.navy,
-            ),
-          ],
+              CeffloTextLink(
+                L.forgotPassword,
+                onTap: widget.onForgotPassword,
+                fontSize: 14,
+                color: CefColors.navy,
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: Gap.lg),
         CeffloPrimaryButton(

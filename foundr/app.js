@@ -859,7 +859,7 @@ window.addEventListener('popstate', () => { if (!authScreen) { const r = route0(
 // boundary itself. Screens follow the Founder FOUNDR auth design
 // (2026-10-01): blue glass, the Cefflo mark, pill actions.
 const AI = {
-  back: '<path d="M19 12H5m6-6-6 6 6 6"/>',
+  back: '<path d="M15 18l-6-6 6-6"/>', // chevron, same back glyph as every surface
   arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>',
   chev: '<path d="m9 6 6 6-6 6"/>',
   mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>',
