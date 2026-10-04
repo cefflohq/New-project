@@ -383,18 +383,8 @@
   "roleAccess": "Role & access",
   "accountStatus": "Account status",
   "businessOwnerAlwaysKeepsFullAccess": "The business owner always keeps full access and cannot be removed from the team.",
-  "removeFromTeam": "Remove from Team",
   "canManageDailyOperationsOrdersRiders": "Can manage daily operations, orders, riders and team members. Cannot manage billing or subscription.",
   "canAccessDailyOperationsOrdersRiders": "Can access daily operations, orders and riders. Cannot manage billing or subscription.",
-  "remove": "Remove {userId}?",
-  "@remove": {
-    "placeholders": {
-      "userId": {
-        "type": "Object"
-      }
-    }
-  },
-  "theyWillLoseAccessBusinessImmediately": "They will lose access to this business immediately.",
   "remove2": "Remove",
   "searchProducts": "Search products...",
   "noProductsCatalogueYet": "No products in the catalogue yet.",
@@ -1796,5 +1786,44 @@
   "unnamedTeamMember": "Team member",
   "emailAlreadyRegistered": "This email is already registered.",
   "productAddedToast": "Product added successfully",
-  "productUpdatedToast": "Product updated successfully"
+  "productUpdatedToast": "Product updated successfully",
+  "removeMember": "Remove member",
+  "removeRider": "Remove rider",
+  "removeMemberTitle": "Remove {name} from your team?",
+  "@removeMemberTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeMemberBody": "{name} will lose access to this business and its permitted workspace.",
+  "@removeMemberBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeRiderTitle": "Remove {name} as a rider?",
+  "@removeRiderTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeRiderBody": "{name} will lose access to this business and can no longer receive new delivery assignments from this business.",
+  "@removeRiderBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "typeConfirmToContinue": "Type CONFIRM to continue.",
+  "memberRemoved": "Member removed",
+  "riderRemoved": "Rider removed",
+  "riderHasActiveWorkCannotRemove": "This rider still has active deliveries. Finish or reassign them, then try again.",
+  "removalNotConfirmed": "We couldn't confirm the removal. Refresh and try again."
 }

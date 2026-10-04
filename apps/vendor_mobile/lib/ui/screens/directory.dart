@@ -1143,7 +1143,10 @@ class _RidersScreenState extends State<RidersScreen> {
     return AsyncView<(List<RiderRow>, Set<String>)>(
       key: ValueKey('riders-${business.id}'),
       load: () async {
-        final riders = await app.repo.riders(business.id);
+        // Removed or rejected riders (inactive) are no longer on the team.
+        final riders = (await app.repo.riders(
+          business.id,
+        )).where((r) => r.status != 'inactive').toList();
         final runs = await app.repo.runs(business.id);
         return (
           riders,
@@ -1331,10 +1334,53 @@ class RiderDetailScreen extends StatelessWidget {
                 ),
               ],
             ),
+            // Rider removal is Owner-only (enforced by deactivate_rider).
+            if (!pending &&
+                rider.status != 'inactive' &&
+                app.business?.isOwner == true)
+              CefButton(
+                L.removeRider,
+                destructive: true,
+                icon: LucideIcons.trash2,
+                onTap: () => _confirmRemoveRider(context, rider),
+              ),
           ],
         );
       },
     );
+  }
+
+  /// Security & Access Master Part III §20/§21/§23: typed CONFIRM, backend
+  /// removal (refused while the rider has open work), fresh read-back.
+  Future<void> _confirmRemoveRider(BuildContext context, RiderRow rider) async {
+    final confirmed = await showTypedConfirmDialog(
+      context,
+      title: L.removeRiderTitle(rider.name),
+      message: L.removeRiderBody(rider.name),
+      actionLabel: L.removeRider,
+    );
+    if (!confirmed || !context.mounted) return;
+    final app = AppScope.read(context);
+    try {
+      await app.repo.removeRider(rider.id);
+      final after = (await app.repo.riders(
+        app.business!.id,
+      )).where((r) => r.id == rider.id);
+      if (!context.mounted) return;
+      if (after.isNotEmpty && after.first.status != 'inactive') {
+        showCefToast(context, L.removalNotConfirmed, error: true);
+        return;
+      }
+      app.dataChanged();
+      showCefToast(context, L.riderRemoved);
+      app.back();
+    } catch (e) {
+      if (!context.mounted) return;
+      final message = '$e'.contains('active work')
+          ? L.riderHasActiveWorkCannotRemove
+          : '$e';
+      showCefToast(context, message, error: true);
+    }
   }
 }
 
@@ -1467,9 +1513,10 @@ class TeamMemberDetailScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall,
               )
-            else
+            // Removal is Owner-only (enforced by update_team_member).
+            else if (app.business?.isOwner == true)
               CefButton(
-                L.removeFromTeam,
+                L.removeMember,
                 destructive: true,
                 icon: LucideIcons.trash2,
                 onTap: () => _confirmRemove(context, member),
@@ -1485,28 +1532,34 @@ class TeamMemberDetailScreen extends StatelessWidget {
     _ => L.canAccessDailyOperationsOrdersRiders,
   };
 
+  /// Security & Access Master Part III §19/§23: typed CONFIRM, backend
+  /// removal, then a fresh read-back before reporting success.
   Future<void> _confirmRemove(BuildContext context, TeamMember member) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(L.remove(member.label)),
-        content: Text(L.theyWillLoseAccessBusinessImmediately),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(L.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              L.remove2,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
+    final confirmed = await showTypedConfirmDialog(
+      context,
+      title: L.removeMemberTitle(member.label),
+      message: L.removeMemberBody(member.label),
+      actionLabel: L.removeMember,
     );
-    if (confirmed == true && context.mounted) AppScope.read(context).back();
+    if (!confirmed || !context.mounted) return;
+    final app = AppScope.read(context);
+    final businessId = app.business!.id;
+    try {
+      await app.repo.removeTeamMember(businessId, member.userId);
+      final stillMember = (await app.repo.team(
+        businessId,
+      )).any((m) => m.userId == member.userId);
+      if (!context.mounted) return;
+      if (stillMember) {
+        showCefToast(context, L.removalNotConfirmed, error: true);
+        return;
+      }
+      app.dataChanged();
+      showCefToast(context, L.memberRemoved);
+      app.back();
+    } catch (e) {
+      if (context.mounted) showCefToast(context, '$e', error: true);
+    }
   }
 }
 

@@ -168,7 +168,7 @@ void main() {
     );
     expect(find.text('Not provided'), findsWidgets);
     expect(find.text('WhatsApp'), findsNothing);
-    expect(find.text('Remove from Team'), findsOneWidget);
+    expect(find.text('Remove member'), findsOneWidget);
   });
 
   testWidgets('the owner cannot be removed from the team', (tester) async {
@@ -176,7 +176,7 @@ void main() {
       tester,
       const VendorLocation(VRoute.teamMemberDetail, entityId: 'team-owner'),
     );
-    expect(find.text('Remove from Team'), findsNothing);
+    expect(find.text('Remove member'), findsNothing);
     expect(find.text('WhatsApp'), findsOneWidget);
   });
 

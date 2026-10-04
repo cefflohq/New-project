@@ -855,24 +855,12 @@ class AppLocalizationsMs extends AppLocalizations {
       'Pemilik perniagaan sentiasa mempunyai akses penuh dan tidak boleh dikeluarkan daripada pasukan.';
 
   @override
-  String get removeFromTeam => 'Keluarkan daripada Pasukan';
-
-  @override
   String get canManageDailyOperationsOrdersRiders =>
       'Boleh mengurus operasi harian, pesanan, rider dan ahli pasukan. Tidak boleh mengurus pengebilan atau langganan.';
 
   @override
   String get canAccessDailyOperationsOrdersRiders =>
       'Boleh mengakses operasi harian, pesanan dan rider. Tidak boleh mengurus pengebilan atau langganan.';
-
-  @override
-  String remove(Object userId) {
-    return 'Keluarkan $userId?';
-  }
-
-  @override
-  String get theyWillLoseAccessBusinessImmediately =>
-      'Mereka akan kehilangan akses kepada perniagaan ini serta-merta.';
 
   @override
   String get remove2 => 'Keluarkan';
@@ -3631,4 +3619,47 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get productUpdatedToast => 'Produk berjaya dikemas kini';
+
+  @override
+  String get removeMember => 'Buang ahli';
+
+  @override
+  String get removeRider => 'Buang rider';
+
+  @override
+  String removeMemberTitle(String name) {
+    return 'Buang $name daripada pasukan anda?';
+  }
+
+  @override
+  String removeMemberBody(String name) {
+    return '$name akan hilang akses kepada perniagaan ini dan ruang kerja yang dibenarkan.';
+  }
+
+  @override
+  String removeRiderTitle(String name) {
+    return 'Buang $name sebagai rider?';
+  }
+
+  @override
+  String removeRiderBody(String name) {
+    return '$name akan hilang akses kepada perniagaan ini dan tidak lagi menerima tugasan penghantaran baharu daripada perniagaan ini.';
+  }
+
+  @override
+  String get typeConfirmToContinue => 'Taip CONFIRM untuk teruskan.';
+
+  @override
+  String get memberRemoved => 'Ahli dibuang';
+
+  @override
+  String get riderRemoved => 'Rider dibuang';
+
+  @override
+  String get riderHasActiveWorkCannotRemove =>
+      'Rider ini masih ada penghantaran aktif. Selesaikan atau agihkan semula dahulu, kemudian cuba lagi.';
+
+  @override
+  String get removalNotConfirmed =>
+      'Kami tidak dapat mengesahkan pembuangan. Muat semula dan cuba lagi.';
 }

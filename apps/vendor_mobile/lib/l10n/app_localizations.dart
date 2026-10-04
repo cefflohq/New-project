@@ -1659,12 +1659,6 @@ abstract class AppLocalizations {
   /// **'The business owner always keeps full access and cannot be removed from the team.'**
   String get businessOwnerAlwaysKeepsFullAccess;
 
-  /// No description provided for @removeFromTeam.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove from Team'**
-  String get removeFromTeam;
-
   /// No description provided for @canManageDailyOperationsOrdersRiders.
   ///
   /// In en, this message translates to:
@@ -1676,18 +1670,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Can access daily operations, orders and riders. Cannot manage billing or subscription.'**
   String get canAccessDailyOperationsOrdersRiders;
-
-  /// No description provided for @remove.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove {userId}?'**
-  String remove(Object userId);
-
-  /// No description provided for @theyWillLoseAccessBusinessImmediately.
-  ///
-  /// In en, this message translates to:
-  /// **'They will lose access to this business immediately.'**
-  String get theyWillLoseAccessBusinessImmediately;
 
   /// No description provided for @remove2.
   ///
@@ -6632,6 +6614,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Product updated successfully'**
   String get productUpdatedToast;
+
+  /// No description provided for @removeMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove member'**
+  String get removeMember;
+
+  /// No description provided for @removeRider.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove rider'**
+  String get removeRider;
+
+  /// No description provided for @removeMemberTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} from your team?'**
+  String removeMemberTitle(String name);
+
+  /// No description provided for @removeMemberBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will lose access to this business and its permitted workspace.'**
+  String removeMemberBody(String name);
+
+  /// No description provided for @removeRiderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} as a rider?'**
+  String removeRiderTitle(String name);
+
+  /// No description provided for @removeRiderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will lose access to this business and can no longer receive new delivery assignments from this business.'**
+  String removeRiderBody(String name);
+
+  /// No description provided for @typeConfirmToContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Type CONFIRM to continue.'**
+  String get typeConfirmToContinue;
+
+  /// No description provided for @memberRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Member removed'**
+  String get memberRemoved;
+
+  /// No description provided for @riderRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Rider removed'**
+  String get riderRemoved;
+
+  /// No description provided for @riderHasActiveWorkCannotRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'This rider still has active deliveries. Finish or reassign them, then try again.'**
+  String get riderHasActiveWorkCannotRemove;
+
+  /// No description provided for @removalNotConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t confirm the removal. Refresh and try again.'**
+  String get removalNotConfirmed;
 }
 
 class _AppLocalizationsDelegate

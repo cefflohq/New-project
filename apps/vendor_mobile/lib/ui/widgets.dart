@@ -2315,3 +2315,87 @@ class AppVersionText extends StatelessWidget {
     },
   );
 }
+
+/// Destructive confirmation that only enables the action once the person
+/// types CONFIRM exactly. UX protection only: the server still authorises.
+Future<bool> showTypedConfirmDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String actionLabel,
+}) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => _TypedConfirmDialog(
+      title: title,
+      message: message,
+      actionLabel: actionLabel,
+    ),
+  );
+  return confirmed == true;
+}
+
+class _TypedConfirmDialog extends StatefulWidget {
+  const _TypedConfirmDialog({
+    required this.title,
+    required this.message,
+    required this.actionLabel,
+  });
+  final String title, message, actionLabel;
+
+  @override
+  State<_TypedConfirmDialog> createState() => _TypedConfirmDialogState();
+}
+
+class _TypedConfirmDialogState extends State<_TypedConfirmDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ready = _controller.text == 'CONFIRM';
+    return AlertDialog(
+      title: Text(widget.title),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.message),
+          const SizedBox(height: Gap.md),
+          Text(
+            L.typeConfirmToContinue,
+            style: Theme.of(context).textTheme.labelLarge,
+          ),
+          const SizedBox(height: Gap.sm),
+          CefField(
+            controller: _controller,
+            hint: 'CONFIRM',
+            onChanged: (_) => setState(() {}),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text(L.cancel),
+        ),
+        TextButton(
+          onPressed: ready ? () => Navigator.pop(context, true) : null,
+          child: Text(
+            widget.actionLabel,
+            style: TextStyle(
+              color: ready
+                  ? Theme.of(context).colorScheme.error
+                  : Theme.of(context).disabledColor,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

@@ -855,24 +855,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'The business owner always keeps full access and cannot be removed from the team.';
 
   @override
-  String get removeFromTeam => 'Remove from Team';
-
-  @override
   String get canManageDailyOperationsOrdersRiders =>
       'Can manage daily operations, orders, riders and team members. Cannot manage billing or subscription.';
 
   @override
   String get canAccessDailyOperationsOrdersRiders =>
       'Can access daily operations, orders and riders. Cannot manage billing or subscription.';
-
-  @override
-  String remove(Object userId) {
-    return 'Remove $userId?';
-  }
-
-  @override
-  String get theyWillLoseAccessBusinessImmediately =>
-      'They will lose access to this business immediately.';
 
   @override
   String get remove2 => 'Remove';
@@ -3628,4 +3616,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productUpdatedToast => 'Product updated successfully';
+
+  @override
+  String get removeMember => 'Remove member';
+
+  @override
+  String get removeRider => 'Remove rider';
+
+  @override
+  String removeMemberTitle(String name) {
+    return 'Remove $name from your team?';
+  }
+
+  @override
+  String removeMemberBody(String name) {
+    return '$name will lose access to this business and its permitted workspace.';
+  }
+
+  @override
+  String removeRiderTitle(String name) {
+    return 'Remove $name as a rider?';
+  }
+
+  @override
+  String removeRiderBody(String name) {
+    return '$name will lose access to this business and can no longer receive new delivery assignments from this business.';
+  }
+
+  @override
+  String get typeConfirmToContinue => 'Type CONFIRM to continue.';
+
+  @override
+  String get memberRemoved => 'Member removed';
+
+  @override
+  String get riderRemoved => 'Rider removed';
+
+  @override
+  String get riderHasActiveWorkCannotRemove =>
+      'This rider still has active deliveries. Finish or reassign them, then try again.';
+
+  @override
+  String get removalNotConfirmed =>
+      'We couldn\'t confirm the removal. Refresh and try again.';
 }

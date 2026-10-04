@@ -880,6 +880,31 @@ class VendorRepository {
     );
   }
 
+  /// Owner-only: removes an Operator/Helper from this business (their global
+  /// account is untouched). The server checks the caller is the Owner.
+  Future<void> removeTeamMember(String businessId, String userId) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'update_team_member',
+        params: {
+          'p_business_id': businessId,
+          'p_user_id': userId,
+          'p_status': 'inactive',
+        },
+      ),
+    );
+  }
+
+  /// Owner-only: removes an active rider from this business. The server
+  /// refuses while the rider still has open runs, orders or stops.
+  Future<void> removeRider(String riderId) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc('deactivate_rider', params: {'p_rider_id': riderId}),
+    );
+  }
+
   /// Pending Operator / Helper requests (Owner only by RLS).
   Future<List<Map<String, dynamic>>> pendingTeamRequests(
     String businessId,
@@ -908,11 +933,16 @@ class VendorRepository {
 
   // ------------------------------------------------------------------ team
 
+  /// Active members only: a removed (inactive) member has no access and is
+  /// not part of the team.
   Future<List<TeamMember>> team(String businessId) async {
     if (_demo) return _DemoData.team;
     final rows = await _run(
-      () =>
-          _db!.from('business_members').select().eq('business_id', businessId),
+      () => _db!
+          .from('business_members')
+          .select()
+          .eq('business_id', businessId)
+          .eq('status', 'active'),
     );
     // business_members carries no names. Names come from what the backend
     // already lets this account read: approved invite-link join requests
