@@ -43,6 +43,7 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Help & Support, FAQ, Contact Support (support@cefflo.com via the user's email app with business/role/account context; no ticket backend, never claims "sent") | V-55–V-57, FG-3/FG-4 | ✅ | ✅ (#10) |
 | Subscription (Owner only): current plan (`business_subscriptions`; RLS = platform admin, so live shows "Managed by Cefflo" as in App), plan catalogue (pricing candidate), billing history (no billing backend → empty). Payment HOLD: plan choice = support request, never a simulated payment | V-50–V-54, D-54 | ✅ | ✅ (#11) |
 | Products / catalogue: list, add, edit, category (pick or create), active/hidden, up to 5 photos (JPG/PNG/WebP ≤5 MB; add, remove, reorder) | V-34–V-36, product media multi | ✅ | ✅ (#12) |
+| Storefront: publish/unpublish, permanent link `{base}{slug}`, QR, Copy, Share, template (App registry: Arena, Stride, Ritual, Market, Feast), appearance (colours, style, tagline, hero image) | V-31–V-33, D-55, Storefront V1 | ✅ | ✅ (#13) |
 | Service Area / coverage configuration | V-26–V-27 | ✅ | ✅ |
 | Business Profile, information, address | V-37–V-39 | ✅ | ✅ |
 | Profile, edit profile, profile photo | V-42–V-43 | ✅ | ✅ |
@@ -54,7 +55,6 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 
 | Capability | Source | App | Web | Work |
 |---|---|---|---|---|
-| Storefront / Appearance / Preview (publish, link, QR, share, templates) | V-31–V-33, D-55, Storefront V1 (Founder 2026-10-01) | ✅ | ❌ | Web: storefront management |
 
 ## Verification debt (clear before production qualification)
 
@@ -63,6 +63,7 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | #2 capacity check | Browser QA of the failure path (violations listed, Create runs blocked) — demo mode always returns compatible; verify on staging data |
 | #10 contact support | Headless browser QA cannot capture the `mailto:` handoff; check once manually in a real browser |
 | #12 product photos | Demo mode refuses writes; verify a real upload → displayable → reorder → archive on staging |
+| #13 storefront | Demo mode refuses writes; verify publish, appearance save and hero upload on staging. Web reads `CEFFLO_CONFIG.storefrontBaseUrl` (falls back to https://cefflo.com/, as the App) — set it with the App's `CEFFLO_STOREFRONT_BASE_URL` when storefront routing ships |
 | Email-invite backend RPCs | `create_team_invitation`, `create_rider_invitation`, `claim_my_team_invitations`, `revoke_*` still granted; retire in the final production/security cleanup after a dependency audit |
 
 ## C. Helper PWA only (must not appear in Owner/Operator surfaces)
