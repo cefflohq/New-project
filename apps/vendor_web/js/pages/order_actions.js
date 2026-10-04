@@ -9,26 +9,30 @@ import { esc, icon, modal, toast, busy } from '../ui.js';
 
 const uuid = () => crypto.randomUUID();
 
-export async function openAddOrder(onDone) {
+// With `existing`, the same form edits a not-yet-dispatched order through
+// update_order_details (V-15, D-61): the server accepts only created orders.
+export async function openAddOrder(onDone, existing = null) {
+  const ed = existing || {};
   let zones = [];
   try { zones = (await fetchZones()).filter(z => z.status === 'active'); } catch { /* zone optional */ }
   const m = modal({
-    title: t('add.title'), lead: t('add.lead'),
+    title: t(existing ? 'edit.title' : 'add.title'), lead: t(existing ? 'edit.lead' : 'add.lead'),
     body: `
-      <div class="field"><label>${esc(t('add.name'))}</label><input class="input" name="name" maxlength="120" autocomplete="off"></div>
-      <div class="field"><label>${esc(t('add.phone'))}</label><input class="input" name="phone" inputmode="tel" placeholder="+60 12-345 6789"></div>
-      <div class="field"><label>${esc(t('add.address'))}</label><textarea class="textarea" name="address" rows="2"></textarea></div>
-      <div class="field"><label>${esc(t('add.zone'))}</label><select class="select" name="zone"><option value="">${esc(t('add.noZone'))}</option>${zones.map(z => `<option value="${esc(z.id)}">${esc(z.name)}</option>`).join('')}</select></div>
+      <div class="field"><label>${esc(t('add.name'))}</label><input class="input" name="name" maxlength="120" autocomplete="off" value="${esc(ed.customer_name || '')}"></div>
+      <div class="field"><label>${esc(t('add.phone'))}</label><input class="input" name="phone" inputmode="tel" placeholder="+60 12-345 6789" value="${esc(ed.customer_phone || '')}"></div>
+      <div class="field"><label>${esc(t('add.address'))}</label><textarea class="textarea" name="address" rows="2">${esc(ed.delivery_address || '')}</textarea></div>
+      <div class="field"><label>${esc(t('add.zone'))}</label><select class="select" name="zone"><option value="">${esc(t('add.noZone'))}</option>${zones.map(z => `<option value="${esc(z.id)}" ${z.id === ed.zone_id ? 'selected' : ''}>${esc(z.name)}</option>`).join('')}</select></div>
       <div class="field"><label>${esc(t('orders.items'))}</label><div data-items style="display:grid;gap:8px"></div>
         <button type="button" class="link-btn" data-additem style="justify-self:start">+ ${esc(t('add.addItem'))}</button></div>
-      <div class="field"><label>${esc(t('add.notes'))}</label><textarea class="textarea" name="notes" rows="2"></textarea></div>
+      <div class="field"><label>${esc(t('add.notes'))}</label><textarea class="textarea" name="notes" rows="2">${esc(ed.notes || '')}</textarea></div>
       <div class="err" data-err hidden></div>`,
-    footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit>${esc(t('add.create'))}</button>`,
+    footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit>${esc(t(existing ? 'edit.save' : 'add.create'))}</button>`,
   });
   const items = m.el.querySelector('[data-items]');
-  const addItem = () => items.insertAdjacentHTML('beforeend', `<div style="display:grid;grid-template-columns:1fr 90px;gap:8px"><input class="input" data-iname placeholder="${esc(t('add.itemName'))}"><input class="input" data-iqty type="number" min="1" value="1" aria-label="${esc(t('add.qty'))}"></div>`);
-  addItem();
-  m.el.querySelector('[data-additem]').addEventListener('click', addItem);
+  const addItem = (l = {}) => items.insertAdjacentHTML('beforeend', `<div style="display:grid;grid-template-columns:1fr 90px;gap:8px"><input class="input" data-iname placeholder="${esc(t('add.itemName'))}" value="${esc(l.name || '')}"><input class="input" data-iqty type="number" min="1" value="${Number(l.quantity) || 1}" aria-label="${esc(t('add.qty'))}"></div>`);
+  const prior = Array.isArray(ed.items) ? ed.items : [];
+  if (prior.length) prior.forEach(addItem); else addItem();
+  m.el.querySelector('[data-additem]').addEventListener('click', () => addItem());
   m.el.querySelector('[data-submit]').addEventListener('click', async e => {
     const f = n => m.el.querySelector(`[name=${n}]`);
     const err = m.el.querySelector('[data-err]');
@@ -38,6 +42,21 @@ export async function openAddOrder(onDone) {
     if (phone.replace(/\D/g, '').length < 7) { f('phone').classList.add('invalid'); err.textContent = t('c.invalidPhone'); err.hidden = false; return; }
     err.hidden = true;
     const lines = [...items.children].map(r => ({ name: r.querySelector('[data-iname]').value.trim(), quantity: Math.max(1, Number(r.querySelector('[data-iqty]').value) || 1) })).filter(l => l.name);
+    if (existing) {
+      // Keep any other item fields (e.g. unit_price) for lines whose name is unchanged.
+      const merged = lines.map(l => ({ ...(prior.find(p => p.name === l.name) || {}), ...l }));
+      const zone = f('zone').value || null;
+      try {
+        await busy(e.currentTarget, () => api.rpc('update_order_details', {
+          p_order_id: existing.id, p_customer_name: name, p_customer_phone: phone, p_delivery_address: address,
+          p_notes: f('notes').value.trim(), p_items: merged, ...(zone ? { p_zone_id: zone } : { p_clear_zone: !!existing.zone_id }),
+        }));
+        // An address change resets the location server-side; resolve it again.
+        if (address !== existing.delivery_address) api.fn('geocode-order', { order_id: existing.id }).catch(() => {});
+        m.close(); toast(t('edit.saved')); onDone?.();
+      } catch (ex) { err.textContent = ex.message; err.hidden = false; }
+      return;
+    }
     try {
       const created = await busy(e.currentTarget, () => api.rpc('create_delivery', {
         p_business_id: ctx.bid, p_customer_name: name, p_customer_phone: phone, p_delivery_address: address,
