@@ -17,6 +17,7 @@ import 'core/theme.dart';
 import 'core/ui_locale.dart';
 import 'data/live_adapters.dart';
 import 'data/rider_repository.dart';
+import 'ui/brand.dart';
 import 'ui/router.dart';
 import 'ui/screens/auth.dart';
 import 'ui/shell.dart';
@@ -26,6 +27,7 @@ import 'package:cefflo_rider_mobile/l10n/l10n.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await precacheBrandAssets();
   // Edge-to-edge: the app draws behind transparent status and gesture bars.
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 

@@ -166,9 +166,36 @@ class _AuthFlowState extends State<AuthFlow> {
     }
   }
 
+  /// D01 → D02 is a 300ms fade: D02 fades in over D01's picture, which
+  /// stays opaque underneath, so no blank or white frame shows between them.
+  bool _splashFading = false;
+
+  void _leaveSplash() {
+    _resetTo(DRoute.signIn);
+    setState(() => _splashFading = true);
+  }
+
   @override
-  Widget build(BuildContext context) => switch (_stack.last) {
-    DRoute.splash => SplashScreen(onContinue: () => _resetTo(DRoute.signIn)),
+  Widget build(BuildContext context) {
+    final screen = _screen(context);
+    if (!_splashFading) return screen;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const SplashBackdrop(),
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 300),
+          onEnd: () => setState(() => _splashFading = false),
+          builder: (context, t, child) => Opacity(opacity: t, child: child),
+          child: screen,
+        ),
+      ],
+    );
+  }
+
+  Widget _screen(BuildContext context) => switch (_stack.last) {
+    DRoute.splash => SplashScreen(onContinue: _leaveSplash),
     DRoute.signIn => _welcome(),
     DRoute.emailSignIn => _signIn(),
     DRoute.createAccount => CreateAccountScreen(
@@ -295,14 +322,14 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  /// D01 is a hold, not a gate: it shows for ~3 seconds and then continues
-  /// into D02 on its own. Tapping still skips ahead.
+  /// D01 is a hold, not a gate: it shows for 2 seconds (the brand minimum)
+  /// and then continues into D02 on its own. Tapping still skips ahead.
   Timer? _hold;
 
   @override
   void initState() {
     super.initState();
-    _hold = Timer(const Duration(seconds: 3), _continue);
+    _hold = Timer(const Duration(seconds: 2), _continue);
   }
 
   @override
@@ -330,17 +357,20 @@ class _SplashScreenState extends State<SplashScreen> {
       systemNavigationBarContrastEnforced: false,
     ),
     child: Scaffold(
-      body: GestureDetector(
-        onTap: _continue,
-        child: NavyBackdrop(
-          watermark: false,
-          // Logo mark and "Cefflo Driver" wordmark only, centred on screen.
-          child: const SafeArea(
-            child: Center(child: CeffloSplashLockup(width: 120)),
-          ),
-        ),
-      ),
+      body: GestureDetector(onTap: _continue, child: const SplashBackdrop()),
     ),
+  );
+}
+
+/// D01's picture: the brand gradient with the official brand block centred.
+/// Also kept under D02 while D02 fades in, so the hand-off has no blank frame.
+class SplashBackdrop extends StatelessWidget {
+  const SplashBackdrop({super.key});
+
+  @override
+  Widget build(BuildContext context) => const NavyBackdrop(
+    watermark: false,
+    child: Center(child: CeffloBrandBlock()),
   );
 }
 
@@ -420,6 +450,9 @@ Future<Locale?> showLanguageSheet(BuildContext context, Locale current) {
 // ---------------------------------------------------------------------------
 // D02 — Welcome (baseline 3c111db; Email only)
 // ---------------------------------------------------------------------------
+/// Height of D02's top row (language control).
+const double _welcomeTopRow = 48;
+
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({
     super.key,
@@ -455,13 +488,22 @@ class WelcomeScreen extends StatelessWidget {
                 child: IntrinsicHeight(
                   child: Column(
                     children: [
-                      const Align(
-                        alignment: Alignment.centerRight,
-                        child: AuthLanguageControl(),
+                      const SizedBox(
+                        height: _welcomeTopRow,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: AuthLanguageControl(),
+                        ),
                       ),
-                      const Spacer(flex: 3),
-                      const CeffloSplashLockup(),
-                      const Spacer(flex: 4),
+                      // Same place as on the splash (screen-centred).
+                      SizedBox(
+                        height: CeffloBrandBlock.gapAbove(
+                          context,
+                          MediaQuery.paddingOf(context).top + _welcomeTopRow,
+                        ),
+                      ),
+                      const CeffloBrandBlock(),
+                      const Spacer(),
                       _WelcomeOption(
                         label: L.continueWithGoogle,
                         image: 'assets/brand/google-g-logo.png',

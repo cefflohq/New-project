@@ -28,6 +28,7 @@ import '../../core/browser_history.dart';
 import '../../core/auth_access.dart';
 import '../../core/theme.dart';
 import '../../data/vendor_repository.dart';
+import '../brand_block.dart';
 import '../system_bars.dart';
 import '../widgets.dart';
 
@@ -283,12 +284,39 @@ class _AuthFlowState extends State<AuthFlow> {
     }
   }
 
+  /// Splash → Sign In is a 300ms fade: Sign In fades in over the splash
+  /// picture, which stays opaque underneath, so no blank frame shows.
+  bool _splashFading = false;
+
+  void _leaveSplash() {
+    _replace(_Stage.signIn);
+    setState(() => _splashFading = true);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screen = _screen(context);
+    if (!_splashFading) return screen;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        SplashScreen(access: widget.access, onReady: () {}, idle: true),
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 300),
+          onEnd: () => setState(() => _splashFading = false),
+          builder: (context, t, child) => Opacity(opacity: t, child: child),
+          child: screen,
+        ),
+      ],
+    );
+  }
+
+  Widget _screen(BuildContext context) {
     return switch (_stage) {
       _Stage.splash => SplashScreen(
         access: widget.access,
-        onReady: () => _replace(_Stage.signIn),
+        onReady: _leaveSplash,
       ),
       _Stage.signIn => SignInScreen(
         access: widget.access,
@@ -422,55 +450,6 @@ class _AuthBackdrop extends StatelessWidget {
       SizedBox.expand(child: BrandBackdrop(child: child));
 }
 
-/// Share of the canonical master's height that the lockup actually occupies.
-/// The D-35 file is a 4375x4375 canvas with the portrait lockup centred in
-/// it, so a plain `height:` renders a logo visibly ~28% smaller than the
-/// number implies.
-const _lockupInkRatio = 0.7225;
-
-/// D-35 canonical primary lockup (mark + wordmark), bundled from
-/// docs/cefflo/brand/assets/logo/ and never redrawn. Always crisp.
-///
-/// [height] is the height of the *visible* lockup, not of the asset's square
-/// canvas.
-class _BrandLockup extends StatelessWidget {
-  const _BrandLockup({this.height = 150});
-
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    final box = height / _lockupInkRatio;
-    return Image.asset(
-      'assets/brand/cefflo-logo-primary.png',
-      height: box,
-      fit: BoxFit.contain,
-      filterQuality: FilterQuality.high,
-      // The canonical asset is 4375x4375; decoding it at full size costs
-      // ~76MB per instance. Decode at 3x the display size instead — the
-      // file itself is untouched, only how much of it we rasterize.
-      cacheWidth: (box * 3).round(),
-    );
-  }
-}
-
-/// The Cefflo wordmark alone (white). After Splash, the auth screens carry
-/// only this — the full logo is Splash's (Founder, 2026-09-30), so the
-/// sheet or form stays the screen's focus.
-class _Wordmark extends StatelessWidget {
-  const _Wordmark({this.height = 30});
-  final double height;
-
-  @override
-  Widget build(BuildContext context) => Image.asset(
-    'assets/brand/cefflo-wordmark-white.png',
-    height: height,
-    fit: BoxFit.contain,
-    filterQuality: FilterQuality.high,
-    semanticLabel: 'Cefflo',
-  );
-}
-
 /// The one layout every auth screen after Sign In uses: the Sign In blue
 /// backdrop with a Back row and crisp lockup in the header band, and a white
 /// rounded sheet below it that fills the rest of the screen.
@@ -537,7 +516,10 @@ class _SheetScaffold extends StatelessWidget {
                               )
                             : const Padding(
                                 padding: EdgeInsets.only(bottom: Gap.xxl),
-                                child: _Wordmark(height: 28),
+                                child: OfficialWordmark(
+                                  height: 28,
+                                  semanticLabel: 'Cefflo',
+                                ),
                               ),
                       ),
                     ],
@@ -816,8 +798,13 @@ class SplashScreen extends StatefulWidget {
     super.key,
     required this.onReady,
     this.access = AuthAccess.vendor,
+    this.idle = false,
   });
   final VoidCallback onReady;
+
+  /// Picture only (no bootstrap): the copy that stays under Sign In while
+  /// Sign In fades in, so the hand-off never shows a blank frame.
+  final bool idle;
 
   /// Which entry opened the app: the label under the logo names it.
   final AuthAccess access;
@@ -836,7 +823,11 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    _bootstrap();
+    if (widget.idle) {
+      _progress.stop();
+    } else {
+      _bootstrap();
+    }
   }
 
   /// Real bootstrap, not a fixed decorative timer: when a session already
@@ -849,7 +840,7 @@ class _SplashScreenState extends State<SplashScreen>
       await app.loadSession();
     }
     final elapsed = DateTime.now().difference(started);
-    const minimumBrandMoment = Duration(seconds: 3);
+    const minimumBrandMoment = Duration(seconds: 2);
     if (elapsed < minimumBrandMoment) {
       await Future<void>.delayed(minimumBrandMoment - elapsed);
     }
@@ -869,34 +860,36 @@ class _SplashScreenState extends State<SplashScreen>
     child: Scaffold(
       backgroundColor: CefColors.navy,
       body: _NavyBackdrop(
-        child: SafeArea(
-          child: Column(
-            children: [
-              const Spacer(flex: 5),
-              const _BrandLockup(height: 200),
-              // VENDOR sits close under the wordmark (Founder, 2026-10-04).
-              const SizedBox(height: Gap.xs),
-              Text(
-                switch (widget.access) {
-                  AuthAccess.vendor => 'VENDOR',
-                  AuthAccess.operator => L.operatorAccess.toUpperCase(),
-                  AuthAccess.helper => L.helperAccess.toUpperCase(),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // The official brand block, centred like every surface's splash.
+            Center(
+              child: CeffloBrandBlock(
+                labelKey: const Key('splash-access'),
+                label: switch (widget.access) {
+                  AuthAccess.vendor => 'Vendor',
+                  AuthAccess.operator => L.operatorAccess,
+                  AuthAccess.helper => L.helperAccess,
                 },
-                key: const Key('splash-access'),
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 6,
+              ),
+            ),
+            // Tagline and progress stay below the brand block.
+            SafeArea(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const _Tagline(),
+                    const SizedBox(height: Gap.section),
+                    _SplashProgress(animation: _progress),
+                    const SizedBox(height: Gap.section),
+                  ],
                 ),
               ),
-              const Spacer(flex: 5),
-              const _Tagline(),
-              const SizedBox(height: Gap.section),
-              _SplashProgress(animation: _progress),
-              const SizedBox(height: Gap.section),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     ),
@@ -911,6 +904,9 @@ class _SplashScreenState extends State<SplashScreen>
 /// the QA harness for the Android app, so it follows Android.
 bool get vendorGoogleSignIn =>
     kIsWeb || defaultTargetPlatform == TargetPlatform.android;
+
+/// Height of Sign In's top row (language pill).
+const double _welcomeTopRow = 44;
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({
@@ -1004,27 +1000,31 @@ class _SignInScreenState extends State<SignInScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             SizedBox(height: fit(Gap.xs, Gap.md)),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: _LanguagePill(onTap: _openLanguageSheet),
-                            ),
-                            const Spacer(flex: 3),
-                            Center(
-                              // The Sign In choice has room for the full
-                              // logo; the form screens after it carry only
-                              // the wordmark (Founder, 2026-09-30).
-                              child: _BrandLockup(
-                                height: fit(operator ? 76 : 92, 128),
+                            SizedBox(
+                              height: _welcomeTopRow,
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: _LanguagePill(onTap: _openLanguageSheet),
                               ),
                             ),
-                            Text(
-                              'VENDOR',
-                              textAlign: TextAlign.center,
-                              style: text.titleSmall?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 6,
+                            // Vendor: the brand block sits exactly where the
+                            // splash centres it. Operator and Helper carry a
+                            // chip and copy too, so they keep the flexible
+                            // spacing.
+                            if (operator)
+                              const Spacer(flex: 3)
+                            else
+                              SizedBox(
+                                height: CeffloBrandBlock.gapAbove(
+                                  context,
+                                  MediaQuery.paddingOf(context).top +
+                                      fit(Gap.xs, Gap.md) +
+                                      _welcomeTopRow,
+                                ),
                               ),
+                            // The official brand block, as on Splash.
+                            const Center(
+                              child: CeffloBrandBlock(label: 'Vendor'),
                             ),
                             if (operator) ...[
                               SizedBox(height: fit(Gap.md, Gap.xl)),
@@ -1118,12 +1118,9 @@ class _SignInScreenState extends State<SignInScreen> {
                                 ),
                               ],
                             ),
-                            // Safe bottom space: a small fixed floor plus a
-                            // share of the free height, so on tall screens
-                            // the group lifts off the edge instead of
-                            // hugging it, without becoming bottom-heavy.
-                            SizedBox(height: fit(Gap.md, Gap.xl)),
-                            const Spacer(flex: 2),
+                            // Thumb zone (Founder, 2026-10-04): the buttons
+                            // and invite line sit at the bottom, as on Driver.
+                            const SizedBox(height: Gap.lg),
                           ],
                         ),
                       ),

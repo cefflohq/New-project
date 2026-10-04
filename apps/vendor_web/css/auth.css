@@ -49,7 +49,6 @@ html:has(.onb), html:has(.onb) body { background: var(--surface); }
 .auth-hero { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(10px, 2.2dvh, 18px); padding: clamp(10px, 3dvh, 28px) 0; }
 .auth-hero.bare { display: none; }
 .auth-word { width: clamp(104px, 16vw, 124px); height: auto; }
-.auth-logo { width: clamp(96px, 18dvh, 150px); height: auto; filter: drop-shadow(0 12px 22px rgba(1, 20, 70, .25)); }
 .auth-product { font-size: 13px; font-weight: 600; letter-spacing: .5em; margin-right: -.5em; }
 .auth-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.16); color: #fff; font-size: 13px; font-weight: 600; }
 .auth-chip svg { width: 15px; height: 15px; }
@@ -195,9 +194,6 @@ html:has(.onb), html:has(.onb) body { background: var(--surface); }
 
 /* Splash, identical on every surface (Founder, 2026-10-04): 156px symbol +
    wordmark artwork, the surface name 26.5px beneath it with a 14px gap. */
-.splash-lockup { display: flex; flex-direction: column; align-items: center; gap: 14px; color: rgba(255,255,255,.9); }
-.splash-lockup img { width: 156px; height: auto; }
-.splash-lockup span { font-family: 'Manrope', Inter, system-ui, sans-serif; font-size: 26.5px; font-weight: 500; line-height: 1; letter-spacing: 1px; }
 
 /* No instruction line under the title on form cards (all surfaces). */
 .auth-card:has(.input) > h1 + p { display: none; }
@@ -206,7 +202,7 @@ html:has(.onb), html:has(.onb) body { background: var(--surface); }
    in the header; no white card -- the form stands on the gradient with
    white title, labels and links, and plain white 48px pill fields. */
 .auth-top { position: relative; }
-.auth-top-word { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 96px; height: auto; pointer-events: none; }
+.auth-top-word.cf-word { --u: 94px; position: absolute; left: 50%; top: 50%; margin: 0; transform: translate(-50%, -50%); pointer-events: none; }
 .auth-card { background: none; box-shadow: none; color: #fff; padding: 0 8px; gap: 14px; }
 .auth-card h1 { text-align: center; font-size: 24px; color: #fff; }
 .auth-card p, .auth-card .auth-muted { color: rgba(255,255,255,.86); }
@@ -224,3 +220,18 @@ html:has(.onb), html:has(.onb) body { background: var(--surface); }
 .auth-card .err { color: #FFD6D6; }
 .auth-card .hint { color: rgba(255,255,255,.8); }
 .auth-card .gated { background: rgba(255,255,255,.14); color: #fff; border-color: transparent; }
+
+/* Phone Welcome: the brand block sits exactly where the splash puts it (group
+   centred on the screen); the choices stay low. The operator entry (extra
+   chip and copy) and short screens keep normal flow so nothing overlaps. */
+@media (max-width: 959px) and (min-height: 600px) {
+  .auth.choose .auth-hero:not(.op) .cf-brand { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  .auth.choose:has(.auth-hero:not(.op))::before { flex-grow: 1.9; }
+}
+/* Thumb zone on phones (Founder, 2026-10-04): the choices and invite line sit
+   at the bottom, as on Driver, with full-size tap targets. */
+@media (max-width: 959px) {
+  .auth.choose::after { flex: 0 0 0; }
+  .auth.choose { padding-bottom: calc(23px + env(safe-area-inset-bottom, 0px)); }
+  .auth.choose .auth-pill { min-height: 52px; font-size: 15px; }
+}

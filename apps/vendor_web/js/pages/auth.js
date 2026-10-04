@@ -20,7 +20,7 @@ function frame(root, bottom, rerender, { hero = '', product = false, back = null
   root.innerHTML = `<div class="auth${product ? ' choose' : ''}">
     <div class="auth-top">
       ${back ? `<button type="button" class="auth-back" data-topback aria-label="${esc(t('c.back'))}">${icon('chevl')}</button>` : ''}
-      ${product ? '' : '<img class="auth-top-word" src="img/cefflo-wordmark-white.png" alt="Cefflo" width="555" height="142">'}
+      ${product ? '' : '<span class="auth-top-word cf-word"><img src="img/cefflo-wordmark.png" alt="Cefflo" width="1024" height="1024"></span>'}
       <div class="auth-lang">
         <button type="button" class="auth-lang-btn" data-langmenu aria-haspopup="menu" aria-expanded="false" aria-label="${prefs.lang === 'ms' ? 'Bahasa Melayu' : 'English'}">${icon('globe')}<span>${prefs.lang === 'ms' ? 'BM' : 'EN'}</span></button>
         <div class="auth-lang-menu" role="menu" hidden>
@@ -31,7 +31,7 @@ function frame(root, bottom, rerender, { hero = '', product = false, back = null
     </div>
     <div class="auth-hero${hero ? ' op' : ''}">
       ${product
-        ? '<img class="auth-logo" src="img/cefflo-logo.png" alt="Cefflo" width="150" height="234"><span class="auth-product">VENDOR</span>'
+        ? '<div class="cf-brand"><span class="cf-sym"><img src="img/cefflo-symbol.png" alt="Cefflo" width="1024" height="1024"></span><span class="cf-word"><img src="img/cefflo-wordmark.png" alt="" width="1024" height="1024"></span><span class="cf-label">Vendor</span></div>'
         : ''}
       ${hero}
     </div>
@@ -46,16 +46,19 @@ function frame(root, bottom, rerender, { hero = '', product = false, back = null
   }));
 }
 
-// Splash, every time the Web App opens: the full logo, centred, and which
-// entry this is (VENDOR or OPERATOR ACCESS). Brief; the session check runs
-// behind it.
-export function renderSplash(root) {
+// Splash, every time the Web App opens: the static brand block in index.html
+// (painted on the first frame, no blank) names which entry this is (Vendor or
+// Operator access). The session check runs behind it from the start; it holds
+// at least 2s, then fades out over 300ms onto whatever screen is ready.
+export function renderSplash() {
   setChromeColor('#061F5C');
-  const label = operatorEntry() ? t('auth.opAccess') : 'Vendor';
-  // Every surface's splash: the same artwork at 156px and the surface name.
-  root.innerHTML = `<div class="auth splash" role="status" aria-label="Cefflo">
-    <div class="splash-lockup"><img src="img/cefflo-logo-splash.png" alt="Cefflo" width="156" height="225"><span>${esc(label)}</span></div>
-  </div>`;
+  const el = document.getElementById('cf-splash');
+  if (!el) return;
+  if (operatorEntry()) el.querySelector('.cf-label').textContent = t('auth.opAccess');
+  setTimeout(() => {
+    el.classList.add('out');
+    setTimeout(() => el.remove(), 320);
+  }, Math.max(0, (window.cfSplashAt || 0) + 2000 - performance.now()));
 }
 
 // Google's multicolour "G" (brand mark, drawn from its official outline).

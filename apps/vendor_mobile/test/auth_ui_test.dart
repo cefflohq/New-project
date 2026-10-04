@@ -107,7 +107,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('VENDOR'), findsOneWidget);
+      expect(find.text('Vendor'), findsOneWidget);
       expect(find.text('Continue with Apple'), findsNothing);
       expect(find.text('Continue with Google'), findsOneWidget);
       expect(find.text('Continue with Email'), findsOneWidget);

@@ -21,6 +21,7 @@ import 'core/theme.dart';
 import 'l10n/l10n.dart';
 import 'core/ui_locale.dart';
 import 'data/vendor_repository.dart';
+import 'ui/brand_block.dart';
 import 'ui/router.dart';
 import 'ui/screens/auth.dart';
 import 'ui/shell.dart';
@@ -29,6 +30,7 @@ import 'ui/widgets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await precacheBrandAssets();
 
   // Global edge-to-edge system chrome (see ui/system_bars.dart). Must run
   // once before the first frame so Android lays the Flutter canvas out

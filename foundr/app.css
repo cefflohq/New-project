@@ -171,3 +171,14 @@ form[data-signin] .fa-btn{margin-top:20px}
    below it; brand logos keep their own colours (no outline stroke). */
 .fa-brand.big{margin:auto 0}
 .fa-g path,.fa-gmail path{stroke:none}
+
+/* Official brand block on FOUNDR screens (sizes live in index.html). */
+.cf-brand.fa-hero{margin:auto 0}.cf-brand.compact{margin-top:4px}
+.cf-sub{margin-top:calc(var(--u)*.04);font-size:max(12.5px,calc(var(--u)*.115));color:var(--fa-sub)}
+/* Phone Welcome: the brand block sits exactly where the splash puts it (group
+   centred on the screen); the sign-in choices stay low. Short screens and the
+   desktop card keep normal flow so nothing overlaps. */
+@media(max-width:559px) and (min-height:600px){
+  .cf-brand.fa-hero{position:absolute;left:50%;top:50%;margin:0;transform:translate(-50%,calc(-50% + var(--u)*.09))}
+  .fa-stage:has(.fa-hero) .fa-body{margin-top:auto;margin-bottom:14px}
+}

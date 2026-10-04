@@ -69,23 +69,30 @@
   <title>Cefflo Vendor</title>
   <link rel="manifest" href="manifest.json">
 <style>
-    /* Pre-splash (Founder, 2026-10-01): shown by the browser before Flutter
-       has loaded, instead of a blank white page. Removed on the first
-       Flutter frame. */
+    /* Pre-splash: painted by the browser on the first frame, before Flutter
+       loads. It is the app's splash itself (gradient + official brand block,
+       same unit and ratios as CeffloBrandBlock), so the Flutter splash takes
+       over with no visible change and no blank or white frame. */
+    @font-face { font-family: 'CefManrope'; src: url('assets/assets/fonts/manrope/Manrope-Medium.ttf'); font-weight: 500; font-display: block; }
     html, body { margin: 0; height: 100%; background: #01265E; }
-    #cef-presplash { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg,#01265E 0%,#00378F 35%,#005CC4 70%,#0592EB 100%); z-index: 0; transition: opacity .25s ease; }
-    #cef-presplash img { width: 132px; height: auto; }
+    #cef-presplash { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg,#01265E 0%,#00378F 35%,#005CC4 70%,#0592EB 100%); z-index: 0; transition: opacity .3s ease; }
     #cef-presplash.gone { opacity: 0; pointer-events: none; }
+    .cf-brand{--u:clamp(84px,min(27vw,14.25vh),128px);display:flex;flex-direction:column;align-items:center;color:rgba(255,255,255,.92)}
+    .cf-sym,.cf-word{position:relative;overflow:hidden;flex:none}
+    .cf-sym{width:calc(var(--u)*.822);height:var(--u)}
+    .cf-word{width:calc(var(--u)*1.02);height:calc(var(--u)*.272);margin-top:calc(var(--u)*.37)}
+    .cf-sym img,.cf-word img{position:absolute;left:50%;top:50%;height:auto;max-width:none}
+    .cf-sym img{width:calc(var(--u)*1.783);transform:translate(-50%,-50%)}
+    .cf-word img{width:calc(var(--u)*1.745);transform:translate(-49.1%,-50.4%)}
+    .cf-label{margin-top:calc(var(--u)*.05);font:500 calc(var(--u)*.2)/1.2 CefManrope,system-ui,sans-serif;letter-spacing:.01em}
   </style>
 </head>
 <body>
-  <!-- Plain brand gradient while Flutter loads: no logo, so the app's own
-       splash is the only splash (Founder, 2026-10-04). -->
-  <div id="cef-presplash" aria-hidden="true"></div>
+  <div id="cef-presplash" aria-hidden="true"><div class="cf-brand"><span class="cf-sym"><img src="assets/assets/brand/cefflo-symbol.png" alt="" width="1024" height="1024"></span><span class="cf-word"><img src="assets/assets/brand/cefflo-wordmark.png" alt="" width="1024" height="1024"></span><span class="cf-label">Vendor</span></div></div>
   <script>
     window.addEventListener('flutter-first-frame', function () {
       var el = document.getElementById('cef-presplash');
-      if (el) { el.classList.add('gone'); setTimeout(function () { el.remove(); }, 300); }
+      if (el) { el.classList.add('gone'); setTimeout(function () { el.remove(); }, 320); }
     });
   </script>
   <!-- Measures env(safe-area-inset-bottom) for lib/core/safe_area_web.dart. -->

@@ -92,5 +92,5 @@ async function start(message = '') {
 
 // Splash each time the Web App opens (Founder, 2026-09-30): a brief brand
 // moment, then the normal start.
-renderSplash(root);
-setTimeout(() => start(), 1100);
+renderSplash();
+start();

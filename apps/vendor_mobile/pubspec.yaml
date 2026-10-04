@@ -43,6 +43,12 @@ flutter:
     # Founder-supplied contact action artwork, used as delivered.
     - assets/icons/
   fonts:
+    # Brand block label (surface name under the official logo), the same
+    # face and weight as every other Cefflo surface's splash.
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/manrope/Manrope-Medium.ttf
+          weight: 500
     # Primary Latin typeface (Inter, OFL-1.1, bundled locally -- no runtime
     # font downloading). Weights match the locked hierarchy: Regular for
     # supporting text, Medium for body, SemiBold for labels/buttons/

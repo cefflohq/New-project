@@ -10,10 +10,32 @@
   <link rel="icon" href="./icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./app.css">
+<link rel="preload" href="./img/cefflo-symbol.png" as="image">
+<link rel="preload" href="./img/cefflo-wordmark.png" as="image">
+<style>
+/* Cefflo brand block (all surfaces): official symbol, official wordmark, surface
+   label. One unit --u = the symbol's visible height; every other size and gap
+   is a fixed ratio of it, from the approved Driver splash. The official files
+   carry transparent padding, so each sits in a crop box at its visible size. */
+.cf-splash{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;transition:opacity .3s ease;
+  background:linear-gradient(180deg,#01265E 0%,#00378F 35%,#005CC4 70%,#0592EB 100%)}
+.cf-splash.out{opacity:0;pointer-events:none}
+.cf-brand{--u:clamp(84px,min(27vw,14.25dvh),128px);display:flex;flex-direction:column;align-items:center;color:rgba(255,255,255,.92)}
+.cf-brand.compact{--u:clamp(64px,min(20vw,10dvh),96px)}
+.cf-sym,.cf-word{position:relative;overflow:hidden;flex:none}
+.cf-sym{width:calc(var(--u)*.822);height:var(--u)}
+.cf-word{width:calc(var(--u)*1.02);height:calc(var(--u)*.272);margin-top:calc(var(--u)*.37)}
+.cf-sym img,.cf-word img{position:absolute;left:50%;top:50%;height:auto;max-width:none}
+.cf-sym img{width:calc(var(--u)*1.783);transform:translate(-50%,-50%)}
+.cf-word img{width:calc(var(--u)*1.745);transform:translate(-49.1%,-50.4%)}
+.cf-label{margin-top:calc(var(--u)*.05);font:500 calc(var(--u)*.2)/1.2 Manrope,Inter,system-ui,sans-serif;letter-spacing:.01em}
+</style>
 </head>
 <body>
+<div id="cf-splash" class="cf-splash" role="status" aria-label="Cefflo FOUNDR"><div class="cf-brand"><span class="cf-sym"><img src="./img/cefflo-symbol.png" alt="Cefflo" width="1024" height="1024"></span><span class="cf-word"><img src="./img/cefflo-wordmark.png" alt="" width="1024" height="1024"></span><span class="cf-label">FOUNDR</span></div></div>
+<script>window.cfSplashAt = performance.now();</script>
   <div id="app"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script>window.CEFFLO_SESSION_KEY = 'cefflo_foundr_auth_session';</script>

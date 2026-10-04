@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -74,12 +76,16 @@ class CeffloLogoMark extends StatelessWidget {
   final double size;
 
   @override
-  Widget build(BuildContext context) => Image.asset(
-    'assets/brand/cefflo-logo-mark.png',
-    width: size,
-    height: size,
-    fit: BoxFit.contain,
-    filterQuality: FilterQuality.medium,
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: size,
+    child: Center(
+      child: _OfficialCrop(
+        asset: _officialSymbol,
+        width: size * 0.822,
+        height: size,
+        canvas: size * 1.783,
+      ),
+    ),
   );
 }
 
@@ -108,12 +114,7 @@ class CeffloAuthWatermark extends StatelessWidget {
           sigmaY: blurSigma,
           tileMode: TileMode.decal,
         ),
-        child: Image.asset(
-          _splashAsset,
-          width: width,
-          fit: BoxFit.contain,
-          filterQuality: FilterQuality.high,
-        ),
+        child: _OfficialStack(width: width),
       ),
     ),
   );
@@ -156,50 +157,180 @@ class CeffloDriverWordmark extends StatelessWidget {
   );
 }
 
-/// D01's splash artwork: the folded chevron mark with its yellow accent above
-/// the "Cefflo" wordmark, supplied as one combined lockup. The master is a
-/// 2813×2813 canvas that is mostly transparent margin; the shipped asset is
-/// that master cropped to its ink (x 796–2100, y 568–2446, so 1304×1878),
-/// with no resampling or recolouring, so the artwork's box is the artwork and
-/// the "Driver" line below it sits against the wordmark rather than against a
-/// band of nothing.
-const _splashAsset = 'assets/brand/cefflo-logo-splash.png';
-const _splashArtworkAspect = 1878 / 1304;
-
-/// D01's stacked lockup: the supplied mark-and-"Cefflo" artwork with
-/// "Driver" set beneath it as the second line of the same lockup — lighter
-/// weight, white, sized and tracked against the baked wordmark so the two
-/// read as one mark. Proportions/spacing match the splash reference.
-class CeffloSplashLockup extends StatelessWidget {
-  const CeffloSplashLockup({super.key, this.width = 156});
-
+/// Official symbol over official wordmark, [width] wide (the wordmark's
+/// visible width), for compact uses that carry no surface label.
+class _OfficialStack extends StatelessWidget {
+  const _OfficialStack({required this.width});
   final double width;
 
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Image.asset(
-        _splashAsset,
-        width: width,
-        height: width * _splashArtworkAspect,
-        fit: BoxFit.contain,
-        filterQuality: FilterQuality.medium,
-      ),
-      // Every surface's splash: same artwork, same label size, a
-      // comfortable gap under the wordmark (Founder, 2026-10-04).
-      const SizedBox(height: 14),
-      Text(
-        'Driver',
-        style: TextStyle(
-          fontFamily: 'Manrope',
-          fontSize: width * 0.17,
-          fontWeight: FontWeight.w500,
-          height: 1.0,
-          letterSpacing: 1.0,
-          color: CefColors.onNavy.withValues(alpha: 0.9),
+  Widget build(BuildContext context) {
+    final u = width / 1.02;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _OfficialCrop(
+          asset: _officialSymbol,
+          width: u * 0.822,
+          height: u,
+          canvas: u * 1.783,
+        ),
+        SizedBox(height: u * 0.37),
+        _OfficialCrop(
+          asset: _officialWordmark,
+          width: width,
+          height: u * 0.272,
+          canvas: u * 1.745,
+          centre: const Offset(0.491, 0.504),
+        ),
+      ],
+    );
+  }
+}
+
+/// The official Cefflo brand block, identical on every surface's splash and
+/// first Welcome screen: the official symbol, the official wordmark, then the
+/// surface label. One unit `u` (the symbol's visible height) sizes everything;
+/// the ratios come from the approved Driver splash. `u` follows the screen
+/// (27% of width, 14.25% of height, whichever is smaller) within 84–128, so
+/// the block never stretches. The official files keep their transparent
+/// padding, so each is shown through a crop box at its visible size.
+class CeffloBrandBlock extends StatelessWidget {
+  const CeffloBrandBlock({super.key, this.label = 'Driver'});
+
+  final String label;
+
+  static double unitFor(Size screen) =>
+      math.min(screen.width * 0.27, screen.height * 0.1425).clamp(84.0, 128.0);
+
+  /// The block's laid-out height for unit [u] (symbol, gap, wordmark, gap,
+  /// one label line).
+  static double heightFor(double u) => u * 1.932;
+
+  /// Space to put above the block in a column that starts [columnTop] px
+  /// from the top of the screen so the block sits exactly where the splash
+  /// centres it. Never less than [min] (short screens just flow).
+  static double gapAbove(
+    BuildContext context,
+    double columnTop, {
+    double min = 16,
+  }) {
+    final size = MediaQuery.sizeOf(context);
+    final u = unitFor(size);
+    return math.max(min, size.height / 2 - heightFor(u) / 2 - columnTop);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final u = unitFor(MediaQuery.sizeOf(context));
+    return Semantics(
+      label: 'Cefflo $label',
+      child: ExcludeSemantics(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _OfficialCrop(
+              asset: _officialSymbol,
+              width: u * 0.822,
+              height: u,
+              canvas: u * 1.783,
+            ),
+            SizedBox(height: u * 0.37),
+            _OfficialCrop(
+              asset: _officialWordmark,
+              width: u * 1.02,
+              height: u * 0.272,
+              canvas: u * 1.745,
+              centre: const Offset(0.491, 0.504),
+            ),
+            SizedBox(height: u * 0.05),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: u * 0.2,
+                fontWeight: FontWeight.w500,
+                height: 1.2,
+                letterSpacing: u * 0.002,
+                color: CefColors.onNavy.withValues(alpha: 0.92),
+              ),
+            ),
+          ],
         ),
       ),
-    ],
+    );
+  }
+}
+
+/// The official files as supplied (2813² canvases, resampled to 1024² for
+/// delivery only; geometry untouched): docs/cefflo/brand/assets/logo/
+/// cefflo-official-symbol.png and cefflo-official-wordmark.png.
+const _officialSymbol = 'assets/brand/cefflo-symbol.png';
+const _officialWordmark = 'assets/brand/cefflo-wordmark.png';
+
+/// Shows [asset] (a square canvas drawn at [canvas]) through a [width]×[height]
+/// window centred on the artwork's [centre] (fractions of the canvas).
+class _OfficialCrop extends StatelessWidget {
+  const _OfficialCrop({
+    required this.asset,
+    required this.width,
+    required this.height,
+    required this.canvas,
+    this.centre = const Offset(0.5, 0.5),
+  });
+
+  final String asset;
+  final double width;
+  final double height;
+  final double canvas;
+  final Offset centre;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: width,
+    height: height,
+    child: ClipRect(
+      child: OverflowBox(
+        minWidth: canvas,
+        maxWidth: canvas,
+        minHeight: canvas,
+        maxHeight: canvas,
+        child: Transform.translate(
+          offset: Offset(
+            (0.5 - centre.dx) * canvas,
+            (0.5 - centre.dy) * canvas,
+          ),
+          child: Image.asset(
+            asset,
+            width: canvas,
+            height: canvas,
+            filterQuality: FilterQuality.medium,
+          ),
+        ),
+      ),
+    ),
   );
 }
+
+/// Decodes the official symbol and wordmark into the image cache before the
+/// first frame, so the Flutter splash never paints without its logo (the
+/// identical HTML pre-splash stays up meanwhile). Gives up after 3s.
+Future<void> precacheBrandAssets() => Future.wait([
+  for (final asset in const [_officialSymbol, _officialWordmark])
+    () {
+      final done = Completer<void>();
+      final stream = AssetImage(asset).resolve(ImageConfiguration.empty);
+      late final ImageStreamListener listener;
+      listener = ImageStreamListener(
+        (_, _) {
+          if (!done.isCompleted) done.complete();
+          stream.removeListener(listener);
+        },
+        onError: (_, _) {
+          if (!done.isCompleted) done.complete();
+        },
+      );
+      stream.addListener(listener);
+      return done.future;
+    }(),
+]).timeout(const Duration(seconds: 3), onTimeout: () => const []);
