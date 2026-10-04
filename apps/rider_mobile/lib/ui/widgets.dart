@@ -227,7 +227,7 @@ class CeffloBackButton extends StatelessWidget {
         height: Sizes.tapTarget,
         child: Icon(
           LucideIcons.chevronLeft,
-          size: 28,
+          size: 24,
           color: onNavy ? CefColors.onNavy : CefColors.navy,
         ),
       ),
@@ -268,7 +268,7 @@ class CeffloScreenHeader extends StatelessWidget {
   Widget build(BuildContext context) => SafeArea(
     bottom: false,
     child: Padding(
-      padding: const EdgeInsets.fromLTRB(Gap.md, 6, Gap.md, 12),
+      padding: const EdgeInsets.fromLTRB(Gap.md, 8, Gap.md, 12),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -379,7 +379,7 @@ class CeffloBrandHeader extends StatelessWidget {
   Widget build(BuildContext context) => SafeArea(
     bottom: false,
     child: Padding(
-      padding: const EdgeInsets.fromLTRB(Gap.gutter, 6, Gap.md, 0),
+      padding: const EdgeInsets.fromLTRB(Gap.gutter, 8, Gap.md, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -389,7 +389,11 @@ class CeffloBrandHeader extends StatelessWidget {
             child: Row(
               children: [
                 if (onBack != null) ...[
-                  CeffloBackButton(onTap: onBack!),
+                  // Back sits 12px from the screen edge on every surface.
+                  Transform.translate(
+                    offset: const Offset(Gap.backInset - Gap.gutter, 0),
+                    child: CeffloBackButton(onTap: onBack!),
+                  ),
                   const SizedBox(width: Gap.sm),
                 ],
                 if (centerWordmark) const Spacer(),
@@ -529,7 +533,7 @@ class CeffloAuthScaffold extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(
                     Gap.gutter,
-                    6,
+                    8,
                     Gap.gutter,
                     Gap.xl,
                   ),
@@ -565,7 +569,14 @@ class CeffloAuthScaffold extends StatelessWidget {
                             if (onBack != null)
                               Align(
                                 alignment: Alignment.centerLeft,
-                                child: CeffloBackButton(onTap: onBack!),
+                                // 12px from the screen edge (all surfaces).
+                                child: Transform.translate(
+                                  offset: const Offset(
+                                    Gap.backInset - Gap.gutter,
+                                    0,
+                                  ),
+                                  child: CeffloBackButton(onTap: onBack!),
+                                ),
                               ),
                             // The action keeps inside its reserved 104px
                             // (longer translations scale down rather than

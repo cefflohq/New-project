@@ -261,7 +261,8 @@ class AppHeader extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: Sizes.header),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Gap.xs),
+          // Left 12px so a back control sits where it does on every surface.
+          padding: const EdgeInsets.symmetric(horizontal: Gap.md),
           child: Row(
             children: [
               SizedBox(
@@ -336,7 +337,7 @@ class HeaderBackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => IconAction(
-    icon: LucideIcons.arrowLeft,
+    icon: LucideIcons.chevronLeft,
     tooltip: L.back,
     color: Colors.white,
     onTap: onTap,

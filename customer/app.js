@@ -106,7 +106,7 @@ const ERROR_ART = `<svg viewBox="0 0 240 150" aria-hidden="true" focusable="fals
 function topbar(title, { back = false } = {}) {
   return `
     <header class="topbar">
-      ${back ? `<button class="topbar__back" type="button" data-action="back-to-tracking" aria-label="Back to delivery tracking">${icon('chevronLeft', { size: 22 })}</button>` : ''}
+      ${back ? `<button class="topbar__back" type="button" data-action="back-to-tracking" aria-label="Back to delivery tracking">${icon('chevronLeft', { size: 24 })}</button>` : ''}
       <p class="topbar__title">${esc(title)}</p>
     </header>`;
 }

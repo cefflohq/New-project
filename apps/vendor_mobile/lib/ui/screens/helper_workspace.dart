@@ -38,12 +38,7 @@ class HelperWorkspaceScreen extends StatefulWidget {
 // ------------------------------------------------------------------ tokens
 
 /// Cefflo blue header gradient (deep blue -> bright Cefflo blue).
-const _headerBlue = LinearGradient(
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
-  colors: [Color(0xFF0A2A8A), Color(0xFF0B47D4), Color(0xFF1B7BF0)],
-  stops: [0.0, 0.55, 1.0],
-);
+const _headerBlue = CefGradients.brand;
 const _ink = CefColors.navy;
 const _muted = Color(0xFF6B7385);
 const _line = Color(0xFFE8EBF1);

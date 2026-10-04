@@ -2,7 +2,7 @@
    Rider tokens follow the Cefflo Flow Palette (sot/12_EXPERIENCE_SYSTEM.md §0A). */
 :root {
   --navy: #01265E;
-  --grad: linear-gradient(160deg, #01265E 0%, #00378F 38%, #005CC4 72%, #0592EB 100%);
+  --grad: linear-gradient(180deg, #01265E 0%, #00378F 35%, #005CC4 70%, #0592EB 100%);
   --ink: #0B1220;
   --muted: #5E6778;
   --faint: #8A93A3;

@@ -7,10 +7,9 @@
 .auth {
   position: relative; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center;
   color: #fff; overflow: hidden; isolation: isolate;
-  padding: calc(clamp(8px, 2dvh, 16px) + env(safe-area-inset-top, 0px)) 16px calc(clamp(12px, 3dvh, 28px) + env(safe-area-inset-bottom, 0px));
-  background:
-    radial-gradient(55% 32% at 68% 53%, rgba(70, 160, 255, .55) 0%, rgba(70, 160, 255, 0) 70%),
-    linear-gradient(0deg, #5BC0F8 0%, #3A9BEF 22%, #1A6FE0 45%, #0E4FBE 66%, #0A3486 84%, #061F5C 100%);
+  padding: calc(8px + env(safe-area-inset-top, 0px)) 16px calc(clamp(12px, 3dvh, 28px) + env(safe-area-inset-bottom, 0px));
+  /* The one Cefflo brand gradient (all surfaces): deep top, light bottom. */
+  background: linear-gradient(180deg, #01265E 0%, #00378F 35%, #005CC4 70%, #0592EB 100%);
 }
 /* One focus, centred: the brand and the screen's action sit together in the
    middle; equal flexible space above and below. */
@@ -24,12 +23,12 @@
 .auth.choose::after { flex: .45 1 0; }
 /* The page behind the auth screens is the backdrop's own bottom tone, so no
    white strip shows under it (browser bars, overscroll). */
-html:has(.auth), html:has(.auth) body { background: #5BC0F8; }
+html:has(.auth), html:has(.auth) body { background: #0592EB; }
 html:has(.onb), html:has(.onb) body { background: var(--surface); }
 .auth::before { order: 1; }
 .auth-top { order: 0; align-self: stretch; display: flex; align-items: center; min-height: 40px; }
 .auth-top .auth-lang { margin-left: auto; }
-.auth-back { width: 40px; height: 40px; margin-left: -8px; border: 0; border-radius: 999px; background: transparent; color: #fff; display: grid; place-items: center; cursor: pointer; }
+.auth-back { width: 44px; height: 44px; margin-left: -4px; border: 0; border-radius: 999px; background: transparent; color: #fff; display: grid; place-items: center; cursor: pointer; }
 .auth-back:hover { background: rgba(255,255,255,.12); }
 .auth-back svg { width: 24px; height: 24px; stroke-width: 2.2; }
 .auth-hero { order: 2; }

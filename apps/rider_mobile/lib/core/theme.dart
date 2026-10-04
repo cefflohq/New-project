@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 /// be renamed.
 class Gap {
   static const gutter = 20.0; // screen side padding in every reference
+  // Back control: 44px target, 12px from the screen edge on every surface.
+  static const backInset = 12.0;
   static const cardPadding = 16.0;
   static const cardGap = 12.0;
   static const section = 20.0;
@@ -128,15 +130,18 @@ extension CefColorsX on BuildContext {
 }
 
 /// The navy header gradient behind every Cefflo Driver screen chrome.
+/// The one Cefflo brand gradient, shared by every surface (Founder,
+/// 2026-10-04): deep blue at the top, light blue at the bottom, vertical.
 const cefHeaderGradient = LinearGradient(
-  begin: Alignment.topRight,
-  end: Alignment.bottomLeft,
+  begin: Alignment.topCenter,
+  end: Alignment.bottomCenter,
   colors: [
-    CefColors.gradientBright,
-    CefColors.gradientMid,
-    CefColors.gradientDeep,
+    Color(0xFF01265E),
+    Color(0xFF00378F),
+    Color(0xFF005CC4),
+    Color(0xFF0592EB),
   ],
-  stops: [0.0, 0.48, 1.0],
+  stops: [0.0, 0.35, 0.7, 1.0],
 );
 
 /// Restrained two-layer navy-tinted shadow — the only elevation the

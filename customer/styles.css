@@ -16,8 +16,8 @@
   --line: #E4E8EF;
   --line-soft: #EEF1F5;
   --cef-blue: #1450E6;
-  --cef-blue-top: #03265E;
-  --cef-blue-bottom: #0788E4;
+  --cef-blue-top: #01265E;
+  --cef-blue-bottom: #0592EB;
   --cef-tint: #EEF3FF;
   --cef-yellow: #FFC629;
   --cef-yellow-ink: #2B2100;
@@ -82,7 +82,7 @@ img { display: block; max-width: 100%; }
 :root { --u: min(calc(100vh / 852), calc(100vw / 393), 1.12px); --gap: calc(18 * var(--u)); }
 @supports (height: 100dvh) { :root { --u: min(calc(100dvh / 852), calc(100vw / 393), 1.12px); } }
 
-.app { width: 100%; max-width: 440px; height: 100vh; height: 100dvh; margin: 0 auto; background: linear-gradient(180deg, var(--cef-blue-top) 0%, var(--cef-blue-bottom) 100%); }
+.app { width: 100%; max-width: 440px; height: 100vh; height: 100dvh; margin: 0 auto; background: linear-gradient(180deg, var(--cef-blue-top) 0%, #00378F 35%, #005CC4 70%, var(--cef-blue-bottom) 100%); }
 .sheet { display: flex; flex-direction: column; height: 100%; }
 
 .screen {
@@ -109,10 +109,10 @@ img { display: block; max-width: 100%; }
 .topbar__back {
   position: absolute;
   left: 12px;
-  top: calc(env(safe-area-inset-top) + 3 * var(--u));
+  top: calc(env(safe-area-inset-top) + 8px);
   display: grid;
   place-items: center;
-  width: calc(36 * var(--u)); height: calc(36 * var(--u));
+  width: 44px; height: 44px;
   padding: 0;
   border: 0;
   border-radius: 12px;

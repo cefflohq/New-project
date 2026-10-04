@@ -522,6 +522,7 @@ class _SheetScaffold extends StatelessWidget {
                   bottom: false,
                   child: Column(
                     children: [
+                      const SizedBox(height: Gap.sm),
                       SizedBox(
                         height: Sizes.tapTarget,
                         child: Row(
@@ -593,11 +594,12 @@ class _BackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(left: Gap.xs),
+    // 12px from the screen edge, like every surface.
+    padding: const EdgeInsets.only(left: Gap.md),
     child: IconButton(
       onPressed: onTap,
       tooltip: L.back,
-      icon: const Icon(LucideIcons.chevronLeft, size: 26),
+      icon: const Icon(LucideIcons.chevronLeft, size: 24),
       color: Colors.white,
       constraints: const BoxConstraints.tightFor(
         width: Sizes.tapTarget,
