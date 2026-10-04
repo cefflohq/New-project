@@ -648,15 +648,21 @@ class OrderDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    return AsyncView<(VendorOrder, List<Zone>)>(
+    return AsyncView<(VendorOrder, List<Zone>, CoverageStatus)>(
       loading: const SkeletonHeroPage(),
       key: ValueKey('order-$orderId'),
       load: () async => (
         await app.repo.order(orderId),
         await app.repo.zones(app.business!.id),
+        // Server verdict (order_coverage_status); a failed lookup shows
+        // "unknown", never a guessed in/out answer.
+        await app.repo
+            .orderCoverageStatus(orderId)
+            .then(CoverageStatus.parse)
+            .catchError((_) => CoverageStatus.unknown),
       ),
       builder: (context, data, reload) {
-        final (order, zones) = data;
+        final (order, zones, coverage) = data;
         final items = order.items;
         // Pre-dispatch only: approval and zone are planning inputs the
         // server rejects once a rider holds the order.
@@ -758,6 +764,15 @@ class OrderDetailScreen extends StatelessWidget {
                 label: L.directions,
                 icon: LucideIcons.navigation,
                 onTap: () => launchDirections(context, order.deliveryAddress),
+              ),
+            ),
+            CefListRow(
+              title: L.coverage,
+              subtitle: coverage.label,
+              icon: LucideIcons.radar,
+              trailing: StatusChip(
+                coverage.label,
+                attention: coverage.needsAttention,
               ),
             ),
             CefListRow(

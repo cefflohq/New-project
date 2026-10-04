@@ -1188,6 +1188,7 @@ class VendorRepository {
   /// Server verdict for one order: unconfigured | pending_location |
   /// covered | out_of_coverage.
   Future<String> orderCoverageStatus(String orderId) async {
+    if (_demo) return 'covered';
     final value = await _run(
       () => _db!.rpc('order_coverage_status', params: {'p_order_id': orderId}),
     );

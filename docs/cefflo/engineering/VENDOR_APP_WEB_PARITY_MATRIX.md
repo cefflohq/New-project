@@ -36,6 +36,7 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Report delivery issue (`vendor_report_delivery_issue`, 5 enum reasons; App had the repository call but no UI — wired in both) | Web SOT §10, S4-08 | ✅ (#3) | ✅ (#3) |
 | Delivery recovery (`initiate_delivery_recovery`: release an assigned order back to unassigned, Owner/Operator only, idempotent) | Web SOT §2/§10, F2-09 | ✅ (#4) | ✅ (#4) |
 | Edit order before dispatch (`update_order_details`: customer, phone, address, zone, items, notes; re-geocode on address change) | V-15, D-61 | ✅ | ✅ (#5) |
+| Order coverage status on Order detail (`order_coverage_status`: unconfigured / awaiting location / in / outside). App had the repository call only — wired in both. `is_within_coverage` (coordinate check) has no caller: neither surface takes typed coordinates | V-26/V-27, Web SOT §2 | ✅ (#6) | ✅ (#6) |
 | Service Area / coverage configuration | V-26–V-27 | ✅ | ✅ |
 | Business Profile, information, address | V-37–V-39 | ✅ | ✅ |
 | Profile, edit profile, profile photo | V-42–V-43 | ✅ | ✅ |
@@ -47,7 +48,6 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 
 | Capability | Source | App | Web | Work |
 |---|---|---|---|---|
-| Order coverage status / within-coverage check | V-26/V-27, Web SOT §2 "location/coverage visibility" | ✅ | ❌ | Web: `order_coverage_status`, `is_within_coverage` |
 | Business hours | V-40 | ✅ | ❌ | Web: `set_business_hours` |
 | Storefront / Appearance / Preview (publish, link, QR, share, templates) | V-31–V-33, D-55, Storefront V1 (Founder 2026-10-01) | ✅ | ❌ | Web: storefront management |
 | Products: list, add, edit, categories, up to 5 photos | V-34–V-36, product media multi (Founder 2026-10-01) | ✅ | ❌ | Web: catalogue |

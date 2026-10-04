@@ -7,6 +7,8 @@ import { esc, icon, chip, orderStatus, itemsText, itemsLines, avatar, loadingRow
 import { openAddOrder } from './order_actions.js';
 
 const PAGE = 12;
+const COV_KEYS = ['unconfigured', 'pending_location', 'covered', 'out_of_coverage'];
+const COV_ATTN = ['pending_location', 'out_of_coverage'];
 // vendor_report_delivery_issue (Web SOT §10, S4-08): any operational member,
 // from these statuses only; reasons are the delivery_issue_reason enum.
 const ISSUE_FROM = ['created', 'ready_for_pickup', 'picked_up', 'out_for_delivery', 'arrived'];
@@ -143,7 +145,9 @@ export default function orders({ el, params, setHeader }) {
 export async function renderDetail(box, id, onChange) {
   const paint = async () => {
     try {
-      const [o, events, rs, stops, ls] = await Promise.all([fetchOrder(id), fetchOrderEvents(id), fetchRiders(), fetchStops(), fetchLocations()]);
+      const [o, events, rs, stops, ls, cov] = await Promise.all([fetchOrder(id), fetchOrderEvents(id), fetchRiders(), fetchStops(), fetchLocations(),
+        // Server verdict (order_coverage_status); a failed lookup shows unknown, never a guess.
+        api.rpc('order_coverage_status', { p_order_id: id }).catch(() => 'unknown')]);
       if (!o) { box.innerHTML = emptyState(t('orders.none')); return; }
       const rider = (rs || []).find(r => r.id === o.assigned_rider_id);
       const prepSt = (stops || []).find(s => s.order_id === o.id)?.preparation_status;
@@ -163,6 +167,7 @@ export async function renderDetail(box, id, onChange) {
         </div>
         <a class="sec kv" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.latitude != null ? `${o.latitude},${o.longitude}` : o.delivery_address)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:0">
           <span style="color:var(--primary)">${icon('pin')}</span><div style="flex:1"><b style="margin:0">${esc(o.delivery_address)}</b></div>${icon('right', 'i chev')}</a>
+        <div class="sec kv" style="border-bottom:0"><span style="color:var(--primary)">${icon('map')}</span><div style="flex:1"><b style="margin:0">${esc(t('cov.title'))}</b></div><span class="chip ${COV_ATTN.includes(cov) ? 'issue' : cov === 'covered' ? 'active' : 'neutral'}">${esc(t(`cov.${COV_KEYS.includes(cov) ? cov : 'unknown'}`))}</span></div>
         ${o.delivery_status === 'created' && !o.assigned_rider_id ? `<div class="sec" style="display:flex;gap:10px"><button class="btn sm" data-edit>${esc(t('edit.action'))}</button>${!o.approved_at ? `<button class="btn primary sm" data-approve>${esc(t('orders.approve'))}</button>` : ''}</div>` : ''}
         ${o.approved_at && !o.assigned_rider_id && ['created', 'ready_for_pickup'].includes(o.delivery_status) ? `<div class="sec" style="display:flex;gap:10px"><select class="select" data-rider-pick style="flex:1"><option value="">${esc(t('orders.selectRider'))}</option>${(rs || []).filter(r => r.status === 'active').map(r => `<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('')}</select><button class="btn primary sm" data-assign>${esc(t('orders.assign'))}</button></div>` : ''}
         ${ISSUE_FROM.includes(o.delivery_status) || recoverable(o) ? `<div class="sec" style="display:flex;gap:10px;flex-wrap:wrap">
