@@ -62,10 +62,10 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 
 | Item | Debt |
 |---|---|
-| #2 capacity check | Browser QA of the failure path (violations listed, Create runs blocked) — demo mode always returns compatible; verify on staging data |
-| #10 contact support | Headless browser QA cannot capture the `mailto:` handoff; check once manually in a real browser |
-| #12 product photos | Demo mode refuses writes; verify a real upload → displayable → reorder → archive on staging |
-| #13 storefront | Demo mode refuses writes; verify publish, appearance save and hero upload on staging. Web reads `CEFFLO_CONFIG.storefrontBaseUrl` (falls back to https://cefflo.com/, as the App) — set it with the App's `CEFFLO_STOREFRONT_BASE_URL` when storefront routing ships |
+| #2 capacity check | Browser QA of the failure path (violations listed, Create runs blocked) — demo mode always returns compatible; verify on staging data — **cleared on staging 2026-10-04** (STAGING_VERIFICATION_2026-10-04.md) |
+| #10 contact support | Headless browser QA cannot capture the `mailto:` handoff; check once manually in a real browser — **cleared on staging 2026-10-04** (STAGING_VERIFICATION_2026-10-04.md) |
+| #12 product photos | Demo mode refuses writes; verify a real upload → displayable → reorder → archive on staging — **cleared on staging 2026-10-04** (STAGING_VERIFICATION_2026-10-04.md) |
+| #13 storefront | Demo mode refuses writes; verify publish, appearance save and hero upload on staging. Web reads `CEFFLO_CONFIG.storefrontBaseUrl` (falls back to https://cefflo.com/, as the App) — set it with the App's `CEFFLO_STOREFRONT_BASE_URL` when storefront routing ships — **cleared on staging 2026-10-04** (STAGING_VERIFICATION_2026-10-04.md) |
 | Email-invite backend RPCs | `create_team_invitation`, `create_rider_invitation`, `claim_my_team_invitations`, `revoke_*` still granted; retire in the final production/security cleanup after a dependency audit |
 
 ## C. Helper PWA only (must not appear in Owner/Operator surfaces)
