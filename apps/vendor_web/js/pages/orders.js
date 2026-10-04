@@ -2,7 +2,7 @@
 import { t, fmtTime, ago } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
-import { fetchOrders, fetchStops, fetchRiders, fetchZones, fetchOrder, fetchOrderEvents, fetchLocations, orderNo } from '../data.js';
+import { fetchOrders, fetchStops, fetchRiders, fetchZones, fetchOrder, fetchOrderEvents, orderNo } from '../data.js';
 import { esc, icon, chip, orderStatus, itemsText, itemsLines, avatar, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal, phoneDigits } from '../ui.js';
 import { openAddOrder } from './order_actions.js';
 
@@ -49,7 +49,7 @@ export default function orders({ el, params, setHeader }) {
   setHeader(t('orders.title'));
   const selected = params[0] || null;
   let tab = 'ongoing', query = '', page = 1, zoneFilter = '', riderFilter = '';
-  let list = [], prep = new Map(), riders = new Map(), zones = new Map(), locs = new Map();
+  let list = [], prep = new Map(), riders = new Map(), zones = new Map();
   el.innerHTML = `<div class="split ${selected ? '' : 'no-detail'}">
     <div class="card">
       <div class="bar">
@@ -67,12 +67,11 @@ export default function orders({ el, params, setHeader }) {
   async function load() {
     if (!el.isConnected) return; // page was left while a modal was saving
     try {
-      const [o, s, r, z, l] = await Promise.all([fetchOrders(), fetchStops(), fetchRiders(), fetchZones(), fetchLocations()]);
+      const [o, s, r, z] = await Promise.all([fetchOrders(), fetchStops(), fetchRiders(), fetchZones()]);
       list = o || [];
       prep = new Map((s || []).map(x => [x.order_id, x.preparation_status]));
       riders = new Map((r || []).map(x => [x.id, x]));
       zones = new Map((z || []).map(x => [x.id, x]));
-      locs = new Map((l || []).map(x => [x.rider_id, x]));
       if (el.isConnected) paint();
     } catch (e) { if (el.isConnected) $('[data-list]').innerHTML = errorState(e, 'orders'); }
   }
@@ -83,7 +82,6 @@ export default function orders({ el, params, setHeader }) {
     if (tb === 'issue') return s === 'issue';
     return s === 'delivered';
   };
-  const liveRider = id => { const l = locs.get(id); return l && Date.now() - new Date(l.recorded_at).getTime() < 5 * 60000; };
 
   function paint() {
     const counts = { ongoing: 0, issue: 0, delivered: 0 };
@@ -103,7 +101,7 @@ export default function orders({ el, params, setHeader }) {
         return `<tr class="row ${o.id === selected ? 'sel' : ''}" data-id="${esc(o.id)}"><td><b>${esc(orderNo(o))}</b></td>
           <td>${esc(o.customer_name)}<span class="sub">${esc(o.customer_phone)}</span></td><td style="color:var(--muted)">${esc(itemsText(o.items))}</td>
           <td>${chip(st(o))}</td>
-          <td>${r ? `<span class="person">${avatar(r.name, 'sm')}<span>${esc(r.name)}${liveRider(r.id) ? `<span class="sub live"><i class="dot"></i>${esc(t('st.live'))}</span>` : ''}</span></span>` : esc(t('c.none'))}</td>
+          <td>${r ? `<span class="person">${avatar(r.name, 'sm')}<span>${esc(r.name)}</span></span>` : esc(t('c.none'))}</td>
           <td class="num" style="color:var(--muted)">${esc(fmtTime(o.updated_at))}</td><td>${icon('right', 'i chev')}</td></tr>`;
       }).join('')}</tbody></table></div>
       <div class="pager"><span>${esc(t('c.showing', { n: slice.length }))}</span><div class="pages">
@@ -145,7 +143,7 @@ export default function orders({ el, params, setHeader }) {
 export async function renderDetail(box, id, onChange) {
   const paint = async () => {
     try {
-      const [o, events, rs, stops, ls, cov] = await Promise.all([fetchOrder(id), fetchOrderEvents(id), fetchRiders(), fetchStops(), fetchLocations(),
+      const [o, events, rs, stops, cov] = await Promise.all([fetchOrder(id), fetchOrderEvents(id), fetchRiders(), fetchStops(),
         // Server verdict (order_coverage_status); a failed lookup shows unknown, never a guess.
         api.rpc('order_coverage_status', { p_order_id: id }).catch(() => 'unknown')]);
       if (!o) { box.innerHTML = emptyState(t('orders.none')); return; }
@@ -156,7 +154,6 @@ export async function renderDetail(box, id, onChange) {
       const steps = [['picked_up', t('orders.pickedUp')], ['out_for_delivery', t('orders.onTheWay')], ['arrived', t('orders.arrived')], ['delivered', t('orders.deliveredStep')]];
       const order = ['created', 'ready_for_pickup', 'picked_up', 'out_for_delivery', 'arrived', 'delivered'];
       const cur = order.indexOf(o.delivery_status);
-      const loc = rider && (ls || []).find(l => l.rider_id === rider.id);
       const lines = itemsLines(o.items);
       const digits = phoneDigits(o.customer_phone);
       box.innerHTML = `
@@ -179,7 +176,7 @@ export async function renderDetail(box, id, onChange) {
             const now = cur === idx && k !== 'delivered';
             return `<div class="tl ${done ? 'done' : ''} ${now ? 'now' : ''}"><span class="mk"></span><div><b style="font-weight:500">${esc(label)}</b>
               ${now && k === 'out_for_delivery' && rider ? `<small>${esc(t('orders.enRoute', { r: rider.name }))}</small>` : ''}
-              ${now && loc && i < 3 ? `<div class="sub-card" style="margin:8px 0 0;padding:10px 12px;background:var(--primary-tint);border:0"><small>${esc(t('orders.currentLocation'))}</small><b style="font-weight:600">${esc(t('orders.lastSeen', { t: ago(loc.recorded_at) }))}</b>${o.estimated_arrival_at ? `<small>${esc(t('orders.eta', { t: fmtTime(o.estimated_arrival_at) }))}</small>` : ''}</div>` : ''}
+              ${now && i < 3 && o.estimated_arrival_at ? `<small>${esc(t('orders.eta', { t: fmtTime(o.estimated_arrival_at) }))}</small>` : ''}
               </div><time>${esc(fmtTime(at(k)) || '-')}</time></div>`;
           }).join('')}
           ${!rider ? `<div class="hint">${esc(t('orders.noRiderYet'))}</div>` : ''}

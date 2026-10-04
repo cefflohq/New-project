@@ -13,7 +13,6 @@ export const fetchZones = () => api.get(`/rest/v1/zones?${bizFilter()}&select=id
 export const fetchSessions = () => api.get(`/rest/v1/delivery_sessions?${bizFilter()}&select=id,name,delivery_date,status,pickup_at,sorting_started_at,created_at&order=created_at.desc&limit=200`);
 export const fetchOrderEvents = orderId => api.get(`/rest/v1/delivery_events?order_id=eq.${q(orderId)}&select=event_type,from_status,to_status,created_at,actor_role&order=created_at.asc`);
 export const fetchRatings = () => api.get(`/rest/v1/ratings?select=rider_id,rating,order_id&limit=2000`);
-export const fetchLocations = () => api.rpc('latest_rider_locations', { p_business_id: ctx.bid }).catch(() => []);
 export const fetchBusiness = () => api.get(`/rest/v1/businesses?id=eq.${q(ctx.bid)}&select=*`).then(r => r?.[0] || null);
 // Active members only: a removed (inactive) member has no access and is not on the team.
 export const fetchMembers = () => api.get(`/rest/v1/business_members?${bizFilter()}&status=eq.active&select=user_id,role,status,created_at&order=created_at.asc`);

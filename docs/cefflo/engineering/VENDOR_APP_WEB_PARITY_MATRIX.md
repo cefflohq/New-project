@@ -45,6 +45,7 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Products / catalogue: list, add, edit, category (pick or create), active/hidden, up to 5 photos (JPG/PNG/WebP ≤5 MB; add, remove, reorder) | V-34–V-36, product media multi | ✅ | ✅ (#12) |
 | Storefront: publish/unpublish, permanent link `{base}{slug}`, QR, Copy, Share, template (App registry: Arena, Stride, Ritual, Market, Feast), appearance (colours, style, tagline, hero image) | V-31–V-33, D-55, Storefront V1 | ✅ | ✅ (#13) |
 | Assignment only through runs (`build_rider_run`); per-order `assign_rider` removed from Web | D-61 | ⚪ | ⚪ (#14) |
+| Vendor live rider location: not approved (D-66 is customer-facing only). Web no longer calls `latest_rider_locations` (Live dot, Current location card removed; rider availability = rider's own `availability_status`) | D-66, Founder 2026-10-04 | ⚪ | ⚪ (#15) |
 | Service Area / coverage configuration | V-26–V-27 | ✅ | ✅ |
 | Business Profile, information, address | V-37–V-39 | ✅ | ✅ |
 | Profile, edit profile, profile photo | V-42–V-43 | ✅ | ✅ |
@@ -77,7 +78,6 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 
 | Item | Current code | Why it needs a decision |
 |---|---|---|
-| Live rider location for the Vendor | Web ✅ (`latest_rider_locations`), App ❌ | D-66 defines customer-facing location only; no decision grants Vendor live location |
 | Full rating history / rating detail UI | Neither (only aggregate rating) | D-46 approves the aggregate rating only |
 | Google Drive import | Web ✅ (Integrations), App ❌ ("Google sign-in not connected") | No D-decision; came with a Vendor Web commit |
 | Light / Dark mode | Web ✅ (dark mode), App ⚪ (D-54: accent colours, "No light/dark mode") | Same capability across both, or keep different? |

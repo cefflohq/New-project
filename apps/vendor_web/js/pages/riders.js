@@ -5,13 +5,13 @@ import { t, fmtDate, fmtTime } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { showInviteLink } from '../invite_link.js';
-import { fetchRiders, fetchOrders, fetchRatings, fetchLocations, orderNo } from '../data.js';
+import { fetchRiders, fetchOrders, fetchRatings, orderNo } from '../data.js';
 import { esc, icon, chip, avatar, loadingRows, emptyState, errorState, toast, busy, modal, confirmDialog, typedConfirmDialog, phoneDigits, orderStatus, gatedNote } from '../ui.js';
 
 export default function riders({ el, params, setHeader }) {
   setHeader(t('riders.title'));
   const selected = params[0] || null;
-  let tab = 'all', query = '', all = [], orders = [], ratings = [], locs = new Map();
+  let tab = 'all', query = '', all = [], orders = [], ratings = [];
   el.innerHTML = `<div class="split no-detail">
     <div class="card">
       <div class="bar">
@@ -26,9 +26,9 @@ export default function riders({ el, params, setHeader }) {
 
   async function load() {
     try {
-      const [r, o, rt, l] = await Promise.all([fetchRiders(), fetchOrders(), fetchRatings(), fetchLocations()]);
+      const [r, o, rt] = await Promise.all([fetchRiders(), fetchOrders(), fetchRatings()]);
       all = (r || []).filter(x => x.status !== 'inactive');
-      orders = o || []; ratings = rt || []; locs = new Map((l || []).map(x => [x.rider_id, x]));
+      orders = o || []; ratings = rt || [];
       paint();
       if (selected) openDetail();
     } catch (e) { $('[data-list]').innerHTML = errorState(e, 'riders'); }
@@ -72,8 +72,9 @@ export default function riders({ el, params, setHeader }) {
     const r = all.find(x => x.id === selected);
     if (!r) { location.hash = '#/riders'; return; }
     const s = stats(r.id), digits = phoneDigits(r.phone);
-    const loc = locs.get(r.id);
-    const live = loc && Date.now() - new Date(loc.recorded_at).getTime() < 5 * 60000;
+    // Availability is the rider's own setting; Vendor live location is not
+    // an approved capability (D-66 covers the customer view only).
+    const live = r.availability_status === 'online';
     const wa = digits ? `https://wa.me/${esc(digits.replace(/^0/, '60'))}` : '';
     const head = `<div class="rd-head">${avatar(r.name, 'lg')}
         <div class="rd-id"><div class="rd-name"><h2>${esc(r.name)}</h2>${chip(r.status === 'active' ? 'active' : 'pending')}</div>
