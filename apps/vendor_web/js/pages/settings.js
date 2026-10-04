@@ -12,7 +12,7 @@ import { rerenderShell, signOutHandler } from '../shell.js';
 import { otpBoxesHtml, wireOtpBoxes, otpFailure } from './auth.js';
 import { openNotificationPrefs } from '../notifications.js';
 
-const PAGES = ['profile', 'security', 'business', 'team', 'integrations', 'help', 'privacy', 'about'];
+const PAGES = ['profile', 'security', 'business', 'team', 'subscription', 'integrations', 'help', 'privacy', 'about'];
 // D-74, as Vendor Mobile: business details, Team and billing are Owner-only.
 // Integrations stays open to Operators (Founder, 2026-09-29).
 const OWNER_ONLY = new Set(['business', 'team', 'subscription']);
@@ -29,7 +29,7 @@ export default function settings({ el, params, setHeader }) {
       ${item('m:notifications', 'bell', 'set.notifications')}
       ${item('m:language', 'globe', 'set.language', esc(prefs.lang === 'ms' ? 'BM' : 'EN'))}
       ${item('m:appearance', 'palette', 'set.appearance')}
-      <h4>${esc(t('set.business'))}</h4>${ctx.isOwner ? item('business', 'building', 'set.businessProfile') + item('team', 'users', 'set.team') : ''}${item('integrations', 'link', 'set.integrations')}
+      <h4>${esc(t('set.business'))}</h4>${ctx.isOwner ? item('business', 'building', 'set.businessProfile') + item('team', 'users', 'set.team') + item('subscription', 'card', 'sub.title') : ''}${item('integrations', 'link', 'set.integrations')}
       <h4>${esc(t('set.support'))}</h4>${item('help', 'help', 'set.help')}
       <h4>${esc(t('set.legal'))}</h4>${item('privacy', 'shield', 'set.privacy')}${item('about', 'info', 'set.about')}
       <button class="signout" data-signout>${icon('logout')}<span>${esc(t('set.signOut'))}</span></button>
@@ -45,7 +45,7 @@ export default function settings({ el, params, setHeader }) {
     if (s === 'm:notifications') return openNotificationPrefs();
     location.hash = `#/settings/${s}`;
   });
-  ({ profile, security, business, team, integrations, help: staticPage('help'), privacy: staticPage('privacy'), about: staticPage('about') })[sub](page);
+  ({ profile, security, business, team, subscription, integrations, help: staticPage('help'), privacy: staticPage('privacy'), about: staticPage('about') })[sub](page);
 }
 
 // ---------------------------------------------------------------- modals
@@ -376,6 +376,52 @@ function integrations(page) {
     const act = e.target.closest('[data-int-action]')?.dataset.intAction;
     if (act === 'import') { const { openImport } = await import('./order_actions.js'); openImport(); }
     if (act === 'add') { const { openAddOrder } = await import('./order_actions.js'); openAddOrder(); }
+  });
+  paint();
+}
+
+// Subscription (V-50-V-54, D-54), Owner only, as Vendor App live: the plan
+// row is administered in FOUNDR (business_subscriptions is readable only by
+// platform admins), so a missing row reads "Managed by Cefflo". Plans are the
+// pricing candidate (sot/10_PRICING.md). Real payment is on HOLD: choosing a
+// plan asks support by email and nothing is ever shown as paid or changed.
+const PLANS = [
+  { id: 'free', name: 'Free', price: 0, f: ['p.f100', 'p.f3r2z', 'p.fTrack'] },
+  { id: 'grow', name: 'Grow', price: 99, f: ['p.f500', 'p.f10r5z', 'p.f3team', 'p.fStdSupport'] },
+  { id: 'operate', name: 'Operate', price: 199, popular: true, f: ['p.f1500', 'p.fUnlimited', 'p.f10team', 'p.fAdvReport', 'p.fPriority'] },
+  { id: 'scale', name: 'Scale', price: 499, f: ['p.f5000', 'p.fUnlimited', 'p.f25team', 'p.fAdvControls', 'p.fPriority'] },
+];
+
+async function subscription(page) {
+  const body = header(page, 'sub.title', 'sub.lead');
+  let sub = null, yearly = false, pick = '';
+  try { sub = (await api.get(`/rest/v1/business_subscriptions?business_id=eq.${encodeURIComponent(ctx.bid)}&select=plan_key,status,trial_ends_at`))?.[0] || null; } catch { sub = null; }
+  const statusKey = { trial: 'sub.trial', active: 'sub.active', past_due: 'sub.pastDue', suspended: 'sub.suspended', cancelled: 'sub.cancelled' };
+  const paint = () => {
+    const cur = PLANS.find(p => p.id === sub?.plan_key);
+    body.innerHTML = `
+      <div class="sub-card"><h3>${esc(t('sub.current'))}</h3>${sub
+        ? `<b style="font-size:18px">${esc(cur ? cur.name : sub.plan_key)}</b><p class="desc" style="margin:4px 0 0">${esc(t('sub.status'))}: ${esc(t(statusKey[sub.status] || 'c.none'))}${sub.trial_ends_at ? ` · ${esc(t('sub.trialEnds', { d: fmtDate(sub.trial_ends_at) }))}` : ''}</p>`
+        : `<b>${esc(t('sub.managed'))}</b><p class="desc" style="margin:4px 0 0">${esc(t('sub.unavailable'))}</p>`}</div>
+      <div class="sub-card"><div style="display:flex;align-items:center;gap:12px"><h3 style="margin:0">${esc(t('sub.choose'))}</h3>
+        <div class="tabs" style="margin-left:auto"><button class="tab ${yearly ? '' : 'on'}" data-cycle="m">${esc(t('sub.monthly'))}</button><button class="tab ${yearly ? 'on' : ''}" data-cycle="y">${esc(t('sub.yearly'))}</button></div></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:12px">${PLANS.map(p => `<button class="opt ${pick === p.id ? 'on' : ''}" data-plan="${p.id}" style="display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:2px;text-align:left;height:100%;min-width:0">
+          <b>${esc(p.name)}</b>${p.popular ? ` <span class="chip active">${esc(t('sub.popular'))}</span>` : ''}${cur?.id === p.id ? ` <span class="chip neutral">${esc(t('sub.currentShort'))}</span>` : ''}
+          <div style="font-size:20px;font-weight:600;margin:6px 0">RM${yearly ? p.price * 10 : p.price}<small style="font-weight:400"> ${esc(t(yearly ? 'sub.perYear' : 'sub.perMonth'))}</small></div>
+          <ul style="margin:0;padding-left:18px">${p.f.map(k => `<li><small>${esc(t(k))}</small></li>`).join('')}</ul></button>`).join('')}</div>
+        <p class="hint" style="margin-top:10px">${esc(t('sub.candidate'))}</p>
+        ${gatedNote(t('sub.paymentHold'))}
+        <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn primary" data-request ${pick && pick !== cur?.id ? '' : 'disabled'}>${icon('mail')}${esc(t('sub.request'))}</button></div></div>
+      <div class="sub-card"><h3>${esc(t('sub.billing'))}</h3>${emptyState(t('sub.noInvoices'))}</div>`;
+  };
+  body.addEventListener('click', e => {
+    const c = e.target.closest('[data-cycle]'); if (c) { yearly = c.dataset.cycle === 'y'; paint(); return; }
+    const p = e.target.closest('[data-plan]'); if (p) { pick = p.dataset.plan; paint(); return; }
+    if (e.target.closest('[data-request]') && pick) {
+      const plan = PLANS.find(x => x.id === pick);
+      const lines = [`Plan change request: ${plan.name} (${yearly ? 'yearly' : 'monthly'})`, '', '--', `Business: ${ctx.business?.business_name} (${ctx.bid})`, ctx.user?.email && `Account: ${ctx.user.email}`, 'App: Cefflo Vendor Web'].filter(Boolean);
+      location.href = `mailto:support@cefflo.com?subject=${encodeURIComponent('Cefflo plan change request')}&body=${encodeURIComponent(lines.join('\n'))}`;
+    }
   });
   paint();
 }

@@ -41,6 +41,7 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Ready-for-pickup visibility (Ready = canonical `ready_for_pickup` only; visibility, no Helper execution). Web previously labelled every `created` order Ready — fixed to Pending / Unassigned / Preparing | D-74, Founder 2026-10-04 | ✅ | ✅ (#8) |
 | Business hours (`business_hours` read, `set_business_hours` whole-week save, Owner only) | V-40, Business Hours V1 | ✅ | ✅ (#9) |
 | Help & Support, FAQ, Contact Support (support@cefflo.com via the user's email app with business/role/account context; no ticket backend, never claims "sent") | V-55–V-57, FG-3/FG-4 | ✅ | ✅ (#10) |
+| Subscription (Owner only): current plan (`business_subscriptions`; RLS = platform admin, so live shows "Managed by Cefflo" as in App), plan catalogue (pricing candidate), billing history (no billing backend → empty). Payment HOLD: plan choice = support request, never a simulated payment | V-50–V-54, D-54 | ✅ | ✅ (#11) |
 | Service Area / coverage configuration | V-26–V-27 | ✅ | ✅ |
 | Business Profile, information, address | V-37–V-39 | ✅ | ✅ |
 | Profile, edit profile, profile photo | V-42–V-43 | ✅ | ✅ |
@@ -54,7 +55,6 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 |---|---|---|---|---|
 | Storefront / Appearance / Preview (publish, link, QR, share, templates) | V-31–V-33, D-55, Storefront V1 (Founder 2026-10-01) | ✅ | ❌ | Web: storefront management |
 | Products: list, add, edit, categories, up to 5 photos | V-34–V-36, product media multi (Founder 2026-10-01) | ✅ | ❌ | Web: catalogue |
-| Subscription: current plan, choose plan, billing history (payments demo-only) | V-50–V-54, D-54 | ✅ | ❌ | Web: subscription surfaces |
 
 ## Verification debt (clear before production qualification)
 
