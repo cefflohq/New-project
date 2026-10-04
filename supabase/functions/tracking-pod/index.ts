@@ -30,7 +30,7 @@ function buildCorsHeaders(origin, allowedOrigins) {
   const headers = { Vary: 'Origin' };
   if (isOriginAllowed(origin, allowedOrigins)) {
     headers['Access-Control-Allow-Origin'] = origin;
-    headers['Access-Control-Allow-Headers'] = 'content-type';
+    headers['Access-Control-Allow-Headers'] = 'apikey, content-type';
     headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS';
   }
   return headers;
