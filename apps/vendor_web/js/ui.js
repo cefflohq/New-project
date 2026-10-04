@@ -61,8 +61,12 @@ export function orderStatus(o, prep) {
   if (d === 'issue') return 'issue';
   if (d === 'cancelled') return 'cancelled';
   if (['picked_up', 'out_for_delivery', 'arrived'].includes(d)) return 'delivery';
-  if (['preparing', 'packed', 'sorted'].includes(prep)) return 'preparing';
-  return 'ready';
+  // Ready means the canonical ready_for_pickup state only (same as Vendor
+  // App); preparation itself is Helper work and is only reflected here.
+  if (d === 'ready_for_pickup') return 'ready';
+  if (['preparing', 'packed', 'sorted'].includes(prep) || o.assigned_rider_id) return 'preparing';
+  if (!o.approved_at) return 'pending';
+  return 'unassigned';
 }
 const CHIP = {
   ready: ['ready', 'st.ready'], delivery: ['delivery', 'st.onDelivery'], issue: ['issue', 'st.issue'],

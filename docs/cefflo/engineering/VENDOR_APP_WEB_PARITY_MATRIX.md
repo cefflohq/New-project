@@ -38,6 +38,7 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Edit order before dispatch (`update_order_details`: customer, phone, address, zone, items, notes; re-geocode on address change) | V-15, D-61 | ✅ | ✅ (#5) |
 | Order coverage status on Order detail (`order_coverage_status`: unconfigured / awaiting location / in / outside). App had the repository call only — wired in both. `is_within_coverage` (coordinate check) has no caller: neither surface takes typed coordinates | V-26/V-27, Web SOT §2 | ✅ (#6) | ✅ (#6) |
 | Delivery events on Order detail (`delivery_events`, oldest first) | Web SOT §2 + §5.8 | ✅ (#7) | ✅ |
+| Ready-for-pickup visibility (Ready = canonical `ready_for_pickup` only; visibility, no Helper execution). Web previously labelled every `created` order Ready — fixed to Pending / Unassigned / Preparing | D-74, Founder 2026-10-04 | ✅ | ✅ (#8) |
 | Service Area / coverage configuration | V-26–V-27 | ✅ | ✅ |
 | Business Profile, information, address | V-37–V-39 | ✅ | ✅ |
 | Profile, edit profile, profile photo | V-42–V-43 | ✅ | ✅ |

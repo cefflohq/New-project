@@ -79,7 +79,7 @@ export default function orders({ el, params, setHeader }) {
   const st = o => orderStatus(o, prep.get(o.id));
   const inTab = (o, tb) => {
     const s = st(o);
-    if (tb === 'ongoing') return ['ready', 'preparing', 'delivery'].includes(s);
+    if (tb === 'ongoing') return ['ready', 'preparing', 'delivery', 'pending', 'unassigned'].includes(s);
     if (tb === 'issue') return s === 'issue';
     return s === 'delivered';
   };

@@ -59,7 +59,7 @@ export default function today({ el, setHeader }) {
     orders.forEach(o => {
       const s = st(o);
       if (s === 'ready') counts.ready++;
-      if (['ready', 'preparing', 'delivery'].includes(s)) counts.ongoing++;
+      if (['ready', 'preparing', 'delivery', 'pending', 'unassigned'].includes(s)) counts.ongoing++;
       if (s === 'issue') counts.issue++;
       if (s === 'delivered') counts.delivered++;
     });
@@ -107,7 +107,7 @@ export default function today({ el, setHeader }) {
     const rows = orders.filter(o => {
       const s = st(o);
       if (tab === 'ready' && s !== 'ready') return false;
-      if (tab === 'ongoing' && !['ready', 'preparing', 'delivery'].includes(s)) return false;
+      if (tab === 'ongoing' && !['ready', 'preparing', 'delivery', 'pending', 'unassigned'].includes(s)) return false;
       if (tab === 'issue' && s !== 'issue') return false;
       if (tab === 'delivered' && s !== 'delivered') return false;
       if (query) {
