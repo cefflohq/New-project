@@ -467,5 +467,6 @@
   "selectedVehicle": "Kenderaan Dipilih",
   "change": "Tukar",
   "stepOf": "{step} / {total}",
-  "enterNamePhonePlate": "Masukkan nama penuh, nombor telefon dan nombor plat kenderaan."
+  "enterNamePhonePlate": "Masukkan nama penuh, nombor telefon dan nombor plat kenderaan.",
+  "keepLoggedIn": "Kekal log masuk"
 }

@@ -3716,4 +3716,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get customerTrackingLinkOnce =>
       'For security this link is shown only now. Copy or share it before closing.';
+
+  @override
+  String get keepLoggedIn => 'Keep me logged in';
 }

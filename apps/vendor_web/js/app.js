@@ -8,7 +8,7 @@ import { loadContext, clearContext, HelperOnlyError, NoBusinessError } from './s
 import { mountShell } from './shell.js';
 import { stopNotifications } from './notifications.js';
 import { errorState } from './ui.js';
-import { renderSignIn, renderSetPassword, renderExpired, renderNoOperatorAccess, renderSplash } from './pages/auth.js';
+import { renderSignIn, renderSetPassword, renderExpired, renderNoOperatorAccess, renderSplash, ephemeralSessionEnded } from './pages/auth.js';
 import { renderBusinessSetup } from './pages/setup.js';
 import { openAddOrder } from './pages/order_actions.js';
 import { openAddRider } from './pages/riders.js';
@@ -32,6 +32,7 @@ async function signOut() {
 }
 
 async function start(message = '') {
+  if (ephemeralSessionEnded() && api.session()?.access_token) { try { await api.signOut(); } catch { /* already gone */ } }
   const linkError = consumeAuthError();
   const linkType = consumeAuthFragment();
   if (!api.session()?.access_token) {

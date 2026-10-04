@@ -111,11 +111,11 @@ code{font-size:12.5px;background:#f4f6f9;padding:1px 5px;border-radius:4px}
 .fa-field input::placeholder{color:#93a2bd}
 .fa-eye{border:0;background:transparent;color:#dbe4f3;padding:6px;margin-right:-6px;border-radius:8px;display:grid}
 .fa-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;flex-wrap:wrap}
-.fa-check{display:inline-flex;align-items:center;gap:10px;color:#dfe6f2;cursor:pointer}
+.fa-check{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#dfe6f2;cursor:pointer}
 .fa-check input{position:absolute;opacity:0;width:1px;height:1px}
-.fa-check span{width:20px;height:20px;border-radius:5px;border:1.5px solid #ffffffaa;display:grid;place-items:center}
-.fa-check input:checked+span{background:#fff;border-color:#fff}
-.fa-check input:checked+span::after{content:'';width:5px;height:10px;border:solid #0b2a6b;border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg)}
+.fa-check span{width:16px;height:16px;border-radius:50%;border:1.4px solid #ffffffaa;display:grid;place-items:center}
+.fa-check input:checked+span{background:#005CC4;border-color:#005CC4}
+.fa-check input:checked+span::after{content:'';width:3.5px;height:7px;border:solid #fff;border-width:0 1.8px 1.8px 0;transform:translateY(-1px) rotate(45deg)}
 .fa-check input:focus-visible+span{outline:2px solid #6aa8ff;outline-offset:2px}
 .fa-link{border:0;background:transparent;color:var(--fa-link);font-size:14.5px;padding:4px;cursor:pointer}
 .fa-link:hover{text-decoration:underline}.fa-link.c{justify-self:center}.fa-link:disabled{color:#7f8fab;cursor:default;text-decoration:none}

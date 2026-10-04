@@ -723,5 +723,6 @@
       }
     }
   },
-  "enterNamePhonePlate": "Enter your full name, phone number and vehicle number plate."
+  "enterNamePhonePlate": "Enter your full name, phone number and vehicle number plate.",
+  "keepLoggedIn": "Keep me logged in"
 }

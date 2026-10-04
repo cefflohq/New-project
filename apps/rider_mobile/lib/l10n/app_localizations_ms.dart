@@ -1587,4 +1587,7 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get enterNamePhonePlate =>
       'Masukkan nama penuh, nombor telefon dan nombor plat kenderaan.';
+
+  @override
+  String get keepLoggedIn => 'Kekal log masuk';
 }

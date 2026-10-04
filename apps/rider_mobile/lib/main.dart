@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import 'core/keep_signed_in.dart';
+
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -52,6 +55,7 @@ Future<void> main() async {
     url: Env.supabaseUrl,
     publishableKey: Env.supabasePublishableKey,
   );
+  await endSessionIfNotKept(Supabase.instance.client);
 
   final repo = RiderRepository(Supabase.instance.client);
   runApp(DriverMobileApp(repo: repo, live: _liveFor(repo)));

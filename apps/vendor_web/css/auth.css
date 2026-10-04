@@ -182,3 +182,13 @@ html:has(.onb), html:has(.onb) body { background: var(--surface); }
   .onb-actions .btn { flex: 1; height: 44px; }
 }
 @media (max-width: 480px) { .onb-row { grid-template-columns: 1fr; } }
+
+/* Keep me logged in — A7 (Founder, 2026-10-04): 16px circle, thin white
+   tick on Cefflo blue; same on every surface. */
+.auth-card-links.split { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.keep { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: var(--text, #101C33); cursor: pointer; user-select: none; }
+.keep input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.keep-dot { width: 16px; height: 16px; border-radius: 50%; border: 1.4px solid #C5CEDC; display: grid; place-items: center; transition: background .16s ease, border-color .16s ease; }
+.keep input:checked + .keep-dot { background: #005CC4; border-color: #005CC4; }
+.keep input:checked + .keep-dot::after { content: ''; width: 3.5px; height: 7px; border: solid #fff; border-width: 0 1.8px 1.8px 0; transform: translateY(-1px) rotate(45deg); }
+.keep input:focus-visible + .keep-dot { outline: 2px solid #005CC4; outline-offset: 2px; }

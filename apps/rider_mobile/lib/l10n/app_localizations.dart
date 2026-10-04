@@ -2905,6 +2905,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter your full name, phone number and vehicle number plate.'**
   String get enterNamePhonePlate;
+
+  /// No description provided for @keepLoggedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep me logged in'**
+  String get keepLoggedIn;
 }
 
 class _AppLocalizationsDelegate

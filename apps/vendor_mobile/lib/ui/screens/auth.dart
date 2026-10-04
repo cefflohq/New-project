@@ -23,6 +23,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/keep_signed_in.dart';
 import '../../core/browser_history.dart';
 import '../../core/auth_access.dart';
 import '../../core/theme.dart';
@@ -1458,6 +1459,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     super.dispose();
   }
 
+  bool _keep = true;
+
   Future<void> _signIn() async {
     setState(() {
       _busy = true;
@@ -1474,6 +1477,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
         email: _email.text,
         password: _password.text,
       );
+      await saveKeepSignedIn(_keep);
       await app.loadSession();
     } on RepositoryError catch (e) {
       if (needsEmailVerification(e)) {
@@ -1514,13 +1518,23 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             enabled: !_busy,
             errorText: _error,
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: _TextLink(
-              L.forgotPassword,
-              onTap: _busy ? null : widget.onForgotPassword,
-              align: TextAlign.right,
-            ),
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+
+            children: [
+              KeepLoggedInCheck(
+                value: _keep,
+                label: L.keepLoggedIn,
+                onChanged: (v) => setState(() => _keep = v),
+              ),
+
+              _TextLink(
+                L.forgotPassword,
+                onTap: _busy ? null : widget.onForgotPassword,
+                align: TextAlign.right,
+              ),
+            ],
           ),
           const SizedBox(height: Gap.xxl),
           CefButton(

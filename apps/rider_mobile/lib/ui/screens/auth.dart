@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/keep_signed_in.dart';
 import '../../core/browser_history.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
@@ -608,6 +609,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _busy = false;
+  bool _keep = true;
   String? _error;
 
   @override
@@ -629,6 +631,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     });
     try {
       await app.repo.signInWithPassword(_email.text, _password.text);
+      await saveKeepSignedIn(_keep);
       await app.loadSession();
       if (mounted) widget.onSignIn();
     } on RepositoryError catch (error) {
@@ -675,15 +678,25 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             ),
           ),
         ],
-        const SizedBox(height: Gap.md),
-        Align(
-          alignment: Alignment.centerRight,
-          child: CeffloTextLink(
-            L.forgotPassword,
-            onTap: widget.onForgotPassword,
-            fontSize: 14,
-            color: CefColors.navy,
-          ),
+        const SizedBox(height: Gap.sm),
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+
+          children: [
+            KeepLoggedInCheck(
+              value: _keep,
+              label: L.keepLoggedIn,
+              onChanged: (v) => setState(() => _keep = v),
+            ),
+
+            CeffloTextLink(
+              L.forgotPassword,
+              onTap: widget.onForgotPassword,
+              fontSize: 14,
+              color: CefColors.navy,
+            ),
+          ],
         ),
         const SizedBox(height: Gap.lg),
         CeffloPrimaryButton(

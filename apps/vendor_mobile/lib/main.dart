@@ -2,6 +2,9 @@ import 'core/auth_access.dart';
 import 'ui/screens/helper_workspace.dart';
 
 import 'package:flutter/material.dart';
+
+import 'core/keep_signed_in.dart';
+
 import 'package:flutter/scheduler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -78,6 +81,7 @@ Future<void> main() async {
     url: Env.supabaseUrl,
     publishableKey: Env.supabasePublishableKey,
   );
+  await endSessionIfNotKept(Supabase.instance.client);
 
   runApp(
     VendorMobileApp(

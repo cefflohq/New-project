@@ -970,7 +970,7 @@ function renderSignIn(message = '', prefill = '') {
     ${message ? `<div class="fa-msg" role="status">${esc(message)}</div>` : ''}
     ${field('mail', `<input id="em" type="email" autocomplete="username" placeholder="Email address" aria-label="Email address" value="${esc(prefill)}" required>`)}
     ${field('lock', '<input id="pw" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password" required>', EYE)}
-    <div class="fa-row"><label class="fa-check"><input type="checkbox" id="keep" checked><span></span>Keep me signed in</label>
+    <div class="fa-row"><label class="fa-check"><input type="checkbox" id="keep" checked><span></span>Keep me logged in</label>
       <button class="fa-link" type="button" data-forgot>Forgot password?</button></div>
     <div class="fa-err" data-err hidden role="alert"></div>
     ${btn('Sign In')}

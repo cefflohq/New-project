@@ -1849,5 +1849,6 @@
   "noDeliveryActivity": "No delivery activity yet.",
   "customerTrackingLink": "Customer tracking link",
   "customerTrackingLinkLead": "Send this link to your customer so they can follow the delivery.",
-  "customerTrackingLinkOnce": "For security this link is shown only now. Copy or share it before closing."
+  "customerTrackingLinkOnce": "For security this link is shown only now. Copy or share it before closing.",
+  "keepLoggedIn": "Keep me logged in"
 }

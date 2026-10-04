@@ -6782,6 +6782,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'For security this link is shown only now. Copy or share it before closing.'**
   String get customerTrackingLinkOnce;
+
+  /// No description provided for @keepLoggedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep me logged in'**
+  String get keepLoggedIn;
 }
 
 class _AppLocalizationsDelegate

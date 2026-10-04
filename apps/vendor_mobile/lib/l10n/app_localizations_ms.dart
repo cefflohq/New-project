@@ -3719,4 +3719,7 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get customerTrackingLinkOnce =>
       'Demi keselamatan, pautan ini dipaparkan sekali sahaja. Salin atau kongsi sebelum menutup.';
+
+  @override
+  String get keepLoggedIn => 'Kekal log masuk';
 }

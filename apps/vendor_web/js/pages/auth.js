@@ -105,6 +105,16 @@ function renderRecoveryCode(root, opts, email) {
   });
 }
 
+// "Keep me logged in" (same rule as FOUNDR): off means the session ends with
+// this browser session; the next visit starts signed out.
+const KEEP_KEY = 'cefflo_vendorweb_ephemeral', ALIVE_KEY = 'cefflo_vendorweb_alive';
+function rememberChoice(keep) {
+  try { if (keep) localStorage.removeItem(KEEP_KEY); else { localStorage.setItem(KEEP_KEY, '1'); sessionStorage.setItem(ALIVE_KEY, '1'); } } catch { /* storage blocked */ }
+}
+export function ephemeralSessionEnded() {
+  try { return localStorage.getItem(KEEP_KEY) === '1' && sessionStorage.getItem(ALIVE_KEY) !== '1'; } catch { return false; }
+}
+
 export function renderSignIn(root, opts, mode = 'choose') {
   const { onSignedIn, message = '' } = opts;
   const again = next => renderSignIn(root, opts, next);
@@ -130,9 +140,10 @@ export function renderSignIn(root, opts, mode = 'choose') {
     ${message ? `<div class="gated">${esc(message)}</div>` : ''}
     <div class="field"><label for="em">${esc(t('auth.email'))}</label><input class="input" id="em" type="email" autocomplete="username" required></div>
     <div class="field"><label for="pw">${esc(t('auth.password'))}</label><input class="input" id="pw" type="password" autocomplete="current-password" required></div>
+    <div class="auth-card-links split"><label class="keep"><input type="checkbox" id="keep" checked><span class="keep-dot" aria-hidden="true"></span>${esc(t('auth.keep'))}</label>
+      <button class="link-btn" type="button" data-forgot>${esc(t('auth.forgot'))}</button></div>
     <div class="err" data-err hidden role="alert"></div>
     <button class="btn primary" type="submit" style="width:100%">${esc(t('auth.signIn'))}</button>
-    <div class="auth-card-links end"><button class="link-btn" type="button" data-forgot>${esc(t('auth.forgot'))}</button></div>
     <p class="auth-foot">${esc(t('auth.noAccount'))} <button class="link-btn" type="button" data-signup>${esc(t('auth.signUp'))}</button></p>
   </form>`, () => again('email'), { back: () => again('choose') });
   const form = root.querySelector('[data-form]'), err = root.querySelector('[data-err]');
@@ -145,6 +156,7 @@ export function renderSignIn(root, opts, mode = 'choose') {
     err.hidden = true;
     try {
       await busy(form.querySelector('[type=submit]'), () => api.signIn(email, pw), t('c.loading'));
+      rememberChoice(root.querySelector('#keep').checked);
       onSignedIn();
     } catch (ex) {
       // An account that never confirmed its email goes to Verify your email.

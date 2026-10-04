@@ -1575,4 +1575,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get enterNamePhonePlate =>
       'Enter your full name, phone number and vehicle number plate.';
+
+  @override
+  String get keepLoggedIn => 'Keep me logged in';
 }

@@ -1112,5 +1112,6 @@
   "noDeliveryActivity": "Belum ada aktiviti penghantaran.",
   "customerTrackingLink": "Pautan jejak pelanggan",
   "customerTrackingLinkLead": "Hantar pautan ini kepada pelanggan supaya mereka boleh mengikuti penghantaran.",
-  "customerTrackingLinkOnce": "Demi keselamatan, pautan ini dipaparkan sekali sahaja. Salin atau kongsi sebelum menutup."
+  "customerTrackingLinkOnce": "Demi keselamatan, pautan ini dipaparkan sekali sahaja. Salin atau kongsi sebelum menutup.",
+  "keepLoggedIn": "Kekal log masuk"
 }
