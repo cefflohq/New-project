@@ -1655,8 +1655,10 @@ String _vehicleSub(String v) => switch (v) {
 String _vehicleImage(String v) =>
     _vehicles.firstWhere((e) => e.$1 == v, orElse: () => _vehicles.first).$2;
 
-/// White registration page: back (and an optional action), centred title
-/// and subtitle, content, and the step indicator at the bottom.
+/// Registration page in the Driver DNA (same as D12/D12.1/D12.2): the navy
+/// header is a transparent window onto the shell gradient, with back, title
+/// and subtitle; the content sits on the white sheet with rounded top
+/// corners. The step indicator closes the sheet.
 class _RegistrationPage extends StatelessWidget {
   const _RegistrationPage({
     required this.title,
@@ -1673,79 +1675,25 @@ class _RegistrationPage extends StatelessWidget {
   final Widget? action;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: context.c.card,
-    body: SafeArea(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(4, 4, Gap.gutter, 0),
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: onBack,
-                  icon: Icon(
-                    LucideIcons.chevronLeft,
-                    color: context.c.textPrimary,
-                  ),
-                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                ),
-                const Spacer(),
-                ?action,
-              ],
-            ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(
-                Gap.gutter,
-                0,
-                Gap.gutter,
-                Gap.lg,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 28,
-                      height: 1.15,
-                      fontWeight: FontWeight.w800,
-                      color: CefColors.navy,
-                    ),
-                  ),
-                  const SizedBox(height: Gap.sm),
-                  Text(
-                    subtitle,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 15,
-                      height: 1.35,
-                      fontWeight: FontWeight.w500,
-                      color: context.c.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: Gap.xl),
-                  ...children,
-                ],
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              Gap.gutter,
-              0,
-              Gap.gutter,
-              Gap.lg,
-            ),
-            child: _StepDots(step: step, total: 4),
-          ),
-        ],
-      ),
+  Widget build(BuildContext context) => CeffloAuthScaffold(
+    onBack: onBack,
+    title: title,
+    subtitle: subtitle,
+    headerAction: action,
+    sheetPadding: const EdgeInsets.fromLTRB(
+      Gap.gutter,
+      Gap.lg,
+      Gap.gutter,
+      Gap.xl,
+    ),
+    sheet: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ...children,
+        const SizedBox(height: Gap.lg),
+        _StepDots(step: step, total: 4),
+      ],
     ),
   );
 }
@@ -1813,7 +1761,7 @@ class _ChooseVehicleScreenState extends State<ChooseVehicleScreen> {
             fontFamily: 'Manrope',
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: CefColors.navy,
+            color: CefColors.onNavy,
           ),
         ),
       ),
