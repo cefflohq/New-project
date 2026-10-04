@@ -387,9 +387,24 @@ function staticPage(kind) {
     if (kind === 'help') {
       body.innerHTML = `<div class="sub-card"><h3>${esc(t('help.faq'))}</h3><div class="faq">
           ${[1, 2, 3, 4, 5, 6].map(n => `<details><summary>${esc(t(`help.q${n}`))}${icon('down')}</summary><p>${esc(t(`help.a${n}`))}</p></details>`).join('')}</div></div>
-        <div class="sub-card row-card">${`<span class="int-ico">${icon('mail')}</span>`}<div class="grow"><h3>${esc(t('help.contact'))}</h3>
-          <p class="desc" style="margin:0">${esc(t('help.contactLead'))} <b class="sel">support@cefflo.com</b></p></div>
-          <a class="btn soft" href="mailto:support@cefflo.com">${icon('mail')}${esc(t('help.email'))}</a></div>`;
+        <div class="sub-card" data-support><h3>${esc(t('help.contact'))}</h3>
+          <p class="desc">${esc(t('help.contactLead'))} <b class="sel">support@cefflo.com</b></p>
+          <div class="field"><label>${esc(t('support.subject'))}</label><input class="input" data-subject maxlength="120" placeholder="${esc(t('support.subjectHint'))}"></div>
+          <div class="field"><label>${esc(t('support.message'))}</label><textarea class="textarea" data-message rows="4" maxlength="500" placeholder="${esc(t('support.messageHint'))}"></textarea></div>
+          <p class="hint">${esc(t('support.opensEmail'))}</p>
+          <div class="err" data-serr hidden></div>
+          <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn primary" data-send>${icon('mail')}${esc(t('support.send'))}</button></div></div>`;
+      // V-57 Contact Support (FG-4), as Vendor App: the request goes to
+      // support@cefflo.com from the user's own email app with business and
+      // account context. No ticket backend, so nothing is reported as sent.
+      body.querySelector('[data-send]').addEventListener('click', () => {
+        const msg = body.querySelector('[data-message]').value.trim(), serr = body.querySelector('[data-serr]');
+        if (!msg) { serr.textContent = t('support.writeFirst'); serr.hidden = false; return; }
+        serr.hidden = true;
+        const subject = body.querySelector('[data-subject]').value.trim() || 'Cefflo Vendor support';
+        const lines = [msg, '', '--', ctx.business && `Business: ${ctx.business.business_name} (${ctx.bid})`, ctx.role && `Role: ${ctx.role}`, ctx.user?.email && `Account: ${ctx.user.email}`, 'App: Cefflo Vendor Web'].filter(Boolean);
+        location.href = `mailto:support@cefflo.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;
+      });
     } else if (kind === 'privacy') {
       body.innerHTML = `<div class="sub-card"><h3>${esc(t('set.privacy'))}</h3><p class="desc" style="line-height:1.7">${esc(t('legal.privacy'))}</p></div>
         <div class="sub-card"><h3>${esc(t('legal.termsTitle'))}</h3><p class="desc" style="line-height:1.7">${esc(t('legal.terms'))}</p></div>`;
