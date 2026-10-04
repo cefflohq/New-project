@@ -3705,4 +3705,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noDeliveryActivity => 'No delivery activity yet.';
+
+  @override
+  String get customerTrackingLink => 'Customer tracking link';
+
+  @override
+  String get customerTrackingLinkLead =>
+      'Send this link to your customer so they can follow the delivery.';
+
+  @override
+  String get customerTrackingLinkOnce =>
+      'For security this link is shown only now. Copy or share it before closing.';
 }

@@ -5,12 +5,33 @@ import { t, fmtTime } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { fetchZones, fetchRiders, todayLocal } from '../data.js';
-import { esc, icon, modal, toast, busy } from '../ui.js';
+import { esc, icon, modal, toast, busy, copyText } from '../ui.js';
 
 const uuid = () => crypto.randomUUID();
 
 // With `existing`, the same form edits a not-yet-dispatched order through
 // update_order_details (V-15, D-61): the server accepts only created orders.
+// Customer Tracking link (D-04: the shared tokenized link is the normal
+// entry). create_delivery returns the token once; only its hash is stored,
+// so the link is offered here, at creation, to copy or share with the
+// customer. Base: CEFFLO_CONFIG.trackingBaseUrl, else this host's /customer/.
+export const trackingUrl = token => `${window.CEFFLO_CONFIG?.trackingBaseUrl || new URL('../customer/', location.href).href}?token=${encodeURIComponent(token)}`;
+function showTrackingLink(token) {
+  const link = trackingUrl(token);
+  const m = modal({
+    title: t('trk.title'), lead: t('trk.lead'),
+    body: `<div class="field"><label>${esc(t('trk.label'))}</label><input class="input" readonly data-trk value="${esc(link)}"></div>
+      <p class="hint">${esc(t('trk.once'))}</p>`,
+    footer: `<button class="btn" data-close>${esc(t('c.close'))}</button>
+      ${navigator.share ? `<button class="btn" data-share>${esc(t('invite.share'))}</button>` : ''}
+      <button class="btn primary" data-copy>${esc(t('riders.copy'))}</button>`,
+  });
+  m.el.addEventListener('click', async e => {
+    if (e.target.closest('[data-copy]')) { const ok = await copyText(link); if (!ok) m.el.querySelector('[data-trk]').select(); toast(ok ? t('riders.copied') : link); }
+    if (e.target.closest('[data-share]')) { try { await navigator.share({ title: t('trk.title'), url: link }); } catch { /* dismissed */ } }
+  });
+}
+
 export async function openAddOrder(onDone, existing = null) {
   const ed = existing || {};
   let zones = [];
@@ -71,6 +92,7 @@ export async function openAddOrder(onDone, existing = null) {
       m.close();
       toast(t('add.created'));
       onDone?.();
+      if (created?.tracking_token) showTrackingLink(created.tracking_token);
     } catch (ex) { err.textContent = ex.message; err.hidden = false; }
   });
 }

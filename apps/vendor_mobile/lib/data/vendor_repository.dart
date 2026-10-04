@@ -580,7 +580,9 @@ class VendorRepository {
     return VendorOrder.fromRow(Map<String, dynamic>.from(row as Map));
   }
 
-  Future<String> createOrder({
+  /// Returns the new order id and the customer tracking token, which
+  /// create_delivery issues once (only its hash is stored).
+  Future<({String id, String? trackingToken})> createOrder({
     required String businessId,
     required String customerName,
     required String customerPhone,
@@ -621,7 +623,7 @@ class VendorRepository {
           .invoke('geocode-order', body: {'order_id': id})
           .then((_) {}, onError: (_) {}),
     );
-    return id;
+    return (id: id, trackingToken: map['tracking_token']?.toString());
   }
 
   Future<VendorOrder> updateOrder({

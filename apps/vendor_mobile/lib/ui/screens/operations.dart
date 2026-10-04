@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/env.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../data/vendor_repository.dart';
 import '../async_view.dart';
+import '../share_link.dart';
 import '../shell.dart';
 import '../widgets.dart';
 import 'import_flow.dart' show ordersRevision;
@@ -940,6 +942,52 @@ Future<void> _reportIssue(
   );
 }
 
+/// Customer Tracking link (D-04). create_delivery issues the token once and
+/// stores only its hash, so the link is offered right after creation to copy
+/// or share with the customer.
+void showTrackingLink(BuildContext context, String token) {
+  final link =
+      '${Env.trackingBaseUrl}?token=${Uri.encodeQueryComponent(token)}';
+  showDialog<void>(
+    context: context,
+    builder: (dialog) => AlertDialog(
+      title: Text(L.customerTrackingLink),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(L.customerTrackingLinkLead),
+          const SizedBox(height: Gap.md),
+          SelectableText(link, key: const ValueKey('tracking-link')),
+          const SizedBox(height: Gap.md),
+          Text(
+            L.customerTrackingLinkOnce,
+            style: Theme.of(dialog).textTheme.bodySmall,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialog).pop(),
+          child: Text(L.close),
+        ),
+        TextButton(
+          onPressed: () => showShareTargets(
+            dialog,
+            link: link,
+            text: L.customerTrackingLinkLead,
+          ),
+          child: Text(L.shareVia),
+        ),
+        FilledButton(
+          onPressed: () => copyLink(dialog, link),
+          child: Text(L.copyLink),
+        ),
+      ],
+    ),
+  );
+}
+
 /// Order → Zone through the canonical `update_order_details` contract.
 Future<void> _pickZone(
   BuildContext context,
@@ -1138,7 +1186,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     });
     try {
       if (widget.isNew) {
-        final id = await app.repo.createOrder(
+        final created = await app.repo.createOrder(
           businessId: app.business!.id,
           customerName: name.text.trim(),
           customerPhone: phone.text.trim(),
@@ -1146,7 +1194,9 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           notes: notes.text.trim(),
         );
         if (!mounted) return;
-        app.go(VRoute.orderDetail, entityId: id);
+        app.go(VRoute.orderDetail, entityId: created.id);
+        final token = created.trackingToken;
+        if (token != null) showTrackingLink(context, token);
       } else {
         await app.repo.updateOrder(
           orderId: widget.orderId!,

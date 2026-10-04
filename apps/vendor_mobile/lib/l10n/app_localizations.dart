@@ -6764,6 +6764,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No delivery activity yet.'**
   String get noDeliveryActivity;
+
+  /// No description provided for @customerTrackingLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer tracking link'**
+  String get customerTrackingLink;
+
+  /// No description provided for @customerTrackingLinkLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Send this link to your customer so they can follow the delivery.'**
+  String get customerTrackingLinkLead;
+
+  /// No description provided for @customerTrackingLinkOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'For security this link is shown only now. Copy or share it before closing.'**
+  String get customerTrackingLinkOnce;
 }
 
 class _AppLocalizationsDelegate

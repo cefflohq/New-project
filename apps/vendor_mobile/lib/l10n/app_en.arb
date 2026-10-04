@@ -1846,5 +1846,8 @@
   "recoverDeliveryLead": "Release the order from its rider so it can be planned again.",
   "deliveryRecovered": "Order released for re-planning.",
   "deliveryActivity": "Delivery activity",
-  "noDeliveryActivity": "No delivery activity yet."
+  "noDeliveryActivity": "No delivery activity yet.",
+  "customerTrackingLink": "Customer tracking link",
+  "customerTrackingLinkLead": "Send this link to your customer so they can follow the delivery.",
+  "customerTrackingLinkOnce": "For security this link is shown only now. Copy or share it before closing."
 }

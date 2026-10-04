@@ -3708,4 +3708,15 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get noDeliveryActivity => 'Belum ada aktiviti penghantaran.';
+
+  @override
+  String get customerTrackingLink => 'Pautan jejak pelanggan';
+
+  @override
+  String get customerTrackingLinkLead =>
+      'Hantar pautan ini kepada pelanggan supaya mereka boleh mengikuti penghantaran.';
+
+  @override
+  String get customerTrackingLinkOnce =>
+      'Demi keselamatan, pautan ini dipaparkan sekali sahaja. Salin atau kongsi sebelum menutup.';
 }
