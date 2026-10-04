@@ -7,7 +7,6 @@
 // Helper (PWA).
 // Public Website: website/index.html, published at the root (dist/index.html).
 export const CANONICAL_SURFACES = Object.freeze({
-  vendor: 'Vendor Web/Desktop',
   customer: 'Customer Tracking PWA',
   foundr: 'Founder Web/PWA',
   // Invitation PWA: rider and team (Operator / Helper) invitations (D-72/D-74).
@@ -19,15 +18,6 @@ export const CANONICAL_SURFACES = Object.freeze({
 });
 
 // Removed surfaces that must never be published again.
-export const FORBIDDEN_OUTPUT_DIRS = Object.freeze(['rider', 'marketing', 'previews', 'storefront']);
+// 'vendor' is the legacy Vendor Web, retired 2026-10-04 for apps/vendor_web (/web/).
+export const FORBIDDEN_OUTPUT_DIRS = Object.freeze(['rider', 'marketing', 'previews', 'storefront', 'vendor']);
 
-// The removed Vendor Web/Desktop welcome presentation.
-export const OBSOLETE_VENDOR_WELCOME_MARKERS = Object.freeze([
-  'id="welcome"',
-  'welcome-hero-photo',
-  'welcome-actions',
-  'showAuthWelcome',
-  "switchScreen('welcome')",
-  'pressWelcomeButton',
-  'welcomeButtonPress',
-]);

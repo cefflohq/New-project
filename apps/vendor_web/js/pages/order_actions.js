@@ -39,11 +39,16 @@ export async function openAddOrder(onDone) {
     err.hidden = true;
     const lines = [...items.children].map(r => ({ name: r.querySelector('[data-iname]').value.trim(), quantity: Math.max(1, Number(r.querySelector('[data-iqty]').value) || 1) })).filter(l => l.name);
     try {
-      await busy(e.currentTarget, () => api.rpc('create_delivery', {
+      const created = await busy(e.currentTarget, () => api.rpc('create_delivery', {
         p_business_id: ctx.bid, p_customer_name: name, p_customer_phone: phone, p_delivery_address: address,
         p_notes: f('notes').value.trim(), p_latitude: null, p_longitude: null, p_items: lines,
         p_zone_id: f('zone').value || null, p_vehicle_requirement: null,
       }));
+      // Same fire-and-forget step as Vendor App: resolve the location planning
+      // needs. The order exists either way; a failure leaves it unresolved
+      // and it surfaces under Need Attention.
+      const orderId = created?.order?.id ?? created?.order_id ?? created?.id;
+      if (orderId) api.fn('geocode-order', { order_id: orderId }).catch(() => {});
       m.close();
       toast(t('add.created'));
       onDone?.();

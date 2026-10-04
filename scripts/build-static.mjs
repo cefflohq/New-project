@@ -1,6 +1,6 @@
-import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { resolveFrontendEnvironment, serializeRuntimeConfig } from './environment.mjs';
-import { CANONICAL_SURFACES, FORBIDDEN_OUTPUT_DIRS, OBSOLETE_VENDOR_WELCOME_MARKERS } from './canonical-surfaces.mjs';
+import { CANONICAL_SURFACES, FORBIDDEN_OUTPUT_DIRS } from './canonical-surfaces.mjs';
 
 const environment = resolveFrontendEnvironment(process.env);
 
@@ -16,8 +16,8 @@ for (const directory of Object.keys(CANONICAL_SURFACES)) {
 
 await writeFile(new URL('../dist/shared/config.js', import.meta.url), serializeRuntimeConfig(environment));
 
-// New Vendor Web App (apps/vendor_web) at /web/, beside the current Vendor
-// Web/Desktop. Same shared runtime config; its demo mode is off in Production.
+// Vendor Web/Desktop (apps/vendor_web) at /web/; vendor.cefflo.com redirects
+// there. Same shared runtime config; its demo mode is off in Production.
 await cp(new URL('../apps/vendor_web/', import.meta.url), new URL('../dist/web/', import.meta.url), { recursive: true });
 
 // Root = the Founder-approved Public Website (www.cefflo.com / cefflo.com),
@@ -37,10 +37,6 @@ for (const name of FORBIDDEN_OUTPUT_DIRS) {
 const allowed = new Set([...Object.keys(CANONICAL_SURFACES), 'web', 'index.html', 'server', '.openai']);
 for (const name of published) {
   if (!allowed.has(name)) throw new Error(`Unexpected published entry "${name}" -- not a canonical surface`);
-}
-const vendorHtml = await readFile(new URL('../dist/vendor/index.html', import.meta.url), 'utf8');
-for (const marker of OBSOLETE_VENDOR_WELCOME_MARKERS) {
-  if (vendorHtml.includes(marker)) throw new Error(`Obsolete Vendor welcome presentation returned: ${marker}`);
 }
 if (!(await stat(new URL('../dist/web/js/app.js', import.meta.url)).catch(() => null))) {
   throw new Error('New Vendor Web App (web/js/app.js) is missing');

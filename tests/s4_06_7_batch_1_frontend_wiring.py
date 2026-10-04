@@ -12,8 +12,6 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-VENDOR_HTML = (ROOT / "vendor" / "index.html").read_text(encoding="utf-8")
-VENDOR_JS = (ROOT / "vendor" / "backend.js").read_text(encoding="utf-8")
 CUSTOMER_HTML = (ROOT / "customer" / "index.html").read_text(encoding="utf-8")
 CUSTOMER_JS = (ROOT / "customer" / "backend.js").read_text(encoding="utf-8")
 # The approved C1-C4 Customer UI renders through tracking-adapter.js (D-62).
@@ -78,73 +76,6 @@ class CustomerZeroFabricatedEtaTests(unittest.TestCase):
     def test_estimated_arrival_stays_the_only_arrival_signal_and_is_null_safe(self):
         # public_tracking's eta is formatted only when present (Grow A5).
         self.assertIn("if (!eta || !eta.state) return null;", CUSTOMER_JS)
-
-class VendorMultiWaveGroupingTests(unittest.TestCase):
-    """Item 4: same Rider + same Zone in two different Waves must never
-    merge into one dashboard card."""
-
-    def test_current_deliveries_group_key_includes_session(self):
-        fn = block(VENDOR_HTML, r"function getCurrentDeliveries\(\)\{")
-        self.assertIn("order.deliverySessionId", fn)
-        self.assertRegex(fn, r"key=`\$\{order\.deliverySessionId")
-
-    def test_today_metrics_consider_every_open_session_not_just_one(self):
-        fn = block(VENDOR_HTML, r"function todaysRelevantOrders\(\)\{")
-        self.assertIn("todaysOpenSessionIds", fn)
-        metrics_fn = block(VENDOR_HTML, r"function getTodayDashboardMetrics\(\)\{")
-        self.assertIn("todaysRelevantOrders()", metrics_fn)
-
-
-class VendorExistingWaveDateFilterTests(unittest.TestCase):
-    """Item 5: the existing-Wave picker must not offer a stale Wave from a
-    different delivery_date as a normal assignment target."""
-
-    def test_existing_waves_filtered_by_delivery_date(self):
-        fn = block(VENDOR_HTML, r"function runBuilderExistingWaves\(\)\{")
-        self.assertIn("s.deliveryDate===today", fn)
-        self.assertIn("operationalDateKey()", fn)
-
-
-class VendorRunProgressHydrationTests(unittest.TestCase):
-    """Item 6: real assignment-state/pickup/delivery progress must be
-    hydrated from the actual backend, not left permanently empty."""
-
-    def test_hydrate_no_longer_hardcodes_empty_assignment_state(self):
-        fn = block(VENDOR_JS, r"async function hydrateCanonicalWorkspace\(\) \{")
-        self.assertNotIn("state.riderAssignments = [];", fn)
-        self.assertNotIn("state.deliveryStops = [];", fn)
-        self.assertIn("listRiderAssignments(selected.business_id)", fn)
-        self.assertIn("state.riderAssignments = assignments.map(mapAssignment)", fn)
-
-    def test_assignment_read_selects_real_status_and_embedded_stop(self):
-        self.assertIn("select=id,rider_id,delivery_session_id,status,accepted_at,delivery_stops(id,order_id,status,sequence)", VENDOR_JS)
-
-    def test_run_progress_reads_only_real_assignment_data(self):
-        fn = block(VENDOR_HTML, r"function computeRunProgress\(\)\{")
-        self.assertIn("state.riderAssignments.forEach", fn)
-        for forbidden in ("Math.random", "etaMinutes", "fake"):
-            self.assertNotIn(forbidden, fn)
-
-    def test_dashboard_renders_run_progress_section(self):
-        fn = block(VENDOR_HTML, r"function pageDashboard\(\)\{")
-        self.assertIn("computeRunProgress()", fn)
-        self.assertIn("Run Progress", fn)
-
-
-class VendorRealtimeReactionTests(unittest.TestCase):
-    """Item 7: Rider Accept/Decline and Run progress must become observable
-    without the Vendor guessing from orders.assigned_rider_id alone -- and
-    the subscription must actually be established, not merely defined."""
-
-    def test_subscribe_listens_on_assignment_and_stop_tables(self):
-        fn = block(VENDOR_JS, r"function subscribe\(businessId, refresh\) \{")
-        self.assertIn("table: 'rider_assignments'", fn)
-        self.assertIn("table: 'delivery_stops'", fn)
-        self.assertIn("table: 'orders'", fn)
-
-    def test_subscribe_is_actually_invoked(self):
-        self.assertIn("subscribe(state.businessId,", VENDOR_JS)
-
 
 if __name__ == "__main__":
     unittest.main()

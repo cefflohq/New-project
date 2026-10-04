@@ -21,8 +21,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 FN_PATH = ROOT / "supabase" / "functions" / "geocode-order" / "index.ts"
 SOURCE = FN_PATH.read_text(encoding="utf-8")
-VENDOR_JS = (ROOT / "vendor" / "backend.js").read_text(encoding="utf-8")
-VENDOR_HTML = (ROOT / "vendor" / "index.html").read_text(encoding="utf-8")
 
 
 def extract_pure_logic():
@@ -198,42 +196,6 @@ class StructuralAndSecrecyTests(unittest.TestCase):
         rate_limit_pos = SOURCE.index("check_rate_limit")
         fetch_pos = SOURCE.index("await fetch(mapboxUrl)")
         self.assertLess(rate_limit_pos, fetch_pos)
-
-
-class FrontendPipelineWiringTests(unittest.TestCase):
-    """Manual New Order and CSV/XLSX import must both enter the same
-    canonical geocode-order pipeline -- no separate import-only geocoding
-    system -- and the manual correction path must remain independently
-    reachable regardless of provider outcome."""
-
-    def test_geocode_wrapper_calls_the_edge_function(self):
-        self.assertIn("/functions/v1/geocode-order", VENDOR_JS)
-
-    def test_manual_new_order_triggers_geocode(self):
-        start = VENDOR_JS.index("wizSubmit = async function")
-        end = VENDOR_JS.index("\n  };", start)
-        fn = VENDOR_JS[start:end]
-        self.assertIn("geocodeOrder(created.order.id)", fn)
-
-    def test_csv_import_triggers_geocode_for_committed_rows_only(self):
-        start = VENDOR_JS.index("confirmCsvImport = async function")
-        end = VENDOR_JS.index("\n  };", start)
-        fn = VENDOR_JS[start:end]
-        self.assertIn("geocodeOrder(id)", fn)
-        self.assertIn("result.committed", fn)
-
-    def test_no_parallel_import_only_geocoding_system(self):
-        # There must be exactly one caller of the geocode-order Edge
-        # Function endpoint in the Vendor adapter (the shared wrapper) --
-        # CSV import must reuse it, not define its own Mapbox call.
-        self.assertEqual(VENDOR_JS.count("/functions/v1/geocode-order"), 1)
-        self.assertNotIn("api.mapbox.com", VENDOR_JS)
-        self.assertNotIn("api.mapbox.com", VENDOR_HTML)
-
-    def test_manual_correction_path_independently_wired(self):
-        self.assertIn("setOrderLocationManual(orderId, lat, lng)", VENDOR_JS)
-        self.assertIn('data-action="confirmSetLocationManual"', VENDOR_HTML)
-        self.assertIn('data-action="openSetLocationManual"', VENDOR_HTML)
 
 
 if __name__ == "__main__":

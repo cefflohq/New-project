@@ -16,18 +16,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-REMOVED_DIRS = ("rider", "marketing", "previews", "storefront")
-WELCOME_MARKERS = (
-    'id="welcome"',
-    "welcome-hero-photo",
-    "welcome-actions",
-    "showAuthWelcome",
-    "switchScreen('welcome')",
-    "pressWelcomeButton",
-    "welcomeButtonPress",
-)
-
-
+REMOVED_DIRS = ("rider", "marketing", "previews", "storefront", "vendor")
 def read(rel):
     return (ROOT / rel).read_text(encoding="utf-8")
 
@@ -36,7 +25,7 @@ class CanonicalSurfaceTests(unittest.TestCase):
     def test_canonical_product_entry_points_exist(self):
         for rel in (
             "apps/vendor_mobile/pubspec.yaml",
-            "vendor/index.html",
+            "apps/vendor_web/index.html",
             "apps/rider_mobile/pubspec.yaml",
             "customer/index.html",
             "customer/app.js",
@@ -57,7 +46,7 @@ class CanonicalSurfaceTests(unittest.TestCase):
         self.assertNotRegex(build, r"\[\s*'vendor'")
         surfaces = read("scripts/canonical-surfaces.mjs")
         listed = re.findall(r"^\s+(\w+): '", surfaces.split("FORBIDDEN_OUTPUT_DIRS")[0], re.M)
-        self.assertEqual(sorted(listed), sorted(["vendor", "customer", "foundr", "invite", "retired", "shared"]))
+        self.assertEqual(sorted(listed), sorted(["customer", "foundr", "invite", "retired", "shared"]))
         self.assertNotIn("marketing", read("scripts/build-static.mjs").split("FORBIDDEN")[0].replace("marketing site", ""))
 
 
@@ -87,23 +76,30 @@ class RoutingTests(unittest.TestCase):
         self.assertEqual([r["destination"] for r in invite], ["/invite/:path*"])
 
 
-class VendorWebAuthEntryTests(unittest.TestCase):
-    def test_obsolete_welcome_presentation_cannot_return(self):
-        html = read("vendor/index.html")
-        for marker in WELCOME_MARKERS:
-            self.assertNotIn(marker, html)
-        self.assertNotIn("data:image/jpeg", html)
+class VendorHostRoutingTests(unittest.TestCase):
+    # The legacy vendor/ page was retired on 2026-10-04: vendor.cefflo.com now
+    # redirects to Vendor Web (apps/vendor_web at /web/), and its old service
+    # worker is replaced by the retirement worker.
+    def setUp(self):
+        config = json.loads(read("vercel.json"))
+        self.rewrites, self.redirects = config["rewrites"], config["redirects"]
 
-    def test_unauthenticated_startup_is_the_login_entry(self):
-        html = read("vendor/index.html")
-        self.assertIn('<div class="screen" id="emailLogin">', html)
-        entry = html.split("function showAuthEntry(){", 1)[1].split("}", 1)[0]
-        self.assertIn("switchScreen('emailLogin')", entry)
-        self.assertIn("if(!restored){showAuthEntry();", html)
-        self.assertIn("switchScreen('language')", html.split('id="emailLogin"', 1)[1][:600])
+    def _vendor(self, rules):
+        return [r for r in rules if (r.get("has") or [{}])[0].get("value") == "vendor.cefflo.com"]
 
-    def test_vendor_shell_cache_was_rotated(self):
-        self.assertNotIn("cefflo-vendor-shell-v1'", read("vendor/sw.js"))
+    def test_legacy_vendor_page_is_gone(self):
+        self.assertFalse((ROOT / "vendor").exists())
+        self.assertFalse([r for r in self.rewrites if r["destination"].startswith("/vendor/")])
+
+    def test_vendor_host_redirects_to_vendor_web(self):
+        redirects = self._vendor(self.redirects)
+        self.assertEqual([r["destination"] for r in redirects], ["/web/"])
+        self.assertFalse(redirects[0]["permanent"])
+        for kept in ("web", "app", "invite", "shared"):
+            self.assertIn(kept, redirects[0]["source"])
+
+    def test_vendor_host_retires_the_old_service_worker(self):
+        self.assertIn({"/sw.js": "/retired/sw.js"}, [{r["source"]: r["destination"]} for r in self._vendor(self.rewrites)])
 
 
 class LegacyPurpleUiTests(unittest.TestCase):
@@ -112,7 +108,7 @@ class LegacyPurpleUiTests(unittest.TestCase):
     LEGACY = re.compile(r"#7c6cf0|#6047d7|#5a40cd|home food business|Delivery Tanpa Drama", re.I)
 
     def test_no_legacy_purple_ui_in_canonical_surfaces(self):
-        roots = ("vendor", "customer", "foundr", "invite", "shared", "apps/vendor_mobile/lib", "apps/rider_mobile/lib")
+        roots = ("apps/vendor_web", "customer", "foundr", "invite", "shared", "apps/vendor_mobile/lib", "apps/rider_mobile/lib")
         hits = []
         for root in roots:
             for path in (ROOT / root).rglob("*"):
@@ -151,15 +147,12 @@ class BuildOutputTests(unittest.TestCase):
         subprocess.run(["node", "scripts/build-static.mjs"], cwd=ROOT, env=env, check=True, capture_output=True)
         dist = ROOT / "dist"
         published = sorted(p.name for p in dist.iterdir())
-        self.assertEqual(published, sorted([".openai", "customer", "foundr", "index.html", "invite", "retired", "server", "shared", "vendor", "web"]))
+        self.assertEqual(published, sorted([".openai", "customer", "foundr", "index.html", "invite", "retired", "server", "shared", "web"]))
         # /web/ = the new Vendor Web App (apps/vendor_web); its demo mode is gated off in Production.
         self.assertIn("<title>Cefflo Vendor</title>", (dist / "web" / "index.html").read_text(encoding="utf-8"))
         self.assertIn("environment !== 'production'", (dist / "web" / "js" / "demo.js").read_text(encoding="utf-8"))
         # Root is the Public Website (claude/public-website @ 810a628), not a product UI.
         self.assertIn("Cefflo — Same-Day Delivery Operating System", (dist / "index.html").read_text(encoding="utf-8"))
-        vendor = (dist / "vendor" / "index.html").read_text(encoding="utf-8")
-        for marker in WELCOME_MARKERS:
-            self.assertNotIn(marker, vendor)
 
 
 if __name__ == "__main__":

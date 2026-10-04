@@ -9,16 +9,6 @@
       "destination": "/shared/:path*"
     },
     {
-      "source": "/manifest.webmanifest",
-      "has": [
-        {
-          "type": "host",
-          "value": "vendor.cefflo.com"
-        }
-      ],
-      "destination": "/vendor/manifest.webmanifest"
-    },
-    {
       "source": "/sw.js",
       "has": [
         {
@@ -26,17 +16,7 @@
           "value": "vendor.cefflo.com"
         }
       ],
-      "destination": "/vendor/sw.js"
-    },
-    {
-      "source": "/icons/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "vendor.cefflo.com"
-        }
-      ],
-      "destination": "/vendor/icons/:path*"
+      "destination": "/retired/sw.js"
     },
     {
       "source": "/invite/:path*",
@@ -77,16 +57,6 @@
         }
       ],
       "destination": "/app/index.html"
-    },
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "vendor.cefflo.com"
-        }
-      ],
-      "destination": "/vendor/:path*"
     },
     {
       "source": "/sw.js",
@@ -216,6 +186,17 @@
   "redirects": [
     {
       "source": "/web",
+      "destination": "/web/",
+      "permanent": false
+    },
+    {
+      "source": "/:path((?!web|app|invite|shared|sw\\.js).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "vendor.cefflo.com"
+        }
+      ],
       "destination": "/web/",
       "permanent": false
     }
