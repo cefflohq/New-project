@@ -2809,6 +2809,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This email is already registered.'**
   String get emailAlreadyRegistered;
+
+  /// No description provided for @continueWithEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Email'**
+  String get continueWithEmail;
 }
 
 class _AppLocalizationsDelegate

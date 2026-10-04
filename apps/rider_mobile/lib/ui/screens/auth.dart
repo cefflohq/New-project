@@ -114,8 +114,15 @@ class _AuthFlowState extends State<AuthFlow> {
       ..add(route);
   });
 
-  /// Driver V1 is Email only (Founder locked): the Sign In screen is the
-  /// email + password form itself, with no provider options.
+  /// D02 Welcome (Founder baseline 3c111db, 2026-10-04): logo lockup, then
+  /// the sign-in options. Driver V1 is Email only (Founder locked), so the
+  /// only option is Continue with Email.
+  Widget _welcome() => WelcomeScreen(
+    onEmail: () => _go(DRoute.emailSignIn),
+    onInvite: () => _go(DRoute.createAccount),
+  );
+
+  /// D03 Sign In with Email.
   Widget _signIn() => EmailSignInScreen(
     onBack: _stack.length > 1 ? _back : null,
     onSignIn: () => widget.onAuthenticated(null),
@@ -147,7 +154,8 @@ class _AuthFlowState extends State<AuthFlow> {
   @override
   Widget build(BuildContext context) => switch (_stack.last) {
     DRoute.splash => SplashScreen(onContinue: () => _resetTo(DRoute.signIn)),
-    DRoute.signIn || DRoute.emailSignIn => _signIn(),
+    DRoute.signIn => _welcome(),
+    DRoute.emailSignIn => _signIn(),
     DRoute.createAccount => CreateAccountScreen(
       onBack: _back,
       // One invitation, one acceptance: the rider already accepted in the
@@ -392,6 +400,155 @@ Future<Locale?> showLanguageSheet(BuildContext context, Locale current) {
       ),
     ),
   );
+}
+
+// ---------------------------------------------------------------------------
+// D02 — Welcome (baseline 3c111db; Email only)
+// ---------------------------------------------------------------------------
+class WelcomeScreen extends StatelessWidget {
+  const WelcomeScreen({
+    super.key,
+    required this.onEmail,
+    required this.onInvite,
+  });
+  final VoidCallback onEmail;
+  final VoidCallback onInvite;
+
+  @override
+  Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
+    value: const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.light,
+      systemNavigationBarContrastEnforced: false,
+    ),
+    child: Scaffold(
+      body: NavyBackdrop(
+        child: SafeArea(
+          // Spaced layout on a phone; scrolls instead of overflowing on a
+          // short screen.
+          child: LayoutBuilder(
+            builder: (context, box) => SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: Gap.gutter),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: box.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    children: [
+                      const Align(
+                        alignment: Alignment.centerRight,
+                        child: AuthLanguageControl(),
+                      ),
+                      const Spacer(flex: 3),
+                      const CeffloSplashLockup(),
+                      const Spacer(flex: 4),
+                      _WelcomeOption(
+                        label: L.continueWithEmail,
+                        icon: LucideIcons.mail,
+                        onTap: onEmail,
+                      ),
+                      const SizedBox(height: Gap.xl),
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            L.haveInvite,
+                            style: TextStyle(
+                              fontFamily: 'Manrope',
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w500,
+                              color: CefColors.onNavy.withValues(alpha: .85),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          InkWell(
+                            onTap: onInvite,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 2,
+                                vertical: 4,
+                              ),
+                              child: Text(
+                                L.getStarted,
+                                style: const TextStyle(
+                                  fontFamily: 'Manrope',
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: CefColors.onNavy,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: CefColors.onNavy,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: Gap.lg),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// D02's full-width option button (3c111db CeffloAuthOption).
+class _WelcomeOption extends StatelessWidget {
+  const _WelcomeOption({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Material(
+      color: c.card,
+      borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+        onTap: onTap,
+        child: Container(
+          width: double.infinity,
+          height: 56,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+            border: Border.all(color: c.border),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 24, color: CefColors.navy),
+              const SizedBox(width: 16),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: c.textPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _RadioDot extends StatelessWidget {

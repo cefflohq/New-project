@@ -697,5 +697,6 @@
     }
   },
   "continueText3": "Continue",
-  "emailAlreadyRegistered": "This email is already registered."
+  "emailAlreadyRegistered": "This email is already registered.",
+  "continueWithEmail": "Continue with Email"
 }

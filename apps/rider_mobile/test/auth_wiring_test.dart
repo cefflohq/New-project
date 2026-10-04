@@ -104,6 +104,20 @@ void main() {
       host(app, AuthFlow(initial: DRoute.signIn, onAuthenticated: (_) {})),
     );
     await tester.pump();
+    // D02 Welcome (baseline 3c111db) offers Email only.
+    expect(find.byType(WelcomeScreen), findsOneWidget);
+    expect(find.text('Continue with Email'), findsOneWidget);
+    expect(find.text('Have an invite?'), findsOneWidget);
+    for (final provider in [
+      'Apple',
+      'Google',
+      'Continue with Apple',
+      'Continue with Google',
+    ]) {
+      expect(find.text(provider), findsNothing, reason: provider);
+    }
+    await tester.tap(find.text('Continue with Email'));
+    await tester.pumpAndSettle();
     expect(find.byType(EmailSignInScreen), findsOneWidget);
     for (final provider in [
       'Apple',

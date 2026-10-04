@@ -1521,4 +1521,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emailAlreadyRegistered => 'This email is already registered.';
+
+  @override
+  String get continueWithEmail => 'Continue with Email';
 }

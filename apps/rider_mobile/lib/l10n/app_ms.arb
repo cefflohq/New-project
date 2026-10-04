@@ -451,5 +451,6 @@
   "joinRequestSentTo": "Permintaan dihantar kepada {business}. Anda akan mendapat akses setelah diluluskan.",
   "joiningBusiness": "Menyertai {business}",
   "continueText3": "Teruskan",
-  "emailAlreadyRegistered": "Emel ini sudah didaftarkan."
+  "emailAlreadyRegistered": "Emel ini sudah didaftarkan.",
+  "continueWithEmail": "Teruskan dengan E-mel"
 }

@@ -545,15 +545,20 @@ class CeffloAuthScaffold extends StatelessWidget {
                             if (title != null)
                               Center(
                                 child: Padding(
+                                  // Room for back (left) and the language
+                                  // control (right); long titles scale down
+                                  // instead of being cut off.
                                   padding: EdgeInsets.symmetric(
-                                    horizontal: headerAction == null ? 48 : 104,
+                                    horizontal: headerAction == null ? 48 : 60,
                                   ),
-                                  child: Text(
-                                    title!.replaceAll('\n', ' '),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: cefHeaderTitleStyle,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      title!.replaceAll('\n', ' '),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      style: cefHeaderTitleStyle,
+                                    ),
                                   ),
                                 ),
                               ),
