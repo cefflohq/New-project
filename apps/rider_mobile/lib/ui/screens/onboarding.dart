@@ -1635,9 +1635,9 @@ class BusinessJoinedScreen extends StatelessWidget {
 // Vehicle values are the stored `rider_vehicle_type` enum.
 // ---------------------------------------------------------------------------
 const _vehicles = [
-  ('motorcycle', 'assets/vehicles/motorbike.png'),
-  ('car', 'assets/vehicles/car.png'),
-  ('van', 'assets/vehicles/van.png'),
+  ('motorcycle', 'assets/vehicles/vehicle_motorcycle.png'),
+  ('car', 'assets/vehicles/vehicle_car.png'),
+  ('van', 'assets/vehicles/vehicle_van.png'),
 ];
 
 String _vehicleName(String v) => switch (v) {
@@ -1663,23 +1663,24 @@ class _RegistrationPage extends StatelessWidget {
   const _RegistrationPage({
     required this.title,
     required this.subtitle,
-    required this.step,
     required this.children,
     required this.onBack,
-    this.action,
+    this.fill = false,
   });
   final String title, subtitle;
-  final int step;
   final List<Widget> children;
   final VoidCallback onBack;
-  final Widget? action;
+
+  /// Fill the sheet to the bottom edge (children may use Expanded), so the
+  /// primary action sits at the bottom instead of leaving empty space.
+  final bool fill;
 
   @override
   Widget build(BuildContext context) => CeffloAuthScaffold(
     onBack: onBack,
     title: title,
     subtitle: subtitle,
-    headerAction: action,
+    scrollable: !fill,
     sheetPadding: const EdgeInsets.fromLTRB(
       Gap.gutter,
       Gap.lg,
@@ -1687,50 +1688,10 @@ class _RegistrationPage extends StatelessWidget {
       Gap.xl,
     ),
     sheet: Column(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisSize: fill ? MainAxisSize.max : MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ...children,
-        const SizedBox(height: Gap.lg),
-        _StepDots(step: step, total: 4),
-      ],
+      children: children,
     ),
-  );
-}
-
-class _StepDots extends StatelessWidget {
-  const _StepDots({required this.step, required this.total});
-  final int step, total;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      const Spacer(),
-      for (var i = 2; i <= total; i++)
-        Container(
-          width: 36,
-          height: 5,
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          decoration: BoxDecoration(
-            color: i <= step ? CefColors.accent : context.c.border,
-            borderRadius: BorderRadius.circular(3),
-          ),
-        ),
-      Expanded(
-        child: Align(
-          alignment: Alignment.centerRight,
-          child: Text(
-            L.stepOf(step, total),
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: context.c.textSecondary,
-            ),
-          ),
-        ),
-      ),
-    ],
   );
 }
 
@@ -1750,32 +1711,23 @@ class _ChooseVehicleScreenState extends State<ChooseVehicleScreen> {
     return _RegistrationPage(
       title: L.chooseYourVehicle,
       subtitle: L.selectVehicleUseDelivery,
-      step: 2,
       onBack: app.back,
-      // Skip leaves registration for later; it is offered again next time.
-      action: TextButton(
-        onPressed: () => app.resetTo(app.homeRoute),
-        child: Text(
-          L.skip,
-          style: const TextStyle(
-            fontFamily: 'Manrope',
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: CefColors.onNavy,
-          ),
-        ),
-      ),
+      fill: true,
+      // Choosing a vehicle is required (no Skip): the three options share
+      // the sheet's height and Next sits at the bottom.
       children: [
-        for (final (v, img) in _vehicles) ...[
-          _VehicleOption(
-            value: v,
-            image: img,
-            selected: v == _selected,
-            onTap: () => setState(() => _selected = v),
+        for (final (index, (v, img)) in _vehicles.indexed) ...[
+          if (index > 0) const SizedBox(height: Gap.md),
+          Expanded(
+            child: _VehicleOption(
+              value: v,
+              image: img,
+              selected: v == _selected,
+              onTap: () => setState(() => _selected = v),
+            ),
           ),
-          const SizedBox(height: Gap.md),
         ],
-        const SizedBox(height: Gap.sm),
+        const SizedBox(height: Gap.lg),
         CeffloPrimaryButton(
           L.next,
           onTap: () {
@@ -1838,10 +1790,25 @@ class _VehicleOption extends StatelessWidget {
               size: 24,
             ),
             const SizedBox(width: Gap.md),
-            Image.asset(image, width: 96, height: 68, fit: BoxFit.contain),
+            // Studio photos on white: multiplied with the card colour so the
+            // white backdrop disappears into both the plain and the selected
+            // card. Fixed box + contain keeps proportions; a wider box lets
+            // the three vehicles read at a similar visual size.
+            SizedBox(
+              width: 128,
+              height: 84,
+              child: Image.asset(
+                image,
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.medium,
+                color: selected ? CefColors.tintInfo : context.c.card,
+                colorBlendMode: BlendMode.multiply,
+              ),
+            ),
             const SizedBox(width: Gap.md),
             Expanded(
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -1950,7 +1917,6 @@ class _YourDriverDetailsScreenState extends State<YourDriverDetailsScreen> {
     return _RegistrationPage(
       title: L.yourDriverDetails,
       subtitle: L.infoSharedDeliveryPartner,
-      step: 3,
       onBack: app.back,
       children: [
         const Center(child: AvatarPicker(size: 84)),
