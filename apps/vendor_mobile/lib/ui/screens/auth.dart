@@ -872,35 +872,29 @@ class _SplashScreenState extends State<SplashScreen>
         child: SafeArea(
           child: Column(
             children: [
-              const Spacer(),
-              // Every surface's splash (Founder, 2026-10-04): the same
-              // symbol + wordmark artwork at 156px and the surface name
-              // beneath it, nothing else.
-              Image.asset(
-                'assets/brand/cefflo-logo-splash.png',
-                width: 156,
-                height: 156 * 1878 / 1304,
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.medium,
-              ),
-              const SizedBox(height: 14),
+              const Spacer(flex: 5),
+              const _BrandLockup(height: 200),
+              // VENDOR sits close under the wordmark (Founder, 2026-10-04).
+              const SizedBox(height: Gap.xs),
               Text(
                 switch (widget.access) {
-                  AuthAccess.vendor => 'Vendor',
-                  AuthAccess.operator => L.operatorAccess,
-                  AuthAccess.helper => L.helperAccess,
+                  AuthAccess.vendor => 'VENDOR',
+                  AuthAccess.operator => L.operatorAccess.toUpperCase(),
+                  AuthAccess.helper => L.helperAccess.toUpperCase(),
                 },
                 key: const Key('splash-access'),
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 156 * 0.17,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: Colors.white,
                   fontWeight: FontWeight.w500,
-                  height: 1.0,
-                  letterSpacing: 1.0,
-                  color: Colors.white.withValues(alpha: 0.9),
+                  letterSpacing: 6,
                 ),
               ),
-              const Spacer(),
+              const Spacer(flex: 5),
+              const _Tagline(),
+              const SizedBox(height: Gap.section),
+              _SplashProgress(animation: _progress),
+              const SizedBox(height: Gap.section),
             ],
           ),
         ),
@@ -2771,4 +2765,49 @@ class _JoinRequestScreenState extends State<JoinRequestScreen> {
     }
     return _SheetScaffold(child: body);
   }
+}
+
+class _Tagline extends StatelessWidget {
+  const _Tagline();
+
+  @override
+  Widget build(BuildContext context) => Text(
+    L.operateTodayGrowTomorrow,
+    textAlign: TextAlign.center,
+    style: Theme.of(context).textTheme.bodyMedium
+        ?.copyWith(color: Colors.white.withValues(alpha: .88), height: 1.45),
+  );
+}
+
+class _SplashProgress extends StatelessWidget {
+  const _SplashProgress({required this.animation});
+  final Animation<double> animation;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 168,
+    height: 4,
+    child: AnimatedBuilder(
+      animation: animation,
+      builder: (context, _) {
+        final active = (animation.value * 3).floor() % 3;
+        return Row(
+          children: List.generate(3, (i) {
+            return Expanded(
+              child: Container(
+                margin: EdgeInsets.only(right: i == 2 ? 0 : 6),
+                height: 4,
+                decoration: BoxDecoration(
+                  color: i == active
+                      ? CefColors.ceffloMustard
+                      : Colors.white.withValues(alpha: .28),
+                  borderRadius: BorderRadius.circular(99),
+                ),
+              ),
+            );
+          }),
+        );
+      },
+    ),
+  );
 }

@@ -119,9 +119,23 @@ class _AuthFlowState extends State<AuthFlow> {
   /// the sign-in options. Driver V1 is Email only (Founder locked), so the
   /// only option is Continue with Email.
   Widget _welcome() => WelcomeScreen(
+    onGoogle: _google,
     onEmail: () => _go(DRoute.emailSignIn),
     onInvite: () => _go(DRoute.createAccount),
   );
+
+  Future<void> _google() async {
+    final app = AppScope.read(context);
+    if (app.repo.isDemo) {
+      widget.onAuthenticated(null);
+      return;
+    }
+    try {
+      await app.repo.signInWithGoogle();
+    } on RepositoryError catch (e) {
+      if (mounted) showCefToast(context, driverAuthErrorText(e), error: true);
+    }
+  }
 
   /// D03 Sign In with Email.
   Widget _signIn() => EmailSignInScreen(
@@ -409,9 +423,11 @@ Future<Locale?> showLanguageSheet(BuildContext context, Locale current) {
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({
     super.key,
+    required this.onGoogle,
     required this.onEmail,
     required this.onInvite,
   });
+  final VoidCallback onGoogle;
   final VoidCallback onEmail;
   final VoidCallback onInvite;
 
@@ -446,6 +462,12 @@ class WelcomeScreen extends StatelessWidget {
                       const Spacer(flex: 3),
                       const CeffloSplashLockup(),
                       const Spacer(flex: 4),
+                      _WelcomeOption(
+                        label: L.continueWithGoogle,
+                        image: 'assets/brand/google-g-logo.png',
+                        onTap: onGoogle,
+                      ),
+                      const SizedBox(height: Gap.md),
                       _WelcomeOption(
                         label: L.continueWithEmail,
                         icon: LucideIcons.mail,
@@ -505,11 +527,13 @@ class WelcomeScreen extends StatelessWidget {
 class _WelcomeOption extends StatelessWidget {
   const _WelcomeOption({
     required this.label,
-    required this.icon,
+    this.icon,
+    this.image,
     required this.onTap,
   });
   final String label;
-  final IconData icon;
+  final IconData? icon;
+  final String? image;
   final VoidCallback onTap;
 
   @override
@@ -531,7 +555,9 @@ class _WelcomeOption extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 24, color: CefColors.navy),
+              image != null
+                  ? Image.asset(image!, width: 22, height: 22)
+                  : Icon(icon, size: 24, color: CefColors.navy),
               const SizedBox(width: 16),
               Flexible(
                 child: Text(

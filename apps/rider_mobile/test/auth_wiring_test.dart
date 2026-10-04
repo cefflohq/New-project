@@ -96,40 +96,36 @@ void main() {
     expect(authenticated, isTrue);
   });
 
-  testWidgets('Driver Sign In is Email only: no Google or Apple options', (
-    tester,
-  ) async {
-    final app = AppState(RiderRepository.demo());
-    await tester.pumpWidget(
-      host(app, AuthFlow(initial: DRoute.signIn, onAuthenticated: (_) {})),
-    );
-    await tester.pump();
-    // D02 Welcome (baseline 3c111db) offers Email only.
-    expect(find.byType(WelcomeScreen), findsOneWidget);
-    expect(find.text('Continue with Email'), findsOneWidget);
-    expect(find.text('Have an invite?'), findsOneWidget);
-    for (final provider in [
-      'Apple',
-      'Google',
-      'Continue with Apple',
-      'Continue with Google',
-    ]) {
-      expect(find.text(provider), findsNothing, reason: provider);
-    }
-    await tester.tap(find.text('Continue with Email'));
-    await tester.pumpAndSettle();
-    expect(find.byType(EmailSignInScreen), findsOneWidget);
-    for (final provider in [
-      'Apple',
-      'Google',
-      'Continue with Apple',
-      'Continue with Google',
-    ]) {
-      expect(find.text(provider), findsNothing, reason: provider);
-    }
-    expect(find.text('Forgot Password?'), findsOneWidget);
-    expect(find.text('Have an invite?'), findsOneWidget);
-  });
+  testWidgets(
+    'Driver Welcome offers Google and Email; the email form has no providers',
+    (tester) async {
+      final app = AppState(RiderRepository.demo());
+      await tester.pumpWidget(
+        host(app, AuthFlow(initial: DRoute.signIn, onAuthenticated: (_) {})),
+      );
+      await tester.pump();
+      // D02 Welcome: Continue with Google and Continue with Email (Founder,
+      // 2026-10-04); no Apple.
+      expect(find.byType(WelcomeScreen), findsOneWidget);
+      expect(find.text('Continue with Google'), findsOneWidget);
+      expect(find.text('Continue with Email'), findsOneWidget);
+      expect(find.text('Have an invite?'), findsOneWidget);
+      expect(find.text('Continue with Apple'), findsNothing);
+      await tester.tap(find.text('Continue with Email'));
+      await tester.pumpAndSettle();
+      expect(find.byType(EmailSignInScreen), findsOneWidget);
+      for (final provider in [
+        'Apple',
+        'Google',
+        'Continue with Apple',
+        'Continue with Google',
+      ]) {
+        expect(find.text(provider), findsNothing, reason: provider);
+      }
+      expect(find.text('Forgot Password?'), findsOneWidget);
+      expect(find.text('Have an invite?'), findsOneWidget);
+    },
+  );
 
   testWidgets('Verify Email counts down, then resends through the backend', (
     tester,

@@ -23,7 +23,7 @@ Future<void> endSessionIfNotKept(SupabaseClient db) async {
   } catch (_) {}
 }
 
-/// A7: 16px circle, thin white tick on Cefflo blue, label beside it.
+/// A7: 16px circle, thin navy tick on Cefflo mustard, label beside it.
 class KeepLoggedInCheck extends StatelessWidget {
   const KeepLoggedInCheck({
     super.key,
@@ -55,10 +55,10 @@ class KeepLoggedInCheck extends StatelessWidget {
               height: 16,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: value ? const Color(0xFF005CC4) : Colors.transparent,
+                color: value ? const Color(0xFFFEC819) : Colors.transparent,
                 border: Border.all(
                   color: value
-                      ? const Color(0xFF005CC4)
+                      ? const Color(0xFFFEC819)
                       : const Color(0xFFC5CEDC),
                   width: 1.4,
                 ),

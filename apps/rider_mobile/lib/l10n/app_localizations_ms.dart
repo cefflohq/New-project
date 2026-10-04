@@ -1590,4 +1590,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get keepLoggedIn => 'Kekal log masuk';
+
+  @override
+  String get continueWithGoogle => 'Teruskan dengan Google';
 }

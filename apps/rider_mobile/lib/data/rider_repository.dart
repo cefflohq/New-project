@@ -160,6 +160,15 @@ class RiderRepository {
     ),
   );
 
+  /// Continue with Google (Founder, 2026-10-04): the same Supabase OAuth
+  /// contract as Vendor App; returns to this app via [authRedirectUrl].
+  Future<void> signInWithGoogle() => _run(
+    () => _db.auth.signInWithOAuth(
+      OAuthProvider.google,
+      redirectTo: authRedirectUrl,
+    ),
+  );
+
   Future<void> sendPasswordReset(String email) => _run(
     () => _db.auth.resetPasswordForEmail(
       email.trim(),

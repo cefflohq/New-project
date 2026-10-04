@@ -724,5 +724,6 @@
     }
   },
   "enterNamePhonePlate": "Enter your full name, phone number and vehicle number plate.",
-  "keepLoggedIn": "Keep me logged in"
+  "keepLoggedIn": "Keep me logged in",
+  "continueWithGoogle": "Continue with Google"
 }

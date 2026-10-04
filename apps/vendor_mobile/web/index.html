@@ -79,7 +79,9 @@
   </style>
 </head>
 <body>
-  <div id="cef-presplash" aria-hidden="true"><img src="assets/assets/brand/cefflo-logo-primary.png" alt=""></div>
+  <!-- Plain brand gradient while Flutter loads: no logo, so the app's own
+       splash is the only splash (Founder, 2026-10-04). -->
+  <div id="cef-presplash" aria-hidden="true"></div>
   <script>
     window.addEventListener('flutter-first-frame', function () {
       var el = document.getElementById('cef-presplash');

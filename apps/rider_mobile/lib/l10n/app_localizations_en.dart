@@ -1578,4 +1578,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get keepLoggedIn => 'Keep me logged in';
+
+  @override
+  String get continueWithGoogle => 'Continue with Google';
 }

@@ -89,7 +89,7 @@ code{font-size:12.5px;background:#f4f6f9;padding:1px 5px;border-radius:4px}
 .fa-brand{display:grid;justify-items:center;gap:8px;margin-top:4px}
 .fa-mark{display:block;width:58px;height:70px;overflow:hidden;position:relative}
 /* The canonical mark sits in the middle of its square canvas: show just the mark. */
-.fa-mark img{position:absolute;width:217%;height:auto;left:-58.7%;top:-39.2%;max-width:none;filter:drop-shadow(0 6px 18px #0007)}
+.fa-mark img{position:absolute;width:217%;height:auto;left:-58.7%;top:-39.2%;max-width:none}
 .fa-brand b{font-size:17px;font-weight:600;letter-spacing:.5em;margin-right:-.5em}
 .fa-brand small{font-size:12.5px;color:var(--fa-sub)}
 .fa-brand.big{margin-top:12vh;gap:12px}.fa-brand.big .fa-mark{width:84px;height:102px}.fa-brand.big b{font-size:24px}.fa-brand.big small{font-size:14.5px}
@@ -114,8 +114,8 @@ code{font-size:12.5px;background:#f4f6f9;padding:1px 5px;border-radius:4px}
 .fa-check{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#dfe6f2;cursor:pointer}
 .fa-check input{position:absolute;opacity:0;width:1px;height:1px}
 .fa-check span{width:16px;height:16px;border-radius:50%;border:1.4px solid #ffffffaa;display:grid;place-items:center}
-.fa-check input:checked+span{background:#005CC4;border-color:#005CC4}
-.fa-check input:checked+span::after{content:'';width:3.5px;height:7px;border:solid #fff;border-width:0 1.8px 1.8px 0;transform:translateY(-1px) rotate(45deg)}
+.fa-check input:checked+span{background:#FEC819;border-color:#FEC819}
+.fa-check input:checked+span::after{content:'';width:3.5px;height:7px;border:solid #12213E;border-width:0 1.8px 1.8px 0;transform:translateY(-1px) rotate(45deg)}
 .fa-check input:focus-visible+span{outline:2px solid #6aa8ff;outline-offset:2px}
 .fa-link{border:0;background:transparent;color:var(--fa-link);font-size:14.5px;padding:4px;cursor:pointer}
 .fa-link:hover{text-decoration:underline}.fa-link.c{justify-self:center}.fa-link:disabled{color:#7f8fab;cursor:default;text-decoration:none}
@@ -165,3 +165,9 @@ code{font-size:12.5px;background:#f4f6f9;padding:1px 5px;border-radius:4px}
 
 .fa-splash{display:grid;place-items:center}.splash-lockup{display:flex;flex-direction:column;align-items:center;gap:14px;color:#ffffffe6}.splash-lockup img{width:156px;height:auto}.splash-lockup span{font-size:26.5px;font-weight:500;line-height:1;letter-spacing:1px}
 .fa-stage:has(.fa-field) .fa-sub{display:none}
+/* Sign In sits a little lower: easier to reach with a thumb. */
+form[data-signin] .fa-btn{margin-top:20px}
+/* Landing (Founder QA, 2026-10-04): brand centred in the screen, choices
+   below it; brand logos keep their own colours (no outline stroke). */
+.fa-brand.big{margin:auto 0}
+.fa-g path,.fa-gmail path{stroke:none}
