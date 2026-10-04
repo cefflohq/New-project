@@ -72,7 +72,7 @@ with psycopg.connect(target.database_url) as conn:
             cur.execute("reset role")
             cur.execute(
                 "select set_config('request.jwt.claim.sub',%s,true),"
-                "set_config('request.jwt.claims',json_build_object('sub',%s,'role',%s)::text,true)",
+                "set_config('request.jwt.claims',json_build_object('sub',%s::text,'role',%s::text)::text,true)",
                 (str(user_id), str(user_id), role),
             )
             cur.execute(f"set local role {role}")

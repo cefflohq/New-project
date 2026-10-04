@@ -172,6 +172,15 @@ with psycopg.connect(target.database_url) as conn:
             "order already dispatched",
         )
 
+        # Security & Access Master §16: a rider with open work cannot be removed.
+        actor(owner_a)
+        expect_rejected(cur, "select deactivate_rider(%s)", (rider_a1,), "rider has active work")
+
+        # Once the work is closed the Owner can remove the rider.
+        cur.execute("reset role")
+        cur.execute("update orders set delivery_status='cancelled' where id=%s", (order_a,))
+        cur.execute("update rider_assignments set status='cancelled' where rider_id=%s and status not in ('completed','cancelled','declined')", (rider_a1,))
+        cur.execute("update delivery_stops set status='cancelled' where rider_id=%s and status not in ('delivered','cancelled')", (rider_a1,))
         actor(owner_a)
         cur.execute("select (deactivate_rider(%s)).status", (rider_a1,))
         assert cur.fetchone()[0] == "inactive"

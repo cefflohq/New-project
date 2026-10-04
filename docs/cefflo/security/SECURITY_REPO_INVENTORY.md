@@ -45,14 +45,35 @@ Storage buckets: `cefflo-avatars` private · `cefflo-pod` private ·
 | Helper read of private product originals (§18 finding) | `product_originals_vendor_read` uses `is_business_member` | Appears resolved; needs negative test |
 | Membership statuses | `business_members.status` ∈ {active, inactive} | — |
 
-## 4. Blockers to evidence
+## 4. Database/security test suite — RESOLVED 2026-10-04
 
-40 Python test modules (token lifecycle, RLS, rate limits, recovery, etc.)
-fail to import `environment_guard`, so no SEC-* suite currently runs.
+The 40 "import errors" were the environment guard refusing to run without an
+explicit, disposable target (by design). The suite now runs against a
+disposable local Supabase (`npx supabase start`, all 77 migrations) via
+`scripts/run-db-tests-local.sh`, which can only target loopback port 54322.
+
+Result: **36 / 36 modules pass** (token lifecycle, RLS, rate limits, POD path,
+tracking/rating limits, order approval, sessions/runs, zones, team and rider
+invitations, multi-business rider context, delivery issues, catalogue,
+public order page, storefront roles, RPC grant hardening).
+
+Stale tests updated to the approved behaviour:
+- `s4_07_batch_3_rider_invitation`: Operator approval of a rider is refused;
+  Owner approves (Master §10, security batch 1).
+- `s4_03_batch_1_contracts`: removing a rider with open work is refused until
+  the work is closed (Master §16).
+- `storefront_v1_roles`: parameter typing fix.
+- `s4_10b_product_media_contract`: retired — it encoded the one-photo
+  pipeline replaced by `20260930090556_product_media_multi` (Founder approval
+  2026-10-01); the current contract is covered by `storefront_v1_roles`.
+
+Not run (tools, not tests): `guarded_supabase_reset`, `check_target_identity`,
+`validate_backend`. Not yet covered: an explicit negative test that a Helper
+cannot read `cefflo-product-originals` objects (§18).
 
 ## 5. Agreed work order (Founder, 2026-10-04)
 
-1. Fix the test harness so security suites run.
+1. ~~Fix the test harness so security suites run.~~ Done 2026-10-04.
 2. Vendor App: Remove member + typed `CONFIRM`; decide Delivery Settings.
 3. Vendor Web: Team → Pending and Remove member parity; retire `/vendor/`.
 4. Operator: own entry/auth on shared code.
