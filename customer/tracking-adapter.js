@@ -216,7 +216,7 @@ export function buildLiveSource(payload = {}) {
     reference: payload.orderId ?? DASH,
     vendor: { ...LIVE_VENDOR, name: payload.storeName || LIVE_VENDOR.name, storefrontPhoto: null, address: DASH },
     order: { itemsLabel: DASH, note: DASH },
-    pickup: { atLabel: DASH },
+    pickup: { atLabel: known(payload.pickedUpAt) ?? DASH },
     eta: known(payload.estimatedArrival) ? { label: 'Estimated Arrival', valueLabel: payload.estimatedArrival } : null,
     // No map illustration: a real location is shown as text + map link only.
     route: null,
@@ -225,8 +225,7 @@ export function buildLiveSource(payload = {}) {
       // D-66: latest authorized point only (never history), from public_tracking.
       location: payload.riderLocation && Number.isFinite(payload.riderLocation.lat)
         ? { lat: payload.riderLocation.lat, lng: payload.riderLocation.lng, recordedAt: payload.riderLocation.recorded_at }
-        : null,
-      stopsAhead: Number.isInteger(payload.stopsAhead) ? payload.stopsAhead : null
+        : null
     },
     delivery: { address: DASH, atLabel: known(payload.deliveredAt) ?? DASH, receivedBy: DASH },
     pod: payload.podPhoto ? { available: true, url: payload.podPhoto, alt: 'Proof of delivery photo', riderNote: DASH } : null,
@@ -245,6 +244,7 @@ function mergeBackendPayload(source, payload) {
       ? { label: 'Estimated Arrival', valueLabel: payload.estimatedArrival }
       : null,
     rider: payload.riderName ? { ...source.rider, name: payload.riderName } : source.rider,
+    pickup: payload.pickedUpAt ? { atLabel: payload.pickedUpAt } : source.pickup,
     delivery: {
       ...source.delivery,
       atLabel: payload.deliveredAt && payload.deliveredAt !== '—' ? payload.deliveredAt : source.delivery.atLabel

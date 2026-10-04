@@ -65,7 +65,7 @@ const done = async () => { while (resolvers.length) { resolvers.shift()(); await
   doc.visibilityState = 'visible'; status = 'delivered'; listeners['d:visibilitychange'](); await flush(); await done();
   out.leftWhenDelivered = liveLog.at(-1)[0] === 'leave';
   out.maxParallel = maxParallel;
-  out.location = statuses[0][1].riderLocation; out.stopsAhead = statuses[0][1].stopsAhead;
+  out.location = statuses[0][1].riderLocation; if ('stopsAhead' in statuses[0][1]) out.stopsAhead = statuses[0][1].stopsAhead;
   console.log(JSON.stringify(out));
 })();
 """
@@ -99,7 +99,8 @@ class CustomerLiveGateTests(unittest.TestCase):
 
     def test_location_comes_from_snapshot(self):
         self.assertEqual(self.out["location"]["lat"], 3.1)
-        self.assertEqual(self.out["stopsAhead"], 2)
+        # Multi-drop privacy (2026-10-04): no stop count reaches the customer UI.
+        self.assertNotIn("stopsAhead", self.out)
 
 
 if __name__ == "__main__":

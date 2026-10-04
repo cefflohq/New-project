@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cefflo-customer-shell-v5';
+const CACHE_NAME = 'cefflo-customer-shell-v6';
 const ROOT = new URL('./', self.registration.scope).pathname;
 const SHELL = [
   ROOT,
@@ -9,6 +9,7 @@ const SHELL = [
   `${ROOT}tracking-adapter.js`,
   `${ROOT}rating-adapter.js`,
   `${ROOT}pod-adapter.js`,
+  `${ROOT}live-map.js`,
   `${ROOT}fonts/inter-Regular.woff2`,
   `${ROOT}fonts/inter-Medium.woff2`,
   `${ROOT}fonts/inter-SemiBold.woff2`,

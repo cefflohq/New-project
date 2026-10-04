@@ -44,7 +44,7 @@
       deliveredAt: snapshot.completed_at ? new Date(snapshot.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
       podPhoto: snapshot.status === 'delivered' && snapshot.pod_available ? await podUrl().catch(() => null) : null,
       riderLocation: snapshot.rider_location || null,
-      stopsAhead: typeof snapshot.stops_ahead === 'number' ? snapshot.stops_ahead : null,
+      pickedUpAt: snapshot.picked_up_at ? new Date(snapshot.picked_up_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null,
       ratingSubmitted: Boolean(snapshot.rating_submitted)
     });
     syncLive(snapshot);
@@ -107,7 +107,7 @@
     clearTimeout(fallbackTimer);
     const s = lastSnapshot;
     if (!s || !TRACKABLE.includes(s.status) || document.visibilityState === 'hidden') return;
-    const high = s.status === 'arrived' || s.stops_ahead === 0;
+    const high = s.status === 'arrived';
     fallbackTimer = setTimeout(guardedRefresh, high ? 60000 : 180000);
   }
 

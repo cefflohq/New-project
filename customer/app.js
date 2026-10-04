@@ -7,6 +7,7 @@
 // by tracking-adapter.js. No business truth is hardwired into the markup.
 
 import { TRACKING_FIXTURE } from './fixtures.js';
+import { liveMapAvailable, isLiveMapOpen, openLiveMap, updateLiveMap, closeLiveMap } from './live-map.js';
 import {
   CUSTOMER_STATUS,
   TRACKING_PHASE,
@@ -141,12 +142,14 @@ function factCard(vm) {
   const delivered = vm.status === CUSTOMER_STATUS.DELIVERED;
   const label = delivered ? 'Delivered at' : 'Estimated arrival';
   const value = delivered ? known(vm.delivery?.atLabel) : vm.eta?.valueLabel;
-  if (!value) return '';
-  return `
+  const fact = (lbl, val) => `
     <div class="fact">
       <span class="fact__icon">${icon('clock', { size: 26 })}</span>
-      <span class="fact__text"><small>${label}</small><strong>${esc(value)}</strong></span>
+      <span class="fact__text"><small>${lbl}</small><strong>${esc(val)}</strong></span>
     </div>`;
+  // Pickup time (this order only) sits with the ETA so the delivery reads at a glance.
+  const picked = !delivered && known(vm.pickup?.atLabel) ? fact('Picked up at', vm.pickup.atLabel) : '';
+  return `${value ? fact(label, value) : ''}${picked}`;
 }
 
 function actionRow(glyph, label, attrs, sub = '') {
@@ -173,8 +176,10 @@ function actions(vm) {
   const loc = vm.rider?.location;
   if (loc) {
     const mins = Math.max(0, Math.round((Date.now() - new Date(loc.recordedAt).getTime()) / 60000));
+    // Status + ETA first; the Mapbox map loads only on this explicit tap.
+    if (!liveMapAvailable()) return '';
     return actionRow(icon('map', { size: 22 }), 'View live map',
-      { href: `https://www.google.com/maps?q=${encodeURIComponent(`${loc.lat},${loc.lng}`)}` },
+      { data: 'data-action="open-live-map"' },
       `Location updated ${mins < 1 ? 'just now' : `${mins} min ago`}`);
   }
   if (!vm.route) return '';
@@ -192,9 +197,6 @@ function riderCard(vm) {
   if (!rider) return '';
   const initial = esc((rider.name || 'R').trim().charAt(0).toUpperCase() || 'R');
   const meta = [known(rider.vehicle), known(rider.plate)].filter(Boolean).join(' · ');
-  const stops = Number.isInteger(rider.stopsAhead)
-    ? `<span class="live-chip">${esc(rider.stopsAhead === 0 ? 'Your delivery is next' : `${rider.stopsAhead} ${rider.stopsAhead === 1 ? 'stop' : 'stops'} before yours`)}</span>`
-    : '';
   return `
     <section class="rider-card" aria-label="Your rider">
       ${rider.photo
@@ -203,7 +205,6 @@ function riderCard(vm) {
       <div class="rider-card__text">
         <strong>${esc(rider.name)}</strong>
         ${meta ? `<small>${esc(meta)}</small>` : ''}
-        ${stops}
       </div>
       <div class="contact-actions">
         ${contactAction('call', 'phone', 'Call', rider)}
@@ -327,6 +328,9 @@ function render() {
   const vm = provider.store.getState();
 
   const showPod = ui.view === 'pod' && vm.phase === TRACKING_PHASE.READY && vm.pod;
+  // An open live map follows the latest authorised point; it closes itself
+  // once the order is no longer on the way.
+  if (isLiveMapOpen()) { if (vm.rider?.location) updateLiveMap(vm.rider.location); else closeLiveMap(); }
   sheet.innerHTML = showPod ? podScreen(vm) : trackingScreen(vm);
   sheet.scrollTop = 0;
 
@@ -362,6 +366,7 @@ sheet.addEventListener('click', (event) => {
   if (action === 'contact-call') contact('call', trigger);
   if (action === 'contact-chat') contact('chat', trigger);
   if (action === 'toggle-map') { ui.mapOpen = !ui.mapOpen; render(); }
+  if (action === 'open-live-map') openLiveMap(provider.store.getState().rider?.location, { title: 'Live map', closeLabel: 'Close map' });
   if (action === 'retry-tracking') retryTracking(trigger);
 });
 

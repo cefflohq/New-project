@@ -96,7 +96,7 @@ class CustomerTrackingLiveTests(unittest.TestCase):
     def test_live_location_only_from_snapshot(self):
         rider = self.out["live"]["rider"]
         self.assertEqual(rider["location"], {"lat": 3.1234, "lng": 101.5678, "recordedAt": "2026-09-27T10:00:00Z"})
-        self.assertEqual(rider["stopsAhead"], 0)
+        self.assertNotIn("stopsAhead", rider)  # multi-drop privacy
         self.assertIsNone(self.out["on_the_way"]["rider"]["location"])
         self.assertIsNone(self.out["live"]["route"])
 
