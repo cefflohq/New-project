@@ -5,8 +5,8 @@ import { t, fmtDate } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { prefs, savePrefs } from '../prefs.js';
-import { fetchBusiness, fetchZones, fetchMembers, fetchTeamInvites } from '../data.js';
-import { esc, icon, avatar, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal, confirmDialog } from '../ui.js';
+import { fetchBusiness, fetchZones, fetchMembers, fetchTeamInvites, fetchJoinRequests } from '../data.js';
+import { esc, icon, avatar, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal, confirmDialog, typedConfirmDialog } from '../ui.js';
 import { showLink } from './riders.js';
 import { rerenderShell, signOutHandler } from '../shell.js';
 import { otpBoxesHtml, wireOtpBoxes, otpFailure } from './auth.js';
@@ -236,19 +236,38 @@ async function business(page) {
   } catch (e) { body.innerHTML = errorState(e); }
 }
 
+// Team (Owner-only page): active members with Owner-only Remove member
+// (typed CONFIRM + fresh read-back), invite-link join requests awaiting the
+// Owner's decision, and email invitations. Security & Access Master Part III
+// §12, §17-24; the server authorises every action.
 async function team(page) {
   const body = header(page, 'set.team', 'team.lead');
+  let names = new Map();
+  const memberName = m => m.user_id === ctx.user.id
+    ? `${ctx.user.user_metadata?.full_name || ctx.user.email} (${t('team.you')})`
+    : (names.get(m.user_id) || t('team.member'));
   const paint = async () => {
     try {
-      const [members, invites] = await Promise.all([fetchMembers(), fetchTeamInvites()]);
-      const pending = (invites || []).filter(i => ['pending', 'consented'].includes(i.status));
+      const [members, invites, requests, approved] = await Promise.all([
+        fetchMembers(), fetchTeamInvites(), fetchJoinRequests('pending'), fetchJoinRequests('approved').catch(() => []),
+      ]);
+      names = new Map((approved || []).filter(r => r.user_id && r.name).map(r => [r.user_id, r.name]));
+      const pendingInvites = (invites || []).filter(i => ['pending', 'consented'].includes(i.status));
+      const unnamed = (members || []).some(m => m.user_id !== ctx.user.id && !names.has(m.user_id));
       body.innerHTML = `
         <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn cta" data-invite>${icon('plus')}${esc(t('team.invite'))}</button></div>
-        <div class="sub-card">${(members || []).map(m => `<div class="list-row" style="cursor:default">${avatar(m.user_id === ctx.user.id ? (ctx.user.user_metadata?.full_name || ctx.user.email) : m.role)}
-            <div class="grow"><b>${esc(m.user_id === ctx.user.id ? `${ctx.user.user_metadata?.full_name || ctx.user.email} (${t('team.you')})` : t('team.member'))}</b><small>${esc(t(`team.${m.role}`))}</small></div>${chip(m.status === 'active' ? 'active' : 'inactive', true)}</div>`).join('')}
-          <div style="margin-top:10px">${gatedNote(t('team.memberNameGated'))}</div></div>
+        <div class="sub-card"><h3>${esc(t('team.members'))}</h3>${(members || []).map(m => `<div class="list-row" style="cursor:default">${avatar(memberName(m))}
+            <div class="grow"><b>${esc(memberName(m))}</b><small>${esc(t(`team.${m.role}`))}</small></div>${chip('active', true)}
+            ${m.role !== 'owner' ? `<button class="btn sm danger-soft" data-remove="${esc(m.user_id)}">${esc(t('team.remove'))}</button>` : ''}</div>`).join('')}
+          ${unnamed ? `<div style="margin-top:10px">${gatedNote(t('team.memberNameGated'))}</div>` : ''}</div>
+        <div class="sub-card"><h3>${esc(t('team.pending'))}</h3><p class="desc" style="margin:0 0 6px">${esc(t('team.pendingLead'))}</p>
+          ${(requests || []).length ? requests.map(r => `<div class="list-row" style="cursor:default">${avatar(r.name || r.role)}
+              <div class="grow"><b>${esc(r.name || t('team.member'))}</b><small>${esc(t(`team.${r.role}`))} · ${esc(t('team.requested'))} ${esc(fmtDate(r.created_at))}</small></div>
+              <button class="btn sm" data-decide="${esc(r.id)}" data-approve="0">${esc(t('team.reject'))}</button>
+              <button class="btn sm primary" data-decide="${esc(r.id)}" data-approve="1">${esc(t('team.approve'))}</button></div>`).join('')
+            : `<div class="hint" style="padding:10px 0">${esc(t('c.none'))}</div>`}</div>
         <div class="sub-card"><div style="display:flex;align-items:center;gap:12px"><div style="flex:1"><h3>${esc(t('team.invitations'))}</h3><p class="desc" style="margin:0">${esc(t('team.invitationsLead'))}</p></div></div>
-          ${pending.length ? pending.map(i => {
+          ${pendingInvites.length ? pendingInvites.map(i => {
             const days = Math.max(0, Math.ceil((new Date(i.expires_at) - Date.now()) / 86400000));
             return `<div class="list-row" style="cursor:default">${avatar(i.invited_email)}<div class="grow"><b>${esc(i.invited_email)}</b></div>
               <span class="chip ${i.role === 'helper' ? 'neutral' : 'delivery'}">${esc(t(`team.${i.role}`))}</span>${chip('pending', true)}
@@ -263,6 +282,28 @@ async function team(page) {
     if (rv) {
       if (!await confirmDialog({ title: t('team.revoke'), confirmLabel: t('team.revoke'), danger: true })) return;
       try { await api.rpc('revoke_team_invitation', { p_invitation_id: rv.dataset.revoke }); toast(t('team.revoked')); paint(); } catch (ex) { toast(ex.message, 'error'); }
+      return;
+    }
+    // Pending requests: Approve / Reject; rejecting never needs typed CONFIRM.
+    const dc = e.target.closest('[data-decide]');
+    if (dc) {
+      const approve = dc.dataset.approve === '1';
+      try {
+        await busy(dc, () => api.rpc('decide_team_join_request', { p_request_id: dc.dataset.decide, p_approve: approve }));
+        toast(t(approve ? 'team.approved' : 'team.rejected')); paint();
+      } catch (ex) { toast(ex.message, 'error'); }
+      return;
+    }
+    const rm = e.target.closest('[data-remove]');
+    if (rm) {
+      const userId = rm.dataset.remove, name = names.get(userId) || t('team.member');
+      if (!await typedConfirmDialog({ title: t('team.removeTitle', { name }), body: t('team.removeBody', { name }), confirmLabel: t('team.remove') })) return;
+      try {
+        await api.rpc('update_team_member', { p_business_id: ctx.bid, p_user_id: userId, p_status: 'inactive' });
+        const still = ((await fetchMembers()) || []).some(m => m.user_id === userId);
+        if (still) { toast(t('c.removalNotConfirmed'), 'error'); return; }
+        toast(t('team.removed')); paint();
+      } catch (ex) { toast(ex.message, 'error'); }
     }
   });
   paint();

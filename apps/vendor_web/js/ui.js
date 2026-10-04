@@ -144,6 +144,25 @@ export function confirmDialog({ title, body, confirmLabel, danger = false }) {
   });
 }
 
+// Destructive confirmation that enables only once CONFIRM is typed exactly
+// (Security & Access Master Part III §19-20). UX protection only: the server
+// still authorises every removal.
+export function typedConfirmDialog({ title, body, confirmLabel }) {
+  return new Promise(resolve => {
+    let done = false;
+    const m = modal({
+      title, lead: body,
+      body: `<div class="field"><label>${esc(t('c.typeConfirm'))}</label><input class="input" data-confirm-input autocomplete="off" placeholder="CONFIRM"></div>`,
+      footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn danger-soft" data-ok disabled>${esc(confirmLabel)}</button>`,
+      onClose: () => { if (!done) resolve(false); },
+    });
+    const input = m.el.querySelector('[data-confirm-input]'), ok = m.el.querySelector('[data-ok]');
+    input.addEventListener('input', () => { ok.disabled = input.value !== 'CONFIRM'; });
+    ok.addEventListener('click', () => { if (ok.disabled) return; done = true; m.close(); resolve(true); });
+    input.focus();
+  });
+}
+
 export function copyText(text) {
   return navigator.clipboard?.writeText(text).then(() => true, () => false) ?? Promise.resolve(false);
 }

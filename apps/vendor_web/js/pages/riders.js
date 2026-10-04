@@ -5,7 +5,7 @@ import { t, fmtDate, fmtTime } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { fetchRiders, fetchOrders, fetchRatings, fetchLocations, orderNo } from '../data.js';
-import { esc, icon, chip, avatar, loadingRows, emptyState, errorState, toast, busy, modal, confirmDialog, copyText, phoneDigits, orderStatus, gatedNote } from '../ui.js';
+import { esc, icon, chip, avatar, loadingRows, emptyState, errorState, toast, busy, modal, confirmDialog, typedConfirmDialog, copyText, phoneDigits, orderStatus, gatedNote } from '../ui.js';
 
 export default function riders({ el, params, setHeader }) {
   setHeader(t('riders.title'));
@@ -95,12 +95,12 @@ export default function riders({ el, params, setHeader }) {
       </div>`;
     const history = s.mine.length ? `<div>${s.mine.slice(0, 30).map(o => `<a class="list-row" href="#/orders/${esc(o.id)}" style="color:inherit;text-decoration:none"><div class="grow"><b>${esc(orderNo(o))}</b><small>${esc(o.customer_name)} · ${esc(fmtDate(o.created_at))} ${esc(fmtTime(o.created_at))}</small></div>${chip(orderStatus(o))}</a>`).join('')}</div>` : emptyState(t('riders.noHistory'));
     const TABS = { ov: overview, docs: gatedNote(t('riders.docsGated')), earn: gatedNote(t('riders.earningsGated')), hist: history };
-    // Approve / reject / deactivate are Owner-only (enforced server-side by
+    // Approve / reject / remove are Owner-only (enforced server-side by
     // approve_pending_rider and deactivate_rider); Operators see none.
     const owner = ctx.isOwner;
     const footer = r.status === 'pending'
       ? (owner ? `<button class="btn" data-reject>${esc(t('riders.reject'))}</button><button class="btn primary" data-approve>${esc(t('riders.approve'))}</button>` : '')
-      : `${owner ? `<button class="link-btn rd-deactivate" data-deactivate>${esc(t('riders.deactivate'))}</button>` : ''}${digits ? `<a class="btn" href="tel:${esc(r.phone)}">${icon('phone')}${esc(t('c.call'))}</a><a class="btn" href="${wa}" target="_blank" rel="noopener">${icon('wa')}WhatsApp</a>` : ''}`;
+      : `${owner ? `<button class="link-btn rd-deactivate" data-remove-rider>${esc(t('riders.remove'))}</button>` : ''}${digits ? `<a class="btn" href="tel:${esc(r.phone)}">${icon('phone')}${esc(t('c.call'))}</a><a class="btn" href="${wa}" target="_blank" rel="noopener">${icon('wa')}WhatsApp</a>` : ''}`;
     const m = modal({
       title: r.name, head, cls: 'rider-modal', footer,
       body: `<div class="tabs rd-tabs" role="tablist">${[['ov', 'riders.overview'], ['docs', 'riders.documents'], ['earn', 'riders.earnings'], ['hist', 'riders.history']]
@@ -115,11 +115,22 @@ export default function riders({ el, params, setHeader }) {
       if (hl) { e.preventDefault(); const to = hl.getAttribute('href'); m.close(); location.hash = to; return; }
       const ap = e.target.closest('[data-approve]');
       if (ap) { try { await busy(ap, () => api.rpc('approve_pending_rider', { p_rider_id: r.id })); toast(t('riders.approved')); m.close(); load(); } catch (ex) { toast(ex.message, 'error'); } return; }
-      const rj = e.target.closest('[data-reject],[data-deactivate]');
-      if (rj) {
-        const reject = rj.hasAttribute('data-reject');
-        if (!await confirmDialog({ title: reject ? t('riders.reject') : t('riders.deactivate'), body: r.name, confirmLabel: reject ? t('riders.reject') : t('riders.deactivate'), danger: true })) return;
-        try { await api.rpc('deactivate_rider', { p_rider_id: r.id }); toast(reject ? t('riders.rejected') : t('riders.deactivated')); m.close(); } catch (ex) { toast(ex.message === 'rider has active work' ? t('riders.activeWork') : ex.message, 'error'); }
+      // Rejecting a pending applicant: simple confirmation (never had access).
+      if (e.target.closest('[data-reject]')) {
+        if (!await confirmDialog({ title: t('riders.reject'), body: r.name, confirmLabel: t('riders.reject'), danger: true })) return;
+        try { await api.rpc('deactivate_rider', { p_rider_id: r.id }); toast(t('riders.rejected')); m.close(); load(); } catch (ex) { toast(ex.message, 'error'); }
+        return;
+      }
+      // Removing an active rider (Master Part III §20-23): typed CONFIRM, the
+      // server refuses while work is open, success only after a fresh read-back.
+      if (e.target.closest('[data-remove-rider]')) {
+        if (!await typedConfirmDialog({ title: t('riders.removeTitle', { name: r.name }), body: t('riders.removeBody', { name: r.name }), confirmLabel: t('riders.remove') })) return;
+        try {
+          await api.rpc('deactivate_rider', { p_rider_id: r.id });
+          const after = ((await fetchRiders()) || []).find(x => x.id === r.id);
+          if (after && after.status !== 'inactive') { toast(t('c.removalNotConfirmed'), 'error'); return; }
+          toast(t('riders.removed')); m.close(); load();
+        } catch (ex) { toast(ex.message === 'rider has active work' ? t('riders.activeWork') : ex.message, 'error'); }
       }
     });
   }

@@ -4,6 +4,12 @@
 import { prefs } from './prefs.js';
 
 const en = {
+  // membership removal and team approvals (Security & Access Master Part III)
+  'c.typeConfirm': 'Type CONFIRM to continue.', 'c.removalNotConfirmed': "We couldn't confirm the removal. Refresh and try again.",
+  'team.members': 'Members', 'team.pending': 'Pending requests', 'team.pendingLead': 'People who joined through your invite link. They have no access until you approve.',
+  'team.requested': 'Requested', 'team.approve': 'Approve', 'team.reject': 'Reject', 'team.approved': 'Request approved', 'team.rejected': 'Request rejected',
+  'team.remove': 'Remove member', 'team.removeTitle': 'Remove {name} from your team?', 'team.removeBody': '{name} will lose access to this business and its permitted workspace.', 'team.removed': 'Member removed',
+  'riders.remove': 'Remove rider', 'riders.removeTitle': 'Remove {name} as a rider?', 'riders.removeBody': '{name} will lose access to this business and can no longer receive new delivery assignments from this business.', 'riders.removed': 'Rider removed',
   // business setup (owner onboarding)
   'c.optional': 'Optional', 'setup.sideTitle': 'Set up your business', 'setup.sideLead': 'Two quick steps and your delivery workspace is ready.',
   'setup.step1': 'Your Business', 'setup.step2': 'Pickup Location', 'setup.stepOf': 'Step {n} of 2',
@@ -89,8 +95,7 @@ const en = {
   'riders.overview': 'Overview', 'riders.history': 'History', 'riders.completed': 'Completed', 'riders.ongoing': 'Ongoing',
   'riders.issues': 'Issues', 'riders.name': 'Name', 'riders.phone': 'Phone', 'riders.vehicleNumber': 'Vehicle Number',
   'riders.vehicleType': 'Vehicle Type', 'riders.availability': 'Availability', 'riders.approve': 'Approve',
-  'riders.reject': 'Reject', 'riders.approved': 'Rider approved', 'riders.rejected': 'Rider request rejected',
-  'riders.deactivate': 'Deactivate rider', 'riders.deactivated': 'Rider deactivated', 'riders.activeWork': 'This rider still has active runs or orders. Reassign or finish them first, then remove the rider.', 'riders.none': 'No riders yet',
+  'riders.reject': 'Reject', 'riders.approved': 'Rider approved', 'riders.rejected': 'Rider request rejected', 'riders.activeWork': 'This rider still has active runs or orders. Reassign or finish them first, then remove the rider.', 'riders.none': 'No riders yet',
   'riders.noneBody': 'Invite a rider with Add Rider.', 'riders.inviteLead': 'The rider receives a link to join your delivery team.',
   'riders.invite': 'Create invite link', 'riders.linkReady': 'Invite link ready', 'riders.linkLead': 'Share this link with the rider. It is shown only once.',
   'riders.copy': 'Copy link', 'riders.copied': 'Link copied', 'riders.noHistory': 'No orders yet.',
@@ -268,6 +273,12 @@ const en = {
 };
 
 const ms = {
+  // pembuangan keahlian dan kelulusan pasukan
+  'c.typeConfirm': 'Taip CONFIRM untuk teruskan.', 'c.removalNotConfirmed': 'Kami tidak dapat mengesahkan pembuangan. Muat semula dan cuba lagi.',
+  'team.members': 'Ahli', 'team.pending': 'Permohonan menunggu', 'team.pendingLead': 'Mereka yang menyertai melalui pautan jemputan anda. Tiada akses sehingga anda luluskan.',
+  'team.requested': 'Dimohon', 'team.approve': 'Luluskan', 'team.reject': 'Tolak', 'team.approved': 'Permohonan diluluskan', 'team.rejected': 'Permohonan ditolak',
+  'team.remove': 'Buang ahli', 'team.removeTitle': 'Buang {name} daripada pasukan anda?', 'team.removeBody': '{name} akan hilang akses kepada perniagaan ini dan ruang kerja yang dibenarkan.', 'team.removed': 'Ahli dibuang',
+  'riders.remove': 'Buang rider', 'riders.removeTitle': 'Buang {name} sebagai rider?', 'riders.removeBody': '{name} akan hilang akses kepada perniagaan ini dan tidak lagi menerima tugasan penghantaran baharu daripada perniagaan ini.', 'riders.removed': 'Rider dibuang',
   'c.optional': 'Pilihan', 'setup.sideTitle': 'Sediakan perniagaan anda', 'setup.sideLead': 'Dua langkah ringkas dan ruang kerja penghantaran anda sedia.',
   'setup.step1': 'Perniagaan Anda', 'setup.step2': 'Lokasi Pengambilan', 'setup.stepOf': 'Langkah {n} daripada 2',
   'setup.step1Lead': 'Beritahu kami tentang perniagaan anda. Anda boleh ubah kemudian di Profil Perniagaan.',
@@ -337,7 +348,7 @@ const ms = {
   'riders.history': 'Sejarah', 'riders.completed': 'Selesai', 'riders.ongoing': 'Berjalan', 'riders.issues': 'Isu', 'riders.name': 'Nama',
   'riders.phone': 'Telefon', 'riders.vehicleNumber': 'Nombor Kenderaan', 'riders.vehicleType': 'Jenis Kenderaan',
   'riders.availability': 'Ketersediaan', 'riders.approve': 'Luluskan', 'riders.reject': 'Tolak', 'riders.approved': 'Rider diluluskan',
-  'riders.rejected': 'Permohonan rider ditolak', 'riders.deactivate': 'Nyahaktif rider', 'riders.deactivated': 'Rider dinyahaktifkan', 'riders.activeWork': 'Rider ini masih ada run atau pesanan aktif. Pindahkan atau selesaikan dahulu, kemudian buang rider.',
+  'riders.rejected': 'Permohonan rider ditolak', 'riders.activeWork': 'Rider ini masih ada run atau pesanan aktif. Pindahkan atau selesaikan dahulu, kemudian buang rider.',
   'riders.none': 'Belum ada rider', 'riders.noneBody': 'Jemput rider dengan Tambah Rider.',
   'riders.inviteLead': 'Rider akan menerima pautan untuk menyertai pasukan penghantaran anda.', 'riders.invite': 'Cipta pautan jemputan',
   'riders.linkReady': 'Pautan jemputan sedia', 'riders.linkLead': 'Kongsi pautan ini dengan rider. Ia dipaparkan sekali sahaja.',
