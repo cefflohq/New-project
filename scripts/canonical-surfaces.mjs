@@ -15,6 +15,8 @@ export const CANONICAL_SURFACES = Object.freeze({
   // Not a product: kill-switch worker for retired web surfaces.
   retired: 'Retirement worker',
   shared: 'Shared runtime client/config',
+  // Public Storefront (Storefront V1): served at {CEFFLO_STOREFRONT_BASE_URL}{slug}.
+  store: 'Storefront (public)',
 });
 
 // Removed surfaces that must never be published again.

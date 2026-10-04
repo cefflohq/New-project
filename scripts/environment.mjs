@@ -50,7 +50,28 @@ export function resolveFrontendEnvironment(values) {
     vendor: webAppUrl(values.CEFFLO_VENDOR_WEB_URL, 'CEFFLO_VENDOR_WEB_URL'),
   };
 
-  return { name, projectRef, supabaseUrl: url.origin, publishableKey, driverStoreUrls, vendorStoreUrls, appWebUrls };
+  // Public product URLs, environment-driven (Founder 2026-10-04): the
+  // Storefront base ({base}{slug}; production https://store.cefflo.com/) and
+  // the Customer Tracking base ({base}?token=...). Optional; https only.
+  const storefrontBaseUrl = baseUrl(values.CEFFLO_STOREFRONT_BASE_URL, 'CEFFLO_STOREFRONT_BASE_URL');
+  const trackingBaseUrl = baseUrl(values.CEFFLO_TRACKING_BASE_URL, 'CEFFLO_TRACKING_BASE_URL');
+
+  // Mapbox PUBLIC token for on-demand client maps (Customer Tracking "View
+  // live map"). Public pk.* only -- a secret sk.* token never ships to a client.
+  const mapboxPublicToken = String(values.CEFFLO_MAPBOX_PUBLIC_TOKEN || '').trim() || null;
+  if (mapboxPublicToken && !/^pk\.[A-Za-z0-9._-]+$/.test(mapboxPublicToken)) throw new Error('CEFFLO_MAPBOX_PUBLIC_TOKEN must be a public pk.* Mapbox token');
+
+  return { name, projectRef, supabaseUrl: url.origin, publishableKey, driverStoreUrls, vendorStoreUrls, appWebUrls, storefrontBaseUrl, trackingBaseUrl, mapboxPublicToken };
+}
+
+function baseUrl(raw, name) {
+  const value = String(raw || '').trim();
+  if (!value) return null;
+  let url;
+  try { url = new URL(value); } catch { throw new Error(`${name} must be a valid absolute URL`); }
+  if (url.protocol !== 'https:' || url.search || url.hash || url.username || url.password) throw new Error(`${name} must be an https URL without credentials, query or fragment`);
+  if (!url.pathname.endsWith('/')) throw new Error(`${name} must end with /`);
+  return url.href;
 }
 
 function webAppUrl(raw, name) {
@@ -86,7 +107,10 @@ export function serializeRuntimeConfig(environment) {
     storageBucket: 'cefflo-pod',
     driverStoreUrls: environment.driverStoreUrls || { android: null, ios: null },
     vendorStoreUrls: environment.vendorStoreUrls || { android: null, ios: null },
-    appWebUrls: environment.appWebUrls || { driver: null, vendor: null }
+    appWebUrls: environment.appWebUrls || { driver: null, vendor: null },
+    storefrontBaseUrl: environment.storefrontBaseUrl || null,
+    trackingBaseUrl: environment.trackingBaseUrl || null,
+    mapboxPublicToken: environment.mapboxPublicToken || null
   };
   return `window.CEFFLO_CONFIG = Object.freeze(${JSON.stringify(config, null, 2)});\n`;
 }
