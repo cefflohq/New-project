@@ -471,18 +471,6 @@ class _Wordmark extends StatelessWidget {
   );
 }
 
-class _Tagline extends StatelessWidget {
-  const _Tagline();
-
-  @override
-  Widget build(BuildContext context) => Text(
-    L.operateTodayGrowTomorrow,
-    textAlign: TextAlign.center,
-    style: Theme.of(context).textTheme.bodyMedium
-        ?.copyWith(color: Colors.white.withValues(alpha: .88), height: 1.45),
-  );
-}
-
 /// The one layout every auth screen after Sign In uses: the Sign In blue
 /// backdrop with a Back row and crisp lockup in the header band, and a white
 /// rounded sheet below it that fills the rest of the screen.
@@ -628,8 +616,12 @@ class _SheetHeading extends StatelessWidget {
       children: [
         if (status != null) ...[status!, const SizedBox(height: Gap.xl)],
         Text(title, textAlign: TextAlign.center, style: text.titleMedium),
-        const SizedBox(height: Gap.sm),
-        _CenteredNote(subtitle),
+        // Form screens carry no instruction line under the title (Founder,
+        // 2026-10-04); status screens keep their explanation.
+        if (subtitle.isNotEmpty) ...[
+          const SizedBox(height: Gap.sm),
+          _CenteredNote(subtitle),
+        ],
       ],
     );
   }
@@ -880,65 +872,39 @@ class _SplashScreenState extends State<SplashScreen>
         child: SafeArea(
           child: Column(
             children: [
-              const Spacer(flex: 5),
-              const _BrandLockup(height: 200),
-              const SizedBox(height: Gap.lg),
+              const Spacer(),
+              // Every surface's splash (Founder, 2026-10-04): the same
+              // symbol + wordmark artwork at 156px and the surface name
+              // beneath it, nothing else.
+              Image.asset(
+                'assets/brand/cefflo-logo-splash.png',
+                width: 156,
+                height: 156 * 1878 / 1304,
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.medium,
+              ),
+              const SizedBox(height: 14),
               Text(
                 switch (widget.access) {
-                  AuthAccess.vendor => 'VENDOR',
-                  AuthAccess.operator => L.operatorAccess.toUpperCase(),
-                  AuthAccess.helper => L.helperAccess.toUpperCase(),
+                  AuthAccess.vendor => 'Vendor',
+                  AuthAccess.operator => L.operatorAccess,
+                  AuthAccess.helper => L.helperAccess,
                 },
                 key: const Key('splash-access'),
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: Colors.white,
+                style: TextStyle(
+                  fontSize: 156 * 0.17,
                   fontWeight: FontWeight.w500,
-                  letterSpacing: 6,
+                  height: 1.0,
+                  letterSpacing: 1.0,
+                  color: Colors.white.withValues(alpha: 0.9),
                 ),
               ),
-              const Spacer(flex: 5),
-              const _Tagline(),
-              const SizedBox(height: Gap.section),
-              _SplashProgress(animation: _progress),
-              const SizedBox(height: Gap.section),
+              const Spacer(),
             ],
           ),
         ),
       ),
-    ),
-  );
-}
-
-class _SplashProgress extends StatelessWidget {
-  const _SplashProgress({required this.animation});
-  final Animation<double> animation;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: 168,
-    height: 4,
-    child: AnimatedBuilder(
-      animation: animation,
-      builder: (context, _) {
-        final active = (animation.value * 3).floor() % 3;
-        return Row(
-          children: List.generate(3, (i) {
-            return Expanded(
-              child: Container(
-                margin: EdgeInsets.only(right: i == 2 ? 0 : 6),
-                height: 4,
-                decoration: BoxDecoration(
-                  color: i == active
-                      ? CefColors.ceffloMustard
-                      : Colors.white.withValues(alpha: .28),
-                  borderRadius: BorderRadius.circular(99),
-                ),
-              ),
-            );
-          }),
-        );
-      },
     ),
   );
 }
@@ -1499,7 +1465,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _SheetHeading(L.signEmail, L.enterEmailPasswordContinue),
+          _SheetHeading(L.signEmail, ''),
           const SizedBox(height: Gap.xxl),
           CefField(
             controller: _email,
@@ -1638,7 +1604,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _SheetHeading(L.createAccount2, L.startManagingDeliveries),
+        _SheetHeading(L.createAccount2, ''),
         const SizedBox(height: Gap.xxl),
         CefField(
           controller: _email,
@@ -1752,7 +1718,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _SheetHeading(L.forgotPassword, L.enterEmailWellSendResetLink),
+        _SheetHeading(L.forgotPassword, ''),
         const SizedBox(height: Gap.xxl),
         CefField(
           controller: _email,
@@ -2577,7 +2543,7 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _SheetHeading(L.setNewPassword, L.chooseStrongPasswordAccount),
+        _SheetHeading(L.setNewPassword, ''),
         const SizedBox(height: Gap.xxl),
         CefField(
           controller: _password,

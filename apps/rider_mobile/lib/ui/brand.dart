@@ -186,7 +186,9 @@ class CeffloSplashLockup extends StatelessWidget {
         fit: BoxFit.contain,
         filterQuality: FilterQuality.medium,
       ),
-      const SizedBox(height: 4),
+      // Every surface's splash: same artwork, same label size, a
+      // comfortable gap under the wordmark (Founder, 2026-10-04).
+      const SizedBox(height: 14),
       Text(
         'Driver',
         style: TextStyle(

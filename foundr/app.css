@@ -103,13 +103,13 @@ code{font-size:12.5px;background:#f4f6f9;padding:1px 5px;border-radius:4px}
 .fa-sub{margin:-8px 0 2px;text-align:center;color:var(--fa-sub);font-size:15px;line-height:1.5}.fa-sub b{color:#fff;font-weight:500}
 .fa-title.c,.fa-sub.c{text-align:center}
 .fa-tag{margin:6px 0 34px;text-align:center;color:#c3cde0;font-size:15.5px;line-height:1.55}
-.fa-field{display:flex;align-items:center;gap:12px;height:48px;padding:0 17px;border-radius:999px;border:1px solid var(--fa-line);background:var(--fa-fill);transition:border-color .15s,box-shadow .15s}
-.fa-field:focus-within{border-color:var(--fa-blue);box-shadow:0 0 0 3px #1e7bff38}
-.fa-field>svg{color:#dbe4f3}
-.fa-field input,.fa-field select{flex:1;width:0;min-width:0;height:100%;border:0;background:transparent;color:#fff;font-size:16px;outline:0}
+.fa-field{display:flex;align-items:center;gap:12px;height:48px;padding:0 17px;border-radius:999px;border:1px solid #ffffff;background:#fff;transition:border-color .15s,box-shadow .15s}
+.fa-field:focus-within{border-color:#fff;box-shadow:0 0 0 3px #ffffff59}
+.fa-field>svg{color:#6b7a94}
+.fa-field input,.fa-field select{flex:1;width:0;min-width:0;height:100%;border:0;background:transparent;color:#101c33;font-size:16px;outline:0}
 .fa-field select option{color:#0b1220}
-.fa-field input::placeholder{color:#93a2bd}
-.fa-eye{border:0;background:transparent;color:#dbe4f3;padding:6px;margin-right:-6px;border-radius:8px;display:grid}
+.fa-field input::placeholder{color:#8a96ab}
+.fa-eye{border:0;background:transparent;color:#6b7a94;padding:6px;margin-right:-6px;border-radius:8px;display:grid}
 .fa-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;flex-wrap:wrap}
 .fa-check{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#dfe6f2;cursor:pointer}
 .fa-check input{position:absolute;opacity:0;width:1px;height:1px}
@@ -162,3 +162,6 @@ code{font-size:12.5px;background:#f4f6f9;padding:1px 5px;border-radius:4px}
 @media(max-width:380px){.fa-otp{gap:7px}.fa-otp input{height:52px;font-size:22px}.fa-title{font-size:24px}}
 
 .fa-back svg{width:24px;height:24px}
+
+.fa-splash{display:grid;place-items:center}.splash-lockup{display:flex;flex-direction:column;align-items:center;gap:14px;color:#ffffffe6}.splash-lockup img{width:156px;height:auto}.splash-lockup span{font-size:26.5px;font-weight:500;line-height:1;letter-spacing:1px}
+.fa-stage:has(.fa-field) .fa-sub{display:none}

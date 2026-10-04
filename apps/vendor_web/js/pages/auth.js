@@ -20,6 +20,7 @@ function frame(root, bottom, rerender, { hero = '', product = false, back = null
   root.innerHTML = `<div class="auth${product ? ' choose' : ''}">
     <div class="auth-top">
       ${back ? `<button type="button" class="auth-back" data-topback aria-label="${esc(t('c.back'))}">${icon('chevl')}</button>` : ''}
+      ${product ? '' : '<img class="auth-top-word" src="img/cefflo-wordmark-white.png" alt="Cefflo" width="555" height="142">'}
       <div class="auth-lang">
         <button type="button" class="auth-lang-btn" data-langmenu aria-haspopup="menu" aria-expanded="false" aria-label="${prefs.lang === 'ms' ? 'Bahasa Melayu' : 'English'}">${icon('globe')}<span>${prefs.lang === 'ms' ? 'BM' : 'EN'}</span></button>
         <div class="auth-lang-menu" role="menu" hidden>
@@ -31,7 +32,7 @@ function frame(root, bottom, rerender, { hero = '', product = false, back = null
     <div class="auth-hero${hero ? ' op' : ''}">
       ${product
         ? '<img class="auth-logo" src="img/cefflo-logo.png" alt="Cefflo" width="150" height="234"><span class="auth-product">VENDOR</span>'
-        : '<img class="auth-word" src="img/cefflo-wordmark-white.png" alt="Cefflo" width="555" height="142">'}
+        : ''}
       ${hero}
     </div>
     <div class="auth-bottom">${bottom}</div>
@@ -50,9 +51,10 @@ function frame(root, bottom, rerender, { hero = '', product = false, back = null
 // behind it.
 export function renderSplash(root) {
   setChromeColor('#061F5C');
-  const label = operatorEntry() ? t('auth.opAccess').toUpperCase() : 'VENDOR';
+  const label = operatorEntry() ? t('auth.opAccess') : 'Vendor';
+  // Every surface's splash: the same artwork at 156px and the surface name.
   root.innerHTML = `<div class="auth splash" role="status" aria-label="Cefflo">
-    <div class="auth-hero"><img class="auth-logo" src="img/cefflo-logo.png" alt="Cefflo" width="150" height="234"><span class="auth-product">${esc(label)}</span></div>
+    <div class="splash-lockup"><img src="img/cefflo-logo-splash.png" alt="Cefflo" width="156" height="225"><span>${esc(label)}</span></div>
   </div>`;
 }
 

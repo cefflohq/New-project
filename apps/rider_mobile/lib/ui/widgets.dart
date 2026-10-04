@@ -476,31 +476,18 @@ class CeffloAuthScaffold extends StatelessWidget {
     final headerAction =
         this.headerAction ??
         (showLanguage ? const AuthLanguageControl() : null);
-    // The title sits in the header row (below); this block carries the
-    // centred supporting line, or a screen's own custom header content.
+    // The header is the title row only: no instruction line under the
+    // title on any surface (Founder, 2026-10-04). Screens with their own
+    // header content (D06, D08) or a trailing chip still get it.
     final header =
         headerChild ??
-        (subtitle == null && headerTrailing == null
+        (headerTrailing == null
             ? const SizedBox.shrink()
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (headerTrailing != null) ...[
-                    headerTrailing!,
-                    const SizedBox(height: Gap.md),
-                  ],
-                  if (subtitle != null)
-                    Text(
-                      subtitle!.replaceAll('\n', ' '),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 15,
-                        height: 1.4,
-                        fontWeight: FontWeight.w500,
-                        color: CefColors.onNavyMuted,
-                      ),
-                    ),
+                  headerTrailing!,
+                  const SizedBox(height: Gap.md),
                 ],
               ));
 
@@ -616,22 +603,32 @@ class CeffloAuthScaffold extends StatelessWidget {
                   ),
                 ),
                 Expanded(
+                  // The sheet's rounded top stays put while its content
+                  // scrolls underneath it (Founder, 2026-10-04).
                   child: scrollable
-                      ? LayoutBuilder(
-                          builder: (context, viewport) => SingleChildScrollView(
-                            padding: EdgeInsets.only(
-                              bottom: MediaQuery.of(context).viewInsets.bottom,
-                            ),
-                            // The sheet starts right under the header and
-                            // always reaches the bottom edge.
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                minHeight: viewport.maxHeight,
-                              ),
-                              child: sheetSurface(
-                                minHeight: viewport.maxHeight,
-                              ),
-                            ),
+                      ? ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(Sizes.sheetRadius),
+                          ),
+                          child: LayoutBuilder(
+                            builder: (context, viewport) =>
+                                SingleChildScrollView(
+                                  padding: EdgeInsets.only(
+                                    bottom: MediaQuery.of(context)
+                                        .viewInsets
+                                        .bottom,
+                                  ),
+                                  // The sheet starts right under the header and
+                                  // always reaches the bottom edge.
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minHeight: viewport.maxHeight,
+                                    ),
+                                    child: sheetSurface(
+                                      minHeight: viewport.maxHeight,
+                                    ),
+                                  ),
+                                ),
                           ),
                         )
                       : sheetSurface(),

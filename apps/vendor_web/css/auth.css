@@ -92,7 +92,7 @@ html:has(.onb), html:has(.onb) body { background: var(--surface); }
 .auth-center p { margin: -6px 0 0; }
 .auth-status { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--primary-tint); color: var(--primary); }
 .auth-status svg { width: 20px; height: 20px; }
-.auth-email { font-weight: 600; font-size: 14px; color: var(--ink) !important; word-break: break-all; }
+.auth-email { font-weight: 600; font-size: 14px; color: #fff; word-break: break-all; }
 .auth-muted { font-size: 12.5px; }
 :root[data-theme='dark'] .auth-card .btn:not(.primary) { border-color: var(--border-strong); color: var(--ink); }
 
@@ -192,3 +192,35 @@ html:has(.onb), html:has(.onb) body { background: var(--surface); }
 .keep input:checked + .keep-dot { background: #005CC4; border-color: #005CC4; }
 .keep input:checked + .keep-dot::after { content: ''; width: 3.5px; height: 7px; border: solid #fff; border-width: 0 1.8px 1.8px 0; transform: translateY(-1px) rotate(45deg); }
 .keep input:focus-visible + .keep-dot { outline: 2px solid #005CC4; outline-offset: 2px; }
+
+/* Splash, identical on every surface (Founder, 2026-10-04): 156px symbol +
+   wordmark artwork, the surface name 26.5px beneath it with a 14px gap. */
+.splash-lockup { display: flex; flex-direction: column; align-items: center; gap: 14px; color: rgba(255,255,255,.9); }
+.splash-lockup img { width: 156px; height: auto; }
+.splash-lockup span { font-family: 'Manrope', Inter, system-ui, sans-serif; font-size: 26.5px; font-weight: 500; line-height: 1; letter-spacing: 1px; }
+
+/* No instruction line under the title on form cards (all surfaces). */
+.auth-card:has(.input) > h1 + p { display: none; }
+
+/* Sign-in family in the FOUNDR form (Founder, 2026-10-04): the wordmark sits
+   in the header; no white card -- the form stands on the gradient with
+   white title, labels and links, and plain white 48px pill fields. */
+.auth-top { position: relative; }
+.auth-top-word { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 96px; height: auto; pointer-events: none; }
+.auth-card { background: none; box-shadow: none; color: #fff; padding: 0 8px; gap: 14px; }
+.auth-card h1 { text-align: center; font-size: 24px; color: #fff; }
+.auth-card p, .auth-card .auth-muted { color: rgba(255,255,255,.86); }
+.auth-card .auth-email { color: #fff; font-weight: 700; }
+.auth-card .field label { color: rgba(255,255,255,.92); }
+.auth-card .input, .auth-card .select { background: #fff; border: 1px solid #fff; color: #101C33; }
+.auth-card .input::placeholder { color: #8A96AB; }
+.auth-card .input:focus, .auth-card .select:focus { border-color: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.35); }
+.auth-card .link-btn, .auth-card .auth-foot, .auth-card .auth-foot .link-btn { color: #fff; }
+.auth-card .link-btn { font-weight: 700; }
+.auth-card .keep { color: #fff; }
+.auth-card .keep-dot { border-color: rgba(255,255,255,.75); }
+.auth-card .btn.primary { height: 48px; }
+.auth-card .btn:not(.primary) { border-color: #fff; color: #fff; background: transparent; }
+.auth-card .err { color: #FFD6D6; }
+.auth-card .hint { color: rgba(255,255,255,.8); }
+.auth-card .gated { background: rgba(255,255,255,.14); color: #fff; border-color: transparent; }

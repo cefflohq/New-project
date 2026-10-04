@@ -1203,7 +1203,17 @@ async function enterApp() {
   ensure(NEEDS[state.route]);
   render();
 }
+// Splash, identical on every surface: the artwork and the surface name.
+let splashShown = false;
+async function showSplash() {
+  if (splashShown) return;
+  splashShown = true;
+  root.innerHTML = `<div class="fa-screen fa-splash" role="status" aria-label="Cefflo FOUNDR"><div class="splash-lockup"><img src="./img/cefflo-logo-splash.png" alt="Cefflo" width="156" height="225"><span>FOUNDR</span></div></div>`;
+  await new Promise(r => setTimeout(r, 1200));
+}
+
 async function boot() {
+  await showSplash();
   if (!F.session()?.access_token) return renderLanding();
   authFrame('<div class="fa-skel"></div><div class="fa-skel"></div>', { foot: false });
   try {

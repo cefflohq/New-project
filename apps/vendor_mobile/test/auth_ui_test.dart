@@ -145,9 +145,10 @@ void main() {
       await tester.pump();
 
       expect(find.text('Sign in with Email'), findsOneWidget);
+      // No instruction line under form titles (Founder, 2026-10-04).
       expect(
         find.text('Enter your email and password to continue.'),
-        findsOneWidget,
+        findsNothing,
       );
       expect(find.text('Email'), findsOneWidget);
       expect(find.text('Password'), findsOneWidget);
@@ -170,7 +171,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('Create your account'), findsOneWidget);
-      expect(find.text('Start managing your deliveries.'), findsOneWidget);
+      expect(find.text('Start managing your deliveries.'), findsNothing);
       expect(find.text('Confirm password'), findsOneWidget);
       expect(find.text('Use at least 8 characters.'), findsOneWidget);
       expect(find.text('Create account'), findsOneWidget);
@@ -187,7 +188,7 @@ void main() {
       expect(find.text('Forgot password?'), findsOneWidget);
       expect(
         find.text("Enter your email and we'll send you a 6-digit code."),
-        findsOneWidget,
+        findsNothing,
       );
       expect(find.text('Send code'), findsOneWidget);
       expect(find.text('Back to sign in'), findsOneWidget);
