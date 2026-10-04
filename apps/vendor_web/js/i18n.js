@@ -10,6 +10,7 @@ const en = {
   'recover.action': 'Recover delivery', 'recover.title': 'Recover delivery', 'recover.lead': 'Releases the order from its rider. It returns to unassigned so you can plan it again.', 'recover.submit': 'Release order', 'recover.done': 'Order released for re-planning.',
   'edit.action': 'Edit order', 'edit.title': 'Edit order', 'edit.lead': 'You can edit an order until it is dispatched.', 'edit.save': 'Save changes', 'edit.saved': 'Order updated.',
   'cov.title': 'Coverage', 'cov.unconfigured': 'Service area not set', 'cov.pending_location': 'Awaiting location', 'cov.covered': 'In coverage', 'cov.out_of_coverage': 'Outside coverage', 'cov.unknown': 'Unknown',
+  'hours.title': 'Business hours', 'hours.lead': 'When your business is open, in your business timezone. Closing before opening means it closes the next day.', 'hours.open': 'Open', 'hours.from': 'Opens', 'hours.to': 'Closes', 'hours.d1': 'Monday', 'hours.d2': 'Tuesday', 'hours.d3': 'Wednesday', 'hours.d4': 'Thursday', 'hours.d5': 'Friday', 'hours.d6': 'Saturday', 'hours.d7': 'Sunday',
   'invite.teamTitle': 'Invite to your team', 'invite.riderTitle': 'Invite a rider', 'invite.lead': 'Share this link or QR code. Joining needs your approval before access starts.',
   'invite.linkLabel': 'Invite link', 'invite.pendingNote': 'People who join appear in Pending. They get access only after you approve them.',
   'invite.share': 'Share', 'invite.shareTitle': 'Join my team on Cefflo', 'invite.unavailable': 'The invite link is not available right now.',
@@ -228,7 +229,7 @@ const en = {
   'bp.schedule': 'Operating Schedule', 'bp.scheduleLead': 'Set your business operating days and hours.',
   'bp.description': 'Business Description', 'bp.descriptionLead': 'Tell customers about your business and what you offer.',
   'bp.social': 'Social Links', 'bp.socialLead': 'Add your website and social media links.',
-  'bp.gatedFields': 'Operating schedule, description and social links need new business fields, which are not in the backend yet.',
+  'bp.gatedFields': 'Description and social links need new business fields, which are not in the backend yet.',
   'bp.mapGated': 'The coverage map needs a map provider.', 'bp.km': '{n} km', 'bp.zonesN': '{n} zones',
   'team.lead': 'Manage your team members who help run deliveries and manage orders.', 'team.invite': 'Invite Member',
   
@@ -288,6 +289,7 @@ const ms = {
   'recover.action': 'Pulihkan penghantaran', 'recover.title': 'Pulihkan penghantaran', 'recover.lead': 'Melepaskan pesanan daripada rider. Ia kembali belum ditugaskan supaya anda boleh merancangnya semula.', 'recover.submit': 'Lepaskan pesanan', 'recover.done': 'Pesanan dilepaskan untuk dirancang semula.',
   'edit.action': 'Edit pesanan', 'edit.title': 'Edit pesanan', 'edit.lead': 'Pesanan boleh diedit sehingga ia dihantar.', 'edit.save': 'Simpan perubahan', 'edit.saved': 'Pesanan dikemas kini.',
   'cov.title': 'Liputan', 'cov.unconfigured': 'Kawasan servis belum ditetapkan', 'cov.pending_location': 'Menunggu lokasi', 'cov.covered': 'Dalam liputan', 'cov.out_of_coverage': 'Luar liputan', 'cov.unknown': 'Tidak diketahui',
+  'hours.title': 'Waktu operasi', 'hours.lead': 'Waktu perniagaan anda dibuka, mengikut zon waktu perniagaan. Waktu tutup sebelum waktu buka bermaksud tutup pada hari berikutnya.', 'hours.open': 'Buka', 'hours.from': 'Buka', 'hours.to': 'Tutup', 'hours.d1': 'Isnin', 'hours.d2': 'Selasa', 'hours.d3': 'Rabu', 'hours.d4': 'Khamis', 'hours.d5': 'Jumaat', 'hours.d6': 'Sabtu', 'hours.d7': 'Ahad',
   'invite.teamTitle': 'Jemput ke pasukan anda', 'invite.riderTitle': 'Jemput rider', 'invite.lead': 'Kongsi pautan atau kod QR ini. Penyertaan perlu kelulusan anda sebelum akses bermula.',
   'invite.linkLabel': 'Pautan jemputan', 'invite.pendingNote': 'Mereka yang menyertai akan muncul dalam Menunggu. Mereka hanya dapat akses selepas anda luluskan.',
   'invite.share': 'Kongsi', 'invite.shareTitle': 'Sertai pasukan saya di Cefflo', 'invite.unavailable': 'Pautan jemputan tidak tersedia buat masa ini.',
@@ -486,7 +488,7 @@ const ms = {
   'bp.schedule': 'Jadual Operasi', 'bp.scheduleLead': 'Tetapkan hari dan waktu operasi perniagaan anda.',
   'bp.description': 'Penerangan Perniagaan', 'bp.descriptionLead': 'Beritahu pelanggan tentang perniagaan dan tawaran anda.',
   'bp.social': 'Pautan Sosial', 'bp.socialLead': 'Tambah pautan laman web dan media sosial anda.',
-  'bp.gatedFields': 'Jadual operasi, penerangan dan pautan sosial memerlukan medan perniagaan baharu, yang belum ada di backend.',
+  'bp.gatedFields': 'Penerangan dan pautan sosial memerlukan medan perniagaan baharu, yang belum ada di backend.',
   'bp.mapGated': 'Peta liputan memerlukan penyedia peta.', 'bp.km': '{n} km', 'bp.zonesN': '{n} zon',
   'team.lead': 'Urus ahli pasukan yang membantu menjalankan penghantaran dan mengurus pesanan.', 'team.invite': 'Jemput Ahli',
   

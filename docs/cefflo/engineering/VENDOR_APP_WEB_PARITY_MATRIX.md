@@ -39,6 +39,7 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 | Order coverage status on Order detail (`order_coverage_status`: unconfigured / awaiting location / in / outside). App had the repository call only — wired in both. `is_within_coverage` (coordinate check) has no caller: neither surface takes typed coordinates | V-26/V-27, Web SOT §2 | ✅ (#6) | ✅ (#6) |
 | Delivery events on Order detail (`delivery_events`, oldest first) | Web SOT §2 + §5.8 | ✅ (#7) | ✅ |
 | Ready-for-pickup visibility (Ready = canonical `ready_for_pickup` only; visibility, no Helper execution). Web previously labelled every `created` order Ready — fixed to Pending / Unassigned / Preparing | D-74, Founder 2026-10-04 | ✅ | ✅ (#8) |
+| Business hours (`business_hours` read, `set_business_hours` whole-week save, Owner only) | V-40, Business Hours V1 | ✅ | ✅ (#9) |
 | Service Area / coverage configuration | V-26–V-27 | ✅ | ✅ |
 | Business Profile, information, address | V-37–V-39 | ✅ | ✅ |
 | Profile, edit profile, profile photo | V-42–V-43 | ✅ | ✅ |
@@ -50,7 +51,6 @@ Legend — App / Web: ✅ present · ❌ absent · ⚪ intentionally absent.
 
 | Capability | Source | App | Web | Work |
 |---|---|---|---|---|
-| Business hours | V-40 | ✅ | ❌ | Web: `set_business_hours` |
 | Storefront / Appearance / Preview (publish, link, QR, share, templates) | V-31–V-33, D-55, Storefront V1 (Founder 2026-10-01) | ✅ | ❌ | Web: storefront management |
 | Products: list, add, edit, categories, up to 5 photos | V-34–V-36, product media multi (Founder 2026-10-01) | ✅ | ❌ | Web: catalogue |
 | Subscription: current plan, choose plan, billing history (payments demo-only) | V-50–V-54, D-54 | ✅ | ❌ | Web: subscription surfaces |

@@ -175,7 +175,7 @@ function security(page) {
 async function business(page) {
   const body = header(page, 'set.businessProfile', 'bp.lead');
   try {
-    const [b, zs] = await Promise.all([fetchBusiness(), fetchZones()]);
+    const [b, zs, hours] = await Promise.all([fetchBusiness(), fetchZones(), api.get(`/rest/v1/business_hours?business_id=eq.${encodeURIComponent(ctx.bid)}&select=weekday,is_open,opens_at,closes_at&order=weekday`).then(r => r || [])]);
     const active = (zs || []).filter(z => z.status === 'active');
     body.innerHTML = `
       <div class="sub-card"><h3>${esc(t('bp.info'))}</h3><p class="desc">${esc(t('bp.infoLead'))}</p>
@@ -198,7 +198,30 @@ async function business(page) {
         <button class="link-btn" type="button" data-locate style="margin-top:10px">${esc(t('bp.locate'))}</button>
         <div class="err" data-aerr hidden></div>
         <div style="margin-top:12px">${gatedNote(t('bp.mapGated'))}</div></div>
-      <div class="sub-card"><h3>${esc(t('bp.schedule'))} · ${esc(t('bp.description'))} · ${esc(t('bp.social'))}</h3>${gatedNote(t('bp.gatedFields'))}</div>`;
+      <div class="sub-card" data-hours><h3>${esc(t('hours.title'))}</h3><p class="desc">${esc(t('hours.lead'))}</p>
+        ${[1, 2, 3, 4, 5, 6, 7].map(d => { const h = hours.find(x => x.weekday === d) || {}; return `<div class="g4" data-day="${d}" style="align-items:center;margin-bottom:6px">
+          <b style="font-weight:500">${esc(t(`hours.d${d}`))}</b>
+          <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-open ${h.is_open ? 'checked' : ''}>${esc(t('hours.open'))}</label>
+          <input class="input" type="time" data-from value="${esc((h.opens_at || '09:00').slice(0, 5))}" aria-label="${esc(t('hours.from'))}">
+          <input class="input" type="time" data-to value="${esc((h.closes_at || '18:00').slice(0, 5))}" aria-label="${esc(t('hours.to'))}"></div>`; }).join('')}
+        <div class="err" data-herr hidden></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn primary" data-hsave>${esc(t('c.save'))}</button></div></div>
+      <div class="sub-card"><h3>${esc(t('bp.description'))} · ${esc(t('bp.social'))}</h3>${gatedNote(t('bp.gatedFields'))}</div>`;
+    // Business Hours V1 (V-40): ISO weekdays 1-7, one interval per day,
+    // overnight allowed; the whole week is replaced atomically, Owner only.
+    const syncDay = row => row.querySelectorAll('[data-from],[data-to]').forEach(i => { i.disabled = !row.querySelector('[data-open]').checked; });
+    body.querySelectorAll('[data-day]').forEach(syncDay);
+    body.querySelector('[data-hours]').addEventListener('change', e => { const row = e.target.closest('[data-day]'); if (row) syncDay(row); });
+    body.querySelector('[data-hsave]').addEventListener('click', async e => {
+      const herr = body.querySelector('[data-herr]');
+      const days = [...body.querySelectorAll('[data-day]')].map(r => {
+        const open = r.querySelector('[data-open]').checked;
+        return { weekday: Number(r.dataset.day), is_open: open, opens_at: open ? r.querySelector('[data-from]').value : null, closes_at: open ? r.querySelector('[data-to]').value : null };
+      });
+      if (days.some(d => d.is_open && (!d.opens_at || !d.closes_at))) { herr.textContent = t('c.required'); herr.hidden = false; return; }
+      herr.hidden = true;
+      try { await busy(e.currentTarget, () => api.rpc('set_business_hours', { p_business_id: ctx.bid, p_days: days })); toast(t('c.saved')); } catch (ex) { herr.textContent = ex.message; herr.hidden = false; }
+    });
     const err = body.querySelector('[data-err]');
     body.querySelector('[data-save]').addEventListener('click', async e => {
       const v = n => body.querySelector(`[name=${n}]`).value.trim();
