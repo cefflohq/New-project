@@ -22,7 +22,7 @@ import 'package:cefflo_rider_mobile/l10n/l10n.dart';
 /// Home/Earnings|History/Help/Profile (D11, D14.1, D14.2, D14.3 — 4
 /// pre-activation screens). The four-tab operational set is the clear
 /// majority and covers every daily-use screen, so it is the real nav.
-enum NavTab { home, runs, history, profile }
+enum NavTab { home, runs, jobs, history, profile }
 
 enum DRoute {
   // --- Auth (D01–D09) --------------------------------------------------
@@ -73,6 +73,12 @@ enum DRoute {
   helpSupport, // D40
   vendorSupport, // D40-B
   submitTicket, // D40-C
+  // --- Find Jobs (D41 family, Rider Hub; Founder 2026-10-05) -----------
+  // Live shows "coming soon" until the Rider Hub backend exists (D-67);
+  // the prototype walks the designed flow with example openings.
+  findJobs, // D41
+  jobDetail, // D41.1
+  mySchedule, // D41.2
   // (D40-A Contact Support is a bottom sheet over D40, not a route.)
 }
 
@@ -361,6 +367,27 @@ Map<DRoute, RouteSpec> get routeSpecs => <DRoute, RouteSpec>{
     title: L.submitTicket,
     parent: DRoute.helpSupport,
     tab: NavTab.profile,
+  ),
+  DRoute.findJobs: RouteSpec(
+    route: DRoute.findJobs,
+    id: 'D41',
+    title: L.findJobs,
+    tab: NavTab.jobs,
+  ),
+  DRoute.jobDetail: RouteSpec(
+    route: DRoute.jobDetail,
+    id: 'D41.1',
+    title: L.findJobs,
+    parent: DRoute.findJobs,
+    tab: NavTab.jobs,
+    requiresEntityId: true,
+  ),
+  DRoute.mySchedule: RouteSpec(
+    route: DRoute.mySchedule,
+    id: 'D41.2',
+    title: L.mySchedule,
+    parent: DRoute.findJobs,
+    tab: NavTab.jobs,
   ),
 };
 

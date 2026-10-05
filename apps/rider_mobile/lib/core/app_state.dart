@@ -235,6 +235,7 @@ class AppState extends ChangeNotifier {
       NavTab.home => homeRoute,
       NavTab.runs =>
         stage == DriverStage.active ? DRoute.runDetails : homeRoute,
+      NavTab.jobs => DRoute.findJobs,
       NavTab.history => DRoute.deliveryHistory,
       NavTab.profile => DRoute.profile,
     };

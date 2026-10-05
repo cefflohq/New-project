@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/app_state.dart';
 import '../core/routes.dart';
 import 'screens/history.dart';
+import 'screens/jobs.dart';
 import 'screens/onboarding.dart';
 import 'screens/operations.dart';
 import 'screens/profile.dart';
@@ -58,6 +59,9 @@ Widget buildScreen(BuildContext context, RiderLocation loc) {
 
     // --- Profile, settings & support ------------------------------------
     DRoute.profile => const ProfileScreen(),
+    DRoute.findJobs => const FindJobsScreen(),
+    DRoute.jobDetail => JobDetailScreen(jobId: id ?? ''),
+    DRoute.mySchedule => const MyScheduleScreen(),
     DRoute.editProfile => const EditProfileScreen(),
     DRoute.vehicleDetails => const VehicleDetailsScreen(),
     DRoute.documents => const DocumentsScreen(),

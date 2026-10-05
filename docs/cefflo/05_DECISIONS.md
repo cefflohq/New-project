@@ -1734,3 +1734,26 @@ separate (Driver app, `riders`). Supersedes D-73's Helper model.
   `apps/vendor_mobile/lib/ui/screens/auth.dart` (`SignInScreen`). Role is
   never taken from which screen was used.
 - **Staging only:** `202609280004` to `202609280006`. Not on Production.
+
+## D-75 Driver "Find Jobs" tab, coming soon (2026-10-05)
+
+Founder decision, 2026-10-05. Refines D-67 and the D11 "do not invent Find
+Work" rule for the Driver app only.
+
+- The Driver app gains a 5th bottom tab, **Find Jobs** (renamed from "Find
+  Work"; BM "Cari Kerja"): Home · Runs · Find Jobs · History · Profile.
+- Screens: D41 Find Jobs (area, cardless one-line filter All · Morning ·
+  Noon · Night, My week, openings list), D41.1 Job details (Request to join,
+  blocked on a time clash or travel buffer), D41.2 My Schedule (one vendor
+  per slot). Design source: Rider Network Strategy §7–13 and the Founder-
+  reviewed mockup.
+- **Live shows "coming soon" only.** There is no Rider Hub backend; the live
+  app never shows an invented opening. The prototype build walks the designed
+  flow with clearly marked example openings.
+- Rules kept for the future backend: a rider may join many vendors; booked
+  times never overlap (real time ranges + travel buffer); a request lands in
+  the vendor's Riders > Pending and only the Owner approves it.
+- Still FUTURE (unchanged): the backend, the Vendor "Looking for riders"
+  switch, portable rider identity, availability/commitment engine. Building
+  them needs a security proposal and Founder approval (Security & Access
+  Master §27/§30).

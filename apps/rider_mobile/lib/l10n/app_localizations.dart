@@ -2923,6 +2923,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue with Google'**
   String get continueWithGoogle;
+
+  /// No description provided for @findJobs.
+  ///
+  /// In en, this message translates to:
+  /// **'Find Jobs'**
+  String get findJobs;
+
+  /// No description provided for @findJobsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Vendors near you that are looking for riders'**
+  String get findJobsSub;
+
+  /// No description provided for @changeArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get changeArea;
+
+  /// No description provided for @shiftAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get shiftAll;
+
+  /// No description provided for @shiftMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning'**
+  String get shiftMorning;
+
+  /// No description provided for @shiftNoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Noon'**
+  String get shiftNoon;
+
+  /// No description provided for @shiftNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Night'**
+  String get shiftNight;
+
+  /// No description provided for @myWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'My week'**
+  String get myWeek;
+
+  /// No description provided for @openSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Open schedule'**
+  String get openSchedule;
+
+  /// No description provided for @openingsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} openings'**
+  String openingsCount(int count);
+
+  /// No description provided for @noOpeningsShift.
+  ///
+  /// In en, this message translates to:
+  /// **'No openings for this shift yet.'**
+  String get noOpeningsShift;
+
+  /// No description provided for @jobNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} needed'**
+  String jobNeeded(int count);
+
+  /// No description provided for @jobClash.
+  ///
+  /// In en, this message translates to:
+  /// **'Clash'**
+  String get jobClash;
+
+  /// No description provided for @jobRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested'**
+  String get jobRequested;
+
+  /// No description provided for @findJobsComingSoonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find Jobs is coming soon'**
+  String get findJobsComingSoonTitle;
+
+  /// No description provided for @findJobsComingSoonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Soon you can see vendors in your area that are looking for riders, and send a request to join them. Your current business is not affected.'**
+  String get findJobsComingSoonBody;
+
+  /// No description provided for @jobShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Shift'**
+  String get jobShift;
+
+  /// No description provided for @jobRequirements.
+  ///
+  /// In en, this message translates to:
+  /// **'Requirements'**
+  String get jobRequirements;
+
+  /// No description provided for @jobTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get jobTime;
+
+  /// No description provided for @jobDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days'**
+  String get jobDays;
+
+  /// No description provided for @jobPay.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay'**
+  String get jobPay;
+
+  /// No description provided for @jobRidersNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Riders needed'**
+  String get jobRidersNeeded;
+
+  /// No description provided for @jobVehicle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle'**
+  String get jobVehicle;
+
+  /// No description provided for @requestToJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Request to join'**
+  String get requestToJoin;
+
+  /// No description provided for @requestSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent'**
+  String get requestSent;
+
+  /// No description provided for @nextOpening.
+  ///
+  /// In en, this message translates to:
+  /// **'Next opening'**
+  String get nextOpening;
+
+  /// No description provided for @jobOwnerReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'The owner reviews your request. Nothing is booked until they approve.'**
+  String get jobOwnerReviews;
+
+  /// No description provided for @jobWaitingApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the owner to approve. You will get a notification.'**
+  String get jobWaitingApproval;
+
+  /// No description provided for @mySchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'My Schedule'**
+  String get mySchedule;
+
+  /// No description provided for @scheduleWeekSub.
+  ///
+  /// In en, this message translates to:
+  /// **'6 – 12 Oct · 3 vendors approved'**
+  String get scheduleWeekSub;
+
+  /// No description provided for @slotBooked.
+  ///
+  /// In en, this message translates to:
+  /// **'Booked'**
+  String get slotBooked;
+
+  /// No description provided for @slotRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested'**
+  String get slotRequested;
+
+  /// No description provided for @slotTravelBuffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel buffer'**
+  String get slotTravelBuffer;
+
+  /// No description provided for @scheduleNote.
+  ///
+  /// In en, this message translates to:
+  /// **'You can work for the same vendor in more than one slot, or for different vendors, as long as the times don\'t overlap.'**
+  String get scheduleNote;
+
+  /// No description provided for @releaseSlot.
+  ///
+  /// In en, this message translates to:
+  /// **'Release a slot'**
+  String get releaseSlot;
+
+  /// No description provided for @previewOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview: example openings'**
+  String get previewOnly;
 }
 
 class _AppLocalizationsDelegate

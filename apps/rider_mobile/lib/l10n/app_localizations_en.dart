@@ -1584,4 +1584,120 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get continueWithGoogle => 'Continue with Google';
+
+  @override
+  String get findJobs => 'Find Jobs';
+
+  @override
+  String get findJobsSub => 'Vendors near you that are looking for riders';
+
+  @override
+  String get changeArea => 'Change';
+
+  @override
+  String get shiftAll => 'All';
+
+  @override
+  String get shiftMorning => 'Morning';
+
+  @override
+  String get shiftNoon => 'Noon';
+
+  @override
+  String get shiftNight => 'Night';
+
+  @override
+  String get myWeek => 'My week';
+
+  @override
+  String get openSchedule => 'Open schedule';
+
+  @override
+  String openingsCount(int count) {
+    return '$count openings';
+  }
+
+  @override
+  String get noOpeningsShift => 'No openings for this shift yet.';
+
+  @override
+  String jobNeeded(int count) {
+    return '$count needed';
+  }
+
+  @override
+  String get jobClash => 'Clash';
+
+  @override
+  String get jobRequested => 'Requested';
+
+  @override
+  String get findJobsComingSoonTitle => 'Find Jobs is coming soon';
+
+  @override
+  String get findJobsComingSoonBody =>
+      'Soon you can see vendors in your area that are looking for riders, and send a request to join them. Your current business is not affected.';
+
+  @override
+  String get jobShift => 'Shift';
+
+  @override
+  String get jobRequirements => 'Requirements';
+
+  @override
+  String get jobTime => 'Time';
+
+  @override
+  String get jobDays => 'Days';
+
+  @override
+  String get jobPay => 'Pay';
+
+  @override
+  String get jobRidersNeeded => 'Riders needed';
+
+  @override
+  String get jobVehicle => 'Vehicle';
+
+  @override
+  String get requestToJoin => 'Request to join';
+
+  @override
+  String get requestSent => 'Request sent';
+
+  @override
+  String get nextOpening => 'Next opening';
+
+  @override
+  String get jobOwnerReviews =>
+      'The owner reviews your request. Nothing is booked until they approve.';
+
+  @override
+  String get jobWaitingApproval =>
+      'Waiting for the owner to approve. You will get a notification.';
+
+  @override
+  String get mySchedule => 'My Schedule';
+
+  @override
+  String get scheduleWeekSub => '6 – 12 Oct · 3 vendors approved';
+
+  @override
+  String get slotBooked => 'Booked';
+
+  @override
+  String get slotRequested => 'Requested';
+
+  @override
+  String get slotTravelBuffer => 'Travel buffer';
+
+  @override
+  String get scheduleNote =>
+      'You can work for the same vendor in more than one slot, or for different vendors, as long as the times don\'t overlap.';
+
+  @override
+  String get releaseSlot => 'Release a slot';
+
+  @override
+  String get previewOnly => 'Preview: example openings';
 }

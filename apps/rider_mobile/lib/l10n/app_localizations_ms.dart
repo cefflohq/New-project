@@ -1596,4 +1596,120 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get continueWithGoogle => 'Teruskan dengan Google';
+
+  @override
+  String get findJobs => 'Cari Kerja';
+
+  @override
+  String get findJobsSub => 'Vendor berdekatan yang sedang mencari rider';
+
+  @override
+  String get changeArea => 'Tukar';
+
+  @override
+  String get shiftAll => 'Semua';
+
+  @override
+  String get shiftMorning => 'Pagi';
+
+  @override
+  String get shiftNoon => 'Tengah hari';
+
+  @override
+  String get shiftNight => 'Malam';
+
+  @override
+  String get myWeek => 'Minggu saya';
+
+  @override
+  String get openSchedule => 'Buka jadual';
+
+  @override
+  String openingsCount(int count) {
+    return '$count kekosongan';
+  }
+
+  @override
+  String get noOpeningsShift => 'Belum ada kekosongan untuk syif ini.';
+
+  @override
+  String jobNeeded(int count) {
+    return 'Perlu $count';
+  }
+
+  @override
+  String get jobClash => 'Bertindih';
+
+  @override
+  String get jobRequested => 'Diminta';
+
+  @override
+  String get findJobsComingSoonTitle => 'Cari Kerja akan datang';
+
+  @override
+  String get findJobsComingSoonBody =>
+      'Tidak lama lagi anda boleh lihat vendor di kawasan anda yang mencari rider, dan hantar permintaan untuk menyertai mereka. Perniagaan semasa anda tidak terjejas.';
+
+  @override
+  String get jobShift => 'Syif';
+
+  @override
+  String get jobRequirements => 'Keperluan';
+
+  @override
+  String get jobTime => 'Masa';
+
+  @override
+  String get jobDays => 'Hari';
+
+  @override
+  String get jobPay => 'Bayaran';
+
+  @override
+  String get jobRidersNeeded => 'Rider diperlukan';
+
+  @override
+  String get jobVehicle => 'Kenderaan';
+
+  @override
+  String get requestToJoin => 'Mohon untuk menyertai';
+
+  @override
+  String get requestSent => 'Permintaan dihantar';
+
+  @override
+  String get nextOpening => 'Kekosongan seterusnya';
+
+  @override
+  String get jobOwnerReviews =>
+      'Pemilik akan menyemak permintaan anda. Tiada apa ditempah sehingga diluluskan.';
+
+  @override
+  String get jobWaitingApproval =>
+      'Menunggu kelulusan pemilik. Anda akan menerima notifikasi.';
+
+  @override
+  String get mySchedule => 'Jadual Saya';
+
+  @override
+  String get scheduleWeekSub => '6 – 12 Okt · 3 vendor diluluskan';
+
+  @override
+  String get slotBooked => 'Ditempah';
+
+  @override
+  String get slotRequested => 'Diminta';
+
+  @override
+  String get slotTravelBuffer => 'Masa perjalanan';
+
+  @override
+  String get scheduleNote =>
+      'Anda boleh bekerja dengan vendor yang sama untuk lebih daripada satu slot, atau dengan vendor berbeza, asalkan masa tidak bertindih.';
+
+  @override
+  String get releaseSlot => 'Lepaskan slot';
+
+  @override
+  String get previewOnly => 'Pratonton: contoh kekosongan';
 }

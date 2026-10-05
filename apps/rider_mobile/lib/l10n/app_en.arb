@@ -726,5 +726,55 @@
   },
   "enterNamePhonePlate": "Enter your full name, phone number and vehicle number plate.",
   "keepLoggedIn": "Keep me logged in",
-  "continueWithGoogle": "Continue with Google"
+  "continueWithGoogle": "Continue with Google",
+  "findJobs": "Find Jobs",
+  "findJobsSub": "Vendors near you that are looking for riders",
+  "changeArea": "Change",
+  "shiftAll": "All",
+  "shiftMorning": "Morning",
+  "shiftNoon": "Noon",
+  "shiftNight": "Night",
+  "myWeek": "My week",
+  "openSchedule": "Open schedule",
+  "openingsCount": "{count} openings",
+  "@openingsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noOpeningsShift": "No openings for this shift yet.",
+  "jobNeeded": "{count} needed",
+  "@jobNeeded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "jobClash": "Clash",
+  "jobRequested": "Requested",
+  "findJobsComingSoonTitle": "Find Jobs is coming soon",
+  "findJobsComingSoonBody": "Soon you can see vendors in your area that are looking for riders, and send a request to join them. Your current business is not affected.",
+  "jobShift": "Shift",
+  "jobRequirements": "Requirements",
+  "jobTime": "Time",
+  "jobDays": "Days",
+  "jobPay": "Pay",
+  "jobRidersNeeded": "Riders needed",
+  "jobVehicle": "Vehicle",
+  "requestToJoin": "Request to join",
+  "requestSent": "Request sent",
+  "nextOpening": "Next opening",
+  "jobOwnerReviews": "The owner reviews your request. Nothing is booked until they approve.",
+  "jobWaitingApproval": "Waiting for the owner to approve. You will get a notification.",
+  "mySchedule": "My Schedule",
+  "scheduleWeekSub": "6 – 12 Oct · 3 vendors approved",
+  "slotBooked": "Booked",
+  "slotRequested": "Requested",
+  "slotTravelBuffer": "Travel buffer",
+  "scheduleNote": "You can work for the same vendor in more than one slot, or for different vendors, as long as the times don't overlap.",
+  "releaseSlot": "Release a slot",
+  "previewOnly": "Preview: example openings"
 }

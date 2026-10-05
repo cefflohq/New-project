@@ -1645,6 +1645,7 @@ class CeffloBottomNav extends StatelessWidget {
   static List<(NavTab, IconData, String)> get _items => [
     (NavTab.home, LucideIcons.house, L.home),
     (NavTab.runs, LucideIcons.tag, L.runs),
+    (NavTab.jobs, LucideIcons.search, L.findJobs),
     (NavTab.history, LucideIcons.archive, L.history),
     (NavTab.profile, LucideIcons.user, L.profile),
   ];
@@ -1652,6 +1653,7 @@ class CeffloBottomNav extends StatelessWidget {
   static const _activeIcons = <NavTab, IconData>{
     NavTab.home: Icons.home_rounded,
     NavTab.runs: Icons.local_offer_rounded,
+    NavTab.jobs: Icons.travel_explore_rounded,
     NavTab.history: Icons.inventory_2_rounded,
     NavTab.profile: Icons.person_rounded,
   };
