@@ -87,7 +87,7 @@ export const itemsText = items => {
   return n === 1 ? t('c.item') : t('c.items', { n });
 };
 export const itemsLines = items => (Array.isArray(items) ? items : []).map(i => ({
-  name: typeof i === 'string' ? i : (i?.name || i?.title || ''), qty: typeof i === 'string' ? 1 : Number(i?.quantity ?? i?.qty ?? 1) || 1,
+  name: typeof i === 'string' ? i : (i?.name || i?.product_name_snapshot || i?.product_name || i?.title || ''), qty: typeof i === 'string' ? 1 : Number(i?.quantity ?? i?.qty ?? 1) || 1,
 })).filter(l => l.name);
 
 // ---------------------------------------------------------------- states

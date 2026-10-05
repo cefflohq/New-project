@@ -185,6 +185,14 @@ class VendorOrder {
   bool get canEdit => !isTerminal;
 }
 
+/// An order line's name. Storefront orders store the catalogue name at the
+/// time of ordering as `product_name_snapshot`; manual orders use `name`.
+Object? itemName(Map it) =>
+    it['name'] ??
+    it['product_name_snapshot'] ??
+    it['product_name'] ??
+    it['title'];
+
 class OrderItem {
   const OrderItem({required this.name, required this.quantity, this.unitPrice});
   final String name;
@@ -192,11 +200,13 @@ class OrderItem {
   final num? unitPrice;
 
   factory OrderItem.fromJson(Map<String, dynamic> j) => OrderItem(
-    name: (j['name'] ?? j['product_name'] ?? L.item).toString(),
+    name: (itemName(j) ?? L.item).toString(),
     quantity: int.tryParse('${j['quantity'] ?? j['qty'] ?? 1}') ?? 1,
     unitPrice: j['unit_price'] is num
         ? j['unit_price'] as num
-        : num.tryParse('${j['unit_price'] ?? j['price'] ?? ''}'),
+        : num.tryParse(
+            '${j['unit_price'] ?? j['price'] ?? j['display_price_snapshot'] ?? ''}',
+          ),
   );
 
   Map<String, dynamic> toJson() => {
@@ -367,9 +377,9 @@ class FulfilmentTask {
       for (final it in (r['items'] is List ? r['items'] as List : const []))
         if (it is String)
           (name: it, qty: 1)
-        else if (it is Map && (it['name'] ?? it['title']) != null)
+        else if (it is Map && itemName(it) != null)
           (
-            name: '${it['name'] ?? it['title']}',
+            name: '${itemName(it)}',
             qty: ((it['quantity'] ?? it['qty'] ?? 1) as num).toInt(),
           ),
     ],
@@ -384,8 +394,8 @@ class FulfilmentTask {
       for (final it in (r['items'] is List ? r['items'] as List : const []))
         if (it is String)
           it
-        else if (it is Map && (it['name'] ?? it['title']) != null)
-          '${it['quantity'] ?? it['qty'] ?? 1}× ${it['name'] ?? it['title']}',
+        else if (it is Map && itemName(it) != null)
+          '${it['quantity'] ?? it['qty'] ?? 1}× ${itemName(it)}',
     ],
   );
 }

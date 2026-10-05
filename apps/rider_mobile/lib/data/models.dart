@@ -211,7 +211,9 @@ class RiderOrderItem {
   final int quantity;
 
   static RiderOrderItem fromJson(Map<String, dynamic> j) => RiderOrderItem(
-    name: (j['name'] ?? j['product_name'] ?? L.item).toString(),
+    name:
+        (j['name'] ?? j['product_name_snapshot'] ?? j['product_name'] ?? L.item)
+            .toString(),
     quantity: int.tryParse('${j['quantity'] ?? j['qty'] ?? 1}') ?? 1,
   );
 }
