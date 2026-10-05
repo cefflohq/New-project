@@ -88,7 +88,7 @@ const dup = await rpc(applicant, 'request_job_opening', { p_opening_id: o1.body.
 ok('duplicate request refused', dup.status >= 400, err(dup));
 const opReq = await rpc(operator, 'request_job_opening', { p_opening_id: o1.body.id });
 ok('team member cannot apply to own business', opReq.status >= 400, err(opReq));
-const pend = await sel(owner, `riders?select=id,status,name&business_id=eq.${B}&name=eq.%5BTEST%5D%20Jobs%20Applicant`);
+const pend = await sel(owner, `riders?select=id,status,name&business_id=eq.${B}&auth_user_id=eq.${JSON.parse(Buffer.from(applicant.split('.')[1], 'base64url').toString()).sub}`);
 ok('request shows in Riders > Pending for the owner', pend.body?.[0]?.status === 'pending', JSON.stringify(pend.body));
 const riderId = pend.body?.[0]?.id;
 const selfApprove = await rpc(applicant, 'approve_pending_rider', { p_rider_id: riderId });

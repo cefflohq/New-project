@@ -18,9 +18,9 @@ const msg = r => (r.body && (r.body.message || r.body.hint)) || JSON.stringify(r
 const denied = r => r.status >= 400 || (Array.isArray(r.body) && r.body.length === 0);
 const uid = tok => JSON.parse(Buffer.from(tok.split('.')[1], 'base64url').toString()).sub;
 const stamp = String(Date.now()).slice(-6);
-async function freshUser(tag) {
+async function freshUser(tag, meta = {}) {
   const email = `zelix.co00+v1005sec${tag}${stamp}@gmail.com`, password = 'Cf-v1005-Invite!5';
-  const r = await fetch(`${URL_}/auth/v1/admin/users`, { method: 'POST', headers: { apikey: SVC, authorization: `Bearer ${SVC}`, 'content-type': 'application/json' }, body: JSON.stringify({ email, password, email_confirm: true }) });
+  const r = await fetch(`${URL_}/auth/v1/admin/users`, { method: 'POST', headers: { apikey: SVC, authorization: `Bearer ${SVC}`, 'content-type': 'application/json' }, body: JSON.stringify({ email, password, email_confirm: true, user_metadata: meta }) });
   if (!r.ok) throw new Error('create ' + await r.text());
   return signIn(email, password);
 }
@@ -84,7 +84,7 @@ ok('  rejected user is refused vendor data', (await rpc(u1, 'get_storefront', { 
 ok('  a decided request cannot be decided again', (await rpc(owner, 'decide_team_join_request', { p_request_id: reqs[0].id, p_approve: true })).status >= 400);
 
 // 6. driver: duplicate, self-activation, cross-business, rejection
-const d1 = await freshUser('d');
+const d1 = await freshUser('d', { driver_registration: { full_name: '[TEST] Sec Driver', phone: '+60 13-2' + stamp, vehicle_type: 'motorcycle', vehicle_plate: 'SEC ' + stamp } });
 const dj = await rpc(d1, 'join_via_invite_link', { p_token: links.rider, p_name: '[TEST] Sec Driver', p_phone: '+60 13-2' + stamp });
 await rpc(d1, 'join_via_invite_link', { p_token: links.rider, p_name: '[TEST] Sec Driver', p_phone: '+60 13-9' + stamp });
 const drows = (await sel(owner, `riders?select=id,status&business_id=eq.${B}&auth_user_id=eq.${uid(d1)}`)).body;
@@ -95,6 +95,25 @@ ok('  driver membership never creates a team membership', ((await rpc(d1, 'get_m
 const dr = await rpc(owner, 'deactivate_rider', { p_rider_id: drows[0].id });
 const dAfter = (await sel(owner, `riders?select=status&id=eq.${drows[0].id}`)).body[0];
 ok('  owner rejects the driver -> inactive, no access', dr.status < 300 && dAfter.status === 'inactive', msg(dr));
+
+// 6b. the driver's real vehicle is preserved (server-side data only)
+for (const [tag, vt, plate] of [['vm', 'motorcycle', 'VM ' + stamp], ['vc', 'car', 'VC ' + stamp], ['vv', 'van', 'VV ' + stamp], ['vn', 'car', null]]) {
+  const reg = { full_name: `[TEST] Veh ${vt}`, phone: `+60 14-${tag}${stamp}`, vehicle_type: vt, ...(plate ? { vehicle_plate: plate } : {}) };
+  const u = await freshUser(tag, { driver_registration: reg });
+  const j = await rpc(u, 'join_via_invite_link', { p_token: links.rider, p_name: reg.full_name, p_phone: reg.phone });
+  const rows = (await sel(owner, `riders?select=id,status,vehicle_type,vehicle_plate&business_id=eq.${B}&auth_user_id=eq.${uid(u)}`)).body;
+  ok(`6b ${vt}${plate ? ' + plate' : ' without plate'}: stored exactly as registered`, j.status === 200 && rows?.length === 1 && rows[0].vehicle_type === vt && rows[0].vehicle_plate === plate, JSON.stringify(rows));
+  const ap = await rpc(owner, 'approve_pending_rider', { p_rider_id: rows[0].id });
+  const after = (await sel(owner, `riders?select=status,vehicle_type,vehicle_plate&business_id=eq.${B}&auth_user_id=eq.${uid(u)}`)).body;
+  ok(`   approval -> exactly one active ${vt} driver, vehicle unchanged`, ap.status === 200 && after.length === 1 && after[0].status === 'active' && after[0].vehicle_type === vt && after[0].vehicle_plate === plate, JSON.stringify(after));
+  await rpc(owner, 'deactivate_rider', { p_rider_id: rows[0].id });
+}
+const nv = await freshUser('vx', { driver_registration: { full_name: '[TEST] Veh none', phone: '+60 14-vx' + stamp } });
+const nvj = await rpc(nv, 'join_via_invite_link', { p_token: links.rider, p_name: '[TEST] Veh none', p_phone: '+60 14-vx' + stamp });
+const nvRows = (await sel(owner, `riders?select=id&business_id=eq.${B}&auth_user_id=eq.${uid(nv)}`)).body;
+ok('6b no known vehicle: refused (never stored as a default motorcycle)', nvj.status >= 400 && /choose your vehicle/.test(msg(nvj)) && nvRows.length === 0, msg(nvj));
+const tamper = await rpc(nv, 'join_via_invite_link', { p_token: links.rider, p_name: 'x', p_phone: 'y', p_vehicle_type: 'van' });
+ok('   client vehicle parameter is not accepted', tamper.status >= 400, msg(tamper));
 
 // 7. reset invalidates the old link
 const oldHelper = links.helper;
