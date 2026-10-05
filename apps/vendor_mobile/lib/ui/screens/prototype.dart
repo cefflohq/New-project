@@ -1127,7 +1127,16 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
       successTitle: L.successful,
       successSubtitle: L.passwordHasBeenUpdatedSuccessfully,
     );
-    if (ok && mounted) app.back();
+    if (ok && mounted) {
+      // Opened as its own page (Helper More): close it; inside the Vendor
+      // shell it is a shell route, so go back there.
+      final nav = Navigator.of(context);
+      if (nav.canPop()) {
+        nav.pop();
+      } else {
+        app.back();
+      }
+    }
   }
 
   @override

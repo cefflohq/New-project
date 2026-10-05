@@ -522,11 +522,19 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
 
   /// Opens a shared account screen (Profile, Security, Privacy, About)
   /// on top of the Helper workspace, never inside the Vendor shell.
+  /// More sub-pages in the Helper DNA: the same navy header (back + title)
+  /// and white rounded sheet as Preparation / Zones / Packing.
   void _push(String title, Widget body) => Navigator.of(context).push(
     MaterialPageRoute<void>(
-      builder: (_) => Scaffold(
-        appBar: AppBar(title: Text(title)),
-        body: body,
+      builder: (routeContext) => Scaffold(
+        backgroundColor: Colors.white,
+        body: _Page(
+          title: title,
+          subtitle: '',
+          onBack: () => Navigator.of(routeContext).pop(),
+          body: body,
+          children: const [],
+        ),
       ),
     ),
   );
@@ -626,9 +634,11 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
           row(
             LucideIcons.lock,
             L.hwPasswordSecurity,
+            // Password is the only sign-in setting for a Helper, so the row
+            // opens it directly, under the row's own name.
             () => _push(
-              L.security,
-              buildScreen(context, const VendorLocation(VRoute.security)),
+              L.hwPasswordSecurity,
+              buildScreen(context, const VendorLocation(VRoute.changePassword)),
             ),
           ),
           row(
@@ -962,9 +972,14 @@ class _Page extends StatelessWidget {
     this.trailing,
     this.bottom,
     this.onRefresh,
+    this.body,
   });
   final String title, subtitle;
   final List<Widget> children;
+
+  /// A ready-made body (e.g. a shared account screen) shown in the white
+  /// sheet instead of [children].
+  final Widget? body;
   final VoidCallback? onBack;
   final Widget? trailing, bottom;
   final Future<void> Function()? onRefresh;
@@ -972,17 +987,19 @@ class _Page extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final list = ListView(
-      // Each screen starts at the top (no scroll carried across screens).
-      key: ValueKey('page-$title-$subtitle'),
-      padding: EdgeInsets.fromLTRB(
-        Gap.gutter,
-        Gap.xl,
-        Gap.gutter,
-        bottom == null ? Gap.xl : 110,
-      ),
-      children: children,
-    );
+    final list =
+        body ??
+        ListView(
+          // Each screen starts at the top (no scroll carried across screens).
+          key: ValueKey('page-$title-$subtitle'),
+          padding: EdgeInsets.fromLTRB(
+            Gap.gutter,
+            Gap.xl,
+            Gap.gutter,
+            bottom == null ? Gap.xl : 110,
+          ),
+          children: children,
+        );
     return DecoratedBox(
       decoration: const BoxDecoration(gradient: _headerBlue),
       child: Column(
