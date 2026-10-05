@@ -14,9 +14,12 @@ export default function riders({ el, params, setHeader }) {
   const selected = params[0] || null;
   let tab = 'all', query = '', all = [], orders = [], ratings = [];
   el.innerHTML = `<div class="split no-detail">
+    ${ctx.isOwner ? `<div class="mode-seg" role="tablist" aria-label="${esc(t('riders.title'))}">
+      <button role="tab" class="on" data-mode="riders">${esc(t('riders.modeRiders'))}</button>
+      <button role="tab" data-mode="openings">${esc(t('riders.modeOpenings'))}<span data-open-count></span></button></div>` : ''}
     <div class="card">
-      ${ctx.isOwner ? '<div data-hiring></div>' : ''}
-      <div class="bar">
+      ${ctx.isOwner ? '<div data-hiring hidden></div>' : ''}
+      <div class="bar" data-riders-bar>
         <div class="tabs" data-tabs></div>
         <div class="search">${icon('search')}<input data-q placeholder="${esc(t('riders.search'))}" aria-label="${esc(t('c.search'))}"></div>
         <button class="btn cta sm" data-add>${icon('plus')}${esc(t('riders.add'))}</button>
@@ -25,8 +28,18 @@ export default function riders({ el, params, setHeader }) {
     </div>
   </div>`;
   const $ = s => el.querySelector(s);
-  // D-75: the Owner's openings for Drivers' Find Jobs.
-  if (ctx.isOwner) mountHiring($('[data-hiring]'));
+  // Draft D: Riders | Openings for the Owner; each view has its own "+".
+  let mode = 'riders';
+  if (ctx.isOwner) {
+    mountHiring($('[data-hiring]'), { onChange: n => { $('[data-open-count]').textContent = n ? ` (${n})` : ''; } });
+    el.querySelector('.mode-seg').addEventListener('click', e => {
+      const b = e.target.closest('[data-mode]'); if (!b) return;
+      mode = b.dataset.mode;
+      el.querySelectorAll('[data-mode]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-selected', String(x === b)); });
+      const openings = mode === 'openings';
+      $('[data-hiring]').hidden = !openings; $('[data-riders-bar]').hidden = openings; $('[data-list]').hidden = openings;
+    });
+  }
 
   async function load() {
     try {

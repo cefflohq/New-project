@@ -1893,5 +1893,8 @@
   "openingTime": "Time",
   "publishOpening": "Publish opening",
   "openingRadiusLabel": "Rider radius",
-  "openingPayLabel": "Pay"
+  "openingPayLabel": "Pay",
+  "ridersTab": "Riders",
+  "openingsTab": "Openings",
+  "noOpenOpenings": "No open openings yet. Post one so riders near you can find this job in Find Jobs."
 }

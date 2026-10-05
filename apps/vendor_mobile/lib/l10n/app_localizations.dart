@@ -7004,6 +7004,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pay'**
   String get openingPayLabel;
+
+  /// No description provided for @ridersTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Riders'**
+  String get ridersTab;
+
+  /// No description provided for @openingsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Openings'**
+  String get openingsTab;
+
+  /// No description provided for @noOpenOpenings.
+  ///
+  /// In en, this message translates to:
+  /// **'No open openings yet. Post one so riders near you can find this job in Find Jobs.'**
+  String get noOpenOpenings;
 }
 
 class _AppLocalizationsDelegate

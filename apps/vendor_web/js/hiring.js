@@ -6,7 +6,7 @@
 import { t } from './i18n.js';
 import { api } from './api.js';
 import { ctx } from './store.js';
-import { esc, icon, toast, busy, modal, confirmDialog } from './ui.js';
+import { esc, icon, toast, busy, modal } from './ui.js';
 
 const hhmm = v => {
   const [h, m] = v.split(':').map(Number);
@@ -24,17 +24,21 @@ export function mountHiring(host, { onChange } = {}) {
     paint();
   }
 
+  // Draft D (Founder 2026-10-05): the Openings view of Riders - a list with
+  // Close, one "+ New opening" action, and an empty state.
   function paint() {
-    const on = (openings || []).length > 0;
+    const list = openings || [];
+    onChange?.(openings === null ? null : list.length);
     host.innerHTML = `<div class="hire">
-      <div class="hire-h"><div><b>${esc(t('hire.title'))}</b><small>${esc(t(on ? 'hire.on' : 'hire.off'))}</small></div>
-        <button class="switch ${on ? 'on' : ''}" role="switch" aria-checked="${on}" aria-label="${esc(t('hire.title'))}" data-toggle ${openings === null || working ? 'disabled' : ''}></button></div>
-      ${on ? `<div class="hire-list">${openings.map(o => `<div class="hire-row">
+      <div class="hire-h"><div><b>${esc(t('hire.openTitle'))}</b><small>${esc(t('hire.openLead'))}</small></div>
+        <button class="btn cta sm" data-add ${working ? 'disabled' : ''}>${icon('plus')}${esc(t('hire.new'))}</button></div>
+      ${openings === null ? '<div class="hire-empty"><i class="spin"></i></div>'
+        : list.length ? `<div class="hire-list">${list.map(o => `<div class="hire-row">
           <div><b>${esc(hhmm(o.shift_start))} – ${esc(hhmm(o.shift_end))}</b>
-          <small>${esc([[...o.days].sort().map(d => t(`hire.d${d}`)).join(', '), t(`veh.${o.vehicle_type}`), `RM ${num(o.pay_amount)} / ${t(`hire.${o.pay_unit}`)}`, `× ${o.riders_needed}`, t('hire.radius', { km: num(o.radius_km) })].join(' · '))}</small>
-          <small>${esc(o.area_label)}</small></div>
-          <button class="btn sm" data-close-id="${esc(o.id)}" ${working ? 'disabled' : ''}>${esc(t('hire.close'))}</button></div>`).join('')}
-        <button class="btn sm" data-add ${working ? 'disabled' : ''}>${icon('plus')}${esc(t('hire.add'))}</button></div>` : ''}
+          <small>${esc([[...o.days].sort().map(d => t(`hire.d${d}`)).join(', '), t(`veh.${o.vehicle_type}`), `RM ${num(o.pay_amount)} / ${t(`hire.${o.pay_unit}`)}`, `× ${o.riders_needed}`].join(' · '))}</small>
+          <small>${esc(o.area_label)} · ${esc(num(o.radius_km))} km</small></div>
+          <button class="link-btn hire-close" data-close-id="${esc(o.id)}" ${working ? 'disabled' : ''}>${esc(t('hire.close'))}</button></div>`).join('')}</div>`
+        : `<div class="hire-empty">${esc(t('hire.none'))}</div>`}
     </div>`;
   }
 
@@ -42,16 +46,8 @@ export function mountHiring(host, { onChange } = {}) {
     if (e.target.closest('[data-add]')) { openForm(); return; }
     const c = e.target.closest('[data-close-id]');
     if (c) {
-      try { await busy(c, () => api.rpc('close_job_opening', { p_opening_id: c.dataset.closeId })); toast(t('hire.closed')); onChange?.(); } catch (ex) { toast(ex.message, 'error'); }
+      try { await busy(c, () => api.rpc('close_job_opening', { p_opening_id: c.dataset.closeId })); toast(t('hire.closed')); } catch (ex) { toast(ex.message, 'error'); }
       return load();
-    }
-    if (e.target.closest('[data-toggle]')) {
-      if (!(openings || []).length) { openForm(); return; }
-      const ok = await confirmDialog({ title: t('hire.offTitle'), body: t('hire.offBody'), confirmLabel: t('hire.turnOff'), danger: true });
-      if (!ok) return;
-      working = true; paint();
-      try { for (const o of openings) await api.rpc('close_job_opening', { p_opening_id: o.id }); } catch (ex) { toast(ex.message, 'error'); }
-      working = false; load();
     }
   });
 
@@ -97,11 +93,12 @@ export function mountHiring(host, { onChange } = {}) {
           p_business_id: ctx.bid, p_area_label: area, p_shift_start: start, p_shift_end: end, p_days: [...days].sort(),
           p_vehicle_type: vehicle, p_pay_amount: pay, p_pay_unit: unit, p_riders_needed: need, p_radius_km: radius,
         }));
-        m.close(); toast(t('hire.posted')); onChange?.(); load();
+        m.close(); toast(t('hire.posted')); load();
       } catch (ex) { err.textContent = ex.message; err.hidden = false; }
     });
   }
 
   paint();
   load();
+  return { openForm, reload: load };
 }

@@ -1149,5 +1149,8 @@
   "openingTime": "Masa",
   "publishOpening": "Siarkan kekosongan",
   "openingRadiusLabel": "Radius rider",
-  "openingPayLabel": "Bayaran"
+  "openingPayLabel": "Bayaran",
+  "ridersTab": "Rider",
+  "openingsTab": "Kekosongan",
+  "noOpenOpenings": "Belum ada kekosongan dibuka. Siarkan satu supaya rider berdekatan boleh menemuinya di Cari Kerja."
 }

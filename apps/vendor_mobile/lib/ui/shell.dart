@@ -9,6 +9,7 @@ import '../core/theme.dart';
 import 'notification_banner.dart';
 import 'system_bars.dart';
 import 'screens/directory.dart' show showCreateZoneDialog;
+import 'screens/hiring.dart' show RidersMode, openNewOpening, ridersMode;
 import 'widgets.dart';
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
@@ -666,7 +667,14 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
         icon: LucideIcons.plus,
         tooltip: addAction.$1,
         color: Colors.white,
-        onTap: () => app.go(addAction.$2),
+        // Riders, draft D: "+" adds what is showing (an opening on the
+        // Owner's Openings view, otherwise a rider).
+        onTap: () =>
+            route == VRoute.riders &&
+                (app.business?.isOwner ?? false) &&
+                ridersMode.value == RidersMode.openings
+            ? openNewOpening(context)
+            : app.go(addAction.$2),
       ),
   ];
 }

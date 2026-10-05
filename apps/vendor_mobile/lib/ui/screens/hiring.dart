@@ -8,157 +8,194 @@ import '../widgets.dart';
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
 
-/// D-75 "Looking for riders" (Owner only): the business's openings shown to
-/// Drivers in Find Jobs. Riders who request one arrive in Riders > Pending,
-/// and the Owner approves them as today. Server: save_job_opening /
-/// close_job_opening (Owner only), rider_job_openings (members read).
-class LookingForRidersCard extends StatefulWidget {
-  const LookingForRidersCard({super.key});
+/// Riders page mode (Founder draft D, 2026-10-05): the Owner switches
+/// between Riders and Openings; the header "+" adds whatever is showing.
+enum RidersMode { riders, openings }
 
-  @override
-  State<LookingForRidersCard> createState() => _LookingForRidersCardState();
+final ridersMode = ValueNotifier<RidersMode>(RidersMode.riders);
+
+/// The business's open openings (null while loading), shared by the switch
+/// label, the Openings list and the header "+".
+final openOpenings = ValueNotifier<List<Map<String, dynamic>>?>(null);
+
+Future<void> loadOpenOpenings(AppState app) async {
+  final b = app.business;
+  if (b == null || !b.isOwner) {
+    openOpenings.value = const [];
+    return;
+  }
+  try {
+    openOpenings.value = await app.repo.jobOpenings(b.id);
+  } on RepositoryError {
+    openOpenings.value ??= const [];
+  }
 }
 
-class _LookingForRidersCardState extends State<LookingForRidersCard> {
-  List<Map<String, dynamic>>? _openings;
-  bool _busy = false;
+/// New opening form (Owner only; the server enforces it too).
+Future<void> openNewOpening(BuildContext context) async {
+  final app = AppScope.read(context);
+  final saved = await showModalBottomSheet<bool>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    // White surface (the theme default is a tinted cream).
+    backgroundColor: Colors.white,
+    builder: (_) => const _OpeningForm(),
+  );
+  if (saved == true) {
+    await loadOpenOpenings(app);
+    if (context.mounted) showCefToast(context, L.openingPosted);
+  }
+}
+
+/// Riders | Openings (n): a small two-option switch at the top of Riders.
+class RidersModeSwitch extends StatelessWidget {
+  const RidersModeSwitch({super.key});
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
-  }
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return ValueListenableBuilder<RidersMode>(
+      valueListenable: ridersMode,
+      builder: (context, mode, _) => ValueListenableBuilder(
+        valueListenable: openOpenings,
+        builder: (context, list, _) {
+          final n = list?.length ?? 0;
+          Widget seg(String label, RidersMode m) {
+            final on = mode == m;
+            return Expanded(
+              child: Semantics(
+                button: true,
+                selected: on,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => ridersMode.value = m,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    padding: const EdgeInsets.symmetric(vertical: 9),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: on ? Colors.white : Colors.transparent,
+                      borderRadius: BorderRadius.circular(9),
+                      boxShadow: on
+                          ? const [
+                              BoxShadow(
+                                color: Color(0x1F0B1220),
+                                blurRadius: 2,
+                                offset: Offset(0, 1),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: on ? CefColors.navy : c.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
 
-  Future<void> _load() async {
-    final app = AppScope.read(context);
-    final b = app.business;
-    if (b == null) return;
-    try {
-      final rows = await app.repo.jobOpenings(b.id);
-      if (mounted) setState(() => _openings = rows);
-    } on RepositoryError catch (e) {
-      if (mounted) {
-        setState(() => _openings = const []);
-        showCefToast(context, e.message, error: true);
-      }
-    }
-  }
-
-  Future<void> _add() async {
-    final saved = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      // White surface (the theme default is a tinted cream).
-      backgroundColor: Colors.white,
-      builder: (_) => const _OpeningForm(),
+          return Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: c.subtle,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                seg(L.ridersTab, RidersMode.riders),
+                seg(
+                  n > 0 ? '${L.openingsTab} ($n)' : L.openingsTab,
+                  RidersMode.openings,
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
-    if (saved == true) {
-      await _load();
-      if (mounted) showCefToast(context, L.openingPosted);
-    }
   }
+}
+
+/// The Owner's open openings, each with Close; an empty state offers New
+/// opening. Riders who apply arrive in Riders > Pending as today.
+class OpeningsList extends StatefulWidget {
+  const OpeningsList({super.key});
+
+  @override
+  State<OpeningsList> createState() => _OpeningsListState();
+}
+
+class _OpeningsListState extends State<OpeningsList> {
+  String? _closing;
 
   Future<void> _close(String id) async {
     final app = AppScope.read(context);
-    setState(() => _busy = true);
+    setState(() => _closing = id);
     try {
       await app.repo.closeJobOpening(id);
-      await _load();
+      await loadOpenOpenings(app);
       if (mounted) showCefToast(context, L.openingClosed);
     } on RepositoryError catch (e) {
       if (mounted) showCefToast(context, e.message, error: true);
     } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  Future<void> _toggle(bool on) async {
-    final list = _openings ?? const [];
-    if (on) return _add();
-    if (list.isEmpty) return;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (d) => AlertDialog(
-        title: Text(L.turnOffHiringTitle),
-        content: Text(L.turnOffHiringBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(d).pop(false),
-            child: Text(L.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(d).pop(true),
-            child: Text(L.turnOff),
-          ),
-        ],
-      ),
-    );
-    if (ok != true || !mounted) return;
-    final app = AppScope.read(context);
-    setState(() => _busy = true);
-    try {
-      for (final o in list) {
-        await app.repo.closeJobOpening(o['id'] as String);
-      }
-    } on RepositoryError catch (e) {
-      if (mounted) showCefToast(context, e.message, error: true);
-    } finally {
-      await _load();
-      if (mounted) setState(() => _busy = false);
+      if (mounted) setState(() => _closing = null);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    final list = _openings;
-    final on = (list ?? const []).isNotEmpty;
-    return CefCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(L.lookingForRiders, style: text.titleSmall),
-                    const SizedBox(height: 2),
-                    Text(
-                      on ? L.lookingForRidersOn : L.lookingForRidersOff,
-                      style: text.bodySmall?.copyWith(
-                        color: context.c.textSecondary,
+    final c = context.c;
+    return ValueListenableBuilder(
+      valueListenable: openOpenings,
+      builder: (context, list, _) {
+        if (list == null) return const StateBlock.loading();
+        if (list.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: Gap.xl),
+            child: Column(
+              children: [
+                Text(
+                  L.noOpenOpenings,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14, color: c.textSecondary),
+                ),
+                const SizedBox(height: Gap.lg),
+                SizedBox(
+                  height: 44,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: CefColors.standardBrand,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                  ],
+                    onPressed: () => openNewOpening(context),
+                    child: Text(L.newOpening),
+                  ),
                 ),
-              ),
-              CefSwitch(
-                value: on,
-                onChanged: list == null || _busy ? (_) {} : _toggle,
-              ),
-            ],
-          ),
-          if (on) ...[
-            const SizedBox(height: Gap.md),
-            for (final o in list!) ...[
+              ],
+            ),
+          );
+        }
+        return Column(
+          children: [
+            for (final o in list)
               _OpeningRow(
                 opening: o,
-                onClose: _busy ? null : () => _close(o['id'] as String),
+                onClose: _closing == null
+                    ? () => _close(o['id'] as String)
+                    : null,
               ),
-              const SizedBox(height: Gap.sm),
-            ],
-            CefButton(
-              L.addOpening,
-              secondary: true,
-              icon: LucideIcons.plus,
-              onTap: _busy ? null : _add,
-            ),
           ],
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -205,24 +242,42 @@ class _OpeningRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final o = opening;
-    final text = Theme.of(context).textTheme;
+    final c = context.c;
     final days = [for (final d in (o['days'] as List)) (d as num).toInt()]
       ..sort();
     return Container(
-      padding: const EdgeInsets.all(Gap.md),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: context.c.subtle,
-        borderRadius: BorderRadius.circular(12),
+        border: Border(bottom: BorderSide(color: c.border)),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEEF3FF),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              LucideIcons.briefcase,
+              size: 18,
+              color: CefColors.standardBrand,
+            ),
+          ),
+          const SizedBox(width: Gap.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   '${_hhmm(o['shift_start'] as String)} – ${_hhmm(o['shift_end'] as String)}',
-                  style: text.titleSmall,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: CefColors.navy,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -231,22 +286,27 @@ class _OpeningRow extends StatelessWidget {
                     _vehicle(o['vehicle_type'] as String),
                     'RM ${_num(o['pay_amount'] as num)} / ${_unit(o['pay_unit'] as String)}',
                     '× ${o['riders_needed']}',
-                    L.openingRadius(_num(o['radius_km'] as num)),
                   ].join(' · '),
-                  style: text.bodySmall?.copyWith(
-                    color: context.c.textSecondary,
-                  ),
+                  style: TextStyle(fontSize: 13, color: c.textSecondary),
                 ),
                 Text(
-                  o['area_label'] as String,
-                  style: text.bodySmall?.copyWith(
-                    color: context.c.textSecondary,
-                  ),
+                  '${o['area_label']} · ${_num(o['radius_km'] as num)} km',
+                  style: TextStyle(fontSize: 13, color: c.textSecondary),
                 ),
               ],
             ),
           ),
-          TextButton(onPressed: onClose, child: Text(L.closeOpening)),
+          TextButton(
+            onPressed: onClose,
+            child: Text(
+              L.closeOpening,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFFC2410C),
+              ),
+            ),
+          ),
         ],
       ),
     );

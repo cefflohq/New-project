@@ -3835,4 +3835,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openingPayLabel => 'Pay';
+
+  @override
+  String get ridersTab => 'Riders';
+
+  @override
+  String get openingsTab => 'Openings';
+
+  @override
+  String get noOpenOpenings =>
+      'No open openings yet. Post one so riders near you can find this job in Find Jobs.';
 }

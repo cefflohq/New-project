@@ -3839,4 +3839,14 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get openingPayLabel => 'Bayaran';
+
+  @override
+  String get ridersTab => 'Rider';
+
+  @override
+  String get openingsTab => 'Kekosongan';
+
+  @override
+  String get noOpenOpenings =>
+      'Belum ada kekosongan dibuka. Siarkan satu supaya rider berdekatan boleh menemuinya di Cari Kerja.';
 }

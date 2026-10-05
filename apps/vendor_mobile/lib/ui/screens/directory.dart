@@ -1141,70 +1141,80 @@ class _RidersScreenState extends State<RidersScreen> {
     if (business == null) {
       return PageBody(children: [StateBlock.empty(L.noBusinessLinked)]);
     }
-    return AsyncView<(List<RiderRow>, Set<String>)>(
-      key: ValueKey('riders-${business.id}'),
-      load: () async {
-        // Removed or rejected riders (inactive) are no longer on the team.
-        final riders = (await app.repo.riders(business.id))
-            .where((r) => r.status != 'inactive')
-            .toList();
-        final runs = await app.repo.runs(business.id);
-        return (
-          riders,
-          {
-            for (final r in runs)
-              if (_onRun.contains(r.status)) r.riderId,
-          },
-        );
-      },
-      builder: (context, data, reload) {
-        final (riders, onRun) = data;
-        final visible = switch (tab) {
-          1 => riders.where((r) => onRun.contains(r.id)).toList(),
-          2 => riders.where((r) => r.isPending).toList(),
-          _ => riders,
-        };
-        final tabLabels = [L.all, L.active, L.pending];
-        return PageBody(
-          onRefresh: reload,
-          children: [
-            // D-75: Owner posts openings that Drivers see in Find Jobs.
-            if (business.isOwner) ...[
-              const LookingForRidersCard(),
-              const SizedBox(height: Gap.md),
-            ],
-            SegmentedTabs(
-              labels: tabLabels,
-              active: tabLabels[tab],
-              onChange: (l) => setState(() => tab = tabLabels.indexOf(l)),
-            ),
-            const SizedBox(height: Gap.md),
-            if (visible.isEmpty)
-              StateBlock.empty(switch (tab) {
-                1 => L.noActiveRidersYet,
-                2 => L.noPendingRidersYet,
-                _ => L.noRidersYet,
-              })
-            else
-              for (final r in visible)
-                CefListRow(
-                  title: r.name,
-                  subtitle: [
-                    if (r.vehicleType != null) _titleCase(r.vehicleType!),
-                    if (r.plate != null) r.plate!,
-                  ].join(' · '),
-                  leading: CefAvatar(r.name, filled: true),
-                  trailing: onRun.contains(r.id)
-                      ? StatusChip(L.active, success: true)
-                      : r.isPending
-                      ? StatusChip(L.pending, warning: true)
-                      : null,
-                  // Audit fix 2: bound to this rider's id.
-                  onTap: () => app.go(VRoute.riderDetail, entityId: r.id),
+    return ValueListenableBuilder<RidersMode>(
+      valueListenable: ridersMode,
+      builder: (context, _, _) => AsyncView<(List<RiderRow>, Set<String>)>(
+        key: ValueKey('riders-${business.id}'),
+        load: () async {
+          await loadOpenOpenings(app);
+          // Removed or rejected riders (inactive) are no longer on the team.
+          final riders = (await app.repo.riders(business.id))
+              .where((r) => r.status != 'inactive')
+              .toList();
+          final runs = await app.repo.runs(business.id);
+          return (
+            riders,
+            {
+              for (final r in runs)
+                if (_onRun.contains(r.status)) r.riderId,
+            },
+          );
+        },
+        builder: (context, data, reload) {
+          final (riders, onRun) = data;
+          final visible = switch (tab) {
+            1 => riders.where((r) => onRun.contains(r.id)).toList(),
+            2 => riders.where((r) => r.isPending).toList(),
+            _ => riders,
+          };
+          final tabLabels = [L.all, L.active, L.pending];
+          final mode = ridersMode.value;
+          return PageBody(
+            onRefresh: reload,
+            children: [
+              // Draft D (Founder 2026-10-05): Riders | Openings for the
+              // Owner; the header "+" adds whatever is showing.
+              if (business.isOwner) ...[
+                const RidersModeSwitch(),
+                const SizedBox(height: Gap.md),
+              ],
+              if (business.isOwner && mode == RidersMode.openings)
+                const OpeningsList()
+              else ...[
+                SegmentedTabs(
+                  labels: tabLabels,
+                  active: tabLabels[tab],
+                  onChange: (l) => setState(() => tab = tabLabels.indexOf(l)),
                 ),
-          ],
-        );
-      },
+                const SizedBox(height: Gap.md),
+                if (visible.isEmpty)
+                  StateBlock.empty(switch (tab) {
+                    1 => L.noActiveRidersYet,
+                    2 => L.noPendingRidersYet,
+                    _ => L.noRidersYet,
+                  })
+                else
+                  for (final r in visible)
+                    CefListRow(
+                      title: r.name,
+                      subtitle: [
+                        if (r.vehicleType != null) _titleCase(r.vehicleType!),
+                        if (r.plate != null) r.plate!,
+                      ].join(' · '),
+                      leading: CefAvatar(r.name, filled: true),
+                      trailing: onRun.contains(r.id)
+                          ? StatusChip(L.active, success: true)
+                          : r.isPending
+                          ? StatusChip(L.pending, warning: true)
+                          : null,
+                      // Audit fix 2: bound to this rider's id.
+                      onTap: () => app.go(VRoute.riderDetail, entityId: r.id),
+                    ),
+              ],
+            ],
+          );
+        },
+      ),
     );
   }
 }
