@@ -649,9 +649,15 @@ class AppState extends ChangeNotifier {
       // Signed in through the Operator Sign-In but no membership was
       // claimed: say so. Business setup would make this account an Owner.
       if (business == null && access != AuthAccess.vendor) {
-        sessionError = access == AuthAccess.helper
-            ? L.noHelperAccessYet
-            : L.noOperatorAccessYet;
+        // A sent join request waiting for the Owner reads as pending, not
+        // as "no access".
+        final pending = await repo.myPendingJoinRole();
+        sessionError = switch ((access, pending)) {
+          (AuthAccess.helper, 'helper') => L.helperRequestPending,
+          (AuthAccess.helper, _) => L.noHelperAccessYet,
+          (_, 'operator') => L.operatorRequestPending,
+          _ => L.noOperatorAccessYet,
+        };
         return;
       }
       // A signed-in account without a business starts in business setup.

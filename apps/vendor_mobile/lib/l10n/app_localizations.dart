@@ -5223,10 +5223,22 @@ abstract class AppLocalizations {
   /// **'Sign in to your store operations'**
   String get signInStoreOperations;
 
+  /// No description provided for @operatorRequestPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Operator request has been sent. You can start once the business owner approves it.'**
+  String get operatorRequestPending;
+
+  /// No description provided for @helperRequestPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Helper request has been sent. You can start once the business owner approves it.'**
+  String get helperRequestPending;
+
   /// No description provided for @noOperatorAccessYet.
   ///
   /// In en, this message translates to:
-  /// **'This account has no Operator access yet. Accept the invitation link from the business owner, then sign in with the email address it was sent to.'**
+  /// **'This account has no Operator access yet. Open the invite link or scan the QR code from the business owner, then send your join request.'**
   String get noOperatorAccessYet;
 
   /// No description provided for @helperAccess.
@@ -5244,7 +5256,7 @@ abstract class AppLocalizations {
   /// No description provided for @noHelperAccessYet.
   ///
   /// In en, this message translates to:
-  /// **'This account has no Helper access yet. Accept the invitation link from the business owner, then sign in with the email address it was sent to.'**
+  /// **'This account has no Helper access yet. Open the invite link or scan the QR code from the business owner, then send your join request.'**
   String get noHelperAccessYet;
 
   /// No description provided for @hwPreparation.

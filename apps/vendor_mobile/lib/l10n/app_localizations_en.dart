@@ -2825,8 +2825,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signInStoreOperations => 'Sign in to your store operations';
 
   @override
+  String get operatorRequestPending =>
+      'Your Operator request has been sent. You can start once the business owner approves it.';
+
+  @override
+  String get helperRequestPending =>
+      'Your Helper request has been sent. You can start once the business owner approves it.';
+
+  @override
   String get noOperatorAccessYet =>
-      'This account has no Operator access yet. Accept the invitation link from the business owner, then sign in with the email address it was sent to.';
+      'This account has no Operator access yet. Open the invite link or scan the QR code from the business owner, then send your join request.';
 
   @override
   String get helperAccess => 'Helper Access';
@@ -2836,7 +2844,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noHelperAccessYet =>
-      'This account has no Helper access yet. Accept the invitation link from the business owner, then sign in with the email address it was sent to.';
+      'This account has no Helper access yet. Open the invite link or scan the QR code from the business owner, then send your join request.';
 
   @override
   String get hwPreparation => 'Preparation';

@@ -67,7 +67,19 @@
   <link rel="icon" type="image/png" href="favicon.png"/>
 
   <title>Cefflo Vendor</title>
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json" id="cef-manifest">
+  <script>
+    // Operator / Helper entry (?access=operator|helper): installing from it
+    // gives an app that always reopens in that entry. Presentation only; the
+    // role still comes from the server after sign-in.
+    (function () {
+      var a = new URLSearchParams(location.search).get('access');
+      if (a === 'operator' || a === 'helper') {
+        document.getElementById('cef-manifest').href = 'manifest-' + a + '.json';
+        document.title = a === 'operator' ? 'Cefflo Operator' : 'Cefflo Helper';
+      }
+    })();
+  </script>
 <style>
     /* Pre-splash: painted by the browser on the first frame, before Flutter
        loads. It is the app's splash itself (gradient + official brand block,
@@ -90,6 +102,14 @@
 <body>
   <div id="cef-presplash" aria-hidden="true"><div class="cf-brand"><span class="cf-sym"><img src="assets/assets/brand/cefflo-symbol.png" alt="" width="1024" height="1024"></span><span class="cf-word"><img src="assets/assets/brand/cefflo-wordmark.png" alt="" width="1024" height="1024"></span><span class="cf-label">Vendor</span></div></div>
   <script>
+    // Same label as the Flutter splash for the Operator / Helper entry.
+    (function () {
+      var a = new URLSearchParams(location.search).get('access');
+      var ms = false;
+      try { ms = /ms/.test(localStorage.getItem('flutter.cefflo.ui_locale') || ''); } catch (e) {}
+      var label = { operator: ms ? 'Akses Operator' : 'Operator Access', helper: ms ? 'Akses Pembantu' : 'Helper Access' }[a];
+      if (label) document.querySelector('#cef-presplash .cf-label').textContent = label;
+    })();
     window.addEventListener('flutter-first-frame', function () {
       var el = document.getElementById('cef-presplash');
       if (el) { el.classList.add('gone'); setTimeout(function () { el.remove(); }, 320); }

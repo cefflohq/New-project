@@ -74,6 +74,9 @@ Widget buildScreen(BuildContext context, VendorLocation loc) {
 /// Business ownership, team, billing: never shown to an Operator (D-74).
 const _ownerOnly = {
   VRoute.businessProfile,
+  VRoute.businessInformation,
+  VRoute.businessAddress,
+  VRoute.businessHours,
   VRoute.team,
   VRoute.teamMemberDetail,
   VRoute.helperRegistrationLink,

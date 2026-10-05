@@ -4,10 +4,9 @@
 /// This is deliberately separate from [Product]/catalogue data (see
 /// `storefront_catalog.dart`) and from order data: it only ever describes
 /// *how* a storefront looks, never *what* it sells or *what was ordered*.
-/// There is no backend for it yet, so it lives as in-memory vendor session
-/// state on [AppState] (`activeStorefrontTemplateId` / per-template branding
-/// overrides) -- a Storefront configuration adapter boundary rather than a
-/// parallel production API.
+/// Saved on the server (get_storefront / save_storefront_appearance, see
+/// [AppState.loadStorefront] and [AppState.applyStorefront]); [AppState]
+/// mirrors the loaded template and per-template branding.
 library;
 
 import 'dart:math' as math;

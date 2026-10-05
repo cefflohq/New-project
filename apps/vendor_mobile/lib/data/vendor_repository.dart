@@ -919,6 +919,23 @@ class VendorRepository {
     );
   }
 
+  /// The signed-in person's own pending Operator / Helper join request, if
+  /// any (the requester may read their own rows by RLS). Presentation only:
+  /// a pending request grants nothing.
+  Future<String?> myPendingJoinRole() async {
+    if (_demo || currentUser == null) return null;
+    final rows = await _run(
+      () => _db!
+          .from('team_join_requests')
+          .select('role')
+          .eq('user_id', currentUser!.id)
+          .eq('status', 'pending')
+          .limit(1),
+    );
+    final list = _rows(rows);
+    return list.isEmpty ? null : list.first['role'] as String?;
+  }
+
   /// Pending Operator / Helper requests (Owner only by RLS).
   Future<List<Map<String, dynamic>>> pendingTeamRequests(
     String businessId,

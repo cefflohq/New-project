@@ -2830,8 +2830,16 @@ class AppLocalizationsMs extends AppLocalizations {
   String get signInStoreOperations => 'Log masuk ke operasi kedai anda';
 
   @override
+  String get operatorRequestPending =>
+      'Permintaan Operator anda telah dihantar. Anda boleh mula sebaik sahaja pemilik perniagaan meluluskannya.';
+
+  @override
+  String get helperRequestPending =>
+      'Permintaan Pembantu anda telah dihantar. Anda boleh mula sebaik sahaja pemilik perniagaan meluluskannya.';
+
+  @override
   String get noOperatorAccessYet =>
-      'Akaun ini belum ada akses Operator. Terima pautan jemputan daripada pemilik perniagaan, kemudian log masuk dengan alamat e-mel yang menerima jemputan itu.';
+      'Akaun ini belum ada akses Operator. Buka pautan jemputan atau imbas kod QR daripada pemilik perniagaan, kemudian hantar permintaan untuk menyertai.';
 
   @override
   String get helperAccess => 'Akses Pembantu';
@@ -2841,7 +2849,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get noHelperAccessYet =>
-      'Akaun ini belum ada akses Pembantu. Terima pautan jemputan daripada pemilik perniagaan, kemudian log masuk dengan alamat e-mel yang menerima jemputan itu.';
+      'Akaun ini belum ada akses Pembantu. Buka pautan jemputan atau imbas kod QR daripada pemilik perniagaan, kemudian hantar permintaan untuk menyertai.';
 
   @override
   String get hwPreparation => 'Penyediaan';
