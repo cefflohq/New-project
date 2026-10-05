@@ -3849,4 +3849,63 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get noOpenOpenings =>
       'Belum ada kekosongan dibuka. Siarkan satu supaya rider berdekatan boleh menemuinya di Cari Kerja.';
+
+  @override
+  String get hiring => 'Pengambilan';
+
+  @override
+  String get hiringSub => 'Cari orang untuk bantu operasi anda.';
+
+  @override
+  String get hiringDriverSub => 'Cari pemandu untuk hantaran anda.';
+
+  @override
+  String get hiringOperatorSub => 'Cari staf untuk urus operasi hantaran.';
+
+  @override
+  String get hiringHelperSub => 'Cari pembantu untuk pembungkusan dan susunan.';
+
+  @override
+  String get roleDriver => 'Pemandu';
+
+  @override
+  String get roleHelper => 'Pembantu';
+
+  @override
+  String get yourHiringPosts => 'Pengambilan anda';
+
+  @override
+  String hiringActiveCount(int n) {
+    return '$n aktif';
+  }
+
+  @override
+  String get noActiveHiring => 'Tiada pengambilan aktif';
+
+  @override
+  String get teamDrivers => 'Pemandu';
+
+  @override
+  String get teamOperators => 'Operator';
+
+  @override
+  String get teamHelpers => 'Pembantu';
+
+  @override
+  String get inviteDriver => 'Jemput Pemandu';
+
+  @override
+  String get inviteOperator => 'Jemput Operator';
+
+  @override
+  String get inviteHelper => 'Jemput Pembantu';
+
+  @override
+  String get noTeamDrivers => 'Belum ada pemandu.';
+
+  @override
+  String get noTeamOperators => 'Belum ada operator.';
+
+  @override
+  String get noTeamHelpers => 'Belum ada pembantu.';
 }

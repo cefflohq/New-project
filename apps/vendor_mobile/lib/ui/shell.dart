@@ -596,7 +596,8 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
     VRoute.orders => (L.addOrder, VRoute.newOrder),
     VRoute.zones || VRoute.zoneConfiguration => (L.addZone, VRoute.createZone),
     VRoute.riders => (L.inviteRider, VRoute.riderRegistrationLink),
-    VRoute.team => (L.inviteTeamMember, VRoute.helperRegistrationLink),
+    // Founder: Team "+" opens Hiring (invite links live there too).
+    VRoute.team => (L.hiring, VRoute.hiring),
     VRoute.products => (L.addProduct, VRoute.addProduct),
     _ => null,
   };

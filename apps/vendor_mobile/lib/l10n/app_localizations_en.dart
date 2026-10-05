@@ -3845,4 +3845,63 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get noOpenOpenings =>
       'No open openings yet. Post one so riders near you can find this job in Find Jobs.';
+
+  @override
+  String get hiring => 'Hiring';
+
+  @override
+  String get hiringSub => 'Find people to help run your operation.';
+
+  @override
+  String get hiringDriverSub => 'Find drivers for your delivery runs.';
+
+  @override
+  String get hiringOperatorSub => 'Find staff to manage delivery operations.';
+
+  @override
+  String get hiringHelperSub => 'Find helpers for packing and sorting.';
+
+  @override
+  String get roleDriver => 'Driver';
+
+  @override
+  String get roleHelper => 'Helper';
+
+  @override
+  String get yourHiringPosts => 'Your hiring posts';
+
+  @override
+  String hiringActiveCount(int n) {
+    return '$n active';
+  }
+
+  @override
+  String get noActiveHiring => 'No active hiring';
+
+  @override
+  String get teamDrivers => 'Drivers';
+
+  @override
+  String get teamOperators => 'Operators';
+
+  @override
+  String get teamHelpers => 'Helpers';
+
+  @override
+  String get inviteDriver => 'Invite Driver';
+
+  @override
+  String get inviteOperator => 'Invite Operator';
+
+  @override
+  String get inviteHelper => 'Invite Helper';
+
+  @override
+  String get noTeamDrivers => 'No drivers yet.';
+
+  @override
+  String get noTeamOperators => 'No operators yet.';
+
+  @override
+  String get noTeamHelpers => 'No helpers yet.';
 }

@@ -7022,6 +7022,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No open openings yet. Post one so riders near you can find this job in Find Jobs.'**
   String get noOpenOpenings;
+
+  /// No description provided for @hiring.
+  ///
+  /// In en, this message translates to:
+  /// **'Hiring'**
+  String get hiring;
+
+  /// No description provided for @hiringSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Find people to help run your operation.'**
+  String get hiringSub;
+
+  /// No description provided for @hiringDriverSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Find drivers for your delivery runs.'**
+  String get hiringDriverSub;
+
+  /// No description provided for @hiringOperatorSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Find staff to manage delivery operations.'**
+  String get hiringOperatorSub;
+
+  /// No description provided for @hiringHelperSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Find helpers for packing and sorting.'**
+  String get hiringHelperSub;
+
+  /// No description provided for @roleDriver.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver'**
+  String get roleDriver;
+
+  /// No description provided for @roleHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Helper'**
+  String get roleHelper;
+
+  /// No description provided for @yourHiringPosts.
+  ///
+  /// In en, this message translates to:
+  /// **'Your hiring posts'**
+  String get yourHiringPosts;
+
+  /// No description provided for @hiringActiveCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} active'**
+  String hiringActiveCount(int n);
+
+  /// No description provided for @noActiveHiring.
+  ///
+  /// In en, this message translates to:
+  /// **'No active hiring'**
+  String get noActiveHiring;
+
+  /// No description provided for @teamDrivers.
+  ///
+  /// In en, this message translates to:
+  /// **'Drivers'**
+  String get teamDrivers;
+
+  /// No description provided for @teamOperators.
+  ///
+  /// In en, this message translates to:
+  /// **'Operators'**
+  String get teamOperators;
+
+  /// No description provided for @teamHelpers.
+  ///
+  /// In en, this message translates to:
+  /// **'Helpers'**
+  String get teamHelpers;
+
+  /// No description provided for @inviteDriver.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite Driver'**
+  String get inviteDriver;
+
+  /// No description provided for @inviteOperator.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite Operator'**
+  String get inviteOperator;
+
+  /// No description provided for @inviteHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite Helper'**
+  String get inviteHelper;
+
+  /// No description provided for @noTeamDrivers.
+  ///
+  /// In en, this message translates to:
+  /// **'No drivers yet.'**
+  String get noTeamDrivers;
+
+  /// No description provided for @noTeamOperators.
+  ///
+  /// In en, this message translates to:
+  /// **'No operators yet.'**
+  String get noTeamOperators;
+
+  /// No description provided for @noTeamHelpers.
+  ///
+  /// In en, this message translates to:
+  /// **'No helpers yet.'**
+  String get noTeamHelpers;
 }
 
 class _AppLocalizationsDelegate

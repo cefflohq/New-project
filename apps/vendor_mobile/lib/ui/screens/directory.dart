@@ -1417,53 +1417,97 @@ class _TeamScreenState extends State<TeamScreen> {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    return AsyncView<(List<TeamMember>, List<Map<String, dynamic>>)>(
+    // Founder screen 6: Team is a view over riders (Drivers) and
+    // business_members (Operators/Helpers); one tab per role.
+    return AsyncView<
+      (List<TeamMember>, List<Map<String, dynamic>>, List<RiderRow>)
+    >(
       key: ValueKey('team-${app.business?.id}'),
       load: () async => (
         await app.repo.team(app.business!.id),
         await app.repo.pendingTeamRequests(app.business!.id),
+        // Approved drivers only; pending ones stay on Drivers > Pending.
+        (await app.repo.riders(app.business!.id))
+            .where((r) => r.status != 'inactive' && !r.isPending)
+            .toList(),
       ),
-      builder: (context, data, reload) {
-        final (members, requests) = data;
-        final q = _query.text.trim().toLowerCase();
-        final visible = q.isEmpty
-            ? members
-            : members.where((m) => m.label.toLowerCase().contains(q)).toList();
-        return PageBody(
-          onRefresh: reload,
-          children: [
-            CefSearchField(
-              hint: L.searchTeamMembers,
-              controller: _query,
-              onChanged: (_) => setState(() {}),
-            ),
-            const SizedBox(height: Gap.md),
-            // Invite-link joins wait here until the Owner decides.
-            if (requests.isNotEmpty) ...[
-              SectionHeading(L.joinRequests, icon: LucideIcons.userPlus),
-              for (final r in requests)
-                _TeamRequestRow(request: r, onDecided: reload),
+      builder: (context, data, reload) => ValueListenableBuilder<TeamTab>(
+        valueListenable: teamTab,
+        builder: (context, tab, _) {
+          final (members, requests, drivers) = data;
+          final q = _query.text.trim().toLowerCase();
+          bool hit(String s) => q.isEmpty || s.toLowerCase().contains(q);
+          final role = tab == TeamTab.helpers ? 'helper' : 'operator';
+          final people = members
+              .where((m) => m.role.toLowerCase() == role && hit(m.label))
+              .toList();
+          final roleRequests = requests
+              .where((r) => (r['role'] ?? 'operator') == role)
+              .toList();
+          final shown = drivers.where((r) => hit(r.name)).toList();
+          final labels = [L.teamDrivers, L.teamOperators, L.teamHelpers];
+          return PageBody(
+            onRefresh: reload,
+            children: [
+              SegmentedTabs(
+                labels: labels,
+                active: labels[tab.index],
+                onChange: (l) =>
+                    teamTab.value = TeamTab.values[labels.indexOf(l)],
+              ),
               const SizedBox(height: Gap.md),
+              CefSearchField(
+                hint: L.searchTeamMembers,
+                controller: _query,
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: Gap.md),
+              if (tab == TeamTab.drivers)
+                if (shown.isEmpty)
+                  StateBlock.empty(L.noTeamDrivers)
+                else
+                  for (final r in shown)
+                    CefListRow(
+                      title: r.name,
+                      subtitle: [
+                        if (r.vehicleType != null) _titleCase(r.vehicleType!),
+                        if (r.plate != null) r.plate!,
+                      ].join(' · '),
+                      leading: CefAvatar(r.name, filled: true),
+                      trailing: StatusChip(L.active, success: true),
+                      onTap: () => app.go(VRoute.riderDetail, entityId: r.id),
+                    )
+              else ...[
+                // Invite-link joins wait here until the Owner decides.
+                if (roleRequests.isNotEmpty) ...[
+                  SectionHeading(L.joinRequests, icon: LucideIcons.userPlus),
+                  for (final r in roleRequests)
+                    _TeamRequestRow(request: r, onDecided: reload),
+                  const SizedBox(height: Gap.md),
+                ],
+                if (people.isEmpty)
+                  StateBlock.empty(
+                    tab == TeamTab.helpers
+                        ? L.noTeamHelpers
+                        : L.noTeamOperators,
+                  )
+                else
+                  // Archetype D (people list): filled avatar, status pill.
+                  for (final m in people)
+                    CefListRow(
+                      title: m.label,
+                      subtitle: roleLabel(m.role),
+                      leading: CefAvatar(m.label, filled: true),
+                      trailing: StatusChip(L.active, success: true),
+                      // Audit fix 2: bound to this member's id.
+                      onTap: () =>
+                          app.go(VRoute.teamMemberDetail, entityId: m.userId),
+                    ),
+              ],
             ],
-            if (visible.isEmpty)
-              StateBlock.empty(
-                q.isEmpty ? L.ownerCanRunAlone : L.noTeamMembersYet,
-              )
-            else
-              // Archetype D (people list): filled avatar, status pill.
-              for (final m in visible)
-                CefListRow(
-                  title: m.label,
-                  subtitle: roleLabel(m.role),
-                  leading: CefAvatar(m.label, filled: true),
-                  trailing: StatusChip(L.active, success: true),
-                  // Audit fix 2: bound to this member's id.
-                  onTap: () =>
-                      app.go(VRoute.teamMemberDetail, entityId: m.userId),
-                ),
-          ],
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

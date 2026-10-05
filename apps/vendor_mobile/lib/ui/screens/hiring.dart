@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/vendor_repository.dart';
+import '../shell.dart' show PageBody;
 import '../widgets.dart';
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
@@ -28,6 +30,99 @@ Future<void> loadOpenOpenings(AppState app) async {
     openOpenings.value = await app.repo.jobOpenings(b.id);
   } on RepositoryError {
     openOpenings.value ??= const [];
+  }
+}
+
+/// Team tab (Founder screen 6); the header "+" invites for the visible tab.
+enum TeamTab { drivers, operators, helpers }
+
+final teamTab = ValueNotifier<TeamTab>(TeamTab.drivers);
+
+/// Founder screen 2 — Hiring home: choose who to hire, then the business's
+/// hiring posts. Driver opens the existing New opening form; Operator and
+/// Helper hiring wait for their phase (pay model not decided).
+class HiringScreen extends StatefulWidget {
+  const HiringScreen({super.key});
+
+  @override
+  State<HiringScreen> createState() => _HiringScreenState();
+}
+
+class _HiringScreenState extends State<HiringScreen> {
+  @override
+  void initState() {
+    super.initState();
+    loadOpenOpenings(AppScope.read(context));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final c = context.c;
+    final text = Theme.of(context).textTheme;
+    final soon = StatusChip(L.comingSoon);
+    return PageBody(
+      onRefresh: () => loadOpenOpenings(app),
+      children: [
+        Text(
+          L.hiringSub,
+          style: text.bodyMedium?.copyWith(color: c.textSecondary),
+        ),
+        const SizedBox(height: Gap.md),
+        CefListRow(
+          title: L.roleDriver,
+          subtitle: L.hiringDriverSub,
+          icon: LucideIcons.motorbike,
+          onTap: () => openNewOpening(context),
+        ),
+        CefListRow(
+          title: L.roleOperator,
+          subtitle: L.hiringOperatorSub,
+          subtitleMaxLines: 2,
+          icon: LucideIcons.userCog,
+          trailing: soon,
+        ),
+        CefListRow(
+          title: L.roleHelper,
+          subtitle: L.hiringHelperSub,
+          subtitleMaxLines: 2,
+          icon: LucideIcons.package,
+          trailing: soon,
+        ),
+        // Direct invite (link / QR) for the Team tab the Owner came from.
+        CefListRow(
+          title: switch (teamTab.value) {
+            TeamTab.drivers => L.inviteDriver,
+            TeamTab.operators => L.inviteOperator,
+            TeamTab.helpers => L.inviteHelper,
+          },
+          icon: LucideIcons.qrCode,
+          onTap: () => app.go(
+            teamTab.value == TeamTab.drivers
+                ? VRoute.riderRegistrationLink
+                : VRoute.helperRegistrationLink,
+          ),
+        ),
+        const SizedBox(height: Gap.md),
+        SectionHeading(L.yourHiringPosts, icon: LucideIcons.megaphone),
+        ValueListenableBuilder(
+          valueListenable: openOpenings,
+          builder: (context, list, _) {
+            final n = list?.length ?? 0;
+            return CefListRow(
+              title: L.roleDriver,
+              subtitle: n > 0 ? L.hiringActiveCount(n) : L.noActiveHiring,
+              icon: LucideIcons.motorbike,
+              // The posts live on Drivers > Openings (draft D).
+              onTap: () {
+                ridersMode.value = RidersMode.openings;
+                app.go(VRoute.riders);
+              },
+            );
+          },
+        ),
+      ],
+    );
   }
 }
 

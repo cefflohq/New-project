@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/app_state.dart';
 import '../core/routes.dart';
 import 'screens/directory.dart';
+import 'screens/hiring.dart' show HiringScreen;
 import 'screens/import_flow.dart';
 import 'screens/operations.dart';
 import 'screens/planning.dart';
@@ -47,6 +48,7 @@ Widget buildScreen(BuildContext context, VendorLocation loc) {
     VRoute.riders => const RidersScreen(),
     VRoute.riderDetail => RiderDetailScreen(riderId: id!),
     VRoute.team => const TeamScreen(),
+    VRoute.hiring => const HiringScreen(),
     VRoute.teamMemberDetail => TeamMemberDetailScreen(memberId: id!),
     VRoute.products => const ProductsScreen(),
     VRoute.productDetail => ProductFormScreen(productId: id!),
@@ -78,6 +80,7 @@ const _ownerOnly = {
   VRoute.businessAddress,
   VRoute.businessHours,
   VRoute.team,
+  VRoute.hiring,
   VRoute.teamMemberDetail,
   VRoute.helperRegistrationLink,
   VRoute.subscription,

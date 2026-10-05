@@ -3050,10 +3050,46 @@ abstract class AppLocalizations {
   /// **'Pay'**
   String get jobPay;
 
+  /// No description provided for @jobPayPerDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay per drop'**
+  String get jobPayPerDrop;
+
+  /// No description provided for @jobPickupTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup time'**
+  String get jobPickupTime;
+
+  /// No description provided for @jobPickupAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup {time}'**
+  String jobPickupAt(String time);
+
+  /// No description provided for @jobAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About this hiring'**
+  String get jobAbout;
+
+  /// No description provided for @jobApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get jobApply;
+
+  /// No description provided for @jobApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied'**
+  String get jobApplied;
+
   /// No description provided for @jobRidersNeeded.
   ///
   /// In en, this message translates to:
-  /// **'Riders needed'**
+  /// **'Drivers needed'**
   String get jobRidersNeeded;
 
   /// No description provided for @jobVehicle.

@@ -1666,7 +1666,27 @@ class AppLocalizationsMs extends AppLocalizations {
   String get jobPay => 'Bayaran';
 
   @override
-  String get jobRidersNeeded => 'Rider diperlukan';
+  String get jobPayPerDrop => 'Bayaran setiap hantaran';
+
+  @override
+  String get jobPickupTime => 'Masa ambil';
+
+  @override
+  String jobPickupAt(String time) {
+    return 'Ambil $time';
+  }
+
+  @override
+  String get jobAbout => 'Tentang pengambilan ini';
+
+  @override
+  String get jobApply => 'Mohon';
+
+  @override
+  String get jobApplied => 'Sudah dimohon';
+
+  @override
+  String get jobRidersNeeded => 'Pemandu diperlukan';
 
   @override
   String get jobVehicle => 'Kenderaan';

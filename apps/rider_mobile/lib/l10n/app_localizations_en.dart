@@ -1654,7 +1654,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get jobPay => 'Pay';
 
   @override
-  String get jobRidersNeeded => 'Riders needed';
+  String get jobPayPerDrop => 'Pay per drop';
+
+  @override
+  String get jobPickupTime => 'Pickup time';
+
+  @override
+  String jobPickupAt(String time) {
+    return 'Pickup $time';
+  }
+
+  @override
+  String get jobAbout => 'About this hiring';
+
+  @override
+  String get jobApply => 'Apply';
+
+  @override
+  String get jobApplied => 'Applied';
+
+  @override
+  String get jobRidersNeeded => 'Drivers needed';
 
   @override
   String get jobVehicle => 'Vehicle';

@@ -76,6 +76,7 @@ enum VRoute {
   about,
   // Additional routes required by the master beyond the 60 inventory.
   notificationInbox,
+  hiring,
 }
 
 class RouteSpec {
@@ -523,6 +524,13 @@ Map<VRoute, RouteSpec> get routeSpecs => <VRoute, RouteSpec>{
     tab: NavTab.more,
   ),
 
+  VRoute.hiring: RouteSpec(
+    route: VRoute.hiring,
+    id: 'X-02',
+    title: L.hiring,
+    parent: VRoute.team,
+    tab: NavTab.more,
+  ),
   VRoute.notificationInbox: RouteSpec(
     route: VRoute.notificationInbox,
     id: 'X-01',

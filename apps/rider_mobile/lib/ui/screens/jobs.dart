@@ -31,12 +31,6 @@ _Shift _shiftOf(int startMinutes) => startMinutes < 11 * 60
     ? _Shift.noon
     : _Shift.night;
 
-String _shiftLabel(_Shift s) => switch (s) {
-  _Shift.morning => L.shiftMorning,
-  _Shift.noon => L.shiftNoon,
-  _Shift.night => L.shiftNight,
-};
-
 int _minutes(String hhmm) {
   final p = hhmm.split(':');
   return int.parse(p[0]) * 60 + int.parse(p[1]);
@@ -989,7 +983,7 @@ class _OpeningCard extends StatelessWidget {
                 ),
               ),
               Text(
-                'RM ${_num(o.payAmount)}',
+                o.pay,
                 style: context.t.titleSmall?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
@@ -1001,9 +995,9 @@ class _OpeningCard extends StatelessWidget {
             spacing: 6,
             runSpacing: 6,
             children: [
-              _Pill(_shiftLabel(o.shift)),
-              _Pill(o.time),
+              // Founder screen 8: days, pickup time, vehicle (no end time).
               _Pill(_daysLabel(o.days)),
+              _Pill(L.jobPickupAt(_clock(o.start))),
               // Compatibility is information, not a warning (Founder 2026-10-05):
               // neutral grey; ranking and eligibility are unchanged.
               _Pill(
@@ -1015,7 +1009,7 @@ class _OpeningCard extends StatelessWidget {
               if (o.myStatus == 'approved')
                 _Pill(L.slotBooked, tone: _PillTone.success)
               else if (o.myStatus == 'pending')
-                _Pill(L.jobRequested, tone: _PillTone.success)
+                _Pill(L.jobApplied, tone: _PillTone.success)
               else if (o.clash != null)
                 _Pill(L.jobClash, tone: _PillTone.warning)
               else
@@ -1135,7 +1129,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
         final next = list[(index + 1) % list.length];
         final sent = o.myStatus != null;
         final blocked = !sent && o.clash != null;
-        final radius = L.jobWithin(_num(o.radiusKm));
         return CeffloNavySheetScaffold(
           header: CeffloScreenHeader(
             title: o.name,
@@ -1155,27 +1148,14 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const _ZoneMap(),
-              _SectionRow(title: L.jobShift),
-              _Kv(L.jobTime, '${_shiftLabel(o.shift)} · ${o.time}'),
+              // Founder screen 9: Days, Pickup time, Pay per drop, Vehicle,
+              // Drivers needed, then About this hiring.
               _Kv(L.jobDays, _daysLabel(o.days)),
-              _Kv(L.jobPay, o.pay),
-              _Kv(L.jobRidersNeeded, '${o.needed}'),
+              _Kv(L.jobPickupTime, _clock(o.start)),
+              _Kv(o.payUnit == 'drop' ? L.jobPayPerDrop : L.jobPay, o.pay),
               _Kv(L.jobVehicle, _vehicleLabel(o.vehicle)),
-              _Kv(
-                L.jobRadius,
-                o.withinRadius != true && o.km != null
-                    ? '$radius · ${L.jobAway(_num(o.km!))}'
-                    : radius,
-              ),
-              if (o.requirements.isNotEmpty) ...[
-                _SectionRow(title: L.jobRequirements),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [for (final r in o.requirements) _Pill(r)],
-                ),
-              ],
-              const SizedBox(height: Gap.lg),
+              _Kv(L.jobRidersNeeded, '${o.needed}'),
+              _SectionRow(title: L.jobAbout),
               CeffloNote(
                 icon: blocked ? LucideIcons.triangleAlert : LucideIcons.info,
                 tone: blocked ? CeffloNoteTone.warning : CeffloNoteTone.info,
@@ -1189,7 +1169,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               CeffloPrimaryButton(
-                sent ? L.requestSent : L.requestToJoin,
+                sent ? L.jobApplied : L.jobApply,
                 busy: _busy,
                 onTap: sent || blocked || _busy ? null : () => _request(app, o),
               ),
