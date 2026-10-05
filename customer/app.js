@@ -30,6 +30,9 @@ const POPUP_DWELL_MS = 3000;
 
 const params = new URLSearchParams(location.search);
 const hasBackendToken = Boolean(params.get('token'));
+// The fixture prototype is a demo tool only (explicit `?demo=1`). A real link
+// without a token never renders demo delivery data.
+const demoMode = !hasBackendToken && params.get('demo') === '1';
 
 /* ---------------------------------------------------------------- adapters */
 
@@ -44,6 +47,8 @@ const provider = createMockTrackingProvider({
 if (hasBackendToken) {
   installBackendBridge(provider, { source: TRACKING_FIXTURE, live: true });
   provider.store.set(buildLoadingViewModel());
+} else if (!demoMode) {
+  installBackendBridge(provider, { source: TRACKING_FIXTURE, live: true }).fail();
 }
 
 // Live orders key their local rating record by their own order reference.
@@ -53,7 +58,7 @@ const rating = createRatingAdapter({
 const podAdapter = createPodAdapter();
 
 // QA/demo helper: `?rated=1` boots straight into the already-rated C3 state.
-if (params.get('rated') === '1' && !rating.getState().submitted) {
+if (demoMode && params.get('rated') === '1' && !rating.getState().submitted) {
   rating.submit(Number(params.get('ratedValue')) || 4).then(() => {
     rating.acknowledgePopup();
     render();
