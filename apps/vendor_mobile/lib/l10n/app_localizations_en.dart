@@ -70,7 +70,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deliveryProgress => 'Delivery progress';
 
   @override
-  String get riders => 'Riders';
+  String get riders => 'Drivers';
 
   @override
   String get riderDetail => 'Rider detail';
@@ -3837,7 +3837,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openingPayLabel => 'Pay';
 
   @override
-  String get ridersTab => 'Riders';
+  String get ridersTab => 'Drivers';
 
   @override
   String get openingsTab => 'Openings';

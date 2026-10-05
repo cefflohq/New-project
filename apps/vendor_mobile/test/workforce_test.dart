@@ -88,7 +88,7 @@ void main() {
     expect(find.text('Kak Lina Kitchen'), findsOneWidget);
     expect(find.text('Required Items'), findsOneWidget);
     // No Vendor navigation for a Helper (Helper tabs only).
-    for (final tab in ['Orders', 'Riders', 'Today']) {
+    for (final tab in ['Orders', 'Drivers', 'Today']) {
       expect(find.text(tab), findsNothing);
     }
   });

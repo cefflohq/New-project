@@ -45,7 +45,7 @@ const en = {
   'bp.locateFailed': 'We could not locate this address. Enter the coordinates manually.',
   // navigation
   'nav.today': 'Today', 'nav.orders': 'Orders', 'nav.zones': 'Zones', 'nav.runs': 'Active Runs',
-  'nav.riders': 'Riders', 'nav.settings': 'Settings', 'nav.expand': 'Expand navigation',
+  'nav.riders': 'Drivers', 'nav.settings': 'Settings', 'nav.expand': 'Expand navigation',
   // shell
   'shell.switchBusiness': 'Switch business', 'shell.notifications': 'Notifications',
   'shell.menu': 'Menu', 'shell.profile': 'Profile', 'shell.signOut': 'Sign out', 'shell.role.owner': 'Owner', 'shell.role.operator': 'Operator',
@@ -102,7 +102,7 @@ const en = {
   'plan.none': 'No approved, unassigned orders to plan.', 'plan.run': 'Run {n}', 'plan.create': 'Create runs',
   'plan.done': '{n} runs created', 'plan.rider': 'Rider', 'plan.noRider': 'Choose a rider for every run.',
   // riders
-  'riders.title': 'Riders', 'riders.all': 'All', 'riders.active': 'Active', 'riders.pending': 'Pending',
+  'riders.title': 'Drivers', 'riders.all': 'All', 'riders.active': 'Active', 'riders.pending': 'Pending',
   'riders.search': 'Search rider name, vehicle no…', 'riders.add': 'Add Rider', 'riders.vehicle': 'Vehicle',
   'riders.totalOrders': 'Total Orders', 'riders.rating': 'Rating', 'riders.joined': 'Join Date',
   'riders.documents': 'Documents', 'riders.earnings': 'Earnings',
@@ -123,7 +123,7 @@ const en = {
   'hire.posted': 'Opening posted', 'hire.closed': 'Opening closed', 'hire.fix': 'Fill in the area, days, a valid time and pay.',
   'hire.offTitle': 'Stop looking for riders?', 'hire.offBody': 'All your open openings will close. Requests already sent stay in Pending.', 'hire.turnOff': 'Turn off',
   'hire.openTitle': 'Open openings', 'hire.openLead': 'Riders near you find these in Find Jobs. Requests arrive in Riders › Pending.', 'hire.none': 'No open openings yet. Post one so riders near you can find this job.',
-  'riders.modeRiders': 'Riders', 'riders.modeOpenings': 'Openings',
+  'riders.modeRiders': 'Drivers', 'riders.modeOpenings': 'Openings',
   'hire.d1': 'Mon', 'hire.d2': 'Tue', 'hire.d3': 'Wed', 'hire.d4': 'Thu', 'hire.d5': 'Fri', 'hire.d6': 'Sat', 'hire.d7': 'Sun',
   // zones
   'zones.title': 'Zones', 'zones.zone': 'Zone', 'zones.search': 'Search zone…', 'zones.total': 'Total Orders',
@@ -336,7 +336,7 @@ const ms = {
   'setup.expired': 'Sesi anda telah tamat. Log masuk semula untuk meneruskan — persediaan anda disimpan pada peranti ini.',
   'bp.locate': 'Cari dari alamat perniagaan', 'bp.located': 'Lokasi dijumpai. Semak radius dan simpan.',
   'bp.locateFailed': 'Kami tidak dapat mencari alamat ini. Masukkan koordinat secara manual.',
-  'nav.today': 'Hari Ini', 'nav.orders': 'Pesanan', 'nav.zones': 'Zon', 'nav.runs': 'Run Aktif', 'nav.riders': 'Rider',
+  'nav.today': 'Hari Ini', 'nav.orders': 'Pesanan', 'nav.zones': 'Zon', 'nav.runs': 'Run Aktif', 'nav.riders': 'Pemandu',
   'nav.settings': 'Tetapan', 'nav.expand': 'Kembangkan navigasi',
   'shell.switchBusiness': 'Tukar perniagaan', 'shell.notifications': 'Notifikasi', 'shell.menu': 'Menu', 'shell.profile': 'Profil', 'shell.signOut': 'Log keluar',
   'shell.role.owner': 'Pemilik', 'shell.role.operator': 'Operator',
@@ -381,7 +381,7 @@ const ms = {
   'plan.title': 'Rancang Penghantaran', 'plan.lead': 'Cefflo mencadangkan run daripada pesanan yang diluluskan dan belum ditetapkan.',
   'plan.none': 'Tiada pesanan yang diluluskan dan belum ditetapkan untuk dirancang.', 'plan.run': 'Run {n}', 'plan.create': 'Cipta run',
   'plan.done': '{n} run dicipta', 'plan.rider': 'Rider', 'plan.noRider': 'Pilih rider untuk setiap run.',
-  'riders.title': 'Rider', 'riders.all': 'Semua', 'riders.active': 'Aktif', 'riders.pending': 'Menunggu',
+  'riders.title': 'Pemandu', 'riders.all': 'Semua', 'riders.active': 'Aktif', 'riders.pending': 'Menunggu',
   'riders.search': 'Cari nama rider, no. kenderaan…', 'riders.add': 'Tambah Rider', 'riders.vehicle': 'Kenderaan',
   'riders.totalOrders': 'Jumlah Pesanan', 'riders.rating': 'Penilaian', 'riders.joined': 'Tarikh Sertai', 'riders.overview': 'Gambaran', 'riders.documents': 'Dokumen', 'riders.earnings': 'Pendapatan',
   'riders.docsGated': 'Lesen memandu dan dokumen kenderaan akan dipaparkan di sini selepas muat naik dokumen diluluskan untuk app web.',
@@ -402,7 +402,7 @@ const ms = {
   'hire.posted': 'Kekosongan disiarkan', 'hire.closed': 'Kekosongan ditutup', 'hire.fix': 'Isi kawasan, hari, masa yang sah dan bayaran.',
   'hire.offTitle': 'Berhenti mencari rider?', 'hire.offBody': 'Semua kekosongan anda akan ditutup. Permintaan yang sudah dihantar kekal dalam Menunggu.', 'hire.turnOff': 'Tutup',
   'hire.openTitle': 'Kekosongan dibuka', 'hire.openLead': 'Rider berdekatan menemuinya di Cari Kerja. Permintaan masuk ke Rider › Menunggu.', 'hire.none': 'Belum ada kekosongan dibuka. Siarkan satu supaya rider berdekatan boleh menemuinya.',
-  'riders.modeRiders': 'Rider', 'riders.modeOpenings': 'Kekosongan',
+  'riders.modeRiders': 'Pemandu', 'riders.modeOpenings': 'Kekosongan',
   'hire.d1': 'Isn', 'hire.d2': 'Sel', 'hire.d3': 'Rab', 'hire.d4': 'Kha', 'hire.d5': 'Jum', 'hire.d6': 'Sab', 'hire.d7': 'Ahd',
   'zones.title': 'Zon', 'zones.zone': 'Zon', 'zones.search': 'Cari zon…', 'zones.total': 'Jumlah Pesanan', 'zones.completed': 'Selesai',
   'zones.ongoing': 'Berjalan', 'zones.issues': 'Isu', 'zones.status': 'Status', 'zones.ongoingOrders': 'Pesanan Berjalan ({n})',

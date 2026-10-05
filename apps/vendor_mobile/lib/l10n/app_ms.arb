@@ -20,7 +20,7 @@
   "zones": "Zon",
   "zone": "Zon",
   "deliveryProgress": "Kemajuan penghantaran",
-  "riders": "Rider",
+  "riders": "Pemandu",
   "riderDetail": "Butiran rider",
   "riderRegistrationLink": "Pautan pendaftaran rider",
   "team": "Pasukan",
@@ -1150,7 +1150,7 @@
   "publishOpening": "Siarkan kekosongan",
   "openingRadiusLabel": "Radius rider",
   "openingPayLabel": "Bayaran",
-  "ridersTab": "Rider",
+  "ridersTab": "Pemandu",
   "openingsTab": "Kekosongan",
   "noOpenOpenings": "Belum ada kekosongan dibuka. Siarkan satu supaya rider berdekatan boleh menemuinya di Cari Kerja."
 }

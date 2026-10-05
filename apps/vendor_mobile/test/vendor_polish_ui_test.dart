@@ -116,7 +116,7 @@ void main() {
     tester,
   ) async {
     await pumpAt(tester, const VendorLocation(VRoute.today));
-    for (final label in ['Today', 'Orders', 'Zones', 'Riders', 'More']) {
+    for (final label in ['Today', 'Orders', 'Zones', 'Drivers', 'More']) {
       expect(find.text(label), findsWidgets);
     }
     // Today's header: date left, business selector centre, no hamburger.
@@ -405,7 +405,7 @@ void main() {
     expect(find.byType(BrandBackdrop), findsOneWidget);
     final before = tester.element(find.byType(BrandBackdrop));
 
-    for (final tab in ['Orders', 'Zones', 'Riders', 'More', 'Today']) {
+    for (final tab in ['Orders', 'Zones', 'Drivers', 'More', 'Today']) {
       await tester.tap(find.text(tab).last);
       await tester.pumpAndSettle();
       expect(find.byType(BrandBackdrop), findsOneWidget, reason: tab);

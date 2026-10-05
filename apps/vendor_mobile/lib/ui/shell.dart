@@ -739,8 +739,13 @@ class _BottomNav extends StatelessWidget {
                             child: selected ? item.$4 : Icon(item.$3),
                           ),
                           const SizedBox(height: Gap.xs),
+                          // One line always: a longer label shrinks to fit
+                          // instead of wrapping and overflowing the bar.
                           Text(
                             item.$2,
+                            maxLines: 1,
+                            softWrap: false,
+                            overflow: TextOverflow.fade,
                             style: Theme.of(context).textTheme.labelSmall
                                 ?.copyWith(
                                   fontWeight: selected

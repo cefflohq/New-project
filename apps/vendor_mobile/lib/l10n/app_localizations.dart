@@ -221,7 +221,7 @@ abstract class AppLocalizations {
   /// No description provided for @riders.
   ///
   /// In en, this message translates to:
-  /// **'Riders'**
+  /// **'Drivers'**
   String get riders;
 
   /// No description provided for @riderDetail.
@@ -7008,7 +7008,7 @@ abstract class AppLocalizations {
   /// No description provided for @ridersTab.
   ///
   /// In en, this message translates to:
-  /// **'Riders'**
+  /// **'Drivers'**
   String get ridersTab;
 
   /// No description provided for @openingsTab.

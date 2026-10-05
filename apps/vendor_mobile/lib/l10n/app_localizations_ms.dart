@@ -70,7 +70,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get deliveryProgress => 'Kemajuan penghantaran';
 
   @override
-  String get riders => 'Rider';
+  String get riders => 'Pemandu';
 
   @override
   String get riderDetail => 'Butiran rider';
@@ -3841,7 +3841,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get openingPayLabel => 'Bayaran';
 
   @override
-  String get ridersTab => 'Rider';
+  String get ridersTab => 'Pemandu';
 
   @override
   String get openingsTab => 'Kekosongan';

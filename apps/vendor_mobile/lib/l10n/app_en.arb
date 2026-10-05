@@ -20,7 +20,7 @@
   "zones": "Zones",
   "zone": "Zone",
   "deliveryProgress": "Delivery progress",
-  "riders": "Riders",
+  "riders": "Drivers",
   "riderDetail": "Rider detail",
   "riderRegistrationLink": "Rider registration link",
   "team": "Team",
@@ -1894,7 +1894,7 @@
   "publishOpening": "Publish opening",
   "openingRadiusLabel": "Rider radius",
   "openingPayLabel": "Pay",
-  "ridersTab": "Riders",
+  "ridersTab": "Drivers",
   "openingsTab": "Openings",
   "noOpenOpenings": "No open openings yet. Post one so riders near you can find this job in Find Jobs."
 }
