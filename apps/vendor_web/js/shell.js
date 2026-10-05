@@ -9,16 +9,18 @@ import { ctx, selectBusiness } from './store.js';
 import { esc, icon, initials, avatar, confirmDialog, setChromeColor } from './ui.js';
 import { notif, onNotifications, startNotifications, renderPanel, wirePanel, openNotificationPrefs } from './notifications.js';
 
-// Mirrors the Vendor App bottom navigation (Founder parity, 2026-10-05):
-// Today · Orders · Zones · Drivers · More. Products, Storefront and Team sit
-// in More; Active Runs opens from Zones, as in the app.
+// Feature parity with the Vendor App, navigation fitted to desktop (Founder,
+// 2026-10-05): the app's tabs plus Products and Storefront as direct
+// shortcuts. Active Runs is a secondary overview opened from Zones.
 const NAV = [
   ['today', 'home', 'nav.today'],
   ['orders', 'file', 'nav.orders'],
   ['zones', 'pin', 'nav.zones'],
   ['riders', 'users', 'nav.riders'],
+  ['products', 'pkg', 'nav.products'],
+  ['storefront', 'store', 'nav.storefront'],
 ];
-const NAV_PARENT = { products: 'settings', storefront: 'settings', runs: 'zones' };
+const NAV_PARENT = { runs: 'zones' };
 
 let root, content, pages, cleanup = null, onSignOut;
 
@@ -179,6 +181,8 @@ function route() {
   });
   try { cleanup?.(); } catch { /* ignore */ }
   cleanup = null;
+  // A page's dialog (e.g. Driver detail) never stays over the next page.
+  document.querySelectorAll('.modal-root [data-close]').forEach(x => x.click());
   // A fresh element per route, so listeners a page attached (and late async
   // renders) never leak into the next page.
   const fresh = content.cloneNode(false);

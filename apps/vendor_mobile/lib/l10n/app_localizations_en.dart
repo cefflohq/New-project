@@ -2680,7 +2680,7 @@ class AppLocalizationsEn extends AppLocalizations {
       riders,
       locale: localeName,
       other: '$riders drivers',
-      one: '1 rider',
+      one: '1 driver',
     );
     return '$_temp0 · $_temp1';
   }

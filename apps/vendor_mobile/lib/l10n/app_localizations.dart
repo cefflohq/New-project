@@ -4974,7 +4974,7 @@ abstract class AppLocalizations {
   /// No description provided for @zoneOrdersRiders.
   ///
   /// In en, this message translates to:
-  /// **'{orders, plural, =1{1 order} other{{orders} orders}} · {riders, plural, =1{1 rider} other{{riders} drivers}}'**
+  /// **'{orders, plural, =1{1 order} other{{orders} orders}} · {riders, plural, =1{1 driver} other{{riders} drivers}}'**
   String zoneOrdersRiders(int orders, int riders);
 
   /// No description provided for @perMonth.

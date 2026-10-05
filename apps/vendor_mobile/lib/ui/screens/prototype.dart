@@ -14,6 +14,7 @@ import '../../data/vendor_repository.dart';
 import '../share_link.dart';
 import '../shell.dart';
 import 'auth.dart' show VerifyEmailCodeScreen, otpFailureFrom;
+import 'hiring.dart' show TeamTab, teamTab;
 import '../widgets.dart';
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
@@ -2010,8 +2011,9 @@ class _InviteLinkScreen extends StatefulWidget {
 }
 
 class _InviteLinkScreenState extends State<_InviteLinkScreen> {
-  // D-73: Operator or Helper only. Owner is never invited.
-  String role = 'operator';
+  // D-73: Operator or Helper only. Owner is never invited. Opens on the role
+  // the Owner came from (Team tab / Hiring row).
+  String role = teamTab.value == TeamTab.helpers ? 'helper' : 'operator';
   final Map<String, String> _tokens = {};
   bool _loading = false;
   String? error;

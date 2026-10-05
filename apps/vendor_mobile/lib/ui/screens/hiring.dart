@@ -60,7 +60,6 @@ class _HiringScreenState extends State<HiringScreen> {
     final app = AppScope.of(context);
     final c = context.c;
     final text = Theme.of(context).textTheme;
-    final soon = StatusChip(L.comingSoon);
     return PageBody(
       onRefresh: () => loadOpenOpenings(app),
       children: [
@@ -80,14 +79,22 @@ class _HiringScreenState extends State<HiringScreen> {
           subtitle: L.hiringOperatorSub,
           subtitleMaxLines: 2,
           icon: LucideIcons.userCog,
-          trailing: soon,
+          // Live through the existing Operator invite (link / QR): the join
+          // request lands in Team for approval (team_join_requests).
+          onTap: () {
+            teamTab.value = TeamTab.operators;
+            app.go(VRoute.helperRegistrationLink);
+          },
         ),
         CefListRow(
           title: L.roleHelper,
           subtitle: L.hiringHelperSub,
           subtitleMaxLines: 2,
           icon: LucideIcons.package,
-          trailing: soon,
+          onTap: () {
+            teamTab.value = TeamTab.helpers;
+            app.go(VRoute.helperRegistrationLink);
+          },
         ),
         // Direct invite (link / QR) for the Team tab the Owner came from.
         CefListRow(

@@ -1235,7 +1235,7 @@
       }
     }
   },
-  "zoneOrdersRiders": "{orders, plural, =1{1 order} other{{orders} orders}} · {riders, plural, =1{1 rider} other{{riders} drivers}}",
+  "zoneOrdersRiders": "{orders, plural, =1{1 order} other{{orders} orders}} · {riders, plural, =1{1 driver} other{{riders} drivers}}",
   "@zoneOrdersRiders": {
     "placeholders": {
       "orders": {

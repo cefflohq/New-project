@@ -346,19 +346,18 @@ async function team(page) {
 }
 
 // Hiring (Founder screen 2, as Vendor App): who to hire, invite for the Team
-// tab the Owner came from, then the hiring posts. Operator / Helper hiring
-// waits for its phase.
+// tab the Owner came from, then the hiring posts.
 async function hiring(page) {
   const body = header(page, 'hiring.title', 'hiring.lead');
   const host = document.createElement('div'); host.hidden = true;
   const hire = mountHiring(host, { onChange: n => { const el = body.querySelector('[data-posts]'); if (el && n !== null) el.textContent = n ? t('hiring.activeCount', { n }) : t('hiring.noActive'); } });
   const inviteKey = { drivers: 'team.inviteDriver', operators: 'team.inviteOperator', helpers: 'team.inviteHelper' }[teamTab];
   const row = (attr, ic, title, sub, tail) => `<button class="list-row hiring-row" ${attr}><span class="hiring-ico">${icon(ic)}</span><div class="grow"><b>${esc(title)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</div>${tail}</button>`;
-  const soon = `<span class="chip">${esc(t('hiring.soon'))}</span>`, chev = icon('chev');
+  const chev = icon('chev');
   body.innerHTML = `<div class="sub-card">
       ${row('data-h="driver"', 'moto', t('team.driver'), t('hiring.driverSub'), chev)}
-      ${row('disabled', 'user', t('team.operator'), t('hiring.operatorSub'), soon)}
-      ${row('disabled', 'pkg', t('team.helper'), t('hiring.helperSub'), soon)}
+      ${row('data-h="operator"', 'user', t('team.operator'), t('hiring.operatorSub'), chev)}
+      ${row('data-h="helper"', 'pkg', t('team.helper'), t('hiring.helperSub'), chev)}
       ${row('data-h="invite"', 'qr', t(inviteKey), '', chev)}</div>
     <div class="sub-card"><h3>${esc(t('hiring.posts'))}</h3>
       ${row('data-h="posts"', 'moto', t('team.driver'), '…', chev).replace('<small>…</small>', '<small data-posts>…</small>')}</div>`;
@@ -366,6 +365,9 @@ async function hiring(page) {
   body.addEventListener('click', e => {
     const h = e.target.closest('[data-h]')?.dataset.h;
     if (h === 'driver') hire.openForm();
+    // Live through the existing Operator / Helper invite (link / QR); the
+    // join request lands in Team for approval.
+    if (h === 'operator' || h === 'helper') showInviteLink('team', h);
     if (h === 'invite') showInviteLink(teamTab === 'drivers' ? 'rider' : 'team', teamTab === 'helpers' ? 'helper' : 'operator');
     if (h === 'posts') { sessionStorage.setItem('cf-riders-mode', 'openings'); location.hash = '#/riders'; }
   });
