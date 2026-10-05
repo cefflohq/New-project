@@ -70,7 +70,7 @@ export function renderBusinessSetup(root, opts) {
   function frame(inner) {
     root.innerHTML = `<div class="onb">
       <aside class="onb-side">
-        <img class="onb-logo" src="img/cefflo-logo.png" alt="Cefflo" width="72" height="112">
+        <span class="onb-logo"><span class="cf-sym" style="--u:48px"><img src="img/cefflo-symbol.png" alt="Cefflo" width="1024" height="1024"></span></span>
         <div><span class="onb-kicker">VENDOR</span><h1>${esc(t('setup.sideTitle'))}</h1><p>${esc(t('setup.sideLead'))}</p></div>
         <ol class="onb-steps">
           ${[[1, 'setup.step1'], [2, 'setup.step2']].map(([n, key]) => `<li class="${step === n && !created ? 'on' : ''} ${step > n || created ? 'done' : ''}">

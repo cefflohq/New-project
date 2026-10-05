@@ -455,8 +455,8 @@ function staticPage(kind) {
       body.innerHTML = `<div class="sub-card"><h3>${esc(t('set.privacy'))}</h3><p class="desc" style="line-height:1.7">${esc(t('legal.privacy'))}</p></div>
         <div class="sub-card"><h3>${esc(t('legal.termsTitle'))}</h3><p class="desc" style="line-height:1.7">${esc(t('legal.terms'))}</p></div>`;
     } else {
-      body.innerHTML = `<div class="sub-card row-card"><img src="img/cefflo-mark-white.png" alt="" class="about-mark"><div class="grow"><h3>Cefflo Vendor</h3><p class="desc" style="margin:0">${esc(t('about.lead'))}</p></div></div>
-        <div class="sub-card"><div class="kv">${icon('info')}<div><small>${esc(t('about.version'))}</small><b>${esc(t('about.versionVal'))}</b></div></div>
+      body.innerHTML = `<div class="sub-card row-card"><span class="about-mark"><span class="cf-sym" style="--u:26px"><img src="img/cefflo-symbol.png" alt="Cefflo" width="1024" height="1024"></span></span><div class="grow"><h3>Cefflo Vendor</h3><p class="desc" style="margin:0">${esc(t('about.lead'))}</p></div></div>
+        <div class="sub-card"><div class="kv">${icon('info')}<div><small>${esc(t('about.version'))}</small><b>${esc(t('about.versionVal'))}${(window.CEFFLO_CONFIG || {}).environment === 'production' ? '' : ` · ${esc((window.CEFFLO_CONFIG || {}).environment || '')}`}</b></div></div>
           <div class="kv">${icon('shield')}<div><small>${esc(t('set.privacy'))}</small><b><a href="#/settings/privacy">${esc(t('about.readPrivacy'))}</a></b></div></div>
           <div class="kv">${icon('mail')}<div><small>${esc(t('help.contact'))}</small><b class="sel">support@cefflo.com</b></div></div></div>`;
     }

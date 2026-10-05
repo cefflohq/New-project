@@ -375,7 +375,7 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
 .faq details[open] summary svg.i { transform: rotate(180deg); }
 .faq details p { margin: 0 0 12px; color: var(--ink-2); font-size: var(--t-label); line-height: 1.6; }
 .sel { user-select: all; }
-.about-mark { width: 40px; height: 40px; padding: 8px; border-radius: var(--r-md); background: linear-gradient(160deg, #01265E, #005CC4); object-fit: contain; }
+.about-mark { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: var(--r-md); background: linear-gradient(160deg, #01265E, #005CC4); }
 .int-ico { width: 36px; height: 36px; border-radius: var(--r-md); background: var(--surface-2); border: 1px solid var(--border); display: grid; place-items: center; color: var(--ink-2); flex: none; }
 @container (max-width: 560px) { .form-row { grid-template-columns: minmax(0, 1fr); gap: 6px; } }
 @container (max-width: 380px) { .inline-field { flex-wrap: wrap; } .inline-field .btn { width: 100%; } }

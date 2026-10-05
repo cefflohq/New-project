@@ -24,6 +24,9 @@ let root, content, pages, cleanup = null, onSignOut;
 export function mountShell(el, pageMap, { signOut }) {
   root = el; pages = pageMap; onSignOut = signOut;
   renderFrame();
+  // One listener per page lifetime: a remount after sign-out / sign-in must
+  // not stack a second router or route against the old, removed shell.
+  window.removeEventListener('hashchange', route);
   window.addEventListener('hashchange', route);
   route();
   startNotifications();
@@ -164,6 +167,8 @@ export function setHeader(title, withDate = true) {
 }
 
 function route() {
+  // Signed out (shell no longer on screen): nothing to route.
+  if (!root?.isConnected || !root.querySelector('[data-title]')) return;
   const [name = 'today', ...rest] = location.hash.replace(/^#\/?/, '').split('/');
   const page = pages[name] ? name : 'today';
   const navKey = page === 'settings' && rest[0] === 'help' ? 'help' : page;
