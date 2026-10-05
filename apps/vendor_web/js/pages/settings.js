@@ -350,7 +350,7 @@ async function team(page) {
 async function hiring(page) {
   const body = header(page, 'hiring.title', 'hiring.lead');
   const host = document.createElement('div'); host.hidden = true;
-  const hire = mountHiring(host, { onChange: n => { const el = body.querySelector('[data-posts]'); if (el && n !== null) el.textContent = n ? t('hiring.activeCount', { n }) : t('hiring.noActive'); } });
+  const hire = mountHiring(host, { onChange: (n, m) => { const el = body.querySelector('[data-posts]'); if (el && n !== null) el.textContent = n ? t('hiring.postsSummary', { n, m }) : t('hiring.noActive'); } });
   const inviteKey = { drivers: 'team.inviteDriver', operators: 'team.inviteOperator', helpers: 'team.inviteHelper' }[teamTab];
   const row = (attr, ic, title, sub, tail) => `<button class="list-row hiring-row" ${attr}><span class="hiring-ico">${icon(ic)}</span><div class="grow"><b>${esc(title)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</div>${tail}</button>`;
   const chev = icon('chev');

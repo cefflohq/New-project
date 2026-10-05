@@ -31,6 +31,15 @@ _Shift _shiftOf(int startMinutes) => startMinutes < 11 * 60
     ? _Shift.noon
     : _Shift.night;
 
+/// M1: a hiring post has a pickup time only (shift_end null) -> end = start.
+int _minutesOr(Object? end, Object? start) =>
+    _minutes((end ?? start) as String);
+
+/// "7:00 AM – 11:00 AM", or "Pickup 7:00 AM" when there is no end time.
+String _span(int start, int end) => end > start
+    ? '${_clock(start)} – ${_clock(end)}'
+    : L.jobPickupAt(_clock(start));
+
 int _minutes(String hhmm) {
   final p = hhmm.split(':');
   return int.parse(p[0]) * 60 + int.parse(p[1]);
@@ -106,7 +115,7 @@ class _Opening {
   final bool vehicleMatch;
 
   _Shift get shift => _shiftOf(start);
-  String get time => '${_clock(start)} – ${_clock(end)}';
+  String get time => _span(start, end);
   String get pay => _payLabel(payAmount, payUnit);
   String get initials => name
       .replaceAll(RegExp(r'[^A-Za-z0-9 ]'), '')
@@ -131,7 +140,7 @@ class _Opening {
     name: (r['business_name'] ?? '').toString(),
     area: (r['area_label'] ?? '').toString(),
     start: _minutes(r['shift_start'] as String),
-    end: _minutes(r['shift_end'] as String),
+    end: _minutesOr(r['shift_end'], r['shift_start']),
     days: [for (final d in (r['days'] as List)) (d as num).toInt()],
     payAmount: r['pay_amount'] as num,
     payUnit: (r['pay_unit'] ?? 'shift').toString(),
@@ -196,7 +205,7 @@ class _Booking {
     approved: r['status'] == 'approved',
     name: (r['business_name'] ?? '').toString(),
     start: _minutes(r['shift_start'] as String),
-    end: _minutes(r['shift_end'] as String),
+    end: _minutesOr(r['shift_end'], r['shift_start']),
     days: [for (final d in (r['days'] as List)) (d as num).toInt()],
   );
 }
@@ -1312,7 +1321,7 @@ class _MyScheduleScreenState extends State<MyScheduleScreen> {
                   contentPadding: EdgeInsets.zero,
                   title: Text(b.name),
                   subtitle: Text(
-                    '${_daysLabel(b.days)} · ${_clock(b.start)} – ${_clock(b.end)}'
+                    '${_daysLabel(b.days)} · ${_span(b.start, b.end)}'
                     '${b.approved ? '' : ' · ${L.slotRequested}'}',
                   ),
                   trailing: TextButton(
@@ -1476,9 +1485,7 @@ class _SlotTile extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  b.approved
-                      ? '${_clock(b.start)} – ${_clock(b.end)}'
-                      : L.slotRequested,
+                  b.approved ? _span(b.start, b.end) : L.slotRequested,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

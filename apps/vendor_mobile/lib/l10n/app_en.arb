@@ -1922,5 +1922,87 @@
         "type": "int"
       }
     }
+  },
+  "hrTitle": "Hiring Driver",
+  "hrPickupTime": "Pickup time",
+  "hrPickupHint": "When drivers should arrive to collect deliveries.",
+  "hrPayPerDrop": "Pay per drop",
+  "hrPayMin": "Minimum RM3.00 per drop.",
+  "hrReach": "Driver reach",
+  "hrReachHint": "Show this hiring to drivers within {km} km.",
+  "hrPublish": "Publish hiring",
+  "hrFix": "Fill in the area, days and pay (minimum RM3.00 per drop).",
+  "hrPickupAt": "Pickup {time}",
+  "hrPerDrop": "RM{amount} / drop",
+  "hrPostTitle": "Driver Hiring",
+  "hrActiveApplicants": "Active · {n} applicants",
+  "hrApplicantsTab": "Applicants ({n})",
+  "hrDetailsTab": "Details",
+  "hrAppliedVia": "Applied {date} · via Hiring",
+  "hrNew": "New",
+  "hrPending": "Pending",
+  "hrApproved": "Approved",
+  "hrRejected": "Rejected",
+  "hrNoApplicants": "No applicants yet. Drivers near you find this post in Find Jobs.",
+  "hrApprove": "Approve",
+  "hrReject": "Reject",
+  "hrApprovedToast": "Driver approved",
+  "hrRejectedToast": "Applicant rejected",
+  "hrPostsSummary": "{n} active · {m} applicants",
+  "hrArea": "Area",
+  "hrDays": "Days",
+  "hrVehicle": "Vehicle",
+  "hrDriversNeeded": "Drivers needed",
+  "@hrReachHint": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "@hrPickupAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@hrPerDrop": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@hrActiveApplicants": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "@hrApplicantsTab": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "@hrAppliedVia": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@hrPostsSummary": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
   }
 }

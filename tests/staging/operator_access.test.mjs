@@ -28,7 +28,7 @@ const riders = (await sel(owner, `riders?select=id,name,status&business_id=eq.${
 const realRider = riders?.[0];
 ok('setup: a real active rider exists', !!realRider, realRider?.name);
 const biz = (await sel(owner, `businesses?select=id,name,phone,email,address&id=eq.${B}`)).body?.[0];
-const opening = (await rpc(owner, 'save_job_opening', { p_business_id: B, p_area_label: '[TEST] op-auth', p_shift_start: '07:00', p_shift_end: '08:00', p_days: [1], p_vehicle_type: 'car', p_pay_amount: 1, p_pay_unit: 'shift', p_riders_needed: 1 })).body;
+const opening = (await rpc(owner, 'save_job_opening', { p_business_id: B, p_area_label: '[TEST] op-auth', p_pickup_time: '07:00', p_days: [1], p_vehicle_type: 'car', p_pay_per_drop: 3, p_drivers_needed: 1 })).body;
 ok('setup: owner posts a real opening', !!opening?.id);
 // a real pending join request from a fresh account through the helper link
 const link = (await rpc(owner, 'get_invite_link', { p_business_id: B, p_kind: 'helper' })).body;
@@ -57,7 +57,7 @@ const cases = [
   ['get_invite_link (helper)', 'get_invite_link', { p_business_id: B, p_kind: 'helper' }],
   ['reset_invite_link (operator)', 'reset_invite_link', { p_business_id: B, p_kind: 'operator' }],
   ['reset_invite_link (helper)', 'reset_invite_link', { p_business_id: B, p_kind: 'helper' }],
-  ['save_job_opening', 'save_job_opening', { p_business_id: B, p_area_label: 'x', p_shift_start: '07:00', p_shift_end: '08:00', p_days: [1], p_vehicle_type: 'car', p_pay_amount: 1, p_pay_unit: 'shift', p_riders_needed: 1 }],
+  ['save_job_opening', 'save_job_opening', { p_business_id: B, p_area_label: 'x', p_pickup_time: '07:00', p_days: [1], p_vehicle_type: 'car', p_pay_per_drop: 3, p_drivers_needed: 1 }],
   ['close_job_opening (real opening)', 'close_job_opening', { p_opening_id: opening.id }],
   ['admin_broadcast_notification (platform admin)', 'admin_broadcast_notification', { p_title: 'x', p_body: 'x', p_audience: 'business', p_business_id: B, p_reason: 'test' }],
   ['admin_set_subscription (platform admin)', 'admin_set_subscription', { p_business_id: B, p_plan_key: 'scale', p_status: 'active', p_mrr_cents: 0, p_trial_ends_at: null }],

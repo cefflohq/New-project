@@ -302,6 +302,15 @@ const en = {
   'hiring.title': 'Hiring', 'hiring.lead': 'Find people to help run your operation.', 'hiring.driverSub': 'Find drivers for your delivery runs.',
   'hiring.operatorSub': 'Find staff to manage delivery operations.', 'hiring.helperSub': 'Find helpers for packing and sorting.',
   'hiring.soon': 'Coming soon', 'hiring.posts': 'Your hiring posts', 'hiring.activeCount': '{n} active', 'hiring.noActive': 'No active hiring',
+  // M1 Driver Hiring contract (2026-10-05).
+  'hr.title': 'Hiring Driver', 'hr.pickupTime': 'Pickup time', 'hr.pickupHint': 'When drivers should arrive to collect deliveries.',
+  'hr.payPerDrop': 'Pay per drop', 'hr.payMin': 'Minimum RM3.00 per drop.', 'hr.reach': 'Driver reach', 'hr.reachKm': 'Driver reach: {km} km',
+  'hr.reachHint': 'Show this hiring to drivers within {km} km.', 'hr.publish': 'Publish hiring', 'hr.fix': 'Fill in the area, days and pay (minimum RM3.00 per drop).',
+  'hr.pickupAt': 'Pickup {t}', 'hr.perDrop': 'RM{a} / drop', 'hr.postTitle': 'Driver Hiring', 'hr.active': 'Active · {n} applicants',
+  'hr.applicantsTab': 'Applicants ({n})', 'hr.applicantsN': '{n} applicants', 'hr.details': 'Details', 'hr.appliedVia': 'Applied {d} · via Hiring',
+  'hr.new': 'New', 'hr.pending': 'Pending', 'hr.approved': 'Approved', 'hr.rejected': 'Rejected',
+  'hr.none': 'No applicants yet. Drivers near you find this post in Find Jobs.', 'hr.approve': 'Approve', 'hr.reject': 'Reject',
+  'hr.approvedToast': 'Driver approved', 'hr.rejectedToast': 'Applicant rejected', 'hiring.postsSummary': '{n} active · {m} applicants',
 };
 
 const ms = {
@@ -579,6 +588,14 @@ const ms = {
   'hiring.title': 'Pengambilan', 'hiring.lead': 'Cari orang untuk bantu operasi anda.', 'hiring.driverSub': 'Cari pemandu untuk hantaran anda.',
   'hiring.operatorSub': 'Cari staf untuk urus operasi hantaran.', 'hiring.helperSub': 'Cari pembantu untuk pembungkusan dan susunan.',
   'hiring.soon': 'Akan datang', 'hiring.posts': 'Pengambilan anda', 'hiring.activeCount': '{n} aktif', 'hiring.noActive': 'Tiada pengambilan aktif',
+  'hr.title': 'Pengambilan Pemandu', 'hr.pickupTime': 'Masa ambil', 'hr.pickupHint': 'Bila pemandu patut tiba untuk ambil hantaran.',
+  'hr.payPerDrop': 'Bayaran setiap hantaran', 'hr.payMin': 'Minimum RM3.00 setiap hantaran.', 'hr.reach': 'Jangkauan pemandu', 'hr.reachKm': 'Jangkauan pemandu: {km} km',
+  'hr.reachHint': 'Tunjuk pengambilan ini kepada pemandu dalam {km} km.', 'hr.publish': 'Siarkan pengambilan', 'hr.fix': 'Isi kawasan, hari dan bayaran (minimum RM3.00 setiap hantaran).',
+  'hr.pickupAt': 'Ambil {t}', 'hr.perDrop': 'RM{a} / hantaran', 'hr.postTitle': 'Pengambilan Pemandu', 'hr.active': 'Aktif · {n} pemohon',
+  'hr.applicantsTab': 'Pemohon ({n})', 'hr.applicantsN': '{n} pemohon', 'hr.details': 'Butiran', 'hr.appliedVia': 'Dimohon {d} · melalui Pengambilan',
+  'hr.new': 'Baharu', 'hr.pending': 'Menunggu', 'hr.approved': 'Diluluskan', 'hr.rejected': 'Ditolak',
+  'hr.none': 'Belum ada pemohon. Pemandu berdekatan akan jumpa post ini di Cari Kerja.', 'hr.approve': 'Luluskan', 'hr.reject': 'Tolak',
+  'hr.approvedToast': 'Pemandu diluluskan', 'hr.rejectedToast': 'Pemohon ditolak', 'hiring.postsSummary': '{n} aktif · {m} pemohon',
 };
 
 const dict = { en, ms };

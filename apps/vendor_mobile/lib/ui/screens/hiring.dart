@@ -6,6 +6,7 @@ import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/vendor_repository.dart';
 import '../shell.dart' show PageBody;
+import '../async_view.dart';
 import '../widgets.dart';
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
@@ -116,9 +117,13 @@ class _HiringScreenState extends State<HiringScreen> {
           valueListenable: openOpenings,
           builder: (context, list, _) {
             final n = list?.length ?? 0;
+            final m = (list ?? const []).fold<int>(
+              0,
+              (t, o) => t + pendingApplicants(o),
+            );
             return CefListRow(
               title: L.roleDriver,
-              subtitle: n > 0 ? L.hiringActiveCount(n) : L.noActiveHiring,
+              subtitle: n > 0 ? L.hrPostsSummary(n, m) : L.noActiveHiring,
               icon: LucideIcons.motorbike,
               // The posts live on Drivers > Openings (draft D).
               onTap: () {
@@ -336,6 +341,20 @@ String _unit(String u) => switch (u) {
 String _num(num v) =>
     v == v.roundToDouble() ? '${v.toInt()}' : v.toStringAsFixed(1);
 
+/// "RM3.50 / drop" for per-drop posts; legacy units keep their own label.
+String _payLabel(Map<String, dynamic> o) {
+  final amount = (o['pay_amount'] as num).toStringAsFixed(2);
+  return o['pay_unit'] == 'drop'
+      ? L.hrPerDrop(amount)
+      : 'RM $amount / ${_unit(o['pay_unit'] as String)}';
+}
+
+/// Applicants still waiting on a post (pending requests).
+int pendingApplicants(Map<String, dynamic> o) => [
+  for (final r in (o['rider_job_requests'] as List? ?? const []))
+    if ((r as Map)['status'] == 'pending') r,
+].length;
+
 class _OpeningRow extends StatelessWidget {
   const _OpeningRow({required this.opening, required this.onClose});
   final Map<String, dynamic> opening;
@@ -345,78 +364,92 @@ class _OpeningRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final o = opening;
     final c = context.c;
+    final app = AppScope.of(context);
+    final waiting = pendingApplicants(o);
     final days = [for (final d in (o['days'] as List)) (d as num).toInt()]
       ..sort();
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: c.border)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEEF3FF),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(
-              LucideIcons.briefcase,
-              size: 18,
-              color: CefColors.standardBrand,
-            ),
-          ),
-          const SizedBox(width: Gap.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${_hhmm(o['shift_start'] as String)} – ${_hhmm(o['shift_end'] as String)}',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: CefColors.navy,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  [
-                    days.map((d) => _short(_days[d - 1])).join(', '),
-                    _vehicle(o['vehicle_type'] as String),
-                    'RM ${_num(o['pay_amount'] as num)} / ${_unit(o['pay_unit'] as String)}',
-                    '× ${o['riders_needed']}',
-                  ].join(' · '),
-                  style: TextStyle(fontSize: 13, color: c.textSecondary),
-                ),
-                Text(
-                  '${o['area_label']} · ${_num(o['radius_km'] as num)} km',
-                  style: TextStyle(fontSize: 13, color: c.textSecondary),
-                ),
-              ],
-            ),
-          ),
-          TextButton(
-            onPressed: onClose,
-            child: Text(
-              L.closeOpening,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFFC2410C),
+    // Tap: the post's Driver Hiring page (applicants + details).
+    return InkWell(
+      onTap: () => app.go(VRoute.hiringPost, entityId: o['id'] as String),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: c.border)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEEF3FF),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                LucideIcons.briefcase,
+                size: 18,
+                color: CefColors.standardBrand,
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: Gap.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    o['shift_end'] == null
+                        ? L.hrPickupAt(_hhmm(o['shift_start'] as String))
+                        : '${_hhmm(o['shift_start'] as String)} – ${_hhmm(o['shift_end'] as String)}',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: CefColors.navy,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    [
+                      days.map((d) => _short(_days[d - 1])).join(', '),
+                      _vehicle(o['vehicle_type'] as String),
+                      _payLabel(o),
+                      '× ${o['riders_needed']}',
+                    ].join(' · '),
+                    style: TextStyle(fontSize: 13, color: c.textSecondary),
+                  ),
+                  Text(
+                    '${o['area_label']} · ${_num(o['radius_km'] as num)} km',
+                    style: TextStyle(fontSize: 13, color: c.textSecondary),
+                  ),
+                  if (waiting > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: StatusChip(L.hrApplicantsTab(waiting), info: true),
+                    ),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: onClose,
+              child: Text(
+                L.closeOpening,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFFC2410C),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// New opening: area, days, start/end, vehicle, pay, riders needed and the
-/// rider radius (5–20 km). The server validates everything again.
+/// Hiring Driver (M1 contract, Founder screen 3): area, days, pickup time
+/// (no end time), vehicle, pay per drop (minimum RM3.00), drivers needed and
+/// driver reach (1–15 km, default 10). The server validates everything again.
 class _OpeningForm extends StatefulWidget {
   const _OpeningForm();
 
@@ -426,14 +459,12 @@ class _OpeningForm extends StatefulWidget {
 
 class _OpeningFormState extends State<_OpeningForm> {
   final _area = TextEditingController();
-  final _pay = TextEditingController(text: '45');
+  final _pay = TextEditingController(text: '3.00');
   final Set<int> _picked = {1, 2, 3, 4, 5};
-  TimeOfDay _start = const TimeOfDay(hour: 7, minute: 0);
-  TimeOfDay _end = const TimeOfDay(hour: 11, minute: 0);
+  TimeOfDay _pickup = const TimeOfDay(hour: 7, minute: 0);
   String _vehicleType = 'motorcycle';
-  String _payUnit = 'shift';
   int _needed = 1;
-  double _radius = 10;
+  double _reach = 10;
   bool _busy = false;
   String? _error;
 
@@ -447,24 +478,21 @@ class _OpeningFormState extends State<_OpeningForm> {
   String _fmt(TimeOfDay t) =>
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
-  Future<void> _pick(bool start) async {
-    final t = await showTimePicker(
-      context: context,
-      initialTime: start ? _start : _end,
-    );
-    if (t != null) setState(() => start ? _start = t : _end = t);
+  Future<void> _pickTime() async {
+    final t = await showTimePicker(context: context, initialTime: _pickup);
+    if (t != null) setState(() => _pickup = t);
   }
 
+  num? get _payValue => num.tryParse(_pay.text.trim().replaceAll(',', '.'));
+  bool get _payTooLow => (_payValue ?? 0) < 3;
+
   Future<void> _save() async {
-    final pay = num.tryParse(_pay.text.trim().replaceAll(',', '.'));
-    final startM = _start.hour * 60 + _start.minute;
-    final endM = _end.hour * 60 + _end.minute;
+    final pay = _payValue;
     if (_area.text.trim().length < 2 ||
         _picked.isEmpty ||
-        endM <= startM ||
         pay == null ||
-        pay <= 0) {
-      setState(() => _error = L.openingFixFields);
+        pay < 3) {
+      setState(() => _error = L.hrFix);
       return;
     }
     final app = AppScope.read(context);
@@ -476,14 +504,12 @@ class _OpeningFormState extends State<_OpeningForm> {
       await app.repo.saveJobOpening(
         businessId: app.business!.id,
         areaLabel: _area.text.trim(),
-        shiftStart: _fmt(_start),
-        shiftEnd: _fmt(_end),
+        pickupTime: _fmt(_pickup),
         days: (_picked.toList()..sort()),
         vehicleType: _vehicleType,
-        payAmount: pay,
-        payUnit: _payUnit,
-        ridersNeeded: _needed,
-        radiusKm: _radius.round(),
+        payPerDrop: pay,
+        driversNeeded: _needed,
+        reachKm: _reach.round(),
       );
       if (mounted) Navigator.of(context).pop(true);
     } on RepositoryError catch (e) {
@@ -497,7 +523,16 @@ class _OpeningFormState extends State<_OpeningForm> {
   Widget build(BuildContext context) {
     final c = context.c;
     final media = MediaQuery.of(context);
-    String cap(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+    Widget hint(String t, {bool error = false}) => Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Text(
+        t,
+        style: TextStyle(
+          fontSize: 12.5,
+          color: error ? c.attention : c.textSecondary,
+        ),
+      ),
+    );
     // One white surface: sections are separated by spacing and a hairline,
     // never by cards. Yellow marks a selection; blue is the action.
     return ColoredBox(
@@ -513,7 +548,7 @@ class _OpeningFormState extends State<_OpeningForm> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                L.newOpening,
+                L.hrTitle,
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
@@ -523,7 +558,7 @@ class _OpeningFormState extends State<_OpeningForm> {
               ),
               const SizedBox(height: 4),
               Text(
-                L.newOpeningSub,
+                L.hiringDriverSub,
                 style: TextStyle(fontSize: 14, color: c.textSecondary),
               ),
               _FormSection(
@@ -555,24 +590,19 @@ class _OpeningFormState extends State<_OpeningForm> {
                 ),
               ),
               _FormSection(
-                label: L.openingTime,
-                child: Row(
+                label: L.hrPickupTime,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
+                    SizedBox(
+                      width: 180,
                       child: _TimeField(
-                        label: L.openingStart,
-                        value: _start.format(context),
-                        onTap: () => _pick(true),
+                        label: L.hrPickupTime,
+                        value: _pickup.format(context),
+                        onTap: _pickTime,
                       ),
                     ),
-                    const SizedBox(width: Gap.md),
-                    Expanded(
-                      child: _TimeField(
-                        label: L.openingEnd,
-                        value: _end.format(context),
-                        onTap: () => _pick(false),
-                      ),
-                    ),
+                    hint(L.hrPickupHint),
                   ],
                 ),
               ),
@@ -597,35 +627,22 @@ class _OpeningFormState extends State<_OpeningForm> {
                 ),
               ),
               _FormSection(
-                label: L.openingPayLabel,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                label: L.hrPayPerDrop,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(
-                      width: 128,
+                      width: 160,
                       child: _OutlinedInput(
                         controller: _pay,
                         prefix: 'RM',
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
+                        onChanged: (_) => setState(() {}),
                       ),
                     ),
-                    const SizedBox(width: Gap.md),
-                    Expanded(
-                      child: Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          for (final u in const ['shift', 'drop', 'hour'])
-                            _Chip(
-                              label: cap(_unit(u)),
-                              selected: _payUnit == u,
-                              onTap: () => setState(() => _payUnit = u),
-                            ),
-                        ],
-                      ),
-                    ),
+                    hint(L.hrPayMin, error: _payTooLow),
                   ],
                 ),
               ),
@@ -661,9 +678,9 @@ class _OpeningFormState extends State<_OpeningForm> {
                 ),
               ),
               _FormSection(
-                label: L.openingRadiusLabel,
+                label: L.hrReach,
                 trailing: Text(
-                  '${_radius.round()} km',
+                  '${_reach.round()} km',
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -683,12 +700,18 @@ class _OpeningFormState extends State<_OpeningForm> {
                     ),
                     showValueIndicator: ShowValueIndicator.never,
                   ),
-                  child: Slider(
-                    value: _radius,
-                    min: 5,
-                    max: 20,
-                    divisions: 15,
-                    onChanged: (v) => setState(() => _radius = v),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Slider(
+                        value: _reach,
+                        min: 1,
+                        max: 15,
+                        divisions: 14,
+                        onChanged: (v) => setState(() => _reach = v),
+                      ),
+                      hint(L.hrReachHint('${_reach.round()}')),
+                    ],
                   ),
                 ),
               ),
@@ -724,7 +747,7 @@ class _OpeningFormState extends State<_OpeningForm> {
                             color: Colors.white,
                           ),
                         )
-                      : Text(L.publishOpening),
+                      : Text(L.hrPublish),
                 ),
               ),
               SizedBox(height: Gap.md + media.viewPadding.bottom),
@@ -798,6 +821,7 @@ class _OutlinedInput extends StatelessWidget {
     this.icon,
     this.prefix,
     this.keyboardType,
+    this.onChanged,
   });
 
   final TextEditingController controller;
@@ -805,6 +829,7 @@ class _OutlinedInput extends StatelessWidget {
   final IconData? icon;
   final String? prefix;
   final TextInputType? keyboardType;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -812,6 +837,7 @@ class _OutlinedInput extends StatelessWidget {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
+      onChanged: onChanged,
       style: const TextStyle(
         fontSize: 15,
         fontWeight: FontWeight.w600,
@@ -984,6 +1010,202 @@ class _StepButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Founder screen 10 — one Driver hiring post: "Active · N applicants",
+/// Applicants | Details. Approve / Reject use the existing rider approval
+/// flow (approve_pending_rider / deactivate_rider, Owner-only server-side).
+class HiringPostScreen extends StatefulWidget {
+  const HiringPostScreen({super.key, required this.openingId});
+  final String openingId;
+
+  @override
+  State<HiringPostScreen> createState() => _HiringPostScreenState();
+}
+
+class _HiringPostScreenState extends State<HiringPostScreen> {
+  int _tab = 0;
+  String? _busy;
+
+  Future<(Map<String, dynamic>?, List<Map<String, dynamic>>)> _load() async {
+    final app = AppScope.read(context);
+    await loadOpenOpenings(app);
+    final post = (openOpenings.value ?? const [])
+        .where((o) => o['id'] == widget.openingId)
+        .firstOrNull;
+    return (post, await app.repo.openingApplicants(widget.openingId));
+  }
+
+  Future<void> _decide(
+    Map<String, dynamic> r,
+    bool approve,
+    VoidCallback reload,
+  ) async {
+    final app = AppScope.read(context);
+    final riderId = r['rider_id'] as String;
+    setState(() => _busy = riderId);
+    try {
+      approve
+          ? await app.repo.approvePendingRider(riderId)
+          : await app.repo.rejectPendingRider(riderId);
+      if (mounted) {
+        showCefToast(context, approve ? L.hrApprovedToast : L.hrRejectedToast);
+      }
+      reload();
+    } on RepositoryError catch (e) {
+      if (mounted) showCefToast(context, e.message, error: true);
+    } finally {
+      if (mounted) setState(() => _busy = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return AsyncView<(Map<String, dynamic>?, List<Map<String, dynamic>>)>(
+      key: ValueKey('hiring-post-${widget.openingId}'),
+      load: _load,
+      builder: (context, data, reload) {
+        final (post, applicants) = data;
+        if (post == null) {
+          return PageBody(children: [StateBlock.empty(L.noOpenOpenings)]);
+        }
+        final waiting = applicants
+            .where((r) => r['status'] == 'pending')
+            .length;
+        final tabs = [L.hrApplicantsTab(applicants.length), L.hrDetailsTab];
+        final days = [
+          for (final d in (post['days'] as List)) (d as num).toInt(),
+        ]..sort();
+        Widget kv(String k, String v) => CefListRow(title: k, subtitle: v);
+        return PageBody(
+          onRefresh: () async => reload(),
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: c.success,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  L.hrActiveApplicants(waiting),
+                  style: TextStyle(fontSize: 14, color: c.textSecondary),
+                ),
+              ],
+            ),
+            const SizedBox(height: Gap.md),
+            SegmentedTabs(
+              labels: tabs,
+              active: tabs[_tab],
+              onChange: (l) => setState(() => _tab = tabs.indexOf(l)),
+            ),
+            const SizedBox(height: Gap.md),
+            if (_tab == 1) ...[
+              kv(L.hrArea, post['area_label'] as String),
+              kv(L.hrDays, days.map((d) => _short(_days[d - 1])).join(', ')),
+              kv(L.hrPickupTime, _hhmm(post['shift_start'] as String)),
+              kv(L.hrVehicle, _vehicle(post['vehicle_type'] as String)),
+              kv(L.hrPayPerDrop, _payLabel(post)),
+              kv(L.hrDriversNeeded, '${post['riders_needed']}'),
+              kv(L.hrReach, '${_num(post['radius_km'] as num)} km'),
+            ] else if (applicants.isEmpty)
+              StateBlock.empty(L.hrNoApplicants)
+            else
+              for (final r in applicants) _applicant(context, r, reload),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _applicant(
+    BuildContext context,
+    Map<String, dynamic> r,
+    VoidCallback reload,
+  ) {
+    final rider = (r['riders'] as Map?) ?? const {};
+    final name = (rider['name'] as String?) ?? L.rider;
+    final created = DateTime.parse(r['created_at'] as String).toLocal();
+    final status = r['status'] as String;
+    final isNew =
+        status == 'pending' &&
+        DateTime.now().difference(created) < const Duration(hours: 24);
+    final chip = switch (status) {
+      'approved' => StatusChip(L.hrApproved, success: true),
+      'rejected' || 'withdrawn' => StatusChip(L.hrRejected),
+      _ =>
+        isNew
+            ? StatusChip(L.hrNew, info: true)
+            : StatusChip(L.hrPending, warning: true),
+    };
+    final date =
+        '${created.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][created.month - 1]} ${created.year}';
+    final pending = status == 'pending' && rider['status'] == 'pending';
+    final busy = _busy == r['rider_id'];
+    return CefListRow(
+      title: name,
+      subtitle: [
+        [
+          if (rider['vehicle_type'] != null)
+            _vehicle(rider['vehicle_type'] as String),
+          if (rider['vehicle_plate'] != null) rider['vehicle_plate'] as String,
+        ].join(' · '),
+        L.hrAppliedVia(date),
+      ].where((x) => x.isNotEmpty).join('\n'),
+      subtitleMaxLines: 2,
+      leading: CefAvatar(name, filled: true),
+      trailing: chip,
+      onTap: !pending || busy
+          ? null
+          : () => showModalBottomSheet<void>(
+              context: context,
+              backgroundColor: Colors.white,
+              showDragHandle: true,
+              builder: (sheet) => SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    Gap.gutter,
+                    0,
+                    Gap.gutter,
+                    Gap.md,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        name,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: Gap.md),
+                      CefButton(
+                        L.hrApprove,
+                        onTap: () {
+                          Navigator.of(sheet).pop();
+                          _decide(r, true, reload);
+                        },
+                      ),
+                      const SizedBox(height: Gap.sm),
+                      CefButton(
+                        L.hrReject,
+                        destructive: true,
+                        onTap: () {
+                          Navigator.of(sheet).pop();
+                          _decide(r, false, reload);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
     );
   }
 }

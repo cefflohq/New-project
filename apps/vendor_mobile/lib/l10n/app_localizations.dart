@@ -7136,6 +7136,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No helpers yet.'**
   String get noTeamHelpers;
+
+  /// No description provided for @hrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hiring Driver'**
+  String get hrTitle;
+
+  /// No description provided for @hrPickupTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup time'**
+  String get hrPickupTime;
+
+  /// No description provided for @hrPickupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'When drivers should arrive to collect deliveries.'**
+  String get hrPickupHint;
+
+  /// No description provided for @hrPayPerDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay per drop'**
+  String get hrPayPerDrop;
+
+  /// No description provided for @hrPayMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum RM3.00 per drop.'**
+  String get hrPayMin;
+
+  /// No description provided for @hrReach.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver reach'**
+  String get hrReach;
+
+  /// No description provided for @hrReachHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Show this hiring to drivers within {km} km.'**
+  String hrReachHint(String km);
+
+  /// No description provided for @hrPublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish hiring'**
+  String get hrPublish;
+
+  /// No description provided for @hrFix.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in the area, days and pay (minimum RM3.00 per drop).'**
+  String get hrFix;
+
+  /// No description provided for @hrPickupAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup {time}'**
+  String hrPickupAt(String time);
+
+  /// No description provided for @hrPerDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'RM{amount} / drop'**
+  String hrPerDrop(String amount);
+
+  /// No description provided for @hrPostTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver Hiring'**
+  String get hrPostTitle;
+
+  /// No description provided for @hrActiveApplicants.
+  ///
+  /// In en, this message translates to:
+  /// **'Active · {n} applicants'**
+  String hrActiveApplicants(int n);
+
+  /// No description provided for @hrApplicantsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Applicants ({n})'**
+  String hrApplicantsTab(int n);
+
+  /// No description provided for @hrDetailsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get hrDetailsTab;
+
+  /// No description provided for @hrAppliedVia.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied {date} · via Hiring'**
+  String hrAppliedVia(String date);
+
+  /// No description provided for @hrNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get hrNew;
+
+  /// No description provided for @hrPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get hrPending;
+
+  /// No description provided for @hrApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get hrApproved;
+
+  /// No description provided for @hrRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get hrRejected;
+
+  /// No description provided for @hrNoApplicants.
+  ///
+  /// In en, this message translates to:
+  /// **'No applicants yet. Drivers near you find this post in Find Jobs.'**
+  String get hrNoApplicants;
+
+  /// No description provided for @hrApprove.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get hrApprove;
+
+  /// No description provided for @hrReject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get hrReject;
+
+  /// No description provided for @hrApprovedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver approved'**
+  String get hrApprovedToast;
+
+  /// No description provided for @hrRejectedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Applicant rejected'**
+  String get hrRejectedToast;
+
+  /// No description provided for @hrPostsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} active · {m} applicants'**
+  String hrPostsSummary(int n, int m);
+
+  /// No description provided for @hrArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Area'**
+  String get hrArea;
+
+  /// No description provided for @hrDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days'**
+  String get hrDays;
+
+  /// No description provided for @hrVehicle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle'**
+  String get hrVehicle;
+
+  /// No description provided for @hrDriversNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Drivers needed'**
+  String get hrDriversNeeded;
 }
 
 class _AppLocalizationsDelegate

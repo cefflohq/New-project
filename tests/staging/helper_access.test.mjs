@@ -59,7 +59,7 @@ const calls = [
   ['approve_order', { p_order_id: Z }],
   ['get_storefront', { p_business_id: B }],
   ['set_storefront_published', { p_business_id: B, p_published: false }],
-  ['save_job_opening', { p_business_id: B, p_area_label: 'x', p_shift_start: '07:00', p_shift_end: '08:00', p_days: [1], p_vehicle_type: 'car', p_pay_amount: 1, p_pay_unit: 'shift', p_riders_needed: 1 }],
+  ['save_job_opening', { p_business_id: B, p_area_label: 'x', p_pickup_time: '07:00', p_days: [1], p_vehicle_type: 'car', p_pay_per_drop: 3, p_drivers_needed: 1 }],
   ['set_business_service_area', { p_business_id: B, p_origin_latitude: 3, p_origin_longitude: 101, p_radius_km: 5 }],
 ];
 for (const [name, body] of calls) {

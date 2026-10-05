@@ -3909,4 +3909,110 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get noTeamHelpers => 'Belum ada pembantu.';
+
+  @override
+  String get hrTitle => 'Pengambilan Pemandu';
+
+  @override
+  String get hrPickupTime => 'Masa ambil';
+
+  @override
+  String get hrPickupHint => 'Bila pemandu patut tiba untuk ambil hantaran.';
+
+  @override
+  String get hrPayPerDrop => 'Bayaran setiap hantaran';
+
+  @override
+  String get hrPayMin => 'Minimum RM3.00 setiap hantaran.';
+
+  @override
+  String get hrReach => 'Jangkauan pemandu';
+
+  @override
+  String hrReachHint(String km) {
+    return 'Tunjuk pengambilan ini kepada pemandu dalam $km km.';
+  }
+
+  @override
+  String get hrPublish => 'Siarkan pengambilan';
+
+  @override
+  String get hrFix =>
+      'Isi kawasan, hari dan bayaran (minimum RM3.00 setiap hantaran).';
+
+  @override
+  String hrPickupAt(String time) {
+    return 'Ambil $time';
+  }
+
+  @override
+  String hrPerDrop(String amount) {
+    return 'RM$amount / hantaran';
+  }
+
+  @override
+  String get hrPostTitle => 'Pengambilan Pemandu';
+
+  @override
+  String hrActiveApplicants(int n) {
+    return 'Aktif · $n pemohon';
+  }
+
+  @override
+  String hrApplicantsTab(int n) {
+    return 'Pemohon ($n)';
+  }
+
+  @override
+  String get hrDetailsTab => 'Butiran';
+
+  @override
+  String hrAppliedVia(String date) {
+    return 'Dimohon $date · melalui Pengambilan';
+  }
+
+  @override
+  String get hrNew => 'Baharu';
+
+  @override
+  String get hrPending => 'Menunggu';
+
+  @override
+  String get hrApproved => 'Diluluskan';
+
+  @override
+  String get hrRejected => 'Ditolak';
+
+  @override
+  String get hrNoApplicants =>
+      'Belum ada pemohon. Pemandu berdekatan akan jumpa post ini di Cari Kerja.';
+
+  @override
+  String get hrApprove => 'Luluskan';
+
+  @override
+  String get hrReject => 'Tolak';
+
+  @override
+  String get hrApprovedToast => 'Pemandu diluluskan';
+
+  @override
+  String get hrRejectedToast => 'Pemohon ditolak';
+
+  @override
+  String hrPostsSummary(int n, int m) {
+    return '$n aktif · $m pemohon';
+  }
+
+  @override
+  String get hrArea => 'Kawasan';
+
+  @override
+  String get hrDays => 'Hari';
+
+  @override
+  String get hrVehicle => 'Kenderaan';
+
+  @override
+  String get hrDriversNeeded => 'Pemandu diperlukan';
 }

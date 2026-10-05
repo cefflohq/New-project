@@ -3904,4 +3904,111 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noTeamHelpers => 'No helpers yet.';
+
+  @override
+  String get hrTitle => 'Hiring Driver';
+
+  @override
+  String get hrPickupTime => 'Pickup time';
+
+  @override
+  String get hrPickupHint =>
+      'When drivers should arrive to collect deliveries.';
+
+  @override
+  String get hrPayPerDrop => 'Pay per drop';
+
+  @override
+  String get hrPayMin => 'Minimum RM3.00 per drop.';
+
+  @override
+  String get hrReach => 'Driver reach';
+
+  @override
+  String hrReachHint(String km) {
+    return 'Show this hiring to drivers within $km km.';
+  }
+
+  @override
+  String get hrPublish => 'Publish hiring';
+
+  @override
+  String get hrFix =>
+      'Fill in the area, days and pay (minimum RM3.00 per drop).';
+
+  @override
+  String hrPickupAt(String time) {
+    return 'Pickup $time';
+  }
+
+  @override
+  String hrPerDrop(String amount) {
+    return 'RM$amount / drop';
+  }
+
+  @override
+  String get hrPostTitle => 'Driver Hiring';
+
+  @override
+  String hrActiveApplicants(int n) {
+    return 'Active · $n applicants';
+  }
+
+  @override
+  String hrApplicantsTab(int n) {
+    return 'Applicants ($n)';
+  }
+
+  @override
+  String get hrDetailsTab => 'Details';
+
+  @override
+  String hrAppliedVia(String date) {
+    return 'Applied $date · via Hiring';
+  }
+
+  @override
+  String get hrNew => 'New';
+
+  @override
+  String get hrPending => 'Pending';
+
+  @override
+  String get hrApproved => 'Approved';
+
+  @override
+  String get hrRejected => 'Rejected';
+
+  @override
+  String get hrNoApplicants =>
+      'No applicants yet. Drivers near you find this post in Find Jobs.';
+
+  @override
+  String get hrApprove => 'Approve';
+
+  @override
+  String get hrReject => 'Reject';
+
+  @override
+  String get hrApprovedToast => 'Driver approved';
+
+  @override
+  String get hrRejectedToast => 'Applicant rejected';
+
+  @override
+  String hrPostsSummary(int n, int m) {
+    return '$n active · $m applicants';
+  }
+
+  @override
+  String get hrArea => 'Area';
+
+  @override
+  String get hrDays => 'Days';
+
+  @override
+  String get hrVehicle => 'Vehicle';
+
+  @override
+  String get hrDriversNeeded => 'Drivers needed';
 }

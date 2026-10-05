@@ -93,7 +93,7 @@ for (const kind of ['operator', 'helper', 'rider']) {
 }
 
 // --- Find Jobs interaction
-const op = (await rpc(owner, 'save_job_opening', { p_business_id: B, p_area_label: '[TEST] inv-regression', p_shift_start: '19:00', p_shift_end: '21:00', p_days: [7], p_vehicle_type: 'motorcycle', p_pay_amount: 30, p_pay_unit: 'shift', p_riders_needed: 1 })).body;
+const op = (await rpc(owner, 'save_job_opening', { p_business_id: B, p_area_label: '[TEST] inv-regression', p_pickup_time: '19:00', p_days: [7], p_vehicle_type: 'motorcycle', p_pay_per_drop: 3, p_drivers_needed: 1 })).body;
 ok('Find Jobs: owner posts an opening', !!op?.id);
 const invitedRider = created.riders[0];
 const rq = await rpc(invitedRider.tok, 'request_job_opening', { p_opening_id: op.id });

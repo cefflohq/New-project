@@ -32,22 +32,25 @@ const vendorB = await signIn(process.env.STAGING_VENDOR_B_EMAIL, process.env.STA
 const biz = (await rpc(owner, 'get_my_businesses')).body.find(b => b.member_role === 'owner');
 ok('setup: owner business', !!biz, biz && biz.business_name);
 const B = biz.business_id;
-const opening = (extra = {}) => ({ p_business_id: B, p_area_label: 'Taman Uda', p_shift_start: '07:00', p_shift_end: '11:00', p_days: [1, 2, 3, 4, 5], p_vehicle_type: 'motorcycle', p_pay_amount: 45, p_pay_unit: 'shift', p_riders_needed: 2, p_radius_km: 10, ...extra });
+// M1 Driver Hiring contract: pickup time (no end), pay per drop (min RM3.00),
+// drivers needed, driver reach 1-15 km.
+const opening = (extra = {}) => ({ p_business_id: B, p_area_label: 'Taman Uda', p_pickup_time: '07:00', p_days: [1, 2, 3, 4, 5], p_vehicle_type: 'motorcycle', p_pay_per_drop: 3.5, p_drivers_needed: 2, p_reach_km: 10, ...extra });
 
 // --- vendor side
 const o1 = await rpc(owner, 'save_job_opening', opening());
 ok('owner can post an opening', o1.status === 200 && o1.body.id, err(o1));
-const o2 = await rpc(owner, 'save_job_opening', opening({ p_shift_start: '10:00', p_shift_end: '13:00', p_days: [2] }));
-ok('owner can post a 2nd opening (overlaps the 1st on Tue)', o2.status === 200, err(o2));
-const o3 = await rpc(owner, 'save_job_opening', opening({ p_shift_start: '18:00', p_shift_end: '21:00', p_days: [5, 6, 7], p_radius_km: 20 }));
-ok('owner can post a night opening, radius 20 km', o3.status === 200, err(o3));
+ok('stored per the contract: per drop, pickup time only, reach 10', o1.body?.pay_unit === 'drop' && Number(o1.body?.pay_amount) === 3.5 && o1.body?.shift_end === null && Number(o1.body?.radius_km) === 10, JSON.stringify({ u: o1.body?.pay_unit, a: o1.body?.pay_amount, e: o1.body?.shift_end, r: o1.body?.radius_km }));
+const o2 = await rpc(owner, 'save_job_opening', opening({ p_pickup_time: '10:00', p_days: [2] }));
+ok('owner can post a 2nd opening (same Tue)', o2.status === 200, err(o2));
+const o3 = await rpc(owner, 'save_job_opening', opening({ p_pickup_time: '18:00', p_days: [5, 6, 7], p_reach_km: 15 }));
+ok('owner can post a night opening, reach 15 km (max)', o3.status === 200, err(o3));
 for (const [who, tok] of [['operator', operator], ['helper', helper], ['outsider', outsider], ['other vendor', vendorB]]) {
   const r = await rpc(tok, 'save_job_opening', opening());
   ok(`${who} cannot post an opening`, r.status >= 400, err(r));
   const c = await rpc(tok, 'close_job_opening', { p_opening_id: o3.body.id });
   ok(`${who} cannot close an opening`, c.status >= 400, err(c));
 }
-for (const [bad, extra] of [['radius 4 km', { p_radius_km: 4 }], ['radius 25 km', { p_radius_km: 25 }], ['end before start', { p_shift_start: '11:00', p_shift_end: '07:00' }], ['day 8', { p_days: [8] }], ['zero pay', { p_pay_amount: 0 }]]) {
+for (const [bad, extra] of [['reach 0 km', { p_reach_km: 0 }], ['reach 16 km', { p_reach_km: 16 }], ['RM2.99 per drop (min RM3.00)', { p_pay_per_drop: 2.99 }], ['no pickup time', { p_pickup_time: null }], ['day 8', { p_days: [8] }], ['old shift/pay-unit parameters', { p_pay_unit: 'shift' }]]) {
   const r = await rpc(owner, 'save_job_opening', opening(extra));
   ok(`invalid opening refused: ${bad}`, r.status >= 400, err(r));
 }
@@ -72,12 +75,15 @@ const shahAlam = { p_lat: 3.0733, p_lng: 101.5185 };
 const sa20 = await rpc(applicant, 'find_job_openings', { ...shahAlam, p_radius_km: 20 });
 ok('Change location to Shah Alam, 20 km: KL openings not shown', Array.isArray(sa20.body) && !sa20.body.some(ours), `${sa20.body?.length} rows`);
 const sa30 = await rpc(applicant, 'find_job_openings', { ...shahAlam, p_radius_km: 30 });
-ok('Shah Alam expanded to 30 km: KL openings appear', Array.isArray(sa30.body) && sa30.body.filter(ours).length === 3, `${sa30.body?.length} rows`);
+ok('Shah Alam 30 km search: KL posts beyond their driver reach stay hidden', Array.isArray(sa30.body) && !sa30.body.some(ours), `${sa30.body?.filter(ours).length} shown`);
+const north12 = await rpc(applicant, 'find_job_openings', { p_lat: 3.2679, p_lng: 101.71, p_radius_km: 20 });
+const n12 = Array.isArray(north12.body) ? north12.body.filter(ours).map(x => x.opening_id) : [];
+ok('driver ~12 km away: sees the 15 km-reach post only, not the 10 km ones', n12.length === 1 && n12[0] === o3.body.id, JSON.stringify(n12));
 const kedah = await rpc(applicant, 'find_job_openings', { p_lat: 6.12, p_lng: 100.37, p_radius_km: 50 });
 ok('rider in Kedah (50 km max) does not see KL openings', Array.isArray(kedah.body) && !kedah.body.some(ours));
 const direct = await sel(applicant, `rider_job_openings?select=id&business_id=eq.${B}`);
 ok('rider cannot read openings table directly', direct.status === 200 && direct.body.length === 0, JSON.stringify(direct.body));
-ok('rider cannot insert an opening directly', (await ins(applicant, 'rider_job_openings', { business_id: B, area_label: 'x', shift_start: '07:00', shift_end: '08:00', days: [1], vehicle_type: 'car', pay_amount: 1, pay_unit: 'shift', riders_needed: 1 })) >= 400);
+ok('rider cannot insert an opening directly', (await ins(applicant, 'rider_job_openings', { business_id: B, area_label: 'x', shift_start: '07:00', days: [1], vehicle_type: 'car', pay_amount: 3, pay_unit: 'drop', riders_needed: 1 })) >= 400);
 const bRead = await sel(vendorB, `rider_job_openings?select=id&business_id=eq.${B}`);
 ok("other vendor cannot read this business's openings", bRead.status === 200 && bRead.body.length === 0);
 
@@ -101,18 +107,18 @@ const ownerApprove = await rpc(owner, 'approve_pending_rider', { p_rider_id: rid
 ok('owner approves the rider', ownerApprove.status === 200, err(ownerApprove));
 const sched = await rpc(applicant, 'my_job_schedule');
 ok('approval also approves the job request (My Schedule)', Array.isArray(sched.body) && sched.body.some(x => x.opening_id === o1.body.id && x.status === 'approved'), JSON.stringify(sched.body).slice(0, 200));
-const clash = await rpc(applicant, 'request_job_opening', { p_opening_id: o2.body.id });
-ok('overlapping shift refused (Tue 10-13 vs 7-11)', clash.status >= 400 && /Clashes/i.test(err(clash)), err(clash));
-const o4 = await rpc(owner, 'save_job_opening', opening({ p_shift_start: '14:00', p_shift_end: '16:00', p_days: [3], p_vehicle_type: 'car' }));
+const sameDay = await rpc(applicant, 'request_job_opening', { p_opening_id: o2.body.id });
+ok('no artificial clash rule: a 2nd Tue post can be taken (approved, already active)', sameDay.status === 200 && sameDay.body.status === 'approved', err(sameDay));
+const o4 = await rpc(owner, 'save_job_opening', opening({ p_pickup_time: '14:00', p_days: [3], p_vehicle_type: 'car' }));
 ok('owner posts a car opening (rider rides a motorbike)', o4.status === 200, err(o4));
 const f2 = await rpc(applicant, 'find_job_openings', { ...NEAR, p_radius_km: 20 });
 const order = f2.body.filter(x => [o2.body.id, o3.body.id, o4.body.id].includes(x.opening_id)).map(x => x.opening_id);
-ok('ranking: compatible + same vehicle, then other vehicle, then clashing last',
-  order[0] === o3.body.id && order[1] === o4.body.id && order[2] === o2.body.id, order.map(id => ({ [o2.body.id]: 'clash', [o3.body.id]: 'night', [o4.body.id]: 'car' })[id]).join(' > '));
+ok('ranking: same vehicle before other vehicle',
+  order.indexOf(o4.body.id) > order.indexOf(o2.body.id) && order.indexOf(o4.body.id) > order.indexOf(o3.body.id), order.map(id => ({ [o2.body.id]: 'tue', [o3.body.id]: 'night', [o4.body.id]: 'car' })[id]).join(' > '));
 const row2 = f2.body.find(x => x.opening_id === o2.body.id), row1 = f2.body.find(x => x.opening_id === o1.body.id);
-ok('browse marks the clash and my booking', row2?.clash && row1?.my_status === 'approved', `${row2?.clash} / ${row1?.my_status}`);
+ok('browse marks my bookings and never a clash', !row2?.clash && row1?.my_status === 'approved' && row2?.my_status === 'approved', `${row2?.clash} / ${row1?.my_status} / ${row2?.my_status}`);
 const night = await rpc(applicant, 'request_job_opening', { p_opening_id: o3.body.id });
-ok('non-overlapping night shift, already an active rider -> approved directly', night.status === 200 && night.body.status === 'approved', err(night));
+ok('night post, already an active rider -> approved directly', night.status === 200 && night.body.status === 'approved', err(night));
 const otherSched = await rpc(outsider, 'my_job_schedule');
 ok("another user's schedule is not visible", Array.isArray(otherSched.body) && !otherSched.body.some(x => x.opening_id === o1.body.id));
 const reqId = sched.body.find(x => x.opening_id === o1.body.id)?.request_id;

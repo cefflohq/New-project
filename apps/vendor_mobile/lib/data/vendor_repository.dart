@@ -944,7 +944,8 @@ class VendorRepository {
     final rows = await _run(
       () => _db!
           .from('rider_job_openings')
-          .select()
+          // Request statuses ride along for the applicant counts (M1).
+          .select('*, rider_job_requests(status)')
           .eq('business_id', businessId)
           .eq('status', 'open')
           .order('shift_start'),
@@ -952,18 +953,18 @@ class VendorRepository {
     return _rows(rows);
   }
 
-  /// Posts (or edits) an opening. Owner only, enforced by the server.
+  /// Posts (or edits) a Driver hiring post (M1 contract): pickup time (no
+  /// end time), pay per drop (min RM3.00), drivers needed, reach 1-15 km.
+  /// Owner only; the server validates everything again.
   Future<void> saveJobOpening({
     required String businessId,
     required String areaLabel,
-    required String shiftStart,
-    required String shiftEnd,
+    required String pickupTime,
     required List<int> days,
     required String vehicleType,
-    required num payAmount,
-    required String payUnit,
-    required int ridersNeeded,
-    required num radiusKm,
+    required num payPerDrop,
+    required int driversNeeded,
+    required num reachKm,
     String? openingId,
   }) async {
     if (_demo) return;
@@ -973,18 +974,33 @@ class VendorRepository {
         params: {
           'p_business_id': businessId,
           'p_area_label': areaLabel,
-          'p_shift_start': shiftStart,
-          'p_shift_end': shiftEnd,
+          'p_pickup_time': pickupTime,
           'p_days': days,
           'p_vehicle_type': vehicleType,
-          'p_pay_amount': payAmount,
-          'p_pay_unit': payUnit,
-          'p_riders_needed': ridersNeeded,
-          'p_radius_km': radiusKm,
+          'p_pay_per_drop': payPerDrop,
+          'p_drivers_needed': driversNeeded,
+          'p_reach_km': reachKm,
           'p_opening_id': openingId,
         },
       ),
     );
+  }
+
+  /// Applicants of one hiring post (Founder screen 10), newest first. RLS:
+  /// business members read their own business's requests and drivers.
+  Future<List<Map<String, dynamic>>> openingApplicants(String openingId) async {
+    if (_demo) return const [];
+    final rows = await _run(
+      () => _db!
+          .from('rider_job_requests')
+          .select(
+            'id, status, created_at, rider_id, '
+            'riders(name, vehicle_type, vehicle_plate, status)',
+          )
+          .eq('opening_id', openingId)
+          .order('created_at', ascending: false),
+    );
+    return _rows(rows);
   }
 
   Future<void> closeJobOpening(String openingId) async {
