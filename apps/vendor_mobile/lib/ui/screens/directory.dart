@@ -10,6 +10,7 @@ import '../../data/models.dart';
 import '../async_view.dart';
 import '../shell.dart';
 import '../widgets.dart';
+import 'hiring.dart';
 import 'planning.dart' show showDispatchSheet;
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
@@ -1144,9 +1145,9 @@ class _RidersScreenState extends State<RidersScreen> {
       key: ValueKey('riders-${business.id}'),
       load: () async {
         // Removed or rejected riders (inactive) are no longer on the team.
-        final riders = (await app.repo.riders(
-          business.id,
-        )).where((r) => r.status != 'inactive').toList();
+        final riders = (await app.repo.riders(business.id))
+            .where((r) => r.status != 'inactive')
+            .toList();
         final runs = await app.repo.runs(business.id);
         return (
           riders,
@@ -1167,6 +1168,11 @@ class _RidersScreenState extends State<RidersScreen> {
         return PageBody(
           onRefresh: reload,
           children: [
+            // D-75: Owner posts openings that Drivers see in Find Jobs.
+            if (business.isOwner) ...[
+              const LookingForRidersCard(),
+              const SizedBox(height: Gap.md),
+            ],
             SegmentedTabs(
               labels: tabLabels,
               active: tabLabels[tab],
@@ -1363,9 +1369,8 @@ class RiderDetailScreen extends StatelessWidget {
     final app = AppScope.read(context);
     try {
       await app.repo.removeRider(rider.id);
-      final after = (await app.repo.riders(
-        app.business!.id,
-      )).where((r) => r.id == rider.id);
+      final after = (await app.repo.riders(app.business!.id))
+          .where((r) => r.id == rider.id);
       if (!context.mounted) return;
       if (after.isNotEmpty && after.first.status != 'inactive') {
         showCefToast(context, L.removalNotConfirmed, error: true);
@@ -1546,9 +1551,8 @@ class TeamMemberDetailScreen extends StatelessWidget {
     final businessId = app.business!.id;
     try {
       await app.repo.removeTeamMember(businessId, member.userId);
-      final stillMember = (await app.repo.team(
-        businessId,
-      )).any((m) => m.userId == member.userId);
+      final stillMember = (await app.repo.team(businessId))
+          .any((m) => m.userId == member.userId);
       if (!context.mounted) return;
       if (stillMember) {
         showCefToast(context, L.removalNotConfirmed, error: true);

@@ -5,6 +5,7 @@ import { t, fmtDate, fmtTime } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { showInviteLink } from '../invite_link.js';
+import { mountHiring } from '../hiring.js';
 import { fetchRiders, fetchOrders, fetchRatings, orderNo } from '../data.js';
 import { esc, icon, chip, avatar, loadingRows, emptyState, errorState, toast, busy, modal, confirmDialog, typedConfirmDialog, phoneDigits, orderStatus, gatedNote } from '../ui.js';
 
@@ -14,6 +15,7 @@ export default function riders({ el, params, setHeader }) {
   let tab = 'all', query = '', all = [], orders = [], ratings = [];
   el.innerHTML = `<div class="split no-detail">
     <div class="card">
+      ${ctx.isOwner ? '<div data-hiring></div>' : ''}
       <div class="bar">
         <div class="tabs" data-tabs></div>
         <div class="search">${icon('search')}<input data-q placeholder="${esc(t('riders.search'))}" aria-label="${esc(t('c.search'))}"></div>
@@ -23,6 +25,8 @@ export default function riders({ el, params, setHeader }) {
     </div>
   </div>`;
   const $ = s => el.querySelector(s);
+  // D-75: the Owner's openings for Drivers' Find Jobs.
+  if (ctx.isOwner) mountHiring($('[data-hiring]'));
 
   async function load() {
     try {

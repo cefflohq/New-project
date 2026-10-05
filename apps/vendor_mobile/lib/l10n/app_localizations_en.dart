@@ -3727,4 +3727,96 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get keepLoggedIn => 'Keep me logged in';
+
+  @override
+  String get lookingForRiders => 'Looking for riders';
+
+  @override
+  String get lookingForRidersOff => 'Off. Only riders you invite can join.';
+
+  @override
+  String get lookingForRidersOn =>
+      'On. Drivers can see your openings in Find Jobs.';
+
+  @override
+  String get addOpening => 'Add opening';
+
+  @override
+  String get postOpening => 'Post opening';
+
+  @override
+  String get closeOpening => 'Close';
+
+  @override
+  String get openingArea => 'Area';
+
+  @override
+  String get openingAreaHint => 'e.g. Taman Uda, Alor Setar';
+
+  @override
+  String get openingDays => 'Days';
+
+  @override
+  String get openingStart => 'Start';
+
+  @override
+  String get openingEnd => 'End';
+
+  @override
+  String get openingVehicle => 'Vehicle';
+
+  @override
+  String get openingPay => 'Pay (RM)';
+
+  @override
+  String get openingPayUnit => 'Per';
+
+  @override
+  String get payShift => 'shift';
+
+  @override
+  String get payDrop => 'drop';
+
+  @override
+  String get payHour => 'hour';
+
+  @override
+  String get openingRidersNeeded => 'Riders needed';
+
+  @override
+  String openingRadius(String km) {
+    return 'Rider radius: $km km';
+  }
+
+  @override
+  String get openingPosted => 'Opening posted';
+
+  @override
+  String get openingClosed => 'Opening closed';
+
+  @override
+  String get newOpening => 'New opening';
+
+  @override
+  String get openingFixFields =>
+      'Fill in the area, days, a valid time and pay.';
+
+  @override
+  String get turnOffHiringTitle => 'Stop looking for riders?';
+
+  @override
+  String get turnOffHiringBody =>
+      'All your open openings will close. Requests already sent stay in Pending.';
+
+  @override
+  String get turnOff => 'Turn off';
+
+  @override
+  String get vehMotorbike => 'Motorbike';
+
+  @override
+  String get vehCar => 'Car';
+
+  @override
+  String get vehVan => 'Van';
 }

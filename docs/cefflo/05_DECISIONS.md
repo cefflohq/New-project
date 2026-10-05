@@ -1747,13 +1747,20 @@ Work" rule for the Driver app only.
   blocked on a time clash or travel buffer), D41.2 My Schedule (one vendor
   per slot). Design source: Rider Network Strategy §7–13 and the Founder-
   reviewed mockup.
-- **Live shows "coming soon" only.** There is no Rider Hub backend; the live
-  app never shows an invented opening. The prototype build walks the designed
-  flow with clearly marked example openings.
+- **Backend wired the same day** (Founder "wired backend", staging only):
+  migration `20261005100000_rider_hub_find_jobs` (rider_job_openings,
+  rider_job_requests, save/close_job_opening Owner-only, find_job_openings,
+  request_job_opening, withdraw_job_request, my_job_schedule, approval
+  trigger). Founder rules: every Driver sees every open opening nationwide
+  (to plan moves), nearest first; the vendor sets a rider radius of 5–20 km
+  (default 10). 46/46 staging security tests pass
+  (`tests/staging/rider_hub_find_jobs.test.mjs`). Vendor App and Vendor Web
+  Riders pages carry the Owner's "Looking for riders" switch.
+- The prototype build still walks the flow with marked example openings.
 - Rules kept for the future backend: a rider may join many vendors; booked
   times never overlap (real time ranges + travel buffer); a request lands in
   the vendor's Riders > Pending and only the Owner approves it.
-- Still FUTURE (unchanged): the backend, the Vendor "Looking for riders"
-  switch, portable rider identity, availability/commitment engine. Building
+- Still FUTURE: a portable rider profile table, a cross-vendor availability
+  engine beyond these job bookings, Production rollout. Building
   them needs a security proposal and Founder approval (Security & Access
   Master §27/§30).

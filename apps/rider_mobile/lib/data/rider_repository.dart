@@ -530,6 +530,44 @@ class RiderRepository {
       e.message.contains('does not exist') ||
       e.message.contains('Could not find the function');
 
+  // ------------------------------------------------- Find Jobs (D-75)
+
+  /// Every open opening in the country, nearest first when a location is
+  /// given (used only to compute a rounded distance, never stored).
+  Future<List<Map<String, dynamic>>> findJobOpenings({
+    double? latitude,
+    double? longitude,
+  }) async {
+    if (isDemo) return const [];
+    final rows = await _run(
+      () => _db.rpc(
+        'find_job_openings',
+        params: {'p_lat': latitude, 'p_lng': longitude},
+      ),
+    );
+    return _rows(rows);
+  }
+
+  /// Requests an opening: the rider lands in that business's Riders >
+  /// Pending (or is booked straight away when already active there).
+  /// Refused on a time clash.
+  Future<Map<String, dynamic>> requestJobOpening(String openingId) async {
+    final res = await _run(
+      () => _db.rpc('request_job_opening', params: {'p_opening_id': openingId}),
+    );
+    return Map<String, dynamic>.from(res as Map);
+  }
+
+  Future<void> withdrawJobRequest(String requestId) => _run(
+    () => _db.rpc('withdraw_job_request', params: {'p_request_id': requestId}),
+  );
+
+  /// The signed-in rider's own pending and approved bookings.
+  Future<List<Map<String, dynamic>>> myJobSchedule() async {
+    if (isDemo) return const [];
+    return _rows(await _run(() => _db.rpc('my_job_schedule')));
+  }
+
   /// Accepts a Rider invitation (the same accept_rider_invitation contract
   /// the invite page uses). Creates this user's rider row as pending; the
   /// business approves it. The token is used once and never stored.

@@ -776,5 +776,41 @@
   "slotTravelBuffer": "Travel buffer",
   "scheduleNote": "You can work for the same vendor in more than one slot, or for different vendors, as long as the times don't overlap.",
   "releaseSlot": "Release a slot",
-  "previewOnly": "Preview: example openings"
+  "previewOnly": "Preview: example openings",
+  "perShift": "/ shift",
+  "perDrop": "/ drop",
+  "perHour": "/ hour",
+  "jobWithin": "Within {km} km",
+  "@jobWithin": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "jobAway": "{km} km away",
+  "@jobAway": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "jobsNearestFirst": "Nearest first · all of Malaysia",
+  "jobsAllAreas": "All areas · turn on location for distance",
+  "jobDaily": "Daily",
+  "scheduleCount": "{count} bookings",
+  "@scheduleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "withdrawBooking": "Withdraw",
+  "bookingWithdrawn": "Booking withdrawn",
+  "noBookingsYet": "No bookings yet. Request an opening in Find Jobs.",
+  "jobsLoadFailed": "Could not load openings. Pull to try again.",
+  "retry2": "Try again",
+  "jobRadius": "Radius"
 }

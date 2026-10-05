@@ -4,23 +4,31 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/app_state.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
+import '../../data/live_adapters.dart';
+import '../../data/rider_repository.dart';
 import '../widgets.dart';
 
 import 'package:cefflo_rider_mobile/l10n/l10n.dart';
 
 // ---------------------------------------------------------------------------
-// D41 Find Jobs family (Rider Hub, docs/cefflo/strategy/
-// CEFFLO_RIDER_NETWORK_STRATEGY.md §7–13; Founder 2026-10-05).
+// D41 Find Jobs family (D-75, Rider Hub V1; Rider Network Strategy §7–13).
 //
-// There is no Rider Hub backend yet (D-67), so the live app shows a clear
-// "coming soon" state and never an invented opening. The prototype walks
-// the designed flow with example openings so it can be reviewed. Rules the
-// design keeps: a rider may join many vendors; booked times never overlap
-// (with a travel buffer); a request lands in the vendor's Riders > Pending
-// and only the Owner can approve it.
+// Live: find_job_openings / request_job_opening / my_job_schedule /
+// withdraw_job_request (migration 20261005100000). Every open opening in the
+// country is listed, nearest first when location is on; the vendor's radius
+// (5–20 km) shows as "Within X km" or "Y km away". A request puts the rider
+// in that business's Riders > Pending; only the Owner approves. The server
+// refuses overlapping shifts (60-minute buffer between businesses).
+// Prototype: the same screens over clearly marked example openings.
 // ---------------------------------------------------------------------------
 
 enum _Shift { morning, noon, night }
+
+_Shift _shiftOf(int startMinutes) => startMinutes < 11 * 60
+    ? _Shift.morning
+    : startMinutes < 17 * 60
+    ? _Shift.noon
+    : _Shift.night;
 
 String _shiftLabel(_Shift s) => switch (s) {
   _Shift.morning => L.shiftMorning,
@@ -28,40 +36,239 @@ String _shiftLabel(_Shift s) => switch (s) {
   _Shift.night => L.shiftNight,
 };
 
+int _minutes(String hhmm) {
+  final p = hhmm.split(':');
+  return int.parse(p[0]) * 60 + int.parse(p[1]);
+}
+
+String _clock(int m) {
+  final h = m ~/ 60, min = m % 60;
+  final h12 = h % 12 == 0 ? 12 : h % 12;
+  return '$h12:${min.toString().padLeft(2, '0')} ${h < 12 ? 'AM' : 'PM'}';
+}
+
+List<String> get _dayNames => [L.mon, L.tue, L.wed, L.thu, L.fri, L.sat, L.sun];
+
+String _daysLabel(List<int> days) {
+  final d = [...days]..sort();
+  if (d.length == 7) return L.jobDaily;
+  final run = d.length >= 3 && d.last - d.first == d.length - 1;
+  if (run) return '${_dayNames[d.first - 1]} – ${_dayNames[d.last - 1]}';
+  return d.map((x) => _dayNames[x - 1]).join(', ');
+}
+
+String _vehicleLabel(String v) => switch (v) {
+  'car' => L.vehicleCar,
+  'van' => L.vehicleVan,
+  _ => L.vehicleMotorbike,
+};
+
+String _payLabel(num amount, String unit) {
+  final u = switch (unit) {
+    'drop' => L.perDrop,
+    'hour' => L.perHour,
+    _ => L.perShift,
+  };
+  return 'RM ${_num(amount)} $u';
+}
+
+String _num(num v) =>
+    v == v.roundToDouble() ? '${v.toInt()}' : v.toStringAsFixed(1);
+
 class _Opening {
   const _Opening({
     required this.id,
     required this.name,
-    required this.category,
     required this.area,
-    required this.km,
-    required this.shift,
-    required this.time,
+    required this.start,
+    required this.end,
     required this.days,
-    required this.pay,
+    required this.payAmount,
+    required this.payUnit,
     required this.needed,
     required this.vehicle,
-    required this.color,
-    required this.requirements,
+    required this.radiusKm,
+    this.category = '',
+    this.km,
+    this.withinRadius,
+    this.myStatus,
     this.clash,
+    this.requirements = const [],
   });
 
-  final String id, name, category, area, time, days, pay, vehicle;
-  final double km;
-  final _Shift shift;
-  final int needed;
-  final Color color;
+  final String id, name, area, category, payUnit, vehicle;
+  final int start, end, needed;
+  final List<int> days;
+  final num payAmount, radiusKm;
+  final num? km;
+  final bool? withinRadius;
+  final String? myStatus; // 'pending' | 'approved'
+  final String? clash;
   final List<String> requirements;
 
-  /// Why this opening cannot be requested (overlap or travel buffer).
-  final String? clash;
-
+  _Shift get shift => _shiftOf(start);
+  String get time => '${_clock(start)} – ${_clock(end)}';
+  String get pay => _payLabel(payAmount, payUnit);
   String get initials => name
+      .replaceAll(RegExp(r'[^A-Za-z0-9 ]'), '')
       .split(' ')
       .where((w) => w.isNotEmpty)
       .take(2)
       .map((w) => w[0])
-      .join();
+      .join()
+      .toUpperCase();
+  Color get color => _palette[name.hashCode.abs() % _palette.length];
+  String get meta => [
+    if (category.isNotEmpty) category,
+    area,
+    if (km != null) '${_num(km!)} km',
+  ].join(' · ');
+
+  static _Opening fromRow(Map<String, dynamic> r) => _Opening(
+    id: r['opening_id'] as String,
+    name: (r['business_name'] ?? '').toString(),
+    area: (r['area_label'] ?? '').toString(),
+    start: _minutes(r['shift_start'] as String),
+    end: _minutes(r['shift_end'] as String),
+    days: [for (final d in (r['days'] as List)) (d as num).toInt()],
+    payAmount: r['pay_amount'] as num,
+    payUnit: (r['pay_unit'] ?? 'shift').toString(),
+    needed: (r['riders_needed'] as num).toInt(),
+    vehicle: (r['vehicle_type'] ?? 'motorcycle').toString(),
+    radiusKm: (r['radius_km'] as num?) ?? 10,
+    km: r['distance_km'] as num?,
+    withinRadius: r['within_radius'] as bool?,
+    myStatus: r['my_status'] as String?,
+    clash: r['clash'] as String?,
+    requirements: [_vehicleLabel((r['vehicle_type'] ?? '').toString())],
+  );
+
+  _Opening withStatus(String? status) => _Opening(
+    id: id,
+    name: name,
+    area: area,
+    category: category,
+    start: start,
+    end: end,
+    days: days,
+    payAmount: payAmount,
+    payUnit: payUnit,
+    needed: needed,
+    vehicle: vehicle,
+    radiusKm: radiusKm,
+    km: km,
+    withinRadius: withinRadius,
+    myStatus: status,
+    clash: status == null ? clash : null,
+    requirements: requirements,
+  );
+}
+
+const _palette = [
+  Color(0xFFC2410C),
+  Color(0xFF0E7490),
+  Color(0xFFB91C1C),
+  Color(0xFF7C3AED),
+  Color(0xFF15803D),
+  Color(0xFF1D4ED8),
+];
+
+class _Booking {
+  const _Booking({
+    required this.requestId,
+    required this.approved,
+    required this.name,
+    required this.start,
+    required this.end,
+    required this.days,
+  });
+  final String requestId, name;
+  final bool approved;
+  final int start, end;
+  final List<int> days;
+
+  static _Booking fromRow(Map<String, dynamic> r) => _Booking(
+    requestId: r['request_id'] as String,
+    approved: r['status'] == 'approved',
+    name: (r['business_name'] ?? '').toString(),
+    start: _minutes(r['shift_start'] as String),
+    end: _minutes(r['shift_end'] as String),
+    days: [for (final d in (r['days'] as List)) (d as num).toInt()],
+  );
+}
+
+// ------------------------------------------------------------- data store
+
+/// One place for the tab's data, so the three screens stay in step.
+class _Jobs {
+  static final openings = ValueNotifier<List<_Opening>?>(null);
+  static final bookings = ValueNotifier<List<_Booking>>(const []);
+  static final hasLocation = ValueNotifier<bool>(false);
+  static final error = ValueNotifier<String?>(null);
+  static final _demoRequested = <String>{};
+
+  static Future<void> load(AppState app) async {
+    if (app.repo.isDemo) {
+      openings.value = [
+        for (final o in _examples)
+          o.withStatus(_demoRequested.contains(o.id) ? 'pending' : null),
+      ];
+      bookings.value = [
+        ..._demoBookings,
+        for (final o in _examples)
+          if (_demoRequested.contains(o.id))
+            _Booking(
+              requestId: o.id,
+              approved: false,
+              name: o.name,
+              start: o.start,
+              end: o.end,
+              days: o.days,
+            ),
+      ];
+      hasLocation.value = true;
+      return;
+    }
+    error.value = null;
+    try {
+      final fix = await GeolocatorSource().current().timeout(
+        const Duration(seconds: 8),
+        onTimeout: () => null,
+      );
+      hasLocation.value = fix != null;
+      final rows = await app.repo.findJobOpenings(
+        latitude: fix?.latitude,
+        longitude: fix?.longitude,
+      );
+      final sched = await app.repo.myJobSchedule();
+      openings.value = rows.map(_Opening.fromRow).toList();
+      bookings.value = sched.map(_Booking.fromRow).toList();
+    } on RepositoryError catch (e) {
+      error.value = e.message;
+      openings.value ??= const [];
+    } catch (_) {
+      error.value = L.jobsLoadFailed;
+      openings.value ??= const [];
+    }
+  }
+
+  static Future<void> request(AppState app, _Opening o) async {
+    if (app.repo.isDemo) {
+      _demoRequested.add(o.id);
+      return load(app);
+    }
+    await app.repo.requestJobOpening(o.id);
+    await load(app);
+  }
+
+  static Future<void> withdraw(AppState app, _Booking b) async {
+    if (app.repo.isDemo) {
+      _demoRequested.remove(b.requestId);
+      return load(app);
+    }
+    await app.repo.withdrawJobRequest(b.requestId);
+    await load(app);
+  }
 }
 
 /// Example openings for the prototype only (Alor Setar, Kedah).
@@ -71,60 +278,51 @@ const _examples = <_Opening>[
     name: 'Kedai Roti Mak Som',
     category: 'Bakery',
     area: 'Taman Uda',
-    km: 2.4,
-    shift: _Shift.morning,
-    time: '7:00 – 11:00 AM',
-    days: 'Mon – Fri',
-    pay: 'RM 45 / shift',
+    km: 2.5,
+    withinRadius: true,
+    radiusKm: 10,
+    start: 7 * 60,
+    end: 11 * 60,
+    days: [1, 2, 3, 4, 5],
+    payAmount: 45,
+    payUnit: 'shift',
     needed: 2,
-    vehicle: 'Motorcycle',
-    color: Color(0xFFC2410C),
-    requirements: ['Motorcycle', 'Own phone'],
+    vehicle: 'motorcycle',
+    requirements: ['Motorbike', 'Own phone'],
   ),
   _Opening(
     id: 'pelita',
     name: 'Nasi Kandar Pelita Jaya',
     category: 'Restaurant',
     area: 'Jalan Langgar',
-    km: 3.1,
-    shift: _Shift.noon,
-    time: '12:00 – 3:00 PM',
-    days: 'Daily',
-    pay: 'RM 40 / shift',
+    km: 3,
+    withinRadius: true,
+    radiusKm: 10,
+    start: 12 * 60,
+    end: 15 * 60,
+    days: [1, 2, 3, 4, 5, 6, 7],
+    payAmount: 40,
+    payUnit: 'shift',
     needed: 3,
-    vehicle: 'Motorcycle',
-    color: Color(0xFF0E7490),
-    requirements: ['Motorcycle', 'Lunch rush'],
-    clash: 'Clashes with Ayam Gepuk Pak Gembus (12:00 – 3:00 PM, Tue).',
-  ),
-  _Opening(
-    id: 'pak-gembus',
-    name: 'Ayam Gepuk Pak Gembus',
-    category: 'Restaurant',
-    area: 'Mergong',
-    km: 4.8,
-    shift: _Shift.noon,
-    time: '12:30 – 3:30 PM',
-    days: 'Sat – Sun',
-    pay: 'RM 9 / drop',
-    needed: 1,
-    vehicle: 'Motorcycle',
-    color: Color(0xFFB91C1C),
-    requirements: ['Motorcycle', 'Weekend'],
+    vehicle: 'motorcycle',
+    requirements: ['Motorbike', 'Lunch rush'],
+    clash: 'Clashes with Ayam Gepuk Pak Gembus (12:00 PM - 3:00 PM)',
   ),
   _Opening(
     id: 'kek-lapis',
     name: 'Kek Lapis Sarawak Mama',
     category: 'Home baker',
     area: 'Anak Bukit',
-    km: 6.2,
-    shift: _Shift.night,
-    time: '6:00 – 9:00 PM',
-    days: 'Fri – Sun',
-    pay: 'RM 50 / shift',
+    km: 6,
+    withinRadius: true,
+    radiusKm: 10,
+    start: 18 * 60,
+    end: 21 * 60,
+    days: [5, 6, 7],
+    payAmount: 50,
+    payUnit: 'shift',
     needed: 1,
-    vehicle: 'Car',
-    color: Color(0xFF7C3AED),
+    vehicle: 'car',
     requirements: ['Car', 'Fragile items'],
   ),
   _Opening(
@@ -132,21 +330,38 @@ const _examples = <_Opening>[
     name: 'Pasar Tani Online Kedah',
     category: 'Groceries',
     area: 'Stargate',
-    km: 7.9,
-    shift: _Shift.morning,
-    time: '8:00 AM – 12:00 PM',
-    days: 'Sat',
-    pay: 'RM 60 / shift',
+    km: 18,
+    withinRadius: false,
+    radiusKm: 10,
+    start: 8 * 60,
+    end: 12 * 60,
+    days: [6],
+    payAmount: 60,
+    payUnit: 'shift',
     needed: 2,
-    vehicle: 'Van',
-    color: Color(0xFF15803D),
+    vehicle: 'van',
     requirements: ['Van', 'Heavy items'],
-    clash: 'Too close to Kedai Roti Mak Som (ends 11:00 AM, 18 km away). A 1 h travel buffer is needed.',
   ),
 ];
 
-/// Prototype session state: which example openings were requested.
-final _requested = ValueNotifier<Set<String>>(<String>{});
+const _demoBookings = <_Booking>[
+  _Booking(
+    requestId: 'b1',
+    approved: true,
+    name: 'Kedai Roti Mak Som',
+    start: 7 * 60,
+    end: 11 * 60,
+    days: [1, 2, 3, 4, 5],
+  ),
+  _Booking(
+    requestId: 'b2',
+    approved: true,
+    name: 'Ayam Gepuk Pak Gembus',
+    start: 12 * 60,
+    end: 15 * 60,
+    days: [2, 6, 7],
+  ),
+];
 
 // ------------------------------------------------------------ D41 Find Jobs
 
@@ -161,25 +376,45 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
   _Shift? _shift;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _Jobs.load(AppScope.read(context));
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    final demo = app.repo.isDemo;
-    return CeffloNavySheetScaffold(
-      header: CeffloScreenHeader(
-        title: L.findJobs,
-        onBell: () => app.go(DRoute.notifications),
-        subtitle: demo ? const _AreaRow() : null,
+    return ValueListenableBuilder<bool>(
+      valueListenable: _Jobs.hasLocation,
+      builder: (context, located, _) => CeffloNavySheetScaffold(
+        header: CeffloScreenHeader(
+          title: L.findJobs,
+          onBell: () => app.go(DRoute.notifications),
+          subtitle: _AreaRow(
+            label: app.repo.isDemo
+                ? 'Alor Setar, Kedah · 10 km'
+                : (located ? L.jobsNearestFirst : L.jobsAllAreas),
+          ),
+        ),
+        body: _body(context, app),
       ),
-      body: demo ? _openings(context, app) : const _ComingSoon(),
     );
   }
 
-  Widget _openings(BuildContext context, AppState app) =>
-      ValueListenableBuilder<Set<String>>(
-        valueListenable: _requested,
-        builder: (context, requested, _) {
+  Widget _body(BuildContext context, AppState app) =>
+      ValueListenableBuilder<List<_Opening>?>(
+        valueListenable: _Jobs.openings,
+        builder: (context, all, _) {
+          if (all == null) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 48),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
           final shown = [
-            for (final o in _examples)
+            for (final o in all)
               if (_shift == null || o.shift == _shift) o,
           ];
           return Column(
@@ -194,27 +429,53 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
                 action: L.openSchedule,
                 onAction: () => app.go(DRoute.mySchedule),
               ),
-              _WeekStrip(requested: requested),
+              ValueListenableBuilder<List<_Booking>>(
+                valueListenable: _Jobs.bookings,
+                builder: (context, b, _) => _WeekStrip(bookings: b),
+              ),
               _SectionRow(title: L.openingsCount(shown.length)),
+              ValueListenableBuilder<String?>(
+                valueListenable: _Jobs.error,
+                builder: (context, e, _) => e == null
+                    ? const SizedBox.shrink()
+                    : Padding(
+                        padding: const EdgeInsets.only(bottom: Gap.md),
+                        child: CeffloNote(
+                          icon: LucideIcons.triangleAlert,
+                          tone: CeffloNoteTone.warning,
+                          body: e,
+                        ),
+                      ),
+              ),
               if (shown.isEmpty)
-                Text(L.noOpeningsShift, style: context.t.bodyMedium)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: Gap.lg),
+                  child: Text(
+                    L.noOpeningsShift,
+                    textAlign: TextAlign.center,
+                    style: context.t.bodyMedium?.copyWith(
+                      color: context.c.textSecondary,
+                    ),
+                  ),
+                )
               else
                 for (final o in shown) ...[
                   _OpeningCard(
                     opening: o,
-                    requested: requested.contains(o.id),
                     onTap: () => app.go(DRoute.jobDetail, entityId: o.id),
                   ),
                   const SizedBox(height: Gap.cardGap),
                 ],
-              const SizedBox(height: Gap.sm),
-              Text(
-                L.previewOnly,
-                textAlign: TextAlign.center,
-                style: context.t.bodySmall?.copyWith(
-                  color: context.c.textSecondary,
+              if (app.repo.isDemo) ...[
+                const SizedBox(height: Gap.sm),
+                Text(
+                  L.previewOnly,
+                  textAlign: TextAlign.center,
+                  style: context.t.bodySmall?.copyWith(
+                    color: context.c.textSecondary,
+                  ),
                 ),
-              ),
+              ],
             ],
           );
         },
@@ -222,7 +483,8 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
 }
 
 class _AreaRow extends StatelessWidget {
-  const _AreaRow();
+  const _AreaRow({required this.label});
+  final String label;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -237,24 +499,15 @@ class _AreaRow extends StatelessWidget {
         children: [
           const Icon(LucideIcons.mapPin, size: 16, color: CefColors.onNavy),
           const SizedBox(width: Gap.sm),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Alor Setar, Kedah · 10 km',
-              style: TextStyle(
+              label,
+              style: const TextStyle(
                 fontFamily: 'Manrope',
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: CefColors.onNavy,
               ),
-            ),
-          ),
-          Text(
-            L.changeArea,
-            style: const TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: CefColors.accent,
             ),
           ),
         ],
@@ -351,14 +604,32 @@ class _SectionRow extends StatelessWidget {
   );
 }
 
-/// Seven days × Morning / Noon / Night: booked slots navy, requested yellow.
+enum _Slot { free, booked, requested }
+
+/// day (0–6) × shift (0–2) → the booking in it, if any.
+List<List<_Booking?>> _grid(List<_Booking> bookings) {
+  final g = List.generate(7, (_) => List<_Booking?>.filled(3, null));
+  for (final b in bookings) {
+    final s = _shiftOf(b.start).index;
+    for (final d in b.days) {
+      final cur = g[d - 1][s];
+      if (cur == null || (!cur.approved && b.approved)) g[d - 1][s] = b;
+    }
+  }
+  return g;
+}
+
+_Slot _slotOf(_Booking? b) =>
+    b == null ? _Slot.free : (b.approved ? _Slot.booked : _Slot.requested);
+
+/// Seven days × Morning / Noon / Night: booked slots blue, requested yellow.
 class _WeekStrip extends StatelessWidget {
-  const _WeekStrip({required this.requested});
-  final Set<String> requested;
+  const _WeekStrip({required this.bookings});
+  final List<_Booking> bookings;
 
   @override
   Widget build(BuildContext context) {
-    final grid = _weekGrid(requested);
+    final grid = _grid(bookings);
     const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     return Row(
       children: [
@@ -377,15 +648,15 @@ class _WeekStrip extends StatelessWidget {
                       color: context.c.textSecondary,
                     ),
                   ),
-                  for (final s in grid[d]) ...[
+                  for (final b in grid[d]) ...[
                     const SizedBox(height: 3),
                     Container(
                       height: 14,
                       decoration: BoxDecoration(
-                        color: switch (s) {
+                        color: switch (_slotOf(b)) {
                           _Slot.booked => const Color(0xFF005CC4),
                           _Slot.requested => CefColors.accent,
-                          _ => CefColors.tintInfo,
+                          _Slot.free => CefColors.tintInfo,
                         },
                         borderRadius: BorderRadius.circular(4),
                       ),
@@ -400,37 +671,10 @@ class _WeekStrip extends StatelessWidget {
   }
 }
 
-enum _Slot { free, booked, requested, buffer }
-
-/// The prototype week: Mak Som every weekday morning, Pak Gembus Tuesday
-/// noon, Pelita Jaya weekend noon; requests show as requested.
-List<List<_Slot>> _weekGrid(Set<String> requested) {
-  final g = List.generate(7, (_) => List.filled(3, _Slot.free));
-  for (var d = 0; d < 5; d++) {
-    g[d][0] = _Slot.booked;
-  }
-  g[0][1] = _Slot.buffer;
-  g[1][1] = _Slot.booked;
-  g[5][1] = g[6][1] = requested.contains('pak-gembus')
-      ? _Slot.requested
-      : _Slot.booked;
-  if (requested.contains('kek-lapis')) {
-    for (final d in [4, 5, 6]) {
-      g[d][2] = _Slot.requested;
-    }
-  }
-  return g;
-}
-
 class _OpeningCard extends StatelessWidget {
-  const _OpeningCard({
-    required this.opening,
-    required this.requested,
-    required this.onTap,
-  });
+  const _OpeningCard({required this.opening, required this.onTap});
 
   final _Opening opening;
-  final bool requested;
   final VoidCallback onTap;
 
   @override
@@ -453,7 +697,7 @@ class _OpeningCard extends StatelessWidget {
                   children: [
                     Text(o.name, style: context.t.titleSmall),
                     Text(
-                      '${o.category} · ${o.area} · ${o.km} km',
+                      o.meta,
                       style: context.t.bodySmall?.copyWith(
                         color: context.c.textSecondary,
                       ),
@@ -462,7 +706,7 @@ class _OpeningCard extends StatelessWidget {
                 ),
               ),
               Text(
-                o.pay.split(' / ').first,
+                'RM ${_num(o.payAmount)}',
                 style: context.t.titleSmall?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
@@ -476,8 +720,14 @@ class _OpeningCard extends StatelessWidget {
             children: [
               _Pill(_shiftLabel(o.shift)),
               _Pill(o.time),
-              _Pill(o.days),
-              if (requested)
+              _Pill(_daysLabel(o.days)),
+              if (o.withinRadius == true)
+                _Pill(L.jobWithin(_num(o.radiusKm)), tone: _PillTone.success)
+              else if (o.km != null)
+                _Pill(L.jobAway(_num(o.km!))),
+              if (o.myStatus == 'approved')
+                _Pill(L.slotBooked, tone: _PillTone.success)
+              else if (o.myStatus == 'pending')
                 _Pill(L.jobRequested, tone: _PillTone.success)
               else if (o.clash != null)
                 _Pill(L.jobClash, tone: _PillTone.warning)
@@ -548,74 +798,63 @@ class _Pill extends StatelessWidget {
   }
 }
 
-class _ComingSoon extends StatelessWidget {
-  const _ComingSoon();
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: Gap.xl),
-    child: Column(
-      children: [
-        Container(
-          width: 72,
-          height: 72,
-          decoration: const BoxDecoration(
-            color: CefColors.tintInfo,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            LucideIcons.searchCheck,
-            size: 32,
-            color: CefColors.navy,
-          ),
-        ),
-        const SizedBox(height: Gap.lg),
-        Text(
-          L.findJobsComingSoonTitle,
-          textAlign: TextAlign.center,
-          style: context.t.titleMedium,
-        ),
-        const SizedBox(height: Gap.sm),
-        Text(
-          L.findJobsComingSoonBody,
-          textAlign: TextAlign.center,
-          style: context.t.bodyMedium?.copyWith(color: context.c.textSecondary),
-        ),
-      ],
-    ),
-  );
-}
-
 // ------------------------------------------------------ D41.1 Job details
 
-class JobDetailScreen extends StatelessWidget {
+class JobDetailScreen extends StatefulWidget {
   const JobDetailScreen({super.key, required this.jobId});
   final String jobId;
 
   @override
+  State<JobDetailScreen> createState() => _JobDetailScreenState();
+}
+
+class _JobDetailScreenState extends State<JobDetailScreen> {
+  bool _busy = false;
+
+  Future<void> _request(AppState app, _Opening o) async {
+    setState(() => _busy = true);
+    try {
+      await _Jobs.request(app, o);
+    } on RepositoryError catch (e) {
+      if (mounted) showCefToast(context, e.message, error: true);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    final index = _examples.indexWhere((o) => o.id == jobId);
-    if (!app.repo.isDemo || index < 0) {
-      return CeffloNavySheetScaffold(
-        header: CeffloScreenHeader(title: L.findJobs, onBack: app.back),
-        body: const _ComingSoon(),
-      );
-    }
-    final o = _examples[index];
-    final next = _examples[(index + 1) % _examples.length];
-    return ValueListenableBuilder<Set<String>>(
-      valueListenable: _requested,
-      builder: (context, requested, _) {
-        final sent = requested.contains(o.id);
+    return ValueListenableBuilder<List<_Opening>?>(
+      valueListenable: _Jobs.openings,
+      builder: (context, all, _) {
+        final list = all ?? const <_Opening>[];
+        final index = list.indexWhere((o) => o.id == widget.jobId);
+        if (index < 0) {
+          return CeffloNavySheetScaffold(
+            header: CeffloScreenHeader(title: L.findJobs, onBack: app.back),
+            body: Padding(
+              padding: const EdgeInsets.symmetric(vertical: Gap.xl),
+              child: Text(
+                L.noOpeningsShift,
+                textAlign: TextAlign.center,
+                style: context.t.bodyMedium,
+              ),
+            ),
+          );
+        }
+        final o = list[index];
+        final next = list[(index + 1) % list.length];
+        final sent = o.myStatus != null;
         final blocked = !sent && o.clash != null;
+        final radius = L.jobWithin(_num(o.radiusKm));
         return CeffloNavySheetScaffold(
           header: CeffloScreenHeader(
             title: o.name,
             onBack: app.back,
             onBell: () => app.go(DRoute.notifications),
             subtitle: Text(
-              '${o.category} · ${o.area} · ${o.km} km',
+              o.meta,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontFamily: 'Manrope',
@@ -630,16 +869,24 @@ class JobDetailScreen extends StatelessWidget {
               const _ZoneMap(),
               _SectionRow(title: L.jobShift),
               _Kv(L.jobTime, '${_shiftLabel(o.shift)} · ${o.time}'),
-              _Kv(L.jobDays, o.days),
+              _Kv(L.jobDays, _daysLabel(o.days)),
               _Kv(L.jobPay, o.pay),
               _Kv(L.jobRidersNeeded, '${o.needed}'),
-              _Kv(L.jobVehicle, o.vehicle),
-              _SectionRow(title: L.jobRequirements),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [for (final r in o.requirements) _Pill(r)],
+              _Kv(L.jobVehicle, _vehicleLabel(o.vehicle)),
+              _Kv(
+                L.jobRadius,
+                o.withinRadius != true && o.km != null
+                    ? '$radius · ${L.jobAway(_num(o.km!))}'
+                    : radius,
               ),
+              if (o.requirements.isNotEmpty) ...[
+                _SectionRow(title: L.jobRequirements),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [for (final r in o.requirements) _Pill(r)],
+                ),
+              ],
               const SizedBox(height: Gap.lg),
               CeffloNote(
                 icon: blocked ? LucideIcons.triangleAlert : LucideIcons.info,
@@ -655,20 +902,21 @@ class JobDetailScreen extends StatelessWidget {
             children: [
               CeffloPrimaryButton(
                 sent ? L.requestSent : L.requestToJoin,
-                onTap: sent || blocked
-                    ? null
-                    : () => _requested.value = {...requested, o.id},
+                busy: _busy,
+                onTap: sent || blocked || _busy ? null : () => _request(app, o),
               ),
-              const SizedBox(height: Gap.sm),
-              CeffloSecondaryButton(
-                L.nextOpening,
-                trailingChevron: true,
-                onTap: () {
-                  // Swap this opening for the next (no history pile-up).
-                  app.back();
-                  app.go(DRoute.jobDetail, entityId: next.id);
-                },
-              ),
+              if (list.length > 1) ...[
+                const SizedBox(height: Gap.sm),
+                CeffloSecondaryButton(
+                  L.nextOpening,
+                  trailingChevron: true,
+                  onTap: () {
+                    // Swap this opening for the next (no history pile-up).
+                    app.back();
+                    app.go(DRoute.jobDetail, entityId: next.id);
+                  },
+                ),
+              ],
             ],
           ),
         );
@@ -762,27 +1010,76 @@ class _Kv extends StatelessWidget {
 
 // ----------------------------------------------------- D41.2 My Schedule
 
-class MyScheduleScreen extends StatelessWidget {
+class MyScheduleScreen extends StatefulWidget {
   const MyScheduleScreen({super.key});
+
+  @override
+  State<MyScheduleScreen> createState() => _MyScheduleScreenState();
+}
+
+class _MyScheduleScreenState extends State<MyScheduleScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _Jobs.load(AppScope.read(context));
+    });
+  }
+
+  Future<void> _release(AppState app, List<_Booking> bookings) async {
+    final picked = await showModalBottomSheet<_Booking>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheet) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, Gap.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(L.releaseSlot, style: sheet.t.titleMedium),
+              const SizedBox(height: Gap.md),
+              for (final b in bookings)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(b.name),
+                  subtitle: Text(
+                    '${_daysLabel(b.days)} · ${_clock(b.start)} – ${_clock(b.end)}'
+                    '${b.approved ? '' : ' · ${L.slotRequested}'}',
+                  ),
+                  trailing: TextButton(
+                    onPressed: () => Navigator.of(sheet).pop(b),
+                    child: Text(L.withdrawBooking),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (picked == null || !mounted) return;
+    try {
+      await _Jobs.withdraw(app, picked);
+      if (mounted) showCefToast(context, L.bookingWithdrawn);
+    } on RepositoryError catch (e) {
+      if (mounted) showCefToast(context, e.message, error: true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    if (!app.repo.isDemo) {
-      return CeffloNavySheetScaffold(
-        header: CeffloScreenHeader(title: L.mySchedule, onBack: app.back),
-        body: const _ComingSoon(),
-      );
-    }
-    return ValueListenableBuilder<Set<String>>(
-      valueListenable: _requested,
-      builder: (context, requested, _) => CeffloNavySheetScaffold(
+    return ValueListenableBuilder<List<_Booking>>(
+      valueListenable: _Jobs.bookings,
+      builder: (context, bookings, _) => CeffloNavySheetScaffold(
         header: CeffloScreenHeader(
           title: L.mySchedule,
           onBack: app.back,
           onBell: () => app.go(DRoute.notifications),
           subtitle: Text(
-            L.scheduleWeekSub,
+            app.repo.isDemo
+                ? L.scheduleWeekSub
+                : L.scheduleCount(bookings.length),
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontFamily: 'Manrope',
@@ -794,7 +1091,7 @@ class MyScheduleScreen extends StatelessWidget {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _ScheduleGrid(requested: requested),
+            _ScheduleGrid(bookings: bookings),
             const SizedBox(height: Gap.md),
             Wrap(
               spacing: 14,
@@ -802,40 +1099,33 @@ class MyScheduleScreen extends StatelessWidget {
               children: [
                 _Legend(CefColors.navy, L.slotBooked),
                 _Legend(const Color(0xFFFFF4CC), L.slotRequested),
-                _Legend(const Color(0xFFE8ECF3), L.slotTravelBuffer),
               ],
             ),
             const SizedBox(height: Gap.lg),
-            CeffloNote(icon: LucideIcons.info, body: L.scheduleNote),
+            CeffloNote(
+              icon: LucideIcons.info,
+              body: bookings.isEmpty ? L.noBookingsYet : L.scheduleNote,
+            ),
           ],
         ),
-        footer: CeffloSecondaryButton(L.releaseSlot, onTap: () {}),
+        footer: bookings.isEmpty
+            ? null
+            : CeffloSecondaryButton(
+                L.releaseSlot,
+                onTap: () => _release(app, bookings),
+              ),
       ),
     );
   }
 }
 
 class _ScheduleGrid extends StatelessWidget {
-  const _ScheduleGrid({required this.requested});
-  final Set<String> requested;
+  const _ScheduleGrid({required this.bookings});
+  final List<_Booking> bookings;
 
   @override
   Widget build(BuildContext context) {
-    final grid = _weekGrid(requested);
-    final days = [L.mon, L.tue, L.wed, L.thu, L.fri, L.sat, L.sun];
-    String? vendor(int d, int s) => switch ((d, s)) {
-      (< 5, 0) => 'Mak Som',
-      (1, 1) => 'Pak Gembus',
-      (> 4, 1) =>
-        requested.contains('pak-gembus') ? 'Pak Gembus' : 'Pelita Jaya',
-      (> 3, 2) => 'Kek Lapis',
-      _ => null,
-    };
-    String? hours(int d, int s) => switch ((d, s)) {
-      (< 5, 0) => '7 – 11 AM',
-      (_, 1) => '12 – 3 PM',
-      _ => null,
-    };
+    final grid = _grid(bookings);
     final head = TextStyle(
       fontFamily: 'Manrope',
       fontSize: 11.5,
@@ -861,7 +1151,7 @@ class _ScheduleGrid extends StatelessWidget {
                 SizedBox(
                   width: 44,
                   child: Text(
-                    days[d],
+                    _dayNames[d],
                     style: head.copyWith(color: context.c.textPrimary),
                   ),
                 ),
@@ -869,13 +1159,7 @@ class _ScheduleGrid extends StatelessWidget {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 2.5),
-                      child: _SlotTile(
-                        slot: grid[d][s],
-                        vendor: vendor(d, s),
-                        hours: grid[d][s] == _Slot.requested
-                            ? L.slotRequested
-                            : hours(d, s),
-                      ),
+                      child: _SlotTile(booking: grid[d][s]),
                     ),
                   ),
               ],
@@ -887,16 +1171,15 @@ class _ScheduleGrid extends StatelessWidget {
 }
 
 class _SlotTile extends StatelessWidget {
-  const _SlotTile({required this.slot, this.vendor, this.hours});
-  final _Slot slot;
-  final String? vendor, hours;
+  const _SlotTile({this.booking});
+  final _Booking? booking;
 
   @override
   Widget build(BuildContext context) {
-    final (bg, fg) = switch (slot) {
+    final b = booking;
+    final (bg, fg) = switch (_slotOf(b)) {
       _Slot.booked => (CefColors.navy, Colors.white),
       _Slot.requested => (const Color(0xFFFFF4CC), const Color(0xFF5B4500)),
-      _Slot.buffer => (const Color(0xFFE8ECF3), context.c.textSecondary),
       _Slot.free => (CefColors.tintInfo, context.c.textSecondary),
     };
     return Container(
@@ -907,41 +1190,37 @@ class _SlotTile extends StatelessWidget {
         color: bg,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: switch (slot) {
-        _Slot.free => const SizedBox.shrink(),
-        _Slot.buffer => Text(
-          L.slotTravelBuffer,
-          style: TextStyle(fontFamily: 'Manrope', fontSize: 10.5, color: fg),
-        ),
-        _ => Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              vendor ?? '',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-                color: fg,
-              ),
-            ),
-            if (hours != null)
-              Text(
-                hours!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 10.5,
-                  color: fg.withValues(alpha: .85),
+      child: b == null
+          ? const SizedBox.shrink()
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  b.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: fg,
+                  ),
                 ),
-              ),
-          ],
-        ),
-      },
+                Text(
+                  b.approved
+                      ? '${_clock(b.start)} – ${_clock(b.end)}'
+                      : L.slotRequested,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 10.5,
+                    color: fg.withValues(alpha: .85),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }

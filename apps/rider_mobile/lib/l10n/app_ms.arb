@@ -506,5 +506,20 @@
   "slotTravelBuffer": "Masa perjalanan",
   "scheduleNote": "Anda boleh bekerja dengan vendor yang sama untuk lebih daripada satu slot, atau dengan vendor berbeza, asalkan masa tidak bertindih.",
   "releaseSlot": "Lepaskan slot",
-  "previewOnly": "Pratonton: contoh kekosongan"
+  "previewOnly": "Pratonton: contoh kekosongan",
+  "perShift": "/ syif",
+  "perDrop": "/ hantaran",
+  "perHour": "/ jam",
+  "jobWithin": "Dalam {km} km",
+  "jobAway": "{km} km dari anda",
+  "jobsNearestFirst": "Terdekat dahulu · seluruh Malaysia",
+  "jobsAllAreas": "Semua kawasan · hidupkan lokasi untuk jarak",
+  "jobDaily": "Setiap hari",
+  "scheduleCount": "{count} tempahan",
+  "withdrawBooking": "Tarik balik",
+  "bookingWithdrawn": "Tempahan ditarik balik",
+  "noBookingsYet": "Belum ada tempahan. Mohon kekosongan di Cari Kerja.",
+  "jobsLoadFailed": "Tidak dapat memuatkan kekosongan. Cuba lagi.",
+  "retry2": "Cuba lagi",
+  "jobRadius": "Radius"
 }

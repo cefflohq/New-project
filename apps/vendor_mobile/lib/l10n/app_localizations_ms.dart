@@ -3730,4 +3730,97 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get keepLoggedIn => 'Kekal log masuk';
+
+  @override
+  String get lookingForRiders => 'Mencari rider';
+
+  @override
+  String get lookingForRidersOff =>
+      'Tutup. Hanya rider yang anda jemput boleh sertai.';
+
+  @override
+  String get lookingForRidersOn =>
+      'Buka. Driver boleh lihat kekosongan anda di Cari Kerja.';
+
+  @override
+  String get addOpening => 'Tambah kekosongan';
+
+  @override
+  String get postOpening => 'Siarkan kekosongan';
+
+  @override
+  String get closeOpening => 'Tutup';
+
+  @override
+  String get openingArea => 'Kawasan';
+
+  @override
+  String get openingAreaHint => 'cth. Taman Uda, Alor Setar';
+
+  @override
+  String get openingDays => 'Hari';
+
+  @override
+  String get openingStart => 'Mula';
+
+  @override
+  String get openingEnd => 'Tamat';
+
+  @override
+  String get openingVehicle => 'Kenderaan';
+
+  @override
+  String get openingPay => 'Bayaran (RM)';
+
+  @override
+  String get openingPayUnit => 'Setiap';
+
+  @override
+  String get payShift => 'syif';
+
+  @override
+  String get payDrop => 'hantaran';
+
+  @override
+  String get payHour => 'jam';
+
+  @override
+  String get openingRidersNeeded => 'Rider diperlukan';
+
+  @override
+  String openingRadius(String km) {
+    return 'Radius rider: $km km';
+  }
+
+  @override
+  String get openingPosted => 'Kekosongan disiarkan';
+
+  @override
+  String get openingClosed => 'Kekosongan ditutup';
+
+  @override
+  String get newOpening => 'Kekosongan baharu';
+
+  @override
+  String get openingFixFields =>
+      'Isi kawasan, hari, masa yang sah dan bayaran.';
+
+  @override
+  String get turnOffHiringTitle => 'Berhenti mencari rider?';
+
+  @override
+  String get turnOffHiringBody =>
+      'Semua kekosongan anda akan ditutup. Permintaan yang sudah dihantar kekal dalam Menunggu.';
+
+  @override
+  String get turnOff => 'Tutup';
+
+  @override
+  String get vehMotorbike => 'Motosikal';
+
+  @override
+  String get vehCar => 'Kereta';
+
+  @override
+  String get vehVan => 'Van';
 }

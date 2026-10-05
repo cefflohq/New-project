@@ -1712,4 +1712,56 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get previewOnly => 'Pratonton: contoh kekosongan';
+
+  @override
+  String get perShift => '/ syif';
+
+  @override
+  String get perDrop => '/ hantaran';
+
+  @override
+  String get perHour => '/ jam';
+
+  @override
+  String jobWithin(String km) {
+    return 'Dalam $km km';
+  }
+
+  @override
+  String jobAway(String km) {
+    return '$km km dari anda';
+  }
+
+  @override
+  String get jobsNearestFirst => 'Terdekat dahulu · seluruh Malaysia';
+
+  @override
+  String get jobsAllAreas => 'Semua kawasan · hidupkan lokasi untuk jarak';
+
+  @override
+  String get jobDaily => 'Setiap hari';
+
+  @override
+  String scheduleCount(int count) {
+    return '$count tempahan';
+  }
+
+  @override
+  String get withdrawBooking => 'Tarik balik';
+
+  @override
+  String get bookingWithdrawn => 'Tempahan ditarik balik';
+
+  @override
+  String get noBookingsYet =>
+      'Belum ada tempahan. Mohon kekosongan di Cari Kerja.';
+
+  @override
+  String get jobsLoadFailed => 'Tidak dapat memuatkan kekosongan. Cuba lagi.';
+
+  @override
+  String get retry2 => 'Cuba lagi';
+
+  @override
+  String get jobRadius => 'Radius';
 }

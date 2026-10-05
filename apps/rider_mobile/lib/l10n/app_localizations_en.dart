@@ -1700,4 +1700,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get previewOnly => 'Preview: example openings';
+
+  @override
+  String get perShift => '/ shift';
+
+  @override
+  String get perDrop => '/ drop';
+
+  @override
+  String get perHour => '/ hour';
+
+  @override
+  String jobWithin(String km) {
+    return 'Within $km km';
+  }
+
+  @override
+  String jobAway(String km) {
+    return '$km km away';
+  }
+
+  @override
+  String get jobsNearestFirst => 'Nearest first · all of Malaysia';
+
+  @override
+  String get jobsAllAreas => 'All areas · turn on location for distance';
+
+  @override
+  String get jobDaily => 'Daily';
+
+  @override
+  String scheduleCount(int count) {
+    return '$count bookings';
+  }
+
+  @override
+  String get withdrawBooking => 'Withdraw';
+
+  @override
+  String get bookingWithdrawn => 'Booking withdrawn';
+
+  @override
+  String get noBookingsYet =>
+      'No bookings yet. Request an opening in Find Jobs.';
+
+  @override
+  String get jobsLoadFailed => 'Could not load openings. Pull to try again.';
+
+  @override
+  String get retry2 => 'Try again';
+
+  @override
+  String get jobRadius => 'Radius';
 }

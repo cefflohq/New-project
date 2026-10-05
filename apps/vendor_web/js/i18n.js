@@ -116,6 +116,13 @@ const en = {
   
   'riders.copy': 'Copy link', 'riders.copied': 'Link copied', 'riders.noHistory': 'No orders yet.',
   'veh.motorcycle': 'Motorcycle', 'veh.car': 'Car', 'veh.van': 'Van',
+  'hire.title': 'Looking for riders', 'hire.off': 'Off. Only riders you invite can join.', 'hire.on': 'On. Drivers can see your openings in Find Jobs.',
+  'hire.add': 'Add opening', 'hire.post': 'Post opening', 'hire.close': 'Close', 'hire.new': 'New opening', 'hire.area': 'Area', 'hire.areaHint': 'e.g. Taman Uda, Alor Setar',
+  'hire.days': 'Days', 'hire.start': 'Start', 'hire.end': 'End', 'hire.vehicle': 'Vehicle', 'hire.pay': 'Pay (RM)', 'hire.per': 'Per',
+  'hire.shift': 'shift', 'hire.drop': 'drop', 'hire.hour': 'hour', 'hire.needed': 'Riders needed', 'hire.radius': 'Rider radius: {km} km',
+  'hire.posted': 'Opening posted', 'hire.closed': 'Opening closed', 'hire.fix': 'Fill in the area, days, a valid time and pay.',
+  'hire.offTitle': 'Stop looking for riders?', 'hire.offBody': 'All your open openings will close. Requests already sent stay in Pending.', 'hire.turnOff': 'Turn off',
+  'hire.d1': 'Mon', 'hire.d2': 'Tue', 'hire.d3': 'Wed', 'hire.d4': 'Thu', 'hire.d5': 'Fri', 'hire.d6': 'Sat', 'hire.d7': 'Sun',
   // zones
   'zones.title': 'Zones', 'zones.zone': 'Zone', 'zones.search': 'Search zone…', 'zones.total': 'Total Orders',
   'zones.completed': 'Completed', 'zones.ongoing': 'Ongoing', 'zones.issues': 'Issues', 'zones.status': 'Status',
@@ -386,6 +393,13 @@ const ms = {
   
   'riders.copy': 'Salin pautan', 'riders.copied': 'Pautan disalin', 'riders.noHistory': 'Belum ada pesanan.',
   'veh.motorcycle': 'Motosikal', 'veh.car': 'Kereta', 'veh.van': 'Van',
+  'hire.title': 'Mencari rider', 'hire.off': 'Tutup. Hanya rider yang anda jemput boleh sertai.', 'hire.on': 'Buka. Driver boleh lihat kekosongan anda di Cari Kerja.',
+  'hire.add': 'Tambah kekosongan', 'hire.post': 'Siarkan kekosongan', 'hire.close': 'Tutup', 'hire.new': 'Kekosongan baharu', 'hire.area': 'Kawasan', 'hire.areaHint': 'cth. Taman Uda, Alor Setar',
+  'hire.days': 'Hari', 'hire.start': 'Mula', 'hire.end': 'Tamat', 'hire.vehicle': 'Kenderaan', 'hire.pay': 'Bayaran (RM)', 'hire.per': 'Setiap',
+  'hire.shift': 'syif', 'hire.drop': 'hantaran', 'hire.hour': 'jam', 'hire.needed': 'Rider diperlukan', 'hire.radius': 'Radius rider: {km} km',
+  'hire.posted': 'Kekosongan disiarkan', 'hire.closed': 'Kekosongan ditutup', 'hire.fix': 'Isi kawasan, hari, masa yang sah dan bayaran.',
+  'hire.offTitle': 'Berhenti mencari rider?', 'hire.offBody': 'Semua kekosongan anda akan ditutup. Permintaan yang sudah dihantar kekal dalam Menunggu.', 'hire.turnOff': 'Tutup',
+  'hire.d1': 'Isn', 'hire.d2': 'Sel', 'hire.d3': 'Rab', 'hire.d4': 'Kha', 'hire.d5': 'Jum', 'hire.d6': 'Sab', 'hire.d7': 'Ahd',
   'zones.title': 'Zon', 'zones.zone': 'Zon', 'zones.search': 'Cari zon…', 'zones.total': 'Jumlah Pesanan', 'zones.completed': 'Selesai',
   'zones.ongoing': 'Berjalan', 'zones.issues': 'Isu', 'zones.status': 'Status', 'zones.ongoingOrders': 'Pesanan Berjalan ({n})',
   'zones.completedOrders': 'Selesai ({n})', 'zones.issuesOrders': 'Isu ({n})', 'zones.viewAllOrders': 'Lihat Semua Pesanan di {z}',

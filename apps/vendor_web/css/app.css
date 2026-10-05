@@ -556,3 +556,16 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
   .row-card .grow { min-width: 0; }
   .inline-field { flex-wrap: wrap; }
 }
+
+/* D-75 Looking for riders (Riders page, Owner) */
+.hire { padding: 14px 16px; border-bottom: 1px solid var(--border); display: grid; gap: 10px; }
+.hire-h { display: flex; align-items: center; gap: 12px; }
+.hire-h > div { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.hire-h small, .hire-row small { color: var(--text-2, #6B7A94); font-size: 12.5px; }
+.hire-list { display: grid; gap: 8px; justify-items: start; }
+.hire-row { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2, #F4F6FA); }
+.hire-row > div { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.hire-form .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.hire-form .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.chip-btn { border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; color: inherit; }
+.chip-btn.on { background: var(--primary); border-color: var(--primary); color: #fff; }

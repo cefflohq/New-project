@@ -3139,6 +3139,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Preview: example openings'**
   String get previewOnly;
+
+  /// No description provided for @perShift.
+  ///
+  /// In en, this message translates to:
+  /// **'/ shift'**
+  String get perShift;
+
+  /// No description provided for @perDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'/ drop'**
+  String get perDrop;
+
+  /// No description provided for @perHour.
+  ///
+  /// In en, this message translates to:
+  /// **'/ hour'**
+  String get perHour;
+
+  /// No description provided for @jobWithin.
+  ///
+  /// In en, this message translates to:
+  /// **'Within {km} km'**
+  String jobWithin(String km);
+
+  /// No description provided for @jobAway.
+  ///
+  /// In en, this message translates to:
+  /// **'{km} km away'**
+  String jobAway(String km);
+
+  /// No description provided for @jobsNearestFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearest first · all of Malaysia'**
+  String get jobsNearestFirst;
+
+  /// No description provided for @jobsAllAreas.
+  ///
+  /// In en, this message translates to:
+  /// **'All areas · turn on location for distance'**
+  String get jobsAllAreas;
+
+  /// No description provided for @jobDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get jobDaily;
+
+  /// No description provided for @scheduleCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} bookings'**
+  String scheduleCount(int count);
+
+  /// No description provided for @withdrawBooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get withdrawBooking;
+
+  /// No description provided for @bookingWithdrawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking withdrawn'**
+  String get bookingWithdrawn;
+
+  /// No description provided for @noBookingsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No bookings yet. Request an opening in Find Jobs.'**
+  String get noBookingsYet;
+
+  /// No description provided for @jobsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load openings. Pull to try again.'**
+  String get jobsLoadFailed;
+
+  /// No description provided for @retry2.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get retry2;
+
+  /// No description provided for @jobRadius.
+  ///
+  /// In en, this message translates to:
+  /// **'Radius'**
+  String get jobRadius;
 }
 
 class _AppLocalizationsDelegate

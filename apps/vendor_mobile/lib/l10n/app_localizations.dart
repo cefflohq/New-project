@@ -6800,6 +6800,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep me logged in'**
   String get keepLoggedIn;
+
+  /// No description provided for @lookingForRiders.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for riders'**
+  String get lookingForRiders;
+
+  /// No description provided for @lookingForRidersOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off. Only riders you invite can join.'**
+  String get lookingForRidersOff;
+
+  /// No description provided for @lookingForRidersOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On. Drivers can see your openings in Find Jobs.'**
+  String get lookingForRidersOn;
+
+  /// No description provided for @addOpening.
+  ///
+  /// In en, this message translates to:
+  /// **'Add opening'**
+  String get addOpening;
+
+  /// No description provided for @postOpening.
+  ///
+  /// In en, this message translates to:
+  /// **'Post opening'**
+  String get postOpening;
+
+  /// No description provided for @closeOpening.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get closeOpening;
+
+  /// No description provided for @openingArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Area'**
+  String get openingArea;
+
+  /// No description provided for @openingAreaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Taman Uda, Alor Setar'**
+  String get openingAreaHint;
+
+  /// No description provided for @openingDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days'**
+  String get openingDays;
+
+  /// No description provided for @openingStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get openingStart;
+
+  /// No description provided for @openingEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get openingEnd;
+
+  /// No description provided for @openingVehicle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle'**
+  String get openingVehicle;
+
+  /// No description provided for @openingPay.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay (RM)'**
+  String get openingPay;
+
+  /// No description provided for @openingPayUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Per'**
+  String get openingPayUnit;
+
+  /// No description provided for @payShift.
+  ///
+  /// In en, this message translates to:
+  /// **'shift'**
+  String get payShift;
+
+  /// No description provided for @payDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'drop'**
+  String get payDrop;
+
+  /// No description provided for @payHour.
+  ///
+  /// In en, this message translates to:
+  /// **'hour'**
+  String get payHour;
+
+  /// No description provided for @openingRidersNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Riders needed'**
+  String get openingRidersNeeded;
+
+  /// No description provided for @openingRadius.
+  ///
+  /// In en, this message translates to:
+  /// **'Rider radius: {km} km'**
+  String openingRadius(String km);
+
+  /// No description provided for @openingPosted.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening posted'**
+  String get openingPosted;
+
+  /// No description provided for @openingClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening closed'**
+  String get openingClosed;
+
+  /// No description provided for @newOpening.
+  ///
+  /// In en, this message translates to:
+  /// **'New opening'**
+  String get newOpening;
+
+  /// No description provided for @openingFixFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in the area, days, a valid time and pay.'**
+  String get openingFixFields;
+
+  /// No description provided for @turnOffHiringTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop looking for riders?'**
+  String get turnOffHiringTitle;
+
+  /// No description provided for @turnOffHiringBody.
+  ///
+  /// In en, this message translates to:
+  /// **'All your open openings will close. Requests already sent stay in Pending.'**
+  String get turnOffHiringBody;
+
+  /// No description provided for @turnOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off'**
+  String get turnOff;
+
+  /// No description provided for @vehMotorbike.
+  ///
+  /// In en, this message translates to:
+  /// **'Motorbike'**
+  String get vehMotorbike;
+
+  /// No description provided for @vehCar.
+  ///
+  /// In en, this message translates to:
+  /// **'Car'**
+  String get vehCar;
+
+  /// No description provided for @vehVan.
+  ///
+  /// In en, this message translates to:
+  /// **'Van'**
+  String get vehVan;
 }
 
 class _AppLocalizationsDelegate

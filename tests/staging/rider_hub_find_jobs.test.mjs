@@ -1,0 +1,118 @@
+// Rider Hub (D-75) staging security tests. Staging only; refuses any other project.
+const URL_ = process.env.SUPABASE_URL, KEY = process.env.SUPABASE_PUBLISHABLE_KEY, SVC = process.env.SUPABASE_SECRET_KEY;
+if (!URL_.includes('tomvvmwktehexwhktenw')) throw new Error('not staging');
+const PW = 'Cf-v1004-Verify!9', mail = r => `zelix.co00+v1004${r}@gmail.com`;
+const results = []; let fails = 0;
+const ok = (name, cond, extra = '') => { results.push(`${cond ? 'PASS' : 'FAIL'}  ${name}${extra ? '  -> ' + extra : ''}`); if (!cond) fails++; };
+async function signIn(email, password = PW) {
+  const r = await fetch(`${URL_}/auth/v1/token?grant_type=password`, { method: 'POST', headers: { apikey: KEY, 'content-type': 'application/json' }, body: JSON.stringify({ email, password }) });
+  const j = await r.json(); if (!j.access_token) throw new Error('signin ' + email + ' ' + JSON.stringify(j)); return j.access_token;
+}
+async function rpc(tok, name, body = {}) {
+  const r = await fetch(`${URL_}/rest/v1/rpc/${name}`, { method: 'POST', headers: { apikey: KEY, authorization: `Bearer ${tok || KEY}`, 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const t = await r.text(); let j; try { j = JSON.parse(t); } catch { j = t; } return { status: r.status, body: j };
+}
+async function sel(tok, path) {
+  const r = await fetch(`${URL_}/rest/v1/${path}`, { headers: { apikey: KEY, authorization: `Bearer ${tok}` } }); return { status: r.status, body: await r.json().catch(() => null) };
+}
+async function ins(tok, table, row) {
+  const r = await fetch(`${URL_}/rest/v1/${table}`, { method: 'POST', headers: { apikey: KEY, authorization: `Bearer ${tok}`, 'content-type': 'application/json', prefer: 'return=representation' }, body: JSON.stringify(row) }); return r.status;
+}
+const err = res => (res.body && (res.body.message || res.body.hint)) || JSON.stringify(res.body);
+
+// fresh applicant (admin API, staging)
+const appEmail = `zelix.co00+v1005jobs${Date.now() % 100000}@gmail.com`, appPw = 'Cf-v1005-Jobs!7';
+const cu = await fetch(`${URL_}/auth/v1/admin/users`, { method: 'POST', headers: { apikey: SVC, authorization: `Bearer ${SVC}`, 'content-type': 'application/json' },
+  body: JSON.stringify({ email: appEmail, password: appPw, email_confirm: true, user_metadata: { full_name: '[TEST] Jobs Applicant', driver_registration: { full_name: '[TEST] Jobs Applicant', phone: '+60 11-' + String(Date.now()).slice(-7), vehicle_type: 'motorcycle', vehicle_plate: 'KDH 1005' } } }) });
+ok('setup: create applicant (staging admin)', cu.ok, cu.ok ? appEmail : await cu.text());
+
+const owner = await signIn(mail('owner')), operator = await signIn(mail('operator')), helper = await signIn(mail('helper')), outsider = await signIn(mail('outsider'));
+const applicant = await signIn(appEmail, appPw);
+const vendorB = await signIn(process.env.STAGING_VENDOR_B_EMAIL, process.env.STAGING_VENDOR_B_PASSWORD);
+const biz = (await rpc(owner, 'get_my_businesses')).body.find(b => b.member_role === 'owner');
+ok('setup: owner business', !!biz, biz && biz.business_name);
+const B = biz.business_id;
+const opening = (extra = {}) => ({ p_business_id: B, p_area_label: 'Taman Uda', p_shift_start: '07:00', p_shift_end: '11:00', p_days: [1, 2, 3, 4, 5], p_vehicle_type: 'motorcycle', p_pay_amount: 45, p_pay_unit: 'shift', p_riders_needed: 2, p_radius_km: 10, ...extra });
+
+// --- vendor side
+const o1 = await rpc(owner, 'save_job_opening', opening());
+ok('owner can post an opening', o1.status === 200 && o1.body.id, err(o1));
+const o2 = await rpc(owner, 'save_job_opening', opening({ p_shift_start: '10:00', p_shift_end: '13:00', p_days: [2] }));
+ok('owner can post a 2nd opening (overlaps the 1st on Tue)', o2.status === 200, err(o2));
+const o3 = await rpc(owner, 'save_job_opening', opening({ p_shift_start: '18:00', p_shift_end: '21:00', p_days: [5, 6, 7], p_radius_km: 20 }));
+ok('owner can post a night opening, radius 20 km', o3.status === 200, err(o3));
+for (const [who, tok] of [['operator', operator], ['helper', helper], ['outsider', outsider], ['other vendor', vendorB]]) {
+  const r = await rpc(tok, 'save_job_opening', opening());
+  ok(`${who} cannot post an opening`, r.status >= 400, err(r));
+  const c = await rpc(tok, 'close_job_opening', { p_opening_id: o3.body.id });
+  ok(`${who} cannot close an opening`, c.status >= 400, err(c));
+}
+for (const [bad, extra] of [['radius 4 km', { p_radius_km: 4 }], ['radius 25 km', { p_radius_km: 25 }], ['end before start', { p_shift_start: '11:00', p_shift_end: '07:00' }], ['day 8', { p_days: [8] }], ['zero pay', { p_pay_amount: 0 }]]) {
+  const r = await rpc(owner, 'save_job_opening', opening(extra));
+  ok(`invalid opening refused: ${bad}`, r.status >= 400, err(r));
+}
+
+// --- browsing
+const anon = await rpc(null, 'find_job_openings', { p_lat: 6.12, p_lng: 100.37 });
+ok('anonymous cannot browse openings', anon.status >= 400, err(anon));
+const f = await rpc(applicant, 'find_job_openings', { p_lat: 6.12, p_lng: 100.37 });
+const mine = Array.isArray(f.body) ? f.body.filter(x => [o1.body.id, o2.body.id, o3.body.id].includes(x.opening_id)) : [];
+ok('any signed-in driver sees all open openings', f.status === 200 && mine.length === 3, `${Array.isArray(f.body) ? f.body.length : err(f)} rows`);
+const keys = mine[0] ? Object.keys(mine[0]) : [];
+ok('browse returns no address/phone/coordinates', !keys.some(k => /address|phone|email|latitude|longitude|owner|customer/i.test(k)), keys.join(','));
+const far = await rpc(applicant, 'find_job_openings', { p_lat: 3.15, p_lng: 101.71 });
+ok('rider far away (KL) still sees them', Array.isArray(far.body) && far.body.some(x => x.opening_id === o1.body.id));
+const badLoc = await rpc(applicant, 'find_job_openings', { p_lat: 200, p_lng: 1 });
+ok('invalid location refused', badLoc.status >= 400, err(badLoc));
+const direct = await sel(applicant, `rider_job_openings?select=id&business_id=eq.${B}`);
+ok('rider cannot read openings table directly', direct.status === 200 && direct.body.length === 0, JSON.stringify(direct.body));
+ok('rider cannot insert an opening directly', (await ins(applicant, 'rider_job_openings', { business_id: B, area_label: 'x', shift_start: '07:00', shift_end: '08:00', days: [1], vehicle_type: 'car', pay_amount: 1, pay_unit: 'shift', riders_needed: 1 })) >= 400);
+const bRead = await sel(vendorB, `rider_job_openings?select=id&business_id=eq.${B}`);
+ok("other vendor cannot read this business's openings", bRead.status === 200 && bRead.body.length === 0);
+
+// --- requests
+const r1 = await rpc(applicant, 'request_job_opening', { p_opening_id: o1.body.id });
+ok('rider can request an opening (pending)', r1.status === 200 && r1.body.status === 'pending', err(r1));
+const dup = await rpc(applicant, 'request_job_opening', { p_opening_id: o1.body.id });
+ok('duplicate request refused', dup.status >= 400, err(dup));
+const opReq = await rpc(operator, 'request_job_opening', { p_opening_id: o1.body.id });
+ok('team member cannot apply to own business', opReq.status >= 400, err(opReq));
+const pend = await sel(owner, `riders?select=id,status,name&business_id=eq.${B}&name=eq.%5BTEST%5D%20Jobs%20Applicant`);
+ok('request shows in Riders > Pending for the owner', pend.body?.[0]?.status === 'pending', JSON.stringify(pend.body));
+const riderId = pend.body?.[0]?.id;
+const selfApprove = await rpc(applicant, 'approve_pending_rider', { p_rider_id: riderId });
+ok('rider cannot approve themselves', selfApprove.status >= 400, err(selfApprove));
+const opApprove = await rpc(operator, 'approve_pending_rider', { p_rider_id: riderId });
+ok('operator cannot approve the rider', opApprove.status >= 400, err(opApprove));
+const bReq = await sel(vendorB, `rider_job_requests?select=id&business_id=eq.${B}`);
+ok("other vendor cannot read this business's requests", bReq.status === 200 && bReq.body.length === 0);
+const ownerApprove = await rpc(owner, 'approve_pending_rider', { p_rider_id: riderId });
+ok('owner approves the rider', ownerApprove.status === 200, err(ownerApprove));
+const sched = await rpc(applicant, 'my_job_schedule');
+ok('approval also approves the job request (My Schedule)', Array.isArray(sched.body) && sched.body.some(x => x.opening_id === o1.body.id && x.status === 'approved'), JSON.stringify(sched.body).slice(0, 200));
+const clash = await rpc(applicant, 'request_job_opening', { p_opening_id: o2.body.id });
+ok('overlapping shift refused (Tue 10-13 vs 7-11)', clash.status >= 400 && /Clashes/i.test(err(clash)), err(clash));
+const f2 = await rpc(applicant, 'find_job_openings', { p_lat: 6.12, p_lng: 100.37 });
+const row2 = f2.body.find(x => x.opening_id === o2.body.id), row1 = f2.body.find(x => x.opening_id === o1.body.id);
+ok('browse marks the clash and my booking', row2?.clash && row1?.my_status === 'approved', `${row2?.clash} / ${row1?.my_status}`);
+const night = await rpc(applicant, 'request_job_opening', { p_opening_id: o3.body.id });
+ok('non-overlapping night shift, already an active rider -> approved directly', night.status === 200 && night.body.status === 'approved', err(night));
+const otherSched = await rpc(outsider, 'my_job_schedule');
+ok("another user's schedule is not visible", Array.isArray(otherSched.body) && !otherSched.body.some(x => x.opening_id === o1.body.id));
+const reqId = sched.body.find(x => x.opening_id === o1.body.id)?.request_id;
+const wOther = await rpc(outsider, 'withdraw_job_request', { p_request_id: reqId });
+ok("cannot withdraw someone else's request", wOther.status >= 400, err(wOther));
+const wOwn = await rpc(applicant, 'withdraw_job_request', { p_request_id: reqId });
+ok('rider can withdraw own booking', wOwn.status === 204 || wOwn.status === 200, err(wOwn));
+
+// --- removal rejects live requests
+const remove = await rpc(owner, 'deactivate_rider', { p_rider_id: riderId });
+ok('owner removes the rider', remove.status === 200, err(remove));
+const after = await rpc(applicant, 'my_job_schedule');
+ok('removal clears the rider\'s bookings', Array.isArray(after.body) && after.body.length === 0, JSON.stringify(after.body).slice(0, 160));
+
+// --- cleanup: close test openings
+for (const o of [o1, o2, o3]) { const c = await rpc(owner, 'close_job_opening', { p_opening_id: o.body.id }); ok('cleanup: owner closes opening', c.status === 200, err(c)); }
+
+console.log(results.join('\n')); console.log(`\n${results.length - fails}/${results.length} passed`);
+process.exit(fails ? 1 : 0);

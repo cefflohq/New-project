@@ -936,6 +936,64 @@ class VendorRepository {
     return list.isEmpty ? null : list.first['role'] as String?;
   }
 
+  // ------------------------------------------- Find Jobs openings (D-75)
+
+  /// This business's open rider openings (members read by RLS).
+  Future<List<Map<String, dynamic>>> jobOpenings(String businessId) async {
+    if (_demo) return const [];
+    final rows = await _run(
+      () => _db!
+          .from('rider_job_openings')
+          .select()
+          .eq('business_id', businessId)
+          .eq('status', 'open')
+          .order('shift_start'),
+    );
+    return _rows(rows);
+  }
+
+  /// Posts (or edits) an opening. Owner only, enforced by the server.
+  Future<void> saveJobOpening({
+    required String businessId,
+    required String areaLabel,
+    required String shiftStart,
+    required String shiftEnd,
+    required List<int> days,
+    required String vehicleType,
+    required num payAmount,
+    required String payUnit,
+    required int ridersNeeded,
+    required num radiusKm,
+    String? openingId,
+  }) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'save_job_opening',
+        params: {
+          'p_business_id': businessId,
+          'p_area_label': areaLabel,
+          'p_shift_start': shiftStart,
+          'p_shift_end': shiftEnd,
+          'p_days': days,
+          'p_vehicle_type': vehicleType,
+          'p_pay_amount': payAmount,
+          'p_pay_unit': payUnit,
+          'p_riders_needed': ridersNeeded,
+          'p_radius_km': radiusKm,
+          'p_opening_id': openingId,
+        },
+      ),
+    );
+  }
+
+  Future<void> closeJobOpening(String openingId) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc('close_job_opening', params: {'p_opening_id': openingId}),
+    );
+  }
+
   /// Pending Operator / Helper requests (Owner only by RLS).
   Future<List<Map<String, dynamic>>> pendingTeamRequests(
     String businessId,
