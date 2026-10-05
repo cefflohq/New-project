@@ -73,10 +73,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get riders => 'Drivers';
 
   @override
-  String get riderDetail => 'Rider detail';
+  String get riderDetail => 'Driver detail';
 
   @override
-  String get riderRegistrationLink => 'Rider registration link';
+  String get riderRegistrationLink => 'Driver registration link';
 
   @override
   String get team => 'Team';
@@ -223,7 +223,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get item => 'Item';
 
   @override
-  String get rider => 'Rider';
+  String get rider => 'Driver';
 
   @override
   String get product => 'Product';
@@ -254,7 +254,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noRiderCompatibleVehicleEnoughSpare =>
-      'No rider with a compatible vehicle and enough spare capacity';
+      'No driver with a compatible vehicle and enough spare capacity';
 
   @override
   String get dispatched => 'Dispatched';
@@ -285,7 +285,7 @@ class AppLocalizationsEn extends AppLocalizations {
     Object vehicle_requirement,
     Object rider_vehicle_type,
   ) {
-    return 'Vehicle incompatible: needs $vehicle_requirement, rider has $rider_vehicle_type.';
+    return 'Vehicle incompatible: needs $vehicle_requirement, driver has $rider_vehicle_type.';
   }
 
   @override
@@ -295,7 +295,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get t100DeliveriesMonth => '100 deliveries a month';
 
   @override
-  String get up3Riders2Zones => 'Up to 3 riders · 2 zones';
+  String get up3Riders2Zones => 'Up to 3 drivers · 2 zones';
 
   @override
   String get customerTrackingProofDelivery =>
@@ -309,7 +309,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get t500DeliveriesMonth => '500 deliveries a month';
 
   @override
-  String get up10Riders5Zones => 'Up to 10 riders · 5 zones';
+  String get up10Riders5Zones => 'Up to 10 drivers · 5 zones';
 
   @override
   String get up3TeamMembers => 'Up to 3 team members';
@@ -325,7 +325,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get t1500DeliveriesMonth => '1,500 deliveries a month';
 
   @override
-  String get unlimitedRidersZones => 'Unlimited riders and zones';
+  String get unlimitedRidersZones => 'Unlimited drivers and zones';
 
   @override
   String get up10TeamMembers => 'Up to 10 team members';
@@ -693,7 +693,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dispatch => 'Dispatch';
 
   @override
-  String get unassignedRider => 'Unassigned rider';
+  String get unassignedRider => 'Unassigned driver';
 
   @override
   String order(Object count, Object s) {
@@ -754,7 +754,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pending => 'Pending';
 
   @override
-  String get noRidersYet => 'No riders yet.';
+  String get noRidersYet => 'No drivers yet.';
 
   @override
   String get jan => 'Jan';
@@ -793,25 +793,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dec => 'Dec';
 
   @override
-  String get riderNotFound => 'Rider not found';
+  String get riderNotFound => 'Driver not found';
 
   @override
   String get pendingReview => 'Pending Review';
 
   @override
-  String get riderApplicant => 'Rider applicant';
+  String get riderApplicant => 'Driver applicant';
 
   @override
   String get reject => 'Reject';
 
   @override
-  String get rejectingRiders => 'Rejecting riders';
+  String get rejectingRiders => 'Rejecting drivers';
 
   @override
-  String get approveRider => 'Approve Rider';
+  String get approveRider => 'Approve Driver';
 
   @override
-  String get approvingRiders => 'Approving riders';
+  String get approvingRiders => 'Approving drivers';
 
   @override
   String get customerRating => 'Customer rating';
@@ -856,11 +856,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get canManageDailyOperationsOrdersRiders =>
-      'Can manage daily operations, orders, riders and team members. Cannot manage billing or subscription.';
+      'Can manage daily operations, orders, drivers and team members. Cannot manage billing or subscription.';
 
   @override
   String get canAccessDailyOperationsOrdersRiders =>
-      'Can access daily operations, orders and riders. Cannot manage billing or subscription.';
+      'Can access daily operations, orders and drivers. Cannot manage billing or subscription.';
 
   @override
   String get remove2 => 'Remove';
@@ -989,7 +989,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ridersPickUpOrdersFromLocation =>
-      'Riders pick up orders from this location.';
+      'Drivers pick up orders from this location.';
 
   @override
   String get pickupAddress => 'Pickup Address';
@@ -1017,7 +1017,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get configured => 'Configured';
 
   @override
-  String get teamRiders => 'Team & Riders';
+  String get teamRiders => 'Team & Drivers';
 
   @override
   String get ready => 'Ready';
@@ -1405,11 +1405,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String chooseRider(Object zone) {
-    return 'Choose the rider for $zone.';
+    return 'Choose the driver for $zone.';
   }
 
   @override
-  String get noActiveRidersYet => 'No active riders yet.';
+  String get noActiveRidersYet => 'No active drivers yet.';
 
   @override
   String get checkingVehicleCapacity => 'Checking vehicle and capacity…';
@@ -1924,7 +1924,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activeRun => 'Active run';
 
   @override
-  String get inviteRider => 'Invite rider';
+  String get inviteRider => 'Invite driver';
 
   @override
   String get inviteTeamMember => 'Invite team member';
@@ -1958,7 +1958,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchOrderNumberCustomer => 'Search order number or customer...';
 
   @override
-  String get searchRiders => 'Search riders...';
+  String get searchRiders => 'Search drivers...';
 
   @override
   String get addOrder => 'Add order';
@@ -2089,7 +2089,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get howCustomersRidersSeeBusiness =>
-      'How customers and riders see your business.';
+      'How customers and drivers see your business.';
 
   @override
   String get taglineOptional2 => 'Tagline (Optional)';
@@ -2099,7 +2099,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get whereCustomersRidersCanReach =>
-      'Where customers and riders can reach you.';
+      'Where customers and drivers can reach you.';
 
   @override
   String get code => 'Code';
@@ -2268,10 +2268,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whenNewOrderComes => 'When a new order comes in.';
 
   @override
-  String get riderStatus => 'Rider status';
+  String get riderStatus => 'Driver status';
 
   @override
-  String get whenRidersGoOnlineOffline => 'When riders go online or offline.';
+  String get whenRidersGoOnlineOffline => 'When drivers go online or offline.';
 
   @override
   String get productNews => 'Product news';
@@ -2358,11 +2358,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Order management, delivery issues';
 
   @override
-  String get ridersTeam => 'Riders & Team';
+  String get ridersTeam => 'Drivers & Team';
 
   @override
   String get riderInvitesApprovalsTeamAccess =>
-      'Rider invites, approvals, team access';
+      'Driver invites, approvals, team access';
 
   @override
   String get subscriptionBilling => 'Subscription & Billing';
@@ -2385,7 +2385,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchHelpEGZonesRiders =>
-      'Search for help, e.g. zones, riders...';
+      'Search for help, e.g. zones, drivers...';
 
   @override
   String get browseTopics => 'Browse topics';
@@ -2400,10 +2400,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get manageOrdersRunsZones => 'Manage orders, runs and zones';
 
   @override
-  String get zonesRiders => 'Zones & Riders';
+  String get zonesRiders => 'Zones & Drivers';
 
   @override
-  String get coverageRidersDispatch => 'Coverage, riders and dispatch';
+  String get coverageRidersDispatch => 'Coverage, drivers and dispatch';
 
   @override
   String get profileSecuritySettings => 'Profile, security and settings';
@@ -2418,7 +2418,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get howDoICreateDeliveryZone => 'How do I create a delivery zone?';
 
   @override
-  String get howDoIAddRider => 'How do I add a rider?';
+  String get howDoIAddRider => 'How do I add a driver?';
 
   @override
   String get canIChangeMyPlanLater => 'Can I change my plan later?';
@@ -2617,7 +2617,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copyLink => 'Copy link';
 
   @override
-  String get inviteRidersBusiness => 'Invite riders to your business';
+  String get inviteRidersBusiness => 'Invite drivers to your business';
 
   @override
   String get inviteTeamMember2 => 'Invite a team member';
@@ -2631,7 +2631,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'They open the link to help run deliveries and manage orders.';
 
   @override
-  String get riderName => 'Rider name';
+  String get riderName => 'Driver name';
 
   @override
   String get operatorText => 'Operator';
@@ -2654,7 +2654,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get linkShownOnlyOnceExpires7 =>
-      'This link is shown only once and expires in 7 days. Invited riders appear in your Riders list as Pending Review once they complete registration.';
+      'This link is shown only once and expires in 7 days. Invited drivers appear in your Drivers list as Pending Review once they complete registration.';
 
   @override
   String get linkShownOnlyOnceExpires72 =>
@@ -2679,7 +2679,7 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp1 = intl.Intl.pluralLogic(
       riders,
       locale: localeName,
-      other: '$riders riders',
+      other: '$riders drivers',
       one: '1 rider',
     );
     return '$_temp0 · $_temp1';
@@ -2922,13 +2922,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hwReadyForPickup => 'Ready for Pickup';
 
   @override
-  String get hwZoneReady => 'This zone is ready for rider pickup.';
+  String get hwZoneReady => 'This zone is ready for driver pickup.';
 
   @override
-  String get hwPickupRider => 'PICKUP RIDER';
+  String get hwPickupRider => 'PICKUP DRIVER';
 
   @override
-  String get hwRiderNotAssigned => 'Rider not assigned yet';
+  String get hwRiderNotAssigned => 'Driver not assigned yet';
 
   @override
   String get hwMotorcycle => 'Motorcycle';
@@ -2985,13 +2985,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get ntRunDeclined => 'A rider declined a run';
+  String get ntRunDeclined => 'A driver declined a run';
 
   @override
   String get ntRunDeclinedBody => 'Reassign the orders so they can go out.';
 
   @override
-  String get ntRiderJoined => 'A rider accepted your invitation';
+  String get ntRiderJoined => 'A driver accepted your invitation';
 
   @override
   String get ntRiderJoinedBody =>
@@ -3306,7 +3306,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String inviteMsgRider(Object business, Object link) {
-    return 'Hi, you\'re invited to join $business as a rider. Register here: $link';
+    return 'Hi, you\'re invited to join $business as a driver. Register here: $link';
   }
 
   @override
@@ -3315,7 +3315,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get noPendingRidersYet => 'No pending riders yet.';
+  String get noPendingRidersYet => 'No pending drivers yet.';
 
   @override
   String inviteShareMessage(Object business) {
@@ -3359,10 +3359,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get requestRejected => 'Request rejected.';
 
   @override
-  String get riderApproved => 'Rider approved.';
+  String get riderApproved => 'Driver approved.';
 
   @override
-  String get riderRejected => 'Rider rejected.';
+  String get riderRejected => 'Driver rejected.';
 
   @override
   String joinTitle(Object business) {
@@ -3629,7 +3629,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get removeMember => 'Remove member';
 
   @override
-  String get removeRider => 'Remove rider';
+  String get removeRider => 'Remove driver';
 
   @override
   String removeMemberTitle(String name) {
@@ -3643,7 +3643,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String removeRiderTitle(String name) {
-    return 'Remove $name as a rider?';
+    return 'Remove $name as a driver?';
   }
 
   @override
@@ -3658,11 +3658,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get memberRemoved => 'Member removed';
 
   @override
-  String get riderRemoved => 'Rider removed';
+  String get riderRemoved => 'Driver removed';
 
   @override
   String get riderHasActiveWorkCannotRemove =>
-      'This rider still has active deliveries. Finish or reassign them, then try again.';
+      'This driver still has active deliveries. Finish or reassign them, then try again.';
 
   @override
   String get removalNotConfirmed =>
@@ -3696,14 +3696,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get issueVendorNotReady => 'Order not ready';
 
   @override
-  String get issueRiderUnableToProceed => 'Rider unable to proceed';
+  String get issueRiderUnableToProceed => 'Driver unable to proceed';
 
   @override
   String get recoverDelivery => 'Recover delivery';
 
   @override
   String get recoverDeliveryLead =>
-      'Release the order from its rider so it can be planned again.';
+      'Release the order from its driver so it can be planned again.';
 
   @override
   String get deliveryRecovered => 'Order released for re-planning.';
@@ -3729,10 +3729,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get keepLoggedIn => 'Keep me logged in';
 
   @override
-  String get lookingForRiders => 'Looking for riders';
+  String get lookingForRiders => 'Looking for drivers';
 
   @override
-  String get lookingForRidersOff => 'Off. Only riders you invite can join.';
+  String get lookingForRidersOff => 'Off. Only drivers you invite can join.';
 
   @override
   String get lookingForRidersOn =>
@@ -3781,11 +3781,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get payHour => 'hour';
 
   @override
-  String get openingRidersNeeded => 'Riders needed';
+  String get openingRidersNeeded => 'Drivers needed';
 
   @override
   String openingRadius(String km) {
-    return 'Rider radius: $km km';
+    return 'Driver radius: $km km';
   }
 
   @override
@@ -3802,7 +3802,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Fill in the area, days, a valid time and pay.';
 
   @override
-  String get turnOffHiringTitle => 'Stop looking for riders?';
+  String get turnOffHiringTitle => 'Stop looking for drivers?';
 
   @override
   String get turnOffHiringBody =>
@@ -3822,7 +3822,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get newOpeningSub =>
-      'Create an opening to find riders for your delivery runs.';
+      'Create an opening to find drivers for your delivery runs.';
 
   @override
   String get openingTime => 'Time';
@@ -3831,7 +3831,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get publishOpening => 'Publish opening';
 
   @override
-  String get openingRadiusLabel => 'Rider radius';
+  String get openingRadiusLabel => 'Driver radius';
 
   @override
   String get openingPayLabel => 'Pay';
@@ -3844,7 +3844,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noOpenOpenings =>
-      'No open openings yet. Post one so riders near you can find this job in Find Jobs.';
+      'No open openings yet. Post one so drivers near you can find this job in Find Jobs.';
 
   @override
   String get hiring => 'Hiring';

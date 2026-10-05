@@ -73,10 +73,10 @@ class AppLocalizationsMs extends AppLocalizations {
   String get riders => 'Pemandu';
 
   @override
-  String get riderDetail => 'Butiran rider';
+  String get riderDetail => 'Butiran pemandu';
 
   @override
-  String get riderRegistrationLink => 'Pautan pendaftaran rider';
+  String get riderRegistrationLink => 'Pautan pendaftaran pemandu';
 
   @override
   String get team => 'Pasukan';
@@ -223,7 +223,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get item => 'Item';
 
   @override
-  String get rider => 'Rider';
+  String get rider => 'Pemandu';
 
   @override
   String get product => 'Produk';
@@ -254,7 +254,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get noRiderCompatibleVehicleEnoughSpare =>
-      'Tiada rider dengan kenderaan yang sesuai dan kapasiti yang mencukupi';
+      'Tiada pemandu dengan kenderaan yang sesuai dan kapasiti yang mencukupi';
 
   @override
   String get dispatched => 'Dihantar keluar';
@@ -285,7 +285,7 @@ class AppLocalizationsMs extends AppLocalizations {
     Object vehicle_requirement,
     Object rider_vehicle_type,
   ) {
-    return 'Kenderaan tidak sesuai: memerlukan $vehicle_requirement, rider menggunakan $rider_vehicle_type.';
+    return 'Kenderaan tidak sesuai: memerlukan $vehicle_requirement, pemandu menggunakan $rider_vehicle_type.';
   }
 
   @override
@@ -295,7 +295,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get t100DeliveriesMonth => '100 penghantaran sebulan';
 
   @override
-  String get up3Riders2Zones => 'Sehingga 3 rider · 2 zon';
+  String get up3Riders2Zones => 'Sehingga 3 pemandu · 2 zon';
 
   @override
   String get customerTrackingProofDelivery =>
@@ -309,7 +309,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get t500DeliveriesMonth => '500 penghantaran sebulan';
 
   @override
-  String get up10Riders5Zones => 'Sehingga 10 rider · 5 zon';
+  String get up10Riders5Zones => 'Sehingga 10 pemandu · 5 zon';
 
   @override
   String get up3TeamMembers => 'Sehingga 3 ahli pasukan';
@@ -325,7 +325,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get t1500DeliveriesMonth => '1,500 penghantaran sebulan';
 
   @override
-  String get unlimitedRidersZones => 'Rider dan zon tanpa had';
+  String get unlimitedRidersZones => 'Pemandu dan zon tanpa had';
 
   @override
   String get up10TeamMembers => 'Sehingga 10 ahli pasukan';
@@ -693,7 +693,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get dispatch => 'Hantar keluar';
 
   @override
-  String get unassignedRider => 'Rider belum ditugaskan';
+  String get unassignedRider => 'Pemandu belum ditugaskan';
 
   @override
   String order(Object count, Object s) {
@@ -754,7 +754,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get pending => 'Belum selesai';
 
   @override
-  String get noRidersYet => 'Belum ada rider.';
+  String get noRidersYet => 'Belum ada pemandu.';
 
   @override
   String get jan => 'Jan';
@@ -793,25 +793,25 @@ class AppLocalizationsMs extends AppLocalizations {
   String get dec => 'Dis';
 
   @override
-  String get riderNotFound => 'Rider tidak ditemui';
+  String get riderNotFound => 'Pemandu tidak ditemui';
 
   @override
   String get pendingReview => 'Menunggu Semakan';
 
   @override
-  String get riderApplicant => 'Pemohon rider';
+  String get riderApplicant => 'Pemohon pemandu';
 
   @override
   String get reject => 'Tolak';
 
   @override
-  String get rejectingRiders => 'Menolak rider';
+  String get rejectingRiders => 'Menolak pemandu';
 
   @override
-  String get approveRider => 'Luluskan Rider';
+  String get approveRider => 'Luluskan Pemandu';
 
   @override
-  String get approvingRiders => 'Meluluskan rider';
+  String get approvingRiders => 'Meluluskan pemandu';
 
   @override
   String get customerRating => 'Penilaian pelanggan';
@@ -856,11 +856,11 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get canManageDailyOperationsOrdersRiders =>
-      'Boleh mengurus operasi harian, pesanan, rider dan ahli pasukan. Tidak boleh mengurus pengebilan atau langganan.';
+      'Boleh mengurus operasi harian, pesanan, pemandu dan ahli pasukan. Tidak boleh mengurus pengebilan atau langganan.';
 
   @override
   String get canAccessDailyOperationsOrdersRiders =>
-      'Boleh mengakses operasi harian, pesanan dan rider. Tidak boleh mengurus pengebilan atau langganan.';
+      'Boleh mengakses operasi harian, pesanan dan pemandu. Tidak boleh mengurus pengebilan atau langganan.';
 
   @override
   String get remove2 => 'Keluarkan';
@@ -989,7 +989,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get ridersPickUpOrdersFromLocation =>
-      'Rider mengambil pesanan dari lokasi ini.';
+      'Pemandu mengambil pesanan dari lokasi ini.';
 
   @override
   String get pickupAddress => 'Alamat Pengambilan';
@@ -1017,7 +1017,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get configured => 'Dikonfigurasikan';
 
   @override
-  String get teamRiders => 'Pasukan & Rider';
+  String get teamRiders => 'Pasukan & Pemandu';
 
   @override
   String get ready => 'Sedia';
@@ -1408,11 +1408,11 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String chooseRider(Object zone) {
-    return 'Pilih rider untuk $zone.';
+    return 'Pilih pemandu untuk $zone.';
   }
 
   @override
-  String get noActiveRidersYet => 'Belum ada rider aktif.';
+  String get noActiveRidersYet => 'Belum ada pemandu aktif.';
 
   @override
   String get checkingVehicleCapacity => 'Menyemak kenderaan dan kapasiti…';
@@ -1930,7 +1930,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get activeRun => 'Larian aktif';
 
   @override
-  String get inviteRider => 'Jemput rider';
+  String get inviteRider => 'Jemput pemandu';
 
   @override
   String get inviteTeamMember => 'Jemput ahli pasukan';
@@ -1965,7 +1965,7 @@ class AppLocalizationsMs extends AppLocalizations {
       'Cari nombor pesanan atau pelanggan...';
 
   @override
-  String get searchRiders => 'Cari rider...';
+  String get searchRiders => 'Cari pemandu...';
 
   @override
   String get addOrder => 'Tambah pesanan';
@@ -2097,7 +2097,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get howCustomersRidersSeeBusiness =>
-      'Cara pelanggan dan rider melihat perniagaan anda.';
+      'Cara pelanggan dan pemandu melihat perniagaan anda.';
 
   @override
   String get taglineOptional2 => 'Slogan (Pilihan)';
@@ -2107,7 +2107,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get whereCustomersRidersCanReach =>
-      'Tempat pelanggan dan rider boleh menghubungi anda.';
+      'Tempat pelanggan dan pemandu boleh menghubungi anda.';
 
   @override
   String get code => 'Kod';
@@ -2278,11 +2278,11 @@ class AppLocalizationsMs extends AppLocalizations {
   String get whenNewOrderComes => 'Apabila pesanan baharu masuk.';
 
   @override
-  String get riderStatus => 'Status rider';
+  String get riderStatus => 'Status pemandu';
 
   @override
   String get whenRidersGoOnlineOffline =>
-      'Apabila rider dalam talian atau luar talian.';
+      'Apabila pemandu dalam talian atau luar talian.';
 
   @override
   String get productNews => 'Berita produk';
@@ -2370,11 +2370,11 @@ class AppLocalizationsMs extends AppLocalizations {
       'Pengurusan pesanan, isu penghantaran';
 
   @override
-  String get ridersTeam => 'Rider & Pasukan';
+  String get ridersTeam => 'Pemandu & Pasukan';
 
   @override
   String get riderInvitesApprovalsTeamAccess =>
-      'Jemputan rider, kelulusan, akses pasukan';
+      'Jemputan pemandu, kelulusan, akses pasukan';
 
   @override
   String get subscriptionBilling => 'Langganan & Pengebilan';
@@ -2396,7 +2396,7 @@ class AppLocalizationsMs extends AppLocalizations {
       'Cari di pusat bantuan kami atau layari topik di bawah.';
 
   @override
-  String get searchHelpEGZonesRiders => 'Cari bantuan, cth. zon, rider...';
+  String get searchHelpEGZonesRiders => 'Cari bantuan, cth. zon, pemandu...';
 
   @override
   String get browseTopics => 'Layari topik';
@@ -2411,10 +2411,11 @@ class AppLocalizationsMs extends AppLocalizations {
   String get manageOrdersRunsZones => 'Urus pesanan, larian dan zon';
 
   @override
-  String get zonesRiders => 'Zon & Rider';
+  String get zonesRiders => 'Zon & Pemandu';
 
   @override
-  String get coverageRidersDispatch => 'Liputan, rider dan penghantaran keluar';
+  String get coverageRidersDispatch =>
+      'Liputan, pemandu dan penghantaran keluar';
 
   @override
   String get profileSecuritySettings => 'Profil, keselamatan dan tetapan';
@@ -2430,7 +2431,7 @@ class AppLocalizationsMs extends AppLocalizations {
       'Bagaimana saya mencipta zon penghantaran?';
 
   @override
-  String get howDoIAddRider => 'Bagaimana saya menambah rider?';
+  String get howDoIAddRider => 'Bagaimana saya menambah pemandu?';
 
   @override
   String get canIChangeMyPlanLater => 'Bolehkah saya menukar pelan kemudian?';
@@ -2632,7 +2633,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get copyLink => 'Salin pautan';
 
   @override
-  String get inviteRidersBusiness => 'Jemput rider ke perniagaan anda';
+  String get inviteRidersBusiness => 'Jemput pemandu ke perniagaan anda';
 
   @override
   String get inviteTeamMember2 => 'Jemput ahli pasukan';
@@ -2646,7 +2647,7 @@ class AppLocalizationsMs extends AppLocalizations {
       'Mereka membuka pautan untuk membantu menjalankan penghantaran dan mengurus pesanan.';
 
   @override
-  String get riderName => 'Nama rider';
+  String get riderName => 'Nama pemandu';
 
   @override
   String get operatorText => 'Operator';
@@ -2669,7 +2670,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get linkShownOnlyOnceExpires7 =>
-      'Pautan ini dipaparkan sekali sahaja dan tamat tempoh dalam 7 hari. Rider yang dijemput akan muncul dalam senarai Rider anda sebagai Menunggu Semakan setelah mereka melengkapkan pendaftaran.';
+      'Pautan ini dipaparkan sekali sahaja dan tamat tempoh dalam 7 hari. Pemandu yang dijemput akan muncul dalam senarai Pemandu anda sebagai Menunggu Semakan setelah mereka melengkapkan pendaftaran.';
 
   @override
   String get linkShownOnlyOnceExpires72 =>
@@ -2685,7 +2686,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String zoneOrdersRiders(int orders, int riders) {
-    return '$orders pesanan · $riders rider';
+    return '$orders pesanan · $riders pemandu';
   }
 
   @override
@@ -2921,13 +2922,13 @@ class AppLocalizationsMs extends AppLocalizations {
   String get hwReadyForPickup => 'Sedia untuk Diambil';
 
   @override
-  String get hwZoneReady => 'Zon ini sedia untuk diambil oleh rider.';
+  String get hwZoneReady => 'Zon ini sedia untuk diambil oleh pemandu.';
 
   @override
-  String get hwPickupRider => 'RIDER PENGAMBILAN';
+  String get hwPickupRider => 'PEMANDU PENGAMBILAN';
 
   @override
-  String get hwRiderNotAssigned => 'Rider belum ditetapkan';
+  String get hwRiderNotAssigned => 'Pemandu belum ditetapkan';
 
   @override
   String get hwMotorcycle => 'Motosikal';
@@ -2985,14 +2986,14 @@ class AppLocalizationsMs extends AppLocalizations {
   }
 
   @override
-  String get ntRunDeclined => 'Rider menolak satu run';
+  String get ntRunDeclined => 'Pemandu menolak satu run';
 
   @override
   String get ntRunDeclinedBody =>
       'Tugaskan semula pesanan supaya boleh dihantar.';
 
   @override
-  String get ntRiderJoined => 'Rider menerima jemputan anda';
+  String get ntRiderJoined => 'Pemandu menerima jemputan anda';
 
   @override
   String get ntRiderJoinedBody => 'Semak dan luluskan sebelum menugaskan run.';
@@ -3309,7 +3310,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String inviteMsgRider(Object business, Object link) {
-    return 'Hai, anda dijemput menyertai $business sebagai rider. Daftar di sini: $link';
+    return 'Hai, anda dijemput menyertai $business sebagai pemandu. Daftar di sini: $link';
   }
 
   @override
@@ -3318,7 +3319,7 @@ class AppLocalizationsMs extends AppLocalizations {
   }
 
   @override
-  String get noPendingRidersYet => 'Tiada rider menunggu kelulusan lagi.';
+  String get noPendingRidersYet => 'Tiada pemandu menunggu kelulusan lagi.';
 
   @override
   String inviteShareMessage(Object business) {
@@ -3362,10 +3363,10 @@ class AppLocalizationsMs extends AppLocalizations {
   String get requestRejected => 'Permintaan ditolak.';
 
   @override
-  String get riderApproved => 'Rider diluluskan.';
+  String get riderApproved => 'Pemandu diluluskan.';
 
   @override
-  String get riderRejected => 'Rider ditolak.';
+  String get riderRejected => 'Pemandu ditolak.';
 
   @override
   String joinTitle(Object business) {
@@ -3632,7 +3633,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get removeMember => 'Buang ahli';
 
   @override
-  String get removeRider => 'Buang rider';
+  String get removeRider => 'Buang pemandu';
 
   @override
   String removeMemberTitle(String name) {
@@ -3646,7 +3647,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String removeRiderTitle(String name) {
-    return 'Buang $name sebagai rider?';
+    return 'Buang $name sebagai pemandu?';
   }
 
   @override
@@ -3661,11 +3662,11 @@ class AppLocalizationsMs extends AppLocalizations {
   String get memberRemoved => 'Ahli dibuang';
 
   @override
-  String get riderRemoved => 'Rider dibuang';
+  String get riderRemoved => 'Pemandu dibuang';
 
   @override
   String get riderHasActiveWorkCannotRemove =>
-      'Rider ini masih ada penghantaran aktif. Selesaikan atau agihkan semula dahulu, kemudian cuba lagi.';
+      'Pemandu ini masih ada penghantaran aktif. Selesaikan atau agihkan semula dahulu, kemudian cuba lagi.';
 
   @override
   String get removalNotConfirmed =>
@@ -3699,14 +3700,14 @@ class AppLocalizationsMs extends AppLocalizations {
   String get issueVendorNotReady => 'Pesanan belum siap';
 
   @override
-  String get issueRiderUnableToProceed => 'Rider tidak dapat meneruskan';
+  String get issueRiderUnableToProceed => 'Pemandu tidak dapat meneruskan';
 
   @override
   String get recoverDelivery => 'Pulihkan penghantaran';
 
   @override
   String get recoverDeliveryLead =>
-      'Lepaskan pesanan daripada rider supaya boleh dirancang semula.';
+      'Lepaskan pesanan daripada pemandu supaya boleh dirancang semula.';
 
   @override
   String get deliveryRecovered => 'Pesanan dilepaskan untuk dirancang semula.';
@@ -3732,11 +3733,11 @@ class AppLocalizationsMs extends AppLocalizations {
   String get keepLoggedIn => 'Kekal log masuk';
 
   @override
-  String get lookingForRiders => 'Mencari rider';
+  String get lookingForRiders => 'Mencari pemandu';
 
   @override
   String get lookingForRidersOff =>
-      'Tutup. Hanya rider yang anda jemput boleh sertai.';
+      'Tutup. Hanya pemandu yang anda jemput boleh sertai.';
 
   @override
   String get lookingForRidersOn =>
@@ -3785,11 +3786,11 @@ class AppLocalizationsMs extends AppLocalizations {
   String get payHour => 'jam';
 
   @override
-  String get openingRidersNeeded => 'Rider diperlukan';
+  String get openingRidersNeeded => 'Pemandu diperlukan';
 
   @override
   String openingRadius(String km) {
-    return 'Radius rider: $km km';
+    return 'Radius pemandu: $km km';
   }
 
   @override
@@ -3806,7 +3807,7 @@ class AppLocalizationsMs extends AppLocalizations {
       'Isi kawasan, hari, masa yang sah dan bayaran.';
 
   @override
-  String get turnOffHiringTitle => 'Berhenti mencari rider?';
+  String get turnOffHiringTitle => 'Berhenti mencari pemandu?';
 
   @override
   String get turnOffHiringBody =>
@@ -3826,7 +3827,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get newOpeningSub =>
-      'Cipta kekosongan untuk mencari rider bagi larian penghantaran anda.';
+      'Cipta kekosongan untuk mencari pemandu bagi larian penghantaran anda.';
 
   @override
   String get openingTime => 'Masa';
@@ -3835,7 +3836,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get publishOpening => 'Siarkan kekosongan';
 
   @override
-  String get openingRadiusLabel => 'Radius rider';
+  String get openingRadiusLabel => 'Radius pemandu';
 
   @override
   String get openingPayLabel => 'Bayaran';
@@ -3848,7 +3849,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get noOpenOpenings =>
-      'Belum ada kekosongan dibuka. Siarkan satu supaya rider berdekatan boleh menemuinya di Cari Kerja.';
+      'Belum ada kekosongan dibuka. Siarkan satu supaya pemandu berdekatan boleh menemuinya di Cari Kerja.';
 
   @override
   String get hiring => 'Pengambilan';

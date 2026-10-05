@@ -227,13 +227,13 @@ abstract class AppLocalizations {
   /// No description provided for @riderDetail.
   ///
   /// In en, this message translates to:
-  /// **'Rider detail'**
+  /// **'Driver detail'**
   String get riderDetail;
 
   /// No description provided for @riderRegistrationLink.
   ///
   /// In en, this message translates to:
-  /// **'Rider registration link'**
+  /// **'Driver registration link'**
   String get riderRegistrationLink;
 
   /// No description provided for @team.
@@ -527,7 +527,7 @@ abstract class AppLocalizations {
   /// No description provided for @rider.
   ///
   /// In en, this message translates to:
-  /// **'Rider'**
+  /// **'Driver'**
   String get rider;
 
   /// No description provided for @product.
@@ -587,7 +587,7 @@ abstract class AppLocalizations {
   /// No description provided for @noRiderCompatibleVehicleEnoughSpare.
   ///
   /// In en, this message translates to:
-  /// **'No rider with a compatible vehicle and enough spare capacity'**
+  /// **'No driver with a compatible vehicle and enough spare capacity'**
   String get noRiderCompatibleVehicleEnoughSpare;
 
   /// No description provided for @dispatched.
@@ -633,7 +633,7 @@ abstract class AppLocalizations {
   /// No description provided for @vehicleIncompatibleNeedsRiderHas.
   ///
   /// In en, this message translates to:
-  /// **'Vehicle incompatible: needs {vehicle_requirement}, rider has {rider_vehicle_type}.'**
+  /// **'Vehicle incompatible: needs {vehicle_requirement}, driver has {rider_vehicle_type}.'**
   String vehicleIncompatibleNeedsRiderHas(
     Object vehicle_requirement,
     Object rider_vehicle_type,
@@ -654,7 +654,7 @@ abstract class AppLocalizations {
   /// No description provided for @up3Riders2Zones.
   ///
   /// In en, this message translates to:
-  /// **'Up to 3 riders · 2 zones'**
+  /// **'Up to 3 drivers · 2 zones'**
   String get up3Riders2Zones;
 
   /// No description provided for @customerTrackingProofDelivery.
@@ -678,7 +678,7 @@ abstract class AppLocalizations {
   /// No description provided for @up10Riders5Zones.
   ///
   /// In en, this message translates to:
-  /// **'Up to 10 riders · 5 zones'**
+  /// **'Up to 10 drivers · 5 zones'**
   String get up10Riders5Zones;
 
   /// No description provided for @up3TeamMembers.
@@ -708,7 +708,7 @@ abstract class AppLocalizations {
   /// No description provided for @unlimitedRidersZones.
   ///
   /// In en, this message translates to:
-  /// **'Unlimited riders and zones'**
+  /// **'Unlimited drivers and zones'**
   String get unlimitedRidersZones;
 
   /// No description provided for @up10TeamMembers.
@@ -1362,7 +1362,7 @@ abstract class AppLocalizations {
   /// No description provided for @unassignedRider.
   ///
   /// In en, this message translates to:
-  /// **'Unassigned rider'**
+  /// **'Unassigned driver'**
   String get unassignedRider;
 
   /// No description provided for @order.
@@ -1464,7 +1464,7 @@ abstract class AppLocalizations {
   /// No description provided for @noRidersYet.
   ///
   /// In en, this message translates to:
-  /// **'No riders yet.'**
+  /// **'No drivers yet.'**
   String get noRidersYet;
 
   /// No description provided for @jan.
@@ -1542,7 +1542,7 @@ abstract class AppLocalizations {
   /// No description provided for @riderNotFound.
   ///
   /// In en, this message translates to:
-  /// **'Rider not found'**
+  /// **'Driver not found'**
   String get riderNotFound;
 
   /// No description provided for @pendingReview.
@@ -1554,7 +1554,7 @@ abstract class AppLocalizations {
   /// No description provided for @riderApplicant.
   ///
   /// In en, this message translates to:
-  /// **'Rider applicant'**
+  /// **'Driver applicant'**
   String get riderApplicant;
 
   /// No description provided for @reject.
@@ -1566,19 +1566,19 @@ abstract class AppLocalizations {
   /// No description provided for @rejectingRiders.
   ///
   /// In en, this message translates to:
-  /// **'Rejecting riders'**
+  /// **'Rejecting drivers'**
   String get rejectingRiders;
 
   /// No description provided for @approveRider.
   ///
   /// In en, this message translates to:
-  /// **'Approve Rider'**
+  /// **'Approve Driver'**
   String get approveRider;
 
   /// No description provided for @approvingRiders.
   ///
   /// In en, this message translates to:
-  /// **'Approving riders'**
+  /// **'Approving drivers'**
   String get approvingRiders;
 
   /// No description provided for @customerRating.
@@ -1662,13 +1662,13 @@ abstract class AppLocalizations {
   /// No description provided for @canManageDailyOperationsOrdersRiders.
   ///
   /// In en, this message translates to:
-  /// **'Can manage daily operations, orders, riders and team members. Cannot manage billing or subscription.'**
+  /// **'Can manage daily operations, orders, drivers and team members. Cannot manage billing or subscription.'**
   String get canManageDailyOperationsOrdersRiders;
 
   /// No description provided for @canAccessDailyOperationsOrdersRiders.
   ///
   /// In en, this message translates to:
-  /// **'Can access daily operations, orders and riders. Cannot manage billing or subscription.'**
+  /// **'Can access daily operations, orders and drivers. Cannot manage billing or subscription.'**
   String get canAccessDailyOperationsOrdersRiders;
 
   /// No description provided for @remove2.
@@ -1908,7 +1908,7 @@ abstract class AppLocalizations {
   /// No description provided for @ridersPickUpOrdersFromLocation.
   ///
   /// In en, this message translates to:
-  /// **'Riders pick up orders from this location.'**
+  /// **'Drivers pick up orders from this location.'**
   String get ridersPickUpOrdersFromLocation;
 
   /// No description provided for @pickupAddress.
@@ -1962,7 +1962,7 @@ abstract class AppLocalizations {
   /// No description provided for @teamRiders.
   ///
   /// In en, this message translates to:
-  /// **'Team & Riders'**
+  /// **'Team & Drivers'**
   String get teamRiders;
 
   /// No description provided for @ready.
@@ -2658,13 +2658,13 @@ abstract class AppLocalizations {
   /// No description provided for @chooseRider.
   ///
   /// In en, this message translates to:
-  /// **'Choose the rider for {zone}.'**
+  /// **'Choose the driver for {zone}.'**
   String chooseRider(Object zone);
 
   /// No description provided for @noActiveRidersYet.
   ///
   /// In en, this message translates to:
-  /// **'No active riders yet.'**
+  /// **'No active drivers yet.'**
   String get noActiveRidersYet;
 
   /// No description provided for @checkingVehicleCapacity.
@@ -3600,7 +3600,7 @@ abstract class AppLocalizations {
   /// No description provided for @inviteRider.
   ///
   /// In en, this message translates to:
-  /// **'Invite rider'**
+  /// **'Invite driver'**
   String get inviteRider;
 
   /// No description provided for @inviteTeamMember.
@@ -3666,7 +3666,7 @@ abstract class AppLocalizations {
   /// No description provided for @searchRiders.
   ///
   /// In en, this message translates to:
-  /// **'Search riders...'**
+  /// **'Search drivers...'**
   String get searchRiders;
 
   /// No description provided for @addOrder.
@@ -3894,7 +3894,7 @@ abstract class AppLocalizations {
   /// No description provided for @howCustomersRidersSeeBusiness.
   ///
   /// In en, this message translates to:
-  /// **'How customers and riders see your business.'**
+  /// **'How customers and drivers see your business.'**
   String get howCustomersRidersSeeBusiness;
 
   /// No description provided for @taglineOptional2.
@@ -3912,7 +3912,7 @@ abstract class AppLocalizations {
   /// No description provided for @whereCustomersRidersCanReach.
   ///
   /// In en, this message translates to:
-  /// **'Where customers and riders can reach you.'**
+  /// **'Where customers and drivers can reach you.'**
   String get whereCustomersRidersCanReach;
 
   /// No description provided for @code.
@@ -4230,13 +4230,13 @@ abstract class AppLocalizations {
   /// No description provided for @riderStatus.
   ///
   /// In en, this message translates to:
-  /// **'Rider status'**
+  /// **'Driver status'**
   String get riderStatus;
 
   /// No description provided for @whenRidersGoOnlineOffline.
   ///
   /// In en, this message translates to:
-  /// **'When riders go online or offline.'**
+  /// **'When drivers go online or offline.'**
   String get whenRidersGoOnlineOffline;
 
   /// No description provided for @productNews.
@@ -4404,13 +4404,13 @@ abstract class AppLocalizations {
   /// No description provided for @ridersTeam.
   ///
   /// In en, this message translates to:
-  /// **'Riders & Team'**
+  /// **'Drivers & Team'**
   String get ridersTeam;
 
   /// No description provided for @riderInvitesApprovalsTeamAccess.
   ///
   /// In en, this message translates to:
-  /// **'Rider invites, approvals, team access'**
+  /// **'Driver invites, approvals, team access'**
   String get riderInvitesApprovalsTeamAccess;
 
   /// No description provided for @subscriptionBilling.
@@ -4452,7 +4452,7 @@ abstract class AppLocalizations {
   /// No description provided for @searchHelpEGZonesRiders.
   ///
   /// In en, this message translates to:
-  /// **'Search for help, e.g. zones, riders...'**
+  /// **'Search for help, e.g. zones, drivers...'**
   String get searchHelpEGZonesRiders;
 
   /// No description provided for @browseTopics.
@@ -4482,13 +4482,13 @@ abstract class AppLocalizations {
   /// No description provided for @zonesRiders.
   ///
   /// In en, this message translates to:
-  /// **'Zones & Riders'**
+  /// **'Zones & Drivers'**
   String get zonesRiders;
 
   /// No description provided for @coverageRidersDispatch.
   ///
   /// In en, this message translates to:
-  /// **'Coverage, riders and dispatch'**
+  /// **'Coverage, drivers and dispatch'**
   String get coverageRidersDispatch;
 
   /// No description provided for @profileSecuritySettings.
@@ -4518,7 +4518,7 @@ abstract class AppLocalizations {
   /// No description provided for @howDoIAddRider.
   ///
   /// In en, this message translates to:
-  /// **'How do I add a rider?'**
+  /// **'How do I add a driver?'**
   String get howDoIAddRider;
 
   /// No description provided for @canIChangeMyPlanLater.
@@ -4884,7 +4884,7 @@ abstract class AppLocalizations {
   /// No description provided for @inviteRidersBusiness.
   ///
   /// In en, this message translates to:
-  /// **'Invite riders to your business'**
+  /// **'Invite drivers to your business'**
   String get inviteRidersBusiness;
 
   /// No description provided for @inviteTeamMember2.
@@ -4908,7 +4908,7 @@ abstract class AppLocalizations {
   /// No description provided for @riderName.
   ///
   /// In en, this message translates to:
-  /// **'Rider name'**
+  /// **'Driver name'**
   String get riderName;
 
   /// No description provided for @operatorText.
@@ -4950,7 +4950,7 @@ abstract class AppLocalizations {
   /// No description provided for @linkShownOnlyOnceExpires7.
   ///
   /// In en, this message translates to:
-  /// **'This link is shown only once and expires in 7 days. Invited riders appear in your Riders list as Pending Review once they complete registration.'**
+  /// **'This link is shown only once and expires in 7 days. Invited drivers appear in your Drivers list as Pending Review once they complete registration.'**
   String get linkShownOnlyOnceExpires7;
 
   /// No description provided for @linkShownOnlyOnceExpires72.
@@ -4974,7 +4974,7 @@ abstract class AppLocalizations {
   /// No description provided for @zoneOrdersRiders.
   ///
   /// In en, this message translates to:
-  /// **'{orders, plural, =1{1 order} other{{orders} orders}} · {riders, plural, =1{1 rider} other{{riders} riders}}'**
+  /// **'{orders, plural, =1{1 order} other{{orders} orders}} · {riders, plural, =1{1 rider} other{{riders} drivers}}'**
   String zoneOrdersRiders(int orders, int riders);
 
   /// No description provided for @perMonth.
@@ -5388,19 +5388,19 @@ abstract class AppLocalizations {
   /// No description provided for @hwZoneReady.
   ///
   /// In en, this message translates to:
-  /// **'This zone is ready for rider pickup.'**
+  /// **'This zone is ready for driver pickup.'**
   String get hwZoneReady;
 
   /// No description provided for @hwPickupRider.
   ///
   /// In en, this message translates to:
-  /// **'PICKUP RIDER'**
+  /// **'PICKUP DRIVER'**
   String get hwPickupRider;
 
   /// No description provided for @hwRiderNotAssigned.
   ///
   /// In en, this message translates to:
-  /// **'Rider not assigned yet'**
+  /// **'Driver not assigned yet'**
   String get hwRiderNotAssigned;
 
   /// No description provided for @hwMotorcycle.
@@ -5502,7 +5502,7 @@ abstract class AppLocalizations {
   /// No description provided for @ntRunDeclined.
   ///
   /// In en, this message translates to:
-  /// **'A rider declined a run'**
+  /// **'A driver declined a run'**
   String get ntRunDeclined;
 
   /// No description provided for @ntRunDeclinedBody.
@@ -5514,7 +5514,7 @@ abstract class AppLocalizations {
   /// No description provided for @ntRiderJoined.
   ///
   /// In en, this message translates to:
-  /// **'A rider accepted your invitation'**
+  /// **'A driver accepted your invitation'**
   String get ntRiderJoined;
 
   /// No description provided for @ntRiderJoinedBody.
@@ -6072,7 +6072,7 @@ abstract class AppLocalizations {
   /// No description provided for @inviteMsgRider.
   ///
   /// In en, this message translates to:
-  /// **'Hi, you\'re invited to join {business} as a rider. Register here: {link}'**
+  /// **'Hi, you\'re invited to join {business} as a driver. Register here: {link}'**
   String inviteMsgRider(Object business, Object link);
 
   /// No description provided for @inviteMsgTeam.
@@ -6084,7 +6084,7 @@ abstract class AppLocalizations {
   /// No description provided for @noPendingRidersYet.
   ///
   /// In en, this message translates to:
-  /// **'No pending riders yet.'**
+  /// **'No pending drivers yet.'**
   String get noPendingRidersYet;
 
   /// No description provided for @inviteShareMessage.
@@ -6162,13 +6162,13 @@ abstract class AppLocalizations {
   /// No description provided for @riderApproved.
   ///
   /// In en, this message translates to:
-  /// **'Rider approved.'**
+  /// **'Driver approved.'**
   String get riderApproved;
 
   /// No description provided for @riderRejected.
   ///
   /// In en, this message translates to:
-  /// **'Rider rejected.'**
+  /// **'Driver rejected.'**
   String get riderRejected;
 
   /// No description provided for @joinTitle.
@@ -6636,7 +6636,7 @@ abstract class AppLocalizations {
   /// No description provided for @removeRider.
   ///
   /// In en, this message translates to:
-  /// **'Remove rider'**
+  /// **'Remove driver'**
   String get removeRider;
 
   /// No description provided for @removeMemberTitle.
@@ -6654,7 +6654,7 @@ abstract class AppLocalizations {
   /// No description provided for @removeRiderTitle.
   ///
   /// In en, this message translates to:
-  /// **'Remove {name} as a rider?'**
+  /// **'Remove {name} as a driver?'**
   String removeRiderTitle(String name);
 
   /// No description provided for @removeRiderBody.
@@ -6678,13 +6678,13 @@ abstract class AppLocalizations {
   /// No description provided for @riderRemoved.
   ///
   /// In en, this message translates to:
-  /// **'Rider removed'**
+  /// **'Driver removed'**
   String get riderRemoved;
 
   /// No description provided for @riderHasActiveWorkCannotRemove.
   ///
   /// In en, this message translates to:
-  /// **'This rider still has active deliveries. Finish or reassign them, then try again.'**
+  /// **'This driver still has active deliveries. Finish or reassign them, then try again.'**
   String get riderHasActiveWorkCannotRemove;
 
   /// No description provided for @removalNotConfirmed.
@@ -6744,7 +6744,7 @@ abstract class AppLocalizations {
   /// No description provided for @issueRiderUnableToProceed.
   ///
   /// In en, this message translates to:
-  /// **'Rider unable to proceed'**
+  /// **'Driver unable to proceed'**
   String get issueRiderUnableToProceed;
 
   /// No description provided for @recoverDelivery.
@@ -6756,7 +6756,7 @@ abstract class AppLocalizations {
   /// No description provided for @recoverDeliveryLead.
   ///
   /// In en, this message translates to:
-  /// **'Release the order from its rider so it can be planned again.'**
+  /// **'Release the order from its driver so it can be planned again.'**
   String get recoverDeliveryLead;
 
   /// No description provided for @deliveryRecovered.
@@ -6804,13 +6804,13 @@ abstract class AppLocalizations {
   /// No description provided for @lookingForRiders.
   ///
   /// In en, this message translates to:
-  /// **'Looking for riders'**
+  /// **'Looking for drivers'**
   String get lookingForRiders;
 
   /// No description provided for @lookingForRidersOff.
   ///
   /// In en, this message translates to:
-  /// **'Off. Only riders you invite can join.'**
+  /// **'Off. Only drivers you invite can join.'**
   String get lookingForRidersOff;
 
   /// No description provided for @lookingForRidersOn.
@@ -6906,13 +6906,13 @@ abstract class AppLocalizations {
   /// No description provided for @openingRidersNeeded.
   ///
   /// In en, this message translates to:
-  /// **'Riders needed'**
+  /// **'Drivers needed'**
   String get openingRidersNeeded;
 
   /// No description provided for @openingRadius.
   ///
   /// In en, this message translates to:
-  /// **'Rider radius: {km} km'**
+  /// **'Driver radius: {km} km'**
   String openingRadius(String km);
 
   /// No description provided for @openingPosted.
@@ -6942,7 +6942,7 @@ abstract class AppLocalizations {
   /// No description provided for @turnOffHiringTitle.
   ///
   /// In en, this message translates to:
-  /// **'Stop looking for riders?'**
+  /// **'Stop looking for drivers?'**
   String get turnOffHiringTitle;
 
   /// No description provided for @turnOffHiringBody.
@@ -6978,7 +6978,7 @@ abstract class AppLocalizations {
   /// No description provided for @newOpeningSub.
   ///
   /// In en, this message translates to:
-  /// **'Create an opening to find riders for your delivery runs.'**
+  /// **'Create an opening to find drivers for your delivery runs.'**
   String get newOpeningSub;
 
   /// No description provided for @openingTime.
@@ -6996,7 +6996,7 @@ abstract class AppLocalizations {
   /// No description provided for @openingRadiusLabel.
   ///
   /// In en, this message translates to:
-  /// **'Rider radius'**
+  /// **'Driver radius'**
   String get openingRadiusLabel;
 
   /// No description provided for @openingPayLabel.
@@ -7020,7 +7020,7 @@ abstract class AppLocalizations {
   /// No description provided for @noOpenOpenings.
   ///
   /// In en, this message translates to:
-  /// **'No open openings yet. Post one so riders near you can find this job in Find Jobs.'**
+  /// **'No open openings yet. Post one so drivers near you can find this job in Find Jobs.'**
   String get noOpenOpenings;
 
   /// No description provided for @hiring.

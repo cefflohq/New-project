@@ -9,15 +9,16 @@ import { ctx, selectBusiness } from './store.js';
 import { esc, icon, initials, avatar, confirmDialog, setChromeColor } from './ui.js';
 import { notif, onNotifications, startNotifications, renderPanel, wirePanel, openNotificationPrefs } from './notifications.js';
 
+// Mirrors the Vendor App bottom navigation (Founder parity, 2026-10-05):
+// Today · Orders · Zones · Drivers · More. Products, Storefront and Team sit
+// in More; Active Runs opens from Zones, as in the app.
 const NAV = [
   ['today', 'home', 'nav.today'],
   ['orders', 'file', 'nav.orders'],
   ['zones', 'pin', 'nav.zones'],
-  ['runs', 'route', 'nav.runs'],
   ['riders', 'users', 'nav.riders'],
-  ['products', 'pkg', 'nav.products'],
-  ['storefront', 'store', 'nav.storefront'],
 ];
+const NAV_PARENT = { products: 'settings', storefront: 'settings', runs: 'zones' };
 
 let root, content, pages, cleanup = null, onSignOut;
 
@@ -57,8 +58,7 @@ function renderFrame() {
       </div>
       <nav class="nav">${NAV.map(([id, ic, key]) => link(id, ic, key)).join('')}</nav>
       <div class="sidebar-foot nav">
-        ${link('settings', 'gear', 'nav.settings')}
-        ${link('help', 'help', 'set.help', '#/settings/help')}
+        ${link('settings', 'menu', 'nav.settings')}
         <div class="acct">
           <button class="acct-btn" data-usermenu aria-haspopup="menu" title="${esc(name)}">${avatar(name, 'xs')}<span class="acct-txt"><b>${esc(name)}</b><small>${esc(ctx.user?.email)}</small></span>${icon('updown', 'i updown')}</button>
         </div>
@@ -171,7 +171,7 @@ function route() {
   if (!root?.isConnected || !root.querySelector('[data-title]')) return;
   const [name = 'today', ...rest] = location.hash.replace(/^#\/?/, '').split('/');
   const page = pages[name] ? name : 'today';
-  const navKey = page === 'settings' && rest[0] === 'help' ? 'help' : page;
+  const navKey = NAV_PARENT[page] || page;
   root.querySelectorAll('[data-nav]').forEach(a => {
     const on = a.dataset.nav === navKey;
     a.classList.toggle('active', on);

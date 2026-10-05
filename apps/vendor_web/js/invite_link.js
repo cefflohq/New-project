@@ -18,8 +18,8 @@ function qrSvg(text) {
 const linkFor = token => new URL(`../invite/?link=${encodeURIComponent(token)}`, location.href).href;
 
 // kind: 'rider' | 'team' (team lets the Owner choose Operator or Helper).
-export function showInviteLink(kind) {
-  let role = kind === 'rider' ? 'rider' : 'operator';
+export function showInviteLink(kind, initialRole = 'operator') {
+  let role = kind === 'rider' ? 'rider' : initialRole;
   const roleOpt = (v, key, subKey) => `<button class="opt ${role === v ? 'on' : ''}" data-v="${v}"><div><b>${esc(t(key))}</b><small>${esc(t(subKey))}</small></div><span class="radio"></span></button>`;
   const m = modal({
     title: t(kind === 'rider' ? 'invite.riderTitle' : 'invite.teamTitle'),

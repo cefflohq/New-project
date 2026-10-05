@@ -5,17 +5,18 @@ import { t, fmtDate } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { prefs, savePrefs } from '../prefs.js';
-import { fetchBusiness, fetchZones, fetchMembers, fetchJoinRequests } from '../data.js';
+import { fetchBusiness, fetchZones, fetchMembers, fetchJoinRequests, fetchRiders } from '../data.js';
+import { mountHiring } from '../hiring.js';
 import { esc, icon, avatar, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal, typedConfirmDialog } from '../ui.js';
 import { showInviteLink } from '../invite_link.js';
 import { rerenderShell, signOutHandler } from '../shell.js';
 import { otpBoxesHtml, wireOtpBoxes, otpFailure } from './auth.js';
 import { openNotificationPrefs } from '../notifications.js';
 
-const PAGES = ['profile', 'security', 'business', 'team', 'subscription', 'integrations', 'help', 'privacy', 'about'];
+const PAGES = ['profile', 'security', 'business', 'team', 'hiring', 'subscription', 'integrations', 'help', 'privacy', 'about'];
 // D-74, as Vendor Mobile: business details, Team and billing are Owner-only.
 // Integrations stays open to Operators (Founder, 2026-09-29).
-const OWNER_ONLY = new Set(['business', 'team', 'subscription']);
+const OWNER_ONLY = new Set(['business', 'team', 'hiring', 'subscription']);
 
 export default function settings({ el, params, setHeader }) {
   setHeader(t('set.title'), false);
@@ -29,9 +30,8 @@ export default function settings({ el, params, setHeader }) {
       ${item('m:notifications', 'bell', 'set.notifications')}
       ${item('m:language', 'globe', 'set.language', esc(prefs.lang === 'ms' ? 'BM' : 'EN'))}
       ${item('m:appearance', 'palette', 'set.appearance')}
-      <h4>${esc(t('set.business'))}</h4>${ctx.isOwner ? item('business', 'building', 'set.businessProfile') + item('team', 'users', 'set.team') + item('subscription', 'card', 'sub.title') : ''}${item('integrations', 'link', 'set.integrations')}
-      <h4>${esc(t('set.support'))}</h4>${item('help', 'help', 'set.help')}
-      <h4>${esc(t('set.legal'))}</h4>${item('privacy', 'shield', 'set.privacy')}${item('about', 'info', 'set.about')}
+      <h4>${esc(t('set.business'))}</h4>${ctx.isOwner ? item('business', 'building', 'set.businessProfile') : ''}${item('go:storefront', 'store', 'set.storefront')}${item('go:products', 'pkg', 'set.products')}${ctx.isOwner ? item('team', 'users', 'set.team') + item('subscription', 'card', 'sub.title') : ''}
+      <h4>${esc(t('set.support'))}</h4>${item('help', 'help', 'set.help')}${item('about', 'info', 'set.about')}
       <button class="signout" data-signout>${icon('logout')}<span>${esc(t('set.signOut'))}</span></button>
     </nav>
     <div class="settings-page" data-page>${loadingRows(4)}</div></div>`;
@@ -43,9 +43,12 @@ export default function settings({ el, params, setHeader }) {
     if (s === 'm:language') return openLanguage();
     if (s === 'm:appearance') return openAppearance();
     if (s === 'm:notifications') return openNotificationPrefs();
+    if (s.startsWith('go:')) { location.hash = `#/${s.slice(3)}`; return; }
     location.hash = `#/settings/${s}`;
   });
-  ({ profile, security, business, team, subscription, integrations, help: staticPage('help'), privacy: staticPage('privacy'), about: staticPage('about') })[sub](page);
+  // Hiring belongs to Team: keep Team highlighted while it is open.
+  if (sub === 'hiring') el.querySelector('[data-s="team"]')?.classList.add('on');
+  ({ profile, security, business, team, hiring, subscription, integrations, help: staticPage('help'), privacy: staticPage('privacy'), about: staticPage('about') })[sub](page);
 }
 
 // ---------------------------------------------------------------- modals
@@ -263,35 +266,60 @@ async function business(page) {
 // (typed CONFIRM + fresh read-back) and invite-link join requests awaiting the
 // Owner's decision. Invitations use the permanent link + QR only. Security & Access Master Part III
 // §12, §17-24; the server authorises every action.
+// Team (Founder screen 6, as Vendor App): Drivers / Operators / Helpers.
+// A view over riders and business_members; "+" opens Hiring.
+let teamTab = 'drivers';
 async function team(page) {
-  const body = header(page, 'set.team', 'team.lead');
-  let names = new Map();
+  page.innerHTML = `<div class="team-h"><div><h2>${esc(t('set.team'))}</h2><p class="lead">${esc(t('team.lead'))}</p></div>
+    <button class="btn cta" data-hiring aria-label="${esc(t('hiring.title'))}">${icon('plus')}${esc(t('hiring.title'))}</button></div>
+    <div class="tabs" data-team-tabs role="tablist"></div><div data-body>${loadingRows(3)}</div>`;
+  const body = page.querySelector('[data-body]');
+  let names = new Map(), data = null;
   const memberName = m => m.user_id === ctx.user.id
     ? `${ctx.user.user_metadata?.full_name || ctx.user.email} (${t('team.you')})`
     : (names.get(m.user_id) || t('team.member'));
+  const tabs = () => {
+    page.querySelector('[data-team-tabs]').innerHTML = [['drivers', 'team.tabDrivers'], ['operators', 'team.tabOperators'], ['helpers', 'team.tabHelpers']]
+      .map(([v, k]) => `<button role="tab" class="${teamTab === v ? 'on' : ''}" aria-selected="${teamTab === v}" data-ttab="${v}">${esc(t(k))}</button>`).join('');
+  };
+  const render = () => {
+    tabs();
+    const { members, requests, drivers } = data;
+    if (teamTab === 'drivers') {
+      body.innerHTML = `<div class="sub-card">${drivers.length ? drivers.map(r => `<a class="list-row" href="#/riders/${esc(r.id)}">${avatar(r.name)}
+          <div class="grow"><b>${esc(r.name || t('team.member'))}</b><small>${esc([r.vehicle_type && t(`veh.${r.vehicle_type}`), r.vehicle_plate].filter(Boolean).join(' · '))}</small></div>${chip('active', true)}</a>`).join('')
+        : `<div class="hint" style="padding:10px 0">${esc(t('team.noDrivers'))}</div>`}</div>`;
+      return;
+    }
+    const role = teamTab === 'helpers' ? 'helper' : 'operator';
+    const people = members.filter(m => m.role === role), reqs = requests.filter(r => (r.role || 'operator') === role);
+    const unnamed = people.some(m => m.user_id !== ctx.user.id && !names.has(m.user_id));
+    body.innerHTML = `${reqs.length ? `<div class="sub-card"><h3>${esc(t('team.pending'))}</h3><p class="desc" style="margin:0 0 6px">${esc(t('team.pendingLead'))}</p>
+        ${reqs.map(r => `<div class="list-row" style="cursor:default">${avatar(r.name || r.role)}
+          <div class="grow"><b>${esc(r.name || t('team.member'))}</b><small>${esc(t(`team.${r.role}`))} · ${esc(t('team.requested'))} ${esc(fmtDate(r.created_at))}</small></div>
+          <button class="btn sm" data-decide="${esc(r.id)}" data-approve="0">${esc(t('team.reject'))}</button>
+          <button class="btn sm primary" data-decide="${esc(r.id)}" data-approve="1">${esc(t('team.approve'))}</button></div>`).join('')}</div>` : ''}
+      <div class="sub-card">${people.length ? people.map(m => `<div class="list-row" style="cursor:default">${avatar(memberName(m))}
+          <div class="grow"><b>${esc(memberName(m))}</b><small>${esc(t(`team.${m.role}`))}</small></div>${chip('active', true)}
+          <button class="btn sm danger-soft" data-remove="${esc(m.user_id)}">${esc(t('team.remove'))}</button></div>`).join('')
+        : `<div class="hint" style="padding:10px 0">${esc(t(role === 'helper' ? 'team.noHelpers' : 'team.noOperators'))}</div>`}
+        ${unnamed ? `<div style="margin-top:10px">${gatedNote(t('team.memberNameGated'))}</div>` : ''}</div>`;
+  };
   const paint = async () => {
     try {
-      const [members, requests, approved] = await Promise.all([
-        fetchMembers(), fetchJoinRequests('pending'), fetchJoinRequests('approved').catch(() => []),
+      const [members, requests, approved, riders] = await Promise.all([
+        fetchMembers(), fetchJoinRequests('pending'), fetchJoinRequests('approved').catch(() => []), fetchRiders(),
       ]);
       names = new Map((approved || []).filter(r => r.user_id && r.name).map(r => [r.user_id, r.name]));
-      const unnamed = (members || []).some(m => m.user_id !== ctx.user.id && !names.has(m.user_id));
-      body.innerHTML = `
-        <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn cta" data-invite>${icon('plus')}${esc(t('team.invite'))}</button></div>
-        <div class="sub-card"><h3>${esc(t('team.members'))}</h3>${(members || []).map(m => `<div class="list-row" style="cursor:default">${avatar(memberName(m))}
-            <div class="grow"><b>${esc(memberName(m))}</b><small>${esc(t(`team.${m.role}`))}</small></div>${chip('active', true)}
-            ${m.role !== 'owner' ? `<button class="btn sm danger-soft" data-remove="${esc(m.user_id)}">${esc(t('team.remove'))}</button>` : ''}</div>`).join('')}
-          ${unnamed ? `<div style="margin-top:10px">${gatedNote(t('team.memberNameGated'))}</div>` : ''}</div>
-        <div class="sub-card"><h3>${esc(t('team.pending'))}</h3><p class="desc" style="margin:0 0 6px">${esc(t('team.pendingLead'))}</p>
-          ${(requests || []).length ? requests.map(r => `<div class="list-row" style="cursor:default">${avatar(r.name || r.role)}
-              <div class="grow"><b>${esc(r.name || t('team.member'))}</b><small>${esc(t(`team.${r.role}`))} · ${esc(t('team.requested'))} ${esc(fmtDate(r.created_at))}</small></div>
-              <button class="btn sm" data-decide="${esc(r.id)}" data-approve="0">${esc(t('team.reject'))}</button>
-              <button class="btn sm primary" data-decide="${esc(r.id)}" data-approve="1">${esc(t('team.approve'))}</button></div>`).join('')
-            : `<div class="hint" style="padding:10px 0">${esc(t('c.none'))}</div>`}</div>`;
+      // Approved drivers only; pending ones stay on Drivers › Pending.
+      data = { members: members || [], requests: requests || [], drivers: (riders || []).filter(r => !['inactive', 'pending'].includes(r.status)) };
+      render();
     } catch (e) { body.innerHTML = errorState(e); }
   };
-  body.addEventListener('click', async e => {
-    if (e.target.closest('[data-invite]')) return showInviteLink('team');
+  page.addEventListener('click', async e => {
+    if (e.target.closest('[data-hiring]')) { location.hash = '#/settings/hiring'; return; }
+    const tb = e.target.closest('[data-ttab]');
+    if (tb) { teamTab = tb.dataset.ttab; if (data) render(); return; }
     // Pending requests: Approve / Reject; rejecting never needs typed CONFIRM.
     const dc = e.target.closest('[data-decide]');
     if (dc) {
@@ -315,6 +343,32 @@ async function team(page) {
     }
   });
   paint();
+}
+
+// Hiring (Founder screen 2, as Vendor App): who to hire, invite for the Team
+// tab the Owner came from, then the hiring posts. Operator / Helper hiring
+// waits for its phase.
+async function hiring(page) {
+  const body = header(page, 'hiring.title', 'hiring.lead');
+  const host = document.createElement('div'); host.hidden = true;
+  const hire = mountHiring(host, { onChange: n => { const el = body.querySelector('[data-posts]'); if (el && n !== null) el.textContent = n ? t('hiring.activeCount', { n }) : t('hiring.noActive'); } });
+  const inviteKey = { drivers: 'team.inviteDriver', operators: 'team.inviteOperator', helpers: 'team.inviteHelper' }[teamTab];
+  const row = (attr, ic, title, sub, tail) => `<button class="list-row hiring-row" ${attr}><span class="hiring-ico">${icon(ic)}</span><div class="grow"><b>${esc(title)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</div>${tail}</button>`;
+  const soon = `<span class="chip">${esc(t('hiring.soon'))}</span>`, chev = icon('chev');
+  body.innerHTML = `<div class="sub-card">
+      ${row('data-h="driver"', 'moto', t('team.driver'), t('hiring.driverSub'), chev)}
+      ${row('disabled', 'user', t('team.operator'), t('hiring.operatorSub'), soon)}
+      ${row('disabled', 'pkg', t('team.helper'), t('hiring.helperSub'), soon)}
+      ${row('data-h="invite"', 'qr', t(inviteKey), '', chev)}</div>
+    <div class="sub-card"><h3>${esc(t('hiring.posts'))}</h3>
+      ${row('data-h="posts"', 'moto', t('team.driver'), '…', chev).replace('<small>…</small>', '<small data-posts>…</small>')}</div>`;
+  body.append(host);
+  body.addEventListener('click', e => {
+    const h = e.target.closest('[data-h]')?.dataset.h;
+    if (h === 'driver') hire.openForm();
+    if (h === 'invite') showInviteLink(teamTab === 'drivers' ? 'rider' : 'team', teamTab === 'helpers' ? 'helper' : 'operator');
+    if (h === 'posts') { sessionStorage.setItem('cf-riders-mode', 'openings'); location.hash = '#/riders'; }
+  });
 }
 
 // Integrations: master list + detail panel (Founder reference). Only what the

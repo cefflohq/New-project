@@ -21,8 +21,8 @@
   "zone": "Zone",
   "deliveryProgress": "Delivery progress",
   "riders": "Drivers",
-  "riderDetail": "Rider detail",
-  "riderRegistrationLink": "Rider registration link",
+  "riderDetail": "Driver detail",
+  "riderRegistrationLink": "Driver registration link",
   "team": "Team",
   "teamMember": "Team member",
   "teamMemberRegistrationLink": "Team member registration link",
@@ -71,7 +71,7 @@
   "business": "Business",
   "approved": "Approved",
   "item": "Item",
-  "rider": "Rider",
+  "rider": "Driver",
   "product": "Product",
   "serviceAreaNotSet": "Service area not set",
   "awaitingLocation": "Awaiting location",
@@ -81,7 +81,7 @@
   "addressNotYetLocated": "Address not yet located",
   "addressAmbiguous": "Address is ambiguous",
   "addressCouldNotLocated": "Address could not be located",
-  "noRiderCompatibleVehicleEnoughSpare": "No rider with a compatible vehicle and enough spare capacity",
+  "noRiderCompatibleVehicleEnoughSpare": "No driver with a compatible vehicle and enough spare capacity",
   "dispatched": "Dispatched",
   "accepted": "Accepted",
   "pickingUp": "Picking up",
@@ -101,7 +101,7 @@
       }
     }
   },
-  "vehicleIncompatibleNeedsRiderHas": "Vehicle incompatible: needs {vehicle_requirement}, rider has {rider_vehicle_type}.",
+  "vehicleIncompatibleNeedsRiderHas": "Vehicle incompatible: needs {vehicle_requirement}, driver has {rider_vehicle_type}.",
   "@vehicleIncompatibleNeedsRiderHas": {
     "placeholders": {
       "vehicle_requirement": {
@@ -114,16 +114,16 @@
   },
   "experienceCefflo": "Experience Cefflo.",
   "t100DeliveriesMonth": "100 deliveries a month",
-  "up3Riders2Zones": "Up to 3 riders · 2 zones",
+  "up3Riders2Zones": "Up to 3 drivers · 2 zones",
   "customerTrackingProofDelivery": "Customer tracking and proof of delivery",
   "businessesRunningLocalDeliveriesRegularly": "For businesses running local deliveries regularly.",
   "t500DeliveriesMonth": "500 deliveries a month",
-  "up10Riders5Zones": "Up to 10 riders · 5 zones",
+  "up10Riders5Zones": "Up to 10 drivers · 5 zones",
   "up3TeamMembers": "Up to 3 team members",
   "standardReportingSupport": "Standard reporting and support",
   "runLocalDeliveryOperationOnePlace": "Run your local delivery operation in one place.",
   "t1500DeliveriesMonth": "1,500 deliveries a month",
-  "unlimitedRidersZones": "Unlimited riders and zones",
+  "unlimitedRidersZones": "Unlimited drivers and zones",
   "up10TeamMembers": "Up to 10 team members",
   "advancedOperationalReporting": "Advanced operational reporting",
   "prioritySupport": "Priority support",
@@ -302,7 +302,7 @@
   "todaysDeliveries": "Today's deliveries",
   "noDeliveriesPlannedZoneToday": "No deliveries planned in this zone today.",
   "dispatch": "Dispatch",
-  "unassignedRider": "Unassigned rider",
+  "unassignedRider": "Unassigned driver",
   "order": "{count} order{s}",
   "@order": {
     "placeholders": {
@@ -350,7 +350,7 @@
   "all": "All",
   "offline": "Offline",
   "pending": "Pending",
-  "noRidersYet": "No riders yet.",
+  "noRidersYet": "No drivers yet.",
   "jan": "Jan",
   "feb": "Feb",
   "mar": "Mar",
@@ -363,13 +363,13 @@
   "oct": "Oct",
   "nov": "Nov",
   "dec": "Dec",
-  "riderNotFound": "Rider not found",
+  "riderNotFound": "Driver not found",
   "pendingReview": "Pending Review",
-  "riderApplicant": "Rider applicant",
+  "riderApplicant": "Driver applicant",
   "reject": "Reject",
-  "rejectingRiders": "Rejecting riders",
-  "approveRider": "Approve Rider",
-  "approvingRiders": "Approving riders",
+  "rejectingRiders": "Rejecting drivers",
+  "approveRider": "Approve Driver",
+  "approvingRiders": "Approving drivers",
   "customerRating": "Customer rating",
   "joined": "Joined",
   "drivingLicence": "Driving Licence",
@@ -383,8 +383,8 @@
   "roleAccess": "Role & access",
   "accountStatus": "Account status",
   "businessOwnerAlwaysKeepsFullAccess": "The business owner always keeps full access and cannot be removed from the team.",
-  "canManageDailyOperationsOrdersRiders": "Can manage daily operations, orders, riders and team members. Cannot manage billing or subscription.",
-  "canAccessDailyOperationsOrdersRiders": "Can access daily operations, orders and riders. Cannot manage billing or subscription.",
+  "canManageDailyOperationsOrdersRiders": "Can manage daily operations, orders, drivers and team members. Cannot manage billing or subscription.",
+  "canAccessDailyOperationsOrdersRiders": "Can access daily operations, orders and drivers. Cannot manage billing or subscription.",
   "remove2": "Remove",
   "searchProducts": "Search products...",
   "noProductsCatalogueYet": "No products in the catalogue yet.",
@@ -451,7 +451,7 @@
   "contactPhone": "Contact Phone",
   "pickupAddressRequired": "Pickup address is required.",
   "whereDoDeliveriesStartFrom": "Where do deliveries start from?",
-  "ridersPickUpOrdersFromLocation": "Riders pick up orders from this location.",
+  "ridersPickUpOrdersFromLocation": "Drivers pick up orders from this location.",
   "pickupAddress": "Pickup Address",
   "searchEnterAddress": "Search or enter your address",
   "postcode": "Postcode",
@@ -460,7 +460,7 @@
   "ceffloUsesDecideWhichOrdersCan": "Cefflo uses this to decide which orders you can accept.",
   "finishSetup": "Finish Setup",
   "configured": "Configured",
-  "teamRiders": "Team & Riders",
+  "teamRiders": "Team & Drivers",
   "ready": "Ready",
   "preferences": "Preferences",
   "setText": "Set",
@@ -679,7 +679,7 @@
       }
     }
   },
-  "chooseRider": "Choose the rider for {zone}.",
+  "chooseRider": "Choose the driver for {zone}.",
   "@chooseRider": {
     "placeholders": {
       "zone": {
@@ -687,7 +687,7 @@
       }
     }
   },
-  "noActiveRidersYet": "No active riders yet.",
+  "noActiveRidersYet": "No active drivers yet.",
   "checkingVehicleCapacity": "Checking vehicle and capacity…",
   "dispatching": "Dispatching…",
   "savingServiceArea": "Saving your service area",
@@ -955,7 +955,7 @@
   "nothingNeedsAttention": "Nothing needs your attention.",
   "needsAction": "Needs your action",
   "activeRun": "Active run",
-  "inviteRider": "Invite rider",
+  "inviteRider": "Invite driver",
   "inviteTeamMember": "Invite team member",
   "online": "Online",
   "youreOfflineNewOrdersPaused": "You're offline. New orders are paused.",
@@ -966,7 +966,7 @@
   "goodEvening": "Good Evening,",
   "heresWhatsHappeningToday": "Here's what's happening today.",
   "searchOrderNumberCustomer": "Search order number or customer...",
-  "searchRiders": "Search riders...",
+  "searchRiders": "Search drivers...",
   "addOrder": "Add order",
   "addZone": "Add zone",
   "notificationOptions": "Notification options",
@@ -1045,10 +1045,10 @@
   "keepBusinessInformationUpDate": "Keep your business information up to date.",
   "editingBusinessDetailsAppNotConnected": "Editing business details in the app is not connected yet.",
   "businessDetails": "Business details",
-  "howCustomersRidersSeeBusiness": "How customers and riders see your business.",
+  "howCustomersRidersSeeBusiness": "How customers and drivers see your business.",
   "taglineOptional2": "Tagline (Optional)",
   "shortDescription": "Short Description",
-  "whereCustomersRidersCanReach": "Where customers and riders can reach you.",
+  "whereCustomersRidersCanReach": "Where customers and drivers can reach you.",
   "code": "Code",
   "businessEmail": "Business Email",
   "editingBusinessAddressAppNotConnected": "Editing the business address in the app is not connected yet.",
@@ -1101,8 +1101,8 @@
   "optional": "Optional",
   "newOrders": "New orders",
   "whenNewOrderComes": "When a new order comes in.",
-  "riderStatus": "Rider status",
-  "whenRidersGoOnlineOffline": "When riders go online or offline.",
+  "riderStatus": "Driver status",
+  "whenRidersGoOnlineOffline": "When drivers go online or offline.",
   "productNews": "Product news",
   "tipsNewCeffloFeatures": "Tips and new Cefflo features.",
   "blue": "Blue",
@@ -1130,26 +1130,26 @@
   "loginProfileSecuritySettings": "Login, profile, security settings",
   "ordersDelivery": "Orders & Delivery",
   "orderManagementDeliveryIssues": "Order management, delivery issues",
-  "ridersTeam": "Riders & Team",
-  "riderInvitesApprovalsTeamAccess": "Rider invites, approvals, team access",
+  "ridersTeam": "Drivers & Team",
+  "riderInvitesApprovalsTeamAccess": "Driver invites, approvals, team access",
   "subscriptionBilling": "Subscription & Billing",
   "plansPaymentsInvoices": "Plans, payments, invoices",
   "appGuides": "App Guides",
   "stepByStepTutorials": "Step-by-step tutorials",
   "findAnswers": "Find answers",
   "searchOurHelpCentreBrowseTopics": "Search our help centre or browse topics below.",
-  "searchHelpEGZonesRiders": "Search for help, e.g. zones, riders...",
+  "searchHelpEGZonesRiders": "Search for help, e.g. zones, drivers...",
   "browseTopics": "Browse topics",
   "gettingStarted": "Getting Started",
   "setUpAccountBusiness": "Set up your account and business",
   "manageOrdersRunsZones": "Manage orders, runs and zones",
-  "zonesRiders": "Zones & Riders",
-  "coverageRidersDispatch": "Coverage, riders and dispatch",
+  "zonesRiders": "Zones & Drivers",
+  "coverageRidersDispatch": "Coverage, drivers and dispatch",
   "profileSecuritySettings": "Profile, security and settings",
   "plansPaymentsInvoices2": "Plans, payments and invoices",
   "popularQuestions": "Popular Questions",
   "howDoICreateDeliveryZone": "How do I create a delivery zone?",
-  "howDoIAddRider": "How do I add a rider?",
+  "howDoIAddRider": "How do I add a driver?",
   "canIChangeMyPlanLater": "Can I change my plan later?",
   "howDoesRouteOptimizationWork": "How does route optimization work?",
   "whereCanMyCustomersTrackTheir": "Where can my customers track their orders?",
@@ -1210,18 +1210,18 @@
   "invitedPersonCanScanCodeOpen": "The invited person can scan this code to open the invitation.",
   "generateInviteLink": "Generate invite link",
   "copyLink": "Copy link",
-  "inviteRidersBusiness": "Invite riders to your business",
+  "inviteRidersBusiness": "Invite drivers to your business",
   "inviteTeamMember2": "Invite a team member",
   "theyOpenLinkJoinTeamComplete": "They open the link to join your team and complete their profile, vehicle and documents.",
   "theyOpenLinkHelpRunDeliveries": "They open the link to help run deliveries and manage orders.",
-  "riderName": "Rider name",
+  "riderName": "Driver name",
   "operatorText": "Operator",
   "owner": "Owner",
   "ownerAccessFullBusinessOwnershipIncluding": "Owner access is full business ownership, including billing and team management.",
   "invitationLink": "Invitation link",
   "showQrCode": "Show QR code",
   "scanOpenInvitation": "Scan to open the invitation",
-  "linkShownOnlyOnceExpires7": "This link is shown only once and expires in 7 days. Invited riders appear in your Riders list as Pending Review once they complete registration.",
+  "linkShownOnlyOnceExpires7": "This link is shown only once and expires in 7 days. Invited drivers appear in your Drivers list as Pending Review once they complete registration.",
   "linkShownOnlyOnceExpires72": "This link is shown only once and expires in 7 days. Invited team members appear in your Team list once they accept.",
   "backSettings": "Back to Settings",
   "active2": "{def}, {style}, active",
@@ -1235,7 +1235,7 @@
       }
     }
   },
-  "zoneOrdersRiders": "{orders, plural, =1{1 order} other{{orders} orders}} · {riders, plural, =1{1 rider} other{{riders} riders}}",
+  "zoneOrdersRiders": "{orders, plural, =1{1 order} other{{orders} orders}} · {riders, plural, =1{1 rider} other{{riders} drivers}}",
   "@zoneOrdersRiders": {
     "placeholders": {
       "orders": {
@@ -1395,9 +1395,9 @@
   "hwSlideConfirmPickup": "Slide to Confirm Pickup",
   "hwPickupTime": "Pickup Time",
   "hwReadyForPickup": "Ready for Pickup",
-  "hwZoneReady": "This zone is ready for rider pickup.",
-  "hwPickupRider": "PICKUP RIDER",
-  "hwRiderNotAssigned": "Rider not assigned yet",
+  "hwZoneReady": "This zone is ready for driver pickup.",
+  "hwPickupRider": "PICKUP DRIVER",
+  "hwRiderNotAssigned": "Driver not assigned yet",
   "hwMotorcycle": "Motorcycle",
   "hwCar": "Car",
   "hwVan": "Van",
@@ -1428,9 +1428,9 @@
       }
     }
   },
-  "ntRunDeclined": "A rider declined a run",
+  "ntRunDeclined": "A driver declined a run",
   "ntRunDeclinedBody": "Reassign the orders so they can go out.",
-  "ntRiderJoined": "A rider accepted your invitation",
+  "ntRiderJoined": "A driver accepted your invitation",
   "ntRiderJoinedBody": "Review and approve them before assigning runs.",
   "ntRunCompleted": "Run completed",
   "ntRunCompletedBody": "Every stop in the run is finished.",
@@ -1606,7 +1606,7 @@
   "shareVia": "Share via",
   "copyText": "Copy",
   "messageCopied": "Message copied",
-  "inviteMsgRider": "Hi, you're invited to join {business} as a rider. Register here: {link}",
+  "inviteMsgRider": "Hi, you're invited to join {business} as a driver. Register here: {link}",
   "@inviteMsgRider": {
     "placeholders": {
       "business": {
@@ -1628,7 +1628,7 @@
       }
     }
   },
-  "noPendingRidersYet": "No pending riders yet.",
+  "noPendingRidersYet": "No pending drivers yet.",
   "inviteShareMessage": "Hi, you're invited to join {business}. Click the link below to register.",
   "@inviteShareMessage": {
     "placeholders": {
@@ -1648,8 +1648,8 @@
   "approveText": "Approve",
   "requestApproved": "Request approved.",
   "requestRejected": "Request rejected.",
-  "riderApproved": "Rider approved.",
-  "riderRejected": "Rider rejected.",
+  "riderApproved": "Driver approved.",
+  "riderRejected": "Driver rejected.",
   "joinTitle": "Join {business}",
   "@joinTitle": {
     "placeholders": {
@@ -1790,7 +1790,7 @@
   "productAddedToast": "Product added successfully",
   "productUpdatedToast": "Product updated successfully",
   "removeMember": "Remove member",
-  "removeRider": "Remove rider",
+  "removeRider": "Remove driver",
   "removeMemberTitle": "Remove {name} from your team?",
   "@removeMemberTitle": {
     "placeholders": {
@@ -1807,7 +1807,7 @@
       }
     }
   },
-  "removeRiderTitle": "Remove {name} as a rider?",
+  "removeRiderTitle": "Remove {name} as a driver?",
   "@removeRiderTitle": {
     "placeholders": {
       "name": {
@@ -1825,8 +1825,8 @@
   },
   "typeConfirmToContinue": "Type CONFIRM to continue.",
   "memberRemoved": "Member removed",
-  "riderRemoved": "Rider removed",
-  "riderHasActiveWorkCannotRemove": "This rider still has active deliveries. Finish or reassign them, then try again.",
+  "riderRemoved": "Driver removed",
+  "riderHasActiveWorkCannotRemove": "This driver still has active deliveries. Finish or reassign them, then try again.",
   "removalNotConfirmed": "We couldn't confirm the removal. Refresh and try again.",
   "reportIssue": "Report issue",
   "reportIssueLead": "The order moves to Issue and appears in Need Attention.",
@@ -1843,9 +1843,9 @@
   "issueAddressProblem": "Address problem",
   "issueAccessProblem": "Access problem",
   "issueVendorNotReady": "Order not ready",
-  "issueRiderUnableToProceed": "Rider unable to proceed",
+  "issueRiderUnableToProceed": "Driver unable to proceed",
   "recoverDelivery": "Recover delivery",
-  "recoverDeliveryLead": "Release the order from its rider so it can be planned again.",
+  "recoverDeliveryLead": "Release the order from its driver so it can be planned again.",
   "deliveryRecovered": "Order released for re-planning.",
   "deliveryActivity": "Delivery activity",
   "noDeliveryActivity": "No delivery activity yet.",
@@ -1853,8 +1853,8 @@
   "customerTrackingLinkLead": "Send this link to your customer so they can follow the delivery.",
   "customerTrackingLinkOnce": "For security this link is shown only now. Copy or share it before closing.",
   "keepLoggedIn": "Keep me logged in",
-  "lookingForRiders": "Looking for riders",
-  "lookingForRidersOff": "Off. Only riders you invite can join.",
+  "lookingForRiders": "Looking for drivers",
+  "lookingForRidersOff": "Off. Only drivers you invite can join.",
   "lookingForRidersOn": "On. Drivers can see your openings in Find Jobs.",
   "addOpening": "Add opening",
   "postOpening": "Post opening",
@@ -1870,8 +1870,8 @@
   "payShift": "shift",
   "payDrop": "drop",
   "payHour": "hour",
-  "openingRidersNeeded": "Riders needed",
-  "openingRadius": "Rider radius: {km} km",
+  "openingRidersNeeded": "Drivers needed",
+  "openingRadius": "Driver radius: {km} km",
   "@openingRadius": {
     "placeholders": {
       "km": {
@@ -1883,27 +1883,26 @@
   "openingClosed": "Opening closed",
   "newOpening": "New opening",
   "openingFixFields": "Fill in the area, days, a valid time and pay.",
-  "turnOffHiringTitle": "Stop looking for riders?",
+  "turnOffHiringTitle": "Stop looking for drivers?",
   "turnOffHiringBody": "All your open openings will close. Requests already sent stay in Pending.",
   "turnOff": "Turn off",
   "vehMotorbike": "Motorbike",
   "vehCar": "Car",
   "vehVan": "Van",
-  "newOpeningSub": "Create an opening to find riders for your delivery runs.",
+  "newOpeningSub": "Create an opening to find drivers for your delivery runs.",
   "openingTime": "Time",
   "publishOpening": "Publish opening",
-  "openingRadiusLabel": "Rider radius",
+  "openingRadiusLabel": "Driver radius",
   "openingPayLabel": "Pay",
   "ridersTab": "Drivers",
   "openingsTab": "Openings",
-  "noOpenOpenings": "No open openings yet. Post one so riders near you can find this job in Find Jobs.",
+  "noOpenOpenings": "No open openings yet. Post one so drivers near you can find this job in Find Jobs.",
   "hiring": "Hiring",
   "hiringSub": "Find people to help run your operation.",
   "hiringDriverSub": "Find drivers for your delivery runs.",
   "hiringOperatorSub": "Find staff to manage delivery operations.",
   "hiringHelperSub": "Find helpers for packing and sorting.",
   "roleDriver": "Driver",
-  "roleOperator": "Operator",
   "roleHelper": "Helper",
   "yourHiringPosts": "Your hiring posts",
   "hiringActiveCount": "{n} active",
@@ -1917,5 +1916,11 @@
   "noTeamDrivers": "No drivers yet.",
   "noTeamOperators": "No operators yet.",
   "noTeamHelpers": "No helpers yet.",
-  "@hiringActiveCount": {"placeholders": {"n": {"type": "int"}}}
+  "@hiringActiveCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  }
 }

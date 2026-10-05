@@ -114,8 +114,8 @@ void main() {
     expect(find.text('Ready for Pickup'), findsNothing);
     await slide(tester); // the single deliberate slide
     expect(find.text('Ready for Pickup'), findsWidgets);
-    expect(find.text('This zone is ready for rider pickup.'), findsOneWidget);
-    expect(find.text('PICKUP RIDER'), findsOneWidget);
+    expect(find.text('This zone is ready for driver pickup.'), findsOneWidget);
+    expect(find.text('PICKUP DRIVER'), findsOneWidget);
     expect(find.text('Amir Hakim'), findsOneWidget);
     expect(find.text('Motorcycle'), findsOneWidget);
     expect(find.text('VMC 4312'), findsOneWidget);

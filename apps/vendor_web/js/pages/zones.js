@@ -16,6 +16,7 @@ export default function zones({ el, params, setHeader }) {
     <div class="card">
       <div class="bar pad">
         <button class="btn sm" data-add>${icon('plus')}${esc(t('zones.add'))}</button>
+        <a class="btn sm" href="#/runs">${icon('route')}${esc(t('nav.runs'))}</a>
         <div class="search" style="margin-left:auto">${icon('search')}<input data-q placeholder="${esc(t('zones.search'))}" aria-label="${esc(t('c.search'))}"></div>
       </div>
       <div data-list>${loadingRows(8)}</div>

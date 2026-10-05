@@ -39,6 +39,10 @@ export default function riders({ el, params, setHeader }) {
       const openings = mode === 'openings';
       $('[data-hiring]').hidden = !openings; $('[data-riders-bar]').hidden = openings; $('[data-list]').hidden = openings;
     });
+    // Hiring › Your hiring posts opens straight on Openings.
+    let want = null;
+    try { want = sessionStorage.getItem('cf-riders-mode'); sessionStorage.removeItem('cf-riders-mode'); } catch { /* storage blocked */ }
+    if (want === 'openings') el.querySelector('[data-mode="openings"]').click();
   }
 
   async function load() {
