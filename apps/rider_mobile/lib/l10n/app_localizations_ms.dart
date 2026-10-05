@@ -1806,4 +1806,7 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get locationOffNote =>
       'Lokasi dimatikan. Menunjukkan bandar pilihan anda.';
+
+  @override
+  String get differentVehicle => 'Kenderaan berbeza';
 }

@@ -3301,6 +3301,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Location is off. Showing the town you chose.'**
   String get locationOffNote;
+
+  /// No description provided for @differentVehicle.
+  ///
+  /// In en, this message translates to:
+  /// **'Different vehicle'**
+  String get differentVehicle;
 }
 
 class _AppLocalizationsDelegate

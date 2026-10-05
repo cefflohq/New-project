@@ -1004,9 +1004,13 @@ class _OpeningCard extends StatelessWidget {
               _Pill(_shiftLabel(o.shift)),
               _Pill(o.time),
               _Pill(_daysLabel(o.days)),
+              // Compatibility is information, not a warning (Founder 2026-10-05):
+              // neutral grey; ranking and eligibility are unchanged.
               _Pill(
-                _vehicleLabel(o.vehicle),
-                tone: o.vehicleMatch ? _PillTone.neutral : _PillTone.warning,
+                o.vehicleMatch
+                    ? _vehicleLabel(o.vehicle)
+                    : '${_vehicleLabel(o.vehicle)} · ${L.differentVehicle}',
+                tone: o.vehicleMatch ? _PillTone.neutral : _PillTone.muted,
               ),
               if (o.myStatus == 'approved')
                 _Pill(L.slotBooked, tone: _PillTone.success)
@@ -1048,7 +1052,7 @@ class _VendorBadge extends StatelessWidget {
   );
 }
 
-enum _PillTone { neutral, success, warning }
+enum _PillTone { neutral, muted, success, warning }
 
 class _Pill extends StatelessWidget {
   const _Pill(this.label, {this.tone = _PillTone.neutral});
@@ -1061,6 +1065,7 @@ class _Pill extends StatelessWidget {
       _PillTone.success => (CefColors.tintSuccess, context.c.success),
       _PillTone.warning => (const Color(0xFFFDECEC), context.c.attention),
       _PillTone.neutral => (CefColors.tintInfo, CefColors.navy),
+      _PillTone.muted => (CefColors.tintNeutral, context.c.textSecondary),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

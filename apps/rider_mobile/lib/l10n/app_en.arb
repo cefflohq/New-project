@@ -841,5 +841,6 @@
   "needLocationTitle": "Where do you want to work?",
   "needLocationBody": "Turn on location to see jobs near you, or choose a town.",
   "chooseTown": "Choose a town",
-  "locationOffNote": "Location is off. Showing the town you chose."
+  "locationOffNote": "Location is off. Showing the town you chose.",
+  "differentVehicle": "Different vehicle"
 }

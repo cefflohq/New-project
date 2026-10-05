@@ -1,5 +1,6 @@
-/// Malaysian towns for Find Jobs "Change location" (D-75). Bundled, so no
-/// geocoding service is called (Mapbox is on hold). Coordinates are town
+/// TEMPORARY V1 FALLBACK (Founder 2026-10-05): replace with Mapbox location
+/// search when Mapbox resumes. Malaysian towns for Find Jobs "Change
+/// location" (D-75a). Bundled, so no geocoding service is called. Coordinates are town
 /// centres; they only set the search point for distance.
 class MyTown {
   const MyTown(this.name, this.state, this.latitude, this.longitude);

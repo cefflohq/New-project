@@ -1793,4 +1793,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get locationOffNote => 'Location is off. Showing the town you chose.';
+
+  @override
+  String get differentVehicle => 'Different vehicle';
 }

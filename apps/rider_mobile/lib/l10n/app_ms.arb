@@ -533,5 +533,6 @@
   "needLocationTitle": "Di mana anda mahu bekerja?",
   "needLocationBody": "Hidupkan lokasi untuk lihat kerja berdekatan, atau pilih bandar.",
   "chooseTown": "Pilih bandar",
-  "locationOffNote": "Lokasi dimatikan. Menunjukkan bandar pilihan anda."
+  "locationOffNote": "Lokasi dimatikan. Menunjukkan bandar pilihan anda.",
+  "differentVehicle": "Kenderaan berbeza"
 }
