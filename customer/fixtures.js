@@ -62,7 +62,7 @@ export const TRACKING_FIXTURE = Object.freeze({
   rider: {
     name: 'Ahmad',
     photo: './assets/rider-ahmad.jpg',
-    photoAlt: 'Photo of Ahmad, your rider',
+    photoAlt: 'Photo of Ahmad, your driver',
     vehicle: 'Yamaha Y15ZR',
     plate: 'VJU 3281',
     contact: {
@@ -104,7 +104,7 @@ export const STATUS_COPY = Object.freeze({
   },
   on_the_way: {
     title: 'On the Way',
-    body: 'Your rider is on the way.'
+    body: 'Your driver is on the way.'
   },
   delivered: {
     title: 'Delivered',

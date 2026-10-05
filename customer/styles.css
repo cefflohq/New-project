@@ -368,3 +368,10 @@ img { display: block; max-width: 100%; }
   .star.is-selected { transform: none; }
   .rate-sheet { transition: none; }
 }
+
+/* Pull-to-refresh: a small spinner under the header; the layout never moves. */
+.ptr { position: fixed; z-index: 20; top: calc(env(safe-area-inset-top) + 64px); left: 50%; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #fff; box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12); opacity: 0; transform: translate(-50%, calc(var(--ptr, 0px) - 48px)); transition: opacity 150ms ease, transform 150ms ease; pointer-events: none; }
+.ptr .spinner { width: 20px; height: 20px; margin: 0; border-width: 2px; animation-play-state: paused; }
+.ptr--spin .spinner { animation-play-state: running; }
+@media (prefers-reduced-motion: reduce) { .ptr { transition: none; } }
+

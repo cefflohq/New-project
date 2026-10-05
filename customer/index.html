@@ -12,7 +12,7 @@
   <title>Track your delivery</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=20261003l">
+  <link rel="stylesheet" href="./styles.css?v=20261005a">
 </head>
 <body>
   <div class="app" id="app">
@@ -28,7 +28,7 @@
     (function () {
       if (!new URLSearchParams(location.search).get('token')) return;
       window.CEFFLO_SESSION_KEY = 'cefflo_customer_auth_session';
-      ['../shared/config.js?v=20260916a', '../shared/client.js?v=20260916a', './live.js?v=20260927a', './backend.js?v=20261004a'].forEach(function (src) {
+      ['../shared/config.js?v=20260916a', '../shared/client.js?v=20260916a', './live.js?v=20260927a', './backend.js?v=20261005a'].forEach(function (src) {
         var script = document.createElement('script');
         script.src = src;
         script.async = false; // preserve execution order and keep blocking `load`
@@ -37,7 +37,7 @@
     })();
   </script>
 
-  <script type="module" src="./app.js?v=20261005a"></script>
+  <script type="module" src="./app.js?v=20261005b"></script>
 
   <script>
     if ('serviceWorker' in navigator) {

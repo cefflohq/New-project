@@ -39,7 +39,13 @@
     window.CEFFLOTracking.setStatus(statusMap[snapshot.status] || 'order_confirmed', {
       orderId: snapshot.order_number ?? snapshot.order_id,
       storeName: snapshot.store_name,
-      riderName: snapshot.rider_name || 'Your rider',
+      riderName: snapshot.rider_name || 'Your driver',
+      // Approved fields (2026-10-05); absent values stay absent (rows hide).
+      items: Array.isArray(snapshot.items) ? snapshot.items : null,
+      pickupAddress: snapshot.pickup_address || null,
+      businessPhone: snapshot.business_phone || null,
+      riderVehicle: snapshot.rider_vehicle || null,
+      riderPlate: snapshot.rider_plate || null,
       estimatedArrival: formatEta(snapshot.eta) || '—',
       deliveredAt: snapshot.completed_at ? new Date(snapshot.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
       podPhoto: snapshot.status === 'delivered' && snapshot.pod_available ? await podUrl().catch(() => null) : null,
@@ -64,12 +70,17 @@
   let lastSnapshot = null;
   let loadRetries = 0;
 
+  // Pull-to-refresh waits on the same gate; settled when the run finishes.
+  const waiters = [];
+
   async function runRefresh() {
     isRefreshing = true;
     lastRefreshAt = Date.now();
+    let outcome = 'ok';
     try {
       lastSnapshot = await refresh();
     } catch (error) {
+      outcome = 'error';
       // Invalid/expired token, or no snapshot yet: the generic customer-safe
       // template (no internals). A failed re-check keeps the last real state.
       const phase = window.CEFFLOTracking.getSnapshot?.()?.phase;
@@ -82,6 +93,7 @@
       }
     } finally {
       isRefreshing = false;
+      waiters.splice(0).forEach((done) => done(outcome));
       armFallback();
       if (pending) { pending = false; guardedRefresh(); }
     }
@@ -137,7 +149,14 @@
     if (!response.ok) throw new Error('POD unavailable');
     return (await response.json()).url;
   }
-  window.CEFFLO_CUSTOMER = Object.freeze({ refresh: guardedRefresh, submitRating, podUrl });
+  // Pull-to-refresh: the SAME coalescing gate (>= 10 s between fetches, the
+  // backend's 10 / 60 s limit). Data fetched within the gap is already fresh,
+  // so the gesture settles at once instead of sending another request.
+  function pullRefresh() {
+    if (!isRefreshing && Date.now() - lastRefreshAt < MIN_GAP_MS) return Promise.resolve('fresh');
+    return new Promise((done) => { waiters.push(done); guardedRefresh(); });
+  }
+  window.CEFFLO_CUSTOMER = Object.freeze({ refresh: guardedRefresh, pullRefresh, submitRating, podUrl });
 
   window.addEventListener('load', guardedRefresh);
   document.addEventListener('visibilitychange', () => {

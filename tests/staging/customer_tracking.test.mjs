@@ -16,10 +16,13 @@ async function sel(tok, path) { const r = await fetch(`${URL_}/rest/v1/${path}`,
 const msg = r => (r.body && (r.body.message || r.body.hint)) || JSON.stringify(r.body);
 const step = async (label, res) => { ok(label, res.status < 300, msg(res)); if (res.status >= 300) { console.log(results.join('\n')); process.exit(1); } return res; };
 // Customer-safe keys only: anything else in the anonymous response is a leak.
-const ALLOWED = new Set(['order_id', 'order_number', 'store_name', 'status', 'eta', 'rider_name', 'completed_at', 'picked_up_at', 'pod_available', 'rating_submitted', 'rider_location', 'live']);
+const ALLOWED = new Set(['order_id', 'order_number', 'store_name', 'status', 'eta', 'rider_name', 'completed_at', 'picked_up_at', 'pod_available', 'rating_submitted', 'rider_location', 'live', 'items', 'pickup_address', 'business_phone', 'rider_vehicle', 'rider_plate']);
+// Must never reach the browser (raw payload text is checked, not the UI).
+const NOTE = 'CTNOTE-' + Date.now(), PODNOTE = 'CTPOD-' + Date.now();
+const noPII = (s, extra = []) => { const j = JSON.stringify(s); return ![NOTE, PODNOTE, '000 3101', '0003101', '000 3102', '0003102', 'Jalan A 1', 'Jalan B 2', 'display_price', 'product_id', 'price', ...extra].some(x => x && j.includes(x)); };
 const track = async tok => (await rpc(null, 'public_tracking', { p_token: tok })).body;
 
-const owner = await signIn(mail('owner')), rider = await signIn(mail('rider'));
+const owner = await signIn(mail('owner')), rider = await signIn(mail('rider2'));
 const B = (await rpc(owner, 'get_my_businesses')).body.find(b => b.member_role === 'owner').business_id;
 const R = (await sel(rider, `riders?select=id&business_id=eq.${B}&status=eq.active`)).body?.[0]?.id;
 ok('setup: driver relationship', !!R);
@@ -28,7 +31,7 @@ const prod = (await rpc(null, 'public_storefront', { p_slug: slug })).body.produ
 
 async function place(name, phone, address) {
   for (let i = 0; i < 3; i++) {
-    const o = await rpc(null, 'submit_storefront_order', { p_slug: slug, p_items: [{ product_id: prod.id, quantity: 1 }], p_customer_name: name, p_customer_phone: phone, p_delivery_address: address, p_delivery_notes: 'CT', p_idempotency_key: crypto.randomUUID() });
+    const o = await rpc(null, 'submit_storefront_order', { p_slug: slug, p_items: [{ product_id: prod.id, quantity: 1 }], p_customer_name: name, p_customer_phone: phone, p_delivery_address: address, p_delivery_notes: NOTE, p_idempotency_key: crypto.randomUUID() });
     if (!/rate limited/.test(msg(o))) return o;
     await sleep(61000);
   }
@@ -44,6 +47,13 @@ let s = await track(tA);
 ok('  A: anonymous link opens A\'s order', s && s.order_id === a.body.order_reference && s.status === 'created', JSON.stringify(s).slice(0, 120));
 ok('  A: response holds customer-safe keys only', s && Object.keys(s).every(k => ALLOWED.has(k)), Object.keys(s || {}).join(','));
 ok('  A: no live location before pickup', s && !('rider_location' in s) && !('live' in s));
+const biz = (await sel(owner, `businesses?select=address,phone&id=eq.${B}`)).body[0];
+const drv = (await sel(owner, `riders?select=phone,vehicle_type,vehicle_plate&id=eq.${R}`)).body[0];
+ok('  items: name + quantity only', Array.isArray(s.items) && s.items.length >= 1 && s.items.every(i => Object.keys(i).sort().join() === 'name,qty' && i.qty === 1), JSON.stringify(s.items));
+ok('  pickup_address is this business\'s address', s.pickup_address === biz.address, s.pickup_address);
+ok('  business_phone is this business\'s phone', s.business_phone === biz.phone, s.business_phone);
+ok('  no vehicle/plate before pickup', !('rider_vehicle' in s) && !('rider_plate' in s));
+ok('  excluded PII absent from raw payload (note, customer phone/address, prices)', noPII(s), JSON.stringify(s).slice(0, 120));
 
 // 2. negative: tampering / unknown / cross-customer
 const fake = await rpc(null, 'public_tracking', { p_token: 'f'.repeat(64) });
@@ -56,7 +66,7 @@ ok('  empty token reveals nothing', empty.body === null || empty.status >= 400);
 const refAsToken = await rpc(null, 'public_tracking', { p_token: a.body.order_reference });
 ok('  order reference is not a credential', refAsToken.body === null || refAsToken.status >= 400);
 s = await track(tB);
-ok('  B\'s link returns B only (no A data)', s && s.order_id === b.body.order_reference && !JSON.stringify(s).includes(a.body.order_reference) && !/Customer A|Jalan A/.test(JSON.stringify(s)));
+ok('  B\'s link returns B only (no A data)', s && s.order_id === b.body.order_reference && !JSON.stringify(s).includes(a.body.order_reference) && !/Customer A|Jalan A 1/.test(JSON.stringify(s)));
 
 // 3. anonymous direct table access and mutations are refused
 for (const t of ['orders', 'tracking_tokens', 'rider_locations', 'delivery_stops', 'riders', 'rider_assignments', 'delivery_events', 'ratings']) {
@@ -91,6 +101,9 @@ for (const O of [OA, OB]) {
 s = await track(tA);
 const ev = (await sel(owner, `delivery_events?select=created_at&order_id=eq.${OA}&to_status=eq.picked_up&order=created_at.asc&limit=1`)).body?.[0]?.created_at;
 ok('  A shows Pickup (picked_up)', s?.status === 'picked_up', s?.status);
+ok('  vehicle + plate of the assigned driver while in progress', s.rider_vehicle === drv.vehicle_type && s.rider_plate === drv.vehicle_plate && !!drv.vehicle_plate, `${s.rider_vehicle} ${s.rider_plate}`);
+ok('  in progress: excluded PII absent from raw payload', noPII(s), JSON.stringify(s).slice(0, 120));
+ok('  driver personal phone absent from raw payload', !JSON.stringify(s).includes(drv.phone) && !JSON.stringify(s).includes(drv.phone.replace(/\D/g, '')), drv.phone ? 'checked' : 'no phone');
 ok('  picked_up_at is the real pickup event time', !!ev && s?.picked_up_at && Math.abs(new Date(s.picked_up_at) - new Date(ev)) < 1000, `${s?.picked_up_at} vs ${ev}`);
 
 // 6. live location: driver reports a point through the real RPC
@@ -100,7 +113,7 @@ ok('6 driver records a live location', loc.status < 300, msg(loc));
 s = await track(tA);
 ok('  A gets the driver\'s latest point (rounded to 4 dp)', s?.rider_location && s.rider_location.lat === 3.1478 && s.rider_location.lng === 101.6953, JSON.stringify(s?.rider_location));
 ok('  A gets a live hint channel only (no coordinates in it)', s?.live && /^trk:/.test(s.live.topic) && !('lat' in s.live));
-ok('  multi-drop: A sees no other stop/customer/count', !('stops_ahead' in s) && !JSON.stringify(s).includes(b.body.order_reference) && !/Customer B|Jalan B|stops/.test(JSON.stringify(s)) && !JSON.stringify(s.eta || {}).includes('stops_ahead'));
+ok('  multi-drop: A sees no other stop/customer/count', !('stops_ahead' in s) && !JSON.stringify(s).includes(b.body.order_reference) && !/Customer B|Jalan B 2|stops/.test(JSON.stringify(s)) && !JSON.stringify(s.eta || {}).includes('stops_ahead'));
 ok('  multi-drop: still customer-safe keys only', Object.keys(s).every(k => ALLOWED.has(k)), Object.keys(s).join(','));
 
 // 7. on the way, then A delivered while B continues
@@ -116,7 +129,7 @@ await step('  driver arrives at A', await rpc(rider, 'rider_transition', { p_rid
 const jpg = Buffer.from('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAAA//EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AN//Z', 'base64');
 const podPath = `${R}/${OA}/${Date.now()}.jpg`;
 await fetch(`${URL_}/storage/v1/object/cefflo-pod/${podPath}`, { method: 'POST', headers: { apikey: KEY, authorization: `Bearer ${rider}`, 'content-type': 'image/jpeg' }, body: jpg });
-await step('8 driver completes A with POD', await rpc(rider, 'complete_delivery', { p_rider_id: R, p_order_id: OA, p_pod_path: podPath, p_note: 'CT', p_idempotency_key: crypto.randomUUID() }));
+await step('8 driver completes A with POD', await rpc(rider, 'complete_delivery', { p_rider_id: R, p_order_id: OA, p_pod_path: podPath, p_note: PODNOTE, p_idempotency_key: crypto.randomUUID() }));
 await sleep(11000); // the 10 s location write floor
 const loc2 = await rpc(rider, 'record_rider_location', { p_rider_id: R, p_latitude: 3.15, p_longitude: 101.7, p_accuracy: 8, p_heading: null, p_speed: null });
 ok('  driver keeps reporting location for B', loc2.status < 300, msg(loc2));
@@ -125,6 +138,8 @@ const done = (await sel(owner, `orders?select=completed_at&id=eq.${OA}`)).body[0
 ok('  A shows Delivered', s?.status === 'delivered', s?.status);
 ok('  delivered time is the real completion time', s?.completed_at && done && new Date(s.completed_at).getTime() === new Date(done).getTime(), `${s?.completed_at} vs ${done}`);
 ok('  delivered: NO driver location and NO live channel for A', s && !('rider_location' in s) && !('live' in s), Object.keys(s || {}).join(','));
+ok('  delivered: vehicle + plate no longer returned', !('rider_vehicle' in s) && !('rider_plate' in s));
+ok('  delivered: POD note and delivery address absent from raw payload', noPII(s), JSON.stringify(s).slice(0, 120));
 const sB = await track(tB);
 ok('  B (still in progress) keeps its live location', ['picked_up', 'out_for_delivery', 'arrived'].includes(sB?.status) && !!sB.rider_location, JSON.stringify(sB).slice(0, 170));
 await sleep(1000);
@@ -142,7 +157,7 @@ ok('  rate-limited reply exposes no data', rl.status >= 400 && !JSON.stringify(r
 await rpc(rider, 'rider_transition', { p_rider_id: R, p_order_id: OB, p_next: 'arrived', p_idempotency_key: crypto.randomUUID() });
 const podB = `${R}/${OB}/${Date.now()}.jpg`;
 await fetch(`${URL_}/storage/v1/object/cefflo-pod/${podB}`, { method: 'POST', headers: { apikey: KEY, authorization: `Bearer ${rider}`, 'content-type': 'image/jpeg' }, body: jpg });
-await rpc(rider, 'complete_delivery', { p_rider_id: R, p_order_id: OB, p_pod_path: podB, p_note: 'CT', p_idempotency_key: crypto.randomUUID() });
+await rpc(rider, 'complete_delivery', { p_rider_id: R, p_order_id: OB, p_pod_path: podB, p_note: PODNOTE, p_idempotency_key: crypto.randomUUID() });
 
 console.log(results.join('\n')); console.log(`\n${results.length - fails}/${results.length} passed`);
 console.log('CT orders', a.body.order_reference, b.body.order_reference, 'tokenA', tA);

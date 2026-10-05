@@ -171,9 +171,9 @@ export function installBackendBridge(provider, { source = TRACKING_FIXTURE, live
     delivered: CUSTOMER_STATUS.DELIVERED
   };
   const unavailableCopy = {
-    order_confirmed: { title: 'No order yet', body: 'Tracking starts when your rider collects the order.', quiet: true },
-    preparing: { title: 'No order yet', body: 'Tracking starts when your rider collects the order.', quiet: true },
-    issue: { title: 'Delivery on hold', body: 'There is an issue with this delivery. The store or rider will be in touch shortly.' },
+    order_confirmed: { title: 'No order yet', body: 'Tracking starts when your driver collects the order.', quiet: true },
+    preparing: { title: 'No order yet', body: 'Tracking starts when your driver collects the order.', quiet: true },
+    issue: { title: 'Delivery on hold', body: 'There is an issue with this delivery. The store or driver will be in touch shortly.' },
     cancelled: { title: 'Order cancelled', body: 'This order has been cancelled.' }
   };
   const bridge = Object.freeze({
@@ -210,18 +210,37 @@ export function installBackendBridge(provider, { source = TRACKING_FIXTURE, live
 const DASH = '\u2014';
 const LIVE_VENDOR = Object.freeze({ name: 'Delivery tracking', tagline: '', theme: TRACKING_FIXTURE.vendor.theme });
 
+const VEHICLE_LABEL = { motorcycle: 'Motorcycle', car: 'Car', van: 'Van' };
+
+/** "Brownie Box ×1, Nasi Lemak ×2": item name + quantity only. */
+const itemsLabel = (items) => (items && items.length
+  ? items.map((i) => `${i.name} ×${i.qty}`).join(', ')
+  : null);
+
+/** Call / Message reach the BUSINESS number only (never the driver's). */
+function businessContact(phone) {
+  const digits = String(phone || '').replace(/[^\d+]/g, '');
+  if (digits.replace(/\D/g, '').length < 7) return {};
+  return {
+    call: { available: true, tel: digits },
+    chat: { available: true, href: `https://wa.me/${digits.replace(/\D/g, '')}` }
+  };
+}
+
 export function buildLiveSource(payload = {}) {
   const known = (value) => (value && value !== DASH ? value : null);
   return {
     reference: payload.orderId ?? DASH,
-    vendor: { ...LIVE_VENDOR, name: payload.storeName || LIVE_VENDOR.name, storefrontPhoto: null, address: DASH },
-    order: { itemsLabel: DASH, note: DASH },
+    vendor: { ...LIVE_VENDOR, name: payload.storeName || LIVE_VENDOR.name, storefrontPhoto: null, address: payload.pickupAddress || DASH },
+    order: { itemsLabel: itemsLabel(payload.items) || DASH, note: DASH },
     pickup: { atLabel: known(payload.pickedUpAt) ?? DASH },
     eta: known(payload.estimatedArrival) ? { label: 'Estimated Arrival', valueLabel: payload.estimatedArrival } : null,
     // No map illustration: a real location is shown as text + map link only.
     route: null,
     rider: {
-      name: payload.riderName || 'Your rider', photo: null, vehicle: DASH, plate: DASH, contact: {},
+      name: payload.riderName || 'Your driver', photo: null,
+      vehicle: VEHICLE_LABEL[payload.riderVehicle] || DASH, plate: payload.riderPlate || DASH,
+      contact: businessContact(payload.businessPhone),
       // D-66: latest authorized point only (never history), from public_tracking.
       location: payload.riderLocation && Number.isFinite(payload.riderLocation.lat)
         ? { lat: payload.riderLocation.lat, lng: payload.riderLocation.lng, recordedAt: payload.riderLocation.recorded_at }

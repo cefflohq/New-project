@@ -203,7 +203,7 @@ function riderCard(vm) {
   const initial = esc((rider.name || 'R').trim().charAt(0).toUpperCase() || 'R');
   const meta = [known(rider.vehicle), known(rider.plate)].filter(Boolean).join(' · ');
   return `
-    <section class="rider-card" aria-label="Your rider">
+    <section class="rider-card" aria-label="Your driver">
       ${rider.photo
         ? `<img class="rider-card__avatar" src="${esc(rider.photo)}" alt="${esc(rider.photoAlt || '')}" loading="lazy">`
         : `<span class="rider-card__avatar rider-card__avatar--initial" aria-hidden="true">${initial}</span>`}
@@ -221,7 +221,7 @@ function riderCard(vm) {
 function contactAction(kind, glyph, label, rider) {
   if (!rider?.contact?.[kind]?.available) return '';
   return `<button class="contact-btn" type="button" data-action="contact-${kind}"
-    aria-label="${esc(label)} ${esc(rider.name)}, your rider">${icon(glyph, { size: 21 })}</button>`;
+    aria-label="${esc(label)} ${esc(rider.name)}, your driver">${icon(glyph, { size: 21 })}</button>`;
 }
 
 function detailRow(label, value) {
@@ -313,7 +313,7 @@ function podScreen(vm) {
     <section class="pod-meta">
       ${podMetaRow('calendar', 'Delivered at', vm.delivery.atLabel)}
       ${podMetaRow('person', 'Received by', vm.delivery.receivedBy)}
-      ${podMetaRow('note', 'Rider note', vm.pod.riderNote)}
+      ${podMetaRow('note', 'Driver note', vm.pod.riderNote)}
     </section>`, { title: 'Proof of Delivery', back: true, modifier: 'screen--pod' });
 }
 
@@ -399,9 +399,16 @@ function copyReference(trigger) {
  */
 function contact(kind, trigger) {
   const vm = provider.store.getState();
-  const tel = vm.rider?.contact?.call?.tel;
+  const who = vm.rider || vm.liveRider;
+  const tel = who?.contact?.call?.tel;
   if (kind === 'call' && tel) {
     location.href = `tel:${tel}`;
+    return;
+  }
+  // Message opens WhatsApp to the business number (real links only).
+  const chat = who?.contact?.chat?.href;
+  if (kind === 'chat' && chat) {
+    window.open(chat, '_blank', 'noopener');
     return;
   }
   flash(
@@ -812,3 +819,57 @@ provider.store.subscribe(() => {
 reduceMotionQuery.addEventListener?.('change', render);
 mountDevPanel();
 root.dataset.ready = 'true';
+
+/* ---------------------------------------------------------- pull-to-refresh */
+// Touch pull at the top of the tracking panel (works in the installed PWA,
+// where the browser's own pull-to-refresh does not exist). Uses the existing
+// refresh gate (window.CEFFLO_CUSTOMER.pullRefresh); never a new request path.
+(function pullToRefresh() {
+  const THRESHOLD = 64, MAX = 96;
+  let startY = null, pull = 0, busy = false, indicator = null;
+  const gate = () => window.CEFFLO_CUSTOMER?.pullRefresh;
+  const panel = () => (ui.view === 'tracking' ? root.querySelector('.panel') : null);
+  const show = (dy, spinning) => {
+    if (!indicator) {
+      indicator = document.createElement('div');
+      indicator.className = 'ptr';
+      indicator.setAttribute('aria-hidden', 'true');
+      indicator.innerHTML = '<span class="spinner"></span>';
+      document.body.append(indicator);
+    }
+    indicator.style.setProperty('--ptr', `${Math.min(dy, MAX)}px`);
+    indicator.style.opacity = String(Math.min(1, dy / THRESHOLD));
+    indicator.classList.toggle('ptr--spin', spinning);
+  };
+  const hide = () => { if (indicator) { indicator.style.opacity = '0'; indicator.style.setProperty('--ptr', '0px'); indicator.classList.remove('ptr--spin'); } };
+
+  root.addEventListener('touchstart', (e) => {
+    const p = panel();
+    if (busy || !gate() || !p || !p.contains(e.target) || p.scrollTop > 0 || e.touches.length !== 1) { startY = null; return; }
+    startY = e.touches[0].clientY; pull = 0;
+  }, { passive: true });
+
+  root.addEventListener('touchmove', (e) => {
+    if (startY === null) return;
+    const p = panel();
+    const dy = e.touches[0].clientY - startY;
+    if (!p || p.scrollTop > 0 || dy <= 0) { if (pull) hide(); startY = dy <= 0 ? null : startY; pull = 0; return; }
+    pull = dy * 0.5;             // resistance: the page itself never moves
+    if (e.cancelable) e.preventDefault();
+    show(pull, false);
+  }, { passive: false });
+
+  root.addEventListener('touchend', async () => {
+    if (startY === null) return;
+    startY = null;
+    if (pull < THRESHOLD) { pull = 0; hide(); return; }
+    pull = 0; busy = true;
+    show(THRESHOLD, true);
+    const started = Date.now();
+    try { await gate()(); } catch (_) { /* the existing states handle failures */ }
+    await new Promise((r) => setTimeout(r, Math.max(0, 450 - (Date.now() - started))));
+    hide(); busy = false;
+  });
+  root.addEventListener('touchcancel', () => { startY = null; pull = 0; if (!busy) hide(); });
+})();
+

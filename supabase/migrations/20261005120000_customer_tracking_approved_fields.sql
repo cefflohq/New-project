@@ -1,6 +1,7 @@
 -- Customer Tracking approved fields (Founder, 2026-10-05, "safer version").
 -- public_tracking additively returns, for the tracking-link holder only:
---   items          orders.items -> name + quantity (max 20), always
+--   items          orders.items -> name (name | product_name_snapshot) +
+--                  quantity (max 20), always
 --   pickup_address businesses.address, always
 --   business_phone businesses.phone (Call / Message target), always
 --   rider_vehicle  riders.vehicle_type, picked_up/out_for_delivery/arrived only
@@ -89,11 +90,11 @@ begin
     'rating_submitted', rt.id is not null,
     -- Founder-approved (2026-10-05): item name + quantity only.
     'items', (select jsonb_agg(jsonb_build_object(
-                'name', left(btrim(x.i ->> 'name'), 80),
+                'name', left(btrim(coalesce(x.i ->> 'name', x.i ->> 'product_name_snapshot')), 80),
                 'qty', case when coalesce(x.i ->> 'qty', x.i ->> 'quantity') ~ '^[0-9]{1,4}$'
                             then coalesce(x.i ->> 'qty', x.i ->> 'quantity')::int else 1 end))
               from (select i from jsonb_array_elements(case when jsonb_typeof(o.items) = 'array' then o.items else '[]'::jsonb end) i
-                    where nullif(btrim(i ->> 'name'), '') is not null limit 20) x),
+                    where nullif(btrim(coalesce(i ->> 'name', i ->> 'product_name_snapshot')), '') is not null limit 20) x),
     -- The store's pickup address and business contact number (never the
     -- Driver's personal phone).
     'pickup_address', nullif(btrim(b.address), ''),
