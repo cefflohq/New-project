@@ -532,17 +532,23 @@ class RiderRepository {
 
   // ------------------------------------------------- Find Jobs (D-75)
 
-  /// Every open opening in the country, nearest first when a location is
-  /// given (used only to compute a rounded distance, never stored).
+  /// Open openings within [radiusKm] (5/10/20/30/50) of the search point
+  /// (GPS or a chosen town), ranked schedule-fit, vehicle-fit, distance,
+  /// start time. The point is only used to compute distance, never stored.
   Future<List<Map<String, dynamic>>> findJobOpenings({
-    double? latitude,
-    double? longitude,
+    required double latitude,
+    required double longitude,
+    int radiusKm = 20,
   }) async {
     if (isDemo) return const [];
     final rows = await _run(
       () => _db.rpc(
         'find_job_openings',
-        params: {'p_lat': latitude, 'p_lng': longitude},
+        params: {
+          'p_lat': latitude,
+          'p_lng': longitude,
+          'p_radius_km': radiusKm,
+        },
       ),
     );
     return _rows(rows);

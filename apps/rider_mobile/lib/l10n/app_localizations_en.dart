@@ -1752,4 +1752,45 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get jobRadius => 'Radius';
+
+  @override
+  String get currentLocation => 'Current location';
+
+  @override
+  String get changeLocation => 'Change location';
+
+  @override
+  String get useMyLocation => 'Use my location';
+
+  @override
+  String get searchTown => 'Search a town';
+
+  @override
+  String withinKm(String km) {
+    return 'Within $km km';
+  }
+
+  @override
+  String noJobsWithin(String km, String place) {
+    return 'No jobs within $km km of $place.';
+  }
+
+  @override
+  String get expandTo50 => 'Expand to 50 km';
+
+  @override
+  String get tryAnotherLocation => 'Try another location.';
+
+  @override
+  String get needLocationTitle => 'Where do you want to work?';
+
+  @override
+  String get needLocationBody =>
+      'Turn on location to see jobs near you, or choose a town.';
+
+  @override
+  String get chooseTown => 'Choose a town';
+
+  @override
+  String get locationOffNote => 'Location is off. Showing the town you chose.';
 }

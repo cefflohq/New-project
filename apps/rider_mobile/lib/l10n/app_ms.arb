@@ -521,5 +521,17 @@
   "noBookingsYet": "Belum ada tempahan. Mohon kekosongan di Cari Kerja.",
   "jobsLoadFailed": "Tidak dapat memuatkan kekosongan. Cuba lagi.",
   "retry2": "Cuba lagi",
-  "jobRadius": "Radius"
+  "jobRadius": "Radius",
+  "currentLocation": "Lokasi semasa",
+  "changeLocation": "Tukar lokasi",
+  "useMyLocation": "Guna lokasi saya",
+  "searchTown": "Cari bandar",
+  "withinKm": "Dalam {km} km",
+  "noJobsWithin": "Tiada kerja dalam {km} km dari {place}.",
+  "expandTo50": "Luaskan ke 50 km",
+  "tryAnotherLocation": "Cuba lokasi lain.",
+  "needLocationTitle": "Di mana anda mahu bekerja?",
+  "needLocationBody": "Hidupkan lokasi untuk lihat kerja berdekatan, atau pilih bandar.",
+  "chooseTown": "Pilih bandar",
+  "locationOffNote": "Lokasi dimatikan. Menunjukkan bandar pilihan anda."
 }

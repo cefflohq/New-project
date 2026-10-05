@@ -812,5 +812,34 @@
   "noBookingsYet": "No bookings yet. Request an opening in Find Jobs.",
   "jobsLoadFailed": "Could not load openings. Pull to try again.",
   "retry2": "Try again",
-  "jobRadius": "Radius"
+  "jobRadius": "Radius",
+  "currentLocation": "Current location",
+  "changeLocation": "Change location",
+  "useMyLocation": "Use my location",
+  "searchTown": "Search a town",
+  "withinKm": "Within {km} km",
+  "@withinKm": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "noJobsWithin": "No jobs within {km} km of {place}.",
+  "@noJobsWithin": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "expandTo50": "Expand to 50 km",
+  "tryAnotherLocation": "Try another location.",
+  "needLocationTitle": "Where do you want to work?",
+  "needLocationBody": "Turn on location to see jobs near you, or choose a town.",
+  "chooseTown": "Choose a town",
+  "locationOffNote": "Location is off. Showing the town you chose."
 }

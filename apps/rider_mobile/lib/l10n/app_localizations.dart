@@ -3229,6 +3229,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Radius'**
   String get jobRadius;
+
+  /// No description provided for @currentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Current location'**
+  String get currentLocation;
+
+  /// No description provided for @changeLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Change location'**
+  String get changeLocation;
+
+  /// No description provided for @useMyLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use my location'**
+  String get useMyLocation;
+
+  /// No description provided for @searchTown.
+  ///
+  /// In en, this message translates to:
+  /// **'Search a town'**
+  String get searchTown;
+
+  /// No description provided for @withinKm.
+  ///
+  /// In en, this message translates to:
+  /// **'Within {km} km'**
+  String withinKm(String km);
+
+  /// No description provided for @noJobsWithin.
+  ///
+  /// In en, this message translates to:
+  /// **'No jobs within {km} km of {place}.'**
+  String noJobsWithin(String km, String place);
+
+  /// No description provided for @expandTo50.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand to 50 km'**
+  String get expandTo50;
+
+  /// No description provided for @tryAnotherLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another location.'**
+  String get tryAnotherLocation;
+
+  /// No description provided for @needLocationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Where do you want to work?'**
+  String get needLocationTitle;
+
+  /// No description provided for @needLocationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on location to see jobs near you, or choose a town.'**
+  String get needLocationBody;
+
+  /// No description provided for @chooseTown.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a town'**
+  String get chooseTown;
+
+  /// No description provided for @locationOffNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Location is off. Showing the town you chose.'**
+  String get locationOffNote;
 }
 
 class _AppLocalizationsDelegate

@@ -1764,4 +1764,46 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get jobRadius => 'Radius';
+
+  @override
+  String get currentLocation => 'Lokasi semasa';
+
+  @override
+  String get changeLocation => 'Tukar lokasi';
+
+  @override
+  String get useMyLocation => 'Guna lokasi saya';
+
+  @override
+  String get searchTown => 'Cari bandar';
+
+  @override
+  String withinKm(String km) {
+    return 'Dalam $km km';
+  }
+
+  @override
+  String noJobsWithin(String km, String place) {
+    return 'Tiada kerja dalam $km km dari $place.';
+  }
+
+  @override
+  String get expandTo50 => 'Luaskan ke 50 km';
+
+  @override
+  String get tryAnotherLocation => 'Cuba lokasi lain.';
+
+  @override
+  String get needLocationTitle => 'Di mana anda mahu bekerja?';
+
+  @override
+  String get needLocationBody =>
+      'Hidupkan lokasi untuk lihat kerja berdekatan, atau pilih bandar.';
+
+  @override
+  String get chooseTown => 'Pilih bandar';
+
+  @override
+  String get locationOffNote =>
+      'Lokasi dimatikan. Menunjukkan bandar pilihan anda.';
 }

@@ -1751,9 +1751,7 @@ Work" rule for the Driver app only.
   migration `20261005100000_rider_hub_find_jobs` (rider_job_openings,
   rider_job_requests, save/close_job_opening Owner-only, find_job_openings,
   request_job_opening, withdraw_job_request, my_job_schedule, approval
-  trigger). Founder rules: every Driver sees every open opening nationwide
-  (to plan moves), nearest first; the vendor sets a rider radius of 5–20 km
-  (default 10). 46/46 staging security tests pass
+  trigger). The vendor sets a preferred rider radius of 5–20 km (default 10). 46/46 staging security tests pass
   (`tests/staging/rider_hub_find_jobs.test.mjs`). Vendor App and Vendor Web
   Riders pages carry the Owner's "Looking for riders" switch.
 - The prototype build still walks the flow with marked example openings.
@@ -1764,3 +1762,20 @@ Work" rule for the Driver app only.
   engine beyond these job bookings, Production rollout. Building
   them needs a security proposal and Founder approval (Security & Access
   Master §27/§30).
+
+### D-75a Find Jobs is nearby-first (Founder, 2026-10-05)
+
+Supersedes the "every opening nationwide" rule above.
+
+- Flow: open Find Jobs, allow GPS, show jobs by distance. **No nationwide
+  feed by default**; without GPS or a chosen town, no list is shown.
+- Distance filter 5 / 10 / 20 / 30 / 50 km, default 20, 50 km maximum (V1).
+  When nothing is within range: "No jobs nearby — expand to 50 km".
+- **Change location**: search/pick another town (bundled town list while
+  Mapbox is on hold), e.g. a rider in KL searching Shah Alam.
+- Distance is from the vendor's pickup origin, never the rider's home or a
+  customer address. Results show area label + distance only ("Bangsar ·
+  3.5 km away"); no precise address.
+- Ranking: schedule-compatible → vehicle-compatible → distance → start time.
+- Migration `20261005110000_rider_hub_nearby_search` (staging). 54/54
+  staging security tests pass.

@@ -52,18 +52,29 @@ for (const [bad, extra] of [['radius 4 km', { p_radius_km: 4 }], ['radius 25 km'
   ok(`invalid opening refused: ${bad}`, r.status >= 400, err(r));
 }
 
-// --- browsing
-const anon = await rpc(null, 'find_job_openings', { p_lat: 6.12, p_lng: 100.37 });
+// --- browsing (nearby-first; business origin is in KL 3.1579,101.7123)
+const NEAR = { p_lat: 3.16, p_lng: 101.71 }, ours = x => [o1.body.id, o2.body.id, o3.body.id].includes(x.opening_id);
+const anon = await rpc(null, 'find_job_openings', { ...NEAR, p_radius_km: 20 });
 ok('anonymous cannot browse openings', anon.status >= 400, err(anon));
-const f = await rpc(applicant, 'find_job_openings', { p_lat: 6.12, p_lng: 100.37 });
-const mine = Array.isArray(f.body) ? f.body.filter(x => [o1.body.id, o2.body.id, o3.body.id].includes(x.opening_id)) : [];
-ok('any signed-in driver sees all open openings', f.status === 200 && mine.length === 3, `${Array.isArray(f.body) ? f.body.length : err(f)} rows`);
+const noLoc = await rpc(applicant, 'find_job_openings', { p_lat: null, p_lng: null, p_radius_km: 20 });
+ok('no nationwide feed: a location is required', noLoc.status >= 400, err(noLoc));
+const badR = await rpc(applicant, 'find_job_openings', { ...NEAR, p_radius_km: 25 });
+ok('radius must be 5/10/20/30/50', badR.status >= 400, err(badR));
+const bigR = await rpc(applicant, 'find_job_openings', { ...NEAR, p_radius_km: 100 });
+ok('radius above 50 km refused', bigR.status >= 400, err(bigR));
+const f = await rpc(applicant, 'find_job_openings', { ...NEAR, p_radius_km: 20 });
+const mine = Array.isArray(f.body) ? f.body.filter(ours) : [];
+ok('nearby rider (default 20 km) sees the openings', f.status === 200 && mine.length === 3, `${Array.isArray(f.body) ? f.body.length : err(f)} rows`);
 const keys = mine[0] ? Object.keys(mine[0]) : [];
-ok('browse returns no address/phone/coordinates', !keys.some(k => /address|phone|email|latitude|longitude|owner|customer/i.test(k)), keys.join(','));
-const far = await rpc(applicant, 'find_job_openings', { p_lat: 3.15, p_lng: 101.71 });
-ok('rider far away (KL) still sees them', Array.isArray(far.body) && far.body.some(x => x.opening_id === o1.body.id));
-const badLoc = await rpc(applicant, 'find_job_openings', { p_lat: 200, p_lng: 1 });
-ok('invalid location refused', badLoc.status >= 400, err(badLoc));
+ok('results carry no address/phone/coordinates', !keys.some(k => /address|phone|email|latitude|longitude|owner|customer/i.test(k)), keys.join(','));
+ok('distance is rounded to 0.5 km from the pickup origin', mine.every(x => Number(x.distance_km) * 2 % 1 === 0 && Number(x.distance_km) < 2), mine.map(x => x.distance_km).join(','));
+const shahAlam = { p_lat: 3.0733, p_lng: 101.5185 };
+const sa20 = await rpc(applicant, 'find_job_openings', { ...shahAlam, p_radius_km: 20 });
+ok('Change location to Shah Alam, 20 km: KL openings not shown', Array.isArray(sa20.body) && !sa20.body.some(ours), `${sa20.body?.length} rows`);
+const sa30 = await rpc(applicant, 'find_job_openings', { ...shahAlam, p_radius_km: 30 });
+ok('Shah Alam expanded to 30 km: KL openings appear', Array.isArray(sa30.body) && sa30.body.filter(ours).length === 3, `${sa30.body?.length} rows`);
+const kedah = await rpc(applicant, 'find_job_openings', { p_lat: 6.12, p_lng: 100.37, p_radius_km: 50 });
+ok('rider in Kedah (50 km max) does not see KL openings', Array.isArray(kedah.body) && !kedah.body.some(ours));
 const direct = await sel(applicant, `rider_job_openings?select=id&business_id=eq.${B}`);
 ok('rider cannot read openings table directly', direct.status === 200 && direct.body.length === 0, JSON.stringify(direct.body));
 ok('rider cannot insert an opening directly', (await ins(applicant, 'rider_job_openings', { business_id: B, area_label: 'x', shift_start: '07:00', shift_end: '08:00', days: [1], vehicle_type: 'car', pay_amount: 1, pay_unit: 'shift', riders_needed: 1 })) >= 400);
@@ -92,7 +103,12 @@ const sched = await rpc(applicant, 'my_job_schedule');
 ok('approval also approves the job request (My Schedule)', Array.isArray(sched.body) && sched.body.some(x => x.opening_id === o1.body.id && x.status === 'approved'), JSON.stringify(sched.body).slice(0, 200));
 const clash = await rpc(applicant, 'request_job_opening', { p_opening_id: o2.body.id });
 ok('overlapping shift refused (Tue 10-13 vs 7-11)', clash.status >= 400 && /Clashes/i.test(err(clash)), err(clash));
-const f2 = await rpc(applicant, 'find_job_openings', { p_lat: 6.12, p_lng: 100.37 });
+const o4 = await rpc(owner, 'save_job_opening', opening({ p_shift_start: '14:00', p_shift_end: '16:00', p_days: [3], p_vehicle_type: 'car' }));
+ok('owner posts a car opening (rider rides a motorbike)', o4.status === 200, err(o4));
+const f2 = await rpc(applicant, 'find_job_openings', { ...NEAR, p_radius_km: 20 });
+const order = f2.body.filter(x => [o2.body.id, o3.body.id, o4.body.id].includes(x.opening_id)).map(x => x.opening_id);
+ok('ranking: compatible + same vehicle, then other vehicle, then clashing last',
+  order[0] === o3.body.id && order[1] === o4.body.id && order[2] === o2.body.id, order.map(id => ({ [o2.body.id]: 'clash', [o3.body.id]: 'night', [o4.body.id]: 'car' })[id]).join(' > '));
 const row2 = f2.body.find(x => x.opening_id === o2.body.id), row1 = f2.body.find(x => x.opening_id === o1.body.id);
 ok('browse marks the clash and my booking', row2?.clash && row1?.my_status === 'approved', `${row2?.clash} / ${row1?.my_status}`);
 const night = await rpc(applicant, 'request_job_opening', { p_opening_id: o3.body.id });
@@ -112,7 +128,7 @@ const after = await rpc(applicant, 'my_job_schedule');
 ok('removal clears the rider\'s bookings', Array.isArray(after.body) && after.body.length === 0, JSON.stringify(after.body).slice(0, 160));
 
 // --- cleanup: close test openings
-for (const o of [o1, o2, o3]) { const c = await rpc(owner, 'close_job_opening', { p_opening_id: o.body.id }); ok('cleanup: owner closes opening', c.status === 200, err(c)); }
+for (const o of [o1, o2, o3, o4]) { const c = await rpc(owner, 'close_job_opening', { p_opening_id: o.body.id }); ok('cleanup: owner closes opening', c.status === 200, err(c)); }
 
 console.log(results.join('\n')); console.log(`\n${results.length - fails}/${results.length} passed`);
 process.exit(fails ? 1 : 0);

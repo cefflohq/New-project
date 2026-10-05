@@ -5,6 +5,7 @@ import '../../core/app_state.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/live_adapters.dart';
+import '../../data/my_towns.dart';
 import '../../data/rider_repository.dart';
 import '../widgets.dart';
 
@@ -94,6 +95,7 @@ class _Opening {
     this.myStatus,
     this.clash,
     this.requirements = const [],
+    this.vehicleMatch = true,
   });
 
   final String id, name, area, category, payUnit, vehicle;
@@ -105,6 +107,9 @@ class _Opening {
   final String? myStatus; // 'pending' | 'approved'
   final String? clash;
   final List<String> requirements;
+
+  /// The opening's vehicle matches the rider's own (ranked first).
+  final bool vehicleMatch;
 
   _Shift get shift => _shiftOf(start);
   String get time => '${_clock(start)} – ${_clock(end)}';
@@ -118,10 +123,13 @@ class _Opening {
       .join()
       .toUpperCase();
   Color get color => _palette[name.hashCode.abs() % _palette.length];
+
+  /// "Bangsar · 3.5 km away": the vendor's area label and the distance from
+  /// its pickup origin. Never a precise address.
   String get meta => [
     if (category.isNotEmpty) category,
     area,
-    if (km != null) '${_num(km!)} km',
+    if (km != null) L.jobAway(_num(km!)),
   ].join(' · ');
 
   static _Opening fromRow(Map<String, dynamic> r) => _Opening(
@@ -141,6 +149,7 @@ class _Opening {
     myStatus: r['my_status'] as String?,
     clash: r['clash'] as String?,
     requirements: [_vehicleLabel((r['vehicle_type'] ?? '').toString())],
+    vehicleMatch: r['vehicle_match'] != false,
   );
 
   _Opening withStatus(String? status) => _Opening(
@@ -161,6 +170,7 @@ class _Opening {
     myStatus: status,
     clash: status == null ? clash : null,
     requirements: requirements,
+    vehicleMatch: vehicleMatch,
   );
 }
 
@@ -199,19 +209,36 @@ class _Booking {
 
 // ------------------------------------------------------------- data store
 
+/// Where the rider is searching from: their GPS position or a chosen town.
+class _Place {
+  const _Place(this.label, this.latitude, this.longitude, {this.gps = false});
+  final String label;
+  final double latitude, longitude;
+  final bool gps;
+}
+
+/// Distance filter (D-75): default 20 km, 50 km maximum for V1.
+const _radii = [5, 10, 20, 30, 50];
+
 /// One place for the tab's data, so the three screens stay in step.
 class _Jobs {
   static final openings = ValueNotifier<List<_Opening>?>(null);
   static final bookings = ValueNotifier<List<_Booking>>(const []);
-  static final hasLocation = ValueNotifier<bool>(false);
+  static final place = ValueNotifier<_Place?>(null);
+  static final radius = ValueNotifier<int>(20);
+  static final needsLocation = ValueNotifier<bool>(false);
   static final error = ValueNotifier<String?>(null);
   static final _demoRequested = <String>{};
 
-  static Future<void> load(AppState app) async {
+  /// [gps]: look up the current position again (first open, "Use my
+  /// location"). A chosen town stays until the rider changes it.
+  static Future<void> load(AppState app, {bool gps = false}) async {
     if (app.repo.isDemo) {
+      place.value ??= const _Place('Alor Setar, Kedah', 6.121, 100.368);
       openings.value = [
         for (final o in _examples)
-          o.withStatus(_demoRequested.contains(o.id) ? 'pending' : null),
+          if ((o.km ?? 0) <= radius.value)
+            o.withStatus(_demoRequested.contains(o.id) ? 'pending' : null),
       ];
       bookings.value = [
         ..._demoBookings,
@@ -226,23 +253,42 @@ class _Jobs {
               days: o.days,
             ),
       ];
-      hasLocation.value = true;
+      needsLocation.value = false;
       return;
     }
     error.value = null;
     try {
-      final fix = await GeolocatorSource().current().timeout(
-        const Duration(seconds: 8),
-        onTimeout: () => null,
-      );
-      hasLocation.value = fix != null;
+      if (place.value == null || (gps && place.value!.gps) || gps) {
+        final fix = await GeolocatorSource().current().timeout(
+          const Duration(seconds: 8),
+          onTimeout: () => null,
+        );
+        if (fix != null) {
+          place.value = _Place(
+            L.currentLocation,
+            fix.latitude,
+            fix.longitude,
+            gps: true,
+          );
+        }
+      }
+      final at = place.value;
+      bookings.value = (await app.repo.myJobSchedule())
+          .map(_Booking.fromRow)
+          .toList();
+      if (at == null) {
+        // No GPS and no town chosen: ask, never fall back to a country feed.
+        needsLocation.value = true;
+        openings.value = const [];
+        return;
+      }
+      needsLocation.value = false;
       final rows = await app.repo.findJobOpenings(
-        latitude: fix?.latitude,
-        longitude: fix?.longitude,
+        latitude: at.latitude,
+        longitude: at.longitude,
+        radiusKm: radius.value,
       );
-      final sched = await app.repo.myJobSchedule();
       openings.value = rows.map(_Opening.fromRow).toList();
-      bookings.value = sched.map(_Booking.fromRow).toList();
     } on RepositoryError catch (e) {
       error.value = e.message;
       openings.value ??= const [];
@@ -250,6 +296,17 @@ class _Jobs {
       error.value = L.jobsLoadFailed;
       openings.value ??= const [];
     }
+  }
+
+  static Future<void> setRadius(AppState app, int km) {
+    radius.value = km;
+    return load(app);
+  }
+
+  static Future<void> setPlace(AppState app, _Place? p) {
+    if (p == null) return load(app, gps: true);
+    place.value = p;
+    return load(app);
   }
 
   static Future<void> request(AppState app, _Opening o) async {
@@ -379,31 +436,53 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _Jobs.load(AppScope.read(context));
+      if (mounted) _Jobs.load(AppScope.read(context), gps: true);
     });
+  }
+
+  Future<void> _changeLocation(AppState app) async {
+    final picked = await showModalBottomSheet<Object>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => const _TownPicker(),
+    );
+    if (picked == null || !mounted) return;
+    if (picked is MyTown) {
+      await _Jobs.setPlace(
+        app,
+        _Place(picked.name, picked.latitude, picked.longitude),
+      );
+    } else {
+      await _Jobs.setPlace(app, null); // use my location
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    return ValueListenableBuilder<bool>(
-      valueListenable: _Jobs.hasLocation,
-      builder: (context, located, _) => CeffloNavySheetScaffold(
-        header: CeffloScreenHeader(
-          title: L.findJobs,
-          onBell: () => app.go(DRoute.notifications),
-          subtitle: _AreaRow(
-            label: app.repo.isDemo
-                ? 'Alor Setar, Kedah · 10 km'
-                : (located ? L.jobsNearestFirst : L.jobsAllAreas),
+    return ValueListenableBuilder<_Place?>(
+      valueListenable: _Jobs.place,
+      builder: (context, place, _) => ValueListenableBuilder<int>(
+        valueListenable: _Jobs.radius,
+        builder: (context, radius, _) => CeffloNavySheetScaffold(
+          header: CeffloScreenHeader(
+            title: L.findJobs,
+            onBell: () => app.go(DRoute.notifications),
+            subtitle: _AreaRow(
+              label: place == null
+                  ? L.chooseTown
+                  : '${place.label} · ${L.withinKm('$radius')}',
+              onChange: () => _changeLocation(app),
+            ),
           ),
+          body: _body(context, app, place, radius),
         ),
-        body: _body(context, app),
       ),
     );
   }
 
-  Widget _body(BuildContext context, AppState app) =>
+  Widget _body(BuildContext context, AppState app, _Place? place, int radius) =>
       ValueListenableBuilder<List<_Opening>?>(
         valueListenable: _Jobs.openings,
         builder: (context, all, _) {
@@ -423,6 +502,11 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
               _ShiftFilter(
                 value: _shift,
                 onChanged: (s) => setState(() => _shift = s),
+              ),
+              const SizedBox(height: Gap.sm),
+              _RadiusFilter(
+                value: radius,
+                onChanged: (km) => _Jobs.setRadius(app, km),
               ),
               _SectionRow(
                 title: L.myWeek,
@@ -447,7 +531,19 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
                         ),
                       ),
               ),
-              if (shown.isEmpty)
+              if (place == null)
+                _NoLocation(
+                  onUseLocation: () => _Jobs.setPlace(app, null),
+                  onChooseTown: () => _changeLocation(app),
+                )
+              else if (all.isEmpty)
+                _NoJobsNearby(
+                  radius: radius,
+                  place: place.label,
+                  onExpand: radius < 50 ? () => _Jobs.setRadius(app, 50) : null,
+                  onChangeLocation: () => _changeLocation(app),
+                )
+              else if (shown.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: Gap.lg),
                   child: Text(
@@ -483,37 +579,224 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
 }
 
 class _AreaRow extends StatelessWidget {
-  const _AreaRow({required this.label});
+  const _AreaRow({required this.label, required this.onChange});
   final String label;
+  final VoidCallback onChange;
 
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(Gap.sm, Gap.sm, Gap.sm, 0),
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .12),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          const Icon(LucideIcons.mapPin, size: 16, color: CefColors.onNavy),
-          const SizedBox(width: Gap.sm),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: CefColors.onNavy,
+    child: GestureDetector(
+      onTap: onChange,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: .12),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            const Icon(LucideIcons.mapPin, size: 16, color: CefColors.onNavy),
+            const SizedBox(width: Gap.sm),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontFamily: 'Manrope',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: CefColors.onNavy,
+                ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: Gap.sm),
+            Text(
+              L.changeArea,
+              style: const TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: CefColors.accent,
+              ),
+            ),
+          ],
+        ),
       ),
     ),
   );
+}
+
+/// 5 · 10 · 20 · 30 · 50 km, cardless like the shift filter.
+class _RadiusFilter extends StatelessWidget {
+  const _RadiusFilter({required this.value, required this.onChanged});
+  final int value;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      for (final km in _radii) ...[
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => onChanged(km),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Text(
+              '$km km',
+              style: TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 13,
+                fontWeight: km == value ? FontWeight.w800 : FontWeight.w600,
+                color: km == value ? CefColors.navy : context.c.textSecondary,
+                decoration: km == value ? TextDecoration.underline : null,
+                decorationThickness: 2,
+              ),
+            ),
+          ),
+        ),
+        if (km != _radii.last) const SizedBox(width: 18),
+      ],
+    ],
+  );
+}
+
+class _NoLocation extends StatelessWidget {
+  const _NoLocation({required this.onUseLocation, required this.onChooseTown});
+  final VoidCallback onUseLocation, onChooseTown;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: Gap.lg),
+    child: Column(
+      children: [
+        const Icon(LucideIcons.mapPinned, size: 34, color: CefColors.navy),
+        const SizedBox(height: Gap.md),
+        Text(
+          L.needLocationTitle,
+          textAlign: TextAlign.center,
+          style: context.t.titleMedium,
+        ),
+        const SizedBox(height: Gap.xs),
+        Text(
+          L.needLocationBody,
+          textAlign: TextAlign.center,
+          style: context.t.bodyMedium?.copyWith(color: context.c.textSecondary),
+        ),
+        const SizedBox(height: Gap.lg),
+        CeffloPrimaryButton(L.useMyLocation, onTap: onUseLocation),
+        const SizedBox(height: Gap.sm),
+        CeffloSecondaryButton(L.chooseTown, onTap: onChooseTown),
+      ],
+    ),
+  );
+}
+
+class _NoJobsNearby extends StatelessWidget {
+  const _NoJobsNearby({
+    required this.radius,
+    required this.place,
+    required this.onExpand,
+    required this.onChangeLocation,
+  });
+  final int radius;
+  final String place;
+  final VoidCallback? onExpand;
+  final VoidCallback onChangeLocation;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: Gap.lg),
+    child: Column(
+      children: [
+        Text(
+          L.noJobsWithin('$radius', place),
+          textAlign: TextAlign.center,
+          style: context.t.bodyMedium?.copyWith(color: context.c.textSecondary),
+        ),
+        const SizedBox(height: Gap.lg),
+        if (onExpand != null)
+          CeffloPrimaryButton(L.expandTo50, onTap: onExpand)
+        else
+          Text(
+            L.tryAnotherLocation,
+            style: context.t.bodyMedium?.copyWith(
+              color: context.c.textSecondary,
+            ),
+          ),
+        const SizedBox(height: Gap.sm),
+        CeffloSecondaryButton(L.changeLocation, onTap: onChangeLocation),
+      ],
+    ),
+  );
+}
+
+/// Change location: "Use my location" or a searchable list of towns.
+class _TownPicker extends StatefulWidget {
+  const _TownPicker();
+
+  @override
+  State<_TownPicker> createState() => _TownPickerState();
+}
+
+class _TownPickerState extends State<_TownPicker> {
+  String _q = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final q = _q.trim().toLowerCase();
+    final towns = [
+      for (final t in myTowns)
+        if (q.isEmpty ||
+            t.name.toLowerCase().contains(q) ||
+            t.state.toLowerCase().contains(q))
+          t,
+    ];
+    return SizedBox(
+      height: MediaQuery.sizeOf(context).height * .75,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: Gap.gutter,
+          right: Gap.gutter,
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(L.changeLocation, style: context.t.titleMedium),
+            const SizedBox(height: Gap.md),
+            TextField(
+              autofocus: false,
+              onChanged: (v) => setState(() => _q = v),
+              decoration: InputDecoration(
+                hintText: L.searchTown,
+                prefixIcon: const Icon(LucideIcons.search, size: 18),
+              ),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(LucideIcons.locateFixed),
+              title: Text(L.useMyLocation),
+              onTap: () => Navigator.of(context).pop('gps'),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView.builder(
+                itemCount: towns.length,
+                itemBuilder: (context, i) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(towns[i].name),
+                  subtitle: Text(towns[i].state),
+                  onTap: () => Navigator.of(context).pop(towns[i]),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// All · Morning · Noon · Night: one cardless line, underline on the
@@ -721,10 +1004,10 @@ class _OpeningCard extends StatelessWidget {
               _Pill(_shiftLabel(o.shift)),
               _Pill(o.time),
               _Pill(_daysLabel(o.days)),
-              if (o.withinRadius == true)
-                _Pill(L.jobWithin(_num(o.radiusKm)), tone: _PillTone.success)
-              else if (o.km != null)
-                _Pill(L.jobAway(_num(o.km!))),
+              _Pill(
+                _vehicleLabel(o.vehicle),
+                tone: o.vehicleMatch ? _PillTone.neutral : _PillTone.warning,
+              ),
               if (o.myStatus == 'approved')
                 _Pill(L.slotBooked, tone: _PillTone.success)
               else if (o.myStatus == 'pending')
