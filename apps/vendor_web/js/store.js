@@ -3,6 +3,7 @@
 // (get_my_businesses); the UI only uses it
 // to decide what to show — the server independently enforces every action.
 import { api } from './api.js';
+import { operatorEntry } from './access.js';
 
 const ACTIVE = 'cefflo.vendorweb.activeBusiness';
 
@@ -22,7 +23,10 @@ export async function loadContext() {
   ctx.user = await api.user();
   const rows = await api.rpc('get_my_businesses');
   const all = Array.isArray(rows) ? rows : [];
-  ctx.businesses = all.filter(b => b.member_role !== 'helper');
+  // Phase 0 role isolation: Operator Access only opens businesses where the
+  // account is an Operator (never its own Owner business). Helpers use the
+  // Helper workspace in the app, never Vendor Web.
+  ctx.businesses = all.filter(b => (operatorEntry() ? b.member_role === 'operator' : b.member_role !== 'helper'));
   if (!ctx.businesses.length) {
     if (all.some(b => b.member_role === 'helper')) throw new HelperOnlyError();
     throw new NoBusinessError();

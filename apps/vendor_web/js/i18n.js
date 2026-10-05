@@ -274,7 +274,7 @@ const en = {
   // auth: Operator Sign-In and the account screens (copy as Vendor Mobile)
   'auth.opAccess': 'Operator Access', 'auth.opWelcome': 'Welcome back', 'auth.opLead': 'Sign in to your store operations',
   'auth.noOpTitle': 'No Operator access yet',
-  'auth.noOpBody': 'This account has no Operator access yet. Accept the invitation link from the business owner, then sign in with the email address it was sent to.',
+  'auth.noOpBody': 'This account has no Operator access yet. Open the invite link or scan the QR code from the business owner, then send your join request.',
   'auth.createTitle': 'Create your account', 'auth.createLead': 'Start managing your deliveries.',
   'auth.confirmPw': 'Confirm password', 'auth.pwRule': 'Use at least 8 characters.', 'auth.create': 'Create account',
   'auth.haveAccount': 'Already have an account?', 'auth.noAccount': "Don't have an account?", 'auth.signUp': 'Sign up',
@@ -545,7 +545,7 @@ const ms = {
   'demo.bar': 'Mod demo', 'demo.barBody': 'Data contoh untuk Kopi Kita. Perubahan tidak disimpan. Log keluar untuk tamat.',
   'auth.opAccess': 'Akses Operator', 'auth.opWelcome': 'Selamat kembali', 'auth.opLead': 'Log masuk ke operasi kedai anda',
   'auth.noOpTitle': 'Belum ada akses Operator',
-  'auth.noOpBody': 'Akaun ini belum ada akses Operator. Terima pautan jemputan daripada pemilik perniagaan, kemudian log masuk dengan alamat e-mel yang menerima jemputan itu.',
+  'auth.noOpBody': 'Akaun ini belum ada akses Operator. Buka pautan jemputan atau imbas kod QR daripada pemilik perniagaan, kemudian hantar permintaan untuk menyertai.',
   'auth.createTitle': 'Cipta akaun anda', 'auth.createLead': 'Mula mengurus penghantaran anda.',
   'auth.confirmPw': 'Sahkan kata laluan', 'auth.pwRule': 'Gunakan sekurang-kurangnya 8 aksara.', 'auth.create': 'Cipta akaun',
   'auth.haveAccount': 'Sudah ada akaun?', 'auth.noAccount': 'Belum ada akaun?', 'auth.signUp': 'Daftar',

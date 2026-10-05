@@ -644,7 +644,10 @@ class AppState extends ChangeNotifier {
       }
       // Memberships come only from the permanent invite link flow: join
       // request → Pending → Owner approval (no email-invitation claim).
-      businesses = await repo.myBusinesses();
+      // Phase 0 role isolation: an entry only ever opens a business where
+      // the account holds that entry's role (an Owner of A who is Operator
+      // of B, opening Operator Access, lands on B and never sees A).
+      businesses = businessesForAccess(await repo.myBusinesses(), access);
       business = businesses.isEmpty ? null : businesses.first;
       // Signed in through the Operator Sign-In but no membership was
       // claimed: say so. Business setup would make this account an Owner.
@@ -754,3 +757,20 @@ const _demoNotifications = [
     read: true,
   ),
 ];
+
+/// The memberships an entry may open (Phase 0, Founder 2026-10-05). The
+/// role still comes from the server; this only stops Operator / Helper
+/// Access from landing in a business where the account has another role
+/// (e.g. its own Owner business). The Vendor entry keeps every membership.
+List<Business> businessesForAccess(List<Business> all, AuthAccess access) =>
+    switch (access) {
+      AuthAccess.operator => [
+        for (final b in all)
+          if (b.role == 'operator') b,
+      ],
+      AuthAccess.helper => [
+        for (final b in all)
+          if (b.isHelper) b,
+      ],
+      AuthAccess.vendor => all,
+    };
