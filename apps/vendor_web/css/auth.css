@@ -235,3 +235,10 @@ html:has(.onb), html:has(.onb) body { background: var(--surface); }
   .auth.choose { padding-bottom: calc(23px + env(safe-area-inset-bottom, 0px)); }
   .auth.choose .auth-pill { min-height: 52px; font-size: 15px; }
 }
+
+/* Edge-to-edge: while a gradient screen (splash, sign-in, auth cards) is up,
+   the page root carries the gradient's bottom stop so the Android gesture /
+   navigation area continues the screen instead of showing a strip. Signed-in
+   pages keep the normal page surface. */
+html:has(#cf-splash), html:has(#cf-splash) body,
+html:has(.auth), html:has(.auth) body { background-color: #0592EB; }

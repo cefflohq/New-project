@@ -86,7 +86,10 @@
        same unit and ratios as CeffloBrandBlock), so the Flutter splash takes
        over with no visible change and no blank or white frame. */
     @font-face { font-family: 'CefManrope'; src: url('assets/assets/fonts/manrope/Manrope-Medium.ttf'); font-weight: 500; font-display: block; }
-    html, body { margin: 0; height: 100%; background: #01265E; }
+    /* Root = bottom stop of the pre-splash gradient, so the Android gesture /
+       navigation area continues the screen from the first frame. The app then
+       keeps it equal to each screen's bottom surface (bottom_surface_web.dart). */
+    html, body { margin: 0; height: 100%; background: #0592EB; }
     #cef-presplash { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg,#01265E 0%,#00378F 35%,#005CC4 70%,#0592EB 100%); z-index: 0; transition: opacity .3s ease; }
     #cef-presplash.gone { opacity: 0; pointer-events: none; }
     .cf-brand{--u:clamp(84px,min(27vw,14.25vh),128px);display:flex;flex-direction:column;align-items:center;color:rgba(255,255,255,.92)}

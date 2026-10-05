@@ -11,6 +11,7 @@ import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/rider_repository.dart';
 import '../brand.dart';
+import '../bottom_surface.dart';
 import '../widgets.dart';
 
 import 'package:cefflo_rider_mobile/l10n/l10n.dart';
@@ -346,18 +347,21 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
-    value: const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      statusBarBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarDividerColor: Colors.transparent,
-      systemNavigationBarIconBrightness: Brightness.light,
-      systemNavigationBarContrastEnforced: false,
-    ),
-    child: Scaffold(
-      body: GestureDetector(onTap: _continue, child: const SplashBackdrop()),
+  Widget build(BuildContext context) => CefBottomSurface(
+    color: CefBottomSurface.gradientBottom,
+    child: AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarDividerColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+        systemNavigationBarContrastEnforced: false,
+      ),
+      child: Scaffold(
+        body: GestureDetector(onTap: _continue, child: const SplashBackdrop()),
+      ),
     ),
   );
 }
@@ -465,95 +469,98 @@ class WelcomeScreen extends StatelessWidget {
   final VoidCallback onInvite;
 
   @override
-  Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
-    value: const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      statusBarBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarDividerColor: Colors.transparent,
-      systemNavigationBarIconBrightness: Brightness.light,
-      systemNavigationBarContrastEnforced: false,
-    ),
-    child: Scaffold(
-      body: NavyBackdrop(
-        child: SafeArea(
-          // Spaced layout on a phone; scrolls instead of overflowing on a
-          // short screen.
-          child: LayoutBuilder(
-            builder: (context, box) => SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: Gap.gutter),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: box.maxHeight),
-                child: IntrinsicHeight(
-                  child: Column(
-                    children: [
-                      const SizedBox(
-                        height: _welcomeTopRow,
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: AuthLanguageControl(),
-                        ),
-                      ),
-                      // Same place as on the splash (screen-centred).
-                      SizedBox(
-                        height: CeffloBrandBlock.gapAbove(
-                          context,
-                          MediaQuery.paddingOf(context).top + _welcomeTopRow,
-                        ),
-                      ),
-                      const CeffloBrandBlock(),
-                      const Spacer(),
-                      _WelcomeOption(
-                        label: L.continueWithGoogle,
-                        image: 'assets/brand/google-g-logo.png',
-                        onTap: onGoogle,
-                      ),
-                      const SizedBox(height: Gap.md),
-                      _WelcomeOption(
-                        label: L.continueWithEmail,
-                        icon: LucideIcons.mail,
-                        onTap: onEmail,
-                      ),
-                      const SizedBox(height: Gap.xl),
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Text(
-                            L.haveInvite,
-                            style: TextStyle(
-                              fontFamily: 'Manrope',
-                              fontSize: 14.5,
-                              fontWeight: FontWeight.w500,
-                              color: CefColors.onNavy.withValues(alpha: .85),
-                            ),
+  Widget build(BuildContext context) => CefBottomSurface(
+    color: CefBottomSurface.gradientBottom,
+    child: AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarDividerColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+        systemNavigationBarContrastEnforced: false,
+      ),
+      child: Scaffold(
+        body: NavyBackdrop(
+          child: SafeArea(
+            // Spaced layout on a phone; scrolls instead of overflowing on a
+            // short screen.
+            child: LayoutBuilder(
+              builder: (context, box) => SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: Gap.gutter),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: box.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        const SizedBox(
+                          height: _welcomeTopRow,
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: AuthLanguageControl(),
                           ),
-                          const SizedBox(width: 6),
-                          InkWell(
-                            onTap: onInvite,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 2,
-                                vertical: 4,
+                        ),
+                        // Same place as on the splash (screen-centred).
+                        SizedBox(
+                          height: CeffloBrandBlock.gapAbove(
+                            context,
+                            MediaQuery.paddingOf(context).top + _welcomeTopRow,
+                          ),
+                        ),
+                        const CeffloBrandBlock(),
+                        const Spacer(),
+                        _WelcomeOption(
+                          label: L.continueWithGoogle,
+                          image: 'assets/brand/google-g-logo.png',
+                          onTap: onGoogle,
+                        ),
+                        const SizedBox(height: Gap.md),
+                        _WelcomeOption(
+                          label: L.continueWithEmail,
+                          icon: LucideIcons.mail,
+                          onTap: onEmail,
+                        ),
+                        const SizedBox(height: Gap.xl),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              L.haveInvite,
+                              style: TextStyle(
+                                fontFamily: 'Manrope',
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w500,
+                                color: CefColors.onNavy.withValues(alpha: .85),
                               ),
-                              child: Text(
-                                L.getStarted,
-                                style: const TextStyle(
-                                  fontFamily: 'Manrope',
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: CefColors.onNavy,
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: CefColors.onNavy,
+                            ),
+                            const SizedBox(width: 6),
+                            InkWell(
+                              onTap: onInvite,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 2,
+                                  vertical: 4,
+                                ),
+                                child: Text(
+                                  L.getStarted,
+                                  style: const TextStyle(
+                                    fontFamily: 'Manrope',
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: CefColors.onNavy,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: CefColors.onNavy,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: Gap.lg),
-                    ],
+                          ],
+                        ),
+                        const SizedBox(height: Gap.lg),
+                      ],
+                    ),
                   ),
                 ),
               ),

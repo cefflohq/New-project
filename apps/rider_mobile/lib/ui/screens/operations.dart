@@ -10,6 +10,7 @@ import '../../core/dial.dart';
 import '../../data/demo_data.dart';
 import '../../data/driver_models.dart';
 import '../map_canvas.dart';
+import '../bottom_surface.dart';
 import '../widgets.dart';
 
 import 'package:cefflo_rider_mobile/l10n/l10n.dart';
@@ -1166,195 +1167,204 @@ class NavigationToStopScreen extends StatelessWidget {
     final app = AppScope.of(context);
     final stop = app.activeStop;
     final c = context.c;
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
-        systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarDividerColor: Colors.transparent,
-        systemNavigationBarIconBrightness: Brightness.dark,
-        systemNavigationBarContrastEnforced: false,
-      ),
-      child: Scaffold(
-        backgroundColor: c.card,
-        body: Column(
-          children: [
-            // Turn instruction card, sitting on the device status bar.
-            Container(
-              color: CefColors.navy,
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    Gap.lg,
-                    Gap.md,
-                    Gap.lg,
-                    Gap.lg,
+    return CefBottomSurface(
+      color: context.c.card,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarDividerColor: Colors.transparent,
+          systemNavigationBarIconBrightness: Brightness.dark,
+          systemNavigationBarContrastEnforced: false,
+        ),
+        child: Scaffold(
+          backgroundColor: c.card,
+          body: Column(
+            children: [
+              // Turn instruction card, sitting on the device status bar.
+              Container(
+                color: CefColors.navy,
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      Gap.lg,
+                      Gap.md,
+                      Gap.lg,
+                      Gap.lg,
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          LucideIcons.cornerUpRight,
+                          size: 40,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: Gap.lg),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                stop.distanceMetres == null
+                                    ? '—'
+                                    : '${stop.distanceMetres} m',
+                                style: const TextStyle(
+                                  fontFamily: 'Manrope',
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  letterSpacing: -0.6,
+                                ),
+                              ),
+                              Text(
+                                stop.addressLine1.replaceAll(',', ''),
+                                style: const TextStyle(
+                                  fontFamily: 'Manrope',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: CefColors.onNavyMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        LucideIcons.cornerUpRight,
-                        size: 40,
-                        color: Colors.white,
+                ),
+              ),
+              Expanded(
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: MapCanvas(
+                        route: _route,
+                        // Illustrative map: real place names only in the prototype.
+                        labels: app.repo.isDemo
+                            ? [
+                                MapLabel(
+                                  L.setapak,
+                                  Offset(0.66, 0.60),
+                                  big: true,
+                                ),
+                              ]
+                            : const [],
+                        markers: const [
+                          MapMarker(position: Offset(0.57, 0.18), pin: true),
+                        ],
                       ),
-                      const SizedBox(width: Gap.lg),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                    Positioned(
+                      left: Gap.md,
+                      top: Gap.md,
+                      child: Column(
+                        children: [
+                          MapControlButton(
+                            icon: LucideIcons.chevronLeft,
+                            onTap: app.back,
+                          ),
+                          const SizedBox(height: Gap.sm),
+                          const MapControlButton(icon: LucideIcons.volume2),
+                          const SizedBox(height: Gap.sm),
+                          const MapControlButton(icon: LucideIcons.layers),
+                          const SizedBox(height: Gap.sm),
+                          const MapControlButton(icon: LucideIcons.navigation),
+                        ],
+                      ),
+                    ),
+                    const Positioned(
+                      right: Gap.md,
+                      bottom: Gap.md,
+                      child: MapRecenterPill(),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: c.card,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(Sizes.sheetRadius),
+                  ),
+                  boxShadow: cefSheetShadow(),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      Gap.gutter,
+                      0,
+                      Gap.gutter,
+                      Gap.lg,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SheetGrabber(),
+                        const SizedBox(height: 4),
+                        Text(stop.reference, style: context.t.labelSmall),
+                        const SizedBox(height: 1),
+                        Text(
+                          stop.customerName,
+                          style: context.t.displaySmall?.copyWith(fontSize: 20),
+                        ),
+                        const SizedBox(height: 4),
+                        MetaRow(
+                          icon: LucideIcons.mapPin,
+                          text: [
+                            stop.addressLine1,
+                            if (stop.addressLine2 != null) stop.addressLine2!,
+                          ].join(' '),
+                          dense: true,
+                        ),
+                        Row(
                           children: [
-                            Text(
-                              stop.distanceMetres == null
-                                  ? '—'
-                                  : '${stop.distanceMetres} m',
-                              style: const TextStyle(
-                                fontFamily: 'Manrope',
-                                fontSize: 30,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                                letterSpacing: -0.6,
+                            Expanded(
+                              child: MetaRow(
+                                icon: LucideIcons.clock,
+                                text: stop.etaMinutes == null
+                                    ? '—'
+                                    : L.min(stop.etaMinutes!),
+                                dense: true,
                               ),
                             ),
-                            Text(
-                              stop.addressLine1.replaceAll(',', ''),
-                              style: const TextStyle(
-                                fontFamily: 'Manrope',
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: CefColors.onNavyMuted,
+                            Expanded(
+                              child: MetaRow(
+                                icon: LucideIcons.route,
+                                text: stop.distanceMetres == null
+                                    ? '—'
+                                    : '${stop.distanceMetres} m',
+                                dense: true,
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: MapCanvas(
-                      route: _route,
-                      // Illustrative map: real place names only in the prototype.
-                      labels: app.repo.isDemo
-                          ? [MapLabel(L.setapak, Offset(0.66, 0.60), big: true)]
-                          : const [],
-                      markers: const [
-                        MapMarker(position: Offset(0.57, 0.18), pin: true),
-                      ],
-                    ),
-                  ),
-                  Positioned(
-                    left: Gap.md,
-                    top: Gap.md,
-                    child: Column(
-                      children: [
-                        MapControlButton(
-                          icon: LucideIcons.chevronLeft,
-                          onTap: app.back,
-                        ),
-                        const SizedBox(height: Gap.sm),
-                        const MapControlButton(icon: LucideIcons.volume2),
-                        const SizedBox(height: Gap.sm),
-                        const MapControlButton(icon: LucideIcons.layers),
-                        const SizedBox(height: Gap.sm),
-                        const MapControlButton(icon: LucideIcons.navigation),
-                      ],
-                    ),
-                  ),
-                  const Positioned(
-                    right: Gap.md,
-                    bottom: Gap.md,
-                    child: MapRecenterPill(),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: c.card,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(Sizes.sheetRadius),
-                ),
-                boxShadow: cefSheetShadow(),
-              ),
-              child: SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    Gap.gutter,
-                    0,
-                    Gap.gutter,
-                    Gap.lg,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SheetGrabber(),
-                      const SizedBox(height: 4),
-                      Text(stop.reference, style: context.t.labelSmall),
-                      const SizedBox(height: 1),
-                      Text(
-                        stop.customerName,
-                        style: context.t.displaySmall?.copyWith(fontSize: 20),
-                      ),
-                      const SizedBox(height: 4),
-                      MetaRow(
-                        icon: LucideIcons.mapPin,
-                        text: [
-                          stop.addressLine1,
-                          if (stop.addressLine2 != null) stop.addressLine2!,
-                        ].join(' '),
-                        dense: true,
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: MetaRow(
-                              icon: LucideIcons.clock,
-                              text: stop.etaMinutes == null
-                                  ? '—'
-                                  : L.min(stop.etaMinutes!),
-                              dense: true,
-                            ),
-                          ),
-                          Expanded(
-                            child: MetaRow(
-                              icon: LucideIcons.route,
-                              text: stop.distanceMetres == null
-                                  ? '—'
-                                  : '${stop.distanceMetres} m',
-                              dense: true,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: Gap.md),
-                      CeffloSlideAction(
-                        label: L.slideArrive,
-                        onConfirmed: () async {
-                          // Real build: rider_transition -> arrived.
-                          try {
-                            await app.arriveAt(stop.id);
-                            app.go(DRoute.confirmDelivery, entityId: stop.id);
-                          } catch (e) {
-                            if (context.mounted) {
-                              showCefToast(context, '$e', error: true);
+                        const SizedBox(height: Gap.md),
+                        CeffloSlideAction(
+                          label: L.slideArrive,
+                          onConfirmed: () async {
+                            // Real build: rider_transition -> arrived.
+                            try {
+                              await app.arriveAt(stop.id);
+                              app.go(DRoute.confirmDelivery, entityId: stop.id);
+                            } catch (e) {
+                              if (context.mounted) {
+                                showCefToast(context, '$e', error: true);
+                              }
                             }
-                          }
-                        },
-                      ),
-                    ],
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

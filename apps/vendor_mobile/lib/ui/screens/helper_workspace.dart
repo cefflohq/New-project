@@ -225,6 +225,8 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
     return CefSystemBars(
       background: Brightness.dark,
       browserChromeColor: const Color(0xFF0A2A8A),
+      // Header is dark, but the workspace ends on its white surface.
+      browserBottomColor: Colors.white,
       child: FutureBuilder<FulfilmentBoard>(
         future: _load,
         builder: (context, snap) {

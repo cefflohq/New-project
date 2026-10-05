@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/bottom_surface.dart';
 import '../core/chrome_color.dart';
+import '../core/theme.dart';
 
 /// Cefflo's single reusable mechanism for edge-to-edge Android/iOS system
 /// chrome. No screen or widget should call
@@ -37,6 +39,7 @@ class CefSystemBars extends StatelessWidget {
     super.key,
     required Brightness background,
     this.browserChromeColor,
+    this.browserBottomColor,
     required this.child,
   }) : statusBarBackground = background,
        navigationBarBackground = background;
@@ -49,6 +52,7 @@ class CefSystemBars extends StatelessWidget {
     required this.statusBarBackground,
     required this.navigationBarBackground,
     this.browserChromeColor,
+    this.browserBottomColor,
     required this.child,
   });
 
@@ -68,6 +72,13 @@ class CefSystemBars extends StatelessWidget {
   /// below; Flutter Web needs this separate DOM path because SystemChrome
   /// cannot recolour Android's browser-owned status bar.
   final Color? browserChromeColor;
+
+  /// The colour at the screen's bottom edge, painted behind the Android
+  /// gesture / navigation area on web so the screen runs to the physical
+  /// edge (see [syncBrowserBottomColor]). Defaults from
+  /// [navigationBarBackground]: the brand gradient's bottom stop on dark
+  /// (gradient) screens, the theme's card surface on light ones.
+  final Color? browserBottomColor;
 
   final Widget child;
 
@@ -113,17 +124,77 @@ class CefSystemBars extends StatelessWidget {
     );
   }
 
+  /// Bottom stop of [CefGradients.brand], the auth/splash backdrop.
+  static const gradientBottom = Color(0xFF0592EB);
+
   @override
-  Widget build(BuildContext context) => _BrowserChromeSync(
-    color: browserChromeColor,
-    child: AnnotatedRegion<SystemUiOverlayStyle>(
-      value: styleFor(
-        statusBarBackground: statusBarBackground,
-        navigationBarBackground: navigationBarBackground,
+  Widget build(BuildContext context) => _BrowserBottomSync(
+    color:
+        browserBottomColor ??
+        (navigationBarBackground == Brightness.dark
+            ? gradientBottom
+            : (Theme.of(context).extension<CefColors>()?.card ?? Colors.white)),
+    child: _BrowserChromeSync(
+      color: browserChromeColor,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: styleFor(
+          statusBarBackground: statusBarBackground,
+          navigationBarBackground: navigationBarBackground,
+        ),
+        child: child,
       ),
-      child: child,
     ),
   );
+}
+
+/// Same owner-stack rule as the top colour: the newest mounted screen
+/// decides, and removing it hands the bottom back to the screen below.
+class _BrowserBottomSync extends StatefulWidget {
+  const _BrowserBottomSync({required this.color, required this.child});
+
+  final Color color;
+  final Widget child;
+
+  @override
+  State<_BrowserBottomSync> createState() => _BrowserBottomSyncState();
+}
+
+class _BrowserBottomSyncState extends State<_BrowserBottomSync> {
+  final Object _owner = Object();
+
+  @override
+  void initState() {
+    super.initState();
+    _setBottomEntry(_owner, widget.color);
+  }
+
+  @override
+  void didUpdateWidget(_BrowserBottomSync oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.color != oldWidget.color) {
+      _setBottomEntry(_owner, widget.color);
+    }
+  }
+
+  @override
+  void dispose() {
+    _bottomStack.removeWhere((e) => identical(e.owner, _owner));
+    if (_bottomStack.isNotEmpty) {
+      syncBrowserBottomColor(_bottomStack.last.color);
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+final List<({Object owner, Color color})> _bottomStack = [];
+
+void _setBottomEntry(Object owner, Color color) {
+  _bottomStack.removeWhere((e) => identical(e.owner, owner));
+  _bottomStack.add((owner: owner, color: color));
+  syncBrowserBottomColor(_bottomStack.last.color);
 }
 
 class _BrowserChromeSync extends StatefulWidget {

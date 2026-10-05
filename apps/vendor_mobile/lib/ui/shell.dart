@@ -135,6 +135,8 @@ class VendorShell extends StatelessWidget {
         statusBarBackground: Brightness.dark,
         navigationBarBackground: Brightness.light,
         browserChromeColor: look.chrome,
+        // The bottom navigation bar's own surface runs to the edge.
+        browserBottomColor: context.c.chrome,
         child: PopScope(
           canPop: !app.canGoBack,
           onPopInvokedWithResult: (didPop, _) {

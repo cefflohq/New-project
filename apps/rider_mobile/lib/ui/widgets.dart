@@ -7,6 +7,9 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+
+import 'bottom_surface.dart';
+
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -508,132 +511,137 @@ class CeffloAuthScaffold extends StatelessWidget {
       child: sheet,
     );
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: _surfaceSystemUi(),
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        body: NavyBackdrop(
-          child: SafeArea(
-            bottom: false,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    Gap.gutter,
-                    8,
-                    Gap.gutter,
-                    Gap.xl,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Header row: back, title centred on the screen, action.
-                      SizedBox(
-                        height: Sizes.tapTarget,
-                        child: Stack(
-                          children: [
-                            if (title != null)
-                              Center(
-                                child: Padding(
-                                  // Room for back (left) and the language
-                                  // control (right); long titles scale down
-                                  // instead of being cut off.
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: headerAction == null ? 48 : 60,
-                                  ),
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                      title!.replaceAll('\n', ' '),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                      style: cefHeaderTitleStyle,
+    return CefBottomSurface(
+      color: context.c.card,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: _surfaceSystemUi(),
+        child: Scaffold(
+          resizeToAvoidBottomInset: true,
+          body: NavyBackdrop(
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      Gap.gutter,
+                      8,
+                      Gap.gutter,
+                      Gap.xl,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Header row: back, title centred on the screen, action.
+                        SizedBox(
+                          height: Sizes.tapTarget,
+                          child: Stack(
+                            children: [
+                              if (title != null)
+                                Center(
+                                  child: Padding(
+                                    // Room for back (left) and the language
+                                    // control (right); long titles scale down
+                                    // instead of being cut off.
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: headerAction == null
+                                          ? 48
+                                          : 60,
+                                    ),
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        title!.replaceAll('\n', ' '),
+                                        textAlign: TextAlign.center,
+                                        maxLines: 1,
+                                        style: cefHeaderTitleStyle,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            if (onBack != null)
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                // 12px from the screen edge (all surfaces).
-                                child: Transform.translate(
-                                  offset: const Offset(
-                                    Gap.backInset - Gap.gutter,
-                                    0,
-                                  ),
-                                  child: CeffloBackButton(onTap: onBack!),
-                                ),
-                              ),
-                            // The action keeps inside its reserved 104px
-                            // (longer translations scale down rather than
-                            // run into the centred title).
-                            if (headerAction != null)
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: ConstrainedBox(
-                                  constraints: const BoxConstraints(
-                                    maxWidth: 100,
-                                  ),
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: headerAction,
+                              if (onBack != null)
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  // 12px from the screen edge (all surfaces).
+                                  child: Transform.translate(
+                                    offset: const Offset(
+                                      Gap.backInset - Gap.gutter,
+                                      0,
+                                    ),
+                                    child: CeffloBackButton(onTap: onBack!),
                                   ),
                                 ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: Gap.md),
-                      SizedBox(
-                        width: double.infinity,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            const Positioned(
-                              right: -4,
-                              top: -38,
-                              child: CeffloAuthWatermark(),
-                            ),
-                            header,
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  // The sheet's rounded top stays put while its content
-                  // scrolls underneath it (Founder, 2026-10-04).
-                  child: scrollable
-                      ? ClipRRect(
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(Sizes.sheetRadius),
-                          ),
-                          child: LayoutBuilder(
-                            builder: (context, viewport) =>
-                                SingleChildScrollView(
-                                  padding: EdgeInsets.only(
-                                    bottom: MediaQuery.of(context)
-                                        .viewInsets
-                                        .bottom,
-                                  ),
-                                  // The sheet starts right under the header and
-                                  // always reaches the bottom edge.
+                              // The action keeps inside its reserved 104px
+                              // (longer translations scale down rather than
+                              // run into the centred title).
+                              if (headerAction != null)
+                                Align(
+                                  alignment: Alignment.centerRight,
                                   child: ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                      minHeight: viewport.maxHeight,
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 100,
                                     ),
-                                    child: sheetSurface(
-                                      minHeight: viewport.maxHeight,
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: headerAction,
                                     ),
                                   ),
                                 ),
+                            ],
                           ),
-                        )
-                      : sheetSurface(),
-                ),
-              ],
+                        ),
+                        const SizedBox(height: Gap.md),
+                        SizedBox(
+                          width: double.infinity,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              const Positioned(
+                                right: -4,
+                                top: -38,
+                                child: CeffloAuthWatermark(),
+                              ),
+                              header,
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    // The sheet's rounded top stays put while its content
+                    // scrolls underneath it (Founder, 2026-10-04).
+                    child: scrollable
+                        ? ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(Sizes.sheetRadius),
+                            ),
+                            child: LayoutBuilder(
+                              builder: (context, viewport) =>
+                                  SingleChildScrollView(
+                                    padding: EdgeInsets.only(
+                                      bottom: MediaQuery.of(context)
+                                          .viewInsets
+                                          .bottom,
+                                    ),
+                                    // The sheet starts right under the header and
+                                    // always reaches the bottom edge.
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        minHeight: viewport.maxHeight,
+                                      ),
+                                      child: sheetSurface(
+                                        minHeight: viewport.maxHeight,
+                                      ),
+                                    ),
+                                  ),
+                            ),
+                          )
+                        : sheetSurface(),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -680,54 +688,57 @@ class CeffloNavySheetScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sheetChild = Padding(padding: bodyPadding, child: body);
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: _surfaceSystemUi(),
-      // Transparent: the shell paints the one navy gradient behind every
-      // signed-in screen, so it never restarts between tabs.
-      child: Stack(
-        children: [
-          const ChevronWatermark(),
-          Column(
-            children: [
-              header,
-              // No lift shadow: the surface is attached to the header rather
-              // than floating over it, and an upward shadow only paints a
-              // dark seam line (and a dark arc in the corner notches) along
-              // the join.
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: context.c.card,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(sheetRadius),
+    return CefBottomSurface(
+      color: context.c.card,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: _surfaceSystemUi(),
+        // Transparent: the shell paints the one navy gradient behind every
+        // signed-in screen, so it never restarts between tabs.
+        child: Stack(
+          children: [
+            const ChevronWatermark(),
+            Column(
+              children: [
+                header,
+                // No lift shadow: the surface is attached to the header rather
+                // than floating over it, and an upward shadow only paints a
+                // dark seam line (and a dark arc in the corner notches) along
+                // the join.
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: context.c.card,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(sheetRadius),
+                      ),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: scrollable
+                              ? SingleChildScrollView(child: sheetChild)
+                              : sheetChild,
+                        ),
+                        if (footer != null)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                              Gap.gutter,
+                              Gap.sm,
+                              Gap.gutter,
+                              Gap.lg,
+                            ),
+                            child: footer!,
+                          ),
+                      ],
                     ),
                   ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: scrollable
-                            ? SingleChildScrollView(child: sheetChild)
-                            : sheetChild,
-                      ),
-                      if (footer != null)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            Gap.gutter,
-                            Gap.sm,
-                            Gap.gutter,
-                            Gap.lg,
-                          ),
-                          child: footer!,
-                        ),
-                    ],
-                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
