@@ -240,7 +240,7 @@ class RiderRepository {
     final businessRows = await _run(
       () => _db
           .from('businesses')
-          .select('id,name,address')
+          .select('id,name,address,phone')
           .inFilter('id', businessIds.toList()),
     );
     final nameById = {
@@ -250,6 +250,10 @@ class RiderRepository {
     final addressById = {
       for (final b in _rows(businessRows))
         b['id'].toString(): b['address']?.toString(),
+    };
+    final phoneById = {
+      for (final b in _rows(businessRows))
+        b['id'].toString(): b['phone']?.toString(),
     };
     return relationships
         .map(
@@ -265,6 +269,7 @@ class RiderRepository {
             },
             businessName: nameById[r.businessId],
             businessAddress: addressById[r.businessId],
+            businessPhone: phoneById[r.businessId],
           ),
         )
         .toList();

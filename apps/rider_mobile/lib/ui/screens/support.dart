@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/app_state.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
+import '../../core/dial.dart';
 import '../../data/demo_data.dart';
 import '../../data/driver_models.dart';
 import '../widgets.dart';
@@ -358,8 +359,7 @@ class VendorSupportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    // Live: the Driver's own business. Call/chat are prototype-only until a
-    // business contact channel exists.
+    // Live: the Driver's own business; Call uses its phone on record.
     final demo = app.repo.isDemo;
     final vendor = demo
         ? DemoData.supportVendor
@@ -459,15 +459,26 @@ class VendorSupportScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (demo) ...[
+                // Live: Call dials the business's own number when it has
+                // one; chat has no channel yet, so it stays prototype-only.
+                if (demo || (vendor.phone ?? '').isNotEmpty) ...[
                   const SizedBox(height: Gap.md),
                   Divider(height: 1, color: c.border),
                   _ContactRow(
                     icon: LucideIcons.phone,
                     title: L.call,
                     subtitle: vendor.phone ?? '',
-                    onTap: () => _toast(context, L.calling2(vendor.name)),
+                    onTap: demo
+                        ? () => _toast(context, L.calling2(vendor.name))
+                        : () async {
+                            if (!await dialPhone(vendor.phone) &&
+                                context.mounted) {
+                              showCefToast(context, L.phoneNotAvailable);
+                            }
+                          },
                   ),
+                ],
+                if (demo) ...[
                   Divider(height: 1, color: c.border),
                   _ContactRow(
                     icon: LucideIcons.messageSquare,

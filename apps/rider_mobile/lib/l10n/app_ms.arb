@@ -287,6 +287,7 @@
   "min": "{etaMinutes} min",
   "slideArrive": "Leret untuk Tiba",
   "calling": "Memanggil {customerName}…",
+  "phoneNotAvailable": "Tiada nombor telefon",
   "openingChat": "Membuka sembang…",
   "orderDetails": "Butiran Pesanan",
   "noItemisedOrderLinesStop": "Tiada senarai item pesanan untuk hentian ini.",

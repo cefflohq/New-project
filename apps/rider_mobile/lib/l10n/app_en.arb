@@ -418,6 +418,7 @@
       }
     }
   },
+  "phoneNotAvailable": "No phone number available",
   "openingChat": "Opening chat…",
   "orderDetails": "Order Details",
   "noItemisedOrderLinesStop": "No itemised order lines for this stop.",

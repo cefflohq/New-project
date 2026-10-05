@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/app_state.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
+import '../../core/dial.dart';
 import '../../data/demo_data.dart';
 import '../../data/driver_models.dart';
 import '../map_canvas.dart';
@@ -1455,21 +1456,31 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
               const SizedBox(width: 8),
               _RoundAction(
                 icon: LucideIcons.phone,
-                onTap: () => _showTopNotice(
-                  context,
-                  L.calling(stop.customerName),
-                  LucideIcons.phone,
-                ),
+                onTap: AppScope.read(context).repo.isDemo
+                    ? () => _showTopNotice(
+                        context,
+                        L.calling(stop.customerName),
+                        LucideIcons.phone,
+                      )
+                    // Live: really dial the customer's number.
+                    : () async {
+                        if (!await dialPhone(stop.phone) && context.mounted) {
+                          showCefToast(context, L.phoneNotAvailable);
+                        }
+                      },
               ),
-              const SizedBox(width: 8),
-              _RoundAction(
-                icon: LucideIcons.messageCircle,
-                onTap: () => _showTopNotice(
-                  context,
-                  L.openingChat,
-                  LucideIcons.messageCircle,
+              // Chat has no channel yet: the prototype only.
+              if (AppScope.read(context).repo.isDemo) ...[
+                const SizedBox(width: 8),
+                _RoundAction(
+                  icon: LucideIcons.messageCircle,
+                  onTap: () => _showTopNotice(
+                    context,
+                    L.openingChat,
+                    LucideIcons.messageCircle,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
           const SizedBox(height: Gap.lg),

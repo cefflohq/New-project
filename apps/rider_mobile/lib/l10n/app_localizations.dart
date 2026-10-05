@@ -1820,6 +1820,12 @@ abstract class AppLocalizations {
   /// **'Calling {customerName}…'**
   String calling(Object customerName);
 
+  /// No description provided for @phoneNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No phone number available'**
+  String get phoneNotAvailable;
+
   /// No description provided for @openingChat.
   ///
   /// In en, this message translates to:

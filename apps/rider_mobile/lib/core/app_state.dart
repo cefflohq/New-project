@@ -674,6 +674,8 @@ class AppState extends ChangeNotifier {
         name: rel.businessName ?? L.business,
         category: '',
         location: rel.businessAddress ?? '',
+        // Contact only while the relationship is active.
+        phone: rel.isActive ? rel.businessPhone : null,
       );
       profile = DriverProfile(
         fullName: rel.name,
@@ -753,10 +755,21 @@ class AppState extends ChangeNotifier {
     ]..sort((a, b) => (a.sequence ?? 1 << 30).compareTo(b.sequence ?? 1 << 30));
     final phase = _phaseOf(r);
     final biz = active?.businessName ?? business?.name ?? L.business;
+    // A finished run is dated by its last completed delivery, so History
+    // never labels an older run with today's date.
+    final finished = [
+      for (final o in r.orders)
+        if (o.completedAt != null) o.completedAt!,
+    ]..sort();
     return DriverRun(
       id: r.sessionId ?? 'run',
       reference: r.waveName ?? L.deliveryRun,
-      dateLabel: todayDateLabel,
+      dateLabel: phase == RunPhase.done && finished.isNotEmpty
+          ? _dateLabel(finished.last)
+          : todayDateLabel,
+      completedAtLabel: phase == RunPhase.done && finished.isNotEmpty
+          ? _timeLabel(finished.last)
+          : null,
       zone: biz,
       pickupBusinessName: biz,
       pickupAddress: active?.businessAddress ?? '',
@@ -813,9 +826,14 @@ class AppState extends ChangeNotifier {
     L.nov,
     L.dec,
   ];
-  static String _dateLabel(DateTime d) =>
-      '${_days[d.weekday - 1]}, ${d.day} ${_months[d.month - 1]} ${d.year}';
-  static String _timeLabel(DateTime t) =>
+  // Backend timestamps arrive in UTC; labels are always the device's time.
+  static String _dateLabel(DateTime utc) {
+    final d = utc.toLocal();
+    return '${_days[d.weekday - 1]}, ${d.day} ${_months[d.month - 1]} ${d.year}';
+  }
+
+  static String _timeLabel(DateTime utc) => _clock(utc.toLocal());
+  static String _clock(DateTime t) =>
       '${(t.hour % 12 == 0 ? 12 : t.hour % 12).toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')} ${t.hour < 12 ? 'AM' : 'PM'}';
 
   // --- real build: canonical Driver execution actions --------------------

@@ -59,6 +59,7 @@ class RiderRelationship {
     required this.name,
     this.businessName,
     this.businessAddress,
+    this.businessPhone,
     this.phone,
     this.vehicleType,
     this.plate,
@@ -70,6 +71,10 @@ class RiderRelationship {
   final String name;
   final String? businessName;
   final String? businessAddress;
+
+  /// The business's own contact number (businesses.phone), for Vendor
+  /// Support's Call.
+  final String? businessPhone;
   final String? phone;
   final String? vehicleType;
   final String? plate;
@@ -81,6 +86,7 @@ class RiderRelationship {
     Map<String, dynamic> row, {
     String? businessName,
     String? businessAddress,
+    String? businessPhone,
   }) => RiderRelationship(
     id: row['id'].toString(),
     businessId: row['business_id'].toString(),
@@ -88,6 +94,7 @@ class RiderRelationship {
     name: (row['name'] ?? '').toString(),
     businessName: businessName,
     businessAddress: businessAddress,
+    businessPhone: businessPhone,
     phone: row['phone']?.toString(),
     vehicleType: row['vehicle_type']?.toString(),
     plate: row['vehicle_plate']?.toString(),

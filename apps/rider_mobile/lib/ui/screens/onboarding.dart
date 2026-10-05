@@ -6,6 +6,7 @@ import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/demo_data.dart';
 import '../../data/driver_models.dart';
+import '../invite_qr_scanner.dart';
 import '../../data/rider_repository.dart' show RepositoryError;
 import '../brand.dart';
 import '../widgets.dart';
@@ -1351,6 +1352,28 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
     }
   }
 
+  /// Live: scan the business's invite QR. It carries the same invite link,
+  /// so it fills the field and follows the same path as a pasted link.
+  Future<void> _scan() async {
+    final value = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => const InviteQrScanner(),
+      ),
+    );
+    if (!mounted || value == null) return;
+    if (invitationTokenFrom(value) == null &&
+        openInviteTokenFrom(value) == null) {
+      setState(() => _error = L.pasteFullInvitationLink);
+      return;
+    }
+    _link.text = value;
+    setState(() => _error = null);
+    // A personal invite needs nothing else; a permanent link still asks
+    // who is joining (name and phone) before Continue.
+    if (_openToken == null) await _join();
+  }
+
   Future<void> _join() async {
     final app = AppScope.read(context);
     if (app.repo.isDemo) {
@@ -1391,7 +1414,7 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    // QR scanning is not built yet: the live app offers the link only.
+    // Live: paste the invite link or scan its QR; the demo also shows tabs.
     final demo = app.repo.isDemo;
     return CeffloNavySheetScaffold(
       header: CeffloBrandHeader(
@@ -1490,7 +1513,7 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
                 ],
                 const SizedBox(height: Gap.lg),
                 CeffloPrimaryButton(L.continueText2, busy: _busy, onTap: _join),
-                if (demo) ...[
+                ...[
                   const SizedBox(height: Gap.lg),
                   Center(
                     child: Text(L.orSeparator, style: context.t.bodyMedium),
@@ -1505,7 +1528,7 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
                       color: Colors.transparent,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(Sizes.cardRadius),
-                        onTap: () => setState(() => _tab = 1),
+                        onTap: demo ? () => setState(() => _tab = 1) : _scan,
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 14,
@@ -1558,7 +1581,15 @@ class BusinessJoinedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    final business = app.business ?? DemoData.business;
+    // Live: only the Driver's own business, never the demo one.
+    final business = app.repo.isDemo
+        ? (app.business ?? DemoData.business)
+        : (app.business ??
+              DriverBusiness(
+                name: app.active?.businessName ?? L.business,
+                category: '',
+                location: app.active?.businessAddress ?? '',
+              ));
     return CeffloNavySheetScaffold(
       header: CeffloBrandHeader(
         onBack: app.back,

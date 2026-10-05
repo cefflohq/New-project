@@ -953,6 +953,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get phoneNotAvailable => 'No phone number available';
+
+  @override
   String get openingChat => 'Opening chat…';
 
   @override

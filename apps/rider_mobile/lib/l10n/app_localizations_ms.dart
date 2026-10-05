@@ -962,6 +962,9 @@ class AppLocalizationsMs extends AppLocalizations {
   }
 
   @override
+  String get phoneNotAvailable => 'Tiada nombor telefon';
+
+  @override
   String get openingChat => 'Membuka sembang…';
 
   @override
