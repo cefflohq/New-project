@@ -28,7 +28,31 @@ class JoinLinkStore {
 
   Future<void> clear() async {
     try {
-      await (await SharedPreferences.getInstance()).remove(key);
+      final p = await SharedPreferences.getInstance();
+      await p.remove(key);
+      await p.remove(sentKey);
+    } catch (_) {}
+  }
+
+  /// The business a request was already sent to (from join_via_invite_link),
+  /// so reopening the app shows Pending — or the workspace once approved —
+  /// instead of the request form again. Grants nothing by itself.
+  static const sentKey = 'cefflo.join_link.sent_business';
+
+  Future<String?> sentBusiness() async {
+    try {
+      return (await SharedPreferences.getInstance()).getString(sentKey);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> markSent(String businessId) async {
+    try {
+      await (await SharedPreferences.getInstance()).setString(
+        sentKey,
+        businessId,
+      );
     } catch (_) {}
   }
 }

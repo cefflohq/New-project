@@ -2612,6 +2612,19 @@ class _JoinRequestScreenState extends State<JoinRequestScreen> {
 
   Future<void> _resolve() async {
     final app = AppScope.read(context);
+    // A request already sent from this device: approved -> open the
+    // workspace; otherwise keep showing Pending (never a second request).
+    final sent = await app.joinSentBusiness();
+    if (sent != null) {
+      try {
+        final mine = await app.repo.myBusinesses();
+        if (mine.any((b) => b.id == sent)) {
+          await _continue();
+          return;
+        }
+      } on RepositoryError catch (_) {}
+      if (mounted) setState(() => _result = 'pending');
+    }
     try {
       final link = await app.repo.resolveInviteLink(widget.token);
       if (mounted) setState(() => _link = link);
@@ -2641,6 +2654,8 @@ class _JoinRequestScreenState extends State<JoinRequestScreen> {
         name: _name.text.trim(),
         phone: _phone.text.trim().isEmpty ? null : _phone.text.trim(),
       );
+      final business = res['business_id'] as String?;
+      if (business != null) await app.markJoinSent(business);
       if (!mounted) return;
       // Never a silent redirect: 'active' is a terminal "already part of"
       // state the invitee acknowledges.

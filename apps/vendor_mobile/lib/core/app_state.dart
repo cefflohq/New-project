@@ -266,6 +266,11 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Business a join request was already sent to (null if none yet).
+  Future<String?> joinSentBusiness() => _joinStore.sentBusiness();
+  Future<void> markJoinSent(String businessId) =>
+      _joinStore.markSent(businessId);
+
   /// The request was sent (pending) or the account is already a member.
   Future<void> finishJoin() async {
     joinToken = null;
