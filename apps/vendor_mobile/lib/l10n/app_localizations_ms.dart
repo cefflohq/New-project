@@ -3823,4 +3823,20 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get vehVan => 'Van';
+
+  @override
+  String get newOpeningSub =>
+      'Cipta kekosongan untuk mencari rider bagi larian penghantaran anda.';
+
+  @override
+  String get openingTime => 'Masa';
+
+  @override
+  String get publishOpening => 'Siarkan kekosongan';
+
+  @override
+  String get openingRadiusLabel => 'Radius rider';
+
+  @override
+  String get openingPayLabel => 'Bayaran';
 }

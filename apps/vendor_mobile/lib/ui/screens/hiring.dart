@@ -49,6 +49,8 @@ class _LookingForRidersCardState extends State<LookingForRidersCard> {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
+      // White surface (the theme default is a tinted cream).
+      backgroundColor: Colors.white,
       builder: (_) => const _OpeningForm(),
     );
     if (saved == true) {
@@ -331,160 +333,493 @@ class _OpeningFormState extends State<_OpeningForm> {
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    Widget label(String s) => Padding(
-      padding: const EdgeInsets.only(top: Gap.md, bottom: Gap.xs),
-      child: Text(s, style: text.labelLarge),
-    );
-    return Padding(
-      padding: EdgeInsets.only(
-        left: Gap.gutter,
-        right: Gap.gutter,
-        bottom: MediaQuery.viewInsetsOf(context).bottom + Gap.lg,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(L.newOpening, style: text.titleLarge),
-            label(L.openingArea),
-            CefField(controller: _area, hint: L.openingAreaHint),
-            label(L.openingDays),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (var d = 1; d <= 7; d++)
-                  CefChoiceChip(
-                    label: _short(_days[d - 1]),
-                    selected: _picked.contains(d),
-                    onTap: () => setState(
-                      () => _picked.contains(d)
-                          ? _picked.remove(d)
-                          : _picked.add(d),
-                    ),
-                  ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      label(L.openingStart),
-                      CefButton(
-                        _start.format(context),
-                        secondary: true,
+    final c = context.c;
+    final media = MediaQuery.of(context);
+    String cap(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+    // One white surface: sections are separated by spacing and a hairline,
+    // never by cards. Yellow marks a selection; blue is the action.
+    return ColoredBox(
+      color: Colors.white,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: Gap.gutter,
+          right: Gap.gutter,
+          bottom: media.viewInsets.bottom,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                L.newOpening,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -.4,
+                  color: CefColors.navy,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                L.newOpeningSub,
+                style: TextStyle(fontSize: 14, color: c.textSecondary),
+              ),
+              _FormSection(
+                label: L.openingArea,
+                first: true,
+                child: _OutlinedInput(
+                  controller: _area,
+                  hint: L.openingAreaHint,
+                  icon: LucideIcons.mapPin,
+                ),
+              ),
+              _FormSection(
+                label: L.openingDays,
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (var d = 1; d <= 7; d++)
+                      _Chip(
+                        label: _short(_days[d - 1]),
+                        selected: _picked.contains(d),
+                        onTap: () => setState(
+                          () => _picked.contains(d)
+                              ? _picked.remove(d)
+                              : _picked.add(d),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              _FormSection(
+                label: L.openingTime,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _TimeField(
+                        label: L.openingStart,
+                        value: _start.format(context),
                         onTap: () => _pick(true),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: Gap.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      label(L.openingEnd),
-                      CefButton(
-                        _end.format(context),
-                        secondary: true,
+                    ),
+                    const SizedBox(width: Gap.md),
+                    Expanded(
+                      child: _TimeField(
+                        label: L.openingEnd,
+                        value: _end.format(context),
                         onTap: () => _pick(false),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            label(L.openingVehicle),
-            Wrap(
-              spacing: 6,
-              children: [
-                for (final v in const ['motorcycle', 'car', 'van'])
-                  CefChoiceChip(
-                    label: _vehicle(v),
-                    selected: _vehicleType == v,
-                    onTap: () => setState(() => _vehicleType = v),
-                  ),
-              ],
-            ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      label(L.openingPay),
-                      CefField(
+              ),
+              _FormSection(
+                label: L.openingVehicle,
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final (v, icon) in const [
+                      ('motorcycle', LucideIcons.motorbike),
+                      ('car', LucideIcons.car),
+                      ('van', LucideIcons.truck),
+                    ])
+                      _Chip(
+                        label: _vehicle(v),
+                        icon: icon,
+                        selected: _vehicleType == v,
+                        onTap: () => setState(() => _vehicleType = v),
+                      ),
+                  ],
+                ),
+              ),
+              _FormSection(
+                label: L.openingPayLabel,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 128,
+                      child: _OutlinedInput(
                         controller: _pay,
+                        prefix: 'RM',
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: Gap.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      label(L.openingPayUnit),
-                      Wrap(
+                    ),
+                    const SizedBox(width: Gap.md),
+                    Expanded(
+                      child: Wrap(
                         spacing: 6,
+                        runSpacing: 6,
                         children: [
                           for (final u in const ['shift', 'drop', 'hour'])
-                            CefChoiceChip(
-                              label: _unit(u),
+                            _Chip(
+                              label: cap(_unit(u)),
                               selected: _payUnit == u,
                               onTap: () => setState(() => _payUnit = u),
                             ),
                         ],
                       ),
-                    ],
+                    ),
+                  ],
+                ),
+              ),
+              _FormSection(
+                label: L.openingRidersNeeded,
+                child: Row(
+                  children: [
+                    _StepButton(
+                      icon: LucideIcons.minus,
+                      onTap: _needed > 1
+                          ? () => setState(() => _needed--)
+                          : null,
+                    ),
+                    SizedBox(
+                      width: 56,
+                      child: Text(
+                        '$_needed',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: CefColors.navy,
+                        ),
+                      ),
+                    ),
+                    _StepButton(
+                      icon: LucideIcons.plus,
+                      onTap: _needed < 50
+                          ? () => setState(() => _needed++)
+                          : null,
+                    ),
+                  ],
+                ),
+              ),
+              _FormSection(
+                label: L.openingRadiusLabel,
+                trailing: Text(
+                  '${_radius.round()} km',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: CefColors.navy,
+                  ),
+                ),
+                child: SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    trackHeight: 4,
+                    activeTrackColor: CefColors.standardBrand,
+                    inactiveTrackColor: c.border,
+                    thumbColor: Colors.white,
+                    overlayColor: CefColors.standardBrand.withValues(alpha: .1),
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 10,
+                      elevation: 2,
+                    ),
+                    showValueIndicator: ShowValueIndicator.never,
+                  ),
+                  child: Slider(
+                    value: _radius,
+                    min: 5,
+                    max: 20,
+                    divisions: 15,
+                    onChanged: (v) => setState(() => _radius = v),
+                  ),
+                ),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: Gap.sm),
+                Text(
+                  _error!,
+                  style: TextStyle(fontSize: 13, color: c.attention),
+                ),
+              ],
+              const SizedBox(height: Gap.lg),
+              SizedBox(
+                height: 52,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: CefColors.standardBrand,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  onPressed: _busy ? null : _save,
+                  child: _busy
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(L.publishOpening),
+                ),
+              ),
+              SizedBox(height: Gap.md + media.viewPadding.bottom),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A form section on the single white surface: hairline above (except the
+/// first), label (and an optional value on the right), then the control.
+class _FormSection extends StatelessWidget {
+  const _FormSection({
+    required this.label,
+    required this.child,
+    this.trailing,
+    this.first = false,
+  });
+
+  final String label;
+  final Widget child;
+  final Widget? trailing;
+  final bool first;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: EdgeInsets.only(top: first ? Gap.lg : 0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!first) ...[
+          const SizedBox(height: Gap.md),
+          Divider(height: 1, thickness: 1, color: context.c.border),
+          const SizedBox(height: Gap.md),
+        ],
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: CefColors.navy,
+                ),
+              ),
+            ),
+            ?trailing,
+          ],
+        ),
+        const SizedBox(height: Gap.sm),
+        child,
+      ],
+    ),
+  );
+}
+
+OutlineInputBorder _outline(Color color, [double width = 1]) =>
+    OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: color, width: width),
+    );
+
+/// White field, light-grey outline, moderate radius; blue on focus.
+class _OutlinedInput extends StatelessWidget {
+  const _OutlinedInput({
+    required this.controller,
+    this.hint,
+    this.icon,
+    this.prefix,
+    this.keyboardType,
+  });
+
+  final TextEditingController controller;
+  final String? hint;
+  final IconData? icon;
+  final String? prefix;
+  final TextInputType? keyboardType;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      style: const TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+        color: CefColors.navy,
+      ),
+      decoration: InputDecoration(
+        isDense: true,
+        filled: true,
+        fillColor: Colors.white,
+        hintText: hint,
+        hintStyle: TextStyle(
+          color: c.textSecondary,
+          fontWeight: FontWeight.w400,
+        ),
+        prefixIcon: icon == null
+            ? null
+            : Icon(icon, size: 18, color: c.textSecondary),
+        prefixText: prefix == null ? null : '$prefix  ',
+        prefixStyle: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: c.textSecondary,
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
+        enabledBorder: _outline(c.border),
+        focusedBorder: _outline(CefColors.standardBrand, 1.5),
+        border: _outline(c.border),
+      ),
+    );
+  }
+}
+
+/// Start / End: a small label over the time, outlined like the inputs.
+class _TimeField extends StatelessWidget {
+  const _TimeField({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
+
+  final String label, value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Material(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: c.border),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(fontSize: 12, color: c.textSecondary),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      value,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: CefColors.navy,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(LucideIcons.clock, size: 18, color: c.textSecondary),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Compact selection chip: yellow only when selected.
+class _Chip extends StatelessWidget {
+  const _Chip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.icon,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: Material(
+        color: selected ? CefColors.ceffloMustard : Colors.white,
+        shape: StadiumBorder(
+          side: BorderSide(
+            color: selected ? CefColors.ceffloMustard : c.border,
+          ),
+        ),
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 15, color: CefColors.navy),
+                  const SizedBox(width: 6),
+                ],
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: CefColors.navy,
                   ),
                 ),
               ],
             ),
-            label(L.openingRidersNeeded),
-            Row(
-              children: [
-                IconButton(
-                  onPressed: _needed > 1
-                      ? () => setState(() => _needed--)
-                      : null,
-                  icon: const Icon(LucideIcons.minus),
-                ),
-                Text('$_needed', style: text.titleMedium),
-                IconButton(
-                  onPressed: _needed < 50
-                      ? () => setState(() => _needed++)
-                      : null,
-                  icon: const Icon(LucideIcons.plus),
-                ),
-              ],
-            ),
-            label(L.openingRadius(_radius.round().toString())),
-            Slider(
-              value: _radius,
-              min: 5,
-              max: 20,
-              divisions: 15,
-              label: '${_radius.round()} km',
-              onChanged: (v) => setState(() => _radius = v),
-            ),
-            if (_error != null) ...[
-              Text(
-                _error!,
-                style: text.bodySmall?.copyWith(color: context.c.attention),
-              ),
-              const SizedBox(height: Gap.sm),
-            ],
-            const SizedBox(height: Gap.sm),
-            CefButton(L.postOpening, busy: _busy, onTap: _busy ? null : _save),
-          ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Small outlined round button for the riders stepper (44px touch target).
+class _StepButton extends StatelessWidget {
+  const _StepButton({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return SizedBox.square(
+      dimension: 44,
+      child: Material(
+        color: Colors.white,
+        shape: CircleBorder(side: BorderSide(color: c.border)),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: Icon(
+            icon,
+            size: 18,
+            color: onTap == null ? c.border : CefColors.navy,
+          ),
         ),
       ),
     );

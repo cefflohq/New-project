@@ -6974,6 +6974,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Van'**
   String get vehVan;
+
+  /// No description provided for @newOpeningSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an opening to find riders for your delivery runs.'**
+  String get newOpeningSub;
+
+  /// No description provided for @openingTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get openingTime;
+
+  /// No description provided for @publishOpening.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish opening'**
+  String get publishOpening;
+
+  /// No description provided for @openingRadiusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Rider radius'**
+  String get openingRadiusLabel;
+
+  /// No description provided for @openingPayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay'**
+  String get openingPayLabel;
 }
 
 class _AppLocalizationsDelegate

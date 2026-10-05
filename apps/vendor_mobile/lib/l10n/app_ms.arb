@@ -1144,5 +1144,10 @@
   "turnOff": "Tutup",
   "vehMotorbike": "Motosikal",
   "vehCar": "Kereta",
-  "vehVan": "Van"
+  "vehVan": "Van",
+  "newOpeningSub": "Cipta kekosongan untuk mencari rider bagi larian penghantaran anda.",
+  "openingTime": "Masa",
+  "publishOpening": "Siarkan kekosongan",
+  "openingRadiusLabel": "Radius rider",
+  "openingPayLabel": "Bayaran"
 }

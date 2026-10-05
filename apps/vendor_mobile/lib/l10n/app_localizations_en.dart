@@ -3819,4 +3819,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get vehVan => 'Van';
+
+  @override
+  String get newOpeningSub =>
+      'Create an opening to find riders for your delivery runs.';
+
+  @override
+  String get openingTime => 'Time';
+
+  @override
+  String get publishOpening => 'Publish opening';
+
+  @override
+  String get openingRadiusLabel => 'Rider radius';
+
+  @override
+  String get openingPayLabel => 'Pay';
 }

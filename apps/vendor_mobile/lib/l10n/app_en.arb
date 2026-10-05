@@ -1888,5 +1888,10 @@
   "turnOff": "Turn off",
   "vehMotorbike": "Motorbike",
   "vehCar": "Car",
-  "vehVan": "Van"
+  "vehVan": "Van",
+  "newOpeningSub": "Create an opening to find riders for your delivery runs.",
+  "openingTime": "Time",
+  "publishOpening": "Publish opening",
+  "openingRadiusLabel": "Rider radius",
+  "openingPayLabel": "Pay"
 }
