@@ -17,14 +17,6 @@ import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
 
 import '../../core/ui_locale.dart';
 
-/// Presentation-only: canonical values stay lowercase ('active', 'van'); this
-/// only affects how they are displayed.
-String _titleCase(String value) => value
-    .split(' ')
-    .where((w) => w.isNotEmpty)
-    .map((w) => w[0].toUpperCase() + w.substring(1))
-    .join(' ');
-
 /// V-16 — Zones overview: every zone on one map, then the zone list (name,
 /// status, today's orders and riders). Tapping a zone opens its Zone detail.
 class ZonesScreen extends StatelessWidget {
@@ -833,7 +825,7 @@ class _DispatchedRiderHeader extends StatelessWidget {
     return CefListRow(
       title: name,
       subtitle: [
-        if (rider?.vehicleType != null) _titleCase(rider!.vehicleType!),
+        if (rider?.vehicleType != null) vehicleTypeLabel(rider!.vehicleType!),
         if (rider?.plate != null) rider!.plate!,
       ].join(' · '),
       leading: CefAvatar(name, filled: true),
@@ -859,7 +851,7 @@ class _RiderHeader extends StatelessWidget {
       title: name,
       subtitle: [
         if (group.candidateRiderVehicleType != null)
-          _titleCase(group.candidateRiderVehicleType!),
+          vehicleTypeLabel(group.candidateRiderVehicleType!),
         if (rider?.plate != null) rider!.plate!,
       ].join(' · '),
       leading: CefAvatar(name, filled: true),
@@ -1198,7 +1190,8 @@ class _RidersScreenState extends State<RidersScreen> {
                     CefListRow(
                       title: r.name,
                       subtitle: [
-                        if (r.vehicleType != null) _titleCase(r.vehicleType!),
+                        if (r.vehicleType != null)
+                          vehicleTypeLabel(r.vehicleType!),
                         if (r.plate != null) r.plate!,
                       ].join(' · '),
                       leading: CefAvatar(r.name, filled: true),
@@ -1470,7 +1463,8 @@ class _TeamScreenState extends State<TeamScreen> {
                     CefListRow(
                       title: r.name,
                       subtitle: [
-                        if (r.vehicleType != null) _titleCase(r.vehicleType!),
+                        if (r.vehicleType != null)
+                          vehicleTypeLabel(r.vehicleType!),
                         if (r.plate != null) r.plate!,
                       ].join(' · '),
                       leading: CefAvatar(r.name, filled: true),

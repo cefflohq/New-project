@@ -723,12 +723,21 @@ class CapacityCheck {
         );
       }
       return L.vehicleIncompatibleNeedsRiderHas(
-        v['vehicle_requirement'],
-        v['rider_vehicle_type'],
+        vehicleTypeLabel('${v['vehicle_requirement'] ?? ''}'),
+        vehicleTypeLabel('${v['rider_vehicle_type'] ?? ''}'),
       );
     }).toList(),
   );
 }
+
+/// User-facing vehicle type ("Motorcycle" / "Motosikal"); the stored value
+/// ('motorcycle', 'car', 'van', ...) never changes.
+String vehicleTypeLabel(String value) => switch (value.toLowerCase()) {
+  'motorcycle' || 'motorbike' => L.hwMotorcycle,
+  'car' => L.vehCar,
+  'van' => L.vehVan,
+  _ => value.isEmpty ? value : value[0].toUpperCase() + value.substring(1),
+};
 
 /// What a notification is about; decides its icon.
 enum NotificationKind { attention, order, rider, system }

@@ -293,7 +293,8 @@ class _DispatchSheetState extends State<_DispatchSheet> {
                       CefListRow(
                         title: r.name,
                         subtitle: [
-                          if (r.vehicleType != null) r.vehicleType!,
+                          if (r.vehicleType != null)
+                            vehicleTypeLabel(r.vehicleType!),
                           if (r.plate != null) r.plate!,
                         ].join(' · '),
                         leading: CefAvatar(r.name, filled: true),

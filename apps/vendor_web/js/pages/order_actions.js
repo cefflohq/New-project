@@ -210,7 +210,7 @@ export async function openPlanDelivery(onDone) {
       ok[i] = r?.compatible === true;
       out.innerHTML = ok[i] ? esc(t('plan.capOk')) : (r?.violations || []).map(v => `<div class="err" style="margin:2px 0">${esc(v.reason === 'capacity_exceeded'
         ? t('plan.capExceeded', { load: v.current_load, req: v.requested, cap: v.effective_capacity })
-        : t('plan.vehicleBad', { need: v.vehicle_requirement, has: v.rider_vehicle_type }))}</div>`).join('');
+        : t('plan.vehicleBad', { need: t(`veh.${v.vehicle_requirement}`), has: t(`veh.${v.rider_vehicle_type}`) }))}</div>`).join('');
     } catch (ex) { out.innerHTML = `<div class="err">${esc(ex.message)}</div>`; }
     refresh();
   }
