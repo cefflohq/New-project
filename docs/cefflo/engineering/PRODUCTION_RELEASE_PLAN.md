@@ -154,11 +154,12 @@ Dashboard access for backups and Auth settings.
     then tightened.
 - **Auth URL configuration:**
   - Site URL `https://vendor.cefflo.com`;
-  - redirect allowlist:
-    - `cefflo-vendor://auth-callback`
-    - `cefflo-driver://auth-callback`
-    - `https://vendor.cefflo.com/**`
-    - `https://invite.cefflo.com/**`
+  - redirect allowlist (superseded 2026-10-05 by
+    `PRODUCTION_DOMAIN_MAP.md`): `cefflo-vendor://auth-callback`,
+    `cefflo-driver://auth-callback`, `https://vendor.cefflo.com/**`,
+    `https://operator.cefflo.com/**`, `https://helper.cefflo.com/**`,
+    `https://driver.cefflo.com/**`, `https://foundr.cefflo.com/**`
+    (the Invite gateway has no sign-in)
 - **Code, verified 2026-09-27:**
   - `resetPasswordForEmail` redirects to the app scheme;
   - `signUp` passes `emailRedirectTo` to the app scheme in both apps, as does
@@ -217,6 +218,12 @@ Dashboard access for backups and Auth settings.
   - the test business's Service Area locates its real address.
 
 ## 6. DNS / hosting: prepared, not changed
+
+> **Superseded 2026-10-05.** The FINAL production domain map, hosting and
+> deploy procedure are in `docs/cefflo/engineering/PRODUCTION_DOMAIN_MAP.md`
+> (vendor / operator / helper / driver / invite / tracking / order / foundr,
+> each served at its root from its own Cloudflare static-assets Worker;
+> marketing stays on Vercel). The table below is kept as history.
 
 Authoritative nameservers: Cloudflare (`chuck`/`maya.ns.cloudflare.com`).
 `preview.cefflo.com` is **not touched**.

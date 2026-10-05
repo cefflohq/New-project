@@ -30,8 +30,9 @@ marketplace supply pool.
 
 ## RI-02 Canonical Route
 
-Planned: `rider.cefflo.com`. Verify current deployment/baseline in Phase
-1.
+Production: `driver.cefflo.com` (Founder domain map, 2026-10-05; see
+`engineering/PRODUCTION_DOMAIN_MAP.md`). `rider.cefflo.com` is legacy and
+serves only the retirement worker.
 
 ## RI-03 Core Flow
 

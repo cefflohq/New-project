@@ -1,0 +1,22 @@
+// PRODUCTION vendor.cefflo.com -> vendor (Founder domain map 2026-10-05). Prepared, NOT deployed.
+// Deploy only via scripts/deploy-production.mjs after Founder approval;
+// attaching the custom domain creates its Cloudflare DNS record.
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "cefflo-prod-vendor",
+  "compatibility_date": "2026-09-26",
+  "assets": {
+    "directory": "../../dist-surfaces/vendor",
+    "not_found_handling": "single-page-application"
+  },
+  "routes": [
+    {
+      "pattern": "vendor.cefflo.com",
+      "custom_domain": true
+    }
+  ],
+  "workers_dev": false,
+  "observability": {
+    "enabled": true
+  }
+}

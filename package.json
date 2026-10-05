@@ -11,6 +11,8 @@
     "supabase:start": "supabase start",
     "supabase:status": "supabase status",
     "supabase:stop": "supabase stop",
-    "supabase:reset": "python3 tests/guarded_supabase_reset.py"
+    "supabase:reset": "python3 tests/guarded_supabase_reset.py",
+    "build:surfaces": "node scripts/build-surfaces.mjs",
+    "test:surfaces": "node tests/production_surfaces.test.mjs"
   }
 }

@@ -17,6 +17,10 @@ void main() {
       token,
     );
   });
+  test('canonical gateway path form is accepted', () {
+    expect(openInviteTokenFrom('https://invite.cefflo.com/$token'), token);
+    expect(openInviteTokenFrom('https://invite.cefflo.com/$token/'), token);
+  });
   test('app link (?join=) and a bare token are accepted', () {
     expect(openInviteTokenFrom('https://app.example/?join=$token'), token);
     expect(openInviteTokenFrom('  $token  '), token);

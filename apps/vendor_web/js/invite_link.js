@@ -15,7 +15,12 @@ function qrSvg(text) {
   return code.createSvgTag({ cellSize: 5, margin: 2, scalable: true });
 }
 
-const linkFor = token => new URL(`../invite/?link=${encodeURIComponent(token)}`, location.href).href;
+// The Team Invite gateway from runtime config (production
+// https://invite.cefflo.com/); staging/local fall back to the bundled /invite/.
+const linkFor = token => {
+  const base = (window.CEFFLO_CONFIG || {}).inviteBaseUrl;
+  return new URL(`?link=${encodeURIComponent(token)}`, base || new URL('../invite/', location.href)).href;
+};
 
 // kind: 'rider' | 'team' (team lets the Owner choose Operator or Helper).
 export function showInviteLink(kind, initialRole = 'operator') {

@@ -185,6 +185,21 @@ void main() {
     );
   });
 
+  test('dedicated production entry hosts pick the entry (domain map)', () {
+    AuthAccess at(String u) => authAccessFromUri(Uri.parse(u));
+    expect(at('https://operator.cefflo.com/'), AuthAccess.operator);
+    expect(at('https://helper.cefflo.com/?join=abc'), AuthAccess.helper);
+    expect(at('https://vendor.cefflo.com/'), AuthAccess.vendor);
+    // An explicit ?access= still wins (staging / installed entries).
+    expect(
+      at('https://helper.cefflo.com/?access=operator'),
+      AuthAccess.operator,
+    );
+    // Only the first label counts: lookalikes do not switch the entry.
+    expect(at('https://operator-cefflo.example/'), AuthAccess.vendor);
+    expect(at('https://x.operator.cefflo.com/'), AuthAccess.vendor);
+  });
+
   test('Operator sign-in without a claimed membership never opens '
       'business setup', () async {
     final app = AppState(_NoMembershipRepo())..access = AuthAccess.operator;

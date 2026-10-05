@@ -1264,7 +1264,11 @@ String? openInviteTokenFrom(String input) {
   final uri = Uri.tryParse(text);
   final fromQuery =
       uri?.queryParameters['link'] ?? uri?.queryParameters['join'];
-  final token = fromQuery ?? text;
+  // Canonical gateway form: https://invite.cefflo.com/<token>.
+  final fromPath = (uri != null && uri.hasScheme && uri.pathSegments.isNotEmpty)
+      ? uri.pathSegments.lastWhere((s) => s.isNotEmpty, orElse: () => '')
+      : null;
+  final token = fromQuery ?? fromPath ?? text;
   return RegExp(r'^[0-9a-f]{48}$').hasMatch(token) ? token : null;
 }
 

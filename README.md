@@ -178,7 +178,7 @@ python -m http.server 4173
 
 Then open `/vendor/`, `/foundr/`, `/invite/?type=rider&token=<invite-token>` and `/customer/?token=<tracking-token>` from the same origin. Runtime configuration is shared through `shared/config.js`. The Flutter apps build from `apps/vendor_mobile` and `apps/rider_mobile`.
 
-Production custom-domain mapping uses one Vercel project and the hostname rewrites in `vercel.json`:
+**Production domain map (FINAL, 2026-10-05): see `docs/cefflo/engineering/PRODUCTION_DOMAIN_MAP.md`.** Marketing (`cefflo.com`, `www`) stays on Vercel; product hosts (`vendor`, `operator`, `helper`, `driver`, `invite`, `tracking`, `order`, `foundr`) are Cloudflare static-assets Workers built by `npm run build:surfaces`. The Vercel mapping below is historical:
 
 - `vendor.cefflo.com` → Vendor Web/Desktop
 - `tracking.cefflo.com/?token=<tracking-token>` → Customer Tracking

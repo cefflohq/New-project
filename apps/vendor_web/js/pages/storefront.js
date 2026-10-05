@@ -18,7 +18,7 @@ const TEMPLATES = [
   { id: 'feast', name: 'Feast', style: 'tpl.feast', primary: '#7A4A21', secondary: '#C89A6C', mode: 'plain', font: 'modern' },
 ];
 const HERO_TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
-const base = () => window.CEFFLO_CONFIG?.storefrontBaseUrl || 'https://cefflo.com/';
+const base = () => window.CEFFLO_CONFIG?.storefrontBaseUrl || 'https://order.cefflo.com/';
 
 function qrSvg(text) {
   const code = qrcode(0, 'M');

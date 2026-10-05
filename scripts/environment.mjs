@@ -43,15 +43,24 @@ export function resolveFrontendEnvironment(values) {
     ios: storeUrl(values.CEFFLO_VENDOR_APP_STORE_URL, 'apps.apple.com', 'CEFFLO_VENDOR_APP_STORE_URL'),
   };
 
-  // Web builds of the apps the invitation PWA hands a permanent invite link
-  // to (Founder, 2026-10-01). Optional; https only.
+  // Where the invitation PWA hands a permanent invite link (Founder,
+  // 2026-10-01). Role-aware destinations (production domain map, Founder
+  // 2026-10-05): Driver -> driver.cefflo.com, Operator -> operator.cefflo.com,
+  // Helper -> helper.cefflo.com. `vendor` is the shared Vendor App build used
+  // with ?access= when no dedicated Operator/Helper host is configured
+  // (staging). Optional; https only. The token, never the URL, decides role.
   const appWebUrls = {
     driver: webAppUrl(values.CEFFLO_DRIVER_WEB_URL, 'CEFFLO_DRIVER_WEB_URL'),
     vendor: webAppUrl(values.CEFFLO_VENDOR_WEB_URL, 'CEFFLO_VENDOR_WEB_URL'),
+    operator: webAppUrl(values.CEFFLO_OPERATOR_WEB_URL, 'CEFFLO_OPERATOR_WEB_URL'),
+    helper: webAppUrl(values.CEFFLO_HELPER_WEB_URL, 'CEFFLO_HELPER_WEB_URL'),
   };
+  // The Team Invite gateway (production https://invite.cefflo.com/). The
+  // static surfaces build invite links from it; unset = the bundled /invite/.
+  const inviteBaseUrl = baseUrl(values.CEFFLO_INVITE_BASE_URL, 'CEFFLO_INVITE_BASE_URL');
 
   // Public product URLs, environment-driven (Founder 2026-10-04): the
-  // Storefront base ({base}{slug}; production https://store.cefflo.com/) and
+  // Storefront base ({base}{slug}; production https://order.cefflo.com/) and
   // the Customer Tracking base ({base}?token=...). Optional; https only.
   const storefrontBaseUrl = baseUrl(values.CEFFLO_STOREFRONT_BASE_URL, 'CEFFLO_STOREFRONT_BASE_URL');
   const trackingBaseUrl = baseUrl(values.CEFFLO_TRACKING_BASE_URL, 'CEFFLO_TRACKING_BASE_URL');
@@ -61,7 +70,7 @@ export function resolveFrontendEnvironment(values) {
   const mapboxPublicToken = String(values.CEFFLO_MAPBOX_PUBLIC_TOKEN || '').trim() || null;
   if (mapboxPublicToken && !/^pk\.[A-Za-z0-9._-]+$/.test(mapboxPublicToken)) throw new Error('CEFFLO_MAPBOX_PUBLIC_TOKEN must be a public pk.* Mapbox token');
 
-  return { name, projectRef, supabaseUrl: url.origin, publishableKey, driverStoreUrls, vendorStoreUrls, appWebUrls, storefrontBaseUrl, trackingBaseUrl, mapboxPublicToken };
+  return { name, projectRef, supabaseUrl: url.origin, publishableKey, driverStoreUrls, vendorStoreUrls, appWebUrls, inviteBaseUrl, storefrontBaseUrl, trackingBaseUrl, mapboxPublicToken };
 }
 
 function baseUrl(raw, name) {
@@ -107,7 +116,8 @@ export function serializeRuntimeConfig(environment) {
     storageBucket: 'cefflo-pod',
     driverStoreUrls: environment.driverStoreUrls || { android: null, ios: null },
     vendorStoreUrls: environment.vendorStoreUrls || { android: null, ios: null },
-    appWebUrls: environment.appWebUrls || { driver: null, vendor: null },
+    appWebUrls: environment.appWebUrls || { driver: null, vendor: null, operator: null, helper: null },
+    inviteBaseUrl: environment.inviteBaseUrl || null,
     storefrontBaseUrl: environment.storefrontBaseUrl || null,
     trackingBaseUrl: environment.trackingBaseUrl || null,
     mapboxPublicToken: environment.mapboxPublicToken || null

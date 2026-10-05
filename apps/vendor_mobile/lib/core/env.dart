@@ -23,8 +23,8 @@ class Env {
   );
 
   /// Base of the public storefront URL: `{base}{slug}`. Production is
-  /// cefflo.com once its routing ships; staging builds point at the staging
-  /// storefront host.
+  /// order.cefflo.com (Founder domain map 2026-10-05); staging builds point
+  /// at the staging storefront host.
   /// Base of the Customer Tracking URL: `{base}?token=...` (D-04). Staging
   /// builds pass the staging tracking host.
   static const trackingBaseUrl = String.fromEnvironment(
@@ -34,7 +34,7 @@ class Env {
 
   static const storefrontBaseUrl = String.fromEnvironment(
     'CEFFLO_STOREFRONT_BASE_URL',
-    defaultValue: 'https://cefflo.com/',
+    defaultValue: 'https://order.cefflo.com/',
   );
 
   static bool get isConfigured =>

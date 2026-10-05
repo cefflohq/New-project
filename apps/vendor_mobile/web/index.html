@@ -69,11 +69,12 @@
   <title>Cefflo Vendor</title>
   <link rel="manifest" href="manifest.json" id="cef-manifest">
   <script>
-    // Operator / Helper entry (?access=operator|helper): installing from it
+    // Operator / Helper entry (?access= or operator./helper. host): installing from it
     // gives an app that always reopens in that entry. Presentation only; the
     // role still comes from the server after sign-in.
     (function () {
-      var a = new URLSearchParams(location.search).get('access');
+      // ?access=, else the dedicated entry host (operator./helper.cefflo.com).
+      var a = new URLSearchParams(location.search).get('access') || location.hostname.split('.')[0];
       if (a === 'operator' || a === 'helper') {
         document.getElementById('cef-manifest').href = 'manifest-' + a + '.json';
         document.title = a === 'operator' ? 'Cefflo Operator' : 'Cefflo Helper';

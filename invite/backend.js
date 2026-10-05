@@ -11,7 +11,7 @@
   const token = params.get('token');
   // A business's permanent invite link (Founder, 2026-10-01): ?link=<token>.
   // Rider / Operator / Helper comes from the server, never from the URL.
-  const openLink = params.get('link');
+  const openLink = window.CEFFLOInvite.inviteTokenFrom(location);
   const isOpenLink = openLink !== null;
   const requested = params.get('type');
   const type = requested === 'team' ? 'team' : 'rider';
@@ -214,17 +214,14 @@
     KIND.features = KIND.features.map(([icon, title, body]) =>
       /email address this invitation/.test(body) ? [icon, title, 'Sign in with your own account. The owner approves your request.'] : [icon, title, body]);
     const apps = (window.CEFFLO_CONFIG && window.CEFFLO_CONFIG.appWebUrls) || {};
-    const appUrl = kind === 'rider' ? apps.driver : apps.vendor;
+    const destination = window.CEFFLOInvite.inviteDestination(kind, apps, openLink);
     invited(result);
     $('declineBtn').hidden = true;
     const accept = $('acceptBtn');
     accept.textContent = 'Continue';
     const go = () => {
-      if (!appUrl) return accepted();
-      const url = new URL(appUrl);
-      if (kind !== 'rider') url.searchParams.set('access', kind);
-      url.searchParams.set('join', openLink);
-      location.href = url.href;
+      if (!destination) return accepted();
+      location.href = destination;
     };
     accept.replaceWith(accept.cloneNode(true));
     $('acceptBtn').addEventListener('click', go);
