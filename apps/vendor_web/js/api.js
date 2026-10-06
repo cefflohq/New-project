@@ -1,7 +1,6 @@
 // Data access for the Vendor Web App. Everything goes through the canonical
 // Supabase REST/RPC contracts with the signed-in user's JWT; RLS and RPC
 // authorisation remain the security boundary. No mock data, no fallbacks.
-import { t } from './i18n.js';
 import { isDemo, exitDemo, demoGet, demoRpc, demoUser, readOnly, DEMO_SESSION } from './demo.js';
 
 const base = window.CEFFLO;
@@ -46,6 +45,11 @@ function expiresSoon() {
   return s?.expires_at && s.expires_at * 1000 - Date.now() < 60_000;
 }
 
+// The localised "access changed" text, supplied by the app (keeps this
+// module free of UI/i18n imports).
+let forbiddenMessage = () => 'Your access to this business has changed.';
+export function setForbiddenMessage(fn) { forbiddenMessage = fn; }
+
 async function call(fn) {
   if (expiresSoon()) await refreshSession().catch(() => {});
   try {
@@ -60,7 +64,7 @@ async function call(fn) {
     // membership (as the Vendor App's loadSession) and shows the right state.
     if (/^forbidden$/i.test(String(e.message).trim())) {
       window.dispatchEvent(new Event('cefflo:forbidden'));
-      throw Object.assign(new Error(t('c.accessChanged')), { status: 403, forbidden: true });
+      throw Object.assign(new Error(forbiddenMessage()), { status: 403, forbidden: true });
     }
     throw e;
   }

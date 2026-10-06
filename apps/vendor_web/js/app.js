@@ -3,7 +3,7 @@
 import './prefs.js';
 import { t } from './i18n.js';
 import { operatorEntry } from './access.js';
-import { api, consumeAuthFragment, consumeAuthError } from './api.js';
+import { api, consumeAuthFragment, consumeAuthError, setForbiddenMessage } from './api.js';
 import { ctx, loadContext, clearContext, HelperOnlyError, NoBusinessError } from './store.js';
 import { mountShell } from './shell.js';
 import { stopNotifications } from './notifications.js';
@@ -22,6 +22,7 @@ import products from './pages/products.js';
 import storefront from './pages/storefront.js';
 
 const root = document.getElementById('app');
+setForbiddenMessage(() => t('c.accessChanged'));
 const PAGES = { today, orders, zones, runs, riders, products, storefront, settings };
 
 async function signOut() {
