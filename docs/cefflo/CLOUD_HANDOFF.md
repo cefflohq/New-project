@@ -38,7 +38,7 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 | **Invite PWA** | **LOCKED @ `79752d0`** | see §3b; `8c067bb` is historical/superseded |
 | Production domain map | FINAL/LOCKED | `docs/cefflo/engineering/PRODUCTION_DOMAIN_MAP.md` (prepared `3c6284e`, not deployed) |
 | **Operator** | **LOCKED @ `79752d0`** | see §3a |
-| Driver (app) | Staging @ `988ff78` | self-edit profile/vehicle, rejoin via invite, paid vehicle change UI (RM50, provider not connected) |
+| Driver Core | READY FOR LOCK (2026-10-06) | invite → pending → approval → run → Plan Route → Pickup → Start → stops → POD → complete → history; `tests/staging/driver_lifecycle` (99); foreground resume re-resolves the relationship; Marketplace not required for assigned work |
 | Driver Marketplace Verification | **HOLD** — see §4 | backend + UI on staging |
 | Vendor App / Vendor Web | Wired on staging; parity decisions locked | full audit pending |
 | Storefront, FOUNDR, Marketing | pending their audit rounds | |
