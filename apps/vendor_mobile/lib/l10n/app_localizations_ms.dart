@@ -4023,4 +4023,21 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get hwLoadFailed =>
       'Tidak dapat memuatkan kerja hari ini. Semak sambungan anda dan cuba lagi.';
+
+  @override
+  String get t150DeliveriesMonth => '150 penghantaran sebulan';
+
+  @override
+  String get planChangeNotAvailableTitle =>
+      'Tukar pelan belum tersedia dalam aplikasi';
+
+  @override
+  String get planChangeNotAvailableBody =>
+      'Pembayaran dalam talian belum diaktifkan. Pelan anda tidak berubah dan tiada caj dikenakan. Hubungi sokongan Cefflo untuk menukar pelan.';
+
+  @override
+  String get checkingYourPlan => 'Menyemak pelan anda…';
+
+  @override
+  String get pleaseWaitMoment => 'Sila tunggu sebentar.';
 }

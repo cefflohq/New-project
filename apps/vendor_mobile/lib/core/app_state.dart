@@ -180,14 +180,43 @@ class AppState extends ChangeNotifier {
     return (meta['full_name'] ?? meta['name'] ?? '').toString().trim();
   }
 
-  // ---- Subscription (V-50..V-54). No billing backend exists yet: the demo
-  // session holds the current plan, cycle and invoices, and a payment only
-  // succeeds in the demo (see [subscribe]).
+  // ---- Subscription (V-50..V-54). Live: the server's price book and the
+  // business's plan/usage (`my_subscription`); a plan change stops at the
+  // payment boundary (`request_plan_change`), nothing is activated or
+  // charged. Demo: the designed flow with session-only state.
   String currentPlanId = 'operate';
   BillingCycle currentCycle = BillingCycle.monthly;
   DateTime nextRenewal = DateTime(2026, 10, 24);
+  LiveSubscription? liveSubscription;
+  List<SubscriptionPlan>? _livePlans;
 
-  SubscriptionPlan get currentPlan => planById(currentPlanId);
+  /// Plans offered in Choose a Plan (live: self-serve server plans).
+  List<SubscriptionPlan> get plans => _livePlans ?? subscriptionPlans;
+
+  SubscriptionPlan planFor(String id) =>
+      plans.where((p) => p.id == id).firstOrNull ?? planById(id);
+
+  SubscriptionPlan get currentPlan => planFor(currentPlanId);
+
+  /// Loads the live price book and this business's subscription.
+  Future<LiveSubscription?> loadSubscription() async {
+    if (repo.isDemo || business == null) return null;
+    final rows = await repo.subscriptionPlanRows();
+    _livePlans = [
+      for (final r in rows)
+        if (r['self_serve'] != false)
+          for (final p in subscriptionPlans)
+            if (p.id == r['key']) p.withServer(r),
+    ];
+    final sub = LiveSubscription.fromJson(
+      await repo.mySubscription(business!.id),
+    );
+    liveSubscription = sub;
+    currentPlanId = sub.planKey;
+    currentCycle = BillingCycle.monthly;
+    notifyListeners();
+    return sub;
+  }
 
   late final List<Invoice> invoices = repo.isDemo
       ? [
@@ -201,11 +230,13 @@ class AppState extends ChangeNotifier {
         ]
       : [];
 
-  /// Subscribes to [plan]. Demo only: with a live backend there is no
-  /// payment contract yet, so it fails and nothing is charged.
+  /// Subscribes to [plan]. Live: asks the server, which stops before
+  /// payment (not enabled yet) -- throws [PlanChangeNotAvailable] and
+  /// nothing changes. Demo: switches the session plan.
   Future<void> subscribe(SubscriptionPlan plan, BillingCycle cycle) async {
     if (!repo.isDemo) {
-      throw StateError(L.paymentsNotAvailableYet);
+      final status = await repo.requestPlanChange(business!.id, plan.id);
+      throw PlanChangeNotAvailable(status);
     }
     currentPlanId = plan.id;
     currentCycle = cycle;
@@ -217,9 +248,6 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ---- Vendor availability (Today header toggle). Session state only: no
-  // availability contract exists on the backend yet.
-  // Starts Offline (Founder, 2026-10-01): the vendor goes Online on purpose.
   // ---- Appearance: device-local only (never synced, no DB column).
   // [appearance] is what is saved on this device; a preview paints the
   // whole app through [liveAppearance] until it is saved or rolled back.
@@ -354,7 +382,13 @@ class AppState extends ChangeNotifier {
   /// operational notification); live lists reload silently. No polling.
   final ValueNotifier<int> liveTick = ValueNotifier(0);
 
-  static const _liveEventPrefixes = ['order.', 'run.', 'delivery.', 'rider.', 'team.'];
+  static const _liveEventPrefixes = [
+    'order.',
+    'run.',
+    'delivery.',
+    'rider.',
+    'team.',
+  ];
 
   Future<void> refreshNotifications() async {
     if (repo.isDemo) return;

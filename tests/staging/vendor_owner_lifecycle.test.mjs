@@ -193,7 +193,7 @@ try {
 
   // ---------- 9. Subscription read authority
   const subO = await sel(owner, `business_subscriptions?select=plan_key,status&business_id=eq.${B}`);
-  ok('9 Owner can read its subscription (none yet -> honest "managed by Cefflo")', subO.status === 200 && Array.isArray(subO.body), JSON.stringify(subO.body));
+  ok('9 Owner reads its subscription: FREE / active by default (published "no payment details")', subO.status === 200 && subO.body?.[0]?.plan_key === 'free' && subO.body?.[0]?.status === 'active', JSON.stringify(subO.body));
   ok('  Operator / Helper / Driver / X read no subscription rows', [op, hel, drv, ownerX].length && empty(await sel(op, `business_subscriptions?select=plan_key&business_id=eq.${B}`)) && empty(await sel(hel, `business_subscriptions?select=plan_key&business_id=eq.${B}`)) && empty(await sel(drv, `business_subscriptions?select=plan_key&business_id=eq.${B}`)) && empty(await sel(ownerX, `business_subscriptions?select=plan_key&business_id=eq.${B}`)));
   ok('  nobody but FOUNDR can set a plan (Owner refused)', refused(await rpc(owner, 'admin_set_subscription', { p_business_id: B, p_plan_key: 'scale', p_status: 'active', p_mrr_cents: 0, p_trial_ends_at: null })) && empty(await rest(owner, 'POST', 'business_subscriptions', { business_id: B, plan_key: 'scale', status: 'active' })));
 

@@ -1895,8 +1895,9 @@ class SettingsScreen extends StatelessWidget {
             L.subscription,
             LucideIcons.creditCard,
             VRoute.subscription,
-            // The plan chip only where the plan is real (demo prototype).
-            trailing: app.repo.isDemo
+            // The plan chip once the plan is known (live: loaded from the
+            // server on the Subscription screen; demo: the session plan).
+            trailing: app.repo.isDemo || app.liveSubscription != null
                 ? StatusChip(app.currentPlan.name, info: true)
                 : null,
           ),

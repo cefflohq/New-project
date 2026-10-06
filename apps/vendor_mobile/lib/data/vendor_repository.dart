@@ -516,6 +516,35 @@ class VendorRepository {
 
   /// Creates the signed-in user's business with them as owner (the same
   /// bootstrap_business contract Vendor Web uses). Returns the business id.
+  /// The published price book (`subscription_plans`, readable by anyone).
+  Future<List<Map<String, dynamic>>> subscriptionPlanRows() async {
+    if (_demo) return const [];
+    final rows = await _run(
+      () => _db!.from('subscription_plans').select().order('sort'),
+    );
+    return _rows(rows);
+  }
+
+  /// Owner: plan, status and this cycle's usage (`my_subscription`).
+  Future<Map<String, dynamic>> mySubscription(String businessId) async {
+    final res = await _run(
+      () => _db!.rpc('my_subscription', params: {'p_business_id': businessId}),
+    );
+    return Map<String, dynamic>.from(res as Map);
+  }
+
+  /// Owner: ask to change plan. The server answers with where the flow
+  /// stops (payment is not enabled yet); it never activates a plan.
+  Future<String> requestPlanChange(String businessId, String planKey) async {
+    final res = await _run(
+      () => _db!.rpc(
+        'request_plan_change',
+        params: {'p_business_id': businessId, 'p_plan_key': planKey},
+      ),
+    );
+    return (Map<String, dynamic>.from(res as Map)['status'] ?? '').toString();
+  }
+
   Future<String> bootstrapBusiness({
     required String name,
     required String phone,

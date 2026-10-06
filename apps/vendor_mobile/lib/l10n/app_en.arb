@@ -2006,5 +2006,10 @@
     }
   },
   "hwActionFailed": "That couldn't be saved. The list has been refreshed.",
-  "hwLoadFailed": "Couldn't load today's work. Check your connection and try again."
+  "hwLoadFailed": "Couldn't load today's work. Check your connection and try again.",
+  "t150DeliveriesMonth": "150 deliveries a month",
+  "planChangeNotAvailableTitle": "Plan changes aren't available in the app yet",
+  "planChangeNotAvailableBody": "Online payment isn't enabled yet. Your plan hasn't changed and nothing was charged. Contact Cefflo support to change your plan.",
+  "checkingYourPlan": "Checking your plan…",
+  "pleaseWaitMoment": "Please wait a moment."
 }

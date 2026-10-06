@@ -1,7 +1,9 @@
-/// Cefflo subscription plans (V-50..V-54, D-54). Values come from the
-/// pricing direction in docs/cefflo/sot/10_PRICING.md §4-8 -- a CANDIDATE,
-/// not a Founder-locked price list -- so they live in one place and change
-/// here only. Yearly billing follows §Annual: pay ~10 months, get 12.
+/// Cefflo subscription plans (V-50..V-54, D-54). Prices, delivery
+/// allowances and caps are the Founder-locked Malaysia price book (locked
+/// 2026-09-28, published on the Founder-approved Public Website). The live
+/// app takes them from the server (`subscription_plans`, see
+/// [SubscriptionPlan.withServer]); this file keeps the localised copy and
+/// the demo values. Yearly billing is not approved: demo only.
 library;
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
@@ -36,6 +38,20 @@ class SubscriptionPlan {
 
   bool get isFree => monthlyPrice == 0;
 
+  /// This plan's localised copy with the server's authoritative numbers.
+  SubscriptionPlan withServer(Map<String, dynamic> row) => SubscriptionPlan(
+    id: id,
+    name: (row['name'] as String?) ?? name,
+    monthlyPrice: (row['monthly_price_myr'] as num?)?.round() ?? monthlyPrice,
+    tagline: tagline,
+    deliveries: (row['delivery_allowance'] as num?)?.toInt() ?? deliveries,
+    riders: (row['driver_cap'] as num?)?.toInt(),
+    zones: (row['zone_cap'] as num?)?.toInt(),
+    teamUsers: (row['team_user_cap'] as num?)?.toInt() ?? teamUsers,
+    features: features,
+    mostPopular: row['most_popular'] == true,
+  );
+
   /// Price for one billing period of [cycle], in RM.
   int priceFor(BillingCycle cycle) =>
       cycle == BillingCycle.yearly ? monthlyPrice * 10 : monthlyPrice;
@@ -47,12 +63,12 @@ List<SubscriptionPlan> get subscriptionPlans => [
     name: 'Free',
     monthlyPrice: 0,
     tagline: L.experienceCefflo,
-    deliveries: 100,
+    deliveries: 150,
     riders: 3,
     zones: 2,
     teamUsers: 1,
     features: [
-      L.t100DeliveriesMonth,
+      L.t150DeliveriesMonth,
       L.up3Riders2Zones,
       L.customerTrackingProofDelivery,
     ],
@@ -112,6 +128,44 @@ List<SubscriptionPlan> get subscriptionPlans => [
 
 SubscriptionPlan planById(String id) =>
     subscriptionPlans.firstWhere((p) => p.id == id);
+
+/// The live subscription of the Owner's business (`my_subscription`).
+class LiveSubscription {
+  const LiveSubscription({
+    required this.planKey,
+    required this.status,
+    required this.deliveriesUsed,
+    required this.driversActive,
+    required this.zonesActive,
+    required this.teamUsers,
+    this.trialEndsAt,
+    this.overAllowance = false,
+  });
+  final String planKey, status;
+  final int deliveriesUsed, driversActive, zonesActive, teamUsers;
+  final DateTime? trialEndsAt;
+  final bool overAllowance;
+
+  factory LiveSubscription.fromJson(Map<String, dynamic> j) => LiveSubscription(
+    planKey: (j['plan_key'] as String?) ?? 'free',
+    status: (j['status'] as String?) ?? 'active',
+    deliveriesUsed: (j['deliveries_used'] as num?)?.toInt() ?? 0,
+    driversActive: (j['drivers_active'] as num?)?.toInt() ?? 0,
+    zonesActive: (j['zones_active'] as num?)?.toInt() ?? 0,
+    teamUsers: (j['team_users'] as num?)?.toInt() ?? 0,
+    trialEndsAt: DateTime.tryParse('${j['trial_ends_at'] ?? ''}'),
+    overAllowance: j['over_allowance'] == true,
+  );
+}
+
+/// The server stopped a plan change before payment (`request_plan_change`):
+/// payment_required | contact_support | contact_sales | current_plan.
+class PlanChangeNotAvailable implements Exception {
+  const PlanChangeNotAvailable(this.status);
+  final String status;
+  @override
+  String toString() => L.planChangeNotAvailableBody;
+}
 
 /// One past invoice (Billing History).
 class Invoice {

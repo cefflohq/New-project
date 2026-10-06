@@ -7328,6 +7328,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t load today\'s work. Check your connection and try again.'**
   String get hwLoadFailed;
+
+  /// No description provided for @t150DeliveriesMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'150 deliveries a month'**
+  String get t150DeliveriesMonth;
+
+  /// No description provided for @planChangeNotAvailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan changes aren\'t available in the app yet'**
+  String get planChangeNotAvailableTitle;
+
+  /// No description provided for @planChangeNotAvailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Online payment isn\'t enabled yet. Your plan hasn\'t changed and nothing was charged. Contact Cefflo support to change your plan.'**
+  String get planChangeNotAvailableBody;
+
+  /// No description provided for @checkingYourPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking your plan…'**
+  String get checkingYourPlan;
+
+  /// No description provided for @pleaseWaitMoment.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait a moment.'**
+  String get pleaseWaitMoment;
 }
 
 class _AppLocalizationsDelegate

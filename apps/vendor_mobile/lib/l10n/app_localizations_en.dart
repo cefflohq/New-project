@@ -4019,4 +4019,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get hwLoadFailed =>
       'Couldn\'t load today\'s work. Check your connection and try again.';
+
+  @override
+  String get t150DeliveriesMonth => '150 deliveries a month';
+
+  @override
+  String get planChangeNotAvailableTitle =>
+      'Plan changes aren\'t available in the app yet';
+
+  @override
+  String get planChangeNotAvailableBody =>
+      'Online payment isn\'t enabled yet. Your plan hasn\'t changed and nothing was charged. Contact Cefflo support to change your plan.';
+
+  @override
+  String get checkingYourPlan => 'Checking your plan…';
+
+  @override
+  String get pleaseWaitMoment => 'Please wait a moment.';
 }

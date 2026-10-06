@@ -100,20 +100,52 @@ class SubscriptionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    // Live: only what business_subscriptions says (FOUNDR administers it).
-    // No plan picker, payment or invoices until a payment architecture
-    // exists (Founder, 2026-10-01). The designed flow stays for the demo.
-    if (!app.repo.isDemo) return const _LiveSubscription();
+    if (app.repo.isDemo) return const _SubscriptionBody(sub: null);
+    // Live: the server's price book + this business's plan and usage.
+    return AsyncView<LiveSubscription?>(
+      key: ValueKey('subscription-${app.business?.id}'),
+      load: app.loadSubscription,
+      builder: (context, sub, reload) =>
+          _SubscriptionBody(sub: sub, onRefresh: reload),
+    );
+  }
+}
+
+class _SubscriptionBody extends StatelessWidget {
+  const _SubscriptionBody({required this.sub, this.onRefresh});
+
+  /// Null in the demo (designed sample usage).
+  final LiveSubscription? sub;
+  final Future<void> Function()? onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
     final text = Theme.of(context).textTheme;
     final plan = app.currentPlan;
-    // Demo usage for this cycle; riders / zones / team mirror the demo data.
+    final live = sub;
+    // Usage this cycle: live counts from the server (only completed
+    // deliveries count); the demo keeps its designed sample.
     final usage = [
-      (LucideIcons.package, L.deliveries, 620, plan.deliveries),
-      (LucideIcons.users, L.riders, 4, plan.riders),
-      (LucideIcons.mapPin, L.zones, 6, plan.zones),
-      (LucideIcons.userCog, L.teamMembers, 3, plan.teamUsers),
+      (
+        LucideIcons.package,
+        L.deliveries,
+        live?.deliveriesUsed ?? 620,
+        plan.deliveries,
+      ),
+      (LucideIcons.users, L.riders, live?.driversActive ?? 4, plan.riders),
+      (LucideIcons.mapPin, L.zones, live?.zonesActive ?? 6, plan.zones),
+      (
+        LucideIcons.userCog,
+        L.teamMembers,
+        live?.teamUsers ?? 3,
+        plan.teamUsers,
+      ),
     ];
+    final status = live?.status ?? 'active';
+    final trial = live?.trialEndsAt;
     return PageBody(
+      onRefresh: onRefresh,
       children: [
         // Current plan: a quiet tinted summary surface.
         Container(
@@ -130,7 +162,13 @@ class SubscriptionScreen extends StatelessWidget {
                   Expanded(
                     child: Text(L.plan(plan.name), style: text.titleMedium),
                   ),
-                  StatusChip(L.active, success: true),
+                  StatusChip(switch (status) {
+                    'trial' => L.subTrial,
+                    'past_due' => L.subPastDue,
+                    'suspended' => L.subSuspended,
+                    'cancelled' => L.subCancelled,
+                    _ => L.active,
+                  }, success: status == 'active' || status == 'trial'),
                 ],
               ),
               const SizedBox(height: Gap.xs),
@@ -141,11 +179,20 @@ class SubscriptionScreen extends StatelessWidget {
               ),
               const SizedBox(height: Gap.xs),
               Text(plan.tagline, style: text.bodySmall),
-              if (!plan.isFree) ...[
+              // Renewal dates come with a payment provider; live shows
+              // only what the server records (a trial end).
+              if (live == null && !plan.isFree) ...[
                 const SizedBox(height: Gap.md),
                 Text(
                   L.nextRenewal(_date(app.nextRenewal)),
                   style: text.bodySmall?.copyWith(color: context.c.textPrimary),
+                ),
+              ],
+              if (trial != null) ...[
+                const SizedBox(height: Gap.md),
+                Text(
+                  L.trialEnds(_date(trial.toLocal())),
+                  style: text.bodySmall,
                 ),
               ],
             ],
@@ -278,12 +325,15 @@ class _ChoosePlanScreenState extends State<ChoosePlanScreen> {
       children: [
         Text(L.selectPlanThatFitsBusiness, style: text.bodyMedium),
         const SizedBox(height: Gap.md),
-        _CycleToggle(
-          cycle: _cycle,
-          onChanged: (c) => setState(() => _cycle = c),
-        ),
-        const SizedBox(height: Gap.md),
-        for (final plan in subscriptionPlans) ...[
+        // Yearly billing is not an approved price: demo only.
+        if (app.repo.isDemo) ...[
+          _CycleToggle(
+            cycle: _cycle,
+            onChanged: (c) => setState(() => _cycle = c),
+          ),
+          const SizedBox(height: Gap.md),
+        ],
+        for (final plan in app.plans) ...[
           _PlanOption(
             plan: plan,
             cycle: _cycle,
@@ -293,11 +343,12 @@ class _ChoosePlanScreenState extends State<ChoosePlanScreen> {
           ),
           const SizedBox(height: Gap.md),
         ],
-        Text(
-          L.plansPricesCurrentPricingCandidate,
-          textAlign: TextAlign.center,
-          style: text.labelSmall,
-        ),
+        if (app.repo.isDemo)
+          Text(
+            L.plansPricesCurrentPricingCandidate,
+            textAlign: TextAlign.center,
+            style: text.labelSmall,
+          ),
       ],
     );
   }
@@ -497,9 +548,8 @@ class ReviewPaymentScreen extends StatefulWidget {
 }
 
 class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
-  late final SubscriptionPlan _plan = planById(
-    widget.selection.split(':').first,
-  );
+  late final SubscriptionPlan _plan = AppScope.read(context)
+      .planFor(widget.selection.split(':').first);
   late final BillingCycle _cycle = BillingCycle.values.firstWhere(
     (c) => c.name == widget.selection.split(':').last,
     orElse: () => BillingCycle.monthly,
@@ -511,16 +561,32 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
     if (_busy) return; // no duplicate submission
     setState(() => _busy = true);
     final app = AppScope.read(context);
+    final live = !app.repo.isDemo;
+    // Live: the server stops the change before payment (not enabled yet),
+    // so the honest outcome is the failure state -- nothing changes and
+    // nothing is charged.
     final ok = await runAsyncFeedback(
       context,
       action: () => app.subscribe(_plan, _cycle),
-      processingTitle: L.processingPayment,
-      processingSubtitle: L.pleaseWaitWhileWeConfirmPayment,
+      processingTitle: live ? L.checkingYourPlan : L.processingPayment,
+      processingSubtitle: live
+          ? L.pleaseWaitMoment
+          : L.pleaseWaitWhileWeConfirmPayment,
       successTitle: L.subscriptionActive,
-      failureTitle: L.paymentUnsuccessful,
-      failureMessage: L.weCouldntProcessPaymentNoCharge,
-      failureSecondaryLabel: L.changePaymentMethod,
-      onFailureSecondary: () {},
+      failureTitle: live
+          ? L.planChangeNotAvailableTitle
+          : L.paymentUnsuccessful,
+      failureMessage: live
+          ? L.planChangeNotAvailableBody
+          : L.weCouldntProcessPaymentNoCharge,
+      failureSecondaryLabel: live ? L.contactSupport2 : L.changePaymentMethod,
+      onFailureSecondary: live
+          ? () => launchSupportEmail(
+              context,
+              subject: L.planQuestionSubject,
+              body: _plan.name,
+            )
+          : () {},
     );
     if (!mounted) return;
     setState(() => _busy = false);
@@ -572,7 +638,8 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
             ],
           ),
         ),
-        if (!_plan.isFree) ...[
+        // Saved payment methods come with the payment provider: demo only.
+        if (!_plan.isFree && app.repo.isDemo) ...[
           SectionHeading(L.paymentMethod2),
           for (final (id, title, subtitle, icon) in [
             ('card', L.creditDebitCard, '•••• 4242', LucideIcons.creditCard),
@@ -645,89 +712,6 @@ class BillingHistoryScreen extends StatelessWidget {
               ),
             ),
       ],
-    );
-  }
-}
-
-class _LiveSubscription extends StatelessWidget {
-  const _LiveSubscription();
-
-  @override
-  Widget build(BuildContext context) {
-    final app = AppScope.of(context);
-    final text = Theme.of(context).textTheme;
-    return AsyncView<Map<String, dynamic>?>(
-      key: ValueKey('subscription-${app.business?.id}'),
-      load: () => app.repo.businessSubscription(app.business!.id),
-      builder: (context, sub, reload) {
-        final key = sub?['plan_key'] as String?;
-        final known = subscriptionPlans.where((p) => p.id == key);
-        final trial = DateTime.tryParse('${sub?['trial_ends_at'] ?? ''}');
-        return PageBody(
-          onRefresh: reload,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(Gap.xl),
-              decoration: BoxDecoration(
-                color: CefColors.brandTint,
-                borderRadius: BorderRadius.circular(Sizes.cardRadius),
-              ),
-              child: sub == null
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          L.subscriptionManagedTitle,
-                          style: text.titleMedium,
-                        ),
-                        const SizedBox(height: Gap.xs),
-                        Text(L.subscriptionUnavailable, style: text.bodySmall),
-                      ],
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          L.plan(
-                            known.isEmpty ? (key ?? '—') : known.first.name,
-                          ),
-                          style: text.titleMedium,
-                        ),
-                        const SizedBox(height: Gap.sm),
-                        Text(
-                          '${L.subscriptionStatus}: ${switch (sub['status']) {
-                            'trial' => L.subTrial,
-                            'active' => L.subActive,
-                            'past_due' => L.subPastDue,
-                            'suspended' => L.subSuspended,
-                            'cancelled' => L.subCancelled,
-                            _ => '—',
-                          }}',
-                          style: text.bodySmall,
-                        ),
-                        if (trial != null) ...[
-                          const SizedBox(height: Gap.xs),
-                          Text(
-                            L.trialEnds(_date(trial.toLocal())),
-                            style: text.bodySmall,
-                          ),
-                        ],
-                      ],
-                    ),
-            ),
-            const SizedBox(height: Gap.lg),
-            CefListRow(
-              title: L.contactSupport2,
-              icon: LucideIcons.mail,
-              onTap: () => launchSupportEmail(
-                context,
-                subject: L.planQuestionSubject,
-                body: '',
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 }
