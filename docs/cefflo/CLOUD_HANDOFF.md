@@ -38,7 +38,7 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 | **Invite PWA** | **LOCKED @ `79752d0`** | see §3b; `8c067bb` is historical/superseded |
 | Production domain map | FINAL/LOCKED | `docs/cefflo/engineering/PRODUCTION_DOMAIN_MAP.md` (prepared `3c6284e`, not deployed) |
 | **Operator** | **LOCKED @ `79752d0`** | see §3a |
-| Driver Core | READY FOR LOCK (2026-10-06) | invite → pending → approval → run → Plan Route → Pickup → Start → stops → POD → complete → history; `tests/staging/driver_lifecycle` (99); foreground resume re-resolves the relationship; Marketplace not required for assigned work |
+| Driver Core | READY FOR LOCK — pre-lock items resolved (2026-10-06) | flow Plan Route → Pickup Checklist → Slide to Start Delivery; `tests/staging/driver_lifecycle` (100); see §5 for customer notifications and the assignment terminal state |
 | Driver Marketplace Verification | **HOLD** — see §4 | backend + UI on staging |
 | Vendor App / Vendor Web | Wired on staging; parity decisions locked | full audit pending |
 | Storefront, FOUNDR, Marketing | pending their audit rounds | |
@@ -88,6 +88,9 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 **Other holds:** Face recognition / biometrics — HOLD (absolute). Marketplace RM49 activation and all payments — NOT IMPLEMENTED (never fake success). Mapbox — gated (see V1 gates). Driver paid vehicle change: UI ready, Curlec (MY) / Stripe (intl) live keys required before production.
 
 ## 5. Follow-ups (not blockers of locked surfaces)
+
+- **Driver customer notifications (Founder decision 2026-10-06):** external customer delivery (WhatsApp / SMS / customer push) stays DEFERRED; never fake success. Driver Core V1 keeps the state progression: Start Delivery → stop #1 `out_for_delivery`; completing stop #N → stop #N+1 `out_for_delivery` (sequence enforced by `rider_transition`). Customer Tracking reflects these states; the future notification system consumes the same transitions. No external second-stop message is NOT a Driver Core blocker.
+- **Assignment terminal state (audit 2026-10-06, unchanged, needs decision):** `rider_assignments.status` never reaches `completed` after delivery; every consumer (Vendor Riders "on a run", FOUNDR `admin_list_riders` / `admin_stuck_riders`, `deactivate_rider`, `reassign_rider`, `replace_run_rider`, `outsource_run`) treats `accepted` as in-flight and `completed` as terminal. Proposed fix: `complete_delivery` marks the stop's assignment `completed` + backfill; cross-surface, needs approval.
 
 0. Known non-blockers (Operator/Invite lock): (a) Vendor App client UX guard `isOwner ?? true` while business is unresolved — server authorization is authoritative; change only on a proven regression. (b) Test-harness debt: legacy suites (`operator_access`, `invite_security`) leave [TEST] auth accounts behind and `invite_security` resets the shared staging Helper link each run; clean up later.
 

@@ -136,6 +136,9 @@ try {
   }
   ok('  Driver B cannot reorder Driver A run', refused(await rpc(db, 'save_run_sequence', { p_rider_id: RA, p_delivery_session_id: SID, p_ordered_order_ids: [o1, o2] })) && refused(await rpc(db, 'save_run_sequence', { p_rider_id: RB, p_delivery_session_id: SID, p_ordered_order_ids: [o1, o2] })));
 
+  const before = await rpc(da, 'start_run_delivery', { p_rider_id: RA, p_delivery_session_id: SID });
+  ok('  order: Plan Route done, Start Delivery still refused before pickup', refused(before) && /pickup incomplete/.test(msg(before)), msg(before));
+
   // ---------- 5. Pickup + Pickup Checklist (server-persisted per order)
   ok('5 Driver B cannot start Driver A pickup', refused(await rpc(db, 'start_pickup_run', { p_rider_id: RA, p_delivery_session_id: SID })));
   const sp = await rpc(da, 'start_pickup_run', { p_rider_id: RA, p_delivery_session_id: SID });
