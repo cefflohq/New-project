@@ -3,7 +3,7 @@
 import { t, fmtTime } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
-import { fetchZones, fetchOrders, todayLocal, orderNo } from '../data.js';
+import { fetchZones, fetchOrders, businessToday, orderNo } from '../data.js';
 import { esc, icon, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal } from '../ui.js';
 
 const ONGOING = ['created', 'ready_for_pickup', 'picked_up', 'out_for_delivery', 'arrived'];
@@ -27,7 +27,7 @@ export default function zones({ el, params, setHeader }) {
 
   async function load() {
     try {
-      const [z, o] = await Promise.all([fetchZones(), fetchOrders(`&order_date=eq.${todayLocal()}`)]);
+      const [z, o] = await Promise.all([fetchZones(), businessToday().then(d => fetchOrders(`&order_date=eq.${d}`))]);
       zs = z || []; orders = o || [];
       paint();
       if (selected) paintDetail();

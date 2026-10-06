@@ -135,6 +135,13 @@ const TABLES = {
     { id: 'p-3', name: 'Mini Tart Set', description: '', display_price: 28, status: 'hidden', category_id: 'cat-2', business_id: BIZ },
   ],
   business_members: () => members,
+  subscription_plans: () => [
+    { key: 'free', name: 'Free', monthly_price_myr: 0, delivery_allowance: 150, driver_cap: 3, zone_cap: 2, team_user_cap: 1, most_popular: false, self_serve: true, sort: 1 },
+    { key: 'grow', name: 'Grow', monthly_price_myr: 99, delivery_allowance: 500, driver_cap: 10, zone_cap: 5, team_user_cap: 3, most_popular: false, self_serve: true, sort: 2 },
+    { key: 'operate', name: 'Operate', monthly_price_myr: 199, delivery_allowance: 1500, driver_cap: null, zone_cap: null, team_user_cap: 10, most_popular: true, self_serve: true, sort: 3 },
+    { key: 'scale', name: 'Scale', monthly_price_myr: 499, delivery_allowance: 5000, driver_cap: null, zone_cap: null, team_user_cap: 25, most_popular: false, self_serve: true, sort: 4 },
+    { key: 'enterprise', name: 'Enterprise', monthly_price_myr: null, delivery_allowance: null, driver_cap: null, zone_cap: null, team_user_cap: null, most_popular: false, self_serve: false, sort: 5 },
+  ],
   profiles: () => [{ id: USER.id, display_name: 'Yusuf Sazali', phone: '+60 12-600 1122' }],
 };
 
@@ -154,6 +161,8 @@ export async function demoRpc(name, body = {}) {
     case 'get_invite_link': return { token: `demo-${body.p_kind}-link` };
     case 'get_storefront': return { slug: 'kopi-kita', published: false, published_at: null, template_key: 'arena', theme: {} };
     case 'order_coverage_status': return 'covered';
+    case 'business_today': return todayLocal();
+    case 'my_subscription': return { plan_key: 'free', status: 'active', has_record: false, trial_ends_at: null, cycle_start: `${todayLocal().slice(0, 8)}01`, cycle_end: todayLocal(), deliveries_used: 42, delivery_allowance: 150, over_allowance: false, payment_enabled: false };
     case 'check_run_vehicle_capacity': return { compatible: true, violations: [] };
     case 'propose_delivery_plan': {
       const waiting = orders.filter(o => o.approved_at && !o.assigned_rider_id && o.delivery_status === 'created');

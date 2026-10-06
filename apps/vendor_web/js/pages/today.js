@@ -1,6 +1,6 @@
 // Today — operational overview (Founder reference 1).
 import { t, fmtTime, ago } from '../i18n.js';
-import { fetchOrders, fetchStops, fetchRiders, todayLocal, orderNo } from '../data.js';
+import { fetchOrders, fetchStops, fetchRiders, businessToday, orderNo } from '../data.js';
 import { esc, icon, chip, orderStatus, itemsText, avatar, loadingRows, emptyState, errorState, gatedNote } from '../ui.js';
 import { openAddOrder, openImport, openPlanDelivery } from './order_actions.js';
 import { openAddRider } from './riders.js';
@@ -43,7 +43,7 @@ export default function today({ el, setHeader }) {
 
   async function load() {
     try {
-      const [o, stops, rs] = await Promise.all([fetchOrders(`&order_date=eq.${todayLocal()}`), fetchStops(), fetchRiders()]);
+      const [o, stops, rs] = await Promise.all([businessToday().then(d => fetchOrders(`&order_date=eq.${d}`)), fetchStops(), fetchRiders()]);
       orders = o || [];
       prep = new Map((stops || []).map(s => [s.order_id, s.preparation_status]));
       riders = new Map((rs || []).map(r => [r.id, r]));
@@ -77,7 +77,7 @@ export default function today({ el, setHeader }) {
       const onRoad = mine.some(o => st(o) === 'delivery');
       const pct = mine.length ? Math.round((done / mine.length) * 100) : 0;
       return `<a class="list-row" href="#/riders/${esc(r.id)}" style="color:inherit;text-decoration:none">
-        ${avatar(r.name)}<div style="min-width:130px"><b>${esc(r.name)}</b><small><span class="live" style="color:${onRoad ? 'var(--success)' : 'var(--faint)'}"><i class="dot"></i>${esc(onRoad ? t('st.onDelivery') : t(r.availability_status === 'online' ? 'st.online' : 'st.offline'))}</span></small></div>
+        ${avatar(r.name)}<div style="min-width:130px"><b>${esc(r.name)}</b><small>${onRoad ? `<span class="live" style="color:var(--success)"><i class="dot"></i>${esc(t('st.onDelivery'))}</span>` : esc(r.vehicle_plate || '')}</small></div>
         <div class="grow"><div class="progress"><i style="width:${pct}%"></i></div></div>
         <span class="num" style="min-width:44px;text-align:right">${done} / ${mine.length}</span>${icon('right', 'i chev')}</a>`;
     }).join('') : emptyState(t('today.noRiders'), t('today.noRidersBody'));

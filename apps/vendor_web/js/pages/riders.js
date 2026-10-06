@@ -93,9 +93,6 @@ export default function riders({ el, params, setHeader }) {
     const r = all.find(x => x.id === selected);
     if (!r) { location.hash = '#/riders'; return; }
     const s = stats(r.id), digits = phoneDigits(r.phone);
-    // Availability is the rider's own setting; Vendor live location is not
-    // an approved capability (D-66 covers the customer view only).
-    const live = r.availability_status === 'online';
     const wa = digits ? `https://wa.me/${esc(digits.replace(/^0/, '60'))}` : '';
     const head = `<div class="rd-head">${avatar(r.name, 'lg')}
         <div class="rd-id"><div class="rd-name"><h2>${esc(r.name)}</h2>${chip(r.status === 'active' ? 'active' : 'pending')}</div>
@@ -114,7 +111,6 @@ export default function riders({ el, params, setHeader }) {
         <div class="kv">${icon('bike')}<div><small>${esc(t('riders.vehicleType'))}</small><b>${esc(vehicle(r) || t('c.none'))}</b></div></div>
         <div class="kv">${icon('clock')}<div><small>${esc(t('riders.joined'))}</small><b>${esc(fmtDate(r.created_at))}</b></div></div>
         <div class="kv">${icon('star')}<div><small>${esc(t('riders.rating'))}</small><b>${s.rating ? esc(s.rating) : '-'}</b></div></div>
-        <div class="kv">${icon('route')}<div style="flex:1"><small>${esc(t('riders.availability'))}</small><b><span class="live" style="color:${live ? 'var(--success)' : 'var(--faint)'}"><i class="dot"></i>${esc(t(live ? 'st.online' : 'st.offline'))}</span></b></div></div>
       </div>`;
     const history = s.mine.length ? `<div>${s.mine.slice(0, 30).map(o => `<a class="list-row" href="#/orders/${esc(o.id)}" style="color:inherit;text-decoration:none"><div class="grow"><b>${esc(orderNo(o))}</b><small>${esc(o.customer_name)} · ${esc(fmtDate(o.created_at))} ${esc(fmtTime(o.created_at))}</small></div>${chip(orderStatus(o))}</a>`).join('')}</div>` : emptyState(t('riders.noHistory'));
     const TABS = { ov: overview, docs: gatedNote(t('riders.docsGated')), earn: gatedNote(t('riders.earningsGated')), hist: history };

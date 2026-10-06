@@ -460,46 +460,55 @@ function integrations(page) {
   paint();
 }
 
-// Subscription (V-50-V-54, D-54), Owner only, as Vendor App live: the plan
-// row is administered in FOUNDR (business_subscriptions is readable only by
-// platform admins), so a missing row reads "Managed by Cefflo". Plans are the
-// pricing candidate (sot/10_PRICING.md). Real payment is on HOLD: choosing a
-// plan asks support by email and nothing is ever shown as paid or changed.
-const PLANS = [
-  { id: 'free', name: 'Free', price: 0, f: ['p.f100', 'p.f3r2z', 'p.fTrack'] },
-  { id: 'grow', name: 'Grow', price: 99, f: ['p.f500', 'p.f10r5z', 'p.f3team', 'p.fStdSupport'] },
-  { id: 'operate', name: 'Operate', price: 199, popular: true, f: ['p.f1500', 'p.fUnlimited', 'p.f10team', 'p.fAdvReport', 'p.fPriority'] },
-  { id: 'scale', name: 'Scale', price: 499, f: ['p.f5000', 'p.fUnlimited', 'p.f25team', 'p.fAdvControls', 'p.fPriority'] },
-];
+// Subscription (V-50-V-54, D-54), Owner only, as Vendor App live: the plan,
+// status and this cycle's usage come from my_subscription (every business
+// starts on FREE) and the Founder-locked price book from subscription_plans.
+// Real payment is on HOLD: choosing a plan asks support by email and nothing
+// is ever shown as paid or changed. Billing is monthly only.
+const PLAN_FEATURES = { free: ['p.fTrack'], grow: ['p.fStdSupport'], operate: ['p.fAdvReport', 'p.fPriority'], scale: ['p.fAdvControls', 'p.fPriority'], enterprise: ['p.fEnterprise'] };
+const n0 = v => Number(v).toLocaleString('en-MY');
 
 async function subscription(page) {
   const body = header(page, 'sub.title', 'sub.lead');
-  let sub = null, yearly = false, pick = '';
-  try { sub = (await api.get(`/rest/v1/business_subscriptions?business_id=eq.${encodeURIComponent(ctx.bid)}&select=plan_key,status,trial_ends_at`))?.[0] || null; } catch { sub = null; }
+  body.innerHTML = loadingRows(3);
+  let sub = null, plans = [], pick = '';
+  try {
+    [sub, plans] = await Promise.all([
+      api.rpc('my_subscription', { p_business_id: ctx.bid }),
+      api.get('/rest/v1/subscription_plans?select=key,name,monthly_price_myr,delivery_allowance,driver_cap,zone_cap,team_user_cap,most_popular,self_serve,sort&order=sort.asc'),
+    ]);
+  } catch (ex) { body.innerHTML = errorState(ex.message); return; }
+  plans = plans || [];
   const statusKey = { trial: 'sub.trial', active: 'sub.active', past_due: 'sub.pastDue', suspended: 'sub.suspended', cancelled: 'sub.cancelled' };
+  const features = p => p.key === 'enterprise' ? PLAN_FEATURES.enterprise.map(k => t(k)) : [
+    t('p.fDeliveries', { n: n0(p.delivery_allowance) }),
+    p.driver_cap == null ? t('p.fUnlimited') : t('p.fDriversZones', { d: p.driver_cap, z: p.zone_cap }),
+    ...(p.team_user_cap > 1 ? [t('p.fTeam', { n: p.team_user_cap })] : []),
+    ...(PLAN_FEATURES[p.key] || []).map(k => t(k)),
+  ];
+  const price = p => p.monthly_price_myr == null ? `<div style="font-size:20px;font-weight:600;margin:6px 0">${esc(t('sub.custom'))}</div>` : `<div style="font-size:20px;font-weight:600;margin:6px 0">RM${n0(Math.round(p.monthly_price_myr))}<small style="font-weight:400"> ${esc(t('sub.perMonth'))}</small></div>`;
   const paint = () => {
-    const cur = PLANS.find(p => p.id === sub?.plan_key);
+    const cur = plans.find(p => p.key === sub?.plan_key);
+    const used = sub?.deliveries_used ?? 0, cap = sub?.delivery_allowance;
     body.innerHTML = `
-      <div class="sub-card"><h3>${esc(t('sub.current'))}</h3>${sub
-        ? `<b style="font-size:18px">${esc(cur ? cur.name : sub.plan_key)}</b><p class="desc" style="margin:4px 0 0">${esc(t('sub.status'))}: ${esc(t(statusKey[sub.status] || 'c.none'))}${sub.trial_ends_at ? ` · ${esc(t('sub.trialEnds', { d: fmtDate(sub.trial_ends_at) }))}` : ''}</p>`
-        : `<b>${esc(t('sub.managed'))}</b><p class="desc" style="margin:4px 0 0">${esc(t('sub.unavailable'))}</p>`}</div>
-      <div class="sub-card"><div style="display:flex;align-items:center;gap:12px"><h3 style="margin:0">${esc(t('sub.choose'))}</h3>
-        <div class="tabs" style="margin-left:auto"><button class="tab ${yearly ? '' : 'on'}" data-cycle="m">${esc(t('sub.monthly'))}</button><button class="tab ${yearly ? 'on' : ''}" data-cycle="y">${esc(t('sub.yearly'))}</button></div></div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:12px">${PLANS.map(p => `<button class="opt ${pick === p.id ? 'on' : ''}" data-plan="${p.id}" style="display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:2px;text-align:left;height:100%;min-width:0">
-          <b>${esc(p.name)}</b>${p.popular ? ` <span class="chip active">${esc(t('sub.popular'))}</span>` : ''}${cur?.id === p.id ? ` <span class="chip neutral">${esc(t('sub.currentShort'))}</span>` : ''}
-          <div style="font-size:20px;font-weight:600;margin:6px 0">RM${yearly ? p.price * 10 : p.price}<small style="font-weight:400"> ${esc(t(yearly ? 'sub.perYear' : 'sub.perMonth'))}</small></div>
-          <ul style="margin:0;padding-left:18px">${p.f.map(k => `<li><small>${esc(t(k))}</small></li>`).join('')}</ul></button>`).join('')}</div>
-        <p class="hint" style="margin-top:10px">${esc(t('sub.candidate'))}</p>
+      <div class="sub-card"><h3>${esc(t('sub.current'))}</h3><b style="font-size:18px">${esc(cur ? cur.name : sub?.plan_key || '')}</b><p class="desc" style="margin:4px 0 0">${esc(t('sub.status'))}: ${esc(t(statusKey[sub?.status] || 'c.none'))}${sub?.trial_ends_at ? ` · ${esc(t('sub.trialEnds', { d: fmtDate(sub.trial_ends_at) }))}` : ''}</p>
+        <p class="desc" style="margin:10px 0 4px">${esc(t('sub.usage', { a: fmtDate(sub.cycle_start), b: fmtDate(sub.cycle_end) }))}</p>
+        <b>${esc(n0(used))}${cap != null ? ` / ${esc(n0(cap))}` : ''}</b> <small>${esc(t('sub.completedDeliveries'))}</small>
+        ${cap ? `<div style="height:6px;border-radius:3px;background:var(--line);margin-top:8px;overflow:hidden"><div style="height:100%;width:${Math.min(100, used / cap * 100)}%;background:${sub.over_allowance ? 'var(--danger)' : 'var(--primary)'}"></div></div>` : ''}</div>
+      <div class="sub-card"><h3 style="margin:0">${esc(t('sub.choose'))}</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:12px">${plans.map(p => `<button class="opt ${pick === p.key ? 'on' : ''}" data-plan="${esc(p.key)}" style="display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:2px;text-align:left;height:100%;min-width:0">
+          <b>${esc(p.name)}</b>${p.most_popular ? ` <span class="chip active">${esc(t('sub.popular'))}</span>` : ''}${cur?.key === p.key ? ` <span class="chip neutral">${esc(t('sub.currentShort'))}</span>` : ''}
+          ${price(p)}
+          <ul style="margin:0;padding-left:18px">${features(p).map(f => `<li><small>${esc(f)}</small></li>`).join('')}</ul></button>`).join('')}</div>
         ${gatedNote(t('sub.paymentHold'))}
-        <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn primary" data-request ${pick && pick !== cur?.id ? '' : 'disabled'}>${icon('mail')}${esc(t('sub.request'))}</button></div></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn primary" data-request ${pick && pick !== cur?.key ? '' : 'disabled'}>${icon('mail')}${esc(t(pick === 'enterprise' ? 'sub.contactSales' : 'sub.request'))}</button></div></div>
       <div class="sub-card"><h3>${esc(t('sub.billing'))}</h3>${emptyState(t('sub.noInvoices'))}</div>`;
   };
   body.addEventListener('click', e => {
-    const c = e.target.closest('[data-cycle]'); if (c) { yearly = c.dataset.cycle === 'y'; paint(); return; }
     const p = e.target.closest('[data-plan]'); if (p) { pick = p.dataset.plan; paint(); return; }
     if (e.target.closest('[data-request]') && pick) {
-      const plan = PLANS.find(x => x.id === pick);
-      const lines = [`Plan change request: ${plan.name} (${yearly ? 'yearly' : 'monthly'})`, '', '--', `Business: ${ctx.business?.business_name} (${ctx.bid})`, ctx.user?.email && `Account: ${ctx.user.email}`, 'App: Cefflo Vendor Web'].filter(Boolean);
+      const plan = plans.find(x => x.key === pick);
+      const lines = [`Plan change request: ${plan.name} (monthly)`, '', '--', `Business: ${ctx.business?.business_name} (${ctx.bid})`, ctx.user?.email && `Account: ${ctx.user.email}`, 'App: Cefflo Vendor Web'].filter(Boolean);
       location.href = `mailto:support@cefflo.com?subject=${encodeURIComponent('Cefflo plan change request')}&body=${encodeURIComponent(lines.join('\n'))}`;
     }
   });

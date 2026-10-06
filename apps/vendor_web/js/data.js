@@ -27,4 +27,14 @@ export function todayLocal() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 }
 
+// The server's business-local date (business_today), as the Vendor App
+// uses; the local computation above is only the fallback (demo, offline).
+export async function businessToday() {
+  try {
+    const d = await api.rpc('business_today', { p_business_id: ctx.bid });
+    if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+  } catch { /* fall back */ }
+  return todayLocal();
+}
+
 export const orderNo = o => o.order_number || (o.public_ref ? `#${o.public_ref}` : `#${o.id.slice(0, 6).toUpperCase()}`);
