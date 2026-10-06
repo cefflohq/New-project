@@ -115,18 +115,16 @@ exists while there is no push provider.
 
 ## 6. Cefflo Signature Notification Sound — integration contract
 
-**v1.0.0 CANDIDATE (2026-10-06) — implemented, awaiting Founder listening
-approval:** an original synthesised sound (no samples, no third-party
-or branded audio) — two short rising bell notes G5 → C6 with a soft inharmonic
-shimmer, 0.95 s, 48 kHz mono, peak −1 dBFS, RMS ≈ −15.4 dBFS, no voice.
-Reproducible from `shared/sounds/cefflo-signature.synth.py`. Delivered:
+**v1.1.0 APPROVED (Founder, 2026-10-06) — candidate C of four (A–D):** an
+original synthesised three-note mallet sonic logo C6 – G6 – E6 (up a fifth,
+settles a third), 0.68 s, 48 kHz mono, peak −1 dBFS, RMS ≈ −13.9 dBFS, no
+voice, no samples or third-party audio. Reproducible from
+`shared/sounds/cefflo-signature.synth.py` (candidate C). Delivered:
 `shared/sounds/cefflo-signature.wav` (source), `shared/sounds/cefflo-signature.mp3`
-(web, 15.7 KB), `apps/vendor_mobile/assets/sounds/cefflo_signature.mp3`
-(Flutter in-app, `audioplayers`). Manifest `approved: false`, `version: 1.0.0-candidate` (web keeps the dev tone /
-silence until approval; the Vendor App plays the candidate asset).
-Still to come with push: Android `res/raw` `.ogg`, iOS `.caf`, and the Driver
-app (still on the platform placeholder). The Founder may replace the asset
-later at the same paths.
+(web, 11.5 KB), `apps/vendor_mobile/assets/sounds/cefflo_signature.mp3`
+(Flutter in-app). Manifest `approved: true`, `version: 1.1.0`. v1.0.0 and
+candidates A, B, D were not selected. Still to come with push: Android
+`res/raw` `.ogg`, iOS `.caf`, and the Driver app (platform placeholder).
 
 This contract defines where it plugs in.
 

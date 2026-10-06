@@ -22,8 +22,9 @@ bool notificationPlaysSound(String? eventKey) =>
 /// Sound and vibration for a foreground alert.
 ///
 /// Cefflo Signature Notification Sound (NOTIFICATION_EVENT_MATRIX §6),
-/// v1.0.0 CANDIDATE awaiting Founder listening approval: `assets/sounds/cefflo_signature.mp3` (original synthesis, source
-/// `shared/sounds/cefflo-signature.wav`, 0.95 s, peak -1 dBFS). Played only
+/// v1.1.0 (Founder-approved, candidate C): `assets/sounds/cefflo_signature.mp3`
+/// (original three-note mallet logo, source `shared/sounds/cefflo-signature.wav`,
+/// 0.68 s, peak -1 dBFS). Played only
 /// for foreground alerts the user's Sound preference allows; a burst of
 /// events plays once (1.5 s window), never loops or retries, and any audio
 /// failure (e.g. a browser blocking audio before interaction) is dropped
