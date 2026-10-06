@@ -550,40 +550,76 @@ class RiderRepository {
 
   String _idempotencyKey() => DateTime.now().microsecondsSinceEpoch.toString();
 
-  /// The Driver's identity document (Founder 2026-10-06): typed MyKad IC
-  /// number + driving-licence photo, reviewed by Cefflo only. Null if none.
-  Future<Map<String, dynamic>?> myLicence() async {
-    if (isDemo) return null;
-    final rows = await _run(
-      () => _db
-          .from('driver_licences')
-          .select('status, ic_last4, reject_reason, submitted_at'),
-    );
-    final list = (rows as List).cast<Map<String, dynamic>>();
-    return list.isEmpty ? null : list.first;
+  /// Marketplace Verification V1 (Find Jobs only; Vendor-invited work never
+  /// needs it). User-facing status only: status, retake step, IC last 4,
+  /// declared vehicle — never evidence, hashes or paths.
+  Future<Map<String, dynamic>> myMarketplaceVerification() async {
+    if (isDemo) return const {'status': 'not_started'};
+    final res = await _run(() => _db.rpc('my_marketplace_verification'));
+    return Map<String, dynamic>.from(res as Map);
   }
 
-  /// Uploads the licence photo to the Driver's own private folder, then
-  /// submit_driver_licence (one IC = one account, enforced server-side).
+  Future<String> _uploadDocument(
+    String kind,
+    List<int> bytes,
+    String ext,
+  ) async {
+    final path = '${currentUser!.id}/$kind-${_idempotencyKey()}.$ext';
+    await _run(
+      () => _db.storage
+          .from('cefflo-driver-documents')
+          .uploadBinary(path, Uint8List.fromList(bytes)),
+    );
+    return path;
+  }
+
+  /// IC number + ONE driving-licence image (one IC = one account,
+  /// enforced server-side; the IC is stored only as a keyed hash).
   Future<void> submitLicence({
     required String icNumber,
     required List<int> photo,
     required String extension,
   }) async {
-    final uid = currentUser?.id;
-    if (isDemo || uid == null) return;
-    final path = '$uid/licence-${_idempotencyKey()}.$extension';
-    await _run(
-      () => _db.storage
-          .from('cefflo-driver-documents')
-          .uploadBinary(path, Uint8List.fromList(photo)),
-    );
+    if (isDemo || currentUser == null) return;
+    final path = await _uploadDocument('licence', photo, extension);
     await _run(
       () => _db.rpc(
         'submit_driver_licence',
-        params: {'p_ic_number': icNumber, 'p_photo_path': path},
+        params: {'p_ic_number': icNumber, 'p_licence_path': path},
       ),
     );
+  }
+
+  /// Vehicle type + declared plate + ONE live camera photo.
+  Future<void> submitMarketplaceVehicle({
+    required String vehicleType,
+    required String plate,
+    required List<int> photo,
+    required String extension,
+  }) async {
+    if (isDemo || currentUser == null) return;
+    final path = await _uploadDocument('vehicle', photo, extension);
+    await _run(
+      () => _db.rpc(
+        'submit_marketplace_vehicle',
+        params: {
+          'p_vehicle_type': vehicleType,
+          'p_vehicle_plate': plate,
+          'p_photo_path': path,
+        },
+      ),
+    );
+  }
+
+  /// Asks the server to screen what was submitted (OCR runs server-side).
+  /// A failure leaves the verification pending; it never verifies.
+  Future<void> requestMarketplaceScreening() async {
+    if (isDemo) return;
+    try {
+      await _db.functions.invoke('verify-marketplace-driver');
+    } catch (_) {
+      // screening unavailable: status stays pending
+    }
   }
 
   /// PostgREST reports a missing routine as PGRST202 (not in the schema cache)

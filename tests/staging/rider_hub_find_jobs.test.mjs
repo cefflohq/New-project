@@ -1,4 +1,5 @@
 // Rider Hub (D-75) staging security tests. Staging only; refuses any other project.
+import { ensureMarketplaceVerified } from './_marketplace.mjs';
 const URL_ = process.env.SUPABASE_URL, KEY = process.env.SUPABASE_PUBLISHABLE_KEY, SVC = process.env.SUPABASE_SECRET_KEY;
 if (!URL_.includes('tomvvmwktehexwhktenw')) throw new Error('not staging');
 const PW = 'Cf-v1004-Verify!9', mail = r => `zelix.co00+v1004${r}@gmail.com`;
@@ -93,6 +94,9 @@ const bRead = await sel(vendorB, `rider_job_openings?select=id&business_id=eq.${
 ok("other vendor cannot read this business's openings", bRead.status === 200 && bRead.body.length === 0);
 
 // --- requests
+const r0 = await rpc(applicant, 'request_job_opening', { p_opening_id: o1.body.id });
+ok('unverified driver cannot apply (Marketplace Verification required)', r0.status >= 400 && /marketplace verification required/.test(err(r0)), err(r0));
+await ensureMarketplaceVerified({ url: URL_, key: KEY, svc: SVC, driverToken: applicant, name: '[TEST] Jobs Applicant', plate: 'KDH 1005' });
 const r1 = await rpc(applicant, 'request_job_opening', { p_opening_id: o1.body.id });
 ok('rider can request an opening (pending)', r1.status === 200 && r1.body.status === 'pending', err(r1));
 const dup = await rpc(applicant, 'request_job_opening', { p_opening_id: o1.body.id });

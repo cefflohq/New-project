@@ -887,9 +887,9 @@
   "payCardIntl": "International card",
   "licenceRejected": "Rejected",
   "drivingLicence": "Driving licence",
-  "licenceNeeded": "Submit it for verification by Cefflo",
+  "licenceNeeded": "Needed for Find Jobs",
   "icEnding": "IC ending {last4}",
-  "licencePrivacy": "Only the Cefflo team sees your IC number and licence photo, never a business. We keep them while your account is active and delete them with your account.",
+  "licencePrivacy": "Only Cefflo uses these to check Find Jobs drivers; businesses never see your IC, licence or photos. Your IC number stays hidden (last 4 digits only). Not needed for deliveries from businesses that invited you.",
   "licenceSubmitted": "Licence sent for review",
   "icInvalid": "Enter your 12-digit MyKad IC number.",
   "licencePhotoNeeded": "Add a photo of your driving licence.",
@@ -897,12 +897,30 @@
   "icNumber": "MyKad IC number",
   "licencePhoto": "Driving licence photo",
   "chooseFromGallery": "Choose photo",
-  "licencePhotoHint": "The front of your Malaysian driving licence, sharp and readable. Only Malaysian licences are accepted for now.",
+  "licencePhotoHint": "One photo of your Malaysian driving licence, sharp and readable. Only Malaysian licences are accepted for now.",
   "@icEnding": {
     "placeholders": {
       "last4": {
         "type": "String"
       }
     }
-  }
+  },
+  "mvTitle": "Marketplace verification",
+  "mvIntro": "To apply for jobs in Find Jobs, add your licence and your vehicle. Deliveries from businesses that invited you do not need this.",
+  "mvChecking": "Checking",
+  "mvPendingBody": "We are checking your documents. This usually takes a moment.",
+  "mvVerifiedBody": "You are verified for Find Jobs.",
+  "mvReviewBody": "The Cefflo team is taking a closer look. We will let you know.",
+  "mvRejectedBody": "Verification was not approved. Contact Cefflo support.",
+  "mvRetakeBody": "We could not read one of your photos. Please take it again.",
+  "mvRetake": "Retake",
+  "mvLicenceSub": "MyKad IC number + one licence photo",
+  "mvVehicle": "Vehicle",
+  "mvVehicleSub": "Type, plate and one live photo",
+  "mvPlate": "Plate number",
+  "mvPlateInvalid": "Enter a valid plate number, e.g. VAB 1234.",
+  "mvVehiclePhotoNeeded": "Take a photo of your vehicle.",
+  "mvVehiclePhotoHint": "Take a photo of your vehicle with the license plate clearly visible.",
+  "mvCheckAgain": "Check again",
+  "mvRequiredToApply": "Complete marketplace verification to apply for jobs."
 }

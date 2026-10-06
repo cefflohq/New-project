@@ -1911,7 +1911,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get drivingLicence => 'Lesen memandu';
 
   @override
-  String get licenceNeeded => 'Hantar untuk pengesahan oleh Cefflo';
+  String get licenceNeeded => 'Diperlukan untuk Cari Kerja';
 
   @override
   String icEnding(String last4) {
@@ -1920,7 +1920,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get licencePrivacy =>
-      'Hanya pasukan Cefflo melihat nombor IC dan gambar lesen anda, bukan bisnes. Kami simpan selagi akaun anda aktif dan memadamnya bersama akaun anda.';
+      'Hanya Cefflo menggunakannya untuk menyemak driver Cari Kerja; bisnes tidak pernah melihat IC, lesen atau gambar anda. Nombor IC anda disembunyikan (4 digit terakhir sahaja). Tidak diperlukan untuk penghantaran daripada bisnes yang menjemput anda.';
 
   @override
   String get licenceSubmitted => 'Lesen dihantar untuk semakan';
@@ -1946,5 +1946,66 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get licencePhotoHint =>
-      'Bahagian depan lesen memandu Malaysia anda, jelas dan boleh dibaca. Hanya lesen Malaysia diterima buat masa ini.';
+      'Satu gambar lesen memandu Malaysia anda, jelas dan boleh dibaca. Hanya lesen Malaysia diterima buat masa ini.';
+
+  @override
+  String get mvTitle => 'Pengesahan marketplace';
+
+  @override
+  String get mvIntro =>
+      'Untuk memohon kerja di Cari Kerja, tambah lesen dan kenderaan anda. Penghantaran daripada bisnes yang menjemput anda tidak memerlukannya.';
+
+  @override
+  String get mvChecking => 'Disemak';
+
+  @override
+  String get mvPendingBody =>
+      'Kami sedang menyemak dokumen anda. Biasanya sekejap sahaja.';
+
+  @override
+  String get mvVerifiedBody => 'Anda disahkan untuk Cari Kerja.';
+
+  @override
+  String get mvReviewBody =>
+      'Pasukan Cefflo sedang menyemak dengan lebih teliti. Kami akan maklumkan.';
+
+  @override
+  String get mvRejectedBody =>
+      'Pengesahan tidak diluluskan. Hubungi sokongan Cefflo.';
+
+  @override
+  String get mvRetakeBody =>
+      'Kami tidak dapat membaca salah satu gambar anda. Sila ambil semula.';
+
+  @override
+  String get mvRetake => 'Ambil semula';
+
+  @override
+  String get mvLicenceSub => 'Nombor IC MyKad + satu gambar lesen';
+
+  @override
+  String get mvVehicle => 'Kenderaan';
+
+  @override
+  String get mvVehicleSub => 'Jenis, plat dan satu gambar langsung';
+
+  @override
+  String get mvPlate => 'Nombor plat';
+
+  @override
+  String get mvPlateInvalid => 'Masukkan nombor plat yang sah, cth. VAB 1234.';
+
+  @override
+  String get mvVehiclePhotoNeeded => 'Ambil gambar kenderaan anda.';
+
+  @override
+  String get mvVehiclePhotoHint =>
+      'Ambil gambar kenderaan anda dengan plat nombor jelas kelihatan.';
+
+  @override
+  String get mvCheckAgain => 'Semak semula';
+
+  @override
+  String get mvRequiredToApply =>
+      'Lengkapkan pengesahan marketplace untuk memohon kerja.';
 }

@@ -1107,7 +1107,13 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     try {
       await _Jobs.request(app, o);
     } on RepositoryError catch (e) {
-      if (mounted) showCefToast(context, e.message, error: true);
+      if (!mounted) return;
+      if (e.message.contains('marketplace verification required')) {
+        showCefToast(context, L.mvRequiredToApply, error: true);
+        AppScope.read(context).go(DRoute.documents);
+      } else {
+        showCefToast(context, e.message, error: true);
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }

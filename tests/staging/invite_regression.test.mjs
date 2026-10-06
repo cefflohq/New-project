@@ -1,3 +1,4 @@
+import { ensureMarketplaceVerified } from './_marketplace.mjs';
 // Invite regression (Security & Access Master §9-12, §27-29) + Find Jobs
 // (D-75) interaction. Fresh staging accounts per role:
 // link -> auth -> join request -> pending -> Owner approval -> correct
@@ -96,6 +97,9 @@ for (const kind of ['operator', 'helper', 'rider']) {
 const op = (await rpc(owner, 'save_job_opening', { p_business_id: B, p_area_label: '[TEST] inv-regression', p_pickup_time: '19:00', p_days: [7], p_vehicle_type: 'motorcycle', p_pay_per_drop: 3, p_drivers_needed: 1 })).body;
 ok('Find Jobs: owner posts an opening', !!op?.id);
 const invitedRider = created.riders[0];
+const unv = await rpc(invitedRider.tok, 'request_job_opening', { p_opening_id: op.id });
+ok('Find Jobs: applying needs Marketplace Verification (invite alone is not enough)', unv.status >= 400 && /marketplace verification required/.test(msg(unv)), msg(unv));
+await ensureMarketplaceVerified({ url: URL_, key: KEY, svc: process.env.SUPABASE_SECRET_KEY, driverToken: invitedRider.tok, name: '[TEST] Inv rider', plate: 'INV ' + stamp.slice(-4) });
 const rq = await rpc(invitedRider.tok, 'request_job_opening', { p_opening_id: op.id });
 ok('Find Jobs: invite-approved rider is booked directly (already active)', rq.status === 200 && rq.body?.status === 'approved', msg(rq));
 for (const t of created.team) {
@@ -104,6 +108,7 @@ for (const t of created.team) {
 }
 // a Find-Jobs applicant later opening the rider invite link -> same relationship, no duplicate
 const fjUser = await freshUser('fj', { driver_registration: { full_name: '[TEST] Inv findjobs', phone: phone(5), vehicle_type: 'motorcycle', vehicle_plate: 'FJ ' + stamp } });
+await ensureMarketplaceVerified({ url: URL_, key: KEY, svc: process.env.SUPABASE_SECRET_KEY, driverToken: fjUser, name: '[TEST] Inv findjobs', plate: 'FJ ' + stamp.slice(-4) });
 const fj = await rpc(fjUser, 'request_job_opening', { p_opening_id: op.id });
 ok('Find Jobs: new rider requests -> pending', fj.status === 200 && fj.body?.status === 'pending', msg(fj));
 const riderLink = tokenOf((await rpc(owner, 'get_invite_link', { p_business_id: B, p_kind: 'rider' })).body);

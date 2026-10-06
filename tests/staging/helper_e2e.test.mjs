@@ -49,6 +49,11 @@ ok('  another business\'s helper/owner sees nothing of it', !JSON.stringify((awa
 // 4. Preparation -> Packing -> Sorting
 await step('4 helper starts preparing', await rpc(helper, 'advance_preparation', { p_order_id: O.id, p_next: 'preparing' }));
 await step('  helper marks packed', await rpc(helper, 'advance_preparation', { p_order_id: O.id, p_next: 'packed' }));
+// leftovers from earlier staging runs in the same zone/day must be packed too
+for (const t of (board.tasks || []).filter(t => t.order_id !== O.id && t.zone_id === zone && ['not_started', 'preparing'].includes(t.preparation_status))) {
+  if (t.preparation_status === 'not_started') await rpc(helper, 'advance_preparation', { p_order_id: t.order_id, p_next: 'preparing' });
+  await rpc(helper, 'advance_preparation', { p_order_id: t.order_id, p_next: 'packed' });
+}
 await step('  helper confirms Packing for the zone', await rpc(helper, 'confirm_packing', { p_business_id: B, p_zone_id: zone, p_order_date: O.order_date }));
 await step('  helper sorts the order', await rpc(helper, 'advance_preparation', { p_order_id: O.id, p_next: 'sorted' }));
 await step('  helper confirms Sorting for the zone + run', await rpc(helper, 'confirm_sorting', { p_business_id: B, p_zone_id: zone, p_delivery_session_id: S, p_order_date: O.order_date }));

@@ -3491,7 +3491,7 @@ abstract class AppLocalizations {
   /// No description provided for @licenceNeeded.
   ///
   /// In en, this message translates to:
-  /// **'Submit it for verification by Cefflo'**
+  /// **'Needed for Find Jobs'**
   String get licenceNeeded;
 
   /// No description provided for @icEnding.
@@ -3503,7 +3503,7 @@ abstract class AppLocalizations {
   /// No description provided for @licencePrivacy.
   ///
   /// In en, this message translates to:
-  /// **'Only the Cefflo team sees your IC number and licence photo, never a business. We keep them while your account is active and delete them with your account.'**
+  /// **'Only Cefflo uses these to check Find Jobs drivers; businesses never see your IC, licence or photos. Your IC number stays hidden (last 4 digits only). Not needed for deliveries from businesses that invited you.'**
   String get licencePrivacy;
 
   /// No description provided for @licenceSubmitted.
@@ -3551,8 +3551,116 @@ abstract class AppLocalizations {
   /// No description provided for @licencePhotoHint.
   ///
   /// In en, this message translates to:
-  /// **'The front of your Malaysian driving licence, sharp and readable. Only Malaysian licences are accepted for now.'**
+  /// **'One photo of your Malaysian driving licence, sharp and readable. Only Malaysian licences are accepted for now.'**
   String get licencePhotoHint;
+
+  /// No description provided for @mvTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Marketplace verification'**
+  String get mvTitle;
+
+  /// No description provided for @mvIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'To apply for jobs in Find Jobs, add your licence and your vehicle. Deliveries from businesses that invited you do not need this.'**
+  String get mvIntro;
+
+  /// No description provided for @mvChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking'**
+  String get mvChecking;
+
+  /// No description provided for @mvPendingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We are checking your documents. This usually takes a moment.'**
+  String get mvPendingBody;
+
+  /// No description provided for @mvVerifiedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You are verified for Find Jobs.'**
+  String get mvVerifiedBody;
+
+  /// No description provided for @mvReviewBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The Cefflo team is taking a closer look. We will let you know.'**
+  String get mvReviewBody;
+
+  /// No description provided for @mvRejectedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification was not approved. Contact Cefflo support.'**
+  String get mvRejectedBody;
+
+  /// No description provided for @mvRetakeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not read one of your photos. Please take it again.'**
+  String get mvRetakeBody;
+
+  /// No description provided for @mvRetake.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get mvRetake;
+
+  /// No description provided for @mvLicenceSub.
+  ///
+  /// In en, this message translates to:
+  /// **'MyKad IC number + one licence photo'**
+  String get mvLicenceSub;
+
+  /// No description provided for @mvVehicle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle'**
+  String get mvVehicle;
+
+  /// No description provided for @mvVehicleSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Type, plate and one live photo'**
+  String get mvVehicleSub;
+
+  /// No description provided for @mvPlate.
+  ///
+  /// In en, this message translates to:
+  /// **'Plate number'**
+  String get mvPlate;
+
+  /// No description provided for @mvPlateInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid plate number, e.g. VAB 1234.'**
+  String get mvPlateInvalid;
+
+  /// No description provided for @mvVehiclePhotoNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo of your vehicle.'**
+  String get mvVehiclePhotoNeeded;
+
+  /// No description provided for @mvVehiclePhotoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo of your vehicle with the license plate clearly visible.'**
+  String get mvVehiclePhotoHint;
+
+  /// No description provided for @mvCheckAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get mvCheckAgain;
+
+  /// No description provided for @mvRequiredToApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete marketplace verification to apply for jobs.'**
+  String get mvRequiredToApply;
 }
 
 class _AppLocalizationsDelegate

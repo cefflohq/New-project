@@ -1896,7 +1896,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get drivingLicence => 'Driving licence';
 
   @override
-  String get licenceNeeded => 'Submit it for verification by Cefflo';
+  String get licenceNeeded => 'Needed for Find Jobs';
 
   @override
   String icEnding(String last4) {
@@ -1905,7 +1905,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licencePrivacy =>
-      'Only the Cefflo team sees your IC number and licence photo, never a business. We keep them while your account is active and delete them with your account.';
+      'Only Cefflo uses these to check Find Jobs drivers; businesses never see your IC, licence or photos. Your IC number stays hidden (last 4 digits only). Not needed for deliveries from businesses that invited you.';
 
   @override
   String get licenceSubmitted => 'Licence sent for review';
@@ -1931,5 +1931,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licencePhotoHint =>
-      'The front of your Malaysian driving licence, sharp and readable. Only Malaysian licences are accepted for now.';
+      'One photo of your Malaysian driving licence, sharp and readable. Only Malaysian licences are accepted for now.';
+
+  @override
+  String get mvTitle => 'Marketplace verification';
+
+  @override
+  String get mvIntro =>
+      'To apply for jobs in Find Jobs, add your licence and your vehicle. Deliveries from businesses that invited you do not need this.';
+
+  @override
+  String get mvChecking => 'Checking';
+
+  @override
+  String get mvPendingBody =>
+      'We are checking your documents. This usually takes a moment.';
+
+  @override
+  String get mvVerifiedBody => 'You are verified for Find Jobs.';
+
+  @override
+  String get mvReviewBody =>
+      'The Cefflo team is taking a closer look. We will let you know.';
+
+  @override
+  String get mvRejectedBody =>
+      'Verification was not approved. Contact Cefflo support.';
+
+  @override
+  String get mvRetakeBody =>
+      'We could not read one of your photos. Please take it again.';
+
+  @override
+  String get mvRetake => 'Retake';
+
+  @override
+  String get mvLicenceSub => 'MyKad IC number + one licence photo';
+
+  @override
+  String get mvVehicle => 'Vehicle';
+
+  @override
+  String get mvVehicleSub => 'Type, plate and one live photo';
+
+  @override
+  String get mvPlate => 'Plate number';
+
+  @override
+  String get mvPlateInvalid => 'Enter a valid plate number, e.g. VAB 1234.';
+
+  @override
+  String get mvVehiclePhotoNeeded => 'Take a photo of your vehicle.';
+
+  @override
+  String get mvVehiclePhotoHint =>
+      'Take a photo of your vehicle with the license plate clearly visible.';
+
+  @override
+  String get mvCheckAgain => 'Check again';
+
+  @override
+  String get mvRequiredToApply =>
+      'Complete marketplace verification to apply for jobs.';
 }

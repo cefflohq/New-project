@@ -10,10 +10,12 @@ import '../widgets.dart';
 
 import 'package:cefflo_rider_mobile/l10n/l10n.dart';
 
-/// D37 Documents, real build (Founder 2026-10-06): the Driver's identity —
-/// typed MyKad IC number + a photo of their driving licence. Malaysia only.
-/// One IC = one account (server-enforced); reviewed by Cefflo only, never by
-/// a business (PDPA); kept while the account exists.
+/// D37 Documents, real build: Marketplace Verification V1 (Founder
+/// 2026-10-06). Needed ONLY for Find Jobs (independent marketplace);
+/// Vendor-invited work never needs it. Steps: MyKad IC + ONE driving-licence
+/// image, then vehicle type + plate + ONE live camera photo. Screening (OCR)
+/// runs on the server; Cefflo staff only see exceptions. Businesses never see
+/// any of it. No face scan / biometrics.
 class LiveDocumentsScreen extends StatefulWidget {
   const LiveDocumentsScreen({super.key});
 
@@ -22,7 +24,7 @@ class LiveDocumentsScreen extends StatefulWidget {
 }
 
 class _LiveDocumentsScreenState extends State<LiveDocumentsScreen> {
-  Map<String, dynamic>? _licence;
+  Map<String, dynamic>? _v;
   bool _loading = true;
   String? _error;
 
@@ -35,8 +37,8 @@ class _LiveDocumentsScreenState extends State<LiveDocumentsScreen> {
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      final l = await AppScope.read(context).repo.myLicence();
-      if (mounted) setState(() => _licence = l);
+      final v = await AppScope.read(context).repo.myMarketplaceVerification();
+      if (mounted) setState(() => _v = v);
     } on RepositoryError catch (e) {
       if (mounted) setState(() => _error = e.message);
     } finally {
@@ -47,14 +49,58 @@ class _LiveDocumentsScreenState extends State<LiveDocumentsScreen> {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    final status = _licence?['status'] as String?;
+    final v = _v ?? const {};
+    final status = v['status'] as String? ?? 'not_started';
+    final retake = v['retake'] as String?;
+    final locked = status == 'verified' || status == 'rejected';
     final (label, tone) = switch (status) {
       'verified' => (L.verified, ChipTone.success),
-      'submitted' => (L.review, ChipTone.warning),
+      'pending' => (L.mvChecking, ChipTone.warning),
+      'needs_review' => (L.review, ChipTone.warning),
       'rejected' => (L.licenceRejected, ChipTone.attention),
       _ => (L.missing, ChipTone.neutral),
     };
-    final canSubmit = status != 'verified' && status != 'submitted';
+    Widget step(
+      IconData icon,
+      String title,
+      String sub,
+      bool done,
+      bool redo,
+      VoidCallback onTap,
+    ) => Padding(
+      padding: const EdgeInsets.only(bottom: Gap.sm),
+      child: CeffloCard(
+        shadow: false,
+        onTap: locked ? null : onTap,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        child: Row(
+          children: [
+            Icon(icon, size: 24),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: context.t.titleSmall),
+                  Text(
+                    sub,
+                    style: context.t.bodySmall?.copyWith(
+                      color: context.c.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            CeffloStatusChip(
+              redo ? L.mvRetake : (done ? L.photoAdded : L.missing),
+              tone: redo
+                  ? ChipTone.attention
+                  : (done ? ChipTone.success : ChipTone.neutral),
+            ),
+          ],
+        ),
+      ),
+    );
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
         title: L.documents,
@@ -72,41 +118,54 @@ class _LiveDocumentsScreenState extends State<LiveDocumentsScreen> {
               ),
             )
           else ...[
-            CeffloCard(
-              shadow: false,
-              onTap: canSubmit ? () => _openSubmit(context) : null,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              child: Row(
-                children: [
-                  const Icon(LucideIcons.idCard, size: 24),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(L.drivingLicence, style: context.t.titleSmall),
-                        Text(
-                          _licence == null
-                              ? L.licenceNeeded
-                              : L.icEnding(_licence!['ic_last4'] as String),
-                          style: context.t.bodySmall?.copyWith(
-                            color: context.c.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  CeffloStatusChip(label, tone: tone),
-                ],
+            Row(
+              children: [
+                Expanded(child: Text(L.mvTitle, style: context.t.titleMedium)),
+                CeffloStatusChip(label, tone: tone),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              switch (status) {
+                'verified' => L.mvVerifiedBody,
+                'pending' => L.mvPendingBody,
+                'needs_review' => L.mvReviewBody,
+                'rejected' => L.mvRejectedBody,
+                _ => retake != null ? L.mvRetakeBody : L.mvIntro,
+              },
+              style: context.t.bodySmall?.copyWith(
+                color: context.c.textSecondary,
               ),
             ),
-            if (status == 'rejected' && _licence?['reject_reason'] != null) ...[
-              const SizedBox(height: Gap.sm),
-              CeffloNote(
-                icon: LucideIcons.triangleAlert,
-                tone: CeffloNoteTone.warning,
-                body: _licence!['reject_reason'] as String,
+            const SizedBox(height: Gap.md),
+            step(
+              LucideIcons.idCard,
+              L.drivingLicence,
+              v['ic_last4'] == null
+                  ? L.mvLicenceSub
+                  : L.icEnding(v['ic_last4'] as String),
+              v['licence_submitted'] == true,
+              retake == 'licence',
+              () => _open(const _SubmitLicenceSheet()),
+            ),
+            step(
+              LucideIcons.car,
+              L.mvVehicle,
+              v['vehicle_plate'] == null
+                  ? L.mvVehicleSub
+                  : '${v['vehicle_plate']}',
+              v['vehicle_submitted'] == true,
+              retake == 'vehicle',
+              () => _open(
+                _SubmitVehicleSheet(
+                  type: v['vehicle_type'] as String?,
+                  plate: v['vehicle_plate'] as String?,
+                ),
               ),
+            ),
+            if (status == 'pending') ...[
+              const SizedBox(height: Gap.xs),
+              CeffloSecondaryButton(L.mvCheckAgain, onTap: _screen),
             ],
             if (_error != null) ...[
               const SizedBox(height: Gap.sm),
@@ -120,14 +179,17 @@ class _LiveDocumentsScreenState extends State<LiveDocumentsScreen> {
     );
   }
 
-  Future<void> _openSubmit(BuildContext context) async {
-    final sent = await showCeffloSheet<bool>(
-      context,
-      child: const _SubmitLicenceSheet(),
-    );
+  Future<void> _screen() async {
+    setState(() => _loading = true);
+    await AppScope.read(context).repo.requestMarketplaceScreening();
+    if (mounted) await _load();
+  }
+
+  Future<void> _open(Widget sheet) async {
+    final sent = await showCeffloSheet<bool>(context, child: sheet);
     if (sent == true && mounted) {
-      showCefToast(this.context, L.licenceSubmitted);
-      _load();
+      showCefToast(context, L.licenceSubmitted);
+      await _screen();
     }
   }
 }
@@ -236,6 +298,128 @@ class _SubmitLicenceSheetState extends State<_SubmitLicenceSheet> {
         const SizedBox(height: Gap.sm),
         Text(
           L.licencePhotoHint,
+          style: context.t.bodySmall?.copyWith(color: context.c.textSecondary),
+        ),
+        if (_error != null) ...[
+          const SizedBox(height: Gap.sm),
+          Text(_error!, style: TextStyle(color: context.c.attention)),
+        ],
+        const SizedBox(height: Gap.lg),
+        CeffloPrimaryButton(
+          L.submitReview,
+          busy: _busy,
+          onTap: _busy ? null : _submit,
+        ),
+      ],
+    ),
+  );
+}
+
+/// Vehicle type + declared plate + ONE live photo (camera only, no gallery).
+/// Cefflo does not verify ownership; it checks the plate in the photo
+/// matches the declared plate.
+class _SubmitVehicleSheet extends StatefulWidget {
+  const _SubmitVehicleSheet({this.type, this.plate});
+  final String? type, plate;
+
+  @override
+  State<_SubmitVehicleSheet> createState() => _SubmitVehicleSheetState();
+}
+
+class _SubmitVehicleSheetState extends State<_SubmitVehicleSheet> {
+  late String _type = widget.type ?? 'motorcycle';
+  late final _plate = TextEditingController(text: widget.plate ?? '');
+  XFile? _photo;
+  bool _busy = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _plate.dispose();
+    super.dispose();
+  }
+
+  Future<void> _capture() async {
+    final p = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+      maxWidth: 2000,
+      imageQuality: 85,
+    );
+    if (p != null && mounted) setState(() => _photo = p);
+  }
+
+  Future<void> _submit() async {
+    final plate = _plate.text.toUpperCase().replaceAll(
+      RegExp(r'[^A-Z0-9]'),
+      '',
+    );
+    if (!RegExp(r'^[A-Z]{1,4}[0-9]{1,4}[A-Z]{0,3}$').hasMatch(plate)) {
+      return setState(() => _error = L.mvPlateInvalid);
+    }
+    if (_photo == null) return setState(() => _error = L.mvVehiclePhotoNeeded);
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final bytes = await _photo!.readAsBytes();
+      if (!mounted) return;
+      await AppScope.read(context).repo.submitMarketplaceVehicle(
+        vehicleType: _type,
+        plate: plate,
+        photo: bytes,
+        extension: 'jpg',
+      );
+      if (mounted) Navigator.of(context).pop(true);
+    } on RepositoryError catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: EdgeInsets.fromLTRB(
+      Gap.gutter,
+      0,
+      Gap.gutter,
+      Gap.lg + MediaQuery.of(context).viewInsets.bottom,
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SheetGrabber(),
+        const SizedBox(height: 6),
+        Center(child: Text(L.mvVehicle, style: context.t.titleLarge)),
+        const SizedBox(height: Gap.lg),
+        CeffloSelectField<String>(
+          label: L.vehicleType,
+          value: _type,
+          options: const ['motorcycle', 'car', 'van'],
+          optionLabel: (t) => switch (t) {
+            'car' => L.car,
+            'van' => L.van,
+            _ => L.motorbike,
+          },
+          onChanged: (t) => setState(() => _type = t),
+        ),
+        const SizedBox(height: Gap.md),
+        CeffloTextField(
+          label: L.mvPlate,
+          controller: _plate,
+          hint: 'VAB 1234',
+          icon: LucideIcons.rectangleHorizontal,
+        ),
+        const SizedBox(height: Gap.md),
+        CeffloSecondaryButton(
+          _photo == null ? L.takePhoto : L.photoAdded,
+          onTap: _busy ? null : _capture,
+        ),
+        const SizedBox(height: Gap.sm),
+        Text(
+          L.mvVehiclePhotoHint,
           style: context.t.bodySmall?.copyWith(color: context.c.textSecondary),
         ),
         if (_error != null) ...[
