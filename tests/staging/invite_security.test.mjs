@@ -27,6 +27,7 @@ async function freshUser(tag, meta = {}) {
 const tok = b => (typeof b === 'string' ? b : b?.token);
 
 const owner = await signIn(mail('owner')), operator = await signIn(mail('operator')), helper = await signIn(mail('helper'));
+const outsider = await signIn(mail('outsider'));
 const ownerX = await signIn('zelix.co00+v1005p0x388121@gmail.com', 'Cf-v1005-P0!X');
 const B = (await rpc(owner, 'get_my_businesses')).body.find(b => b.member_role === 'owner').business_id;
 
@@ -34,8 +35,8 @@ const B = (await rpc(owner, 'get_my_businesses')).body.find(b => b.member_role =
 ok('1 anon cannot obtain a link', (await rpc(null, 'get_invite_link', { p_business_id: B, p_kind: 'operator' })).status >= 400);
 ok('  helper cannot obtain any link', (await rpc(helper, 'get_invite_link', { p_business_id: B, p_kind: 'rider' })).status >= 400);
 ok('  operator cannot obtain an Operator link', (await rpc(operator, 'get_invite_link', { p_business_id: B, p_kind: 'operator' })).status >= 400);
-ok('  operator cannot obtain a Helper link (current authority)', (await rpc(operator, 'get_invite_link', { p_business_id: B, p_kind: 'helper' })).status >= 400);
-ok('  another business\'s owner cannot obtain this business\'s link', (await rpc(ownerX, 'get_invite_link', { p_business_id: B, p_kind: 'operator' })).status >= 400);
+ok('  M2: operator CAN obtain the Helper link (Driver + Helper)', (await rpc(operator, 'get_invite_link', { p_business_id: B, p_kind: 'helper' })).status === 200);
+ok('  an Operator (who owns another shop) cannot obtain the Operator link', (await rpc(ownerX, 'get_invite_link', { p_business_id: B, p_kind: 'operator' })).status >= 400);
 ok('  an unknown kind is refused', (await rpc(owner, 'get_invite_link', { p_business_id: B, p_kind: 'owner' })).status >= 400);
 const links = {};
 for (const k of ['rider', 'operator', 'helper']) links[k] = tok((await rpc(owner, 'get_invite_link', { p_business_id: B, p_kind: k })).body);
@@ -68,7 +69,7 @@ ok('  pending grants no workspace', ((await rpc(u1, 'get_my_businesses')).body |
 // 4. no self-service escalation
 ok('4 user cannot approve their own request', (await rpc(u1, 'decide_team_join_request', { p_request_id: reqs[0].id, p_approve: true })).status >= 400);
 ok('  operator cannot approve a team request', (await rpc(operator, 'decide_team_join_request', { p_request_id: reqs[0].id, p_approve: true })).status >= 400);
-ok('  another business\'s owner cannot approve it', (await rpc(ownerX, 'decide_team_join_request', { p_request_id: reqs[0].id, p_approve: true })).status >= 400);
+ok('  an Operator (who owns another shop) cannot approve a team request', (await rpc(ownerX, 'decide_team_join_request', { p_request_id: reqs[0].id, p_approve: true })).status >= 400);
 ok('  user cannot insert their own membership', denied(await rest(u1, 'POST', 'business_members', { business_id: B, user_id: uid(u1), role: 'operator', status: 'active' })));
 ok('  user cannot rewrite their request (role/status)', denied(await rest(u1, 'PATCH', `team_join_requests?id=eq.${reqs[0].id}`, { role: 'operator', status: 'approved' })));
 ok('  user cannot create an invite link row', denied(await rest(u1, 'POST', 'business_invite_links', { business_id: B, kind: 'operator', token: 'a'.repeat(48) })));
@@ -90,7 +91,7 @@ await rpc(d1, 'join_via_invite_link', { p_token: links.rider, p_name: '[TEST] Se
 const drows = (await sel(owner, `riders?select=id,status&business_id=eq.${B}&auth_user_id=eq.${uid(d1)}`)).body;
 ok('6 driver link -> ONE pending driver row', dj.body?.kind === 'rider' && drows?.length === 1 && drows[0].status === 'pending', JSON.stringify(drows));
 ok('  driver cannot activate themselves', denied(await rest(d1, 'PATCH', `riders?id=eq.${drows[0].id}`, { status: 'active' })) && (await rpc(d1, 'approve_pending_rider', { p_rider_id: drows[0].id })).status >= 400);
-ok('  another business\'s owner cannot approve this driver', (await rpc(ownerX, 'approve_pending_rider', { p_rider_id: drows[0].id })).status >= 400);
+ok('  an outsider cannot approve this driver', (await rpc(outsider, 'approve_pending_rider', { p_rider_id: drows[0].id })).status >= 400);
 ok('  driver membership never creates a team membership', ((await rpc(d1, 'get_my_businesses')).body || []).length === 0);
 const dr = await rpc(owner, 'deactivate_rider', { p_rider_id: drows[0].id });
 const dAfter = (await sel(owner, `riders?select=status&id=eq.${drows[0].id}`)).body[0];
@@ -126,7 +127,7 @@ const oldJoin = await rpc(u2, 'join_via_invite_link', { p_token: oldHelper, p_na
 ok('  old link can no longer be joined', oldJoin.status >= 400 && /not available/.test(msg(oldJoin)), msg(oldJoin));
 const newJoin = await rpc(u2, 'join_via_invite_link', { p_token: newHelper, p_name: '[TEST] Sec New', p_phone: '+60 13-3' + stamp });
 ok('  new link works (pending helper)', newJoin.body?.status === 'pending' && newJoin.body?.kind === 'helper', msg(newJoin));
-ok('  operator cannot reset links', (await rpc(operator, 'reset_invite_link', { p_business_id: B, p_kind: 'helper' })).status >= 400);
+ok('  operator cannot reset the Operator link', (await rpc(operator, 'reset_invite_link', { p_business_id: B, p_kind: 'operator' })).status >= 400);
 // tidy: reject the pending request created by this suite
 const p2 = (await sel(owner, `team_join_requests?select=id&business_id=eq.${B}&user_id=eq.${uid(u2)}&status=eq.pending`)).body?.[0];
 if (p2) await rpc(owner, 'decide_team_join_request', { p_request_id: p2.id, p_approve: false });

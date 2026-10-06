@@ -14,11 +14,11 @@ export default function riders({ el, params, setHeader }) {
   const selected = params[0] || null;
   let tab = 'all', query = '', all = [], orders = [], ratings = [];
   el.innerHTML = `<div class="split no-detail">
-    ${ctx.isOwner ? `<div class="mode-seg" role="tablist" aria-label="${esc(t('riders.title'))}">
+    ${ctx.canHire ? `<div class="mode-seg" role="tablist" aria-label="${esc(t('riders.title'))}">
       <button role="tab" class="on" data-mode="riders">${esc(t('riders.modeRiders'))}</button>
       <button role="tab" data-mode="openings">${esc(t('riders.modeOpenings'))}<span data-open-count></span></button></div>` : ''}
     <div class="card">
-      ${ctx.isOwner ? '<div data-hiring hidden></div>' : ''}
+      ${ctx.canHire ? '<div data-hiring hidden></div>' : ''}
       <div class="bar" data-riders-bar>
         <div class="tabs" data-tabs></div>
         <div class="search">${icon('search')}<input data-q placeholder="${esc(t('riders.search'))}" aria-label="${esc(t('c.search'))}"></div>
@@ -30,7 +30,7 @@ export default function riders({ el, params, setHeader }) {
   const $ = s => el.querySelector(s);
   // Draft D: Riders | Openings for the Owner; each view has its own "+".
   let mode = 'riders';
-  if (ctx.isOwner) {
+  if (ctx.canHire) {
     mountHiring($('[data-hiring]'), { onChange: n => { $('[data-open-count]').textContent = n ? ` (${n})` : ''; } });
     el.querySelector('.mode-seg').addEventListener('click', e => {
       const b = e.target.closest('[data-mode]'); if (!b) return;
@@ -118,11 +118,11 @@ export default function riders({ el, params, setHeader }) {
       </div>`;
     const history = s.mine.length ? `<div>${s.mine.slice(0, 30).map(o => `<a class="list-row" href="#/orders/${esc(o.id)}" style="color:inherit;text-decoration:none"><div class="grow"><b>${esc(orderNo(o))}</b><small>${esc(o.customer_name)} · ${esc(fmtDate(o.created_at))} ${esc(fmtTime(o.created_at))}</small></div>${chip(orderStatus(o))}</a>`).join('')}</div>` : emptyState(t('riders.noHistory'));
     const TABS = { ov: overview, docs: gatedNote(t('riders.docsGated')), earn: gatedNote(t('riders.earningsGated')), hist: history };
-    // Approve / reject / remove are Owner-only (enforced server-side by
-    // approve_pending_rider and deactivate_rider); Operators see none.
+    // Approve / reject: Owner + Operator (M2). Removing an active driver
+    // stays Owner-only. All enforced server-side.
     const owner = ctx.isOwner;
     const footer = r.status === 'pending'
-      ? (owner ? `<button class="btn" data-reject>${esc(t('riders.reject'))}</button><button class="btn primary" data-approve>${esc(t('riders.approve'))}</button>` : '')
+      ? (ctx.canHire ? `<button class="btn" data-reject>${esc(t('riders.reject'))}</button><button class="btn primary" data-approve>${esc(t('riders.approve'))}</button>` : '')
       : `${owner ? `<button class="link-btn rd-deactivate" data-remove-rider>${esc(t('riders.remove'))}</button>` : ''}${digits ? `<a class="btn" href="tel:${esc(r.phone)}">${icon('phone')}${esc(t('c.call'))}</a><a class="btn" href="${wa}" target="_blank" rel="noopener">${icon('wa')}WhatsApp</a>` : ''}`;
     const m = modal({
       title: r.name, head, cls: 'rider-modal', footer,

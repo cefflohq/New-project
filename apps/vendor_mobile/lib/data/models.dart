@@ -110,6 +110,11 @@ class Business {
 
   bool get isOwner => role == 'owner';
   bool get isHelper => role == 'helper';
+
+  /// M2 (Founder 2026-10-06): Owner and Operator manage Driver hiring, the
+  /// Driver / Helper invites and Driver approval. Presentation only; the
+  /// server enforces it (is_business_operational).
+  bool get canHire => role == 'owner' || role == 'operator';
 }
 
 class VendorOrder {

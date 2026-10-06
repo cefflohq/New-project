@@ -2014,6 +2014,10 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
   // D-73: Operator or Helper only. Owner is never invited. Opens on the role
   // the Owner came from (Team tab / Hiring row).
   String role = teamTab.value == TeamTab.helpers ? 'helper' : 'operator';
+
+  /// M2: an Operator may invite Helpers only (Operator links are Owner-only;
+  /// the server refuses them too).
+  bool get _ownerInvites => AppScope.read(context).business?.isOwner ?? true;
   final Map<String, String> _tokens = {};
   bool _loading = false;
   String? error;
@@ -2028,6 +2032,7 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
   }
 
   Future<void> _load() async {
+    if (!rider && !_ownerInvites) role = 'helper';
     if (_tokens.containsKey(kind)) return setState(() {});
     final app = AppScope.read(context);
     final businessId = app.business?.id;
@@ -2096,7 +2101,7 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
                     style: text.bodySmall,
                   ),
                   const SizedBox(height: Gap.lg),
-                  if (!rider) ...[
+                  if (!rider && _ownerInvites) ...[
                     Wrap(
                       alignment: WrapAlignment.center,
                       spacing: Gap.sm,

@@ -23,7 +23,7 @@ final openOpenings = ValueNotifier<List<Map<String, dynamic>>?>(null);
 
 Future<void> loadOpenOpenings(AppState app) async {
   final b = app.business;
-  if (b == null || !b.isOwner) {
+  if (b == null || !b.canHire) {
     openOpenings.value = const [];
     return;
   }
@@ -75,18 +75,20 @@ class _HiringScreenState extends State<HiringScreen> {
           icon: LucideIcons.motorbike,
           onTap: () => openNewOpening(context),
         ),
-        CefListRow(
-          title: L.roleOperator,
-          subtitle: L.hiringOperatorSub,
-          subtitleMaxLines: 2,
-          icon: LucideIcons.userCog,
-          // Live through the existing Operator invite (link / QR): the join
-          // request lands in Team for approval (team_join_requests).
-          onTap: () {
-            teamTab.value = TeamTab.operators;
-            app.go(VRoute.helperRegistrationLink);
-          },
-        ),
+        // An Operator never invites Operators (Owner only).
+        if (app.business?.isOwner ?? false)
+          CefListRow(
+            title: L.roleOperator,
+            subtitle: L.hiringOperatorSub,
+            subtitleMaxLines: 2,
+            icon: LucideIcons.userCog,
+            // Live through the existing Operator invite (link / QR): the join
+            // request lands in Team for approval (team_join_requests).
+            onTap: () {
+              teamTab.value = TeamTab.operators;
+              app.go(VRoute.helperRegistrationLink);
+            },
+          ),
         CefListRow(
           title: L.roleHelper,
           subtitle: L.hiringHelperSub,

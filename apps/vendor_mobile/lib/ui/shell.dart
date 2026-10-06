@@ -672,7 +672,7 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
         // Owner's Openings view, otherwise a rider).
         onTap: () =>
             route == VRoute.riders &&
-                (app.business?.isOwner ?? false) &&
+                (app.business?.canHire ?? false) &&
                 ridersMode.value == RidersMode.openings
             ? openNewOpening(context)
             : app.go(addAction.$2),

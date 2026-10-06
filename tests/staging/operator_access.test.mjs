@@ -54,11 +54,7 @@ const cases = [
   ['create_team_invitation (email invites)', 'create_team_invitation', { p_business_id: B, p_role: 'operator', p_invited_email: 'x@example.com' }],
   ['revoke_team_invitation', 'revoke_team_invitation', { p_invitation_id: '00000000-0000-0000-0000-000000000000' }],
   ['get_invite_link (operator)', 'get_invite_link', { p_business_id: B, p_kind: 'operator' }],
-  ['get_invite_link (helper)', 'get_invite_link', { p_business_id: B, p_kind: 'helper' }],
   ['reset_invite_link (operator)', 'reset_invite_link', { p_business_id: B, p_kind: 'operator' }],
-  ['reset_invite_link (helper)', 'reset_invite_link', { p_business_id: B, p_kind: 'helper' }],
-  ['save_job_opening', 'save_job_opening', { p_business_id: B, p_area_label: 'x', p_pickup_time: '07:00', p_days: [1], p_vehicle_type: 'car', p_pay_per_drop: 3, p_drivers_needed: 1 }],
-  ['close_job_opening (real opening)', 'close_job_opening', { p_opening_id: opening.id }],
   ['admin_broadcast_notification (platform admin)', 'admin_broadcast_notification', { p_title: 'x', p_body: 'x', p_audience: 'business', p_business_id: B, p_reason: 'test' }],
   ['admin_set_subscription (platform admin)', 'admin_set_subscription', { p_business_id: B, p_plan_key: 'scale', p_status: 'active', p_mrr_cents: 0, p_trial_ends_at: null }],
 ];
@@ -81,8 +77,38 @@ const op2 = (await rpc(operator, 'get_my_businesses')).body?.[0];
 ok('operator still operator (no escalation)', op2?.member_role === 'operator', op2?.member_role);
 const req2 = (await sel(owner, `team_join_requests?select=status&id=eq.${pendingReq?.id}`)).body?.[0];
 ok('join request still pending', req2?.status === 'pending', req2?.status);
-const op3 = (await sel(owner, `rider_job_openings?select=status&id=eq.${opening.id}`)).body?.[0];
-ok('opening still open', op3?.status === 'open', op3?.status);
+
+// --- M2 (Founder 2026-10-06): Operator manages Hiring + Invite for Driver
+// and Helper, and approves / rejects Driver applicants.
+const hl = await rpc(operator, 'get_invite_link', { p_business_id: B, p_kind: 'helper' });
+ok('M2 operator CAN get the Helper invite link', hl.status === 200 && /^[0-9a-f]{48}$/.test(hl.body?.token || ''), msg(hl));
+const hr = await rpc(operator, 'reset_invite_link', { p_business_id: B, p_kind: 'helper' });
+ok('M2 operator CAN reset the Helper invite link', hr.status === 200 && hr.body?.token && hr.body.token !== hl.body?.token, msg(hr));
+const opPost = await rpc(operator, 'save_job_opening', { p_business_id: B, p_area_label: '[TEST] op-m2', p_pickup_time: '08:00', p_days: [2], p_vehicle_type: 'car', p_pay_per_drop: 3.2, p_drivers_needed: 1 });
+ok('M2 operator CAN publish a Driver hiring post', opPost.status === 200 && opPost.body?.pay_unit === 'drop', msg(opPost));
+const opLow = await rpc(operator, 'save_job_opening', { p_business_id: B, p_area_label: '[TEST] op-m2', p_pickup_time: '08:00', p_days: [2], p_vehicle_type: 'car', p_pay_per_drop: 2, p_drivers_needed: 1 });
+ok('  the RM3.00 minimum still applies to the Operator', opLow.status >= 400, msg(opLow));
+const opClose = await rpc(operator, 'close_job_opening', { p_opening_id: opening.id });
+ok('M2 operator CAN close a hiring post', opClose.status === 200 && opClose.body?.status === 'closed', msg(opClose));
+if (opPost.body?.id) await rpc(operator, 'close_job_opening', { p_opening_id: opPost.body.id });
+// two real Driver applicants through the Driver invite link
+const rlink = (await rpc(operator, 'get_invite_link', { p_business_id: B, p_kind: 'rider' })).body?.token;
+const applicants = [];
+for (const tag of ['a', 'b']) {
+  const em = `zelix.co00+v1005opm2${tag}${Date.now() % 100000}@gmail.com`;
+  await fetch(`${URL_}/auth/v1/admin/users`, { method: 'POST', headers: { apikey: SVC, authorization: `Bearer ${SVC}`, 'content-type': 'application/json' }, body: JSON.stringify({ email: em, password: 'Cf-v1005-OpAuth!3', email_confirm: true, user_metadata: { driver_registration: { full_name: `[TEST] OpM2 ${tag}`, phone: '+60 11-7' + tag.charCodeAt(0) + String(Date.now()).slice(-5), vehicle_type: 'car', vehicle_plate: 'OPM2 ' + tag } } }) });
+  const tok = await signIn(em, 'Cf-v1005-OpAuth!3');
+  const j = await rpc(tok, 'join_via_invite_link', { p_token: rlink, p_name: `[TEST] OpM2 ${tag}`, p_phone: '+60 11-7' + tag.charCodeAt(0) + String(Date.now()).slice(-5) });
+  applicants.push((await sel(owner, `riders?select=id,status&business_id=eq.${B}&auth_user_id=eq.${JSON.parse(Buffer.from(tok.split('.')[1], 'base64url').toString()).sub}`)).body?.[0]);
+}
+ok('setup: two pending Driver applicants', applicants.every(a => a?.status === 'pending'), JSON.stringify(applicants));
+const opAp = await rpc(operator, 'approve_pending_rider', { p_rider_id: applicants[0].id });
+ok('M2 operator CAN approve a Driver', opAp.status === 200 && opAp.body?.status === 'active', msg(opAp));
+const opRj = await rpc(operator, 'deactivate_rider', { p_rider_id: applicants[1].id });
+ok('M2 operator CAN reject a pending Driver applicant', opRj.status === 200 && opRj.body?.status === 'inactive', msg(opRj));
+const opRm = await rpc(operator, 'deactivate_rider', { p_rider_id: applicants[0].id });
+ok('  but cannot remove an ACTIVE driver (Owner-only)', refused(opRm), msg(opRm));
+await rpc(owner, 'deactivate_rider', { p_rider_id: applicants[0].id });
 
 // --- positive controls: operational work still allowed
 const rl = await rpc(operator, 'get_invite_link', { p_business_id: B, p_kind: 'rider' });

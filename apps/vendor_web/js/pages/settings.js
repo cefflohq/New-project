@@ -16,12 +16,15 @@ import { openNotificationPrefs } from '../notifications.js';
 const PAGES = ['profile', 'security', 'business', 'team', 'hiring', 'subscription', 'integrations', 'help', 'privacy', 'about'];
 // D-74, as Vendor Mobile: business details, Team and billing are Owner-only.
 // Integrations stays open to Operators (Founder, 2026-09-29).
-const OWNER_ONLY = new Set(['business', 'team', 'hiring', 'subscription']);
+const OWNER_ONLY = new Set(['business', 'team', 'subscription']);
+// M2: Hiring is Owner + Operator.
+const HIRING = new Set(['hiring']);
 
 export default function settings({ el, params, setHeader }) {
   setHeader(t('set.title'), false);
   let sub = PAGES.includes(params[0]) ? params[0] : 'profile';
   if (OWNER_ONLY.has(sub) && !ctx.isOwner) sub = 'profile';
+  if (HIRING.has(sub) && !ctx.canHire) sub = 'profile';
   const item = (id, ic, key, tail = '') => `<button data-s="${id}" class="${sub === id ? 'on' : ''}"${sub === id ? ' aria-current="page"' : ''}>${icon(ic)}<span>${esc(t(key))}</span>${tail ? `<span class="tail">${tail}</span>` : ''}</button>`;
   el.innerHTML = `<div class="settings">
     <nav class="settings-nav" aria-label="${esc(t('set.title'))}">
@@ -30,7 +33,7 @@ export default function settings({ el, params, setHeader }) {
       ${item('m:notifications', 'bell', 'set.notifications')}
       ${item('m:language', 'globe', 'set.language', esc(prefs.lang === 'ms' ? 'BM' : 'EN'))}
       ${item('m:appearance', 'palette', 'set.appearance')}
-      <h4>${esc(t('set.business'))}</h4>${ctx.isOwner ? item('business', 'building', 'set.businessProfile') : ''}${item('go:storefront', 'store', 'set.storefront')}${item('go:products', 'pkg', 'set.products')}${ctx.isOwner ? item('team', 'users', 'set.team') + item('subscription', 'card', 'sub.title') : ''}
+      <h4>${esc(t('set.business'))}</h4>${ctx.isOwner ? item('business', 'building', 'set.businessProfile') : ''}${item('go:storefront', 'store', 'set.storefront')}${item('go:products', 'pkg', 'set.products')}${ctx.isOwner ? item('team', 'users', 'set.team') + item('subscription', 'card', 'sub.title') : ''}${!ctx.isOwner && ctx.canHire ? item('hiring', 'users', 'hiring.title') : ''}
       <h4>${esc(t('set.support'))}</h4>${item('help', 'help', 'set.help')}${item('about', 'info', 'set.about')}
       <button class="signout" data-signout>${icon('logout')}<span>${esc(t('set.signOut'))}</span></button>
     </nav>
@@ -356,7 +359,7 @@ async function hiring(page) {
   const chev = icon('chev');
   body.innerHTML = `<div class="sub-card">
       ${row('data-h="driver"', 'moto', t('team.driver'), t('hiring.driverSub'), chev)}
-      ${row('data-h="operator"', 'user', t('team.operator'), t('hiring.operatorSub'), chev)}
+      ${ctx.isOwner ? row('data-h="operator"', 'user', t('team.operator'), t('hiring.operatorSub'), chev) : ''}
       ${row('data-h="helper"', 'pkg', t('team.helper'), t('hiring.helperSub'), chev)}
       ${row('data-h="invite"', 'qr', t(inviteKey), '', chev)}</div>
     <div class="sub-card"><h3>${esc(t('hiring.posts'))}</h3>

@@ -12,6 +12,9 @@ export const ctx = {
   businesses: [],
   business: null, // { business_id, business_name, member_role, ... }
   get isOwner() { return this.business?.member_role === 'owner'; },
+  // M2 (Founder 2026-10-06): Owner + Operator manage Driver hiring, the
+  // Driver / Helper invites and Driver approval (server-enforced).
+  get canHire() { return ['owner', 'operator'].includes(this.business?.member_role); },
   get role() { return this.business?.member_role; },
   get bid() { return this.business?.business_id; },
 };

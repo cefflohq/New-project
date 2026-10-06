@@ -1166,11 +1166,11 @@ class _RidersScreenState extends State<RidersScreen> {
             children: [
               // Draft D (Founder 2026-10-05): Riders | Openings for the
               // Owner; the header "+" adds whatever is showing.
-              if (business.isOwner) ...[
+              if (business.canHire) ...[
                 const RidersModeSwitch(),
                 const SizedBox(height: Gap.md),
               ],
-              if (business.isOwner && mode == RidersMode.openings)
+              if (business.canHire && mode == RidersMode.openings)
                 const OpeningsList()
               else ...[
                 SegmentedTabs(
@@ -1285,9 +1285,9 @@ class RiderDetailScreen extends StatelessWidget {
                 HeroLine(plate, icon: _vehicleIcon(rider.vehicleType)),
             ],
           ),
-          // Rider approval/rejection is Owner-only (enforced server-side by
-          // approve_pending_rider / deactivate_rider); Operators see none.
-          bottomAction: pending && app.business?.isOwner == true
+          // Driver approval/rejection: Owner and Operator (M2; enforced
+          // server-side by approve_pending_rider / deactivate_rider).
+          bottomAction: pending && (app.business?.canHire ?? false)
               ? Row(
                   children: [
                     Expanded(
@@ -1881,6 +1881,9 @@ class SettingsScreen extends StatelessWidget {
         row(L.products, LucideIcons.package, VRoute.products),
         if (app.business?.isOwner ?? true)
           row(L.team, LucideIcons.users, VRoute.team),
+        // M2: the Operator reaches Hiring here (Team is Owner-only).
+        if (app.business?.role == 'operator')
+          row(L.hiring, LucideIcons.userSearch, VRoute.hiring),
         // D-73: Subscription/Billing is Owner-only (presentation; the
         // server never grants billing authority from this).
         if (app.business?.isOwner ?? true)

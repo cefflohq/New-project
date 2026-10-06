@@ -44,7 +44,12 @@ const o2 = await rpc(owner, 'save_job_opening', opening({ p_pickup_time: '10:00'
 ok('owner can post a 2nd opening (same Tue)', o2.status === 200, err(o2));
 const o3 = await rpc(owner, 'save_job_opening', opening({ p_pickup_time: '18:00', p_days: [5, 6, 7], p_reach_km: 15 }));
 ok('owner can post a night opening, reach 15 km (max)', o3.status === 200, err(o3));
-for (const [who, tok] of [['operator', operator], ['helper', helper], ['outsider', outsider], ['other vendor', vendorB]]) {
+// M2 (Founder 2026-10-06): the Operator manages Driver hiring too.
+const opPost = await rpc(operator, 'save_job_opening', opening({ p_area_label: '[TEST] op hiring', p_pickup_time: '09:00', p_days: [6] }));
+ok('M2 operator can post a hiring post', opPost.status === 200 && opPost.body.id, err(opPost));
+const opClose = await rpc(operator, 'close_job_opening', { p_opening_id: opPost.body?.id });
+ok('M2 operator can close a hiring post', opClose.status === 200 && opClose.body?.status === 'closed', err(opClose));
+for (const [who, tok] of [['helper', helper], ['outsider', outsider], ['other vendor', vendorB]]) {
   const r = await rpc(tok, 'save_job_opening', opening());
   ok(`${who} cannot post an opening`, r.status >= 400, err(r));
   const c = await rpc(tok, 'close_job_opening', { p_opening_id: o3.body.id });
@@ -99,12 +104,11 @@ ok('request shows in Riders > Pending for the owner', pend.body?.[0]?.status ===
 const riderId = pend.body?.[0]?.id;
 const selfApprove = await rpc(applicant, 'approve_pending_rider', { p_rider_id: riderId });
 ok('rider cannot approve themselves', selfApprove.status >= 400, err(selfApprove));
-const opApprove = await rpc(operator, 'approve_pending_rider', { p_rider_id: riderId });
-ok('operator cannot approve the rider', opApprove.status >= 400, err(opApprove));
+// (the Operator approving is covered below: M2)
 const bReq = await sel(vendorB, `rider_job_requests?select=id&business_id=eq.${B}`);
 ok("other vendor cannot read this business's requests", bReq.status === 200 && bReq.body.length === 0);
-const ownerApprove = await rpc(owner, 'approve_pending_rider', { p_rider_id: riderId });
-ok('owner approves the rider', ownerApprove.status === 200, err(ownerApprove));
+const opApprove = await rpc(operator, 'approve_pending_rider', { p_rider_id: riderId });
+ok('M2 operator approves the rider', opApprove.status === 200 && opApprove.body?.status === 'active', err(opApprove));
 const sched = await rpc(applicant, 'my_job_schedule');
 ok('approval also approves the job request (My Schedule)', Array.isArray(sched.body) && sched.body.some(x => x.opening_id === o1.body.id && x.status === 'approved'), JSON.stringify(sched.body).slice(0, 200));
 const sameDay = await rpc(applicant, 'request_job_opening', { p_opening_id: o2.body.id });
