@@ -1929,7 +1929,8 @@ class AppLocalizationsMs extends AppLocalizations {
   String get icInvalid => 'Masukkan nombor IC MyKad 12 digit anda.';
 
   @override
-  String get licencePhotoNeeded => 'Tambah gambar lesen memandu anda.';
+  String get licencePhotoNeeded =>
+      'Ambil gambar depan dan belakang lesen memandu anda.';
 
   @override
   String get icAlreadyRegistered =>
@@ -1946,7 +1947,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get licencePhotoHint =>
-      'Satu gambar lesen memandu Malaysia anda, jelas dan boleh dibaca. Hanya lesen Malaysia diterima buat masa ini.';
+      'Depan dan belakang lesen memandu Malaysia anda, diambil sekarang dengan kamera, jelas dan boleh dibaca. Hanya lesen Malaysia diterima buat masa ini.';
 
   @override
   String get mvTitle => 'Pengesahan marketplace';
@@ -1981,7 +1982,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get mvRetake => 'Ambil semula';
 
   @override
-  String get mvLicenceSub => 'Nombor IC MyKad + satu gambar lesen';
+  String get mvLicenceSub => 'Nombor IC MyKad + lesen depan dan belakang';
 
   @override
   String get mvVehicle => 'Kenderaan';
@@ -2008,4 +2009,24 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get mvRequiredToApply =>
       'Lengkapkan pengesahan marketplace untuk memohon kerja.';
+
+  @override
+  String get licenceFront => 'Depan';
+
+  @override
+  String get licenceBack => 'Belakang';
+
+  @override
+  String get takeFrontPhoto => 'Ambil Gambar Depan';
+
+  @override
+  String get takeBackPhoto => 'Ambil Gambar Belakang';
+
+  @override
+  String mvRetakePhoto(String side) {
+    return 'Ambil semula gambar $side';
+  }
+
+  @override
+  String get continueLabel => 'Teruskan';
 }

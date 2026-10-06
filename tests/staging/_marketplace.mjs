@@ -1,5 +1,5 @@
 // Shared staging helper: put a Driver through Marketplace Verification V1
-// with the real Driver RPCs, then record a high-confidence screening
+// (IC + licence front + back + vehicle) with the real Driver RPCs, then record a high-confidence screening
 // fixture through the service-role RPC (what the Edge Function does after
 // Google Vision OCR). Idempotent. Needed only for Find Jobs.
 import { createHash } from 'node:crypto';
@@ -29,17 +29,17 @@ export async function ensureMarketplaceVerified({ url, key, svc, driverToken, na
   const uid = uidOf(driverToken);
   if ((await rpc(driverToken, 'my_marketplace_verification')).body?.status === 'verified') return true;
   const stamp = Date.now();
-  const lp = `${uid}/licence-${stamp}.jpg`, vp = `${uid}/vehicle-${stamp}.jpg`;
-  await upload(driverToken, lp); await upload(driverToken, vp);
+  const fp = `${uid}/licence-front-${stamp}.jpg`, bp = `${uid}/licence-back-${stamp}.jpg`, vp = `${uid}/vehicle-${stamp}.jpg`;
+  for (const p of [fp, bp, vp]) await upload(driverToken, p);
   const ic = testIcFor(uid);
-  for (const [fn, body] of [['submit_driver_licence', { p_ic_number: ic, p_licence_path: lp }],
+  for (const [fn, body] of [['submit_driver_licence', { p_ic_number: ic, p_front_path: fp, p_back_path: bp }],
                             ['submit_marketplace_vehicle', { p_vehicle_type: vehicle, p_vehicle_plate: plate, p_photo_path: vp }]]) {
     const r = await rpc(driverToken, fn, body);
     if (r.status >= 400) throw new Error(`${fn}: ${JSON.stringify(r.body)}`);
   }
   const res = await rpc(svc, 'record_marketplace_screening', {
     p_user_id: uid,
-    p_licence: { text_found: true, confidence: 0.97, ic, name, classes: vehicle === 'motorcycle' ? ['B2', 'D'] : ['D'], expiry: '2030-12-31' },
+    p_licence: { text_found: true, sides: 2, confidence: 0.97, ic, name, classes: vehicle === 'motorcycle' ? ['B2', 'D'] : ['D'], expiry: '2030-12-31' },
     p_plate: { plates: [{ text: plate.replace(/\s/g, ''), confidence: 0.96 }] },
   });
   if (res.body?.status !== 'verified') throw new Error('not verified: ' + JSON.stringify(res.body));

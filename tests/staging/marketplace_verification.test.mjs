@@ -22,11 +22,11 @@ async function fresh(name) {
 }
 const icFor = i => `9${String(Number(stamp) % 10)}0${(i % 9) + 1}1${(i % 2) + 1}${stamp.slice(-4)}${String(i).padStart(2, '0')}`.slice(0, 12);
 async function submitAll(tok, ic, plate = 'VAB 1234', vehicle = 'motorcycle') {
-  const u = uidOf(tok), lp = `${u}/licence-${Date.now()}.jpg`, vp = `${u}/vehicle-${Date.now()}.jpg`;
-  await upload(tok, lp); await upload(tok, vp);
-  const l = await rpc(tok, 'submit_driver_licence', { p_ic_number: ic, p_licence_path: lp });
+  const u = uidOf(tok), t = Date.now(), fp = `${u}/licence-front-${t}.jpg`, bp = `${u}/licence-back-${t}.jpg`, vp = `${u}/vehicle-${t}.jpg`;
+  for (const p of [fp, bp, vp]) await upload(tok, p);
+  const l = await rpc(tok, 'submit_driver_licence', { p_ic_number: ic, p_front_path: fp, p_back_path: bp });
   const v = await rpc(tok, 'submit_marketplace_vehicle', { p_vehicle_type: vehicle, p_vehicle_plate: plate, p_photo_path: vp });
-  return { l, v, lp, vp };
+  return { l, v, fp, bp, vp };
 }
 const good = (ic, name, extra = {}) => ({ text_found: true, confidence: 0.97, ic, name, classes: ['B2', 'D'], expiry: '2030-12-31', ...extra });
 const plates = (text, confidence = 0.96) => ({ plates: [{ text, confidence }] });
@@ -42,7 +42,12 @@ const NAME = '[TEST] Ahmad Faizal bin Ismail';
 const a = await fresh(NAME), IC = icFor(1), DASHED = `${IC.slice(0, 6)}-${IC.slice(6, 8)}-${IC.slice(8)}`;
 ok('initial status: not_started, no Find Jobs access', (await status(a)).status === 'not_started' && (await status(a)).marketplace_access === false);
 const A = await submitAll(a, DASHED, 'vab-1234');
-ok('licence (IC + ONE image) + vehicle (type + plate + ONE photo) accepted', A.l.status === 200 && A.v.status === 200, msg(A.l) + msg(A.v));
+const ua = uidOf(a);
+await upload(a, `${ua}/only-front-${stamp}.jpg`);
+ok('licence with FRONT only (no back) is refused', (await rpc(a, 'submit_driver_licence', { p_ic_number: IC, p_front_path: `${ua}/only-front-${stamp}.jpg`, p_back_path: null })).status >= 400);
+ok('  the same image as front and back is refused', (await rpc(a, 'submit_driver_licence', { p_ic_number: IC, p_front_path: `${ua}/only-front-${stamp}.jpg`, p_back_path: `${ua}/only-front-${stamp}.jpg` })).status >= 400);
+ok('  a back image that was never uploaded is refused', (await rpc(a, 'submit_driver_licence', { p_ic_number: IC, p_front_path: `${ua}/only-front-${stamp}.jpg`, p_back_path: `${ua}/ghost.jpg` })).status >= 400);
+ok('licence (IC + FRONT + BACK) + vehicle (type + plate + ONE photo) accepted', A.l.status === 200 && A.v.status === 200, msg(A.l) + msg(A.v));
 const sa = await status(a);
 ok('I. declared plate normalised: vab-1234 -> VAB1234', sa.vehicle_plate === 'VAB1234', sa);
 ok('  before screening: pending (never verified without OCR)', sa.status === 'pending' && sa.marketplace_access === false, sa);
@@ -62,7 +67,7 @@ const c = await fresh('[TEST] Same Self');
 const C1 = await submitAll(c, icFor(3));
 const C2 = await submitAll(c, `${icFor(3).slice(0, 6)}-${icFor(3).slice(6, 8)}-${icFor(3).slice(8)}`);
 ok('  900101-14-5678 and 900101145678 = one identity (resubmit by the owner ok)', C1.l.status === 200 && C2.l.status === 200 && (await status(c)).ic_last4 === icFor(3).slice(-4), msg(C2.l));
-ok('  invalid IC refused', (await rpc(c, 'submit_driver_licence', { p_ic_number: '901301145678', p_licence_path: C1.lp })).status >= 400);
+ok('  invalid IC refused', (await rpc(c, 'submit_driver_licence', { p_ic_number: '901301145678', p_front_path: C1.fp, p_back_path: C1.bp })).status >= 400);
 
 // ---- E. IC hash: keyed, unreadable
 const row = (await sel(SVC, `driver_licences?select=ic_hash&user_id=eq.${uidOf(a)}`)).body?.[0];
@@ -73,19 +78,19 @@ for (const [who, tok] of [['driver', a], ['owner', owner], ['operator', operator
   ok(`E. ${who} cannot read ic_hash`, r.status >= 400, `${r.status}`);
 }
 for (const [who, tok] of [['owner', owner], ['operator', operator], ['helper', helper], ['other business owner', vendorB], ['driver self', a]]) {
-  const r1 = await sel(tok, 'driver_licences?select=user_id,ic_last4,licence_path');
+  const r1 = await sel(tok, 'driver_licences?select=user_id,ic_last4,front_path,back_path');
   const r2 = await sel(tok, 'driver_marketplace_verifications?select=user_id,status,licence_result,plate_result');
   ok(`F. ${who}: no licence rows and no verification evidence`, (r1.status >= 400 || r1.body?.length === 0) && (r2.status >= 400 || r2.body?.length === 0), `${r1.status}/${JSON.stringify(r1.body).slice(0, 60)} ${r2.status}/${JSON.stringify(r2.body).slice(0, 60)}`);
 }
 
 // ---- B/C/F. documents private
 for (const [who, tok] of [['B. owner', owner], ['C. operator', operator], ['helper', helper], ['J. other business owner', vendorB], ['another driver', b]]) {
-  const l = await fetchObj(tok, A.lp), v = await fetchObj(tok, A.vp);
-  ok(`${who} cannot open the licence image or the vehicle photo`, !l.ok && !v.ok, `${l.status}/${v.status}`);
+  const f = await fetchObj(tok, A.fp), bk = await fetchObj(tok, A.bp), v = await fetchObj(tok, A.vp);
+  ok(`${who} cannot open licence FRONT, licence BACK or the vehicle photo`, !f.ok && !bk.ok && !v.ok, `${f.status}/${bk.status}/${v.status}`);
 }
-ok('  driver can open their own licence image', (await fetchObj(a, A.lp)).ok);
+ok('  driver can open their own front + back', (await fetchObj(a, A.fp)).ok && (await fetchObj(a, A.bp)).ok);
 ok('  cannot upload into another driver\'s folder', !(await upload(b, `${uidOf(a)}/evil-${stamp}.jpg`)));
-ok('  cannot submit another driver\'s file as own licence', (await rpc(b, 'submit_driver_licence', { p_ic_number: icFor(4), p_licence_path: A.lp })).status >= 400);
+ok('  cannot submit another driver\'s file as own licence', (await rpc(b, 'submit_driver_licence', { p_ic_number: icFor(4), p_front_path: A.fp, p_back_path: A.bp })).status >= 400);
 
 // ---- J. only the server records screening; only platform admins decide
 ok('J. a driver cannot record their own screening result', (await rpc(b, 'record_marketplace_screening', { p_user_id: uidOf(b), p_licence: good(icFor(4), 'X'), p_plate: plates('VAB1234') })).status >= 400);
@@ -95,6 +100,7 @@ ok('  has_marketplace_access is not callable by clients', (await rpc(b, 'has_mar
 
 // ---- G. OCR failure / uncertainty never verifies
 const cases = [
+  ['licence BACK unreadable -> RETAKE licence', { text_found: false, confidence: 0, unreadable: ['back'] }, plates('VAB1234'), 'not_started', 'licence'],
   ['no usable text -> RETAKE licence', { text_found: false, confidence: 0 }, plates('VAB1234'), 'not_started', 'licence'],
   ['IC not found -> RETAKE licence', { text_found: true, confidence: 0.9, ic: null }, plates('VAB1234'), 'not_started', 'licence'],
   ['required fields missing (no class / expiry) -> RETAKE licence', { text_found: true, confidence: 0.95, ic: '@IC', name: '@NAME', classes: [], expiry: null }, plates('VAB1234'), 'not_started', 'licence'],

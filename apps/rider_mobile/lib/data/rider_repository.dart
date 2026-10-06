@@ -573,19 +573,25 @@ class RiderRepository {
     return path;
   }
 
-  /// IC number + ONE driving-licence image (one IC = one account,
-  /// enforced server-side; the IC is stored only as a keyed hash).
+  /// IC number + driving licence FRONT and BACK (live camera captures).
+  /// One IC = one account, enforced server-side; the IC is stored only as a
+  /// keyed hash. Only Cefflo verification uses the images.
   Future<void> submitLicence({
     required String icNumber,
-    required List<int> photo,
-    required String extension,
+    required List<int> front,
+    required List<int> back,
   }) async {
     if (isDemo || currentUser == null) return;
-    final path = await _uploadDocument('licence', photo, extension);
+    final frontPath = await _uploadDocument('licence-front', front, 'jpg');
+    final backPath = await _uploadDocument('licence-back', back, 'jpg');
     await _run(
       () => _db.rpc(
         'submit_driver_licence',
-        params: {'p_ic_number': icNumber, 'p_licence_path': path},
+        params: {
+          'p_ic_number': icNumber,
+          'p_front_path': frontPath,
+          'p_back_path': backPath,
+        },
       ),
     );
   }

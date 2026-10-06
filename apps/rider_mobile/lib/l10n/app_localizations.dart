@@ -3521,7 +3521,7 @@ abstract class AppLocalizations {
   /// No description provided for @licencePhotoNeeded.
   ///
   /// In en, this message translates to:
-  /// **'Add a photo of your driving licence.'**
+  /// **'Take photos of the front and back of your driving licence.'**
   String get licencePhotoNeeded;
 
   /// No description provided for @icAlreadyRegistered.
@@ -3551,7 +3551,7 @@ abstract class AppLocalizations {
   /// No description provided for @licencePhotoHint.
   ///
   /// In en, this message translates to:
-  /// **'One photo of your Malaysian driving licence, sharp and readable. Only Malaysian licences are accepted for now.'**
+  /// **'Front and back of your Malaysian driving licence, taken now with the camera, sharp and readable. Only Malaysian licences are accepted for now.'**
   String get licencePhotoHint;
 
   /// No description provided for @mvTitle.
@@ -3611,7 +3611,7 @@ abstract class AppLocalizations {
   /// No description provided for @mvLicenceSub.
   ///
   /// In en, this message translates to:
-  /// **'MyKad IC number + one licence photo'**
+  /// **'MyKad IC number + licence front and back'**
   String get mvLicenceSub;
 
   /// No description provided for @mvVehicle.
@@ -3661,6 +3661,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Complete marketplace verification to apply for jobs.'**
   String get mvRequiredToApply;
+
+  /// No description provided for @licenceFront.
+  ///
+  /// In en, this message translates to:
+  /// **'Front'**
+  String get licenceFront;
+
+  /// No description provided for @licenceBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get licenceBack;
+
+  /// No description provided for @takeFrontPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Front Photo'**
+  String get takeFrontPhoto;
+
+  /// No description provided for @takeBackPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Back Photo'**
+  String get takeBackPhoto;
+
+  /// No description provided for @mvRetakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake {side} photo'**
+  String mvRetakePhoto(String side);
+
+  /// No description provided for @continueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueLabel;
 }
 
 class _AppLocalizationsDelegate

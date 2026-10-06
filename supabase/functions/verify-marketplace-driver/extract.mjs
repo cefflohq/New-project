@@ -70,3 +70,19 @@ export function extractPlates({ text, confidence }) {
   }
   return { plates: out };
 }
+
+/**
+ * Licence FRONT + BACK: OCR both, combine the text, then extract once, so a
+ * field may come from either side (never required on both). If EITHER side
+ * has no usable text the result is text_found=false (retake).
+ */
+export function extractLicenceFrontBack(front, back) {
+  const unreadable = [['front', front], ['back', back]]
+    .filter(([, s]) => !String(s?.text || '').trim()).map(([n]) => n);
+  if (unreadable.length) return { text_found: false, confidence: 0, unreadable };
+  const out = extractLicence({
+    text: `${front.text}\n${back.text}`,
+    confidence: Math.min(front.confidence, back.confidence),
+  });
+  return { ...out, sides: 2 };
+}

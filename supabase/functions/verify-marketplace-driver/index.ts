@@ -1,12 +1,12 @@
 // Marketplace Verification V1 screening (Founder 2026-10-06).
-// Driver calls this after submitting IC + ONE licence image and/or vehicle
+// Driver calls this after submitting IC + licence FRONT + BACK and/or vehicle
 // type + plate + ONE live photo. Server-side only: the Google Cloud Vision
 // key (GOOGLE_VISION_API_KEY) never reaches the client. This function only
 // extracts fields; record_marketplace_screening (service_role) applies the
 // rules. If OCR fails nothing is recorded, so a driver can never be
 // verified by a failure. No biometric processing of any kind.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { extractLicence, extractPlates, visionText } from './extract.mjs';
+import { extractLicenceFrontBack, extractPlates, visionText } from './extract.mjs';
 
 const BUCKET = 'cefflo-driver-documents';
 const cors = {
@@ -48,13 +48,17 @@ Deno.serve(async (req) => {
   const { data: v } = await admin.from('driver_marketplace_verifications')
     .select('status, licence_result, plate_result, vehicle_photo_path').eq('user_id', uid).maybeSingle();
   if (!v || ['verified', 'rejected'].includes(v.status)) return json({ status: v?.status ?? 'not_started' });
-  const { data: lic } = await admin.from('driver_licences').select('licence_path').eq('user_id', uid).maybeSingle();
+  const { data: lic } = await admin.from('driver_licences').select('front_path, back_path').eq('user_id', uid).maybeSingle();
 
   let licence = null, plate = null;
   try {
-    if (lic?.licence_path && !v.licence_result) {
-      const { data } = await admin.storage.from(BUCKET).download(lic.licence_path);
-      if (data) licence = extractLicence(await ocr(new Uint8Array(await data.arrayBuffer()), key));
+    if (lic?.front_path && lic?.back_path && !v.licence_result) {
+      const side = async (path: string) => {
+        const { data } = await admin.storage.from(BUCKET).download(path);
+        if (!data) throw new Error('missing image');
+        return ocr(new Uint8Array(await data.arrayBuffer()), key);
+      };
+      licence = extractLicenceFrontBack(await side(lic.front_path), await side(lic.back_path));
     }
     if (v.vehicle_photo_path && !v.plate_result) {
       const { data } = await admin.storage.from(BUCKET).download(v.vehicle_photo_path);

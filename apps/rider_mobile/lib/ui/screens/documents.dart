@@ -12,8 +12,8 @@ import 'package:cefflo_rider_mobile/l10n/l10n.dart';
 
 /// D37 Documents, real build: Marketplace Verification V1 (Founder
 /// 2026-10-06). Needed ONLY for Find Jobs (independent marketplace);
-/// Vendor-invited work never needs it. Steps: MyKad IC + ONE driving-licence
-/// image, then vehicle type + plate + ONE live camera photo. Screening (OCR)
+/// Vendor-invited work never needs it. Steps: MyKad IC + driving licence
+/// FRONT and BACK, then vehicle type + plate + ONE live camera photo. Screening (OCR)
 /// runs on the server; Cefflo staff only see exceptions. Businesses never see
 /// any of it. No face scan / biometrics.
 class LiveDocumentsScreen extends StatefulWidget {
@@ -203,7 +203,7 @@ class _SubmitLicenceSheet extends StatefulWidget {
 
 class _SubmitLicenceSheetState extends State<_SubmitLicenceSheet> {
   final _ic = TextEditingController();
-  XFile? _photo;
+  XFile? _front, _back;
   bool _busy = false;
   String? _error;
 
@@ -216,28 +216,29 @@ class _SubmitLicenceSheetState extends State<_SubmitLicenceSheet> {
   bool get _icValid =>
       RegExp(r'^\d{12}$').hasMatch(_ic.text.replaceAll(RegExp(r'\D'), ''));
 
-  Future<void> _pick(ImageSource source) async {
-    final p = await ImagePicker().pickImage(
-      source: source,
-      maxWidth: 2000,
-      imageQuality: 85,
-    );
-    if (p != null && mounted) setState(() => _photo = p);
+  /// Marketplace evidence must be freshly captured: camera only.
+  Future<void> _capture(bool front) async {
+    final p = await liveCapture();
+    if (p != null && mounted) {
+      setState(() => front ? _front = p : _back = p);
+    }
   }
 
   Future<void> _submit() async {
     if (!_icValid) return setState(() => _error = L.icInvalid);
-    if (_photo == null) return setState(() => _error = L.licencePhotoNeeded);
+    if (_front == null || _back == null) {
+      return setState(() => _error = L.licencePhotoNeeded);
+    }
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
-      final bytes = await _photo!.readAsBytes();
-      final ext = _photo!.name.toLowerCase().endsWith('.png') ? 'png' : 'jpg';
+      final front = await _front!.readAsBytes();
+      final back = await _back!.readAsBytes();
       if (!mounted) return;
       await AppScope.read(context).repo
-          .submitLicence(icNumber: _ic.text, photo: bytes, extension: ext);
+          .submitLicence(icNumber: _ic.text, front: front, back: back);
       if (mounted) Navigator.of(context).pop(true);
     } on RepositoryError catch (e) {
       if (mounted) {
@@ -251,6 +252,26 @@ class _SubmitLicenceSheetState extends State<_SubmitLicenceSheet> {
       if (mounted) setState(() => _busy = false);
     }
   }
+
+  Widget _side(String label, String take, XFile? photo, bool front) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text(label, style: context.t.titleSmall),
+      const SizedBox(height: 6),
+      CeffloSecondaryButton(
+        photo == null ? take : L.mvRetakePhoto(label),
+        onTap: _busy ? null : () => _capture(front),
+      ),
+      if (photo != null)
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            L.photoAdded,
+            style: context.t.bodySmall?.copyWith(color: context.c.success),
+          ),
+        ),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -276,25 +297,9 @@ class _SubmitLicenceSheetState extends State<_SubmitLicenceSheet> {
           keyboardType: TextInputType.number,
         ),
         const SizedBox(height: Gap.md),
-        Text(L.licencePhoto, style: context.t.titleSmall),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            Expanded(
-              child: CeffloSecondaryButton(
-                _photo == null ? L.takePhoto : L.photoAdded,
-                onTap: _busy ? null : () => _pick(ImageSource.camera),
-              ),
-            ),
-            const SizedBox(width: Gap.sm),
-            Expanded(
-              child: CeffloSecondaryButton(
-                L.chooseFromGallery,
-                onTap: _busy ? null : () => _pick(ImageSource.gallery),
-              ),
-            ),
-          ],
-        ),
+        _side(L.licenceFront, L.takeFrontPhoto, _front, true),
+        const SizedBox(height: Gap.md),
+        _side(L.licenceBack, L.takeBackPhoto, _back, false),
         const SizedBox(height: Gap.sm),
         Text(
           L.licencePhotoHint,
@@ -306,14 +311,23 @@ class _SubmitLicenceSheetState extends State<_SubmitLicenceSheet> {
         ],
         const SizedBox(height: Gap.lg),
         CeffloPrimaryButton(
-          L.submitReview,
+          L.continueLabel,
           busy: _busy,
-          onTap: _busy ? null : _submit,
+          onTap: _busy || _front == null || _back == null ? null : _submit,
         ),
       ],
     ),
   );
 }
+
+/// Live camera capture only (Marketplace Verification evidence): never the
+/// gallery, files or an existing image. Rear camera.
+Future<XFile?> liveCapture() => ImagePicker().pickImage(
+  source: ImageSource.camera,
+  preferredCameraDevice: CameraDevice.rear,
+  maxWidth: 2000,
+  imageQuality: 85,
+);
 
 /// Vehicle type + declared plate + ONE live photo (camera only, no gallery).
 /// Cefflo does not verify ownership; it checks the plate in the photo
@@ -340,11 +354,7 @@ class _SubmitVehicleSheetState extends State<_SubmitVehicleSheet> {
   }
 
   Future<void> _capture() async {
-    final p = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-      maxWidth: 2000,
-      imageQuality: 85,
-    );
+    final p = await liveCapture();
     if (p != null && mounted) setState(() => _photo = p);
   }
 
@@ -414,7 +424,7 @@ class _SubmitVehicleSheetState extends State<_SubmitVehicleSheet> {
         ),
         const SizedBox(height: Gap.md),
         CeffloSecondaryButton(
-          _photo == null ? L.takePhoto : L.photoAdded,
+          _photo == null ? L.takePhoto : L.mvRetakePhoto(L.mvVehicle),
           onTap: _busy ? null : _capture,
         ),
         const SizedBox(height: Gap.sm),

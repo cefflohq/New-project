@@ -1914,7 +1914,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get icInvalid => 'Enter your 12-digit MyKad IC number.';
 
   @override
-  String get licencePhotoNeeded => 'Add a photo of your driving licence.';
+  String get licencePhotoNeeded =>
+      'Take photos of the front and back of your driving licence.';
 
   @override
   String get icAlreadyRegistered =>
@@ -1931,7 +1932,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licencePhotoHint =>
-      'One photo of your Malaysian driving licence, sharp and readable. Only Malaysian licences are accepted for now.';
+      'Front and back of your Malaysian driving licence, taken now with the camera, sharp and readable. Only Malaysian licences are accepted for now.';
 
   @override
   String get mvTitle => 'Marketplace verification';
@@ -1966,7 +1967,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mvRetake => 'Retake';
 
   @override
-  String get mvLicenceSub => 'MyKad IC number + one licence photo';
+  String get mvLicenceSub => 'MyKad IC number + licence front and back';
 
   @override
   String get mvVehicle => 'Vehicle';
@@ -1993,4 +1994,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get mvRequiredToApply =>
       'Complete marketplace verification to apply for jobs.';
+
+  @override
+  String get licenceFront => 'Front';
+
+  @override
+  String get licenceBack => 'Back';
+
+  @override
+  String get takeFrontPhoto => 'Take Front Photo';
+
+  @override
+  String get takeBackPhoto => 'Take Back Photo';
+
+  @override
+  String mvRetakePhoto(String side) {
+    return 'Retake $side photo';
+  }
+
+  @override
+  String get continueLabel => 'Continue';
 }

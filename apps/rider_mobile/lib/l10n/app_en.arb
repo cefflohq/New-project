@@ -892,12 +892,12 @@
   "licencePrivacy": "Only Cefflo uses these to check Find Jobs drivers; businesses never see your IC, licence or photos. Your IC number stays hidden (last 4 digits only). Not needed for deliveries from businesses that invited you.",
   "licenceSubmitted": "Licence sent for review",
   "icInvalid": "Enter your 12-digit MyKad IC number.",
-  "licencePhotoNeeded": "Add a photo of your driving licence.",
+  "licencePhotoNeeded": "Take photos of the front and back of your driving licence.",
   "icAlreadyRegistered": "This IC number is already registered to another Cefflo account. Sign in with that account instead.",
   "icNumber": "MyKad IC number",
   "licencePhoto": "Driving licence photo",
   "chooseFromGallery": "Choose photo",
-  "licencePhotoHint": "One photo of your Malaysian driving licence, sharp and readable. Only Malaysian licences are accepted for now.",
+  "licencePhotoHint": "Front and back of your Malaysian driving licence, taken now with the camera, sharp and readable. Only Malaysian licences are accepted for now.",
   "@icEnding": {
     "placeholders": {
       "last4": {
@@ -914,7 +914,7 @@
   "mvRejectedBody": "Verification was not approved. Contact Cefflo support.",
   "mvRetakeBody": "We could not read one of your photos. Please take it again.",
   "mvRetake": "Retake",
-  "mvLicenceSub": "MyKad IC number + one licence photo",
+  "mvLicenceSub": "MyKad IC number + licence front and back",
   "mvVehicle": "Vehicle",
   "mvVehicleSub": "Type, plate and one live photo",
   "mvPlate": "Plate number",
@@ -922,5 +922,18 @@
   "mvVehiclePhotoNeeded": "Take a photo of your vehicle.",
   "mvVehiclePhotoHint": "Take a photo of your vehicle with the license plate clearly visible.",
   "mvCheckAgain": "Check again",
-  "mvRequiredToApply": "Complete marketplace verification to apply for jobs."
+  "mvRequiredToApply": "Complete marketplace verification to apply for jobs.",
+  "licenceFront": "Front",
+  "licenceBack": "Back",
+  "takeFrontPhoto": "Take Front Photo",
+  "takeBackPhoto": "Take Back Photo",
+  "mvRetakePhoto": "Retake {side} photo",
+  "@mvRetakePhoto": {
+    "placeholders": {
+      "side": {
+        "type": "String"
+      }
+    }
+  },
+  "continueLabel": "Continue"
 }
