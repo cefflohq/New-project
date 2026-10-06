@@ -59,18 +59,26 @@ int _r(FulfilmentTask t) => _rank[t.status] ?? 0;
 
 enum _Tab { preparation, zones, packing, more }
 
-/// Open work (not yet picked up) of the business's working day — its own
-/// "today" from the server, in the business timezone. Never the device
-/// clock, and never an older day just because unfinished orders from
-/// earlier days exist. (Demo build without a server day: the earliest day.)
+/// Active Helper workload (Founder 2026-10-06): the business's own TODAY
+/// plus UNFINISHED work (not Ready, not picked up) from the previous 7
+/// business calendar days. "Today" is the server's business-local date
+/// (businesses.timezone), never the device clock. The server already
+/// returns exactly this window; this mirrors it. (Demo build without a
+/// server day: the earliest day, as before.)
 @visibleForTesting
 List<FulfilmentTask> helperWorkingSet(
   List<FulfilmentTask> tasks,
   String? businessToday,
 ) {
   final all = tasks.where((t) => !t.pickedUp).toList();
-  if (businessToday != null) {
-    return all.where((t) => t.orderDate == businessToday).toList();
+  final today = DateTime.tryParse(businessToday ?? '');
+  if (today != null) {
+    final from = today.subtract(const Duration(days: 7));
+    return all.where((t) {
+      final d = DateTime.tryParse(t.orderDate ?? '');
+      if (d == null || d.isBefore(from) || d.isAfter(today)) return false;
+      return t.orderDate == businessToday || t.status != 'ready';
+    }).toList();
   }
   final days = all.map((t) => t.orderDate).whereType<String>().toList()..sort();
   if (days.isEmpty) return all;
@@ -254,21 +262,29 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen>
     final repo = app.repo;
     final biz = app.business!.id;
     try {
-      if (!z.packingConfirmed) {
-        await repo.confirmPacking(biz, z.id, z.tasks.first.orderDate);
+      // Packing is confirmed per Zone + order date; a Zone can hold today
+      // and carried-over days, so each date group is confirmed.
+      for (final day
+          in z.tasks
+              .where((t) => !t.packingConfirmed)
+              .map((t) => t.orderDate)
+              .toSet()) {
+        await repo.confirmPacking(biz, z.id, day);
       }
       for (final t in z.tasks.where((t) => t.status == 'packed')) {
         await repo.advancePreparation(t.orderId, 'sorted');
       }
-      for (final run in z.tasks.map((t) => t.runId).toSet()) {
-        final inRun = z.tasks.where((t) => t.runId == run);
-        if (inRun.every((t) => _r(t) >= 4)) continue;
-        await repo.confirmSorting(
-          biz,
-          z.id,
-          run,
-          run == null ? inRun.first.orderDate : null,
+      // Sorting per Run; orders without a Run per order date.
+      final groups = <(String?, String?)>{
+        for (final t in z.tasks)
+          (t.runId, t.runId == null ? t.orderDate : null),
+      };
+      for (final (run, day) in groups) {
+        final inGroup = z.tasks.where(
+          (t) => t.runId == run && (run != null || t.orderDate == day),
         );
+        if (inGroup.every((t) => _r(t) >= 4)) continue;
+        await repo.confirmSorting(biz, z.id, run, day);
       }
       await _reload();
       if (mounted) setState(() => _showReady = true);
