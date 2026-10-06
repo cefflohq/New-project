@@ -86,6 +86,12 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 - Known non-blockers (follow-ups, not fixed in the lock): POD CDN cache for a URL the same token already opened; private orphan POD object after a failed completion retry; no business selector for multi-business Drivers; Plan Route confirmation not kept across an app restart before pickup; external customer notification channels deferred.
 - Tests: `tests/staging/driver_lifecycle` (110), `driver_profile` (25), `delivery_e2e` (33); Flutter Driver 78.
 
+## 3d. Vendor App (Owner) — non-payment V1, READY FOR PRODUCT REVIEW (2026-10-06, not locked)
+
+- Done: Today on the business's working day (`business_today`, `20261007100000`); silent live refresh on resume / operational events; Cefflo Signature Notification Sound v1 (Vendor App + web manifest); `tests/staging/vendor_owner_lifecycle` (66).
+- Product decisions open: (1) Online/Offline toggle is local-only, starts Offline every launch and says "new orders paused" though nothing pauses — no backend contract exists; (2) Subscription: plans in `data/plans.dart` are a pricing CANDIDATE and live mode shows only `business_subscriptions` (no row exists for any business yet) — need locked plans/prices, the Free/default plan rule and entitlements before anything beyond "current plan"; (3) KIM / help articles not connected (approved interim: contact support).
+- Storefront untouched (waiting for the Founder's final UI references).
+
 ## 4. HOLDs
 
 **Marketplace OCR live validation — HOLD**
@@ -111,7 +117,7 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 
 ## 6. Production release checklist (pending, needs approval per step)
 
-Staging-only migrations to promote (in order) are everything from `20261005120000` through `20261006230000` in `supabase/migrations/`, plus secrets/env from `PRODUCTION_DOMAIN_MAP.md` (static build bases, Supabase Auth allow-list, tracking-pod CORS, Mapbox public token, Cloudflare token with Workers + DNS edit). Record current DNS before attaching custom domains. Marketplace verification needs its own Vault key and Vision key per environment.
+Staging-only migrations to promote (in order) are everything from `20261005120000` through `20261007100000` in `supabase/migrations/`, plus secrets/env from `PRODUCTION_DOMAIN_MAP.md` (static build bases, Supabase Auth allow-list, tracking-pod CORS, Mapbox public token, Cloudflare token with Workers + DNS edit). Record current DNS before attaching custom domains. Marketplace verification needs its own Vault key and Vision key per environment.
 
 ## 7. How to verify
 
