@@ -3361,6 +3361,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Details saved'**
   String get detailsSaved;
+
+  /// No description provided for @changeFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Change fee'**
+  String get changeFee;
+
+  /// No description provided for @paymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment method'**
+  String get paymentMethod;
+
+  /// No description provided for @curlecMethods.
+  ///
+  /// In en, this message translates to:
+  /// **'Malaysia · FPX online banking, card or e-wallet'**
+  String get curlecMethods;
+
+  /// No description provided for @stripeMethods.
+  ///
+  /// In en, this message translates to:
+  /// **'International · Visa or Mastercard'**
+  String get stripeMethods;
+
+  /// No description provided for @changeAfterPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Your vehicle details change only after the payment is confirmed. Each vehicle or plate change costs RM50.'**
+  String get changeAfterPayment;
+
+  /// No description provided for @payAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay {amount}'**
+  String payAmount(String amount);
+
+  /// No description provided for @paymentsNotConnectedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment not available yet'**
+  String get paymentsNotConnectedTitle;
+
+  /// No description provided for @paymentsNotConnectedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Online payment is not connected yet, so nothing was charged and your vehicle details are unchanged.'**
+  String get paymentsNotConnectedBody;
+
+  /// No description provided for @paymentFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment failed. Nothing was changed.'**
+  String get paymentFailed;
+
+  /// No description provided for @vehicleChangePaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment confirmed. Vehicle details updated.'**
+  String get vehicleChangePaid;
+
+  /// No description provided for @okGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get okGotIt;
+
+  /// No description provided for @vehicleChangePaidNote.
+  ///
+  /// In en, this message translates to:
+  /// **'A vehicle or plate change costs RM50.'**
+  String get vehicleChangePaidNote;
 }
 
 class _AppLocalizationsDelegate

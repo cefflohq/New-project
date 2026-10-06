@@ -1826,4 +1826,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detailsSaved => 'Details saved';
+
+  @override
+  String get changeFee => 'Change fee';
+
+  @override
+  String get paymentMethod => 'Payment method';
+
+  @override
+  String get curlecMethods => 'Malaysia · FPX online banking, card or e-wallet';
+
+  @override
+  String get stripeMethods => 'International · Visa or Mastercard';
+
+  @override
+  String get changeAfterPayment =>
+      'Your vehicle details change only after the payment is confirmed. Each vehicle or plate change costs RM50.';
+
+  @override
+  String payAmount(String amount) {
+    return 'Pay $amount';
+  }
+
+  @override
+  String get paymentsNotConnectedTitle => 'Payment not available yet';
+
+  @override
+  String get paymentsNotConnectedBody =>
+      'Online payment is not connected yet, so nothing was charged and your vehicle details are unchanged.';
+
+  @override
+  String get paymentFailed => 'Payment failed. Nothing was changed.';
+
+  @override
+  String get vehicleChangePaid => 'Payment confirmed. Vehicle details updated.';
+
+  @override
+  String get okGotIt => 'OK';
+
+  @override
+  String get vehicleChangePaidNote => 'A vehicle or plate change costs RM50.';
 }

@@ -9,6 +9,7 @@ import '../../data/driver_models.dart';
 import '../../data/rider_repository.dart' show RepositoryError;
 import '../widgets.dart';
 import 'auth.dart' show showLanguageSheet, SetNewPasswordScreen;
+import 'payment.dart' show VehicleChangePaymentScreen;
 
 import 'package:cefflo_rider_mobile/l10n/l10n.dart';
 
@@ -510,7 +511,7 @@ class VehicleDetailsScreen extends StatefulWidget {
 class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
   late final AppState _app = AppScope.read(context);
   late String _type = _app.myVehicleType;
-  bool _busy = false;
+  final bool _busy = false;
   late final _model = TextEditingController(text: _app.profile.vehicleModel);
   late final _plate = TextEditingController(text: _app.profile.plateNumber);
 
@@ -559,6 +560,10 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
           ],
           const SizedBox(height: Gap.lg),
           CeffloTextField(label: L.registrationPlateNumber, controller: _plate),
+          if (live) ...[
+            const SizedBox(height: Gap.md),
+            CeffloNote(icon: LucideIcons.wallet, body: L.vehicleChangePaidNote),
+          ],
           const SizedBox(height: Gap.xl),
           CeffloPrimaryButton(
             L.save,
@@ -577,24 +582,26 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
                       app.back();
                       return;
                     }
-                    setState(() => _busy = true);
-                    try {
-                      await app.saveMyDriverProfile(
-                        fullName: app.profile.fullName,
-                        phone: app.profile.phone,
-                        vehicleType: _type,
-                        plate: _plate.text.trim(),
-                      );
-                      if (!context.mounted) return;
-                      showCefToast(context, L.detailsSaved);
+                    // Founder 2026-10-06: a vehicle / plate change is paid
+                    // (RM50). It goes through the change-fee screen and is
+                    // applied only after a confirmed payment.
+                    final plate = _plate.text.trim();
+                    if (_type == app.myVehicleType &&
+                        plate == app.profile.plateNumber) {
                       app.back();
-                    } on RepositoryError catch (e) {
-                      if (context.mounted) {
-                        showCefToast(context, e.message, error: true);
-                      }
-                    } finally {
-                      if (mounted) setState(() => _busy = false);
+                      return;
                     }
+                    final paid = await Navigator.of(context).push<bool>(
+                      MaterialPageRoute(
+                        builder: (_) => VehicleChangePaymentScreen(
+                          fromVehicle: app.myVehicleType,
+                          toVehicle: _type,
+                          fromPlate: app.profile.plateNumber,
+                          toPlate: plate,
+                        ),
+                      ),
+                    );
+                    if (paid == true && context.mounted) app.back();
                   },
           ),
         ],

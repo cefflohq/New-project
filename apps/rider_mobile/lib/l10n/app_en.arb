@@ -858,5 +858,24 @@
   "differentVehicle": "Different vehicle",
   "documentsNotYet": "Document uploads are not available yet. The business checks your licence and vehicle documents directly for now.",
   "passwordChanged": "Password updated",
-  "detailsSaved": "Details saved"
+  "detailsSaved": "Details saved",
+  "changeFee": "Change fee",
+  "paymentMethod": "Payment method",
+  "curlecMethods": "Malaysia · FPX online banking, card or e-wallet",
+  "stripeMethods": "International · Visa or Mastercard",
+  "changeAfterPayment": "Your vehicle details change only after the payment is confirmed. Each vehicle or plate change costs RM50.",
+  "payAmount": "Pay {amount}",
+  "paymentsNotConnectedTitle": "Payment not available yet",
+  "paymentsNotConnectedBody": "Online payment is not connected yet, so nothing was charged and your vehicle details are unchanged.",
+  "paymentFailed": "Payment failed. Nothing was changed.",
+  "vehicleChangePaid": "Payment confirmed. Vehicle details updated.",
+  "okGotIt": "OK",
+  "vehicleChangePaidNote": "A vehicle or plate change costs RM50.",
+  "@payAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  }
 }

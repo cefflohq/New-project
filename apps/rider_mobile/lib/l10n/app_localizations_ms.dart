@@ -1839,4 +1839,47 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get detailsSaved => 'Butiran disimpan';
+
+  @override
+  String get changeFee => 'Yuran perubahan';
+
+  @override
+  String get paymentMethod => 'Kaedah bayaran';
+
+  @override
+  String get curlecMethods =>
+      'Malaysia · FPX perbankan dalam talian, kad atau e-dompet';
+
+  @override
+  String get stripeMethods => 'Antarabangsa · Visa atau Mastercard';
+
+  @override
+  String get changeAfterPayment =>
+      'Butiran kenderaan anda hanya berubah selepas bayaran disahkan. Setiap perubahan kenderaan atau plat dikenakan RM50.';
+
+  @override
+  String payAmount(String amount) {
+    return 'Bayar $amount';
+  }
+
+  @override
+  String get paymentsNotConnectedTitle => 'Bayaran belum tersedia';
+
+  @override
+  String get paymentsNotConnectedBody =>
+      'Bayaran dalam talian belum disambung, jadi tiada caj dikenakan dan butiran kenderaan anda tidak berubah.';
+
+  @override
+  String get paymentFailed => 'Bayaran gagal. Tiada perubahan dibuat.';
+
+  @override
+  String get vehicleChangePaid =>
+      'Bayaran disahkan. Butiran kenderaan dikemas kini.';
+
+  @override
+  String get okGotIt => 'OK';
+
+  @override
+  String get vehicleChangePaidNote =>
+      'Perubahan kenderaan atau plat dikenakan RM50.';
 }

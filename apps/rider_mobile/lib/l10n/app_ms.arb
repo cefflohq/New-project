@@ -543,5 +543,17 @@
   "differentVehicle": "Kenderaan berbeza",
   "documentsNotYet": "Muat naik dokumen belum tersedia. Buat masa ini, bisnes semak lesen dan dokumen kenderaan anda secara terus.",
   "passwordChanged": "Kata laluan dikemas kini",
-  "detailsSaved": "Butiran disimpan"
+  "detailsSaved": "Butiran disimpan",
+  "changeFee": "Yuran perubahan",
+  "paymentMethod": "Kaedah bayaran",
+  "curlecMethods": "Malaysia · FPX perbankan dalam talian, kad atau e-dompet",
+  "stripeMethods": "Antarabangsa · Visa atau Mastercard",
+  "changeAfterPayment": "Butiran kenderaan anda hanya berubah selepas bayaran disahkan. Setiap perubahan kenderaan atau plat dikenakan RM50.",
+  "payAmount": "Bayar {amount}",
+  "paymentsNotConnectedTitle": "Bayaran belum tersedia",
+  "paymentsNotConnectedBody": "Bayaran dalam talian belum disambung, jadi tiada caj dikenakan dan butiran kenderaan anda tidak berubah.",
+  "paymentFailed": "Bayaran gagal. Tiada perubahan dibuat.",
+  "vehicleChangePaid": "Bayaran disahkan. Butiran kenderaan dikemas kini.",
+  "okGotIt": "OK",
+  "vehicleChangePaidNote": "Perubahan kenderaan atau plat dikenakan RM50."
 }

@@ -25,21 +25,28 @@ await rpc(operator, 'approve_pending_rider', { p_rider_id: r.id });
 ok('setup: driver joined + approved', (await row())?.status === 'active');
 
 // 1. edit own details
-const up = await rpc(drv, 'update_my_driver_profile', { p_full_name: '[TEST] DP Driver Edited', p_phone: `+60 13-7${stamp}`, p_vehicle_type: 'car', p_vehicle_plate: 'DPC ' + stamp });
+// Founder 2026-10-06: vehicle / plate changes are PAID (RM50) -> refused on
+// the free path; name and phone stay self-service.
+const paidVeh = await rpc(drv, 'update_my_driver_profile', { p_full_name: '[TEST] DP Driver', p_phone: `+60 13-6${stamp}`, p_vehicle_type: 'car', p_vehicle_plate: 'DP ' + stamp });
+ok('1 vehicle-type change without payment is refused', paidVeh.status >= 400 && /requires payment/.test(msg(paidVeh)), msg(paidVeh));
+const paidPlate = await rpc(drv, 'update_my_driver_profile', { p_full_name: '[TEST] DP Driver', p_phone: `+60 13-6${stamp}`, p_vehicle_type: 'motorcycle', p_vehicle_plate: 'NEW ' + stamp });
+ok('  plate change without payment is refused', paidPlate.status >= 400 && /requires payment/.test(msg(paidPlate)), msg(paidPlate));
+ok('  vehicle and plate unchanged', (await row()).vehicle_type === 'motorcycle' && (await row()).vehicle_plate === 'DP ' + stamp);
+const up = await rpc(drv, 'update_my_driver_profile', { p_full_name: '[TEST] DP Driver Edited', p_phone: `+60 13-7${stamp}`, p_vehicle_type: 'motorcycle', p_vehicle_plate: 'DP ' + stamp });
 r = await row();
-ok('1 driver updates own name, phone, vehicle, plate', up.status === 200 && r.name === '[TEST] DP Driver Edited' && r.phone === `+60 13-7${stamp}` && r.vehicle_type === 'car' && r.vehicle_plate === 'DPC ' + stamp, JSON.stringify(r));
+ok('  driver updates own name + phone (free)', up.status === 200 && r.name === '[TEST] DP Driver Edited' && r.phone === `+60 13-7${stamp}`, JSON.stringify(r));
 const ev = (await sel(owner, `delivery_events?select=event_type&business_id=eq.${B}&event_type=eq.rider.profile_updated&order=created_at.desc&limit=1`)).body;
 ok('  the business sees a profile_updated event', ev?.length === 1);
 const r2before = (await sel(owner, `riders?select=name,phone,vehicle_type&business_id=eq.${B}&auth_user_id=eq.${uid(rider2)}`)).body?.[0];
 ok('  another driver\'s row is untouched', r2before && r2before.name !== '[TEST] DP Driver Edited');
 
 // 2. validation / authority
-for (const [label, body] of [['empty name', { p_full_name: ' ', p_phone: `+60 13-7${stamp}`, p_vehicle_type: 'car', p_vehicle_plate: 'X' }], ['short phone', { p_full_name: 'Ok Name', p_phone: '123', p_vehicle_type: 'car', p_vehicle_plate: 'X' }], ['long plate', { p_full_name: 'Ok Name', p_phone: `+60 13-7${stamp}`, p_vehicle_type: 'car', p_vehicle_plate: 'X'.repeat(25) }], ['no vehicle', { p_full_name: 'Ok Name', p_phone: `+60 13-7${stamp}`, p_vehicle_type: null, p_vehicle_plate: 'X' }]]) {
+for (const [label, body] of [['empty name', { p_full_name: ' ', p_phone: `+60 13-7${stamp}`, p_vehicle_type: 'motorcycle', p_vehicle_plate: 'DP ' + stamp }], ['short phone', { p_full_name: 'Ok Name', p_phone: '123', p_vehicle_type: 'motorcycle', p_vehicle_plate: 'DP ' + stamp }], ['long plate', { p_full_name: 'Ok Name', p_phone: `+60 13-7${stamp}`, p_vehicle_type: 'motorcycle', p_vehicle_plate: 'DP ' + stamp.repeat(25) }], ['no vehicle', { p_full_name: 'Ok Name', p_phone: `+60 13-7${stamp}`, p_vehicle_type: null, p_vehicle_plate: 'X' }]]) {
   const x = await rpc(drv, 'update_my_driver_profile', body); ok(`2 refused: ${label}`, x.status >= 400, msg(x));
 }
 ok('  anonymous refused', (await rpc(null, 'update_my_driver_profile', { p_full_name: 'A B', p_phone: '+60 12 345 6789', p_vehicle_type: 'car', p_vehicle_plate: null })).status >= 400);
 const r2phone = (await sel(owner, `riders?select=phone&business_id=eq.${B}&auth_user_id=eq.${uid(rider2)}`)).body?.[0]?.phone;
-const clash = await rpc(drv, 'update_my_driver_profile', { p_full_name: '[TEST] DP Driver Edited', p_phone: r2phone, p_vehicle_type: 'car', p_vehicle_plate: 'DPC ' + stamp });
+const clash = await rpc(drv, 'update_my_driver_profile', { p_full_name: '[TEST] DP Driver Edited', p_phone: r2phone, p_vehicle_type: 'motorcycle', p_vehicle_plate: 'DP ' + stamp });
 ok('  phone already used by another driver of the business -> refused', clash.status >= 400, msg(clash));
 
 // 3. vehicle change blocked during active work
@@ -54,8 +61,8 @@ const S = (x => Array.isArray(x) ? x[0] : x)((await rpc(owner, 'create_delivery_
 const built = await rpc(owner, 'build_rider_run', { p_delivery_session_id: S, p_rider_id: r.id, p_order_ids: [O], p_idempotency_key: crypto.randomUUID(), p_override_capacity: true });
 ok('setup: the driver has an active run', built.status === 200, msg(built));
 const busyVeh = await rpc(drv, 'update_my_driver_profile', { p_full_name: '[TEST] DP Driver Edited', p_phone: `+60 13-7${stamp}`, p_vehicle_type: 'van', p_vehicle_plate: 'DPC ' + stamp });
-ok('3 vehicle change refused during active work', busyVeh.status >= 400 && /active deliveries/.test(msg(busyVeh)), msg(busyVeh));
-const busyName = await rpc(drv, 'update_my_driver_profile', { p_full_name: '[TEST] DP Busy Rename', p_phone: `+60 13-7${stamp}`, p_vehicle_type: 'car', p_vehicle_plate: 'DPC ' + stamp });
+ok('3 vehicle change refused during active work', busyVeh.status >= 400, msg(busyVeh));
+const busyName = await rpc(drv, 'update_my_driver_profile', { p_full_name: '[TEST] DP Busy Rename', p_phone: `+60 13-7${stamp}`, p_vehicle_type: 'motorcycle', p_vehicle_plate: 'DP ' + stamp });
 ok('  name / plate still editable during work (same vehicle)', busyName.status === 200 && (await row()).name === '[TEST] DP Busy Rename', msg(busyName));
 // finish that run through the real Driver flow (keeps staging clean)
 await rpc(drv, 'accept_run', { p_rider_id: r.id, p_delivery_session_id: S });
@@ -71,7 +78,7 @@ await fetch(`${URL_}/storage/v1/object/cefflo-pod/${pod}`, { method: 'POST', hea
 const done = await rpc(drv, 'complete_delivery', { p_rider_id: r.id, p_order_id: O, p_pod_path: pod, p_note: 'dp', p_idempotency_key: crypto.randomUUID() });
 ok('  the driver finishes the run', done.status === 200, msg(done));
 const freeVeh = await rpc(drv, 'update_my_driver_profile', { p_full_name: '[TEST] DP Busy Rename', p_phone: `+60 13-7${stamp}`, p_vehicle_type: 'van', p_vehicle_plate: 'DPV ' + stamp });
-ok('  after the run, the vehicle change is allowed', freeVeh.status === 200 && (await row()).vehicle_type === 'van', msg(freeVeh));
+ok('  after the run, a vehicle change still needs payment', freeVeh.status >= 400 && /requires payment/.test(msg(freeVeh)), msg(freeVeh));
 
 // 4. rejoin via invite after removal (a separate driver that never ran)
 const email2 = `zelix.co00+v1005dq${stamp}@gmail.com`;
