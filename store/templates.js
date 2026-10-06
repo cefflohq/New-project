@@ -628,7 +628,7 @@
   // quantity steppers and a "View Cart" footer; a detail screen with image
   // counter, thumbnails, price, quantity, outlined Add to Cart + Buy Now.
   T.care = {
-    name: 'Care', defaults: { accent: '#1677D8', accent2: '#E8F2FD', bg: '#ffffff', bar: '#ffffff' },
+    name: 'Care', defaults: { accent: '#0E8F7E', accent2: '#E3F4F1', bg: '#ffffff', bar: '#ffffff' },
     home(c) {
       const all = c.list(null, ''), f = all[0];
       return `<section class="ca-home">

@@ -62,8 +62,8 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
       'Add to Cart + Buy Now',
     ],
     const ['Health', 'Retail'],
-    const Color(0xFF1677D8),
-    const Color(0xFFE8F2FD),
+    const Color(0xFF0E8F7E),
+    const Color(0xFFE3F4F1),
   ),
   _t(
     'capsule',

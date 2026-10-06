@@ -68,6 +68,9 @@
   // own photos replace these as soon as one product has a photo; the public
   // storefront never shows samples.
   // Each template shows photos of the business type its reference was made for.
+  // Per-template sets (fictional brands, rendered like the reference) take
+  // precedence over the shared category photos.
+  const OWN_SAMPLES = { care: 'png' };
   const SAMPLE_SETS = Object.fromEntries(['cafe', 'food', 'health', 'beauty', 'fashion', 'sport', 'gift', 'service'].map(k => [k, [1, 2, 3, 4, 5, 6].map(n => `/store/samples/${k}-${n}.jpg`)]));
   const SAMPLE_THEME = {
     care: 'health', capsule: 'health', crimson: 'health', botanic: 'beauty',
@@ -78,7 +81,7 @@
   };
   function samplePhotos(products, key) {
     if (!EMBED || products.some(p => p.images.length)) return;
-    const pool = SAMPLE_SETS[SAMPLE_THEME[key] || 'health'];
+    const pool = OWN_SAMPLES[key] ? [1, 2, 3, 4, 5, 6].map(n => `/store/samples/${key}-${n}.${OWN_SAMPLES[key]}`) : SAMPLE_SETS[SAMPLE_THEME[key] || 'health'];
     products.forEach((p, i) => { p.images = [pool[i % pool.length]]; p.sample = true; });
   }
 
