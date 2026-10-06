@@ -13,7 +13,7 @@ class _FakeRepo extends RiderRepository {
   _FakeRepo(this.rels)
     : super(SupabaseClient('http://127.0.0.1:1', 'test-publishable-key'));
 
-  final List<RiderRelationship> rels;
+  List<RiderRelationship> rels;
   var signedOut = false;
   final calls = <String>[];
   bool claimFails = false;
@@ -149,5 +149,28 @@ void main() {
     expect(app.sessionError, isNull);
     // Signed in normally: an unregistered rider starts on V2.
     expect(app.current.route, DRoute.chooseVehicle);
+  });
+
+  test('foreground resume: a Driver removed while away loses the workspace', () async {
+    final repo = _FakeRepo([_rel('r1', 'bA', 'active')]);
+    final app = AppState(repo);
+    await app.loadSession();
+    expect(app.active?.id, 'r1');
+    repo.rels = [_rel('r1', 'bA', 'inactive')];
+    await app.resyncOnResume();
+    expect(app.active, isNull);
+    expect(app.stage, DriverStage.noBusiness);
+  });
+
+  test('foreground resume: unchanged relationship only refreshes the work', () async {
+    final repo = _FakeRepo([_rel('r1', 'bA', 'active')]);
+    final app = AppState(repo);
+    await app.loadSession();
+    app.go(DRoute.notifications);
+    repo.calls.clear();
+    await app.resyncOnResume();
+    expect(app.active?.id, 'r1');
+    expect(app.current.route, DRoute.notifications);
+    expect(repo.calls, ['relationships']);
   });
 }

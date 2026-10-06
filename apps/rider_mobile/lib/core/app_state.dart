@@ -417,6 +417,30 @@ class AppState extends ChangeNotifier {
   /// lifecycle): re-read the centre in case the socket slept.
   void onAppResumed() {
     if (_cancelNotifications != null) refreshNotifications();
+    if (!repo.isDemo && sessionLoaded && !loadingSession) {
+      resyncOnResume().catchError((_) {});
+    }
+  }
+
+  /// Back in the foreground: re-read the relationship and the assigned work,
+  /// since realtime may have dropped while backgrounded. A relationship that
+  /// changed (removed, approved, another business) re-resolves the whole
+  /// session; otherwise only the orders refresh, keeping the current screen.
+  Future<void> resyncOnResume() async {
+    final rows = await repo.myRiderRelationships();
+    final stillActive = rows.where((r) => r.isActive).toList();
+    final sameActive =
+        stillActive.isNotEmpty && stillActive.first.id == active?.id;
+    final unchanged =
+        rows.length == relationships.length &&
+        rows.every(
+          (r) => relationships.any((o) => o.id == r.id && o.status == r.status),
+        );
+    if (!sameActive || !unchanged) {
+      await loadSession();
+    } else {
+      await refreshOrders();
+    }
   }
 
   Future<void> refreshNotifications() async {
