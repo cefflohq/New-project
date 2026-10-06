@@ -63,6 +63,8 @@ ok('setup: the driver has an active run', built.status === 200, msg(built));
 const busyVeh = await rpc(drv, 'update_my_driver_profile', { p_full_name: '[TEST] DP Driver Edited', p_phone: `+60 13-7${stamp}`, p_vehicle_type: 'van', p_vehicle_plate: 'DPC ' + stamp });
 ok('3 vehicle change refused during active work', busyVeh.status >= 400, msg(busyVeh));
 const busyName = await rpc(drv, 'update_my_driver_profile', { p_full_name: '[TEST] DP Busy Rename', p_phone: `+60 13-7${stamp}`, p_vehicle_type: 'motorcycle', p_vehicle_plate: 'DP ' + stamp });
+const rmBusy = await rpc(owner, 'deactivate_rider', { p_rider_id: r.id });
+ok('  owner cannot remove the driver while the run is in progress', rmBusy.status >= 400 && /active work/.test(msg(rmBusy)), msg(rmBusy));
 ok('  name / plate still editable during work (same vehicle)', busyName.status === 200 && (await row()).name === '[TEST] DP Busy Rename', msg(busyName));
 // finish that run through the real Driver flow (keeps staging clean)
 await rpc(drv, 'accept_run', { p_rider_id: r.id, p_delivery_session_id: S });
@@ -98,8 +100,8 @@ ok('  still exactly one driver row', (await sel(owner, `riders?select=id&busines
 const again = await rpc(operator, 'approve_pending_rider', { p_rider_id: q.id });
 ok('  approval again makes it active', again.status === 200 && (await row2()).status === 'active', msg(again));
 await rpc(owner, 'deactivate_rider', { p_rider_id: q.id });
-const findingRm = await rpc(owner, 'deactivate_rider', { p_rider_id: r.id });
-results.push(`${findingRm.status === 200 ? 'PASS   ' : 'FINDING'}  owner ${findingRm.status === 200 ? 'can' : 'CANNOT'} remove a driver whose runs are all delivered (${msg(findingRm)})`);
+const finRm = await rpc(owner, 'deactivate_rider', { p_rider_id: r.id });
+ok('5 owner CAN remove a driver whose runs are all delivered', finRm.status === 200 && (await row()).status === 'inactive', msg(finRm));
 
 console.log(results.join('\n')); console.log(`\n${results.length - fails}/${results.length} passed`);
 process.exit(fails ? 1 : 0);

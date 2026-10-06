@@ -1,4 +1,4 @@
--- PROPOSAL (not applied): the Owner can remove a driver whose runs are all
+-- The Owner can remove a driver whose runs are all delivered (Founder-approved 2026-10-06: blocked only while a run is in progress, not because one ever existed).
 -- delivered. P1 found in the Driver audit (2026-10-06): rider_assignments are
 -- never set to 'completed' (0 rows on staging), so deactivate_rider counted
 -- every accepted run forever and refused to remove any driver who had ever
