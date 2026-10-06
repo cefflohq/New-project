@@ -39,6 +39,7 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 | Production domain map | FINAL/LOCKED | `docs/cefflo/engineering/PRODUCTION_DOMAIN_MAP.md` (prepared `3c6284e`, not deployed) |
 | **Operator** | **LOCKED @ `79752d0`** | see §3a |
 | **Driver Core** | **LOCKED @ `8d773c4`** | see §3c |
+| **Vendor App (Owner) V1** | **LOCKED @ `2bd8636`** | see §3d |
 | Driver Marketplace Verification | **HOLD** — see §4 | backend + UI on staging |
 | Vendor App / Vendor Web | Wired on staging; parity decisions locked | full audit pending |
 | Storefront, FOUNDR, Marketing | pending their audit rounds | |
@@ -86,14 +87,15 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 - Known non-blockers (follow-ups, not fixed in the lock): POD CDN cache for a URL the same token already opened; private orphan POD object after a failed completion retry; no business selector for multi-business Drivers; Plan Route confirmation not kept across an app restart before pickup; external customer notification channels deferred.
 - Tests: `tests/staging/driver_lifecycle` (110), `driver_profile` (25), `delivery_e2e` (33); Flutter Driver 78.
 
-## 3d. Vendor App (Owner) — non-payment V1, pre-lock (2026-10-06, not locked)
+## 3d. Vendor App (Owner) V1 — LOCKED @ `2bd8636` (Founder-approved 2026-10-06)
 
-- Done: Today on the business's working day (`business_today`, `20261007100000`); silent live refresh on resume / operational events; `tests/staging/vendor_owner_lifecycle` (66).
-- **Online/Offline removed from Vendor V1** (Founder 2026-10-06): it was local-only, reset on restart and claimed "new orders paused" though nothing paused. No availability contract was created; a future Store Open/Closed is designed with Storefront / business hours.
-- **Subscription (pre-payment, 2026-10-06):** restored designed V-50/51/52/54 in live mode on the server price book (`subscription_plans`, Founder-locked Malaysia prices FREE RM0/150 · GROW RM99/500 · OPERATE RM199/1,500 · SCALE RM499/5,000 · Enterprise custom; `10_PRICING.md` restored from `50c6856`). Every business starts on FREE/active (trigger + backfill). `my_subscription` (Owner usage: completed deliveries this cycle, drivers, zones, team), `request_plan_change` stops at the PAYMENT BOUNDARY (payment_required, writes nothing). FOUNDR `admin_set_subscription` unchanged authority, now validates the plan. Migration `20261007110000`; tests `tests/staging/subscription` (27). HOLD: payment gateway/checkout/webhook/activation, annual pricing, overage, cap and quota ENFORCEMENT (dispatch block touches the locked run contract — needs approval).
-- **KIM / help articles: DEFERRED.** Contact Support (email) stays.
-- **Notification sound: v1.2.0 APPROVED** (Founder 2026-10-06, candidate M: "Cef-flo, Cef-flo" — two beats D6 → F#6, glassy, played twice, 0.98 s) in the Vendor App (`apps/vendor_mobile/assets/sounds/cefflo_signature.mp3`; source `shared/sounds/cefflo-signature.wav`); manifest `approved: true`, so the web player uses it too. Also installed in the Driver app (same asset) — every surface with in-app notifications now plays it.
-- **Storefront untouched** — waiting for the Founder's final UI references.
+- Scope: Today (business working day via `business_today`), Orders, Zones / Runs (locked Driver assignment terminal state), Drivers, Team (locked Invite / Operator / Helper contracts), Products + photos, Service Area (non-Mapbox), Business Profile + Hours, Profile / Account + private avatar, Appearance / Language (device-only), Help & Support (Contact Support; KIM / articles DEFERRED), About (real build version). Silent live refresh on resume / operational events. **Online/Offline removed.**
+- Notifications: banner, Notification Center, realtime, resume refresh, Sound preference, 1.5 s burst protection; **Cefflo Signature Sound M v1.2.0** (Founder-approved: "Cef-flo, Cef-flo", `shared/sounds/cefflo-signature.*`, manifest `approved: true`).
+- Subscription (pre-payment): designed V-50 / V-51 / V-52 / V-54 live on the server price book `subscription_plans` — FREE RM0 · 150 completed deliveries · 3 Drivers · 2 Zones · 1 User; GROW RM99 · 500 · 10 · 5 · 3; OPERATE RM199 · 1,500 · unlimited · unlimited · 10 (most popular); SCALE RM499 · 5,000 · unlimited · unlimited · 25; ENTERPRISE custom. FREE needs no payment details (every business starts FREE/active). Only completed deliveries count. Owner-only `my_subscription`; `request_plan_change` stops at the payment boundary (writes nothing); FOUNDR `admin_set_subscription` is the only plan setter. No fake payment, invoice or renewal date. **Quota / allowance enforcement deferred** to the commercial/payment pass (never block dispatch until then).
+- Migrations (Vendor work, staging only): `20261007100000_business_today`, `20261007110000_subscription_plans_free_default`.
+- Tests: `tests/staging/vendor_owner_lifecycle` (66), `tests/staging/subscription` (27); Flutter Vendor 222.
+- Deferred pre-production: payment gateway / checkout / webhook / verified activation / invoices / payment methods; annual pricing, overage, quota + cap enforcement; Mapbox (Locate address, geocoding); external push (+ Android `.ogg` / iOS `.caf`); Google login E2E + redirect allow-list; KIM / help articles.
+- Storefront untouched — next surface, waiting for the Founder's final UI references.
 
 ## 4. HOLDs
 
