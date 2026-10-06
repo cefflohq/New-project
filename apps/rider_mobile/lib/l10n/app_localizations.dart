@@ -3355,6 +3355,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Password updated'**
   String get passwordChanged;
+
+  /// No description provided for @detailsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Details saved'**
+  String get detailsSaved;
 }
 
 class _AppLocalizationsDelegate

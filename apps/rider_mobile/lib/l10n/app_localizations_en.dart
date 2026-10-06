@@ -1823,4 +1823,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passwordChanged => 'Password updated';
+
+  @override
+  String get detailsSaved => 'Details saved';
 }

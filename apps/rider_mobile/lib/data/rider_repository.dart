@@ -112,6 +112,35 @@ class RiderRepository {
     );
   }
 
+  /// The Driver edits their own name, phone, vehicle and plate (Founder
+  /// 2026-10-06): every own rider row via update_my_driver_profile (vehicle
+  /// changes refused during active work), then the registration metadata.
+  Future<void> updateMyDriverProfile({
+    required String fullName,
+    required String phone,
+    required String vehicleType,
+    required String plate,
+  }) async {
+    if (isDemo) return;
+    await _run(
+      () => _db.rpc(
+        'update_my_driver_profile',
+        params: {
+          'p_full_name': fullName,
+          'p_phone': phone,
+          'p_vehicle_type': vehicleType,
+          'p_vehicle_plate': plate,
+        },
+      ),
+    );
+    await saveRegistration(
+      vehicleType: vehicleType,
+      fullName: fullName,
+      phone: phone,
+      plate: plate,
+    );
+  }
+
   Stream<AuthState> get authChanges =>
       isDemo ? const Stream<AuthState>.empty() : _db.auth.onAuthStateChange;
 

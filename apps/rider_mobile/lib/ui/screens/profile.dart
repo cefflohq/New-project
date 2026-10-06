@@ -6,6 +6,7 @@ import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/demo_data.dart';
 import '../../data/driver_models.dart';
+import '../../data/rider_repository.dart' show RepositoryError;
 import '../widgets.dart';
 import 'auth.dart' show showLanguageSheet, SetNewPasswordScreen;
 
@@ -380,6 +381,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final _name = TextEditingController(text: _app.profile.fullName);
   late final _phone = TextEditingController(text: _app.profile.phone);
   late final _email = TextEditingController(text: _app.profile.email);
+  bool _busy = false;
 
   @override
   void dispose() {
@@ -392,9 +394,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    // Live: profile details come from the business's rider record and there
-    // is no Driver-side update contract, so the screen is read-only rather
-    // than a Save that would not persist.
+    // Live: the Driver edits their own name and phone (update_my_driver_profile;
+    // email stays the sign-in identity).
     final live = !app.repo.isDemo;
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
@@ -446,35 +447,49 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
           const SizedBox(height: Gap.xl),
-          CeffloTextField(label: L.fullName, controller: _name, readOnly: live),
+          CeffloTextField(label: L.fullName, controller: _name),
           const SizedBox(height: Gap.lg),
-          if (live)
-            CeffloTextField(
-              label: L.phoneNumber,
-              controller: _phone,
-              readOnly: true,
-            )
-          else
-            CeffloPhoneField(label: L.phoneNumber, controller: _phone),
+          CeffloPhoneField(label: L.phoneNumber, controller: _phone),
           const SizedBox(height: Gap.lg),
           CeffloTextField(label: L.email, controller: _email, readOnly: true),
           const SizedBox(height: Gap.xl),
-          if (live)
-            CeffloNote(icon: LucideIcons.info, body: L.detailsManagedByBusiness)
-          else
-            CeffloPrimaryButton(
-              L.save,
-              pill: false,
-              onTap: () {
-                app.updateProfile(
-                  app.profile.copyWith(
-                    fullName: _name.text.trim(),
-                    phone: _phone.text.trim(),
-                  ),
-                );
-                app.back();
-              },
-            ),
+          CeffloPrimaryButton(
+            L.save,
+            pill: false,
+            busy: _busy,
+            onTap: _busy
+                ? null
+                : () async {
+                    if (!live) {
+                      app.updateProfile(
+                        app.profile.copyWith(
+                          fullName: _name.text.trim(),
+                          phone: _phone.text.trim(),
+                        ),
+                      );
+                      app.back();
+                      return;
+                    }
+                    setState(() => _busy = true);
+                    try {
+                      await app.saveMyDriverProfile(
+                        fullName: _name.text.trim(),
+                        phone: _phone.text.trim(),
+                        vehicleType: app.myVehicleType,
+                        plate: app.profile.plateNumber,
+                      );
+                      if (!context.mounted) return;
+                      showCefToast(context, L.detailsSaved);
+                      app.back();
+                    } on RepositoryError catch (e) {
+                      if (context.mounted) {
+                        showCefToast(context, e.message, error: true);
+                      }
+                    } finally {
+                      if (mounted) setState(() => _busy = false);
+                    }
+                  },
+          ),
         ],
       ),
     );
@@ -494,7 +509,8 @@ class VehicleDetailsScreen extends StatefulWidget {
 
 class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
   late final AppState _app = AppScope.read(context);
-  late String _type = _app.profile.vehicleType;
+  late String _type = _app.myVehicleType;
+  bool _busy = false;
   late final _model = TextEditingController(text: _app.profile.vehicleModel);
   late final _plate = TextEditingController(text: _app.profile.plateNumber);
 
@@ -534,33 +550,53 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
                 _type,
             ],
             optionLabel: vehicleTypeLabel,
-            onChanged: live ? (_) {} : (v) => setState(() => _type = v),
+            onChanged: (v) => setState(() => _type = v),
           ),
+          // No model is stored on the server: prototype only.
+          if (!live) ...[
+            const SizedBox(height: Gap.lg),
+            CeffloTextField(label: L.model, controller: _model),
+          ],
           const SizedBox(height: Gap.lg),
-          CeffloTextField(label: L.model, controller: _model, readOnly: live),
-          const SizedBox(height: Gap.lg),
-          CeffloTextField(
-            label: L.registrationPlateNumber,
-            controller: _plate,
-            readOnly: live,
-          ),
+          CeffloTextField(label: L.registrationPlateNumber, controller: _plate),
           const SizedBox(height: Gap.xl),
-          if (live)
-            CeffloNote(icon: LucideIcons.info, body: L.detailsManagedByBusiness)
-          else
-            CeffloPrimaryButton(
-              L.save,
-              onTap: () {
-                app.updateProfile(
-                  app.profile.copyWith(
-                    vehicleType: _type,
-                    vehicleModel: _model.text.trim(),
-                    plateNumber: _plate.text.trim(),
-                  ),
-                );
-                app.back();
-              },
-            ),
+          CeffloPrimaryButton(
+            L.save,
+            busy: _busy,
+            onTap: _busy
+                ? null
+                : () async {
+                    if (!live) {
+                      app.updateProfile(
+                        app.profile.copyWith(
+                          vehicleType: _type,
+                          vehicleModel: _model.text.trim(),
+                          plateNumber: _plate.text.trim(),
+                        ),
+                      );
+                      app.back();
+                      return;
+                    }
+                    setState(() => _busy = true);
+                    try {
+                      await app.saveMyDriverProfile(
+                        fullName: app.profile.fullName,
+                        phone: app.profile.phone,
+                        vehicleType: _type,
+                        plate: _plate.text.trim(),
+                      );
+                      if (!context.mounted) return;
+                      showCefToast(context, L.detailsSaved);
+                      app.back();
+                    } on RepositoryError catch (e) {
+                      if (context.mounted) {
+                        showCefToast(context, e.message, error: true);
+                      }
+                    } finally {
+                      if (mounted) setState(() => _busy = false);
+                    }
+                  },
+          ),
         ],
       ),
     );

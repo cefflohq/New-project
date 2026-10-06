@@ -332,6 +332,28 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Real build: saves the Driver's own details on the server, then reloads.
+  Future<void> saveMyDriverProfile({
+    required String fullName,
+    required String phone,
+    required String vehicleType,
+    required String plate,
+  }) async {
+    await repo.updateMyDriverProfile(
+      fullName: fullName,
+      phone: phone,
+      vehicleType: vehicleType,
+      plate: plate,
+    );
+    await loadSession();
+  }
+
+  /// The vehicle to show / edit: the business relationship, else the
+  /// Driver's registration choice.
+  String get myVehicleType => profile.vehicleType.isNotEmpty
+      ? profile.vehicleType
+      : (repo.registration['vehicle_type']?.toString() ?? 'motorcycle');
+
   void updateProfile(DriverProfile next) {
     profile = next;
     notifyListeners();

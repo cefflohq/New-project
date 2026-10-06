@@ -857,5 +857,6 @@
   "locationOffNote": "Location is off. Showing the town you chose.",
   "differentVehicle": "Different vehicle",
   "documentsNotYet": "Document uploads are not available yet. The business checks your licence and vehicle documents directly for now.",
-  "passwordChanged": "Password updated"
+  "passwordChanged": "Password updated",
+  "detailsSaved": "Details saved"
 }

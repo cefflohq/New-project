@@ -1836,4 +1836,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get passwordChanged => 'Kata laluan dikemas kini';
+
+  @override
+  String get detailsSaved => 'Butiran disimpan';
 }

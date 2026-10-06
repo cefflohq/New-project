@@ -1,4 +1,4 @@
--- PROPOSAL (not applied): a removed Driver can rejoin through the invite link.
+-- A removed Driver can rejoin through the invite link (Founder-approved 2026-10-06; staging first).
 -- Today join_via_invite_link returns status 'inactive' for a driver the
 -- business removed earlier, so the link is a dead end (request_job_opening
 -- already reactivates inactive -> pending). This returns the relationship to

@@ -1,4 +1,4 @@
--- PROPOSAL (not applied): Driver edits own name, phone, vehicle and plate.
+-- Driver edits own name, phone, vehicle and plate (Founder-approved 2026-10-06; staging first).
 -- V1 item "Driver self-edit profile/vehicle" (Founder 2026-10-05 split (1)).
 -- Today Edit Profile / Vehicle Details are read-only in the real app because
 -- no Driver-side update contract exists.
@@ -36,7 +36,9 @@ begin
   if exists (
     select 1 from riders r
     where r.auth_user_id = auth.uid() and r.vehicle_type <> p_vehicle_type
-      and (exists (select 1 from rider_assignments a where a.rider_id = r.id and a.status not in ('completed', 'cancelled', 'declined'))
+      -- Active work = an open stop or order (assignments are never marked
+      -- completed, so their status is not a reliable signal).
+      and (exists (select 1 from delivery_stops s where s.rider_id = r.id and s.status not in ('delivered', 'cancelled'))
            or exists (select 1 from orders o where o.assigned_rider_id = r.id and o.delivery_status not in ('delivered', 'cancelled')))
   ) then
     raise exception 'finish your active deliveries before changing vehicle';
