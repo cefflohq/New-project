@@ -33,7 +33,7 @@ class VehicleChangePaymentScreen extends StatefulWidget {
 
 class _VehicleChangePaymentScreenState
     extends State<VehicleChangePaymentScreen> {
-  late PaymentProvider _provider = defaultProviderFor(
+  late PaymentMethod _method = defaultMethodFor(
     AppScope.read(context).profile.phone,
   );
   bool _busy = false;
@@ -41,7 +41,7 @@ class _VehicleChangePaymentScreenState
   Future<void> _pay() async {
     setState(() => _busy = true);
     final outcome = await driverPayments.payVehicleChange(
-      provider: _provider,
+      method: _method,
       vehicleType: widget.toVehicle,
       plate: widget.toPlate,
     );
@@ -124,34 +124,30 @@ class _VehicleChangePaymentScreenState
         ],
       ),
     );
-    Widget method(PaymentProvider p, String title, String subtitle) {
-      final on = _provider == p;
+    Widget method(PaymentMethod m, IconData icon, String title, [String? sub]) {
+      final on = _method == m;
       return Padding(
         padding: const EdgeInsets.only(bottom: Gap.sm),
         child: CeffloCard(
           shadow: false,
-          onTap: () => setState(() => _provider = p),
+          onTap: () => setState(() => _method = m),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
-              Icon(
-                p == PaymentProvider.curlec
-                    ? LucideIcons.landmark
-                    : LucideIcons.creditCard,
-                size: 22,
-              ),
+              Icon(icon, size: 22),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title, style: context.t.titleSmall),
-                    Text(
-                      subtitle,
-                      style: context.t.bodySmall?.copyWith(
-                        color: c.textSecondary,
+                    if (sub != null)
+                      Text(
+                        sub,
+                        style: context.t.bodySmall?.copyWith(
+                          color: c.textSecondary,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -165,6 +161,14 @@ class _VehicleChangePaymentScreenState
         ),
       );
     }
+
+    Widget group(String label) => Padding(
+      padding: const EdgeInsets.only(top: Gap.sm, bottom: 6),
+      child: Text(
+        label,
+        style: context.t.labelLarge?.copyWith(color: c.textSecondary),
+      ),
+    );
 
     // Pushed over the shell as its own route: paint the shell's navy
     // backdrop so the header matches every other Driver screen.
@@ -219,8 +223,52 @@ class _VehicleChangePaymentScreenState
               const SizedBox(height: Gap.lg),
               Text(L.paymentMethod, style: context.t.titleMedium),
               const SizedBox(height: Gap.sm),
-              method(PaymentProvider.curlec, 'Curlec', L.curlecMethods),
-              method(PaymentProvider.stripe, 'Stripe', L.stripeMethods),
+              group(L.payGroupBanking),
+              method(
+                PaymentMethod.fpx,
+                LucideIcons.landmark,
+                L.payFpx,
+                L.payFpxSub,
+              ),
+              group(L.payGroupWallet),
+              method(
+                PaymentMethod.touchNGo,
+                LucideIcons.wallet,
+                "Touch 'n Go eWallet",
+              ),
+              method(PaymentMethod.grabPay, LucideIcons.wallet, 'GrabPay'),
+              method(PaymentMethod.boost, LucideIcons.wallet, 'Boost'),
+              method(PaymentMethod.shopeePay, LucideIcons.wallet, 'ShopeePay'),
+              group(L.payGroupLater),
+              method(
+                PaymentMethod.atome,
+                LucideIcons.calendarClock,
+                'Atome',
+                L.payAtomeSub,
+              ),
+              group(L.payGroupCard),
+              method(
+                PaymentMethod.card,
+                LucideIcons.creditCard,
+                L.payCardMy,
+                'Visa · Mastercard',
+              ),
+              method(
+                PaymentMethod.internationalCard,
+                LucideIcons.globe,
+                L.payCardIntl,
+                'Visa · Mastercard · Amex',
+              ),
+              method(
+                PaymentMethod.applePay,
+                LucideIcons.smartphone,
+                'Apple Pay',
+              ),
+              method(
+                PaymentMethod.googlePay,
+                LucideIcons.smartphone,
+                'Google Pay',
+              ),
               const SizedBox(height: Gap.sm),
               CeffloNote(icon: LucideIcons.info, body: L.changeAfterPayment),
             ],

@@ -1847,13 +1847,6 @@ class AppLocalizationsMs extends AppLocalizations {
   String get paymentMethod => 'Kaedah bayaran';
 
   @override
-  String get curlecMethods =>
-      'Malaysia · FPX perbankan dalam talian, kad atau e-dompet';
-
-  @override
-  String get stripeMethods => 'Antarabangsa · Visa atau Mastercard';
-
-  @override
   String get changeAfterPayment =>
       'Butiran kenderaan anda hanya berubah selepas bayaran disahkan. Setiap perubahan kenderaan atau plat dikenakan RM50.';
 
@@ -1882,4 +1875,76 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get vehicleChangePaidNote =>
       'Perubahan kenderaan atau plat dikenakan RM50.';
+
+  @override
+  String get payGroupBanking => 'Perbankan dalam talian';
+
+  @override
+  String get payFpx => 'Perbankan dalam talian (FPX)';
+
+  @override
+  String get payFpxSub =>
+      'Maybank2u, CIMB Clicks, Public Bank, RHB dan bank Malaysia lain';
+
+  @override
+  String get payGroupWallet => 'E-dompet';
+
+  @override
+  String get payGroupLater => 'Bayar kemudian';
+
+  @override
+  String get payAtomeSub => 'Bayar dalam 3 ansuran';
+
+  @override
+  String get payGroupCard => 'Kad';
+
+  @override
+  String get payCardMy => 'Kad debit / kredit';
+
+  @override
+  String get payCardIntl => 'Kad antarabangsa';
+
+  @override
+  String get licenceRejected => 'Ditolak';
+
+  @override
+  String get drivingLicence => 'Lesen memandu';
+
+  @override
+  String get licenceNeeded => 'Hantar untuk pengesahan oleh Cefflo';
+
+  @override
+  String icEnding(String last4) {
+    return 'IC berakhir $last4';
+  }
+
+  @override
+  String get licencePrivacy =>
+      'Hanya pasukan Cefflo melihat nombor IC dan gambar lesen anda, bukan bisnes. Kami simpan selagi akaun anda aktif dan memadamnya bersama akaun anda.';
+
+  @override
+  String get licenceSubmitted => 'Lesen dihantar untuk semakan';
+
+  @override
+  String get icInvalid => 'Masukkan nombor IC MyKad 12 digit anda.';
+
+  @override
+  String get licencePhotoNeeded => 'Tambah gambar lesen memandu anda.';
+
+  @override
+  String get icAlreadyRegistered =>
+      'Nombor IC ini sudah didaftarkan pada akaun Cefflo lain. Log masuk dengan akaun itu.';
+
+  @override
+  String get icNumber => 'Nombor IC MyKad';
+
+  @override
+  String get licencePhoto => 'Gambar lesen memandu';
+
+  @override
+  String get chooseFromGallery => 'Pilih gambar';
+
+  @override
+  String get licencePhotoHint =>
+      'Bahagian depan lesen memandu Malaysia anda, jelas dan boleh dibaca. Hanya lesen Malaysia diterima buat masa ini.';
 }

@@ -3374,18 +3374,6 @@ abstract class AppLocalizations {
   /// **'Payment method'**
   String get paymentMethod;
 
-  /// No description provided for @curlecMethods.
-  ///
-  /// In en, this message translates to:
-  /// **'Malaysia · FPX online banking, card or e-wallet'**
-  String get curlecMethods;
-
-  /// No description provided for @stripeMethods.
-  ///
-  /// In en, this message translates to:
-  /// **'International · Visa or Mastercard'**
-  String get stripeMethods;
-
   /// No description provided for @changeAfterPayment.
   ///
   /// In en, this message translates to:
@@ -3433,6 +3421,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A vehicle or plate change costs RM50.'**
   String get vehicleChangePaidNote;
+
+  /// No description provided for @payGroupBanking.
+  ///
+  /// In en, this message translates to:
+  /// **'Online banking'**
+  String get payGroupBanking;
+
+  /// No description provided for @payFpx.
+  ///
+  /// In en, this message translates to:
+  /// **'Online banking (FPX)'**
+  String get payFpx;
+
+  /// No description provided for @payFpxSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybank2u, CIMB Clicks, Public Bank, RHB and other Malaysian banks'**
+  String get payFpxSub;
+
+  /// No description provided for @payGroupWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'E-wallet'**
+  String get payGroupWallet;
+
+  /// No description provided for @payGroupLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay later'**
+  String get payGroupLater;
+
+  /// No description provided for @payAtomeSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Split into 3 instalments'**
+  String get payAtomeSub;
+
+  /// No description provided for @payGroupCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Card'**
+  String get payGroupCard;
+
+  /// No description provided for @payCardMy.
+  ///
+  /// In en, this message translates to:
+  /// **'Debit / credit card'**
+  String get payCardMy;
+
+  /// No description provided for @payCardIntl.
+  ///
+  /// In en, this message translates to:
+  /// **'International card'**
+  String get payCardIntl;
+
+  /// No description provided for @licenceRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get licenceRejected;
+
+  /// No description provided for @drivingLicence.
+  ///
+  /// In en, this message translates to:
+  /// **'Driving licence'**
+  String get drivingLicence;
+
+  /// No description provided for @licenceNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit it for verification by Cefflo'**
+  String get licenceNeeded;
+
+  /// No description provided for @icEnding.
+  ///
+  /// In en, this message translates to:
+  /// **'IC ending {last4}'**
+  String icEnding(String last4);
+
+  /// No description provided for @licencePrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the Cefflo team sees your IC number and licence photo, never a business. We keep them while your account is active and delete them with your account.'**
+  String get licencePrivacy;
+
+  /// No description provided for @licenceSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Licence sent for review'**
+  String get licenceSubmitted;
+
+  /// No description provided for @icInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your 12-digit MyKad IC number.'**
+  String get icInvalid;
+
+  /// No description provided for @licencePhotoNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a photo of your driving licence.'**
+  String get licencePhotoNeeded;
+
+  /// No description provided for @icAlreadyRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'This IC number is already registered to another Cefflo account. Sign in with that account instead.'**
+  String get icAlreadyRegistered;
+
+  /// No description provided for @icNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'MyKad IC number'**
+  String get icNumber;
+
+  /// No description provided for @licencePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Driving licence photo'**
+  String get licencePhoto;
+
+  /// No description provided for @chooseFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose photo'**
+  String get chooseFromGallery;
+
+  /// No description provided for @licencePhotoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The front of your Malaysian driving licence, sharp and readable. Only Malaysian licences are accepted for now.'**
+  String get licencePhotoHint;
 }
 
 class _AppLocalizationsDelegate

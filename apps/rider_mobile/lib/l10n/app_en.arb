@@ -861,8 +861,6 @@
   "detailsSaved": "Details saved",
   "changeFee": "Change fee",
   "paymentMethod": "Payment method",
-  "curlecMethods": "Malaysia · FPX online banking, card or e-wallet",
-  "stripeMethods": "International · Visa or Mastercard",
   "changeAfterPayment": "Your vehicle details change only after the payment is confirmed. Each vehicle or plate change costs RM50.",
   "payAmount": "Pay {amount}",
   "paymentsNotConnectedTitle": "Payment not available yet",
@@ -874,6 +872,35 @@
   "@payAmount": {
     "placeholders": {
       "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "payGroupBanking": "Online banking",
+  "payFpx": "Online banking (FPX)",
+  "payFpxSub": "Maybank2u, CIMB Clicks, Public Bank, RHB and other Malaysian banks",
+  "payGroupWallet": "E-wallet",
+  "payGroupLater": "Pay later",
+  "payAtomeSub": "Split into 3 instalments",
+  "payGroupCard": "Card",
+  "payCardMy": "Debit / credit card",
+  "payCardIntl": "International card",
+  "licenceRejected": "Rejected",
+  "drivingLicence": "Driving licence",
+  "licenceNeeded": "Submit it for verification by Cefflo",
+  "icEnding": "IC ending {last4}",
+  "licencePrivacy": "Only the Cefflo team sees your IC number and licence photo, never a business. We keep them while your account is active and delete them with your account.",
+  "licenceSubmitted": "Licence sent for review",
+  "icInvalid": "Enter your 12-digit MyKad IC number.",
+  "licencePhotoNeeded": "Add a photo of your driving licence.",
+  "icAlreadyRegistered": "This IC number is already registered to another Cefflo account. Sign in with that account instead.",
+  "icNumber": "MyKad IC number",
+  "licencePhoto": "Driving licence photo",
+  "chooseFromGallery": "Choose photo",
+  "licencePhotoHint": "The front of your Malaysian driving licence, sharp and readable. Only Malaysian licences are accepted for now.",
+  "@icEnding": {
+    "placeholders": {
+      "last4": {
         "type": "String"
       }
     }

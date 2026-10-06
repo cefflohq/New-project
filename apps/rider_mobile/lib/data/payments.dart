@@ -10,6 +10,31 @@ library;
 
 enum PaymentProvider { curlec, stripe }
 
+/// What the Driver picks: real payment methods, never a provider name
+/// (Founder 2026-10-06). Malaysian methods run through Curlec; international
+/// cards / wallets through Stripe.
+enum PaymentMethod {
+  fpx, // local online banking (FPX)
+  touchNGo,
+  grabPay,
+  boost,
+  shopeePay,
+  atome, // pay later
+  card, // Visa / Mastercard (Malaysian cards via Curlec)
+  internationalCard, // Visa / Mastercard / Amex via Stripe
+  applePay,
+  googlePay,
+}
+
+extension PaymentMethodX on PaymentMethod {
+  PaymentProvider get provider => switch (this) {
+    PaymentMethod.internationalCard ||
+    PaymentMethod.applePay ||
+    PaymentMethod.googlePay => PaymentProvider.stripe,
+    _ => PaymentProvider.curlec,
+  };
+}
+
 /// The fee for one vehicle / plate change, in sen (RM50.00).
 const vehicleChangeFeeSen = 5000;
 
@@ -23,7 +48,7 @@ abstract class DriverPayments {
   /// lets the server apply the change. Never reports [PaymentOutcome.paid]
   /// without a confirmed payment.
   Future<PaymentOutcome> payVehicleChange({
-    required PaymentProvider provider,
+    required PaymentMethod method,
     required String vehicleType,
     required String plate,
   });
@@ -36,7 +61,7 @@ class UnconnectedPayments implements DriverPayments {
 
   @override
   Future<PaymentOutcome> payVehicleChange({
-    required PaymentProvider provider,
+    required PaymentMethod method,
     required String vehicleType,
     required String plate,
   }) async => PaymentOutcome.notConnected;
@@ -46,10 +71,10 @@ class UnconnectedPayments implements DriverPayments {
 /// wired and the build enables it.
 const DriverPayments driverPayments = UnconnectedPayments();
 
-/// Malaysian numbers (+60) default to Curlec; anything else to Stripe.
-PaymentProvider defaultProviderFor(String phone) =>
-    phone.replaceAll(RegExp(r'[^\d+]'), '').startsWith('+60') ||
-        phone.replaceAll(RegExp(r'\D'), '').startsWith('60') ||
-        phone.trim().startsWith('0')
-    ? PaymentProvider.curlec
-    : PaymentProvider.stripe;
+/// Malaysian Drivers (+60 / local numbers) start on online banking;
+/// others on an international card.
+PaymentMethod defaultMethodFor(String phone) {
+  final digits = phone.replaceAll(RegExp(r'\D'), '');
+  final local = phone.trim().startsWith('0') || digits.startsWith('60');
+  return local ? PaymentMethod.fpx : PaymentMethod.internationalCard;
+}

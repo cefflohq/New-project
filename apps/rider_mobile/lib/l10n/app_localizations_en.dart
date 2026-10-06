@@ -1834,12 +1834,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentMethod => 'Payment method';
 
   @override
-  String get curlecMethods => 'Malaysia · FPX online banking, card or e-wallet';
-
-  @override
-  String get stripeMethods => 'International · Visa or Mastercard';
-
-  @override
   String get changeAfterPayment =>
       'Your vehicle details change only after the payment is confirmed. Each vehicle or plate change costs RM50.';
 
@@ -1866,4 +1860,76 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get vehicleChangePaidNote => 'A vehicle or plate change costs RM50.';
+
+  @override
+  String get payGroupBanking => 'Online banking';
+
+  @override
+  String get payFpx => 'Online banking (FPX)';
+
+  @override
+  String get payFpxSub =>
+      'Maybank2u, CIMB Clicks, Public Bank, RHB and other Malaysian banks';
+
+  @override
+  String get payGroupWallet => 'E-wallet';
+
+  @override
+  String get payGroupLater => 'Pay later';
+
+  @override
+  String get payAtomeSub => 'Split into 3 instalments';
+
+  @override
+  String get payGroupCard => 'Card';
+
+  @override
+  String get payCardMy => 'Debit / credit card';
+
+  @override
+  String get payCardIntl => 'International card';
+
+  @override
+  String get licenceRejected => 'Rejected';
+
+  @override
+  String get drivingLicence => 'Driving licence';
+
+  @override
+  String get licenceNeeded => 'Submit it for verification by Cefflo';
+
+  @override
+  String icEnding(String last4) {
+    return 'IC ending $last4';
+  }
+
+  @override
+  String get licencePrivacy =>
+      'Only the Cefflo team sees your IC number and licence photo, never a business. We keep them while your account is active and delete them with your account.';
+
+  @override
+  String get licenceSubmitted => 'Licence sent for review';
+
+  @override
+  String get icInvalid => 'Enter your 12-digit MyKad IC number.';
+
+  @override
+  String get licencePhotoNeeded => 'Add a photo of your driving licence.';
+
+  @override
+  String get icAlreadyRegistered =>
+      'This IC number is already registered to another Cefflo account. Sign in with that account instead.';
+
+  @override
+  String get icNumber => 'MyKad IC number';
+
+  @override
+  String get licencePhoto => 'Driving licence photo';
+
+  @override
+  String get chooseFromGallery => 'Choose photo';
+
+  @override
+  String get licencePhotoHint =>
+      'The front of your Malaysian driving licence, sharp and readable. Only Malaysian licences are accepted for now.';
 }

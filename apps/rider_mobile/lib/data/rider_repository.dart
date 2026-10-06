@@ -550,6 +550,42 @@ class RiderRepository {
 
   String _idempotencyKey() => DateTime.now().microsecondsSinceEpoch.toString();
 
+  /// The Driver's identity document (Founder 2026-10-06): typed MyKad IC
+  /// number + driving-licence photo, reviewed by Cefflo only. Null if none.
+  Future<Map<String, dynamic>?> myLicence() async {
+    if (isDemo) return null;
+    final rows = await _run(
+      () => _db
+          .from('driver_licences')
+          .select('status, ic_last4, reject_reason, submitted_at'),
+    );
+    final list = (rows as List).cast<Map<String, dynamic>>();
+    return list.isEmpty ? null : list.first;
+  }
+
+  /// Uploads the licence photo to the Driver's own private folder, then
+  /// submit_driver_licence (one IC = one account, enforced server-side).
+  Future<void> submitLicence({
+    required String icNumber,
+    required List<int> photo,
+    required String extension,
+  }) async {
+    final uid = currentUser?.id;
+    if (isDemo || uid == null) return;
+    final path = '$uid/licence-${_idempotencyKey()}.$extension';
+    await _run(
+      () => _db.storage
+          .from('cefflo-driver-documents')
+          .uploadBinary(path, Uint8List.fromList(photo)),
+    );
+    await _run(
+      () => _db.rpc(
+        'submit_driver_licence',
+        params: {'p_ic_number': icNumber, 'p_photo_path': path},
+      ),
+    );
+  }
+
   /// PostgREST reports a missing routine as PGRST202 (not in the schema cache)
   /// and Postgres reports it as 42883 (undefined_function). Same convention
   /// as VendorRepository.

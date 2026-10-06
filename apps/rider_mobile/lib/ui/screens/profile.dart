@@ -10,6 +10,7 @@ import '../../data/rider_repository.dart' show RepositoryError;
 import '../widgets.dart';
 import 'auth.dart' show showLanguageSheet, SetNewPasswordScreen;
 import 'payment.dart' show VehicleChangePaymentScreen;
+import 'documents.dart' show LiveDocumentsScreen;
 
 import 'package:cefflo_rider_mobile/l10n/l10n.dart';
 
@@ -626,6 +627,8 @@ class DocumentsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
+    // Real build: the Driver's licence + IC (Founder 2026-10-06).
+    if (!app.repo.isDemo) return const LiveDocumentsScreen();
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
         title: L.documents,
