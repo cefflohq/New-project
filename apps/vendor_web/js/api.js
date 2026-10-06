@@ -1,6 +1,7 @@
 // Data access for the Vendor Web App. Everything goes through the canonical
 // Supabase REST/RPC contracts with the signed-in user's JWT; RLS and RPC
 // authorisation remain the security boundary. No mock data, no fallbacks.
+import { t } from './i18n.js';
 import { isDemo, exitDemo, demoGet, demoRpc, demoUser, readOnly, DEMO_SESSION } from './demo.js';
 
 const base = window.CEFFLO;
@@ -53,6 +54,13 @@ async function call(fn) {
     if (/JWT expired|invalid JWT|401/.test(String(e.message))) {
       await refreshSession();
       return fn();
+    }
+    // The server refused because this account's access changed (removed /
+    // role changed): never show the raw word; the app re-checks the
+    // membership (as the Vendor App's loadSession) and shows the right state.
+    if (/^forbidden$/i.test(String(e.message).trim())) {
+      window.dispatchEvent(new Event('cefflo:forbidden'));
+      throw Object.assign(new Error(t('c.accessChanged')), { status: 403, forbidden: true });
     }
     throw e;
   }

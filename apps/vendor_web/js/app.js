@@ -4,7 +4,7 @@ import './prefs.js';
 import { t } from './i18n.js';
 import { operatorEntry } from './access.js';
 import { api, consumeAuthFragment, consumeAuthError } from './api.js';
-import { loadContext, clearContext, HelperOnlyError, NoBusinessError } from './store.js';
+import { ctx, loadContext, clearContext, HelperOnlyError, NoBusinessError } from './store.js';
 import { mountShell } from './shell.js';
 import { stopNotifications } from './notifications.js';
 import { errorState } from './ui.js';
@@ -89,6 +89,22 @@ async function start(message = '') {
     root.querySelector('[data-retry]')?.addEventListener('click', () => start());
   }
 }
+
+// A refused action (cefflo:forbidden) means the membership may have changed:
+// re-read it from the server; if this business or role is no longer granted,
+// restart so the user lands on the correct state (no stale authority in UI).
+let accessCheck = null;
+window.addEventListener('cefflo:forbidden', () => {
+  if (accessCheck) return;
+  accessCheck = setTimeout(async () => {
+    try {
+      const rows = await api.rpc('get_my_businesses');
+      const still = (Array.isArray(rows) ? rows : []).find(b => b.business_id === ctx.bid);
+      if (!still || still.member_role !== ctx.role) { stopNotifications(); clearContext(); start(); }
+    } catch { /* offline: next action retries */ }
+    finally { accessCheck = null; }
+  }, 1200);
+});
 
 // Splash each time the Web App opens (Founder, 2026-09-30): a brief brand
 // moment, then the normal start.
