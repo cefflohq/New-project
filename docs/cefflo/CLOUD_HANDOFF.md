@@ -38,7 +38,7 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 | **Invite PWA** | **LOCKED @ `79752d0`** | see §3b; `8c067bb` is historical/superseded |
 | Production domain map | FINAL/LOCKED | `docs/cefflo/engineering/PRODUCTION_DOMAIN_MAP.md` (prepared `3c6284e`, not deployed) |
 | **Operator** | **LOCKED @ `79752d0`** | see §3a |
-| Driver Core | READY FOR LOCK — pre-lock items resolved (2026-10-06) | flow Plan Route → Pickup Checklist → Slide to Start Delivery; `tests/staging/driver_lifecycle` (100); see §5 for customer notifications and the assignment terminal state |
+| Driver Core | READY FOR LOCK — pre-lock items resolved (2026-10-06) | flow Plan Route → Pickup Checklist → Slide to Start Delivery; `tests/staging/driver_lifecycle` (110); assignment terminal state fixed (`20261006230000`); see §5 for customer notifications and the assignment terminal state |
 | Driver Marketplace Verification | **HOLD** — see §4 | backend + UI on staging |
 | Vendor App / Vendor Web | Wired on staging; parity decisions locked | full audit pending |
 | Storefront, FOUNDR, Marketing | pending their audit rounds | |
@@ -90,7 +90,7 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 ## 5. Follow-ups (not blockers of locked surfaces)
 
 - **Driver customer notifications (Founder decision 2026-10-06):** external customer delivery (WhatsApp / SMS / customer push) stays DEFERRED; never fake success. Driver Core V1 keeps the state progression: Start Delivery → stop #1 `out_for_delivery`; completing stop #N → stop #N+1 `out_for_delivery` (sequence enforced by `rider_transition`). Customer Tracking reflects these states; the future notification system consumes the same transitions. The absence of an external second-stop message is NOT a Driver Core blocker.
-- **Assignment terminal state (audit 2026-10-06, unchanged, needs decision):** `rider_assignments.status` never reaches `completed` after delivery; every consumer (Vendor Riders "on a run", FOUNDR `admin_list_riders` / `admin_stuck_riders`, `deactivate_rider`, `reassign_rider`, `replace_run_rider`, `outsource_run`) treats `accepted` as in-flight and `completed` as terminal. Proposed fix: `complete_delivery` marks the stop's assignment `completed` + backfill; cross-surface, needs approval.
+- **Assignment terminal state (fixed 2026-10-06, `20261006230000`):** `complete_delivery` now sets the stop's own assignment `completed` + `completed_at`; the run completes only when every stop is delivered. Staging backfill: 66 assignments whose order was already delivered. Remaining Driver follow-ups (non-blocking): CDN cache of an already-fetched POD URL, orphan POD objects on retry, multi-business Driver selector, Plan Route confirmation not kept across app restart, external customer notification channels.
 
 0. Known non-blockers (Operator/Invite lock): (a) Vendor App client UX guard `isOwner ?? true` while business is unresolved — server authorization is authoritative; change only on a proven regression. (b) Test-harness debt: legacy suites (`operator_access`, `invite_security`) leave [TEST] auth accounts behind and `invite_security` resets the shared staging Helper link each run; clean up later.
 
@@ -102,7 +102,7 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 
 ## 6. Production release checklist (pending, needs approval per step)
 
-Staging-only migrations to promote (in order) are everything from `20261005120000` through `20261006220000` in `supabase/migrations/`, plus secrets/env from `PRODUCTION_DOMAIN_MAP.md` (static build bases, Supabase Auth allow-list, tracking-pod CORS, Mapbox public token, Cloudflare token with Workers + DNS edit). Record current DNS before attaching custom domains. Marketplace verification needs its own Vault key and Vision key per environment.
+Staging-only migrations to promote (in order) are everything from `20261005120000` through `20261006230000` in `supabase/migrations/`, plus secrets/env from `PRODUCTION_DOMAIN_MAP.md` (static build bases, Supabase Auth allow-list, tracking-pod CORS, Mapbox public token, Cloudflare token with Workers + DNS edit). Record current DNS before attaching custom domains. Marketplace verification needs its own Vault key and Vision key per environment.
 
 ## 7. How to verify
 

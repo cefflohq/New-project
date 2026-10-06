@@ -37,6 +37,10 @@ async function upload(tok, path) { const r = await fetch(`${URL_}/storage/v1/obj
 async function download(tok, path) { return fetch(`${URL_}/storage/v1/object/authenticated/cefflo-pod/${path}`, { headers: { apikey: KEY, authorization: `Bearer ${tok || KEY}` } }); }
 const tr = (tok, R, O, next) => rpc(tok, 'rider_transition', { p_rider_id: R, p_order_id: O, p_next: next, p_idempotency_key: uuid() });
 const status = async O => (await svcSel(`orders?select=delivery_status&id=eq.${O}`))[0]?.delivery_status;
+const asg = async O => (await svcSel(`delivery_stops?select=rider_assignments(id,status,completed_at)&order_id=eq.${O}`))[0]?.rider_assignments;
+// The exact "active" predicate of Vendor Riders (on a run) and FOUNDR
+// admin_list_riders / admin_stuck_riders.
+const ACTIVE = ['assigned', 'accepted', 'picking_up', 'delivering'];
 
 async function newBusiness(tag) {
   const s = await fresh('own' + tag); const t = s.access_token;
@@ -124,6 +128,7 @@ try {
   ok('  Driver A accepts the run', ac.status === 200 && ac.body?.newly_accepted === 2, msg(ac));
   const ac2 = await rpc(da, 'accept_run', { p_rider_id: RA, p_delivery_session_id: SID });
   ok('  repeated accept is idempotent', ac2.status === 200 && ac2.body?.newly_accepted === 0 && ac2.body?.already_accepted === 2, msg(ac2));
+  ok('  assignments start active (accepted, no completed_at)', (await asg(o1))?.status === 'accepted' && (await asg(o2))?.status === 'accepted' && !(await asg(o1))?.completed_at);
   ok('  transitions before pickup are refused (created -> picked_up)', refused(await tr(da, RA, o1, 'picked_up')));
 
   // ---------- 4. Plan Route (before pickup, persists until the route is locked)
@@ -185,8 +190,14 @@ try {
   ok('  Driver B cannot complete Driver A stop', refused(await rpc(db, 'complete_delivery', { p_rider_id: RB, p_order_id: o2, p_pod_path: pod2, p_idempotency_key: uuid() })) && refused(await rpc(db, 'complete_delivery', { p_rider_id: RA, p_order_id: o2, p_pod_path: pod2, p_idempotency_key: uuid() })));
   const c2 = await rpc(da, 'complete_delivery', { p_rider_id: RA, p_order_id: o2, p_pod_path: pod2, p_note: '[TEST]', p_idempotency_key: uuid() });
   ok('  SLIDE Complete stop 1 with POD', c2.status === 200 && c2.body?.delivery_status === 'delivered', msg(c2));
+  const a2 = await asg(o2), a1 = await asg(o1);
+  ok('  stop 1 assignment -> completed with completed_at', a2?.status === 'completed' && !!a2?.completed_at, JSON.stringify(a2));
+  ok('  stop 2 assignment still active (accepted)', a1?.status === 'accepted' && !a1?.completed_at, JSON.stringify(a1));
+  ok('  run still active after stop 1', (await svcSel(`delivery_sessions?select=status&id=eq.${SID}`))[0]?.status === 'active');
   const c2b = await rpc(da, 'complete_delivery', { p_rider_id: RA, p_order_id: o2, p_pod_path: pod2, p_idempotency_key: uuid() });
   ok('  duplicate complete is idempotent (one completion event)', c2b.status === 200 && (await svcSel(`delivery_events?select=id&order_id=eq.${o2}&event_type=eq.delivery.completed`)).length === 1);
+  ok('  duplicate complete keeps the same completed_at', (await asg(o2))?.completed_at === a2?.completed_at);
+  ok('  Driver B / Driver X cannot change the assignment', empty(await rest(db, 'PATCH', `rider_assignments?id=eq.${a1?.id}`, { status: 'completed' })) && empty(await rest(dx, 'PATCH', `rider_assignments?id=eq.${a1?.id}`, { status: 'completed' })) && empty(await rest(da, 'PATCH', `rider_assignments?id=eq.${a1?.id}`, { status: 'completed' })) && (await asg(o1))?.status === 'accepted');
   ok('  completed stop cannot be reopened', refused(await tr(da, RA, o2, 'arrived')) && refused(await tr(da, RA, o2, 'out_for_delivery')) && (await status(o2)) === 'delivered');
   const stop2 = (await sel(owner, `delivery_stops?select=pod_storage_path,status&order_id=eq.${o2}`)).body?.[0];
   ok('  Owner sees the stop delivered with its POD', stop2?.status === 'delivered' && stop2?.pod_storage_path === pod2, JSON.stringify(stop2));
@@ -201,6 +212,12 @@ try {
   const pod1 = `${RA}/${o1}/${stamp}.jpg`; await upload(da, pod1);
   const c1 = await rpc(da, 'complete_delivery', { p_rider_id: RA, p_order_id: o1, p_pod_path: pod1, p_idempotency_key: uuid() });
   ok('  final stop completed', c1.status === 200 && c1.body?.delivery_status === 'delivered', msg(c1));
+  ok('  final stop assignment -> completed with completed_at', (await asg(o1))?.status === 'completed' && !!(await asg(o1))?.completed_at);
+  const ownAsg = (await sel(owner, `rider_assignments?select=status&rider_id=eq.${RA}`)).body || [];
+  ok('  Vendor: Driver A no longer has an active ("on a run") assignment', ownAsg.length === 2 && ownAsg.every(a => a.status === 'completed'), JSON.stringify(ownAsg));
+  ok('  FOUNDR predicate: no active / stuck-eligible assignment for Driver A', (await svcSel(`rider_assignments?select=id&rider_id=eq.${RA}&status=in.(${ACTIVE.join(',')})`)).length === 0);
+  const locAfter = await rpc(da, 'record_rider_location', { p_rider_id: RA, p_latitude: 3.1, p_longitude: 101.6 });
+  ok('  a location after the run is no longer tied to a completed assignment', locAfter.status === 200 && locAfter.body?.assignment_id === null, JSON.stringify(locAfter.body).slice(0, 120));
   const sess = (await sel(owner, `delivery_sessions?select=status,completed_at&id=eq.${SID}`)).body?.[0];
   ok('  run completed for the Owner (auto)', sess?.status === 'completed' && !!sess?.completed_at, JSON.stringify(sess));
   ok('  Driver sees the completed run', (await sel(da, `delivery_sessions?select=status&id=eq.${SID}`)).body?.[0]?.status === 'completed');
