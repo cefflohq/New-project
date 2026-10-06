@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -1249,12 +1248,6 @@ class _NotificationPreferencesScreenState
           ),
         ),
         const SizedBox(height: Gap.md),
-        // Honest about sound on web: SystemSound is silent in browsers and
-        // the Cefflo signature sound is not approved yet (no stand-in).
-        if (kIsWeb) ...[
-          Text(L.ntWebSoundPending, style: text.bodySmall),
-          const SizedBox(height: Gap.sm),
-        ],
         Text(L.ntPushDeferred, style: text.bodySmall),
       ],
     );

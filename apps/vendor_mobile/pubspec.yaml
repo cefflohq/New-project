@@ -27,6 +27,7 @@ dependencies:
   share_plus: ^13.3.0
   font_awesome_flutter: ^11.0.0
   package_info_plus: ^10.2.1
+  audioplayers: ^6.8.1
 
 dev_dependencies:
   flutter_test:
@@ -42,6 +43,8 @@ flutter:
     - assets/brand/
     # Founder-supplied contact action artwork, used as delivered.
     - assets/icons/
+    # Cefflo Signature Notification Sound (NOTIFICATION_EVENT_MATRIX §6).
+    - assets/sounds/
   fonts:
     # Brand block label (surface name under the official logo), the same
     # face and weight as every other Cefflo surface's splash.

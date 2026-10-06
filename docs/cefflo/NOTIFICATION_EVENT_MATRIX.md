@@ -115,8 +115,19 @@ exists while there is no push provider.
 
 ## 6. Cefflo Signature Notification Sound — integration contract
 
-The final audio identity is **not** produced here (Master MD §3.4). This
-contract defines where it plugs in.
+**v1.0.0 shipped (2026-10-06, Founder instruction "complete the actual
+signature sound"):** an original synthesised sound (no samples, no third-party
+or branded audio) — two short rising bell notes G5 → C6 with a soft inharmonic
+shimmer, 0.95 s, 48 kHz mono, peak −1 dBFS, RMS ≈ −15.4 dBFS, no voice.
+Reproducible from `shared/sounds/cefflo-signature.synth.py`. Delivered:
+`shared/sounds/cefflo-signature.wav` (source), `shared/sounds/cefflo-signature.mp3`
+(web, 15.7 KB), `apps/vendor_mobile/assets/sounds/cefflo_signature.mp3`
+(Flutter in-app, `audioplayers`). Manifest `approved: true`, `version: 1.0.0`.
+Still to come with push: Android `res/raw` `.ogg`, iOS `.caf`, and the Driver
+app (still on the platform placeholder). The Founder may replace the asset
+later at the same paths.
+
+This contract defines where it plugs in.
 
 - **Canonical source asset**: `shared/sounds/cefflo-signature.wav`
   (48 kHz, 16-bit, mono, 0.6–1.2 s, peak ≤ −1 dBFS, integrated ≈ −16 LUFS,
@@ -152,7 +163,7 @@ contract defines where it plugs in.
 | FOUNDR | — | — | — | read counts per broadcast | — | — | — |
 | FOUNDR Broadcasts | Controls › Broadcasts: compose, preview, exact audience size, reason, confirm, history (recipients, read), audit group | | | | | | |
 | Vendor Web | bell + badge + panel | yes (normal 6 s, urgent sticky) | web player (§6) | yes + mark all | Notifications, Sound, browser permission state | order / runs / rider (switches business) | deferred; browser Notification API only while the tab is open but hidden and permission is granted |
-| Vendor Mobile | X-01 | overlay banner | platform alert placeholder (§6) | yes + mark all, delete (Undo window), clear | V-47: Notifications, Sound | order / zones (runs) / rider | deferred |
+| Vendor Mobile | X-01 | overlay banner | Cefflo signature v1 (§6), Sound toggle, one play per 1.5 s burst | yes + mark all, delete (Undo window), clear | V-47: Notifications, Sound | order / zones (runs) / rider | deferred |
 | Rider Mobile | D33 + unread dot on every bell | overlay banner, urgent = red edge, sticky, vibration | platform alert placeholder (§6) | yes (long-press) + mark all | Notification settings sheet | run | deferred |
 | Customer Tracking | not added (audit: no notification, push, WhatsApp or SMS claims; no polling; uses its own realtime channel) | | | | | | |
 
