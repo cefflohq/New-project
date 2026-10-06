@@ -23,26 +23,35 @@
   // brand home with two products crossing.
   T.capsule = {
     name: 'Capsule', defaults: { accent: '#C8234F', accent2: '#F7C531', bg: '#5B8DB9', bar: '#5B8DB9' },
+    head(c, back) {
+      return `<header class="cap-top">${back ? `<button type="button" class="cap-back" data-act="back" aria-label="Back">${c.icon('back')}</button>` : ''}<span class="cap-logo"></span><b>${brand(c)}</b><span class="cap-me">${c.esc(c.initials(c.s.name).slice(0, 1))}</span>${c.toCart('cap-icon', c.icon('basket'))}</header>`;
+    },
     home(c) {
       const ps = c.list(null, '');
       return `<section class="cap-home">
-        <header class="cap-brand"><span class="cap-logo">${c.icon('sparkle')}</span><b>${brand(c)}</b>${c.toCart('cap-icon', c.icon('basket'))}</header>
-        <nav class="cap-pills"><a href="#/all" class="cap-pill">Products</a><a href="#about" class="cap-pill">Contact</a></nav>
-        <p class="cap-kicker">${c.esc(c.s.area || c.openLabel() || '')}</p>
+        ${this.head(c, false)}
+        <nav class="cap-pills"><a href="#/all" class="cap-pill">Products</a><a href="#/all" class="cap-pill">Contact</a></nav>
+        <p class="cap-kicker">${c.esc([c.s.area, c.openLabel()].filter(Boolean).join(' · '))}</p>
         <h1 class="cap-title">${c.esc(c.headline(c.s.name))}</h1>
         <div class="cap-duo">${ps.slice(0, 2).map((p, i) => `<button type="button" class="cap-duo-${i}" ${c.open(p.id)}>${c.img(p)}</button>`).join('') || c.empty()}</div>
-        <a class="cap-about" id="about">About ${brand(c)}</a>
-        <p class="cap-sub">${c.esc([c.s.area, c.hoursText()].filter(Boolean).join(' · '))}</p>
-        <div class="cap-list">${ps.map(p => `<button type="button" class="cap-row" ${c.open(p.id)}>${c.img(p)}<span><b>${c.esc(p.name)}</b><small>${c.money(p.price)}</small></span>${c.icon('chevronRight')}</button>`).join('')}</div>
+        <p class="cap-about">About ${brand(c)}</p>
+        <p class="cap-sub">${c.esc(c.hoursText() || c.s.area || '')}</p>
       </section>`;
     },
-    all(c) { return this.home(c); },
+    all(c) {
+      const ps = c.list();
+      return `<section class="cap-home cap-all">
+        ${this.head(c, true)}
+        <div class="cap-tabs">${c.s.categories.map(k => `<button type="button" class="${c.ui.cat === k.id ? 'on' : ''}" ${c.cat(k.id)}>${c.icon('sparkle')}${c.esc(k.name)}</button>`).join('')}</div>
+        <div class="cap-list">${ps.map(p => `<button type="button" class="cap-row" ${c.open(p.id)}>${c.img(p)}<span><b>${c.esc(p.name)}</b><small>${c.money(p.price)}</small></span>${c.icon('chevronRight')}</button>`).join('') || c.empty()}</div>
+      </section>`;
+    },
     product(c, p) {
       const i = c.list(null, '').indexOf(p);
       return `<section class="cap-pdp ${i % 2 ? 'alt' : ''}">
-        <header class="cap-top"><button type="button" class="cap-back" data-act="back" aria-label="Back">${c.icon('back')}</button><span class="cap-logo">${c.icon('sparkle')}</span><b>${brand(c)}</b>${c.toCart('cap-icon', c.icon('basket'))}</header>
-        <div class="cap-tabs">${c.s.categories.slice(0, 2).map(k => `<span class="${k.id === p.categoryId ? 'on' : ''}">${c.esc(k.name)}</span>`).join('')}</div>
-        ${gallery(c, p, 'cap-steps')}
+        ${this.head(c, true)}
+        <div class="cap-tabs">${c.s.categories.slice(0, 3).map(k => `<span class="${k.id === p.categoryId ? 'on' : ''}">${c.icon('sparkle')}${c.esc(k.name)}</span>`).join('')}</div>
+        ${p.images.length > 1 ? `<div class="cap-steps">${p.images.slice(0, 3).map((_, n) => `<button type="button" class="${n === c.ui.img ? 'on' : ''}" ${c.selImg(n)}>${n + 1}</button>`).join('')}</div>` : ''}
         <div class="cap-shot">${c.img(p, '', c.ui.img)}</div>
         <div class="cap-card">
           <h1>${c.esc(p.name)}</h1>
@@ -62,8 +71,8 @@
     home(c) {
       const ps = c.list(), all = c.list(null, '');
       return `<section class="kit-home">
-        <header class="kit-head"><button type="button" class="kit-ic" data-act="catpage" data-id="" aria-label="All products">${c.icon('dots')}</button><b class="kit-logo">${brand(c)}</b>${c.toCart('kit-ic', c.icon('cart'))}</header>
-        <div class="kit-badges"><span class="kit-filter">${c.icon('filter')}</span>${c.s.categories.map(k => `<button type="button" class="kit-badge${c.ui.cat === k.id ? ' on' : ''}" ${c.cat(k.id)} title="${c.esc(k.name)}">${c.esc(c.initials(k.name))}</button>`).join('')}</div>
+        <header class="kit-head"><button type="button" class="kit-ic" data-act="catpage" data-id="" aria-label="All products">${c.icon('grid')}</button><b class="kit-logo">${brand(c)}</b>${c.toCart('kit-ic kit-cart', c.icon('basket'))}</header>
+        <div class="kit-badges"><button type="button" class="kit-filter${!c.ui.cat ? ' on' : ''}" ${c.cat(null)} aria-label="All">${c.icon('filter')}</button>${c.s.categories.map(k => { const p = all.find(x => x.categoryId === k.id); return `<button type="button" class="kit-badge${c.ui.cat === k.id ? ' on' : ''}" ${c.cat(k.id)} title="${c.esc(k.name)}">${p ? c.img(p) : c.esc(c.initials(k.name))}</button>`; }).join('')}</div>
         <div class="kit-sec"><h2>Popular</h2><span class="kit-bar"><i></i></span></div>
         <div class="kit-rail">${ps.map(p => `<article class="kit-card" ${c.open(p.id)}>${c.img(p)}<span class="kit-heart">${c.icon('heart')}</span><div class="kit-meta"><b>${c.esc(p.name)}</b><span>${c.moneyShort(p.price)}</span><button type="button" ${c.add(p.id)}>Add</button></div></article>`).join('') || c.empty()}</div>
         <div class="kit-sec"><h2>Categories</h2><span class="kit-bar"><i></i></span></div>
@@ -74,9 +83,9 @@
       const all = c.list(null, ''), i = all.indexOf(p);
       const prev = all[i - 1], next = all[i + 1];
       return `<section class="kit-pdp">
-        <header class="kit-head light"><button type="button" class="kit-ic" data-act="back" aria-label="Back">${c.icon('arrowLeft')}</button><b class="kit-logo">${brand(c)}</b>${c.toCart('kit-ic', c.icon('cart'))}</header>
+        <header class="kit-head light"><button type="button" class="kit-ic" data-act="back" aria-label="Back">${c.icon('grid')}</button><b class="kit-logo">${brand(c)}</b>${c.toCart('kit-ic', c.icon('basket'))}</header>
         <div class="kit-stage">
-          <div class="kit-frame">
+          <div class="kit-frame"><span class="kit-under"></span>
             <span class="kit-tag">${c.esc(c.catName(p.categoryId) || c.s.name)}</span>
             <p class="kit-name">${c.esc(p.name)}</p>
             ${c.img(p, 'kit-shot', c.ui.img)}
@@ -85,7 +94,7 @@
           ${prev ? `<button type="button" class="kit-side l" ${c.open(prev.id)}>Prev</button>` : ''}
           ${next ? `<button type="button" class="kit-side r" ${c.open(next.id)}>Next</button>` : ''}
         </div>
-        <div class="kit-price"><sup>RM</sup>${c.esc(Number(p.price).toFixed(Number.isInteger(p.price) ? 0 : 2))}${c.stepper('__sel', 'kit-step')}</div>
+        <div class="kit-price"><span><sup>RM</sup>${c.esc(Number(p.price).toFixed(Number.isInteger(p.price) ? 0 : 2))}</span>${c.stepper('__sel', 'kit-step')}</div>
         <div class="kit-actions"><button type="button" class="kit-cartbtn" data-act="addsel" aria-label="Add to cart">${c.icon('cart')}</button>${c.buy('BUY NOW', 'kit-buy')}</div>
       </section>`;
     },
@@ -100,12 +109,12 @@
     home(c) {
       const ps = c.list();
       return `<section class="brew-home">
-        <header class="brew-head"><span class="brew-av">${c.esc(c.initials(c.s.name))}</span><span class="brew-loc">${c.icon('pin')}${c.esc(c.s.area || c.s.name)}</span>${c.toCart('brew-bell', c.icon('bag'))}</header>
+        <header class="brew-head"><span class="brew-av">${c.esc(c.initials(c.s.name))}</span><span class="brew-loc">${c.icon('pin')}${c.esc(c.s.area || c.s.name)}</span>${c.toCart('brew-bell', c.icon('bell'))}</header>
         <label class="brew-search">${c.searchInput('Search')}<span>${c.icon('search')}</span></label>
         <h2 class="brew-h">Categories</h2>
-        <div class="brew-chips">${chips(c, 'brew-chip')}</div>
+        <div class="brew-chips"><button type="button" class="brew-chip${!c.ui.cat ? ' on' : ''}" ${c.cat(null)}>${c.icon('apps')}All</button>${c.s.categories.map(k => `<button type="button" class="brew-chip${c.ui.cat === k.id ? ' on' : ''}" ${c.cat(k.id)}>${c.icon('tag')}${c.esc(k.name)}</button>`).join('')}</div>
         <div class="brew-rail">${ps.map(p => `<article class="brew-card" ${c.open(p.id)}><div class="brew-cup">${c.img(p)}</div><div class="brew-body"><h3>${c.esc(p.name)}</h3><p>${c.esc(c.catName(p.categoryId))}</p><b>${c.money(p.price)}</b></div><button type="button" class="brew-plus" ${c.add(p.id)} aria-label="Add">${c.icon('plus')}</button></article>`).join('') || c.empty()}</div>
-        <nav class="brew-nav"><button type="button" class="on" data-act="home">${c.icon('home')}</button><button type="button" data-act="catpage" data-id="">${c.icon('heart')}</button><button type="button" data-act="tocart">${c.icon('apps')}</button></nav>
+        <nav class="brew-nav"><button type="button" class="on" data-act="home">${c.icon('home')}<i></i></button><button type="button" data-act="catpage" data-id="">${c.icon('heart')}</button><button type="button" data-act="tocart">${c.icon('apps')}</button></nav>
       </section>`;
     },
     product(c, p) {
@@ -141,7 +150,7 @@
     product(c, p) {
       return `<section class="cri-pdp">
         <div class="cri-red">
-          <header class="cri-head on"><button type="button" class="cri-ic" data-act="back" aria-label="Back">${c.icon('arrowLeft')}</button><span></span>${c.toCart('cri-ic w', c.icon('bag'))}</header>
+          <header class="cri-head on"><button type="button" class="cri-ic" data-act="back" aria-label="Back">${c.icon('arrowLeft')}</button><span></span>${c.toCart('cri-ic w', c.icon('menu'))}</header>
           <small>${c.esc(c.catName(p.categoryId) || c.s.name)}</small>
           <h1>${c.esc(p.name)}</h1>
           <p class="cri-big">${c.money(p.price)}</p>
@@ -170,7 +179,7 @@
         <header class="lift-head"><button type="button" class="lift-sq" data-act="catpage" data-id="" aria-label="All">${c.icon('arrowLeft')}</button><b class="lift-logo">${brand(c)}</b>${c.toCart('lift-sq', c.icon('bag'))}</header>
         <h1 class="lift-h">${c.esc(c.headline('New Collection'))}</h1><p class="lift-sub">${c.esc(c.s.name)}</p>
         ${f ? `<div class="lift-banner"><div><b>${c.esc(f.name)}</b><small>${c.esc(c.catName(f.categoryId))}</small><button type="button" ${c.open(f.id)}>Shop now</button></div>${c.hero(f, 'lift-bimg')}</div>${dots(3, 0, 'dots lift-dots')}` : ''}
-        <div class="lift-tabs">${c.s.categories.map(k => `<button type="button" class="${c.ui.cat === k.id ? 'on' : ''}" ${c.cat(k.id)}><b>${c.esc(k.name)}</b><small>${counts(k.id)} items</small></button>`).join('') || `<button type="button" class="on"><b>All</b><small>${all.length} items</small></button>`}</div>
+        <div class="lift-tabs"><button type="button" class="${!c.ui.cat ? 'on' : ''}" ${c.cat(null)}><b>All</b><small>${all.length} items</small></button>${c.s.categories.map(k => `<button type="button" class="${c.ui.cat === k.id ? 'on' : ''}" ${c.cat(k.id)}><b>${c.esc(k.name)}</b><small>${counts(k.id)} items</small></button>`).join('')}</div>
         <div class="lift-grid">${ps.map(p => `<article class="lift-card" ${c.open(p.id)}><b>${c.esc(p.name)}</b><span class="lift-sw"><i></i><i></i><i></i></span>${c.img(p)}<div class="lift-foot"><span><b>${c.moneyShort(p.price)}</b><small>Price</small></span><button type="button" ${c.add(p.id)} aria-label="Add">${c.icon('arrowRight')}</button></div></article>`).join('') || c.empty()}</div>
         <nav class="lift-nav"><button type="button" data-act="home">${c.icon('home')}</button><label class="lift-find">${c.icon('search')}${c.searchInput('', 'lift-q')}</label><button type="button" data-act="tocart">${c.icon('heart')}</button></nav>
       </section>`;
@@ -474,7 +483,7 @@
       const ps = c.list(id === null ? c.ui.cat : id);
       return `<section class="sl-cat">
         <header class="sl-srow"><button type="button" class="sl-back" data-act="home" aria-label="Back">${c.icon('arrowLeft')}</button><label class="sl-search">${c.icon('search')}${c.searchInput(c.catName(id) || 'Search')}</label></header>
-        <div class="sl-tiles"><button type="button" class="${!id ? 'on' : ''}" ${c.catPage(null)}><span>${c.icon('apps')}</span>All</button>${c.s.categories.map(k => `<button type="button" class="${id === k.id ? 'on' : ''}" ${c.catPage(k.id)}><span>${c.icon('tag')}</span>${c.esc(k.name)}</button>`).join('')}</div>
+        <div class="sl-tiles"><button type="button" class="${!id ? 'on' : ''}" ${c.catPage(null)}><span>${c.icon('apps')}</span>All</button>${c.s.categories.map(k => { const f = c.list(k.id, '')[0]; return `<button type="button" class="${id === k.id ? 'on' : ''}" ${c.catPage(k.id)}><span>${f ? c.img(f) : c.icon('tag')}</span>${c.esc(k.name)}</button>`; }).join('')}</div>
         <div class="sl-grid">${ps.map(p => `<article class="sl-card" ${c.open(p.id)}><div class="sl-ph">${c.img(p)}<span class="sl-heart">${c.icon('heart')}</span><span class="sl-price">${c.money(p.price)}</span></div><b>${c.esc(p.name)}</b></article>`).join('') || c.empty()}</div>
       </section>`;
     },
@@ -507,7 +516,7 @@
         <div class="sv-offers">${all.slice(0, 4).map(p => `<article class="sv-offer" ${c.open(p.id)}>${c.img(p)}<div><span class="sv-lt">${c.esc(c.catName(p.categoryId) || c.s.name)}</span><h4>${c.esc(p.name)}</h4><p>From <b>${c.money(p.price)}</b></p><button type="button" class="sv-claim" ${c.add(p.id)}>Add</button></div></article>`).join('')}</div>
         ${dots(Math.min(all.length, 3) || 1, 0, 'dots sv-dots')}
         <div class="sv-sec"><h3>Services</h3><a href="#/all">See all</a></div>
-        <div class="sv-cats">${c.s.categories.map(k => `<button type="button" class="${c.ui.cat === k.id ? 'on' : ''}" ${c.cat(k.id)}><span>${c.icon('tag')}</span>${c.esc(k.name)}</button>`).join('')}</div>
+        <div class="sv-cats">${c.s.categories.map(k => { const f = all.find(p => p.categoryId === k.id); return `<button type="button" class="${c.ui.cat === k.id ? 'on' : ''}" ${c.cat(k.id)}><span>${f ? c.img(f) : c.icon('tag')}</span>${c.esc(k.name)}</button>`; }).join('')}</div>
         <div class="sv-sec"><h3>Popular</h3><a href="#/all">See all</a></div>
         <div class="sv-pop">${ps.map(p => `<article class="sv-card" ${c.open(p.id)}>${c.img(p)}<span class="sv-bm">${c.icon('heart')}</span><b>${c.esc(p.name)}</b><small>${c.money(p.price)}</small></article>`).join('') || c.empty()}</div>
         <nav class="sv-nav"><button type="button" class="on" data-act="home">${c.icon('home')}<span>Home</span></button><button type="button" data-act="catpage" data-id="">${c.icon('pin')}<span>Explore</span></button><button type="button" data-act="tocart">${c.icon('bag')}<span>Cart</span></button><button type="button" data-act="tocart">${c.icon('user')}<span>Profile</span></button></nav>
@@ -626,7 +635,7 @@
         ${head(c)}
         <div class="ca-banner"><div><h2>${c.esc(c.headline(c.s.name))}</h2><p>${c.esc([c.s.area, c.openLabel()].filter(Boolean).join(' · '))}</p><button type="button" data-act="catpage" data-id="">Shop Now ${c.icon('arrowRight')}</button></div>${c.hero(f, 'ca-bimg')}${dots(3, 0, 'dots ca-dots')}</div>
         <div class="ca-sec"><h3>Shop by Category</h3><a href="#/all">View All ${c.icon('arrowRight')}</a></div>
-        <div class="ca-cats">${c.s.categories.slice(0, 8).map(k => `<button type="button" ${c.catPage(k.id)}><span>${c.icon('box')}</span>${c.esc(k.name)}</button>`).join('') || `<button type="button" ${c.catPage(null)}><span>${c.icon('apps')}</span>All</button>`}</div>
+        <div class="ca-cats">${c.s.categories.slice(0, 8).map(k => `<button type="button" ${c.catPage(k.id)}><span>${(p => p?.images?.[0] ? c.img(p, 'ca-cat-img') : c.icon('box'))(c.list(k.id, '')[0])}</span>${c.esc(k.name)}</button>`).join('') || `<button type="button" ${c.catPage(null)}><span>${c.icon('apps')}</span>All</button>`}</div>
         <div class="ca-sec"><h3>Featured Products</h3><a href="#/all">View All ${c.icon('arrowRight')}</a></div>
         <div class="ca-feat">${c.list().map(p => `<article class="ca-card" ${c.open(p.id)}><span class="ca-heart">${c.icon('heart')}</span>${c.img(p)}<b>${c.esc(p.name)}</b><small>${c.esc(p.description)}</small><div class="ca-pr"><b>${c.money(p.price)}</b><button type="button" ${c.add(p.id)} aria-label="Add to cart">${c.icon('cart')}</button></div></article>`).join('') || c.empty()}</div>
         ${nav(c, 'home')}
