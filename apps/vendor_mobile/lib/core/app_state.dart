@@ -220,13 +220,6 @@ class AppState extends ChangeNotifier {
   // ---- Vendor availability (Today header toggle). Session state only: no
   // availability contract exists on the backend yet.
   // Starts Offline (Founder, 2026-10-01): the vendor goes Online on purpose.
-  bool vendorOnline = false;
-
-  void setVendorOnline(bool value) {
-    vendorOnline = value;
-    notifyListeners();
-  }
-
   // ---- Appearance: device-local only (never synced, no DB column).
   // [appearance] is what is saved on this device; a preview paints the
   // whole app through [liveAppearance] until it is saved or rolled back.

@@ -105,18 +105,9 @@ class VendorShell extends StatelessWidget {
             children: [
               if (!ownHeader) _Header(app: app),
               Expanded(
-                child: _OfflineTint(
-                  // Offline greys the operational screens (Today, Orders,
-                  // Zones, Riders and their details); More stays in colour,
-                  // and so do onboarding screens (no business to be online).
-                  active:
-                      !app.vendorOnline &&
-                      app.activeTab != NavTab.more &&
-                      app.current.route.index > VRoute.setupComplete.index,
-                  child: hero || ownHeader
-                      ? child
-                      : ContentSurface(bottomSafeArea: !showNav, child: child),
-                ),
+                child: hero || ownHeader
+                    ? child
+                    : ContentSurface(bottomSafeArea: !showNav, child: child),
               ),
               if (showNav) const _BottomNav(),
             ],
@@ -160,41 +151,6 @@ class VendorShell extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Greys out [child] (full desaturation) while the vendor
-/// is offline; colour returns as soon as they are back online.
-class _OfflineTint extends StatelessWidget {
-  const _OfflineTint({required this.active, required this.child});
-  final bool active;
-  final Widget child;
-
-  static const _greyscale = ColorFilter.matrix([
-    0.2126,
-    0.7152,
-    0.0722,
-    0,
-    0,
-    0.2126,
-    0.7152,
-    0.0722,
-    0,
-    0,
-    0.2126,
-    0.7152,
-    0.0722,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-  ]);
-
-  @override
-  Widget build(BuildContext context) =>
-      active ? ColorFiltered(colorFilter: _greyscale, child: child) : child;
 }
 
 /// The white surface that enters the gradient with rounded top corners.
@@ -364,9 +320,7 @@ class _Header extends StatelessWidget {
       sideWidth: today ? 100 : null,
       onTitleTap: today ? () => _showBusinessSwitcher(context, app) : null,
       leading: [
-        if (today)
-          const _OnlineToggle()
-        else if (!isRoot && app.canGoBack)
+        if (!today && !isRoot && app.canGoBack)
           HeaderBackButton(onTap: app.back),
       ],
       trailing: [
@@ -387,114 +341,6 @@ class _Header extends StatelessWidget {
         header,
         _TodayGreeting(name: app.userDisplayName),
       ],
-    );
-  }
-}
-
-/// Today's availability switch: the Founder-referenced toggle (blue track,
-/// white knob) with "Online" / "Offline" inside the track. Offline greys the
-/// operational screens (see [VendorShell]).
-class _OnlineToggle extends StatelessWidget {
-  const _OnlineToggle();
-
-  @override
-  Widget build(BuildContext context) {
-    final app = AppScope.of(context);
-    final on = app.vendorOnline;
-    return Flexible(
-      child: Padding(
-        padding: const EdgeInsets.only(left: Gap.md),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Semantics(
-            toggled: on,
-            label: on ? L.online : L.offline,
-            button: true,
-            child: GestureDetector(
-              onTap: () {
-                app.setVendorOnline(!on);
-                showCefToast(
-                  context,
-                  on ? L.youreOfflineNewOrdersPaused : L.youreOnline,
-                );
-              },
-              child: _ToggleTrack(on: on),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// The toggle itself: a pill track (Vendor blue when on, muted when off)
-/// with a white round knob; the state label sits in the track's free space
-/// -- "Online" left of the knob, "Offline" right of it.
-class _ToggleTrack extends StatelessWidget {
-  const _ToggleTrack({required this.on});
-  final bool on;
-
-  static const _w = 88.0, _h = 30.0, _knob = 24.0;
-
-  @override
-  Widget build(BuildContext context) {
-    final label = Text(
-      on ? L.online : L.offline,
-      maxLines: 1,
-      style: Theme.of(context).textTheme.labelSmall
-          // Online: dark text on Cefflo mustard (Founder, 2026-10-01).
-          ?.copyWith(
-            color: on ? CefColors.onAccent : Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-    );
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      width: _w,
-      height: _h,
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        color: on
-            ? CefColors.ceffloMustard
-            : Colors.white.withValues(alpha: .28),
-        borderRadius: BorderRadius.circular(_h),
-        border: Border.all(color: Colors.white.withValues(alpha: .55)),
-      ),
-      child: Stack(
-        children: [
-          // Label in the space the knob is not using.
-          Positioned.fill(
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: on ? Gap.sm : _knob + Gap.xs,
-                right: on ? _knob + Gap.xs : Gap.sm,
-              ),
-              child: Center(child: FittedBox(child: label)),
-            ),
-          ),
-          AnimatedAlign(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
-            alignment: on ? Alignment.centerRight : Alignment.centerLeft,
-            child: Container(
-              width: _knob,
-              height: _knob,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0x40000000),
-                    blurRadius: 4,
-                    offset: Offset(0, 1),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

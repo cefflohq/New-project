@@ -467,22 +467,14 @@ void main() {
     expect(find.byTooltip('Download invoice'), findsWidgets);
   });
 
-  testWidgets('online toggle greys operational screens when offline', (
+  testWidgets('no Online/Offline toggle: Today is never greyed (Founder 2026-10-06)', (
     tester,
   ) async {
+    // Removed from V1: it was local-only, reset on restart and claimed new
+    // orders were paused though nothing paused them.
     await pumpAt(tester, const VendorLocation(VRoute.today));
-    // Starts Offline (Founder, 2026-10-01): operational screens greyed.
-    expect(find.text('Offline'), findsOneWidget);
-    expect(find.byType(ColorFiltered), findsOneWidget);
-    await tester.tap(find.text('Offline'));
-    await tester.pumpAndSettle();
-    expect(find.text('Online'), findsOneWidget);
-    expect(find.byType(ColorFiltered), findsNothing);
-    await tester.tap(find.text('Online'));
-    await tester.pumpAndSettle();
-    // More stays in colour.
-    await tester.tap(find.text('More'));
-    await tester.pumpAndSettle();
+    expect(find.text('Offline'), findsNothing);
+    expect(find.text('Online'), findsNothing);
     expect(find.byType(ColorFiltered), findsNothing);
   });
 }
