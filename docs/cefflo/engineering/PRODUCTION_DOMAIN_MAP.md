@@ -51,8 +51,15 @@ Static build (`scripts/environment.mjs`):
     CEFFLO_DRIVER_WEB_URL=https://driver.cefflo.com/
     CEFFLO_OPERATOR_WEB_URL=https://operator.cefflo.com/
     CEFFLO_HELPER_WEB_URL=https://helper.cefflo.com/
+    CEFFLO_VENDOR_CONSOLE_URL=https://vendor.cefflo.com/
     # CEFFLO_VENDOR_WEB_URL: not set in production (staging-only fallback:
     # shared Vendor app build + ?access= for Operator/Helper invites)
+
+`CEFFLO_VENDOR_CONSOLE_URL` (Founder-approved production requirement,
+2026-10-07; not a domain change): the Owner Vendor Web origin. The
+Storefront (order.cefflo.com) accepts Live Preview data only from configured
+app origins; without it the Vendor Web Storefront page cannot show the Live
+Preview (saving still works). Configurable; never hard-coded.
 
 Vendor app (`--dart-define`): `CEFFLO_INVITE_BASE_URL=https://invite.cefflo.com/`,
 `CEFFLO_TRACKING_BASE_URL=https://tracking.cefflo.com/`,
