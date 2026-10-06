@@ -64,13 +64,17 @@ export function resolveFrontendEnvironment(values) {
   // the Customer Tracking base ({base}?token=...). Optional; https only.
   const storefrontBaseUrl = baseUrl(values.CEFFLO_STOREFRONT_BASE_URL, 'CEFFLO_STOREFRONT_BASE_URL');
   const trackingBaseUrl = baseUrl(values.CEFFLO_TRACKING_BASE_URL, 'CEFFLO_TRACKING_BASE_URL');
+  // The Owner Vendor Web console (production https://vendor.cefflo.com/).
+  // Optional; https only. Lets the Storefront accept Live Preview data from
+  // that origin (the Vendor Web Storefront page embeds store/?embed=1).
+  const vendorConsoleUrl = webAppUrl(values.CEFFLO_VENDOR_CONSOLE_URL, 'CEFFLO_VENDOR_CONSOLE_URL');
 
   // Mapbox PUBLIC token for on-demand client maps (Customer Tracking "View
   // live map"). Public pk.* only -- a secret sk.* token never ships to a client.
   const mapboxPublicToken = String(values.CEFFLO_MAPBOX_PUBLIC_TOKEN || '').trim() || null;
   if (mapboxPublicToken && !/^pk\.[A-Za-z0-9._-]+$/.test(mapboxPublicToken)) throw new Error('CEFFLO_MAPBOX_PUBLIC_TOKEN must be a public pk.* Mapbox token');
 
-  return { name, projectRef, supabaseUrl: url.origin, publishableKey, driverStoreUrls, vendorStoreUrls, appWebUrls, inviteBaseUrl, storefrontBaseUrl, trackingBaseUrl, mapboxPublicToken };
+  return { name, projectRef, supabaseUrl: url.origin, publishableKey, driverStoreUrls, vendorStoreUrls, appWebUrls, inviteBaseUrl, storefrontBaseUrl, trackingBaseUrl, vendorConsoleUrl, mapboxPublicToken };
 }
 
 function baseUrl(raw, name) {
@@ -120,6 +124,7 @@ export function serializeRuntimeConfig(environment) {
     inviteBaseUrl: environment.inviteBaseUrl || null,
     storefrontBaseUrl: environment.storefrontBaseUrl || null,
     trackingBaseUrl: environment.trackingBaseUrl || null,
+    vendorConsoleUrl: environment.vendorConsoleUrl || null,
     mapboxPublicToken: environment.mapboxPublicToken || null
   };
   return `window.CEFFLO_CONFIG = Object.freeze(${JSON.stringify(config, null, 2)});\n`;

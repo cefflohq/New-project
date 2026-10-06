@@ -293,11 +293,11 @@
   }
   async function load() {
     if (EMBED) {
-      // Vendor App live preview: the app posts its own storefront_preview
-      // payload; no backend call, ordering disabled. Only the configured
-      // Vendor / Operator app origins may feed it (a foreign site framing
+      // Vendor App / Vendor Web live preview: the app posts its own
+      // storefront_preview payload; no backend call, ordering disabled. Only
+      // the configured Vendor / Operator app and Vendor Web origins may feed it (a foreign site framing
       // ?embed=1 cannot paint content on this domain).
-      const allowed = new Set(Object.values(cfg.appWebUrls || {}).filter(Boolean).map(u => { try { return new URL(u).origin; } catch { return null; } }).filter(Boolean));
+      const allowed = new Set([...Object.values(cfg.appWebUrls || {}), cfg.vendorConsoleUrl].filter(Boolean).map(u => { try { return new URL(u).origin; } catch { return null; } }).filter(Boolean));
       if (window.parent === window) { app.innerHTML = '<p class="sf-state">Preview is shown inside the Cefflo app.</p>'; return; }
       window.addEventListener('message', ev => {
         if (!allowed.has(ev.origin) || ev.source !== window.parent) return;

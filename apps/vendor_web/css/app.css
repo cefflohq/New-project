@@ -590,3 +590,4 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
 .hire-empty { padding: 28px 8px; text-align: center; color: var(--text-2, #6B7A94); font-size: 13.5px; }
 .hire-close { color: #C2410C; font-weight: 700; }
 .hire { border-bottom: 0; }
+@media (max-width: 900px) { .sf-split { grid-template-columns: minmax(0, 1fr) !important; } .sf-split > .card { position: static !important; } }

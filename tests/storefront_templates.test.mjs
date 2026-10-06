@@ -66,6 +66,13 @@ test('the Vendor App registry lists exactly the same template ids, in the same o
   assert.deepEqual(ids, ORDER);
 });
 
+test('Vendor Web lists exactly the same template ids, in the same order (no retired templates)', () => {
+  const web = readFileSync(new URL('../apps/vendor_web/js/pages/storefront.js', import.meta.url), 'utf8');
+  const block = web.slice(web.indexOf('const TEMPLATES = ['), web.indexOf('];', web.indexOf('const TEMPLATES = [')));
+  assert.deepEqual([...block.matchAll(/id: '([a-z]+)'/g)].map(m => m[1]), ORDER);
+  assert.ok(!/arena|stride|ritual|feast|'market'/.test(web), 'retired template keys');
+});
+
 test('every template renders the business data on every screen and nothing else', () => {
   for (const k of ORDER) {
     const out = screens(k, ctx());

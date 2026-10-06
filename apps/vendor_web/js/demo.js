@@ -159,9 +159,11 @@ export async function demoRpc(name, body = {}) {
   switch (name) {
     case 'get_my_businesses': return [{ business_id: BIZ, business_name: business.name, member_role: 'owner', timezone: business.timezone }];
     case 'get_invite_link': return { token: `demo-${body.p_kind}-link` };
-    case 'get_storefront': return { slug: 'kopi-kita', published: false, published_at: null, template_key: 'arena', theme: {} };
+    case 'get_storefront': return { slug: 'kopi-kita', published: false, published_at: null, template_key: 'care', theme: {} };
     case 'order_coverage_status': return 'covered';
     case 'business_today': return todayLocal();
+    case 'storefront_preview': return { slug: 'kopi-kita', business: { name: business.name, area: 'Petaling Jaya' }, theme: {}, open_now: true, hours: [],
+      categories: TABLES.product_categories(), products: TABLES.products().filter(p => p.status === 'active').map(p => ({ id: p.id, category_id: p.category_id, name: p.name, description: p.description, display_price: p.display_price, images: [] })) };
     case 'my_subscription': return { plan_key: 'free', status: 'active', has_record: false, trial_ends_at: null, cycle_start: `${todayLocal().slice(0, 8)}01`, cycle_end: todayLocal(), deliveries_used: 42, delivery_allowance: 150, over_allowance: false, payment_enabled: false };
     case 'check_run_vehicle_capacity': return { compatible: true, violations: [] };
     case 'propose_delivery_plan': {
