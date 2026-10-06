@@ -35,15 +35,15 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 |---|---|---|
 | **Helper PWA** | **LOCKED @ `fe99e46`** | see §3 |
 | Customer Tracking | LOCKED @ `b495169` | |
-| Invite PWA | READY FOR LOCK (verified at current HEAD, 2026-10-06) | baseline 8c067bb superseded: Operator-issued Driver/Helper links, Operator Helper approval, Driver rejoin via invite; see `tests/staging/operator_lifecycle` |
+| **Invite PWA** | **LOCKED @ `79752d0`** | see §3b; `8c067bb` is historical/superseded |
 | Production domain map | FINAL/LOCKED | `docs/cefflo/engineering/PRODUCTION_DOMAIN_MAP.md` (prepared `3c6284e`, not deployed) |
-| Operator | READY FOR LOCK (2026-10-06) | M2 `c939fc6`, Helper requests `9084c43`, fix `20261006220000` (join approval never restores a removed Owner) |
+| **Operator** | **LOCKED @ `79752d0`** | see §3a |
 | Driver (app) | Staging @ `988ff78` | self-edit profile/vehicle, rejoin via invite, paid vehicle change UI (RM50, provider not connected) |
 | Driver Marketplace Verification | **HOLD** — see §4 | backend + UI on staging |
 | Vendor App / Vendor Web | Wired on staging; parity decisions locked | full audit pending |
 | Storefront, FOUNDR, Marketing | pending their audit rounds | |
 
-**Next surface (per V1 order: Operator + Invite + Helper → Vendor Web → Storefront → Customer Tracking E2E → Vendor App → FOUNDR → Driver): Vendor Web** — start only when the Founder says so.
+**Next surface (per V1 order: Operator + Invite + Helper → Vendor Web → Storefront → Customer Tracking E2E → Vendor App → FOUNDR → Driver): Vendor Web — NOT STARTED.** Start only when the Founder says so.
 
 ## 3. Helper PWA — LOCKED @ `fe99e46`
 
@@ -59,6 +59,24 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 - Migrations: `20261006200000_helper_board_business_today`, `20261006210000_helper_backlog_7_days` (staging only).
 - Tests: `tests/staging/helper_lifecycle` (59), `helper_backlog` (22), `helper_access` (36), `helper_e2e` (33); Flutter `test/helper_working_day_test.dart`.
 
+## 3a. Operator — LOCKED @ `79752d0` (Founder-approved 2026-10-06)
+
+- Lifecycle: Owner's Operator link → join → Pending (no workspace, no privileges) → Owner approves → operational workspace. Business + role resolved server-side (`get_my_businesses`); `?access=` / host only choose the Sign-In variant.
+- Approved capabilities: operational workspace and actions (orders, storefront, Driver hiring posts); Driver link + approve / reject pending Driver applicants; Helper link (get / reset) + approve / reject Helper join requests (own business only).
+- Never: Owner or Operator invites; promote anyone (incl. self) to Owner; remove an active Driver; Business Profile / hours / slug / Team administration / subscription / billing; anything in another business.
+- Removal (`update_team_member` → inactive) revokes every privilege immediately, including on a live session. A removed Operator rejoins only through the current valid link + Owner approval.
+- Tests: `tests/staging/operator_lifecycle` (89), `operator_access` (42).
+
+## 3b. Invite — LOCKED @ `79752d0` (Founder-approved 2026-10-06)
+
+- Gateway `invite.cefflo.com`; routing Driver → `driver.cefflo.com`, Operator → `operator.cefflo.com`, Helper → `helper.cefflo.com`. Owner is never an invite role.
+- One permanent token per business + role. The server-issued token alone decides business, role and validity; client URL / query / domain never authorize.
+- Issuers: Owner → Operator / Driver / Helper; Operator → Driver / Helper. Helper, Driver and pending users issue nothing.
+- **Reset semantics (locked product decision):** reset immediately invalidates the old token for NEW join attempts and reveals the new token for that business + role only. It does NOT cancel pending join requests already created; those stay Pending and the Owner / authorized Operator still approves or rejects them under the normal role rules. Do not change.
+- Rejoin: removed Helper / Driver / Operator returns to Pending through the current link (old token refused); no duplicate membership or pending request; approval required again.
+- **Security fix (locked):** `20261006220000_join_approval_never_restores_owner` — approval grants the requested role; a removed (inactive) Owner never regains Owner through an approved join request. Owner is preserved only for an ACTIVE Owner row.
+- Tests: `operator_lifecycle` (89), `invite_security` (48), `invite_regression` (54).
+
 ## 4. HOLDs
 
 **Marketplace OCR live validation — HOLD**
@@ -70,6 +88,8 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 **Other holds:** Face recognition / biometrics — HOLD (absolute). Marketplace RM49 activation and all payments — NOT IMPLEMENTED (never fake success). Mapbox — gated (see V1 gates). Driver paid vehicle change: UI ready, Curlec (MY) / Stripe (intl) live keys required before production.
 
 ## 5. Follow-ups (not blockers of locked surfaces)
+
+0. Known non-blockers (Operator/Invite lock): (a) Vendor App client UX guard `isOwner ?? true` while business is unresolved — server authorization is authoritative; change only on a proven regression. (b) Test-harness debt: legacy suites (`operator_access`, `invite_security`) leave [TEST] auth accounts behind and `invite_security` resets the shared staging Helper link each run; clean up later.
 
 1. **Owner/Operator — stale fulfilment >7 days should surface under Needs Attention / operational attention.** Today "Need attention" (Vendor App + Web) counts only delivery issues. Do not build without approval.
 2. FOUNDR exception-review UI for Marketplace Verification (backend stores status + reasons).
