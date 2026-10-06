@@ -3,7 +3,7 @@
 // Riders > Pending and the Owner approves as today. Server:
 // save_job_opening / close_job_opening (Owner only, enforced server-side);
 // rider_job_openings is readable by business members.
-import { t } from './i18n.js';
+import { t, fmtDate } from './i18n.js';
 import { api } from './api.js';
 import { ctx } from './store.js';
 import { esc, icon, toast, busy, modal, avatar } from './ui.js';
@@ -69,7 +69,7 @@ export function mountHiring(host, { onChange } = {}) {
     const m = modal({ title: t('hr.postTitle'), body: '<div data-post></div>' });
     const box = m.el.querySelector('[data-post]');
     const kv = (k, v) => `<div class="kv"><div><small>${esc(k)}</small><b>${esc(v)}</b></div></div>`;
-    const fmt = d => new Date(d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+    const fmt = fmtDate;
     const paintPost = () => {
       const waiting = rows.filter(r => r.status === 'pending').length;
       const chipFor = r => r.status === 'approved' ? `<span class="chip ready">${esc(t('hr.approved'))}</span>`

@@ -4,6 +4,7 @@
 // to decide what to show — the server independently enforces every action.
 import { api } from './api.js';
 import { operatorEntry } from './access.js';
+import { setDisplayTimeZone } from './i18n.js';
 
 const ACTIVE = 'cefflo.vendorweb.activeBusiness';
 
@@ -37,6 +38,7 @@ export async function loadContext() {
   let remembered = null;
   try { remembered = localStorage.getItem(ACTIVE); } catch { /* ignore */ }
   ctx.business = ctx.businesses.find(b => b.business_id === remembered) || ctx.businesses[0];
+  setDisplayTimeZone(ctx.business?.timezone);
   return ctx;
 }
 
@@ -44,6 +46,7 @@ export function selectBusiness(id) {
   const b = ctx.businesses.find(x => x.business_id === id);
   if (!b) return;
   ctx.business = b;
+  setDisplayTimeZone(b.timezone);
   try { localStorage.setItem(ACTIVE, id); } catch { /* ignore */ }
 }
 

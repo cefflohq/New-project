@@ -607,14 +607,21 @@ export function t(key, vars) {
 
 export const locale = () => (prefs.lang === 'ms' ? 'ms-MY' : 'en-MY');
 
+// Timestamps are shown in the active business's timezone (as the Vendor
+// App does), not the device's. store.js sets it when a business is chosen.
+let displayTz = 'Asia/Kuala_Lumpur';
+export function setDisplayTimeZone(tz) { if (tz) displayTz = tz; }
 export function fmtTime(iso) {
   if (!iso) return '';
-  return new Date(iso).toLocaleTimeString(prefs.lang === 'ms' ? 'ms-MY' : 'en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  return new Date(iso).toLocaleTimeString(prefs.lang === 'ms' ? 'ms-MY' : 'en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: displayTz });
 }
 export function fmtDate(iso) {
   if (!iso) return '';
-  const d = new Date(iso);
-  return `${d.getDate()} ${d.toLocaleDateString(prefs.lang === 'ms' ? 'ms-MY' : 'en-US', { month: 'short' })} ${d.getFullYear()}`;
+  // A plain date (YYYY-MM-DD) is already business-local: format it as is.
+  const plain = /^\d{4}-\d{2}-\d{2}$/.test(iso);
+  const d = new Date(plain ? `${iso}T12:00:00Z` : iso), timeZone = plain ? 'UTC' : displayTz;
+  const part = o => d.toLocaleDateString(prefs.lang === 'ms' ? 'ms-MY' : 'en-US', { ...o, timeZone });
+  return `${part({ day: 'numeric' })} ${part({ month: 'short' })} ${part({ year: 'numeric' })}`;
 }
 // "Wednesday, 17 Sep 2025" (reference format), localised.
 // Pass the server's business date (YYYY-MM-DD) when known; otherwise the
