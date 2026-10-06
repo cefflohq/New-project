@@ -885,20 +885,33 @@ class _StopListScreenState extends State<StopListScreen> {
           ),
         ],
       ),
-      footer: CeffloSlideAction(
-        label: L.slideConfirmRoute,
-        onConfirmed: () async {
-          // Real build: save_run_sequence (this order) + start_run_delivery.
-          try {
-            await app.confirmRouteAndStart();
-            if (mounted) setState(() => _filter = 0);
-          } catch (e) {
-            if (context.mounted) {
-              showCefToast(context, '$e', error: true);
-            }
-          }
-        },
-      ),
+      // Locked order: Plan Route (Slide to Confirm Route saves the stop
+      // order) -> Pickup Checklist -> Slide to Start Delivery. No slide while
+      // the Pickup Checklist is still open.
+      footer: app.runPhase == RunPhase.pickup
+          ? null
+          : CeffloSlideAction(
+              label: app.runPhase == RunPhase.route
+                  ? L.slideStartDelivery
+                  : L.slideConfirmRoute,
+              onConfirmed: () async {
+                try {
+                  if (app.runPhase == RunPhase.plan) {
+                    // Real build: save_run_sequence; pickup comes next.
+                    await app.confirmRoutePlan();
+                    app.back();
+                  } else {
+                    // save_run_sequence (this order) + start_run_delivery.
+                    await app.confirmRouteAndStart();
+                    if (mounted) setState(() => _filter = 0);
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    showCefToast(context, '$e', error: true);
+                  }
+                }
+              },
+            ),
     );
   }
 

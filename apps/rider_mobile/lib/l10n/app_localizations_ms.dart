@@ -937,6 +937,9 @@ class AppLocalizationsMs extends AppLocalizations {
   String get slideConfirmRoute => 'Leret untuk Sahkan Laluan';
 
   @override
+  String get slideStartDelivery => 'Leret untuk Mula Penghantaran';
+
+  @override
   String get setapak => 'Setapak';
 
   @override

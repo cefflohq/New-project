@@ -22,7 +22,11 @@ enum DriverStage { noBusiness, pendingReview, approved, active }
 
 /// Where the current run is in the canonical execution lifecycle, derived
 /// only from persisted assignment and order states (real build).
-enum RunPhase { accept, pickup, route, delivering, done }
+/// Real-build run phases, in the locked order (Plan Route -> Pickup
+/// Checklist -> Delivery Run): accept, plan (Plan Route), pickup (Pickup
+/// Checklist), route (picked up, ready for Slide to Start Delivery),
+/// delivering, done.
+enum RunPhase { accept, plan, pickup, route, delivering, done }
 
 /// Navigation + session state.
 ///
@@ -784,7 +788,14 @@ class AppState extends ChangeNotifier {
           o.status == DeliveryStatus.created ||
           o.status == DeliveryStatus.readyForPickup,
     )) {
-      return RunPhase.pickup;
+      // Plan Route comes first: until the Driver confirms the stop order
+      // (or pickup has already begun), the run waits on Plan Route.
+      final pickupBegun = r.orders.any(
+        (o) => o.status == DeliveryStatus.pickedUp,
+      );
+      return pickupBegun || _plannedRuns.contains(r.sessionId ?? 'run')
+          ? RunPhase.pickup
+          : RunPhase.plan;
     }
     final live = r.orders.where((o) => !_terminal(o.status));
     if (live.isEmpty) return RunPhase.done;
@@ -941,6 +952,28 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Runs whose stop order the Driver confirmed on Plan Route. The order
+  /// itself is persisted by save_run_sequence; this only records that the
+  /// Plan Route step was completed in this session (re-confirming after an
+  /// app restart is a server no-op when nothing changed).
+  final Set<String> _plannedRuns = {};
+
+  /// Plan Route: Slide to Confirm Route saves the stop order (pickup next).
+  Future<void> confirmRoutePlan() async {
+    final session = currentRun.id;
+    await _thenRefresh(() async {
+      await repo.saveRunSequence(
+        riderId: _riderId,
+        sessionId: session,
+        orderedOrderIds: [
+          for (final s in currentRun.stops)
+            if (s.status == StopStatus.pending) s.id,
+        ],
+      );
+      _plannedRuns.add(session);
+    });
+  }
+
   /// accept_run for the whole run.
   Future<void> acceptCurrentRun() => _thenRefresh(
     () => repo.acceptRun(riderId: _riderId, sessionId: currentRun.id),
@@ -971,8 +1004,9 @@ class AppState extends ChangeNotifier {
     }
   }, locationEvent: true);
 
-  /// Slide to Confirm Route: save_run_sequence with the stop order on screen,
-  /// then start_run_delivery (locks the sequence, orders go out for delivery).
+  /// Slide to Start Delivery (after the Pickup Checklist): save_run_sequence
+  /// with the stop order on screen, then start_run_delivery (locks the
+  /// sequence; the backend refuses it while pickup is incomplete).
   Future<void> confirmRouteAndStart() async {
     if (repo.isDemo) {
       confirmRoute();

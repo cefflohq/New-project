@@ -928,6 +928,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get slideConfirmRoute => 'Slide to Confirm Route';
 
   @override
+  String get slideStartDelivery => 'Slide to Start Delivery';
+
+  @override
   String get setapak => 'Setapak';
 
   @override

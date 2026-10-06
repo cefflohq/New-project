@@ -1778,6 +1778,12 @@ abstract class AppLocalizations {
   /// **'Slide to Confirm Route'**
   String get slideConfirmRoute;
 
+  /// No description provided for @slideStartDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide to Start Delivery'**
+  String get slideStartDelivery;
+
   /// No description provided for @setapak.
   ///
   /// In en, this message translates to:

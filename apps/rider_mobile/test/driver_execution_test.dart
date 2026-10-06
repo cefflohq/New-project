@@ -140,8 +140,17 @@ void main() {
   });
 
   test('phases follow canonical assignment and order states', () async {
+    // Locked order: Plan Route first, before the Pickup Checklist.
     expect(
       (await _hydrate([_order('1', DeliveryStatus.created)])).$1.runPhase,
+      RunPhase.plan,
+    );
+    // Pickup already begun (e.g. after an app restart): Pickup Checklist.
+    expect(
+      (await _hydrate([
+        _order('1', DeliveryStatus.pickedUp),
+        _order('2', DeliveryStatus.created),
+      ])).$1.runPhase,
       RunPhase.pickup,
     );
     expect(
@@ -168,7 +177,7 @@ void main() {
   });
 
   test(
-    'accept -> pickup -> route call the canonical contracts in order',
+    'accept -> Plan Route -> Pickup Checklist -> Start Delivery, in order',
     () async {
       final (app, repo) = await _hydrate([
         _order('1', DeliveryStatus.created, assignment: 'assigned'),
@@ -176,6 +185,17 @@ void main() {
       ]);
       await app.acceptCurrentRun();
       expect(repo.calls, ['accept_run rider-1 s-1']);
+
+      repo.orders = [
+        _order('1', DeliveryStatus.created),
+        _order('2', DeliveryStatus.readyForPickup),
+      ];
+      await app.refreshOrders();
+      expect(app.runPhase, RunPhase.plan);
+      repo.calls.clear();
+      await app.confirmRoutePlan();
+      expect(repo.calls, ['save_run_sequence 1,2']);
+      expect(app.runPhase, RunPhase.pickup);
 
       repo.calls.clear();
       await app.confirmPickup();
