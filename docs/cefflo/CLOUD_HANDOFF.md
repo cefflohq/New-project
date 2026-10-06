@@ -35,9 +35,9 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 |---|---|---|
 | **Helper PWA** | **LOCKED @ `fe99e46`** | see §3 |
 | Customer Tracking | LOCKED @ `b495169` | |
-| Invite PWA | READY (code) @ `8c067bb` | driver invite join keeps vehicle |
+| Invite PWA | READY FOR LOCK (verified at current HEAD, 2026-10-06) | baseline 8c067bb superseded: Operator-issued Driver/Helper links, Operator Helper approval, Driver rejoin via invite; see `tests/staging/operator_lifecycle` |
 | Production domain map | FINAL/LOCKED | `docs/cefflo/engineering/PRODUCTION_DOMAIN_MAP.md` (prepared `3c6284e`, not deployed) |
-| Operator | Wired on staging (M2 `c939fc6`, Helper requests `9084c43`) | not formally locked |
+| Operator | READY FOR LOCK (2026-10-06) | M2 `c939fc6`, Helper requests `9084c43`, fix `20261006220000` (join approval never restores a removed Owner) |
 | Driver (app) | Staging @ `988ff78` | self-edit profile/vehicle, rejoin via invite, paid vehicle change UI (RM50, provider not connected) |
 | Driver Marketplace Verification | **HOLD** — see §4 | backend + UI on staging |
 | Vendor App / Vendor Web | Wired on staging; parity decisions locked | full audit pending |
@@ -79,7 +79,7 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 
 ## 6. Production release checklist (pending, needs approval per step)
 
-Staging-only migrations to promote (in order) are everything from `20261005120000` through `20261006210000` in `supabase/migrations/`, plus secrets/env from `PRODUCTION_DOMAIN_MAP.md` (static build bases, Supabase Auth allow-list, tracking-pod CORS, Mapbox public token, Cloudflare token with Workers + DNS edit). Record current DNS before attaching custom domains. Marketplace verification needs its own Vault key and Vision key per environment.
+Staging-only migrations to promote (in order) are everything from `20261005120000` through `20261006220000` in `supabase/migrations/`, plus secrets/env from `PRODUCTION_DOMAIN_MAP.md` (static build bases, Supabase Auth allow-list, tracking-pod CORS, Mapbox public token, Cloudflare token with Workers + DNS edit). Record current DNS before attaching custom domains. Marketplace verification needs its own Vault key and Vision key per environment.
 
 ## 7. How to verify
 
