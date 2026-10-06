@@ -3,44 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#01265E">
+<meta name="theme-color" content="#ffffff">
 <meta name="robots" content="noindex">
-<title>Cefflo Storefront</title>
-<link rel="stylesheet" href="/store/store.css?v=20261001c">
+<title>Storefront</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Montserrat:wght@500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="/store/store.css?v=20261007a">
 </head>
 <body>
-<!-- Cefflo Storefront V1 (STAGING proof of the slug architecture).
-     /{slug} -> public_storefront(slug) -> catalogue from the business's own
-     Products -> submit_storefront_order -> a real Cefflo order. -->
-<header class="top" id="top">
-  <h1 id="bizName">Cefflo</h1>
-  <p id="bizMeta"></p>
-</header>
-<main id="app">
-  <p class="state" id="state">Loading…</p>
-  <section id="catalogue" hidden></section>
-  <section id="checkout" class="sheet" hidden>
-    <h2>Your order</h2>
-    <ul id="cartLines"></ul>
-    <p class="total">Total <b id="cartTotal">RM 0.00</b></p>
-    <label>Name<input id="cName" autocomplete="name" maxlength="120"></label>
-    <label>Phone<input id="cPhone" autocomplete="tel" inputmode="tel" maxlength="30"></label>
-    <label>Delivery address<textarea id="cAddress" rows="3" maxlength="500"></textarea></label>
-    <label>Notes (optional)<textarea id="cNotes" rows="2" maxlength="500"></textarea></label>
-    <p class="error" id="formError" hidden></p>
-    <button class="cta" id="placeOrder" type="button">Place order</button>
-  </section>
-  <section id="done" class="sheet" hidden>
-    <h2>Order received</h2>
-    <p>Your order reference is <b id="orderRef"></b>.</p>
-    <p class="muted">The business will confirm your order.</p>
-  </section>
-</main>
-<footer class="bar" id="bar" hidden>
-  <span id="barCount"></span>
-  <button class="cta" id="toCheckout" type="button">Checkout</button>
-</footer>
+<!-- Cefflo Storefront V1. /{slug} -> public_storefront(slug) -> the
+     business's own catalogue rendered in its chosen template ->
+     submit_storefront_order -> a real Cefflo order + tracking link.
+     ?embed=1 is the Vendor App live preview (data arrives by postMessage,
+     no backend call); ?template=<key> previews another template. -->
+<div id="app" aria-live="polite"><p class="sf-state">Loading…</p></div>
 <script src="/shared/config.js?v=20261001a"></script>
-<script src="/store/store.js?v=20261001c"></script>
+<script src="/store/templates.js?v=20261007a"></script>
+<script src="/store/store.js?v=20261007a"></script>
 </body>
 </html>
