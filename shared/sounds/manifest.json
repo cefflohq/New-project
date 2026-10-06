@@ -1,9 +1,12 @@
 {
   "_contract": "docs/cefflo/NOTIFICATION_EVENT_MATRIX.md §6 — Cefflo Signature Notification Sound",
-  "approved": true,
-  "version": "1.0.0",
+  "approved": false,
+  "version": "1.0.0-candidate",
   "files": {
-    "web": ["cefflo-signature.mp3"],
+    "web": [
+      "cefflo-signature.mp3"
+    ],
     "source": "cefflo-signature.wav"
-  }
+  },
+  "_status": "Candidate v1.0.0 implemented; awaiting Founder listening approval (2026-10-06)."
 }

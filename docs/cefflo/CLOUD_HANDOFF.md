@@ -86,11 +86,14 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 - Known non-blockers (follow-ups, not fixed in the lock): POD CDN cache for a URL the same token already opened; private orphan POD object after a failed completion retry; no business selector for multi-business Drivers; Plan Route confirmation not kept across an app restart before pickup; external customer notification channels deferred.
 - Tests: `tests/staging/driver_lifecycle` (110), `driver_profile` (25), `delivery_e2e` (33); Flutter Driver 78.
 
-## 3d. Vendor App (Owner) — non-payment V1, READY FOR PRODUCT REVIEW (2026-10-06, not locked)
+## 3d. Vendor App (Owner) — non-payment V1, pre-lock (2026-10-06, not locked)
 
-- Done: Today on the business's working day (`business_today`, `20261007100000`); silent live refresh on resume / operational events; Cefflo Signature Notification Sound v1 (Vendor App + web manifest); `tests/staging/vendor_owner_lifecycle` (66).
-- Product decisions open: (1) Online/Offline toggle is local-only, starts Offline every launch and says "new orders paused" though nothing pauses — no backend contract exists; (2) Subscription: plans in `data/plans.dart` are a pricing CANDIDATE and live mode shows only `business_subscriptions` (no row exists for any business yet) — need locked plans/prices, the Free/default plan rule and entitlements before anything beyond "current plan"; (3) KIM / help articles not connected (approved interim: contact support).
-- Storefront untouched (waiting for the Founder's final UI references).
+- Done: Today on the business's working day (`business_today`, `20261007100000`); silent live refresh on resume / operational events; `tests/staging/vendor_owner_lifecycle` (66).
+- **Online/Offline removed from Vendor V1** (Founder 2026-10-06): it was local-only, reset on restart and claimed "new orders paused" though nothing paused. No availability contract was created; a future Store Open/Closed is designed with Storefront / business hours.
+- **Subscription:** commercial model and payment **HOLD** — final plans, prices, Free/default-plan policy, entitlements, upgrade lifecycle and checkout are finalised in the payment/commercial pass. V1 keeps the honest read of `business_subscriptions` (no row → "managed by Cefflo", never a pretend paid plan). `data/plans.dart` stays a candidate (demo only).
+- **KIM / help articles: DEFERRED.** Contact Support (email) stays.
+- **Notification sound: v1.0.0 CANDIDATE** implemented in the Vendor App (`apps/vendor_mobile/assets/sounds/cefflo_signature.mp3`; source `shared/sounds/cefflo-signature.wav`), **awaiting Founder listening approval**; manifest `approved: false`.
+- **Storefront untouched** — waiting for the Founder's final UI references.
 
 ## 4. HOLDs
 
