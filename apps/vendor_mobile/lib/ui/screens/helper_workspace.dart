@@ -59,6 +59,24 @@ int _r(FulfilmentTask t) => _rank[t.status] ?? 0;
 
 enum _Tab { preparation, zones, packing, more }
 
+/// Open work (not yet picked up) of the business's working day — its own
+/// "today" from the server, in the business timezone. Never the device
+/// clock, and never an older day just because unfinished orders from
+/// earlier days exist. (Demo build without a server day: the earliest day.)
+@visibleForTesting
+List<FulfilmentTask> helperWorkingSet(
+  List<FulfilmentTask> tasks,
+  String? businessToday,
+) {
+  final all = tasks.where((t) => !t.pickedUp).toList();
+  if (businessToday != null) {
+    return all.where((t) => t.orderDate == businessToday).toList();
+  }
+  final days = all.map((t) => t.orderDate).whereType<String>().toList()..sort();
+  if (days.isEmpty) return all;
+  return all.where((t) => t.orderDate == days.first).toList();
+}
+
 /// One Zone of the working day: its tasks and derived progress.
 class _Zone {
   _Zone(this.id, this.name, this.tasks);
@@ -78,7 +96,8 @@ class _Zone {
       .fold<DateTime?>(null, (a, b) => a == null || b.isBefore(a) ? b : a);
 }
 
-class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
+class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen>
+    with WidgetsBindingObserver {
   Future<FulfilmentBoard>? _load;
   FulfilmentBoard? _board;
   _Tab _tab = _Tab.preparation;
@@ -87,16 +106,59 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
   final _busy = <String>{};
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// Back in the foreground: re-read the board (server truth), the same
+  /// resume rule the Vendor shell uses for notifications. No polling.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _board != null && mounted) {
+      _reload().catchError((_) {});
+    }
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _load ??= _fetch();
   }
 
+  /// Server errors never reach the screen verbatim. A refused board or
+  /// action means the membership changed (removed / not active): the
+  /// session is resolved again, which shows the no-access state.
+  String _friendly(Object e) {
+    final m = e is RepositoryError ? e.message : '$e';
+    if (m.contains('forbidden')) {
+      AppScope.read(context).loadSession();
+    }
+    return L.hwActionFailed;
+  }
+
   Future<FulfilmentBoard> _fetch() async {
     final app = AppScope.read(context);
-    final b = await app.repo.myFulfilmentBoard(app.business!.id);
-    if (mounted) setState(() => _board = b);
-    return b;
+    try {
+      final b = await app.repo.myFulfilmentBoard(app.business!.id);
+      if (mounted) setState(() => _board = b);
+      return b;
+    } on RepositoryError catch (e) {
+      final m = e.message;
+      if (m.contains('forbidden') && mounted) {
+        app.loadSession();
+      }
+      if (_board != null && mounted) {
+        showCefToast(context, L.hwLoadFailed, error: true);
+      }
+      rethrow;
+    }
   }
 
   Future<void> _reload() async {
@@ -104,24 +166,24 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
     setState(() {
       _load = next;
     });
-    await next;
+    try {
+      await next;
+    } on RepositoryError {
+      // shown by the error state / toast; the last good board stays
+    }
   }
 
   // ---------------------------------------------------------- working set
 
-  /// Open work of the earliest working day (not yet picked up).
-  List<FulfilmentTask> get _open {
-    final all = (_board?.tasks ?? const <FulfilmentTask>[])
-        .where((t) => !t.pickedUp)
-        .toList();
-    final days = all.map((t) => t.orderDate).whereType<String>().toList()
-      ..sort();
-    if (days.isEmpty) return all;
-    return all.where((t) => t.orderDate == days.first).toList();
-  }
+  List<FulfilmentTask> get _open => helperWorkingSet(
+    _board?.tasks ?? const <FulfilmentTask>[],
+    _board?.businessToday,
+  );
 
   DateTime get _day =>
-      DateTime.tryParse(_open.firstOrNull?.orderDate ?? '') ?? DateTime.now();
+      DateTime.tryParse(_board?.businessToday ?? '') ??
+      DateTime.tryParse(_open.firstOrNull?.orderDate ?? '') ??
+      DateTime.now();
 
   /// Zones prioritised by pickup time, earliest first (Founder rule).
   List<_Zone> get _zones {
@@ -167,7 +229,7 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
       await action();
       await _reload();
     } on RepositoryError catch (e) {
-      if (mounted) showCefToast(context, e.message, error: true);
+      if (mounted) showCefToast(context, _friendly(e), error: true);
       await _reload();
     } finally {
       if (mounted) setState(() => _busy.remove(key));
@@ -212,7 +274,7 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
       if (mounted) setState(() => _showReady = true);
       return true;
     } on RepositoryError catch (e) {
-      if (mounted) showCefToast(context, e.message, error: true);
+      if (mounted) showCefToast(context, _friendly(e), error: true);
       await _reload();
       return false;
     }
@@ -234,7 +296,7 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen> {
             return Scaffold(
               backgroundColor: Colors.white,
               body: snap.hasError
-                  ? StateBlock.error('${snap.error}', onRetry: _reload)
+                  ? StateBlock.error(L.hwLoadFailed, onRetry: _reload)
                   : const StateBlock.loading(),
             );
           }

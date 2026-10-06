@@ -7316,6 +7316,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Drivers needed'**
   String get hrDriversNeeded;
+
+  /// No description provided for @hwActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'That couldn\'t be saved. The list has been refreshed.'**
+  String get hwActionFailed;
+
+  /// No description provided for @hwLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load today\'s work. Check your connection and try again.'**
+  String get hwLoadFailed;
 }
 
 class _AppLocalizationsDelegate

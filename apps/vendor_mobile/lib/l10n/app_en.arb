@@ -2004,5 +2004,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "hwActionFailed": "That couldn't be saved. The list has been refreshed.",
+  "hwLoadFailed": "Couldn't load today's work. Check your connection and try again."
 }

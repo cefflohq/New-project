@@ -659,7 +659,9 @@ class AppState extends ChangeNotifier {
       if (business == null && access != AuthAccess.vendor) {
         // A sent join request waiting for the Owner reads as pending, not
         // as "no access".
-        final pending = await repo.myPendingJoinRole();
+        final pending = await repo.myPendingJoinRole(
+          prefer: access == AuthAccess.helper ? 'helper' : 'operator',
+        );
         sessionError = switch ((access, pending)) {
           (AuthAccess.helper, 'helper') => L.helperRequestPending,
           (AuthAccess.helper, _) => L.noHelperAccessYet,

@@ -4015,4 +4015,12 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get hrDriversNeeded => 'Pemandu diperlukan';
+
+  @override
+  String get hwActionFailed =>
+      'Tidak dapat disimpan. Senarai telah dikemas kini.';
+
+  @override
+  String get hwLoadFailed =>
+      'Tidak dapat memuatkan kerja hari ini. Semak sambungan anda dan cuba lagi.';
 }

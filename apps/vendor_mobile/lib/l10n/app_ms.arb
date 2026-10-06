@@ -1201,5 +1201,7 @@
   "hrArea": "Kawasan",
   "hrDays": "Hari",
   "hrVehicle": "Kenderaan",
-  "hrDriversNeeded": "Pemandu diperlukan"
+  "hrDriversNeeded": "Pemandu diperlukan",
+  "hwActionFailed": "Tidak dapat disimpan. Senarai telah dikemas kini.",
+  "hwLoadFailed": "Tidak dapat memuatkan kerja hari ini. Semak sambungan anda dan cuba lagi."
 }

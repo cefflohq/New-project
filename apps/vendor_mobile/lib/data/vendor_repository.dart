@@ -922,18 +922,21 @@ class VendorRepository {
   /// The signed-in person's own pending Operator / Helper join request, if
   /// any (the requester may read their own rows by RLS). Presentation only:
   /// a pending request grants nothing.
-  Future<String?> myPendingJoinRole() async {
+  /// The role of a pending join request, preferring [prefer] (the entry the
+  /// user signed in through) when the account has requests for several
+  /// roles, so a Helper never reads an Operator message.
+  Future<String?> myPendingJoinRole({String? prefer}) async {
     if (_demo || currentUser == null) return null;
     final rows = await _run(
       () => _db!
           .from('team_join_requests')
           .select('role')
           .eq('user_id', currentUser!.id)
-          .eq('status', 'pending')
-          .limit(1),
+          .eq('status', 'pending'),
     );
-    final list = _rows(rows);
-    return list.isEmpty ? null : list.first['role'] as String?;
+    final roles = _rows(rows).map((r) => r['role'] as String?).toList();
+    if (roles.isEmpty) return null;
+    return roles.contains(prefer) ? prefer : roles.first;
   }
 
   // ------------------------------------------- Find Jobs openings (D-75)
@@ -1113,6 +1116,7 @@ class VendorRepository {
       businessName: (map['business_name'] as String?) ?? '',
       tasks: _rows(map['tasks']).map(FulfilmentTask.fromRow).toList(),
       itemImages: images,
+      businessToday: map['business_today'] as String?,
     );
   }
 

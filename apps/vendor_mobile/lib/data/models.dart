@@ -306,10 +306,15 @@ class FulfilmentBoard {
     required this.businessName,
     required this.tasks,
     this.itemImages = const {},
+    this.businessToday,
   });
   final String businessName;
   final List<FulfilmentTask> tasks;
   final Map<String, String> itemImages;
+
+  /// The business's working day in its own timezone (server, yyyy-MM-dd).
+  /// Null only in the demo build.
+  final String? businessToday;
 }
 
 class FulfilmentTask {

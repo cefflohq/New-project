@@ -4011,4 +4011,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hrDriversNeeded => 'Drivers needed';
+
+  @override
+  String get hwActionFailed =>
+      'That couldn\'t be saved. The list has been refreshed.';
+
+  @override
+  String get hwLoadFailed =>
+      'Couldn\'t load today\'s work. Check your connection and try again.';
 }
