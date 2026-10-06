@@ -63,12 +63,26 @@
   let idempotencyKey = crypto.randomUUID();
   let lastOrder = null;
 
+  // Vendor App preview only: a catalogue with no photos at all shows sample
+  // photos (store/samples, CC0) so the vendor sees the finished look. Their
+  // own photos replace these as soon as one product has a photo; the public
+  // storefront never shows samples.
+  const SAMPLE_SETS = { cafe: [1, 2, 3, 4, 5, 6].map(n => `/store/samples/cafe-${n}.jpg`), food: [1, 2, 3, 4, 5, 6].map(n => `/store/samples/food-${n}.jpg`) };
+  const SAMPLE_THEME = { brew: 'cafe', pour: 'cafe', combo: 'cafe', care: 'cafe', harvest: 'food', warung: 'food' };
+  function samplePhotos(products, key) {
+    if (!EMBED || products.some(p => p.images.length)) return;
+    const first = SAMPLE_SETS[SAMPLE_THEME[key] || 'cafe'], second = first === SAMPLE_SETS.cafe ? SAMPLE_SETS.food : SAMPLE_SETS.cafe;
+    const pool = [...first, ...second];
+    products.forEach((p, i) => { p.images = [pool[i % pool.length]]; p.sample = true; });
+  }
+
   function normalise(raw) {
     const theme = raw.theme || {};
     const products = (raw.products || []).map(p => ({
       id: p.id, categoryId: p.category_id, name: p.name || '', description: p.description || '',
       price: Number(p.display_price || 0), images: (p.images || []).map(abs).filter(Boolean),
     }));
+    samplePhotos(products, raw.template_key);
     return {
       slug: raw.slug, name: raw.business?.name || '', area: raw.business?.area || '',
       tagline: theme.tagline || '', theme, heroUrl: abs(raw.hero_url), openNow: raw.open_now,

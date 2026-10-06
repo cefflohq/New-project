@@ -1,0 +1,13 @@
+Sample product photos for the Vendor App preview only (CC0, via Openverse). 800x800, centre-cropped.
+cafe-1.jpg  CC0  wordpress  https://pd.w.org/2022/09/847631584e924bcb5.15126133-1536x2048.jpeg
+cafe-2.jpg  CC0  flickr  https://live.staticflickr.com/4470/26488792749_1e52bc5ded_b.jpg
+cafe-3.jpg  CC0  rawpixel  https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcHgxMDgwNjgxLWltYWdlLWt3eXJmY3d3LmpwZw.jpg
+cafe-4.jpg  CC0  flickr  https://live.staticflickr.com/697/22142307894_0a64e37e44_b.jpg
+cafe-5.jpg  CC0  rawpixel  https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9zdGF0aWMvaW1hZ2Uvd2Vic2l0ZS8yMDIyLTA0L2xyL25zMjcwOC1pbWFnZS1rd3Z3b3dkci5qcGc.jpg
+cafe-6.jpg  CC0  stocksnap  https://cdn.stocksnap.io/img-thumbs/960w/HEA4IBI3WQ.jpg
+food-1.jpg  CC0  rawpixel  https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIyLTA0L3Vwd2s2MjEyMDAwOS13aWtpbWVkaWEtaW1hZ2Uta293bm53YjYuanBn.jpg
+food-2.jpg  CC0  flickr  https://live.staticflickr.com/44/138568275_f898f57868_b.jpg
+food-3.jpg  CC0  stocksnap  https://cdn.stocksnap.io/img-thumbs/960w/FWJC3SUNGR.jpg
+food-4.jpg  CC0  stocksnap  https://cdn.stocksnap.io/img-thumbs/960w/PLOA1CWIRK.jpg
+food-5.jpg  CC0  wordpress  https://pd.w.org/2025/08/61568afc669eeaff8.38846550-2048x1536.jpg
+food-6.jpg  CC0  rawpixel  https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvaXM5NjMzLWltYWdlLWt3eXM1eDgzLmpwZw.jpg
