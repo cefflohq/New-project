@@ -36,6 +36,26 @@ export function mountShell(el, pageMap, { signOut }) {
   startNotifications();
 }
 
+// Live data (Vendor App parity: it reloads on resume): operational pages
+// re-read their data when a Vendor notification arrives or the tab comes back
+// after a while. Never while a dialog is open or the user is typing.
+const LIVE_PAGES = new Set(['today', 'orders', 'zones', 'runs', 'riders']);
+let hiddenAt = 0, refreshTimer = null;
+function refreshLivePage() {
+  if (!root?.isConnected || !content) return;
+  const name = location.hash.replace(/^#\/?/, '').split('/')[0] || 'today';
+  if (!LIVE_PAGES.has(name)) return;
+  const busyUi = document.querySelector('.modal-root .modal') || (document.activeElement && content.contains(document.activeElement) && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName));
+  if (busyUi) return;
+  route();
+}
+window.addEventListener('cefflo:vendor-notification', () => { clearTimeout(refreshTimer); refreshTimer = setTimeout(refreshLivePage, 800); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { hiddenAt = Date.now(); return; }
+  if (hiddenAt && Date.now() - hiddenAt > 60_000) refreshLivePage();
+  hiddenAt = 0;
+});
+
 // A notification deep-link into another of the user's businesses.
 window.addEventListener('cefflo:business-switched', () => { if (root?.isConnected) rerenderShell(); });
 

@@ -105,6 +105,8 @@ function handleChange({ type, record, old_record: old }) {
     if (!record.read_at) notif.unread += 1;
     emit();
     if (!seen.has(record.id)) { seen.add(record.id); present(record); }
+    // Operational pages re-read their data (as the Vendor App does on resume).
+    window.dispatchEvent(new CustomEvent('cefflo:vendor-notification', { detail: { event: record.event_key } }));
   } else if (type === 'UPDATE' && record) {
     const i = notif.items.findIndex(n => n.id === record.id);
     if (i >= 0) {
