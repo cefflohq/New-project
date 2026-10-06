@@ -1208,5 +1208,14 @@
   "planChangeNotAvailableTitle": "Tukar pelan belum tersedia dalam aplikasi",
   "planChangeNotAvailableBody": "Pembayaran dalam talian belum diaktifkan. Pelan anda tidak berubah dan tiada caj dikenakan. Hubungi sokongan Cefflo untuk menukar pelan.",
   "checkingYourPlan": "Menyemak pelan anda…",
-  "pleaseWaitMoment": "Sila tunggu sebentar."
+  "pleaseWaitMoment": "Sila tunggu sebentar.",
+  "storefrontPreviewWebOnly": "Pratonton storefront langsung dibuka dalam aplikasi web Cefflo.",
+  "livePreview": "Pratonton Langsung",
+  "livePreviewBody": "Lihat rupa kedai anda dengan warna pilihan anda.",
+  "deviceMobile": "Telefon",
+  "deviceTablet": "Tablet",
+  "deviceDesktop": "Desktop",
+  "screenHomeBrowse": "Laman Utama",
+  "screenCategoryProducts": "Kategori & Produk",
+  "screenProductDetail": "Butiran Produk"
 }

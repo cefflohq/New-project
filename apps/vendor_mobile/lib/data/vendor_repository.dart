@@ -450,6 +450,17 @@ class VendorRepository {
   /// Uploads a storefront hero as a NEW object (no overwrite) at
   /// '{business}/hero-{uuid}.{ext}' (20260930110132: Owner/Operator of that
   /// business only). Returns the path to save as hero_path.
+  /// The business's storefront exactly as the public page renders it
+  /// (`storefront_preview`, Owner / Operator), for the template previews.
+  Future<Map<String, dynamic>?> storefrontPreview(String businessId) async {
+    if (_demo) return null;
+    final res = await _run(
+      () =>
+          _db!.rpc('storefront_preview', params: {'p_business_id': businessId}),
+    );
+    return res == null ? null : Map<String, dynamic>.from(res as Map);
+  }
+
   Future<String> uploadStorefrontHero(
     String businessId,
     Uint8List bytes,

@@ -93,11 +93,13 @@ class StorefrontSurface extends StatelessWidget {
     required this.def,
     required this.branding,
     required this.catalogue,
+    this.interactive = true,
   });
 
   final StorefrontTemplateDef def;
   final StorefrontBranding branding;
   final StorefrontCatalogue catalogue;
+  final bool interactive;
 
   @override
   Widget build(BuildContext context) {
@@ -113,6 +115,7 @@ class StorefrontSurface extends StatelessWidget {
           items: catalogue.items,
           categories: catalogue.categories,
           tokens: tokens,
+          interactive: interactive,
         ),
       ),
     );
@@ -164,6 +167,7 @@ class StorefrontMiniature extends StatelessWidget {
           def: def,
           branding: branding,
           catalogue: catalogue,
+          interactive: interactive,
         ),
       ),
     );

@@ -4036,4 +4036,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pleaseWaitMoment => 'Please wait a moment.';
+
+  @override
+  String get storefrontPreviewWebOnly =>
+      'The live storefront preview opens in the Cefflo web app.';
+
+  @override
+  String get livePreview => 'Live Preview';
+
+  @override
+  String get livePreviewBody =>
+      'See how your store will look with your selected colours.';
+
+  @override
+  String get deviceMobile => 'Mobile';
+
+  @override
+  String get deviceTablet => 'Tablet';
+
+  @override
+  String get deviceDesktop => 'Desktop';
+
+  @override
+  String get screenHomeBrowse => 'Home / Browse';
+
+  @override
+  String get screenCategoryProducts => 'Category & Products';
+
+  @override
+  String get screenProductDetail => 'Product Detail';
 }

@@ -14,6 +14,7 @@ import '../../../core/app_state.dart';
 import '../../../core/env.dart';
 import '../../../core/routes.dart';
 import '../../../core/theme.dart';
+import '../../../data/storefront_config.dart';
 import '../../shell.dart';
 import '../../system_bars.dart';
 import '../../share_link.dart';
@@ -21,6 +22,7 @@ import '../../widgets.dart';
 import 'shared/storefront_surface.dart';
 import 'shared/template_definition.dart';
 import 'templates/template_registry.dart';
+import 'templates/web/web_templates.dart';
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
 
@@ -832,6 +834,12 @@ class StorefrontTemplatePreviewScreen extends StatelessWidget {
                               style: text.bodySmall,
                             ),
                           ],
+                          const SizedBox(height: Gap.xl),
+                          _LivePreviewPanel(
+                            def: def,
+                            branding: branding,
+                            catalogue: catalogue,
+                          ),
                         ],
                       ),
                     ),
@@ -921,6 +929,140 @@ class LiveStorefrontScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Live Preview (Founder reference): Mobile shows Home / Browse, Category &
+/// Products and Product Detail side by side; Tablet and Desktop show the
+/// store at those widths. Every frame is the real storefront renderer.
+class _LivePreviewPanel extends StatefulWidget {
+  const _LivePreviewPanel({
+    required this.def,
+    required this.branding,
+    required this.catalogue,
+  });
+  final StorefrontTemplateDef def;
+  final StorefrontBranding branding;
+  final StorefrontCatalogue catalogue;
+
+  @override
+  State<_LivePreviewPanel> createState() => _LivePreviewPanelState();
+}
+
+class _LivePreviewPanelState extends State<_LivePreviewPanel> {
+  int _device = 0; // 0 Mobile, 1 Tablet, 2 Desktop
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final c = context.c;
+    final first = widget.catalogue.items.firstOrNull;
+    Widget frame(Size viewport, String route, double width) => Container(
+      width: width,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(_device == 2 ? 10 : 22),
+        border: Border.all(color: const Color(0xFF111827), width: 5),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: AspectRatio(
+        aspectRatio: viewport.width / viewport.height,
+        child: StorefrontFramedPreview(
+          def: widget.def,
+          branding: widget.branding,
+          catalogue: widget.catalogue,
+          viewport: viewport,
+          route: route,
+        ),
+      ),
+    );
+    final screens = [
+      (L.screenHomeBrowse, ''),
+      (L.screenCategoryProducts, 'all'),
+      (L.screenProductDetail, first == null ? '' : 'p/${first.id}'),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(L.livePreview, style: text.titleMedium),
+                  const SizedBox(height: 2),
+                  Text(L.livePreviewBody, style: text.bodySmall),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: Gap.md),
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: c.subtle,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              for (final (i, label, icon) in [
+                (0, L.deviceMobile, LucideIcons.smartphone),
+                (1, L.deviceTablet, LucideIcons.tablet),
+                (2, L.deviceDesktop, LucideIcons.monitor),
+              ])
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _device = i),
+                    child: Container(
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: _device == i ? c.card : Colors.transparent,
+                        borderRadius: BorderRadius.circular(9),
+                        border: _device == i
+                            ? Border.all(color: CefColors.brand)
+                            : null,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(icon, size: 16),
+                          const SizedBox(width: Gap.xs),
+                          Text(label, style: text.labelMedium),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: Gap.lg),
+        if (_device == 0)
+          SizedBox(
+            height: 380,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: screens.length,
+              separatorBuilder: (_, _) => const SizedBox(width: Gap.md),
+              itemBuilder: (context, i) => Column(
+                children: [
+                  frame(const Size(390, 844), screens[i].$2, 160),
+                  const SizedBox(height: Gap.sm),
+                  Text(screens[i].$1, style: text.labelMedium),
+                ],
+              ),
+            ),
+          )
+        else
+          frame(
+            _device == 1 ? const Size(820, 1180) : const Size(1280, 800),
+            '',
+            double.infinity,
+          ),
+      ],
     );
   }
 }

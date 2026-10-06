@@ -1,28 +1,21 @@
 /// The canonical Storefront template registry.
 ///
 /// The Storefront gallery, its filters, Template Preview and Customize all
-/// render from [kStorefrontTemplates]. Adding a template is: create
-/// `templates/<id>/`, then add its definition to this list -- see
-/// `STOREFRONT_TEMPLATE_GUIDE.md`. Order here is gallery order.
+/// render from [kStorefrontTemplates]. Storefront V1 templates follow the
+/// Founder's UI references (2026-10-06) and are rendered by the public
+/// storefront itself (store/templates.js) -- see `web/web_templates.dart`.
+/// Order here is gallery order.
 library;
 
 import '../shared/template_definition.dart';
-import 'arena/arena_template.dart';
-import 'feast/feast_template.dart';
-import 'market/market_template.dart';
-import 'ritual/ritual_template.dart';
-import 'stride/stride_template.dart';
+import 'web/web_templates.dart';
 
-final List<StorefrontTemplateDef> kStorefrontTemplates = [
-  arenaTemplate,
-  strideTemplate,
-  ritualTemplate,
-  marketTemplate,
-  feastTemplate,
-];
+final List<StorefrontTemplateDef> kStorefrontTemplates =
+    kWebStorefrontTemplates;
 
-/// The storefront a vendor starts on before choosing a template.
-const kDefaultStorefrontTemplateId = 'arena';
+/// The storefront a vendor starts on before choosing a template (and the
+/// one the public page uses for an unknown / retired key).
+const kDefaultStorefrontTemplateId = 'care';
 
 /// Lookup by id; unknown ids fall back to the default template so a stale
 /// saved id never breaks the storefront.

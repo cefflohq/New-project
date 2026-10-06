@@ -61,7 +61,11 @@ class StorefrontRenderData {
     required this.items,
     required this.categories,
     required this.tokens,
+    this.interactive = true,
   });
+
+  /// False in gallery miniatures: the preview must not take taps.
+  final bool interactive;
 
   final String businessName;
   final List<StorefrontItem> items;

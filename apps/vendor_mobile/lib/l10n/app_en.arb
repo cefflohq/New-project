@@ -2011,5 +2011,14 @@
   "planChangeNotAvailableTitle": "Plan changes aren't available in the app yet",
   "planChangeNotAvailableBody": "Online payment isn't enabled yet. Your plan hasn't changed and nothing was charged. Contact Cefflo support to change your plan.",
   "checkingYourPlan": "Checking your plan…",
-  "pleaseWaitMoment": "Please wait a moment."
+  "pleaseWaitMoment": "Please wait a moment.",
+  "storefrontPreviewWebOnly": "The live storefront preview opens in the Cefflo web app.",
+  "livePreview": "Live Preview",
+  "livePreviewBody": "See how your store will look with your selected colours.",
+  "deviceMobile": "Mobile",
+  "deviceTablet": "Tablet",
+  "deviceDesktop": "Desktop",
+  "screenHomeBrowse": "Home / Browse",
+  "screenCategoryProducts": "Category & Products",
+  "screenProductDetail": "Product Detail"
 }

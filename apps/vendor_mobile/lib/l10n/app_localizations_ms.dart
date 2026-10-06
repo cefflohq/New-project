@@ -4040,4 +4040,33 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get pleaseWaitMoment => 'Sila tunggu sebentar.';
+
+  @override
+  String get storefrontPreviewWebOnly =>
+      'Pratonton storefront langsung dibuka dalam aplikasi web Cefflo.';
+
+  @override
+  String get livePreview => 'Pratonton Langsung';
+
+  @override
+  String get livePreviewBody =>
+      'Lihat rupa kedai anda dengan warna pilihan anda.';
+
+  @override
+  String get deviceMobile => 'Telefon';
+
+  @override
+  String get deviceTablet => 'Tablet';
+
+  @override
+  String get deviceDesktop => 'Desktop';
+
+  @override
+  String get screenHomeBrowse => 'Laman Utama';
+
+  @override
+  String get screenCategoryProducts => 'Kategori & Produk';
+
+  @override
+  String get screenProductDetail => 'Butiran Produk';
 }

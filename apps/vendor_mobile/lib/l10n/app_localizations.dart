@@ -7358,6 +7358,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please wait a moment.'**
   String get pleaseWaitMoment;
+
+  /// No description provided for @storefrontPreviewWebOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'The live storefront preview opens in the Cefflo web app.'**
+  String get storefrontPreviewWebOnly;
+
+  /// No description provided for @livePreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Preview'**
+  String get livePreview;
+
+  /// No description provided for @livePreviewBody.
+  ///
+  /// In en, this message translates to:
+  /// **'See how your store will look with your selected colours.'**
+  String get livePreviewBody;
+
+  /// No description provided for @deviceMobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile'**
+  String get deviceMobile;
+
+  /// No description provided for @deviceTablet.
+  ///
+  /// In en, this message translates to:
+  /// **'Tablet'**
+  String get deviceTablet;
+
+  /// No description provided for @deviceDesktop.
+  ///
+  /// In en, this message translates to:
+  /// **'Desktop'**
+  String get deviceDesktop;
+
+  /// No description provided for @screenHomeBrowse.
+  ///
+  /// In en, this message translates to:
+  /// **'Home / Browse'**
+  String get screenHomeBrowse;
+
+  /// No description provided for @screenCategoryProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Category & Products'**
+  String get screenCategoryProducts;
+
+  /// No description provided for @screenProductDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Detail'**
+  String get screenProductDetail;
 }
 
 class _AppLocalizationsDelegate

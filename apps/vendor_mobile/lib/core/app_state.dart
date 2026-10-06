@@ -56,7 +56,26 @@ class AppState extends ChangeNotifier {
   // ---- Storefront (V-31/X-02/V-33). Template and customization persist on
   // the server (public_order_pages, Storefront V1); these fields mirror the
   // loaded state. Products and business data are never stored here.
-  String activeStorefrontTemplateId = 'arena';
+  String activeStorefrontTemplateId = 'care';
+
+  Future<Map<String, dynamic>?>? _storefrontPreview;
+
+  /// The business's own storefront payload for previews (`storefront_preview`:
+  /// exactly what the public page shows, also before publishing). Loaded once
+  /// and shared by every template preview; null in the demo or on failure.
+  Future<Map<String, dynamic>?> storefrontPreviewPayload({
+    bool refresh = false,
+  }) {
+    final b = business;
+    if (repo.isDemo || b == null) return Future.value(null);
+    if (refresh || _storefrontPreview == null) {
+      _storefrontPreview = repo
+          .storefrontPreview(b.id)
+          .then<Map<String, dynamic>?>((v) => v)
+          .catchError((Object _) => null);
+    }
+    return _storefrontPreview!;
+  }
 
   /// Saved customization per template id, so returning to a template keeps
   /// the vendor's last saved look.
@@ -86,6 +105,7 @@ class AppState extends ChangeNotifier {
       return;
     }
     final m = await repo.getStorefront(b.id);
+    _storefrontPreview = null;
     storefront = (slug: m['slug'] as String, published: m['published'] == true);
     final key = (m['template_key'] as String?) ?? activeStorefrontTemplateId;
     final theme = Map<String, dynamic>.from((m['theme'] as Map?) ?? const {});
@@ -167,6 +187,7 @@ class AppState extends ChangeNotifier {
     }
     activeStorefrontTemplateId = templateId;
     _storefrontBranding[templateId] = branding;
+    _storefrontPreview = null;
     notifyListeners();
   }
 

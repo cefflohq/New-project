@@ -1,3 +1,5 @@
+> **Storefront V1 (2026-10-06):** the gallery now holds the 18 templates built 1:1 from the Founder's UI references. They are rendered by the public storefront itself — `store/templates.js` (layout) + `store/store.css` (styles) + `store/store.js` (data, cart, checkout) — and the Vendor App embeds that renderer (`shared/storefront_web_frame*.dart`, `templates/web/web_templates.dart`) with the business's `storefront_preview` payload, so the preview and the customer page are the same code. To add a template: add it to `window.CEFFLO_TEMPLATES` + `CEFFLO_TEMPLATE_ORDER`, a `_t(...)` entry in `web_templates.dart`, and its key to the `public_order_pages_template_key` check (migration). `tests/storefront_templates.test.mjs` keeps the three lists equal. The Flutter-renderer guide below describes the retired pre-V1 templates.
+
 # Storefront template guide
 
 How to add a Storefront template to Vendor Mobile. If you follow these steps, the new template appears in Explore Templates, Template Preview and Customize without any change to those screens.

@@ -110,7 +110,7 @@ void main() {
   ) async {
     await _pumpAt(
       tester,
-      const VendorLocation(VRoute.branding, entityId: 'stride'),
+      const VendorLocation(VRoute.branding, entityId: 'combo'),
     );
     expect(find.text('Brand colour'), findsOneWidget);
     await tester.drag(find.byType(Scrollable).last, const Offset(0, -600));
@@ -124,9 +124,11 @@ void main() {
   ) async {
     await _pumpAt(
       tester,
-      const VendorLocation(VRoute.branding, entityId: 'market'),
+      const VendorLocation(VRoute.branding, entityId: 'care'),
     );
-    for (final label in ['Brand colour', 'Background', 'Hero image']) {
+    // Storefront V1 templates keep their reference backgrounds; brand
+    // colour and hero image are the vendor's controls.
+    for (final label in ['Brand colour', 'Hero image']) {
       await tester.scrollUntilVisible(
         find.text(label),
         150,
@@ -141,7 +143,7 @@ void main() {
   ) async {
     await _pumpAt(
       tester,
-      const VendorLocation(VRoute.storefrontTemplatePreview, entityId: 'feast'),
+      const VendorLocation(VRoute.storefrontTemplatePreview, entityId: 'brew'),
     );
     final app = _app(tester);
     final before = await app.repo.products(app.business!.id);
@@ -157,7 +159,7 @@ void main() {
     await tester.tap(find.text('Done'));
     await tester.pumpAndSettle();
 
-    expect(app.activeStorefrontTemplateId, 'feast');
+    expect(app.activeStorefrontTemplateId, 'brew');
     expect(app.current.route, VRoute.storefront);
     final after = await app.repo.products(app.business!.id);
     expect(after.map((p) => p.id), before.map((p) => p.id));
