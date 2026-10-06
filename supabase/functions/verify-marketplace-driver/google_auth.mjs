@@ -2,8 +2,8 @@
 // JWT bearer grant). Pure and runtime-independent (WebCrypto + fetch), so it
 // runs in the Deno Edge runtime and in Node tests alike.
 //
-// Secret: GOOGLE_VISION_SERVICE_ACCOUNT_JSON = base64 of the service-account
-// JSON. Nothing secret (JSON, private key, JWT assertion, access token) is
+// Secret: GOOGLE_VISION_SERVICE_ACCOUNT_JSON = the raw service-account JSON
+// (multi-line value in Supabase Edge Function Secrets). Nothing secret (JSON, private key, JWT assertion, access token) is
 // ever logged, returned or put in an error message: errors carry only a
 // fixed code.
 
@@ -23,12 +23,12 @@ export class ScreeningUnavailable extends Error {
   }
 }
 
-/** Decode + validate the base64 service-account JSON. */
-export function parseServiceAccount(b64) {
-  if (!b64 || typeof b64 !== 'string') throw new ScreeningUnavailable('credential_missing');
+/** Parse + validate the raw service-account JSON. */
+export function parseServiceAccount(raw) {
+  if (!raw || typeof raw !== 'string' || !raw.trim()) throw new ScreeningUnavailable('credential_missing');
   let sa;
   try {
-    sa = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b64.trim()), (c) => c.charCodeAt(0))));
+    sa = JSON.parse(raw);
   } catch {
     throw new ScreeningUnavailable('credential_malformed');
   }
@@ -72,8 +72,8 @@ let cache = null; // { email, token, expiresAt } — this isolate only
 export function _resetTokenCache() { cache = null; }
 
 /** Short-lived OAuth access token, cached in memory with a safety margin. */
-export async function getAccessToken(b64, { fetchImpl = fetch, nowS = () => Math.floor(Date.now() / 1000) } = {}) {
-  const sa = parseServiceAccount(b64);
+export async function getAccessToken(raw, { fetchImpl = fetch, nowS = () => Math.floor(Date.now() / 1000) } = {}) {
+  const sa = parseServiceAccount(raw);
   const now = nowS();
   if (cache && cache.email === sa.client_email && cache.expiresAt - EXPIRY_MARGIN_S > now) return cache.token;
   const assertion = await createAssertion(sa, now);

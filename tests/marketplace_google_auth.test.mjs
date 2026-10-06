@@ -13,20 +13,23 @@ const ok = (n, c, x = '') => { results.push(`${c ? 'PASS' : 'FAIL'}  ${n}${x ? '
 const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
 const PEM = privateKey.export({ type: 'pkcs8', format: 'pem' });
 const SA = { type: 'service_account', client_email: 'test-ocr@cefflo-test.iam.gserviceaccount.com', private_key: PEM, token_uri: 'https://oauth2.googleapis.com/token', private_key_id: 'test' };
-const enc = o => Buffer.from(typeof o === 'string' ? o : JSON.stringify(o)).toString('base64');
+const enc = o => JSON.stringify(o, null, 2); // raw multi-line JSON, as stored in Supabase Secrets
 const B64 = enc(SA);
 const KEY_BODY = PEM.split('\n')[1];
-const leaks = s => [KEY_BODY, 'ya29.TEST-ACCESS-TOKEN', B64.slice(0, 40)].some(t => String(s).includes(t));
+const leaks = s => [KEY_BODY, 'ya29.TEST-ACCESS-TOKEN', SA.client_email].some(t => String(s).includes(t));
 const codeOf = async f => { try { await f(); return 'no-error'; } catch (e) { return e instanceof ScreeningUnavailable ? e.code : 'other:' + e.message; } };
 const dec = s => JSON.parse(Buffer.from(s, 'base64url').toString());
 
 // --- credential validation
-ok('valid credential parses (client_email, private_key, token_uri)', parseServiceAccount(B64).client_email === SA.client_email);
+ok('raw multi-line JSON credential parses (client_email, private_key, token_uri)', B64.includes('\n') && parseServiceAccount(B64).client_email === SA.client_email);
+ok('compact single-line raw JSON also parses', parseServiceAccount(JSON.stringify(SA)).token_uri === SA.token_uri);
 for (const [label, v, code] of [
   ['missing credential', undefined, 'credential_missing'],
   ['empty credential', '', 'credential_missing'],
-  ['not base64 JSON', 'not-json!!', 'credential_malformed'],
-  ['raw JSON (not base64)', JSON.stringify(SA), 'credential_malformed'],
+  ['whitespace only', '   \n ', 'credential_missing'],
+  ['not JSON', 'not-json!!', 'credential_malformed'],
+  ['base64 (no longer accepted)', Buffer.from(JSON.stringify(SA)).toString('base64'), 'credential_malformed'],
+  ['JSON array', '[1,2]', 'credential_invalid_client_email'],
   ['missing client_email', enc({ ...SA, client_email: undefined }), 'credential_invalid_client_email'],
   ['non service-account email', enc({ ...SA, client_email: 'someone@gmail.com' }), 'credential_invalid_client_email'],
   ['missing private_key', enc({ ...SA, private_key: undefined }), 'credential_invalid_private_key'],

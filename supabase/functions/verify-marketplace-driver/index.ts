@@ -2,7 +2,7 @@
 // Driver calls this after submitting IC + licence FRONT + BACK and/or vehicle
 // type + plate + ONE live photo. Server-side only. Google Cloud Vision is
 // called with a short-lived OAuth token from the dedicated service account
-// (secret GOOGLE_VISION_SERVICE_ACCOUNT_JSON, base64) — never exposed to the
+// (secret GOOGLE_VISION_SERVICE_ACCOUNT_JSON, raw JSON) — never exposed to the
 // client, never logged, never returned. This function only extracts fields;
 // record_marketplace_screening (service_role) applies the rules. If anything
 // fails nothing is recorded, so a driver can never be verified by a failure.
