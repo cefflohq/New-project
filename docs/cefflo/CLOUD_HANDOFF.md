@@ -38,7 +38,7 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 | **Invite PWA** | **LOCKED @ `79752d0`** | see §3b; `8c067bb` is historical/superseded |
 | Production domain map | FINAL/LOCKED | `docs/cefflo/engineering/PRODUCTION_DOMAIN_MAP.md` (prepared `3c6284e`, not deployed) |
 | **Operator** | **LOCKED @ `79752d0`** | see §3a |
-| Driver Core | READY FOR LOCK — pre-lock items resolved (2026-10-06) | flow Plan Route → Pickup Checklist → Slide to Start Delivery; `tests/staging/driver_lifecycle` (110); assignment terminal state fixed (`20261006230000`); see §5 for customer notifications and the assignment terminal state |
+| **Driver Core** | **LOCKED @ `8d773c4`** | see §3c |
 | Driver Marketplace Verification | **HOLD** — see §4 | backend + UI on staging |
 | Vendor App / Vendor Web | Wired on staging; parity decisions locked | full audit pending |
 | Storefront, FOUNDR, Marketing | pending their audit rounds | |
@@ -76,6 +76,15 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 - Rejoin: removed Helper / Driver / Operator returns to Pending through the current link (old token refused); no duplicate membership or pending request; approval required again.
 - **Security fix (locked):** `20261006220000_join_approval_never_restores_owner` — approval grants the requested role; a removed (inactive) Owner never regains Owner through an approved join request. Owner is preserved only for an ACTIVE Owner row.
 - Tests: `operator_lifecycle` (89), `invite_security` (48), `invite_regression` (54).
+
+## 3c. Driver Core — LOCKED @ `8d773c4` (Founder-approved 2026-10-06)
+
+- Access: Driver invite → Pending → Owner / Operator approval → active Driver. Business-assigned Drivers need NO Marketplace activation, payment, OCR or face recognition (Marketplace / Find Jobs is separate).
+- Flow (locked order): Plan Route → Pickup Checklist → Slide to Start Delivery → sequential stops → POD → Complete → History. `start_run_delivery` is refused until pickup is complete; stop order is enforced by `rider_transition`.
+- Tracking propagation: Pickup → On the way → Delivered. Multi-stop: Start Delivery → stop #1 `out_for_delivery`; completing stop #N → stop #N+1 `out_for_delivery`. External customer channels DEFERRED.
+- Assignment lifecycle (locked, `20261006230000_assignment_completed_on_delivery`): a completed delivery sets its own assignment `completed` + `completed_at`; other stops and the run are untouched until every stop is delivered, then the session completes. Never regress to a stale `accepted`.
+- Known non-blockers (follow-ups, not fixed in the lock): POD CDN cache for a URL the same token already opened; private orphan POD object after a failed completion retry; no business selector for multi-business Drivers; Plan Route confirmation not kept across an app restart before pickup; external customer notification channels deferred.
+- Tests: `tests/staging/driver_lifecycle` (110), `driver_profile` (25), `delivery_e2e` (33); Flutter Driver 78.
 
 ## 4. HOLDs
 
