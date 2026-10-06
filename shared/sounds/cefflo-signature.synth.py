@@ -50,36 +50,36 @@ def finish(buf, name, fade=0.10):
         w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR); w.writeframes(pcm.tobytes())
     print(f"{name}: {n/SR:.2f}s peak -1.0 dBFS rms {20*math.log10(rms):.1f} dBFS")
 
-# A -- evolution: rising fifth E5 -> B5 on a glassy FM tone, with a quick
-#      upper grace that gives the motion a signature "lift".
-a = blank(0.80)
-add_fm(a, 0.000, 659.25, 0.30, 0.55, 1.41, 1.6, 18, 9.0)
-add_fm(a, 0.085, 987.77, 0.72, 0.85, 1.41, 2.2, 10, 5.2)
-add_fm(a, 0.085, 1975.5, 0.25, 0.10, 2.00, 0.5, 20, 16)   # airy octave sheen
-finish(a, 'cefflo-signature-A.wav')
+# "Cef-flo, Cef-flo": two beats (Cef = short accent, flo = slightly longer),
+# the pair played twice. Original synthesis only (no samples, no voice).
 
-# B -- logistics-tech: crisp transient, short bright "ping", then a soft
-#      resolving tone a fourth below (D6 -> A5).
-b = blank(0.70)
-add_tick(b, 0.000, 0.35)
-add_fm(b, 0.004, 1174.66, 0.10, 0.55, 3.0, 1.2, 40, 30.0, attack=0.002)
-add_partials(b, 0.070, 880.0, 0.62, 0.80, [(1, 1.0, 6.5), (2, 0.22, 11), (3, 0.06, 18)], attack=0.012)
-finish(b, 'cefflo-signature-B.wav')
 
-# C -- minimal sonic logo: three mallet notes C6 - G6 - E6 (up a fifth,
-#      settle a third), tight rhythm for memorability.
-c = blank(0.68)
-mallet = [(1, 1.0, 9.0), (3.93, 0.28, 28), (9.2, 0.06, 60)]
-add_partials(c, 0.000, 1046.5, 0.40, 0.70, mallet)
-add_partials(c, 0.075, 1567.98, 0.40, 0.62, mallet)
-add_partials(c, 0.150, 1318.51, 0.53, 0.85, [(1, 1.0, 6.0), (3.93, 0.22, 24), (9.2, 0.05, 55)])
-finish(c, 'cefflo-signature-C.wav')
 
-# D -- Cefflo identity: a two-syllable "Cef-flo" figure. A short confident
-#      pickup (A5), then a note that glides up into C#6 (bright major third)
-#      and blooms with a slow FM shimmer -- a "flow" that resolves upward.
-d = blank(0.95)
-add_fm(d, 0.000, 880.0, 0.16, 0.60, 2.0, 1.4, 30, 22.0, attack=0.003)
-add_fm(d, 0.110, 1108.73, 0.84, 0.90, 1.5, 1.8, 6, 4.6, attack=0.006, glide=(830.6, 0.07))
-add_fm(d, 0.110, 2217.46, 0.35, 0.08, 1.0, 0.3, 10, 12, attack=0.01)
-finish(d, 'cefflo-signature-D.wav')
+
+CEF = [(1, 1.0, 13), (2.0, 0.45, 20), (3.0, 0.18, 30)]       # short, bright
+FLO = [(1, 1.0, 8.0), (2.0, 0.38, 13), (3.0, 0.14, 20)]       # a bit longer
+FLO_END = [(1, 1.0, 6.0), (2.0, 0.35, 11), (3.0, 0.12, 18)]   # last one rings out
+BEAT, REPEAT = 0.13, 0.40                                      # Cef->flo, pair->pair
+
+def cefflo(name, cef_hz, flo_hz, voice='bell', length=0.98):
+    b = blank(length)
+    for k, t0 in enumerate([0.0, REPEAT]):
+        last = k == 1
+        if voice == 'bell':
+            add_partials(b, t0, cef_hz, 0.30, 0.70, CEF)
+            add_partials(b, t0 + BEAT, flo_hz, length - t0 - BEAT, 0.90, FLO_END if last else FLO)
+        elif voice == 'glass':
+            add_fm(b, t0, cef_hz, 0.30, 0.70, 3.5, 1.1, 25, 13, attack=0.002)
+            add_fm(b, t0 + BEAT, flo_hz, length - t0 - BEAT, 0.90, 3.5, 1.1, 18, 6 if last else 8, attack=0.002)
+        elif voice == 'crisp':
+            add_tick(b, t0, 0.15, seed=3 + k)
+            add_partials(b, t0 + 0.002, cef_hz, 0.30, 0.70, CEF)
+            add_tick(b, t0 + BEAT, 0.12, seed=5 + k)
+            add_partials(b, t0 + BEAT + 0.002, flo_hz, length - t0 - BEAT, 0.90, FLO_END if last else FLO)
+    finish(b, name, fade=0.08)
+
+cefflo('cefflo-signature-J.wav', 1318.51, 1760.00, 'bell')    # up a fourth  E6 -> A6
+cefflo('cefflo-signature-K.wav', 1567.98, 1318.51, 'bell')    # down a third G6 -> E6
+cefflo('cefflo-signature-L.wav', 1046.50, 1567.98, 'bell')    # up a fifth   C6 -> G6
+cefflo('cefflo-signature-M.wav', 1174.66, 1479.98, 'glass')   # up a third   D6 -> F#6, glassy
+cefflo('cefflo-signature-N.wav', 1046.50, 2093.00, 'crisp')   # up an octave C6 -> C7, crisp

@@ -115,16 +115,17 @@ exists while there is no push provider.
 
 ## 6. Cefflo Signature Notification Sound — integration contract
 
-**v1.1.0 APPROVED (Founder, 2026-10-06) — candidate C of four (A–D):** an
-original synthesised three-note mallet sonic logo C6 – G6 – E6 (up a fifth,
-settles a third), 0.68 s, 48 kHz mono, peak −1 dBFS, RMS ≈ −13.9 dBFS, no
-voice, no samples or third-party audio. Reproducible from
-`shared/sounds/cefflo-signature.synth.py` (candidate C). Delivered:
+**v1.2.0 APPROVED (Founder, 2026-10-06) — candidate M:** the "Cef-flo,
+Cef-flo" sonic logo — two beats (Cef = short accent D6, flo = slightly longer
+F#6) on a glassy FM tone, the pair played twice (0.13 s between beats, second
+pair at 0.40 s), 0.98 s, 48 kHz mono, peak −1 dBFS, RMS ≈ −12.3 dBFS, no
+voice, original synthesis (no samples or third-party audio). Reproducible from
+`shared/sounds/cefflo-signature.synth.py`. Delivered:
 `shared/sounds/cefflo-signature.wav` (source), `shared/sounds/cefflo-signature.mp3`
-(web, 11.5 KB), `apps/vendor_mobile/assets/sounds/cefflo_signature.mp3`
-(Flutter in-app). Manifest `approved: true`, `version: 1.1.0`. v1.0.0 and
-candidates A, B, D were not selected. Still to come with push: Android
-`res/raw` `.ogg`, iOS `.caf`, and the Driver app (platform placeholder).
+(web), `apps/vendor_mobile/assets/sounds/cefflo_signature.mp3` (Flutter
+in-app). Manifest `approved: true`, `version: 1.2.0`. Supersedes v1.1.0
+(candidate C). Still to come with push: Android `res/raw` `.ogg`, iOS `.caf`,
+and the Driver app (platform placeholder).
 
 This contract defines where it plugs in.
 

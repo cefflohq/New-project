@@ -1,12 +1,12 @@
 {
   "_contract": "docs/cefflo/NOTIFICATION_EVENT_MATRIX.md §6 — Cefflo Signature Notification Sound",
   "approved": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "files": {
     "web": [
       "cefflo-signature.mp3"
     ],
     "source": "cefflo-signature.wav"
   },
-  "_status": "Founder-approved 2026-10-06: candidate C (three-note mallet logo C6-G6-E6)."
+  "_status": "Founder-approved 2026-10-06: candidate M — \"Cef-flo, Cef-flo\" (two beats D6 -> F#6, glassy, played twice)."
 }

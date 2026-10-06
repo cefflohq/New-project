@@ -92,7 +92,7 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 - **Online/Offline removed from Vendor V1** (Founder 2026-10-06): it was local-only, reset on restart and claimed "new orders paused" though nothing paused. No availability contract was created; a future Store Open/Closed is designed with Storefront / business hours.
 - **Subscription:** commercial model and payment **HOLD** — final plans, prices, Free/default-plan policy, entitlements, upgrade lifecycle and checkout are finalised in the payment/commercial pass. V1 keeps the honest read of `business_subscriptions` (no row → "managed by Cefflo", never a pretend paid plan). `data/plans.dart` stays a candidate (demo only).
 - **KIM / help articles: DEFERRED.** Contact Support (email) stays.
-- **Notification sound: v1.1.0 APPROVED** (Founder 2026-10-06, candidate C: three-note mallet logo C6–G6–E6, 0.68 s) in the Vendor App (`apps/vendor_mobile/assets/sounds/cefflo_signature.mp3`; source `shared/sounds/cefflo-signature.wav`); manifest `approved: true`, so the web player uses it too.
+- **Notification sound: v1.2.0 APPROVED** (Founder 2026-10-06, candidate M: "Cef-flo, Cef-flo" — two beats D6 → F#6, glassy, played twice, 0.98 s) in the Vendor App (`apps/vendor_mobile/assets/sounds/cefflo_signature.mp3`; source `shared/sounds/cefflo-signature.wav`); manifest `approved: true`, so the web player uses it too.
 - **Storefront untouched** — waiting for the Founder's final UI references.
 
 ## 4. HOLDs
