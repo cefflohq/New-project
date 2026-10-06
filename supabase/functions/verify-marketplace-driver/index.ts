@@ -1,15 +1,15 @@
 // Marketplace Verification V1 screening (Founder 2026-10-06).
 // Driver calls this after submitting IC + licence FRONT + BACK and/or vehicle
 // type + plate + ONE live photo. Server-side only. Google Cloud Vision is
-// called with a short-lived OAuth token from the dedicated service account
-// (secret GOOGLE_VISION_SERVICE_ACCOUNT_JSON, raw JSON) — never exposed to the
-// client, never logged, never returned. This function only extracts fields;
+// called with a restricted API key (Cloud Vision API only; secret
+// GOOGLE_VISION_API_KEY) — never exposed to the client, never logged, never
+// returned. This function only extracts fields;
 // record_marketplace_screening (service_role) applies the rules. If anything
 // fails nothing is recorded, so a driver can never be verified by a failure.
 // No biometric processing of any kind.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractLicenceFrontBack, extractPlates, visionText } from './extract.mjs';
-import { annotateImage, getAccessToken, parseServiceAccount, screen, ScreeningUnavailable } from './google_auth.mjs';
+import { annotateImage, requireApiKey, screen, ScreeningUnavailable } from './vision.mjs';
 
 const BUCKET = 'cefflo-driver-documents';
 const cors = {
@@ -29,14 +29,14 @@ function toBase64(bytes: Uint8Array) {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
   if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
-  const credential = Deno.env.get('GOOGLE_VISION_SERVICE_ACCOUNT_JSON');
+  const apiKey = Deno.env.get('GOOGLE_VISION_API_KEY');
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
   const jwt = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
   const { data: who } = await admin.auth.getUser(jwt);
   const uid = who?.user?.id;
   if (!uid) return json({ error: 'authentication required' }, 401);
   try {
-    parseServiceAccount(credential);
+    requireApiKey(apiKey);
   } catch (_) {
     return json({ error: 'screening unavailable' }, 503); // stays pending
   }
@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
         return new Uint8Array(await data.arrayBuffer());
       },
       ocr: async (bytes: Uint8Array) =>
-        visionText(await annotateImage(toBase64(bytes), await getAccessToken(credential))),
+        visionText(await annotateImage(toBase64(bytes), apiKey)),
       extractLicenceFrontBack,
       extractPlates,
     });
