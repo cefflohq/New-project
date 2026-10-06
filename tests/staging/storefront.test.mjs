@@ -12,6 +12,11 @@ async function rpc(tok, name, body = {}) { const r = await fetch(`${URL_}/rest/v
 async function sel(tok, path) { const r = await fetch(`${URL_}/rest/v1/${path}`, { headers: H(tok) }); return { status: r.status, body: await r.json().catch(() => null) }; }
 const msg = r => (r.body && (r.body.message || r.body.hint)) || JSON.stringify(r.body);
 
+// Test isolation (the limiter is unchanged): suites that run just before
+// (e.g. delivery_e2e) place storefront orders from this same caller, so start
+// in a fresh limiter window instead of inheriting their count.
+await new Promise(r => setTimeout(r, 61000 - (Date.now() % 60000) + 500));
+
 const owner = await signIn(mail('owner'));
 const B = (await rpc(owner, 'get_my_businesses')).body.find(b => b.member_role === 'owner').business_id;
 const sf = (await rpc(owner, 'get_storefront', { p_business_id: B })).body;
