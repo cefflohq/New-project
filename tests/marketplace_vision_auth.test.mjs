@@ -39,6 +39,16 @@ for (const [label, impl] of [
   ok(`Vision failure (${label}) -> vision_failed, key not in error`, err?.code === 'vision_failed' && err.message === 'vision_failed' && !leaks(err), err?.message);
 }
 
+// sanitized Google status: enum only, never the free-text message / key
+{
+  let e1; try { await annotateImage('aW1n', KEY, { fetchImpl: async () => ({ ok: false, status: 400, json: async () => ({ error: { status: 'INVALID_ARGUMENT', message: `API key not valid ${KEY}`, details: [{ reason: 'API_KEY_INVALID' }] } }) }) }); } catch (e) { e1 = e; }
+  ok('Google error -> googleStatus = API_KEY_INVALID (reason enum), message/key dropped', e1?.googleStatus === 'API_KEY_INVALID' && !leaks(e1) && !JSON.stringify(e1).includes('not valid'), e1?.googleStatus);
+  let e2; try { await annotateImage('aW1n', KEY, { fetchImpl: async () => ({ ok: false, status: 403, json: async () => ({ error: { status: 'PERMISSION_DENIED', message: 'Cloud Vision API has not been used' } }) }) }); } catch (e) { e2 = e; }
+  ok('Google error without reason -> googleStatus = PERMISSION_DENIED', e2?.googleStatus === 'PERMISSION_DENIED');
+  let e3; try { await annotateImage('aW1n', KEY, { fetchImpl: async () => ({ ok: false, status: 400, json: async () => ({ error: { status: `bad ${KEY}` } }) }) }); } catch (e) { e3 = e; }
+  ok('non-enum Google status is never passed through (key cannot leak via status)', e3?.googleStatus === null && !leaks(e3));
+}
+
 // OCR failure never produces a verified status: screen() throws -> the Edge
 // Function records nothing (driver stays pending; proven server-side in
 // tests/staging/marketplace_verification "nothing screened yet -> pending").
@@ -61,7 +71,7 @@ const vis = readFileSync(new URL('../supabase/functions/verify-marketplace-drive
 ok('reads GOOGLE_VISION_API_KEY server-side', idx.includes("Deno.env.get('GOOGLE_VISION_API_KEY')"));
 ok('service-account / OAuth code removed', !/SERVICE_ACCOUNT|oauth2|createAssertion|private_key/.test(idx + vis));
 ok('no logging of the key', !/console\./.test(vis) && !/console\.[a-z]+\([^)]*apiKey/.test(idx));
-ok('responses never carry the key', !/json\(\{[^}]*apiKey/.test(idx));
+ok('responses never carry the key', !/json\(\{[^}]*apiKey/.test(idx) && !/json\(\{[^}]*e\.message/.test(idx));
 
 console.log(results.join('\n')); console.log(`\n${results.length - fails}/${results.length} passed`);
 process.exit(fails ? 1 : 0);

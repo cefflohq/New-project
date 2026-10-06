@@ -6,10 +6,13 @@
 
 /** Safe error: the message is a fixed code, never secret material. */
 export class ScreeningUnavailable extends Error {
-  constructor(code) {
+  constructor(code, googleStatus = null) {
     super(code);
     this.name = 'ScreeningUnavailable';
     this.code = code;
+    // Google's enum status/reason only (e.g. PERMISSION_DENIED,
+    // API_KEY_INVALID); never Google's free-text message.
+    this.googleStatus = typeof googleStatus === 'string' && /^[A-Z_0-9]{3,40}$/.test(googleStatus) ? googleStatus : null;
   }
 }
 
@@ -38,7 +41,9 @@ export async function annotateImage(imageBase64, apiKey, { fetchImpl = fetch } =
     throw new ScreeningUnavailable('vision_failed');
   }
   if (!res.ok || !Array.isArray(body?.responses) || body.responses[0]?.error) {
-    throw new ScreeningUnavailable('vision_failed');
+    const err = body?.error;
+    const reason = err?.details?.find?.((d) => typeof d?.reason === 'string')?.reason;
+    throw new ScreeningUnavailable('vision_failed', reason || err?.status || (res.ok ? 'IMAGE_ERROR' : `HTTP_${res.status}`.replace(/[^A-Z_0-9]/g, '')));
   }
   return body;
 }

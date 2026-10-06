@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
   try {
     requireApiKey(apiKey);
   } catch (_) {
-    return json({ error: 'screening unavailable' }, 503); // stays pending
+    return json({ error: 'screening unavailable', code: 'credential_missing' }, 503); // stays pending
   }
 
   const { data: v } = await admin.from('driver_marketplace_verifications')
@@ -63,8 +63,11 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     // fixed code only (never secret material); the driver stays pending
-    console.error('screening unavailable', e instanceof ScreeningUnavailable ? e.code : 'unexpected');
-    return json({ error: 'screening unavailable' }, 503);
+    // fixed code + Google enum status only (never the key or Google's text)
+    const code = e instanceof ScreeningUnavailable ? e.code : 'unexpected';
+    const google = e instanceof ScreeningUnavailable ? e.googleStatus : null;
+    console.error('screening unavailable', code, google ?? '');
+    return json({ error: 'screening unavailable', code, google_status: google }, 503);
   }
   if (!result.licence && !result.plate) return json({ status: v.status });
   const { data, error } = await admin.rpc('record_marketplace_screening', { p_user_id: uid, p_licence: result.licence, p_plate: result.plate });
