@@ -90,7 +90,7 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 
 - Done: Today on the business's working day (`business_today`, `20261007100000`); silent live refresh on resume / operational events; `tests/staging/vendor_owner_lifecycle` (66).
 - **Online/Offline removed from Vendor V1** (Founder 2026-10-06): it was local-only, reset on restart and claimed "new orders paused" though nothing paused. No availability contract was created; a future Store Open/Closed is designed with Storefront / business hours.
-- **Subscription:** commercial model and payment **HOLD** — final plans, prices, Free/default-plan policy, entitlements, upgrade lifecycle and checkout are finalised in the payment/commercial pass. V1 keeps the honest read of `business_subscriptions` (no row → "managed by Cefflo", never a pretend paid plan). `data/plans.dart` stays a candidate (demo only).
+- **Subscription (pre-payment, 2026-10-06):** restored designed V-50/51/52/54 in live mode on the server price book (`subscription_plans`, Founder-locked Malaysia prices FREE RM0/150 · GROW RM99/500 · OPERATE RM199/1,500 · SCALE RM499/5,000 · Enterprise custom; `10_PRICING.md` restored from `50c6856`). Every business starts on FREE/active (trigger + backfill). `my_subscription` (Owner usage: completed deliveries this cycle, drivers, zones, team), `request_plan_change` stops at the PAYMENT BOUNDARY (payment_required, writes nothing). FOUNDR `admin_set_subscription` unchanged authority, now validates the plan. Migration `20261007110000`; tests `tests/staging/subscription` (27). HOLD: payment gateway/checkout/webhook/activation, annual pricing, overage, cap and quota ENFORCEMENT (dispatch block touches the locked run contract — needs approval).
 - **KIM / help articles: DEFERRED.** Contact Support (email) stays.
 - **Notification sound: v1.2.0 APPROVED** (Founder 2026-10-06, candidate M: "Cef-flo, Cef-flo" — two beats D6 → F#6, glassy, played twice, 0.98 s) in the Vendor App (`apps/vendor_mobile/assets/sounds/cefflo_signature.mp3`; source `shared/sounds/cefflo-signature.wav`); manifest `approved: true`, so the web player uses it too. Also installed in the Driver app (same asset) — every surface with in-app notifications now plays it.
 - **Storefront untouched** — waiting for the Founder's final UI references.
@@ -120,7 +120,7 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 
 ## 6. Production release checklist (pending, needs approval per step)
 
-Staging-only migrations to promote (in order) are everything from `20261005120000` through `20261007100000` in `supabase/migrations/`, plus secrets/env from `PRODUCTION_DOMAIN_MAP.md` (static build bases, Supabase Auth allow-list, tracking-pod CORS, Mapbox public token, Cloudflare token with Workers + DNS edit). Record current DNS before attaching custom domains. Marketplace verification needs its own Vault key and Vision key per environment.
+Staging-only migrations to promote (in order) are everything from `20261005120000` through `20261007110000` in `supabase/migrations/`, plus secrets/env from `PRODUCTION_DOMAIN_MAP.md` (static build bases, Supabase Auth allow-list, tracking-pod CORS, Mapbox public token, Cloudflare token with Workers + DNS edit). Record current DNS before attaching custom domains. Marketplace verification needs its own Vault key and Vision key per environment.
 
 ## 7. How to verify
 
