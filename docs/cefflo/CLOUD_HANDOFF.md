@@ -1,0 +1,100 @@
+# Cefflo — Cloud Handoff (2026-10-06)
+
+Single source for a new session (Claude Code cloud / web or local) to continue
+without re-deriving context. **Verify with git before trusting any note here**
+(`git log -1`, `git status`, branch) — a stale handoff once started a session
+on the wrong branch.
+
+## 1. Where to work
+
+| Item | Value |
+|---|---|
+| Repository | this repo, branch **`official/staging`** (the only working branch; no new branches/worktrees for surface work) |
+| Main | `main` = marketing only (Vercel builds production `cefflo.com` from it) |
+| Supabase STAGING | project ref `tomvvmwktehexwhktenw` — the only database you may change |
+| Supabase PRODUCTION | `lmaxtrubwdniovxyuqdy` — **FORBIDDEN** without explicit Founder approval |
+| Founder language | Reply to the Founder in **Bahasa Melayu**; code, commits and docs stay English |
+
+### Hard rules
+- Production (DB, secrets, DNS, Workers, Vercel) is **untouched** until the Founder approves a production release step.
+- **Stop after push.** Deploy (even staging) only when the current instruction asks for it.
+- Database changes: write a migration in `supabase/migrations/`, apply to staging only, record it in `supabase_migrations.schema_migrations`. Material authorization / RLS / role changes need Founder approval **before** applying.
+- Every `psql` call is guarded: `[[ "$DATABASE_URL" == *tomvvmwktehexwhktenw* ]] || exit 1`.
+- Requirements drive code: cite the locked decision before building; never invent behaviour. If UI and backend disagree, stop and report.
+- Locked surfaces are frozen: change them only for a proven regression.
+- Never print, log or commit secrets. Never reuse stored credentials to work around a missing permission.
+- Do not add the unrelated untracked files in the working tree (`.claude/`, `docs/cefflo/brand/assets/logo/cefflo-bimi.svg`, `docs/cefflo/finos-framer-source-audit.*`, `docs/cefflo/legal/`, `wrangler.jsonc`).
+
+### Credentials (not in the repo)
+Staging values live in a local env file outside the repo (`/tmp/cefflo-phase2a-staging.env` on the Founder's machine): `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` (new-style `sb_secret_…`: send as `apikey`, not as a Bearer JWT), `DATABASE_URL`, `SUPABASE_ACCESS_TOKEN` (deploy Edge Functions only; it lacks `edge_functions_secrets_read` and `analytics_logs_read`), staging test accounts. A cloud session must be given its own copy by the Founder — never ask for secrets in chat.
+Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any client build.
+
+## 2. Surface status
+
+| Surface | Status | Baseline / notes |
+|---|---|---|
+| **Helper PWA** | **LOCKED @ `fe99e46`** | see §3 |
+| Customer Tracking | LOCKED @ `b495169` | |
+| Invite PWA | READY (code) @ `8c067bb` | driver invite join keeps vehicle |
+| Production domain map | FINAL/LOCKED | `docs/cefflo/engineering/PRODUCTION_DOMAIN_MAP.md` (prepared `3c6284e`, not deployed) |
+| Operator | Wired on staging (M2 `c939fc6`, Helper requests `9084c43`) | not formally locked |
+| Driver (app) | Staging @ `988ff78` | self-edit profile/vehicle, rejoin via invite, paid vehicle change UI (RM50, provider not connected) |
+| Driver Marketplace Verification | **HOLD** — see §4 | backend + UI on staging |
+| Vendor App / Vendor Web | Wired on staging; parity decisions locked | full audit pending |
+| Storefront, FOUNDR, Marketing | pending their audit rounds | |
+
+**Next surface (per V1 order: Operator + Invite + Helper → Vendor Web → Storefront → Customer Tracking E2E → Vendor App → FOUNDR → Driver): Vendor Web** — start only when the Founder says so.
+
+## 3. Helper PWA — LOCKED @ `fe99e46`
+
+- Source: `apps/vendor_mobile` (Flutter web, Helper entry; `lib/ui/screens/helper_workspace.dart`). Staging: `https://cefflo-staging-app.pages.dev/?access=helper`. Production domain: `helper.cefflo.com` (host selects the entry; not merged with Operator; no `app.cefflo.com`).
+- Access: permanent Helper invite link → join request (role from the server token only) → Pending → Owner (or Operator, Helper requests only) approval → workspace. Removed / pending / reset-link / cross-business all denied server-side.
+- Data: reads only `my_fulfilment_tasks`; writes only `advance_preparation`, `confirm_packing`, `confirm_sorting` (forward-only transitions, row-locked, idempotent).
+- **Active workload rule (locked):** TODAY + UNFINISHED work of the previous 7 business calendar days.
+  - Date authority: `businesses.timezone` → `business_today` (server). No device time, no hardcoded Malaysia.
+  - Previous 7 days included only while unfinished (not Ready, not picked up); Ready/completed history excluded.
+  - Older than 7 days: excluded from the Helper board, **never deleted, cancelled or reset**. Progress carries across days.
+- **Multi-date fix (locked):** packing confirmed per (Zone, order date) group; sorting per Run, or per order date when there is no Run.
+- Refresh: pull-to-refresh, after each action, and on app resume (no polling; Helper has no RLS read on `orders`, so no realtime).
+- Migrations: `20261006200000_helper_board_business_today`, `20261006210000_helper_backlog_7_days` (staging only).
+- Tests: `tests/staging/helper_lifecycle` (59), `helper_backlog` (22), `helper_access` (36), `helper_e2e` (33); Flutter `test/helper_working_day_test.dart`.
+
+## 4. HOLDs
+
+**Marketplace OCR live validation — HOLD**
+- Blocker: Google Cloud `BILLING_DISABLED`. Resume condition: Cefflo business billing/payment setup is ready.
+- State: Edge Function `verify-marketplace-driver` DEPLOYED/ACTIVE on staging @ `a534f2d`, restricted `GOOGLE_VISION_API_KEY` set server-side (never modify/rotate/expose). Function reaches Google; fails safe (driver stays pending).
+- On resume (no rebuild, no redeploy): 1) Founder enables billing; 2) re-run the live Vision smoke (a [TEST] driver + a non-document text image as the vehicle photo); 3) confirm `DOCUMENT_TEXT_DETECTION` succeeds; 4) authorized real-document OCR (Founder captures via the Driver staging app); 5) full Marketplace Verification E2E; 6) only then lock the backend.
+- Locked design: Find Jobs only (Vendor-invited drivers FREE, never gated); IC typed + keyed HMAC (Vault `driver_ic_hmac_key`), licence FRONT + BACK + ONE vehicle photo, all live camera; SQL decides AUTO PASS / RETAKE / NEEDS REVIEW; FOUNDR = exceptions only; businesses never see IC / hash / images / evidence.
+
+**Other holds:** Face recognition / biometrics — HOLD (absolute). Marketplace RM49 activation and all payments — NOT IMPLEMENTED (never fake success). Mapbox — gated (see V1 gates). Driver paid vehicle change: UI ready, Curlec (MY) / Stripe (intl) live keys required before production.
+
+## 5. Follow-ups (not blockers of locked surfaces)
+
+1. **Owner/Operator — stale fulfilment >7 days should surface under Needs Attention / operational attention.** Today "Need attention" (Vendor App + Web) counts only delivery issues. Do not build without approval.
+2. FOUNDR exception-review UI for Marketplace Verification (backend stores status + reasons).
+3. Multi-vehicle per driver needs a schema change (riders hold one vehicle) — propose separately.
+4. Flutter resets the tab title to "Cefflo Vendor" on operator/helper hosts (manifest is correct).
+5. Push notifications (V1 required, after the surface audits); Google Sign-in where shown (V1 required).
+
+## 6. Production release checklist (pending, needs approval per step)
+
+Staging-only migrations to promote (in order) are everything from `20261005120000` through `20261006210000` in `supabase/migrations/`, plus secrets/env from `PRODUCTION_DOMAIN_MAP.md` (static build bases, Supabase Auth allow-list, tracking-pod CORS, Mapbox public token, Cloudflare token with Workers + DNS edit). Record current DNS before attaching custom domains. Marketplace verification needs its own Vault key and Vision key per environment.
+
+## 7. How to verify
+
+```bash
+set -a; . <staging env file>; set +a; unset DATABASE_URL
+for t in tests/staging/*.test.mjs; do node "$t" | tail -1; done   # staging suites
+node tests/production_surfaces.test.mjs
+node tests/marketplace_ocr_extract.test.mjs; node tests/marketplace_vision_auth.test.mjs
+(cd apps/vendor_mobile && flutter analyze && flutter test); git checkout -- apps/vendor_mobile/analysis_options.yaml
+(cd apps/rider_mobile && flutter analyze && flutter test); git checkout -- apps/rider_mobile/analysis_options.yaml
+```
+Last full run (2026-10-06): all staging suites green (helper_lifecycle 59, helper_backlog 22, helper_access 36, helper_e2e 33, invite_regression 54, invite_security 48, operator_access 42, delivery_e2e 33, customer_tracking 63, rider_hub_find_jobs 57, driver_profile 25, storefront 25, marketplace_verification 55), production_surfaces 51, Flutter Vendor 213, Driver 76.
+
+Staging test accounts follow `zelix.co00+v1004{owner,operator,helper,rider,rider2,outsider}@gmail.com` (password in the env file / Founder); business `8b643f0b-4034-47c3-bbbf-1eb8bea72532`. Tests create `[TEST]` fixtures and must clean them up.
+
+## 8. Report format
+
+End each surface round with: `| Surface | V1 Ready | Wired % | Surface blocker | Global dependency | Hold/Future | What's left |`, then global V1 gates (Push, Mapbox, Google OAuth, Payments) and P0/P1 blockers. Never declare a surface LOCKED yourself — report READY FOR LOCK and wait.
