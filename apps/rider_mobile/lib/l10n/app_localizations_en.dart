@@ -1341,7 +1341,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your business moved a run to you. Open it to accept.';
 
   @override
-  String get ntRunRemoved => 'Run moved to another rider';
+  String get ntRunRemoved => 'Run moved to another driver';
 
   @override
   String get ntRunRemovedBody => 'Your business reassigned a run you were on.';
@@ -1350,13 +1350,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ntApproved => 'You are approved';
 
   @override
-  String get ntApprovedBody => 'The business approved you as a rider.';
+  String get ntApprovedBody => 'The business approved you as a driver.';
 
   @override
   String get ntAccessChanged => 'Access changed';
 
   @override
-  String get ntAccessChangedBody => 'A business deactivated you as a rider.';
+  String get ntAccessChangedBody => 'A business deactivated you as a driver.';
 
   @override
   String get ntJustNow => 'just now';
@@ -1589,7 +1589,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get findJobs => 'Find Jobs';
 
   @override
-  String get findJobsSub => 'Vendors near you that are looking for riders';
+  String get findJobsSub => 'Vendors near you that are looking for drivers';
 
   @override
   String get changeArea => 'Change';
@@ -1636,7 +1636,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get findJobsComingSoonBody =>
-      'Soon you can see vendors in your area that are looking for riders, and send a request to join them. Your current business is not affected.';
+      'Soon you can see vendors in your area that are looking for drivers, and send a request to join them. Your current business is not affected.';
 
   @override
   String get jobShift => 'Shift';
@@ -1816,4 +1816,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get differentVehicle => 'Different vehicle';
+
+  @override
+  String get documentsNotYet =>
+      'Document uploads are not available yet. The business checks your licence and vehicle documents directly for now.';
+
+  @override
+  String get passwordChanged => 'Password updated';
 }

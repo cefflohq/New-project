@@ -589,12 +589,12 @@
   },
   "ntRunReassigned": "Run reassigned to you",
   "ntRunReassignedBody": "Your business moved a run to you. Open it to accept.",
-  "ntRunRemoved": "Run moved to another rider",
+  "ntRunRemoved": "Run moved to another driver",
   "ntRunRemovedBody": "Your business reassigned a run you were on.",
   "ntApproved": "You are approved",
-  "ntApprovedBody": "The business approved you as a rider.",
+  "ntApprovedBody": "The business approved you as a driver.",
   "ntAccessChanged": "Access changed",
-  "ntAccessChangedBody": "A business deactivated you as a rider.",
+  "ntAccessChangedBody": "A business deactivated you as a driver.",
   "ntJustNow": "just now",
   "ntMinutesAgo": "{n} min ago",
   "@ntMinutesAgo": {
@@ -728,7 +728,7 @@
   "keepLoggedIn": "Keep me logged in",
   "continueWithGoogle": "Continue with Google",
   "findJobs": "Find Jobs",
-  "findJobsSub": "Vendors near you that are looking for riders",
+  "findJobsSub": "Vendors near you that are looking for drivers",
   "changeArea": "Change",
   "shiftAll": "All",
   "shiftMorning": "Morning",
@@ -756,7 +756,7 @@
   "jobClash": "Clash",
   "jobRequested": "Requested",
   "findJobsComingSoonTitle": "Find Jobs is coming soon",
-  "findJobsComingSoonBody": "Soon you can see vendors in your area that are looking for riders, and send a request to join them. Your current business is not affected.",
+  "findJobsComingSoonBody": "Soon you can see vendors in your area that are looking for drivers, and send a request to join them. Your current business is not affected.",
   "jobShift": "Shift",
   "jobRequirements": "Requirements",
   "jobTime": "Time",
@@ -765,7 +765,13 @@
   "jobPayPerDrop": "Pay per drop",
   "jobPickupTime": "Pickup time",
   "jobPickupAt": "Pickup {time}",
-  "@jobPickupAt": {"placeholders": {"time": {"type": "String"}}},
+  "@jobPickupAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "jobAbout": "About this hiring",
   "jobApply": "Apply",
   "jobApplied": "Applied",
@@ -849,5 +855,7 @@
   "needLocationBody": "Turn on location to see jobs near you, or choose a town.",
   "chooseTown": "Choose a town",
   "locationOffNote": "Location is off. Showing the town you chose.",
-  "differentVehicle": "Different vehicle"
+  "differentVehicle": "Different vehicle",
+  "documentsNotYet": "Document uploads are not available yet. The business checks your licence and vehicle documents directly for now.",
+  "passwordChanged": "Password updated"
 }

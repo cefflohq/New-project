@@ -1346,7 +1346,7 @@ class AppLocalizationsMs extends AppLocalizations {
       'Perniagaan anda memindahkan satu run kepada anda. Buka untuk terima.';
 
   @override
-  String get ntRunRemoved => 'Run dipindahkan kepada rider lain';
+  String get ntRunRemoved => 'Run dipindahkan kepada pemandu lain';
 
   @override
   String get ntRunRemovedBody =>
@@ -1357,14 +1357,14 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get ntApprovedBody =>
-      'Perniagaan telah meluluskan anda sebagai rider.';
+      'Perniagaan telah meluluskan anda sebagai pemandu.';
 
   @override
   String get ntAccessChanged => 'Akses berubah';
 
   @override
   String get ntAccessChangedBody =>
-      'Satu perniagaan telah menyahaktifkan anda sebagai rider.';
+      'Satu perniagaan telah menyahaktifkan anda sebagai pemandu.';
 
   @override
   String get ntJustNow => 'baru sahaja';
@@ -1601,7 +1601,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get findJobs => 'Cari Kerja';
 
   @override
-  String get findJobsSub => 'Vendor berdekatan yang sedang mencari rider';
+  String get findJobsSub => 'Vendor berdekatan yang sedang mencari pemandu';
 
   @override
   String get changeArea => 'Tukar';
@@ -1648,7 +1648,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get findJobsComingSoonBody =>
-      'Tidak lama lagi anda boleh lihat vendor di kawasan anda yang mencari rider, dan hantar permintaan untuk menyertai mereka. Perniagaan semasa anda tidak terjejas.';
+      'Tidak lama lagi anda boleh lihat vendor di kawasan anda yang mencari pemandu, dan hantar permintaan untuk menyertai mereka. Perniagaan semasa anda tidak terjejas.';
 
   @override
   String get jobShift => 'Syif';
@@ -1829,4 +1829,11 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get differentVehicle => 'Kenderaan berbeza';
+
+  @override
+  String get documentsNotYet =>
+      'Muat naik dokumen belum tersedia. Buat masa ini, bisnes semak lesen dan dokumen kenderaan anda secara terus.';
+
+  @override
+  String get passwordChanged => 'Kata laluan dikemas kini';
 }

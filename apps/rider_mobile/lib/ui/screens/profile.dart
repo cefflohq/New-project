@@ -7,7 +7,7 @@ import '../../core/theme.dart';
 import '../../data/demo_data.dart';
 import '../../data/driver_models.dart';
 import '../widgets.dart';
-import 'auth.dart' show showLanguageSheet;
+import 'auth.dart' show showLanguageSheet, SetNewPasswordScreen;
 
 import 'package:cefflo_rider_mobile/l10n/l10n.dart';
 
@@ -598,6 +598,8 @@ class DocumentsScreen extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (app.documents.isEmpty)
+            CeffloNote(icon: LucideIcons.info, body: L.documentsNotYet),
           for (final doc in app.documents) ...[
             CeffloCard(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
@@ -733,10 +735,18 @@ class SettingsScreen extends StatelessWidget {
           OutlinedNavRow(
             icon: LucideIcons.lock,
             label: L.security,
-            onTap: () => showCefToast(
-              context,
-              L.securitySettingsNotWiredUpPreview,
-              error: false,
+            // Change password with Supabase Auth (updateUser) -- the same
+            // screen as password recovery, opened over Settings.
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (route) => SetNewPasswordScreen(
+                  onBack: () => Navigator.of(route).pop(),
+                  onUpdated: () {
+                    Navigator.of(route).pop();
+                    showCefToast(context, L.passwordChanged);
+                  },
+                ),
+              ),
             ),
           ),
           const SizedBox(height: Gap.md),

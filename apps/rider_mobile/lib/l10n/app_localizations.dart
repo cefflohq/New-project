@@ -2495,7 +2495,7 @@ abstract class AppLocalizations {
   /// No description provided for @ntRunRemoved.
   ///
   /// In en, this message translates to:
-  /// **'Run moved to another rider'**
+  /// **'Run moved to another driver'**
   String get ntRunRemoved;
 
   /// No description provided for @ntRunRemovedBody.
@@ -2513,7 +2513,7 @@ abstract class AppLocalizations {
   /// No description provided for @ntApprovedBody.
   ///
   /// In en, this message translates to:
-  /// **'The business approved you as a rider.'**
+  /// **'The business approved you as a driver.'**
   String get ntApprovedBody;
 
   /// No description provided for @ntAccessChanged.
@@ -2525,7 +2525,7 @@ abstract class AppLocalizations {
   /// No description provided for @ntAccessChangedBody.
   ///
   /// In en, this message translates to:
-  /// **'A business deactivated you as a rider.'**
+  /// **'A business deactivated you as a driver.'**
   String get ntAccessChangedBody;
 
   /// No description provided for @ntJustNow.
@@ -2933,7 +2933,7 @@ abstract class AppLocalizations {
   /// No description provided for @findJobsSub.
   ///
   /// In en, this message translates to:
-  /// **'Vendors near you that are looking for riders'**
+  /// **'Vendors near you that are looking for drivers'**
   String get findJobsSub;
 
   /// No description provided for @changeArea.
@@ -3017,7 +3017,7 @@ abstract class AppLocalizations {
   /// No description provided for @findJobsComingSoonBody.
   ///
   /// In en, this message translates to:
-  /// **'Soon you can see vendors in your area that are looking for riders, and send a request to join them. Your current business is not affected.'**
+  /// **'Soon you can see vendors in your area that are looking for drivers, and send a request to join them. Your current business is not affected.'**
   String get findJobsComingSoonBody;
 
   /// No description provided for @jobShift.
@@ -3343,6 +3343,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Different vehicle'**
   String get differentVehicle;
+
+  /// No description provided for @documentsNotYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Document uploads are not available yet. The business checks your licence and vehicle documents directly for now.'**
+  String get documentsNotYet;
+
+  /// No description provided for @passwordChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated'**
+  String get passwordChanged;
 }
 
 class _AppLocalizationsDelegate

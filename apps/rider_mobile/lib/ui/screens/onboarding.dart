@@ -1283,8 +1283,14 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
   late final _link = TextEditingController(
     text: AppScope.read(context).joinToken ?? '',
   );
-  final _name = TextEditingController();
-  final _phone = TextEditingController();
+  // Prefilled from the Driver's own registration (editable).
+  late final _name = TextEditingController(
+    text:
+        AppScope.read(context).repo.registration['full_name']?.toString() ?? '',
+  );
+  late final _phone = TextEditingController(
+    text: AppScope.read(context).repo.registration['phone']?.toString() ?? '',
+  );
   int _tab = 0;
   bool _busy = false;
   String? _error;
