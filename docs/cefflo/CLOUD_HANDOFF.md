@@ -97,6 +97,13 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 - Deferred pre-production: payment gateway / checkout / webhook / verified activation / invoices / payment methods; annual pricing, overage, quota + cap enforcement; Mapbox (Locate address, geocoding); external push (+ Android `.ogg` / iOS `.caf`); Google login E2E + redirect allow-list; KIM / help articles.
 - Storefront untouched — next surface, waiting for the Founder's final UI references.
 
+## 3e. Storefront V1 — READY FOR PRODUCT REVIEW (2026-10-06, not locked)
+
+- 18 templates built 1:1 from the Founder's UI references (Care, Capsule, Kit, Brew, Crimson, Lift, Harvest, Botanic, Combo, Discover, Atelier, Pour, Tailor, Sprint, Splash, Service, Warung, Collector) in the public renderer `store/templates.js` + `store/store.css`; engine `store/store.js` (cart, checkout, server-priced `submit_storefront_order`, tracking link). Vendor App gallery / Template Preview / Customize / View storefront embed the same renderer (`?embed=1`, postMessage from app origins only) with `storefront_preview`; Template Preview has the reference Live Preview (Mobile ×3 screens / Tablet / Desktop).
+- Migrations: `20261007120000_storefront_preview`, `20261007130000_storefront_v1_template_keys` (18 keys, default `care`; retired keys moved to `care`).
+- Tests: `tests/storefront_templates.test.mjs` (5), `tests/staging/storefront_v1` (25), `storefront` (25, starts in a fresh limiter window).
+- Not implemented (no data / HOLD): ratings, sizes/variants, stock, discounts, delivery ETA (Mapbox), payment (orders are placed; payment arranged with the business). Open decision: ordering while the business is closed (store shows Open/Closed now; ordering not blocked).
+
 ## 4. HOLDs
 
 **Marketplace OCR live validation — HOLD**
@@ -122,7 +129,7 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 
 ## 6. Production release checklist (pending, needs approval per step)
 
-Staging-only migrations to promote (in order) are everything from `20261005120000` through `20261007110000` in `supabase/migrations/`, plus secrets/env from `PRODUCTION_DOMAIN_MAP.md` (static build bases, Supabase Auth allow-list, tracking-pod CORS, Mapbox public token, Cloudflare token with Workers + DNS edit). Record current DNS before attaching custom domains. Marketplace verification needs its own Vault key and Vision key per environment.
+Staging-only migrations to promote (in order) are everything from `20261005120000` through `20261007130000` in `supabase/migrations/`, plus secrets/env from `PRODUCTION_DOMAIN_MAP.md` (static build bases, Supabase Auth allow-list, tracking-pod CORS, Mapbox public token, Cloudflare token with Workers + DNS edit). Record current DNS before attaching custom domains. Marketplace verification needs its own Vault key and Vision key per environment.
 
 ## 7. How to verify
 
