@@ -44,8 +44,6 @@ ok('setup: a real pending Helper join request exists', jr.status === 200 && !!pe
 const cases = [
   ['approve_pending_rider (real pending? uses active rider)', 'approve_pending_rider', { p_rider_id: realRider.id }],
   ['deactivate_rider (real active rider)', 'deactivate_rider', { p_rider_id: realRider.id }],
-  ['decide_team_join_request approve (real pending)', 'decide_team_join_request', { p_request_id: pendingReq?.id, p_approve: true }],
-  ['decide_team_join_request reject (real pending)', 'decide_team_join_request', { p_request_id: pendingReq?.id, p_approve: false }],
   ['update_team_member: promote self to owner', 'update_team_member', { p_business_id: B, p_user_id: meOp, p_role: 'owner', p_status: 'active' }],
   ['update_team_member: change another member', 'update_team_member', { p_business_id: B, p_user_id: JSON.parse(Buffer.from(owner.split('.')[1], 'base64url').toString()).sub, p_role: 'operator', p_status: 'inactive' }],
   ['update_business_profile', 'update_business_profile', { p_business_id: B, p_name: biz.name, p_phone: biz.phone, p_email: biz.email, p_address: biz.address, p_operating_area: null, p_timezone: 'Asia/Kuala_Lumpur', p_currency: 'MYR', p_idempotency_key: crypto.randomUUID() }],
@@ -67,16 +65,36 @@ for (const t of ['business_subscriptions', 'team_invitations']) {
   const r = await sel(operator, `${t}?select=*&business_id=eq.${B}`);
   ok(`operator reads no rows from ${t}`, r.status >= 400 || (Array.isArray(r.body) && r.body.length === 0), `${r.status} ${r.body?.length}`);
 }
-const tj = await sel(operator, `team_join_requests?select=user_id&business_id=eq.${B}`);
-ok("operator cannot read others' team join requests", Array.isArray(tj.body) && tj.body.every(x => x.user_id === meOp), `${tj.body?.length} rows`);
+const tj = await sel(operator, `team_join_requests?select=user_id,role&business_id=eq.${B}`);
+ok("operator reads only Helper requests (and its own)", Array.isArray(tj.body) && tj.body.every(x => x.role === 'helper' || x.user_id === meOp), `${tj.body?.length} rows`);
 
 // --- state unchanged after the attempts
 const r2 = (await sel(owner, `riders?select=status&id=eq.${realRider.id}`)).body?.[0];
 ok('rider still active after operator attempts', r2?.status === 'active', r2?.status);
 const op2 = (await rpc(operator, 'get_my_businesses')).body?.[0];
 ok('operator still operator (no escalation)', op2?.member_role === 'operator', op2?.member_role);
-const req2 = (await sel(owner, `team_join_requests?select=status&id=eq.${pendingReq?.id}`)).body?.[0];
-ok('join request still pending', req2?.status === 'pending', req2?.status);
+// M2 follow-up: the Operator decides HELPER requests, never Operator ones.
+const seeHelper = await sel(operator, `team_join_requests?select=id,role&id=eq.${pendingReq?.id}`);
+ok('M2 operator CAN see the pending Helper request', seeHelper.body?.[0]?.role === 'helper', JSON.stringify(seeHelper.body));
+const opLink = (await rpc(owner, 'get_invite_link', { p_business_id: B, p_kind: 'operator' })).body?.token;
+const em2 = `zelix.co00+v1005opreq${Date.now() % 100000}@gmail.com`;
+await fetch(`${URL_}/auth/v1/admin/users`, { method: 'POST', headers: { apikey: SVC, authorization: `Bearer ${SVC}`, 'content-type': 'application/json' }, body: JSON.stringify({ email: em2, password: 'Cf-v1005-OpAuth!3', email_confirm: true }) });
+const wantsOp = await signIn(em2, 'Cf-v1005-OpAuth!3');
+await rpc(wantsOp, 'join_via_invite_link', { p_token: opLink, p_name: '[TEST] OpAuth WantsOperator', p_phone: '+60 11-8' + String(Date.now()).slice(-6) });
+const opReq = (await sel(owner, `team_join_requests?select=id&business_id=eq.${B}&status=eq.pending&role=eq.operator&name=eq.%5BTEST%5D%20OpAuth%20WantsOperator`)).body?.[0];
+ok('setup: a real pending Operator request exists', !!opReq);
+const seeOp = await sel(operator, `team_join_requests?select=id&id=eq.${opReq?.id}`);
+ok('  operator cannot see an Operator request', Array.isArray(seeOp.body) && seeOp.body.length === 0, JSON.stringify(seeOp.body));
+const decOp = await rpc(operator, 'decide_team_join_request', { p_request_id: opReq?.id, p_approve: true });
+ok('  operator cannot approve an Operator request', refused(decOp), msg(decOp));
+const decOpR = await rpc(operator, 'decide_team_join_request', { p_request_id: opReq?.id, p_approve: false });
+ok('  operator cannot reject an Operator request', refused(decOpR), msg(decOpR));
+const decH = await rpc(operator, 'decide_team_join_request', { p_request_id: pendingReq?.id, p_approve: true });
+ok('M2 operator CAN approve the Helper request', decH.status === 200 && decH.body?.status === 'approved', msg(decH));
+const helperNow = (await rpc(joiner, 'get_my_businesses')).body?.find(x => x.business_id === B);
+ok('  the joiner is now exactly a Helper (never Operator)', helperNow?.member_role === 'helper', JSON.stringify(helperNow));
+await rpc(owner, 'decide_team_join_request', { p_request_id: opReq?.id, p_approve: false });
+await rpc(owner, 'update_team_member', { p_business_id: B, p_user_id: JSON.parse(Buffer.from(joiner.split('.')[1], 'base64url').toString()).sub, p_role: 'helper', p_status: 'inactive' });
 
 // --- M2 (Founder 2026-10-06): Operator manages Hiring + Invite for Driver
 // and Helper, and approves / rejects Driver applicants.
@@ -121,7 +139,7 @@ ok('operator CAN read business orders', ord.status === 200 && Array.isArray(ord.
 // cleanup
 await rpc(owner, 'close_job_opening', { p_opening_id: opening.id });
 const rej = await rpc(owner, 'decide_team_join_request', { p_request_id: pendingReq?.id, p_approve: false });
-ok('cleanup: owner rejects the test join request', rej.status === 200, msg(rej));
+// (the Helper request was decided by the Operator above)
 
 console.log(results.join('\n')); console.log(`\n${results.length - fails}/${results.length} passed`);
 process.exit(fails ? 1 : 0);

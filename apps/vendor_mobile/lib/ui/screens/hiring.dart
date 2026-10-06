@@ -8,6 +8,7 @@ import '../../data/vendor_repository.dart';
 import '../shell.dart' show PageBody;
 import '../async_view.dart';
 import '../widgets.dart';
+import 'directory.dart' show TeamRequestRow;
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
 
@@ -113,6 +114,9 @@ class _HiringScreenState extends State<HiringScreen> {
                 : VRoute.helperRegistrationLink,
           ),
         ),
+        // M2 follow-up: the Operator approves Helper join requests here (the
+        // Owner does it in Team). Server: decide_team_join_request.
+        if (app.business?.role == 'operator') const _HelperRequests(),
         const SizedBox(height: Gap.md),
         SectionHeading(L.yourHiringPosts, icon: LucideIcons.megaphone),
         ValueListenableBuilder(
@@ -1207,6 +1211,35 @@ class _HiringPostScreenState extends State<HiringPostScreen> {
                   ),
                 ),
               ),
+            ),
+    );
+  }
+}
+
+/// Pending Helper join requests for the Operator (RLS shows role = helper
+/// only), with the same Approve / Reject row as Team.
+class _HelperRequests extends StatelessWidget {
+  const _HelperRequests();
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    return AsyncView<List<Map<String, dynamic>>>(
+      key: ValueKey('helper-requests-${app.business?.id}'),
+      load: () async =>
+          (await app.repo.pendingTeamRequests(app.business!.id))
+              .where((r) => r['role'] == 'helper')
+              .toList(),
+      builder: (context, requests, reload) => requests.isEmpty
+          ? const SizedBox.shrink()
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: Gap.md),
+                SectionHeading(L.joinRequests, icon: LucideIcons.userPlus),
+                for (final r in requests)
+                  TeamRequestRow(request: r, onDecided: () async => reload()),
+              ],
             ),
     );
   }

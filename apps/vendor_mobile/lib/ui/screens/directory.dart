@@ -1476,7 +1476,7 @@ class _TeamScreenState extends State<TeamScreen> {
                 if (roleRequests.isNotEmpty) ...[
                   SectionHeading(L.joinRequests, icon: LucideIcons.userPlus),
                   for (final r in roleRequests)
-                    _TeamRequestRow(request: r, onDecided: reload),
+                    TeamRequestRow(request: r, onDecided: reload),
                   const SizedBox(height: Gap.md),
                 ],
                 if (people.isEmpty)
@@ -2067,16 +2067,20 @@ Future<void> _decideRider(
   }
 }
 
-class _TeamRequestRow extends StatefulWidget {
-  const _TeamRequestRow({required this.request, required this.onDecided});
+class TeamRequestRow extends StatefulWidget {
+  const TeamRequestRow({
+    super.key,
+    required this.request,
+    required this.onDecided,
+  });
   final Map<String, dynamic> request;
   final Future<void> Function() onDecided;
 
   @override
-  State<_TeamRequestRow> createState() => _TeamRequestRowState();
+  State<TeamRequestRow> createState() => TeamRequestRowState();
 }
 
-class _TeamRequestRowState extends State<_TeamRequestRow> {
+class TeamRequestRowState extends State<TeamRequestRow> {
   bool _busy = false;
 
   Future<void> _decide(bool approve) async {

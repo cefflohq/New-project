@@ -365,6 +365,27 @@ async function hiring(page) {
     <div class="sub-card"><h3>${esc(t('hiring.posts'))}</h3>
       ${row('data-h="posts"', 'moto', t('team.driver'), '…', chev).replace('<small>…</small>', '<small data-posts>…</small>')}</div>`;
   body.append(host);
+  // M2 follow-up: the Operator approves Helper join requests here (the Owner
+  // does it in Team). RLS shows the Operator role = helper requests only.
+  if (!ctx.isOwner && ctx.canHire) {
+    const reqBox = document.createElement('div'); body.append(reqBox);
+    const paintReqs = async () => {
+      let rows = [];
+      try { rows = ((await fetchJoinRequests('pending')) || []).filter(r => r.role === 'helper'); } catch (e) { toast(e.message, 'error'); }
+      reqBox.innerHTML = rows.length ? `<div class="sub-card"><h3>${esc(t('team.pending'))}</h3><p class="desc" style="margin:0 0 6px">${esc(t('team.pendingLead'))}</p>
+        ${rows.map(r => `<div class="list-row" style="cursor:default">${avatar(r.name || r.role)}
+          <div class="grow"><b>${esc(r.name || t('team.member'))}</b><small>${esc(t('team.helper'))} · ${esc(t('team.requested'))} ${esc(fmtDate(r.created_at))}</small></div>
+          <button class="btn sm" data-hdec="${esc(r.id)}" data-ok="0">${esc(t('team.reject'))}</button>
+          <button class="btn sm primary" data-hdec="${esc(r.id)}" data-ok="1">${esc(t('team.approve'))}</button></div>`).join('')}</div>` : '';
+    };
+    reqBox.addEventListener('click', async e => {
+      const d = e.target.closest('[data-hdec]'); if (!d) return;
+      const approve = d.dataset.ok === '1';
+      try { await busy(d, () => api.rpc('decide_team_join_request', { p_request_id: d.dataset.hdec, p_approve: approve })); toast(t(approve ? 'team.approved' : 'team.rejected')); paintReqs(); }
+      catch (ex) { toast(ex.message, 'error'); }
+    });
+    paintReqs();
+  }
   body.addEventListener('click', e => {
     const h = e.target.closest('[data-h]')?.dataset.h;
     if (h === 'driver') hire.openForm();

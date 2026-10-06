@@ -68,8 +68,8 @@ ok('  pending grants no workspace', ((await rpc(u1, 'get_my_businesses')).body |
 
 // 4. no self-service escalation
 ok('4 user cannot approve their own request', (await rpc(u1, 'decide_team_join_request', { p_request_id: reqs[0].id, p_approve: true })).status >= 400);
-ok('  operator cannot approve a team request', (await rpc(operator, 'decide_team_join_request', { p_request_id: reqs[0].id, p_approve: true })).status >= 400);
-ok('  an Operator (who owns another shop) cannot approve a team request', (await rpc(ownerX, 'decide_team_join_request', { p_request_id: reqs[0].id, p_approve: true })).status >= 400);
+// (Operator deciding Helper requests is allowed -- covered in operator_access.)
+ok('  an outsider cannot approve a team request', (await rpc(outsider, 'decide_team_join_request', { p_request_id: reqs[0].id, p_approve: true })).status >= 400);
 ok('  user cannot insert their own membership', denied(await rest(u1, 'POST', 'business_members', { business_id: B, user_id: uid(u1), role: 'operator', status: 'active' })));
 ok('  user cannot rewrite their request (role/status)', denied(await rest(u1, 'PATCH', `team_join_requests?id=eq.${reqs[0].id}`, { role: 'operator', status: 'approved' })));
 ok('  user cannot create an invite link row', denied(await rest(u1, 'POST', 'business_invite_links', { business_id: B, kind: 'operator', token: 'a'.repeat(48) })));
