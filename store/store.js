@@ -67,12 +67,18 @@
   // photos (store/samples, CC0) so the vendor sees the finished look. Their
   // own photos replace these as soon as one product has a photo; the public
   // storefront never shows samples.
-  const SAMPLE_SETS = { cafe: [1, 2, 3, 4, 5, 6].map(n => `/store/samples/cafe-${n}.jpg`), food: [1, 2, 3, 4, 5, 6].map(n => `/store/samples/food-${n}.jpg`) };
-  const SAMPLE_THEME = { brew: 'cafe', pour: 'cafe', combo: 'cafe', care: 'cafe', harvest: 'food', warung: 'food' };
+  // Each template shows photos of the business type its reference was made for.
+  const SAMPLE_SETS = Object.fromEntries(['cafe', 'food', 'health', 'beauty', 'fashion', 'sport', 'gift', 'service'].map(k => [k, [1, 2, 3, 4, 5, 6].map(n => `/store/samples/${k}-${n}.jpg`)]));
+  const SAMPLE_THEME = {
+    care: 'health', capsule: 'health', crimson: 'health', botanic: 'beauty',
+    kit: 'sport', lift: 'sport', sprint: 'sport', splash: 'sport',
+    atelier: 'fashion', tailor: 'fashion', discover: 'fashion',
+    brew: 'cafe', pour: 'cafe', combo: 'food', harvest: 'food', warung: 'food',
+    service: 'service', collector: 'gift',
+  };
   function samplePhotos(products, key) {
     if (!EMBED || products.some(p => p.images.length)) return;
-    const first = SAMPLE_SETS[SAMPLE_THEME[key] || 'cafe'], second = first === SAMPLE_SETS.cafe ? SAMPLE_SETS.food : SAMPLE_SETS.cafe;
-    const pool = [...first, ...second];
+    const pool = SAMPLE_SETS[SAMPLE_THEME[key] || 'health'];
     products.forEach((p, i) => { p.images = [pool[i % pool.length]]; p.sample = true; });
   }
 
@@ -82,7 +88,7 @@
       id: p.id, categoryId: p.category_id, name: p.name || '', description: p.description || '',
       price: Number(p.display_price || 0), images: (p.images || []).map(abs).filter(Boolean),
     }));
-    samplePhotos(products, raw.template_key);
+    samplePhotos(products, params.get('template') || raw.template_key);
     return {
       slug: raw.slug, name: raw.business?.name || '', area: raw.business?.area || '',
       tagline: theme.tagline || '', theme, heroUrl: abs(raw.hero_url), openNow: raw.open_now,
