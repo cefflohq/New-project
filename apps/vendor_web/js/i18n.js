@@ -617,11 +617,13 @@ export function fmtDate(iso) {
   return `${d.getDate()} ${d.toLocaleDateString(prefs.lang === 'ms' ? 'ms-MY' : 'en-US', { month: 'short' })} ${d.getFullYear()}`;
 }
 // "Wednesday, 17 Sep 2025" (reference format), localised.
-export function longToday() {
-  const d = new Date();
-  const loc = prefs.lang === 'ms' ? 'ms-MY' : 'en-US';
-  const part = o => d.toLocaleDateString(loc, o);
-  return `${part({ weekday: 'long' })}, ${d.getDate()} ${part({ month: 'short' })} ${d.getFullYear()}`;
+// Pass the server's business date (YYYY-MM-DD) when known; otherwise the
+// device date is shown until it arrives.
+export function longToday(ymd) {
+  const d = ymd ? new Date(`${ymd}T12:00:00Z`) : new Date();
+  const loc = prefs.lang === 'ms' ? 'ms-MY' : 'en-US', tz = ymd ? 'UTC' : undefined;
+  const part = o => d.toLocaleDateString(loc, { ...o, timeZone: tz });
+  return `${part({ weekday: 'long' })}, ${part({ day: 'numeric' })} ${part({ month: 'short' })} ${part({ year: 'numeric' })}`;
 }
 export function ago(iso) {
   const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);

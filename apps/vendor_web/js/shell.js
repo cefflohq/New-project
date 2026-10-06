@@ -5,6 +5,7 @@
 // off-canvas drawer; both open from the top-bar toggle.
 import { t, longToday } from './i18n.js';
 import { isDemo } from './demo.js';
+import { businessToday } from './data.js';
 import { ctx, selectBusiness } from './store.js';
 import { esc, icon, initials, avatar, confirmDialog, setChromeColor } from './ui.js';
 import { notif, onNotifications, startNotifications, renderPanel, wirePanel, openNotificationPrefs } from './notifications.js';
@@ -164,7 +165,10 @@ function openUserMenu(anchor) {
 
 export function setHeader(title, withDate = true) {
   root.querySelector('[data-title]').textContent = title;
-  root.querySelector('[data-date]').textContent = withDate ? longToday() : '';
+  const el = root.querySelector('[data-date]');
+  el.textContent = withDate ? longToday() : '';
+  // The business's own date (business_today) replaces the device date.
+  if (withDate && ctx.bid) businessToday().then(d => { if (el.textContent) el.textContent = longToday(d); });
   document.title = `${title} · Cefflo Vendor`;
 }
 

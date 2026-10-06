@@ -29,10 +29,12 @@ export function todayLocal() {
 
 // The server's business-local date (business_today), as the Vendor App
 // uses; the local computation above is only the fallback (demo, offline).
+let todayCache = null; // { bid, at, value }
 export async function businessToday() {
+  if (todayCache && todayCache.bid === ctx.bid && Date.now() - todayCache.at < 60000) return todayCache.value;
   try {
     const d = await api.rpc('business_today', { p_business_id: ctx.bid });
-    if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+    if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)) { todayCache = { bid: ctx.bid, at: Date.now(), value: d }; return d; }
   } catch { /* fall back */ }
   return todayLocal();
 }
