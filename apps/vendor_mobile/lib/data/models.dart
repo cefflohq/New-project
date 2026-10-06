@@ -134,10 +134,15 @@ class VendorOrder {
     this.origin,
     this.approvedAt,
     this.completedAt,
+    this.orderDate,
   });
 
   final String id;
   final DeliveryStatus status;
+
+  /// The business-local working day the order belongs to (server-set
+  /// `order_date`, yyyy-MM-dd).
+  final String? orderDate;
   final String customerName, customerPhone, deliveryAddress;
   final DateTime createdAt;
   final String? notes, publicRef, orderNumber, zoneId, assignedRiderId, origin;
@@ -172,6 +177,7 @@ class VendorOrder {
     completedAt: r['completed_at'] == null
         ? null
         : DateTime.parse(r['completed_at'] as String).toLocal(),
+    orderDate: r['order_date'] as String?,
   );
 
   /// Short human reference. Falls back to the id when the backend has not

@@ -354,7 +354,14 @@ class AppState extends ChangeNotifier {
   /// lifecycle): re-read the centre in case the socket slept.
   void onAppResumed() {
     if (_cancelNotifications != null) refreshNotifications();
+    if (!repo.isDemo) liveTick.value++;
   }
+
+  /// Bumped when operational truth may have changed (foreground resume, an
+  /// operational notification); live lists reload silently. No polling.
+  final ValueNotifier<int> liveTick = ValueNotifier(0);
+
+  static const _liveEventPrefixes = ['order.', 'run.', 'delivery.', 'rider.', 'team.'];
 
   Future<void> refreshNotifications() async {
     if (repo.isDemo) return;
@@ -383,6 +390,8 @@ class AppState extends ChangeNotifier {
       if (!n.read) _unreadLive++;
       notifyListeners();
       if (_seenNotifications.add(id)) _present(n);
+      final key = n.eventKey ?? '';
+      if (_liveEventPrefixes.any(key.startsWith)) liveTick.value++;
     } else if (type == 'UPDATE') {
       final i = _notifications.indexWhere((n) => n.id == id);
       if (i < 0) return;
@@ -730,6 +739,12 @@ class AppScope extends InheritedNotifier<AppState> {
       (context.getElementForInheritedWidgetOfExactType<AppScope>()!.widget
               as AppScope)
           .notifier!;
+
+  /// [read] that tolerates a tree without an AppScope (isolated widgets).
+  static AppState? maybeRead(BuildContext context) =>
+      (context.getElementForInheritedWidgetOfExactType<AppScope>()?.widget
+              as AppScope?)
+          ?.notifier;
 }
 
 const _demoNotifications = [

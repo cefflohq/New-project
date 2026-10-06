@@ -1226,6 +1226,7 @@ class _HelperRequests extends StatelessWidget {
     final app = AppScope.of(context);
     return AsyncView<List<Map<String, dynamic>>>(
       key: ValueKey('helper-requests-${app.business?.id}'),
+      live: true,
       load: () async =>
           (await app.repo.pendingTeamRequests(app.business!.id))
               .where((r) => r['role'] == 'helper')

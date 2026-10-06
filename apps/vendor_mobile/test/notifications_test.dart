@@ -118,6 +118,23 @@ void main() {
 
   tearDown(() => app.stopNotifications());
 
+  test('operational events and foreground resume reload live lists', () {
+    final before = app.liveTick.value;
+    repo.push!('INSERT', _row('nl1', key: 'order.new_customer'));
+    expect(app.liveTick.value, before + 1);
+    repo.push!('INSERT', _row('nl2', key: 'platform.announcement'));
+    expect(app.liveTick.value, before + 1, reason: 'not operational');
+    app.onAppResumed();
+    expect(app.liveTick.value, before + 2);
+  });
+  test('Sound off: banner shows, the signature does not play', () async {
+    await app.setNotificationPrefs(
+      const NotificationPrefs(enabled: true, sound: false),
+    );
+    repo.push!('INSERT', _row('ns1'));
+    expect(app.foregroundAlert.value?.id, 'ns1');
+    expect(effects, ['sound=false urgent=false']);
+  });
   test('loads the centre and unread count from the backend', () {
     expect(app.notifications.map((n) => n.id), ['n1', 'n2']);
     expect(app.unreadNotifications, 1);

@@ -25,6 +25,7 @@ class RunDetailScreen extends StatelessWidget {
     final app = AppScope.of(context);
     return AsyncView<(VendorRun, List<VendorOrder>, List<RiderRow>)>(
       key: ValueKey('run-$runId'),
+      live: true,
       load: () async {
         final businessId = app.business!.id;
         final run = await app.repo.run(runId);

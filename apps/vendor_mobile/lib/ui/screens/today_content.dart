@@ -19,8 +19,13 @@ class TodayContent extends StatelessWidget {
     required this.orders,
     required this.riders,
     required this.reload,
+    this.businessToday,
   });
   final List<VendorOrder> orders;
+
+  /// The business's working day (server). The KPIs and Recent Delivery
+  /// cover this day; Need Attention keeps every open issue whatever its day.
+  final String? businessToday;
   final List<RiderRow> riders;
   final Future<void> Function() reload;
 
@@ -35,18 +40,25 @@ class TodayContent extends StatelessWidget {
     final app = AppScope.of(context);
     final c = context.c;
     final demo = app.repo.isDemo;
-    final delivered = orders
-        .where((o) => o.status == DeliveryStatus.delivered)
-        .toList();
+    final today = demo || businessToday == null
+        ? orders
+        : orders.where((o) => o.orderDate == businessToday).toList();
+    final delivered =
+        today.where((o) => o.status == DeliveryStatus.delivered).toList()
+          ..sort(
+            (a, b) => (b.completedAt ?? b.createdAt).compareTo(
+              a.completedAt ?? a.createdAt,
+            ),
+          );
     final issues = orders
         .where((o) => o.status == DeliveryStatus.issue)
         .toList();
-    final ready = orders
+    final ready = today
         .where((o) => o.status == DeliveryStatus.readyForPickup)
         .length;
     final counts = demo
         ? [48, 12, 3, 33]
-        : [orders.length, ready, issues.length, delivered.length];
+        : [today.length, ready, issues.length, delivered.length];
     final samples = [
       (L.ahmadRazi, L.vfy7281, L.bangsar, L.t224Pm),
       (L.sitiAminah, L.bmd4120, L.sentul, L.t156Pm),

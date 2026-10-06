@@ -554,15 +554,22 @@ class TodayScreen extends StatelessWidget {
         children: [StateBlock.empty(L.noBusinessLinkedAccountYet)],
       );
     }
-    return AsyncView<(List<VendorOrder>, List<RiderRow>)>(
+    return AsyncView<(List<VendorOrder>, List<RiderRow>, String?)>(
       loading: const SkeletonPage.today(),
       key: ValueKey('today-${business.id}'),
+      live: true,
       load: () async => (
         await app.repo.orders(business.id),
         await app.repo.riders(business.id),
+        await app.repo.businessToday(business.id),
       ),
       builder: (context, data, reload) {
-        return TodayContent(orders: data.$1, riders: data.$2, reload: reload);
+        return TodayContent(
+          orders: data.$1,
+          riders: data.$2,
+          businessToday: data.$3,
+          reload: reload,
+        );
       },
     );
   }
@@ -587,6 +594,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     }
     return AsyncView<List<VendorOrder>>(
       key: ValueKey('orders-${business.id}-${ordersRevision.value}'),
+      live: true,
       load: () => app.repo.orders(business.id),
       builder: (context, orders, reload) {
         final visible = orders.where((o) => tab.accepts(o.status)).toList();
@@ -655,6 +663,7 @@ class OrderDetailScreen extends StatelessWidget {
     >(
       loading: const SkeletonHeroPage(),
       key: ValueKey('order-$orderId'),
+      live: true,
       load: () async => (
         await app.repo.order(orderId),
         await app.repo.zones(app.business!.id),

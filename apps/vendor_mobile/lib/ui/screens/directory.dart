@@ -37,6 +37,7 @@ class ZonesScreen extends StatelessWidget {
         ],
       ),
       key: ValueKey('zones-${business.id}-${zonesRevision.value}'),
+      live: true,
       load: () async => (
         await app.repo.zones(business.id),
         await app.repo.orders(business.id),
@@ -1137,6 +1138,7 @@ class _RidersScreenState extends State<RidersScreen> {
       valueListenable: ridersMode,
       builder: (context, _, _) => AsyncView<(List<RiderRow>, Set<String>)>(
         key: ValueKey('riders-${business.id}'),
+        live: true,
         load: () async {
           await loadOpenOpenings(app);
           // Removed or rejected riders (inactive) are no longer on the team.
@@ -1252,6 +1254,7 @@ class RiderDetailScreen extends StatelessWidget {
     return AsyncView<RiderRow>(
       loading: const SkeletonHeroPage(),
       key: ValueKey('rider-$riderId'),
+      live: true,
       load: () async {
         final riders = await app.repo.riders(app.business!.id);
         return riders.firstWhere(
@@ -1416,6 +1419,7 @@ class _TeamScreenState extends State<TeamScreen> {
       (List<TeamMember>, List<Map<String, dynamic>>, List<RiderRow>)
     >(
       key: ValueKey('team-${app.business?.id}'),
+      live: true,
       load: () async => (
         await app.repo.team(app.business!.id),
         await app.repo.pendingTeamRequests(app.business!.id),

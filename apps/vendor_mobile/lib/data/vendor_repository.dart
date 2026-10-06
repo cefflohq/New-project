@@ -567,6 +567,16 @@ class VendorRepository {
     return _rows(rows).map(VendorOrder.fromRow).toList();
   }
 
+  /// The business's working day (yyyy-MM-dd) from the server, in
+  /// businesses.timezone -- never the device clock. Null if unavailable.
+  Future<String?> businessToday(String businessId) async {
+    if (_demo) return null;
+    final res = await _run(
+      () => _db!.rpc('business_today', params: {'p_business_id': businessId}),
+    );
+    return res?.toString();
+  }
+
   Future<VendorOrder> order(String orderId) async {
     if (_demo) {
       return _DemoData.orders.firstWhere(

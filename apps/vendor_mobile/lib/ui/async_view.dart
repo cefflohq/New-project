@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/app_state.dart';
 import '../data/vendor_repository.dart';
 import 'shell.dart';
 import 'widgets.dart';
@@ -14,7 +15,14 @@ class AsyncView<T> extends StatefulWidget {
     this.emptyMessage,
     this.isEmpty,
     this.loading,
+    this.live = false,
   });
+
+  /// Operational lists: reload silently (keeping the current data on
+  /// screen) when the app returns to the foreground or an operational
+  /// notification arrives ([AppState.liveTick]). Off for forms, so unsaved
+  /// edits are never replaced.
+  final bool live;
 
   /// Page-shaped placeholder shown while loading; a heading and rows by
   /// default.
@@ -40,10 +48,28 @@ class AsyncViewState<T> extends State<AsyncView<T>> {
   bool _loading = true;
   int _generation = 0;
 
+  ValueNotifier<int>? _tick;
+
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!widget.live) return;
+    final tick = AppScope.maybeRead(context)?.liveTick;
+    if (identical(tick, _tick)) return;
+    _tick?.removeListener(_load);
+    _tick = tick?..addListener(_load);
+  }
+
+  @override
+  void dispose() {
+    _tick?.removeListener(_load);
+    super.dispose();
   }
 
   Future<void> _load() async {
