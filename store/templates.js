@@ -628,14 +628,14 @@
   // quantity steppers and a "View Cart" footer; a detail screen with image
   // counter, thumbnails, price, quantity, outlined Add to Cart + Buy Now.
   T.care = {
-    name: 'Care', defaults: { accent: '#0E8F7E', accent2: '#E3F4F1', bg: '#ffffff', bar: '#ffffff' },
+    name: 'Care', defaults: { accent: '#1677D8', accent2: '#E8F2FD', bg: '#ffffff', bar: '#ffffff' },
     home(c) {
       const all = c.list(null, ''), f = all[0];
       return `<section class="ca-home">
         ${head(c)}
         <div class="ca-banner"><div><h2>${c.esc(c.headline(c.s.name))}</h2><p>${c.esc([c.s.area, c.openLabel()].filter(Boolean).join(' · '))}</p><button type="button" data-act="catpage" data-id="">Shop Now ${c.icon('arrowRight')}</button></div>${c.hero(f, 'ca-bimg')}${dots(3, 0, 'dots ca-dots')}</div>
         <div class="ca-sec"><h3>Shop by Category</h3><a href="#/all">View All ${c.icon('arrowRight')}</a></div>
-        <div class="ca-cats">${c.s.categories.slice(0, 8).map(k => `<button type="button" ${c.catPage(k.id)}><span>${(p => p?.images?.[0] ? c.img(p, 'ca-cat-img') : c.icon('box'))(c.list(k.id, '')[0])}</span>${c.esc(k.name)}</button>`).join('') || `<button type="button" ${c.catPage(null)}><span>${c.icon('apps')}</span>All</button>`}</div>
+        <div class="ca-cats">${c.s.categories.slice(0, 8).map(k => `<button type="button" ${c.catPage(k.id)}><span>${c.icon('box')}</span>${c.esc(k.name)}</button>`).join('') || `<button type="button" ${c.catPage(null)}><span>${c.icon('apps')}</span>All</button>`}</div>
         <div class="ca-sec"><h3>Featured Products</h3><a href="#/all">View All ${c.icon('arrowRight')}</a></div>
         <div class="ca-feat">${c.list().map(p => `<article class="ca-card" ${c.open(p.id)}><span class="ca-heart">${c.icon('heart')}</span>${c.img(p)}<b>${c.esc(p.name)}</b><small>${c.esc(p.description)}</small><div class="ca-pr"><b>${c.money(p.price)}</b><button type="button" ${c.add(p.id)} aria-label="Add to cart">${c.icon('cart')}</button></div></article>`).join('') || c.empty()}</div>
         ${nav(c, 'home')}
