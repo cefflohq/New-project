@@ -124,8 +124,11 @@ voice, original synthesis (no samples or third-party audio). Reproducible from
 `shared/sounds/cefflo-signature.wav` (source), `shared/sounds/cefflo-signature.mp3`
 (web), `apps/vendor_mobile/assets/sounds/cefflo_signature.mp3` (Flutter
 in-app). Manifest `approved: true`, `version: 1.2.0`. Supersedes v1.1.0
-(candidate C). Still to come with push: Android `res/raw` `.ogg`, iOS `.caf`,
-and the Driver app (platform placeholder).
+(candidate C). Installed on every surface with in-app notifications: Vendor App (Owner /
+Operator / Helper), Vendor Web (web player via the manifest) and the Driver
+app (same asset). Customer Tracking, Invite, Storefront and FOUNDR have no
+in-app notification sound. Still to come with push: Android `res/raw` `.ogg`,
+iOS `.caf`.
 
 This contract defines where it plugs in.
 
@@ -164,7 +167,7 @@ This contract defines where it plugs in.
 | FOUNDR Broadcasts | Controls › Broadcasts: compose, preview, exact audience size, reason, confirm, history (recipients, read), audit group | | | | | | |
 | Vendor Web | bell + badge + panel | yes (normal 6 s, urgent sticky) | web player (§6) | yes + mark all | Notifications, Sound, browser permission state | order / runs / rider (switches business) | deferred; browser Notification API only while the tab is open but hidden and permission is granted |
 | Vendor Mobile | X-01 | overlay banner | Cefflo signature v1 (§6), Sound toggle, one play per 1.5 s burst | yes + mark all, delete (Undo window), clear | V-47: Notifications, Sound | order / zones (runs) / rider | deferred |
-| Rider Mobile | D33 + unread dot on every bell | overlay banner, urgent = red edge, sticky, vibration | platform alert placeholder (§6) | yes (long-press) + mark all | Notification settings sheet | run | deferred |
+| Rider Mobile | D33 + unread dot on every bell | overlay banner, urgent = red edge, sticky, vibration | Cefflo signature v1.2.0 (§6), Sound toggle, one play per 1.5 s burst | yes (long-press) + mark all | Notification settings sheet | run | deferred |
 | Customer Tracking | not added (audit: no notification, push, WhatsApp or SMS claims; no polling; uses its own realtime channel) | | | | | | |
 
 Reconnect: every client re-reads the centre when its realtime channel

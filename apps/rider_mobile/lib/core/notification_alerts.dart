@@ -1,3 +1,5 @@
+import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../data/driver_models.dart';
@@ -18,25 +20,50 @@ bool notificationPlaysSound(String? eventKey) =>
 
 /// Sound and vibration for a foreground alert.
 ///
-/// Cefflo Signature Notification Sound contract (§6): the approved asset
-/// ships as `assets/sounds/cefflo_signature.mp3` (in-app) plus
-/// `res/raw/cefflo_signature.ogg` / `cefflo_signature.caf` for the OS
-/// notification channel once push exists. It is not approved yet, so this
-/// deliberately plays only the platform's own alert sound -- PLACEHOLDER,
-/// not the Cefflo sound -- and never a bundled random beep. When the asset
-/// is approved, replace [_playSound] with the asset player; nothing else
-/// changes.
+/// Cefflo Signature Notification Sound v1.2.0 (Founder-approved, candidate
+/// M; NOTIFICATION_EVENT_MATRIX §6): `assets/sounds/cefflo_signature.mp3`,
+/// the same asset as the Vendor App ("Cef-flo, Cef-flo", 0.98 s). Played
+/// only when the Driver's Sound preference allows; a burst of alerts plays
+/// once (1.5 s window), never loops or retries, and any audio failure is
+/// dropped silently. OS push sounds come with the later push integration.
 class NotificationAlertEffects {
   const NotificationAlertEffects();
 
+  static const signatureAsset = 'sounds/cefflo_signature.mp3';
+  static const burstWindow = Duration(milliseconds: 1500);
+  static AudioPlayer? _player;
+  static DateTime? _lastPlayed;
+
   void play({required bool sound, required bool urgent}) {
-    if (sound) _playSound();
+    if (sound) playSignature();
     // Urgent run events (server priority) vibrate; normal ones do not.
     if (urgent) HapticFeedback.heavyImpact();
   }
 
-  // PLACEHOLDER until the Founder approves the signature asset.
-  void _playSound() => SystemSound.play(SystemSoundType.alert);
+  /// True when a sound may start now (outside the burst window); records it.
+  @visibleForTesting
+  static bool claimPlaySlot([DateTime? now]) {
+    final t = now ?? DateTime.now();
+    final last = _lastPlayed;
+    if (last != null && t.difference(last) < burstWindow) return false;
+    _lastPlayed = t;
+    return true;
+  }
+
+  @visibleForTesting
+  static void resetPlaySlot() => _lastPlayed = null;
+
+  Future<void> playSignature() async {
+    if (!claimPlaySlot()) return;
+    try {
+      final player = _player ??= AudioPlayer()
+        ..setReleaseMode(ReleaseMode.stop);
+      await player.stop();
+      await player.play(AssetSource(signatureAsset), volume: 1.0);
+    } catch (_) {
+      // Audio unavailable or blocked: the banner still shows; never retried.
+    }
+  }
 }
 
 /// Localised copy for known event keys; the server's English copy is the
