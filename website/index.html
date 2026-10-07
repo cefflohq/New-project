@@ -423,6 +423,10 @@ footer .foot,footer .foot nav{text-align:center;justify-items:center}footer .bra
 .button{transition:transform .2s var(--ease),box-shadow .2s,background-color .2s,border-color .2s}
 .tile,.benefit,.sf-card,.plan{transition:transform .3s var(--ease),box-shadow .3s,background .25s}
 .tile:hover,.sf-card:hover{transform:translateY(-4px);box-shadow:0 26px 50px -36px #07101f55}
+/* cards: clearer entrance (heavier than text), still once only */
+.js .benefit.reveal,.js .tile.reveal,.js .sf-card.reveal,.js .plans.m-group>.plan,.js .sf-gallery.m-group>*{opacity:0;translate:0 48px;scale:.94;transition:opacity .9s var(--ease),translate 1s var(--ease),scale 1s var(--ease);transition-delay:calc(var(--i,0)*130ms + var(--d,0ms))}
+.js .benefit.reveal.in,.js .tile.reveal.in,.js .sf-card.reveal.in,.js .plans.m-group.in>.plan,.js .sf-gallery.m-group.in>*{opacity:1;translate:0 0;scale:1}
+.js .role-card{translate:0 56px;scale:.95}
 details p{overflow:hidden}
 @media(max-width:600px){:root{--m-y:14px;--m-py:16px;--m-stag:45ms}.js .flow:before{scale:1 0;transform-origin:top}.js .flow.in:before{scale:1}}
 
