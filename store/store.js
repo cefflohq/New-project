@@ -14,9 +14,25 @@
 
   // ------------------------------------------------------------- helpers
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // Customer-facing amounts always show two decimals (RM 8.00); the server
+  // price contract is unchanged.
   const money = n => `RM ${Number(n || 0).toFixed(2)}`;
-  const moneyShort = n => { const v = Number(n || 0); return `RM ${Number.isInteger(v) ? v : v.toFixed(2)}`; };
-  const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const moneyShort = money;
+
+  // Customer language: English by default, Bahasa Melayu when chosen; kept on
+  // this device only, never auto-detected. Vendor content is never translated.
+  const LANG_KEY = 'cefflo.store.lang';
+  let lang = 'en';
+  try { lang = localStorage.getItem(LANG_KEY) === 'ms' ? 'ms' : 'en'; } catch { /* private mode */ }
+  const MS = window.CEFFLO_STORE_MS || {};
+  const t = (s, vars) => { let out = lang === 'ms' && MS[s] ? MS[s] : s; if (vars) out = out.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? ''); return out; };
+  window.CEFFLO_I18N = s => (lang === 'ms' && MS[s] ? MS[s] : s);
+  const DAYS_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], DAYS_MS = ['Isn', 'Sel', 'Rab', 'Kha', 'Jum', 'Sab', 'Ahd'];
+  let DAYS = lang === 'ms' ? DAYS_MS : DAYS_EN;
+
+  // A usable international phone: optional +, then 7-15 digits once spaces,
+  // dashes, dots and brackets are removed (the server applies the same rule).
+  const phoneOk = v => /^\+?[0-9]{7,15}$/.test(String(v || '').replace(/[\s().-]/g, ''));
   const abs = u => (!u ? null : /^(https?:|data:image\/)/.test(u) ? u : `${cfg.supabaseUrl || ''}${u}`);
 
   async function rpc(name, body) {
@@ -59,6 +75,22 @@
   let store = null; // normalised data
   let tpl = null, tplKey = null;
   const cart = new Map(); // product_id -> quantity (display only; the server prices it)
+  // The cart is kept on this device per storefront (never customer details) and
+  // reconciled with the live catalogue on load; the server still prices and
+  // validates every order.
+  const cartKey = () => `cefflo.store.cart.${store?.slug || slug}`;
+  function saveCart() { if (EMBED || !store) return; try { localStorage.setItem(cartKey(), JSON.stringify([...cart])); } catch { /* storage unavailable */ } }
+  function restoreCart() {
+    if (EMBED) return;
+    let rows = [];
+    try { rows = JSON.parse(localStorage.getItem(cartKey()) || '[]'); } catch { rows = []; }
+    cart.clear();
+    for (const [id, q] of Array.isArray(rows) ? rows : []) {
+      const n = Math.floor(Number(q));
+      if (product(id) && n >= 1) cart.set(id, Math.min(50, n));
+    }
+    saveCart();
+  }
   const ui = { cat: null, q: '', sel: 1, img: 0, intro: false };
   let idempotencyKey = crypto.randomUUID();
   let lastOrder = null;
@@ -71,7 +103,7 @@
     }));
     return {
       slug: raw.slug, name: raw.business?.name || '', area: raw.business?.area || '',
-      tagline: theme.tagline || '', theme, heroUrl: abs(raw.hero_url), openNow: raw.open_now,
+      tagline: theme.tagline || '', theme, heroUrl: abs(raw.hero_url), openNow: raw.open_now, nextOpen: raw.next_open || null,
       hours: Array.isArray(raw.hours) ? raw.hours : [], products,
       categories: (raw.categories || []).filter(c => products.some(p => p.categoryId === c.id)),
       templateKey: raw.template_key,
@@ -98,10 +130,19 @@
     if (!store.hours.length) return '';
     const today = (new Date().getDay() + 6) % 7 + 1;
     const h = store.hours.find(x => x.weekday === today);
-    return h ? (h.is_open ? `Today ${h.opens_at}–${h.closes_at}` : 'Closed today') : '';
+    return h ? (h.is_open ? `${t('Today')} ${h.opens_at}–${h.closes_at}` : t('Closed today')) : '';
   }
-  const openLabel = () => (store.openNow === true ? 'Open now' : store.openNow === false ? 'Closed now' : '');
-  function greeting() { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; }
+  const openLabel = () => (store.openNow === true ? t('Open now') : store.openNow === false ? t('Closed now') : '');
+  function greeting() { const h = new Date().getHours(); return t(h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'); }
+  const isClosed = () => store?.openNow === false;
+  function nextOpenText() {
+    const n = store?.nextOpen;
+    if (!n) return '';
+    if (n.in_days === 0) return t('Opens today at {time}', { time: n.time });
+    if (n.in_days === 1) return t('Opens tomorrow at {time}', { time: n.time });
+    return t('Opens {day} at {time}', { day: DAYS[(n.weekday || 1) - 1], time: n.time });
+  }
+  const closedNote = () => `<div class="sf-closed" role="status">${icon('clock')}<div><b>${esc(t('This store is closed right now.'))}</b><small>${esc(nextOpenText() || t('You can browse the menu; ordering opens when the store is open.'))}</small></div></div>`;
 
   // ------------------------------------------------------------- routing
   function route() {
@@ -121,7 +162,7 @@
   function ctx() {
     return {
       s: store, ui, esc, money, moneyShort, icon, img, list, qty, count, total, product, catName, initials,
-      hoursText, openLabel, greeting, DAYS,
+      hoursText, openLabel, greeting, DAYS, t, isClosed,
       // An image that always fills its box (cover) for banners/heroes.
       hero: (fallbackProduct, cls = '') => store.heroUrl
         ? `<img class="${cls}" src="${esc(store.heroUrl)}" alt="" loading="lazy">`
@@ -132,56 +173,63 @@
       add: id => `data-act="add" data-id="${esc(id)}"`,
       cat: id => `data-act="cat" data-id="${esc(id || '')}"`,
       catPage: id => `data-act="catpage" data-id="${esc(id || '')}"`,
-      empty: msg => `<div class="sf-empty">${esc(msg || (ui.q ? 'No products match your search.' : 'No products yet.'))}</div>`,
-      searchInput: (ph, cls = '') => `<input class="sf-search ${cls}" type="search" data-act="search" placeholder="${esc(ph || 'Search')}" value="${esc(ui.q)}" aria-label="Search products">`,
+      empty: msg => `<div class="sf-empty">${esc(msg ? t(msg) : t(ui.q ? 'No products match your search.' : 'No products yet.'))}</div>`,
+      searchInput: (ph, cls = '') => `<input class="sf-search ${cls}" type="search" data-act="search" placeholder="${esc(t(ph || 'Search'))}" value="${esc(ui.q)}" aria-label="${esc(t('Search products'))}">`,
       stepper: (id, cls = '') => {
         const q = id === '__sel' ? ui.sel : qty(id);
         const act = id === '__sel' ? 'sel' : 'q';
-        return `<div class="sf-stepper ${cls}"><button type="button" data-act="${act}-" data-id="${esc(id)}" aria-label="Remove one">${icon('minus')}</button><span>${q}</span><button type="button" data-act="${act}+" data-id="${esc(id)}" aria-label="Add one">${icon('plus')}</button></div>`;
+        return `<div class="sf-stepper ${cls}"><button type="button" data-act="${act}-" data-id="${esc(id)}" aria-label="${esc(t('Remove one'))}">${icon('minus')}</button><span>${q}</span><button type="button" data-act="${act}+" data-id="${esc(id)}" aria-label="${esc(t('Add one'))}">${icon('plus')}</button></div>`;
       },
       buy: (label, cls = '') => `<button type="button" class="${cls}" data-act="buy">${label}</button>`,
-      toCart: (cls = '', inner) => `<button type="button" class="${cls}" data-act="tocart" aria-label="Cart">${inner || icon('bag')}${count() ? `<i class="sf-badge">${count()}</i>` : ''}</button>`,
+      toCart: (cls = '', inner) => `<button type="button" class="${cls}" data-act="tocart" aria-label="${esc(t('Cart'))}">${inner || icon('bag')}${count() ? `<i class="sf-badge">${count()}</i>` : ''}</button>`,
       home: cls => `data-act="home"${cls ? ` class="${cls}"` : ''}`,
       selImg: i => `data-act="img" data-id="${i}"`,
     };
   }
 
   // ------------------------------------------------------------- shared views
+  const langSwitch = () => `<div class="sf-lang" role="group" aria-label="Language / Bahasa"><button type="button" data-act="lang" data-id="en" class="${lang === 'en' ? 'on' : ''}" aria-pressed="${lang === 'en'}">English</button><button type="button" data-act="lang" data-id="ms" class="${lang === 'ms' ? 'on' : ''}" aria-pressed="${lang === 'ms'}">Bahasa Melayu</button></div>`;
   function cartView() {
     const lines = [...cart].filter(([id]) => product(id));
     return `<div class="sf-flow">
-      <header class="sf-flow-top"><button type="button" class="sf-round" data-act="back" aria-label="Back">${icon('arrowLeft')}</button><h1>Your order</h1><span></span></header>
-      ${lines.length ? `<ul class="sf-lines">${lines.map(([id, q]) => { const p = product(id); return `<li>${img(p, 'sf-line-img')}<div><b>${esc(p.name)}</b><small>${money(p.price)}</small></div>${ctx().stepper(id)}</li>`; }).join('')}</ul>
-      <div class="sf-sum"><span>Total</span><b>${money(total())}</b></div>
-      <p class="sf-note">Final prices are confirmed by ${esc(store.name)} when your order is received.</p>
-      <button type="button" class="sf-cta" data-act="checkout">Continue</button>`
-      : `<div class="sf-empty">Your cart is empty.</div><button type="button" class="sf-cta" data-act="home">Browse products</button>`}
+      <header class="sf-flow-top"><button type="button" class="sf-round" data-act="back" aria-label="${esc(t('Back'))}">${icon('arrowLeft')}</button><h1>${esc(t('Your order'))}</h1>${lines.length ? `<button type="button" class="sf-link sf-clear" data-act="clear">${esc(t('Empty cart'))}</button>` : '<span></span>'}</header>
+      ${isClosed() ? closedNote() : ''}
+      ${lines.length ? `<ul class="sf-lines">${lines.map(([id]) => { const p = product(id); return `<li>${img(p, 'sf-line-img')}<div><b>${esc(p.name)}</b><small>${money(p.price)}</small></div>${ctx().stepper(id)}</li>`; }).join('')}</ul>
+      <div class="sf-sum"><span>${esc(t('Total'))}</span><b>${money(total())}</b></div>
+      <p class="sf-note">${esc(t('Final prices are confirmed by {store} when your order is received.', { store: store.name }))}</p>
+      <button type="button" class="sf-cta" data-act="checkout" ${isClosed() ? 'disabled' : ''}>${esc(t(isClosed() ? 'Closed' : 'Continue'))}</button>`
+      : `<div class="sf-empty">${esc(t('Your cart is empty.'))}</div><button type="button" class="sf-cta" data-act="home">${esc(t('Browse products'))}</button>`}
+      ${langSwitch()}
     </div>`;
   }
   function checkoutView(err) {
+    const n = count();
     return `<div class="sf-flow">
-      <header class="sf-flow-top"><button type="button" class="sf-round" data-act="back" aria-label="Back">${icon('arrowLeft')}</button><h1>Delivery details</h1><span></span></header>
+      <header class="sf-flow-top"><button type="button" class="sf-round" data-act="back" aria-label="${esc(t('Back'))}">${icon('arrowLeft')}</button><h1>${esc(t('Delivery details'))}</h1><span></span></header>
+      ${isClosed() ? closedNote() : ''}
       <form class="sf-form" id="sfForm" novalidate>
-        <label>Name<input name="name" autocomplete="name" maxlength="120" required></label>
-        <label>Phone<input name="phone" autocomplete="tel" inputmode="tel" maxlength="30" required></label>
-        <label>Delivery address<textarea name="address" rows="3" maxlength="500" required></textarea></label>
-        <label>Notes (optional)<textarea name="notes" rows="2" maxlength="500"></textarea></label>
-        <div class="sf-sum"><span>${count()} item${count() === 1 ? '' : 's'}</span><b>${money(total())}</b></div>
-        <p class="sf-note">Payment is arranged directly with ${esc(store.name)}. Cefflo does not take payment for this order.</p>
+        <label>${esc(t('Name'))}<input name="name" autocomplete="name" maxlength="120" required></label>
+        <label>${esc(t('Phone'))}<input name="phone" autocomplete="tel" inputmode="tel" maxlength="30" required placeholder="+60 12-345 6789"></label>
+        <label>${esc(t('Delivery address'))}<textarea name="address" rows="3" maxlength="500" required></textarea></label>
+        <label>${esc(t('Notes (optional)'))}<textarea name="notes" rows="2" maxlength="500"></textarea></label>
+        <div class="sf-sum"><span>${esc(t(n === 1 ? '{n} item' : '{n} items', { n }))}</span><b>${money(total())}</b></div>
+        <p class="sf-note">${esc(t('Payment is arranged directly with {store}. Cefflo does not take payment for this order.', { store: store.name }))}</p>
         ${err ? `<p class="sf-error" role="alert">${esc(err)}</p>` : ''}
-        <button type="submit" class="sf-cta" id="sfPlace">Place order</button>
+        <button type="submit" class="sf-cta" id="sfPlace" ${isClosed() ? 'disabled' : ''}>${esc(t(isClosed() ? 'Closed' : 'Place order'))}</button>
       </form>
+      ${langSwitch()}
     </div>`;
   }
   function doneView() {
     const link = lastOrder?.token && cfg.trackingBaseUrl ? `${cfg.trackingBaseUrl}?token=${encodeURIComponent(lastOrder.token)}` : null;
     return `<div class="sf-flow sf-done">
       <div class="sf-done-mark">${icon('check')}</div>
-      <h1>Order received</h1>
-      <p>Your order number is <b>${esc(lastOrder?.ref || '')}</b>.</p>
-      <p class="sf-note">${esc(store.name)} will confirm your order.</p>
-      ${link ? `<a class="sf-cta" href="${esc(link)}">Track your order</a>` : ''}
-      <button type="button" class="sf-link" data-act="home">Back to the store</button>
+      <h1>${esc(t('Order received'))}</h1>
+      <p>${esc(t('Your order number is'))} <b>${esc(lastOrder?.ref || '')}</b>.</p>
+      <p class="sf-note">${esc(t('{store} will confirm your order.', { store: store.name }))}</p>
+      ${link ? `<a class="sf-cta" href="${esc(link)}">${esc(t('Track your order'))}</a>` : ''}
+      <button type="button" class="sf-link" data-act="home">${esc(t('Back to the store'))}</button>
+      ${langSwitch()}
     </div>`;
   }
 
@@ -200,40 +248,53 @@
     else if (tpl.intro && !ui.intro) html = tpl.intro(c);
     else html = tpl.home(c);
     const bar = ['home', 'category', 'all'].includes(r.name) && count() && tpl.bar !== false
-      ? (tpl.bar ? tpl.bar(c) : `<button type="button" class="sf-bar" data-act="tocart"><span>${count()} item${count() === 1 ? '' : 's'}</span><b>${money(total())}</b><span>View cart ${icon('arrowRight')}</span></button>`)
+      ? (tpl.bar ? tpl.bar(c) : `<button type="button" class="sf-bar" data-act="tocart"><span>${esc(t(count() === 1 ? '{n} item' : '{n} items', { n: count() }))}</span><b>${money(total())}</b><span>${esc(t('View cart'))} ${icon('arrowRight')}</span></button>`)
       : '';
-    app.className = `sf t-${tplKey} r-${r.name}`;
-    app.innerHTML = `<div class="sf-page">${html}</div>${bar}`;
+    app.className = `sf t-${tplKey} r-${r.name}${isClosed() ? ' is-closed' : ''}`;
+    const browse = !['cart', 'checkout', 'done'].includes(r.name);
+    app.innerHTML = `<div class="sf-page">${browse && isClosed() ? closedNote() : ''}${html}${browse && !EMBED ? `<footer class="sf-foot">${langSwitch()}</footer>` : ''}</div>${bar}`;
     if (r.name === 'checkout' && cart.size) {
       const f = document.getElementById('sfForm');
       for (const [k, v] of Object.entries(form)) if (f.elements[k]) f.elements[k].value = v;
       f.addEventListener('input', e => { form[e.target.name] = e.target.value; });
+      if (err) { const bad = f.querySelector('[aria-invalid="true"]'); bad?.focus(); }
       f.addEventListener('submit', submit);
     }
   }
 
+  // A server refusal comes back as {error} (so failed attempts stay counted
+  // by the rate limit); transport problems throw.
+  const errorText = m => (/rate limited/.test(m) ? t('Too many attempts. Please wait a minute and try again.')
+    : /store closed/.test(m) ? `${t('This store is closed right now.')} ${nextOpenText()}`.trim()
+    : /phone/.test(m) ? t('Enter a valid phone number, for example +60 12-345 6789.')
+    : /available|product|item|quantity/i.test(m) ? t('Some items are no longer available. Please review your order.')
+    : t('We could not place your order. Please try again.'));
   async function submit(e) {
     e.preventDefault();
     const name = (form.name || '').trim(), phone = (form.phone || '').trim(), address = (form.address || '').trim();
-    if (!name || !phone || !address) return render('Please fill in your name, phone and delivery address.');
-    if (EMBED) return render('This is a preview. Orders are placed from your live storefront.');
+    if (!name || !phone || !address) return render(t('Please fill in your name, phone and delivery address.'));
+    if (!phoneOk(phone)) return render(t('Enter a valid phone number, for example +60 12-345 6789.'));
+    if (EMBED) return render(t('This is a preview. Orders are placed from your live storefront.'));
+    if (isClosed()) return render(`${t('This store is closed right now.')} ${nextOpenText()}`.trim());
     const btn = document.getElementById('sfPlace');
-    btn.disabled = true; btn.textContent = 'Placing order…';
+    btn.disabled = true; btn.textContent = t('Placing order…');
     try {
       const res = await rpc('submit_storefront_order', {
         p_slug: store.slug, p_items: [...cart].map(([product_id, quantity]) => ({ product_id, quantity })),
         p_customer_name: name, p_customer_phone: phone, p_delivery_address: address,
         p_delivery_notes: (form.notes || '').trim(), p_idempotency_key: idempotencyKey,
       });
+      if (res?.error) {
+        if (/store closed/.test(res.error)) { store.openNow = false; store.nextOpen = res.next_open || store.nextOpen; }
+        return render(errorText(res.error));
+      }
       lastOrder = { ref: res.order_reference, token: res.tracking_token };
-      cart.clear(); form = {}; idempotencyKey = crypto.randomUUID();
+      cart.clear(); saveCart(); form = {}; idempotencyKey = crypto.randomUUID();
       go('done');
     } catch (ex) {
-      // The same key is kept, so a retry never creates a second order.
-      const m = String(ex.message || '');
-      render(/rate limited/.test(m) ? 'Too many attempts. Please wait a minute and try again.'
-        : /available|product|item/i.test(m) ? 'Some items are no longer available. Please review your order.'
-        : ex.status ? 'We could not place your order. Please try again.' : 'No connection. Please check your internet and try again.');
+      // The same key is kept, so a retry never creates a second order (a
+      // replay returns the same order and its tracking link).
+      render(ex.status ? errorText(String(ex.message || '')) : t('No connection. Please check your internet and try again.'));
     }
   }
 
@@ -242,7 +303,7 @@
     const t = e.target.closest('[data-act]');
     if (!t || t.tagName === 'INPUT') return;
     const act = t.dataset.act, id = t.dataset.id;
-    const bump = (pid, d) => { const n = Math.max(0, Math.min(50, qty(pid) + d)); if (n) cart.set(pid, n); else cart.delete(pid); };
+    const bump = (pid, d) => { const n = Math.max(0, Math.min(50, qty(pid) + d)); if (n) cart.set(pid, n); else cart.delete(pid); saveCart(); };
     switch (act) {
       case 'open': ui.sel = 1; ui.img = 0; go(`p/${id}`); break;
       case 'add': bump(id, 1); render(); break;
@@ -260,6 +321,8 @@
       case 'home': ui.cat = null; ui.intro = true; go(''); break;
       case 'intro': ui.intro = true; render(); break;
       case 'back': history.length > 1 ? history.back() : go(''); break;
+      case 'clear': cart.clear(); saveCart(); render(); break;
+      case 'lang': lang = id === 'ms' ? 'ms' : 'en'; DAYS = lang === 'ms' ? DAYS_MS : DAYS_EN; try { localStorage.setItem(LANG_KEY, lang); } catch { /* private mode */ } document.documentElement.lang = lang; render(); break;
       default: break;
     }
   });
@@ -285,10 +348,32 @@
     root.setProperty('--bg', /^#[0-9a-f]{6}$/i.test(th.background_color || '') ? th.background_color : d.bg || '#ffffff');
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', d.bar || '#ffffff');
   }
+  // Robots: a live, published storefront is indexable; previews and missing /
+  // unpublished storefronts are not.
+  function setRobots(index) {
+    let m = document.querySelector('meta[name="robots"]');
+    if (!index) { if (!m) { m = document.createElement('meta'); m.name = 'robots'; document.head.append(m); } m.content = 'noindex'; }
+    else m?.remove();
+  }
+  function setMeta(name, content, prop = false) {
+    const sel = prop ? `meta[property="${name}"]` : `meta[name="${name}"]`;
+    let m = document.querySelector(sel);
+    if (!m) { m = document.createElement('meta'); m.setAttribute(prop ? 'property' : 'name', name); document.head.append(m); }
+    m.content = content;
+  }
+  function state(msg) { setRobots(false); app.innerHTML = `<p class="sf-state">${esc(t(msg))}</p>`; }
   function start(raw) {
     store = normalise(raw);
     document.title = store.name || 'Storefront';
+    document.documentElement.lang = lang;
     useTemplate(params.get('template') || store.templateKey);
+    if (EMBED) setRobots(false);
+    else {
+      setRobots(true);
+      const desc = [store.tagline, store.area].filter(Boolean).join(' · ') || store.name;
+      setMeta('description', desc); setMeta('og:title', store.name, true); setMeta('og:description', desc, true); setMeta('og:type', 'website', true);
+      restoreCart();
+    }
     render();
   }
   async function load() {
@@ -298,7 +383,8 @@
       // the configured Vendor / Operator app and Vendor Web origins may feed it (a foreign site framing
       // ?embed=1 cannot paint content on this domain).
       const allowed = new Set([...Object.values(cfg.appWebUrls || {}), cfg.vendorConsoleUrl].filter(Boolean).map(u => { try { return new URL(u).origin; } catch { return null; } }).filter(Boolean));
-      if (window.parent === window) { app.innerHTML = '<p class="sf-state">Preview is shown inside the Cefflo app.</p>'; return; }
+      setRobots(false);
+      if (window.parent === window) { state('Preview is shown inside the Cefflo app.'); return; }
       window.addEventListener('message', ev => {
         if (!allowed.has(ev.origin) || ev.source !== window.parent) return;
         if (ev.data?.type === 'cefflo-storefront-preview' && ev.data.store) start(ev.data.store);
@@ -306,11 +392,11 @@
       window.parent.postMessage({ type: 'cefflo-storefront-ready' }, '*');
       return;
     }
-    if (!/^[a-z0-9]([a-z0-9-]{1,28}[a-z0-9])$/.test(slug)) { app.innerHTML = '<p class="sf-state">This storefront does not exist.</p>'; return; }
+    if (!/^[a-z0-9]([a-z0-9-]{1,28}[a-z0-9])$/.test(slug)) { state('This storefront does not exist.'); return; }
     let raw;
     try { raw = await rpc('public_storefront', { p_slug: slug }); }
-    catch (e) { app.innerHTML = `<p class="sf-state">${/rate limited/.test(e.message) ? 'Too many visits right now. Please try again in a minute.' : 'We could not load this storefront. Please try again.'}</p>`; return; }
-    if (!raw) { app.innerHTML = '<p class="sf-state">This storefront is not available.</p>'; return; }
+    catch (e) { state(/rate limited/.test(e.message) ? 'Too many visits right now. Please try again in a minute.' : 'We could not load this storefront. Please try again.'); return; }
+    if (!raw) { state('This storefront is not available.'); return; }
     if (raw.slug !== slug) history.replaceState(null, '', `/${raw.slug}${location.search}${location.hash}`);
     start(raw);
   }
