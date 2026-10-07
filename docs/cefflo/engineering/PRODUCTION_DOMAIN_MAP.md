@@ -40,6 +40,15 @@ role (`get_my_businesses`). Owner/Vendor is not a Team Invite role.
    (and replaces the current Vercel record for `vendor`, `tracking`,
    `foundr`): record the current DNS first for rollback.
 
+## Production hosting region (Founder-approved 2026-10-07)
+
+Target Supabase region for production V1: **ap-southeast-1 (Singapore)**
+(Supabase has no Malaysia region). Not executed: no new project, migration,
+DNS, secrets, Auth or Storage change; the current production project
+(ap-south-1) stays unchanged and INACTIVE. A PDPA cross-border transfer
+assessment is still required before real-user production
+(`docs/cefflo/security/PDPA_DATA_MAP.md` §7).
+
 ## Canonical production configuration
 
 Static build (`scripts/environment.mjs`):

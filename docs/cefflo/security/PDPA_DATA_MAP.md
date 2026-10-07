@@ -7,8 +7,8 @@ marked *TBD (counsel)* need a decision by the privacy lawyer / Founder
 (legal checklist L-039 to L-046).
 
 Law in scope: Personal Data Protection Act 2010 as amended by Act A1727
-(2024). Hosting: Supabase **ap-south-1 (Mumbai, India)** today — Founder
-decision 2026-10-07: production must not stay in Mumbai (see §7).
+(2024). Hosting: Supabase **ap-south-1 (Mumbai, India)** today (staging). Approved
+target production region: **ap-southeast-1 (Singapore)** — not yet executed (see §7).
 
 ---
 
@@ -104,7 +104,7 @@ indefinitely today (no cleanup job exists).
 | Google (OAuth sign-in) | Email, name, avatar from Google | Global | Vendor/Driver sign-in |
 | Google Cloud Vision (OCR of licence/vehicle images) | **Licence and vehicle images** | Google global | **HOLD** (billing disabled) |
 | Mapbox (geocoding, maps) | Addresses, coordinates | US/global | **HOLD** |
-| Google Fonts (Storefront, Invite pages) | Visitor IP address | Google global | Active — consider self-hosting fonts |
+| Google Fonts (Storefront, Invite pages) | Visitor IP address | Google global | Active — pre-production minimisation item (§8) |
 | Auth email delivery (SMTP for verification/recovery) | Email address | TBD (confirm provider) | Active |
 | Curlec / Stripe (driver paid changes, subscriptions) | Payment data | MY / global | **HOLD** |
 
@@ -128,24 +128,28 @@ indefinitely today (no cleanup job exists).
 | DPO not appointed / threshold not determined | L-045 |
 | Data-controller registration status not determined | L-044 |
 | Cross-border transfer not assessed (Mumbai hosting, Google, Mapbox, Cloudflare) | L-043 |
-| Legacy tables with personal data (`team_invitations`, `rider_invitations`, `helper_workers`) | — |
+| Legacy tables with personal data (`team_invitations`, `rider_invitations`, `helper_workers`) — keep; usage audit before any cleanup (§8) | — |
 
-## 7. Hosting location decision (Founder, 2026-10-07)
+## 7. Hosting location decision
 
-Founder: production must not stay in Mumbai; preference is Malaysia.
+**APPROVED (Founder, 2026-10-07): target production region = Supabase
+ap-southeast-1 (Singapore)** for the final production rollout. Supabase
+offers no Malaysia region (AWS ap-southeast-5 Kuala Lumpur is not available
+on Supabase); Mumbai is not the production target.
 
-Fact check (2026-10-07): Supabase's managed regions do **not** include
-Malaysia (AWS ap-southeast-5 Kuala Lumpur exists but Supabase does not offer
-it). Nearest Supabase region: **ap-southeast-1 Singapore**. Options for the
-Founder:
+- Not yet executed: no Singapore project created, no migration, no DNS,
+  secrets, Auth, Storage or production configuration changed. The existing
+  production project (`lmaxtrubwdniovxyuqdy`, ap-south-1) remains unchanged
+  and INACTIVE.
+- Singapore hosting does **not** by itself make the transfer PDPA-compliant.
+  A cross-border transfer assessment and documentation (L-043) remain
+  required before real-user production.
 
-- **A. Supabase Singapore** — same platform and code; new production project
-  in ap-southeast-1 (the current production project is INACTIVE and empty of
-  real users, so no data migration is needed). Still a cross-border transfer
-  (Singapore has its own PDPA 2012) to document.
-- **B. Self-hosted Supabase on AWS Kuala Lumpur (ap-southeast-5)** — data in
-  Malaysia, but Cefflo then operates the database, auth, storage, realtime,
-  backups and security patching itself.
-- **C. Another managed Postgres provider in Malaysia** — major re-platforming.
+## 8. Pre-production minimisation items (recorded, not implemented)
 
-No hosting change has been made.
+- **Google Fonts** (Storefront, Invite): visitor IP addresses go to Google.
+  Minimise before real-user production (e.g. self-hosted fonts); no UI or
+  typography change now.
+- **Legacy tables** `team_invitations`, `rider_invitations`, `helper_workers`
+  hold names/emails/phones from the retired email-invite flow. **Do not
+  delete.** A dependency/usage audit is required before any cleanup.
