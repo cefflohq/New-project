@@ -10,7 +10,10 @@ async function signIn(email, password = PW) { const r = await fetch(`${URL_}/aut
 const H = tok => ({ apikey: KEY, authorization: `Bearer ${tok || KEY}`, 'content-type': 'application/json' });
 async function rpc(tok, name, body = {}) { const r = await fetch(`${URL_}/rest/v1/rpc/${name}`, { method: 'POST', headers: H(tok), body: JSON.stringify(body) }); const t = await r.text(); let j; try { j = JSON.parse(t); } catch { j = t; } return { status: r.status, body: j }; }
 async function sel(tok, path) { const r = await fetch(`${URL_}/rest/v1/${path}`, { headers: H(tok) }); return { status: r.status, body: await r.json().catch(() => null) }; }
-const msg = r => (r.body && (r.body.message || r.body.hint)) || JSON.stringify(r.body);
+const msg = r => (r.body && (r.body.error || r.body.message || r.body.hint)) || JSON.stringify(r.body);
+// submit_storefront_order returns its refusals as {error} (HTTP 200) so failed
+// attempts stay counted by the rate limit (migration 20261007150000).
+const isRefusal = r => r.status >= 400 || !!r.body?.error;
 
 // Test isolation (the limiter is unchanged): suites that run just before
 // (e.g. delivery_e2e) place storefront orders from this same caller, so start
@@ -63,15 +66,15 @@ const cases = [
   ['21 lines', Array.from({ length: 21 }, () => ({ product_id: prod.id, quantity: 1 }))],
   ['empty cart', []],
 ];
-const pause = () => new Promise(r => setTimeout(r, 13000)); // limiter: 5 orders / 60 s per caller
-for (const [label, items] of cases) { await pause(); const r = await rpc(null, 'submit_storefront_order', { ...base, p_items: items, p_idempotency_key: crypto.randomUUID() }); ok(`refused by validation: ${label}`, r.status >= 400 && !/rate limited/.test(msg(r)), msg(r)); }
+const pause = () => new Promise(r => setTimeout(r, 16000)); // limiter: 5 attempts (incl. refusals) / 60 s per caller
+for (const [label, items] of cases) { await pause(); const r = await rpc(null, 'submit_storefront_order', { ...base, p_items: items, p_idempotency_key: crypto.randomUUID() }); ok(`refused by validation: ${label}`, isRefusal(r) && !/rate limited/.test(msg(r)), msg(r)); }
 await pause(); const noName = await rpc(null, 'submit_storefront_order', { ...base, p_customer_name: '', p_items: [{ product_id: prod.id, quantity: 1 }], p_idempotency_key: crypto.randomUUID() });
-ok('refused by validation: missing customer name', noName.status >= 400 && !/rate limited/.test(msg(noName)), msg(noName));
+ok('refused by validation: missing customer name', isRefusal(noName) && !/rate limited/.test(msg(noName)), msg(noName));
 // another business's product through this store
 const vb = await signIn(process.env.STAGING_VENDOR_B_EMAIL, process.env.STAGING_VENDOR_B_PASSWORD);
 const bBiz = (await rpc(vb, 'get_my_businesses')).body?.[0]?.business_id;
 const bProd = (await sel(vb, `products?select=id&business_id=eq.${bBiz}&limit=1`)).body?.[0];
-if (bProd) { const r = await rpc(null, 'submit_storefront_order', { ...base, p_items: [{ product_id: bProd.id, quantity: 1 }] }); ok("refused: another business's product", r.status >= 400, msg(r)); }
+if (bProd) { const r = await rpc(null, 'submit_storefront_order', { ...base, p_items: [{ product_id: bProd.id, quantity: 1 }] }); ok("refused: another business's product", isRefusal(r), msg(r)); }
 else ok("skipped: other business has no product to test with", true);
 
 // the limiter itself: valid orders beyond 5 a minute are refused. (A refused
@@ -87,7 +90,7 @@ await rpc(owner, 'set_storefront_published', { p_business_id: B, p_published: fa
 const hidden = await rpc(null, 'public_storefront', { p_slug: slug });
 ok('unpublished storefront is not shown', hidden.status >= 400 || hidden.body === null, msg(hidden));
 await pause(); const blocked = await rpc(null, 'submit_storefront_order', { ...base, p_items: [{ product_id: prod.id, quantity: 1 }], p_idempotency_key: crypto.randomUUID() });
-ok('unpublished storefront takes no orders', blocked.status >= 400 && !/rate limited/.test(msg(blocked)), msg(blocked));
+ok('unpublished storefront takes no orders', isRefusal(blocked) && !/rate limited/.test(msg(blocked)), msg(blocked));
 await rpc(owner, 'set_storefront_published', { p_business_id: B, p_published: wasPublished !== false });
 // anonymous cannot read orders
 const anonOrders = await sel(null, `orders?select=id&limit=1`);

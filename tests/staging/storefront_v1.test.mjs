@@ -15,8 +15,11 @@ const H = tok => ({ apikey: KEY, authorization: `Bearer ${tok || KEY}`, 'content
 const SH = { apikey: SVC, authorization: `Bearer ${SVC}`, 'content-type': 'application/json' };
 async function rpc(tok, name, body = {}) { const r = await fetch(`${URL_}/rest/v1/rpc/${name}`, { method: 'POST', headers: H(tok), body: JSON.stringify(body) }); const t = await r.text(); let j; try { j = JSON.parse(t); } catch { j = t; } return { status: r.status, body: j }; }
 async function rest(tok, method, path, body) { const r = await fetch(`${URL_}/rest/v1/${path}`, { method, headers: { ...H(tok), prefer: 'return=representation' }, body: body ? JSON.stringify(body) : undefined }); return { status: r.status, body: await r.json().catch(() => null) }; }
-const msg = r => (r.body && (r.body.message || r.body.hint)) || JSON.stringify(r.body);
-const refused = r => r.status >= 400;
+const msg = r => (r.body && (r.body.error || r.body.message || r.body.hint)) || JSON.stringify(r.body);
+// submit_storefront_order returns its refusals as {error} (HTTP 200) so failed
+// attempts stay counted by the rate limit (migration 20261007150000).
+const isRefusal = r => r.status >= 400 || !!r.body?.error;
+const refused = r => isRefusal(r);
 const uid = tok => JSON.parse(Buffer.from(tok.split('.')[1], 'base64url').toString()).sub;
 const uuid = () => crypto.randomUUID();
 const stamp = String(Date.now()).slice(-6);
