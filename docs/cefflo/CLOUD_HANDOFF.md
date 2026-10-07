@@ -40,11 +40,12 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 | **Operator** | **LOCKED @ `79752d0`** | see §3a |
 | **Driver Core** | **LOCKED @ `8d773c4`** | see §3c |
 | **Vendor App (Owner) V1** | **LOCKED @ `2bd8636`** | see §3d |
+| **Vendor Web V1** | **LOCKED @ `234b0cc`** | see §3f |
 | Driver Marketplace Verification | **HOLD** — see §4 | backend + UI on staging |
-| Vendor App / Vendor Web | Wired on staging; parity decisions locked | full audit pending |
-| Storefront, FOUNDR, Marketing | pending their audit rounds | |
+| Storefront V1 | READY FOR PRODUCT REVIEW (not locked) | see §3e |
+| FOUNDR, Marketing | pending their audit rounds | FOUNDR = next |
 
-**Next surface (per V1 order: Operator + Invite + Helper → Vendor Web → Storefront → Customer Tracking E2E → Vendor App → FOUNDR → Driver): Vendor Web — NOT STARTED.** Start only when the Founder says so.
+**Next surface: FOUNDR — full audit + backend completion (Founder, 2026-10-07).** Compliance items (PDPA §5 / `PDPA_DATA_MAP.md`) are production-readiness gates, not blockers of staging work.
 
 ## 3. Helper PWA — LOCKED @ `fe99e46`
 
@@ -103,6 +104,15 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 - Migrations: `20261007120000_storefront_preview`, `20261007130000_storefront_v1_template_keys` (18 keys, default `care`; retired keys moved to `care`).
 - Tests: `tests/storefront_templates.test.mjs` (5), `tests/staging/storefront_v1` (25), `storefront` (25, starts in a fresh limiter window).
 - Not implemented (no data / HOLD): ratings, sizes/variants, stock, discounts, delivery ETA (Mapbox), payment (orders are placed; payment arranged with the business). Open decision: ordering while the business is closed (store shows Open/Closed now; ordering not blocked).
+
+## 3f. Vendor Web V1 — LOCKED @ `234b0cc` (Founder-approved 2026-10-07)
+
+- Parity with the locked Vendor App, fitted to desktop: Today, Orders, Zones / Active Runs, Drivers, Team (Drivers / Operators / Helpers; approve / reject / remove with typed CONFIRM), Products, Service Area (manual coordinates; Locate needs Mapbox), Storefront settings, Business Profile + Hours, Profile, Notifications + Sound M v1.2.0, Subscription, Hiring, Appearance / Language (EN/BM), Help, About, auth (email/password, session restore, expired session, sign-out). Invite Reset not in UI (as the App, Founder 2026-10-01; server function kept).
+- Storefront settings: the 18 V1 templates (ids/order shared with the renderer and the Vendor App, test-enforced), Live Preview through the real renderer (`store/?embed=1`), colour/slogan live, banner field hidden for no-banner templates, old templates and style selector removed.
+- Subscription from the server price book (`my_subscription` + `subscription_plans`), ENTERPRISE custom, monthly only; payment HOLD.
+- Dates/times in the business timezone; `business_today`; no driver Online/Offline; live refresh on Vendor notifications and tab resume; a refused (`forbidden`) action re-checks membership (as the App's loadSession).
+- Verification 2026-10-07 (staging, real accounts, CDP browser): 144-page sweep at 1440/1100/820/390 (no overflow, console errors or failed requests), Owner + Operator browser QA, security matrix 105/105, full staging regression green, Flutter Vendor 235.
+- Production requirement: `CEFFLO_VENDOR_CONSOLE_URL=https://vendor.cefflo.com/` (Live Preview origin; recorded in the domain map). Gates: Google OAuth, Mapbox, Push, Payments.
 
 ## 4. HOLDs
 
