@@ -447,6 +447,10 @@ footer .foot,footer .foot nav{text-align:center;justify-items:center}footer .bra
 /* images/product visuals: same entrance as cards */
 .js .m-product{opacity:0;translate:0 48px;scale:.94;transition:opacity .9s var(--ease),translate 1s var(--ease),scale 1s var(--ease);transition-delay:var(--d,0ms)}
 .js .m-product.in{opacity:1;translate:0 0;scale:1}
+/* unified entrance: every content block, card and image uses the same motion */
+.js .reveal,.js .m-group>*,.js .m-product,.js .role-card{opacity:0;translate:0 48px;scale:.94;transition:opacity .9s var(--ease),translate 1s var(--ease),scale 1s var(--ease);transition-delay:calc(var(--i,0)*130ms + var(--d,0ms))}
+.js .reveal.in,.js .m-group.in>*,.js .m-product.in,.js .role-card.in{opacity:1;translate:0 0;scale:1}
+.js .m-group{opacity:1;translate:none;scale:none}
 /* ---------- reveal ---------- */
 /* ---------- motion system (calm → reveal → settle) ----------
    A content reveal (.reveal)   B editorial lines (.m-lines)   C product reveal (.m-product)
