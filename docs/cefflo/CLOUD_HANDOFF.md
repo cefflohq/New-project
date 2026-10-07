@@ -43,9 +43,10 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 | **Vendor Web V1** | **LOCKED @ `234b0cc`** | see §3f |
 | Driver Marketplace Verification | **HOLD** — see §4 | backend + UI on staging |
 | Storefront V1 | READY FOR PRODUCT REVIEW (not locked) | see §3e |
-| FOUNDR, Marketing | pending their audit rounds | FOUNDR = next |
+| **FOUNDR V1** | **LOCKED @ `897977a`** | see §3g |
+| Marketing | pending its audit round | |
 
-**Next surface: FOUNDR — full audit + backend completion (Founder, 2026-10-07).** Compliance items (PDPA §5 / `PDPA_DATA_MAP.md`) are production-readiness gates, not blockers of staging work.
+**Next surface: NOT STARTED — waiting for the Founder (FOUNDR locked 2026-10-07).** Compliance items (PDPA §5 / `PDPA_DATA_MAP.md`) are production-readiness gates, not blockers of staging work.
 
 ## 3. Helper PWA — LOCKED @ `fe99e46`
 
@@ -113,6 +114,22 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 - Dates/times in the business timezone; `business_today`; no driver Online/Offline; live refresh on Vendor notifications and tab resume; a refused (`forbidden`) action re-checks membership (as the App's loadSession).
 - Verification 2026-10-07 (staging, real accounts, CDP browser): 144-page sweep at 1440/1100/820/390 (no overflow, console errors or failed requests), Owner + Operator browser QA, security matrix 105/105, full staging regression green, Flutter Vendor 235.
 - Production requirement: `CEFFLO_VENDOR_CONSOLE_URL=https://vendor.cefflo.com/` (Live Preview origin; recorded in the domain map). Gates: Google OAuth, Mapbox, Push, Payments.
+
+## 3g. FOUNDR V1 — LOCKED @ `897977a` (Founder-approved 2026-10-07)
+
+Final verification: P0 none · P1 none · READY FOR FOUNDR LOCK.
+
+- **Auth / security:** platform admin only; server-authoritative authorization; **MFA / AAL2 required server-side** (`is_platform_admin()` requires aal2, migration `20261007140000`) — an admin without MFA cannot use admin RPCs or admin RLS/storage reads; mandatory MFA set-up (no "Not now"); Cloudflare Access stays in the production protection architecture; sensitive admin mutations are audit-logged.
+- **Admin backend:** the 24 FOUNDR admin RPCs on the real backend; no fake operational/admin data; RLS + RPC authorization authoritative; `admin_audit_log` authoritative for admin mutations.
+- **Subscriptions:** server price book only — FREE · GROW · OPERATE · SCALE · ENTERPRISE (custom). `trial` is a status, never a selectable plan. No `business_subscriptions` row = **Free (default)** (no row created). Admin override through `admin_set_subscription` with confirmation (current → target), server result shown, audited. No fake payment / invoices / renewal, annual pricing, overage or quota enforcement.
+- **Marketplace Driver Verification (manual review, LOCKED):** views Pending / Needs review / Verified / Rejected / Retake; decisions Verify / Reject / Retake licence / Retake vehicle via `decide_marketplace_verification` (now writes `admin_audit_log` `marketplace_decision`); private documents through temporary signed URLs only; IC shown as last 4 digits only, the full IC never exposed by FOUNDR; confirmation before every decision; reason required for Reject / Retake; result refreshed from the backend. Google Vision / OCR, Marketplace activation payment and face / liveness remain HOLD.
+- **Terminology:** user-facing "Driver"; backend identifiers keep `rider` / `riders` / `rider_*`.
+- **Modules locked as functional:** Overview, Vendors, Operations, Drivers, Driver Verification, Controls (Maintenance, Flags, Announcements, Broadcast), Versions, Subscriptions, System Health, Audit Log, Settings / Account / Admin, Auth + MFA. Honest HOLD states (not blockers, never fabricated): Support, Marketing, external Integrations Health.
+- **Security baseline:** `tests/staging/foundr_admin` **168/168** — all 24 used admin RPCs; anon / normal user / business Owner / AAL1 admin rejected, AAL2 admin permitted; RLS isolation; private document access; audit rows for every admin mutation incl. Marketplace decisions; fixtures cleaned.
+- **Browser QA (CDP, real [TEST] admin + TOTP):** PASS at 1440 / 1100 / 820 / 390; 52-page sweep with 0 console errors, 0 failed requests, 0 page errors; no page-level horizontal overflow; single approved light theme.
+- **Regression (2026-10-07):** foundr_admin 168/168 · subscription 27/27 · vendor_owner_lifecycle 66/66 · storefront_v1 25/25 · storefront 25/25 · operator_access 42/42 · operator_lifecycle 89/89 · helper_access 36/36 · helper_backlog 22/22 · helper_lifecycle 59/59 · helper_e2e 33/33 · invite_regression 54/54 · invite_security 48/48 · driver_profile 25/25 · driver_lifecycle 110/110 · rider_hub_find_jobs 57/57 · delivery_e2e 33/33 · customer_tracking 63/63 · marketplace_verification 55/55; offline foundr_auth_recovery 12/12 · foundr_mfa 15/15 (+ storefront_templates 6/6, vendor_web_auth_recovery 10/10, production_surfaces).
+- **Known non-blockers:** (1) **HARD PRE-OCR PRODUCTION GATE:** `driver_marketplace_verifications.licence_result` can technically hold the full IC from OCR; data minimisation must be resolved BEFORE Google Vision / OCR is enabled for real users (not done in the lock). (2) Long admin email truncates at phone width (cosmetic). (3) `apps/vendor_mobile/analysis_options.yaml` local change is unrelated and untouched.
+- Global holds that do not reopen FOUNDR: payment gateway, Marketplace activation payment, Vision/OCR live processing and its data-minimisation fix, face/liveness, Mapbox, external push, Google OAuth production E2E/allow-list, Supabase Singapore production project, production DNS/secrets/migrations, remaining PDPA readiness, external Support/Marketing/integration sources.
 
 ## 4. HOLDs
 
