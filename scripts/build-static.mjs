@@ -24,7 +24,7 @@ await cp(new URL('../apps/vendor_web/', import.meta.url), new URL('../dist/web/'
 // brought in from main @ 15efffe so one branch serves the website and every
 // product host (vercel.json routes the product hosts to their surfaces).
 await cp(new URL('../website/index.html', import.meta.url), new URL('../dist/index.html', import.meta.url));
-for (const page of ['privacy.html', 'terms.html']) await cp(new URL(`../website/${page}`, import.meta.url), new URL(`../dist/${page}`, import.meta.url));
+for (const page of ['privacy.html', 'terms.html', 'robots.txt', 'sitemap.xml']) await cp(new URL(`../website/${page}`, import.meta.url), new URL(`../dist/${page}`, import.meta.url));
 await cp(new URL('../website/img/', import.meta.url), new URL('../dist/img/', import.meta.url), { recursive: true });
 await cp(new URL('../website/fonts/', import.meta.url), new URL('../dist/fonts/', import.meta.url), { recursive: true });
 await mkdir(new URL('../dist/server/', import.meta.url), { recursive: true });
@@ -37,7 +37,7 @@ const published = await readdir(output);
 for (const name of FORBIDDEN_OUTPUT_DIRS) {
   if (published.includes(name)) throw new Error(`Obsolete UI "${name}" must never be published`);
 }
-const allowed = new Set([...Object.keys(CANONICAL_SURFACES), 'web', 'img', 'fonts', 'index.html', 'privacy.html', 'terms.html', 'server', '.openai']);
+const allowed = new Set([...Object.keys(CANONICAL_SURFACES), 'web', 'img', 'fonts', 'index.html', 'privacy.html', 'terms.html', 'robots.txt', 'sitemap.xml', 'server', '.openai']);
 for (const name of published) {
   if (!allowed.has(name)) throw new Error(`Unexpected published entry "${name}" -- not a canonical surface`);
 }

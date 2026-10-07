@@ -12,6 +12,13 @@
 <meta property="og:description" content="Orders, delivery zones, multi-drop runs, Drivers and customer tracking in one system. Start free.">
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://cefflo.com/">
+<link rel="alternate" hreflang="en" href="https://cefflo.com/">
+<link rel="alternate" hreflang="ms" href="https://cefflo.com/?lang=ms">
+<link rel="alternate" hreflang="x-default" href="https://cefflo.com/">
+<meta property="og:url" content="https://cefflo.com/">
+<meta property="og:image" content="https://cefflo.com/img/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="preload" href="fonts/inter-ExtraBold.woff2" as="font" type="font/woff2" crossorigin>
@@ -379,7 +386,7 @@ footer{background:linear-gradient(135deg,#01265e 0%,#00378f 55%,#0050d6 100%);co
 @media(max-width:600px){.fan{height:300px;left:22px}.fan .phone{--w:96px}}
 /* ---------- hero: clean white ---------- */
 .hero{background:#fff;color:var(--ink)}
-.hero .eyebrow{color:#0057e7}.hero h1{color:#8a8f98}.hero h1 .hl{color:var(--ink)}
+.hero .eyebrow{color:#0057e7}.hero h1{color:var(--ink)}.hero h1 .hl{color:var(--ink)}
 .hero .lead{color:#5b6577}
 .hero-stores{display:flex;justify-content:center;gap:12px;margin-top:32px}
 .hs{display:inline-flex;align-items:center;gap:12px;height:64px;padding:0 24px 0 20px;border-radius:18px;text-align:left;transition:transform .2s}
@@ -396,6 +403,31 @@ main .hero .lead{margin-left:auto;margin-right:auto}
 .stage .phone{animation:none!important}
 .phone,.phone img{animation:none!important}
 footer .foot,footer .foot nav{text-align:center;justify-items:center}footer .brand{justify-content:center}footer .foot p{margin-inline:auto}
+/* ---------- cleanup pass ---------- */
+.hero h1 .hl{background:linear-gradient(90deg,#0592eb,#0060fe 55%,#00378f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-cta{display:flex;justify-content:center;margin-top:30px}.hero-start{min-height:56px;padding-inline:34px;font-size:17px}
+.hero-stores{margin-top:14px!important}
+.moments{list-style:none;padding:0;margin:56px auto 0;display:grid;grid-template-columns:1fr 1.6fr 1fr;gap:18px;max-width:1100px;align-items:stretch;position:relative}
+.mo{border:1px solid var(--line);border-radius:22px;background:#fff;padding:26px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;position:relative}
+.mo b{font-size:20px;letter-spacing:-.02em}.mo p{margin:0;color:var(--muted);font-size:14.5px}
+.mo .dot{margin:0 0 6px}
+.mo.op{background:var(--brand-grad);border-color:transparent;color:#fff}.mo.op b,.mo.op p{color:#fff}.mo.op .dot{background:#fff;border-color:#fff;color:#0050d6}
+.subs{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.subs li{padding:7px 12px;border-radius:999px;background:#ffffff24;border:1px solid #ffffff40;font-size:13px;font-weight:600}
+.mo.done .dot{background:var(--yellow);border-color:var(--yellow);color:#111}
+.mo:not(:last-child):after{content:'';position:absolute;top:50%;right:-14px;width:10px;height:10px;border-top:2px solid #0060fe;border-right:2px solid #0060fe;transform:translateY(-50%) rotate(45deg);z-index:1}
+.ig-legend{display:flex;flex-direction:column;gap:8px;margin-top:18px;align-items:center;font-size:13.5px;font-weight:600}
+.ig-legend span{display:block;max-width:420px}.ig-legend span:before{content:'';display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.ig-legend .lv{color:#0b7a46}.ig-legend .lv:before{background:#10b981}.ig-legend .pl{color:#5b6577}.ig-legend .pl:before{background:#c9cdd2}
+.ig-node.soon .ig-ico{opacity:.45;filter:grayscale(1)}.ig-node.soon small{color:#8a93a3}
+.ig-node em{position:absolute;top:-8px;right:-8px;font-style:normal;font-size:9.5px;font-weight:800;padding:3px 7px;border-radius:999px;background:#eef1f5;color:#5b6577;border:1px solid #dfe4ec}
+.soon-tag{display:inline-block;vertical-align:middle;margin-left:6px;padding:4px 10px;border-radius:999px;background:#eef1f5;color:#5b6577;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.cta-band{background:radial-gradient(120% 110% at 50% 0%,#0592eb 0%,#0060fe 35%,#00378f 75%,#01265e 100%);color:#fff;padding-bottom:clamp(64px,8vw,110px)}
+.cta-band .eyebrow{color:var(--yellow)}.cta-band h2{color:#fff}.cta-band .lead{color:#ffffffde}
+.cta-band .button.primary{background:#fff;border-color:#fff;color:#0050d6}
+.cta-band .store-badge{background:#ffffff1f;border:1px solid #ffffff40;box-shadow:none}
+.cta-band .pair:after{background:radial-gradient(#00133260,transparent 70%)}
+@media(max-width:900px){.moments{grid-template-columns:1fr;max-width:460px}.mo:not(:last-child):after{top:auto;bottom:-14px;right:50%;transform:translateX(50%) rotate(135deg)}}
 /* ---------- reveal ---------- */
 /* ---------- motion system (calm → reveal → settle) ----------
    A content reveal (.reveal)   B editorial lines (.m-lines)   C product reveal (.m-product)
@@ -417,8 +449,8 @@ footer .foot,footer .foot nav{text-align:center;justify-items:center}footer .bra
 .ba2-col:first-child .ba2-img{transition:opacity .8s ease .2s}
 .ba2.after-in .ba2-col:first-child .ba2-img{opacity:.8}
 /* Operating flow: three beats — Orders → Cefflo operation → Delivered Today */
-.js .flow.in:before{scale:1}.js .flow:before{scale:0 1;transform-origin:left;transition:scale 1.3s var(--ease) .3s}
-.js .flow .step:last-child .dot{scale:.6;transition:scale .6s cubic-bezier(.3,1.3,.5,1) 1.15s}.js .flow.in .step:last-child .dot{scale:1}
+.js .moments .subs li{opacity:0;translate:0 10px;transition:opacity .5s ease,translate .5s var(--ease);transition-delay:var(--d,0ms)}.js .moments.in .subs li{opacity:1;translate:0 0}
+.js .moments .mo.done .dot{scale:.6;transition:scale .6s cubic-bezier(.3,1.3,.5,1) 1.2s}.js .moments.in .mo.done .dot{scale:1}
 /* micro interaction */
 .button{transition:transform .2s var(--ease),box-shadow .2s,background-color .2s,border-color .2s}
 .tile,.benefit,.sf-card,.plan{transition:transform .3s var(--ease),box-shadow .3s,background .25s}
@@ -428,7 +460,7 @@ footer .foot,footer .foot nav{text-align:center;justify-items:center}footer .bra
 .js .benefit.reveal.in,.js .tile.reveal.in,.js .sf-card.reveal.in,.js .plans.m-group.in>.plan,.js .sf-gallery.m-group.in>*{opacity:1;translate:0 0;scale:1}
 .js .role-card{translate:0 56px;scale:.95}
 details p{overflow:hidden}
-@media(max-width:600px){:root{--m-y:14px;--m-py:16px;--m-stag:45ms}.js .flow:before{scale:1 0;transform-origin:top}.js .flow.in:before{scale:1}}
+@media(max-width:600px){:root{--m-y:14px;--m-py:16px;--m-stag:45ms}}
 
 /* ---------- ≤1100 ---------- */
 @media(max-width:1100px){
@@ -587,7 +619,8 @@ details p{overflow:hidden}
         <span class="eyebrow reveal" style="--d:120ms" data-ms="Sistem operasi delivery tempatan">Local delivery operating system</span>
         <h1 class="m-lines" style="--d:220ms" data-ms="Jalankan <span class='nw'>operasi anda</span><br><span class='hl'>tanpa serabut.</span>">Run your operation<br><span class="hl">without chaos.</span></h1>
         <p class="lead reveal" style="--d:640ms" data-ms="Cefflo membantu bisnes tempatan menyusun order, zon penghantaran, run multi-drop dan Driver dalam satu sistem operasi.">Cefflo helps local businesses organise orders, delivery zones, multi-drop runs and Drivers in one operating system.</p>
-        <div class="hero-stores reveal" style="--d:780ms"><a class="hs apple" href="#" aria-disabled="true" aria-label="App Store, coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.6c-.02-2.1 1.72-3.12 1.8-3.17-.98-1.43-2.5-1.63-3.05-1.65-1.3-.13-2.53.76-3.19.76-.66 0-1.67-.74-2.75-.72-1.41.02-2.72.82-3.44 2.09-1.47 2.55-.38 6.32 1.05 8.39.7 1.01 1.53 2.15 2.62 2.11 1.05-.04 1.45-.68 2.72-.68 1.27 0 1.63.68 2.74.66 1.13-.02 1.85-1.03 2.54-2.05.8-1.17 1.13-2.31 1.15-2.37-.03-.01-2.2-.84-2.22-3.35zM14.27 6.43c.58-.7.97-1.68.86-2.65-.83.03-1.84.55-2.44 1.25-.53.62-1 1.62-.88 2.57.93.07 1.88-.47 2.46-1.17z"/></svg><span><small data-ms="Akan datang di">Coming soon on</small><b>App Store</b></span></a><a class="hs play" href="#" aria-disabled="true" aria-label="Google Play, coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#00d7fe" d="M3.6 2.2l9.9 9.8-9.9 9.8c-.36-.2-.6-.6-.6-1.1V3.3c0-.5.24-.9.6-1.1z"/><path fill="#ffc93c" d="M17.1 8.4l3.1 1.8c.9.5.9 1.8 0 2.3l-3.1 1.8-3.6-2.3z"/><path fill="#ff3a44" d="M13.5 12l3.6 2.3-11.2 6.5c-.8.5-1.7.4-2.3-.1z"/><path fill="#10b981" d="M3.6 2.2c.6-.5 1.5-.6 2.3-.1l11.2 6.3-3.6 3.6z"/></svg><span><small data-ms="Akan datang di">Coming soon on</small><b>Google Play</b></span></a></div>
+        <div class="hero-cta reveal" style="--d:760ms"><a class="button primary hero-start" href="https://vendor.cefflo.com/" data-ms="Mula percuma">Start free</a></div>
+        <div class="hero-stores reveal" style="--d:860ms"><a class="hs apple" href="#" aria-disabled="true" aria-label="App Store, coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.6c-.02-2.1 1.72-3.12 1.8-3.17-.98-1.43-2.5-1.63-3.05-1.65-1.3-.13-2.53.76-3.19.76-.66 0-1.67-.74-2.75-.72-1.41.02-2.72.82-3.44 2.09-1.47 2.55-.38 6.32 1.05 8.39.7 1.01 1.53 2.15 2.62 2.11 1.05-.04 1.45-.68 2.72-.68 1.27 0 1.63.68 2.74.66 1.13-.02 1.85-1.03 2.54-2.05.8-1.17 1.13-2.31 1.15-2.37-.03-.01-2.2-.84-2.22-3.35zM14.27 6.43c.58-.7.97-1.68.86-2.65-.83.03-1.84.55-2.44 1.25-.53.62-1 1.62-.88 2.57.93.07 1.88-.47 2.46-1.17z"/></svg><span><small data-ms="Akan datang di">Coming soon on</small><b>App Store</b></span></a><a class="hs play" href="#" aria-disabled="true" aria-label="Google Play, coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#00d7fe" d="M3.6 2.2l9.9 9.8-9.9 9.8c-.36-.2-.6-.6-.6-1.1V3.3c0-.5.24-.9.6-1.1z"/><path fill="#ffc93c" d="M17.1 8.4l3.1 1.8c.9.5.9 1.8 0 2.3l-3.1 1.8-3.6-2.3z"/><path fill="#ff3a44" d="M13.5 12l3.6 2.3-11.2 6.5c-.8.5-1.7.4-2.3-.1z"/><path fill="#10b981" d="M3.6 2.2c.6-.5 1.5-.6 2.3-.1l11.2 6.3-3.6 3.6z"/></svg><span><small data-ms="Akan datang di">Coming soon on</small><b>Google Play</b></span></a></div>
       
       </div>
     </div>
@@ -613,33 +646,11 @@ details p{overflow:hidden}
         <span class="eyebrow" data-ms="Cara Cefflo berfungsi">How Cefflo works</span>
         <h2 data-ms="Dari order sampai dihantar.<br>Satu aliran yang jelas.">From order to delivered.<br>One clear flow.</h2>
       </div>
-      <ol class="flow m-group">
-        <li class="step"><span class="dot">1</span><b data-ms="Order">Orders</b></li>
-        <li class="step"><span class="dot">2</span><b data-ms="Liputan">Coverage</b></li>
-        <li class="step"><span class="dot">3</span><b data-ms="Zon Penghantaran">Delivery Zones</b></li>
-        <li class="step"><span class="dot">4</span><b data-ms="Pelan Penghantaran">Delivery Plan</b></li>
-        <li class="step"><span class="dot">5</span><b data-ms="Run Multi-drop">Multi-drop Runs</b></li>
-        <li class="step"><span class="dot">6</span><b data-ms="Driver">Drivers</b></li>
-        <li class="step"><span class="dot">7</span><b data-ms="Dihantar Hari Ini">Delivered Today</b></li>
-      </ol>
+      <ol class="moments m-group"><li class="mo"><span class="dot">1</span><b data-ms="Order">Orders</b><p data-ms="Order masuk dari saluran yang anda guna.">Orders come in from the channels you use.</p></li><li class="mo op"><span class="dot">2</span><b data-ms="Operasi Cefflo">Cefflo Operation</b><p data-ms="Anda rancang, Cefflo susun.">You plan, Cefflo organises.</p><ul class="subs"><li data-ms="Liputan">Coverage</li><li data-ms="Zon Penghantaran">Delivery Zones</li><li data-ms="Pelan Penghantaran">Delivery Plan</li><li data-ms="Run Multi-drop">Multi-drop Runs</li><li data-ms="Driver">Drivers</li></ul></li><li class="mo done"><span class="dot">3</span><b data-ms="Dihantar Hari Ini">Delivered Today</b><p data-ms="Driver anda hantar, customer nampak status.">Your Drivers deliver and customers see the status.</p></li></ol>
     </div>
   </section>
 
-  <section class="soft" id="features">
-    <div class="wrap">
-      <div class="head center reveal">
-        <span class="eyebrow" data-ms="Kelebihan utama">Key benefits</span>
-        <h2 data-ms="Rancang. Hantar. Jejak.">Plan. Dispatch. Track.</h2>
-      </div>
-      <div class="benefitgrid">
-        <article class="benefit reveal"><span class="eyebrow" data-ms="Rancang">Plan</span><h3 data-ms="Rancang penghantaran ikut cara bisnes anda beroperasi.">Plan deliveries around how your business actually operates.</h3><p data-ms="Tetapkan liputan dan jadikan order hari ini satu pelan penghantaran yang jelas.">Define coverage and turn today’s orders into a clear delivery plan.</p><div class="visual floor"><div class="phone"><img src="img/s_v_zones.webp" alt="Cefflo Vendor: delivery zones" width="786" height="1704"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div></article>
-        <article class="benefit reveal"><span class="eyebrow" data-ms="Hantar">Dispatch</span><h3 data-ms="Jadikan banyak order sebagai run multi&#8209;drop yang jelas.">Turn many orders into clear multi&#8209;drop runs.</h3><p data-ms="Susun stop dan serahkan setiap run kepada Driver anda.">Organise stops and assign each run to your Driver.</p><div class="visual floor"><div class="phone"><img src="img/s_d_run.webp" alt="Cefflo Driver: run details" width="786" height="1704"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div></article>
-        <article class="benefit reveal"><span class="eyebrow" data-ms="Jejak">Track</span><h3 data-ms="Customer sentiasa tahu, tanpa mesej berulang.">Keep customers informed without constant messages.</h3><p data-ms="Satu pautan menunjukkan Picked Up, On the Way dan Delivered.">One link shows Picked Up, On the Way and Delivered.</p><div class="visual floor"><div class="phone"><img src="img/s_c_done.webp" alt="Customer tracking: delivered" width="786" height="1704"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div></article>
-      </div>
-    </div>
-  </section>
-
-  <section>
+  <section id="features">
     <div class="wrap">
       <div class="head center reveal">
         <span class="eyebrow" data-ms="Satu sistem operasi">One operating system</span>
@@ -661,11 +672,12 @@ details p{overflow:hidden}
         <span class="eyebrow" data-ms="Integrasi">Integrations</span>
         <h2 data-ms="Satukan semua order anda. <span class='hl'>Jalankan delivery tempatan dari Cefflo.</span>">Connect all your orders. <span class="hl">Run your local deliveries from Cefflo.</span></h2>
         <p class="lead" data-ms="Bawa setiap order dari alat yang anda dah guna, dan urus operasi delivery di satu tempat.">Bring every order from the tools you already use and manage your delivery operations in one place.</p>
+        <div class="ig-legend"><span class="lv" data-ms="Tersedia: Storefront, CSV, Excel, manual">Available: Storefront, CSV, Excel, manual entry</span><span class="pl" data-ms="Akan datang: Shopify, WooCommerce, Wix, Google Sheets, Google Drive, API">Coming soon: Shopify, WooCommerce, Wix, Google Sheets, Google Drive, API</span></div>
       </div>
       <div class="ig-hub m-product" role="img" aria-label="Cefflo connected to Storefront, CSV, Excel, manual entry, Shopify, WooCommerce, Wix, Google Sheets, Google Drive and API">
         <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="rg" cx="50" cy="50" r="47"/><circle class="rg" cx="50" cy="50" r="31"/><circle class="rg in" cx="50" cy="50" r="20"/><line class="w" x1="50.0" y1="18.0" x2="50.00" y2="35.80"/><line class="p" x1="50.0" y1="18.0" x2="50.00" y2="35.80" style="animation-delay:-0.00s"/><line class="w" x1="68.81" y1="24.11" x2="58.35" y2="38.51"/><line class="p" x1="68.81" y1="24.11" x2="58.35" y2="38.51" style="animation-delay:-0.27s"/><line class="w" x1="80.43" y1="40.11" x2="63.50" y2="45.61"/><line class="p" x1="80.43" y1="40.11" x2="63.50" y2="45.61" style="animation-delay:-0.54s"/><line class="w" x1="80.43" y1="59.89" x2="63.50" y2="54.39"/><line class="p" x1="80.43" y1="59.89" x2="63.50" y2="54.39" style="animation-delay:-0.81s"/><line class="w" x1="68.81" y1="75.89" x2="58.35" y2="61.49"/><line class="p" x1="68.81" y1="75.89" x2="58.35" y2="61.49" style="animation-delay:-1.08s"/><line class="w" x1="50.0" y1="82.0" x2="50.00" y2="64.20"/><line class="p" x1="50.0" y1="82.0" x2="50.00" y2="64.20" style="animation-delay:-1.35s"/><line class="w" x1="31.19" y1="75.89" x2="41.65" y2="61.49"/><line class="p" x1="31.19" y1="75.89" x2="41.65" y2="61.49" style="animation-delay:-1.62s"/><line class="w" x1="19.57" y1="59.89" x2="36.50" y2="54.39"/><line class="p" x1="19.57" y1="59.89" x2="36.50" y2="54.39" style="animation-delay:-1.89s"/><line class="w" x1="19.57" y1="40.11" x2="36.50" y2="45.61"/><line class="p" x1="19.57" y1="40.11" x2="36.50" y2="45.61" style="animation-delay:-2.16s"/><line class="w" x1="31.19" y1="24.11" x2="41.65" y2="38.51"/><line class="p" x1="31.19" y1="24.11" x2="41.65" y2="38.51" style="animation-delay:-2.43s"/></svg>
         <div class="ig-core"><img src="img/logo_mark.png" alt="" width="165" height="200"><b>Cefflo</b></div>
-        <div class="ig-node" style="left:50.0%;top:10.0%"><span class="ig-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#0050d6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9l1.5-5h13L20 9M4 9h16M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M9 20v-6h6v6"/></svg></span><small>Storefront</small></div><div class="ig-node" style="left:73.5%;top:17.6%"><span class="ig-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#0050d6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5"/><text x="12" y="18" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="5.5" fill="#0050d6" stroke="none">CSV</text></svg></span><small>CSV</small></div><div class="ig-node" style="left:88.0%;top:37.6%"><span class="ig-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="9" y="4" width="20" height="24" rx="2" fill="#21A366"/><path fill="#33C481" d="M19 4h8a2 2 0 0 1 2 2v6H19z"/><path fill="#107C41" d="M9 16h10v12h-8a2 2 0 0 1-2-2z"/><rect x="3" y="9" width="14" height="14" rx="2" fill="#107C41"/><path fill="#fff" d="M6.4 12.5h2.3l1.3 2.4 1.3-2.4h2.2l-2.3 3.5 2.4 3.5h-2.3L10 17l-1.4 2.5H6.3l2.4-3.5z"/></svg></span><small>Excel</small></div><div class="ig-node" style="left:88.0%;top:62.4%"><span class="ig-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#3d4659" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 5l-3 14"/></svg></span><small>API / Webhooks</small></div><div class="ig-node" style="left:73.5%;top:82.4%"><span class="ig-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#0050d6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/></svg></span><small>Manual entry</small></div><div class="ig-node" style="left:50.0%;top:90.0%"><span class="ig-ico"><img src="img/int_sheets.png" alt="" width="40" height="40"></span><small>Google Sheets</small></div><div class="ig-node" style="left:26.5%;top:82.4%"><span class="ig-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#0066DA" d="M4.3 24.6l1.3 2.3c.3.5.7.9 1.1 1.1l4.6-8H2.1c0 .6.1 1.1.4 1.6z"/><path fill="#00AC47" d="M16 11.5 11.4 3.5c-.4.3-.8.6-1.1 1.1L2.5 18.4c-.3.5-.4 1-.4 1.6h9.2z"/><path fill="#EA4335" d="M25.3 28c.4-.3.8-.6 1.1-1.1l.5-.9 2.6-4.4c.3-.5.4-1 .4-1.6h-9.2l2 3.9z"/><path fill="#00832D" d="M16 11.5l4.6-8c-.4-.3-1-.4-1.5-.4h-6.2c-.5 0-1.1.2-1.5.4z"/><path fill="#2684FC" d="M20.7 20H11.3l-4.6 8c.4.3 1 .4 1.5.4h15.6c.5 0 1.1-.2 1.5-.4z"/><path fill="#FFBA00" d="M25.2 12.1l-4.3-7.4c-.3-.5-.7-.9-1.1-1.1L15.2 11.5 20.7 20h9.2c0-.6-.1-1.1-.4-1.6z"/></svg></span><small>Google Drive</small></div><div class="ig-node" style="left:12.0%;top:62.4%"><span class="ig-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><text x="16" y="21" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="12" fill="currentColor">WiX</text></svg></span><small>Wix</small></div><div class="ig-node" style="left:12.0%;top:37.6%"><span class="ig-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="7" width="30" height="16" rx="4" fill="#7F54B3"/><path fill="#7F54B3" d="M17 22l3 5 1-5z"/><text x="16" y="19" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="10" fill="#fff">Woo</text></svg></span><small>WooCommerce</small></div><div class="ig-node" style="left:26.5%;top:17.6%"><span class="ig-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#95BF47" d="M22.6 6.3c0-.1-.1-.2-.2-.2l-2.1-.2-1.6-1.6c-.2-.2-.5-.1-.6-.1l-.8.3C16.8 3.1 16 2.2 14.6 2.2h-.1c-.4-.5-.9-.7-1.3-.7-3.2 0-4.8 4-5.2 6l-2.3.7c-.7.2-.7.2-.8.9L3 27.3l15.2 2.8 8.2-1.8L22.6 6.3z"/><path fill="#5E8E3E" d="M22.4 6.1l-2.1-.2-1.6-1.6-.4-.1L18.2 30l8.2-1.8L22.6 6.3c0-.1-.1-.2-.2-.2z"/><path fill="#fff" d="M14.6 11.2l-1 3s-.9-.5-2-.5c-1.6 0-1.7 1-1.7 1.3 0 1.4 3.6 1.9 3.6 5.1 0 2.5-1.6 4.2-3.8 4.2-2.6 0-4-1.6-4-1.6l.7-2.3s1.4 1.2 2.6 1.2c.8 0 1.1-.6 1.1-1.1 0-1.8-3-1.9-3-4.9 0-2.5 1.8-5 5.5-5 1.4 0 2 .4 2 .4z"/></svg></span><small>Shopify</small></div>
+        <div class="ig-node" style="left:50.0%;top:10.0%"><span class="ig-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#0050d6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9l1.5-5h13L20 9M4 9h16M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M9 20v-6h6v6"/></svg></span><small>Storefront</small></div><div class="ig-node" style="left:73.5%;top:17.6%"><span class="ig-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#0050d6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5"/><text x="12" y="18" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="5.5" fill="#0050d6" stroke="none">CSV</text></svg></span><small>CSV</small></div><div class="ig-node" style="left:88.0%;top:37.6%"><span class="ig-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="9" y="4" width="20" height="24" rx="2" fill="#21A366"/><path fill="#33C481" d="M19 4h8a2 2 0 0 1 2 2v6H19z"/><path fill="#107C41" d="M9 16h10v12h-8a2 2 0 0 1-2-2z"/><rect x="3" y="9" width="14" height="14" rx="2" fill="#107C41"/><path fill="#fff" d="M6.4 12.5h2.3l1.3 2.4 1.3-2.4h2.2l-2.3 3.5 2.4 3.5h-2.3L10 17l-1.4 2.5H6.3l2.4-3.5z"/></svg></span><small>Excel</small></div><div class="ig-node soon" style="left:88.0%;top:62.4%"><span class="ig-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#3d4659" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 5l-3 14"/></svg></span><small>API / Webhooks</small><em data-ms="Akan datang">Soon</em></div><div class="ig-node" style="left:73.5%;top:82.4%"><span class="ig-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#0050d6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/></svg></span><small>Manual entry</small></div><div class="ig-node soon" style="left:50.0%;top:90.0%"><span class="ig-ico"><img src="img/int_sheets.png" alt="" width="40" height="40"></span><small>Google Sheets</small><em data-ms="Akan datang">Soon</em></div><div class="ig-node soon" style="left:26.5%;top:82.4%"><span class="ig-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#0066DA" d="M4.3 24.6l1.3 2.3c.3.5.7.9 1.1 1.1l4.6-8H2.1c0 .6.1 1.1.4 1.6z"/><path fill="#00AC47" d="M16 11.5 11.4 3.5c-.4.3-.8.6-1.1 1.1L2.5 18.4c-.3.5-.4 1-.4 1.6h9.2z"/><path fill="#EA4335" d="M25.3 28c.4-.3.8-.6 1.1-1.1l.5-.9 2.6-4.4c.3-.5.4-1 .4-1.6h-9.2l2 3.9z"/><path fill="#00832D" d="M16 11.5l4.6-8c-.4-.3-1-.4-1.5-.4h-6.2c-.5 0-1.1.2-1.5.4z"/><path fill="#2684FC" d="M20.7 20H11.3l-4.6 8c.4.3 1 .4 1.5.4h15.6c.5 0 1.1-.2 1.5-.4z"/><path fill="#FFBA00" d="M25.2 12.1l-4.3-7.4c-.3-.5-.7-.9-1.1-1.1L15.2 11.5 20.7 20h9.2c0-.6-.1-1.1-.4-1.6z"/></svg></span><small>Google Drive</small><em data-ms="Akan datang">Soon</em></div><div class="ig-node soon" style="left:12.0%;top:62.4%"><span class="ig-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><text x="16" y="21" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="12" fill="currentColor">WiX</text></svg></span><small>Wix</small><em data-ms="Akan datang">Soon</em></div><div class="ig-node soon" style="left:12.0%;top:37.6%"><span class="ig-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="7" width="30" height="16" rx="4" fill="#7F54B3"/><path fill="#7F54B3" d="M17 22l3 5 1-5z"/><text x="16" y="19" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="10" fill="#fff">Woo</text></svg></span><small>WooCommerce</small><em data-ms="Akan datang">Soon</em></div><div class="ig-node soon" style="left:26.5%;top:17.6%"><span class="ig-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#95BF47" d="M22.6 6.3c0-.1-.1-.2-.2-.2l-2.1-.2-1.6-1.6c-.2-.2-.5-.1-.6-.1l-.8.3C16.8 3.1 16 2.2 14.6 2.2h-.1c-.4-.5-.9-.7-1.3-.7-3.2 0-4.8 4-5.2 6l-2.3.7c-.7.2-.7.2-.8.9L3 27.3l15.2 2.8 8.2-1.8L22.6 6.3z"/><path fill="#5E8E3E" d="M22.4 6.1l-2.1-.2-1.6-1.6-.4-.1L18.2 30l8.2-1.8L22.6 6.3c0-.1-.1-.2-.2-.2z"/><path fill="#fff" d="M14.6 11.2l-1 3s-.9-.5-2-.5c-1.6 0-1.7 1-1.7 1.3 0 1.4 3.6 1.9 3.6 5.1 0 2.5-1.6 4.2-3.8 4.2-2.6 0-4-1.6-4-1.6l.7-2.3s1.4 1.2 2.6 1.2c.8 0 1.1-.6 1.1-1.1 0-1.8-3-1.9-3-4.9 0-2.5 1.8-5 5.5-5 1.4 0 2 .4 2 .4z"/></svg></span><small>Shopify</small><em data-ms="Akan datang">Soon</em></div>
       </div>
     </div>
   </section>
@@ -689,18 +701,6 @@ details p{overflow:hidden}
     </div>
   </section>
 
-  <section>
-    <div class="wrap split">
-      <div class="trackvisual floor m-product"><div class="phone"><img src="img/s_c_done.webp" alt="Customer tracking: delivered" width="786" height="1704"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div>
-      <div class="reveal">
-        <span class="eyebrow" data-ms="Pengalaman customer">Customer experience</span>
-        <h2 data-ms="Customer tahu apa yang berlaku. Kurang mesej &ldquo;order saya kat mana?&rdquo;">Customers know what’s happening. Fewer “where is my order?” messages.</h2>
-        <p class="lead" data-ms="Customer buka satu pautan sahaja. Tiada app, tiada akaun.">Customers open one link. No app and no account required.</p>
-        <div class="statuses"><span>Picked Up</span><span>On the Way</span><span class="done">Delivered</span></div>
-      </div>
-    </div>
-  </section>
-
   <section class="soft">
     <div class="wrap">
       <div class="head center reveal">
@@ -715,27 +715,12 @@ details p{overflow:hidden}
   <section class="soft jobs">
     <div class="wrap">
       <div class="head center reveal">
-        <span class="eyebrow" data-ms="Cari Driver">Find Drivers</span>
+        <span class="eyebrow" data-ms="Cari Driver">Find Drivers</span> <span class="soon-tag" data-ms="Akan datang">Coming soon</span>
         <h2 data-ms="Driver boleh jumpa kerja anda.">Drivers can find your job.</h2>
         <p class="lead" data-ms="Siarkan slot penghantaran anda. Driver berdekatan nampak, mohon dan tambah ke jadual mingguan mereka.">Post your delivery shifts. Nearby Drivers see them, apply and add them to their weekly schedule.</p>
       </div>
       <div class="jobs-stage m-product"><div class="phone tilt-l j-left"><img src="img/s_d_jobs.webp" alt="Cefflo Driver: Find Jobs openings nearby" width="786" height="1704"><span class="sb" aria-hidden="true">9:41<i></i></span></div><div class="phone j-right"><img src="img/s_d_schedule.webp" alt="Cefflo Driver: My Schedule" width="786" height="1704"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div>
       <div class="jobs-points m-group"><span data-ms="Ikut kawasan dan jarak">By area and distance</span><span data-ms="Pagi, tengah hari, malam">Morning, noon or night shifts</span><span data-ms="Driver disahkan sebelum bekerja">Drivers verified before they work</span></div>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <div class="head center reveal">
-        <span class="eyebrow" data-ms="Hasil praktikal">Practical outcomes</span>
-        <h2 data-ms="Kurang koordinasi. Lebih jelas setiap hari.">Less coordination. More clarity every day.</h2>
-      </div>
-      <div class="outcomes m-group">
-        <article><b data-ms="Kurang koordinasi manual">Less manual coordination</b></article>
-        <article><b data-ms="Perancangan delivery lebih jelas">Clearer delivery planning</b></article>
-        <article><b data-ms="Kurang soalan status daripada customer">Fewer customer status questions</b></article>
-        <article><b data-ms="Satu paparan operasi harian">One daily operating view</b></article>
-      </div>
     </div>
   </section>
 
@@ -748,14 +733,14 @@ details p{overflow:hidden}
       </div>
       <div class="plans m-group">
         <article class="plan" tabindex="0" role="button" aria-pressed="false"><h3>FREE</h3><p class="who" data-ms="Rasa sendiri operasi Cefflo dengan penghantaran sebenar.">Run real deliveries on Cefflo.</p><div class="price">RM0</div><div class="per" data-ms="/ bulan">/ month</div><ul>
-          <li data-ms="150 penghantaran siap sebulan">150 completed deliveries a month</li><li data-ms="Sehingga 3 Driver aktif">Up to 3 active Drivers</li><li data-ms="Sehingga 2 zon">Up to 2 zones</li><li data-ms="1 pengguna">1 user</li></ul><a class="button plan-cta" href="https://vendor.cefflo.com/?plan=free" data-ms="Mula percuma">Start free</a></article>
+          <li data-ms="150 penghantaran siap sebulan">150 completed deliveries a month</li><li data-ms="Sehingga 3 Driver aktif">Up to 3 active Drivers</li><li data-ms="Sehingga 2 zon">Up to 2 zones</li><li data-ms="1 pengguna">1 user</li></ul><a class="button plan-cta" href="https://vendor.cefflo.com/" data-ms="Mula percuma">Start free</a></article>
         <article class="plan" tabindex="0" role="button" aria-pressed="false"><h3>GROW</h3><p class="who" data-ms="Untuk bisnes yang dah hantar setiap hari.">For businesses delivering every day.</p><div class="price">RM99</div><div class="per" data-ms="/ bulan">/ month</div><ul>
-          <li data-ms="500 penghantaran siap sebulan">500 completed deliveries a month</li><li data-ms="Sehingga 10 Driver aktif">Up to 10 active Drivers</li><li data-ms="Sehingga 5 zon">Up to 5 zones</li><li data-ms="Sehingga 3 pengguna">Up to 3 users</li></ul><a class="button plan-cta" href="https://vendor.cefflo.com/?plan=grow" data-ms="Pilih Grow">Choose Grow</a></article>
+          <li data-ms="500 penghantaran siap sebulan">500 completed deliveries a month</li><li data-ms="Sehingga 10 Driver aktif">Up to 10 active Drivers</li><li data-ms="Sehingga 5 zon">Up to 5 zones</li><li data-ms="Sehingga 3 pengguna">Up to 3 users</li></ul><a class="button plan-cta" href="https://vendor.cefflo.com/" data-ms="Pilih Grow">Choose Grow</a></article>
         <article class="plan on" tabindex="0" role="button" aria-pressed="true"><span class="tag" data-ms="Disyorkan">Recommended</span><h3>OPERATE</h3><p class="who" data-ms="Jalankan operasi delivery bisnes anda sepenuhnya.">Run your whole delivery operation.</p><div class="price">RM199</div><div class="per" data-ms="/ bulan">/ month</div><ul>
-          <li data-ms="1,500 penghantaran siap sebulan">1,500 completed deliveries a month</li><li data-ms="Driver tanpa had">Unlimited Drivers</li><li data-ms="Zon tanpa had">Unlimited zones</li><li data-ms="Sehingga 10 pengguna">Up to 10 users</li></ul><a class="button plan-cta" href="https://vendor.cefflo.com/?plan=operate" data-ms="Pilih Operate">Choose Operate</a></article>
+          <li data-ms="1,500 penghantaran siap sebulan">1,500 completed deliveries a month</li><li data-ms="Driver tanpa had">Unlimited Drivers</li><li data-ms="Zon tanpa had">Unlimited zones</li><li data-ms="Sehingga 10 pengguna">Up to 10 users</li></ul><a class="button plan-cta" href="https://vendor.cefflo.com/" data-ms="Pilih Operate">Choose Operate</a></article>
         <article class="plan" tabindex="0" role="button" aria-pressed="false"><h3>SCALE</h3><p class="who" data-ms="Untuk operasi berkapasiti tinggi.">For high-volume operations.</p><div class="price">RM499</div><div class="per" data-ms="/ bulan">/ month</div><ul>
-          <li data-ms="5,000 penghantaran siap sebulan">5,000 completed deliveries a month</li><li data-ms="Driver tanpa had">Unlimited Drivers</li><li data-ms="Zon tanpa had">Unlimited zones</li><li data-ms="Sehingga 25 pengguna">Up to 25 users</li></ul><a class="button plan-cta" href="https://vendor.cefflo.com/?plan=scale" data-ms="Pilih Scale">Choose Scale</a></article>
-        <article class="plan" tabindex="0" role="button" aria-pressed="false"><h3>ENTERPRISE</h3><p class="who" data-ms="Lebih 5,000 penghantaran sebulan atau keperluan khas.">Over 5,000 deliveries a month or special requirements.</p><div class="price" data-ms="Ikut keperluan">Custom</div><div class="per" data-ms="Harga disesuaikan">Custom pricing</div><a class="button plan-cta" href="https://vendor.cefflo.com/?plan=enterprise" data-ms="Pilih Enterprise">Choose Enterprise</a></article>
+          <li data-ms="5,000 penghantaran siap sebulan">5,000 completed deliveries a month</li><li data-ms="Driver tanpa had">Unlimited Drivers</li><li data-ms="Zon tanpa had">Unlimited zones</li><li data-ms="Sehingga 25 pengguna">Up to 25 users</li></ul><a class="button plan-cta" href="https://vendor.cefflo.com/" data-ms="Pilih Scale">Choose Scale</a></article>
+        <article class="plan" tabindex="0" role="button" aria-pressed="false"><h3>ENTERPRISE</h3><p class="who" data-ms="Lebih 5,000 penghantaran sebulan atau keperluan khas.">Over 5,000 deliveries a month or special requirements.</p><div class="price" data-ms="Ikut keperluan">Custom</div><div class="per" data-ms="Harga disesuaikan">Custom pricing</div><a class="button plan-cta" href="mailto:support@cefflo.com?subject=Cefflo%20Enterprise%20enquiry" data-ms="Hubungi kami">Contact us</a></article>
       </div>
       
     </div>
@@ -780,7 +765,7 @@ details p{overflow:hidden}
     </div>
   </section>
 
-  <section class="closing">
+  <section class="closing cta-band">
     <div class="wrap center">
       <div class="reveal">
         <span class="eyebrow" data-ms="Mula dengan Cefflo">Get started with Cefflo</span>
@@ -849,8 +834,8 @@ details p{overflow:hidden}
     document.querySelectorAll('.m-lines').forEach(lines);
     document.querySelectorAll('.m-group').forEach(function (g) { [].forEach.call(g.children, function (c, i) { c.style.setProperty('--i', Math.min(i, 6)); }); });
     document.querySelectorAll('.reveal').forEach(function (r) { var sib = [].filter.call(r.parentElement.children, function (x) { return x.classList.contains('reveal') && !x.style.getPropertyValue('--d'); }); var i = sib.indexOf(r); if (i > 0) r.style.setProperty('--i', Math.min(i, 5)); });
-    var fl = document.querySelector('.flow'); // D: three beats
-    if (fl) [].forEach.call(fl.children, function (st, i) { st.style.setProperty('--i', 0); st.style.setProperty('--d', i === 0 ? '0ms' : i === fl.children.length - 1 ? '1050ms' : (380 + (i - 1) * 70) + 'ms'); });
+    var fl = document.querySelector('.moments'); // D: three beats — Orders → Cefflo Operation → Delivered Today
+    if (fl) { [].forEach.call(fl.children, function (st, i) { st.style.setProperty('--i', 0); st.style.setProperty('--d', [0, 380, 900][i] + 'ms'); }); fl.querySelectorAll('.subs li').forEach(function (li, i) { li.style.setProperty('--d', (620 + i * 70) + 'ms'); }); }
     requestAnimationFrame(function () { document.querySelector('.nav').classList.add('in'); });
     var ba = document.querySelector('.ba2');
     var o = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); o.unobserve(e.target);
