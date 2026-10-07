@@ -196,7 +196,7 @@ class AppState extends ChangeNotifier {
   /// account email is never displayed as a name. The demo session is the
   /// demo owner.
   String get userDisplayName {
-    if (repo.isDemo) return 'Yusuf Sazali';
+    if (repo.isDemo) return 'Fida';
     final meta = repo.currentUser?.userMetadata ?? const {};
     return (meta['full_name'] ?? meta['name'] ?? '').toString().trim();
   }

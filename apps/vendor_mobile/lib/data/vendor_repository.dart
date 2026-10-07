@@ -2060,9 +2060,9 @@ class _DemoData {
     TeamMember(
       userId: 'team-owner',
       role: 'owner',
-      displayName: 'Yusuf Sazali',
+      displayName: 'Fida',
       phone: '+60 12 345 6789',
-      email: 'yusuf@kopikita.my',
+      email: 'fida1996@gmail.com',
     ),
     TeamMember(
       userId: 'team-ops',

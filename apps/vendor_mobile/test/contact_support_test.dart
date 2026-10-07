@@ -23,7 +23,7 @@ void main() {
 
     expect(find.text('support@cefflo.com'), findsWidgets);
     // No demo contact prefilled, no fake attachment picker.
-    expect(find.text('yusuf@kopikita.my'), findsNothing);
+    expect(find.text('fida1996@gmail.com'), findsNothing);
     expect(find.text('Tap to attach images'), findsNothing);
 
     // An empty message is not "sent" anywhere.

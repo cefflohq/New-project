@@ -18,7 +18,7 @@ export class DemoReadOnlyError extends Error {}
 // ---------------------------------------------------------------- sample data
 const BIZ = 'demo-biz-kopikita';
 export const DEMO_SESSION = Object.freeze({ access_token: 'demo', token_type: 'bearer' });
-const USER = { id: 'demo-owner', email: 'yusuf@kopikita.my', user_metadata: { full_name: 'Yusuf Sazali' } };
+const USER = { id: 'demo-owner', email: 'fida1996@gmail.com', user_metadata: { full_name: 'Fida' } };
 
 function todayLocal() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kuala_Lumpur', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
@@ -142,7 +142,7 @@ const TABLES = {
     { key: 'scale', name: 'Scale', monthly_price_myr: 499, delivery_allowance: 5000, driver_cap: null, zone_cap: null, team_user_cap: 25, most_popular: false, self_serve: true, sort: 4 },
     { key: 'enterprise', name: 'Enterprise', monthly_price_myr: null, delivery_allowance: null, driver_cap: null, zone_cap: null, team_user_cap: null, most_popular: false, self_serve: false, sort: 5 },
   ],
-  profiles: () => [{ id: USER.id, display_name: 'Yusuf Sazali', phone: '+60 12-600 1122' }],
+  profiles: () => [{ id: USER.id, display_name: 'Fida', phone: '+60 12-600 1122' }],
 };
 
 export async function demoGet(path) {

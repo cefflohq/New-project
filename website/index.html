@@ -2,944 +2,767 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Cefflo — Same-Day Delivery Operating System</title>
-<meta name="description" content="Cefflo groups today&#39;s orders by area, turns them into multi-drop runs for your own riders, and gives customers a tracking link. Start free.">
-<meta name="theme-color" content="#01265E">
-<meta property="og:title" content="Cefflo — Run local delivery without the chaos">
-<meta property="og:description" content="Orders, zones, multi-drop runs, riders and customer tracking in one system. Start free.">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cefflo — Local Delivery Operating System</title>
+<meta name="description" content="Organise orders, delivery zones, multi-drop runs and Drivers in one local delivery operating system.">
+<meta name="theme-color" content="#01265e">
+<!-- "light dark" stops Chrome Auto Dark / Android WebView from machine-darkening the page; every surface sets its own colours. -->
+<meta name="color-scheme" content="light dark">
+<meta property="og:title" content="Cefflo — Run your operation without chaos">
+<meta property="og:description" content="Orders, delivery zones, multi-drop runs, Drivers and customer tracking in one system. Start free.">
 <meta property="og:type" content="website">
-<link rel="icon" type="image/png" href="img/logo_mark.png">
+<link rel="canonical" href="https://cefflo.com/">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="preload" href="fonts/inter-ExtraBold.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-/* Inter (SIL OFL 1.1), subset to Latin; same files the Vendor app bundles. */
-@font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/inter-Regular.woff2") format("woff2"); }
-@font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap; src: url("fonts/inter-Medium.woff2") format("woff2"); }
-@font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap; src: url("fonts/inter-SemiBold.woff2") format("woff2"); }
-@font-face { font-family: "Inter"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/inter-Bold.woff2") format("woff2"); }
-@font-face { font-family: "Inter"; font-style: normal; font-weight: 800; font-display: swap; src: url("fonts/inter-ExtraBold.woff2") format("woff2"); }
-/* Colour values are the canonical Vendor Mobile tokens
-   (apps/vendor_mobile/lib/core/theme.dart, D-70). */
-:root {
-  color-scheme: light;
-  --anchor: #01265E;
-  --g1: #00378F;
-  --g2: #005CC4;
-  --g3: #0592EB;
-  --brand: #0060FE;
-  --tint: #E6EFFF;
-  --mustard: #FFC93C;
-  --on-mustard: #181818;
-  --navy: #0B1220;
-  --ink: #0F1A36;
-  --ink-2: #6B7489;
-  --ink-3: #9AA1B2;
-  --canvas: #F4F6FA;
-  --surface: #FFFFFF;
-  --line: #E6E9F0;
-  --success: #10B981;
-  --attention: #EF4444;
-  --gradient: linear-gradient(180deg, #01265E 0%, #00378F 35%, #005CC4 70%, #0592EB 100%);
+@font-face{font-family:Inter;src:url('fonts/inter-Regular.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url('fonts/inter-Medium.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url('fonts/inter-SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
+@font-face{font-family:Inter;src:url('fonts/inter-Bold.woff2') format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url('fonts/inter-ExtraBold.woff2') format('woff2');font-weight:800;font-display:swap}
 
-  --gutter: 20px;
-  --max: 1240px;
-  --section: 96px;
-  --r-lg: 28px;
-  --r-md: 20px;
-  --ease: cubic-bezier(.2, .7, .2, 1);
+/* ---------- tokens ---------- */
+:root{
+  color-scheme:light dark;
+  --navy:#01265e;--blue-deep:#00378f;--blue:#0060fe;--blue-mid:#0050d6;--cyan:#0592eb;--sky:#9fd4ff;
+  --yellow:#ffc93c;--ink:#07101f;--graphite:#0a1426;--muted:#4f5b70;--line:#e2e6ed;--soft:#f5f7fa;--white:#fff;
+  --brand-grad:linear-gradient(145deg,#00378f 0%,#0050d6 62%,#0060fe 100%) border-box;
+  --max:1200px;--g:clamp(20px,4vw,56px);--s:clamp(80px,9vw,128px);--r:24px;
 }
-@media (min-width: 768px) { :root { --gutter: 32px; --section: 128px; } }
-@media (min-width: 1200px) { :root { --gutter: 56px; --section: 168px; } }
+*{box-sizing:border-box}
+html{background:var(--white);scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--white);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:clip}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-appearance:none;appearance:none}
+:focus-visible{outline:3px solid #0057e7;outline-offset:3px;border-radius:8px}
+.nav :focus-visible,.hero :focus-visible,footer :focus-visible,.on-blue :focus-visible{outline-color:var(--yellow)}
+section[id]{scroll-margin-top:96px}
 
-*, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; overflow-x: clip; }
-body {
-  margin: 0;
-  background: var(--canvas);
-  color: var(--ink);
-  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 17px;
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-}
-img { display: block; max-width: 100%; }
-a { color: inherit; text-decoration: none; }
-:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; border-radius: 8px; }
+.wrap{width:min(100%,calc(var(--max) + var(--g)*2));margin-inline:auto;padding-inline:var(--g)}
+section{padding-block:var(--s)}
+.soft{background:var(--soft)}
+.center{text-align:center;margin-inline:auto}
+.eyebrow{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#0057e7}
+h1,h2,h3{margin:0;color:var(--ink);text-wrap:balance}
+h1{font-size:clamp(44px,7vw,88px);font-weight:800;letter-spacing:-.05em;line-height:.98}
+h2{font-size:clamp(32px,4.4vw,58px);font-weight:800;letter-spacing:-.045em;line-height:1.03}
+.eyebrow+h2,.eyebrow+h1{margin-top:16px}
+h3{font-weight:700;letter-spacing:-.025em}
+.nw{white-space:nowrap}
+.lead{font-size:clamp(17px,1.5vw,20px);line-height:1.55;color:var(--muted);max-width:640px;text-wrap:pretty}
+.center .lead{margin-inline:auto}
+.head{max-width:880px}
+.head .lead{margin-top:18px}
 
-.wrap { width: 100%; max-width: var(--max); margin-inline: auto; padding-inline: var(--gutter); }
-section { padding-block: calc(var(--section) / 2); }
+/* buttons: the primary action is always yellow with ink text */
+.buttons{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.center .buttons{justify-content:center}
+.button{min-height:52px;padding:0 24px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;border:1px solid var(--line);background:var(--white);color:var(--ink);transition:transform .2s,box-shadow .2s,background-color .2s}
+.button:hover{transform:translateY(-1px);box-shadow:0 12px 28px -10px #0b122033}
+.button.primary{background:var(--yellow);border-color:var(--yellow);color:#111}
+.button.primary:hover{box-shadow:0 12px 28px -8px #ffc93c80}
+.button.ghost{background:transparent;border-color:#ffffff66;color:#fff}
+.button.ghost:hover{background:#ffffff14}
+.fine{font-size:13px;color:#5b6577}
 
-/* ---------- type ---------- */
-.label {
-  display: inline-block;
-  font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--brand);
-  margin-bottom: 18px;
-}
-.h1, .h2 { margin: 0; font-weight: 800; letter-spacing: -.035em; line-height: 1.02; text-wrap: balance; }
-.h1 { font-size: clamp(42px, 7vw, 104px); }
-@media (min-width: 1100px) { .hero .h1 { font-size: clamp(56px, 6vw, 96px); } .split .h2 { font-size: clamp(36px, 3.6vw, 58px); } }
-.h2 { font-size: clamp(34px, 4.6vw, 68px); }
-.h1 .soft, .h2 .soft { color: var(--ink-3); }
-.lead { margin: 22px 0 0; max-width: 40ch; color: var(--ink-2); font-size: clamp(18px, 1.6vw, 21px); line-height: 1.5; }
-.center { text-align: center; }
-.center .lead { margin-inline: auto; }
-.head { max-width: 900px; }
-.center.head { margin-inline: auto; }
+/* ---------- nav (graphite glass: the official white mark + wordmark stay visible on every section) ---------- */
+.nav{position:fixed;inset:14px 0 auto;z-index:50}
+.navin{height:60px;display:flex;align-items:center;gap:22px;padding:8px 8px 8px 18px;border:1px solid #ffffff1f;border-radius:999px;background:#0a1426eb;box-shadow:0 18px 44px -12px #0b122066;-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%)}
+.brand{display:flex;align-items:center;gap:9px;flex:none}
+.brand .mark{height:28px;width:auto}
+.brand .word{height:40px;width:auto;margin-block:-10px}
+.links{margin-left:auto;display:flex;gap:26px;font-size:14px;font-weight:500;color:#ffffffc7}
+.links a:hover{color:#fff}
+.lang{min-width:44px;min-height:42px;padding:0 12px;border-radius:999px;color:#fff;font-size:14px;font-weight:700}
+.lang:hover{background:#ffffff17}
+.nav .button{min-height:44px;padding-inline:20px;font-size:15px}
+.menu{display:none;width:44px;height:44px;border-radius:50%;background:#ffffff1f;color:#fff;place-items:center}
+.menu svg{width:20px;height:20px}
+.menu .x{display:none}
+.menu[aria-expanded="true"] .bars{display:none}
+.menu[aria-expanded="true"] .x{display:block}
+.mobile{display:none}
 
-/* ---------- buttons & store badges ---------- */
-.cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; align-items: center; }
-.center .cta-row { justify-content: center; }
-.badge {
-  display: inline-flex; align-items: center; gap: 10px;
-  height: 54px; padding: 0 16px 0 13px;
-  border-radius: 14px;
-  background: #000; color: #fff;
-  transition: transform 180ms var(--ease);
-}
-.badge:hover { transform: translateY(-2px); }
-.badge svg { width: 24px; height: 24px; flex: none; }
-.badge small { display: block; font-size: 11px; line-height: 1.1; opacity: .85; font-weight: 500; }
-.badge b { display: block; font-size: 17px; line-height: 1.15; font-weight: 600; letter-spacing: -.01em; }
-.on-dark .badge { background: #fff; color: #000; }
-.micro { margin-top: 14px; font-size: 14px; color: var(--ink-2); }
-.micro strong { color: var(--ink); font-weight: 600; }
-.on-dark .micro, .on-dark .micro strong { color: rgba(255,255,255,.85); }
-.store-note { font-size: 13px; color: var(--ink-3); margin-top: 8px; }
-.on-dark .store-note { color: rgba(255,255,255,.6); }
+/* ---------- hero: full-bleed blue gradient, darkest behind the text, brightest toward the product ---------- */
+.hero{position:relative;overflow:hidden;padding-top:clamp(132px,13vw,168px);padding-bottom:clamp(64px,7vw,104px);background:radial-gradient(130% 120% at 50% 118%,#0592eb 0%,#0060fe 32%,#00378f 64%,#01265e 100%);color:#fff;text-align:center}
+.hero .grid{position:absolute;inset:0;background-image:linear-gradient(#ffffff10 1px,transparent 1px),linear-gradient(90deg,#ffffff10 1px,transparent 1px);background-size:56px 56px;-webkit-mask-image:radial-gradient(70% 80% at 50% 40%,#000,transparent);mask-image:radial-gradient(70% 80% at 50% 40%,#000,transparent)}
+.hero .wrap{position:relative}
+.hero .eyebrow{color:var(--yellow)}
+.hero h1{color:#fff}
+.hero h1 .hl{color:var(--sky)}
+.hero .lead{color:#ffffffde;margin:24px auto 0;max-width:620px;text-wrap:balance}
+.hero .buttons{justify-content:center;margin-top:32px}
+.hero .fine{color:#ffffffb8;margin-top:16px}
 
-/* ---------- nav ---------- */
-.nav {
-  position: fixed; z-index: 50; left: 50%; transform: translateX(-50%);
-  top: calc(env(safe-area-inset-top, 0px) + 12px);
-  width: min(calc(100% - 24px), 1000px);
-  transition: transform 320ms var(--ease);
-}
-.nav.hide { transform: translate(-50%, calc(-100% - 24px)); }
-.nav-bar {
-  display: flex; align-items: center; gap: 12px;
-  height: 62px; padding: 0 8px 0 24px;
-  border-radius: 999px;
-  background: linear-gradient(100deg, #01265E 0%, #00378F 35%, #005CC4 70%, #0592EB 100%);
-  box-shadow: 0 16px 40px -18px rgba(1, 38, 94, .6);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  color: #fff;
-}
-.brand { display: flex; align-items: center; gap: 8px; }
-.brand .mark { height: 28px; width: auto; }
-.brand .word { height: 22px; width: auto; }
-.nav-links { display: none; margin-left: auto; gap: 26px; font-size: 15px; font-weight: 500; color: rgba(255,255,255,.78); }
-.nav-links a:hover { color: #fff; }
-.nav-go {
-  margin-left: auto; height: 46px; padding: 0 22px; border-radius: 999px;
-  display: inline-flex; align-items: center;
-  background: var(--mustard); color: var(--on-mustard); font-weight: 700; font-size: 15px;
-}
-@media (min-width: 900px) { .nav-links { display: flex; } .nav-go { margin-left: 12px; } }
+/* ---------- iPhone 15 mockup (1em = 1% of the phone width) ---------- */
+.phone{--w:300px;--edge:0 0 0 transparent;position:relative;isolation:isolate;width:var(--w);font-size:calc(var(--w)/100);padding:1.15em;border-radius:15.5em;
+  background:linear-gradient(140deg,#fbfbfc 0%,#b9bec4 7%,#6d737b 18%,#2e3238 36%,#4c5259 50%,#d7dade 58%,#7b8189 70%,#c9cdd2 86%,#f5f6f7 100%);
+  box-shadow:inset 0 0 0 .25em #ffffffd0,inset .4em .4em .5em -.2em #ffffffa0,inset 0 0 0 .55em #2c3036,var(--edge),0 2em 3em -1em #0b122033,0 6em 9em -3em #0b122040}
+.phone>img{width:100%;height:auto;border:3.6em solid #040405;border-radius:14.3em;background:#040405;box-shadow:0 0 0 .2em #1b1d21}
+/* Dynamic Island */
+.phone:before{content:'';position:absolute;z-index:3;left:50%;top:7.2em;width:29em;height:8.6em;transform:translateX(-50%);border-radius:9em;background:radial-gradient(circle at 80% 50%,#1d2a44 0 1.3em,#0b0f18 1.6em,#000 2.2em)}
+/* side buttons: action + volume (left), power (right) */
+.phone:after{content:'';position:absolute;z-index:-1;left:-.7em;top:19em;width:1em;height:6em;border-radius:.5em 0 0 .5em;background:linear-gradient(90deg,#6e737b,#c3c7cc);box-shadow:0 10em 0 .05em #8c9198,0 19.5em 0 .05em #8c9198,calc(var(--w) + .1em) 9em 0 .5em #8c9198;pointer-events:none}
+/* iOS status bar over the screen's top safe area (font-size follows the phone width) */
+.sb{position:absolute;z-index:2;top:calc(var(--w)*.076);left:calc(var(--w)*.056);right:calc(var(--w)*.056);height:calc(var(--w)*.078);display:flex;align-items:center;justify-content:space-between;padding-inline:calc(var(--w)*.072) calc(var(--w)*.062);color:#fff;font-weight:600;font-size:calc(var(--w)*.042);letter-spacing:-.01em;line-height:1;pointer-events:none}
+.sb.dark{color:#0b0f18}
+.sb i{display:block;width:4.3em;height:1em;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 68 16'%3E%3Crect x='0' y='10' width='3' height='5' rx='1'/%3E%3Crect x='5' y='7.5' width='3' height='7.5' rx='1'/%3E%3Crect x='10' y='5' width='3' height='10' rx='1'/%3E%3Crect x='15' y='2' width='3' height='13' rx='1'/%3E%3Cpath d='M30 4.6a11 11 0 0 1 14.8 0l-1.6 1.7a8.6 8.6 0 0 0-11.6 0zM33.1 8a6.6 6.6 0 0 1 8.6 0l-1.6 1.7a4.2 4.2 0 0 0-5.4 0zM37.4 13.4l-1.7-1.8a2.4 2.4 0 0 1 3.4 0z'/%3E%3Crect x='49' y='3' width='16' height='10' rx='3' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3Crect x='51' y='5' width='12' height='6' rx='1.6'/%3E%3Crect x='66.2' y='6.2' width='1.6' height='3.6' rx='.8'/%3E%3C/svg%3E") no-repeat center/contain;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 68 16'%3E%3Crect x='0' y='10' width='3' height='5' rx='1'/%3E%3Crect x='5' y='7.5' width='3' height='7.5' rx='1'/%3E%3Crect x='10' y='5' width='3' height='10' rx='1'/%3E%3Crect x='15' y='2' width='3' height='13' rx='1'/%3E%3Cpath d='M30 4.6a11 11 0 0 1 14.8 0l-1.6 1.7a8.6 8.6 0 0 0-11.6 0zM33.1 8a6.6 6.6 0 0 1 8.6 0l-1.6 1.7a4.2 4.2 0 0 0-5.4 0zM37.4 13.4l-1.7-1.8a2.4 2.4 0 0 1 3.4 0z'/%3E%3Crect x='49' y='3' width='16' height='10' rx='3' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3Crect x='51' y='5' width='12' height='6' rx='1.6'/%3E%3Crect x='66.2' y='6.2' width='1.6' height='3.6' rx='.8'/%3E%3C/svg%3E") no-repeat center/contain}
+/* titanium thickness only on tilted phones (finely stepped so it reads as one machined edge) */
+.phone.tilt-l{--edge:-.35em .25em 0 #eceef1,-.7em .5em 0 #c9cdd2,-1.05em .75em 0 #9aa0a7,-1.4em 1em 0 #6a7078,-1.75em 1.25em 0 #4a4f56,-2.1em 1.5em 0 #8d939a,-2.4em 1.7em 0 #cfd3d7}
+.phone.tilt-r{--edge:.35em .25em 0 #eceef1,.7em .5em 0 #c9cdd2,1.05em .75em 0 #9aa0a7,1.4em 1em 0 #6a7078,1.75em 1.25em 0 #4a4f56,2.1em 1.5em 0 #8d939a,2.4em 1.7em 0 #cfd3d7}
+.phone.lie{--edge:-.4em .45em 0 #eceef1,-.8em .9em 0 #c9cdd2,-1.2em 1.35em 0 #9aa0a7,-1.6em 1.8em 0 #6a7078,-2em 2.25em 0 #4a4f56,-2.4em 2.7em 0 #8d939a,-2.8em 3.1em 0 #cfd3d7}
+/* soft floor shadow under a single upright phone */
+.floor{position:relative;isolation:isolate}
+.floor:after{content:'';position:absolute;z-index:-1;left:50%;bottom:-18px;width:min(320px,80%);height:36px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(#0b12202e,transparent 70%);filter:blur(8px);pointer-events:none}
 
-/* ---------- iPhone 15 frame (real captures, untouched) ----------
-   Screen 393 x 852 pt, 55 pt screen radius, thin black bezel, titanium band,
-   Dynamic Island, status bar and home indicator drawn as frame chrome. */
-.phone {
-  --w: 300px;
-  position: relative;
-  width: var(--w);
-  aspect-ratio: 393 / 852;
-  padding: calc(var(--w) * .034);
-  border-radius: calc(var(--w) * .168);
-  background: linear-gradient(135deg, #B9BEC6 0%, #4A4E55 18%, #2A2D32 40%, #8D929A 55%, #34373C 72%, #A8ADB5 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.35),
-    inset 0 0 calc(var(--w) * .01) rgba(0,0,0,.6),
-    0 60px 100px -40px rgba(4, 16, 40, .6),
-    0 24px 44px -26px rgba(4, 16, 40, .45);
-  flex: none;
-}
-.phone::before, .phone::after {
-  content: ""; position: absolute; width: calc(var(--w) * .013); border-radius: 3px;
-}
-.phone::before { /* action button + volume up/down */
-  left: calc(var(--w) * -.011);
-  top: 18%; height: 24%;
-  background: linear-gradient(#6E737B 0 14%, transparent 14% 30%, #6E737B 30% 62%, transparent 62% 72%, #6E737B 72% 100%);
-}
-.phone::after { /* side button */
-  right: calc(var(--w) * -.011);
-  top: 26%; height: 12%;
-  background: #6E737B;
-}
-.screen {
-  position: relative; width: 100%; height: 100%;
-  border-radius: calc(var(--w) * .136);
-  box-shadow: 0 0 0 calc(var(--w) * .022) #050608;
-  overflow: hidden; background: #fff;
-  container-type: inline-size;
-}
-.screen::after { /* faint glass reflection */
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(118deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,0) 32%);
-}
-.screen > img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
-.sb {
-  position: absolute; top: 0; left: 0; right: 0; height: 13.7cqw;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 1.2cqw 7.5cqw 0 9.5cqw;
-  color: #fff; pointer-events: none;
-}
-.sb .t { font-weight: 600; font-size: 4.3cqw; letter-spacing: -.01em; width: 18cqw; }
-.sb .island {
-  position: absolute; left: 50%; top: 2.8cqw; transform: translateX(-50%);
-  width: 32cqw; height: 9.4cqw; border-radius: 999px; background: #000;
-}
-.sb .ic { display: flex; align-items: center; gap: 1.4cqw; }
-.sb svg { height: 3.2cqw; width: auto; display: block; }
-.home {
-  position: absolute; left: 50%; bottom: 2cqw; transform: translateX(-50%);
-  width: 34cqw; height: 1.3cqw; border-radius: 999px; background: #0F1A36;
-}
-.cap { margin-top: 16px; text-align: center; font-size: 13px; font-weight: 600; color: var(--ink-2); }
-.on-dark .cap { color: rgba(255,255,255,.75); }
-
-/* screen crop in a card (real capture, cropped only) */
-.crop { border-radius: 18px; overflow: hidden; background: #fff; box-shadow: 0 1px 0 var(--line), 0 18px 40px -28px rgba(11,18,32,.35); }
-.crop img { width: 100%; }
-
-/* ---------- hero ---------- */
-.hero { padding-top: calc(env(safe-area-inset-top, 0px) + 120px); padding-bottom: 0; }
-.hero-grid { display: grid; gap: 48px; align-items: center; }
-.poster {
-  position: relative; overflow: hidden; isolation: isolate;
-  border-radius: 36px;
-  height: 600px;
-  background:
-    radial-gradient(60% 50% at 55% 42%, rgba(5, 146, 235, .65) 0%, rgba(5, 146, 235, 0) 70%),
-    linear-gradient(160deg, #01265E 0%, #00378F 42%, #005CC4 78%, #0592EB 100%);
-}
-.poster::before { /* faint grid */
-  content: ""; position: absolute; inset: 0; z-index: -1;
-  background-image: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px);
-  background-size: 44px 44px;
-  -webkit-mask-image: radial-gradient(70% 60% at 50% 45%, #000 20%, transparent 75%);
-          mask-image: radial-gradient(70% 60% at 50% 45%, #000 20%, transparent 75%);
-}
-.poster.light {
-  background:
-    radial-gradient(55% 45% at 50% 45%, rgba(0, 96, 254, .22) 0%, rgba(0, 96, 254, 0) 70%),
-    linear-gradient(180deg, #F4F8FF 0%, #E6EFFF 100%);
-}
-.poster.light::before { background-image: linear-gradient(rgba(0,96,254,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(0,96,254,.07) 1px, transparent 1px); }
-.orbit { position: absolute; left: 50%; top: 46%; width: 118%; transform: translate(-50%, -50%) rotate(-14deg); z-index: 0; overflow: visible; }
-.orbit ellipse { fill: none; stroke: rgba(255,255,255,.45); stroke-width: 1.4; filter: drop-shadow(0 0 6px rgba(255,255,255,.8)); }
-.poster.light .orbit ellipse { stroke: rgba(0,96,254,.35); filter: drop-shadow(0 0 5px rgba(0,96,254,.5)); }
-.poster .phone { position: absolute; left: 50%; top: 52px; z-index: 2; }
-.poster .p-hero { --w: 230px; transform: translateX(-50%) perspective(1800px) rotateY(-16deg) rotateX(7deg) rotateZ(5deg); }
-.poster .p-tilt-l { --w: 230px; transform: translateX(-50%) perspective(1800px) rotateY(16deg) rotateX(7deg) rotateZ(-5deg); }
-.ground {
-  position: absolute; left: 50%; bottom: 26px; width: 62%; height: 44px; transform: translateX(-50%); z-index: 1;
-  background: radial-gradient(50% 50% at 50% 50%, rgba(0, 8, 30, .55), rgba(0, 8, 30, 0));
-}
-.poster.light .ground { background: radial-gradient(50% 50% at 50% 50%, rgba(1, 38, 94, .28), rgba(1, 38, 94, 0)); }
-.chip {
-  position: absolute; z-index: 3; margin: 0;
-  width: 58%; max-width: 330px;
-  animation: float 7s ease-in-out infinite alternate;
-}
-.chip img { width: 100%; border-radius: 14px; background: #fff; box-shadow: 0 28px 50px -22px rgba(0, 16, 50, .6), 0 0 0 1px rgba(255,255,255,.6); }
-.chip figcaption {
-  display: inline-block; margin: 0 0 7px 6px;
-  padding: 5px 11px; border-radius: 999px;
-  font-size: 12px; font-weight: 700; letter-spacing: .01em; white-space: nowrap;
-  color: #fff; background: rgba(255,255,255,.16);
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,.28);
-}
-.poster.light .chip figcaption { color: var(--brand); background: #fff; border-color: var(--line); }
-.chip.tr, .chip.br { text-align: right; }
-.chip.tr figcaption, .chip.br figcaption { margin: 0 6px 7px 0; }
-@media (max-width: 899px) {
-  .chip figcaption { color: var(--brand); background: #fff; border-color: rgba(255,255,255,.9); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: 0 8px 18px -10px rgba(0,16,50,.5); }
-}
-.chip.tl { left: -4%; top: 9%; transform: rotate(-4deg); }
-.chip.tr { right: -4%; top: 34%; transform: rotate(3deg); animation-delay: -2s; }
-.chip.bl { left: -4%; top: 58%; transform: rotate(-2deg); animation-delay: -4s; }
-.chip.br { right: -3%; top: 78%; transform: rotate(3deg); animation-delay: -1s; }
-.chip.small { width: 34%; max-width: 170px; }
-@media (max-width: 599px) {
-  .chip { width: 62%; }
-  .chip.tl { left: 3%; top: 6%; }
-  .chip.tr { right: 3%; }
-  .chip.br { right: 3%; }
-  .hero .chip.bl { display: none; }
-  .chip.bl { left: 3%; }
-  .chip.small { width: 40%; right: 3%; }
-}
-@keyframes float { from { translate: 0 0; } to { translate: 0 -10px; } }
-@media (min-width: 600px) {
-  .poster { height: 640px; }
-  .poster .p-hero, .poster .p-tilt-l { --w: 250px; }
-  .chip { width: 46%; }
-  .chip.tl { left: 3%; } .chip.tr { right: 3%; } .chip.bl { left: 2%; } .chip.br { right: 3%; }
-  .chip.small { width: 26%; }
-}
-@media (min-width: 1100px) {
-  .poster { height: 700px; }
-  .poster .p-hero, .poster .p-tilt-l { --w: 280px; top: 58px; }
-  .chip { width: 50%; }
-  .chip.tl { left: -2%; } .chip.tr { right: -2%; } .chip.bl { left: -3%; } .chip.br { right: -2%; }
-}
-.poster-wide { max-width: 1000px; margin: 56px auto 0; }
-@media (min-width: 1100px) { .poster-wide .chip { width: 38%; } .poster-wide .chip.small { width: 20%; } .poster-wide .chip.tl { left: 6%; } .poster-wide .chip.bl { left: 5%; } .poster-wide .chip.tr { right: 6%; } .poster-wide .chip.br { right: 6%; } }
-
-/* ---------- categories strip ---------- */
-.cats { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 28px; }
-.cats span { padding: 10px 16px; border-radius: 999px; background: #fff; border: 1px solid var(--line); font-weight: 600; font-size: 15px; }
+/* ---------- showcase: three phones on white (reference 3) ---------- */
+.showcase{padding-block:clamp(40px,5vw,64px) clamp(24px,3vw,40px);background:var(--white);overflow-x:clip}
+.stage{position:relative;height:660px;perspective:1400px}
+.showcase+section{padding-top:clamp(56px,6vw,88px)}
+.stage .phone{position:absolute;top:0}
+.stage .p-main{--w:300px;left:calc(50% - 150px);z-index:3;animation:drift 7s ease-in-out infinite}
+.stage .p-left{--w:240px;left:calc(50% - 420px);top:110px;z-index:1;transform:rotate(-9deg) rotateY(22deg) rotateX(6deg);animation:drift 8s ease-in-out -2s infinite}
+.stage .p-right{--w:240px;left:calc(50% + 180px);top:110px;z-index:1;transform:rotate(9deg) rotateY(-22deg) rotateX(6deg);animation:drift 8.5s ease-in-out -4s infinite}
+.stage:after{content:'';position:absolute;z-index:0;left:50%;bottom:-6px;width:70%;height:48px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(#0b122026,transparent 70%);filter:blur(10px);pointer-events:none}
+@keyframes drift{0%,100%{translate:0 0}50%{translate:0 -8px}}
 
 /* ---------- problem ---------- */
-.split { display: grid; gap: 48px; align-items: center; }
-@media (min-width: 960px) { .split { grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 72px; } .split.rev > :first-child { order: 2; } }
-.pains { list-style: none; margin: 36px 0 0; padding: 0; display: grid; gap: 0; }
-.pains li { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 20px 0; border-top: 1px solid var(--line); }
-.pains li:last-child { border-bottom: 1px solid var(--line); }
-.pains .n { font-weight: 800; color: var(--attention); font-size: 15px; padding-top: 3px; }
-.pains b { display: block; font-size: 19px; letter-spacing: -.015em; }
-.pains span { color: var(--ink-2); font-size: 16px; }
-.grow { margin-top: 28px; font-size: 18px; font-weight: 600; }
-.grow em { font-style: normal; color: var(--brand); }
-.show { display: flex; flex-direction: column; align-items: center; }
-.show .phone { --w: 290px; }
-.proof-note { margin-top: 12px; font-size: 13px; color: var(--ink-3); text-align: center; }
+.pain{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:56px;background:var(--line);border-block:1px solid var(--line)}
+.pain article{background:var(--white);padding:34px 30px}
+.pain small{display:block;color:#0057e7;font-weight:700;font-size:13px;margin-bottom:22px}
+.pain b{display:block;font-size:21px;line-height:1.25;letter-spacing:-.02em;min-height:2.5em}
+.pain p{margin:10px 0 0;color:var(--muted)}
 
-/* ---------- category difference (dark moment) ---------- */
-.dark { background: var(--navy); color: #fff; }
-.dark .h2 .soft { color: rgba(255,255,255,.45); }
-.dark .label { color: var(--mustard); }
-.dark .lead { color: rgba(255,255,255,.72); }
-.versus { display: grid; gap: 16px; margin-top: 40px; }
-@media (min-width: 700px) { .versus { grid-template-columns: 1fr 1fr; } }
-.vcol { border-radius: var(--r-md); padding: 26px; }
-.vcol h3 { margin: 0 0 14px; font-size: 15px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
-.vcol ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
-.vcol li { font-size: 17px; line-height: 1.45; padding-left: 26px; position: relative; }
-.vcol.them { background: rgba(255,255,255,.06); color: rgba(255,255,255,.75); }
-.vcol.them h3 { color: rgba(255,255,255,.55); }
-.vcol.them li::before { content: "—"; position: absolute; left: 0; color: rgba(255,255,255,.4); }
-.vcol.us { background: #fff; color: var(--ink); }
-.vcol.us h3 { color: var(--brand); }
-.vcol.us li::before { content: ""; position: absolute; left: 2px; top: 7px; width: 12px; height: 7px; border-left: 2.5px solid var(--success); border-bottom: 2.5px solid var(--success); transform: rotate(-45deg); }
+/* ---------- before / after ---------- */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:56px}
+.side{border:1px solid var(--line);border-radius:var(--r);background:var(--white);padding:clamp(28px,4vw,48px)}
+.side h3{font-size:clamp(24px,2.6vw,34px);margin-bottom:26px}
+.side ul{list-style:none;padding:0;margin:0;display:grid;gap:16px}
+.side li{color:var(--muted);display:flex;gap:12px}
+.side li:before{content:'—';color:#0057e7;flex:none}
+.side.after{background:var(--brand-grad);border-color:transparent;color:#fff}
+.side.after h3{color:#fff}
+.side.after li{color:#fff}
+.side.after li:before{content:'✓';color:var(--yellow);font-weight:700}
 
-/* ---------- how it works ---------- */
-.steps { display: grid; gap: 20px; margin-top: 56px; }
-@media (min-width: 700px) { .steps { grid-template-columns: 1fr 1fr; } }
-@media (min-width: 1100px) { .steps { grid-template-columns: repeat(4, 1fr); } }
-.step { background: #fff; border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 1px 0 var(--line); }
-.step-top { padding: 26px 24px 22px; }
-.step .num { font-size: 14px; font-weight: 800; color: var(--brand); letter-spacing: .04em; }
-.step h3 { margin: 10px 0 8px; font-size: 22px; letter-spacing: -.02em; line-height: 1.2; }
-.step p { margin: 0; color: var(--ink-2); font-size: 16px; }
-.step-shot { margin-top: auto; background: var(--canvas); padding: 20px 20px 0; height: 300px; overflow: hidden; }
-.step-shot img { width: 100%; border-radius: 16px 16px 0 0; box-shadow: 0 10px 30px -18px rgba(11,18,32,.4); }
+/* ---------- flow ---------- */
+.flow{display:grid;grid-template-columns:repeat(7,1fr);position:relative;margin:56px 0 0;padding:0;list-style:none}
+.flow:before{content:'';position:absolute;left:7%;right:7%;top:23px;height:2px;background:linear-gradient(90deg,var(--blue) 0 84%,var(--yellow) 84%)}
+.step{text-align:center;position:relative;padding-inline:4px}
+.dot{width:48px;height:48px;border:2px solid var(--blue);border-radius:50%;background:var(--white);color:var(--blue);font-weight:800;display:grid;place-items:center;margin:0 auto 16px;position:relative}
+.step:last-child .dot{background:var(--yellow);border-color:var(--yellow);color:#111}
+.step b{display:block;font-size:14px;line-height:1.25;text-wrap:balance}
 
-/* ---------- intake ---------- */
-.formats { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
-.formats span { padding: 9px 16px; border-radius: 999px; background: var(--tint); color: var(--brand); font-weight: 700; font-size: 15px; }
+/* ---------- benefits (upright phones on white cards, reference 1) ---------- */
+.benefitgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:56px}
+.benefit{border:1px solid var(--line);border-radius:var(--r);background:var(--white);padding:32px 30px 44px;display:flex;flex-direction:column;transition:transform .35s,box-shadow .35s}
+.benefit:hover{transform:translateY(-4px);box-shadow:0 30px 60px -40px #07101f55}
+.benefit h3{font-size:clamp(22px,2vw,28px);line-height:1.12;margin:14px 0 10px;min-height:3.4em}
+.benefit p{margin:0;color:var(--muted)}
+.benefit .visual{margin-top:auto;padding-top:36px;display:grid;justify-items:center}
+.benefit .phone{--w:210px}
 
-/* ---------- annotated showcase ---------- */
-.showcase { position: relative; display: flex; justify-content: center; align-items: flex-start; gap: 28px; margin-top: 56px; }
-.showcase .phone.big { --w: 320px; position: relative; }
-.showcase .phone.side { --w: 220px; margin-top: 80px; display: none; }
-@media (min-width: 1100px) { .showcase { gap: 180px; } .showcase .phone.side { display: block; } }
-.anno { position: absolute; z-index: 3; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: var(--ink); white-space: nowrap; }
-.anno i { display: block; width: 36px; height: 2px; background: var(--brand); position: relative; }
-.anno i::after { content: ""; position: absolute; right: -3px; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--brand); }
-.anno.l { right: calc(100% - 6px); flex-direction: row; }
-.anno.r { left: calc(100% - 6px); flex-direction: row-reverse; }
-.anno.r i::after { right: auto; left: -3px; }
-.anno span { background: #fff; border: 1px solid var(--line); padding: 7px 12px; border-radius: 999px; box-shadow: 0 8px 20px -14px rgba(0,0,0,.4); }
-@media (max-width: 899px) {
-  .anno { position: static; }
-  .anno i { display: none; }
-  .anno-list { position: absolute; top: calc(100% + 22px); left: 50%; transform: translateX(-50%); width: 110%; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-  .showcase { padding-bottom: 110px; }
-}
-@media (min-width: 900px) { .anno-list { display: contents; } }
+/* ---------- bento (UI fragments on white, faded instead of cut) ---------- */
+.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;margin-top:56px}
+.tile{border:1px solid var(--line);border-radius:var(--r);background:var(--white);padding:28px 28px 0;overflow:hidden;display:flex;flex-direction:column}
+.tile h3{font-size:22px}
+.tile p{margin:8px 0 0;color:var(--muted)}
+.tile.big{grid-column:span 7}.tile.tall{grid-column:span 5}.tile.small{grid-column:span 4}
+.shots{display:flex;gap:16px;justify-content:center;margin-top:auto;padding-top:26px}
+.shot{flex:none;height:400px;overflow:hidden;padding:4px 10px 0;-webkit-mask-image:linear-gradient(#000 78%,transparent);mask-image:linear-gradient(#000 78%,transparent)}
+.shot .phone{--w:230px;box-shadow:inset 0 0 0 .25em #ffffffd0,inset .4em .4em .5em -.2em #ffffffa0,inset 0 0 0 .55em #2c3036,0 1.5em 2.5em -1em #0b122040}
+.tile.tall .shot .phone{--w:250px}
+.tile.small .shot{height:330px}
+.tile.small .shot .phone{--w:220px}
+
+/* ---------- storefront ---------- */
+.storegrid,.split{display:grid;grid-template-columns:1fr 1fr;gap:clamp(40px,6vw,80px);align-items:center}
+.storegrid h2,.split h2{font-size:clamp(32px,3.6vw,50px)}
+.storegrid .lead,.split .lead{margin-top:18px}
+.points{display:grid;margin-top:28px;max-width:520px}
+.points span{padding:15px 0;border-bottom:1px solid var(--line);color:#2c3445;font-weight:500;display:flex;gap:12px;align-items:center}
+.points span:before{content:'';width:8px;height:8px;border-radius:50%;background:var(--yellow);flex:none}
+.browser{border:1px solid var(--line);border-radius:18px;background:var(--white);overflow:hidden;box-shadow:0 40px 80px -40px #0b122059}
+.browser .bar{height:38px;display:flex;align-items:center;gap:7px;padding:0 14px;border-bottom:1px solid var(--line);background:#f8f9fb}
+.browser .bar i{width:10px;height:10px;border-radius:50%;background:#d9dde3}
+.browser img{width:100%;height:auto}
 
 /* ---------- tracking ---------- */
+.trackvisual{display:grid;justify-items:center;padding-block:10px 30px}
+.trackvisual .phone{--w:290px}
+.statuses{display:flex;gap:8px;flex-wrap:wrap;margin-top:28px}
+.statuses span{padding:10px 14px;border-radius:999px;background:#eef3ff;color:#244a7c;font-size:13px;font-weight:700}
+.statuses .done{background:var(--yellow);color:#3b2a00}
+
+/* ---------- team ---------- */
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.role{border:1px solid var(--line);border-radius:20px;padding:24px;background:var(--white)}
+.role b{font-size:20px;letter-spacing:-.02em}
+.role p{margin:8px 0 0;color:var(--muted)}
+.role.lead-role{background:var(--brand-grad);border-color:transparent;color:#fff}
+.role.lead-role p{color:#fff}
 
 /* ---------- outcomes ---------- */
-.outs { display: grid; gap: 20px; margin-top: 56px; }
-@media (min-width: 800px) { .outs { grid-template-columns: 1fr 1fr; } }
-.out { background: #fff; border-radius: var(--r-lg); padding: 28px; display: grid; gap: 22px; box-shadow: 0 1px 0 var(--line); }
-@media (min-width: 1100px) { .out { grid-template-columns: 1fr 230px; align-items: center; } }
-.out h3 { margin: 0 0 8px; font-size: 22px; letter-spacing: -.02em; line-height: 1.2; }
-.out p { margin: 0; color: var(--ink-2); font-size: 16px; }
-.out .shot { height: 210px; overflow: hidden; border-radius: 16px; background: var(--canvas); }
-.out .shot img { width: 100%; }
-.out .shot.mid img { margin-top: -40px; }
+.outcomes{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:56px}
+.outcomes article{padding-top:24px;border-top:1px solid var(--line);position:relative}
+.outcomes article:before{content:'';position:absolute;top:-2px;left:0;width:32px;height:3px;border-radius:2px;background:var(--yellow)}
+.outcomes b{display:block;font-size:clamp(20px,1.9vw,26px);line-height:1.2;letter-spacing:-.02em;text-wrap:balance}
 
 /* ---------- pricing ---------- */
-.plans { display: grid; gap: 16px; margin-top: 56px; }
-@media (min-width: 700px) { .plans { grid-template-columns: 1fr 1fr; } }
-@media (min-width: 1180px) { .plans { grid-template-columns: repeat(4, 1fr); } }
-.plan { position: relative; background: #fff; border-radius: var(--r-lg); padding: 28px 24px; border: 1px solid var(--line); display: flex; flex-direction: column; }
-.plan.hero-plan { border: 2px solid var(--brand); box-shadow: 0 24px 50px -30px rgba(0,96,254,.55); }
-.plan .tag { position: absolute; top: -13px; left: 24px; background: var(--brand); color: #fff; font-size: 12px; font-weight: 700; padding: 5px 11px; border-radius: 999px; }
-.plan h3 { margin: 0; font-size: 15px; font-weight: 800; letter-spacing: .06em; }
-.plan .for { margin: 6px 0 18px; color: var(--ink-2); font-size: 15px; min-height: 44px; }
-.price { display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
-.price b { font-size: 40px; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
-.price span { color: var(--ink-2); font-size: 15px; }
-.allow { margin: 18px 0 0; padding: 14px 0 0; border-top: 1px solid var(--line); font-size: 15px; }
-.allow strong { display: block; font-size: 20px; letter-spacing: -.01em; }
-.plan ul { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; font-size: 15px; color: var(--ink); }
-.plan li { padding-left: 22px; position: relative; }
-.plan li::before { content: ""; position: absolute; left: 2px; top: 7px; width: 10px; height: 6px; border-left: 2px solid var(--brand); border-bottom: 2px solid var(--brand); transform: rotate(-45deg); }
-.enterprise { margin-top: 16px; background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px 24px; display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; }
-.enterprise b { font-size: 15px; letter-spacing: .06em; }
-.enterprise span { color: var(--ink-2); }
-.promises { display: grid; gap: 14px; margin-top: 28px; }
-@media (min-width: 900px) { .promises { grid-template-columns: repeat(3, 1fr); } }
-.promise { background: var(--tint); border-radius: var(--r-md); padding: 20px 22px; }
-.promise b { display: block; font-size: 17px; letter-spacing: -.01em; }
-.promise span { color: var(--ink-2); font-size: 15px; }
-.price-note { margin-top: 18px; font-size: 13px; color: var(--ink-3); }
+.plans{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:56px;align-items:stretch}
+.plan{border:1px solid var(--line);border-radius:22px;padding:26px 20px;position:relative;background:var(--white);display:flex;flex-direction:column}
+.plan h3{font-size:13px;letter-spacing:.1em}
+.plan .who{font-size:13px;color:var(--muted);margin:8px 0 0;min-height:4.5em}
+.price{font-size:34px;font-weight:800;letter-spacing:-.03em;margin:18px 0 0;line-height:1}
+.per{font-size:13px;color:var(--muted);margin-top:6px}
+.plan ul{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:9px;font-size:13.5px;color:#2c3445}
+.plan li{display:flex;gap:8px}
+.plan li:before{content:'✓';color:#0057e7;font-weight:700;flex:none}
+.plan.featured{background:var(--brand-grad);border-color:transparent;color:#fff;box-shadow:0 30px 60px -30px #0050d680}
+.plan.featured h3,.plan.featured .who,.plan.featured .per,.plan.featured ul{color:#fff}
+.plan.featured li:before{color:var(--yellow)}
+.tag{position:absolute;top:-11px;left:20px;padding:5px 10px;border-radius:999px;background:var(--yellow);color:#111;font-size:11px;font-weight:800;letter-spacing:.02em}
+.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px}
+.notes b{display:block;font-size:16px}
+.notes p{margin:6px 0 0;color:var(--muted);font-size:14px}
+.pricing-cta{margin-top:40px;display:grid;justify-items:center;gap:12px;text-align:center}
 
 /* ---------- FAQ ---------- */
-.faq { max-width: 820px; margin: 48px auto 0; }
-details { border-top: 1px solid var(--line); }
-details:last-child { border-bottom: 1px solid var(--line); }
-summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; gap: 18px; align-items: center; padding: 22px 2px; font-size: 19px; font-weight: 700; letter-spacing: -.015em; }
-summary::-webkit-details-marker { display: none; }
-summary .pm { flex: none; width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 1px solid var(--line); display: grid; place-items: center; transition: transform 200ms var(--ease); }
-details[open] summary .pm { transform: rotate(45deg); background: var(--ink); color: #fff; border-color: var(--ink); }
-summary .pm svg { width: 14px; height: 14px; }
-details p { margin: 0 0 22px; padding-inline: 2px; color: var(--ink-2); max-width: 66ch; }
+.faq{max-width:880px;margin:48px auto 0;border-top:1px solid var(--line)}
+details{border-bottom:1px solid var(--line)}
+summary{list-style:none;padding:22px 4px;cursor:pointer;font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:space-between;gap:16px;color:var(--ink)}
+summary::-webkit-details-marker{display:none}
+summary:after{content:'+';flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#eef3ff;color:#0057e7;font-size:20px;line-height:1;font-weight:600}
+details[open] summary:after{content:'−'}
+details p{margin:0;padding:0 4px 22px;color:var(--muted);max-width:760px}
 
-/* ---------- final CTA ---------- */
-.final { position: relative; border-radius: 36px; background: var(--gradient); color: #fff; overflow: hidden; padding: 64px var(--gutter) 0; text-align: center; }
-.final .h2 { color: #fff; }
-.final .h2 .soft { color: rgba(255,255,255,.62); }
-.final .lead { color: rgba(255,255,255,.8); }
-.final-phones { display: flex; justify-content: center; gap: 20px; margin-top: 56px; height: 300px; overflow: hidden; }
-.final-phones .phone { --w: 240px; }
-.final-phones .phone.hide-sm { display: none; }
-@media (min-width: 700px) { .final-phones .phone.hide-sm { display: block; } .final-phones { height: 340px; } }
+/* ---------- closing (white, reference 2 pair) ---------- */
+#faq{padding-bottom:clamp(56px,6vw,88px)}
+.closing{overflow-x:clip;padding-top:clamp(56px,6vw,88px);padding-bottom:clamp(96px,10vw,140px)}
+.closing h2{font-size:clamp(36px,5vw,64px)}
+.closing .lead{margin-top:18px}
+.closing .buttons{margin-top:30px}
+.stores{display:flex;justify-content:center;gap:12px;margin-top:20px}
+.store-badge{display:inline-flex;align-items:center;gap:10px;min-width:160px;height:56px;padding:0 16px 0 14px;border-radius:14px;background:#0a1426;color:#fff;text-align:left;box-shadow:0 12px 26px -14px #0b122080}
+.store-badge svg{width:26px;height:26px;flex:none}
+.store-badge small{display:block;font-size:10.5px;line-height:1.1;color:#ffffffbf;font-weight:500}
+.store-badge b{display:block;font-size:18px;line-height:1.15;letter-spacing:-.02em;font-weight:700}
+@media(max-width:380px){.store-badge{min-width:0;padding:0 12px}.store-badge b{font-size:16px}}
+.pair{position:relative;height:670px;margin-top:56px;perspective:1400px}
+.pair .phone{position:absolute;top:0}
+.pair .p-up{--w:250px;left:calc(50% + 74px);z-index:2}
+.pair .p-lie{--w:250px;left:calc(50% - 236px);top:90px;transform:rotate(-24deg) rotateY(18deg) rotateX(10deg);z-index:1}
+.pair:after{content:'';position:absolute;z-index:0;left:50%;bottom:-10px;width:min(560px,90%);height:44px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(#0b122026,transparent 70%);filter:blur(10px)}
+.demo-note{margin-top:28px;font-size:13px;color:#5b6577}
 
 /* ---------- footer ---------- */
-footer { background: var(--anchor); color: rgba(255,255,255,.75); margin-top: calc(var(--section) / 2); padding: 48px 0 calc(48px + env(safe-area-inset-bottom, 0px)); }
-.foot { display: grid; gap: 28px; }
-@media (min-width: 800px) { .foot { grid-template-columns: 1.2fr 1fr; align-items: start; } }
-.foot .brand .mark { height: 34px; }
-.foot .brand .word { height: 26px; }
-.foot p { margin: 14px 0 0; font-size: 15px; max-width: 38ch; }
-.foot-links { display: flex; flex-wrap: wrap; gap: 12px 28px; font-size: 15px; font-weight: 500; }
-.foot-links a:hover { color: #fff; }
-.copy { margin-top: 36px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.12); font-size: 13px; color: rgba(255,255,255,.55); }
+footer{background:linear-gradient(135deg,#01265e 0%,#00378f 55%,#0050d6 100%);color:#fff;padding:64px 0 32px}
+.foot{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;align-items:start}
+.foot .brand .mark{height:32px}
+.foot .brand .word{height:46px;margin-block:-12px}
+.foot p{margin:16px 0 0;color:#ffffffd9;font-size:14px;line-height:1.6;max-width:340px}
+.foot nav{display:grid;gap:12px;align-content:start}
+.foot h3{color:#fff;font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin:0 0 4px}
+.foot nav a{color:#ffffffd9;font-size:14px}
+.foot nav a:hover{color:#fff}
+.copy{margin-top:48px;padding-top:22px;border-top:1px solid #ffffff2e;font-size:12px;color:#ffffffb3}
 
+/* ---------- storefront gallery ---------- */
+.sf-gallery{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:18px;margin-top:56px;padding:6px 4px 30px;justify-items:center}
+.sf-gallery .phone{--w:180px;align-self:start;height:max-content}
+.sf-gallery .phone:nth-child(even){margin-top:36px}
+.sf-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:40px}
+.sf-card{border:1px solid var(--line);border-radius:var(--r);background:var(--white);padding:26px 26px 0;overflow:hidden;display:flex;flex-direction:column;min-height:330px}
+.sf-card b{font-size:20px;letter-spacing:-.02em}
+.sf-card p{margin:8px 0 0;color:var(--muted);font-size:15px}
+.sf-names{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 26px}
+.sf-names span{padding:6px 10px;border-radius:999px;background:#eef3ff;color:#244a7c;font-size:12px;font-weight:600}
+.sf-share{margin:auto 0 26px;display:flex;align-items:center;gap:16px}
+.sf-link{flex:1;min-width:0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--soft);font-size:13px;font-weight:600;color:#0057e7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qr{width:104px;height:104px;flex:none;padding:8px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.sf-shot{height:230px;margin:auto auto 0;padding-top:18px}
+.sf-shot .phone{--w:200px}
+@media(max-width:1100px){
+  .sf-gallery{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;justify-items:normal;margin-inline:calc(var(--g)*-1);padding-inline:var(--g);scrollbar-width:none}
+  .sf-gallery::-webkit-scrollbar{display:none}
+  .sf-gallery .phone{flex:none;scroll-snap-align:center;--w:200px}
+}
+@media(max-width:900px){.sf-cards{grid-template-columns:1fr}.sf-card{min-height:0}}
 
-/* ---------- polish pass: side posters, panels, steps, outcomes, final ---------- */
-.poster.side { height: 580px; }
-.poster.side .phone { top: 44px; }
-.poster.side .p-hero, .poster.side .p-tilt-l { --w: 220px; }
-.poster.side.short { height: 440px; }
-@media (min-width: 1100px) { .poster.side { height: 660px; } .poster.side .p-hero, .poster.side .p-tilt-l { --w: 240px; } .poster.side .chip { width: 56%; } .poster.side .chip.small { width: 30%; } }
-.intake-card {
-  position: absolute; left: 50%; top: 50%; width: min(84%, 430px); z-index: 2;
-  transform: translate(-50%, -50%) perspective(1400px) rotateY(-12deg) rotateX(8deg) rotateZ(2deg);
-  border-radius: 20px; overflow: hidden; background: #fff;
-  box-shadow: 0 40px 70px -30px rgba(1, 38, 94, .55), 0 0 0 1px rgba(255,255,255,.8);
-}
-.intake-card img { width: 100%; }
-.fmt {
-  position: absolute; z-index: 3; padding: 10px 18px; border-radius: 999px;
-  background: #fff; color: var(--brand); font-weight: 800; font-size: 15px;
-  box-shadow: 0 16px 30px -14px rgba(1, 38, 94, .45);
-  animation: float 6s ease-in-out infinite alternate;
-}
-.fmt.f1 { left: 8%; top: 14%; }
-.fmt.f2 { right: 10%; top: 20%; animation-delay: -2s; }
-.fmt.f3 { right: 16%; bottom: 14%; animation-delay: -4s; }
-.panel {
-  margin-top: 48px; border-radius: 36px; overflow: hidden; position: relative; isolation: isolate;
-  padding: 56px 16px 64px;
-  background:
-    radial-gradient(55% 45% at 50% 45%, rgba(0, 96, 254, .20) 0%, rgba(0, 96, 254, 0) 70%),
-    linear-gradient(180deg, #F4F8FF 0%, #E6EFFF 100%);
-}
-.panel::before {
-  content: ""; position: absolute; inset: 0; z-index: -1;
-  background-image: linear-gradient(rgba(0,96,254,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(0,96,254,.07) 1px, transparent 1px);
-  background-size: 44px 44px;
-  -webkit-mask-image: radial-gradient(70% 60% at 50% 45%, #000 20%, transparent 75%); mask-image: radial-gradient(70% 60% at 50% 45%, #000 20%, transparent 75%);
-}
-.panel .showcase { margin-top: 0; }
-@media (min-width: 1100px) { .panel .showcase { gap: 150px; } .panel .showcase .phone.side { --w: 200px; } }
-.showcase .phone.sl { transform: rotate(-6deg) translateY(24px); }
-.showcase .phone.sr { transform: rotate(6deg) translateY(24px); }
-.step-shot {
-  background: linear-gradient(180deg, #EAF2FF 0%, #F7FAFF 100%);
-  padding: 22px 22px 0; height: 280px;
-  display: flex; align-items: flex-start; justify-content: center;
-}
-.step-shot img { border-radius: 16px 16px 0 0; box-shadow: 0 18px 36px -18px rgba(1, 38, 94, .45); }
-.out .shot { background: linear-gradient(180deg, #EAF2FF 0%, #F7FAFF 100%); padding: 18px 18px 0; }
-.out .shot img { border-radius: 14px 14px 0 0; box-shadow: 0 14px 30px -16px rgba(1, 38, 94, .45); }
-.final { isolation: isolate; }
-.final::before {
-  content: ""; position: absolute; inset: 0; z-index: -1;
-  background: radial-gradient(50% 45% at 50% 70%, rgba(5, 146, 235, .6), rgba(5, 146, 235, 0) 70%);
-}
-.final::after {
-  content: ""; position: absolute; inset: 0; z-index: -1;
-  background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
-  background-size: 44px 44px;
-  -webkit-mask-image: radial-gradient(60% 60% at 50% 60%, #000 20%, transparent 75%); mask-image: radial-gradient(60% 60% at 50% 60%, #000 20%, transparent 75%);
-}
-.final-phones { align-items: flex-start; }
-.final-phones .fan-l { transform: rotate(-8deg) translateY(40px); }
-.final-phones .fan-r { transform: rotate(8deg) translateY(40px); }
+/* ---------- team role cards: stacked, revealed one by one ---------- */
+.role-stack{display:grid;gap:28px;margin-top:48px;max-width:1100px}
+.role-card{margin:0;border-radius:28px;overflow:hidden;background:#fff;box-shadow:0 30px 70px -40px #0b122059;aspect-ratio:1630/680}
+.role-card img{width:100%;height:100%;object-fit:cover}
+.js .role-card{opacity:0;transform:translateY(60px) scale(.97);transition:opacity 1.1s cubic-bezier(.2,.7,.2,1),transform 1.1s cubic-bezier(.2,.7,.2,1)}
+.js .role-card.in{opacity:1;transform:none}
+@media(max-width:600px){.role-stack{gap:18px}.role-card{border-radius:18px}}
+/* ---------- integrations ---------- */
+#integrations{padding-top:80px;padding-bottom:88px}
+#integrations .wrap{display:flex;flex-direction:column}
+#integrations .head{max-width:720px;margin:0 auto 32px}
+#integrations h2{font-size:clamp(34px,4.8vw,60px);line-height:1.06;letter-spacing:-.045em;text-wrap:balance}
+#integrations .lead{font-size:clamp(16px,1.6vw,19px);line-height:1.55;max-width:530px;margin:20px auto 0;color:#535c6a}
+.int-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px;order:3}
+.int-card{border:1px solid var(--line);border-radius:22px;background:#fff;padding:22px;display:grid;grid-template-columns:44px 1fr;column-gap:16px;row-gap:6px;align-content:start;box-shadow:0 6px 24px -20px #01265e30}
+.int-card b{font-size:18px;letter-spacing:-.025em;align-self:center}
+.int-card p{grid-column:2;margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+.int-ico{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--brand-grad);color:#fff;grid-row:1 / span 2}
+.int-ico svg{width:22px;height:22px}
+.int-ico.sm{width:30px;height:30px;border-radius:9px;flex-shrink:0}.int-ico.sm svg{width:16px;height:16px}
+.int-live{grid-column:2;justify-self:start;margin-top:5px;color:#0b7a46;font-size:11px;font-weight:700}
+.int-live:before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:middle}
+.int-planned{order:2;border:1px solid #e4e9f0;border-radius:24px;padding:24px;background:linear-gradient(135deg,#f8faff,#fff 75%);display:grid;gap:18px}
+.int-planned b{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700;color:#674900}
+.int-planned b>span:last-child{background:#fff2cc;padding:5px 10px;border-radius:999px}
+.int-names{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.int-names span{display:flex;align-items:center;justify-content:center;text-align:center;min-height:64px;padding:12px 8px;border-radius:14px;background:#fff;border:1px solid var(--line);color:#182231;font-size:16px;font-weight:700;letter-spacing:-.025em;transition:transform .22s,box-shadow .22s}
+.int-names span:nth-child(n+4){font-size:13px;font-weight:500;min-height:44px}
+.int-planned p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.int-names span:hover{transform:translateY(-3px);box-shadow:0 12px 24px -18px #00378f55}}
+@media(max-width:600px){#integrations{padding-top:52px;padding-bottom:64px}#integrations .head{margin-bottom:24px}#integrations .lead{margin-top:16px}.int-grid{grid-template-columns:1fr;gap:10px;margin-top:14px}.int-card{padding:18px;column-gap:14px;border-radius:20px}.int-card b{font-size:16px}.int-card p{font-size:13px}.int-planned{padding:18px;gap:14px;border-radius:22px}.int-names{gap:7px}.int-names span{font-size:14px;min-height:58px;padding:10px 4px}.int-names span:nth-child(n+4){font-size:11px}}
+.ig-hub>svg .w{stroke:#bcd3ff;stroke-width:.5;stroke-linecap:round}.ig-hub>svg .p{stroke:#0060fe;stroke-width:.6;stroke-linecap:round;stroke-dasharray:3 30;animation:wire 2.7s linear infinite}.ig-hub>svg .d{fill:#fff;stroke:#0060fe;stroke-width:.4}@keyframes wire{from{stroke-dashoffset:33}to{stroke-dashoffset:0}}@media(prefers-reduced-motion:reduce){.ig-hub>svg .p{animation:none;stroke-dasharray:none;opacity:.5}}
+/* ---------- integrations hub ---------- */
+.ig{overflow-x:clip}
+#integrations .wrap.ig-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(24px,4vw,56px);align-items:center}
+.ig h2{font-size:clamp(34px,4.4vw,58px)}.ig h2 .hl{color:#0060fe}
+.ig .lead{margin-top:18px}.ig .buttons{margin-top:28px}
+.ig-copy{text-align:center}.ig-copy .lead{margin-inline:auto}
+.ig-hub{position:relative;width:100%;max-width:620px;aspect-ratio:1;margin:auto;}
+.ig-hub>svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.ig-hub>svg .rg{fill:none;stroke:#d6e3f7;stroke-width:.25;stroke-dasharray:.5 1}
+.ig-hub>svg .rg.in{display:none}
+.ig-hub>svg path{fill:none;stroke-width:.45;stroke-linecap:round}
+.ig-hub>svg path.b{stroke:#1d7bff}.ig-hub>svg path.y{stroke:#ffc93c}
+.ig-hub .dot.b{fill:#1d7bff}.ig-hub .dot.y{fill:#ffc93c}
+.ig-core{position:absolute;left:50%;top:50%;width:29%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 50% 25%,#2a8cff,#0060fe 45%,#0043b8);display:grid;place-items:center;align-content:center;gap:4px;box-shadow:0 24px 50px -18px #0050d6a0}
+.ig-core img{width:36%;height:auto}.ig-core b{color:#fff;font-size:clamp(14px,2.2vw,26px);letter-spacing:-.03em}
+.ig-node{position:absolute;transform:translate(-50%,-50%);width:clamp(66px,11vw,104px);aspect-ratio:1;border-radius:clamp(14px,2vw,22px);background:#fff;display:grid;place-items:center;align-content:center;gap:6px;box-shadow:0 18px 40px -18px #0b122040,0 0 30px -8px #0060fe30}
+.ig-ico{width:46%;aspect-ratio:1;display:grid;place-items:center}.ig-ico svg,.ig-ico img{width:100%;height:100%}
+.ig-node small{font-size:clamp(9px,1.1vw,12.5px);font-weight:600;color:#1b2333;text-align:center;line-height:1.15;padding-inline:4px}
+@media(max-width:900px){#integrations .wrap.ig-grid{grid-template-columns:1fr}}
+.ba2{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;max-width:1120px;margin:0 auto}
+.ba2-col{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px}
+.ba2-col h3{font-size:clamp(22px,2.4vw,30px);line-height:1.15}
+.ba2-tag{padding:6px 14px;border-radius:999px;font-size:13px;font-weight:700}.ba2-tag.before{background:#ffe4e4;color:#c81e1e}.ba2-tag.after{background:#0060fe;color:#fff}
+.ba2-img{width:100%;height:auto;border-radius:24px;box-shadow:0 30px 60px -36px #0b122066}
+.ba2-arrow{align-self:center;width:64px;height:64px;border-radius:50%;background:linear-gradient(145deg,#0592eb,#0060fe 45%,#00378f);display:grid;place-items:center;box-shadow:0 18px 40px -12px #0050d6a0}.ba2-arrow img{width:44%}
+.ba2-after{width:100%;border-radius:24px;background:linear-gradient(160deg,#f4f8ff,#e6f0ff);padding:32px 24px;display:grid;justify-items:center;gap:24px}
+.ba2-after .phone{--w:260px}
+.ba2-after ul{list-style:none;margin:0;padding:0;display:grid;gap:12px;width:100%;max-width:340px}
+.ba2-after li{display:flex;gap:10px;color:#1b2333;font-weight:500}.ba2-after li:before{content:'✓';color:#0060fe;font-weight:800}
+@media(max-width:900px){.ba2{grid-template-columns:1fr}.ba2-arrow{justify-self:center}}
+.ba{margin:0 auto;max-width:720px}.ba img{width:100%;height:auto;border-radius:28px}
+.jobs-stage{position:relative;height:620px;margin-top:40px;perspective:1400px}
+.jobs-stage .phone{position:absolute;top:0}
+.jobs-stage .j-left{--w:260px;left:calc(50% - 290px);top:40px;transform:rotate(-8deg) rotateY(18deg)}
+.jobs-stage .j-right{--w:270px;left:calc(50% + 10px);z-index:2}
+.jobs-points{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:20px}
+.jobs-points span{padding:9px 16px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:14px;font-weight:600;color:#2c3445}
+@media(max-width:600px){.jobs-stage{height:440px}.jobs-stage .j-left{--w:170px;left:calc(50% - 170px);top:30px}.jobs-stage .j-right{--w:180px;left:calc(50% - 10px)}}
+.split>div,.storegrid>div{text-align:center}.split .lead,.storegrid .lead{margin-inline:auto}.split .statuses{justify-content:center}
+.plan{cursor:pointer;transition:transform .25s,box-shadow .25s,background .25s}
+.plan:hover{transform:translateY(-4px)}
+.plan.on{background:var(--brand-grad);border-color:transparent;color:#fff;box-shadow:0 30px 60px -30px #0050d680}
+.plan.on h3,.plan.on .who,.plan.on .per,.plan.on ul,.plan.on .price{color:#fff}.plan.on li:before{color:var(--yellow)}
+.plan-cta{margin-top:auto;min-height:44px;width:100%;font-size:14px}.plan ul{margin-bottom:20px}
+.plan.on .plan-cta{background:var(--yellow);border-color:var(--yellow);color:#111}
+/* ---------- hero fan (static) ---------- */
+.fan{position:relative;height:clamp(380px,48vw,620px);margin-top:clamp(36px,5vw,64px);perspective:1800px}
+.fan .phone{position:absolute;bottom:0;--w:clamp(150px,19vw,260px);transform-origin:50% 100%;box-shadow:inset 0 0 0 .25em #ffffffd0,inset 0 0 0 .55em #2c3036,-2em 3em 5em -1em #00133280}
+.fan .f1{left:calc(50% - var(--w)*1.7);transform:rotateX(18deg) rotateZ(-14deg);bottom:-4%;z-index:1}
+.fan .f2{left:calc(50% - var(--w)*.9);transform:rotateX(18deg) rotateZ(-14deg) translateY(-10%);z-index:2}
+.fan .f3{left:calc(50% - var(--w)*.1);transform:rotateX(18deg) rotateZ(-14deg) translateY(-20%);z-index:3}
+.fan .f4{left:calc(50% + var(--w)*.7);transform:rotateX(18deg) rotateZ(-14deg) translateY(-30%);z-index:4}
+.hero{padding-bottom:clamp(40px,5vw,72px)}
+@media(max-width:600px){.fan{height:300px;left:22px}.fan .phone{--w:96px}}
+/* ---------- hero: clean white ---------- */
+.hero{background:#fff;color:var(--ink)}
+.hero .eyebrow{color:#0057e7}.hero h1{color:#8a8f98}.hero h1 .hl{color:var(--ink)}
+.hero .lead{color:#5b6577}
+.hero-stores{display:flex;justify-content:center;gap:12px;margin-top:32px}
+.hs{display:inline-flex;align-items:center;gap:12px;height:64px;padding:0 24px 0 20px;border-radius:18px;text-align:left;transition:transform .2s}
+.hs:hover{transform:translateY(-2px)}
+.hs svg{width:30px;height:30px;flex:none}
+.hs small{display:block;font-size:12px;font-weight:500;line-height:1.1}.hs b{display:block;font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.15}
+.hs.apple{background:linear-gradient(180deg,#3a3f47 0%,#16191e 55%,#050608 100%);color:#fff;box-shadow:0 16px 30px -14px #05060899,inset 0 1px 0 #ffffff40}
+.hs.play{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:0 14px 30px -18px #0b122040}
+.hero .fan .phone{box-shadow:inset 0 0 0 .25em #ffffffd0,inset 0 0 0 .55em #2c3036,-2em 3em 5em -1.5em #0b122045}
+@media(max-width:600px){.hero{text-align:center}.hero .lead{margin-inline:auto}.hero-stores{gap:8px}.hs{flex:1 1 0;min-width:0;height:52px;gap:8px;padding:0 10px;justify-content:center;border-radius:14px}.hs small{font-size:9.5px;white-space:nowrap}.hs b{font-size:15px;white-space:nowrap}.hs svg{width:20px;height:20px}}
+main .hero,main .hero .reveal{text-align:center}
+main .hero .lead{margin-left:auto;margin-right:auto}
+@media(max-width:600px){main .hero{padding-top:110px}main .hero h1{font-size:44px}.fan{height:280px;left:0;margin-top:28px;transform:translateX(26px)}.fan .phone{--w:92px}}
+.stage .phone{animation:none!important}
+/* ---------- reveal ---------- */
+.reveal{transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.js .reveal{opacity:0;transform:translateY(24px)}
+.js .reveal.in{opacity:1;transform:none}
 
-
-/* ---------- premium pass ---------- */
-.hero { padding: 12px 12px 0; }
-.hero-shell {
-  position: relative; overflow: hidden; isolation: isolate;
-  border-radius: 40px;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 116px);
-  color: #fff;
-  background:
-    radial-gradient(45% 35% at 50% 72%, rgba(5, 146, 235, .75) 0%, rgba(5, 146, 235, 0) 70%),
-    radial-gradient(40% 30% at 85% 10%, rgba(0, 96, 254, .45) 0%, rgba(0, 96, 254, 0) 70%),
-    linear-gradient(170deg, #011C47 0%, #01265E 30%, #00378F 60%, #005CC4 100%);
+/* ---------- ≤1100 ---------- */
+@media(max-width:1100px){
+  .plans{grid-template-columns:repeat(6,1fr)}
+  .plan{grid-column:span 2}
+  .plan:nth-child(n+4){grid-column:span 3}
+  .links{gap:18px}
+  .plan .who{min-height:0}
 }
-.hero-shell::before {
-  content: ""; position: absolute; inset: 0; z-index: -1;
-  background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
-  background-size: 56px 56px;
-  -webkit-mask-image: radial-gradient(60% 55% at 50% 60%, #000 10%, transparent 75%); mask-image: radial-gradient(60% 55% at 50% 60%, #000 10%, transparent 75%);
+/* ---------- ≤1000: showcase side phones stay inside the viewport ---------- */
+@media(max-width:1000px){
+  .stage{height:580px}
+  .stage .p-main{--w:260px;left:calc(50% - 130px)}
+  .stage .p-left{--w:200px;left:calc(50% - 330px);top:100px}
+  .stage .p-right{--w:200px;left:calc(50% + 130px);top:100px}
+  .benefit{padding-inline:24px}
+  .benefit .phone{--w:190px}
 }
-.hero-shell::after { /* soft light beam */
-  content: ""; position: absolute; z-index: -1; left: -10%; right: -10%; top: 38%; height: 38%;
-  background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,.10) 45%, rgba(255,255,255,0) 60%);
-  transform: rotate(-12deg); filter: blur(10px);
+/* ---------- ≤900 ---------- */
+@media(max-width:900px){
+  .links,.navin>.button{display:none}
+  .lang{margin-left:auto}
+  .menu{display:grid}
+  .mobile.open{display:grid;position:absolute;left:var(--g);right:var(--g);top:70px;padding:8px 18px 18px;border:1px solid #ffffff1f;border-radius:22px;background:#0a1426;box-shadow:0 30px 60px -20px #0b122080}
+  .mobile a{min-height:50px;display:flex;align-items:center;color:#ffffffe6;font-weight:500;border-bottom:1px solid #ffffff14}
+  .mobile a:nth-last-child(2){border-bottom:0}
+  .mobile a.button{display:flex;min-height:52px;margin-top:14px;border:0;justify-content:center;color:#111;font-weight:700}
+  .flow{grid-template-columns:1fr;max-width:420px;margin-inline:auto}
+  .flow:before{left:23px;right:auto;top:24px;bottom:24px;width:2px;height:auto;background:linear-gradient(180deg,var(--blue) 0 84%,var(--yellow) 84%)}
+  .step{display:flex;align-items:center;gap:16px;text-align:left;padding:0;margin-bottom:16px}
+  .step:last-child{margin-bottom:0}
+  .dot{margin:0;flex:none}
+  .step b{font-size:16px}
+  .benefitgrid{grid-template-columns:1fr}
+  .benefit{display:grid;grid-template-columns:1fr auto;grid-template-rows:1fr auto auto auto 1fr;column-gap:32px;padding:32px}
+  .benefit>.eyebrow{grid-column:1;grid-row:2;justify-self:start}
+  .benefit h3{grid-column:1;grid-row:3}
+  .benefit p{grid-column:1;grid-row:4}
+  .benefit .visual{grid-column:2;grid-row:1/-1;padding:0;align-self:center}
+  .benefit h3{min-height:0}
+  .benefit .phone{--w:190px}
+  .tile.big,.tile.tall{grid-column:span 12}
+  .tile.small{grid-column:span 6}
+  .tile.small:last-child{grid-column:span 12}
+  .tile.small .shot{height:320px}
+  .tile.small .shot .phone{--w:210px}
+  .plans{grid-template-columns:repeat(4,1fr)}
+  .plan,.plan:nth-child(n+4){grid-column:auto}
+  .plan:last-child{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;align-items:baseline;column-gap:20px;row-gap:4px;padding:22px 24px}
+  .plan:last-child h3{flex-basis:100%}
+  .plan:last-child .who{margin:0;flex:1 1 260px}
+  .plan:last-child .price{margin:0;font-size:28px}
+  .plan:last-child .per{margin:0}
+  .storegrid,.split{grid-template-columns:1fr}
+  .split .trackvisual{order:2}
+  .outcomes{grid-template-columns:1fr 1fr;row-gap:36px}
+  .notes{grid-template-columns:1fr}
+  .foot{grid-template-columns:1fr 1fr}
+  .foot>div:first-child{grid-column:1/-1}
 }
-.hero .label { color: #9FD4FF; }
-.hero .h1 { color: #fff; }
-.hero .lead { color: rgba(255,255,255,.78); }
-.hero .micro, .hero .micro strong { color: rgba(255,255,255,.88); }
-.hero .store-note { color: rgba(255,255,255,.55); }
-.poster.bare { background: none; border-radius: 0; margin-top: 24px; }
-.poster.bare::before { display: none; }
-@media (min-width: 1100px) { .poster.bare { height: 740px; } .poster.bare .p-hero { --w: 300px; } }
-
-/* headline accent: brand gradient instead of grey */
-.h1 .soft, .h2 .soft {
-  background-image: linear-gradient(90deg, #005CC4 0%, #0592EB 100%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+/* ---------- 601–780: tablet portrait ---------- */
+@media(max-width:780px) and (min-width:601px){
+  .stage{height:540px}
+  .stage .p-main{--w:240px;left:calc(50% - 120px)}
+  .stage .p-left{--w:170px;left:calc(50% - 262px);top:92px}
+  .stage .p-right{--w:170px;left:calc(50% + 92px);top:92px}
+  .pair{height:570px}
+  .pair .p-up{--w:212px;left:calc(50% + 52px)}
+  .pair .p-lie{--w:212px;left:calc(50% - 200px);top:76px}
+  .pain{grid-template-columns:1fr}
+  .pain b{min-height:0}
+  .plans{grid-template-columns:1fr 1fr}
 }
-.hero .h1 .soft, .dark .h2 .soft, .final .h2 .soft { background-image: linear-gradient(90deg, #7CC6FF 0%, #FFFFFF 100%); }
-
-/* product floats on glow, not inside boxes */
-.poster.light { background: radial-gradient(50% 42% at 50% 48%, rgba(0, 96, 254, .16) 0%, rgba(0, 96, 254, 0) 70%); }
-.poster.light::before { -webkit-mask-image: radial-gradient(45% 45% at 50% 48%, #000 10%, transparent 70%); mask-image: radial-gradient(45% 45% at 50% 48%, #000 10%, transparent 70%); }
-.dark .poster { background: radial-gradient(50% 45% at 50% 48%, rgba(5, 146, 235, .45) 0%, rgba(5, 146, 235, 0) 70%); box-shadow: none; }
-.panel { background: radial-gradient(50% 45% at 50% 48%, rgba(0, 96, 254, .14) 0%, rgba(0, 96, 254, 0) 70%); }
-
-/* chips: framed cards with gradient labels */
-.chip img { box-shadow: none; border-radius: 12px; }
-.chip .card {
-  display: block; background: #fff; padding: 6px; border-radius: 18px;
-  box-shadow: 0 1px 2px rgba(1, 38, 94, .10), 0 30px 60px -24px rgba(0, 16, 50, .55), 0 0 0 1px rgba(1, 38, 94, .04);
+/* ---------- ≤600 ---------- */
+@media(max-width:600px){
+  :root{--s:76px}
+  .nav{inset:10px 0 auto}
+  .navin{height:56px;padding-left:14px;gap:10px}
+  .brand .mark{height:24px}
+  .brand .word{height:34px;margin-block:-9px}
+  .mobile.open{top:66px}
+  .hero{text-align:left;padding-top:118px;padding-bottom:56px}
+  .hero .lead{margin-left:0}
+  .hero .buttons .button{flex:1 1 100%}
+  .stage{height:500px}
+  .stage .p-main{--w:220px;left:calc(50% - 110px)}
+  .stage .p-left{--w:150px;left:calc(50% - 168px);top:84px;transform:rotate(-7deg) rotateY(20deg) rotateX(5deg)}
+  .stage .p-right{--w:150px;left:calc(50% + 18px);top:84px;transform:rotate(7deg) rotateY(-20deg) rotateX(5deg)}
+  .pain{grid-template-columns:1fr}
+  .pain b{min-height:0}
+  .compare{grid-template-columns:1fr}
+  .benefit{display:flex;align-items:stretch;padding:28px 24px 38px}
+  .benefit>.eyebrow{align-self:flex-start}
+  .benefit .visual{padding-top:28px}
+  .benefit .phone{--w:200px}
+  .bento{grid-template-columns:1fr}
+  .tile.big,.tile.tall,.tile.small{grid-column:auto}
+  .shots .shot:nth-child(2),.hide-sm{display:none}
+  .shot{height:360px}
+  .tile.small .shot{height:330px}
+  .shot .phone,.tile.tall .shot .phone,.tile.small .shot .phone{--w:230px}
+  .trackvisual .phone{--w:240px}
+  .roles{grid-template-columns:1fr}
+  .outcomes{grid-template-columns:1fr}
+  .plans{grid-template-columns:1fr}
+  .plan,.plan:nth-child(n+4){grid-column:auto}
+  .plan .who{min-height:0}
+  .pair{height:440px}
+  .pair .p-up{--w:160px;left:calc(50% + 6px)}
+  .pair .p-lie{--w:150px;left:calc(50% - 135px);top:60px;transform:rotate(-20deg) rotateY(16deg) rotateX(8deg)}
+  .foot{gap:32px}
+  .tile.small,.tile.small:last-child{grid-column:auto}
+  .plans{grid-template-columns:1fr}
+  .plan:last-child{display:flex;flex-direction:column;flex-wrap:nowrap;padding:26px 20px}
+  .plan:last-child .who{flex:none;margin-top:8px}
+  .plan:last-child .price{margin-top:18px;font-size:34px}
+  .plan:last-child .per{margin-top:6px}
 }
-.chip figcaption, .poster.light .chip figcaption {
-  color: #fff; border: 0;
-  background: linear-gradient(90deg, #005CC4 0%, #0592EB 100%);
-  box-shadow: 0 10px 20px -10px rgba(0, 96, 254, .7);
-  backdrop-filter: none; -webkit-backdrop-filter: none;
+/* ---------- ≤400: small phones keep every phone fully on screen ---------- */
+@media(max-width:400px){
+  .stage{height:440px}
+  .stage .p-main{--w:200px;left:calc(50% - 100px)}
+  .stage .p-left,.stage .p-right{--w:136px;top:76px}
+  .stage .p-left{left:calc(50% - 150px)}
+  .stage .p-right{left:calc(50% + 14px)}
+  .pair{height:380px}
+  .pair .p-up{--w:148px;left:calc(50% + 4px)}
+  .pair .p-lie{--w:136px;left:calc(50% - 112px);top:60px}
 }
-@media (max-width: 899px) {
-  .chip figcaption { color: #fff; background: linear-gradient(90deg, #005CC4 0%, #0592EB 100%); border: 0; }
-}
-
-/* nav edge */
-.nav-bar { box-shadow: inset 0 0 0 1px rgba(255,255,255,.14), 0 18px 40px -18px rgba(1, 38, 94, .7); }
-
-/* comparison: Cefflo column as the brand card */
-.vcol.us { background: linear-gradient(160deg, #00378F 0%, #005CC4 60%, #0592EB 100%); color: #fff; }
-.vcol.us h3 { color: var(--mustard); }
-.vcol.us li::before { border-color: var(--mustard); }
-
-/* pricing: hero plan as brand card */
-.plan.hero-plan { border: 0; color: #fff; background: linear-gradient(165deg, #01265E 0%, #00378F 45%, #005CC4 100%); box-shadow: 0 30px 60px -28px rgba(1, 38, 94, .7); }
-.plan.hero-plan .for, .plan.hero-plan .price span { color: rgba(255,255,255,.75); }
-.plan.hero-plan .allow { border-top-color: rgba(255,255,255,.18); }
-.plan.hero-plan li::before { border-color: var(--mustard); }
-.plan.hero-plan .tag { background: var(--mustard); color: var(--on-mustard); }
-
-.plan.hero-plan ul { color: #fff; }
-@media (min-width: 1100px) {
-  .poster.light, .dark .poster, .poster.bare { overflow: visible; }
-  .poster.light .orbit, .dark .poster .orbit { width: 100%; }
-}
-section { overflow-x: clip; }
-
-.lang {
-  margin-left: auto; height: 40px; min-width: 48px; padding: 0 12px; border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.35); background: transparent; color: #fff;
-  font: 700 13px/1 "Inter", system-ui, sans-serif; letter-spacing: .04em; cursor: pointer;
-}
-.lang:hover { background: rgba(255,255,255,.12); }
-.lang + .nav-go { margin-left: 8px; }
-@media (min-width: 900px) { .lang { margin-left: 16px; } }
-
-/* ---------- motion ---------- */
-@keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
-.hero .head > * { animation: rise 650ms var(--ease) both; }
-.hero .head > :nth-child(2) { animation-delay: 60ms; }
-.hero .head > :nth-child(3) { animation-delay: 120ms; }
-.hero .head > :nth-child(4) { animation-delay: 180ms; }
-.hero .stage { animation: rise 850ms var(--ease) 220ms both; }
-.js .reveal { opacity: 0; transform: translateY(28px); transition: opacity 600ms var(--ease), transform 600ms var(--ease); }
-.js .reveal.in { opacity: 1; transform: none; }
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
-  .js .reveal { opacity: 1; transform: none; }
-  html { scroll-behavior: auto; }
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*:before,*:after{transition:none!important;animation:none!important}
+  .js .reveal{opacity:1;transform:none}
 }
 </style>
 </head>
 <body>
-
 <header class="nav">
-  <div class="nav-bar">
-    <a class="brand" href="#top" aria-label="Cefflo home">
-      <img class="mark" src="img/logo_mark.png" alt="">
-      <img class="word" src="img/logo_word.png" alt="Cefflo">
-    </a>
-    <nav class="nav-links" aria-label="Primary">
-      <a href="#cara"><span data-ms="Cara ia berfungsi">How it works</span></a>
-      <a href="#driver"><span data-ms="Rider">Riders</span></a>
-      <a href="#harga"><span data-ms="Harga">Pricing</span></a>
-      <a href="#soalan"><span data-ms="Soalan">FAQ</span></a>
-    </nav>
-    <button class="lang" id="langBtn" type="button" aria-label="Bahasa Melayu">BM</button>
-    <a class="nav-go" href="#muat-turun"><span data-ms="Muat turun">Download</span></a>
+  <div class="wrap">
+    <div class="navin">
+      <a class="brand" href="#top" aria-label="Cefflo home"><img class="mark" src="img/logo_mark.png" alt="" width="165" height="200"><img class="word" src="img/logo_word.png" alt="Cefflo" width="252" height="120"></a>
+      <nav class="links" aria-label="Primary"><a href="#how" data-ms="Cara ia berfungsi">How it works</a><a href="#features" data-ms="Ciri">Features</a><a href="#pricing" data-ms="Harga">Pricing</a><a href="#faq" data-ms="Soalan">FAQ</a></nav>
+      <button class="lang" id="lang" type="button" aria-label="Bahasa Melayu">BM</button>
+      <a class="button primary" href="https://vendor.cefflo.com/" data-ms="Mula percuma">Start free</a>
+      <button class="menu" id="menu" type="button" aria-label="Menu" aria-controls="mobile" aria-expanded="false"><svg class="bars" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14"/></svg><svg class="x" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+    </div>
+    <nav class="mobile" id="mobile" aria-label="Menu"><a href="#how" data-ms="Cara ia berfungsi">How it works</a><a href="#features" data-ms="Ciri">Features</a><a href="#pricing" data-ms="Harga">Pricing</a><a href="#faq" data-ms="Soalan">FAQ</a><a class="button primary" href="https://vendor.cefflo.com/" data-ms="Mula percuma">Start free</a></nav>
   </div>
 </header>
 
 <main id="top">
-
-  <!-- 02 HERO -->
   <section class="hero">
-    <div class="hero-shell on-dark"><div class="wrap">
-      <div class="head center">
-        <span class="label"><span data-ms="Sistem operasi delivery hari-sama">Same-day delivery operating system</span></span>
-        <h1 class="h1"><span data-ms="Uruskan delivery tempatan. &lt;span class=&quot;soft&quot;&gt;Tanpa serabut.&lt;/span&gt;">Run local delivery. <span class="soft">Without the chaos.</span></span></h1>
-        <p class="lead"><span data-ms="Order hari ini disusun ikut kawasan, jadi run multi-drop untuk rider anda sendiri. Customer semak status sendiri melalui pautan.">Today&#39;s orders are grouped by area and turned into multi-drop runs for your own riders. Customers check their status from a link.</span></p>
-        <div>
-          <div class="cta-row" data-stores></div>
-          <p class="micro"><span data-ms="&lt;strong&gt;Mula percuma&lt;/strong&gt; · 150 penghantaran sebulan · tanpa kad kredit"><strong>Start free</strong> · 150 deliveries a month · no credit card</span></p>
-        </div>
-      </div>
-      <div class="poster poster-wide bare" role="img" aria-label="Real Cefflo Vendor app screen with elements from the Vendor app, Cefflo Driver and customer tracking">
-        <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
-        <div class="ground"></div>
-        <div class="phone p-hero"><div class="screen"><img src="img/v11_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <figure class="chip tl"><figcaption><span data-ms="Ringkasan hari ini">Today at a glance</span></figcaption><span class="card"><img src="img/f_kpi.webp" alt=""></span></figure>
-        <figure class="chip tr"><figcaption><span data-ms="Siap dihantar">Delivered</span></figcaption><span class="card"><img src="img/f_delivered.webp" alt=""></span></figure>
-        <figure class="chip bl"><figcaption><span data-ms="Rider: stop seterusnya">Rider: next stop</span></figcaption><span class="card"><img src="img/f_stop.webp" alt=""></span></figure>
-        <figure class="chip br"><figcaption><span data-ms="Customer nampak status">Customer sees the status</span></figcaption><span class="card"><img src="img/f_status.webp" alt=""></span></figure>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- 05 BUILT FOR -->
-  <section style="padding-bottom: 0">
-    <div class="wrap center reveal">
-      <p class="micro" style="margin: 0; font-size: 15px"><span data-ms="Dibina untuk bisnes yang hantar order sendiri">Built for businesses that deliver their own orders</span></p>
-      <div class="cats">
-        <span>F&amp;B</span><span><span data-ms="Bakeri &amp;amp; kek">Bakeries &amp; cakes</span></span><span>Meal prep</span><span><span data-ms="Florist">Florists</span></span><span><span data-ms="Hamper &amp;amp; hadiah">Hampers &amp; gifts</span></span><span><span data-ms="Kecantikan">Beauty</span></span><span><span data-ms="Runcit tempatan">Local retail</span></span>
-      </div>
-    </div>
-  </section>
-
-  <!-- 03 THE PROBLEM -->
-  <section id="masalah">
-    <div class="wrap split">
-      <div class="reveal">
-        <span class="label"><span data-ms="Masalahnya">The problem</span></span>
-        <h2 class="h2"><span data-ms="Order bertambah itu rezeki. &lt;span class=&quot;soft&quot;&gt;Sampailah delivery tak terkejar.&lt;/span&gt;">More orders are good news. <span class="soft">Until delivery can&#39;t keep up.</span></span></h2>
-        <ol class="pains">
-          <li><span class="n">01</span><div><b><span data-ms="Order bersepah">Orders everywhere</span></b><span><span data-ms="Dalam WhatsApp, DM, nota dan ingatan anda sendiri.">In WhatsApp, DMs, notes and your own memory.</span></span></div></li>
-          <li><span class="n">02</span><div><b><span data-ms="Rider call setiap stop">Riders call at every stop</span></b><span><span data-ms="&quot;Lepas ni pergi mana dulu?&quot;">"Where do I go next?"</span></span></div></li>
-          <li><span class="n">03</span><div><b><span data-ms="Customer tanya tak henti">Customers keep asking</span></b><span><span data-ms="&quot;Order saya dah sampai mana?&quot;">"Where&#39;s my order?"</span></span></div></li>
-        </ol>
-        <p class="grow"><span data-ms="Bisnes membesar hanya bila operasi ikut membesar. &lt;em&gt;Grow = Operate.&lt;/em&gt;">A business grows only as far as its operation can. <em>Grow = Operate.</em></span></p>
-      </div>
-      <div class="poster light side reveal" role="img" aria-label="Cefflo Orders screen: all of today&#39;s orders in one list with their status">
-        <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
-        <div class="ground"></div>
-        <div class="phone p-hero"><div class="screen"><img src="img/v12_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <figure class="chip br"><figcaption><span data-ms="Status setiap order jelas">Every order&#39;s status, clear</span></figcaption><span class="card"><img src="img/f_delivered.webp" alt=""></span></figure>
-      </div>
-    </div>
-  </section>
-
-  <!-- 04 CATEGORY DIFFERENCE -->
-  <section class="dark">
-    <div class="wrap split rev">
-      <div class="reveal">
-        <span class="label"><span data-ms="Bezanya">The difference</span></span>
-        <h2 class="h2"><span data-ms="Jangan setakat hantar. &lt;span class=&quot;soft&quot;&gt;Uruskan delivery.&lt;/span&gt;">Don&#39;t just send deliveries. <span class="soft">Run delivery.</span></span></h2>
-        <p class="lead"><span data-ms="Servis penghantaran membantu anda hantar satu job. Cefflo membantu anda menjalankan seluruh operasi delivery anda sendiri, setiap hari.">A delivery service helps you send one job. Cefflo helps you run your whole delivery operation, every day.</span></p>
-        <div class="versus">
-          <div class="vcol them">
-            <h3><span data-ms="Tempah penghantaran">Book a delivery</span></h3>
-            <ul>
-              <li><span data-ms="Satu order ditempah sebagai satu job">One order booked as one job</span></li>
-              <li><span data-ms="Rider disediakan oleh platform">Riders supplied by the platform</span></li>
-              <li><span data-ms="Perancangan hari anda tetap dalam kepala">Your day&#39;s plan still lives in your head</span></li>
-            </ul>
-          </div>
-          <div class="vcol us">
-            <h3><span data-ms="Jalankan dengan Cefflo">Run it with Cefflo</span></h3>
-            <ul>
-              <li><span data-ms="Semua order hari ini disusun jadi run multi-drop">All of today&#39;s orders grouped into multi-drop runs</span></li>
-              <li><span data-ms="Rider anda sendiri, customer anda sendiri">Your own riders, your own customers</span></li>
-              <li><span data-ms="Seluruh hari delivery dalam satu skrin">Your whole delivery day on one screen</span></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      <div class="poster side reveal" role="img" aria-label="Cefflo Zones screen: zone map with orders and riders per zone">
-        <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
-        <div class="ground"></div>
-        <div class="phone p-tilt-l"><div class="screen"><img src="img/v16_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <figure class="chip tl"><figcaption><span data-ms="Ringkasan order hari ini">Today&#39;s orders at a glance</span></figcaption><span class="card"><img src="img/f_kpi.webp" alt=""></span></figure>
-      </div>
-    </div>
-  </section>
-
-  <!-- 06 HOW IT WORKS -->
-  <section id="cara">
+    
     <div class="wrap">
-      <div class="head center reveal">
-        <span class="label"><span data-ms="Cara ia berfungsi">How it works</span></span>
-        <h2 class="h2"><span data-ms="Empat langkah. &lt;span class=&quot;soft&quot;&gt;Dari order sampai ke pintu.&lt;/span&gt;">Four steps. <span class="soft">From order to doorstep.</span></span></h2>
-      </div>
-      <div class="steps">
-        <article class="step reveal">
-          <div class="step-top"><span class="num">01</span><h3><span data-ms="Order masuk">Orders come in</span></h3><p><span data-ms="Taip satu-satu, atau import fail CSV dan Excel yang anda dah guna.">Type them in, or import the CSV and Excel files you already use.</span></p></div>
-          <div class="step-shot"><img src="img/v14_top.webp" alt="New order screen: Manual Entry and Import Orders"></div>
-        </article>
-        <article class="step reveal">
-          <div class="step-top"><span class="num">02</span><h3><span data-ms="Susun &amp;amp; rancang">Group &amp; plan</span></h3><p><span data-ms="Order dikumpul ikut zon. Cefflo cadangkan run, anda semak dan sahkan.">Orders are grouped by zone. Cefflo suggests runs; you review and confirm.</span></p></div>
-          <div class="step-shot"><img src="img/v17.webp" alt="Bangsar zone screen: distance, orders and today&#39;s deliveries"></div>
-        </article>
-        <article class="step reveal">
-          <div class="step-top"><span class="num">03</span><h3><span data-ms="Hantar ke rider">Dispatch to riders</span></h3><p><span data-ms="Setiap run pergi kepada rider anda, ikut kenderaan motosikal, kereta atau van.">Each run goes to one of your riders, matched to their motorcycle, car or van.</span></p></div>
-          <div class="step-shot"><img src="img/v20_top.webp" alt="Riders screen: riders with vehicle type and status"></div>
-        </article>
-        <article class="step reveal">
-          <div class="step-top"><span class="num">04</span><h3><span data-ms="Sampai">Delivered</span></h3><p><span data-ms="Rider ikut turutan stop, ambil gambar bukti hantar, dan slide untuk siap.">Riders follow the stop order, take a proof-of-delivery photo and slide to complete.</span></p></div>
-          <div class="step-shot"><img src="img/d23.webp" alt="Cefflo Driver Confirm Delivery with proof of delivery and Slide to Complete"></div>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- 07 BRING YOUR ORDERS IN -->
-  <section style="padding-top: 0">
-    <div class="wrap split">
       <div class="reveal">
-        <span class="label"><span data-ms="Bawa masuk order">Bring your orders in</span></span>
-        <h2 class="h2"><span data-ms="Terus ambil order cara anda. &lt;span class=&quot;soft&quot;&gt;Cefflo urus apa yang jadi selepas itu.&lt;/span&gt;">Keep taking orders your way. <span class="soft">Cefflo runs what happens next.</span></span></h2>
-        <p class="lead"><span data-ms="Tak perlu tukar cara customer order. Masukkan order secara manual, atau import terus dari spreadsheet anda.">No need to change how customers order. Enter orders by hand, or import them straight from your spreadsheet.</span></p>
-        <div class="formats"><span>Manual</span><span>CSV</span><span>Excel</span></div>
-      </div>
-      <div class="poster light side short reveal" role="img" aria-label="New order screen: Manual Entry and Import Orders">
-        <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
-        <div class="intake-card"><img src="img/v14_top.webp" alt=""></div>
-        <span class="fmt f1">Manual</span><span class="fmt f2">CSV</span><span class="fmt f3">Excel</span>
+        <span class="eyebrow" data-ms="Sistem operasi delivery tempatan">Local delivery operating system</span>
+        <h1 data-ms="Jalankan <span class='nw'>operasi anda</span><br><span class='hl'>tanpa serabut.</span>">Run your operation<br><span class="hl">without chaos.</span></h1>
+        <p class="lead" data-ms="Cefflo membantu bisnes tempatan menyusun order, zon penghantaran, run multi-drop dan Driver dalam satu sistem operasi.">Cefflo helps local businesses organise orders, delivery zones, multi-drop runs and Drivers in one operating system.</p>
+        <div class="hero-stores"><a class="hs apple" href="#" aria-disabled="true" aria-label="App Store, coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.6c-.02-2.1 1.72-3.12 1.8-3.17-.98-1.43-2.5-1.63-3.05-1.65-1.3-.13-2.53.76-3.19.76-.66 0-1.67-.74-2.75-.72-1.41.02-2.72.82-3.44 2.09-1.47 2.55-.38 6.32 1.05 8.39.7 1.01 1.53 2.15 2.62 2.11 1.05-.04 1.45-.68 2.72-.68 1.27 0 1.63.68 2.74.66 1.13-.02 1.85-1.03 2.54-2.05.8-1.17 1.13-2.31 1.15-2.37-.03-.01-2.2-.84-2.22-3.35zM14.27 6.43c.58-.7.97-1.68.86-2.65-.83.03-1.84.55-2.44 1.25-.53.62-1 1.62-.88 2.57.93.07 1.88-.47 2.46-1.17z"/></svg><span><small data-ms="Akan datang di">Coming soon on</small><b>App Store</b></span></a><a class="hs play" href="#" aria-disabled="true" aria-label="Google Play, coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#00d7fe" d="M3.6 2.2l9.9 9.8-9.9 9.8c-.36-.2-.6-.6-.6-1.1V3.3c0-.5.24-.9.6-1.1z"/><path fill="#ffc93c" d="M17.1 8.4l3.1 1.8c.9.5.9 1.8 0 2.3l-3.1 1.8-3.6-2.3z"/><path fill="#ff3a44" d="M13.5 12l3.6 2.3-11.2 6.5c-.8.5-1.7.4-2.3-.1z"/><path fill="#10b981" d="M3.6 2.2c.6-.5 1.5-.6 2.3-.1l11.2 6.3-3.6 3.6z"/></svg><span><small data-ms="Akan datang di">Coming soon on</small><b>Google Play</b></span></a></div>
+      
       </div>
     </div>
   </section>
+  <section class="showcase" aria-label="Cefflo app"><div class="wrap"><div class="stage reveal"><div class="phone tilt-l p-left"><img src="img/s_v_drivers.webp" alt="Cefflo Vendor: Drivers" width="786" height="1704"><span class="sb" aria-hidden="true">9:41<i></i></span></div><div class="phone p-main"><img src="img/s_v_today.webp" alt="Cefflo Vendor: Today overview" width="786" height="1704"><span class="sb" aria-hidden="true">9:41<i></i></span></div><div class="phone tilt-r p-right"><img src="img/s_d_stops.webp" alt="Cefflo Driver: stop list" width="786" height="1704"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div></div></section>
 
-  <!-- 08 OPERATE TODAY -->
-  <section id="operasi">
-    <div class="wrap">
-      <div class="head center reveal">
-        <span class="label"><span data-ms="Operasi hari ini">Operate today</span></span>
-        <h2 class="h2"><span data-ms="Satu hari delivery. &lt;span class=&quot;soft&quot;&gt;Satu skrin.&lt;/span&gt;">One delivery day. <span class="soft">One screen.</span></span></h2>
-        <p class="lead"><span data-ms="Nampak berapa order siap, berapa bermasalah, siapa hantar apa, dan apa yang perlu tindakan anda sekarang.">See what&#39;s done, what has an issue, who&#39;s delivering what, and what needs you right now.</span></p>
-      </div>
-      <div class="panel reveal"><div class="showcase">
-        <div class="phone side sl"><div class="screen"><img src="img/v19_ph.webp" alt="Active run screen: Bangsar Run, 1 of 3 delivered, next stop"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <div class="phone big"><div class="screen"><img src="img/v11_ph.webp" alt="Cefflo Vendor Today screen: total orders, Ready, Issue, Delivered, Recent Delivery and Need Attention"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div>
-          <div class="anno-list">
-            <div class="anno l" style="top: 22%"><span><span data-ms="Ringkasan hari ini">Today at a glance</span></span><i></i></div>
-            <div class="anno r" style="top: 44%"><span><span data-ms="Siapa hantar apa">Who&#39;s delivering what</span></span><i></i></div>
-            <div class="anno l" style="top: 80%"><span><span data-ms="Perlu perhatian">Needs attention</span></span><i></i></div>
-          </div>
-        </div>
-        <div class="phone side sr"><div class="screen"><img src="img/v17_ph.webp" alt="Bangsar zone screen with today&#39;s deliveries and the Dispatch button"><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
+
+  
+
+  
+
+  <section class="soft">
+    <div class="wrap"><div class="ba2">
+        <div class="ba2-col reveal"><span class="ba2-tag before" data-ms="Sebelum">Before</span><h3 data-ms="Kerja manual makan masa anda.">Manual work eats up your time.</h3><img class="ba2-img" src="img/before.webp" alt="Orders arriving from many platforms, a checklist of manual tasks and a stressed business owner" width="1024" height="1536" loading="lazy"></div>
+        <div class="ba2-col reveal"><span class="ba2-tag after" data-ms="Selepas">After</span><h3 data-ms="Cefflo urus kerja remeh.">Cefflo handles the busywork.</h3>
+          <img class="ba2-img" src="img/after.webp" alt="Orders from every channel organised in Cefflo while the team delivers" width="1024" height="1536" loading="lazy"></div>
       </div></div>
-    </div>
   </section>
 
-  <!-- 09 DRIVER -->
-  <section id="driver" style="background: #fff">
+  <section id="how">
     <div class="wrap">
       <div class="head center reveal">
-        <span class="label">Cefflo Driver</span>
-        <h2 class="h2"><span data-ms="Rider tahu stop seterusnya. &lt;span class=&quot;soft&quot;&gt;Tanpa call.&lt;/span&gt;">Riders know the next stop. <span class="soft">No calls.</span></span></h2>
-        <p class="lead"><span data-ms="Run, senarai stop ikut turutan, bukti hantar dan slide untuk siap. Semua dalam app rider.">The run, stops in order, proof of delivery and slide to complete. All in the rider app.</span></p>
+        <span class="eyebrow" data-ms="Cara Cefflo berfungsi">How Cefflo works</span>
+        <h2 data-ms="Dari order sampai dihantar.<br>Satu aliran yang jelas.">From order to delivered.<br>One clear flow.</h2>
       </div>
-      <div class="poster light poster-wide reveal" role="img" aria-label="Cefflo Driver Stop List with proof of delivery and Slide to Complete">
-        <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
-        <div class="ground"></div>
-        <div class="phone p-tilt-l"><div class="screen"><img src="img/d21_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <figure class="chip tl"><figcaption><span data-ms="12 order, satu run">12 orders, one run</span></figcaption><span class="card"><img src="img/f_stop.webp" alt=""></span></figure>
-        <figure class="chip small tr"><figcaption><span data-ms="Bukti hantar">Proof of delivery</span></figcaption><span class="card"><img src="img/f_pod.webp" alt=""></span></figure>
-        <figure class="chip br"><figcaption><span data-ms="Slide untuk siap">Slide to complete</span></figcaption><span class="card"><img src="img/f_slide.webp" alt=""></span></figure>
+      <ol class="flow reveal">
+        <li class="step"><span class="dot">1</span><b data-ms="Order">Orders</b></li>
+        <li class="step"><span class="dot">2</span><b data-ms="Liputan">Coverage</b></li>
+        <li class="step"><span class="dot">3</span><b data-ms="Zon Penghantaran">Delivery Zones</b></li>
+        <li class="step"><span class="dot">4</span><b data-ms="Pelan Penghantaran">Delivery Plan</b></li>
+        <li class="step"><span class="dot">5</span><b data-ms="Run Multi-drop">Multi-drop Runs</b></li>
+        <li class="step"><span class="dot">6</span><b data-ms="Driver">Drivers</b></li>
+        <li class="step"><span class="dot">7</span><b data-ms="Dihantar Hari Ini">Delivered Today</b></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="soft" id="features">
+    <div class="wrap">
+      <div class="head center reveal">
+        <span class="eyebrow" data-ms="Kelebihan utama">Key benefits</span>
+        <h2 data-ms="Rancang. Hantar. Jejak.">Plan. Dispatch. Track.</h2>
+      </div>
+      <div class="benefitgrid">
+        <article class="benefit reveal"><span class="eyebrow" data-ms="Rancang">Plan</span><h3 data-ms="Rancang penghantaran ikut cara bisnes anda beroperasi.">Plan deliveries around how your business actually operates.</h3><p data-ms="Tetapkan liputan dan jadikan order hari ini satu pelan penghantaran yang jelas.">Define coverage and turn today’s orders into a clear delivery plan.</p><div class="visual floor"><div class="phone"><img src="img/s_v_zones.webp" alt="Cefflo Vendor: delivery zones" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div></article>
+        <article class="benefit reveal"><span class="eyebrow" data-ms="Hantar">Dispatch</span><h3 data-ms="Jadikan banyak order sebagai run multi&#8209;drop yang jelas.">Turn many orders into clear multi&#8209;drop runs.</h3><p data-ms="Susun stop dan serahkan setiap run kepada Driver anda.">Organise stops and assign each run to your Driver.</p><div class="visual floor"><div class="phone"><img src="img/s_d_run.webp" alt="Cefflo Driver: run details" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div></article>
+        <article class="benefit reveal"><span class="eyebrow" data-ms="Jejak">Track</span><h3 data-ms="Customer sentiasa tahu, tanpa mesej berulang.">Keep customers informed without constant messages.</h3><p data-ms="Satu pautan menunjukkan Picked Up, On the Way dan Delivered.">One link shows Picked Up, On the Way and Delivered.</p><div class="visual floor"><div class="phone"><img src="img/s_c_done.webp" alt="Customer tracking: delivered" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div></article>
       </div>
     </div>
   </section>
 
-  <!-- 10 CUSTOMER TRACKING -->
-  <section id="tracking">
+  <section>
+    <div class="wrap">
+      <div class="head center reveal">
+        <span class="eyebrow" data-ms="Satu sistem operasi">One operating system</span>
+        <h2 data-ms="Setiap bahagian hari delivery anda, bersambung.">Every part of your delivery day, connected.</h2>
+      </div>
+      <div class="bento">
+        <article class="tile big reveal"><h3 data-ms="Order<span class='hide-sm'> + Zon</span>">Orders<span class="hide-sm"> + Zones</span></h3><p data-ms="Nampak apa yang masuk dan ke mana ia perlu pergi.">See what came in and where it needs to go.</p><div class="shots"><div class="shot"><div class="phone"><img src="img/s_v_orders.webp" alt="Order list" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div><div class="shot"><div class="phone"><img src="img/s_v_zones.webp" alt="Delivery zones" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div></div></article>
+        <article class="tile tall reveal"><h3 data-ms="Run Multi-drop">Multi-drop Runs</h3><p data-ms="Daripada pelan penghantaran kepada beban kerja Driver yang jelas.">From a delivery plan to a clear Driver workload.</p><div class="shots"><div class="shot"><div class="phone"><img src="img/s_d_stops.webp" alt="Driver stop list" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div></div></article>
+        <article class="tile small reveal"><h3 data-ms="Driver">Drivers</h3><p data-ms="Serahkan run dan pastikan status kelihatan.">Assign runs and keep status visible.</p><div class="shots"><div class="shot"><div class="phone"><img src="img/s_v_drivers.webp" alt="Drivers list" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div></div></article>
+        <article class="tile small reveal"><h3 data-ms="Senarai Semak Pickup">Pickup Checklist</h3><p data-ms="Sahkan order yang betul sebelum run bermula.">Confirm the right orders before a run starts.</p><div class="shots"><div class="shot"><div class="phone"><img src="img/s_d_run.webp" alt="Run steps starting with pickup from store" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div></div></article>
+        <article class="tile small reveal"><h3 data-ms="Bukti Penghantaran">Proof of Delivery</h3><p data-ms="Siapkan penghantaran dengan bukti yang jelas.">Complete delivery with clear proof.</p><div class="shots"><div class="shot"><div class="phone"><img src="img/s_d_pod.webp" alt="Confirm delivery with proof of delivery photo" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="integrations" class="ig">
+    <div class="wrap ig-grid">
+      <div class="ig-copy reveal">
+        <span class="eyebrow" data-ms="Integrasi">Integrations</span>
+        <h2 data-ms="Satukan semua order anda. <span class='hl'>Jalankan delivery tempatan dari Cefflo.</span>">Connect all your orders. <span class="hl">Run your local deliveries from Cefflo.</span></h2>
+        <p class="lead" data-ms="Bawa setiap order dari alat yang anda dah guna, dan urus operasi delivery di satu tempat.">Bring every order from the tools you already use and manage your delivery operations in one place.</p>
+      </div>
+      <div class="ig-hub reveal" role="img" aria-label="Cefflo connected to Storefront, CSV, Excel, manual entry, Shopify, WooCommerce, Wix, Google Sheets, Google Drive and API">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="rg" cx="50" cy="50" r="47"/><circle class="rg" cx="50" cy="50" r="31"/><circle class="rg in" cx="50" cy="50" r="20"/><line class="w" x1="50.0" y1="18.0" x2="50.00" y2="35.80"/><line class="p" x1="50.0" y1="18.0" x2="50.00" y2="35.80" style="animation-delay:-0.00s"/><line class="w" x1="68.81" y1="24.11" x2="58.35" y2="38.51"/><line class="p" x1="68.81" y1="24.11" x2="58.35" y2="38.51" style="animation-delay:-0.27s"/><line class="w" x1="80.43" y1="40.11" x2="63.50" y2="45.61"/><line class="p" x1="80.43" y1="40.11" x2="63.50" y2="45.61" style="animation-delay:-0.54s"/><line class="w" x1="80.43" y1="59.89" x2="63.50" y2="54.39"/><line class="p" x1="80.43" y1="59.89" x2="63.50" y2="54.39" style="animation-delay:-0.81s"/><line class="w" x1="68.81" y1="75.89" x2="58.35" y2="61.49"/><line class="p" x1="68.81" y1="75.89" x2="58.35" y2="61.49" style="animation-delay:-1.08s"/><line class="w" x1="50.0" y1="82.0" x2="50.00" y2="64.20"/><line class="p" x1="50.0" y1="82.0" x2="50.00" y2="64.20" style="animation-delay:-1.35s"/><line class="w" x1="31.19" y1="75.89" x2="41.65" y2="61.49"/><line class="p" x1="31.19" y1="75.89" x2="41.65" y2="61.49" style="animation-delay:-1.62s"/><line class="w" x1="19.57" y1="59.89" x2="36.50" y2="54.39"/><line class="p" x1="19.57" y1="59.89" x2="36.50" y2="54.39" style="animation-delay:-1.89s"/><line class="w" x1="19.57" y1="40.11" x2="36.50" y2="45.61"/><line class="p" x1="19.57" y1="40.11" x2="36.50" y2="45.61" style="animation-delay:-2.16s"/><line class="w" x1="31.19" y1="24.11" x2="41.65" y2="38.51"/><line class="p" x1="31.19" y1="24.11" x2="41.65" y2="38.51" style="animation-delay:-2.43s"/></svg>
+        <div class="ig-core"><img src="img/logo_mark.png" alt="" width="165" height="200"><b>Cefflo</b></div>
+        <div class="ig-node" style="left:50.0%;top:10.0%"><span class="ig-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#0050d6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9l1.5-5h13L20 9M4 9h16M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M9 20v-6h6v6"/></svg></span><small>Storefront</small></div><div class="ig-node" style="left:73.5%;top:17.6%"><span class="ig-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#0050d6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5"/><text x="12" y="18" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="5.5" fill="#0050d6" stroke="none">CSV</text></svg></span><small>CSV</small></div><div class="ig-node" style="left:88.0%;top:37.6%"><span class="ig-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="9" y="4" width="20" height="24" rx="2" fill="#21A366"/><path fill="#33C481" d="M19 4h8a2 2 0 0 1 2 2v6H19z"/><path fill="#107C41" d="M9 16h10v12h-8a2 2 0 0 1-2-2z"/><rect x="3" y="9" width="14" height="14" rx="2" fill="#107C41"/><path fill="#fff" d="M6.4 12.5h2.3l1.3 2.4 1.3-2.4h2.2l-2.3 3.5 2.4 3.5h-2.3L10 17l-1.4 2.5H6.3l2.4-3.5z"/></svg></span><small>Excel</small></div><div class="ig-node" style="left:88.0%;top:62.4%"><span class="ig-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#3d4659" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 5l-3 14"/></svg></span><small>API / Webhooks</small></div><div class="ig-node" style="left:73.5%;top:82.4%"><span class="ig-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#0050d6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/></svg></span><small>Manual entry</small></div><div class="ig-node" style="left:50.0%;top:90.0%"><span class="ig-ico"><img src="img/int_sheets.png" alt="" width="40" height="40"></span><small>Google Sheets</small></div><div class="ig-node" style="left:26.5%;top:82.4%"><span class="ig-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#0066DA" d="M4.3 24.6l1.3 2.3c.3.5.7.9 1.1 1.1l4.6-8H2.1c0 .6.1 1.1.4 1.6z"/><path fill="#00AC47" d="M16 11.5 11.4 3.5c-.4.3-.8.6-1.1 1.1L2.5 18.4c-.3.5-.4 1-.4 1.6h9.2z"/><path fill="#EA4335" d="M25.3 28c.4-.3.8-.6 1.1-1.1l.5-.9 2.6-4.4c.3-.5.4-1 .4-1.6h-9.2l2 3.9z"/><path fill="#00832D" d="M16 11.5l4.6-8c-.4-.3-1-.4-1.5-.4h-6.2c-.5 0-1.1.2-1.5.4z"/><path fill="#2684FC" d="M20.7 20H11.3l-4.6 8c.4.3 1 .4 1.5.4h15.6c.5 0 1.1-.2 1.5-.4z"/><path fill="#FFBA00" d="M25.2 12.1l-4.3-7.4c-.3-.5-.7-.9-1.1-1.1L15.2 11.5 20.7 20h9.2c0-.6-.1-1.1-.4-1.6z"/></svg></span><small>Google Drive</small></div><div class="ig-node" style="left:12.0%;top:62.4%"><span class="ig-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><text x="16" y="21" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="12" fill="currentColor">WiX</text></svg></span><small>Wix</small></div><div class="ig-node" style="left:12.0%;top:37.6%"><span class="ig-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="7" width="30" height="16" rx="4" fill="#7F54B3"/><path fill="#7F54B3" d="M17 22l3 5 1-5z"/><text x="16" y="19" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="10" fill="#fff">Woo</text></svg></span><small>WooCommerce</small></div><div class="ig-node" style="left:26.5%;top:17.6%"><span class="ig-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#95BF47" d="M22.6 6.3c0-.1-.1-.2-.2-.2l-2.1-.2-1.6-1.6c-.2-.2-.5-.1-.6-.1l-.8.3C16.8 3.1 16 2.2 14.6 2.2h-.1c-.4-.5-.9-.7-1.3-.7-3.2 0-4.8 4-5.2 6l-2.3.7c-.7.2-.7.2-.8.9L3 27.3l15.2 2.8 8.2-1.8L22.6 6.3z"/><path fill="#5E8E3E" d="M22.4 6.1l-2.1-.2-1.6-1.6-.4-.1L18.2 30l8.2-1.8L22.6 6.3c0-.1-.1-.2-.2-.2z"/><path fill="#fff" d="M14.6 11.2l-1 3s-.9-.5-2-.5c-1.6 0-1.7 1-1.7 1.3 0 1.4 3.6 1.9 3.6 5.1 0 2.5-1.6 4.2-3.8 4.2-2.6 0-4-1.6-4-1.6l.7-2.3s1.4 1.2 2.6 1.2c.8 0 1.1-.6 1.1-1.1 0-1.8-3-1.9-3-4.9 0-2.5 1.8-5 5.5-5 1.4 0 2 .4 2 .4z"/></svg></span><small>Shopify</small></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="soft sf">
+    <div class="wrap">
+      <div class="head center reveal">
+        <span class="eyebrow" data-ms="Jual + Hantar">Sell + Deliver</span>
+        <h2 data-ms="Halaman order anda, bersambung terus ke operasi delivery.">Your ordering page, connected to your delivery operation.</h2>
+        <p class="lead" data-ms="Pilih gaya Storefront, terbitkan produk anda, dan setiap order customer terus masuk ke Cefflo.">Pick a Storefront style, publish your products, and every customer order lands straight in Cefflo.</p>
+      </div>
+      <div class="sf-gallery reveal" tabindex="0" aria-label="Storefront styles"><div class="phone"><img src="img/s_sf_brew.webp" alt="Storefront Brew: coffee house" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div><div class="phone"><img src="img/s_sf_pour.webp" alt="Storefront Pour: bakery product" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div><div class="phone"><img src="img/s_sf_botanic.webp" alt="Storefront Botanic: natural care" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div><div class="phone"><img src="img/s_sf_care.webp" alt="Storefront Care: florist" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div><div class="phone"><img src="img/s_sf_warung.webp" alt="Storefront Warung: local eatery" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div><div class="phone"><img src="img/s_sf_atelier.webp" alt="Storefront Atelier: fashion" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div>
+      <div class="sf-cards">
+        <article class="sf-card reveal"><b data-ms="18 gaya Storefront">18 Storefront styles</b><p data-ms="Kafe, bakeri, florist, fesyen, kedai makan dan banyak lagi. Produk datang terus dari katalog anda.">Cafés, bakeries, florists, fashion, local eateries and more. Products come straight from your catalogue.</p>
+          <div class="sf-names" aria-hidden="true"><span>Care</span><span>Capsule</span><span>Kit</span><span>Brew</span><span>Crimson</span><span>Lift</span><span>Harvest</span><span>Botanic</span><span>Combo</span><span>Discover</span><span>Atelier</span><span>Pour</span><span>Tailor</span><span>Sprint</span><span>Splash</span><span>Service</span><span>Warung</span><span>Collector</span></div></article>
+        <article class="sf-card reveal"><b data-ms="Pautan dan kod QR untuk dikongsi">Shareable link and QR</b><p data-ms="Kongsi pautan kedai anda di WhatsApp, Instagram atau cetak kod QR di kaunter.">Share your store link anywhere, or print the QR code for your counter.</p>
+          <div class="sf-share"><span class="sf-link">order.cefflo.com/kopi-kita</span><svg class="qr" role="img" aria-label="QR code for the demo storefront link" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 116 116"  preserveAspectRatio="xMinYMin meet"><rect width="100%" height="100%" fill="white" cx="0" cy="0"/><path d="M0,0l4,0 0,4 -4,0 0,-4z M4,0l4,0 0,4 -4,0 0,-4z M8,0l4,0 0,4 -4,0 0,-4z M12,0l4,0 0,4 -4,0 0,-4z M16,0l4,0 0,4 -4,0 0,-4z M20,0l4,0 0,4 -4,0 0,-4z M24,0l4,0 0,4 -4,0 0,-4z M36,0l4,0 0,4 -4,0 0,-4z M48,0l4,0 0,4 -4,0 0,-4z M52,0l4,0 0,4 -4,0 0,-4z M64,0l4,0 0,4 -4,0 0,-4z M68,0l4,0 0,4 -4,0 0,-4z M72,0l4,0 0,4 -4,0 0,-4z M76,0l4,0 0,4 -4,0 0,-4z M88,0l4,0 0,4 -4,0 0,-4z M92,0l4,0 0,4 -4,0 0,-4z M96,0l4,0 0,4 -4,0 0,-4z M100,0l4,0 0,4 -4,0 0,-4z M104,0l4,0 0,4 -4,0 0,-4z M108,0l4,0 0,4 -4,0 0,-4z M112,0l4,0 0,4 -4,0 0,-4z M0,4l4,0 0,4 -4,0 0,-4z M24,4l4,0 0,4 -4,0 0,-4z M52,4l4,0 0,4 -4,0 0,-4z M56,4l4,0 0,4 -4,0 0,-4z M60,4l4,0 0,4 -4,0 0,-4z M72,4l4,0 0,4 -4,0 0,-4z M80,4l4,0 0,4 -4,0 0,-4z M88,4l4,0 0,4 -4,0 0,-4z M112,4l4,0 0,4 -4,0 0,-4z M0,8l4,0 0,4 -4,0 0,-4z M8,8l4,0 0,4 -4,0 0,-4z M12,8l4,0 0,4 -4,0 0,-4z M16,8l4,0 0,4 -4,0 0,-4z M24,8l4,0 0,4 -4,0 0,-4z M44,8l4,0 0,4 -4,0 0,-4z M52,8l4,0 0,4 -4,0 0,-4z M64,8l4,0 0,4 -4,0 0,-4z M68,8l4,0 0,4 -4,0 0,-4z M76,8l4,0 0,4 -4,0 0,-4z M88,8l4,0 0,4 -4,0 0,-4z M96,8l4,0 0,4 -4,0 0,-4z M100,8l4,0 0,4 -4,0 0,-4z M104,8l4,0 0,4 -4,0 0,-4z M112,8l4,0 0,4 -4,0 0,-4z M0,12l4,0 0,4 -4,0 0,-4z M8,12l4,0 0,4 -4,0 0,-4z M12,12l4,0 0,4 -4,0 0,-4z M16,12l4,0 0,4 -4,0 0,-4z M24,12l4,0 0,4 -4,0 0,-4z M36,12l4,0 0,4 -4,0 0,-4z M40,12l4,0 0,4 -4,0 0,-4z M44,12l4,0 0,4 -4,0 0,-4z M52,12l4,0 0,4 -4,0 0,-4z M56,12l4,0 0,4 -4,0 0,-4z M60,12l4,0 0,4 -4,0 0,-4z M72,12l4,0 0,4 -4,0 0,-4z M76,12l4,0 0,4 -4,0 0,-4z M88,12l4,0 0,4 -4,0 0,-4z M96,12l4,0 0,4 -4,0 0,-4z M100,12l4,0 0,4 -4,0 0,-4z M104,12l4,0 0,4 -4,0 0,-4z M112,12l4,0 0,4 -4,0 0,-4z M0,16l4,0 0,4 -4,0 0,-4z M8,16l4,0 0,4 -4,0 0,-4z M12,16l4,0 0,4 -4,0 0,-4z M16,16l4,0 0,4 -4,0 0,-4z M24,16l4,0 0,4 -4,0 0,-4z M36,16l4,0 0,4 -4,0 0,-4z M40,16l4,0 0,4 -4,0 0,-4z M52,16l4,0 0,4 -4,0 0,-4z M56,16l4,0 0,4 -4,0 0,-4z M64,16l4,0 0,4 -4,0 0,-4z M68,16l4,0 0,4 -4,0 0,-4z M72,16l4,0 0,4 -4,0 0,-4z M88,16l4,0 0,4 -4,0 0,-4z M96,16l4,0 0,4 -4,0 0,-4z M100,16l4,0 0,4 -4,0 0,-4z M104,16l4,0 0,4 -4,0 0,-4z M112,16l4,0 0,4 -4,0 0,-4z M0,20l4,0 0,4 -4,0 0,-4z M24,20l4,0 0,4 -4,0 0,-4z M32,20l4,0 0,4 -4,0 0,-4z M36,20l4,0 0,4 -4,0 0,-4z M48,20l4,0 0,4 -4,0 0,-4z M52,20l4,0 0,4 -4,0 0,-4z M56,20l4,0 0,4 -4,0 0,-4z M72,20l4,0 0,4 -4,0 0,-4z M76,20l4,0 0,4 -4,0 0,-4z M80,20l4,0 0,4 -4,0 0,-4z M88,20l4,0 0,4 -4,0 0,-4z M112,20l4,0 0,4 -4,0 0,-4z M0,24l4,0 0,4 -4,0 0,-4z M4,24l4,0 0,4 -4,0 0,-4z M8,24l4,0 0,4 -4,0 0,-4z M12,24l4,0 0,4 -4,0 0,-4z M16,24l4,0 0,4 -4,0 0,-4z M20,24l4,0 0,4 -4,0 0,-4z M24,24l4,0 0,4 -4,0 0,-4z M32,24l4,0 0,4 -4,0 0,-4z M40,24l4,0 0,4 -4,0 0,-4z M48,24l4,0 0,4 -4,0 0,-4z M56,24l4,0 0,4 -4,0 0,-4z M64,24l4,0 0,4 -4,0 0,-4z M72,24l4,0 0,4 -4,0 0,-4z M80,24l4,0 0,4 -4,0 0,-4z M88,24l4,0 0,4 -4,0 0,-4z M92,24l4,0 0,4 -4,0 0,-4z M96,24l4,0 0,4 -4,0 0,-4z M100,24l4,0 0,4 -4,0 0,-4z M104,24l4,0 0,4 -4,0 0,-4z M108,24l4,0 0,4 -4,0 0,-4z M112,24l4,0 0,4 -4,0 0,-4z M40,28l4,0 0,4 -4,0 0,-4z M44,28l4,0 0,4 -4,0 0,-4z M56,28l4,0 0,4 -4,0 0,-4z M68,28l4,0 0,4 -4,0 0,-4z M72,28l4,0 0,4 -4,0 0,-4z M76,28l4,0 0,4 -4,0 0,-4z M80,28l4,0 0,4 -4,0 0,-4z M0,32l4,0 0,4 -4,0 0,-4z M12,32l4,0 0,4 -4,0 0,-4z M20,32l4,0 0,4 -4,0 0,-4z M24,32l4,0 0,4 -4,0 0,-4z M32,32l4,0 0,4 -4,0 0,-4z M44,32l4,0 0,4 -4,0 0,-4z M60,32l4,0 0,4 -4,0 0,-4z M64,32l4,0 0,4 -4,0 0,-4z M72,32l4,0 0,4 -4,0 0,-4z M76,32l4,0 0,4 -4,0 0,-4z M84,32l4,0 0,4 -4,0 0,-4z M92,32l4,0 0,4 -4,0 0,-4z M0,36l4,0 0,4 -4,0 0,-4z M4,36l4,0 0,4 -4,0 0,-4z M12,36l4,0 0,4 -4,0 0,-4z M16,36l4,0 0,4 -4,0 0,-4z M20,36l4,0 0,4 -4,0 0,-4z M28,36l4,0 0,4 -4,0 0,-4z M32,36l4,0 0,4 -4,0 0,-4z M36,36l4,0 0,4 -4,0 0,-4z M40,36l4,0 0,4 -4,0 0,-4z M44,36l4,0 0,4 -4,0 0,-4z M48,36l4,0 0,4 -4,0 0,-4z M56,36l4,0 0,4 -4,0 0,-4z M60,36l4,0 0,4 -4,0 0,-4z M88,36l4,0 0,4 -4,0 0,-4z M100,36l4,0 0,4 -4,0 0,-4z M112,36l4,0 0,4 -4,0 0,-4z M4,40l4,0 0,4 -4,0 0,-4z M8,40l4,0 0,4 -4,0 0,-4z M12,40l4,0 0,4 -4,0 0,-4z M24,40l4,0 0,4 -4,0 0,-4z M36,40l4,0 0,4 -4,0 0,-4z M40,40l4,0 0,4 -4,0 0,-4z M64,40l4,0 0,4 -4,0 0,-4z M68,40l4,0 0,4 -4,0 0,-4z M76,40l4,0 0,4 -4,0 0,-4z M92,40l4,0 0,4 -4,0 0,-4z M96,40l4,0 0,4 -4,0 0,-4z M100,40l4,0 0,4 -4,0 0,-4z M104,40l4,0 0,4 -4,0 0,-4z M108,40l4,0 0,4 -4,0 0,-4z M16,44l4,0 0,4 -4,0 0,-4z M20,44l4,0 0,4 -4,0 0,-4z M28,44l4,0 0,4 -4,0 0,-4z M36,44l4,0 0,4 -4,0 0,-4z M48,44l4,0 0,4 -4,0 0,-4z M56,44l4,0 0,4 -4,0 0,-4z M60,44l4,0 0,4 -4,0 0,-4z M72,44l4,0 0,4 -4,0 0,-4z M84,44l4,0 0,4 -4,0 0,-4z M88,44l4,0 0,4 -4,0 0,-4z M92,44l4,0 0,4 -4,0 0,-4z M104,44l4,0 0,4 -4,0 0,-4z M108,44l4,0 0,4 -4,0 0,-4z M4,48l4,0 0,4 -4,0 0,-4z M8,48l4,0 0,4 -4,0 0,-4z M12,48l4,0 0,4 -4,0 0,-4z M16,48l4,0 0,4 -4,0 0,-4z M24,48l4,0 0,4 -4,0 0,-4z M36,48l4,0 0,4 -4,0 0,-4z M40,48l4,0 0,4 -4,0 0,-4z M44,48l4,0 0,4 -4,0 0,-4z M48,48l4,0 0,4 -4,0 0,-4z M64,48l4,0 0,4 -4,0 0,-4z M68,48l4,0 0,4 -4,0 0,-4z M76,48l4,0 0,4 -4,0 0,-4z M80,48l4,0 0,4 -4,0 0,-4z M88,48l4,0 0,4 -4,0 0,-4z M100,48l4,0 0,4 -4,0 0,-4z M108,48l4,0 0,4 -4,0 0,-4z M112,48l4,0 0,4 -4,0 0,-4z M12,52l4,0 0,4 -4,0 0,-4z M28,52l4,0 0,4 -4,0 0,-4z M40,52l4,0 0,4 -4,0 0,-4z M76,52l4,0 0,4 -4,0 0,-4z M80,52l4,0 0,4 -4,0 0,-4z M84,52l4,0 0,4 -4,0 0,-4z M0,56l4,0 0,4 -4,0 0,-4z M8,56l4,0 0,4 -4,0 0,-4z M12,56l4,0 0,4 -4,0 0,-4z M16,56l4,0 0,4 -4,0 0,-4z M24,56l4,0 0,4 -4,0 0,-4z M28,56l4,0 0,4 -4,0 0,-4z M36,56l4,0 0,4 -4,0 0,-4z M44,56l4,0 0,4 -4,0 0,-4z M48,56l4,0 0,4 -4,0 0,-4z M64,56l4,0 0,4 -4,0 0,-4z M72,56l4,0 0,4 -4,0 0,-4z M84,56l4,0 0,4 -4,0 0,-4z M92,56l4,0 0,4 -4,0 0,-4z M96,56l4,0 0,4 -4,0 0,-4z M100,56l4,0 0,4 -4,0 0,-4z M104,56l4,0 0,4 -4,0 0,-4z M108,56l4,0 0,4 -4,0 0,-4z M112,56l4,0 0,4 -4,0 0,-4z M8,60l4,0 0,4 -4,0 0,-4z M12,60l4,0 0,4 -4,0 0,-4z M16,60l4,0 0,4 -4,0 0,-4z M28,60l4,0 0,4 -4,0 0,-4z M32,60l4,0 0,4 -4,0 0,-4z M36,60l4,0 0,4 -4,0 0,-4z M52,60l4,0 0,4 -4,0 0,-4z M56,60l4,0 0,4 -4,0 0,-4z M60,60l4,0 0,4 -4,0 0,-4z M64,60l4,0 0,4 -4,0 0,-4z M68,60l4,0 0,4 -4,0 0,-4z M72,60l4,0 0,4 -4,0 0,-4z M76,60l4,0 0,4 -4,0 0,-4z M80,60l4,0 0,4 -4,0 0,-4z M84,60l4,0 0,4 -4,0 0,-4z M88,60l4,0 0,4 -4,0 0,-4z M100,60l4,0 0,4 -4,0 0,-4z M108,60l4,0 0,4 -4,0 0,-4z M0,64l4,0 0,4 -4,0 0,-4z M12,64l4,0 0,4 -4,0 0,-4z M16,64l4,0 0,4 -4,0 0,-4z M24,64l4,0 0,4 -4,0 0,-4z M28,64l4,0 0,4 -4,0 0,-4z M36,64l4,0 0,4 -4,0 0,-4z M44,64l4,0 0,4 -4,0 0,-4z M52,64l4,0 0,4 -4,0 0,-4z M56,64l4,0 0,4 -4,0 0,-4z M64,64l4,0 0,4 -4,0 0,-4z M68,64l4,0 0,4 -4,0 0,-4z M80,64l4,0 0,4 -4,0 0,-4z M84,64l4,0 0,4 -4,0 0,-4z M108,64l4,0 0,4 -4,0 0,-4z M4,68l4,0 0,4 -4,0 0,-4z M16,68l4,0 0,4 -4,0 0,-4z M20,68l4,0 0,4 -4,0 0,-4z M40,68l4,0 0,4 -4,0 0,-4z M44,68l4,0 0,4 -4,0 0,-4z M48,68l4,0 0,4 -4,0 0,-4z M64,68l4,0 0,4 -4,0 0,-4z M68,68l4,0 0,4 -4,0 0,-4z M84,68l4,0 0,4 -4,0 0,-4z M88,68l4,0 0,4 -4,0 0,-4z M92,68l4,0 0,4 -4,0 0,-4z M100,68l4,0 0,4 -4,0 0,-4z M112,68l4,0 0,4 -4,0 0,-4z M0,72l4,0 0,4 -4,0 0,-4z M12,72l4,0 0,4 -4,0 0,-4z M16,72l4,0 0,4 -4,0 0,-4z M24,72l4,0 0,4 -4,0 0,-4z M28,72l4,0 0,4 -4,0 0,-4z M32,72l4,0 0,4 -4,0 0,-4z M44,72l4,0 0,4 -4,0 0,-4z M48,72l4,0 0,4 -4,0 0,-4z M52,72l4,0 0,4 -4,0 0,-4z M68,72l4,0 0,4 -4,0 0,-4z M80,72l4,0 0,4 -4,0 0,-4z M88,72l4,0 0,4 -4,0 0,-4z M108,72l4,0 0,4 -4,0 0,-4z M112,72l4,0 0,4 -4,0 0,-4z M12,76l4,0 0,4 -4,0 0,-4z M16,76l4,0 0,4 -4,0 0,-4z M20,76l4,0 0,4 -4,0 0,-4z M36,76l4,0 0,4 -4,0 0,-4z M52,76l4,0 0,4 -4,0 0,-4z M60,76l4,0 0,4 -4,0 0,-4z M64,76l4,0 0,4 -4,0 0,-4z M68,76l4,0 0,4 -4,0 0,-4z M72,76l4,0 0,4 -4,0 0,-4z M76,76l4,0 0,4 -4,0 0,-4z M80,76l4,0 0,4 -4,0 0,-4z M92,76l4,0 0,4 -4,0 0,-4z M108,76l4,0 0,4 -4,0 0,-4z M112,76l4,0 0,4 -4,0 0,-4z M0,80l4,0 0,4 -4,0 0,-4z M8,80l4,0 0,4 -4,0 0,-4z M12,80l4,0 0,4 -4,0 0,-4z M20,80l4,0 0,4 -4,0 0,-4z M24,80l4,0 0,4 -4,0 0,-4z M32,80l4,0 0,4 -4,0 0,-4z M40,80l4,0 0,4 -4,0 0,-4z M48,80l4,0 0,4 -4,0 0,-4z M56,80l4,0 0,4 -4,0 0,-4z M60,80l4,0 0,4 -4,0 0,-4z M64,80l4,0 0,4 -4,0 0,-4z M80,80l4,0 0,4 -4,0 0,-4z M84,80l4,0 0,4 -4,0 0,-4z M88,80l4,0 0,4 -4,0 0,-4z M92,80l4,0 0,4 -4,0 0,-4z M96,80l4,0 0,4 -4,0 0,-4z M104,80l4,0 0,4 -4,0 0,-4z M32,84l4,0 0,4 -4,0 0,-4z M36,84l4,0 0,4 -4,0 0,-4z M40,84l4,0 0,4 -4,0 0,-4z M48,84l4,0 0,4 -4,0 0,-4z M52,84l4,0 0,4 -4,0 0,-4z M64,84l4,0 0,4 -4,0 0,-4z M68,84l4,0 0,4 -4,0 0,-4z M72,84l4,0 0,4 -4,0 0,-4z M76,84l4,0 0,4 -4,0 0,-4z M80,84l4,0 0,4 -4,0 0,-4z M96,84l4,0 0,4 -4,0 0,-4z M104,84l4,0 0,4 -4,0 0,-4z M108,84l4,0 0,4 -4,0 0,-4z M112,84l4,0 0,4 -4,0 0,-4z M0,88l4,0 0,4 -4,0 0,-4z M4,88l4,0 0,4 -4,0 0,-4z M8,88l4,0 0,4 -4,0 0,-4z M12,88l4,0 0,4 -4,0 0,-4z M16,88l4,0 0,4 -4,0 0,-4z M20,88l4,0 0,4 -4,0 0,-4z M24,88l4,0 0,4 -4,0 0,-4z M36,88l4,0 0,4 -4,0 0,-4z M52,88l4,0 0,4 -4,0 0,-4z M56,88l4,0 0,4 -4,0 0,-4z M64,88l4,0 0,4 -4,0 0,-4z M72,88l4,0 0,4 -4,0 0,-4z M80,88l4,0 0,4 -4,0 0,-4z M88,88l4,0 0,4 -4,0 0,-4z M96,88l4,0 0,4 -4,0 0,-4z M108,88l4,0 0,4 -4,0 0,-4z M0,92l4,0 0,4 -4,0 0,-4z M24,92l4,0 0,4 -4,0 0,-4z M32,92l4,0 0,4 -4,0 0,-4z M44,92l4,0 0,4 -4,0 0,-4z M52,92l4,0 0,4 -4,0 0,-4z M80,92l4,0 0,4 -4,0 0,-4z M96,92l4,0 0,4 -4,0 0,-4z M100,92l4,0 0,4 -4,0 0,-4z M104,92l4,0 0,4 -4,0 0,-4z M108,92l4,0 0,4 -4,0 0,-4z M112,92l4,0 0,4 -4,0 0,-4z M0,96l4,0 0,4 -4,0 0,-4z M8,96l4,0 0,4 -4,0 0,-4z M12,96l4,0 0,4 -4,0 0,-4z M16,96l4,0 0,4 -4,0 0,-4z M24,96l4,0 0,4 -4,0 0,-4z M40,96l4,0 0,4 -4,0 0,-4z M48,96l4,0 0,4 -4,0 0,-4z M56,96l4,0 0,4 -4,0 0,-4z M60,96l4,0 0,4 -4,0 0,-4z M64,96l4,0 0,4 -4,0 0,-4z M68,96l4,0 0,4 -4,0 0,-4z M80,96l4,0 0,4 -4,0 0,-4z M84,96l4,0 0,4 -4,0 0,-4z M88,96l4,0 0,4 -4,0 0,-4z M92,96l4,0 0,4 -4,0 0,-4z M96,96l4,0 0,4 -4,0 0,-4z M112,96l4,0 0,4 -4,0 0,-4z M0,100l4,0 0,4 -4,0 0,-4z M8,100l4,0 0,4 -4,0 0,-4z M12,100l4,0 0,4 -4,0 0,-4z M16,100l4,0 0,4 -4,0 0,-4z M24,100l4,0 0,4 -4,0 0,-4z M32,100l4,0 0,4 -4,0 0,-4z M48,100l4,0 0,4 -4,0 0,-4z M56,100l4,0 0,4 -4,0 0,-4z M80,100l4,0 0,4 -4,0 0,-4z M88,100l4,0 0,4 -4,0 0,-4z M96,100l4,0 0,4 -4,0 0,-4z M100,100l4,0 0,4 -4,0 0,-4z M104,100l4,0 0,4 -4,0 0,-4z M108,100l4,0 0,4 -4,0 0,-4z M0,104l4,0 0,4 -4,0 0,-4z M8,104l4,0 0,4 -4,0 0,-4z M12,104l4,0 0,4 -4,0 0,-4z M16,104l4,0 0,4 -4,0 0,-4z M24,104l4,0 0,4 -4,0 0,-4z M52,104l4,0 0,4 -4,0 0,-4z M68,104l4,0 0,4 -4,0 0,-4z M72,104l4,0 0,4 -4,0 0,-4z M76,104l4,0 0,4 -4,0 0,-4z M96,104l4,0 0,4 -4,0 0,-4z M100,104l4,0 0,4 -4,0 0,-4z M104,104l4,0 0,4 -4,0 0,-4z M112,104l4,0 0,4 -4,0 0,-4z M0,108l4,0 0,4 -4,0 0,-4z M24,108l4,0 0,4 -4,0 0,-4z M40,108l4,0 0,4 -4,0 0,-4z M60,108l4,0 0,4 -4,0 0,-4z M64,108l4,0 0,4 -4,0 0,-4z M68,108l4,0 0,4 -4,0 0,-4z M72,108l4,0 0,4 -4,0 0,-4z M76,108l4,0 0,4 -4,0 0,-4z M80,108l4,0 0,4 -4,0 0,-4z M96,108l4,0 0,4 -4,0 0,-4z M108,108l4,0 0,4 -4,0 0,-4z M0,112l4,0 0,4 -4,0 0,-4z M4,112l4,0 0,4 -4,0 0,-4z M8,112l4,0 0,4 -4,0 0,-4z M12,112l4,0 0,4 -4,0 0,-4z M16,112l4,0 0,4 -4,0 0,-4z M20,112l4,0 0,4 -4,0 0,-4z M24,112l4,0 0,4 -4,0 0,-4z M32,112l4,0 0,4 -4,0 0,-4z M36,112l4,0 0,4 -4,0 0,-4z M52,112l4,0 0,4 -4,0 0,-4z M60,112l4,0 0,4 -4,0 0,-4z M68,112l4,0 0,4 -4,0 0,-4z M72,112l4,0 0,4 -4,0 0,-4z M80,112l4,0 0,4 -4,0 0,-4z M84,112l4,0 0,4 -4,0 0,-4z M92,112l4,0 0,4 -4,0 0,-4z M100,112l4,0 0,4 -4,0 0,-4z M108,112l4,0 0,4 -4,0 0,-4z " stroke="transparent" fill="black"/></svg></div></article>
+        <article class="sf-card reveal"><b data-ms="Order masuk ke operasi yang sama">Orders enter the same operation</b><p data-ms="Order dari Storefront muncul dalam senarai Orders, sedia untuk dirancang dan dihantar.">Storefront orders appear in your Orders list, ready to plan and deliver.</p>
+          <div class="shot sf-shot"><div class="phone"><img src="img/s_v_orders.webp" alt="Cefflo Vendor: Orders list" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section>
     <div class="wrap split">
+      <div class="trackvisual floor reveal"><div class="phone"><img src="img/s_c_done.webp" alt="Customer tracking: delivered" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div>
       <div class="reveal">
-        <span class="label"><span data-ms="Tracking customer">Customer tracking</span></span>
-        <h2 class="h2"><span data-ms="Customer semak sendiri. &lt;span class=&quot;soft&quot;&gt;Anda bukan lagi &amp;#39;hotline&amp;#39;.&lt;/span&gt;">Customers check for themselves. <span class="soft">You&#39;re not the hotline anymore.</span></span></h2>
-        <p class="lead"><span data-ms="Setiap order ada pautan tracking. Tiada app, tiada akaun. Customer nampak status Pickup, On the Way dan Delivered, siap dengan bukti hantar.">Every order gets a tracking link. No app, no account. Customers see Pickup, On the Way and Delivered, with proof of delivery.</span></p>
-      </div>
-      <div class="poster light side reveal" role="img" aria-label="Customer tracking: Delivered status with proof of delivery">
-        <svg class="orbit" viewBox="0 0 600 300" aria-hidden="true"><ellipse cx="300" cy="150" rx="290" ry="118"/><ellipse cx="300" cy="150" rx="250" ry="92" opacity=".5"/></svg>
-        <div class="ground"></div>
-        <div class="phone p-hero"><div class="screen"><img src="img/c_done_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        <figure class="chip small tl"><figcaption><span data-ms="Dalam perjalanan">On the way</span></figcaption><span class="card"><img src="img/c_way_top.webp" alt=""></span></figure>
-        <figure class="chip small tr"><figcaption><span data-ms="Bukti hantar">Proof of delivery</span></figcaption><span class="card"><img src="img/f_pod.webp" alt=""></span></figure>
-        <figure class="chip br"><figcaption><span data-ms="Sudah sampai">Delivered</span></figcaption><span class="card"><img src="img/f_status.webp" alt=""></span></figure>
+        <span class="eyebrow" data-ms="Pengalaman customer">Customer experience</span>
+        <h2 data-ms="Customer tahu apa yang berlaku. Kurang mesej &ldquo;order saya kat mana?&rdquo;">Customers know what’s happening. Fewer “where is my order?” messages.</h2>
+        <p class="lead" data-ms="Customer buka satu pautan sahaja. Tiada app, tiada akaun.">Customers open one link. No app and no account required.</p>
+        <div class="statuses"><span>Picked Up</span><span>On the Way</span><span class="done">Delivered</span></div>
       </div>
     </div>
   </section>
 
-  <!-- 11 WHY CEFFLO -->
-  <section id="kenapa" style="padding-top: 0">
+  <section class="soft">
     <div class="wrap">
       <div class="head center reveal">
-        <span class="label"><span data-ms="Kenapa Cefflo">Why Cefflo</span></span>
-        <h2 class="h2"><span data-ms="Apa yang berubah &lt;span class=&quot;soft&quot;&gt;untuk bisnes anda.&lt;/span&gt;">What changes <span class="soft">for your business.</span></span></h2>
+        <span class="eyebrow" data-ms="Pasukan anda">Your team</span>
+        <h2 data-ms="Setiap orang nampak apa yang mereka perlu. Operasi kekal bersambung.">Your team sees what they need. Your operation stays connected.</h2>
+        <p class="lead" data-ms="Owner kekal memegang kawalan, manakala Operator, Helper dan Driver bekerja dengan akses yang sesuai dengan tugas masing-masing.">Owners stay in control while Operators, Helpers and Drivers work with access suited to their task.</p>
       </div>
-      <div class="outs">
-        <article class="out reveal">
-          <div><h3><span data-ms="Order tak lagi bersepah">Orders stop scattering</span></h3><p><span data-ms="Order dari mana-mana saluran masuk ke satu senarai, dengan status yang sama untuk semua.">Orders from any channel land in one list, with the same status for every order.</span></p></div>
-          <div class="shot"><img src="img/v12.webp" alt="Orders list with status"></div>
-        </article>
-        <article class="out reveal">
-          <div><h3><span data-ms="Multi-drop, bukan satu order satu trip">Multi-drop, not one order per trip</span></h3><p><span data-ms="Satu run membawa banyak stop, jadi rider anda buat lebih banyak dalam satu perjalanan.">One run carries many stops, so your riders do more in a single trip.</span></p></div>
-          <div class="shot"><img src="img/d20.webp" alt="Run Details: 12 orders, 3.2 km, three run steps"></div>
-        </article>
-        <article class="out reveal">
-          <div><h3><span data-ms="Rider anda. Customer anda.">Your riders. Your customers.</span></h3><p><span data-ms="Cefflo bukan marketplace. Anda jemput rider sendiri, dan customer kekal milik bisnes anda.">Cefflo isn&#39;t a marketplace. You invite your own riders, and your customers stay yours.</span></p></div>
-          <div class="shot"><img src="img/v20_top.webp" alt="The business&#39;s riders with their vehicles"></div>
-        </article>
-        <article class="out reveal">
-          <div><h3><span data-ms="Masalah tak tenggelam">Problems don&#39;t get buried</span></h3><p><span data-ms="Order yang ada isu muncul di bahagian Perlu Perhatian, supaya tiada yang tertinggal.">Orders with an issue show up under Needs Attention, so nothing slips through.</span></p></div>
-          <div class="shot" style="display: grid; place-items: center; padding: 16px"><img src="img/v11_attn.webp" alt="Needs Attention: an order missing a phone number" style="border-radius: 12px"></div>
-        </article>
       </div>
-    </div>
+    <div class="wrap role-stack"><figure class="role-card"><img src="img/role_owner.webp" alt="Owner: full business view and control — business settings, team access, Storefront and products, delivery operations" width="1630" height="680" loading="lazy"></figure><figure class="role-card"><img src="img/role_operator.webp" alt="Operator: manages daily operations — process orders, plan deliveries, assign Drivers, track progress" width="1630" height="680" loading="lazy"></figure><figure class="role-card"><img src="img/role_helper.webp" alt="Helper: preparation, packing and sorting" width="1630" height="680" loading="lazy"></figure><figure class="role-card"><img src="img/role_driver.webp" alt="Driver: executes assigned runs and stops — run details, pickup and deliver, proof of delivery" width="1630" height="680" loading="lazy"></figure></div>
   </section>
 
-  <!-- 12 PRICING -->
-  <section id="harga" style="background: #fff">
+  <section class="soft jobs">
     <div class="wrap">
       <div class="head center reveal">
-        <span class="label"><span data-ms="Harga">Pricing</span></span>
-        <h2 class="h2"><span data-ms="Mula percuma. &lt;span class=&quot;soft&quot;&gt;Naik plan bila bisnes membesar.&lt;/span&gt;">Start free. <span class="soft">Upgrade as you grow.</span></span></h2>
-        <p class="lead"><span data-ms="Bayar ikut penghantaran yang siap, bukan ikut bilangan rider.">Pay for completed deliveries, not for the number of riders.</span></p>
+        <span class="eyebrow" data-ms="Cari Driver">Find Drivers</span>
+        <h2 data-ms="Driver boleh jumpa kerja anda.">Drivers can find your job.</h2>
+        <p class="lead" data-ms="Siarkan slot penghantaran anda. Driver berdekatan nampak, mohon dan tambah ke jadual mingguan mereka.">Post your delivery shifts. Nearby Drivers see them, apply and add them to their weekly schedule.</p>
       </div>
-      <div class="plans">
-        <article class="plan reveal">
-          <h3>FREE</h3>
-          <p class="for"><span data-ms="Rasa sendiri operasi Cefflo dengan penghantaran sebenar.">Run real deliveries on Cefflo.</span></p>
-          <div class="price"><b>RM0</b><span><span data-ms="/ bulan">/ month</span></span></div>
-          <p class="allow"><strong>150</strong><span data-ms="penghantaran siap sebulan">completed deliveries a month</span></p>
-          <ul><li><span data-ms="Sehingga 3 rider aktif">Up to 3 active riders</span></li><li><span data-ms="Sehingga 2 zon">Up to 2 zones</span></li><li><span data-ms="1 pengguna">1 user</span></li></ul>
-        </article>
-        <article class="plan reveal">
-          <h3>GROW</h3>
-          <p class="for"><span data-ms="Untuk bisnes yang dah hantar setiap hari.">For businesses delivering every day.</span></p>
-          <div class="price"><b>RM99</b><span><span data-ms="/ bulan">/ month</span></span></div>
-          <p class="allow"><strong>500</strong><span data-ms="penghantaran siap sebulan">completed deliveries a month</span></p>
-          <ul><li><span data-ms="Sehingga 10 rider aktif">Up to 10 active riders</span></li><li><span data-ms="Sehingga 5 zon">Up to 5 zones</span></li><li><span data-ms="Sehingga 3 pengguna">Up to 3 users</span></li></ul>
-        </article>
-        <article class="plan hero-plan reveal">
-          <span class="tag"><span data-ms="Pilihan utama">Recommended</span></span>
-          <h3>OPERATE</h3>
-          <p class="for"><span data-ms="Jalankan operasi delivery bisnes anda sepenuhnya.">Run your whole delivery operation.</span></p>
-          <div class="price"><b>RM199</b><span><span data-ms="/ bulan">/ month</span></span></div>
-          <p class="allow"><strong>1,500</strong><span data-ms="penghantaran siap sebulan">completed deliveries a month</span></p>
-          <ul><li><span data-ms="Rider tanpa had">Unlimited riders</span></li><li><span data-ms="Zon tanpa had">Unlimited zones</span></li><li><span data-ms="Sehingga 10 pengguna">Up to 10 users</span></li></ul>
-        </article>
-        <article class="plan reveal">
-          <h3>SCALE</h3>
-          <p class="for"><span data-ms="Untuk operasi berkapasiti tinggi.">For high-volume operations.</span></p>
-          <div class="price"><b>RM499</b><span><span data-ms="/ bulan">/ month</span></span></div>
-          <p class="allow"><strong>5,000</strong><span data-ms="penghantaran siap sebulan">completed deliveries a month</span></p>
-          <ul><li><span data-ms="Rider tanpa had">Unlimited riders</span></li><li><span data-ms="Zon tanpa had">Unlimited zones</span></li><li><span data-ms="Sehingga 25 pengguna">Up to 25 users</span></li></ul>
-        </article>
-      </div>
-      <div class="enterprise reveal"><b>ENTERPRISE</b><span><span data-ms="Lebih 5,000 penghantaran sebulan atau keperluan khas? Harga disesuaikan.">More than 5,000 deliveries a month or special requirements? Custom pricing.</span></span></div>
-      <div class="promises">
-        <div class="promise reveal"><b><span data-ms="Delivery tak akan terhenti">Deliveries never stop mid-run</span></b><span><span data-ms="Kalau kuota habis ketika rider sedang hantar, run itu tetap siap dengan selamat.">If you hit your quota while a rider is out, that run still finishes safely.</span></span></div>
-        <div class="promise reveal"><b><span data-ms="Hanya penghantaran yang siap dikira">Only completed deliveries count</span></b><span><span data-ms="Draf dan order yang dibatalkan sebelum dihantar tidak dikira.">Drafts and orders cancelled before dispatch aren&#39;t counted.</span></span></div>
-        <div class="promise reveal"><b><span data-ms="Mula tanpa kad kredit">Start without a credit card</span></b><span><span data-ms="Plan FREE tidak perlukan butiran pembayaran.">The FREE plan needs no payment details.</span></span></div>
-      </div>
-      <p class="price-note"><span data-ms="Harga dalam Ringgit Malaysia, sebulan.">Prices in Malaysian Ringgit, per month.</span></p>
+      <div class="jobs-stage reveal"><div class="phone tilt-l j-left"><img src="img/s_d_jobs.webp" alt="Cefflo Driver: Find Jobs openings nearby" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div><div class="phone j-right"><img src="img/s_d_schedule.webp" alt="Cefflo Driver: My Schedule" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div></div>
+      <div class="jobs-points reveal"><span data-ms="Ikut kawasan dan jarak">By area and distance</span><span data-ms="Pagi, tengah hari, malam">Morning, noon or night shifts</span><span data-ms="Driver disahkan sebelum bekerja">Drivers verified before they work</span></div>
     </div>
   </section>
 
-  <!-- 13 FAQ -->
-  <section id="soalan">
+  <section>
     <div class="wrap">
       <div class="head center reveal">
-        <span class="label"><span data-ms="Soalan lazim">FAQ</span></span>
-        <h2 class="h2"><span data-ms="Soalan, &lt;span class=&quot;soft&quot;&gt;dijawab.&lt;/span&gt;">Questions, <span class="soft">answered.</span></span></h2>
+        <span class="eyebrow" data-ms="Hasil praktikal">Practical outcomes</span>
+        <h2 data-ms="Kurang koordinasi. Lebih jelas setiap hari.">Less coordination. More clarity every day.</h2>
       </div>
-      <div class="faq">
-        <details><summary><span data-ms="Apa itu Cefflo?">What is Cefflo?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Cefflo ialah sistem operasi untuk delivery tempatan hari-sama. Ia menyusun order hari ini ikut kawasan, menjadikannya run multi-drop untuk rider anda, dan memberi customer pautan untuk semak status.">Cefflo is an operating system for same-day local delivery. It groups today&#39;s orders by area, turns them into multi-drop runs for your riders, and gives customers a link to check their status.</span></p></details>
-        <details><summary><span data-ms="Cefflo ni marketplace atau servis penghantaran ke?">Is Cefflo a marketplace or a delivery service?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Bukan. Cefflo bukan marketplace, bukan syarikat rider dan bukan aggregator. Customer, saluran jualan dan rider kekal milik bisnes anda. Cefflo ialah sistem yang anda guna untuk menjalankan operasi delivery.">Neither. Cefflo isn&#39;t a marketplace, a rider company or an aggregator. Your customers, sales channels and riders stay yours. Cefflo is the system you run your delivery operation on.</span></p></details>
-        <details><summary><span data-ms="Perlu ada rider sendiri?">Do I need my own riders?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Ya. Cefflo dibina untuk bisnes yang hantar dengan rider atau driver sendiri, sama ada motosikal, kereta atau van. Anda jemput mereka ke pasukan anda dan beri run kepada mereka.">Yes. Cefflo is built for businesses that deliver with their own riders or drivers, on motorcycles, cars or vans. You invite them to your team and give them runs.</span></p></details>
-        <details><summary><span data-ms="Boleh import order dari Excel?">Can I import orders from Excel?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Ya. Order boleh ditaip satu-satu, atau diimport dari fail CSV dan Excel.">Yes. Orders can be typed in one by one, or imported from CSV and Excel files.</span></p></details>
-        <details><summary><span data-ms="Perlu ada website sendiri?">Do I need my own website?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Tidak. Cefflo menguruskan delivery untuk order dari saluran jualan yang anda dah guna sekarang, sama ada WhatsApp, media sosial, telefon atau lain-lain.">No. Cefflo runs delivery for orders from the sales channels you already use, whether WhatsApp, social media, phone calls or anything else.</span></p></details>
-        <details><summary><span data-ms="Customer perlu muat turun app?">Do customers need to download an app?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Tidak. Customer cuma buka pautan tracking. Tiada app, tiada akaun.">No. Customers just open the tracking link. No app, no account.</span></p></details>
-        <details><summary><span data-ms="Berapa harganya?">How much does it cost?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Plan FREE adalah RM0 untuk 150 penghantaran siap sebulan. Plan berbayar bermula RM99 sebulan (GROW, 500 penghantaran), RM199 (OPERATE, 1,500) dan RM499 (SCALE, 5,000). Bayaran dikira ikut penghantaran yang siap, bukan ikut bilangan rider.">The FREE plan is RM0 for 150 completed deliveries a month. Paid plans are RM99 a month (GROW, 500 deliveries), RM199 (OPERATE, 1,500) and RM499 (SCALE, 5,000). You pay for completed deliveries, not for the number of riders.</span></p></details>
-        <details><summary><span data-ms="Apa jadi kalau kuota habis ketika rider tengah hantar?">What happens if I hit my quota while a rider is delivering?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Run yang sedang berjalan tetap siap, termasuk bukti hantar dan tracking customer. Had hanya terpakai untuk run baharu selepas itu.">The run in progress still finishes, including proof of delivery and customer tracking. The limit only applies to new runs after that.</span></p></details>
-        <details><summary><span data-ms="Bisnes apa yang sesuai?">Which businesses is Cefflo for?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><p><span data-ms="Bisnes tempatan yang hantar order sendiri dalam kawasan servis mereka: F&amp;amp;B, bakeri, meal prep, florist, hamper dan hadiah, kecantikan dan runcit tempatan.">Local businesses that deliver their own orders within their service area: F&amp;B, bakeries, meal prep, florists, hampers and gifts, beauty and local retail.</span></p></details>
+      <div class="outcomes reveal">
+        <article><b data-ms="Kurang koordinasi manual">Less manual coordination</b></article>
+        <article><b data-ms="Perancangan delivery lebih jelas">Clearer delivery planning</b></article>
+        <article><b data-ms="Kurang soalan status daripada customer">Fewer customer status questions</b></article>
+        <article><b data-ms="Satu paparan operasi harian">One daily operating view</b></article>
       </div>
     </div>
   </section>
 
-  <!-- 14 FINAL CTA -->
-  <section id="muat-turun" style="padding-bottom: 0">
+  <section class="soft" id="pricing">
     <div class="wrap">
-      <div class="final reveal">
-        <span class="label" style="color: var(--mustard)"><span data-ms="Mula sekarang">Get started</span></span>
-        <h2 class="h2"><span data-ms="Order makin banyak? &lt;span class=&quot;soft&quot;&gt;Delivery pun boleh kemas.&lt;/span&gt;">More orders coming in? <span class="soft">Keep delivery under control.</span></span></h2>
-        <p class="lead" style="margin-inline: auto"><span data-ms="Muat turun Cefflo dan jalankan delivery hari ini dengan plan FREE.">Download Cefflo and run today&#39;s deliveries on the FREE plan.</span></p>
-        <div class="on-dark">
-          <div class="cta-row" data-stores style="justify-content: center"></div>
-          <p class="micro"><span data-ms="&lt;strong&gt;Mula percuma&lt;/strong&gt; · 150 penghantaran sebulan · tanpa kad kredit"><strong>Start free</strong> · 150 deliveries a month · no credit card</span></p>
-        </div>
-        <div class="final-phones">
-          <div class="phone hide-sm fan-l"><div class="screen"><img src="img/d21_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-          <div class="phone"><div class="screen"><img src="img/v11_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-          <div class="phone hide-sm fan-r"><div class="screen"><img src="img/c_done_ph.webp" alt=""><span class="sb" aria-hidden="true"><span class="t">9:41</span><span class="island"></span><span class="ic"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 12"><path d="M8 11.5 10.6 8.6a3.7 3.7 0 0 0-5.2 0L8 11.5zM3.4 6.5a6.6 6.6 0 0 1 9.2 0l1.6-1.7a9 9 0 0 0-12.4 0l1.6 1.7zM.1 3.3a11.4 11.4 0 0 1 15.8 0L16 3.2 14.3 1.4a13.8 13.8 0 0 0-12.6 0L0 3.2l.1.1z" fill="currentColor"/></svg><svg viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2" fill="currentColor"/><path d="M24.5 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg></span></span><span class="home" aria-hidden="true"></span></div></div>
-        </div>
+      <div class="head center reveal">
+        <span class="eyebrow" data-ms="Harga">Pricing</span>
+        <h2 data-ms="Mula percuma. Naik plan bila operasi berkembang.">Start free. Upgrade as your operation grows.</h2>
+        <p class="lead" data-ms="Bayar ikut penghantaran yang siap, bukan ikut bilangan Driver.">Pay for completed deliveries, not for the number of Drivers.</p>
       </div>
-      <p class="proof-note"><span data-ms="Semua paparan skrin di laman ini ialah app Cefflo sebenar dengan data demo.">Every screen on this page is the real Cefflo app with demo data.</span></p>
+      <div class="plans reveal">
+        <article class="plan" tabindex="0" role="button" aria-pressed="false"><h3>FREE</h3><p class="who" data-ms="Rasa sendiri operasi Cefflo dengan penghantaran sebenar.">Run real deliveries on Cefflo.</p><div class="price">RM0</div><div class="per" data-ms="/ bulan">/ month</div><ul>
+          <li data-ms="150 penghantaran siap sebulan">150 completed deliveries a month</li><li data-ms="Sehingga 3 Driver aktif">Up to 3 active Drivers</li><li data-ms="Sehingga 2 zon">Up to 2 zones</li><li data-ms="1 pengguna">1 user</li></ul><a class="button plan-cta" href="https://vendor.cefflo.com/?plan=free" data-ms="Mula percuma">Start free</a></article>
+        <article class="plan" tabindex="0" role="button" aria-pressed="false"><h3>GROW</h3><p class="who" data-ms="Untuk bisnes yang dah hantar setiap hari.">For businesses delivering every day.</p><div class="price">RM99</div><div class="per" data-ms="/ bulan">/ month</div><ul>
+          <li data-ms="500 penghantaran siap sebulan">500 completed deliveries a month</li><li data-ms="Sehingga 10 Driver aktif">Up to 10 active Drivers</li><li data-ms="Sehingga 5 zon">Up to 5 zones</li><li data-ms="Sehingga 3 pengguna">Up to 3 users</li></ul><a class="button plan-cta" href="https://vendor.cefflo.com/?plan=grow" data-ms="Pilih Grow">Choose Grow</a></article>
+        <article class="plan on" tabindex="0" role="button" aria-pressed="true"><span class="tag" data-ms="Disyorkan">Recommended</span><h3>OPERATE</h3><p class="who" data-ms="Jalankan operasi delivery bisnes anda sepenuhnya.">Run your whole delivery operation.</p><div class="price">RM199</div><div class="per" data-ms="/ bulan">/ month</div><ul>
+          <li data-ms="1,500 penghantaran siap sebulan">1,500 completed deliveries a month</li><li data-ms="Driver tanpa had">Unlimited Drivers</li><li data-ms="Zon tanpa had">Unlimited zones</li><li data-ms="Sehingga 10 pengguna">Up to 10 users</li></ul><a class="button plan-cta" href="https://vendor.cefflo.com/?plan=operate" data-ms="Pilih Operate">Choose Operate</a></article>
+        <article class="plan" tabindex="0" role="button" aria-pressed="false"><h3>SCALE</h3><p class="who" data-ms="Untuk operasi berkapasiti tinggi.">For high-volume operations.</p><div class="price">RM499</div><div class="per" data-ms="/ bulan">/ month</div><ul>
+          <li data-ms="5,000 penghantaran siap sebulan">5,000 completed deliveries a month</li><li data-ms="Driver tanpa had">Unlimited Drivers</li><li data-ms="Zon tanpa had">Unlimited zones</li><li data-ms="Sehingga 25 pengguna">Up to 25 users</li></ul><a class="button plan-cta" href="https://vendor.cefflo.com/?plan=scale" data-ms="Pilih Scale">Choose Scale</a></article>
+        <article class="plan" tabindex="0" role="button" aria-pressed="false"><h3>ENTERPRISE</h3><p class="who" data-ms="Lebih 5,000 penghantaran sebulan atau keperluan khas.">Over 5,000 deliveries a month or special requirements.</p><div class="price" data-ms="Ikut keperluan">Custom</div><div class="per" data-ms="Harga disesuaikan">Custom pricing</div><a class="button plan-cta" href="https://vendor.cefflo.com/?plan=enterprise" data-ms="Pilih Enterprise">Choose Enterprise</a></article>
+      </div>
+      
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="head center reveal">
+        <span class="eyebrow" data-ms="Soalan lazim">FAQ</span>
+        <h2 data-ms="Soalan sebenar, jawapan yang jelas.">Real questions, clear answers.</h2>
+      </div>
+      <div class="faq reveal">
+        <details><summary data-ms="Apa itu Cefflo?">What is Cefflo?</summary><p data-ms="Cefflo ialah sistem operasi untuk bisnes tempatan yang menjalankan delivery mereka sendiri.">Cefflo is an operating system for local businesses that run their own delivery.</p></details>
+        <details><summary data-ms="Cefflo ni syarikat penghantaran ke?">Is Cefflo a delivery company?</summary><p data-ms="Bukan. Cefflo bukan kurier dan bukan marketplace. Customer, saluran jualan dan Driver anda kekal milik anda.">No. Cefflo is not a courier or marketplace. Your customers, sales channels and Drivers stay yours.</p></details>
+        <details><summary data-ms="Perlu ada Driver sendiri?">Do I need my own Drivers?</summary><p data-ms="Ya. Anda jemput Driver anda sendiri dan serahkan run kepada mereka.">Yes. You invite your own Drivers and assign runs to them.</p></details>
+        <details><summary data-ms="Boleh customer order melalui Cefflo?">Can customers order through Cefflo?</summary><p data-ms="Boleh. Cefflo Storefront menyediakan halaman order yang bersambung terus ke operasi anda.">Yes. Cefflo Storefront provides an ordering page connected to your operation.</p></details>
+        <details><summary data-ms="Boleh customer jejak penghantaran?">Can customers track deliveries?</summary><p data-ms="Boleh. Mereka buka pautan tracking tanpa perlu app atau akaun.">Yes. They open a tracking link without needing an app or account.</p></details>
+        <details><summary data-ms="Boleh staf saya guna Cefflo?">Can my staff use Cefflo?</summary><p data-ms="Boleh. Operator dan Helper ada akses yang sesuai dengan tugas mereka, dan Driver guna ruang kerja mereka sendiri.">Yes. Operators and Helpers have task-appropriate access, and Drivers use their own workspace.</p></details>
+        <details><summary data-ms="Ada plan percuma?">Is there a free plan?</summary><p data-ms="Ada. Plan FREE merangkumi sehingga 150 penghantaran siap sebulan.">Yes. The FREE plan includes up to 150 completed deliveries per month.</p></details>
+        <details><summary data-ms="Perlu ada website sendiri?">Do I need a website?</summary><p data-ms="Tidak. Anda boleh guna Cefflo Storefront atau masukkan order dari saluran yang anda dah guna sekarang.">No. You can use Cefflo Storefront or enter orders from channels you already use.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="closing">
+    <div class="wrap center">
+      <div class="reveal">
+        <span class="eyebrow" data-ms="Mula dengan Cefflo">Get started with Cefflo</span>
+        <h2 data-ms="Jalankan <span class='nw'>operasi anda</span><br>tanpa serabut.">Run your operation<br>without chaos.</h2>
+        <p class="lead" data-ms="Satukan order, pelan, run, Driver dan tracking dalam satu sistem.">Bring orders, plans, runs, Drivers and tracking into one system.</p>
+        <div class="buttons"><a class="button primary" href="https://vendor.cefflo.com/" data-ms="Mula percuma">Start free</a></div>
+        <div class="stores"><span class="store-badge" role="img" aria-label="App Store, coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.6c-.02-2.1 1.72-3.12 1.8-3.17-.98-1.43-2.5-1.63-3.05-1.65-1.3-.13-2.53.76-3.19.76-.66 0-1.67-.74-2.75-.72-1.41.02-2.72.82-3.44 2.09-1.47 2.55-.38 6.32 1.05 8.39.7 1.01 1.53 2.15 2.62 2.11 1.05-.04 1.45-.68 2.72-.68 1.27 0 1.63.68 2.74.66 1.13-.02 1.85-1.03 2.54-2.05.8-1.17 1.13-2.31 1.15-2.37-.03-.01-2.2-.84-2.22-3.35zM14.27 6.43c.58-.7.97-1.68.86-2.65-.83.03-1.84.55-2.44 1.25-.53.62-1 1.62-.88 2.57.93.07 1.88-.47 2.46-1.17z"/></svg><span><small data-ms="Akan datang di">Coming soon on</small><b>App Store</b></span></span><span class="store-badge" role="img" aria-label="Google Play, coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#00d7fe" d="M3.6 2.2l9.9 9.8-9.9 9.8c-.36-.2-.6-.6-.6-1.1V3.3c0-.5.24-.9.6-1.1z"/><path fill="#ffc93c" d="M17.1 8.4l3.1 1.8c.9.5.9 1.8 0 2.3l-3.1 1.8-3.6-2.3z"/><path fill="#ff3a44" d="M13.5 12l3.6 2.3-11.2 6.5c-.8.5-1.7.4-2.3-.1z"/><path fill="#10b981" d="M3.6 2.2c.6-.5 1.5-.6 2.3-.1l11.2 6.3-3.6 3.6z"/></svg><span><small data-ms="Akan datang di">Coming soon on</small><b>Google Play</b></span></span></div>
+      </div>
+      <div class="pair reveal">
+        <div class="phone lie p-lie"><img src="img/s_d_home.webp" alt="Cefflo Driver: home" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div>
+        <div class="phone p-up"><img src="img/s_v_today.webp" alt="Cefflo Vendor: Today overview" width="786" height="1704" loading="lazy"><span class="sb" aria-hidden="true">9:41<i></i></span></div>
+      </div>
+      <p class="demo-note" data-ms="Skrin dalam telefon ialah app Cefflo sebenar dengan data demo. Gambar lain ialah ilustrasi.">Screens shown in phones are the real Cefflo app with demo data. Other images are illustrations.</p>
     </div>
   </section>
 </main>
@@ -947,110 +770,53 @@ section { overflow-x: clip; }
 <footer>
   <div class="wrap">
     <div class="foot">
-      <div>
-        <a class="brand" href="#top" aria-label="Cefflo"><img class="mark" src="img/logo_mark.png" alt=""><img class="word" src="img/logo_word.png" alt="Cefflo"></a>
-        <p><span data-ms="Sistem operasi delivery hari-sama untuk bisnes yang hantar order sendiri.">The same-day delivery operating system for businesses that deliver their own orders.</span></p>
-      </div>
-      <nav class="foot-links" aria-label="Footer">
-        <a href="#cara"><span data-ms="Cara ia berfungsi">How it works</span></a>
-        <a href="#driver"><span data-ms="Rider">Riders</span></a>
-        <a href="#tracking">Tracking</a>
-        <a href="#harga"><span data-ms="Harga">Pricing</span></a>
-        <a href="#soalan"><span data-ms="Soalan">FAQ</span></a>
-        <a href="#muat-turun"><span data-ms="Muat turun">Download</span></a>
-      </nav>
+      <div><a class="brand" href="#top" aria-label="Cefflo home"><img class="mark" src="img/logo_mark.png" alt="" width="165" height="200" loading="lazy"><img class="word" src="img/logo_word.png" alt="Cefflo" width="252" height="120" loading="lazy"></a><p data-ms="Sistem operasi delivery tempatan untuk bisnes yang hantar order sendiri.">The local delivery operating system for businesses that deliver their own orders.</p></div>
+      <nav aria-label="Product"><h3 data-ms="Produk">Product</h3><a href="#how" data-ms="Cara ia berfungsi">How it works</a><a href="#features" data-ms="Ciri">Features</a><a href="#pricing" data-ms="Harga">Pricing</a><a href="#faq" data-ms="Soalan">FAQ</a></nav>
+      <nav aria-label="Legal"><h3 data-ms="Undang-undang">Legal</h3><a href="privacy.html" data-ms="Privasi">Privacy</a><a href="terms.html" data-ms="Terma">Terms</a></nav>
+      <nav aria-label="Access"><h3 data-ms="Akses">Access</h3><a href="https://vendor.cefflo.com/" data-ms="Mula percuma">Start free</a></nav>
     </div>
-    <p class="copy">© 2026 Cefflo · Grow = Operate</p>
+    <div class="copy"><span data-ms="© 2026 Cefflo. Hak cipta terpelihara.">© 2026 Cefflo. All rights reserved.</span></div>
   </div>
 </footer>
 
 <script>
 (function () {
-  /* App-store listing URLs. Leave empty until the real listings are live;
-     empty badges scroll to the download section and say "coming soon". */
-  var STORE = { ios: '', android: '' };
-
-  var APPLE = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.62c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.7-3.19-1.72-1.36-.14-2.65.8-3.34.8-.69 0-1.75-.78-2.88-.76-1.48.02-2.85.86-3.61 2.19-1.54 2.67-.39 6.62 1.11 8.79.73 1.06 1.6 2.25 2.74 2.21 1.1-.04 1.51-.71 2.84-.71 1.33 0 1.7.71 2.86.69 1.18-.02 1.93-1.08 2.65-2.14.84-1.23 1.18-2.42 1.2-2.48-.03-.01-2.3-.88-2.32-3.5zM14.19 6.13c.6-.73 1.01-1.75.9-2.76-.87.04-1.92.58-2.54 1.31-.56.64-1.05 1.67-.92 2.66.97.07 1.96-.49 2.56-1.21z"/></svg>';
-  var PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.6 2.3 13.5 12 3.6 21.7c-.35-.2-.6-.6-.6-1.1V3.4c0-.5.25-.9.6-1.1z" fill="#00D7FE"/><path d="m16.9 8.6-3.4 3.4L3.6 2.3c.2-.1.5-.15.8-.1l12.5 6.4z" fill="#32BBFF"/><path d="m16.9 15.4-12.5 6.4c-.3.05-.6 0-.8-.1l9.9-9.7 3.4 3.4z" fill="#FF3A44"/><path d="M20.4 10.8c.8.5.8 1.9 0 2.4l-3.5 2.2-3.4-3.4 3.4-3.4 3.5 2.2z" fill="#FFD500"/></svg>';
-
-  var ua = navigator.userAgent || '';
-  var android = /Android/i.test(ua);
-  var live = !!(STORE.ios || STORE.android);
-  var COPY = {
-    en: { soon: 'Coming soon to', ios: 'Download on the', android: 'Get it on', note: 'The app is being prepared for the App Store and Google Play.', toggle: 'BM', toggleLabel: 'Bahasa Melayu' },
-    ms: { soon: 'Akan datang di', ios: 'Muat turun di', android: 'Dapatkan di', note: 'App sedang disediakan untuk App Store dan Google Play.', toggle: 'EN', toggleLabel: 'English' }
-  };
-
-  function badge(kind, t) {
-    var url = STORE[kind];
-    var a = document.createElement('a');
-    a.className = 'badge';
-    a.href = url || '#muat-turun';
-    if (url) { a.target = '_blank'; a.rel = 'noopener'; }
-    a.innerHTML = (kind === 'ios' ? APPLE : PLAY) + '<span><small>' + (url ? t[kind] : t.soon) + '</small><b>' + (kind === 'ios' ? 'App Store' : 'Google Play') + '</b></span>';
-    return a;
-  }
-  function renderStores(t) {
-    document.querySelectorAll('[data-stores]').forEach(function (row) {
-      row.innerHTML = '';
-      (android ? ['android', 'ios'] : ['ios', 'android']).forEach(function (k) { row.appendChild(badge(k, t)); });
-      if (!live) {
-        var note = document.createElement('p');
-        note.className = 'store-note';
-        note.style.flexBasis = '100%';
-        note.textContent = t.note;
-        row.appendChild(note);
-      }
-    });
-  }
-
-  /* English is the default; Bahasa Melayu is stored in data-ms. */
-  var langBtn = document.getElementById('langBtn');
-  function applyLang(l) {
-    document.querySelectorAll('[data-ms]').forEach(function (el) {
-      if (!el.hasAttribute('data-en')) el.setAttribute('data-en', el.innerHTML);
-      el.innerHTML = el.getAttribute(l === 'ms' ? 'data-ms' : 'data-en');
-    });
-    document.documentElement.lang = l;
-    renderStores(COPY[l]);
-    langBtn.textContent = COPY[l].toggle;
-    langBtn.setAttribute('aria-label', COPY[l].toggleLabel);
-  }
+  var doc = document.documentElement, b = document.getElementById('lang'), m = document.getElementById('menu'), mobi = document.getElementById('mobile');
+  var titles = { en: document.title, ms: 'Cefflo — Sistem Operasi Delivery Tempatan' };
+  var nodes = document.querySelectorAll('[data-ms]');
+  nodes.forEach(function (e) { e.dataset.en = e.innerHTML; });
   var lang = 'en';
-  try {
-    var q = new URLSearchParams(location.search).get('lang');
-    lang = q === 'ms' || q === 'en' ? q : (localStorage.getItem('cefflo_lang') || 'en');
-  } catch (e) {}
-  applyLang(lang);
-  langBtn.addEventListener('click', function () {
-    lang = lang === 'ms' ? 'en' : 'ms';
-    applyLang(lang);
-    try { localStorage.setItem('cefflo_lang', lang); } catch (e) {}
-  });
+  function set(x) {
+    lang = x; doc.lang = x; document.title = titles[x];
+    nodes.forEach(function (e) { e.innerHTML = x === 'ms' ? e.dataset.ms : e.dataset.en; });
+    b.textContent = x === 'ms' ? 'EN' : 'BM';
+    b.setAttribute('aria-label', x === 'ms' ? 'English' : 'Bahasa Melayu');
+  }
+  var initial = new URLSearchParams(location.search).get('lang');
+  if (initial !== 'ms' && initial !== 'en') { try { initial = localStorage.getItem('cefflo.www.lang'); } catch (e) { initial = null; } }
+  set(initial === 'ms' ? 'ms' : 'en');
+  b.addEventListener('click', function () { set(lang === 'en' ? 'ms' : 'en'); try { localStorage.setItem('cefflo.www.lang', lang); } catch (e) {} });
 
-  var nav = document.querySelector('.nav');
-  var lastY = window.scrollY;
-  window.addEventListener('scroll', function () {
-    var y = window.scrollY;
-    if (Math.abs(y - lastY) < 6) return;
-    nav.classList.toggle('hide', y > lastY && y > 120);
-    lastY = y;
-  }, { passive: true });
+  function setMenu(open) { mobi.classList.toggle('open', open); m.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+  m.addEventListener('click', function () { setMenu(!mobi.classList.contains('open')); });
+  mobi.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });
+  document.addEventListener('click', function (e) { if (mobi.classList.contains('open') && !e.target.closest('#mobile,#menu')) setMenu(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setMenu(false); });
+  addEventListener('resize', function () { if (innerWidth > 900) setMenu(false); });
 
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduce || !('IntersectionObserver' in window)) return;
-  var items = Array.prototype.filter.call(document.querySelectorAll('.reveal'), function (el) {
-    return el.getBoundingClientRect().top > window.innerHeight * .92;
+  document.querySelectorAll('.plans .plan').forEach(function (p) {
+    function pick() { document.querySelectorAll('.plans .plan').forEach(function (q) { q.classList.toggle('on', q === p); q.setAttribute('aria-pressed', q === p ? 'true' : 'false'); }); }
+    p.addEventListener('click', function (e) { if (!e.target.closest('a')) pick(); });
+    p.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
   });
-  if (!items.length) return;
-  document.documentElement.classList.add('js');
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-  }, { rootMargin: '0px 0px -8% 0px', threshold: .08 });
-  document.querySelectorAll('.reveal').forEach(function (el) {
-    if (items.indexOf(el) === -1) el.classList.add('in'); else io.observe(el);
-  });
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce && 'IntersectionObserver' in window) {
+    doc.classList.add('js');
+    var o = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); o.unobserve(e.target); } }); }, { rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.reveal,.role-card').forEach(function (e) { o.observe(e); });
+  }
 })();
+document.querySelectorAll('.hs').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();});});
 </script>
 </body>
 </html>

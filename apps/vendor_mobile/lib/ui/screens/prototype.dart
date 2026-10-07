@@ -881,7 +881,7 @@ class _EditProfileScreenState extends State<_EditProfileScreen> {
         CefListRow(
           icon: LucideIcons.mail,
           title: L.emailAddress,
-          subtitle: _email ?? 'yusuf@kopikita.my',
+          subtitle: _email ?? 'fida1996@gmail.com',
           showChevron: live,
           trailing: live
               ? Text(
