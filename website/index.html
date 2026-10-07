@@ -38,7 +38,7 @@
   --max:1200px;--g:clamp(20px,4vw,56px);--s:clamp(80px,9vw,128px);--r:24px;
 }
 *{box-sizing:border-box}
-html{background:var(--white);scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+html{background:var(--white);scroll-behavior:smooth;overscroll-behavior-y:none;-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--white);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:clip}
 img{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
@@ -444,6 +444,9 @@ footer .foot,footer .foot nav{text-align:center;justify-items:center}footer .bra
 /* hero CTA spacing (final) */
 .hero-cta{margin-top:32px}.hero .hero-stores{margin-top:32px!important;gap:14px}
 @media(max-width:600px){.hero-cta{margin-top:28px}.hero .hero-stores{margin-top:28px!important;gap:12px;display:grid;grid-template-columns:1fr 1fr;width:100%;max-width:360px;margin-inline:auto}.hero .hs{width:100%;min-width:0;padding:0 10px;gap:8px;overflow:hidden}.hero .hs span{min-width:0}.hero .hs b{font-size:clamp(12px,3.8vw,15px)}.hero .hs small{font-size:clamp(8.5px,2.4vw,9.5px)}}
+/* images/product visuals: same entrance as cards */
+.js .m-product{opacity:0;translate:0 48px;scale:.94;transition:opacity .9s var(--ease),translate 1s var(--ease),scale 1s var(--ease);transition-delay:var(--d,0ms)}
+.js .m-product.in{opacity:1;translate:0 0;scale:1}
 /* ---------- reveal ---------- */
 /* ---------- motion system (calm → reveal → settle) ----------
    A content reveal (.reveal)   B editorial lines (.m-lines)   C product reveal (.m-product)
@@ -850,6 +853,29 @@ details p{overflow:hidden}
       lastY = y; ticking = false;
     });
   }, { passive: true });
+  // Smooth, slower wheel scrolling on desktop mice/trackpads only (touch, keyboard and reduced motion keep native scrolling)
+  (function () {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches || !matchMedia('(pointer:fine)').matches) return;
+    var target = scrollY, current = scrollY, running = false, EASE = 0.075, SPEED = 0.7;
+    function max() { return document.documentElement.scrollHeight - innerHeight; }
+    function step() {
+      current += (target - current) * EASE;
+      if (Math.abs(target - current) < 0.5) { current = target; running = false; }
+      window.scrollTo({ top: current, behavior: 'instant' });
+      if (running) requestAnimationFrame(step);
+    }
+    addEventListener('wheel', function (e) {
+      if (e.ctrlKey || e.defaultPrevented) return;
+      var el = e.target.closest && e.target.closest('.sf-gallery,.mobile');
+      if (el && el.scrollWidth > el.clientWidth && Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      if (!running) { target = current = scrollY; }
+      var dy = e.deltaMode === 1 ? e.deltaY * 32 : e.deltaY;
+      target = Math.max(0, Math.min(max(), target + dy * SPEED));
+      if (!running) { running = true; requestAnimationFrame(step); }
+    }, { passive: false });
+    addEventListener('scroll', function () { if (!running) target = current = scrollY; }, { passive: true });
+  })();
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   function lines(el) { // B: split an <h1>/<h2> into its <br>-separated lines, keeping inner markup
     var parts = el.innerHTML.split(/<br\s*\/?>/i);
