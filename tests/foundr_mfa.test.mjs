@@ -111,11 +111,13 @@ test('403 is never a sign-out: the in-app handler re-checks access', () => {
   assert.doesNotMatch(APP, /e\?\.status === 401 \|\| e\?\.status === 403\) \{ await F\.signOut/);
 });
 
-test('routing: not admin → denied; no factor → set up; aal1 with factor → verify', () => {
+test('routing: not admin → denied; no factor → REQUIRED set up; aal1 with factor → verify', () => {
   const route = APP.slice(APP.indexOf('async function routeAccess'), APP.indexOf('let rechecking'));
   assert.match(route, /if \(!st\?\.admin\) return renderDenied/);
   assert.match(route, /st\.verified_factors > 0 && st\.aal !== 'aal2'\) return renderMfaVerify\(next\)/);
-  assert.match(route, /st\.verified_factors === 0\) return renderMfaSetup\(next, \{ optional: true \}\)/);
+  // MFA is mandatory (server requires aal2, migration 20261007140000): no skippable set-up.
+  assert.match(route, /st\.verified_factors === 0\) return renderMfaSetup\(next\)/);
+  assert.doesNotMatch(APP, /renderMfaSetup\([^)]*optional: true/);
 });
 
 test('entering FOUNDR still requires the canonical allowlist check', () => {

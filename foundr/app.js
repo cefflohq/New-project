@@ -33,6 +33,7 @@ const icons = {
   overview: '<path d="M3 11 12 3l9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
   vendors: '<path d="M4 9h16l-2-5H6zM5 9v11h14V9M9 20v-6h6v6"/>',
   operations: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h5"/>',
+  verification: '<path d="M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6l-7-3z"/><path d="m9 12 2 2 4-4"/>',
   riders: '<circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17h4l3-6h4l1 6M13 11l-2-4H8"/>',
   controls: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
   product: '<path d="M4 5h16v13H4zM8 21h8M12 18v3"/>',
@@ -54,7 +55,7 @@ const I = {
 };
 
 const NAV = [
-  ['overview', 'Overview'], ['vendors', 'Vendors'], ['operations', 'Operations'], ['riders', 'Riders'],
+  ['overview', 'Overview'], ['vendors', 'Vendors'], ['operations', 'Operations'], ['riders', 'Drivers'], ['verification', 'Driver Verification'],
   ['controls', 'Controls'], ['product', 'Versions'], ['business', 'Subscriptions'],
   ['system', 'System'], ['audit', 'Audit Log'], ['support', 'Support'], ['marketing', 'Marketing'],
   ['settings', 'Settings'],
@@ -72,7 +73,10 @@ let updatedAt = null;
 
 const LOADERS = {
   vendors: () => F.listVendors(),
-  subs: () => F.listSubscriptions(),
+  // No business_subscriptions row = FREE / active by the locked contract
+  // (my_subscription); shown as "Free (default)" without creating a row.
+  subs: () => F.listSubscriptions().then(rows => (rows || []).map(x => (x.plan_key ? x : { ...x, plan_key: 'free', status: 'active', is_default: true }))),
+  plans: () => F.listPlans(),
   ops: () => F.deliveryOperations(),
   riders: () => F.listRiders(),
   stuck: () => F.stuckRiders(state.stuckMinutes),
@@ -84,13 +88,14 @@ const LOADERS = {
   versions: () => F.listAppVersions(),
   admins: () => F.listPlatformAdmins(),
   broadcasts: () => F.listBroadcasts(200),
+  verif: () => F.listVerifications(),
 };
 const NEEDS = {
   overview: ['vendors', 'ops', 'stuck', 'audit', 'windows', 'activeAnns', 'flags', 'versions'],
-  vendors: ['vendors', 'subs'], operations: ['ops'], riders: ['riders', 'stuck'],
-  controls: ['windows', 'flags', 'anns'], product: ['versions'], business: ['subs'],
+  vendors: ['vendors', 'subs', 'plans'], operations: ['ops'], riders: ['riders', 'stuck'],
+  controls: ['windows', 'flags', 'anns'], product: ['versions'], business: ['subs', 'plans'],
   system: ['windows', 'activeAnns', 'admins'], audit: ['audit'], settings: ['admins'],
-  support: [], marketing: [],
+  support: [], marketing: [], verification: ['verif'],
 };
 function load(key, force = false) {
   if (!force && (key in data)) return Promise.resolve(data[key]);
@@ -111,6 +116,11 @@ function invalidate(...keys) { keys.forEach(k => { delete data[k]; delete errors
 const chip = (label, tone = '') => `<span class="chip ${tone}">${esc(label)}</span>`;
 const toneFor = s => /suspend|cancel|issue|critical|past_due|stuck|inactive|unreachable|failed/i.test(s) ? 'red' : /trial|pending|warning|ready_for_pickup|created|not set|offline/i.test(s) ? 'amber' : /active|online|delivered|healthy|reachable|operational|live/i.test(s) ? '' : 'blue';
 const statusChip = s => chip(human(s || 'Not set'), toneFor(s || 'not set'));
+// Plan names come from the server price book; "(default)" marks a business
+// with no explicit row (FREE by contract).
+const planName = key => (data.plans || []).find(p => p.key === key)?.name || human(key);
+const planLabel = sub => (sub?.plan_key ? `${planName(sub.plan_key)}${sub.is_default ? ' (default)' : ''}` : '—');
+const planPrice = p => (p.monthly_price_myr == null ? 'Custom pricing' : `RM${Number(p.monthly_price_myr).toLocaleString('en-MY')}/month`);
 const metric = (v, l, sub = '', bad = false) => `<div class="metric"><div class="metric-value">${v}</div><div class="metric-label">${esc(l)}</div>${sub ? `<div class="trend ${bad ? 'down' : ''}">${sub}</div>` : ''}</div>`;
 const metrics = (arr, cards = true) => `<div class="metrics ${cards ? 'metrics-cards' : ''}" style="--cols:${arr.length}">${arr.map(a => metric(...a)).join('')}</div>`;
 const head = (eyebrow, title, desc, action = '') => `<div class="page-head"><div><div class="eyebrow">${esc(eyebrow)}</div><h1>${esc(title)}</h1><p>${esc(desc)}</p></div>${action}</div>`;
@@ -165,7 +175,7 @@ function overview() {
     [k('vendors', num(vendors.length)), 'Vendors', k('vendors', `${num(vendors.filter(v => Number(v.order_count_30d) > 0).length)} ordered in 30 days`)],
     [k('vendors', num(orders30)), 'Orders (30 days)'],
     [k('ops', num(ops.length)), 'Deliveries in flight', k('ops', unassigned ? `${num(unassigned)} unassigned` : 'all assigned'), unassigned > 0],
-    [k('stuck', num(stuck.length)), 'Riders not reporting', k('stuck', `no location for ${state.stuckMinutes}+ min`), stuck.length > 0],
+    [k('stuck', num(stuck.length)), 'Drivers not reporting', k('stuck', `no location for ${state.stuckMinutes}+ min`), stuck.length > 0],
   ], false)}
   <div class="layout-right"><div>
     <div class="card card-pad"><div class="card-title"><h3>Deliveries in flight by status</h3><button class="link" data-go="operations">View all</button></div>
@@ -182,7 +192,7 @@ function overview() {
       ${insight('product', '', 'Client versions', 'versions', versions.length ? `${versions.length} releases recorded` : 'No releases recorded yet', versions.length ? '' : 'amber')}
     </div>
     <div class="card card-pad"><div class="card-title"><h3>Needs attention</h3><button class="link" data-go="riders" data-go-tab="stuck">View all</button></div>
-      ${!('stuck' in data) ? (errors.stuck ? errorBlock(['stuck']) : '<div class="skel"></div>') : stuck.length ? stuck.slice(0, 5).map(s => `<div class="list-row clickable" data-go="riders" data-go-tab="stuck" data-open="rider:${esc(s.rider_id)}"><i class="dot" style="background:var(--amber)"></i><span class="grow"><b>${esc(s.rider_name)}</b><span class="sub">${esc(s.business_name)} · ${esc(human(s.assignment_status))}</span></span><span class="sub inline">${s.last_recorded_at ? esc(ago(s.last_recorded_at)) : 'never'}</span></div>`).join('') : emptyBlock('Nothing needs attention', 'Every rider on a job is reporting location.')}
+      ${!('stuck' in data) ? (errors.stuck ? errorBlock(['stuck']) : '<div class="skel"></div>') : stuck.length ? stuck.slice(0, 5).map(s => `<div class="list-row clickable" data-go="riders" data-go-tab="stuck" data-open="rider:${esc(s.rider_id)}"><i class="dot" style="background:var(--amber)"></i><span class="grow"><b>${esc(s.rider_name)}</b><span class="sub">${esc(s.business_name)} · ${esc(human(s.assignment_status))}</span></span><span class="sub inline">${s.last_recorded_at ? esc(ago(s.last_recorded_at)) : 'never'}</span></div>`).join('') : emptyBlock('Nothing needs attention', 'Every driver on a job is reporting location.')}
     </div>
   </aside></div>`;
 }
@@ -202,30 +212,29 @@ function vendors() {
   if (failed(keys)) return title + errorBlock(keys);
   if (!ready(keys)) return title + loadingBlock();
   const all = vendorList();
-  const status = v => v.sub?.status || 'not_set';
-  const tabList = [['all', 'All', all.length], ...['active', 'trial', 'past_due', 'suspended', 'cancelled', 'not_set'].map(s => [s, s === 'not_set' ? 'Not set' : human(s), all.filter(v => status(v) === s).length])];
+  const status = v => v.sub?.status || 'active';
+  const tabList = [['all', 'All', all.length], ...['active', 'trial', 'past_due', 'suspended', 'cancelled'].map(s => [s, human(s), all.filter(v => status(v) === s).length])];
   const tab = state.tab || 'all';
   const list = all.filter(v => (tab === 'all' || status(v) === tab)
     && match(state.query, v.name, v.email, v.phone, v.operating_area)
     && (!f('activity') || (f('activity') === 'active' ? Number(v.order_count_30d) > 0 : !Number(v.order_count_30d)))
-    && (!f('plan') || (v.sub?.plan_key || '') === f('plan')));
+    && (!f('plan') || (v.sub?.plan_key || 'free') === f('plan')));
   const sort = f('sort') || 'newest';
   list.sort(sort === 'name' ? byName('name') : sort === 'orders' ? (a, b) => Number(b.order_count_30d) - Number(a.order_count_30d) : byTime('created_at'));
   const pg = paginate(list);
-  const plans = distinct(all.map(v => ({ p: v.sub?.plan_key })), 'p');
   return `${title}
   ${metrics([
     [num(all.length), 'Vendors'],
     [num(all.filter(v => Number(v.order_count_30d) > 0).length), 'Ordered in 30 days'],
     [num(all.reduce((s, v) => s + Number(v.order_count_30d || 0), 0)), 'Orders (30 days)'],
-    [num(all.reduce((s, v) => s + Number(v.active_rider_count || 0), 0)), 'Active riders'],
+    [num(all.reduce((s, v) => s + Number(v.active_rider_count || 0), 0)), 'Active drivers'],
     [num(all.filter(v => ['suspended', 'past_due'].includes(status(v))).length), 'Past due or suspended', '', all.some(v => ['suspended', 'past_due'].includes(status(v)))],
   ])}
   ${tabs(tabList, tab)}
-  ${toolbar('Search name, email, phone or area…', select('activity', [['', 'All activity'], ['active', 'Ordered in 30 days'], ['idle', 'No orders in 30 days']], 'Activity') + select('plan', [['', 'All plans'], ...plans.map(p => [p, human(p)])], 'Plan') + select('sort', [['newest', 'Newest first'], ['name', 'Name A–Z'], ['orders', 'Most orders (30d)']], 'Sort'))}
-  ${pg.total ? table(['Vendor', 'Area', 'Plan', 'Subscription', 'Orders (30d)', 'Active riders', 'Last order', 'Joined'], pg.rows.map(v => ({ id: v.business_id, cells: [
+  ${toolbar('Search name, email, phone or area…', select('activity', [['', 'All activity'], ['active', 'Ordered in 30 days'], ['idle', 'No orders in 30 days']], 'Activity') + select('plan', [['', 'All plans'], ...(data.plans || []).map(p => [p.key, p.name])], 'Plan') + select('sort', [['newest', 'Newest first'], ['name', 'Name A–Z'], ['orders', 'Most orders (30d)']], 'Sort'))}
+  ${pg.total ? table(['Vendor', 'Area', 'Plan', 'Subscription', 'Orders (30d)', 'Active drivers', 'Last order', 'Joined'], pg.rows.map(v => ({ id: v.business_id, cells: [
     `<div class="entity"><span class="entity-avatar">${esc(initials(v.name))}</span><span><strong>${esc(v.name)}</strong><span class="sub">${esc(v.email || v.phone || '—')}</span></span></div>`,
-    esc(v.operating_area || '—'), esc(v.sub?.plan_key ? human(v.sub.plan_key) : '—'), statusChip(status(v)), `<b>${num(v.order_count_30d)}</b>`, num(v.active_rider_count), esc(v.last_order_at ? ago(v.last_order_at) : 'Never'), esc(fmtDate(v.created_at)),
+    esc(v.operating_area || '—'), esc(planLabel(v.sub)), statusChip(status(v)), `<b>${num(v.order_count_30d)}</b>`, num(v.active_rider_count), esc(v.last_order_at ? ago(v.last_order_at) : 'Never'), esc(fmtDate(v.created_at)),
   ] })), 'vendor') : emptyBlock(all.length ? 'No vendors match these filters' : 'No vendors yet', all.length ? 'Clear the search or filters.' : 'Businesses appear here once they sign up.')}
   ${pager(pg, 'vendors')}`;
 }
@@ -234,7 +243,7 @@ function vendors() {
 const OPS_STATUSES = ['created', 'ready_for_pickup', 'picked_up', 'out_for_delivery', 'arrived', 'issue'];
 const staleRider = o => o.assigned_rider_id && (!o.rider_last_seen || Date.now() - new Date(o.rider_last_seen) > 15 * 60000);
 function operations() {
-  const title = head('Operations', 'Deliveries in flight', 'Every order not yet delivered or cancelled, across all businesses, with its rider’s last known position.');
+  const title = head('Operations', 'Deliveries in flight', 'Every order not yet delivered or cancelled, across all businesses, with its driver’s last known position.');
   if (failed(['ops'])) return title + errorBlock(['ops']);
   if (!ready(['ops'])) return title + loadingBlock();
   const all = data.ops;
@@ -252,11 +261,11 @@ function operations() {
     [num(all.filter(o => !o.assigned_rider_id).length), 'Unassigned', '', all.some(o => !o.assigned_rider_id)],
     [num(all.filter(o => ['picked_up', 'out_for_delivery', 'arrived'].includes(o.delivery_status)).length), 'On the road'],
     [num(all.filter(o => o.delivery_status === 'issue').length), 'Issues', '', all.some(o => o.delivery_status === 'issue')],
-    [num(all.filter(staleRider).length), 'Rider location stale (15+ min)', '', all.some(staleRider)],
+    [num(all.filter(staleRider).length), 'Driver location stale (15+ min)', '', all.some(staleRider)],
   ])}
   ${tabs([['all', 'All in flight', all.length], ...OPS_STATUSES.map(s => [s, human(s), all.filter(o => o.delivery_status === s).length])], tab)}
-  ${toolbar('Search order ref, vendor or rider…', select('vendor', [['', 'All vendors'], ...vendorsOpt], 'Vendor') + select('rider', [['', 'All riders'], ['assigned', 'Rider assigned'], ['unassigned', 'No rider'], ['stale', 'Location stale']], 'Rider') + select('sort', [['newest', 'Newest first'], ['oldest', 'Oldest first']], 'Sort'))}
-  ${pg.total ? table(['Order', 'Vendor', 'Status', 'Rider', 'Rider last seen', 'ETA', 'Created'], pg.rows.map(o => ({ id: o.order_id, cells: [
+  ${toolbar('Search order ref, vendor or driver…', select('vendor', [['', 'All vendors'], ...vendorsOpt], 'Vendor') + select('rider', [['', 'All drivers'], ['assigned', 'Driver assigned'], ['unassigned', 'No driver'], ['stale', 'Location stale']], 'Rider') + select('sort', [['newest', 'Newest first'], ['oldest', 'Oldest first']], 'Sort'))}
+  ${pg.total ? table(['Order', 'Vendor', 'Status', 'Driver', 'Driver last seen', 'ETA', 'Created'], pg.rows.map(o => ({ id: o.order_id, cells: [
     `<b style="color:#0870de">${esc(o.public_ref || shortId(o.order_id))}</b>`, esc(o.business_name), statusChip(o.delivery_status),
     o.rider_name ? `<b>${esc(o.rider_name)}</b>` : chip('Unassigned', 'amber'),
     o.assigned_rider_id ? (o.rider_last_seen ? `<span class="${staleRider(o) ? 'warn' : ''}">${esc(ago(o.rider_last_seen))}</span>` : '<span class="warn">No location yet</span>') : '—',
@@ -265,9 +274,9 @@ function operations() {
   ${pager(pg, 'deliveries')}`;
 }
 
-// --- Riders
+// --- Drivers (backend: riders)
 function riders() {
-  const title = head('Riders', 'Riders', 'Every rider across all businesses, and riders on a job who stopped reporting location.');
+  const title = head('Drivers', 'Drivers', 'Every driver across all businesses, and drivers on a job who stopped reporting location.');
   const tab = state.tab || 'all';
   if (tab === 'stuck') {
     if (failed(['stuck'])) return title + ridersTabs() + errorBlock(['stuck']);
@@ -276,13 +285,13 @@ function riders() {
     list.sort((a, b) => Number(b.minutes_since_last_location ?? 1e9) - Number(a.minutes_since_last_location ?? 1e9));
     const pg = paginate(list);
     return `${title}${ridersSummary()}${ridersTabs()}
-    <div class="toolbar"><div class="search"><span class="search-icon">${I.search}</span><input data-search placeholder="Search rider, phone or vendor…" value="${esc(state.query)}" aria-label="Search riders not reporting"></div>
+    <div class="toolbar"><div class="search"><span class="search-icon">${I.search}</span><input data-search placeholder="Search driver, phone or vendor…" value="${esc(state.query)}" aria-label="Search drivers not reporting"></div>
       <label class="inline-label">No location for <select class="select" data-stuck aria-label="Silence threshold">${[15, 30, 45, 60, 120].map(m => `<option value="${m}" ${m === state.stuckMinutes ? 'selected' : ''}>${m}+ min</option>`).join('')}</select></label></div>
-    ${pg.total ? table(['Rider', 'Vendor', 'Job status', 'Last location', 'Minutes silent'], pg.rows.map(s => ({ id: s.rider_id, cells: [
+    ${pg.total ? table(['Driver', 'Vendor', 'Job status', 'Last location', 'Minutes silent'], pg.rows.map(s => ({ id: s.rider_id, cells: [
       `<b>${esc(s.rider_name)}</b><span class="sub">${esc(s.rider_phone || '')}</span>`, esc(s.business_name), statusChip(s.assignment_status),
       esc(s.last_recorded_at ? fmtDateTime(s.last_recorded_at) : 'Never reported'), `<b class="warn">${s.minutes_since_last_location == null ? '—' : num(Math.round(s.minutes_since_last_location))}</b>`,
-    ] })), 'rider') : emptyBlock(data.stuck.length ? 'No riders match' : 'No riders are silent', data.stuck.length ? '' : `Every rider on an active job reported location in the last ${state.stuckMinutes} minutes.`)}
-    ${pager(pg, 'riders')}`;
+    ] })), 'rider') : emptyBlock(data.stuck.length ? 'No drivers match' : 'No drivers are silent', data.stuck.length ? '' : `Every driver on an active job reported location in the last ${state.stuckMinutes} minutes.`)}
+    ${pager(pg, 'drivers')}`;
   }
   if (failed(['riders'])) return title + errorBlock(['riders']);
   if (!ready(['riders'])) return title + loadingBlock();
@@ -297,17 +306,17 @@ function riders() {
   const vendorsOpt = [...new Map(all.map(r => [r.business_id, r.business_name])).entries()].sort((a, b) => String(a[1]).localeCompare(String(b[1])));
   return `${title}${ridersSummary()}${ridersTabs()}
   ${toolbar('Search name, phone, plate or vendor…', select('vendor', [['', 'All vendors'], ...vendorsOpt], 'Vendor') + select('avail', [['', 'Any availability'], ['online', 'Online'], ['offline', 'Offline']], 'Availability') + select('sort', [['newest', 'Newest first'], ['name', 'Name A–Z'], ['delivered', 'Most delivered (30d)']], 'Sort'))}
-  ${pg.total ? table(['Rider', 'Vendor', 'Vehicle plate', 'Status', 'Availability', 'Delivered (30d)', 'Active jobs', 'Joined'], pg.rows.map(r => ({ id: r.rider_id, cells: [
+  ${pg.total ? table(['Driver', 'Vendor', 'Vehicle plate', 'Status', 'Availability', 'Delivered (30d)', 'Active jobs', 'Joined'], pg.rows.map(r => ({ id: r.rider_id, cells: [
     `<div class="entity"><span class="entity-avatar">${esc(initials(r.name))}</span><span><strong>${esc(r.name)}</strong><span class="sub">${esc(r.phone || '')}</span></span></div>`,
     esc(r.business_name), esc(r.vehicle_plate || '—'), statusChip(r.status), statusChip(r.availability_status), num(r.delivered_count_30d), num(r.active_assignment_count), esc(fmtDate(r.created_at)),
-  ] })), 'rider') : emptyBlock(all.length ? 'No riders match these filters' : 'No riders yet', all.length ? 'Clear the search or filters.' : 'Riders appear once a business invites them.')}
-  ${pager(pg, 'riders')}`;
+  ] })), 'rider') : emptyBlock(all.length ? 'No drivers match these filters' : 'No drivers yet', all.length ? 'Clear the search or filters.' : 'Drivers appear once a business invites them.')}
+  ${pager(pg, 'drivers')}`;
 }
 function ridersSummary() {
   const all = data.riders || [];
   const k = html => ('riders' in data) ? html : '…';
   return metrics([
-    [k(num(all.length)), 'Riders'], [k(num(all.filter(r => r.status === 'active').length)), 'Active'],
+    [k(num(all.length)), 'Drivers'], [k(num(all.filter(r => r.status === 'active').length)), 'Active'],
     [k(num(all.filter(r => r.availability_status === 'online').length)), 'Online now'],
     [k(num(all.filter(r => r.status === 'pending').length)), 'Pending approval'],
     [('stuck' in data) ? num(data.stuck.length) : '…', `Silent ${state.stuckMinutes}+ min on a job`, '', (data.stuck || []).length > 0],
@@ -319,8 +328,46 @@ function ridersTabs() {
   return tabs([['all', 'All', ('riders' in data) ? all.length : null], ...['active', 'pending', 'inactive'].map(s => [s, human(s), c(s)]), ['stuck', 'Not reporting', ('stuck' in data) ? data.stuck.length : null]], state.tab || 'all');
 }
 
+// --- Driver Verification (Marketplace, Find Jobs only): FOUNDR handles the
+// exceptions the server could not decide. OCR and payment stay on HOLD; this
+// reviews what is already stored and decides through
+// decide_marketplace_verification (audited).
+const VERIF_TABS = [['needs_review', 'Needs review'], ['pending', 'Pending'], ['verified', 'Verified'], ['rejected', 'Rejected'], ['not_started', 'Not started / retake'], ['all', 'All']];
+const REASON_TEXT = { licence_unreadable: 'Licence unreadable', ic_mismatch: 'IC does not match', licence_fields_missing: 'Licence fields missing', low_confidence: 'Low OCR confidence', name_mismatch: 'Name does not match', plate_mismatch: 'Plate does not match', repeated_retakes: 'Repeated retakes', licence_expired: 'Licence expired', class_mismatch: 'Licence class does not cover vehicle' };
+const reasonText = r => (String(r).startsWith('foundr:') ? `Admin: ${String(r).slice(7)}` : REASON_TEXT[r] || human(r));
+const verifName = v => v.lic_name || `Driver ${shortId(v.user_id)}`;
+function verification() {
+  const title = head('Drivers', 'Driver Verification', 'Marketplace (Find Jobs) verification exceptions for manual review. OCR and Marketplace payment are on hold; decisions here use what is already stored.');
+  if (failed(['verif'])) return title + errorBlock(['verif']);
+  if (!ready(['verif'])) return title + loadingBlock();
+  const all = data.verif;
+  const tab = state.tab || 'needs_review';
+  const list = all.filter(v => (tab === 'all' || v.status === tab) && match(state.query, v.lic_name, v.vehicle_plate, v.user_id, (v.reasons || []).join(' ')));
+  const pg = paginate(list);
+  return `${title}
+  ${metrics([[num(all.filter(v => v.status === 'needs_review').length), 'Needs review', '', all.some(v => v.status === 'needs_review')], [num(all.filter(v => v.status === 'pending').length), 'Pending screening'], [num(all.filter(v => v.status === 'verified').length), 'Verified'], [num(all.filter(v => v.status === 'rejected').length), 'Rejected']])}
+  ${tabs(VERIF_TABS.map(([id, l]) => [id, l, id === 'all' ? all.length : all.filter(v => v.status === id).length]), tab)}
+  ${toolbar('Search name, plate or reason…', '')}
+  ${pg.total ? table(['Driver', 'Vehicle', 'Status', 'Reasons', 'Attempts', 'Submitted', 'Reviewed'], pg.rows.map(v => ({ id: v.user_id, cells: [`<b>${esc(verifName(v))}</b>`, esc([human(v.vehicle_type), v.vehicle_plate].filter(Boolean).join(' · ') || '—'), statusChip(v.status), esc((v.reasons || []).map(reasonText).join(', ') || '—'), num(v.attempts), esc(v.submitted_at ? fmtDateTime(v.submitted_at) : '—'), esc(v.reviewed_at ? fmtDateTime(v.reviewed_at) : '—')] })), 'verification') : emptyBlock(all.length ? 'Nothing in this list' : 'No verifications yet', all.length ? '' : 'Drivers appear here when they submit Find Jobs verification.')}
+  ${pager(pg, 'verifications')}`;
+}
+// Per-driver licence (last 4 IC digits, document paths) and short-lived
+// signed document URLs, loaded when the detail opens.
+const licences = {}, docUrls = {};
+function loadVerifDetail(userId) {
+  if (licences[userId] !== undefined) return;
+  licences[userId] = null;
+  const v = (data.verif || []).find(x => x.user_id === userId);
+  F.getLicence(userId).then(async l => {
+    licences[userId] = l || false;
+    const paths = [['front', l?.front_path], ['back', l?.back_path], ['vehicle', v?.vehicle_photo_path]];
+    docUrls[userId] = {};
+    for (const [k, path] of paths) { if (!path) continue; try { docUrls[userId][k] = await F.signDocument(path); } catch (e) { docUrls[userId][k] = e; handleAuthError(e); } }
+  }).catch(e => { licences[userId] = e; handleAuthError(e); }).finally(render);
+}
+
 // --- Controls: Maintenance, Feature Flags, Announcements (emergency comms)
-const SCOPES = [['all', 'All surfaces'], ['vendor', 'Vendor'], ['rider', 'Rider / Driver'], ['customer', 'Customer Tracking'], ['invite', 'Invite'], ['foundr', 'FOUNDR']];
+const SCOPES = [['all', 'All surfaces'], ['vendor', 'Vendor'], ['rider', 'Driver'], ['customer', 'Customer Tracking'], ['invite', 'Invite'], ['foundr', 'FOUNDR']];
 function controls() {
   const tab = state.tab || 'maintenance';
   const title = head('Controls', 'Platform controls', 'Emergency maintenance, feature flags, platform announcements and notification broadcasts. Every change is confirmed and written to the audit log.');
@@ -333,7 +380,7 @@ function controls() {
     const list = data.broadcasts.filter(x => match(state.query, x.title, x.body, x.reason, x.business_name) && (!f('aud') || x.audience === f('aud')));
     const pg = paginate(list);
     return `${title}${t}
-    <div class="card card-pad status-panel" style="margin-bottom:12px"><p class="sub">Sends an in-app notification to the Vendor and/or Rider notification centre of every account in the audience, with a banner and sound while the app is open. Push to closed apps is not connected yet, so this is not an emergency channel for users who are offline; use a critical announcement for that.</p></div>
+    <div class="card card-pad status-panel" style="margin-bottom:12px"><p class="sub">Sends an in-app notification to the Vendor and/or Driver notification centre of every account in the audience, with a banner and sound while the app is open. Push to closed apps is not connected yet, so this is not an emergency channel for users who are offline; use a critical announcement for that.</p></div>
     ${toolbar('Search broadcasts…', select('aud', [['', 'All audiences'], ...AUDIENCES], 'Audience') + `<button class="btn primary" data-modal="broadcast" ${'vendors' in data ? '' : 'disabled'}>＋ New broadcast</button>`)}
     ${pg.total ? table(['Broadcast', 'Audience', 'Recipients', 'Read', 'Reason', 'Sent'], pg.rows.map(x => ({ id: x.id, cells: [`<b>${esc(x.title)}</b><span class="sub">${esc(x.body)}</span>`, esc(audienceLabel(x.audience)) + (x.business_name ? `<span class="sub">${esc(x.business_name)}</span>` : ''), num(x.recipient_count), `${num(x.read_count)}<span class="sub">${x.recipient_count ? Math.round(100 * x.read_count / x.recipient_count) + '%' : '—'}</span>`, esc(x.reason), esc(fmtDateTime(x.created_at))] }))) : emptyBlock(data.broadcasts.length ? 'No broadcasts match' : 'No broadcasts yet', data.broadcasts.length ? '' : 'Broadcasts appear here with their recipient and read counts.')}
     ${pager(pg, 'broadcasts')}`;
@@ -368,11 +415,11 @@ function controls() {
   ${pager(pg, 'announcements')}`;
 }
 
-const AUDIENCES = [['vendors', 'All vendors (Owners and Operators)'], ['riders', 'All riders'], ['all', 'Everyone (vendors and riders)'], ['business', 'One business (its Owners and Operators)']];
+const AUDIENCES = [['vendors', 'All vendors (Owners and Operators)'], ['riders', 'All drivers'], ['all', 'Everyone (vendors and drivers)'], ['business', 'One business (its Owners and Operators)']];
 const audienceLabel = a => AUDIENCES.find(x => x[0] === a)?.[1] || a;
 
 // --- Client Versions
-const APPS = [['vendor', 'Vendor'], ['rider', 'Rider / Driver'], ['customer', 'Customer Tracking'], ['invite', 'Invite'], ['foundr', 'FOUNDR']];
+const APPS = [['vendor', 'Vendor'], ['rider', 'Driver'], ['customer', 'Customer Tracking'], ['invite', 'Invite'], ['foundr', 'FOUNDR']];
 function product() {
   const title = head('Client Version Control', 'Client versions', 'The release register for each client app: current version and minimum supported version.', '<button class="btn primary" data-modal="version">＋ Record release</button>');
   if (failed(['versions'])) return title + errorBlock(['versions']);
@@ -392,20 +439,19 @@ function product() {
 // --- Subscriptions (admin-set; no payment gateway)
 const SUB_STATUSES = ['trial', 'active', 'past_due', 'suspended', 'cancelled'];
 function business() {
-  const title = head('Business', 'Subscriptions', 'Plan and status per business, as recorded by a platform admin. There is no payment gateway: nothing here is billed or computed.');
-  if (failed(['subs'])) return title + errorBlock(['subs']);
-  if (!ready(['subs'])) return title + loadingBlock();
+  const title = head('Business', 'Subscriptions', 'Plan and status per business from the locked price book. Businesses without a recorded plan are on Free by default. There is no payment gateway: nothing here is billed, invoiced or renewed.');
+  if (failed(['subs', 'plans'])) return title + errorBlock(['subs', 'plans']);
+  if (!ready(['subs', 'plans'])) return title + loadingBlock();
   const all = data.subs;
-  const st = s => s.status || 'not_set';
   const mrr = all.filter(s => s.status === 'active').reduce((t, s) => t + Number(s.mrr_cents || 0), 0);
-  const plans = distinct(all, 'plan_key');
-  const list = all.filter(s => match(state.query, s.business_name, s.plan_key) && (!f('status') || st(s) === f('status')) && (!f('plan') || s.plan_key === f('plan')));
+  const list = all.filter(s => match(state.query, s.business_name, s.plan_key, planName(s.plan_key)) && (!f('status') || s.status === f('status')) && (!f('plan') || s.plan_key === f('plan')));
   list.sort(byName('business_name'));
   const pg = paginate(list);
   return `${title}
-  ${metrics([[num(all.length), 'Businesses'], [rm(mrr), 'Recorded MRR (active)'], [num(all.filter(s => s.status === 'active').length), 'Active'], [num(all.filter(s => s.status === 'trial').length), 'Trial'], [num(all.filter(s => !s.status).length), 'Not set', '', all.some(s => !s.status)]])}
-  ${toolbar('Search business or plan…', select('status', [['', 'All statuses'], ...SUB_STATUSES.map(s => [s, human(s)]), ['not_set', 'Not set']], 'Status') + select('plan', [['', 'All plans'], ...plans.map(p => [p, human(p)])], 'Plan'))}
-  ${pg.total ? table(['Business', 'Plan', 'Status', 'MRR', 'Trial ends', 'Updated'], pg.rows.map(s => ({ id: s.business_id, cells: [`<b>${esc(s.business_name)}</b>`, esc(s.plan_key ? human(s.plan_key) : '—'), statusChip(st(s)), esc(rm(s.mrr_cents)), esc(fmtDate(s.trial_ends_at)), esc(s.updated_at ? fmtDateTime(s.updated_at) : '—')] })), 'vendor') : emptyBlock(all.length ? 'No subscriptions match' : 'No businesses yet')}
+  ${metrics([[num(all.length), 'Businesses'], [rm(mrr), 'Recorded MRR (active)'], [num(all.filter(s => s.status === 'active').length), 'Active'], [num(all.filter(s => s.status === 'trial').length), 'Trial'], [num(all.filter(s => s.is_default).length), 'Free (default)']])}
+  <div class="card card-pad"><h3 style="margin:0 0 8px">Price book</h3><div class="sub">${(data.plans || []).map(p => `<b>${esc(p.name)}</b> ${esc(planPrice(p))}${p.delivery_allowance != null ? ` · ${num(p.delivery_allowance)} completed deliveries` : ''}`).join(' &nbsp;·&nbsp; ')}</div><p class="sub" style="margin:6px 0 0">From the server (subscription_plans). Monthly only.</p></div>
+  ${toolbar('Search business or plan…', select('status', [['', 'All statuses'], ...SUB_STATUSES.map(s => [s, human(s)])], 'Status') + select('plan', [['', 'All plans'], ...(data.plans || []).map(p => [p.key, p.name])], 'Plan'))}
+  ${pg.total ? table(['Business', 'Plan', 'Status', 'MRR', 'Trial ends', 'Updated'], pg.rows.map(s => ({ id: s.business_id, cells: [`<b>${esc(s.business_name)}</b>`, esc(planLabel(s)), statusChip(s.status), esc(rm(s.mrr_cents)), esc(fmtDate(s.trial_ends_at)), esc(s.updated_at ? fmtDateTime(s.updated_at) : '—')] })), 'vendor') : emptyBlock(all.length ? 'No subscriptions match' : 'No businesses yet')}
   ${pager(pg, 'businesses')}`;
 }
 
@@ -440,7 +486,7 @@ function system() {
 }
 
 // --- Audit log
-const AUDIT_GROUPS = [['all', 'All'], ['maintenance', 'Maintenance'], ['feature_flag', 'Feature flags'], ['subscription', 'Subscriptions'], ['version', 'Versions'], ['announcement', 'Announcements'], ['broadcast', 'Broadcasts']];
+const AUDIT_GROUPS = [['all', 'All'], ['maintenance', 'Maintenance'], ['feature_flag', 'Feature flags'], ['subscription', 'Subscriptions'], ['version', 'Versions'], ['announcement', 'Announcements'], ['broadcast', 'Broadcasts'], ['marketplace', 'Driver verification']];
 const inGroup = (a, g) => g === 'all' || String(a.action).includes(g) || String(a.target_type || '').includes(g);
 function auditRows() {
   const list = (data.audit || []).filter(a => inGroup(a, state.tab || 'all')
@@ -466,7 +512,7 @@ function audit() {
 }
 
 // --- Not built: Support, Marketing (no backend source; outside the D-21 minimum scope)
-const support = () => head('Support', 'Support & feedback', 'Customer, vendor and rider support.') + unavailable('Support tickets are not connected', 'There is no support-ticket backend in Cefflo yet. FOUNDR will show real tickets here once that backend exists.');
+const support = () => head('Support', 'Support & feedback', 'Customer, vendor and driver support.') + unavailable('Support tickets are not connected', 'There is no support-ticket backend in Cefflo yet. FOUNDR will show real tickets here once that backend exists.');
 const marketing = () => head('Marketing', 'Marketing', 'Acquisition and ads performance.') + unavailable('Marketing data is not connected', 'Ads spend, leads and ROAS need an ads/analytics source connected to the backend. Until then FOUNDR shows no marketing numbers.');
 
 // --- Settings
@@ -488,7 +534,7 @@ function settings() {
     <aside class="stack">${unavailable('Platform preferences', 'Company details, notification preferences and backups have no backend store yet.')}</aside></div>`;
 }
 
-const PAGES = { overview, vendors, operations, riders, controls, product, business, system, audit, support, marketing, settings };
+const PAGES = { overview, vendors, operations, riders, verification, controls, product, business, system, audit, support, marketing, settings };
 
 // ------------------------------------------------------------------ drawer
 const vendorDetail = {};
@@ -514,28 +560,47 @@ function drawer() {
     const det = vendorDetail[d.id];
     if (det === undefined) queueMicrotask(() => loadVendorDetail(d.id));
     const name = v?.name || sub?.business_name || (det && !(det instanceof Error) ? det.name : '') || 'Vendor';
-    body = `<div class="drawer-head"><span class="entity-avatar" style="width:42px;height:42px">${esc(initials(name))}</span><div><h2>${esc(name)}</h2>${statusChip(sub?.status || 'not_set')}</div>${close}</div>
+    body = `<div class="drawer-head"><span class="entity-avatar" style="width:42px;height:42px">${esc(initials(name))}</span><div><h2>${esc(name)}</h2>${statusChip(sub?.status || 'active')}</div>${close}</div>
     ${det === undefined ? '<div class="skel"></div><div class="skel"></div>' : det instanceof Error ? `<div class="err-card card card-pad" role="alert"><b>Could not load vendor details.</b><p class="sub">${esc(det.message)}</p><button class="btn" data-vendor-retry="${esc(d.id)}">Try again</button></div>` : `
       <div class="drawer-section"><h3>Business</h3>${kvRows([['Phone', det.phone || '—'], ['Email', det.email || '—'], ['Address', det.address || '—'], ['Area', det.operating_area || '—'], ['Joined', fmtDate(det.created_at)], ['Active members', num(det.member_count)]])}</div>
-      <div class="drawer-section"><h3>Orders</h3>${kvRows([['Last 30 days', num(det.order_count_30d)], ['Delivered (30d)', num(det.delivered_count_30d)], ['Issues (30d)', num(det.issue_count_30d)], ['All time', num(det.order_count_total)], ['Riders', `${num(det.active_rider_count)} active of ${num(det.rider_count)}`]])}</div>`}
-    <div class="drawer-section"><h3>Subscription</h3>${('subs' in data) ? kvRows([['Plan', sub?.plan_key ? human(sub.plan_key) : 'Not set'], ['Status', human(sub?.status || 'not set')], ['MRR', rm(sub?.mrr_cents)], ['Trial ends', fmtDate(sub?.trial_ends_at)], ['Updated', sub?.updated_at ? fmtDateTime(sub.updated_at) : '—']]) : errors.subs ? '<p class="sub">Subscription could not be loaded.</p>' : '<div class="skel"></div>'}
+      <div class="drawer-section"><h3>Orders</h3>${kvRows([['Last 30 days', num(det.order_count_30d)], ['Delivered (30d)', num(det.delivered_count_30d)], ['Issues (30d)', num(det.issue_count_30d)], ['All time', num(det.order_count_total)], ['Drivers', `${num(det.active_rider_count)} active of ${num(det.rider_count)}`]])}</div>`}
+    <div class="drawer-section"><h3>Subscription</h3>${('subs' in data) ? kvRows([['Plan', planLabel(sub)], ['Status', human(sub?.status || 'active')], ['MRR', rm(sub?.mrr_cents)], ['Trial ends', fmtDate(sub?.trial_ends_at)], ['Updated', sub?.updated_at ? fmtDateTime(sub.updated_at) : '—']]) : errors.subs ? '<p class="sub">Subscription could not be loaded.</p>' : '<div class="skel"></div>'}
       <button class="btn primary" style="width:100%;margin-top:8px" data-modal="subscription" data-id="${esc(d.id)}" ${'subs' in data ? '' : 'disabled'}>Change subscription</button>
-      <p class="sub">Recorded by hand for this business; no payment is taken.</p></div>`;
+      <p class="sub">Administrative override through the admin contract; no payment is taken.</p></div>`;
   } else if (d.type === 'order') {
     const o = (data.ops || []).find(x => x.order_id === d.id);
     if (!o) return '';
     body = `<div class="drawer-head"><div><h2>${esc(o.public_ref || shortId(o.order_id))}</h2>${statusChip(o.delivery_status)}</div>${close}</div>
     <div class="drawer-section"><h3>Order</h3>${kvRows([['Vendor', o.business_name], ['Created', fmtDateTime(o.created_at)], ['ETA', o.estimated_arrival_at ? fmtDateTime(o.estimated_arrival_at) : '—'], ['Order ID', o.order_id]])}
       <button class="link" data-open="vendor:${esc(o.business_id)}">Open vendor ›</button></div>
-    <div class="drawer-section"><h3>Rider</h3>${o.assigned_rider_id ? `${kvRows([['Rider', o.rider_name], ['Last seen', o.rider_last_seen ? `${fmtDateTime(o.rider_last_seen)} (${ago(o.rider_last_seen)})` : 'No location reported']])}${o.rider_last_lat != null ? `<a class="btn" style="display:inline-block;margin-top:6px" target="_blank" rel="noopener" href="https://www.google.com/maps?q=${encodeURIComponent(o.rider_last_lat + ',' + o.rider_last_lng)}">Open last position in Maps ↗</a>` : ''}` : '<p class="sub">No rider assigned. The business assigns riders in Vendor.</p>'}</div>`;
+    <div class="drawer-section"><h3>Driver</h3>${o.assigned_rider_id ? `${kvRows([['Driver', o.rider_name], ['Last seen', o.rider_last_seen ? `${fmtDateTime(o.rider_last_seen)} (${ago(o.rider_last_seen)})` : 'No location reported']])}${o.rider_last_lat != null ? `<a class="btn" style="display:inline-block;margin-top:6px" target="_blank" rel="noopener" href="https://www.google.com/maps?q=${encodeURIComponent(o.rider_last_lat + ',' + o.rider_last_lng)}">Open last position in Maps ↗</a>` : ''}` : '<p class="sub">No driver assigned. The business assigns drivers in Vendor.</p>'}</div>`;
   } else if (d.type === 'rider') {
     const r = (data.riders || []).find(x => x.rider_id === d.id);
     const s = (data.stuck || []).find(x => x.rider_id === d.id);
     if (!r && !s) return ('riders' in data) || ('stuck' in data) ? '' : `<aside class="drawer">${close}<div class="skel"></div></aside>`;
     body = `<div class="drawer-head"><span class="entity-avatar" style="width:42px;height:42px">${esc(initials(r?.name || s?.rider_name))}</span><div><h2>${esc(r?.name || s?.rider_name)}</h2>${r ? statusChip(r.status) : ''}</div>${close}</div>
-    <div class="drawer-section"><h3>Rider</h3>${kvRows([['Phone', r?.phone || s?.rider_phone || '—'], ['Vendor', r?.business_name || s?.business_name], ['Vehicle plate', r?.vehicle_plate || '—'], ['Availability', r ? human(r.availability_status) : '—'], ['Delivered (30d)', r ? num(r.delivered_count_30d) : '—'], ['Active jobs', r ? num(r.active_assignment_count) : '—'], ['Joined', r ? fmtDate(r.created_at) : '—']])}
+    <div class="drawer-section"><h3>Driver</h3>${kvRows([['Phone', r?.phone || s?.rider_phone || '—'], ['Vendor', r?.business_name || s?.business_name], ['Vehicle plate', r?.vehicle_plate || '—'], ['Availability', r ? human(r.availability_status) : '—'], ['Delivered (30d)', r ? num(r.delivered_count_30d) : '—'], ['Active jobs', r ? num(r.active_assignment_count) : '—'], ['Joined', r ? fmtDate(r.created_at) : '—']])}
       <button class="link" data-open="vendor:${esc(r?.business_id || s?.business_id)}">Open vendor ›</button></div>
     ${s ? `<div class="drawer-section"><h3>Not reporting</h3>${kvRows([['Job status', human(s.assignment_status)], ['Last location', s.last_recorded_at ? `${fmtDateTime(s.last_recorded_at)} (${ago(s.last_recorded_at)})` : 'Never reported']])}</div>` : ''}`;
+  } else if (d.type === 'verification') {
+    const v = (data.verif || []).find(x => x.user_id === d.id);
+    if (!v) return ('verif' in data) ? '' : `<aside class="drawer">${close}<div class="skel"></div></aside>`;
+    if (licences[d.id] === undefined) queueMicrotask(() => loadVerifDetail(d.id));
+    const l = licences[d.id], urls = docUrls[d.id] || {};
+    const doc = (k, label) => { const u = urls[k]; return `<figure class="doc"><figcaption>${label}</figcaption>${u instanceof Error ? `<p class="sub">${esc(u.message)}</p>` : u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer"><img src="${esc(u)}" alt="${esc(label)}" style="width:100%;max-height:220px;object-fit:contain;border-radius:8px;background:var(--line,#eee)"></a>` : l === null ? '<div class="skel"></div>' : '<p class="sub">Not uploaded</p>'}</figure>`; };
+    const plate = (v.plate_result?.plates || []).map(p => `${p.text}${p.confidence != null ? ` (${Math.round(p.confidence * 100)}%)` : ''}`).join(', ');
+    const decidable = ['needs_review', 'pending'].includes(v.status);
+    body = `<div class="drawer-head"><span class="entity-avatar" style="width:42px;height:42px">${esc(initials(verifName(v)))}</span><div><h2>${esc(verifName(v))}</h2>${statusChip(v.status)}</div>${close}</div>
+    <div class="drawer-section"><h3>Identity</h3>${kvRows([['Name on licence', v.lic_name || '—'], ['IC (last 4)', l && l.ic_last4 ? `•••• ${l.ic_last4}` : l === null ? '…' : '—'], ['Account', shortId(v.user_id)]])}<p class="sub">The full IC number is never shown.</p></div>
+    <div class="drawer-section"><h3>Licence screening</h3>${kvRows([['Text found', v.lic_text_found == null ? 'Not screened' : v.lic_text_found === 'true' ? 'Yes' : 'No'], ['Expiry', v.lic_expiry || '—'], ['Classes', (v.lic_classes || []).join(', ') || '—'], ['Confidence', v.lic_confidence != null ? `${Math.round(Number(v.lic_confidence) * 100)}%` : '—']])}</div>
+    <div class="drawer-section"><h3>Vehicle</h3>${kvRows([['Type', human(v.vehicle_type) || '—'], ['Plate declared', v.vehicle_plate || '—'], ['Plate read', plate || '—']])}</div>
+    <div class="drawer-section"><h3>Documents</h3><div style="display:grid;gap:10px">${doc('front', 'Licence (front)')}${doc('back', 'Licence (back)')}${doc('vehicle', 'Vehicle photo')}</div><p class="sub">Private documents, shown through links that expire in 5 minutes.</p></div>
+    <div class="drawer-section"><h3>History</h3>${kvRows([['Reasons', (v.reasons || []).map(reasonText).join(', ') || '—'], ['Retake requested', v.retake ? human(v.retake) : '—'], ['Attempts', num(v.attempts)], ['Submitted', v.submitted_at ? fmtDateTime(v.submitted_at) : '—'], ['Screened', v.screened_at ? fmtDateTime(v.screened_at) : '—'], ['Reviewed', v.reviewed_at ? `${fmtDateTime(v.reviewed_at)} by ${v.reviewed_by === me.user?.id ? 'you' : shortId(v.reviewed_by)}` : '—']])}</div>
+    <div class="drawer-section"><h3>Decision</h3>${decidable ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn primary" data-modal="mp-decision" data-id="${esc(v.user_id)}|verified">Verify</button>
+      <button class="btn danger" data-modal="mp-decision" data-id="${esc(v.user_id)}|rejected">Reject</button>
+      <button class="btn" data-modal="mp-decision" data-id="${esc(v.user_id)}|retake_licence">Retake licence</button>
+      <button class="btn" data-modal="mp-decision" data-id="${esc(v.user_id)}|retake_vehicle">Retake vehicle</button></div>` : `<p class="sub">Decided (${esc(human(v.status))}). Only pending or needs-review verifications are decided here.</p>`}</div>`;
   } else if (d.type === 'audit') {
     const a = (data.audit || []).find(x => String(x.id) === String(d.id));
     if (!a) return ('audit' in data) ? '' : `<aside class="drawer">${close}<div class="skel"></div></aside>`;
@@ -609,12 +674,24 @@ function modal() {
       return wrap('Record release', `<div class="field"><label for="v-app">App</label><select id="v-app" name="app">${APPS.map(([id, l]) => `<option value="${id}" ${v.app === id ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
         <div class="form-grid"><div class="field"><label for="v-ver">Version</label><input id="v-ver" name="version" value="${esc(v.version || '')}" placeholder="1.4.0" maxlength="40"></div><div class="field"><label for="v-min">Min supported (optional)</label><input id="v-min" name="min" value="${esc(v.min || '')}" placeholder="1.2.0" maxlength="40"></div></div>
         <div class="field"><label for="v-notes">Notes (optional)</label><textarea id="v-notes" name="notes" rows="2" maxlength="500">${esc(v.notes || '')}</textarea></div>` + actions('Review'));
+    case 'mp-decision': {
+      const [uid, decision] = String(m.id).split('|');
+      const x = (data.verif || []).find(y => y.user_id === uid) || {};
+      const label = { verified: 'Verify driver', rejected: 'Reject verification', retake_licence: 'Ask for a new licence photo', retake_vehicle: 'Ask for a new vehicle photo' }[decision];
+      const effect = { verified: 'The driver can use Find Jobs.', rejected: 'The driver cannot use Find Jobs. Invited business drivers are not affected.', retake_licence: 'The driver is asked to retake the licence photos (status returns to Not started).', retake_vehicle: 'The driver is asked to retake the vehicle photo (status returns to Not started).' }[decision];
+      if (m.step === 'confirm') return wrap(`${label}?`, confirm([`Driver: <b>${esc(verifName(x))}</b>`, `Status: ${esc(human(x.status))} → <b>${esc(decision.startsWith('retake') ? 'Not started (retake)' : human(decision))}</b>`, esc(effect), v.reason ? `Reason: ${esc(v.reason)}` : ''], 'marketplace_decision', !!v.reason) + actions(label, decision === 'rejected'));
+      return wrap(label, `<p class="sub">${esc(effect)} No payment, OCR or Google Vision is involved.</p>
+        <div class="field"><label for="mp-reason">Reason${decision === 'verified' ? ' (optional)' : ''}</label><textarea id="mp-reason" name="reason" rows="3" maxlength="300">${esc(v.reason || '')}</textarea></div>` + actions('Review'));
+    }
     case 'subscription': {
       const s = (data.subs || []).find(x => x.business_id === m.id) || {};
-      if (m.step === 'confirm') return wrap('Change subscription?', confirm([`Business: <b>${esc(s.business_name)}</b>`, `Plan: ${esc(human(s.plan_key || 'not set'))} → <b>${esc(human(v.plan))}</b>`, `Status: ${esc(human(s.status || 'not set'))} → <b>${esc(human(v.status))}</b>`, `MRR: ${esc(rm(s.mrr_cents))} → <b>${esc(v.mrr === '' ? '—' : rm(Math.round(Number(v.mrr) * 100)))}</b>`, `Trial ends: ${esc(v.trial ? fmtDate(new Date(`${v.trial}T12:00:00+08:00`).toISOString()) : '—')}`, v.status === 'suspended' ? '<b>Suspended</b> is recorded here only; it does not block the business in Vendor.' : ''], 'set_subscription', false) + actions('Save subscription', ['suspended', 'cancelled'].includes(v.status)));
-      const cur = { plan: v.plan ?? s.plan_key ?? 'trial', status: v.status ?? s.status ?? 'trial', mrr: v.mrr ?? (s.mrr_cents != null ? (s.mrr_cents / 100).toFixed(2) : ''), trial: v.trial ?? (s.trial_ends_at ? s.trial_ends_at.slice(0, 10) : '') };
-      return wrap(`Subscription · ${s.business_name || ''}`, `<p class="sub">Recorded by hand; there is no payment gateway.</p>
-        <div class="form-grid"><div class="field"><label for="s-plan">Plan</label><select id="s-plan" name="plan">${['trial', 'free', 'grow', 'operate'].map(p => `<option value="${p}" ${cur.plan === p ? 'selected' : ''}>${human(p)}</option>`).join('')}</select></div>
+      const plans = data.plans || [];
+      const target = plans.find(p => p.key === v.plan);
+      if (m.step === 'confirm') return wrap('Change subscription?', confirm([`Business: <b>${esc(s.business_name)}</b>`, `Plan: ${esc(planLabel(s))} → <b>${esc(target ? `${target.name} (${planPrice(target)})` : v.plan)}</b>`, `Status: ${esc(human(s.status))} → <b>${esc(human(v.status))}</b>`, `MRR: ${esc(rm(s.mrr_cents))} → <b>${esc(v.mrr === '' ? '—' : rm(Math.round(Number(v.mrr) * 100)))}</b>`, `Trial ends: ${esc(v.trial ? fmtDate(new Date(`${v.trial}T12:00:00+08:00`).toISOString()) : '—')}`, 'Administrative override. No payment, invoice or renewal is created, and quotas are not enforced.', v.status === 'suspended' ? '<b>Suspended</b> is recorded here only; it does not block the business in Vendor.' : ''], 'set_subscription', false) + actions('Save subscription', ['suspended', 'cancelled'].includes(v.status)));
+      const priceCents = p => (p?.monthly_price_myr == null ? '' : Number(p.monthly_price_myr).toFixed(2));
+      const cur = { plan: v.plan ?? s.plan_key ?? 'free', status: v.status ?? s.status ?? 'active', mrr: v.mrr ?? (s.mrr_cents != null ? (s.mrr_cents / 100).toFixed(2) : priceCents(plans.find(p => p.key === (s.plan_key || 'free')))), trial: v.trial ?? (s.trial_ends_at ? s.trial_ends_at.slice(0, 10) : '') };
+      return wrap(`Subscription · ${s.business_name || ''}`, `<p class="sub">Administrative override from the server price book. There is no payment gateway: nothing is charged, invoiced or renewed.</p>
+        <div class="form-grid"><div class="field"><label for="s-plan">Plan</label><select id="s-plan" name="plan">${plans.map(p => `<option value="${esc(p.key)}" ${cur.plan === p.key ? 'selected' : ''}>${esc(p.name)} — ${esc(planPrice(p))}</option>`).join('')}</select></div>
         <div class="field"><label for="s-status">Status</label><select id="s-status" name="status">${SUB_STATUSES.map(p => `<option value="${p}" ${cur.status === p ? 'selected' : ''}>${human(p)}</option>`).join('')}</select></div>
         <div class="field"><label for="s-mrr">MRR in RM (optional)</label><input id="s-mrr" name="mrr" type="number" min="0" step="0.01" value="${esc(cur.mrr)}"></div>
         <div class="field"><label for="s-trial">Trial ends (optional)</label><input id="s-trial" name="trial" type="date" value="${esc(cur.trial)}"></div></div>` + actions('Review'));
@@ -623,7 +700,7 @@ function modal() {
   return '';
 }
 const DIRECT = new Set(['end-maintenance', 'toggle-flag', 'toggle-ann']); // confirm-only actions
-const openModal = (type, extra = {}) => { state.modal = { type, step: DIRECT.has(type) ? 'confirm' : 'form', values: {}, ...extra }; state.menu = null; render(); };
+const openModal = (type, extra = {}) => { if (type === 'subscription') ensure(['subs', 'plans']); state.modal = { type, step: DIRECT.has(type) ? 'confirm' : 'form', values: {}, ...extra }; state.menu = null; render(); };
 function readForm(form) {
   const o = {};
   new FormData(form).forEach((val, k) => { o[k] = typeof val === 'string' ? val.trim() : val; });
@@ -659,7 +736,12 @@ function validate(type, v) {
       if (v.audience === 'business' && !v.business) return 'Choose the business.';
       if (!v.reason) return 'Reason is required.';
       return '';
+    case 'mp-decision':
+      if (!String(state.modal?.id || '').endsWith('|verified') && !v.reason) return 'A reason is required for this decision.';
+      return '';
     case 'subscription':
+      if (!(data.plans || []).some(p => p.key === v.plan)) return 'Choose a plan from the price book.';
+      if (!SUB_STATUSES.includes(v.status)) return 'Choose a status.';
       if (v.mrr !== '' && (isNaN(Number(v.mrr)) || Number(v.mrr) < 0)) return 'MRR must be zero or a positive amount.';
       return '';
   }
@@ -695,7 +777,8 @@ async function submitModal(form) {
       case 'toggle-ann': await F.setAnnouncementActive(m.id, !!m.active); invalidate('anns', 'activeAnns'); done = m.active ? 'Announcement turned on' : 'Announcement turned off'; break;
       case 'broadcast': { const r = await F.broadcastNotification(v.title, v.body, v.audience, v.audience === 'business' ? v.business : null, v.reason); invalidate('broadcasts'); done = `Broadcast sent to ${num(r?.recipient_count ?? 0)} account${r?.recipient_count === 1 ? '' : 's'}`; break; }
       case 'version': await F.recordAppVersion(v.app, v.version, v.min || null, v.notes || null); invalidate('versions'); done = 'Release recorded'; break;
-      case 'subscription': await F.setSubscription(m.id, v.plan, v.status, v.mrr === '' ? null : Math.round(Number(v.mrr) * 100), v.trial ? new Date(`${v.trial}T23:59:59+08:00`).toISOString() : null); invalidate('subs'); done = 'Subscription saved'; break;
+      case 'mp-decision': { const [uid, decision] = String(m.id).split('|'); const r = await F.decideVerification(uid, decision, v.reason || null); invalidate('verif'); delete licences[uid]; done = `Saved: ${human(r?.status || decision)}${r?.retake ? ` (retake ${r.retake})` : ''}`; break; }
+      case 'subscription': { const r = await F.setSubscription(m.id, v.plan, v.status, v.mrr === '' ? null : Math.round(Number(v.mrr) * 100), v.trial ? new Date(`${v.trial}T23:59:59+08:00`).toISOString() : null); const row = Array.isArray(r) ? r[0] : r; invalidate('subs'); done = `Saved: ${planName(row?.plan_key || v.plan)} · ${human(row?.status || v.status)}`; break; }
     }
     invalidate('audit');
     state.modal = null;
@@ -723,7 +806,7 @@ function menus() {
     const items = [
       ...live.map(w => [`Maintenance active: ${scopeLabel(w.scope)}`, 'controls', 'maintenance']),
       ...anns.map(a => [`${human(a.severity)} announcement live: ${a.title}`, 'controls', 'announcements']),
-      ...(stuck.length ? [[`${stuck.length} rider${stuck.length > 1 ? 's' : ''} not reporting location`, 'riders', 'stuck']] : []),
+      ...(stuck.length ? [[`${stuck.length} driver${stuck.length > 1 ? 's' : ''} not reporting location`, 'riders', 'stuck']] : []),
     ];
     const loading = ['windows', 'activeAnns', 'stuck'].some(k => pending[k]);
     return `<div class="pop pop-notify" role="menu">${items.length ? items.map(([t, r, tab]) => `<button role="menuitem" data-go="${r}" data-go-tab="${tab}">${esc(t)}</button>`).join('') : `<p class="sub" style="padding:10px">${loading ? 'Checking…' : 'Nothing needs attention.'}</p>`}</div>`;
@@ -733,20 +816,20 @@ function menus() {
     const q = state.gq.trim();
     const hits = [
       ...(data.vendors || []).filter(v => match(q, v.name, v.email, v.phone)).slice(0, 5).map(v => ['Vendor', v.name, `vendor:${v.business_id}`, 'vendors']),
-      ...(data.riders || []).filter(r => match(q, r.name, r.phone, r.vehicle_plate)).slice(0, 5).map(r => ['Rider', `${r.name} · ${r.business_name}`, `rider:${r.rider_id}`, 'riders']),
+      ...(data.riders || []).filter(r => match(q, r.name, r.phone, r.vehicle_plate)).slice(0, 5).map(r => ['Driver', `${r.name} · ${r.business_name}`, `rider:${r.rider_id}`, 'riders']),
       ...(data.ops || []).filter(o => match(q, o.public_ref, o.rider_name)).slice(0, 5).map(o => ['Delivery', `${o.public_ref || shortId(o.order_id)} · ${o.business_name}`, `order:${o.order_id}`, 'operations']),
     ];
     const loading = ['vendors', 'riders', 'ops'].some(k => pending[k]);
-    return `<div class="pop pop-search" role="listbox">${hits.length ? hits.map(([k, label, open, r]) => `<button role="option" data-go="${r}" data-open="${esc(open)}"><span class="chip blue">${k}</span> ${esc(label)}</button>`).join('') : `<p class="sub" style="padding:10px">${loading ? 'Searching…' : 'No vendor, rider or delivery matches.'}</p>`}</div>`;
+    return `<div class="pop pop-search" role="listbox">${hits.length ? hits.map(([k, label, open, r]) => `<button role="option" data-go="${r}" data-open="${esc(open)}"><span class="chip blue">${k}</span> ${esc(label)}</button>`).join('') : `<p class="sub" style="padding:10px">${loading ? 'Searching…' : 'No vendor, driver or delivery matches.'}</p>`}</div>`;
   }
   return '';
 }
 function shell() {
   const hasAlerts = (data.windows || []).some(w => !w.ended_at) || (data.activeAnns || []).length || (data.stuck || []).length;
   const initial = esc((me.user?.email || 'A')[0].toUpperCase());
-  return `<div class="shell"><aside class="sidebar" id="sidebar"><div class="brand">Cefflo</div><nav class="nav" aria-label="FOUNDR">${NAV.map(([r, l], i) => `${i === 9 ? '<div class="nav-sep"></div>' : ''}<button class="nav-btn ${state.route === r ? 'active' : ''}" data-route="${r}" title="${l}" aria-label="${l}" ${state.route === r ? 'aria-current="page"' : ''}>${svg(r)}<span>${l}</span></button>`).join('')}</nav><div class="profile"><div class="avatar">${initial}</div><div><b>${esc((me.user?.email || '').split('@')[0])}</b><span>Platform admin</span></div></div></aside><div class="nav-scrim" id="nav-scrim"></div>
+  return `<div class="shell"><aside class="sidebar" id="sidebar"><div class="brand">Cefflo</div><nav class="nav" aria-label="FOUNDR">${NAV.map(([r, l], i) => `${r === 'support' ? '<div class="nav-sep"></div>' : ''}<button class="nav-btn ${state.route === r ? 'active' : ''}" data-route="${r}" title="${l}" aria-label="${l}" ${state.route === r ? 'aria-current="page"' : ''}>${svg(r)}<span>${l}</span></button>`).join('')}</nav><div class="profile"><div class="avatar">${initial}</div><div><b>${esc((me.user?.email || '').split('@')[0])}</b><span>Platform admin</span></div></div></aside><div class="nav-scrim" id="nav-scrim"></div>
   <main class="workspace"><header class="topbar"><button class="mobile-menu" data-menu aria-label="Open menu">${I.menu}</button>
-    <div class="global-search"><span class="search-icon">${I.search}</span><input data-gsearch placeholder="Search vendor, rider or delivery…" value="${esc(state.gq)}" aria-label="Search vendors, riders and deliveries" autocomplete="off">${state.menu === 'search' ? menus() : ''}</div>
+    <div class="global-search"><span class="search-icon">${I.search}</span><input data-gsearch placeholder="Search vendor, driver or delivery…" value="${esc(state.gq)}" aria-label="Search vendors, drivers and deliveries" autocomplete="off">${state.menu === 'search' ? menus() : ''}</div>
     <div class="top-spacer"></div>
     <button class="date-control" data-refresh title="Reload this page’s data from the server">${I.refresh}<span>${updatedAt ? 'Updated ' + esc(updatedAt.toLocaleTimeString('en-MY', { hour: 'numeric', minute: '2-digit', timeZone: TZ })) : 'Refresh'}</span></button>
     <div class="menu-anchor"><button class="icon-control" data-notify aria-label="Alerts" aria-expanded="${state.menu === 'notify'}">${I.bell}${hasAlerts ? '<i class="notif-dot"></i>' : ''}</button>${state.menu === 'notify' ? menus() : ''}</div>
@@ -776,6 +859,7 @@ function go(r, tab = '', open = '') {
   ensure(NEEDS[state.route]);
   if (state.drawer?.type === 'vendor') ensure(['vendors', 'subs']);
   if (state.drawer?.type === 'rider') ensure(['riders', 'stuck']);
+  if (state.drawer?.type === 'verification') ensure(['verif']);
   render();
   window.scrollTo(0, 0);
 }
@@ -846,6 +930,8 @@ root.addEventListener('input', e => {
 });
 root.addEventListener('change', e => {
   if (authScreen) return;
+  // Subscription form: a new plan pre-fills its price-book MRR (Enterprise is custom, left blank).
+  if (e.target.matches('#s-plan')) { const p = (data.plans || []).find(x => x.key === e.target.value); const mrr = root.querySelector('#s-mrr'); if (mrr && p) mrr.value = p.monthly_price_myr == null ? '' : Number(p.monthly_price_myr).toFixed(2); }
   if (e.target.matches('[data-filter]')) { state.filters[e.target.dataset.filter] = e.target.value; state.page = 1; render(); }
   if (e.target.matches('[data-stuck]')) { state.stuckMinutes = Number(e.target.value); state.page = 1; load('stuck', true); render(); }
 });
@@ -1172,13 +1258,15 @@ async function endSession(message = 'Your session ended. Sign in again.') {
 
 // Route a signed-in account from its own server-side state
 // (platform_admin_status): not an admin → Access denied; an admin with no
-// authenticator → Set up; an admin with one but still aal1 → Verify.
+// authenticator → Set up (required: the server only grants admin access to
+// an aal2 session, migration 20261007140000); an admin with one but still
+// aal1 → Verify.
 // `next` runs once the account is allowed through (default: open FOUNDR).
 async function routeAccess(next = enterApp) {
   const st = await F.platformAdminStatus();
   if (!st?.admin) return renderDenied(me.user?.email);
   if (st.verified_factors > 0 && st.aal !== 'aal2') return renderMfaVerify(next);
-  if (st.verified_factors === 0) return renderMfaSetup(next, { optional: true });
+  if (st.verified_factors === 0) return renderMfaSetup(next);
   return next();
 }
 let rechecking = false, lastRecheck = 0;
@@ -1257,18 +1345,19 @@ async function renderMfaSetup(next = enterApp, { optional = false, back = null }
   const qrSrc = qr.startsWith('data:image/svg+xml') ? qr : `data:image/svg+xml;utf-8,${encodeURIComponent(qr)}`;
   authFrame(`<form data-mfa-setup novalidate>
     <h1 class="fa-title">Set Up Authenticator</h1>
-    <p class="fa-sub">Protect FOUNDR with a second step. Scan this QR with an authenticator app (Google Authenticator, 1Password, Authy…), then enter the 6-digit code the app shows.</p>
+    <p class="fa-sub">FOUNDR requires a second step for every admin. Scan this QR with an authenticator app (Google Authenticator, 1Password, Authy…), then enter the 6-digit code the app shows.</p>
     <div class="fa-qr"><img alt="Authenticator QR code" src="${esc(qrSrc)}" width="176" height="176"></div>
     <details class="fa-secret"><summary>Can't scan? Enter this key</summary><code>${esc(factor.totp?.secret || '')}</code></details>
     <p class="fa-label">Code from your authenticator app</p>
     ${OTP_BOXES}
     <div class="fa-err" data-err hidden role="alert"></div>
     ${btn('Verify and Turn On')}
-    ${optional ? '<button class="fa-link c" type="button" data-mfa-later>Not now</button>' : ''}
+    ${optional ? '<button class="fa-link c" type="button" data-mfa-later>Not now</button>' : '<button class="fa-link c" type="button" data-mfa-signout>Sign out</button>'}
     <p class="fa-note">Keep this key private. Anyone with it can generate your codes.</p></form>`, { back, foot: false });
   const form = root.querySelector('[data-mfa-setup]'), err = form.querySelector('[data-err]');
   const otp = wireOtp(form.querySelector('[data-otp]'), () => form.requestSubmit());
   form.querySelector('[data-mfa-later]')?.addEventListener('click', () => next());
+  form.querySelector('[data-mfa-signout]')?.addEventListener('click', () => endSession(''));
   form.addEventListener('submit', async e => {
     e.preventDefault();
     const code = otp.value();
@@ -1293,7 +1382,7 @@ async function renderMfaVerify(next = enterApp, { afterEmail = false } = {}) {
     if (deadSession(ex)) return endSession();
     return renderBootError(ex);
   }
-  if (!factors.length) return renderMfaSetup(next, { optional: true });
+  if (!factors.length) return renderMfaSetup(next);
   const pick = factors.length > 1
     ? `<label class="fa-field select">${ai('key')}<select id="factor" aria-label="Authenticator">${factors.map(f => `<option value="${esc(f.id)}">${esc(f.friendly_name || 'Authenticator')}</option>`).join('')}</select></label>`
     : '';

@@ -206,6 +206,8 @@
 
   // ----- Phase 3: subscriptions (admin-set), versions, announcements -----
   const listSubscriptions = () => rpc('admin_list_subscriptions');
+  // The locked server price book (public read): FOUNDR never keeps its own.
+  const listPlans = () => get('/rest/v1/subscription_plans?select=key,name,monthly_price_myr,delivery_allowance,driver_cap,zone_cap,team_user_cap,most_popular,self_serve,sort&order=sort.asc');
   const setSubscription = (businessId, planKey, status, mrrCents, trialEndsAt) =>
     rpc('admin_set_subscription', { p_business_id: businessId, p_plan_key: planKey, p_status: status, p_mrr_cents: mrrCents ?? null, p_trial_ends_at: trialEndsAt ?? null });
   const listAppVersions = () => rpc('admin_list_app_versions');
@@ -216,6 +218,31 @@
   const createAnnouncement = (title, body, severity, startsAt, endsAt) =>
     rpc('admin_create_announcement', { p_title: title, p_body: body, p_severity: severity ?? 'info', p_starts_at: startsAt ?? null, p_ends_at: endsAt ?? null });
   const setAnnouncementActive = (id, active) => rpc('admin_set_announcement_active', { p_id: id, p_active: active });
+
+  // ----- Marketplace Driver verification (manual exceptions review) -----
+  // Admin RLS reads (aal2 admin only). Only the screening fields needed for a
+  // decision are selected: the OCR result also holds the licence's full IC
+  // number, which never leaves the server -- the IC shows as last 4 digits
+  // (driver_licences.ic_last4) only.
+  const VERIF_COLS = 'user_id,status,retake,reasons,vehicle_type,vehicle_plate,vehicle_photo_path,plate_result,attempts,submitted_at,screened_at,reviewed_at,reviewed_by,updated_at,'
+    + 'lic_name:licence_result->>name,lic_expiry:licence_result->>expiry,lic_classes:licence_result->classes,lic_confidence:licence_result->>confidence,lic_text_found:licence_result->>text_found';
+  const listVerifications = () => get(`/rest/v1/driver_marketplace_verifications?select=${VERIF_COLS}&order=updated_at.desc&limit=500`);
+  const getLicence = async userId => (await get(`/rest/v1/driver_licences?user_id=eq.${encodeURIComponent(userId)}&select=user_id,ic_last4,front_path,back_path,submitted_at`))?.[0] || null;
+  // Private bucket: a short-lived signed URL per document (storage policy
+  // driver_documents_own_read allows the platform admin); never a public URL.
+  async function signDocument(path, expiresIn = 300) {
+    return call(async () => {
+      const res = await fetch(`${cfg.supabaseUrl}/storage/v1/object/sign/cefflo-driver-documents/${path.split('/').map(encodeURIComponent).join('/')}`, {
+        method: 'POST',
+        headers: { apikey: cfg.supabaseAnonKey, Authorization: `Bearer ${base.session()?.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expiresIn }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.signedURL) throw Object.assign(new Error(data?.message || data?.error || `Document unavailable (${res.status})`), { status: res.status });
+      return `${cfg.supabaseUrl}/storage/v1${data.signedURL}`;
+    });
+  }
+  const decideVerification = (userId, decision, reason) => rpc('decide_marketplace_verification', { p_user_id: userId, p_decision: decision, p_reason: reason || null });
 
   // ----- Notification broadcasts (in-app notification centre fan-out) -----
   const broadcastNotification = (title, body, audience, businessId, reason) =>
@@ -235,8 +262,9 @@
     sessionAal, platformAdminStatus, listFactors, enrollTotp, unenrollFactor, challengeFactor, verifyFactor,
     stuckRiders, listVendors, getVendor, listRiders, deliveryOperations,
     listAuditLog, listFeatureFlags, setFeatureFlag, activeMaintenance, listMaintenanceWindows, startMaintenance, endMaintenance,
-    listSubscriptions, setSubscription, listAppVersions, recordAppVersion,
+    listSubscriptions, listPlans, setSubscription, listAppVersions, recordAppVersion,
     activeAnnouncements, listAnnouncements, createAnnouncement, setAnnouncementActive,
     broadcastNotification, listBroadcasts, broadcastAudienceSize,
+    listVerifications, getLicence, signDocument, decideVerification,
   });
 })();
