@@ -430,6 +430,17 @@ footer .foot,footer .foot nav{text-align:center;justify-items:center}footer .bra
 @media(max-width:900px){.moments{grid-template-columns:1fr;max-width:460px}.mo:not(:last-child):after{top:auto;bottom:-14px;right:50%;transform:translateX(50%) rotate(135deg)}}
 .navin{background:linear-gradient(180deg,#2b2f36ee 0%,#121418f2 55%,#050608f5 100%);border-color:#ffffff1a}.mobile.open{background:#0b0d10}
 .nav{transition:transform .35s cubic-bezier(.22,.61,.24,1),opacity .6s ease,translate .6s cubic-bezier(.22,.61,.24,1)}.nav.hide{transform:translateY(calc(-100% - 24px))}
+/* founder pass: nav black→Cefflo blue, hero eyebrow ink, even spacing rhythm */
+.navin{background:linear-gradient(100deg,#050608f2 0%,#0b1a3af2 45%,#00378ff2 80%,#0050d6f2 100%)!important;border-color:#ffffff1f}
+.mobile.open{background:linear-gradient(160deg,#050608,#00378f)}
+.hero .eyebrow{color:var(--ink)}
+.hero-cta{margin-top:28px}.hero-stores{margin-top:16px!important;gap:12px}
+.bento,.plans,.sf-cards,.moments,.int-grid{gap:20px}
+.role-stack{gap:24px}
+.jobs-points{gap:12px}
+.head+.bento,.head+.plans,.head+.moments,.head+.faq,.head+.ba2,.head+.sf-gallery{margin-top:48px}
+.sf-gallery+.sf-cards{margin-top:32px}
+@media(max-width:600px){.bento,.plans,.sf-cards,.moments{gap:16px}.role-stack{gap:16px}.hero-cta{margin-top:24px}.hero-stores{margin-top:12px!important;gap:10px}.head+.bento,.head+.plans,.head+.moments,.head+.faq,.head+.ba2,.head+.sf-gallery{margin-top:36px}}
 /* ---------- reveal ---------- */
 /* ---------- motion system (calm → reveal → settle) ----------
    A content reveal (.reveal)   B editorial lines (.m-lines)   C product reveal (.m-product)
