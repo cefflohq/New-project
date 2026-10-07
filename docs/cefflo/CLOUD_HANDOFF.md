@@ -42,11 +42,11 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 | **Vendor App (Owner) V1** | **LOCKED @ `2bd8636`** | see §3d |
 | **Vendor Web V1** | **LOCKED @ `234b0cc`** | see §3f |
 | Driver Marketplace Verification | **HOLD** — see §4 | backend + UI on staging |
-| Storefront V1 | READY FOR PRODUCT REVIEW (not locked) | see §3e |
+| **Public Storefront V1** (`order.cefflo.com`) | **LOCKED @ `e93f464`** | see §3e (separate from Vendor Web Storefront Settings) |
 | **FOUNDR V1** | **LOCKED @ `897977a`** | see §3g |
 | Marketing | pending its audit round | |
 
-**Next surface: NOT STARTED — waiting for the Founder (FOUNDR locked 2026-10-07).** Compliance items (PDPA §5 / `PDPA_DATA_MAP.md`) are production-readiness gates, not blockers of staging work.
+**Next surface: MARKETING — NOT STARTED (wait for the Founder; Public Storefront locked 2026-10-07).** Compliance items (PDPA §5 / `PDPA_DATA_MAP.md`) are production-readiness gates, not blockers of staging work.
 
 ## 3. Helper PWA — LOCKED @ `fe99e46`
 
@@ -99,12 +99,25 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
 - Deferred pre-production: payment gateway / checkout / webhook / verified activation / invoices / payment methods; annual pricing, overage, quota + cap enforcement; Mapbox (Locate address, geocoding); external push (+ Android `.ogg` / iOS `.caf`); Google login E2E + redirect allow-list; KIM / help articles.
 - Storefront untouched — next surface, waiting for the Founder's final UI references.
 
-## 3e. Storefront V1 — READY FOR PRODUCT REVIEW (2026-10-06, not locked)
+## 3e. Public Storefront V1 — LOCKED @ `e93f464` (Founder-approved 2026-10-07)
 
-- 18 templates built 1:1 from the Founder's UI references (Care, Capsule, Kit, Brew, Crimson, Lift, Harvest, Botanic, Combo, Discover, Atelier, Pour, Tailor, Sprint, Splash, Service, Warung, Collector) in the public renderer `store/templates.js` + `store/store.css`; engine `store/store.js` (cart, checkout, server-priced `submit_storefront_order`, tracking link). Vendor App gallery / Template Preview / Customize / View storefront embed the same renderer (`?embed=1`, postMessage from app origins only) with `storefront_preview`; Template Preview has the reference Live Preview (Mobile ×3 screens / Tablet / Desktop).
-- Migrations: `20261007120000_storefront_preview`, `20261007130000_storefront_v1_template_keys` (18 keys, default `care`; retired keys moved to `care`).
-- Tests: `tests/storefront_templates.test.mjs` (5), `tests/staging/storefront_v1` (25), `storefront` (25, starts in a fresh limiter window).
-- Not implemented (no data / HOLD): ratings, sizes/variants, stock, discounts, delivery ETA (Mapbox), payment (orders are placed; payment arranged with the business). Open decision: ordering while the business is closed (store shows Open/Closed now; ordering not blocked).
+Canonical production surface `https://order.cefflo.com` (separate from Vendor Web Storefront Settings / Live Preview). Final verification: P0 none · P1 none. Earlier build history: 18 templates from the Founder's references (`store/templates.js`, `store/store.css`, engine `store/store.js`), migrations `20261007120000_storefront_preview`, `20261007130000_storefront_v1_template_keys`.
+
+- **Public access:** only published / enabled storefronts are public; unpublished / disabled ones take no orders; data-minimised payload (business name, area, hours, active products, approved display photos); original / private product media stays private; XSS escaping enforced.
+- **Ordering:** server-authoritative products and prices; hidden / cross-business products refused; integer quantities, 1-50 per product, max 20 lines; idempotency key required; replay never duplicates and returns the same order with its rotated tracking token; a successful order creates exactly one Vendor `order.new_customer` notification. Refusals return `{error}` (HTTP 200) so they stay counted.
+- **Business hours:** browsable while closed; new orders refused server-side while closed (canonical `business_open_now`, business timezone, overnight hours supported); no configured hours keeps the existing unknown semantics (ordering allowed); client clock never authoritative; payload `next_open`.
+- **Rate limiting (migration `20261007150000`):** trusted caller identity = `sb-forwarded-for`, then `cf-connecting-ip`, else one restrictive shared bucket; client-controlled `X-Forwarded-For` / `True-Client-IP` never trusted (verified against the real Supabase proxy chain); read limit 60/min/caller, order limit 5/min/caller, per-store 120/min; malformed / refused attempts counted; limiter failure fails closed.
+- **Language:** English default, Bahasa Melayu selectable; stored on the device; no auto-detection; vendor content never translated.
+- **Cart:** persisted on the device per storefront, no customer details stored, reconciled with the live catalogue on load, clearable, cleared after a successful order; server authoritative.
+- **Customer phone:** international format (optional +, 7-15 digits), frontend for UX, backend authoritative; no SMS verification.
+- **Money:** always two decimals (RM 8.00).
+- **Tracking:** the success page shows Track your order when tracking is configured and a token is returned; replay restores valid tracking access; the tracking lifecycle stays governed by locked Customer Tracking.
+- **SEO:** published live storefront indexable with basic description / OG; preview and unpublished / nonexistent storefronts noindex; no SEO subsystem in V1.
+- **18 templates — PASS:** Care, Capsule, Kit, Brew, Crimson, Lift, Harvest, Botanic, Combo, Discover, Atelier, Pour, Tailor, Sprint, Splash, Service, Warung, Collector. Ids / order and the Vendor Storefront Settings contract unchanged; the Founder's references remain the visual source of truth. Final QA 18 templates × 4 widths (390 / 820 / 1100 / 1440) × 4 screens = 288 browser checks: no page-level overflow, no blank screens, no console errors.
+- **Security baseline:** `storefront_security` 44/44 · `storefront` 25/25 · `storefront_v1` 25/25 (unpublished / disabled, closed business, hidden and cross-business products, server price, quantity and line limits, idempotency, replay, rate-limit spoofing, malformed abuse, minimal payload, Vendor notification, XSS, private original media).
+- **Regression (2026-10-07):** storefront_security 44/44 · foundr_admin 168/168 · subscription 27/27 · vendor_owner_lifecycle 66/66 · storefront_v1 25/25 · storefront 25/25 · operator_access 42/42 · operator_lifecycle 89/89 · helper_access 36/36 · helper_backlog 22/22 · helper_lifecycle 59/59 · helper_e2e 33/33 · invite_regression 54/54 · invite_security 48/48 · driver_profile 25/25 · driver_lifecycle 110/110 · rider_hub_find_jobs 57/57 · delivery_e2e 33/33 · customer_tracking 63/63 · marketplace_verification 55/55; offline storefront_templates 6/6, vendor_web_auth_recovery 10/10, foundr_auth_recovery 12/12, foundr_mfa 15/15, production_surfaces, marketplace ocr / vision.
+- **Hard pre-production gates (do not reopen the lock):** (1) Public Storefront Privacy Notice and any legally required consent (PDPA) before real users; (2) configure and verify `CEFFLO_STOREFRONT_BASE_URL=https://order.cefflo.com/` and `CEFFLO_TRACKING_BASE_URL=https://tracking.cefflo.com/`, then deployment smoke test; (3) migration `20261007150000` in the approved production migration rollout.
+- **Known non-blockers:** no deployed staging Storefront surface; local staging env lacks the Storefront / Tracking base URLs; the JavaScript-added noindex is not seen by non-JS crawlers; tracking starts per the locked Customer Tracking lifecycle; the idempotency key is not kept across a full reload after an interrupted submission; unrelated `apps/vendor_mobile/analysis_options.yaml` untouched.
 
 ## 3f. Vendor Web V1 — LOCKED @ `234b0cc` (Founder-approved 2026-10-07)
 
