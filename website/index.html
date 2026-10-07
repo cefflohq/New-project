@@ -429,6 +429,7 @@ footer .foot,footer .foot nav{text-align:center;justify-items:center}footer .bra
 .cta-band .pair:after{background:radial-gradient(#00133260,transparent 70%)}
 @media(max-width:900px){.moments{grid-template-columns:1fr;max-width:460px}.mo:not(:last-child):after{top:auto;bottom:-14px;right:50%;transform:translateX(50%) rotate(135deg)}}
 .navin{background:linear-gradient(180deg,#2b2f36ee 0%,#121418f2 55%,#050608f5 100%);border-color:#ffffff1a}.mobile.open{background:#0b0d10}
+.nav{transition:transform .35s cubic-bezier(.22,.61,.24,1),opacity .6s ease,translate .6s cubic-bezier(.22,.61,.24,1)}.nav.hide{transform:translateY(calc(-100% - 24px))}
 /* ---------- reveal ---------- */
 /* ---------- motion system (calm → reveal → settle) ----------
    A content reveal (.reveal)   B editorial lines (.m-lines)   C product reveal (.m-product)
@@ -825,6 +826,17 @@ details p{overflow:hidden}
     p.addEventListener('click', function (e) { if (!e.target.closest('a')) pick(); });
     p.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
   });
+  // nav: hide on scroll down, show on scroll up (always shown near top or with menu open)
+  var lastY = scrollY, navEl = document.querySelector('.nav'), ticking = false;
+  addEventListener('scroll', function () {
+    if (ticking) return; ticking = true;
+    requestAnimationFrame(function () {
+      var y = scrollY, d = y - lastY;
+      if (y < 80 || mobi.classList.contains('open') || d < -4) navEl.classList.remove('hide');
+      else if (d > 4) navEl.classList.add('hide');
+      lastY = y; ticking = false;
+    });
+  }, { passive: true });
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   function lines(el) { // B: split an <h1>/<h2> into its <br>-separated lines, keeping inner markup
     var parts = el.innerHTML.split(/<br\s*\/?>/i);
