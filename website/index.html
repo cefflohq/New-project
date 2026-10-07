@@ -451,6 +451,17 @@ footer .foot,footer .foot nav{text-align:center;justify-items:center}footer .bra
 .js .reveal,.js .m-group>*,.js .m-product,.js .role-card{opacity:0;translate:0 48px;scale:.94;transition:opacity .9s var(--ease),translate 1s var(--ease),scale 1s var(--ease);transition-delay:calc(var(--i,0)*130ms + var(--d,0ms))}
 .js .reveal.in,.js .m-group.in>*,.js .m-product.in,.js .role-card.in{opacity:1;translate:0 0;scale:1}
 .js .m-group{opacity:1;translate:none;scale:none}
+/* ---------- uniform motion (final): one entrance everywhere, no special effects ---------- */
+.js .m-lines{opacity:0;translate:0 48px;scale:.94;transition:opacity .9s var(--ease),translate 1s var(--ease),scale 1s var(--ease);transition-delay:var(--d,0ms)}
+.js .m-lines.in{opacity:1;translate:0 0;scale:1}
+.js .m-lines .m-line>span{translate:none!important;opacity:1!important;transition:none!important}
+.js .ig-hub .ig-node,.js .ig-hub.in .ig-node{opacity:1!important;scale:none!important;transition:transform .3s var(--ease),box-shadow .3s!important}
+.js .ig-core,.js .ig-hub.in .ig-core{opacity:1!important;scale:none!important}
+.js .ig-hub>svg line.w,.js .ig-hub.in>svg line.w{stroke-dashoffset:0!important;transition:none!important}
+.js .moments .subs li,.js .moments.in .subs li{opacity:1!important;translate:none!important;transition:none!important}
+.js .moments .mo.done .dot,.js .moments.in .mo.done .dot{scale:none!important;transition:none!important}
+.ba2.after-in .ba2-col:first-child .ba2-img{opacity:1}
+.js .nav{opacity:1;translate:none}
 /* ---------- reveal ---------- */
 /* ---------- motion system (calm → reveal → settle) ----------
    A content reveal (.reveal)   B editorial lines (.m-lines)   C product reveal (.m-product)
@@ -618,6 +629,11 @@ details p{overflow:hidden}
   *,*:before,*:after{transition:none!important;animation:none!important}
   .js .reveal{opacity:1;transform:none}
 }
+
+/* ---------- MOTION: single source of truth (overrides all earlier entrance rules) ---------- */
+html.js .reveal,html.js .m-group>*,html.js .m-product,html.js .role-card,html.js .m-lines{opacity:0;translate:0 48px;scale:.94;transition:opacity .9s var(--ease),translate 1s var(--ease),scale 1s var(--ease);transition-delay:calc(var(--i,0)*130ms + var(--d,0ms))}
+html.js .reveal.in,html.js .m-group.in>*,html.js .m-product.in,html.js .role-card.in,html.js .m-lines.in{opacity:1;translate:0 0;scale:1}
+html.js .m-group{opacity:1;translate:none;scale:none}
 </style>
 </head>
 <body>
