@@ -134,7 +134,7 @@ const TG_KEYBOARD = idExpr => ({ rows: [{ row: { buttons: [
 
 const deepseekBody = '={{ $json.body }}';
 const parseLLM = `const raw = $json.choices?.[0]?.message?.content ?? '';
-let out; try { out = JSON.parse(raw.replace(/^\`\`\`(json)?|\`\`\`$/g, '').trim()); } catch (e) { throw new Error('LLM did not return JSON: ' + raw.slice(0, 300)); }`;
+const t = raw.replace(/^\`\`\`(json)?|\`\`\`$/g, '').trim(); let out; try { out = JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1)); } catch (e) { throw new Error('LLM did not return JSON: ' + raw.slice(0, 300)); }`;
 
 // ============================================================ WF01 Daily plan
 const wf01 = wf(ID.plan, 'CEFFLO CE2 · 01 · Daily Plan + Script + QA', a => {
@@ -161,7 +161,7 @@ Runs **06:00 MYT** daily (or Manual).
 const sys = ${JSON.stringify(PROMPTS.planner)} + '\\n\\nPERSONA:\\n' + ${JSON.stringify(PROMPTS.persona)} + '\\n\\n' + ${JSON.stringify(PROMPTS.truth)};
 const user = JSON.stringify({ date: $now.setZone(c.tz).toISODate(), slot2: m.day_parity == 0 ? 'TOFU' : 'MOFU', slot3: m.day_parity == 0 ? 'MOFU' : 'BOFU',
   learnings: m.learnings, recycle_candidates: m.recycle, last_hooks: (m.recent_hooks || []).map(h => h.hook) });
-return [{ json: { body: { model: c.deepseek.model, temperature: c.deepseek.temperature, response_format: { type: 'json_object' },
+return [{ json: { body: { model: c.deepseek.model, temperature: c.deepseek.temperature, response_format: { type: 'json_object' }, max_tokens: 8000,
   messages: [{ role: 'system', content: sys }, { role: 'user', content: user }] } } }];`, [880, 60]);
   a.http('DeepSeek · plan', 'DeepSeek', { url: `={{ ${cfg}.deepseek.url }}`, body: deepseekBody }, [1100, 60]);
   a.code('Parse plan → 5 items', `${parseLLM}
@@ -181,13 +181,13 @@ return $input.all().map((it, i) => { const ctx = it.json.content_id ? it.json : 
   const sys = (isVideo ? ${JSON.stringify(PROMPTS.video)} : ${JSON.stringify(PROMPTS.text)}) + '\\n\\nPERSONA:\\n' + ${JSON.stringify(PROMPTS.persona)} + '\\n\\n' + ${JSON.stringify(PROMPTS.truth)}
     + (isVideo ? '\\nWardrobe: ' + c.image.wardrobe : '');
   const user = JSON.stringify({ brief: b, qa_findings_to_fix: ctx.findings || [] });
-  return { json: { ...ctx, body: { model: c.deepseek.model, temperature: c.deepseek.temperature, response_format: { type: 'json_object' },
+  return { json: { ...ctx, body: { model: c.deepseek.model, temperature: c.deepseek.temperature, response_format: { type: 'json_object' }, max_tokens: 8000,
     messages: [{ role: 'system', content: sys }, { role: 'user', content: user }] } } }; });`, [1980, 60]);
   a.http('DeepSeek · script', 'DeepSeek', { url: `={{ ${cfg}.deepseek.url }}`, body: deepseekBody }, [2200, 60]);
   a.code('Build QA request', `const c = ${cfg};
 return $input.all().map((it, i) => { const ctx = $('Build script request').all()[i].json; const json = it.json; ${parseLLM.replace(/\n/g, ' ')}
   const sys = ${JSON.stringify(PROMPTS.qa)} + '\\n\\nPERSONA:\\n' + ${JSON.stringify(PROMPTS.persona)} + '\\n\\n' + ${JSON.stringify(PROMPTS.truth)};
-  return { json: { ...ctx, body: { model: c.deepseek.model, temperature: 0.1, response_format: { type: 'json_object' },
+  return { json: { ...ctx, body: { model: c.deepseek.model, temperature: 0.1, response_format: { type: 'json_object' }, max_tokens: 8000,
     messages: [{ role: 'system', content: sys }, { role: 'user', content: JSON.stringify({ type: ctx.brief.type, script: out }) }] }, script: out } }; });`.replace('const raw = $json.', 'const raw = json.'), [2420, 60]);
   a.http('DeepSeek · QA', 'DeepSeek', { url: `={{ ${cfg}.deepseek.url }}`, body: deepseekBody }, [2640, 60]);
   a.code('Evaluate QA', `return $input.all().map((it, i) => { const ctx = $('Build QA request').all()[i].json; const json = it.json; ${parseLLM.replace(/\n/g, ' ')}
@@ -427,13 +427,13 @@ video → 02 (re-render) · text → 03 (new preview). QA FAIL → HOLD + Telegr
   a.pg('Load content', `={{ "select id, type, brief, script, revise_note from cefflo_ce2.content where id = '" + $('From 04').first().json.content_id + "'" }}`, [440, 0]);
   a.code('Build rewrite request', `const c = ${cfg}; const r = $json; const isVideo = r.type === 'video';
 const sys = (isVideo ? ${JSON.stringify(PROMPTS.video)} : ${JSON.stringify(PROMPTS.text)}) + '\\n\\nPERSONA:\\n' + ${JSON.stringify(PROMPTS.persona)} + '\\n\\n' + ${JSON.stringify(PROMPTS.truth)};
-return [{ json: { ...r, body: { model: c.deepseek.model, temperature: 0.7, response_format: { type: 'json_object' }, messages: [
+return [{ json: { ...r, body: { model: c.deepseek.model, temperature: 0.7, response_format: { type: 'json_object' }, max_tokens: 8000, messages: [
   { role: 'system', content: sys },
   { role: 'user', content: JSON.stringify({ brief: r.brief, previous_script: r.script, founder_note: r.revise_note, instruction: 'Rewrite applying the founder note. Keep everything that the note does not ask to change.' }) }] } } }];`, [660, 0]);
   a.http('DeepSeek · rewrite', 'DeepSeek', { url: `={{ ${cfg}.deepseek.url }}`, body: deepseekBody }, [880, 0]);
   a.code('Build QA request', `const c = ${cfg}; const ctx = $('Build rewrite request').first().json; ${parseLLM}
 const sys = ${JSON.stringify(PROMPTS.qa)} + '\\n\\nPERSONA:\\n' + ${JSON.stringify(PROMPTS.persona)} + '\\n\\n' + ${JSON.stringify(PROMPTS.truth)};
-return [{ json: { ...ctx, script: out, body: { model: c.deepseek.model, temperature: 0.1, response_format: { type: 'json_object' },
+return [{ json: { ...ctx, script: out, body: { model: c.deepseek.model, temperature: 0.1, response_format: { type: 'json_object' }, max_tokens: 8000,
   messages: [{ role: 'system', content: sys }, { role: 'user', content: JSON.stringify({ type: ctx.type, script: out }) }] } } }];`, [1100, 0]);
   a.http('DeepSeek · QA', 'DeepSeek', { url: `={{ ${cfg}.deepseek.url }}`, body: deepseekBody }, [1320, 0]);
   a.code('Evaluate + SQL', `${SQL_HELPER} const ctx = $('Build QA request').first().json; ${parseLLM}
@@ -562,7 +562,7 @@ left join cefflo_ce2.metric m on m.publication_id = p.id and m.checkpoint = '72h
 where c.created_at > now() - interval '14 days' group by c.id order by c.created_at`, [400, 520]);
   a.code('Build learning request', `const c = $('Config (weekly)').first().json.config; const rows = $input.all().map(i => i.json);
 const sys = 'You are M6 GROWTH learning analyst for CEFFLO. From the rows, find evidence-backed patterns (hooks, formats, worlds, funnel, pains) using engagement quality (avg watch, shares, saves, comments) more than views. Never declare a universal rule from one post; give confidence LOW/MEDIUM/HIGH. Also pick up to 5 content ids worth remixing (score 0-100) and up to 5 to stop. Include REJECTED items as negative evidence. Return ONLY JSON: {"learnings":[{"observation":"...","confidence":"LOW|MEDIUM|HIGH","action":"...","evidence":["content ids"]}],"recycle":[{"content_id":"...","score":0,"reason":"..."}],"retire":["content ids"],"report_ms":"short Malay summary for the Founder (max 8 lines)"}';
-return [{ json: { rows: rows.length, body: { model: c.deepseek.model, temperature: 0.2, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: sys }, { role: 'user', content: JSON.stringify(rows) }] } } }];`, [600, 520]);
+return [{ json: { rows: rows.length, body: { model: c.deepseek.model, temperature: 0.2, response_format: { type: 'json_object' }, max_tokens: 8000, messages: [{ role: 'system', content: sys }, { role: 'user', content: JSON.stringify(rows) }] } } }];`, [600, 520]);
   a.http('DeepSeek · learn', 'DeepSeek', { url: `={{ $('Config (weekly)').first().json.config.deepseek.url }}`, body: deepseekBody }, [820, 520]);
   a.code('Save learnings SQL', `${SQL_HELPER} ${parseLLM}
 const week = $now.setZone('Asia/Kuala_Lumpur').startOf('week').toISODate();
