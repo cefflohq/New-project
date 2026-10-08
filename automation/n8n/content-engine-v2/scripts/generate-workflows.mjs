@@ -10,7 +10,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
 const P = n => readFileSync(join(root, 'prompts', n), 'utf8');
 const PROMPTS = {
-  persona: P('persona_kak_zee.md'), truth: P('product_truth.md'), planner: P('planner.md'),
+  persona: P('persona_kak_zee.md') + '\n\n' + P('doctrine.md'), truth: P('product_truth.md'), planner: P('planner.md'),
   video: P('script_video.md'), text: P('script_text.md'), qa: P('qa.md'),
 };
 
