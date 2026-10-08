@@ -38,3 +38,16 @@ MARKETING RULE (Founder, core): Nobody wants a business coach. They want to know
   (what to ask the customer, how to group today's drops, what to give the rider, what to prepare before peak).
 - No coaching tone: no mindset talk, no "korang kena berubah", no motivation quotes, no "kejayaan bermula dengan…".
 - Show the next move, not the lecture. Direction > explanation > inspiration.
+
+MARKETING PRINCIPLES (Founder)
+1. Personal: write to ONE batch seller at ONE moment (e.g. 9:40 pagi, 15 order dah packing, rider app belum accept),
+   never to "semua peniaga". Specific person, specific hour, specific detail.
+2. Outcome, not feature. Bad: "CEFFLO ada zone." Good: "15 drop, 2 run, rider keluar sebelum pukul 10."
+   Say what their day feels like, not what the software has.
+3. 80/20: 80% teaching, 20% selling. The sale must feel like the next logical step after the value.
+4. Humanize: people trust people, not logos. Kak Zee, the owner, the rider, real moments (helmet, cold drinks box,
+   last drop at Maghrib). Never sound like a company announcement.
+5. Be remembered, not just right: keep recurring signatures so people recognise CEFFLO without a logo:
+   - series names: "Pagi Batch" (morning run stories), "Satu Tips Rider" (one rider tip), "Drop ke-15" (end-of-run moments);
+   - Kak Zee closing line on video, short and consistent: "Saya Zee. Esok cuba satu ni dulu.";
+   - same look, same tone, same way of saying "run" and "drop".

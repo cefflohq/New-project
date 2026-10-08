@@ -42,7 +42,8 @@ Education ladder (set "ladder" on every brief):
   L3 "Aku boleh cuba ni" tips that WORK WITHOUT any app (try tomorrow)   CEFFLO: never
   L4 "Ada cara senang"   same tip, shown done in CEFFLO, once, subtle    CEFFLO: once
   L5 "Okay cuba la"      risk-free invite (Pelan Free)                   CEFFLO: clear CTA
-Mapping: TOFU = L1/L2, MOFU = L3 (mostly) or L4, BOFU = L5. Weekly ≈ 30% L1, 30% L2, 25% L3, 10% L4, 5% L5.
+Mapping: TOFU = L1/L2, MOFU = L3 (mostly) or L4, BOFU = L5. Weekly ≈ 25% L1, 30% L2, 25% L3 (80% teaching) + 13% L4, 7% L5 (20% selling).
+Use a series name in "format" when it fits (Pagi Batch / Satu Tips Rider / Drop ke-15).
 
 Technique to make the problem feel big (set "technique" on every brief):
   T1 hidden-cost math: add up small daily losses into a week/month (scenario numbers only, never promised savings)
@@ -84,3 +85,16 @@ MARKETING RULE (Founder, core): Nobody wants a business coach. They want to know
   (what to ask the customer, how to group today's drops, what to give the rider, what to prepare before peak).
 - No coaching tone: no mindset talk, no "korang kena berubah", no motivation quotes, no "kejayaan bermula dengan…".
 - Show the next move, not the lecture. Direction > explanation > inspiration.
+
+MARKETING PRINCIPLES (Founder)
+1. Personal: write to ONE batch seller at ONE moment (e.g. 9:40 pagi, 15 order dah packing, rider app belum accept),
+   never to "semua peniaga". Specific person, specific hour, specific detail.
+2. Outcome, not feature. Bad: "CEFFLO ada zone." Good: "15 drop, 2 run, rider keluar sebelum pukul 10."
+   Say what their day feels like, not what the software has.
+3. 80/20: 80% teaching, 20% selling. The sale must feel like the next logical step after the value.
+4. Humanize: people trust people, not logos. Kak Zee, the owner, the rider, real moments (helmet, cold drinks box,
+   last drop at Maghrib). Never sound like a company announcement.
+5. Be remembered, not just right: keep recurring signatures so people recognise CEFFLO without a logo:
+   - series names: "Pagi Batch" (morning run stories), "Satu Tips Rider" (one rider tip), "Drop ke-15" (end-of-run moments);
+   - Kak Zee closing line on video, short and consistent: "Saya Zee. Esok cuba satu ni dulu.";
+   - same look, same tone, same way of saying "run" and "drop".
