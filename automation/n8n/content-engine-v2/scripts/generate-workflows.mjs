@@ -188,7 +188,7 @@ return $input.all().map((it, i) => { const ctx = it.json.content_id ? it.json : 
 return $input.all().map((it, i) => { const ctx = $('Build script request').all()[i].json; const json = it.json; ${parseLLM.replace(/\n/g, ' ').replace("throw new Error('LLM did not return JSON: ' + raw.slice(0, 300));", "out = { _invalid: true };")}
   const sys = ${JSON.stringify(PROMPTS.qa)} + '\\n\\nPERSONA:\\n' + ${JSON.stringify(PROMPTS.persona)} + '\\n\\n' + ${JSON.stringify(PROMPTS.truth)};
   return { json: { ...ctx, body: { model: c.deepseek.model, temperature: 0.1, response_format: { type: 'json_object' }, max_tokens: 8000, thinking: { type: 'disabled' },
-    messages: [{ role: 'system', content: sys }, { role: 'user', content: JSON.stringify({ type: ctx.brief.type, script: out }) }] }, script: out } }; });`.replace('const raw = $json.', 'const raw = json.'), [2420, 60]);
+    messages: [{ role: 'system', content: sys }, { role: 'user', content: JSON.stringify({ type: ctx.brief.type, brief: ctx.brief, script: out }) }] }, script: out } }; });`.replace('const raw = $json.', 'const raw = json.'), [2420, 60]);
   a.http('DeepSeek · QA', 'DeepSeek', { url: `={{ ${cfg}.deepseek.url }}`, body: deepseekBody }, [2640, 60]);
   a.code('Evaluate QA', `return $input.all().map((it, i) => { const ctx = $('Build QA request').all()[i].json; const json = it.json; ${parseLLM.replace(/\n/g, ' ').replace("throw new Error('LLM did not return JSON: ' + raw.slice(0, 300));", "out = { verdict: 'FAIL', findings: [{ criterion: 'QA_UNAVAILABLE', evidence: 'QA returned no JSON; rewrite cleanly.' }] };")}
   if (ctx.script && ctx.script._invalid) out = { verdict: 'FAIL', findings: [{ criterion: 'FORMAT', evidence: 'Script was not valid JSON. Return valid JSON only.' }] };
@@ -435,7 +435,7 @@ return [{ json: { ...r, body: { model: c.deepseek.model, temperature: 0.7, respo
   a.code('Build QA request', `const c = ${cfg}; const ctx = $('Build rewrite request').first().json; ${parseLLM}
 const sys = ${JSON.stringify(PROMPTS.qa)} + '\\n\\nPERSONA:\\n' + ${JSON.stringify(PROMPTS.persona)} + '\\n\\n' + ${JSON.stringify(PROMPTS.truth)};
 return [{ json: { ...ctx, script: out, body: { model: c.deepseek.model, temperature: 0.1, response_format: { type: 'json_object' }, max_tokens: 8000, thinking: { type: 'disabled' },
-  messages: [{ role: 'system', content: sys }, { role: 'user', content: JSON.stringify({ type: ctx.type, script: out }) }] } } }];`, [1100, 0]);
+  messages: [{ role: 'system', content: sys }, { role: 'user', content: JSON.stringify({ type: ctx.type, brief: ctx.brief, script: out }) }] } } }];`, [1100, 0]);
   a.http('DeepSeek · QA', 'DeepSeek', { url: `={{ ${cfg}.deepseek.url }}`, body: deepseekBody }, [1320, 0]);
   a.code('Evaluate + SQL', `${SQL_HELPER} const ctx = $('Build QA request').first().json; ${parseLLM}
 const pass = out.verdict === 'PASS';
