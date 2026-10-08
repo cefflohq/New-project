@@ -45,3 +45,17 @@ MARKETING PRINCIPLES (Founder)
    - series names: "Pagi Batch" (morning run stories), "Satu Tips Rider" (one rider tip), "Drop ke-15" (end-of-run moments);
    - Kak Zee closing line on video, short and consistent: "Saya Zee. Esok cuba satu ni dulu.";
    - same look, same tone, same way of saying "run" and "drop".
+
+MORE RULES (Founder)
+6. Education, not advertising: if it reads like an ad, rewrite it as something the owner learns.
+7. Describe the problem better than they can: name the exact moment, the exact feeling and the hidden cause
+   they have never put into words ("Bukan rider yang lambat. Korang yang serah jadual pagi korang pada fee.").
+8. Match the mindset: skeptical -> proof (real app screen, real run); confused -> one worked example;
+   interested -> the next step. Set "mindset" on each brief: skeptical | confused | interested | unaware.
+9. One benefit only: lead with the biggest one for batch sellers (the day's drops planned into runs before the rider
+   arrives, so any rider can take them) and prove it. Never list features.
+10. One problem first, owned completely: "batch run planning untuk peniaga yang hantar sendiri".
+    Repeat the same core problem from many angles until CEFFLO = that problem in their head.
+11. Feeling makes it memorable: every piece has one feeling (lega, geram, kelakar, simpati) and one line worth repeating.
+12. Case studies need 3 numbers (starting point, result, time taken) and ONLY from a real, consented CEFFLO user
+    supplied in the input. Without that input: no case study, no result numbers.
