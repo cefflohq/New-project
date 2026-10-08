@@ -8,6 +8,8 @@ await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 await cp(new URL('../retired/', import.meta.url), new URL('../dist/retired/', import.meta.url), { recursive: true });
 await cp(new URL('../index.html', import.meta.url), new URL('../dist/index.html', import.meta.url));
+for (const page of ['privacy.html', 'terms.html', 'robots.txt', 'sitemap.xml']) await cp(new URL(`../${page}`, import.meta.url), new URL(`../dist/${page}`, import.meta.url));
+for (const dir of ['img', 'fonts']) await cp(new URL(`../${dir}/`, import.meta.url), new URL(`../dist/${dir}/`, import.meta.url), { recursive: true });
 await mkdir(new URL('../dist/server/', import.meta.url), { recursive: true });
 await mkdir(new URL('../dist/.openai/', import.meta.url), { recursive: true });
 await writeFile(new URL('../dist/server/index.js', import.meta.url), "export default { fetch(request, env) { return env.ASSETS.fetch(request); } };\n");
