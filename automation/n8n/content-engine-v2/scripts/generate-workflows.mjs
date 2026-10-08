@@ -32,7 +32,7 @@ const CRED = {
 const CONFIG_JS = `// ===== CEFFLO Content Engine V2 — CONFIG (edit here; secrets live in Credentials) =====
 return [{ json: { config: {
   tz: 'Asia/Kuala_Lumpur',
-  founderChatId: 'SET_TELEGRAM_CHAT_ID',          // your Telegram user/chat id (numbers)
+  founderChatId: '1140338735',          // your Telegram user/chat id (numbers)
   dailyBudgetUsd: 25,                              // generation stops when today's cost reaches this
   deepseek: { url: 'https://api.deepseek.com/chat/completions', model: 'deepseek-v4-flash', temperature: 0.8 },
   image: { url: 'SET_IMAGE_API_URL', model: 'SET_IMAGE_MODEL',
