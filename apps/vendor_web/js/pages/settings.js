@@ -95,7 +95,7 @@ async function profile(page) {
     const name = p.display_name || u.user_metadata?.full_name || '';
     body.innerHTML = `
       <div class="photo">
-        <button type="button" class="photo-btn" data-photo aria-label="${esc(t('prof.photoChange'))}">${avatar(name || u.email, 'xl')}<i class="spin" data-photo-spin hidden></i></button>
+        <button type="button" class="photo-btn" data-photo aria-label="${esc(t('prof.photoChange'))}">${avatar(name || u.email, 'xl')}<span data-photo-spin hidden></span></button>
         <input type="file" accept="image/jpeg,image/png,image/webp" data-photo-input hidden>
         <div class="photo-actions">
           <button class="icon-btn" type="button" data-photo-pick title="${esc(t('prof.photoChange'))}" aria-label="${esc(t('prof.photoChange'))}">${icon('camera')}</button>
@@ -427,7 +427,7 @@ let intState = null; // integration_list result for the current business
 const inboundBase = () => `${window.CEFFLO_CONFIG.supabaseUrl}/functions/v1/integrations-inbound`;
 const PROV = { woo: 'woocommerce', shopify: 'shopify' };
 function connectPanel(x) {
-  if (!intState) return `<p class="muted">${esc(t('c.loading'))}</p>`;
+  if (!intState) return window.cfLoader.markup(t('ld.default'));
   if (x.action === 'apikey') {
     const keys = intState.api_keys || [];
     return `<div class="int-conn">
@@ -674,7 +674,7 @@ function wirePhoto(body, u, row, name, savedPath) {
   const initialsOf = n => holder.dataset.initials || (holder.dataset.initials = holder.textContent.trim());
   initialsOf();
   if (savedPath) show(savedPath);
-  const setBusy = on => { btn.disabled = on; spin.hidden = !on; btn.classList.toggle('busy', on); };
+  const setBusy = on => { btn.disabled = on; spin.hidden = !on; on ? window.showPageLoader(t('ld.upload')) : window.hidePageLoader(); btn.classList.toggle('busy', on); };
   const fail = m => { err.textContent = m; err.hidden = false; };
   const saveRow = async avatar_url => {
     if (row.exists) await api.write(`/rest/v1/profiles?id=eq.${u.id}`, 'PATCH', { avatar_url, updated_at: new Date().toISOString() });

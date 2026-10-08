@@ -1,3 +1,4 @@
+import 'package:cefflo_loader/cefflo_loader.dart';
 import 'dart:async';
 
 export 'toast.dart' show showCefToast;
@@ -387,14 +388,7 @@ class CefButton extends StatelessWidget {
             ? Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: foreground,
-                    ),
-                  ),
+                  CefDots(onBlue: foreground.computeLuminance() > .5),
                   if (busyLabel != null) ...[
                     const SizedBox(width: Gap.sm),
                     Flexible(
@@ -1955,7 +1949,7 @@ class StateBlock extends StatelessWidget {
     if (kind == StateKind.loading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: Gap.xxxl),
-        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        child: CefPageLoader(),
       );
     }
     final (icon, color) = switch (kind) {
@@ -2128,13 +2122,7 @@ class _AsyncFeedbackOverlayState extends State<_AsyncFeedbackOverlay> {
     final closable = _stage != _FeedbackStage.processing;
     final body = switch (_stage) {
       _FeedbackStage.processing => [
-        SizedBox.square(
-          dimension: 36,
-          child: CircularProgressIndicator(
-            strokeWidth: 3,
-            color: CefColors.brand,
-          ),
-        ),
+        const CefDots(),
         const SizedBox(height: Gap.lg),
         Text(
           widget.processingTitle,

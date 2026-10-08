@@ -1,3 +1,4 @@
+import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -825,7 +826,7 @@ class _EditProfileScreenState extends State<_EditProfileScreen> {
               if (_photoBusy)
                 const SizedBox.square(
                   dimension: 88,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: Center(child: CefDots()),
                 ),
             ],
           ),
@@ -2144,7 +2145,7 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
                         ),
                       ),
                     ),
-                  if (_loading && link != null) const LinearProgressIndicator(),
+                  if (_loading && link != null) const CefPageLoader(),
                 ],
               ),
             ),

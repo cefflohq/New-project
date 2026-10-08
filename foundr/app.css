@@ -40,8 +40,6 @@
 .field-err{color:var(--red);font-size:13px;margin-top:8px}
 .field{margin-bottom:10px}.field .hint{display:block;color:var(--muted);font-size:12px;margin-top:4px}
 .check{display:flex;gap:8px;align-items:center;font-size:13.5px;margin:6px 0}
-.skel{height:18px;border-radius:5px;margin:10px 0;background:linear-gradient(90deg,#eef1f5,#f7f9fb,#eef1f5);background-size:200% 100%;animation:skel 1.2s infinite}
-@keyframes skel{to{background-position:-200% 0}}
 .err-card{border-color:#ffd9df;background:#fff8f9}.err-card p{margin:6px 0 10px}
 .unavail{display:grid;gap:8px;justify-items:start}.unavail h3{margin:4px 0 0;font-size:17px}.unavail p{margin:0;color:var(--muted);font-size:14px;max-width:70ch}
 .note{font-size:12.5px;color:var(--muted);margin:8px 2px 12px}
@@ -158,7 +156,6 @@ code{font-size:12.5px;background:#f4f6f9;padding:1px 5px;border-radius:4px}
 .fa-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-radius:14px;border:1px solid var(--fa-line);background:var(--fa-fill)}
 .fa-item b{display:block;font-weight:500}.fa-item small{color:#93a2bd;font-size:12.5px}
 .fa-done{display:grid;gap:18px;justify-items:stretch;margin-top:18px}.fa-done .fa-orb{margin-top:0}
-.fa-skel{height:18px;border-radius:8px;background:linear-gradient(90deg,#ffffff10,#ffffff24,#ffffff10);background-size:200% 100%;animation:skel 1.2s infinite}
 @media(max-width:380px){.fa-otp{gap:7px}.fa-otp input{height:52px;font-size:22px}.fa-title{font-size:24px}}
 
 .fa-back svg{width:24px;height:24px}

@@ -40,7 +40,7 @@ export function mountHiring(host, { onChange } = {}) {
     host.innerHTML = `<div class="hire">
       <div class="hire-h"><div><b>${esc(t('hire.openTitle'))}</b><small>${esc(t('hire.openLead'))}</small></div>
         <button class="btn cta sm" data-add ${working ? 'disabled' : ''}>${icon('plus')}${esc(t('hr.title'))}</button></div>
-      ${openings === null ? '<div class="hire-empty"><i class="spin"></i></div>'
+      ${openings === null ? window.cfLoader.markup(t('ld.default'))
         : list.length ? `<div class="hire-list">${list.map(o => `<div class="hire-row" data-open-id="${esc(o.id)}" role="button" tabindex="0" style="cursor:pointer">
           <div><b>${esc(timeLabel(o))}</b>
           <small>${esc([[...o.days].sort().map(d => t(`hire.d${d}`)).join(', '), t(`veh.${o.vehicle_type}`), payLabel(o), `× ${o.riders_needed}`].join(' · '))}</small>

@@ -1,3 +1,4 @@
+import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -745,14 +746,7 @@ class _OpeningFormState extends State<_OpeningForm> {
                   ),
                   onPressed: _busy ? null : _save,
                   child: _busy
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
+                      ? const CefDots(onBlue: true)
                       : Text(L.hrPublish),
                 ),
               ),

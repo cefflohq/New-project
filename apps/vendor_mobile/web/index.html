@@ -81,6 +81,7 @@
       }
     })();
   </script>
+<link rel="stylesheet" href="loader/loader.css">
 <style>
     /* Pre-splash: painted by the browser on the first frame, before Flutter
        loads. It is the app's splash itself (gradient + official brand block,
@@ -104,7 +105,7 @@
   </style>
 </head>
 <body>
-  <div id="cef-presplash" aria-hidden="true"><div class="cf-brand"><span class="cf-sym"><img src="assets/assets/brand/cefflo-symbol.png" alt="" width="1024" height="1024"></span><span class="cf-word"><img src="assets/assets/brand/cefflo-wordmark.png" alt="" width="1024" height="1024"></span><span class="cf-label">Vendor</span></div></div>
+  <div id="cef-presplash" style="flex-direction:column;gap:28px"><div class="cf-brand"><span class="cf-sym"><img src="assets/assets/brand/cefflo-symbol.png" alt="" width="1024" height="1024"></span><span class="cf-word"><img src="assets/assets/brand/cefflo-wordmark.png" alt="" width="1024" height="1024"></span><span class="cf-label">Vendor</span></div><div class="cf-page-loader cf-page-loader--inline cf-on-blue" role="status" aria-live="polite" style="min-height:0;padding:0"><div class="cf-dots" aria-hidden="true"><i></i><i></i><i></i></div><p class="cf-loader-label">Memuatkan…</p></div></div>
   <script>
     // Same label as the Flutter splash for the Operator / Helper entry.
     (function () {

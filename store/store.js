@@ -278,6 +278,7 @@
     if (isClosed()) return render(`${t('This store is closed right now.')} ${nextOpenText()}`.trim());
     const btn = document.getElementById('sfPlace');
     btn.disabled = true; btn.textContent = t('Placing order…');
+    window.showPageLoader(t('Placing order…'));
     try {
       const res = await rpc('submit_storefront_order', {
         p_slug: store.slug, p_items: [...cart].map(([product_id, quantity]) => ({ product_id, quantity })),
@@ -295,7 +296,7 @@
       // The same key is kept, so a retry never creates a second order (a
       // replay returns the same order and its tracking link).
       render(ex.status ? errorText(String(ex.message || '')) : t('No connection. Please check your internet and try again.'));
-    }
+    } finally { window.hidePageLoader(); }
   }
 
   // ------------------------------------------------------------- events

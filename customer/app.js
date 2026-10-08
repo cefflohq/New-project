@@ -261,8 +261,8 @@ function unavailableScreen(vm) {
 
 function loadingScreen(vm) {
   return `
-    <section class="unavailable" aria-busy="true">
-      <span class="spinner" aria-hidden="true"></span>
+    <section class="unavailable">
+      ${window.cfLoader.markup('Memuatkan penghantaran')}
       ${statusHead(vm)}
     </section>`;
 }
@@ -382,6 +382,7 @@ sheet.addEventListener('click', (event) => {
 function retryTracking(trigger) {
   trigger.disabled = true;
   trigger.classList.add('is-busy');
+  window.showPageLoader('Memuatkan penghantaran');
   setTimeout(() => location.reload(), prefersReducedMotion() ? 0 : 200);
 }
 
@@ -602,7 +603,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, prefersReduced
 function sheetBody(state) {
   if (state === 'submitting') {
     return `<div class="sheet-state" role="status" aria-live="polite">
-      <span class="sheet-spinner" aria-hidden="true"></span>
+      <div class="cf-dots" aria-hidden="true"><i></i><i></i><i></i></div>
       <h2 class="sheet-title">Thanks for your rating!</h2>
       <p class="sheet-sub">Submitting your feedback…</p></div>`;
   }
@@ -834,7 +835,7 @@ root.dataset.ready = 'true';
       indicator = document.createElement('div');
       indicator.className = 'ptr';
       indicator.setAttribute('aria-hidden', 'true');
-      indicator.innerHTML = '<span class="spinner"></span>';
+      indicator.innerHTML = '<div class="cf-dots"><i></i><i></i><i></i></div>';
       document.body.append(indicator);
     }
     indicator.style.setProperty('--ptr', `${Math.min(dy, MAX)}px`);

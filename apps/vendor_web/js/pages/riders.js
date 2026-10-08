@@ -24,7 +24,7 @@ export default function riders({ el, params, setHeader }) {
         <div class="search">${icon('search')}<input data-q placeholder="${esc(t('riders.search'))}" aria-label="${esc(t('c.search'))}"></div>
         <button class="btn cta sm" data-add>${icon('plus')}${esc(t('riders.add'))}</button>
       </div>
-      <div data-list>${loadingRows(8)}</div>
+      <div data-list>${loadingRows(8, t('ld.riders'))}</div>
     </div>
   </div>`;
   const $ = s => el.querySelector(s);

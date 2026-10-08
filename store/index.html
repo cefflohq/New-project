@@ -18,7 +18,9 @@
      submit_storefront_order -> a real Cefflo order + tracking link.
      ?embed=1 is the Vendor App live preview (data arrives by postMessage,
      no backend call); ?template=<key> previews another template. -->
-<div id="app" aria-live="polite"><p class="sf-state">Loading…</p></div>
+<div id="app" aria-live="polite"></div>
+<script src="/shared/loader/loader.js?v=20261008a"></script>
+<script>document.getElementById('app').innerHTML = window.cfLoader.markup('Memuatkan kedai');</script>
 <script src="/shared/config.js?v=20261001a"></script>
 <script src="/store/i18n-ms.js?v=20261008a"></script>
 <script src="/store/templates.js?v=20261008a"></script>

@@ -31,7 +31,7 @@ export function showInviteLink(kind, initialRole = 'operator') {
     title: t(kind === 'rider' ? 'invite.riderTitle' : 'invite.teamTitle'),
     lead: t('invite.lead'),
     body: `${kind === 'rider' ? '' : (ctx.isOwner ? roleOpt('operator', 'team.operator', 'team.operatorSub') : '') + roleOpt('helper', 'team.helper', 'team.helperSub')}
-      <div class="invite-qr" data-qr style="display:grid;place-items:center;min-height:200px"><i class="spin"></i></div>
+      <div class="invite-qr" data-qr style="display:grid;place-items:center;min-height:200px">${window.cfLoader.markup(t('ld.default'))}</div>
       <div class="field"><label>${esc(t('invite.linkLabel'))}</label><input class="input" readonly data-link></div>
       <p class="desc" style="margin:4px 0 0">${esc(t('invite.pendingNote'))}</p>
       <div class="err" data-err hidden></div>`,
@@ -43,7 +43,7 @@ export function showInviteLink(kind, initialRole = 'operator') {
   const load = async () => {
     const qr = m.el.querySelector('[data-qr]'), input = m.el.querySelector('[data-link]'), err = m.el.querySelector('[data-err]');
     m.el.querySelectorAll('[data-copy],[data-share]').forEach(b => { b.disabled = true; });
-    qr.innerHTML = '<i class="spin"></i>'; input.value = ''; err.hidden = true;
+    qr.innerHTML = window.cfLoader.markup(t('ld.default')); input.value = ''; err.hidden = true;
     try {
       const res = await api.rpc('get_invite_link', { p_business_id: ctx.bid, p_kind: role });
       const token = (Array.isArray(res) ? res[0] : res)?.token;

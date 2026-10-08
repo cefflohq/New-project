@@ -91,7 +91,9 @@ export const itemsLines = items => (Array.isArray(items) ? items : []).map(i => 
 })).filter(l => l.name);
 
 // ---------------------------------------------------------------- states
-export const loadingRows = (n = 5) => `<div class="card-b" aria-busy="true">${Array.from({ length: n }, () => '<div class="skel" style="height:42px;margin:10px 0"></div>').join('')}</div>`;
+// The one CEFFLO loader (shared/loader). `_n` kept for old call sites.
+export const loader = (label = t('ld.default')) => window.cfLoader.markup(label);
+export const loadingRows = (_n, label) => loader(label);
 export const emptyState = (title, body = '', actionHtml = '') => `<div class="state"><div class="ico">${icon('box')}</div><h3>${esc(title)}</h3>${body ? `<div>${esc(body)}</div>` : ''}${actionHtml}</div>`;
 export const errorState = (err, retryId) => `<div class="state error" role="alert"><div class="ico">${icon('alert')}</div><h3>${esc(t('c.errorTitle'))}</h3><div>${esc(err?.message || t('c.errorBody'))}</div>${retryId ? `<button class="btn sm" data-retry="${retryId}">${esc(t('c.retry'))}</button>` : ''}</div>`;
 export const gatedNote = text => `<div class="gated">${icon('info')}<div><b>${esc(t('gate.title'))}.</b> ${esc(text)}</div></div>`;
@@ -108,14 +110,15 @@ export function toast(message, kind = '') {
 }
 
 // ---------------------------------------------------------------- busy
-// Runs an async action with the button disabled + spinner, preventing
+// Runs an async action with the button disabled + the page loader, preventing
 // duplicate submissions. Returns the action result or throws.
 export async function busy(btn, action, label = t('c.saving')) {
   if (!btn || btn.disabled) return undefined;
   const html = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = `<i class="spin"></i>${esc(label)}`;
-  try { return await action(); } finally { btn.disabled = false; btn.innerHTML = html; }
+  btn.textContent = label;
+  window.showPageLoader(label);
+  try { return await action(); } finally { window.hidePageLoader(); btn.disabled = false; btn.innerHTML = html; }
 }
 
 // ---------------------------------------------------------------- modal

@@ -50,9 +50,6 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .next { margin: 18px auto 0; max-width: 36ch; text-align: center; font-size: 14px; line-height: 1.55; color: var(--muted); }
 
 /* Screen 1 */
-.ring { width: 72px; height: 72px; margin: 18px auto 22px; border-radius: 50%; border: 6px solid #DCE8FB; border-top-color: var(--blue); animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .ring { animation-duration: 3s; } }
 .checks { list-style: none; margin: 26px auto 0; padding: 0; max-width: 280px; display: grid; gap: 14px; }
 .checks li { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--muted); }
 .checks li::before { content: ''; width: 20px; height: 20px; flex: none; border-radius: 50%; border: 1.8px solid #C9D1DD; }

@@ -50,7 +50,7 @@ async function start(message = '') {
     renderSetPassword(root, { onDone: () => start() });
     return;
   }
-  root.innerHTML = '<div class="auth"><div class="auth-card"><div class="skel" style="height:24px"></div><div class="skel" style="height:24px"></div></div></div>';
+  root.innerHTML = window.cfLoader.markup(t('ld.default'));
   try {
     await loadContext();
     mountShell(root, PAGES, { signOut });

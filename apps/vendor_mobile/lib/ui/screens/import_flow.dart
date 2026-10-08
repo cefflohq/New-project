@@ -1,3 +1,4 @@
+import 'package:cefflo_loader/cefflo_loader.dart';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -264,11 +265,7 @@ class _ImportOrdersScreenState extends State<ImportOrdersScreen> {
           trailing: source.needsGoogle
               ? _Pill(L.connectGoogle)
               : _busy
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+              ? const CefDots()
               : null,
           showChevron: !source.needsGoogle,
           onTap: _busy

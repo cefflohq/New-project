@@ -1,3 +1,4 @@
+import 'package:cefflo_loader/cefflo_loader.dart';
 import 'dart:async';
 
 export 'toast.dart' show showCefToast;
@@ -81,14 +82,7 @@ class CeffloPrimaryButton extends StatelessWidget {
         onTap: busy ? null : onTap,
         child: Center(
           child: busy
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.2,
-                    color: CefColors.onAccent,
-                  ),
-                )
+              ? const CefDots(onBlue: false)
               : Text(
                   label,
                   textAlign: TextAlign.center,
@@ -1868,13 +1862,7 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
                           ],
                         ),
                         child: (widget.busy || _firing)
-                            ? const Padding(
-                                padding: EdgeInsets.all(22),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.4,
-                                  color: CefColors.onAccent,
-                                ),
-                              )
+                            ? const Center(child: CefDots(onBlue: false))
                             : const Icon(
                                 Icons.arrow_forward_ios_rounded,
                                 size: 31,
@@ -1918,75 +1906,6 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
 // ---------------------------------------------------------------------------
 // Processing identity + modals
 // ---------------------------------------------------------------------------
-
-/// The four-dot processing motif (alternating blue / CEFFLO Yellow) shown in
-/// the Contact Support "Submitting…" modal. A real sequential wave — dot 1 →
-/// 2 → 3 → 4 → repeat — never a CircularProgressIndicator.
-class FourDotLoader extends StatefulWidget {
-  const FourDotLoader({super.key, this.dotSize = 16, this.spacing = 12});
-  final double dotSize;
-  final double spacing;
-
-  @override
-  State<FourDotLoader> createState() => _FourDotLoaderState();
-}
-
-class _FourDotLoaderState extends State<FourDotLoader>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1200),
-  )..repeat();
-
-  static const _colors = [
-    Color(0xFF1668E3),
-    CefColors.accent,
-    Color(0xFF1668E3),
-    CefColors.accent,
-  ];
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => AnimatedBuilder(
-    animation: _c,
-    builder: (context, _) => Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        for (var i = 0; i < 4; i++) ...[
-          if (i > 0) SizedBox(width: widget.spacing),
-          Builder(
-            builder: (_) {
-              // One quarter-cycle lead per dot produces the wave.
-              final phase = (_c.value - i * 0.18) % 1.0;
-              final lift = phase < 0.45
-                  ? math.sin(phase / 0.45 * math.pi)
-                  : 0.0;
-              return Transform.translate(
-                offset: Offset(0, -lift * 5),
-                child: Opacity(
-                  opacity: 0.45 + 0.55 * lift,
-                  child: Container(
-                    width: widget.dotSize,
-                    height: widget.dotSize,
-                    decoration: BoxDecoration(
-                      color: _colors[i],
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ],
-    ),
-  );
-}
 
 /// Shared modal geometry so a processing modal and its success modal keep
 /// the same size, position and corner radius as they swap.
@@ -2086,7 +2005,7 @@ class CeffloSubmittingModal extends StatelessWidget {
       children: [
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 10),
-          child: FourDotLoader(),
+          child: CefDots(),
         ),
         const SizedBox(height: Gap.lg),
         Text(title, style: context.t.displaySmall?.copyWith(fontSize: 20)),
@@ -2252,7 +2171,7 @@ class StateBlock extends StatelessWidget {
     if (kind == StateKind.loading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 48),
-        child: Center(child: FourDotLoader()),
+        child: Center(child: CefDots()),
       );
     }
     final (icon, color) = switch (kind) {

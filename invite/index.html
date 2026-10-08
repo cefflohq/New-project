@@ -26,7 +26,7 @@
   <section class="rider-sheet">
     <!-- Screen 1: validating -->
     <div id="scrValidating" class="screen centered" hidden>
-      <div class="ring" aria-hidden="true"></div>
+      <div class="cf-page-loader cf-page-loader--inline" role="status" aria-live="polite"><div class="cf-dots" aria-hidden="true"><i></i><i></i><i></i></div><p class="cf-loader-label">Memuatkan…</p></div>
       <h1>Checking invitation…</h1>
       <p class="lede">Please wait while we verify your invitation link.</p>
       <ul class="checks" id="checks">
@@ -85,6 +85,7 @@
   </section>
 </main>
 
+<script src="../shared/loader/loader.js?v=20261008a"></script>
 <script src="../shared/config.js?v=20261001a"></script>
 <script src="../shared/client.js?v=20260829a"></script>
 <script src="./destination.js?v=20261005a"></script>

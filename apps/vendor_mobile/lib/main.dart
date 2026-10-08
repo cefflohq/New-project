@@ -1,3 +1,5 @@
+import 'package:cefflo_loader/cefflo_loader.dart';
+
 import 'core/auth_access.dart';
 import 'ui/screens/helper_workspace.dart';
 
@@ -227,13 +229,15 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
         // default. Screens with a dark background (Splash, Sign In, the
         // Auth sheet family) nest their own CefSystemBars deeper in the
         // tree, which takes precedence for that route.
-        builder: (context, child) => LocaleRefresh(
-          locale: app.uiLocale,
-          accent: CefColors.brand,
-          child: CefSystemBars(
-            background: Brightness.light,
-            browserChromeColor: CefColors.light.chrome,
-            child: _EdgeToEdgeInsets(child: ResponsiveDensity(child: child!)),
+        builder: (context, child) => CefLoaderHost(
+          child: LocaleRefresh(
+            locale: app.uiLocale,
+            accent: CefColors.brand,
+            child: CefSystemBars(
+              background: Brightness.light,
+              browserChromeColor: CefColors.light.chrome,
+              child: _EdgeToEdgeInsets(child: ResponsiveDensity(child: child!)),
+            ),
           ),
         ),
         home: Builder(

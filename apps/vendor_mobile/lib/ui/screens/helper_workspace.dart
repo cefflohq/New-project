@@ -1,3 +1,4 @@
+import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -1375,13 +1376,7 @@ class _OrderRow extends StatelessWidget {
             SizedBox(
               width: 44,
               child: busy
-                  ? const Center(
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    )
+                  ? const Center(child: CefDots(size: 6))
                   : Container(
                       width: 34,
                       height: 34,
@@ -1618,12 +1613,8 @@ class _SlideToConfirmState extends State<SlideToConfirm> {
                             : const Color(0xFFC9D0DB),
                       ),
                       child: _working
-                          ? const Padding(
-                              padding: EdgeInsets.all(20),
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: _ink,
-                              ),
+                          ? const Center(
+                              child: CefDots(onBlue: false),
                             )
                           : Icon(
                               LucideIcons.chevronRight,

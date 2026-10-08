@@ -5,6 +5,7 @@
 /// draw.
 library;
 
+import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/app_state.dart';
@@ -82,7 +83,7 @@ class _StorefrontCatalogueLoaderState extends State<StorefrontCatalogueLoader> {
     future: _catalogue,
     builder: (context, snap) => snap.hasData
         ? widget.builder(context, snap.data!)
-        : const SizedBox.expand(),
+        : const CefPageLoader(),
   );
 }
 

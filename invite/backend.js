@@ -167,6 +167,7 @@
     const acceptBtn = $('acceptBtn'); const declineBtn = $('declineBtn'); const status = $('decisionStatus');
     acceptBtn.disabled = declineBtn.disabled = true; status.hidden = true;
     if (kind === 'accept') acceptBtn.textContent = 'Accepting…';
+    window.showPageLoader(kind === 'accept' ? 'Accepting…' : undefined);
     try {
       const result = await api.rpc(kind === 'accept' ? KIND.accept : KIND.decline, { p_token: token }, { token: null });
       if (kind === 'accept' && result?.status === KIND.acceptedResult) return accepted();
@@ -179,6 +180,7 @@
       status.textContent = 'We could not save your answer. Check your connection and try again.';
       status.hidden = false;
     } finally {
+      window.hidePageLoader();
       acceptBtn.disabled = declineBtn.disabled = false;
       acceptBtn.textContent = 'Accept Invitation';
     }

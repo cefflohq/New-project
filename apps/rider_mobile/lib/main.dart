@@ -1,3 +1,4 @@
+import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 
 import 'core/keep_signed_in.dart';
@@ -264,9 +265,11 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
         theme: buildRiderTheme(),
         // Applied above the Navigator so every route, dialog and bottom
         // sheet lays out against the same normalized canvas.
-        builder: (context, child) => LocaleRefresh(
-          locale: app.uiLocale,
-          child: _EdgeToEdgeInsets(child: ResponsiveDensity(child: child!)),
+        builder: (context, child) => CefLoaderHost(
+          child: LocaleRefresh(
+            locale: app.uiLocale,
+            child: _EdgeToEdgeInsets(child: ResponsiveDensity(child: child!)),
+          ),
         ),
         home: Builder(
           builder: (context) {

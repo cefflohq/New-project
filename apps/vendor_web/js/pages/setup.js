@@ -150,13 +150,15 @@ export function renderBusinessSetup(root, opts) {
     const errBox = root.querySelector('[data-submit-err]');
     inFlight = true;
     btn.disabled = true; back.disabled = true;
-    btn.innerHTML = `<i class="spin"></i>${esc(t('setup.creating'))}`;
+    btn.textContent = t('setup.creating');
+    window.showPageLoader(t('setup.creating'));
     errBox.hidden = true;
     try {
       await api.rpc('bootstrap_business', {
         p_name: d.name.trim(), p_phone: d.phone.trim(), p_email: ctx.user?.email || null, p_address: composeAddress(d),
       });
     } catch (ex) {
+      window.hidePageLoader();
       inFlight = false;
       btn.disabled = false; back.disabled = false;
       btn.textContent = t('setup.create');
@@ -167,6 +169,7 @@ export function renderBusinessSetup(root, opts) {
     }
     // The server created the business: from here on we never call
     // bootstrap_business again, and the draft must not survive.
+    window.hidePageLoader();
     created = true;
     clearSetupDraft();
     await reloadAfterCreate();
@@ -175,7 +178,7 @@ export function renderBusinessSetup(root, opts) {
   async function reloadAfterCreate() {
     frame(`<div class="onb-center" aria-busy="true"><div class="onb-status">${icon('check')}</div>
       <h2>${esc(t('setup.finishing'))}</h2><p class="onb-lead">${esc(t('setup.finishingLead'))}</p>
-      <div class="skel" style="height:10px;width:60%"></div></div>`);
+      ${window.cfLoader.markup(t('ld.default'))}</div>`);
     try {
       await opts.reload();
       ready();

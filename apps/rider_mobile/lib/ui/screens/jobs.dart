@@ -1,3 +1,4 @@
+import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -493,7 +494,7 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
           if (all == null) {
             return const Padding(
               padding: EdgeInsets.symmetric(vertical: 48),
-              child: Center(child: CircularProgressIndicator()),
+              child: CefPageLoader(),
             );
           }
           final shown = [

@@ -58,9 +58,9 @@ export default function orders({ el, params, setHeader }) {
         <div class="search">${icon('search')}<input data-q placeholder="${esc(t('today.searchOrders'))}" aria-label="${esc(t('c.search'))}"></div>
         <div style="position:relative"><button class="btn sm" data-filter aria-haspopup="true" title="${esc(t('orders.filter'))}">${icon('filter')}</button></div>
       </div>
-      <div data-list>${loadingRows(8)}</div>
+      <div data-list>${loadingRows(8, t('ld.orders'))}</div>
     </div>
-    ${selected ? '<div class="card panel" data-detail>' + loadingRows(6) + '</div>' : ''}
+    ${selected ? '<div class="card panel" data-detail>' + loadingRows(6, t('ld.orders')) + '</div>' : ''}
   </div>`;
   const $ = s => el.querySelector(s);
 

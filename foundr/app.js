@@ -127,7 +127,9 @@ const head = (eyebrow, title, desc, action = '') => `<div class="page-head"><div
 const tabs = (items, active) => `<div class="tabs" role="tablist">${items.map(([id, label, count]) => `<button class="tab ${id === active ? 'active' : ''}" role="tab" aria-selected="${id === active}" data-tab="${esc(id)}">${esc(label)}${count != null ? `<span class="tab-count">${num(count)}</span>` : ''}</button>`).join('')}</div>`;
 const select = (key, opts, label) => `<select class="select" data-filter="${key}" aria-label="${esc(label || key)}">${opts.map(([v, l]) => `<option value="${esc(v)}" ${String(state.filters[key] ?? '') === String(v) ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
 const toolbar = (placeholder, selects = '') => `<div class="toolbar"><div class="search"><span class="search-icon">${I.search}</span><input data-search placeholder="${esc(placeholder)}" value="${esc(state.query)}" aria-label="${esc(placeholder)}"></div>${selects}</div>`;
-const loadingBlock = (rows = 5) => `<div class="card card-pad" aria-busy="true">${Array.from({ length: rows }, () => '<div class="skel"></div>').join('')}</div>`;
+// The one CEFFLO loader (shared/loader). `_rows` kept for old call sites.
+const ldr = (label) => window.cfLoader.markup(label);
+const loadingBlock = (_rows, label) => `<div class="card card-pad">${ldr(label)}</div>`;
 const errorBlock = keys => { const k = failed(keys); const e = errors[k]; return `<div class="card card-pad err-card" role="alert"><b>Could not load this from the server.</b><p class="sub">${esc(e?.message || 'Unknown error')}</p><button class="btn" data-retry="${esc(keys.join(','))}">Try again</button></div>`; };
 const emptyBlock = (title, body = '') => `<div class="empty"><b>${esc(title)}</b>${body ? `<br><span class="sub inline">${esc(body)}</span>` : ''}</div>`;
 const unavailable = (title, body) => `<div class="card card-pad unavail" role="status"><span class="chip amber">Not available yet</span><h3>${esc(title)}</h3><p>${esc(body)}</p></div>`;
@@ -179,10 +181,10 @@ function overview() {
   ], false)}
   <div class="layout-right"><div>
     <div class="card card-pad"><div class="card-title"><h3>Deliveries in flight by status</h3><button class="link" data-go="operations">View all</button></div>
-      ${!('ops' in data) ? (errors.ops ? errorBlock(['ops']) : '<div class="skel"></div><div class="skel"></div>') : ops.length ? byStatus.map(([s, n]) => `<div class="list-row clickable" data-go="operations" data-go-tab="${s}"><span class="grow">${esc(human(s))}</span><div class="progress" style="width:180px"><i style="width:${n / max * 100}%"></i></div><b style="width:40px;text-align:right">${num(n)}</b></div>`).join('') : emptyBlock('No deliveries in flight', 'Every order is delivered or cancelled.')}
+      ${!('ops' in data) ? (errors.ops ? errorBlock(['ops']) : ldr()) : ops.length ? byStatus.map(([s, n]) => `<div class="list-row clickable" data-go="operations" data-go-tab="${s}"><span class="grow">${esc(human(s))}</span><div class="progress" style="width:180px"><i style="width:${n / max * 100}%"></i></div><b style="width:40px;text-align:right">${num(n)}</b></div>`).join('') : emptyBlock('No deliveries in flight', 'Every order is delivered or cancelled.')}
     </div>
     <div class="card card-pad" style="margin-top:12px"><div class="card-title"><h3>Latest admin activity</h3><button class="link" data-go="audit">View all</button></div>
-      ${!('audit' in data) ? (errors.audit ? errorBlock(['audit']) : '<div class="skel"></div>') : audit.length ? audit.slice(0, 6).map(a => `<div class="list-row clickable" data-go="audit" data-open="audit:${esc(a.id)}"><span style="width:110px">${esc(fmtDateTime(a.created_at))}</span><i class="dot"></i><b class="grow">${esc(human(a.action))}</b><span class="sub inline">${esc(human(a.target_type || ''))}</span><span>›</span></div>`).join('') : emptyBlock('No admin actions recorded yet')}
+      ${!('audit' in data) ? (errors.audit ? errorBlock(['audit']) : ldr()) : audit.length ? audit.slice(0, 6).map(a => `<div class="list-row clickable" data-go="audit" data-open="audit:${esc(a.id)}"><span style="width:110px">${esc(fmtDateTime(a.created_at))}</span><i class="dot"></i><b class="grow">${esc(human(a.action))}</b><span class="sub inline">${esc(human(a.target_type || ''))}</span><span>›</span></div>`).join('') : emptyBlock('No admin actions recorded yet')}
     </div>
   </div><aside class="stack">
     <div><div class="card-title"><h3>Platform controls</h3></div>
@@ -192,12 +194,12 @@ function overview() {
       ${insight('product', '', 'Client versions', 'versions', versions.length ? `${versions.length} releases recorded` : 'No releases recorded yet', versions.length ? '' : 'amber')}
     </div>
     <div class="card card-pad"><div class="card-title"><h3>Needs attention</h3><button class="link" data-go="riders" data-go-tab="stuck">View all</button></div>
-      ${!('stuck' in data) ? (errors.stuck ? errorBlock(['stuck']) : '<div class="skel"></div>') : stuck.length ? stuck.slice(0, 5).map(s => `<div class="list-row clickable" data-go="riders" data-go-tab="stuck" data-open="rider:${esc(s.rider_id)}"><i class="dot" style="background:var(--amber)"></i><span class="grow"><b>${esc(s.rider_name)}</b><span class="sub">${esc(s.business_name)} · ${esc(human(s.assignment_status))}</span></span><span class="sub inline">${s.last_recorded_at ? esc(ago(s.last_recorded_at)) : 'never'}</span></div>`).join('') : emptyBlock('Nothing needs attention', 'Every driver on a job is reporting location.')}
+      ${!('stuck' in data) ? (errors.stuck ? errorBlock(['stuck']) : ldr()) : stuck.length ? stuck.slice(0, 5).map(s => `<div class="list-row clickable" data-go="riders" data-go-tab="stuck" data-open="rider:${esc(s.rider_id)}"><i class="dot" style="background:var(--amber)"></i><span class="grow"><b>${esc(s.rider_name)}</b><span class="sub">${esc(s.business_name)} · ${esc(human(s.assignment_status))}</span></span><span class="sub inline">${s.last_recorded_at ? esc(ago(s.last_recorded_at)) : 'never'}</span></div>`).join('') : emptyBlock('Nothing needs attention', 'Every driver on a job is reporting location.')}
     </div>
   </aside></div>`;
 }
 function insight(route, tab, title, key, text, tone = '') {
-  const body = (key in data) ? esc(text) : errors[key] ? 'Could not load' : 'Loading…';
+  const body = (key in data) ? esc(text) : errors[key] ? 'Could not load' : '…';
   return `<div class="insight clickable" data-go="${route}" ${tab ? `data-go-tab="${tab}"` : ''}><i class="insight-dot" style="background:${tone === 'red' ? 'var(--red)' : tone === 'amber' ? 'var(--amber)' : 'var(--green)'}"></i><div class="grow"><b>${esc(title)}</b><p>${body}</p></div><span>›</span></div>`;
 }
 
@@ -528,7 +530,7 @@ function settings() {
       <div class="modal-actions" style="justify-content:flex-start"><button class="btn danger" data-signout>Sign out</button></div>
     </div>
     <div class="card card-pad" style="margin-top:12px"><div class="card-title"><h3>Platform admins</h3></div>
-      ${failed(['admins']) ? errorBlock(['admins']) : !ready(['admins']) ? '<div class="skel"></div>' : data.admins.length ? data.admins.map(a => `<div class="list-row"><span class="entity-avatar">${esc((a.role || 'a')[0].toUpperCase())}</span><span class="grow"><code>${esc(a.user_id)}</code>${a.user_id === me.user?.id ? ' <span class="chip blue">You</span>' : ''}</span>${statusChip(a.role)}<span class="sub inline">since ${esc(fmtDate(a.created_at))}</span></div>`).join('') : emptyBlock('No admins listed')}
+      ${failed(['admins']) ? errorBlock(['admins']) : !ready(['admins']) ? ldr() : data.admins.length ? data.admins.map(a => `<div class="list-row"><span class="entity-avatar">${esc((a.role || 'a')[0].toUpperCase())}</span><span class="grow"><code>${esc(a.user_id)}</code>${a.user_id === me.user?.id ? ' <span class="chip blue">You</span>' : ''}</span>${statusChip(a.role)}<span class="sub inline">since ${esc(fmtDate(a.created_at))}</span></div>`).join('') : emptyBlock('No admins listed')}
       <p class="note">Admin access is granted directly in the database by design; FOUNDR has no self-service grant.</p>
     </div></div>
     <aside class="stack">${unavailable('Platform preferences', 'Company details, notification preferences and backups have no backend store yet.')}</aside></div>`;
@@ -561,10 +563,10 @@ function drawer() {
     if (det === undefined) queueMicrotask(() => loadVendorDetail(d.id));
     const name = v?.name || sub?.business_name || (det && !(det instanceof Error) ? det.name : '') || 'Vendor';
     body = `<div class="drawer-head"><span class="entity-avatar" style="width:42px;height:42px">${esc(initials(name))}</span><div><h2>${esc(name)}</h2>${statusChip(sub?.status || 'active')}</div>${close}</div>
-    ${det === undefined ? '<div class="skel"></div><div class="skel"></div>' : det instanceof Error ? `<div class="err-card card card-pad" role="alert"><b>Could not load vendor details.</b><p class="sub">${esc(det.message)}</p><button class="btn" data-vendor-retry="${esc(d.id)}">Try again</button></div>` : `
+    ${det === undefined ? ldr() : det instanceof Error ? `<div class="err-card card card-pad" role="alert"><b>Could not load vendor details.</b><p class="sub">${esc(det.message)}</p><button class="btn" data-vendor-retry="${esc(d.id)}">Try again</button></div>` : `
       <div class="drawer-section"><h3>Business</h3>${kvRows([['Phone', det.phone || '—'], ['Email', det.email || '—'], ['Address', det.address || '—'], ['Area', det.operating_area || '—'], ['Joined', fmtDate(det.created_at)], ['Active members', num(det.member_count)]])}</div>
       <div class="drawer-section"><h3>Orders</h3>${kvRows([['Last 30 days', num(det.order_count_30d)], ['Delivered (30d)', num(det.delivered_count_30d)], ['Issues (30d)', num(det.issue_count_30d)], ['All time', num(det.order_count_total)], ['Drivers', `${num(det.active_rider_count)} active of ${num(det.rider_count)}`]])}</div>`}
-    <div class="drawer-section"><h3>Subscription</h3>${('subs' in data) ? kvRows([['Plan', planLabel(sub)], ['Status', human(sub?.status || 'active')], ['MRR', rm(sub?.mrr_cents)], ['Trial ends', fmtDate(sub?.trial_ends_at)], ['Updated', sub?.updated_at ? fmtDateTime(sub.updated_at) : '—']]) : errors.subs ? '<p class="sub">Subscription could not be loaded.</p>' : '<div class="skel"></div>'}
+    <div class="drawer-section"><h3>Subscription</h3>${('subs' in data) ? kvRows([['Plan', planLabel(sub)], ['Status', human(sub?.status || 'active')], ['MRR', rm(sub?.mrr_cents)], ['Trial ends', fmtDate(sub?.trial_ends_at)], ['Updated', sub?.updated_at ? fmtDateTime(sub.updated_at) : '—']]) : errors.subs ? '<p class="sub">Subscription could not be loaded.</p>' : ldr()}
       <button class="btn primary" style="width:100%;margin-top:8px" data-modal="subscription" data-id="${esc(d.id)}" ${'subs' in data ? '' : 'disabled'}>Change subscription</button>
       <p class="sub">Administrative override through the admin contract; no payment is taken.</p></div>`;
   } else if (d.type === 'order') {
@@ -577,17 +579,17 @@ function drawer() {
   } else if (d.type === 'rider') {
     const r = (data.riders || []).find(x => x.rider_id === d.id);
     const s = (data.stuck || []).find(x => x.rider_id === d.id);
-    if (!r && !s) return ('riders' in data) || ('stuck' in data) ? '' : `<aside class="drawer">${close}<div class="skel"></div></aside>`;
+    if (!r && !s) return ('riders' in data) || ('stuck' in data) ? '' : `<aside class="drawer">${close}${ldr()}</aside>`;
     body = `<div class="drawer-head"><span class="entity-avatar" style="width:42px;height:42px">${esc(initials(r?.name || s?.rider_name))}</span><div><h2>${esc(r?.name || s?.rider_name)}</h2>${r ? statusChip(r.status) : ''}</div>${close}</div>
     <div class="drawer-section"><h3>Driver</h3>${kvRows([['Phone', r?.phone || s?.rider_phone || '—'], ['Vendor', r?.business_name || s?.business_name], ['Vehicle plate', r?.vehicle_plate || '—'], ['Availability', r ? human(r.availability_status) : '—'], ['Delivered (30d)', r ? num(r.delivered_count_30d) : '—'], ['Active jobs', r ? num(r.active_assignment_count) : '—'], ['Joined', r ? fmtDate(r.created_at) : '—']])}
       <button class="link" data-open="vendor:${esc(r?.business_id || s?.business_id)}">Open vendor ›</button></div>
     ${s ? `<div class="drawer-section"><h3>Not reporting</h3>${kvRows([['Job status', human(s.assignment_status)], ['Last location', s.last_recorded_at ? `${fmtDateTime(s.last_recorded_at)} (${ago(s.last_recorded_at)})` : 'Never reported']])}</div>` : ''}`;
   } else if (d.type === 'verification') {
     const v = (data.verif || []).find(x => x.user_id === d.id);
-    if (!v) return ('verif' in data) ? '' : `<aside class="drawer">${close}<div class="skel"></div></aside>`;
+    if (!v) return ('verif' in data) ? '' : `<aside class="drawer">${close}${ldr()}</aside>`;
     if (licences[d.id] === undefined) queueMicrotask(() => loadVerifDetail(d.id));
     const l = licences[d.id], urls = docUrls[d.id] || {};
-    const doc = (k, label) => { const u = urls[k]; return `<figure class="doc"><figcaption>${label}</figcaption>${u instanceof Error ? `<p class="sub">${esc(u.message)}</p>` : u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer"><img src="${esc(u)}" alt="${esc(label)}" style="width:100%;max-height:220px;object-fit:contain;border-radius:8px;background:var(--line,#eee)"></a>` : l === null ? '<div class="skel"></div>' : '<p class="sub">Not uploaded</p>'}</figure>`; };
+    const doc = (k, label) => { const u = urls[k]; return `<figure class="doc"><figcaption>${label}</figcaption>${u instanceof Error ? `<p class="sub">${esc(u.message)}</p>` : u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer"><img src="${esc(u)}" alt="${esc(label)}" style="width:100%;max-height:220px;object-fit:contain;border-radius:8px;background:var(--line,#eee)"></a>` : l === null ? ldr() : '<p class="sub">Not uploaded</p>'}</figure>`; };
     const plate = (v.plate_result?.plates || []).map(p => `${p.text}${p.confidence != null ? ` (${Math.round(p.confidence * 100)}%)` : ''}`).join(', ');
     const decidable = ['needs_review', 'pending'].includes(v.status);
     body = `<div class="drawer-head"><span class="entity-avatar" style="width:42px;height:42px">${esc(initials(verifName(v)))}</span><div><h2>${esc(verifName(v))}</h2>${statusChip(v.status)}</div>${close}</div>
@@ -603,7 +605,7 @@ function drawer() {
       <button class="btn" data-modal="mp-decision" data-id="${esc(v.user_id)}|retake_vehicle">Retake vehicle</button></div>` : `<p class="sub">Decided (${esc(human(v.status))}). Only pending or needs-review verifications are decided here.</p>`}</div>`;
   } else if (d.type === 'audit') {
     const a = (data.audit || []).find(x => String(x.id) === String(d.id));
-    if (!a) return ('audit' in data) ? '' : `<aside class="drawer">${close}<div class="skel"></div></aside>`;
+    if (!a) return ('audit' in data) ? '' : `<aside class="drawer">${close}${ldr()}</aside>`;
     body = `<div class="drawer-head"><div><h2>${esc(human(a.action))}</h2><span class="sub">${esc(fmtDateTime(a.created_at))}</span></div>${close}</div>
     <div class="drawer-section">${kvRows([['Entry', `#${a.id}`], ['Admin', a.admin_user_id || 'System'], ['Target', `${human(a.target_type || '—')} ${a.target_id || ''}`], ['Reason', a.reason || '— (not captured by this action)']])}</div>
     <div class="drawer-section"><h3>Metadata</h3><pre class="json">${esc(JSON.stringify(a.metadata || {}, null, 2))}</pre></div>`;
@@ -841,6 +843,7 @@ function shell() {
 // ------------------------------------------------------------------ render + events
 let authScreen = true;
 function render() {
+  window.hidePageLoader(true);
   if (authScreen) return;
   const a = document.activeElement;
   const focus = a?.matches?.('[data-search],[data-gsearch]') ? { sel: a.matches('[data-gsearch]') ? '[data-gsearch]' : '[data-search]', pos: a.selectionStart } : null;
@@ -987,8 +990,8 @@ function authFrame(inner, { back = null, top = null, foot = true } = {}) {
     eye.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${show ? AI.eye : AI.eyeOff}</svg>`;
   }));
 }
-const busyBtn = (b, label) => { b.disabled = true; b.dataset.label = b.querySelector('span').textContent; b.querySelector('span').textContent = label; };
-const freeBtn = b => { b.disabled = false; b.querySelector('span').textContent = b.dataset.label || b.querySelector('span').textContent; };
+const busyBtn = (b, label) => { window.showPageLoader(label); b.disabled = true; b.dataset.label = b.querySelector('span').textContent; b.querySelector('span').textContent = label; };
+const freeBtn = b => { window.hidePageLoader(true); b.disabled = false; b.querySelector('span').textContent = b.dataset.label || b.querySelector('span').textContent; };
 const showErr = (el, text) => { el.textContent = text; el.hidden = false; };
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 // Open the mail app: Gmail's inbox for Gmail addresses, the system mail
@@ -1305,7 +1308,7 @@ function showSplash() {
 async function boot() {
   showSplash();
   if (!F.session()?.access_token) return renderLanding();
-  authFrame('<div class="fa-skel"></div><div class="fa-skel"></div>', { foot: false });
+  authFrame(`<div class="cf-on-blue">${ldr()}</div>`, { foot: false });
   try {
     try { me.user = await F.currentUser(); } catch (e) {
       if (deadSession(e)) return endSession();
@@ -1328,7 +1331,7 @@ const mfaError = ex => ex?.code === 'mfa_verification_failed' || /invalid|expire
 // Set up authenticator: GoTrue creates an unverified TOTP factor and its QR;
 // only a correct code verifies it (and upgrades this session to aal2).
 async function renderMfaSetup(next = enterApp, { optional = false, back = null } = {}) {
-  authFrame('<div class="fa-skel"></div><div class="fa-skel"></div>', { back, foot: false });
+  authFrame(`<div class="cf-on-blue">${ldr()}</div>`, { back, foot: false });
   let factor;
   try {
     // Abandoned earlier set-ups leave unverified factors that GoTrue still
@@ -1418,7 +1421,7 @@ async function renderMfaVerify(next = enterApp, { afterEmail = false } = {}) {
 // aal2 session (GoTrue enforces it); removal also asks for typed CONFIRM.
 async function renderSecurity() {
   const back = () => { authScreen = false; render(); };
-  authFrame('<div class="fa-skel"></div><div class="fa-skel"></div>', { back, foot: false });
+  authFrame(`<div class="cf-on-blue">${ldr()}</div>`, { back, foot: false });
   let factors;
   try { factors = (await F.listFactors()).filter(f => f.status === 'verified'); } catch (ex) {
     if (deadSession(ex)) return endSession();
@@ -1454,11 +1457,11 @@ function renderRemoveFactor(factorId, name, total) {
   form.addEventListener('submit', async e => {
     e.preventDefault();
     if (form.querySelector('#confirm').value !== 'CONFIRM') return;
-    btnEl.disabled = true; btnEl.querySelector('span').textContent = 'Removing…'; err.hidden = true;
+    window.showPageLoader('Removing…'); btnEl.disabled = true; btnEl.querySelector('span').textContent = 'Removing…'; err.hidden = true;
     try { await F.unenrollFactor(factorId); toastSoon('Authenticator removed'); renderSecurity(); } catch (ex) {
       if (deadSession(ex)) return endSession();
       showErr(err, ex.status === 403 || /aal2|AAL2/.test(ex.message) ? 'Verify with your authenticator first, then remove it.' : ex.message);
-      btnEl.disabled = false; btnEl.querySelector('span').textContent = 'Remove Authenticator';
+      window.hidePageLoader(true); btnEl.disabled = false; btnEl.querySelector('span').textContent = 'Remove Authenticator';
     }
   });
 }

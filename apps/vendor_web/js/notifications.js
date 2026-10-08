@@ -233,7 +233,7 @@ export function renderPanel() {
   const bizName = id => ctx.businesses.find(b => b.business_id === id)?.business_name || '';
   const list = notif.error
     ? `<div class="np-empty">${icon('alert')}<b>${esc(t('c.errorTitle'))}</b><span>${esc(notif.error.message || '')}</span><button class="btn sm" data-nretry>${esc(t('c.retry'))}</button></div>`
-    : !notif.loaded ? '<div class="skel" style="height:42px;margin:12px"></div>'.repeat(3)
+    : !notif.loaded ? window.cfLoader.markup(t('ld.default'))
     : !notif.items.length ? `<div class="np-empty">${icon('bell')}<b>${esc(t('nt.empty'))}</b><span>${esc(t(isDemo() ? 'nt.emptyDemo' : 'nt.emptySub'))}</span></div>`
     : notif.items.map(n => {
       const c = copy(n);

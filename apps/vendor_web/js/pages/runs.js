@@ -6,8 +6,8 @@ import { esc, icon, avatar, chip, orderStatus, loadingRows, emptyState, errorSta
 
 export default function runs({ el, setHeader }) {
   setHeader(t('runs.title'));
-  el.innerHTML = `<div class="kpis" data-kpis>${['route', 'box', 'check', 'clock'].map(() => '<div class="kpi"><div class="skel" style="height:56px"></div></div>').join('')}</div>
-    <div class="card"><div data-list>${loadingRows(6)}</div></div>`;
+  el.innerHTML = `<div class="kpis" data-kpis>${['route', 'box', 'check', 'clock'].map(() => '<div class="kpi" style="min-height:56px"></div>').join('')}</div>
+    <div class="card"><div data-list>${loadingRows(6, t('ld.runs'))}</div></div>`;
   const box = el.querySelector('[data-list]'), kpis = el.querySelector('[data-kpis]');
   // Summary of the open runs (Founder reference: Active Runs). A run is one
   // rider's share of an open delivery session.

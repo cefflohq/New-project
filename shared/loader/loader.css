@@ -1,0 +1,64 @@
+/* CEFFLO Page Loader — the one loading component for every web surface.
+   Markup (see loader.html): .cf-page-loader > .cf-dots > i×3 + .cf-loader-label */
+:root {
+  --cf-blue-start: #0060FE;
+  --cf-blue-end: #0592EB;
+  --cf-mustard: #FFC93C;
+  --cf-white: #FFFFFF;
+  --cf-dot: 8px;
+  --cf-dot-gap: 6px;
+  --cf-dot-outline: 1.5px;
+  --cf-label-gap: 12px;
+  --cf-loader-text: var(--cf-text-secondary, #5B6472);
+  --cf-loader-backdrop: rgba(255, 255, 255, .72);
+  --cf-loader-fade: 200ms;
+  --cf-loader-delay: 300ms;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --cf-blue-start: #4D8DFF; --cf-blue-end: #48B6F5;
+    --cf-loader-text: #AEB6C3; --cf-loader-backdrop: rgba(10, 16, 28, .72);
+  }
+}
+:root[data-theme="dark"] {
+  --cf-blue-start: #4D8DFF; --cf-blue-end: #48B6F5;
+  --cf-loader-text: #AEB6C3; --cf-loader-backdrop: rgba(10, 16, 28, .72);
+}
+
+.cf-page-loader {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--cf-label-gap); pointer-events: none;
+  opacity: 0; transition: opacity var(--cf-loader-fade) ease;
+}
+/* Global overlay: fixed, so it never shifts layout. */
+.cf-page-loader--global { position: fixed; inset: 0; z-index: 2147483000; background: var(--cf-loader-backdrop); }
+.cf-page-loader.is-visible { opacity: 1; }
+/* Inline (inside a page region): appears only after 300ms, without JS. */
+.cf-page-loader--inline { min-height: 160px; padding: 24px 0; animation: cf-loader-in var(--cf-loader-fade) ease var(--cf-loader-delay) forwards; }
+@keyframes cf-loader-in { to { opacity: 1; } }
+
+.cf-dots { display: flex; gap: var(--cf-dot-gap); height: calc(var(--cf-dot) * 2.2); align-items: flex-end; }
+.cf-dots i {
+  display: block; width: var(--cf-dot); height: var(--cf-dot); border-radius: 50%; box-sizing: border-box;
+  opacity: .6; animation: cf-bounce .9s cubic-bezier(.45, 0, .55, 1) infinite;
+}
+.cf-dots i:nth-child(1) { background: linear-gradient(135deg, var(--cf-blue-start), var(--cf-blue-end)); }
+.cf-dots i:nth-child(2) { background: var(--cf-white); border: var(--cf-dot-outline) solid var(--cf-blue-start); animation-delay: .12s; }
+.cf-dots i:nth-child(3) { background: var(--cf-mustard); animation-delay: .24s; }
+/* Dark mode / blue background: white dot without outline. */
+:root[data-theme="dark"] .cf-dots i:nth-child(2), .cf-on-blue .cf-dots i:nth-child(2) { border: 0; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cf-dots i:nth-child(2) { border: 0; } }
+.cf-on-blue { --cf-blue-start: #6FA4FF; --cf-blue-end: #7CCBF8; --cf-loader-text: rgba(255, 255, 255, .78); }
+
+.cf-loader-label {
+  margin: 0; font: 400 12.5px/1.4 Poppins, system-ui, sans-serif; color: var(--cf-loader-text);
+  text-align: center; min-height: 1.4em;
+}
+@keyframes cf-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: .6; }
+  30% { transform: translateY(calc(var(--cf-dot) * -1.1)) scale(1.1); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cf-dots i { animation: none; opacity: 1; }
+  .cf-page-loader { transition: none; }
+}

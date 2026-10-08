@@ -176,7 +176,7 @@ export function openImport(onDone) {
 }
 
 export async function openPlanDelivery(onDone) {
-  const m = modal({ title: t('plan.title'), lead: t('plan.lead'), body: `<div data-body><div class="skel" style="height:60px"></div></div><div class="err" data-err hidden></div>`,
+  const m = modal({ title: t('plan.title'), lead: t('plan.lead'), body: `<div data-body>${window.cfLoader.markup(t('ld.route'))}</div><div class="err" data-err hidden></div>`,
     footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit disabled>${esc(t('plan.create'))}</button>` });
   const body = m.el.querySelector('[data-body]'), err = m.el.querySelector('[data-err]'), submit = m.el.querySelector('[data-submit]');
   let groups = [], riders = [], zones = new Map();

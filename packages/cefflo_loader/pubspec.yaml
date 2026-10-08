@@ -1,0 +1,10 @@
+name: cefflo_loader
+description: The one CEFFLO page loader (bounce dots + label) for every Flutter surface. Web twin lives in shared/loader.
+publish_to: none
+version: 1.0.0
+environment:
+  sdk: ^3.5.0
+  flutter: ">=3.24.0"
+dependencies:
+  flutter:
+    sdk: flutter

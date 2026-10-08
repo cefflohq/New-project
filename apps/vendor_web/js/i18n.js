@@ -51,7 +51,7 @@ const en = {
   'shell.menu': 'Menu', 'shell.profile': 'Profile', 'shell.signOut': 'Sign out', 'shell.role.owner': 'Owner', 'shell.role.operator': 'Operator',
   // common
   'c.viewAll': 'View All', 'c.search': 'Search', 'c.save': 'Save', 'c.cancel': 'Cancel', 'c.close': 'Close',
-  'c.edit': 'Edit', 'c.retry': 'Try again', 'c.loading': 'Loading…', 'c.saving': 'Saving…', 'c.saved': 'Saved',
+  'c.edit': 'Edit', 'c.retry': 'Try again', 'c.loading': 'Loading…', 'ld.default': 'Loading…', 'ld.orders': 'Loading orders', 'ld.riders': 'Loading riders', 'ld.zones': 'Loading zones', 'ld.runs': 'Loading runs', 'ld.route': 'Calculating route', 'ld.sync': 'Syncing data', 'ld.upload': 'Uploading', 'c.saving': 'Saving…', 'c.saved': 'Saved',
   'c.call': 'Call', 'c.whatsapp': 'WhatsApp', 'c.change': 'Change', 'c.none': '—', 'c.showing': 'Showing {n} orders',
   'c.errorTitle': 'Something went wrong', 'c.errorBody': 'We could not load this from the server.',
   'c.required': 'This field is required.', 'c.invalidEmail': 'Enter a valid email address.',
@@ -359,7 +359,7 @@ const ms = {
   'shell.switchBusiness': 'Tukar perniagaan', 'shell.notifications': 'Notifikasi', 'shell.menu': 'Menu', 'shell.profile': 'Profil', 'shell.signOut': 'Log keluar',
   'shell.role.owner': 'Pemilik', 'shell.role.operator': 'Operator',
   'c.viewAll': 'Lihat Semua', 'c.search': 'Cari', 'c.save': 'Simpan', 'c.cancel': 'Batal', 'c.close': 'Tutup', 'c.edit': 'Sunting',
-  'c.retry': 'Cuba lagi', 'c.loading': 'Memuatkan…', 'c.saving': 'Menyimpan…', 'c.saved': 'Disimpan', 'c.call': 'Panggil',
+  'c.retry': 'Cuba lagi', 'c.loading': 'Memuatkan…', 'ld.default': 'Memuatkan…', 'ld.orders': 'Memuatkan order', 'ld.riders': 'Memuatkan rider', 'ld.zones': 'Memuatkan zon', 'ld.runs': 'Memuatkan larian', 'ld.route': 'Mengira laluan', 'ld.sync': 'Menyegerak data', 'ld.upload': 'Memuat naik', 'c.saving': 'Menyimpan…', 'c.saved': 'Disimpan', 'c.call': 'Panggil',
   'c.whatsapp': 'WhatsApp', 'c.change': 'Tukar', 'c.none': '—', 'c.showing': 'Memaparkan {n} pesanan',
   'c.errorTitle': 'Ada masalah', 'c.errorBody': 'Kami tidak dapat memuatkan ini dari pelayan.', 'c.required': 'Medan ini wajib diisi.',
   'c.invalidEmail': 'Masukkan alamat e-mel yang sah.', 'c.invalidPhone': 'Masukkan nombor telefon yang sah.',

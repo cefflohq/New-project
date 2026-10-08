@@ -280,7 +280,6 @@ img { display: block; max-width: 100%; }
 .star.is-selected .star__filled { opacity: 1; }
 .star.is-selected .star__outline { opacity: 0; }
 .star.is-selected { transform: scale(1.06); }
-.sheet-spinner { width: calc(46 * var(--u)); height: calc(46 * var(--u)); margin-bottom: 14px; border-radius: 50%; border: 4px solid #DCE7FD; border-top-color: var(--cef-blue); border-right-color: var(--cef-blue); animation: spin 850ms linear infinite; }
 .sheet-success { display: grid; place-items: center; width: calc(64 * var(--u)); height: calc(64 * var(--u)); margin: calc(6 * var(--u)) 0 calc(14 * var(--u)); border-radius: 50%; background: var(--ok); color: #FFFFFF; box-shadow: 0 0 0 8px var(--ok-tint); animation: pop 360ms cubic-bezier(0.2, 1.4, 0.4, 1) both; }
 .sheet-error { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 10px; margin: 8px 0 4px; color: #B42335; font-size: 12.5px; font-weight: 500; }
 .sheet-retry { padding: 6px 12px; border: 0; border-radius: 999px; background: #FDECEE; color: #B42335; font-size: 12.5px; font-weight: 700; }
@@ -290,7 +289,6 @@ img { display: block; max-width: 100%; }
 .unavailable { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 12px; }
 .scene-error { width: 100%; height: 170px; margin-top: 24px; }
 .scene-error svg { width: 100%; height: 100%; }
-.spinner { width: 32px; height: 32px; margin: 8px 0 18px; border-radius: 50%; border: 3px solid #E1E5EC; border-top-color: var(--cef-blue); animation: spin 900ms linear infinite; }
 .btn-yellow {
   display: flex;
   align-items: center;
@@ -309,7 +307,6 @@ img { display: block; max-width: 100%; }
   transition: transform var(--press) var(--ease), filter var(--press) var(--ease);
 }
 .btn-yellow:active { transform: scale(0.98); filter: brightness(0.96); }
-.btn-yellow.is-busy svg { animation: spin 700ms linear infinite; }
 
 /* ------------------------------------------------- C4 proof of delivery */
 
@@ -348,7 +345,6 @@ img { display: block; max-width: 100%; }
 
 /* ------------------------------------------------------------- animation */
 
-@keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes zoomIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
 @keyframes sheetIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -369,9 +365,11 @@ img { display: block; max-width: 100%; }
   .rate-sheet { transition: none; }
 }
 
-/* Pull-to-refresh: a small spinner under the header; the layout never moves. */
+/* Pull-to-refresh: the shared CEFFLO dots under the header; the layout never moves. */
 .ptr { position: fixed; z-index: 20; top: calc(env(safe-area-inset-top) + 64px); left: 50%; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #fff; box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12); opacity: 0; transform: translate(-50%, calc(var(--ptr, 0px) - 48px)); transition: opacity 150ms ease, transform 150ms ease; pointer-events: none; }
-.ptr .spinner { width: 20px; height: 20px; margin: 0; border-width: 2px; animation-play-state: paused; }
-.ptr--spin .spinner { animation-play-state: running; }
 @media (prefers-reduced-motion: reduce) { .ptr { transition: none; } }
 
+
+.ptr .cf-dots i { animation-play-state: paused; }
+.ptr--spin .cf-dots i { animation-play-state: running; }
+.sheet-state .cf-dots { margin-bottom: 14px; }

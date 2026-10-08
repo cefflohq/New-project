@@ -140,8 +140,6 @@ svg.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor;
 .btn.sm { height: var(--ctl-h-sm); padding: 0 10px; font-size: var(--t-meta); }
 .btn.sm svg.i { width: 14px; height: 14px; }
 .btn:disabled { opacity: .5; cursor: not-allowed; filter: none; }
-.btn .spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin .7s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
 .link-btn { border: 0; background: none; color: var(--primary); font-weight: 500; cursor: pointer; padding: 0; font-size: inherit; }
 .link-btn:hover { text-decoration: underline; text-underline-offset: 2px; }
 .round-btn { width: 32px; height: 32px; border-radius: var(--r-sm); border: 1px solid var(--border-strong); background: var(--surface); display: grid; place-items: center; color: var(--ink-2); text-decoration: none; }
@@ -242,8 +240,6 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
 .state.error .ico { background: var(--danger-tint); color: var(--danger); }
 .gated { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: var(--r-sm); background: var(--surface-2); border: 1px solid var(--border); color: var(--ink-2); font-size: var(--t-meta); text-align: left; }
 .gated svg.i { width: 14px; height: 14px; margin-top: 1px; color: var(--muted); }
-.skel { background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-hover) 50%, var(--surface-2) 75%); background-size: 200% 100%; animation: sk 1.2s ease-in-out infinite; border-radius: var(--r-sm); }
-@keyframes sk { to { background-position: -200% 0; } }
 
 /* ================================================================ stats, lists, detail */
 .stats { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
@@ -537,7 +533,7 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
   .nbanners { top: 12px; left: 12px; right: 12px; width: auto; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .skel, .btn .spin, .modal-root, .modal, .nbanner { animation: none; }
+  .modal-root, .modal, .nbanner { animation: none; }
   .sidebar, .switch::after { transition: none; }
 }
 
@@ -546,7 +542,6 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
 .photo-btn { position: relative; display: block; padding: 0; border: 0; background: none; border-radius: 50%; cursor: pointer; }
 .photo-btn .avatar { overflow: hidden; }
 .photo-btn .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
-.photo-btn .spin { position: absolute; inset: 0; margin: auto; width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--primary); border-right-color: transparent; animation: spin .7s linear infinite; }
 .photo-btn.busy .avatar { opacity: .45; }
 .photo-actions { display: flex; gap: 6px; }
 .photo-actions .icon-btn { border: 1px solid var(--border); }

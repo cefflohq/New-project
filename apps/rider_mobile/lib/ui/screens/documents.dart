@@ -1,3 +1,4 @@
+import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -111,11 +112,9 @@ class _LiveDocumentsScreenState extends State<LiveDocumentsScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (_loading)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(Gap.xl),
-                child: CircularProgressIndicator(),
-              ),
+            const Padding(
+              padding: EdgeInsets.all(Gap.xl),
+              child: CefPageLoader(),
             )
           else ...[
             Row(

@@ -1,3 +1,4 @@
+import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -559,16 +560,7 @@ class SubmittingDetailsModal extends StatelessWidget {
     width: 320,
     child: Column(
       children: [
-        const SizedBox(
-          width: 62,
-          height: 62,
-          child: CircularProgressIndicator(
-            strokeWidth: 7,
-            strokeCap: StrokeCap.round,
-            color: Color(0xFF1668E3),
-            backgroundColor: Color(0xFFE2EAF7),
-          ),
-        ),
+        const CefDots(),
         const SizedBox(height: Gap.lg),
         Text(
           L.submittingDetails,
