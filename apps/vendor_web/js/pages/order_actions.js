@@ -6,6 +6,7 @@ import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { fetchZones, fetchRiders, todayLocal } from '../data.js';
 import { esc, icon, modal, toast, busy, copyText } from '../ui.js';
+import { hasPin, mountPicker } from '../map.js';
 
 const uuid = () => crypto.randomUUID();
 
@@ -36,7 +37,9 @@ export async function openAddOrder(onDone, existing = null) {
   const ed = existing || {};
   let zones = [];
   try { zones = (await fetchZones()).filter(z => z.status === 'active'); } catch { /* zone optional */ }
+  let picker = null;
   const m = modal({
+    onClose: () => picker?.destroy(),
     title: t(existing ? 'edit.title' : 'add.title'), lead: t(existing ? 'edit.lead' : 'add.lead'),
     body: `
       <div class="field"><label>${esc(t('add.name'))}</label><input class="input" name="name" maxlength="120" autocomplete="off" value="${esc(ed.customer_name || '')}"></div>
@@ -45,10 +48,21 @@ export async function openAddOrder(onDone, existing = null) {
       <div class="field"><label>${esc(t('add.zone'))}</label><select class="select" name="zone"><option value="">${esc(t('add.noZone'))}</option>${zones.map(z => `<option value="${esc(z.id)}" ${z.id === ed.zone_id ? 'selected' : ''}>${esc(z.name)}</option>`).join('')}</select></div>
       <div class="field"><label>${esc(t('orders.items'))}</label><div data-items style="display:grid;gap:8px"></div>
         <button type="button" class="link-btn" data-additem style="justify-self:start">+ ${esc(t('add.addItem'))}</button></div>
+      <div class="field"><label>${esc(t('pin.pickerLabel'))}</label><div class="pm pm-picker" data-pin></div><div class="hint" data-pinhint>${esc(t('pin.pickerHint'))}</div></div>
       <div class="field"><label>${esc(t('add.notes'))}</label><textarea class="textarea" name="notes" rows="2">${esc(ed.notes || '')}</textarea></div>
       <div class="err" data-err hidden></div>`,
     footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit>${esc(t(existing ? 'edit.save' : 'add.create'))}</button>`,
   });
+  picker = mountPicker(m.el.querySelector('[data-pin]'), hasPin(ed) ? { lat: Number(ed.latitude), lng: Number(ed.longitude) } : null,
+    pin => { m.el.querySelector('[data-pinhint]').textContent = t(pin ? 'pin.set' : 'pin.pickerHint'); });
+  // set_order_pin (Owner/Operator only, source 'vendor'). The order is already
+  // saved by then, so a pin failure is a warning, never a lost order.
+  const savePin = async orderId => {
+    const pin = picker.get();
+    if (!orderId || !pin || !picker.changed()) return;
+    try { await api.rpc('set_order_pin', { p_order_id: orderId, p_latitude: pin.lat, p_longitude: pin.lng }); }
+    catch { toast(t('pin.saveFail'), 'error'); }
+  };
   const items = m.el.querySelector('[data-items]');
   const addItem = (l = {}) => items.insertAdjacentHTML('beforeend', `<div style="display:grid;grid-template-columns:1fr 90px;gap:8px"><input class="input" data-iname placeholder="${esc(t('add.itemName'))}" value="${esc(l.name || '')}"><input class="input" data-iqty type="number" min="1" value="${Number(l.quantity) || 1}" aria-label="${esc(t('add.qty'))}"></div>`);
   const prior = Array.isArray(ed.items) ? ed.items : [];
@@ -74,6 +88,7 @@ export async function openAddOrder(onDone, existing = null) {
         }));
         // An address change resets the location server-side; resolve it again.
         if (address !== existing.delivery_address) api.fn('geocode-order', { order_id: existing.id }).catch(() => {});
+        await savePin(existing.id);
         m.close(); toast(t('edit.saved')); onDone?.();
       } catch (ex) { err.textContent = ex.message; err.hidden = false; }
       return;
@@ -89,6 +104,7 @@ export async function openAddOrder(onDone, existing = null) {
       // and it surfaces under Need Attention.
       const orderId = created?.order?.id ?? created?.order_id ?? created?.id;
       if (orderId) api.fn('geocode-order', { order_id: orderId }).catch(() => {});
+      await savePin(orderId);
       m.close();
       toast(t('add.created'));
       onDone?.();

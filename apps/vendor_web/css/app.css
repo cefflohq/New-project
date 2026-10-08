@@ -594,3 +594,25 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
 .int-key { display: flex; align-items: center; gap: 10px; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); }
 .int-conn .muted { font-size: 12.5px; color: var(--muted); margin: 0; }
 .int-conn .err { color: var(--danger, #c81e1e); font-size: 13px; margin: 0; }
+
+/* Delivery pin maps — CEFFLO UI over MapLibre/OpenFreeMap */
+.pm { position: relative; height: 200px; border-radius: var(--r-lg); overflow: hidden; background: var(--neutral-tint); box-shadow: inset 0 0 0 1px var(--border); isolation: isolate; }
+.pm-picker { height: 260px; }
+[data-detail] .pm { height: 180px; }
+.pm-canvas { position: absolute !important; inset: 0; width: 100%; height: 100%; }
+.pm-pin { position: absolute; left: 50%; top: 50%; width: 36px; height: 47px; margin: -47px 0 0 -18px; pointer-events: none; z-index: 3; opacity: 0; transition: transform .18s ease; }
+.pm-pin.has, .pm.is-moving .pm-pin { opacity: 1; }
+.pm-pin svg { width: 36px; height: 47px; filter: drop-shadow(0 6px 8px rgba(0,0,0,.25)); }
+.pm-pin path { fill: var(--primary); } .pm-pin circle { fill: #fff; }
+.pm-pin i { position: absolute; left: 50%; bottom: -4px; width: 12px; height: 5px; margin-left: -6px; border-radius: 50%; background: rgba(0,0,0,.28); transition: transform .18s ease, opacity .18s ease; }
+.pm.is-moving .pm-pin { transform: translateY(-10px); }
+.pm.is-moving .pm-pin i { transform: scale(.6); opacity: .5; }
+.pm-zoom { position: absolute; right: 10px; top: 10px; display: grid; border-radius: var(--r-md); overflow: hidden; background: var(--surface); box-shadow: var(--shadow-pop); z-index: 4; }
+.pm-zoom button { width: 36px; height: 36px; display: grid; place-items: center; border: 0; background: var(--surface); color: var(--ink); cursor: pointer; }
+.pm-zoom button + button { border-top: 1px solid var(--border); }
+.pm-locate { position: absolute; right: 10px; bottom: 12px; width: 42px; height: 42px; border-radius: 50%; border: 0; display: grid; place-items: center; background: var(--surface); color: var(--primary); box-shadow: var(--shadow-pop); cursor: pointer; z-index: 4; }
+.pm-zoom svg, .pm-locate svg { width: 18px; height: 18px; }
+.pm.is-locating .pm-locate svg { animation: pm-spin 1s linear infinite; }
+@keyframes pm-spin { to { transform: rotate(360deg); } }
+.pm-attr { position: absolute; left: 8px; bottom: 6px; font-size: 10px; color: var(--ink-2); background: rgba(255,255,255,.78); padding: 2px 6px; border-radius: 6px; z-index: 4; }
+.pm-view .pm-canvas { pointer-events: none; }
