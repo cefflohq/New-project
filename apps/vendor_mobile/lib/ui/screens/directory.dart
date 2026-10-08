@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -8,6 +6,7 @@ import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../async_view.dart';
+import '../delivery_pin.dart';
 import '../shell.dart';
 import '../widgets.dart';
 import 'hiring.dart';
@@ -47,7 +46,7 @@ class ZonesScreen extends StatelessWidget {
         return PageBody(
           onRefresh: reload,
           children: [
-            _ZonesOverviewMap(zones: zones),
+            _ZonesOverviewMap(orders: orders),
             SectionHeading(L.zones2(zones.length)),
             if (zones.isEmpty)
               StateBlock.empty(L.noZonesYetTapCreateFirst)
@@ -84,160 +83,29 @@ class ZonesScreen extends StatelessWidget {
   }
 }
 
-/// All zones on one illustrative map: each zone is a polygon with a pin and
-/// its name, the first active zone emphasised in Anchor Blue. Geometry stays
-/// server-owned; this is a preview layout, not real boundaries.
+/// Every pinned order across the business's zones on one real map. Zones
+/// have no stored geometry, so the map shows the orders, not boundaries.
 class _ZonesOverviewMap extends StatelessWidget {
-  const _ZonesOverviewMap({required this.zones});
-  final List<Zone> zones;
-
-  /// Fractional centres for up to eight zones, the emphasised one first.
-  static const _slots = [
-    (.50, .52),
-    (.26, .20),
-    (.80, .22),
-    (.20, .62),
-    (.76, .70),
-    (.44, .86),
-    (.88, .46),
-    (.10, .40),
-  ];
+  const _ZonesOverviewMap({required this.orders});
+  final List<VendorOrder> orders;
 
   @override
-  Widget build(BuildContext context) {
-    final shown = zones.take(_slots.length).toList();
-    final focus = shown.indexWhere((z) => z.isActive);
-    return SizedBox(
-      height: 240,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(Sizes.cardRadius),
-        child: LayoutBuilder(
-          builder: (context, box) => CustomPaint(
-            painter: _ZonesOverviewPainter(
-              count: shown.length,
-              focus: focus,
-              slots: _slots,
-              ground: context.c.subtle,
-              road: context.c.card,
-            ),
-            child: Stack(
-              children: [
-                for (final (i, z) in shown.indexed)
-                  Positioned(
-                    left: box.maxWidth * _slots[i].$1 - 55,
-                    top: box.maxHeight * _slots[i].$2 - 22,
-                    width: 110,
-                    child: _ZonePinLabel(name: z.name, focused: i == focus),
-                  ),
-              ],
-            ),
-          ),
-        ),
+  Widget build(BuildContext context) =>
+      PinsMap(drops: _drops(orders), emptyLabel: L.mapNoPinnedOrders);
+}
+
+/// Pinned orders as map drops; delivered ones show a check.
+List<MapDrop> _drops(Iterable<VendorOrder> orders) => [
+  for (final o in orders)
+    if (o.hasPin && o.status != DeliveryStatus.cancelled)
+      (
+        lat: o.latitude!,
+        lng: o.longitude!,
+        label: null,
+        done: o.status == DeliveryStatus.delivered,
+        next: false,
       ),
-    );
-  }
-}
-
-class _ZonePinLabel extends StatelessWidget {
-  const _ZonePinLabel({required this.name, required this.focused});
-  final String name;
-  final bool focused;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          LucideIcons.mapPin,
-          size: Sizes.icon,
-          color: focused ? CefColors.brand : context.c.iconColor,
-        ),
-        const SizedBox(height: 2),
-        if (focused)
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: Gap.sm,
-              vertical: 2,
-            ),
-            decoration: BoxDecoration(
-              color: CefColors.brand,
-              borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-            ),
-            child: Text(
-              name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: text.labelMedium?.copyWith(color: Colors.white),
-            ),
-          )
-        else
-          Text(
-            name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: text.labelMedium?.copyWith(color: context.c.textPrimary),
-          ),
-      ],
-    );
-  }
-}
-
-class _ZonesOverviewPainter extends CustomPainter {
-  const _ZonesOverviewPainter({
-    required this.count,
-    required this.focus,
-    required this.slots,
-    required this.ground,
-    required this.road,
-  });
-  final int count, focus;
-  final List<(double, double)> slots;
-  final Color ground, road;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    _paintStreets(canvas, size, ground, road);
-    for (var i = 0; i < count; i++) {
-      final centre = Offset(
-        size.width * slots[i].$1,
-        size.height * slots[i].$2,
-      );
-      final r = i == focus ? size.height * .24 : size.height * .15;
-      final hex = Path();
-      for (var k = 0; k < 6; k++) {
-        final angle = (k * 60 - 30) * 3.1415926535 / 180;
-        final point = centre + Offset(r * 1.1 * _cos(angle), r * _sin(angle));
-        k == 0
-            ? hex.moveTo(point.dx, point.dy)
-            : hex.lineTo(point.dx, point.dy);
-      }
-      hex.close();
-      final emphasis = i == focus;
-      canvas.drawPath(
-        hex,
-        Paint()
-          ..color = CefColors.brand.withValues(alpha: emphasis ? .22 : .08),
-      );
-      canvas.drawPath(
-        hex,
-        Paint()
-          ..color = CefColors.brand.withValues(alpha: emphasis ? 1 : .35)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = emphasis ? 2 : 1.2,
-      );
-    }
-  }
-
-  static double _cos(double a) => math.cos(a);
-  static double _sin(double a) => math.sin(a);
-
-  @override
-  bool shouldRepaint(_ZonesOverviewPainter old) =>
-      old.count != count || old.focus != focus || old.ground != ground;
-}
+];
 
 /// Light street grid shared by the zone map painters.
 void _paintStreets(Canvas canvas, Size size, Color ground, Color road) {
@@ -713,7 +581,7 @@ class _ZoneDetailBody extends StatelessWidget {
           Gap.xxl,
         ),
         children: [
-          _ZoneMap(name: zone.name),
+          _ZoneMap(orders: orders),
           const SizedBox(height: Gap.md),
           Row(
             children: [
@@ -965,45 +833,16 @@ class _SequenceBadge extends StatelessWidget {
   );
 }
 
-/// Zone detail map: the zone's polygon with its name pill and pin. The
-/// strongest visual element of the screen.
+/// Zone detail map: this zone's pinned orders on a real map.
 class _ZoneMap extends StatelessWidget {
-  const _ZoneMap({required this.name});
-  final String name;
+  const _ZoneMap({required this.orders});
+  final List<VendorOrder> orders;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
+  Widget build(BuildContext context) => PinsMap(
     height: 200,
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(Sizes.cardRadius),
-      child: CustomPaint(
-        painter: _CoverageMapPainter.of(context),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Gap.md,
-                  vertical: Gap.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: CefColors.brand,
-                  borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-                ),
-                child: Text(
-                  name,
-                  style: Theme.of(context).textTheme.labelLarge
-                      ?.copyWith(color: Colors.white),
-                ),
-              ),
-              const SizedBox(height: Gap.xs),
-              Icon(LucideIcons.mapPin, color: CefColors.brand, size: 28),
-            ],
-          ),
-        ),
-      ),
-    ),
+    drops: _drops(orders),
+    emptyLabel: L.mapNoPinnedOrders,
   );
 }
 

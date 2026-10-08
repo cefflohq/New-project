@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/theme.dart';
+
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
 
 /// Raster OpenStreetMap tiles work on Flutter web, Android and iOS. Temporary
@@ -18,11 +19,8 @@ const _attribution = SimpleAttributionWidget(
   alignment: Alignment.bottomLeft,
 );
 
-Widget _pinIcon() => const Icon(
-  LucideIcons.mapPin,
-  size: 40,
-  color: CefColors.navy,
-);
+Widget _pinIcon() =>
+    const Icon(LucideIcons.mapPin, size: 40, color: CefColors.navy);
 
 /// Read-only mini map with the customer's pin. Pan-only, no zoom or rotate.
 class DeliveryPinView extends StatelessWidget {
@@ -266,6 +264,154 @@ class _DeliveryPinPickerState extends State<DeliveryPinPicker> {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One drop on a [PinsMap]. [label] is the stop sequence when known.
+typedef MapDrop = ({
+  double lat,
+  double lng,
+  String? label,
+  bool done,
+  bool next,
+});
+
+/// Read-only map with several customer pins (run stops, zone orders). Fits
+/// all pins; Malaysia overview when none. Pins only -- no rider location.
+class PinsMap extends StatelessWidget {
+  const PinsMap({
+    super.key,
+    required this.drops,
+    this.height = 240,
+    this.emptyLabel,
+  });
+  final List<MapDrop> drops;
+  final double height;
+  final String? emptyLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final points = [for (final d in drops) LatLng(d.lat, d.lng)];
+    final MapOptions options;
+    if (points.length > 1) {
+      options = MapOptions(
+        initialCameraFit: CameraFit.coordinates(
+          coordinates: points,
+          padding: const EdgeInsets.all(40),
+          maxZoom: 16,
+        ),
+        interactionOptions: const InteractionOptions(
+          flags: InteractiveFlag.drag | InteractiveFlag.pinchZoom,
+        ),
+      );
+    } else {
+      options = MapOptions(
+        initialCenter: points.isEmpty ? _malaysia : points.first,
+        initialZoom: points.isEmpty ? 5.5 : 15,
+        interactionOptions: const InteractionOptions(
+          flags: InteractiveFlag.drag | InteractiveFlag.pinchZoom,
+        ),
+      );
+    }
+    Widget dot(MapDrop d) => Container(
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: d.done
+            ? c.success
+            : d.next
+            ? CefColors.ceffloMustard
+            : CefColors.anchorBlue,
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 4)],
+      ),
+      child: d.done
+          ? const Icon(LucideIcons.check, size: 16, color: Colors.white)
+          : Text(
+              d.label ?? '',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: d.next ? CefColors.navy : Colors.white,
+              ),
+            ),
+    );
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(Sizes.cardRadius),
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          border: Border.all(color: c.border),
+          borderRadius: BorderRadius.circular(Sizes.cardRadius),
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            FlutterMap(
+              options: options,
+              children: [
+                TileLayer(
+                  urlTemplate: _tiles,
+                  userAgentPackageName: _tileAgent,
+                ),
+                MarkerLayer(
+                  markers: [
+                    // Next stop last so it draws on top.
+                    for (final d in [
+                      ...drops.where((d) => !d.next),
+                      ...drops.where((d) => d.next),
+                    ])
+                      Marker(
+                        point: LatLng(d.lat, d.lng),
+                        width: d.next ? 34 : 28,
+                        height: d.next ? 34 : 28,
+                        child: dot(d),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+            // Plain text credit: SimpleAttributionWidget overflows before
+            // the map has a width.
+            Positioned(
+              left: Gap.sm,
+              bottom: Gap.xs,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                color: Colors.white70,
+                child: const Text(
+                  '© OpenStreetMap',
+                  style: TextStyle(fontSize: 10, color: Colors.black87),
+                ),
+              ),
+            ),
+            if (drops.isEmpty && emptyLabel != null)
+              Positioned(
+                left: Gap.md,
+                right: Gap.md,
+                top: Gap.md,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: Gap.md,
+                    vertical: Gap.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: c.card,
+                    borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+                    border: Border.all(color: c.border),
+                  ),
+                  child: Text(
+                    emptyLabel!,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              ),
           ],
         ),
       ),

@@ -44,12 +44,11 @@ class TodayContent extends StatelessWidget {
         ? orders
         : orders.where((o) => o.orderDate == businessToday).toList();
     final delivered =
-        today.where((o) => o.status == DeliveryStatus.delivered).toList()
-          ..sort(
-            (a, b) => (b.completedAt ?? b.createdAt).compareTo(
-              a.completedAt ?? a.createdAt,
-            ),
-          );
+        today.where((o) => o.status == DeliveryStatus.delivered).toList()..sort(
+          (a, b) => (b.completedAt ?? b.createdAt).compareTo(
+            a.completedAt ?? a.createdAt,
+          ),
+        );
     final issues = orders
         .where((o) => o.status == DeliveryStatus.issue)
         .toList();

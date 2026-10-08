@@ -4160,4 +4160,7 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get pinSaveFailed =>
       'Pesanan disimpan, tetapi pin tidak dapat disimpan.';
+
+  @override
+  String get mapNoPinnedOrders => 'Belum ada order yang dipin';
 }

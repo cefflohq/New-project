@@ -2048,5 +2048,6 @@
   "useMyLocation": "Use my location",
   "zoomIn": "Zoom in",
   "zoomOut": "Zoom out",
-  "pinSaveFailed": "Order saved, but the pin could not be saved."
+  "pinSaveFailed": "Order saved, but the pin could not be saved.",
+  "mapNoPinnedOrders": "No pinned orders yet"
 }

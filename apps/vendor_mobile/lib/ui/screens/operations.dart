@@ -1284,11 +1284,8 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     final pin = _pickedPin;
     if (pin == null) return;
     try {
-      await AppScope.read(context).repo.setOrderPin(
-        orderId: orderId,
-        latitude: pin.lat,
-        longitude: pin.lng,
-      );
+      await AppScope.read(context).repo
+          .setOrderPin(orderId: orderId, latitude: pin.lat, longitude: pin.lng);
     } catch (_) {
       if (mounted) showCefToast(context, L.pinSaveFailed, error: true);
     }

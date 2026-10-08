@@ -7,6 +7,7 @@ import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../data/vendor_repository.dart';
 import '../async_view.dart';
+import '../delivery_pin.dart';
 import '../shell.dart';
 import '../widgets.dart';
 
@@ -110,19 +111,24 @@ class _RunDetailBody extends StatelessWidget {
           style: text.bodySmall,
         ),
         const SizedBox(height: Gap.md),
-        SizedBox(
-          height: 240,
-          width: double.infinity,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-            child: CustomPaint(
-              painter: _RoutePreviewPainter(
-                ground: c.subtle,
-                route: c.info,
-                road: c.card,
-              ),
-            ),
-          ),
+        Builder(
+          builder: (context) {
+            final nextId = open.isEmpty ? null : open.first.orderId;
+            return PinsMap(
+              emptyLabel: L.mapNoPinnedOrders,
+              drops: [
+                for (final (i, s) in run.stops.indexed)
+                  if (orders[s.orderId] case final o? when o.hasPin)
+                    (
+                      lat: o.latitude!,
+                      lng: o.longitude!,
+                      label: '${i + 1}',
+                      done: s.status == DeliveryStatus.delivered,
+                      next: s.orderId == nextId,
+                    ),
+              ],
+            );
+          },
         ),
         const SizedBox(height: Gap.lg),
         Row(
@@ -349,120 +355,6 @@ class _DispatchSheetState extends State<_DispatchSheet> {
       ),
     );
   }
-}
-
-/// Locked V-19 direction: a blue route with a Yellow driver marker, never a
-/// bare placeholder box. Illustrative only — real polylines/ETA are
-/// backend-owned and land in Phase 3.
-class _RoutePreviewPainter extends CustomPainter {
-  _RoutePreviewPainter({
-    required this.ground,
-    required this.route,
-    required this.road,
-  });
-  final Color ground, route, road;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawRect(Offset.zero & size, Paint()..color = ground);
-    final roads = Paint()
-      ..color = road
-      ..strokeWidth = 5;
-    for (var i = -2; i < 8; i++) {
-      canvas.drawLine(
-        Offset(0, i * 40.0),
-        Offset(size.width, i * 40.0 + 90),
-        roads,
-      );
-    }
-    final path = Path()
-      ..moveTo(size.width * .12, size.height * .82)
-      ..quadraticBezierTo(
-        size.width * .35,
-        size.height * .30,
-        size.width * .58,
-        size.height * .48,
-      )
-      ..quadraticBezierTo(
-        size.width * .78,
-        size.height * .62,
-        size.width * .90,
-        size.height * .18,
-      );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = route
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 4
-        ..strokeCap = StrokeCap.round,
-    );
-    for (final stop in [
-      Offset(size.width * .12, size.height * .82),
-      Offset(size.width * .58, size.height * .48),
-    ]) {
-      canvas.drawCircle(stop, 5, Paint()..color = route);
-      canvas.drawCircle(
-        stop,
-        5,
-        Paint()
-          ..color = Colors.white
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2,
-      );
-    }
-    for (final fraction in const [
-      Offset(.25, .58),
-      Offset(.43, .43),
-      Offset(.73, .48),
-    ]) {
-      final center = Offset(
-        size.width * fraction.dx,
-        size.height * fraction.dy,
-      );
-      canvas.drawCircle(center, 12, Paint()..color = route);
-      final check = Path()
-        ..moveTo(center.dx - 4, center.dy)
-        ..lineTo(center.dx - 1, center.dy + 3)
-        ..lineTo(center.dx + 5, center.dy - 4);
-      canvas.drawPath(
-        check,
-        Paint()
-          ..color = Colors.white
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2,
-      );
-    }
-    final driver = Offset(size.width * .90, size.height * .18);
-    canvas.drawCircle(driver, 20, Paint()..color = CefColors.ceffloMustard);
-    final marker = TextPainter(
-      text: TextSpan(
-        text: String.fromCharCode(LucideIcons.motorbike.codePoint),
-        style: TextStyle(
-          fontFamily: LucideIcons.motorbike.fontFamily,
-          package: LucideIcons.motorbike.fontPackage,
-          fontSize: 22,
-          color: CefColors.navy,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    marker.paint(canvas, driver - Offset(marker.width / 2, marker.height / 2));
-    canvas.drawCircle(
-      driver,
-      20,
-      Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.4,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _RoutePreviewPainter oldDelegate) =>
-      oldDelegate.ground != ground ||
-      oldDelegate.route != route ||
-      oldDelegate.road != road;
 }
 
 /// V-26 / V-27 — Service area. Coverage is a server decision; this screen

@@ -7580,6 +7580,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Order saved, but the pin could not be saved.'**
   String get pinSaveFailed;
+
+  /// No description provided for @mapNoPinnedOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'No pinned orders yet'**
+  String get mapNoPinnedOrders;
 }
 
 class _AppLocalizationsDelegate

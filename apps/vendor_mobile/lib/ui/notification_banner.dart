@@ -8,7 +8,6 @@ import '../core/notification_alerts.dart';
 import '../core/theme.dart';
 import '../data/models.dart';
 
-
 /// Foreground alert banner (NOTIFICATION_EVENT_MATRIX §5,
 /// CEFFLO_NOTIFICATION_SYSTEM_MASTER_SPEC): shown once per notification
 /// while the app is open. A compact grey glass card from Cefflo — the

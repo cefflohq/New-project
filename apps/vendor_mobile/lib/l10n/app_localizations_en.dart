@@ -4155,4 +4155,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pinSaveFailed => 'Order saved, but the pin could not be saved.';
+
+  @override
+  String get mapNoPinnedOrders => 'No pinned orders yet';
 }

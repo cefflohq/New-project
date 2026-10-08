@@ -1613,9 +1613,7 @@ class _SlideToConfirmState extends State<SlideToConfirm> {
                             : const Color(0xFFC9D0DB),
                       ),
                       child: _working
-                          ? const Center(
-                              child: CefDots(onBlue: false),
-                            )
+                          ? const Center(child: CefDots(onBlue: false))
                           : Icon(
                               LucideIcons.chevronRight,
                               size: 30,
