@@ -11,4 +11,5 @@ for pair in vendor_orders:s_v_orders vendor_zones:s_v_zones vendor_riders:s_v_dr
     "color=c=0xF2F5FA:s=1080x1920:d=6[bg];[0:v]scale=900:-1,format=rgba[p];[bg][p]overlay=x=90:y='(1920-h)/2+40-t*12'" \
     -r 30 -c:v libx264 -pix_fmt yuv420p "$OUT/$n.mp4"
 done
+mkdir -p "$HERE/files/persona/kak_zee" && cp "$HERE/../persona/kak_zee/"[0-9]*.jpg "$HERE/files/persona/kak_zee/"
 echo "screens: $(ls "$OUT" | wc -l)"

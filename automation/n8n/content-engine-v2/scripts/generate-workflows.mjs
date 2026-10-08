@@ -36,8 +36,9 @@ return [{ json: { config: {
   dailyBudgetUsd: 25,                              // generation stops when today's cost reaches this
   deepseek: { url: 'https://api.deepseek.com/chat/completions', model: 'deepseek-v4-flash', temperature: 0.8 },
   image: { url: 'SET_IMAGE_API_URL', model: 'SET_IMAGE_MODEL',
-           personaRefs: ['SET_KAK_ZEE_REF_FRONT_URL', 'SET_KAK_ZEE_REF_3Q_URL', 'SET_KAK_ZEE_REF_FULL_URL'],
-           wardrobe: 'plain pastel baju kurung moden or simple blouse with tudung bawal, casual' },
+           // Kak Zee references (persona/kak_zee), served by the render worker under /files/persona/kak_zee/
+           personaRefs: ['01_front_portrait.jpg', '05_three_quarter_right.jpg', '07_three_quarter_left.jpg', '02_full_body.jpg'],
+           wardrobe: 'denim-blue cotton tudung bawal, beige linen overshirt over a white t-shirt, black wide-leg trousers, white sneakers, black smartwatch, black shoulder bag' },
   seedance: { url: 'https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks', model: 'SET_SEEDANCE_MODEL_ID' },
   kling: { url: 'https://api-singapore.klingai.com/v1/videos/image2video', model: 'kling-v2-1' },
   omni: { submitUrl: 'SET_OMNIHUMAN_SUBMIT_URL', pollUrl: 'SET_OMNIHUMAN_POLL_URL' },
@@ -273,8 +274,8 @@ Prompt style is enforced: handheld phone, natural light, no cinematic/4K.
 return [{ json: { n: $json.n, seconds: $json.seconds, subtitle: $json.subtitle, audio_url: $json.audio_url, video_url: c.render.url + path, provider: 'screen-library' } }];`, [1720, -260]);
   // keyframe (broll + talking)
   a.code('Keyframe request', `const c = ${cfg};
-const prompt = 'Vertical 9:16 photo taken on a phone, handheld, natural indoor light, candid, everyday Malaysian setting. Kak Zee (same woman as reference images), Malay woman mid-30s, wearing ' + c.image.wardrobe + '. ' + $json.visual_prompt + '. Not cinematic, not studio, natural skin texture, no text, no logos.';
-return [{ json: { ...$json, kf: { model: c.image.model, prompt, reference_images: c.image.personaRefs, size: '1080x1920', n: 1 } } }];`, [1720, 60]);
+const prompt = 'Vertical 9:16 photo taken on a phone, handheld, natural indoor light, candid, everyday Malaysian setting. Kak Zee (exactly the same woman as the reference images: round face, warm brown eyes, light natural makeup, soft smile), Malay woman mid-30s, wearing ' + c.image.wardrobe + '. ' + $json.visual_prompt + '. Not cinematic, not studio, natural skin texture, no text, no logos.';
+return [{ json: { ...$json, kf: { model: c.image.model, prompt, reference_images: c.image.personaRefs.map(f => c.render.url + '/files/persona/kak_zee/' + f), size: '1080x1920', n: 1 } } }];`, [1720, 60]);
   a.http('Image · keyframe', 'Image', { url: `={{ ${cfg}.image.url }}`, body: '={{ JSON.stringify($json.kf) }}' }, [1940, 60]);
   a.code('Keyframe URL', `const s = $('Keyframe request').first().json; const r = $json;
 const url = r.data?.[0]?.url || r.images?.[0]?.url || r.output?.[0] || r.url; if (!url) throw new Error('Image API: no URL in response');
