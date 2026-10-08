@@ -208,7 +208,7 @@ return $('Save script').all().map(it => ({ json: { content_id: it.json.content_i
   a.code('Mark HOLD', `${SQL_HELPER}
 return $input.all().map(it => ({ json: { ...it.json, sql: \`update cefflo_ce2.content set qa = \${q(it.json.qa)}::jsonb, script = \${q(it.json.script)}::jsonb, status = 'HOLD', updated_at = now() where id = '\${it.json.content_id}'\` } }));`, [3520, 380]);
   a.pg('DB · hold', '={{ $json.sql }}', [3740, 380]);
-  a.tg('Notify HOLD', { chatId: `={{ ${cfg}.founderChatId }}`, text: `=⚠️ CE2 HOLD — slot {{ $('Mark HOLD').item.json.brief.slot }} ({{ $('Mark HOLD').item.json.brief.type }}) gagal QA 2 kali.\n{{ ($('Mark HOLD').item.json.findings || []).map(f => '• ' + f.criterion + ': ' + f.evidence).join('\\n').slice(0, 900) }}`, additionalFields: { appendAttribution: false } }, [3960, 380]);
+  a.tg('Notify HOLD', { chatId: `={{ ${cfg}.founderChatId }}`, text: `=⚠️ CE2 HOLD — slot {{ $('Mark HOLD').item.json.brief.slot }} ({{ $('Mark HOLD').item.json.brief.type }}) gagal QA 2 kali.\n{{ ($('Mark HOLD').item.json.findings || []).map(f => '• ' + f.criterion + ': ' + f.evidence).join('\\n').replace(/[_*\\[\\]]/g, ' ').slice(0, 900) }}`, additionalFields: { appendAttribution: false } }, [3960, 380]);
 
   a.chain('Config', 'Memory + cost today', 'Under budget?');
   a.link('Under budget?', 'Build plan request', 0); a.link('Under budget?', 'Alert: budget reached', 1);
@@ -364,7 +364,7 @@ const body = r.type === 'video'
   ? 'Hook: ' + (s.hook || '') + shots + '\\n\\nTikTok: ' + (s.caption?.tiktok || '') + '\\nMeta: ' + (s.caption?.meta || '') + '\\n' + (s.hashtags || []).join(' ')
   : (s.posts ? s.posts.map((t, i) => (i + 1) + '/' + s.posts.length + '\\n' + t).join('\\n\\n— — —\\n\\n') : (s.text || ''));
 const claims = (s.claims || []).length ? '\\n\\nClaims: ' + s.claims.join(' | ') : '';
-return [{ json: { ...r, tag, kind: r.media_url ? 'video' : 'text', text: (head + '\\n' + tag + '\\n\\n' + body + claims).slice(0, r.media_url ? 1000 : 4000) } }];`, [660, 0]);
+return [{ json: { ...r, tag, kind: r.media_url ? 'video' : 'text', text: (head + '\\n' + tag + '\\n\\n' + body + claims).replace(/[_*\\[\\]]/g, ' ').slice(0, r.media_url ? 1000 : 4000) } }];`, [660, 0]);
   a.sw('Video or text?', '={{ $json.kind }}', ['video', 'text'], [880, 0]);
   a.tg('Telegram · video preview', { operation: 'sendVideo', chatId: `={{ ${cfg}.founderChatId }}`, file: '={{ $json.media_url }}',
     replyMarkup: 'inlineKeyboard', inlineKeyboard: TG_KEYBOARD('$json.id'), additionalFields: { caption: '={{ $json.text }}' } }, [1120, -80]);
@@ -447,7 +447,7 @@ return [{ json: { content_id: ctx.id, type: ctx.type, pass, findings: out.findin
   a.sw('Video or text?', '={{ $json.type }}', ['video', 'text'], [2420, -80]);
   a.exec('→ 02 Video Production', ID.video, [2660, -160], false);
   a.exec('→ 03 Send for approval', ID.send, [2660, 0], false);
-  a.tg('Notify HOLD', { chatId: `={{ ${cfg}.founderChatId }}`, text: `=⚠️ Revise gagal QA — content #{{ $json.content_id }} kini HOLD.\n{{ $json.findings.map(f => '• ' + f.criterion + ': ' + f.evidence).join('\\n').slice(0, 900) }}`, additionalFields: { appendAttribution: false } }, [2420, 160]);
+  a.tg('Notify HOLD', { chatId: `={{ ${cfg}.founderChatId }}`, text: `=⚠️ Revise gagal QA — content #{{ $json.content_id }} kini HOLD.\n{{ $json.findings.map(f => '• ' + f.criterion + ': ' + f.evidence).join('\\n').replace(/[_*\\[\\]]/g, ' ').slice(0, 900) }}`, additionalFields: { appendAttribution: false } }, [2420, 160]);
   a.chain('From 04', 'Config', 'Load content', 'Build rewrite request', 'DeepSeek · rewrite', 'Build QA request', 'DeepSeek · QA', 'Evaluate + SQL', 'Save revision', 'Carry', 'QA pass?');
   a.link('QA pass?', 'Video or text?', 0); a.link('QA pass?', 'Notify HOLD', 1);
   a.link('Video or text?', '→ 02 Video Production', 0); a.link('Video or text?', '→ 03 Send for approval', 1);

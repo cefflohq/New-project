@@ -356,7 +356,7 @@
       ],
       "parameters": {
         "chatId": "={{ $('Config').first().json.config.founderChatId }}",
-        "text": "=⚠️ Revise gagal QA — content #{{ $json.content_id }} kini HOLD.\n{{ $json.findings.map(f => '• ' + f.criterion + ': ' + f.evidence).join('\\n').slice(0, 900) }}",
+        "text": "=⚠️ Revise gagal QA — content #{{ $json.content_id }} kini HOLD.\n{{ $json.findings.map(f => '• ' + f.criterion + ': ' + f.evidence).join('\\n').replace(/[_*\\[\\]]/g, ' ').slice(0, 900) }}",
         "additionalFields": {
           "appendAttribution": false
         }

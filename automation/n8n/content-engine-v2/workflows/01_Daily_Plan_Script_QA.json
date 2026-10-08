@@ -607,7 +607,7 @@
       ],
       "parameters": {
         "chatId": "={{ $('Config').first().json.config.founderChatId }}",
-        "text": "=⚠️ CE2 HOLD — slot {{ $('Mark HOLD').item.json.brief.slot }} ({{ $('Mark HOLD').item.json.brief.type }}) gagal QA 2 kali.\n{{ ($('Mark HOLD').item.json.findings || []).map(f => '• ' + f.criterion + ': ' + f.evidence).join('\\n').slice(0, 900) }}",
+        "text": "=⚠️ CE2 HOLD — slot {{ $('Mark HOLD').item.json.brief.slot }} ({{ $('Mark HOLD').item.json.brief.type }}) gagal QA 2 kali.\n{{ ($('Mark HOLD').item.json.findings || []).map(f => '• ' + f.criterion + ': ' + f.evidence).join('\\n').replace(/[_*\\[\\]]/g, ' ').slice(0, 900) }}",
         "additionalFields": {
           "appendAttribution": false
         }
