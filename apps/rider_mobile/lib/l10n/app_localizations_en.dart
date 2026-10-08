@@ -2023,4 +2023,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mapNotAvailable => 'Could not open the map';
+
+  @override
+  String get navigate => 'Navigate';
+
+  @override
+  String get noCustomerPin =>
+      'Customer did not pin a location — use the address';
 }

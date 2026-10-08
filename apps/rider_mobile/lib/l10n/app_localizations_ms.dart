@@ -2038,4 +2038,10 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get mapNotAvailable => 'Tak dapat buka peta';
+
+  @override
+  String get navigate => 'Navigasi';
+
+  @override
+  String get noCustomerPin => 'Pelanggan tidak pin lokasi — guna alamat';
 }

@@ -938,5 +938,7 @@
   },
   "continueLabel": "Continue",
   "pinnedLocation": "Customer pinned the exact location",
-  "mapNotAvailable": "Could not open the map"
+  "mapNotAvailable": "Could not open the map",
+  "navigate": "Navigate",
+  "noCustomerPin": "Customer did not pin a location — use the address"
 }

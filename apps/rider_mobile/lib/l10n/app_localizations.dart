@@ -3715,6 +3715,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not open the map'**
   String get mapNotAvailable;
+
+  /// No description provided for @navigate.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigate'**
+  String get navigate;
+
+  /// No description provided for @noCustomerPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer did not pin a location — use the address'**
+  String get noCustomerPin;
 }
 
 class _AppLocalizationsDelegate

@@ -9,6 +9,7 @@ import '../../core/theme.dart';
 import '../../core/dial.dart';
 import '../../data/demo_data.dart';
 import '../../data/driver_models.dart';
+import '../delivery_pin_map.dart';
 import '../map_canvas.dart';
 import '../bottom_surface.dart';
 import '../widgets.dart';
@@ -1428,6 +1429,17 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
     super.dispose();
   }
 
+  Future<void> _navigate(BuildContext context, DriverStop stop) async {
+    if (!await openNavigation(
+          lat: stop.latitude,
+          lng: stop.longitude,
+          address: stop.addressLine1,
+        ) &&
+        context.mounted) {
+      showCefToast(context, L.mapNotAvailable);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
@@ -1486,16 +1498,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
               const SizedBox(width: 8),
               _RoundAction(
                 icon: LucideIcons.navigation,
-                onTap: () async {
-                  if (!await openNavigation(
-                        lat: stop.latitude,
-                        lng: stop.longitude,
-                        address: stop.addressLine1,
-                      ) &&
-                      context.mounted) {
-                    showCefToast(context, L.mapNotAvailable);
-                  }
-                },
+                onTap: () => _navigate(context, stop),
               ),
               const SizedBox(width: 8),
               _RoundAction(
@@ -1526,6 +1529,23 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                 ),
               ],
             ],
+          ),
+          const SizedBox(height: Gap.md),
+          if (stop.latitude != null && stop.longitude != null) ...[
+            DeliveryPinMap(
+              latitude: stop.latitude!,
+              longitude: stop.longitude!,
+              onTap: () => _navigate(context, stop),
+            ),
+            const SizedBox(height: Gap.sm),
+          ] else
+            Text(
+              L.noCustomerPin,
+              style: context.t.bodyMedium?.copyWith(fontSize: 12.5),
+            ),
+          CeffloPrimaryButton(
+            L.navigate,
+            onTap: () => _navigate(context, stop),
           ),
           const SizedBox(height: Gap.lg),
           Divider(height: 1, color: c.border),

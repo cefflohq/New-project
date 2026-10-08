@@ -602,5 +602,7 @@
   "mvRetakePhoto": "Ambil semula gambar {side}",
   "continueLabel": "Teruskan",
   "pinnedLocation": "Pelanggan pin lokasi tepat",
-  "mapNotAvailable": "Tak dapat buka peta"
+  "mapNotAvailable": "Tak dapat buka peta",
+  "navigate": "Navigasi",
+  "noCustomerPin": "Pelanggan tidak pin lokasi — guna alamat"
 }
