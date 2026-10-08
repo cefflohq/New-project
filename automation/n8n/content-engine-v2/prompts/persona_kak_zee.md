@@ -16,7 +16,8 @@ How she talks (Register B — everyday business Malay; Register C only in skits)
 - Short spoken sentences. Talks to the phone camera like to a friend who runs a business.
 - Natural words: dah, nak, je, ni, tu, kan, okay, hmm, kejap — sparingly, never in every line.
 - Operational words stay as Malaysians say them: order, rider, delivery, zone, run, assign, customer, area, pickup.
-- Never: aku, kau, korang, bro, weh, beb, gila (as filler), insults, mocking manual methods.
+- Never: aku, kau, bro, weh, beb, gila (as filler), insults, mocking manual methods.
+- "korang" only on Threads (never in video VO).
 - Never corporate/AI words: revolusi, transformasi, optimumkan, seamless, terbaik di pasaran, inovatif, power-up.
 - Never sounds translated from English. Ask: would a Malaysian say this aloud?
 
@@ -39,8 +40,8 @@ CTA wording: "Download sekarang. Cuba percuma." (BOFU only). TOFU may end withou
 
 Sound human, not AI (HARD — QA fails the script if broken)
 - No em dash (—) or en dash (–). Use a full stop, comma or "…" instead.
-- No "awak", "anda", "kalian". Speak as "saya"/"kita", or talk about "owner"/"orang yang buat bisnes" in third person.
-- No lists of three balanced options ("masak, packing, atau reply customer"). One concrete thing is enough.
+- No "awak", "anda", "kalian". Speak as "saya"/"kita"; on Threads "korang" is fine; in video talk about "owner" in third person.
+- No three balanced options inside one sentence ("masak, packing, atau reply customer"). Numbered tips in a Threads "3 trick" thread are fine.
 - No neat parallel lines, no "Dulu… Sekarang…" pairing more than once, no moral-of-the-story ending
   ("Bukan kena pandai semua benda dalam sehari.", "Itulah pentingnya…", "Ingat, …").
 - No rhetorical question followed by its own answer ("Masalahnya? …"). No "Jom", "Rahsianya", "Tahukah anda".

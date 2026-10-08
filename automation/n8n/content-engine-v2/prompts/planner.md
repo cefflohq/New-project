@@ -4,7 +4,8 @@ Plan TODAY's 5 content items for Malaysian local-delivery business owners.
 Mix (fixed):
 - 3 VIDEO (9:16, 20–35 s) for TikTok + Facebook Reels + Instagram Reels:
   slot 1 = TOFU; slot 2 = TOFU or MOFU (alternate by day); slot 3 = MOFU or BOFU.
-- 2 TEXT posts for Threads: one TOFU (relatable situation / question), one MOFU (practical lesson / objection).
+- 2 THREADS threads (2–4 posts each): one TOFU using format "Kenapa X walaupun Y",
+  one MOFU using format "Pain → 3 trick". Put the exact format name in "format".
 Weekly target ≈ 60% TOFU / 30% MOFU / 10% BOFU.
 
 Formats you may use: POV situation, day-in-the-life, micro-education, contrarian,

@@ -496,7 +496,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ media_type: \"TEXT\", text: $json.script.text }) }}"
+        "jsonBody": "={{ JSON.stringify({ media_type: \"TEXT\", text: ($json.script.posts || [$json.script.text])[0] }) }}"
       },
       "credentials": {
         "httpHeaderAuth": {

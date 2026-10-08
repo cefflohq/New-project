@@ -361,7 +361,7 @@ const head = (r.type === 'video' ? '🎬 VIDEO' : '✍️ THREADS') + ' · slot 
 const shots = r.type === 'video' && !r.media_url ? '\\n\\nSKRIP (belum dirender):\\n' + (s.shots || []).map(x => x.n + '. [' + x.kind + (x.screen_id ? ':' + x.screen_id : '') + ', ' + x.seconds + 's] ' + (x.vo || '(tiada VO)')).join('\\n') : '';
 const body = r.type === 'video'
   ? 'Hook: ' + (s.hook || '') + shots + '\\n\\nTikTok: ' + (s.caption?.tiktok || '') + '\\nMeta: ' + (s.caption?.meta || '') + '\\n' + (s.hashtags || []).join(' ')
-  : (s.text || '');
+  : (s.posts ? s.posts.map((t, i) => (i + 1) + '/' + s.posts.length + '\\n' + t).join('\\n\\n— — —\\n\\n') : (s.text || ''));
 const claims = (s.claims || []).length ? '\\n\\nClaims: ' + s.claims.join(' | ') : '';
 return [{ json: { ...r, tag, kind: r.media_url ? 'video' : 'text', text: (head + '\\n' + tag + '\\n\\n' + body + claims).slice(0, r.media_url ? 1000 : 4000) } }];`, [660, 0]);
   a.sw('Video or text?', '={{ $json.kind }}', ['video', 'text'], [880, 0]);
@@ -488,7 +488,7 @@ return [{ json: { sql: \`insert into cefflo_ce2.publication (content_id, platfor
 return [{ json: { sql: \`insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('\${it.id}', 'facebook', \${q(vid)}, '\${ok ? 'PUBLISHED' : 'FAILED'}', \${q(ok ? null : ($json.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id\` } }];`, [1520, 60]);
   a.pg('DB · FB', '={{ $json.sql }}', [1740, 60]);
   // Threads
-  a.http('Threads · create', 'Threads', { url: `={{ ${cfg}.threads.graph + '/' + ${cfg}.threads.userId + '/threads' }}`, body: '={{ JSON.stringify({ media_type: "TEXT", text: $json.script.text }) }}' }, [860, 260], { onError: 'continueRegularOutput' });
+  a.http('Threads · create', 'Threads', { url: `={{ ${cfg}.threads.graph + '/' + ${cfg}.threads.userId + '/threads' }}`, body: '={{ JSON.stringify({ media_type: "TEXT", text: ($json.script.posts || [$json.script.text])[0] }) }}' }, [860, 260], { onError: 'continueRegularOutput' });
   a.wait('Wait 30s (Threads)', 30, [1080, 260]);
   a.http('Threads · publish', 'Threads', { url: `={{ ${cfg}.threads.graph + '/' + ${cfg}.threads.userId + '/threads_publish' }}`, body: `={{ JSON.stringify({ creation_id: $('Threads · create').item.json.id }) }}` }, [1300, 260], { onError: 'continueRegularOutput' });
   a.code('Record Threads', `${SQL_HELPER} const it = $('Claim due items').item.json; const ok = !!$json.id;
