@@ -132,7 +132,7 @@ const TG_KEYBOARD = idExpr => ({ rows: [{ row: { buttons: [
   { text: '✏️ Revise', additionalFields: { callback_data: `=rv|{{ ${idExpr} }}` } },
   { text: '❌ Reject', additionalFields: { callback_data: `=no|{{ ${idExpr} }}` } } ] } }] });
 
-const deepseekBody = '={{ JSON.stringify($json.body) }}';
+const deepseekBody = '={{ $json.body }}';
 const parseLLM = `const raw = $json.choices?.[0]?.message?.content ?? '';
 let out; try { out = JSON.parse(raw.replace(/^\`\`\`(json)?|\`\`\`$/g, '').trim()); } catch (e) { throw new Error('LLM did not return JSON: ' + raw.slice(0, 300)); }`;
 

@@ -175,7 +175,7 @@
           "genericAuthType": "httpHeaderAuth",
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify($json.body) }}"
+          "jsonBody": "={{ $json.body }}"
         },
         "credentials": {
           "httpHeaderAuth": {
@@ -269,7 +269,7 @@
           "genericAuthType": "httpHeaderAuth",
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify($json.body) }}"
+          "jsonBody": "={{ $json.body }}"
         },
         "credentials": {
           "httpHeaderAuth": {
@@ -314,7 +314,7 @@
           "genericAuthType": "httpHeaderAuth",
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify($json.body) }}"
+          "jsonBody": "={{ $json.body }}"
         },
         "credentials": {
           "httpHeaderAuth": {
@@ -3620,7 +3620,7 @@
           "genericAuthType": "httpHeaderAuth",
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify($json.body) }}"
+          "jsonBody": "={{ $json.body }}"
         },
         "credentials": {
           "httpHeaderAuth": {
@@ -3665,7 +3665,7 @@
           "genericAuthType": "httpHeaderAuth",
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify($json.body) }}"
+          "jsonBody": "={{ $json.body }}"
         },
         "credentials": {
           "httpHeaderAuth": {
@@ -5463,7 +5463,7 @@
           "genericAuthType": "httpHeaderAuth",
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify($json.body) }}"
+          "jsonBody": "={{ $json.body }}"
         },
         "credentials": {
           "httpHeaderAuth": {
