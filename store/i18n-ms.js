@@ -2,6 +2,15 @@
 // English is the default and the key; vendor content is never translated.
 window.CEFFLO_STORE_MS = {
   // engine: states, cart, checkout, success
+  'Delivery pin': 'Pin lokasi penghantaran', 'Pin my location': 'Pin lokasi saya', 'Use my current location again': 'Guna lokasi semasa semula',
+  'Pin your exact location so the rider finds you without calling.': 'Pin lokasi tepat anda supaya rider jumpa tanpa perlu telefon.',
+  'Location is approximate (±{m} m). Drag the pin onto your house.': 'Lokasi anggaran (±{m} m). Seret pin ke rumah anda.',
+  'Pinned. Drag the pin or tap the map if it is not exactly at your place.': 'Dah dipin. Seret pin atau tekan peta kalau belum tepat di tempat anda.',
+  'Tap the map to pin your place.': 'Tekan peta untuk pin tempat anda.', 'Finding your location…': 'Mencari lokasi anda…',
+  'Location is off. Tap the map to pin your place.': 'Lokasi dimatikan. Tekan peta untuk pin tempat anda.',
+  'Please pin your delivery location on the map.': 'Sila pin lokasi penghantaran anda di peta.',
+  'Notes for the rider (optional)': 'Nota untuk rider (pilihan)',
+  'e.g. blue gate, rumah lot behind the surau, leave at the guardhouse': 'cth. pagar biru, rumah lot belakang surau, tinggal di pondok guard',
   'Back': 'Kembali', 'Your order': 'Pesanan anda', 'Empty cart': 'Kosongkan troli', 'Total': 'Jumlah',
   'Final prices are confirmed by {store} when your order is received.': 'Harga akhir disahkan oleh {store} apabila pesanan anda diterima.',
   'Continue': 'Teruskan', 'Closed': 'Tutup', 'Your cart is empty.': 'Troli anda kosong.', 'Browse products': 'Lihat produk',

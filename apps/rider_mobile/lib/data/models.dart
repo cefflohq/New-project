@@ -136,6 +136,8 @@ class RiderOrder {
     this.items = const [],
     this.completedAt,
     this.sequenceLocked = false,
+    this.latitude,
+    this.longitude,
   });
 
   final String id;
@@ -159,6 +161,10 @@ class RiderOrder {
   /// start_run_delivery locks the stop sequence; each stop then moves
   /// picked_up -> out_for_delivery -> arrived through rider_transition.
   final bool sequenceLocked;
+
+  /// Customer-pinned drop point (orders.latitude/longitude), if any.
+  final double? latitude;
+  final double? longitude;
 
   bool get isDelivered => status == DeliveryStatus.delivered;
   bool get hasIssue => status == DeliveryStatus.issue;
@@ -200,6 +206,8 @@ class RiderOrder {
       sequence: stop?['sequence'] is int ? stop!['sequence'] as int : null,
       sequenceLocked: stop?['sequence_locked_at'] != null,
       assignmentStatus: assignment?['status']?.toString(),
+      latitude: (row['latitude'] as num?)?.toDouble(),
+      longitude: (row['longitude'] as num?)?.toDouble(),
     );
   }
 }

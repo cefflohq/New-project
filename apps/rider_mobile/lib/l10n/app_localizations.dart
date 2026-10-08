@@ -3703,6 +3703,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue'**
   String get continueLabel;
+
+  /// No description provided for @pinnedLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer pinned the exact location'**
+  String get pinnedLocation;
+
+  /// No description provided for @mapNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the map'**
+  String get mapNotAvailable;
 }
 
 class _AppLocalizationsDelegate

@@ -936,5 +936,7 @@
       }
     }
   },
-  "continueLabel": "Continue"
+  "continueLabel": "Continue",
+  "pinnedLocation": "Customer pinned the exact location",
+  "mapNotAvailable": "Could not open the map"
 }

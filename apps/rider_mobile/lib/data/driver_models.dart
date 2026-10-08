@@ -28,6 +28,9 @@ class DriverStop {
     this.etaMinutes,
     this.distanceMetres,
     this.deliveryStatus,
+    this.latitude,
+    this.longitude,
+    this.note,
   });
 
   final String id;
@@ -46,6 +49,13 @@ class DriverStop {
   /// (null in the prototype). Drives which execution step is next.
   final String? deliveryStatus;
 
+  /// Exact drop point pinned by the customer (Storefront GPS pin), if any.
+  final double? latitude;
+  final double? longitude;
+
+  /// The customer's delivery note (gate, block, where to leave it).
+  final String? note;
+
   DriverStop copyWith({StopStatus? status, String? deliveredAt}) => DriverStop(
     id: id,
     reference: reference,
@@ -59,6 +69,9 @@ class DriverStop {
     etaMinutes: etaMinutes,
     distanceMetres: distanceMetres,
     deliveryStatus: deliveryStatus,
+    latitude: latitude,
+    longitude: longitude,
+    note: note,
   );
 }
 

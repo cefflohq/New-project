@@ -859,6 +859,9 @@ class AppState extends ChangeNotifier {
     ],
     deliveredAt: o.completedAt == null ? null : _timeLabel(o.completedAt!),
     deliveryStatus: o.status.name,
+    latitude: o.latitude,
+    longitude: o.longitude,
+    note: o.note.trim().isEmpty ? null : o.note.trim(),
   );
 
   static List<String> get _days => [

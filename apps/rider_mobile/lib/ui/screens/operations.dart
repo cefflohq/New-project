@@ -1476,8 +1476,26 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                         LucideIcons.milestone,
                         stop.addressLine2!,
                       ),
+                    if (stop.note != null)
+                      _iconLine(context, LucideIcons.stickyNote, stop.note!),
+                    if (stop.latitude != null)
+                      _iconLine(context, LucideIcons.locateFixed, L.pinnedLocation),
                   ],
                 ),
+              ),
+              const SizedBox(width: 8),
+              _RoundAction(
+                icon: LucideIcons.navigation,
+                onTap: () async {
+                  if (!await openNavigation(
+                        lat: stop.latitude,
+                        lng: stop.longitude,
+                        address: stop.addressLine1,
+                      ) &&
+                      context.mounted) {
+                    showCefToast(context, L.mapNotAvailable);
+                  }
+                },
               ),
               const SizedBox(width: 8),
               _RoundAction(

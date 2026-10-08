@@ -600,5 +600,7 @@
   "takeFrontPhoto": "Ambil Gambar Depan",
   "takeBackPhoto": "Ambil Gambar Belakang",
   "mvRetakePhoto": "Ambil semula gambar {side}",
-  "continueLabel": "Teruskan"
+  "continueLabel": "Teruskan",
+  "pinnedLocation": "Pelanggan pin lokasi tepat",
+  "mapNotAvailable": "Tak dapat buka peta"
 }

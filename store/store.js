@@ -49,7 +49,7 @@
 
   // Line icons (stroke = currentColor), drawn for Cefflo; no icon font.
   const P = {
-    back: '<path d="M15 18l-6-6 6-6"/>', arrowLeft: '<path d="M19 12H5M12 19l-7-7 7-7"/>', arrowRight: '<path d="M5 12h14M12 5l7 7-7 7"/>',
+    back: '<path d="M15 18l-6-6 6-6"/>', arrowLeft: '<path d="M19 12H5M12 19l-7-7 7-7"/>', mapPin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>', arrowRight: '<path d="M5 12h14M12 5l7 7-7 7"/>',
     arrowDown: '<path d="M12 5v14M19 12l-7 7-7-7"/>', bag: '<path d="M6 7h12l1 13H5L6 7z"/><path d="M9 7a3 3 0 016 0"/>',
     cart: '<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.6 11.2a1 1 0 001 .8h9.7a1 1 0 001-.8L21 7H6"/>',
     basket: '<path d="M4 10h16l-1.5 9a1 1 0 01-1 .8H6.5a1 1 0 01-1-.8L4 10z"/><path d="M8 10l4-6 4 6M9 14v3M15 14v3"/>',
@@ -211,7 +211,13 @@
         <label>${esc(t('Name'))}<input name="name" autocomplete="name" maxlength="120" required></label>
         <label>${esc(t('Phone'))}<input name="phone" autocomplete="tel" inputmode="tel" maxlength="30" required placeholder="+60 12-345 6789"></label>
         <label>${esc(t('Delivery address'))}<textarea name="address" rows="3" maxlength="500" required></textarea></label>
-        <label>${esc(t('Notes (optional)'))}<textarea name="notes" rows="2" maxlength="500"></textarea></label>
+        <div class="sf-pin">
+          <span class="sf-pin-label">${esc(t('Delivery pin'))}</span>
+          <div class="sf-pin-map" id="sfPinMap" ${pin || pinOpen ? '' : 'hidden'}></div>
+          <p class="sf-pin-hint" id="sfPinHint">${esc(pin ? pinHint() : t('Pin your exact location so the rider finds you without calling.'))}</p>
+          <button type="button" class="sf-pin-btn" data-act="pin">${icon('mapPin')} ${esc(t(pin ? 'Use my current location again' : 'Pin my location'))}</button>
+        </div>
+        <label>${esc(t('Notes for the rider (optional)'))}<textarea name="notes" rows="2" maxlength="500" placeholder="${esc(t('e.g. blue gate, rumah lot behind the surau, leave at the guardhouse'))}"></textarea></label>
         <div class="sf-sum"><span>${esc(t(n === 1 ? '{n} item' : '{n} items', { n }))}</span><b>${money(total())}</b></div>
         <p class="sf-note">${esc(t('Payment is arranged directly with {store}. Cefflo does not take payment for this order.', { store: store.name }))}</p>
         ${err ? `<p class="sf-error" role="alert">${esc(err)}</p>` : ''}
@@ -231,6 +237,61 @@
       <button type="button" class="sf-link" data-act="home">${esc(t('Back to the store'))}</button>
       ${langSwitch()}
     </div>`;
+  }
+
+  // ------------------------------------------------------------- delivery pin
+  // OpenStreetMap + Leaflet (temporary until Mapbox; Founder 2026-10-08).
+  // GPS gives the first fix; the customer drags the pin or taps the map onto
+  // the exact house. Coordinates go with the order (submit_storefront_order).
+  let pin = null, pinOpen = false, pinMap = null, pinMarker = null;
+  const MY_CENTER = [4.2, 101.9];
+  const pinHint = () => pin.source === 'gps' && pin.acc > 60
+    ? t('Location is approximate (±{m} m). Drag the pin onto your house.', { m: Math.round(pin.acc) })
+    : t('Pinned. Drag the pin or tap the map if it is not exactly at your place.');
+  function loadLeaflet() {
+    if (window.L) return Promise.resolve(window.L);
+    return new Promise((ok, bad) => {
+      const css = document.createElement('link'); css.rel = 'stylesheet';
+      css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'; document.head.append(css);
+      const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+      s.onload = () => ok(window.L); s.onerror = bad; document.head.append(s);
+    });
+  }
+  function setPin(lat, lng, source, acc = null) {
+    pin = { lat: +lat.toFixed(6), lng: +lng.toFixed(6), source, acc };
+    const hint = document.getElementById('sfPinHint'); if (hint) hint.textContent = pinHint();
+  }
+  async function mountPinMap() {
+    const box = document.getElementById('sfPinMap'); if (!box) return;
+    box.hidden = false;
+    const L = await loadLeaflet();
+    pinMap?.remove();
+    pinMap = L.map(box, { zoomControl: true, attributionControl: true }).setView(pin ? [pin.lat, pin.lng] : MY_CENTER, pin ? 18 : 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(pinMap);
+    pinMarker = pin ? L.marker([pin.lat, pin.lng], { draggable: true }).addTo(pinMap) : null;
+    const place = (ll, source) => {
+      if (!pinMarker) pinMarker = L.marker(ll, { draggable: true }).addTo(pinMap); else pinMarker.setLatLng(ll);
+      pinMarker.off('dragend').on('dragend', () => { const p = pinMarker.getLatLng(); setPin(p.lat, p.lng, 'pin_adjusted'); });
+      setPin(ll.lat ?? ll[0], ll.lng ?? ll[1], source, source === 'gps' ? pin?.acc : null);
+    };
+    if (pinMarker) pinMarker.on('dragend', () => { const p = pinMarker.getLatLng(); setPin(p.lat, p.lng, 'pin_adjusted'); });
+    pinMap.on('click', e => place(e.latlng, pinMarker ? 'pin_adjusted' : 'map'));
+    mountPinMap.place = place;
+  }
+  async function locate() {
+    pinOpen = true;
+    await mountPinMap();
+    const hint = document.getElementById('sfPinHint');
+    if (!navigator.geolocation) { if (hint) hint.textContent = t('Tap the map to pin your place.'); return; }
+    if (hint) hint.textContent = t('Finding your location…');
+    navigator.geolocation.getCurrentPosition(p => {
+      pin = { ...(pin || {}), acc: p.coords.accuracy };
+      mountPinMap.place?.({ lat: p.coords.latitude, lng: p.coords.longitude }, 'gps');
+      pin.acc = p.coords.accuracy; if (hint) hint.textContent = pinHint();
+      pinMap?.setView([p.coords.latitude, p.coords.longitude], 18);
+    }, () => { if (hint) hint.textContent = t('Location is off. Tap the map to pin your place.'); },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
   }
 
   // ------------------------------------------------------------- render
@@ -258,6 +319,7 @@
       for (const [k, v] of Object.entries(form)) if (f.elements[k]) f.elements[k].value = v;
       f.addEventListener('input', e => { form[e.target.name] = e.target.value; });
       if (err) { const bad = f.querySelector('[aria-invalid="true"]'); bad?.focus(); }
+      if (pin || pinOpen) mountPinMap();
       f.addEventListener('submit', submit);
     }
   }
@@ -273,6 +335,7 @@
     e.preventDefault();
     const name = (form.name || '').trim(), phone = (form.phone || '').trim(), address = (form.address || '').trim();
     if (!name || !phone || !address) return render(t('Please fill in your name, phone and delivery address.'));
+    if (!pin && !EMBED) return render(t('Please pin your delivery location on the map.'));
     if (!phoneOk(phone)) return render(t('Enter a valid phone number, for example +60 12-345 6789.'));
     if (EMBED) return render(t('This is a preview. Orders are placed from your live storefront.'));
     if (isClosed()) return render(`${t('This store is closed right now.')} ${nextOpenText()}`.trim());
@@ -284,13 +347,14 @@
         p_slug: store.slug, p_items: [...cart].map(([product_id, quantity]) => ({ product_id, quantity })),
         p_customer_name: name, p_customer_phone: phone, p_delivery_address: address,
         p_delivery_notes: (form.notes || '').trim(), p_idempotency_key: idempotencyKey,
+        ...(pin ? { p_latitude: pin.lat, p_longitude: pin.lng, p_location_accuracy_m: pin.acc ?? null, p_location_source: pin.source } : {}),
       });
       if (res?.error) {
         if (/store closed/.test(res.error)) { store.openNow = false; store.nextOpen = res.next_open || store.nextOpen; }
         return render(errorText(res.error));
       }
       lastOrder = { ref: res.order_reference, token: res.tracking_token };
-      cart.clear(); saveCart(); form = {}; idempotencyKey = crypto.randomUUID();
+      cart.clear(); saveCart(); form = {}; pin = null; pinOpen = false; idempotencyKey = crypto.randomUUID();
       go('done');
     } catch (ex) {
       // The same key is kept, so a retry never creates a second order (a
@@ -315,6 +379,7 @@
       case 'buy': { const r = route(); if (r.name === 'product') { bump(r.id, ui.sel); ui.sel = 1; } go('cart'); break; }
       case 'addsel': { const r = route(); if (r.name === 'product') { bump(r.id, ui.sel); ui.sel = 1; } render(); break; }
       case 'img': ui.img = Number(id) || 0; render(); break;
+      case 'pin': locate(); break;
       case 'cat': ui.cat = id || null; render(); break;
       case 'catpage': ui.cat = id || null; go(id ? `c/${id}` : 'all'); break;
       case 'tocart': go('cart'); break;

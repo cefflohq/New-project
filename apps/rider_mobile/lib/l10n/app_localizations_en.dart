@@ -2017,4 +2017,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get continueLabel => 'Continue';
+
+  @override
+  String get pinnedLocation => 'Customer pinned the exact location';
+
+  @override
+  String get mapNotAvailable => 'Could not open the map';
 }
