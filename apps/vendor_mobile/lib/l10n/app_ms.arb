@@ -1217,5 +1217,7 @@
   "deviceDesktop": "Desktop",
   "screenHomeBrowse": "Laman Utama",
   "screenCategoryProducts": "Kategori & Produk",
-  "screenProductDetail": "Butiran Produk"
+  "screenProductDetail": "Butiran Produk",
+  "integrations": "Integrasi",
+  "integrationsLead": "Bawa order masuk ke Cefflo dari alat yang anda dah guna."
 }

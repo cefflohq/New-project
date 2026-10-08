@@ -4069,4 +4069,11 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get screenProductDetail => 'Butiran Produk';
+
+  @override
+  String get integrations => 'Integrasi';
+
+  @override
+  String get integrationsLead =>
+      'Bawa order masuk ke Cefflo dari alat yang anda dah guna.';
 }

@@ -74,6 +74,7 @@ enum VRoute {
   privacyPolicy,
   termsOfService,
   about,
+  integrations,
   // Additional routes required by the master beyond the 60 inventory.
   notificationInbox,
   hiring,
@@ -515,6 +516,13 @@ Map<VRoute, RouteSpec> get routeSpecs => <VRoute, RouteSpec>{
     id: 'V-59',
     title: L.termsService,
     parent: VRoute.about,
+    tab: NavTab.more,
+  ),
+  VRoute.integrations: RouteSpec(
+    route: VRoute.integrations,
+    id: 'X-INT',
+    title: L.integrations,
+    parent: VRoute.settings,
     tab: NavTab.more,
   ),
   VRoute.about: RouteSpec(

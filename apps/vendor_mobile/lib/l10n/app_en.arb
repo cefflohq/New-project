@@ -2020,5 +2020,7 @@
   "deviceDesktop": "Desktop",
   "screenHomeBrowse": "Home / Browse",
   "screenCategoryProducts": "Category & Products",
-  "screenProductDetail": "Product Detail"
+  "screenProductDetail": "Product Detail",
+  "integrations": "Integrations",
+  "integrationsLead": "Bring orders into Cefflo from the tools you already use."
 }

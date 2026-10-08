@@ -46,6 +46,7 @@ class UiPrototypeScreen extends StatelessWidget {
     VRoute.privacyPolicy => const _PolicyScreen(privacy: true),
     VRoute.termsOfService => const _PolicyScreen(privacy: false),
     VRoute.about => const _AboutScreen(),
+    VRoute.integrations => const _IntegrationsScreen(),
     VRoute.notificationInbox => const _NotificationInboxScreen(),
     _ => _ComingSoonScreen(
       title: spec.title,
@@ -2179,4 +2180,54 @@ class _ComingSoonScreen extends StatelessWidget {
       ),
     ],
   );
+}
+
+/// Integrations (Founder, 2026-10-08: listed in More again). Same list and
+/// truth as Vendor Web Settings → Integrations: only what the app can really
+/// do is Available and opens its flow; the rest is Coming soon, no action.
+class _IntegrationsScreen extends StatelessWidget {
+  const _IntegrationsScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    CefListRow live(String title, IconData icon, VRoute to) => CefListRow(
+      title: title,
+      icon: icon,
+      trailing: StatusChip(L.available, success: true),
+      onTap: () => app.go(to),
+    );
+    CefListRow soon(String title, IconData icon) => CefListRow(
+      title: title,
+      icon: icon,
+      trailing: StatusChip(L.comingSoon),
+      showChevron: false,
+    );
+    return PageBody(
+      grouped: true,
+      children: [
+        Text(L.integrationsLead, style: Theme.of(context).textTheme.bodyMedium),
+        const SizedBox(height: Gap.lg),
+        CefListGroup(
+          label: L.available,
+          children: [
+            live('CSV & Excel', LucideIcons.fileSpreadsheet, VRoute.importOrders),
+            live(L.manualEntry, LucideIcons.pencil, VRoute.newOrderManual),
+            live(L.storefront, LucideIcons.store, VRoute.storefront),
+          ],
+        ),
+        CefListGroup(
+          label: L.comingSoon,
+          children: [
+            soon('Shopify', LucideIcons.shoppingBag),
+            soon('WooCommerce', LucideIcons.shoppingCart),
+            soon('Wix', LucideIcons.globe),
+            soon('Google Sheets', LucideIcons.sheet),
+            soon('Google Drive', LucideIcons.hardDrive),
+            soon('API / Webhooks', LucideIcons.code),
+          ],
+        ),
+      ],
+    );
+  }
 }

@@ -7412,6 +7412,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Product Detail'**
   String get screenProductDetail;
+
+  /// No description provided for @integrations.
+  ///
+  /// In en, this message translates to:
+  /// **'Integrations'**
+  String get integrations;
+
+  /// No description provided for @integrationsLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Bring orders into Cefflo from the tools you already use.'**
+  String get integrationsLead;
 }
 
 class _AppLocalizationsDelegate

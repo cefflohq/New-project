@@ -4065,4 +4065,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get screenProductDetail => 'Product Detail';
+
+  @override
+  String get integrations => 'Integrations';
+
+  @override
+  String get integrationsLead =>
+      'Bring orders into Cefflo from the tools you already use.';
 }

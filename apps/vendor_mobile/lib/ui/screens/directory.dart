@@ -1883,6 +1883,7 @@ class SettingsScreen extends StatelessWidget {
           ),
         row(L.storefront, LucideIcons.store, VRoute.storefront),
         row(L.products, LucideIcons.package, VRoute.products),
+        row(L.integrations, LucideIcons.plug, VRoute.integrations),
         if (app.business?.isOwner ?? true)
           row(L.team, LucideIcons.users, VRoute.team),
         // M2: the Operator reaches Hiring here (Team is Owner-only).
