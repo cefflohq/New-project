@@ -33,7 +33,8 @@ const CONFIG_JS = `// ===== CEFFLO Content Engine V2 — CONFIG (edit here; secr
 return [{ json: { config: {
   tz: 'Asia/Kuala_Lumpur',
   founderChatId: '1140338735',          // your Telegram user/chat id (numbers)
-  dailyBudgetUsd: 25,                              // generation stops when today's cost reaches this
+  dailyBudgetUsd: 25,
+  videoProduction: false,                         // true once image/Seedance/OmniHuman/ElevenLabs + render worker are connected                              // generation stops when today's cost reaches this
   deepseek: { url: 'https://api.deepseek.com/chat/completions', model: 'deepseek-v4-flash', temperature: 0.8 },
   image: { url: 'SET_IMAGE_API_URL', model: 'SET_IMAGE_MODEL',
            // Kak Zee references (persona/kak_zee), served by the render worker under /files/persona/kak_zee/
@@ -150,7 +151,7 @@ Runs **06:00 MYT** daily (or Manual).
   a.link('Every day 06:00', 'Config'); a.link('Manual run', 'Config');
   a.pg('Memory + cost today', `select
   coalesce((select sum(usd) from cefflo_ce2.cost where created_at >= date_trunc('day', now() at time zone 'Asia/Kuala_Lumpur') at time zone 'Asia/Kuala_Lumpur'),0) as cost_today,
-  coalesce((select jsonb_agg(l order by l.id desc) from (select week, observation, confidence, action from cefflo_ce2.learning order by id desc limit 12) l),'[]') as learnings,
+  coalesce((select jsonb_agg(l) from (select week, observation, confidence, action from cefflo_ce2.learning order by id desc limit 12) l),'[]') as learnings,
   coalesce((select jsonb_agg(r) from (select c.id, c.hook, c.format, c.world, c.funnel, rc.score, rc.reason from cefflo_ce2.recycle_candidate rc join cefflo_ce2.content c on c.id = rc.content_id where not rc.used order by rc.score desc limit 3) r),'[]') as recycle,
   coalesce((select jsonb_agg(h) from (select hook from cefflo_ce2.content where hook is not null order by created_at desc limit 30) h),'[]') as recent_hooks,
   ((now() at time zone 'Asia/Kuala_Lumpur')::date - date '2026-01-05') % 2 as day_parity`, [440, 80], { alwaysOutputData: true });
@@ -198,7 +199,8 @@ return $input.all().map((it, i) => { const ctx = $('Build script request').all()
 return $input.all().map(it => ({ json: { ...it.json, sql: \`update cefflo_ce2.content set script = \${q(it.json.script)}::jsonb, qa = \${q(it.json.qa)}::jsonb,
   hook = coalesce(\${q(it.json.script.hook || it.json.script.title)}, hook), status = 'SCRIPTED', updated_at = now() where id = '\${it.json.content_id}'\` } }));`, [3300, 0]);
   a.pg('DB · scripted', '={{ $json.sql }}', [3520, 0]);
-  a.code('Route by type', `return $('Save script').all().map(it => ({ json: { content_id: it.json.content_id, type: it.json.brief.type } }));`, [3740, 0]);
+  a.code('Route by type', `const on = ${cfg}.videoProduction;
+return $('Save script').all().map(it => ({ json: { content_id: it.json.content_id, type: it.json.brief.type === 'video' && on ? 'video' : 'text' } }));`, [3740, 0]);
   a.sw('Video or text?', '={{ $json.type }}', ['video', 'text'], [3960, 0]);
   a.exec('→ 02 Video Production', ID.video, [4200, -80], false);
   a.exec('→ 03 Send for approval', ID.send, [4200, 100], false);
@@ -356,12 +358,13 @@ Nothing is published without **Approve** (handled in 04).`, [-80, -320], 560, 24
   a.pg('Load content', `={{ "select id, type, funnel, format, world, slot, script, media_url, revisions from cefflo_ce2.content where id = '" + $('From 01 / 02 / 05').first().json.content_id + "'" }}`, [440, 0]);
   a.code('Compose preview', `const r = $json; const s = r.script || {}; const tag = '#' + r.id.slice(0, 8);
 const head = (r.type === 'video' ? '🎬 VIDEO' : '✍️ THREADS') + ' · slot ' + r.slot + ' · ' + r.funnel + ' · ' + (r.format || '') + ' · ' + (r.world || '') + (r.revisions ? ' · rev ' + r.revisions : '');
+const shots = r.type === 'video' && !r.media_url ? '\\n\\nSKRIP (belum dirender):\\n' + (s.shots || []).map(x => x.n + '. [' + x.kind + (x.screen_id ? ':' + x.screen_id : '') + ', ' + x.seconds + 's] ' + (x.vo || '(tiada VO)')).join('\\n') : '';
 const body = r.type === 'video'
-  ? 'Hook: ' + (s.hook || '') + '\\n\\nTikTok: ' + (s.caption?.tiktok || '') + '\\nMeta: ' + (s.caption?.meta || '') + '\\n' + (s.hashtags || []).join(' ')
+  ? 'Hook: ' + (s.hook || '') + shots + '\\n\\nTikTok: ' + (s.caption?.tiktok || '') + '\\nMeta: ' + (s.caption?.meta || '') + '\\n' + (s.hashtags || []).join(' ')
   : (s.text || '');
 const claims = (s.claims || []).length ? '\\n\\nClaims: ' + s.claims.join(' | ') : '';
-return [{ json: { ...r, tag, text: (head + '\\n' + tag + '\\n\\n' + body + claims).slice(0, 1000) } }];`, [660, 0]);
-  a.sw('Video or text?', '={{ $json.type }}', ['video', 'text'], [880, 0]);
+return [{ json: { ...r, tag, kind: r.media_url ? 'video' : 'text', text: (head + '\\n' + tag + '\\n\\n' + body + claims).slice(0, r.media_url ? 1000 : 4000) } }];`, [660, 0]);
+  a.sw('Video or text?', '={{ $json.kind }}', ['video', 'text'], [880, 0]);
   a.tg('Telegram · video preview', { operation: 'sendVideo', chatId: `={{ ${cfg}.founderChatId }}`, file: '={{ $json.media_url }}',
     replyMarkup: 'inlineKeyboard', inlineKeyboard: TG_KEYBOARD('$json.id'), additionalFields: { caption: '={{ $json.text }}' } }, [1120, -80]);
   a.tg('Telegram · text preview', { chatId: `={{ ${cfg}.founderChatId }}`, text: '={{ $json.text }}',
@@ -393,14 +396,14 @@ const m = replied.match(/REVISE #([0-9a-f-]{36})/);
 if (m && msg.text) return [{ json: { action: 'note', content_id: m[1], note: msg.text.slice(0, 800), chat } }];
 return [];`, [440, 0]);
   a.sw('Action', '={{ $json.action }}', ['ok', 'no', 'rv', 'note'], [660, 0]);
-  a.pg('Approve + schedule', `={{ "with c as (select id, type from cefflo_ce2.content where id = '" + $json.content_id + "' and status in ('AWAITING_APPROVAL','READY','SCRIPTED')),
+  a.pg('Approve + schedule', `={{ "with c as (select id, type from cefflo_ce2.content where id = '" + $json.content_id + "' and status in ('AWAITING_APPROVAL','READY','SCRIPTED') and (type = 'text' or media_url is not null)),
 slots as (select (d + t::time) at time zone 'Asia/Kuala_Lumpur' as at from c,
   generate_series((now() at time zone 'Asia/Kuala_Lumpur')::date, (now() at time zone 'Asia/Kuala_Lumpur')::date + 7, interval '1 day') d,
   unnest(case when c.type = 'video' then array" + JSON.stringify(${cfg}.slots.video).replaceAll('\\"', "'") + " else array" + JSON.stringify(${cfg}.slots.text).replaceAll('\\"', "'") + " end) t),
 free as (select s.at from slots s where s.at > now() + interval '10 minutes' and not exists (select 1 from cefflo_ce2.content x, c where x.scheduled_at = s.at and x.type = c.type and x.status in ('APPROVED','PUBLISHING','PUBLISHED')) order by s.at limit 1)
 update cefflo_ce2.content set status = 'APPROVED', scheduled_at = (select at from free), updated_at = now() where id = (select id from c) returning id, scheduled_at" }}`, [900, -240], { alwaysOutputData: true });
   a.tg('Ack approve', { operation: 'sendMessage', chatId: `={{ $('Parse update').first().json.chat }}`,
-    text: `={{ $json.scheduled_at ? '✅ Diluluskan. Dijadual: ' + DateTime.fromISO(new Date($json.scheduled_at).toISOString()).setZone('Asia/Kuala_Lumpur').toFormat('ccc d LLL, HH:mm') + ' MYT' : 'ℹ️ Content ni dah diproses sebelum ni.' }}`, additionalFields: { appendAttribution: false } }, [1120, -240]);
+    text: `={{ $json.scheduled_at ? '✅ Diluluskan. Dijadual: ' + DateTime.fromISO(new Date($json.scheduled_at).toISOString()).setZone('Asia/Kuala_Lumpur').toFormat('ccc d LLL, HH:mm') + ' MYT' : 'ℹ️ Tak dijadualkan: video belum dirender, atau content ni dah diproses.' }}`, additionalFields: { appendAttribution: false } }, [1120, -240]);
   a.pg('Reject', `={{ "update cefflo_ce2.content set status = 'REJECTED', updated_at = now() where id = '" + $json.content_id + "' returning id" }}`, [900, -60]);
   a.tg('Ack reject', { chatId: `={{ $('Parse update').first().json.chat }}`, text: '❌ Ditolak. Akan diambil kira dalam learning mingguan.', additionalFields: { appendAttribution: false } }, [1120, -60]);
   a.pg('Mark REVISE', `={{ "update cefflo_ce2.content set status = 'REVISE', updated_at = now() where id = '" + $json.content_id + "' and revisions < 2 returning id" }}`, [900, 120], { alwaysOutputData: true });
