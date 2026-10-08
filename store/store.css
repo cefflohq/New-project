@@ -1038,10 +1038,28 @@ h1, h2, h3, h4, p { margin: 0; }
 
 .sf-clear { white-space: nowrap; }
 
-/* Delivery pin (OpenStreetMap) */
+/* Delivery pin — CEFFLO UI over MapLibre/OpenFreeMap */
 .sf-pin { display: grid; gap: 8px; }
 .sf-pin-label { font-size: 14px; font-weight: 600; }
-.sf-pin-map { height: 240px; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb; z-index: 0; }
+.sf-pin-map { position: relative; height: 280px; border-radius: 18px; overflow: hidden; background: #eef1f4; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); isolation: isolate; }
+.sf-map-canvas { position: absolute !important; inset: 0; width: 100%; height: 100%; }
+.sf-map-pin { position: absolute; left: 50%; top: 50%; width: 40px; height: 52px; margin: -52px 0 0 -20px; pointer-events: none; z-index: 3; transition: transform .18s ease; opacity: 0; }
+.sf-pin-map.has-pin .sf-map-pin, .sf-pin-map.is-moving .sf-map-pin { opacity: 1; }
+.sf-map-pin svg { width: 40px; height: 52px; filter: drop-shadow(0 6px 8px rgba(0,0,0,.25)); }
+.sf-map-pin path { fill: var(--accent, #1450E6); } .sf-map-pin circle { fill: #fff; }
+.sf-map-pin i { position: absolute; left: 50%; bottom: -4px; width: 12px; height: 5px; margin-left: -6px; border-radius: 50%; background: rgba(0,0,0,.28); transition: transform .18s ease, opacity .18s ease; }
+.sf-pin-map.is-moving .sf-map-pin { transform: translateY(-10px); }
+.sf-pin-map.is-moving .sf-map-pin i { transform: scale(.6); opacity: .5; }
+.sf-map-zoom { position: absolute; right: 10px; top: 10px; display: grid; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.14); z-index: 4; }
+.sf-map-zoom button { width: 38px; height: 38px; display: grid; place-items: center; border: 0; background: #fff; color: #111; cursor: pointer; }
+.sf-map-zoom button + button { border-top: 1px solid #eee; }
+.sf-map-zoom svg, .sf-map-locate svg, .sf-map-start svg { width: 18px; height: 18px; }
+.sf-map-locate { position: absolute; right: 10px; bottom: 12px; width: 44px; height: 44px; border-radius: 50%; border: 0; display: grid; place-items: center; background: #fff; color: var(--accent, #1450E6); box-shadow: 0 4px 14px rgba(0,0,0,.18); cursor: pointer; z-index: 4; }
+.sf-pin-map.is-locating .sf-map-locate svg { animation: sf-spin 1s linear infinite; }
+@keyframes sf-spin { to { transform: rotate(360deg); } }
+.sf-map-acc { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); padding: 6px 12px; border-radius: 999px; background: rgba(17,17,17,.78); color: #fff; font: 600 12px/1 Inter, sans-serif; z-index: 4; }
+.sf-map-start { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(255,255,255,.45); backdrop-filter: blur(2px); z-index: 5; transition: opacity .2s ease; }
+.sf-map-start button { display: inline-flex; align-items: center; gap: 8px; padding: 13px 20px; border: 0; border-radius: 999px; background: var(--accent, #1450E6); color: #fff; font: 700 15px Inter, sans-serif; box-shadow: 0 8px 20px rgba(0,0,0,.2); cursor: pointer; }
+.sf-pin-map.has-pin .sf-map-start, .sf-pin-map.is-locating .sf-map-start { opacity: 0; pointer-events: none; }
+.sf-map-attr { position: absolute; left: 8px; bottom: 6px; font-size: 10px; color: #555; background: rgba(255,255,255,.75); padding: 2px 6px; border-radius: 6px; z-index: 4; }
 .sf-pin-hint { margin: 0; font-size: 13px; color: #6b7280; }
-.sf-pin-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 12px; border: 1px solid #d1d5db; background: #fff; font: inherit; font-weight: 600; cursor: pointer; }
-.sf-pin-btn svg { width: 18px; height: 18px; }

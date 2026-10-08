@@ -2,6 +2,11 @@
 // English is the default and the key; vendor content is never translated.
 window.CEFFLO_STORE_MS = {
   // engine: states, cart, checkout, success
+  'Move the map so the pin sits on your house.': 'Gerakkan peta sampai pin tepat atas rumah anda.',
+  'Approximate (±{m} m). Move the map so the pin sits on your house.': 'Anggaran (±{m} m). Gerakkan peta sampai pin tepat atas rumah anda.',
+  'Pinned. Move the map if the pin is not exactly at your place.': 'Dah dipin. Gerakkan peta kalau pin belum tepat di tempat anda.',
+  'Location is off. Move the map so the pin sits on your house.': 'Lokasi dimatikan. Gerakkan peta sampai pin tepat atas rumah anda.',
+  'Use my current location': 'Guna lokasi semasa saya', 'Zoom in': 'Zum masuk', 'Zoom out': 'Zum keluar',
   'Delivery pin': 'Pin lokasi penghantaran', 'Pin my location': 'Pin lokasi saya', 'Use my current location again': 'Guna lokasi semasa semula',
   'Pin your exact location so the rider finds you without calling.': 'Pin lokasi tepat anda supaya rider jumpa tanpa perlu telefon.',
   'Location is approximate (±{m} m). Drag the pin onto your house.': 'Lokasi anggaran (±{m} m). Seret pin ke rumah anda.',
