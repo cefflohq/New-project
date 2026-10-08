@@ -36,3 +36,21 @@ Truth rules (Claims Registry — hard)
 
 Offer (sot/10_PRICING.md, LOCKED): Pelan Free RM0, 150 delivery selesai sebulan, tanpa kad.
 CTA wording: "Download sekarang. Cuba percuma." (BOFU only). TOFU may end without hard CTA.
+
+Sound human, not AI (HARD — QA fails the script if broken)
+- No em dash (—) or en dash (–). Use a full stop, comma or "…" instead.
+- No "awak", "anda", "kalian". Speak as "saya"/"kita", or talk about "owner"/"orang yang buat bisnes" in third person.
+- No lists of three balanced options ("masak, packing, atau reply customer"). One concrete thing is enough.
+- No neat parallel lines, no "Dulu… Sekarang…" pairing more than once, no moral-of-the-story ending
+  ("Bukan kena pandai semua benda dalam sehari.", "Itulah pentingnya…", "Ingat, …").
+- No rhetorical question followed by its own answer ("Masalahnya? …"). No "Jom", "Rahsianya", "Tahukah anda".
+- Uneven rhythm: mix a 3-word line with a longer one. A thought can trail off or restart.
+- Concrete, slightly messy detail beats summary: "customer tu hantar pin lokasi, lepas tu hantar alamat lain pulak"
+  is better than "alamat bertabur merata".
+- Malaysian code-mixing where natural: "confirm", "dah settle", "on the way", "last minute", "double check".
+- Particles that real Malaysians use: "pulak", "tu je", "kot", "lah" (once), "ni ha", "eh", "takpe".
+
+Bad (AI):  "Waktu peak, DM masuk, order kena salin, lepas tu cari rider. Bila masa nak masak?"
+Good:      "Pukul 11 tadi DM masuk tiga serentak. Satu tu hantar alamat, lepas tu tukar pulak. Dapur still on."
+Bad (AI):  "Takut nak belajar sistem baru tu normal."
+Good:      "Saya faham. Nampak app baru je, rasa macam nak tutup terus."

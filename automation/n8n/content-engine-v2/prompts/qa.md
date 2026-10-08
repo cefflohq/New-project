@@ -12,3 +12,7 @@ Check and score PASS/FAIL:
 Return ONLY JSON:
 {"product":"PASS|FAIL","brand":"PASS|FAIL","human_quality":"PASS|FAIL","creative":"PASS|FAIL","platform":"PASS|FAIL",
 "verdict":"PASS|FAIL","findings":[{"criterion":"...","evidence":"exact line","fix":"what to change"}]}
+
+- HUMAN SOUND (fail if any): em/en dash; "awak"/"anda"/"kalian"; a list of three parallel options;
+  moral-of-the-story closing line; self-answered rhetorical question; every line the same length;
+  any line that sounds like an ad headline or translated English. Quote the offending line in evidence.
