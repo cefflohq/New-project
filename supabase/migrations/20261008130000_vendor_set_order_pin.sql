@@ -1,4 +1,4 @@
--- PROPOSAL — NOT APPLIED (awaiting Founder approval).
+-- Founder-approved 2026-10-08 ("lulus task 4"); applied on staging.
 -- docs/cefflo/security/DELIVERY_PIN_AND_PLACE_PHOTOS_PROPOSAL.md §7.
 -- Vendors cannot write orders.latitude/longitude directly (no UPDATE policy on
 -- orders for members), so manual / phone orders cannot get a pin. This adds one
