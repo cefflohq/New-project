@@ -1,4 +1,5 @@
 import 'package:cefflo_loader/cefflo_loader.dart';
+
 import 'dart:async';
 
 export 'toast.dart' show showCefToast;
@@ -1703,38 +1704,18 @@ Future<void> showListSheet(
 }
 
 // ---------------------------------------------------------------------------
-// Skeleton loading: page-shaped placeholders instead of a spinner.
+// Loading: every placeholder below renders the one CEFFLO page loader
+// (packages/cefflo_loader). The shape arguments are kept for call sites.
 // ---------------------------------------------------------------------------
 
 /// Softly pulses its [child] while content loads. One animation drives
 /// every placeholder inside it.
-class SkeletonPulse extends StatefulWidget {
+class SkeletonPulse extends StatelessWidget {
   const SkeletonPulse({super.key, required this.child});
   final Widget child;
 
   @override
-  State<SkeletonPulse> createState() => _SkeletonPulseState();
-}
-
-class _SkeletonPulseState extends State<SkeletonPulse>
-    with SingleTickerProviderStateMixin {
-  late final _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1100),
-    lowerBound: .55,
-  )..repeat(reverse: true);
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    label: L.loading,
-    child: FadeTransition(opacity: _controller, child: widget.child),
-  );
+  Widget build(BuildContext context) => const CefPageLoader();
 }
 
 /// One placeholder shape: a rounded cool-grey bar, or a circle.

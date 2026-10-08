@@ -1,3 +1,4 @@
+import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -898,63 +899,5 @@ class SkeletonHeroPage extends StatelessWidget {
   const SkeletonHeroPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final onHero = Colors.white.withValues(alpha: .18);
-    Widget bar(double w, double h) => Container(
-      width: w,
-      height: h,
-      decoration: BoxDecoration(
-        color: onHero,
-        borderRadius: BorderRadius.circular(Gap.sm),
-      ),
-    );
-    return HeroPage(
-      hero: SkeletonPulse(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            Gap.gutter,
-            Gap.xs,
-            Gap.gutter,
-            Gap.xl,
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  color: onHero,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: Gap.xl),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  bar(160, 26),
-                  const SizedBox(height: Gap.sm),
-                  bar(80, 22),
-                  const SizedBox(height: Gap.sm),
-                  bar(110, 14),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-      children: const [
-        SkeletonPulse(
-          child: Column(
-            children: [
-              SkeletonKpis(count: 3),
-              SkeletonRow(),
-              SkeletonRow(),
-              SkeletonRow(),
-              SkeletonRow(),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => const CefPageLoader();
 }
