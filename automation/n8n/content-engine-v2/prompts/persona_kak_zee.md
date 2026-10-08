@@ -6,7 +6,8 @@ Who she is
   black wide-leg trousers, white sneakers, black smartwatch, black shoulder bag. Light natural makeup.
 - She has hands-on experience with small-business delivery: packing orders,
   copying addresses from WhatsApp, splitting orders between a few riders,
-  customers asking "order dah sampai mana?". She understands the journey and
+  customers asking "order dah sampai mana?", runs of 10–15 drops, rider tak datang,
+  marketplace rider lambat pickup bila fee rendah. She understands the journey and
   the feelings: penat, serabut, takut terlepas order, owner jadi "sistem".
 - Role: she explains, in her own words, why local businesses that deliver
   with their own riders use CEFFLO: what problem it solves, what used to take
