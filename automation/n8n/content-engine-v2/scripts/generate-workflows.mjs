@@ -134,7 +134,7 @@ const TG_KEYBOARD = idExpr => ({ rows: [{ row: { buttons: [
 
 const deepseekBody = '={{ $json.body }}';
 const parseLLM = `const raw = $json.choices?.[0]?.message?.content ?? '';
-const t = raw.replace(/^\`\`\`(json)?|\`\`\`$/g, '').trim(); const j = t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1); let out; try { out = JSON.parse(j); } catch (e0) { let r = '', inS = false, esc = false; for (const ch of j) { if (inS && !esc && (ch === '\\n' || ch === '\\r' || ch === '\\t')) { r += ch === '\\n' ? '\\\\n' : ch === '\\r' ? '' : ' '; continue; } if (ch === '"' && !esc) inS = !inS; esc = !esc && ch === '\\\\'; r += ch; } out = undefined; try { out = JSON.parse(r); } catch (e1) {} } if (out === undefined) try { out = JSON.parse(j); } catch (e) { throw new Error('LLM did not return JSON: ' + raw.slice(0, 300)); }`;
+const t = raw.replace(/^\`\`\`(json)?|\`\`\`$/g, '').trim(); const j = t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1); let out; try { out = JSON.parse(j); } catch (e0) { let r = '', inS = false, esc = false; for (const ch of j) { if (inS && !esc && (ch === '\\n' || ch === '\\r' || ch === '\\t')) { r += ch === '\\n' ? '\\\\n' : ch === '\\r' ? '' : ' '; continue; } if (ch === '"' && !esc) inS = !inS; esc = !esc && ch === '\\\\'; r += ch; } out = undefined; try { out = JSON.parse(r); } catch (e1) {} } if (out === undefined) for (let k = j.length - 2; k > 0 && out === undefined; k--) { if (j[k] !== '}') continue; try { out = JSON.parse(j.slice(0, k) + j.slice(k + 1)); } catch (e2) {} } if (out === undefined) try { out = JSON.parse(j); } catch (e) { throw new Error('LLM did not return JSON: ' + raw.slice(0, 300)); }`;
 
 // ============================================================ WF01 Daily plan
 const wf01 = wf(ID.plan, 'CEFFLO CE2 · 01 · Daily Plan + Script + QA', a => {
@@ -185,12 +185,13 @@ return $input.all().map((it, i) => { const ctx = it.json.content_id ? it.json : 
     messages: [{ role: 'system', content: sys }, { role: 'user', content: user }] } } }; });`, [1980, 60]);
   a.http('DeepSeek · script', 'DeepSeek', { url: `={{ ${cfg}.deepseek.url }}`, body: deepseekBody }, [2200, 60]);
   a.code('Build QA request', `const c = ${cfg};
-return $input.all().map((it, i) => { const ctx = $('Build script request').all()[i].json; const json = it.json; ${parseLLM.replace(/\n/g, ' ')}
+return $input.all().map((it, i) => { const ctx = $('Build script request').all()[i].json; const json = it.json; ${parseLLM.replace(/\n/g, ' ').replace("throw new Error('LLM did not return JSON: ' + raw.slice(0, 300));", "out = { _invalid: true };")}
   const sys = ${JSON.stringify(PROMPTS.qa)} + '\\n\\nPERSONA:\\n' + ${JSON.stringify(PROMPTS.persona)} + '\\n\\n' + ${JSON.stringify(PROMPTS.truth)};
   return { json: { ...ctx, body: { model: c.deepseek.model, temperature: 0.1, response_format: { type: 'json_object' }, max_tokens: 8000,
     messages: [{ role: 'system', content: sys }, { role: 'user', content: JSON.stringify({ type: ctx.brief.type, script: out }) }] }, script: out } }; });`.replace('const raw = $json.', 'const raw = json.'), [2420, 60]);
   a.http('DeepSeek · QA', 'DeepSeek', { url: `={{ ${cfg}.deepseek.url }}`, body: deepseekBody }, [2640, 60]);
   a.code('Evaluate QA', `return $input.all().map((it, i) => { const ctx = $('Build QA request').all()[i].json; const json = it.json; ${parseLLM.replace(/\n/g, ' ')}
+  if (ctx.script && ctx.script._invalid) out = { verdict: 'FAIL', findings: [{ criterion: 'FORMAT', evidence: 'Script was not valid JSON. Return valid JSON only.' }] };
   const pass = out.verdict === 'PASS'; return { json: { ...ctx, body: undefined, qa: out, pass, retry: !pass && ctx.attempt < 1,
     attempt: ctx.attempt + 1, findings: out.findings || [] } }; });`.replace('const raw = $json.', 'const raw = json.'), [2860, 60]);
   a.iff('QA pass?', '={{ $json.pass }}', [3080, 60]);
