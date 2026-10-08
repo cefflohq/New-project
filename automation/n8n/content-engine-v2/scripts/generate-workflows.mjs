@@ -204,7 +204,7 @@ return $input.all().map(it => ({ json: { ...it.json, sql: \`update cefflo_ce2.co
 return $('Save script').all().map(it => ({ json: { content_id: it.json.content_id, type: it.json.brief.type === 'video' && on ? 'video' : 'text' } }));`, [3740, 0]);
   a.sw('Video or text?', '={{ $json.type }}', ['video', 'text'], [3960, 0]);
   a.exec('→ 02 Video Production', ID.video, [4200, -80], false);
-  a.exec('→ 03 Send for approval', ID.send, [4200, 100], false);
+  a.exec('→ 03 Send for approval', ID.send, [4200, 100], true);
   a.code('Mark HOLD', `${SQL_HELPER}
 return $input.all().map(it => ({ json: { ...it.json, sql: \`update cefflo_ce2.content set qa = \${q(it.json.qa)}::jsonb, script = \${q(it.json.script)}::jsonb, status = 'HOLD', updated_at = now() where id = '\${it.json.content_id}'\` } }));`, [3520, 380]);
   a.pg('DB · hold', '={{ $json.sql }}', [3740, 380]);
