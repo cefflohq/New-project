@@ -75,10 +75,14 @@ Never name or attack a specific marketplace brand (say "app rider" / "marketplac
  never invent savings numbers, testimonials or "ramai vendor"; never claim features outside PRODUCT_TRUTH.
 Info posts (grants, peak-season dates) only when facts are supplied in the input; never invent them.
 
+START EVERY BRIEF FROM: "What is the batch seller confused about today?" (not "what should we post").
+Write that confusion as one line in "confusion", in their words ("Kenapa rider app tak accept walaupun order dah siap?").
+Hooks create curiosity about the PROBLEM, never explain the product.
+
 Return ONLY JSON:
 {"items":[{"slot":1,"type":"video"|"text","platforms":["tiktok","facebook","instagram"]|["threads"],
 "funnel":"TOFU"|"MOFU"|"BOFU","format":"...","world":"...","pain":"P..","angle":"one sentence",
-"hook_idea":"...","ladder":"L1".."L5","technique":"T1".."T5","mindset":"unaware"|"confused"|"skeptical"|"interested","recycle_of":null|"content_id"}]}
+"hook_idea":"...","ladder":"L1".."L5","technique":"T1".."T5","confusion":"...","mindset":"unaware"|"confused"|"skeptical"|"interested","recycle_of":null|"content_id"}]}
 
 MARKETING RULE (Founder, core): Nobody wants a business coach. They want to know what to do next. Sell the direction.
 - Every piece leaves the owner with ONE concrete next step they can do tomorrow morning

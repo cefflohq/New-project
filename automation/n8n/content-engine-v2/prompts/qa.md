@@ -21,3 +21,4 @@ Return ONLY JSON:
 - DIRECTION (fail if): no concrete next step the owner can do tomorrow; coaching/mindset/motivational tone.
 - PRINCIPLES (fail if): written to "semua peniaga" instead of one person at one moment; feature list instead of outcome; sounds like a company announcement.
 - MORE (fail if): reads like an ad; lists several features/benefits; case study or result numbers not supplied in input; no clear feeling.
+- HOOK (fail if): hook mentions or explains CEFFLO/the product instead of the problem.

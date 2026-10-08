@@ -59,3 +59,4 @@ MORE RULES (Founder)
 11. Feeling makes it memorable: every piece has one feeling (lega, geram, kelakar, simpati) and one line worth repeating.
 12. Case studies need 3 numbers (starting point, result, time taken) and ONLY from a real, consented CEFFLO user
     supplied in the input. Without that input: no case study, no result numbers.
+13. The hook creates curiosity about the problem in brief.confusion; it never names or explains CEFFLO.
