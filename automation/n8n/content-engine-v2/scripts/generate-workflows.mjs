@@ -190,7 +190,7 @@ return $input.all().map((it, i) => { const ctx = $('Build script request').all()
   return { json: { ...ctx, body: { model: c.deepseek.model, temperature: 0.1, response_format: { type: 'json_object' }, max_tokens: 8000,
     messages: [{ role: 'system', content: sys }, { role: 'user', content: JSON.stringify({ type: ctx.brief.type, script: out }) }] }, script: out } }; });`.replace('const raw = $json.', 'const raw = json.'), [2420, 60]);
   a.http('DeepSeek · QA', 'DeepSeek', { url: `={{ ${cfg}.deepseek.url }}`, body: deepseekBody }, [2640, 60]);
-  a.code('Evaluate QA', `return $input.all().map((it, i) => { const ctx = $('Build QA request').all()[i].json; const json = it.json; ${parseLLM.replace(/\n/g, ' ')}
+  a.code('Evaluate QA', `return $input.all().map((it, i) => { const ctx = $('Build QA request').all()[i].json; const json = it.json; ${parseLLM.replace(/\n/g, ' ').replace("throw new Error('LLM did not return JSON: ' + raw.slice(0, 300));", "out = { verdict: 'FAIL', findings: [{ criterion: 'QA_UNAVAILABLE', evidence: 'QA returned no JSON; rewrite cleanly.' }] };")}
   if (ctx.script && ctx.script._invalid) out = { verdict: 'FAIL', findings: [{ criterion: 'FORMAT', evidence: 'Script was not valid JSON. Return valid JSON only.' }] };
   const pass = out.verdict === 'PASS'; return { json: { ...ctx, body: undefined, qa: out, pass, retry: !pass && ctx.attempt < 1,
     attempt: ctx.attempt + 1, findings: out.findings || [] } }; });`.replace('const raw = $json.', 'const raw = json.'), [2860, 60]);
