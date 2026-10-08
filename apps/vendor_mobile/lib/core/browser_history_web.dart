@@ -14,7 +14,12 @@ external void _historyBack();
 @JS('window.addEventListener')
 external void _addEventListener(JSString type, JSFunction listener);
 
-void pushBrowserHistoryEntry() => _pushState(null, ''.toJS);
+// The entry is marked as a Flutter entry ({flutter: true}). The Flutter web
+// engine treats any other history state as a foreign page and answers its
+// popstate with history.go(-1) — each of those popped the app's stack once
+// more, so one Back skipped screens (Founder report, 2026-10-08).
+void pushBrowserHistoryEntry() =>
+    _pushState(<String, Object>{'flutter': true}.jsify(), ''.toJS);
 
 void browserHistoryBack() => _historyBack();
 

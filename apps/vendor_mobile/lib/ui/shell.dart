@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/app_state.dart';
+import '../core/browser_history.dart' show hasBrowserHistory;
 import '../core/appearance.dart';
 import '../data/models.dart';
 import '../core/routes.dart';
@@ -131,8 +132,12 @@ class VendorShell extends StatelessWidget {
         browserBottomColor: context.c.chrome,
         child: PopScope(
           canPop: !app.canGoBack,
+          // On the web the browser's popstate already pops the app's stack
+          // (AppState.onBrowserBack). Flutter also reports that same Back
+          // here; acting on it too popped two steps (e.g. Import orders →
+          // More, skipping Integrations). Native Back is handled here only.
           onPopInvokedWithResult: (didPop, _) {
-            if (!didPop && app.canGoBack) app.back();
+            if (!didPop && app.canGoBack && !hasBrowserHistory) app.back();
           },
           // The universal Vendor background (D-52): painted once, here, under
           // every authenticated route. This element is reused across route

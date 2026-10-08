@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/app_state.dart';
+import '../core/browser_history.dart' show hasBrowserHistory;
 import '../core/routes.dart';
 import 'brand.dart';
 import 'notification_banner.dart';
@@ -50,8 +51,10 @@ class DriverShell extends StatelessWidget {
       ),
       child: PopScope(
         canPop: !app.canGoBack,
+        // Web: popstate already pops the app stack (AppState.onBrowserBack);
+        // acting on Flutter's copy of the same Back popped two steps.
         onPopInvokedWithResult: (didPop, _) {
-          if (!didPop && app.canGoBack) app.back();
+          if (!didPop && app.canGoBack && !hasBrowserHistory) app.back();
         },
         // The one navy gradient (D-52 parity with Vendor): painted once
         // here, behind the transparent status bar and every screen's

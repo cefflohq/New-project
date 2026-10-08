@@ -249,6 +249,39 @@ ThemeData buildVendorTheme(Brightness brightness) {
         borderRadius: BorderRadius.circular(Sizes.cardRadius),
       ),
     ),
+    // The one dialog treatment (every AlertDialog / Dialog): white Cefflo
+    // card, card radius, centred, no Material seed tint; text actions in
+    // Cefflo blue, the primary (Filled) action in mustard.
+    dialogTheme: DialogThemeData(
+      backgroundColor: c.card,
+      surfaceTintColor: Colors.transparent,
+      elevation: 8,
+      alignment: Alignment.center,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+      ),
+      titleTextStyle: t(20, FontWeight.w600, c.textPrimary, spacing: -0.3),
+      contentTextStyle: t(15, FontWeight.w400, c.textSecondary),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: CefColors.standardBrand,
+        textStyle: t(15, FontWeight.w600, CefColors.standardBrand),
+      ),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: CefColors.ceffloMustard,
+        foregroundColor: CefColors.onAccent,
+        textStyle: t(15, FontWeight.w600, CefColors.onAccent),
+        shape: const StadiumBorder(),
+      ),
+    ),
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: c.card,
+      surfaceTintColor: Colors.transparent,
+    ),
     // The one slider treatment (service-area radius and any future slider).
     sliderTheme: SliderThemeData(
       trackHeight: 4,

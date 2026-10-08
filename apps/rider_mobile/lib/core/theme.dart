@@ -204,6 +204,20 @@ ThemeData buildRiderTheme() {
       primary: CefColors.navy,
     ),
     extensions: const [c],
+    // Any bare AlertDialog / Dialog gets the Cefflo card, never the Material
+    // seed tint (custom pop-ups use CeffloModal).
+    dialogTheme: DialogThemeData(
+      backgroundColor: c.card,
+      surfaceTintColor: Colors.transparent,
+      alignment: Alignment.center,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+      ),
+    ),
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: c.card,
+      surfaceTintColor: Colors.transparent,
+    ),
     textTheme: TextTheme(
       // Auth display headings — "Welcome Back", "Create your account".
       displayLarge: t(
