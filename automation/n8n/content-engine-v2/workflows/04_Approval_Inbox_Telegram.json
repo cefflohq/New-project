@@ -325,7 +325,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "={{ \"update cefflo_ce2.content set revise_note = $ce2$\" + $json.note.replaceAll('$ce2$', '') + \"$ce2$, revisions = revisions + 1, updated_at = now() where id = '\" + $json.content_id + \"' and status = 'REVISE' returning id as content_id\" }}",
+        "query": "={{ \"update cefflo_ce2.content set revise_note = '\" + $json.note.replaceAll(\"'\", \"''\") + \"', revisions = revisions + 1, updated_at = now() where id = '\" + $json.content_id + \"' and status = 'REVISE' returning id as content_id\" }}",
         "options": {}
       },
       "credentials": {

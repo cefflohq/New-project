@@ -179,7 +179,7 @@
       ],
       "parameters": {
         "mode": {},
-        "jsCode": "const q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$'; const it = $('Claim due items').item.json; const r = $json; const ok = !!r.data?.publish_id;\nreturn [{ json: { content_id: it.id, sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'tiktok', ${q(r.data?.publish_id)}, '${ok ? 'SENT' : 'FAILED'}', ${q(ok ? null : (r.error?.message || r.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
+        "jsCode": "const q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\"; const it = $('Claim due items').item.json; const r = $json; const ok = !!r.data?.publish_id;\nreturn [{ json: { content_id: it.id, sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'tiktok', ${q(r.data?.publish_id)}, '${ok ? 'SENT' : 'FAILED'}', ${q(ok ? null : (r.error?.message || r.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
       }
     },
     {
@@ -322,7 +322,7 @@
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$'; const it = $('Claim due items').item.json; const r = $json; const ok = !!r.id;\nreturn [{ json: { sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'instagram', ${q(r.id)}, '${ok ? 'PUBLISHED' : 'FAILED'}', ${q(ok ? null : (r.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
+        "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\"; const it = $('Claim due items').item.json; const r = $json; const ok = !!r.id;\nreturn [{ json: { sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'instagram', ${q(r.id)}, '${ok ? 'PUBLISHED' : 'FAILED'}', ${q(ok ? null : (r.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
       }
     },
     {
@@ -453,7 +453,7 @@
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$'; const it = $('Claim due items').item.json; const vid = $('FB Reels · start').item.json.video_id; const ok = !!$json.success;\nreturn [{ json: { sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'facebook', ${q(vid)}, '${ok ? 'PUBLISHED' : 'FAILED'}', ${q(ok ? null : ($json.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
+        "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\"; const it = $('Claim due items').item.json; const vid = $('FB Reels · start').item.json.video_id; const ok = !!$json.success;\nreturn [{ json: { sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'facebook', ${q(vid)}, '${ok ? 'PUBLISHED' : 'FAILED'}', ${q(ok ? null : ($json.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
       }
     },
     {
@@ -567,7 +567,7 @@
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$'; const it = $('Claim due items').item.json; const ok = !!$json.id;\nreturn [{ json: { sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'threads', ${q($json.id)}, '${ok ? 'PUBLISHED' : 'FAILED'}', ${q(ok ? null : ($json.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
+        "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\"; const it = $('Claim due items').item.json; const ok = !!$json.id;\nreturn [{ json: { sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'threads', ${q($json.id)}, '${ok ? 'PUBLISHED' : 'FAILED'}', ${q(ok ? null : ($json.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
       }
     },
     {

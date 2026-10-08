@@ -58,7 +58,7 @@ return [{ json: { config: {
   tiktok: { initUrl: 'https://open.tiktokapis.com/v2/post/publish/video/init/', privacy: 'SELF_ONLY' }, // PUBLIC_TO_EVERYONE after TikTok audit
 } } }];`;
 
-const SQL_HELPER = `const q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$';`;
+const SQL_HELPER = `const q = v => v === null || v === undefined ? 'null' : "'" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll("'", "''") + "'";`;
 const cfg = `$('Config').first().json.config`;
 
 // ------------------------------------------------------------- builders
@@ -410,7 +410,7 @@ update cefflo_ce2.content set status = 'APPROVED', scheduled_at = (select at fro
   a.tg('Ask for note', { chatId: `={{ $('Parse update').first().json.chat }}`,
     text: `={{ $json.id ? '✏️ REVISE #' + $json.id + '\\nBalas (reply) mesej ni dengan apa yang nak diubah.' : '⚠️ Dah 2 kali revise. Sila Approve atau Reject.' }}`,
     additionalFields: { appendAttribution: false } }, [1120, 120]);
-  a.pg('Save note', `={{ "update cefflo_ce2.content set revise_note = $ce2$" + $json.note.replaceAll('$ce2$', '') + "$ce2$, revisions = revisions + 1, updated_at = now() where id = '" + $json.content_id + "' and status = 'REVISE' returning id as content_id" }}`, [900, 300]);
+  a.pg('Save note', `={{ "update cefflo_ce2.content set revise_note = '" + $json.note.replaceAll("'", "''") + "', revisions = revisions + 1, updated_at = now() where id = '" + $json.content_id + "' and status = 'REVISE' returning id as content_id" }}`, [900, 300]);
   a.exec('→ 05 Revise', ID.revise, [1120, 300], false);
   a.chain('Telegram updates', 'Config', 'Parse update', 'Action');
   a.link('Action', 'Approve + schedule', 0); a.link('Action', 'Reject', 1); a.link('Action', 'Mark REVISE', 2); a.link('Action', 'Save note', 3);

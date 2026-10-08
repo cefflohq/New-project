@@ -211,7 +211,7 @@
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$';\nreturn $input.all().map(it => { const b = it.json.brief;\n  return { json: { ...it.json, sql: `insert into cefflo_ce2.content (slot,type,platforms,funnel,format,world,pain,angle,hook,recycle_of,brief,status)\n  values (${Number(b.slot)}, ${q(b.type)}, ${q('{' + (b.platforms || []).join(',') + '}')}::text[], ${q(b.funnel)}, ${q(b.format)}, ${q(b.world)}, ${q(b.pain)}, ${q(b.angle)}, ${q(b.hook_idea)},\n  ${b.recycle_of ? q(b.recycle_of) + '::uuid' : 'null'}, ${q(b)}::jsonb, 'NEW')\n  on conflict (run_date, slot, revisions) do update set brief = excluded.brief returning id` } }; });"
+        "jsCode": "const q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\";\nreturn $input.all().map(it => { const b = it.json.brief;\n  return { json: { ...it.json, sql: `insert into cefflo_ce2.content (slot,type,platforms,funnel,format,world,pain,angle,hook,recycle_of,brief,status)\n  values (${Number(b.slot)}, ${q(b.type)}, ${q('{' + (b.platforms || []).join(',') + '}')}::text[], ${q(b.funnel)}, ${q(b.format)}, ${q(b.world)}, ${q(b.pain)}, ${q(b.angle)}, ${q(b.hook_idea)},\n  ${b.recycle_of ? q(b.recycle_of) + '::uuid' : 'null'}, ${q(b)}::jsonb, 'NEW')\n  on conflict (run_date, slot, revisions) do update set brief = excluded.brief returning id` } }; });"
       }
     },
     {
@@ -416,7 +416,7 @@
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$';\nreturn $input.all().map(it => ({ json: { ...it.json, sql: `update cefflo_ce2.content set script = ${q(it.json.script)}::jsonb, qa = ${q(it.json.qa)}::jsonb,\n  hook = coalesce(${q(it.json.script.hook || it.json.script.title)}, hook), status = 'SCRIPTED', updated_at = now() where id = '${it.json.content_id}'` } }));"
+        "jsCode": "const q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\";\nreturn $input.all().map(it => ({ json: { ...it.json, sql: `update cefflo_ce2.content set script = ${q(it.json.script)}::jsonb, qa = ${q(it.json.qa)}::jsonb,\n  hook = coalesce(${q(it.json.script.hook || it.json.script.title)}, hook), status = 'SCRIPTED', updated_at = now() where id = '${it.json.content_id}'` } }));"
       }
     },
     {
@@ -572,7 +572,7 @@
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$';\nreturn $input.all().map(it => ({ json: { ...it.json, sql: `update cefflo_ce2.content set qa = ${q(it.json.qa)}::jsonb, script = ${q(it.json.script)}::jsonb, status = 'HOLD', updated_at = now() where id = '${it.json.content_id}'` } }));"
+        "jsCode": "const q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\";\nreturn $input.all().map(it => ({ json: { ...it.json, sql: `update cefflo_ce2.content set qa = ${q(it.json.qa)}::jsonb, script = ${q(it.json.script)}::jsonb, status = 'HOLD', updated_at = now() where id = '${it.json.content_id}'` } }));"
       }
     },
     {

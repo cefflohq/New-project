@@ -212,7 +212,7 @@
         ],
         "parameters": {
           "mode": "runOnceForAllItems",
-          "jsCode": "const q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$';\nreturn $input.all().map(it => { const b = it.json.brief;\n  return { json: { ...it.json, sql: `insert into cefflo_ce2.content (slot,type,platforms,funnel,format,world,pain,angle,hook,recycle_of,brief,status)\n  values (${Number(b.slot)}, ${q(b.type)}, ${q('{' + (b.platforms || []).join(',') + '}')}::text[], ${q(b.funnel)}, ${q(b.format)}, ${q(b.world)}, ${q(b.pain)}, ${q(b.angle)}, ${q(b.hook_idea)},\n  ${b.recycle_of ? q(b.recycle_of) + '::uuid' : 'null'}, ${q(b)}::jsonb, 'NEW')\n  on conflict (run_date, slot, revisions) do update set brief = excluded.brief returning id` } }; });"
+          "jsCode": "const q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\";\nreturn $input.all().map(it => { const b = it.json.brief;\n  return { json: { ...it.json, sql: `insert into cefflo_ce2.content (slot,type,platforms,funnel,format,world,pain,angle,hook,recycle_of,brief,status)\n  values (${Number(b.slot)}, ${q(b.type)}, ${q('{' + (b.platforms || []).join(',') + '}')}::text[], ${q(b.funnel)}, ${q(b.format)}, ${q(b.world)}, ${q(b.pain)}, ${q(b.angle)}, ${q(b.hook_idea)},\n  ${b.recycle_of ? q(b.recycle_of) + '::uuid' : 'null'}, ${q(b)}::jsonb, 'NEW')\n  on conflict (run_date, slot, revisions) do update set brief = excluded.brief returning id` } }; });"
         }
       },
       {
@@ -417,7 +417,7 @@
         ],
         "parameters": {
           "mode": "runOnceForAllItems",
-          "jsCode": "const q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$';\nreturn $input.all().map(it => ({ json: { ...it.json, sql: `update cefflo_ce2.content set script = ${q(it.json.script)}::jsonb, qa = ${q(it.json.qa)}::jsonb,\n  hook = coalesce(${q(it.json.script.hook || it.json.script.title)}, hook), status = 'SCRIPTED', updated_at = now() where id = '${it.json.content_id}'` } }));"
+          "jsCode": "const q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\";\nreturn $input.all().map(it => ({ json: { ...it.json, sql: `update cefflo_ce2.content set script = ${q(it.json.script)}::jsonb, qa = ${q(it.json.qa)}::jsonb,\n  hook = coalesce(${q(it.json.script.hook || it.json.script.title)}, hook), status = 'SCRIPTED', updated_at = now() where id = '${it.json.content_id}'` } }));"
         }
       },
       {
@@ -573,7 +573,7 @@
         ],
         "parameters": {
           "mode": "runOnceForAllItems",
-          "jsCode": "const q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$';\nreturn $input.all().map(it => ({ json: { ...it.json, sql: `update cefflo_ce2.content set qa = ${q(it.json.qa)}::jsonb, script = ${q(it.json.script)}::jsonb, status = 'HOLD', updated_at = now() where id = '${it.json.content_id}'` } }));"
+          "jsCode": "const q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\";\nreturn $input.all().map(it => ({ json: { ...it.json, sql: `update cefflo_ce2.content set qa = ${q(it.json.qa)}::jsonb, script = ${q(it.json.script)}::jsonb, status = 'HOLD', updated_at = now() where id = '${it.json.content_id}'` } }));"
         }
       },
       {
@@ -3365,7 +3365,7 @@
         ],
         "parameters": {
           "operation": "executeQuery",
-          "query": "={{ \"update cefflo_ce2.content set revise_note = $ce2$\" + $json.note.replaceAll('$ce2$', '') + \"$ce2$, revisions = revisions + 1, updated_at = now() where id = '\" + $json.content_id + \"' and status = 'REVISE' returning id as content_id\" }}",
+          "query": "={{ \"update cefflo_ce2.content set revise_note = '\" + $json.note.replaceAll(\"'\", \"''\") + \"', revisions = revisions + 1, updated_at = now() where id = '\" + $json.content_id + \"' and status = 'REVISE' returning id as content_id\" }}",
           "options": {}
         },
         "credentials": {
@@ -3688,7 +3688,7 @@
         ],
         "parameters": {
           "mode": "runOnceForAllItems",
-          "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$'; const ctx = $('Build QA request').first().json; const raw = $json.choices?.[0]?.message?.content ?? '';\nlet out; try { out = JSON.parse(raw.replace(/^```(json)?|```$/g, '').trim()); } catch (e) { throw new Error('LLM did not return JSON: ' + raw.slice(0, 300)); }\nconst pass = out.verdict === 'PASS';\nreturn [{ json: { content_id: ctx.id, type: ctx.type, pass, findings: out.findings || [], sql: `update cefflo_ce2.content set script = ${q(ctx.script)}::jsonb, qa = ${q(out)}::jsonb,\n  status = '${pass ? 'SCRIPTED' : 'HOLD'}', media_url = case when '${ctx.type}' = 'video' then null else media_url end, updated_at = now() where id = '${ctx.id}'` } }];"
+          "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\"; const ctx = $('Build QA request').first().json; const raw = $json.choices?.[0]?.message?.content ?? '';\nlet out; try { out = JSON.parse(raw.replace(/^```(json)?|```$/g, '').trim()); } catch (e) { throw new Error('LLM did not return JSON: ' + raw.slice(0, 300)); }\nconst pass = out.verdict === 'PASS';\nreturn [{ json: { content_id: ctx.id, type: ctx.type, pass, findings: out.findings || [], sql: `update cefflo_ce2.content set script = ${q(ctx.script)}::jsonb, qa = ${q(out)}::jsonb,\n  status = '${pass ? 'SCRIPTED' : 'HOLD'}', media_url = case when '${ctx.type}' = 'video' then null else media_url end, updated_at = now() where id = '${ctx.id}'` } }];"
         }
       },
       {
@@ -4229,7 +4229,7 @@
         ],
         "parameters": {
           "mode": {},
-          "jsCode": "const q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$'; const it = $('Claim due items').item.json; const r = $json; const ok = !!r.data?.publish_id;\nreturn [{ json: { content_id: it.id, sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'tiktok', ${q(r.data?.publish_id)}, '${ok ? 'SENT' : 'FAILED'}', ${q(ok ? null : (r.error?.message || r.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
+          "jsCode": "const q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\"; const it = $('Claim due items').item.json; const r = $json; const ok = !!r.data?.publish_id;\nreturn [{ json: { content_id: it.id, sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'tiktok', ${q(r.data?.publish_id)}, '${ok ? 'SENT' : 'FAILED'}', ${q(ok ? null : (r.error?.message || r.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
         }
       },
       {
@@ -4372,7 +4372,7 @@
         ],
         "parameters": {
           "mode": "runOnceForAllItems",
-          "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$'; const it = $('Claim due items').item.json; const r = $json; const ok = !!r.id;\nreturn [{ json: { sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'instagram', ${q(r.id)}, '${ok ? 'PUBLISHED' : 'FAILED'}', ${q(ok ? null : (r.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
+          "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\"; const it = $('Claim due items').item.json; const r = $json; const ok = !!r.id;\nreturn [{ json: { sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'instagram', ${q(r.id)}, '${ok ? 'PUBLISHED' : 'FAILED'}', ${q(ok ? null : (r.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
         }
       },
       {
@@ -4503,7 +4503,7 @@
         ],
         "parameters": {
           "mode": "runOnceForAllItems",
-          "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$'; const it = $('Claim due items').item.json; const vid = $('FB Reels · start').item.json.video_id; const ok = !!$json.success;\nreturn [{ json: { sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'facebook', ${q(vid)}, '${ok ? 'PUBLISHED' : 'FAILED'}', ${q(ok ? null : ($json.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
+          "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\"; const it = $('Claim due items').item.json; const vid = $('FB Reels · start').item.json.video_id; const ok = !!$json.success;\nreturn [{ json: { sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'facebook', ${q(vid)}, '${ok ? 'PUBLISHED' : 'FAILED'}', ${q(ok ? null : ($json.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
         }
       },
       {
@@ -4617,7 +4617,7 @@
         ],
         "parameters": {
           "mode": "runOnceForAllItems",
-          "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$'; const it = $('Claim due items').item.json; const ok = !!$json.id;\nreturn [{ json: { sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'threads', ${q($json.id)}, '${ok ? 'PUBLISHED' : 'FAILED'}', ${q(ok ? null : ($json.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
+          "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\"; const it = $('Claim due items').item.json; const ok = !!$json.id;\nreturn [{ json: { sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'threads', ${q($json.id)}, '${ok ? 'PUBLISHED' : 'FAILED'}', ${q(ok ? null : ($json.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
         }
       },
       {
@@ -5351,7 +5351,7 @@
         ],
         "parameters": {
           "mode": "runOnceForEachItem",
-          "jsCode": "const q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$';\nconst src = $('Due checkpoints').item.json; const r = $json; const m = {};\nconst pick = (arr) => (arr || []).forEach(x => { m[x.name] = x.values?.[0]?.value ?? x.total_value?.value ?? x.value; });\nif (src.platform === 'instagram' || src.platform === 'threads' || src.platform === 'facebook') pick(r.data);\nconst v = r.data?.videos?.[0]; if (v) Object.assign(m, { views: v.view_count, likes: v.like_count, comments: v.comment_count, shares: v.share_count });\nconst n = x => x === undefined || x === null || isNaN(Number(x)) ? 'null' : Number(x);\nreturn [{ json: { sql: `insert into cefflo_ce2.metric (publication_id, checkpoint, views, reach, avg_watch_s, likes, comments, shares, saves, raw)\nvalues ('${src.publication_id}', '${src.checkpoint}', ${n(m.views ?? m.total_video_views ?? m.blue_reels_play_count)}, ${n(m.reach ?? m.total_video_impressions_unique)}, ${n(m.ig_reels_avg_watch_time ? m.ig_reels_avg_watch_time / 1000 : m.total_video_avg_time_watched ? m.total_video_avg_time_watched / 1000 : null)},\n  ${n(m.likes ?? m.total_video_reactions_by_type_total)}, ${n(m.comments ?? m.replies)}, ${n(m.shares ?? m.reposts)}, ${n(m.saved)}, ${q(r)}::jsonb)\non conflict (publication_id, checkpoint) do nothing` } }];"
+          "jsCode": "const q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\";\nconst src = $('Due checkpoints').item.json; const r = $json; const m = {};\nconst pick = (arr) => (arr || []).forEach(x => { m[x.name] = x.values?.[0]?.value ?? x.total_value?.value ?? x.value; });\nif (src.platform === 'instagram' || src.platform === 'threads' || src.platform === 'facebook') pick(r.data);\nconst v = r.data?.videos?.[0]; if (v) Object.assign(m, { views: v.view_count, likes: v.like_count, comments: v.comment_count, shares: v.share_count });\nconst n = x => x === undefined || x === null || isNaN(Number(x)) ? 'null' : Number(x);\nreturn [{ json: { sql: `insert into cefflo_ce2.metric (publication_id, checkpoint, views, reach, avg_watch_s, likes, comments, shares, saves, raw)\nvalues ('${src.publication_id}', '${src.checkpoint}', ${n(m.views ?? m.total_video_views ?? m.blue_reels_play_count)}, ${n(m.reach ?? m.total_video_impressions_unique)}, ${n(m.ig_reels_avg_watch_time ? m.ig_reels_avg_watch_time / 1000 : m.total_video_avg_time_watched ? m.total_video_avg_time_watched / 1000 : null)},\n  ${n(m.likes ?? m.total_video_reactions_by_type_total)}, ${n(m.comments ?? m.replies)}, ${n(m.shares ?? m.reposts)}, ${n(m.saved)}, ${q(r)}::jsonb)\non conflict (publication_id, checkpoint) do nothing` } }];"
         }
       },
       {
@@ -5486,7 +5486,7 @@
         ],
         "parameters": {
           "mode": "runOnceForAllItems",
-          "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$'; const raw = $json.choices?.[0]?.message?.content ?? '';\nlet out; try { out = JSON.parse(raw.replace(/^```(json)?|```$/g, '').trim()); } catch (e) { throw new Error('LLM did not return JSON: ' + raw.slice(0, 300)); }\nconst week = $now.setZone('Asia/Kuala_Lumpur').startOf('week').toISODate();\nconst s = [];\nfor (const l of out.learnings || []) s.push(`insert into cefflo_ce2.learning (week, observation, confidence, action, evidence) values ('${week}', ${q(l.observation)}, ${q(['LOW','MEDIUM','HIGH'].includes(l.confidence) ? l.confidence : 'LOW')}, ${q(l.action)}, ${q(l.evidence || [])}::jsonb)`);\nfor (const r of out.recycle || []) if (/^[0-9a-f-]{36}$/.test(r.content_id)) s.push(`insert into cefflo_ce2.recycle_candidate (content_id, score, reason) values ('${r.content_id}', ${Number(r.score) || 0}, ${q(r.reason)}) on conflict (content_id) do update set score = excluded.score, reason = excluded.reason`);\nfor (const id of out.retire || []) if (/^[0-9a-f-]{36}$/.test(id)) s.push(`update cefflo_ce2.recycle_candidate set used = true where content_id = '${id}'`);\ns.push(\"select coalesce(sum(usd),0) as cost_week from cefflo_ce2.cost where created_at > now() - interval '7 days'\");\nreturn [{ json: { sql: s.join(';\\n'), report: out.report_ms || '' } }];"
+          "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : \"'\" + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll(\"'\", \"''\") + \"'\"; const raw = $json.choices?.[0]?.message?.content ?? '';\nlet out; try { out = JSON.parse(raw.replace(/^```(json)?|```$/g, '').trim()); } catch (e) { throw new Error('LLM did not return JSON: ' + raw.slice(0, 300)); }\nconst week = $now.setZone('Asia/Kuala_Lumpur').startOf('week').toISODate();\nconst s = [];\nfor (const l of out.learnings || []) s.push(`insert into cefflo_ce2.learning (week, observation, confidence, action, evidence) values ('${week}', ${q(l.observation)}, ${q(['LOW','MEDIUM','HIGH'].includes(l.confidence) ? l.confidence : 'LOW')}, ${q(l.action)}, ${q(l.evidence || [])}::jsonb)`);\nfor (const r of out.recycle || []) if (/^[0-9a-f-]{36}$/.test(r.content_id)) s.push(`insert into cefflo_ce2.recycle_candidate (content_id, score, reason) values ('${r.content_id}', ${Number(r.score) || 0}, ${q(r.reason)}) on conflict (content_id) do update set score = excluded.score, reason = excluded.reason`);\nfor (const id of out.retire || []) if (/^[0-9a-f-]{36}$/.test(id)) s.push(`update cefflo_ce2.recycle_candidate set used = true where content_id = '${id}'`);\ns.push(\"select coalesce(sum(usd),0) as cost_week from cefflo_ce2.cost where created_at > now() - interval '7 days'\");\nreturn [{ json: { sql: s.join(';\\n'), report: out.report_ms || '' } }];"
         }
       },
       {
