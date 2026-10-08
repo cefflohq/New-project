@@ -7520,6 +7520,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send each order as JSON with the key in the Authorization header (Bearer). Include external_id so an order is never created twice.'**
   String get integrationApiHow;
+
+  /// No description provided for @noPin.
+  ///
+  /// In en, this message translates to:
+  /// **'No pin'**
+  String get noPin;
+
+  /// No description provided for @noPinBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The customer did not pin a location. Directions use the address.'**
+  String get noPinBody;
+
+  /// No description provided for @openInMaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in maps'**
+  String get openInMaps;
+
+  /// No description provided for @pinLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin location'**
+  String get pinLocation;
+
+  /// No description provided for @pinLocationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the map so the pin sits on the drop point. Optional.'**
+  String get pinLocationHint;
+
+  /// No description provided for @pinLocationSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned. Move the map to adjust.'**
+  String get pinLocationSet;
+
+  /// No description provided for @useMyLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use my location'**
+  String get useMyLocation;
+
+  /// No description provided for @zoomIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom in'**
+  String get zoomIn;
+
+  /// No description provided for @zoomOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom out'**
+  String get zoomOut;
+
+  /// No description provided for @pinSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Order saved, but the pin could not be saved.'**
+  String get pinSaveFailed;
 }
 
 class _AppLocalizationsDelegate

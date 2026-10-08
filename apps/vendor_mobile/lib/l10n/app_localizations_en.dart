@@ -4123,4 +4123,36 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get integrationApiHow =>
       'Send each order as JSON with the key in the Authorization header (Bearer). Include external_id so an order is never created twice.';
+
+  @override
+  String get noPin => 'No pin';
+
+  @override
+  String get noPinBody =>
+      'The customer did not pin a location. Directions use the address.';
+
+  @override
+  String get openInMaps => 'Open in maps';
+
+  @override
+  String get pinLocation => 'Pin location';
+
+  @override
+  String get pinLocationHint =>
+      'Move the map so the pin sits on the drop point. Optional.';
+
+  @override
+  String get pinLocationSet => 'Pinned. Move the map to adjust.';
+
+  @override
+  String get useMyLocation => 'Use my location';
+
+  @override
+  String get zoomIn => 'Zoom in';
+
+  @override
+  String get zoomOut => 'Zoom out';
+
+  @override
+  String get pinSaveFailed => 'Order saved, but the pin could not be saved.';
 }

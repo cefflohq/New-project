@@ -2038,5 +2038,15 @@
   "integrationCopied": "Copied",
   "integrationWooHow": "In WooCommerce → Settings → Advanced → Webhooks, add a webhook: topic Order created, the URL below and the same secret.",
   "integrationShopHow": "In Shopify admin → Settings → Notifications → Webhooks, create an Order creation webhook (JSON) to the URL below. Paste its signing secret here.",
-  "integrationApiHow": "Send each order as JSON with the key in the Authorization header (Bearer). Include external_id so an order is never created twice."
+  "integrationApiHow": "Send each order as JSON with the key in the Authorization header (Bearer). Include external_id so an order is never created twice.",
+  "noPin": "No pin",
+  "noPinBody": "The customer did not pin a location. Directions use the address.",
+  "openInMaps": "Open in maps",
+  "pinLocation": "Pin location",
+  "pinLocationHint": "Move the map so the pin sits on the drop point. Optional.",
+  "pinLocationSet": "Pinned. Move the map to adjust.",
+  "useMyLocation": "Use my location",
+  "zoomIn": "Zoom in",
+  "zoomOut": "Zoom out",
+  "pinSaveFailed": "Order saved, but the pin could not be saved."
 }

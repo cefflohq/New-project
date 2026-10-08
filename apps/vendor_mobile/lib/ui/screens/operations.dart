@@ -8,6 +8,7 @@ import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../data/vendor_repository.dart';
 import '../async_view.dart';
+import '../delivery_pin.dart';
 import '../share_link.dart';
 import '../shell.dart';
 import '../widgets.dart';
@@ -624,9 +625,16 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   title: o.reference,
                   subtitle: '${o.customerName} · ${o.deliveryAddress}',
                   icon: LucideIcons.package,
-                  trailing: DeliveryStatusChip(
-                    o.status,
-                    approved: o.isApproved,
+                  trailing: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      DeliveryStatusChip(o.status, approved: o.isApproved),
+                      if (!o.hasPin) ...[
+                        const SizedBox(height: 4),
+                        StatusChip(L.noPin),
+                      ],
+                    ],
                   ),
                   onTap: () => app.go(VRoute.orderDetail, entityId: o.id),
                 ),
@@ -777,9 +785,47 @@ class OrderDetailScreen extends StatelessWidget {
               trailing: OutlinedIconAction(
                 label: L.directions,
                 icon: LucideIcons.navigation,
-                onTap: () => launchDirections(context, order.deliveryAddress),
+                onTap: () => launchDirections(
+                  context,
+                  order.hasPin
+                      ? '${order.latitude},${order.longitude}'
+                      : order.deliveryAddress,
+                ),
               ),
             ),
+            if (order.hasPin) ...[
+              DeliveryPinView(
+                latitude: order.latitude!,
+                longitude: order.longitude!,
+              ),
+              const SizedBox(height: Gap.sm),
+              CefButton(
+                L.openInMaps,
+                secondary: true,
+                compact: true,
+                icon: LucideIcons.map,
+                onTap: () => launchMapsSearch(
+                  context,
+                  '${order.latitude},${order.longitude}',
+                ),
+              ),
+              const SizedBox(height: Gap.sm),
+            ] else
+              Padding(
+                padding: const EdgeInsets.only(bottom: Gap.sm),
+                child: Row(
+                  children: [
+                    StatusChip(L.noPin),
+                    const SizedBox(width: Gap.sm),
+                    Expanded(
+                      child: Text(
+                        L.noPinBody,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             CefListRow(
               title: L.coverage,
               subtitle: coverage.label,
@@ -1129,6 +1175,11 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
   bool busy = false;
   String? error;
   final errors = <String, String>{};
+  PinPoint? _initialPin;
+
+  /// Set only when the vendor located or moved the map; an untouched picker
+  /// never writes a pin.
+  PinPoint? _pickedPin;
 
   @override
   void initState() {
@@ -1145,6 +1196,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       phone.text = o.customerPhone;
       address.text = o.deliveryAddress;
       notes.text = o.notes ?? '';
+      if (o.hasPin) _initialPin = (lat: o.latitude!, lng: o.longitude!);
     } catch (e) {
       error = '$e';
     } finally {
@@ -1202,6 +1254,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           deliveryAddress: address.text.trim(),
           notes: notes.text.trim(),
         );
+        await _savePin(created.id);
         if (!mounted) return;
         app.go(VRoute.orderDetail, entityId: created.id);
         final token = created.trackingToken;
@@ -1214,6 +1267,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           deliveryAddress: address.text.trim(),
           notes: notes.text.trim(),
         );
+        await _savePin(widget.orderId!);
         if (!mounted) return;
         app.back();
       }
@@ -1221,6 +1275,22 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       if (mounted) setState(() => error = '$e');
     } finally {
       if (mounted) setState(() => busy = false);
+    }
+  }
+
+  /// The order is already saved by now, so a pin failure is a warning, never
+  /// a lost order.
+  Future<void> _savePin(String orderId) async {
+    final pin = _pickedPin;
+    if (pin == null) return;
+    try {
+      await AppScope.read(context).repo.setOrderPin(
+        orderId: orderId,
+        latitude: pin.lat,
+        longitude: pin.lng,
+      );
+    } catch (_) {
+      if (mounted) showCefToast(context, L.pinSaveFailed, error: true);
     }
   }
 
@@ -1279,6 +1349,15 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           prefixIcon: LucideIcons.mapPin,
           maxLines: 2,
           errorText: errors['address'],
+        ),
+        SectionHeading(
+          L.pinLocation,
+          icon: LucideIcons.locateFixed,
+          subtitle: _pickedPin == null ? L.pinLocationHint : L.pinLocationSet,
+        ),
+        DeliveryPinPicker(
+          initial: _initialPin,
+          onChanged: (p) => setState(() => _pickedPin = p),
         ),
         SectionHeading(
           L.items2,

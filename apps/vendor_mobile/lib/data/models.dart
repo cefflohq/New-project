@@ -135,10 +135,16 @@ class VendorOrder {
     this.approvedAt,
     this.completedAt,
     this.orderDate,
+    this.latitude,
+    this.longitude,
   });
 
   final String id;
   final DeliveryStatus status;
+
+  /// The customer's (or vendor's) pinned drop point; null when never pinned.
+  final double? latitude, longitude;
+  bool get hasPin => latitude != null && longitude != null;
 
   /// The business-local working day the order belongs to (server-set
   /// `order_date`, yyyy-MM-dd).
@@ -178,6 +184,8 @@ class VendorOrder {
         ? null
         : DateTime.parse(r['completed_at'] as String).toLocal(),
     orderDate: r['order_date'] as String?,
+    latitude: (r['latitude'] as num?)?.toDouble(),
+    longitude: (r['longitude'] as num?)?.toDouble(),
   );
 
   /// Short human reference. Falls back to the id when the backend has not

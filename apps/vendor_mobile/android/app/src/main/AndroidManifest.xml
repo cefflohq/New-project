@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Release builds need network access (Supabase). -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Pin picker: "use my location" when adding an order by hand. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <application
         android:label="Cefflo Vendor"
         android:name="${applicationName}"

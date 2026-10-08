@@ -1450,6 +1450,13 @@ Future<void> launchDirections(BuildContext context, String address) => _launch(
   'maps',
 );
 
+/// Opens a map search for [query] (an address, or "lat,lng" for a pin).
+Future<void> launchMapsSearch(BuildContext context, String query) => _launch(
+  context,
+  Uri.https('www.google.com', '/maps/search/', {'api': '1', 'query': query}),
+  'maps',
+);
+
 Future<void> _launch(BuildContext context, Uri uri, String target) async {
   var opened = false;
   try {

@@ -4128,4 +4128,36 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get integrationApiHow =>
       'Hantar setiap order sebagai JSON dengan kunci dalam header Authorization (Bearer). Sertakan external_id supaya order tak dicipta dua kali.';
+
+  @override
+  String get noPin => 'Tiada pin';
+
+  @override
+  String get noPinBody => 'Pelanggan tidak pin lokasi. Arah guna alamat.';
+
+  @override
+  String get openInMaps => 'Buka di peta';
+
+  @override
+  String get pinLocation => 'Pin lokasi';
+
+  @override
+  String get pinLocationHint =>
+      'Gerakkan peta supaya pin tepat di lokasi hantar. Pilihan.';
+
+  @override
+  String get pinLocationSet => 'Dipin. Gerakkan peta untuk laras.';
+
+  @override
+  String get useMyLocation => 'Guna lokasi saya';
+
+  @override
+  String get zoomIn => 'Zum masuk';
+
+  @override
+  String get zoomOut => 'Zum keluar';
+
+  @override
+  String get pinSaveFailed =>
+      'Pesanan disimpan, tetapi pin tidak dapat disimpan.';
 }

@@ -768,6 +768,25 @@ class VendorRepository {
     return VendorOrder.fromRow(_single(row));
   }
 
+  /// Vendor-set drop point (set_order_pin, Owner/Operator only; the server
+  /// records source 'vendor' and refuses delivered/cancelled orders).
+  Future<void> setOrderPin({
+    required String orderId,
+    required double latitude,
+    required double longitude,
+  }) async {
+    await _run(
+      () => _db!.rpc(
+        'set_order_pin',
+        params: {
+          'p_order_id': orderId,
+          'p_latitude': latitude,
+          'p_longitude': longitude,
+        },
+      ),
+    );
+  }
+
   Future<VendorOrder> approveOrder(String orderId) async {
     final row = await _run(
       () => _db!.rpc('approve_order', params: {'p_order_id': orderId}),
