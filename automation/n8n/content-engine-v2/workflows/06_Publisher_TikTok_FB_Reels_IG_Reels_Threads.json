@@ -1,0 +1,957 @@
+{
+  "id": "ce2WF06Publisher",
+  "name": "CEFFLO CE2 · 06 · Publisher (TikTok · FB Reels · IG Reels · Threads)",
+  "nodes": [
+    {
+      "id": "ce2WF06Publisher-1",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -440
+      ],
+      "parameters": {
+        "content": "## 06 · Publisher  (M6)\nEvery 10 min: APPROVED items whose slot is due.\n- **Video** → TikTok (Content Posting API, PULL_FROM_URL, `is_aigc: true`) · IG Reels (container → poll → publish) · FB Reels (start → hosted file → finish)\n- **Text** → Threads (create → publish)\nEach platform is recorded in `publication`; one platform failing does not block the others.\n⚠️ TikTok: app audit required before PUBLIC posting (until then `privacy: SELF_ONLY`), and the video URL domain must be verified in TikTok.\n⚠️ Meta: Instagram/Facebook publishing permissions need Meta app review. Add the platform **AI label** where the API cannot.",
+        "width": 680,
+        "height": 320,
+        "color": 4
+      }
+    },
+    {
+      "id": "ce2WF06Publisher-2",
+      "name": "Every 10 min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 10
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ce2WF06Publisher-3",
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ===== CEFFLO Content Engine V2 — CONFIG (edit here; secrets live in Credentials) =====\nreturn [{ json: { config: {\n  tz: 'Asia/Kuala_Lumpur',\n  founderChatId: 'SET_TELEGRAM_CHAT_ID',          // your Telegram user/chat id (numbers)\n  dailyBudgetUsd: 25,                              // generation stops when today's cost reaches this\n  deepseek: { url: 'https://api.deepseek.com/chat/completions', model: 'deepseek-v4-flash', temperature: 0.8 },\n  image: { url: 'SET_IMAGE_API_URL', model: 'SET_IMAGE_MODEL',\n           personaRefs: ['SET_KAK_ZEE_REF_FRONT_URL', 'SET_KAK_ZEE_REF_3Q_URL', 'SET_KAK_ZEE_REF_FULL_URL'],\n           wardrobe: 'plain pastel baju kurung moden or simple blouse with tudung bawal, casual' },\n  seedance: { url: 'https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks', model: 'SET_SEEDANCE_MODEL_ID' },\n  kling: { url: 'https://api-singapore.klingai.com/v1/videos/image2video', model: 'kling-v2-1' },\n  omni: { submitUrl: 'SET_OMNIHUMAN_SUBMIT_URL', pollUrl: 'SET_OMNIHUMAN_POLL_URL' },\n  eleven: { voiceId: 'SET_KAK_ZEE_VOICE_ID', model: 'eleven_v3',\n            settings: { stability: 0.4, similarity_boost: 0.75, style: 0.15, use_speaker_boost: true } },\n  render: { url: 'SET_RENDER_WORKER_URL' },        // e.g. https://render.cefflo.com (render-worker/)\n  screens: {                                       // real CEFFLO screen clips hosted by the render worker\n    vendor_orders: '/files/screens/vendor_orders.mp4', vendor_zones: '/files/screens/vendor_zones.mp4',\n    vendor_plan: '/files/screens/vendor_today.mp4', vendor_riders: '/files/screens/vendor_riders.mp4',\n    vendor_today: '/files/screens/vendor_today.mp4', driver_run: '/files/screens/driver_run.mp4',\n    driver_stops: '/files/screens/driver_stops.mp4', driver_pod: '/files/screens/driver_pod.mp4',\n    customer_tracking: '/files/screens/customer_tracking.mp4', storefront: '/files/screens/storefront.mp4' },\n  slots: { video: ['08:30', '12:30', '20:30'], text: ['10:00', '17:00'] },   // MYT publish times\n  meta: { graph: 'https://graph.facebook.com/v23.0', igUserId: 'SET_IG_USER_ID', pageId: 'SET_FB_PAGE_ID' },\n  threads: { graph: 'https://graph.threads.net/v1.0', userId: 'SET_THREADS_USER_ID' },\n  tiktok: { initUrl: 'https://open.tiktokapis.com/v2/post/publish/video/init/', privacy: 'SELF_ONLY' }, // PUBLIC_TO_EVERYONE after TikTok audit\n} } }];"
+      }
+    },
+    {
+      "id": "ce2WF06Publisher-4",
+      "name": "Claim due items",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        400,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "update cefflo_ce2.content set status = 'PUBLISHING', updated_at = now()\nwhere id in (select id from cefflo_ce2.content where status = 'APPROVED' and scheduled_at <= now() order by scheduled_at limit 3 for update skip locked)\nreturning id, type, script, media_url",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF06Publisher-5",
+      "name": "Video or text?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        600,
+        0
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Video or text?-0",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "video",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "video"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Video or text?-1",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ce2WF06Publisher-6",
+      "name": "TikTok · init (pull URL)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        860,
+        -300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.config.tiktok.initUrl }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ post_info: { title: (($json.script.caption?.tiktok || '') + ' ' + ($json.script.hashtags || []).join(' ')).slice(0, 2100), privacy_level: $('Config').first().json.config.tiktok.privacy, disable_comment: false, is_aigc: true }, source_info: { source: 'PULL_FROM_URL', video_url: $json.media_url } }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_TIKTOK",
+          "name": "CE2 TikTok"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ce2WF06Publisher-7",
+      "name": "Record TikTok",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        -300
+      ],
+      "parameters": {
+        "mode": {},
+        "jsCode": "const q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$'; const it = $('Claim due items').item.json; const r = $json; const ok = !!r.data?.publish_id;\nreturn [{ json: { content_id: it.id, sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'tiktok', ${q(r.data?.publish_id)}, '${ok ? 'SENT' : 'FAILED'}', ${q(ok ? null : (r.error?.message || r.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
+      }
+    },
+    {
+      "id": "ce2WF06Publisher-8",
+      "name": "DB · TikTok",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1300,
+        -300
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.sql }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF06Publisher-9",
+      "name": "IG · create Reels container",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        860,
+        -120
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.config.meta.graph + '/' + $('Config').first().json.config.meta.igUserId + '/media' }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ media_type: 'REELS', video_url: $json.media_url, caption: (($json.script.caption?.meta || '') + '\\n' + ($json.script.hashtags || []).join(' ')).slice(0, 2200), share_to_feed: true }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_META",
+          "name": "CE2 Meta"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ce2WF06Publisher-10",
+      "name": "Wait 60s (IG processing)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1080,
+        -120
+      ],
+      "parameters": {
+        "amount": 60,
+        "unit": "seconds"
+      },
+      "webhookId": "ce2WF06PublisherWait60sIGprocessing"
+    },
+    {
+      "id": "ce2WF06Publisher-11",
+      "name": "IG · status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1300,
+        -120
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Config').first().json.config.meta.graph + '/' + $('IG · create Reels container').item.json.id + '?fields=status_code' }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_META",
+          "name": "CE2 Meta"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ce2WF06Publisher-12",
+      "name": "IG · publish",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1520,
+        -120
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.config.meta.graph + '/' + $('Config').first().json.config.meta.igUserId + '/media_publish' }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ creation_id: $('IG · create Reels container').item.json.id }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_META",
+          "name": "CE2 Meta"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ce2WF06Publisher-13",
+      "name": "Record IG",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1740,
+        -120
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$'; const it = $('Claim due items').item.json; const r = $json; const ok = !!r.id;\nreturn [{ json: { sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'instagram', ${q(r.id)}, '${ok ? 'PUBLISHED' : 'FAILED'}', ${q(ok ? null : (r.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
+      }
+    },
+    {
+      "id": "ce2WF06Publisher-14",
+      "name": "DB · IG",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1960,
+        -120
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.sql }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF06Publisher-15",
+      "name": "FB Reels · start",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        860,
+        60
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.config.meta.graph + '/' + $('Config').first().json.config.meta.pageId + '/video_reels' }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ upload_phase: \"start\" }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_META",
+          "name": "CE2 Meta"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ce2WF06Publisher-16",
+      "name": "FB Reels · upload hosted file",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1080,
+        60
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.upload_url || (\"https://rupload.facebook.com/video-upload/v23.0/\" + $json.video_id) }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={{ JSON.stringify({ file_url: $('Claim due items').item.json.media_url }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_META",
+          "name": "CE2 Meta"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ce2WF06Publisher-17",
+      "name": "FB Reels · finish",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1300,
+        60
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.config.meta.graph + '/' + $('Config').first().json.config.meta.pageId + '/video_reels' }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ upload_phase: 'finish', video_id: $('FB Reels · start').item.json.video_id, video_state: 'PUBLISHED', description: (($('Claim due items').item.json.script.caption?.meta || '') + '\\n' + ($('Claim due items').item.json.script.hashtags || []).join(' ')).slice(0, 2200) }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_META",
+          "name": "CE2 Meta"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ce2WF06Publisher-18",
+      "name": "Record FB",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        60
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$'; const it = $('Claim due items').item.json; const vid = $('FB Reels · start').item.json.video_id; const ok = !!$json.success;\nreturn [{ json: { sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'facebook', ${q(vid)}, '${ok ? 'PUBLISHED' : 'FAILED'}', ${q(ok ? null : ($json.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
+      }
+    },
+    {
+      "id": "ce2WF06Publisher-19",
+      "name": "DB · FB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1740,
+        60
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.sql }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF06Publisher-20",
+      "name": "Threads · create",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        860,
+        260
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.config.threads.graph + '/' + $('Config').first().json.config.threads.userId + '/threads' }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ media_type: \"TEXT\", text: $json.script.text }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_THREADS",
+          "name": "CE2 Threads"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ce2WF06Publisher-21",
+      "name": "Wait 30s (Threads)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1080,
+        260
+      ],
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "webhookId": "ce2WF06PublisherWait30sThreads"
+    },
+    {
+      "id": "ce2WF06Publisher-22",
+      "name": "Threads · publish",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1300,
+        260
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.config.threads.graph + '/' + $('Config').first().json.config.threads.userId + '/threads_publish' }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ creation_id: $('Threads · create').item.json.id }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_THREADS",
+          "name": "CE2 Threads"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ce2WF06Publisher-23",
+      "name": "Record Threads",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        260
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$'; const it = $('Claim due items').item.json; const ok = !!$json.id;\nreturn [{ json: { sql: `insert into cefflo_ce2.publication (content_id, platform, platform_post_id, status, error, published_at) values ('${it.id}', 'threads', ${q($json.id)}, '${ok ? 'PUBLISHED' : 'FAILED'}', ${q(ok ? null : ($json.error?.message || 'unknown'))}, now()) on conflict (content_id, platform) do update set status = excluded.status, error = excluded.error, platform_post_id = excluded.platform_post_id` } }];"
+      }
+    },
+    {
+      "id": "ce2WF06Publisher-24",
+      "name": "DB · Threads",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1740,
+        260
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.sql }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF06Publisher-25",
+      "name": "Settle 2 min",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2180,
+        0
+      ],
+      "parameters": {
+        "amount": 120,
+        "unit": "seconds"
+      },
+      "webhookId": "ce2WF06PublisherSettle2min"
+    },
+    {
+      "id": "ce2WF06Publisher-26",
+      "name": "Close + summary",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2400,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "with done as (update cefflo_ce2.content c set status = case when exists (select 1 from cefflo_ce2.publication p where p.content_id = c.id and p.status in ('PUBLISHED','SENT')) then 'PUBLISHED' else 'FAILED' end, updated_at = now()\n  where c.status = 'PUBLISHING' and c.updated_at < now() - interval '90 seconds' returning c.id, c.type, c.status)\nselect d.id, d.type, d.status, coalesce(string_agg(p.platform || ':' || p.status || coalesce(' (' || left(p.error, 80) || ')', ''), ', '), '') as platforms\nfrom done d left join cefflo_ce2.publication p on p.content_id = d.id group by d.id, d.type, d.status",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF06Publisher-27",
+      "name": "Report",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2620,
+        0
+      ],
+      "parameters": {
+        "chatId": "={{ $('Config').first().json.config.founderChatId }}",
+        "text": "={{ ($json.status === 'PUBLISHED' ? '📣 Disiarkan' : '⚠️ Gagal siar') + ' #' + $json.id.slice(0, 8) + ' (' + $json.type + ')\\n' + $json.platforms }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "CE2_TG",
+          "name": "CE2 Telegram Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 10 min": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Claim due items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim due items": {
+      "main": [
+        [
+          {
+            "node": "Video or text?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video or text?": {
+      "main": [
+        [
+          {
+            "node": "TikTok · init (pull URL)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IG · create Reels container",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "FB Reels · start",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Threads · create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok · init (pull URL)": {
+      "main": [
+        [
+          {
+            "node": "Record TikTok",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record TikTok": {
+      "main": [
+        [
+          {
+            "node": "DB · TikTok",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IG · create Reels container": {
+      "main": [
+        [
+          {
+            "node": "Wait 60s (IG processing)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60s (IG processing)": {
+      "main": [
+        [
+          {
+            "node": "IG · status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IG · status": {
+      "main": [
+        [
+          {
+            "node": "IG · publish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IG · publish": {
+      "main": [
+        [
+          {
+            "node": "Record IG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record IG": {
+      "main": [
+        [
+          {
+            "node": "DB · IG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Reels · start": {
+      "main": [
+        [
+          {
+            "node": "FB Reels · upload hosted file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Reels · upload hosted file": {
+      "main": [
+        [
+          {
+            "node": "FB Reels · finish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Reels · finish": {
+      "main": [
+        [
+          {
+            "node": "Record FB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record FB": {
+      "main": [
+        [
+          {
+            "node": "DB · FB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Threads · create": {
+      "main": [
+        [
+          {
+            "node": "Wait 30s (Threads)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30s (Threads)": {
+      "main": [
+        [
+          {
+            "node": "Threads · publish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Threads · publish": {
+      "main": [
+        [
+          {
+            "node": "Record Threads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Threads": {
+      "main": [
+        [
+          {
+            "node": "DB · Threads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB · TikTok": {
+      "main": [
+        [
+          {
+            "node": "Settle 2 min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB · IG": {
+      "main": [
+        [
+          {
+            "node": "Settle 2 min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB · FB": {
+      "main": [
+        [
+          {
+            "node": "Settle 2 min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB · Threads": {
+      "main": [
+        [
+          {
+            "node": "Settle 2 min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Settle 2 min": {
+      "main": [
+        [
+          {
+            "node": "Close + summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Close + summary": {
+      "main": [
+        [
+          {
+            "node": "Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kuala_Lumpur",
+    "saveManualExecutions": true,
+    "errorWorkflow": "ce2WF99ErrorAlrt"
+  },
+  "tags": [],
+  "pinData": {}
+}

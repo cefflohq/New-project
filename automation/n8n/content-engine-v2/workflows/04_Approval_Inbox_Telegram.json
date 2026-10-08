@@ -1,0 +1,481 @@
+{
+  "id": "ce2WF04ApproveIn",
+  "name": "CEFFLO CE2 · 04 · Approval Inbox (Telegram)",
+  "nodes": [
+    {
+      "id": "ce2WF04ApproveIn-1",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -360
+      ],
+      "parameters": {
+        "content": "## 04 · Approval inbox\nTelegram buttons + replies from the **Founder chat only** (other chats ignored).\n- ✅ Approve → schedule in the next free slot (video 08:30/12:30/20:30, Threads 10:00/17:00 MYT) → 06 publishes\n- ❌ Reject → REJECTED (feeds learning)\n- ✏️ Revise → bot asks for a note; **reply to that message** with the note → 05 Revise (max 2 revisions)",
+        "width": 620,
+        "height": 280,
+        "color": 4
+      }
+    },
+    {
+      "id": "ce2WF04ApproveIn-2",
+      "name": "Telegram updates",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "updates": [
+          "callback_query",
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "CE2_TG",
+          "name": "CE2 Telegram Bot"
+        }
+      },
+      "webhookId": "ce2-telegram-inbox"
+    },
+    {
+      "id": "ce2WF04ApproveIn-3",
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ===== CEFFLO Content Engine V2 — CONFIG (edit here; secrets live in Credentials) =====\nreturn [{ json: { config: {\n  tz: 'Asia/Kuala_Lumpur',\n  founderChatId: 'SET_TELEGRAM_CHAT_ID',          // your Telegram user/chat id (numbers)\n  dailyBudgetUsd: 25,                              // generation stops when today's cost reaches this\n  deepseek: { url: 'https://api.deepseek.com/chat/completions', model: 'deepseek-v4-flash', temperature: 0.8 },\n  image: { url: 'SET_IMAGE_API_URL', model: 'SET_IMAGE_MODEL',\n           personaRefs: ['SET_KAK_ZEE_REF_FRONT_URL', 'SET_KAK_ZEE_REF_3Q_URL', 'SET_KAK_ZEE_REF_FULL_URL'],\n           wardrobe: 'plain pastel baju kurung moden or simple blouse with tudung bawal, casual' },\n  seedance: { url: 'https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks', model: 'SET_SEEDANCE_MODEL_ID' },\n  kling: { url: 'https://api-singapore.klingai.com/v1/videos/image2video', model: 'kling-v2-1' },\n  omni: { submitUrl: 'SET_OMNIHUMAN_SUBMIT_URL', pollUrl: 'SET_OMNIHUMAN_POLL_URL' },\n  eleven: { voiceId: 'SET_KAK_ZEE_VOICE_ID', model: 'eleven_v3',\n            settings: { stability: 0.4, similarity_boost: 0.75, style: 0.15, use_speaker_boost: true } },\n  render: { url: 'SET_RENDER_WORKER_URL' },        // e.g. https://render.cefflo.com (render-worker/)\n  screens: {                                       // real CEFFLO screen clips hosted by the render worker\n    vendor_orders: '/files/screens/vendor_orders.mp4', vendor_zones: '/files/screens/vendor_zones.mp4',\n    vendor_plan: '/files/screens/vendor_today.mp4', vendor_riders: '/files/screens/vendor_riders.mp4',\n    vendor_today: '/files/screens/vendor_today.mp4', driver_run: '/files/screens/driver_run.mp4',\n    driver_stops: '/files/screens/driver_stops.mp4', driver_pod: '/files/screens/driver_pod.mp4',\n    customer_tracking: '/files/screens/customer_tracking.mp4', storefront: '/files/screens/storefront.mp4' },\n  slots: { video: ['08:30', '12:30', '20:30'], text: ['10:00', '17:00'] },   // MYT publish times\n  meta: { graph: 'https://graph.facebook.com/v23.0', igUserId: 'SET_IG_USER_ID', pageId: 'SET_FB_PAGE_ID' },\n  threads: { graph: 'https://graph.threads.net/v1.0', userId: 'SET_THREADS_USER_ID' },\n  tiktok: { initUrl: 'https://open.tiktokapis.com/v2/post/publish/video/init/', privacy: 'SELF_ONLY' }, // PUBLIC_TO_EVERYONE after TikTok audit\n} } }];"
+      }
+    },
+    {
+      "id": "ce2WF04ApproveIn-4",
+      "name": "Parse update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const c = $('Config').first().json.config; const u = $('Telegram updates').first().json;\nconst cb = u.callback_query, msg = u.message;\nconst chat = String(cb?.message?.chat?.id ?? msg?.chat?.id ?? '');\nif (chat !== String(c.founderChatId)) return [];                      // ignore everyone else\nif (cb) { const [act, id] = String(cb.data || '').split('|');\n  return [{ json: { action: act, content_id: id, callback_id: cb.id, chat, message_id: cb.message?.message_id } }]; }\nconst replied = msg?.reply_to_message?.text || '';\nconst m = replied.match(/REVISE #([0-9a-f-]{36})/);\nif (m && msg.text) return [{ json: { action: 'note', content_id: m[1], note: msg.text.slice(0, 800), chat } }];\nreturn [];"
+      }
+    },
+    {
+      "id": "ce2WF04ApproveIn-5",
+      "name": "Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Action-0",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ok",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "ok"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Action-1",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "no",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "no"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Action-2",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "rv",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "rv"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Action-3",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "note",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "note"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ce2WF04ApproveIn-6",
+      "name": "Approve + schedule",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        900,
+        -240
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ \"with c as (select id, type from cefflo_ce2.content where id = '\" + $json.content_id + \"' and status in ('AWAITING_APPROVAL','READY','SCRIPTED')),\nslots as (select (d + t::time) at time zone 'Asia/Kuala_Lumpur' as at from c,\n  generate_series((now() at time zone 'Asia/Kuala_Lumpur')::date, (now() at time zone 'Asia/Kuala_Lumpur')::date + 7, interval '1 day') d,\n  unnest(case when c.type = 'video' then array\" + JSON.stringify($('Config').first().json.config.slots.video).replaceAll('\\\"', \"'\") + \" else array\" + JSON.stringify($('Config').first().json.config.slots.text).replaceAll('\\\"', \"'\") + \" end) t),\nfree as (select s.at from slots s where s.at > now() + interval '10 minutes' and not exists (select 1 from cefflo_ce2.content x, c where x.scheduled_at = s.at and x.type = c.type and x.status in ('APPROVED','PUBLISHING','PUBLISHED')) order by s.at limit 1)\nupdate cefflo_ce2.content set status = 'APPROVED', scheduled_at = (select at from free), updated_at = now() where id = (select id from c) returning id, scheduled_at\" }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "ce2WF04ApproveIn-7",
+      "name": "Ack approve",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        -240
+      ],
+      "parameters": {
+        "operation": "sendMessage",
+        "chatId": "={{ $('Parse update').first().json.chat }}",
+        "text": "={{ $json.scheduled_at ? '✅ Diluluskan. Dijadual: ' + DateTime.fromISO(new Date($json.scheduled_at).toISOString()).setZone('Asia/Kuala_Lumpur').toFormat('ccc d LLL, HH:mm') + ' MYT' : 'ℹ️ Content ni dah diproses sebelum ni.' }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "CE2_TG",
+          "name": "CE2 Telegram Bot"
+        }
+      }
+    },
+    {
+      "id": "ce2WF04ApproveIn-8",
+      "name": "Reject",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        900,
+        -60
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ \"update cefflo_ce2.content set status = 'REJECTED', updated_at = now() where id = '\" + $json.content_id + \"' returning id\" }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF04ApproveIn-9",
+      "name": "Ack reject",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        -60
+      ],
+      "parameters": {
+        "chatId": "={{ $('Parse update').first().json.chat }}",
+        "text": "❌ Ditolak. Akan diambil kira dalam learning mingguan.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "CE2_TG",
+          "name": "CE2 Telegram Bot"
+        }
+      }
+    },
+    {
+      "id": "ce2WF04ApproveIn-10",
+      "name": "Mark REVISE",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        900,
+        120
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ \"update cefflo_ce2.content set status = 'REVISE', updated_at = now() where id = '\" + $json.content_id + \"' and revisions < 2 returning id\" }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "ce2WF04ApproveIn-11",
+      "name": "Ask for note",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        120
+      ],
+      "parameters": {
+        "chatId": "={{ $('Parse update').first().json.chat }}",
+        "text": "={{ $json.id ? '✏️ REVISE #' + $json.id + '\\nBalas (reply) mesej ni dengan apa yang nak diubah.' : '⚠️ Dah 2 kali revise. Sila Approve atau Reject.' }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "CE2_TG",
+          "name": "CE2 Telegram Bot"
+        }
+      }
+    },
+    {
+      "id": "ce2WF04ApproveIn-12",
+      "name": "Save note",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        900,
+        300
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ \"update cefflo_ce2.content set revise_note = $ce2$\" + $json.note.replaceAll('$ce2$', '') + \"$ce2$, revisions = revisions + 1, updated_at = now() where id = '\" + $json.content_id + \"' and status = 'REVISE' returning id as content_id\" }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF04ApproveIn-13",
+      "name": "→ 05 Revise",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        300
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "ce2WF05ReviseCon"
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram updates": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Parse update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse update": {
+      "main": [
+        [
+          {
+            "node": "Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Action": {
+      "main": [
+        [
+          {
+            "node": "Approve + schedule",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark REVISE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve + schedule": {
+      "main": [
+        [
+          {
+            "node": "Ack approve",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject": {
+      "main": [
+        [
+          {
+            "node": "Ack reject",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark REVISE": {
+      "main": [
+        [
+          {
+            "node": "Ask for note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save note": {
+      "main": [
+        [
+          {
+            "node": "→ 05 Revise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kuala_Lumpur",
+    "saveManualExecutions": true,
+    "errorWorkflow": "ce2WF99ErrorAlrt"
+  },
+  "tags": [],
+  "pinData": {}
+}

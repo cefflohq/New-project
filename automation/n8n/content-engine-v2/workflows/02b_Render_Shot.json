@@ -1,0 +1,1406 @@
+{
+  "id": "ce2WF02bRenderSh",
+  "name": "CEFFLO CE2 · 02b · Render Shot",
+  "nodes": [
+    {
+      "id": "ce2WF02bRenderSh-1",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -420
+      ],
+      "parameters": {
+        "content": "## 02b · Render one shot\n- **vo** → ElevenLabs (Kak Zee voice) → upload to render worker → `audio_url`\n- **screen** → real CEFFLO screen clip from the library (never AI-generated UI)\n- **broll** → keyframe (image model + Kak Zee references) → **Seedance** (poll ≤ 10 min) → fallback **Kling**\n- **talking** → keyframe → **OmniHuman** lip-sync with the VO audio\nPrompt style is enforced: handheld phone, natural light, no cinematic/4K.\n⚠️ Kling needs a JWT from AK/SK: set env `NODE_FUNCTION_ALLOW_BUILTIN=crypto` on n8n.\n⚠️ Image + OmniHuman request bodies are adapters — adjust to the provider you sign up with.",
+        "width": 620,
+        "height": 320,
+        "color": 4
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-2",
+      "name": "From 02",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-3",
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ===== CEFFLO Content Engine V2 — CONFIG (edit here; secrets live in Credentials) =====\nreturn [{ json: { config: {\n  tz: 'Asia/Kuala_Lumpur',\n  founderChatId: 'SET_TELEGRAM_CHAT_ID',          // your Telegram user/chat id (numbers)\n  dailyBudgetUsd: 25,                              // generation stops when today's cost reaches this\n  deepseek: { url: 'https://api.deepseek.com/chat/completions', model: 'deepseek-v4-flash', temperature: 0.8 },\n  image: { url: 'SET_IMAGE_API_URL', model: 'SET_IMAGE_MODEL',\n           personaRefs: ['SET_KAK_ZEE_REF_FRONT_URL', 'SET_KAK_ZEE_REF_3Q_URL', 'SET_KAK_ZEE_REF_FULL_URL'],\n           wardrobe: 'plain pastel baju kurung moden or simple blouse with tudung bawal, casual' },\n  seedance: { url: 'https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks', model: 'SET_SEEDANCE_MODEL_ID' },\n  kling: { url: 'https://api-singapore.klingai.com/v1/videos/image2video', model: 'kling-v2-1' },\n  omni: { submitUrl: 'SET_OMNIHUMAN_SUBMIT_URL', pollUrl: 'SET_OMNIHUMAN_POLL_URL' },\n  eleven: { voiceId: 'SET_KAK_ZEE_VOICE_ID', model: 'eleven_v3',\n            settings: { stability: 0.4, similarity_boost: 0.75, style: 0.15, use_speaker_boost: true } },\n  render: { url: 'SET_RENDER_WORKER_URL' },        // e.g. https://render.cefflo.com (render-worker/)\n  screens: {                                       // real CEFFLO screen clips hosted by the render worker\n    vendor_orders: '/files/screens/vendor_orders.mp4', vendor_zones: '/files/screens/vendor_zones.mp4',\n    vendor_plan: '/files/screens/vendor_today.mp4', vendor_riders: '/files/screens/vendor_riders.mp4',\n    vendor_today: '/files/screens/vendor_today.mp4', driver_run: '/files/screens/driver_run.mp4',\n    driver_stops: '/files/screens/driver_stops.mp4', driver_pod: '/files/screens/driver_pod.mp4',\n    customer_tracking: '/files/screens/customer_tracking.mp4', storefront: '/files/screens/storefront.mp4' },\n  slots: { video: ['08:30', '12:30', '20:30'], text: ['10:00', '17:00'] },   // MYT publish times\n  meta: { graph: 'https://graph.facebook.com/v23.0', igUserId: 'SET_IG_USER_ID', pageId: 'SET_FB_PAGE_ID' },\n  threads: { graph: 'https://graph.threads.net/v1.0', userId: 'SET_THREADS_USER_ID' },\n  tiktok: { initUrl: 'https://open.tiktokapis.com/v2/post/publish/video/init/', privacy: 'SELF_ONLY' }, // PUBLIC_TO_EVERYONE after TikTok audit\n} } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-4",
+      "name": "Shot context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const i = $('From 02').first().json; return [{ json: { content_id: i.content_id, ...i.shot, has_vo: !!(i.shot.vo || '').trim() } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-5",
+      "name": "Has VO?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        600,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "Has VO?-c",
+              "leftValue": "={{ $json.has_vo }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-6",
+      "name": "ElevenLabs · VO",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        820,
+        -120
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://api.elevenlabs.io/v1/text-to-speech/' + $('Config').first().json.config.eleven.voiceId + '?output_format=mp3_44100_128' }}",
+        "options": {
+          "timeout": 120000,
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.vo, model_id: $('Config').first().json.config.eleven.model, language_code: 'ms', voice_settings: $('Config').first().json.config.eleven.settings }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_ELEVENLABS",
+          "name": "CE2 ElevenLabs"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "ce2WF02bRenderSh-7",
+      "name": "Upload VO to worker",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        -120
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.config.render.url + '/upload?ext=mp3' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_RENDER",
+          "name": "CE2 Render"
+        }
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-8",
+      "name": "Attach audio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        -120
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst s = $('Shot context').first().json; return [{ json: { ...s, audio_url: $json.url } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-9",
+      "name": "No audio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        120
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return [{ json: { ...$('Shot context').first().json, audio_url: null } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-10",
+      "name": "Shot kind",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1480,
+        0
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Shot kind-0",
+                    "leftValue": "={{ $json.kind }}",
+                    "rightValue": "screen",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "screen"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Shot kind-1",
+                    "leftValue": "={{ $json.kind }}",
+                    "rightValue": "broll",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "broll"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Shot kind-2",
+                    "leftValue": "={{ $json.kind }}",
+                    "rightValue": "talking",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "talking"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-11",
+      "name": "Screen clip",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1720,
+        -260
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst c = $('Config').first().json.config; const path = c.screens[$json.screen_id] || c.screens.vendor_orders;\nreturn [{ json: { n: $json.n, seconds: $json.seconds, subtitle: $json.subtitle, audio_url: $json.audio_url, video_url: c.render.url + path, provider: 'screen-library' } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-12",
+      "name": "Keyframe request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1720,
+        60
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst c = $('Config').first().json.config;\nconst prompt = 'Vertical 9:16 photo taken on a phone, handheld, natural indoor light, candid, everyday Malaysian setting. Kak Zee (same woman as reference images), Malay woman mid-30s, wearing ' + c.image.wardrobe + '. ' + $json.visual_prompt + '. Not cinematic, not studio, natural skin texture, no text, no logos.';\nreturn [{ json: { ...$json, kf: { model: c.image.model, prompt, reference_images: c.image.personaRefs, size: '1080x1920', n: 1 } } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-13",
+      "name": "Image · keyframe",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1940,
+        60
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.config.image.url }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.kf) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_IMAGE",
+          "name": "CE2 Image"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "ce2WF02bRenderSh-14",
+      "name": "Keyframe URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        60
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst s = $('Keyframe request').first().json; const r = $json;\nconst url = r.data?.[0]?.url || r.images?.[0]?.url || r.output?.[0] || r.url; if (!url) throw new Error('Image API: no URL in response');\nreturn [{ json: { ...s, keyframe_url: url } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-15",
+      "name": "Talking or b-roll?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2380,
+        60
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Talking or b-roll?-0",
+                    "leftValue": "={{ $json.kind }}",
+                    "rightValue": "broll",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "broll"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Talking or b-roll?-1",
+                    "leftValue": "={{ $json.kind }}",
+                    "rightValue": "talking",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "talking"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-16",
+      "name": "Seedance · submit",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2620,
+        -60
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.config.seedance.url }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $('Config').first().json.config.seedance.model, content: [\n    { type: 'text', text: $json.visual_prompt + ', handheld smartphone video, natural light, subtle camera shake, realistic, not cinematic --ratio 9:16 --resolution 1080p --duration ' + Math.min(10, Math.max(5, Math.round($json.seconds))) + ' --camerafixed false' },\n    { type: 'image_url', image_url: { url: $json.keyframe_url } } ] }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_SEEDANCE",
+          "name": "CE2 Seedance"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "ce2WF02bRenderSh-17",
+      "name": "Seedance task",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2840,
+        -60
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst s = $('Keyframe URL').first().json; return [{ json: { ...s, task_id: $json.id, tries: 0 } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-18",
+      "name": "Wait 20s (Seedance)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3060,
+        -60
+      ],
+      "parameters": {
+        "amount": 20,
+        "unit": "seconds"
+      },
+      "webhookId": "ce2WF02bRenderShWait20sSeedance"
+    },
+    {
+      "id": "ce2WF02bRenderSh-19",
+      "name": "Seedance · poll",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3280,
+        -60
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Config').first().json.config.seedance.url + '/' + $json.task_id }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_SEEDANCE",
+          "name": "CE2 Seedance"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "ce2WF02bRenderSh-20",
+      "name": "Seedance status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3500,
+        -60
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst prev = $('Wait 20s (Seedance)').first().json; const st = $json.status;\nreturn [{ json: { ...prev, tries: prev.tries + 1, status: st, done: st === 'succeeded', failed: st === 'failed' || st === 'cancelled' || prev.tries >= 30,\n  video_url: $json.content?.video_url || null } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-21",
+      "name": "Seedance done?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3720,
+        -60
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "Seedance done?-c",
+              "leftValue": "={{ $json.done }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-22",
+      "name": "Seedance failed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3940,
+        60
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "Seedance failed?-c",
+              "leftValue": "={{ $json.failed }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-23",
+      "name": "B-roll result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3940,
+        -160
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst s = $json; return [{ json: { n: s.n, seconds: s.seconds, subtitle: s.subtitle, audio_url: s.audio_url, video_url: s.video_url, provider: 'seedance' } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-24",
+      "name": "Kling JWT + body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4160,
+        160
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const c = $('Config').first().json.config; const s = $('Keyframe URL').first().json;\n// Kling auth: JWT HS256 signed with your Access Key / Secret Key (store in credential \"CE2 Kling\" as header Authorization: Bearer <JWT>,\n// or let this node sign it when NODE_FUNCTION_ALLOW_BUILTIN=crypto and the keys are set below).\nconst AK = 'SET_KLING_ACCESS_KEY', SK = 'SET_KLING_SECRET_KEY'; let bearer = null;\ntry { const crypto = require('crypto'); const b64 = o => Buffer.from(JSON.stringify(o)).toString('base64url'); const now = Math.floor(Date.now() / 1000);\n  const h = b64({ alg: 'HS256', typ: 'JWT' }), p = b64({ iss: AK, exp: now + 1800, nbf: now - 5 });\n  bearer = h + '.' + p + '.' + crypto.createHmac('sha256', SK).update(h + '.' + p).digest('base64url'); } catch (e) { bearer = null; }\nreturn [{ json: { ...s, tries: 0, bearer, kbody: { model_name: c.kling.model, image: s.keyframe_url, prompt: s.visual_prompt + ', handheld phone video, natural light, realistic', duration: s.seconds > 5 ? '10' : '5', aspect_ratio: '9:16', mode: 'std' } } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-25",
+      "name": "Kling · submit",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4380,
+        160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.config.kling.url }}",
+        "options": {
+          "timeout": 120000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.kbody) }}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={{ JSON.stringify({ Authorization: 'Bearer ' + $json.bearer }) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "ce2WF02bRenderSh-26",
+      "name": "Kling task",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4600,
+        160
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst s = $('Kling JWT + body').first().json; return [{ json: { ...s, task_id: $json.data?.task_id } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-27",
+      "name": "Wait 30s (Kling)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4820,
+        160
+      ],
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "webhookId": "ce2WF02bRenderShWait30sKling"
+    },
+    {
+      "id": "ce2WF02bRenderSh-28",
+      "name": "Kling · poll",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5040,
+        160
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Config').first().json.config.kling.url + '/' + $json.task_id }}",
+        "options": {
+          "timeout": 120000
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={{ JSON.stringify({ Authorization: 'Bearer ' + $json.bearer }) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "ce2WF02bRenderSh-29",
+      "name": "Kling status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5260,
+        160
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst prev = $('Wait 30s (Kling)').first().json; const st = $json.data?.task_status;\nif (st === 'failed' || prev.tries >= 20) throw new Error('Kling failed for shot ' + prev.n + ': ' + ($json.data?.task_status_msg || 'timeout'));\nreturn [{ json: { ...prev, tries: prev.tries + 1, done: st === 'succeed', video_url: $json.data?.task_result?.videos?.[0]?.url || null } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-30",
+      "name": "Kling done?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5480,
+        160
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "Kling done?-c",
+              "leftValue": "={{ $json.done }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-31",
+      "name": "Kling result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5700,
+        80
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst s = $json; return [{ json: { n: s.n, seconds: s.seconds, subtitle: s.subtitle, audio_url: s.audio_url, video_url: s.video_url, provider: 'kling' } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-32",
+      "name": "Has audio for lip-sync?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2620,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "Has audio for lip-sync?-c",
+              "leftValue": "={{ !!$json.audio_url }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-33",
+      "name": "OmniHuman · submit",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2840,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.config.omni.submitUrl }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ image_url: $json.keyframe_url, audio_url: $json.audio_url, prompt: \"natural talking to phone camera, small head movement, blinking, relaxed\" }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_OMNIHUMAN",
+          "name": "CE2 OmniHuman"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "ce2WF02bRenderSh-34",
+      "name": "Omni task",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3060,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst s = $('Has audio for lip-sync?').first().json; const r = $json; return [{ json: { ...s, task_id: r.task_id || r.data?.task_id || r.id, tries: 0 } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-35",
+      "name": "Wait 20s (Omni)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3280,
+        300
+      ],
+      "parameters": {
+        "amount": 20,
+        "unit": "seconds"
+      },
+      "webhookId": "ce2WF02bRenderShWait20sOmni"
+    },
+    {
+      "id": "ce2WF02bRenderSh-36",
+      "name": "OmniHuman · poll",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3500,
+        300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Config').first().json.config.omni.pollUrl.replace('{task_id}', $json.task_id) }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_OMNIHUMAN",
+          "name": "CE2 OmniHuman"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "ce2WF02bRenderSh-37",
+      "name": "Omni status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3720,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst prev = $('Wait 20s (Omni)').first().json; const r = $json; const st = (r.status || r.data?.status || '').toLowerCase();\nif (/fail|error|cancel/.test(st) || prev.tries >= 30) throw new Error('OmniHuman failed for shot ' + prev.n);\nreturn [{ json: { ...prev, tries: prev.tries + 1, done: /succe|done|complete/.test(st), video_url: r.video_url || r.data?.video_url || r.output?.video_url || null } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-38",
+      "name": "Omni done?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3940,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "Omni done?-c",
+              "leftValue": "={{ $json.done && !!$json.video_url }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-39",
+      "name": "Talking result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4160,
+        400
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst s = $json; return [{ json: { n: s.n, seconds: s.seconds, subtitle: s.subtitle, audio_url: null, video_url: s.video_url, provider: 'omnihuman' } }];"
+      }
+    },
+    {
+      "id": "ce2WF02bRenderSh-40",
+      "name": "Talking without audio = b-roll",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2840,
+        480
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nreturn [{ json: { ...$json, kind: 'broll' } }];"
+      }
+    }
+  ],
+  "connections": {
+    "From 02": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Shot context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shot context": {
+      "main": [
+        [
+          {
+            "node": "Has VO?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has VO?": {
+      "main": [
+        [
+          {
+            "node": "ElevenLabs · VO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ElevenLabs · VO": {
+      "main": [
+        [
+          {
+            "node": "Upload VO to worker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload VO to worker": {
+      "main": [
+        [
+          {
+            "node": "Attach audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach audio": {
+      "main": [
+        [
+          {
+            "node": "Shot kind",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No audio": {
+      "main": [
+        [
+          {
+            "node": "Shot kind",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shot kind": {
+      "main": [
+        [
+          {
+            "node": "Screen clip",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Keyframe request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Keyframe request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keyframe request": {
+      "main": [
+        [
+          {
+            "node": "Image · keyframe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image · keyframe": {
+      "main": [
+        [
+          {
+            "node": "Keyframe URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keyframe URL": {
+      "main": [
+        [
+          {
+            "node": "Talking or b-roll?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Talking or b-roll?": {
+      "main": [
+        [
+          {
+            "node": "Seedance · submit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Has audio for lip-sync?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seedance · submit": {
+      "main": [
+        [
+          {
+            "node": "Seedance task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Kling JWT + body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seedance task": {
+      "main": [
+        [
+          {
+            "node": "Wait 20s (Seedance)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 20s (Seedance)": {
+      "main": [
+        [
+          {
+            "node": "Seedance · poll",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seedance · poll": {
+      "main": [
+        [
+          {
+            "node": "Seedance status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seedance status": {
+      "main": [
+        [
+          {
+            "node": "Seedance done?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seedance done?": {
+      "main": [
+        [
+          {
+            "node": "B-roll result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Seedance failed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seedance failed?": {
+      "main": [
+        [
+          {
+            "node": "Kling JWT + body",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 20s (Seedance)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kling JWT + body": {
+      "main": [
+        [
+          {
+            "node": "Kling · submit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kling · submit": {
+      "main": [
+        [
+          {
+            "node": "Kling task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kling task": {
+      "main": [
+        [
+          {
+            "node": "Wait 30s (Kling)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30s (Kling)": {
+      "main": [
+        [
+          {
+            "node": "Kling · poll",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kling · poll": {
+      "main": [
+        [
+          {
+            "node": "Kling status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kling status": {
+      "main": [
+        [
+          {
+            "node": "Kling done?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kling done?": {
+      "main": [
+        [
+          {
+            "node": "Kling result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 30s (Kling)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has audio for lip-sync?": {
+      "main": [
+        [
+          {
+            "node": "OmniHuman · submit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Talking without audio = b-roll",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Talking without audio = b-roll": {
+      "main": [
+        [
+          {
+            "node": "Seedance · submit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OmniHuman · submit": {
+      "main": [
+        [
+          {
+            "node": "Omni task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Omni task": {
+      "main": [
+        [
+          {
+            "node": "Wait 20s (Omni)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 20s (Omni)": {
+      "main": [
+        [
+          {
+            "node": "OmniHuman · poll",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OmniHuman · poll": {
+      "main": [
+        [
+          {
+            "node": "Omni status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Omni status": {
+      "main": [
+        [
+          {
+            "node": "Omni done?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Omni done?": {
+      "main": [
+        [
+          {
+            "node": "Talking result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 20s (Omni)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kuala_Lumpur",
+    "saveManualExecutions": true,
+    "errorWorkflow": "ce2WF99ErrorAlrt"
+  },
+  "tags": [],
+  "pinData": {}
+}

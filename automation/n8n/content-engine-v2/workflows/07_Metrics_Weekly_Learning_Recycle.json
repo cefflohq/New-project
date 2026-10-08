@@ -1,0 +1,749 @@
+{
+  "id": "ce2WF07MetricsLe",
+  "name": "CEFFLO CE2 · 07 · Metrics + Weekly Learning + Recycle",
+  "nodes": [
+    {
+      "id": "ce2WF07MetricsLe-1",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -440
+      ],
+      "parameters": {
+        "content": "## 07 · Metrics + Learning + Recycle  (M6 → M1)\n**Hourly**: collect metrics at +24h / +72h / +7d per platform → `metric`.\n**Sunday 21:00 MYT**: score last 14 days (3s hold, completion, shares, saves, comments, clicks; views alone never qualify),\nDeepSeek writes evidence-backed learnings (confidence LOW/MEDIUM/HIGH, never \"universal\" from one post),\nmarks top performers as **recycle candidates** (01 remixes max 1 per day with a new hook + world/format),\nand sends the weekly report + cost to Telegram.",
+        "width": 680,
+        "height": 300,
+        "color": 4
+      }
+    },
+    {
+      "id": "ce2WF07MetricsLe-2",
+      "name": "Every hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ce2WF07MetricsLe-3",
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ===== CEFFLO Content Engine V2 — CONFIG (edit here; secrets live in Credentials) =====\nreturn [{ json: { config: {\n  tz: 'Asia/Kuala_Lumpur',\n  founderChatId: 'SET_TELEGRAM_CHAT_ID',          // your Telegram user/chat id (numbers)\n  dailyBudgetUsd: 25,                              // generation stops when today's cost reaches this\n  deepseek: { url: 'https://api.deepseek.com/chat/completions', model: 'deepseek-v4-flash', temperature: 0.8 },\n  image: { url: 'SET_IMAGE_API_URL', model: 'SET_IMAGE_MODEL',\n           personaRefs: ['SET_KAK_ZEE_REF_FRONT_URL', 'SET_KAK_ZEE_REF_3Q_URL', 'SET_KAK_ZEE_REF_FULL_URL'],\n           wardrobe: 'plain pastel baju kurung moden or simple blouse with tudung bawal, casual' },\n  seedance: { url: 'https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks', model: 'SET_SEEDANCE_MODEL_ID' },\n  kling: { url: 'https://api-singapore.klingai.com/v1/videos/image2video', model: 'kling-v2-1' },\n  omni: { submitUrl: 'SET_OMNIHUMAN_SUBMIT_URL', pollUrl: 'SET_OMNIHUMAN_POLL_URL' },\n  eleven: { voiceId: 'SET_KAK_ZEE_VOICE_ID', model: 'eleven_v3',\n            settings: { stability: 0.4, similarity_boost: 0.75, style: 0.15, use_speaker_boost: true } },\n  render: { url: 'SET_RENDER_WORKER_URL' },        // e.g. https://render.cefflo.com (render-worker/)\n  screens: {                                       // real CEFFLO screen clips hosted by the render worker\n    vendor_orders: '/files/screens/vendor_orders.mp4', vendor_zones: '/files/screens/vendor_zones.mp4',\n    vendor_plan: '/files/screens/vendor_today.mp4', vendor_riders: '/files/screens/vendor_riders.mp4',\n    vendor_today: '/files/screens/vendor_today.mp4', driver_run: '/files/screens/driver_run.mp4',\n    driver_stops: '/files/screens/driver_stops.mp4', driver_pod: '/files/screens/driver_pod.mp4',\n    customer_tracking: '/files/screens/customer_tracking.mp4', storefront: '/files/screens/storefront.mp4' },\n  slots: { video: ['08:30', '12:30', '20:30'], text: ['10:00', '17:00'] },   // MYT publish times\n  meta: { graph: 'https://graph.facebook.com/v23.0', igUserId: 'SET_IG_USER_ID', pageId: 'SET_FB_PAGE_ID' },\n  threads: { graph: 'https://graph.threads.net/v1.0', userId: 'SET_THREADS_USER_ID' },\n  tiktok: { initUrl: 'https://open.tiktokapis.com/v2/post/publish/video/init/', privacy: 'SELF_ONLY' }, // PUBLIC_TO_EVERYONE after TikTok audit\n} } }];"
+      }
+    },
+    {
+      "id": "ce2WF07MetricsLe-4",
+      "name": "Due checkpoints",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        400,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select p.id as publication_id, p.platform, p.platform_post_id, cp.checkpoint\nfrom cefflo_ce2.publication p\ncross join (values ('24h', interval '24 hours'), ('72h', interval '72 hours'), ('7d', interval '7 days')) as cp(checkpoint, after)\nwhere p.status in ('PUBLISHED','SENT') and p.platform_post_id is not null and p.published_at + cp.after <= now()\n  and not exists (select 1 from cefflo_ce2.metric m where m.publication_id = p.id and m.checkpoint = cp.checkpoint)\nlimit 40",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF07MetricsLe-5",
+      "name": "Platform",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        600,
+        0
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Platform-0",
+                    "leftValue": "={{ $json.platform }}",
+                    "rightValue": "instagram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "instagram"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Platform-1",
+                    "leftValue": "={{ $json.platform }}",
+                    "rightValue": "facebook",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "facebook"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Platform-2",
+                    "leftValue": "={{ $json.platform }}",
+                    "rightValue": "threads",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "threads"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Platform-3",
+                    "leftValue": "={{ $json.platform }}",
+                    "rightValue": "tiktok",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "tiktok"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ce2WF07MetricsLe-6",
+      "name": "IG insights",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        840,
+        -240
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Config').first().json.config.meta.graph + '/' + $json.platform_post_id + '/insights?metric=views,reach,likes,comments,shares,saved,ig_reels_avg_watch_time' }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_META",
+          "name": "CE2 Meta"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ce2WF07MetricsLe-7",
+      "name": "FB video insights",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        840,
+        -80
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Config').first().json.config.meta.graph + '/' + $json.platform_post_id + '/video_insights' }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_META",
+          "name": "CE2 Meta"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ce2WF07MetricsLe-8",
+      "name": "Threads insights",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        840,
+        80
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Config').first().json.config.threads.graph + '/' + $json.platform_post_id + '/insights?metric=views,likes,replies,reposts,quotes,shares' }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_THREADS",
+          "name": "CE2 Threads"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ce2WF07MetricsLe-9",
+      "name": "TikTok status → video id",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        840,
+        240
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/status/fetch/",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ publish_id: $json.platform_post_id }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_TIKTOK",
+          "name": "CE2 TikTok"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ce2WF07MetricsLe-10",
+      "name": "TikTok video query",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1060,
+        240
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/video/query/?fields=id,view_count,like_count,comment_count,share_count",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ filters: { video_ids: [ ($json.data?.publicaly_available_post_id || [])[0] ].filter(Boolean) } }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_TIKTOK",
+          "name": "CE2 TikTok"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ce2WF07MetricsLe-11",
+      "name": "Normalize metrics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$';\nconst src = $('Due checkpoints').item.json; const r = $json; const m = {};\nconst pick = (arr) => (arr || []).forEach(x => { m[x.name] = x.values?.[0]?.value ?? x.total_value?.value ?? x.value; });\nif (src.platform === 'instagram' || src.platform === 'threads' || src.platform === 'facebook') pick(r.data);\nconst v = r.data?.videos?.[0]; if (v) Object.assign(m, { views: v.view_count, likes: v.like_count, comments: v.comment_count, shares: v.share_count });\nconst n = x => x === undefined || x === null || isNaN(Number(x)) ? 'null' : Number(x);\nreturn [{ json: { sql: `insert into cefflo_ce2.metric (publication_id, checkpoint, views, reach, avg_watch_s, likes, comments, shares, saves, raw)\nvalues ('${src.publication_id}', '${src.checkpoint}', ${n(m.views ?? m.total_video_views ?? m.blue_reels_play_count)}, ${n(m.reach ?? m.total_video_impressions_unique)}, ${n(m.ig_reels_avg_watch_time ? m.ig_reels_avg_watch_time / 1000 : m.total_video_avg_time_watched ? m.total_video_avg_time_watched / 1000 : null)},\n  ${n(m.likes ?? m.total_video_reactions_by_type_total)}, ${n(m.comments ?? m.replies)}, ${n(m.shares ?? m.reposts)}, ${n(m.saved)}, ${q(r)}::jsonb)\non conflict (publication_id, checkpoint) do nothing` } }];"
+      }
+    },
+    {
+      "id": "ce2WF07MetricsLe-12",
+      "name": "Save metric",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1520,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.sql }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF07MetricsLe-13",
+      "name": "Sunday 21:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        520
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 21 * * 0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ce2WF07MetricsLe-14",
+      "name": "Config (weekly)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        520
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ===== CEFFLO Content Engine V2 — CONFIG (edit here; secrets live in Credentials) =====\nreturn [{ json: { config: {\n  tz: 'Asia/Kuala_Lumpur',\n  founderChatId: 'SET_TELEGRAM_CHAT_ID',          // your Telegram user/chat id (numbers)\n  dailyBudgetUsd: 25,                              // generation stops when today's cost reaches this\n  deepseek: { url: 'https://api.deepseek.com/chat/completions', model: 'deepseek-v4-flash', temperature: 0.8 },\n  image: { url: 'SET_IMAGE_API_URL', model: 'SET_IMAGE_MODEL',\n           personaRefs: ['SET_KAK_ZEE_REF_FRONT_URL', 'SET_KAK_ZEE_REF_3Q_URL', 'SET_KAK_ZEE_REF_FULL_URL'],\n           wardrobe: 'plain pastel baju kurung moden or simple blouse with tudung bawal, casual' },\n  seedance: { url: 'https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks', model: 'SET_SEEDANCE_MODEL_ID' },\n  kling: { url: 'https://api-singapore.klingai.com/v1/videos/image2video', model: 'kling-v2-1' },\n  omni: { submitUrl: 'SET_OMNIHUMAN_SUBMIT_URL', pollUrl: 'SET_OMNIHUMAN_POLL_URL' },\n  eleven: { voiceId: 'SET_KAK_ZEE_VOICE_ID', model: 'eleven_v3',\n            settings: { stability: 0.4, similarity_boost: 0.75, style: 0.15, use_speaker_boost: true } },\n  render: { url: 'SET_RENDER_WORKER_URL' },        // e.g. https://render.cefflo.com (render-worker/)\n  screens: {                                       // real CEFFLO screen clips hosted by the render worker\n    vendor_orders: '/files/screens/vendor_orders.mp4', vendor_zones: '/files/screens/vendor_zones.mp4',\n    vendor_plan: '/files/screens/vendor_today.mp4', vendor_riders: '/files/screens/vendor_riders.mp4',\n    vendor_today: '/files/screens/vendor_today.mp4', driver_run: '/files/screens/driver_run.mp4',\n    driver_stops: '/files/screens/driver_stops.mp4', driver_pod: '/files/screens/driver_pod.mp4',\n    customer_tracking: '/files/screens/customer_tracking.mp4', storefront: '/files/screens/storefront.mp4' },\n  slots: { video: ['08:30', '12:30', '20:30'], text: ['10:00', '17:00'] },   // MYT publish times\n  meta: { graph: 'https://graph.facebook.com/v23.0', igUserId: 'SET_IG_USER_ID', pageId: 'SET_FB_PAGE_ID' },\n  threads: { graph: 'https://graph.threads.net/v1.0', userId: 'SET_THREADS_USER_ID' },\n  tiktok: { initUrl: 'https://open.tiktokapis.com/v2/post/publish/video/init/', privacy: 'SELF_ONLY' }, // PUBLIC_TO_EVERYONE after TikTok audit\n} } }];"
+      }
+    },
+    {
+      "id": "ce2WF07MetricsLe-15",
+      "name": "Last 14 days performance",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        400,
+        520
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select c.id, c.type, c.funnel, c.format, c.world, c.pain, c.hook, c.status, c.recycle_of,\n  jsonb_object_agg(p.platform, jsonb_build_object('views', m.views, 'avg_watch_s', m.avg_watch_s, 'likes', m.likes, 'comments', m.comments, 'shares', m.shares, 'saves', m.saves)) filter (where p.platform is not null) as metrics_72h\nfrom cefflo_ce2.content c\nleft join cefflo_ce2.publication p on p.content_id = c.id\nleft join cefflo_ce2.metric m on m.publication_id = p.id and m.checkpoint = '72h'\nwhere c.created_at > now() - interval '14 days' group by c.id order by c.created_at",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF07MetricsLe-16",
+      "name": "Build learning request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        520
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const c = $('Config (weekly)').first().json.config; const rows = $input.all().map(i => i.json);\nconst sys = 'You are M6 GROWTH learning analyst for CEFFLO. From the rows, find evidence-backed patterns (hooks, formats, worlds, funnel, pains) using engagement quality (avg watch, shares, saves, comments) more than views. Never declare a universal rule from one post; give confidence LOW/MEDIUM/HIGH. Also pick up to 5 content ids worth remixing (score 0-100) and up to 5 to stop. Include REJECTED items as negative evidence. Return ONLY JSON: {\"learnings\":[{\"observation\":\"...\",\"confidence\":\"LOW|MEDIUM|HIGH\",\"action\":\"...\",\"evidence\":[\"content ids\"]}],\"recycle\":[{\"content_id\":\"...\",\"score\":0,\"reason\":\"...\"}],\"retire\":[\"content ids\"],\"report_ms\":\"short Malay summary for the Founder (max 8 lines)\"}';\nreturn [{ json: { rows: rows.length, body: { model: c.deepseek.model, temperature: 0.2, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: sys }, { role: 'user', content: JSON.stringify(rows) }] } } }];"
+      }
+    },
+    {
+      "id": "ce2WF07MetricsLe-17",
+      "name": "DeepSeek · learn",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        820,
+        520
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config (weekly)').first().json.config.deepseek.url }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_DEEPSEEK",
+          "name": "CE2 DeepSeek"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "ce2WF07MetricsLe-18",
+      "name": "Save learnings SQL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        520
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst q = v => v === null || v === undefined ? 'null' : '$ce2$' + String(typeof v === 'object' ? JSON.stringify(v) : v).replaceAll('$ce2$', '') + '$ce2$'; const raw = $json.choices?.[0]?.message?.content ?? '';\nlet out; try { out = JSON.parse(raw.replace(/^```(json)?|```$/g, '').trim()); } catch (e) { throw new Error('LLM did not return JSON: ' + raw.slice(0, 300)); }\nconst week = $now.setZone('Asia/Kuala_Lumpur').startOf('week').toISODate();\nconst s = [];\nfor (const l of out.learnings || []) s.push(`insert into cefflo_ce2.learning (week, observation, confidence, action, evidence) values ('${week}', ${q(l.observation)}, ${q(['LOW','MEDIUM','HIGH'].includes(l.confidence) ? l.confidence : 'LOW')}, ${q(l.action)}, ${q(l.evidence || [])}::jsonb)`);\nfor (const r of out.recycle || []) if (/^[0-9a-f-]{36}$/.test(r.content_id)) s.push(`insert into cefflo_ce2.recycle_candidate (content_id, score, reason) values ('${r.content_id}', ${Number(r.score) || 0}, ${q(r.reason)}) on conflict (content_id) do update set score = excluded.score, reason = excluded.reason`);\nfor (const id of out.retire || []) if (/^[0-9a-f-]{36}$/.test(id)) s.push(`update cefflo_ce2.recycle_candidate set used = true where content_id = '${id}'`);\ns.push(\"select coalesce(sum(usd),0) as cost_week from cefflo_ce2.cost where created_at > now() - interval '7 days'\");\nreturn [{ json: { sql: s.join(';\\n'), report: out.report_ms || '' } }];"
+      }
+    },
+    {
+      "id": "ce2WF07MetricsLe-19",
+      "name": "Save learnings",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1260,
+        520
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.sql }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF07MetricsLe-20",
+      "name": "Weekly report",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1480,
+        520
+      ],
+      "parameters": {
+        "chatId": "={{ $('Config (weekly)').first().json.config.founderChatId }}",
+        "text": "={{ '📊 Laporan mingguan CE2\\n\\n' + $('Save learnings SQL').first().json.report + '\\n\\nKos 7 hari: USD ' + Number($json.cost_week || 0).toFixed(2) }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "CE2_TG",
+          "name": "CE2 Telegram Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every hour": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Due checkpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Due checkpoints": {
+      "main": [
+        [
+          {
+            "node": "Platform",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Platform": {
+      "main": [
+        [
+          {
+            "node": "IG insights",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FB video insights",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Threads insights",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TikTok status → video id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok status → video id": {
+      "main": [
+        [
+          {
+            "node": "TikTok video query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IG insights": {
+      "main": [
+        [
+          {
+            "node": "Normalize metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB video insights": {
+      "main": [
+        [
+          {
+            "node": "Normalize metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Threads insights": {
+      "main": [
+        [
+          {
+            "node": "Normalize metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok video query": {
+      "main": [
+        [
+          {
+            "node": "Normalize metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize metrics": {
+      "main": [
+        [
+          {
+            "node": "Save metric",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sunday 21:00": {
+      "main": [
+        [
+          {
+            "node": "Config (weekly)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config (weekly)": {
+      "main": [
+        [
+          {
+            "node": "Last 14 days performance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Last 14 days performance": {
+      "main": [
+        [
+          {
+            "node": "Build learning request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build learning request": {
+      "main": [
+        [
+          {
+            "node": "DeepSeek · learn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek · learn": {
+      "main": [
+        [
+          {
+            "node": "Save learnings SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save learnings SQL": {
+      "main": [
+        [
+          {
+            "node": "Save learnings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save learnings": {
+      "main": [
+        [
+          {
+            "node": "Weekly report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kuala_Lumpur",
+    "saveManualExecutions": true,
+    "errorWorkflow": "ce2WF99ErrorAlrt"
+  },
+  "tags": [],
+  "pinData": {}
+}

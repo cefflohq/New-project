@@ -1,0 +1,350 @@
+{
+  "id": "ce2WF02VideoProd",
+  "name": "CEFFLO CE2 · 02 · Video Production",
+  "nodes": [
+    {
+      "id": "ce2WF02VideoProd-1",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -360
+      ],
+      "parameters": {
+        "content": "## 02 · Video Production  (M4 STUDIO)\nInput: `content_id`. For every shot → **02b Render Shot** (keyframe → Seedance/Kling or OmniHuman lip-sync, ElevenLabs VO), then the **render worker** assembles:\n1080×1920 · 30 fps · H.264 ~7 Mbps · subtitles · room tone · **phone look** (light grain, soft sharpen, handheld micro-shake, WB drift) · −14 LUFS.\nThen → **03 Send for approval**. Any failure → status PRODUCE_FAIL + Telegram.",
+        "width": 620,
+        "height": 280,
+        "color": 4
+      }
+    },
+    {
+      "id": "ce2WF02VideoProd-2",
+      "name": "From 01 / 05",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "id": "ce2WF02VideoProd-3",
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ===== CEFFLO Content Engine V2 — CONFIG (edit here; secrets live in Credentials) =====\nreturn [{ json: { config: {\n  tz: 'Asia/Kuala_Lumpur',\n  founderChatId: 'SET_TELEGRAM_CHAT_ID',          // your Telegram user/chat id (numbers)\n  dailyBudgetUsd: 25,                              // generation stops when today's cost reaches this\n  deepseek: { url: 'https://api.deepseek.com/chat/completions', model: 'deepseek-v4-flash', temperature: 0.8 },\n  image: { url: 'SET_IMAGE_API_URL', model: 'SET_IMAGE_MODEL',\n           personaRefs: ['SET_KAK_ZEE_REF_FRONT_URL', 'SET_KAK_ZEE_REF_3Q_URL', 'SET_KAK_ZEE_REF_FULL_URL'],\n           wardrobe: 'plain pastel baju kurung moden or simple blouse with tudung bawal, casual' },\n  seedance: { url: 'https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks', model: 'SET_SEEDANCE_MODEL_ID' },\n  kling: { url: 'https://api-singapore.klingai.com/v1/videos/image2video', model: 'kling-v2-1' },\n  omni: { submitUrl: 'SET_OMNIHUMAN_SUBMIT_URL', pollUrl: 'SET_OMNIHUMAN_POLL_URL' },\n  eleven: { voiceId: 'SET_KAK_ZEE_VOICE_ID', model: 'eleven_v3',\n            settings: { stability: 0.4, similarity_boost: 0.75, style: 0.15, use_speaker_boost: true } },\n  render: { url: 'SET_RENDER_WORKER_URL' },        // e.g. https://render.cefflo.com (render-worker/)\n  screens: {                                       // real CEFFLO screen clips hosted by the render worker\n    vendor_orders: '/files/screens/vendor_orders.mp4', vendor_zones: '/files/screens/vendor_zones.mp4',\n    vendor_plan: '/files/screens/vendor_today.mp4', vendor_riders: '/files/screens/vendor_riders.mp4',\n    vendor_today: '/files/screens/vendor_today.mp4', driver_run: '/files/screens/driver_run.mp4',\n    driver_stops: '/files/screens/driver_stops.mp4', driver_pod: '/files/screens/driver_pod.mp4',\n    customer_tracking: '/files/screens/customer_tracking.mp4', storefront: '/files/screens/storefront.mp4' },\n  slots: { video: ['08:30', '12:30', '20:30'], text: ['10:00', '17:00'] },   // MYT publish times\n  meta: { graph: 'https://graph.facebook.com/v23.0', igUserId: 'SET_IG_USER_ID', pageId: 'SET_FB_PAGE_ID' },\n  threads: { graph: 'https://graph.threads.net/v1.0', userId: 'SET_THREADS_USER_ID' },\n  tiktok: { initUrl: 'https://open.tiktokapis.com/v2/post/publish/video/init/', privacy: 'SELF_ONLY' }, // PUBLIC_TO_EVERYONE after TikTok audit\n} } }];"
+      }
+    },
+    {
+      "id": "ce2WF02VideoProd-4",
+      "name": "Load content",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ \"select id, script, brief from cefflo_ce2.content where id = '\" + $('From 01 / 05').first().json.content_id + \"'\" }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF02VideoProd-5",
+      "name": "Mark PRODUCING",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ \"update cefflo_ce2.content set status = 'PRODUCING', updated_at = now() where id = '\" + $json.id + \"' returning id\" }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF02VideoProd-6",
+      "name": "Expand shots",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const row = $('Load content').first().json;\nreturn (row.script.shots || []).map(s => ({ json: { content_id: row.id, shot: s } }));"
+      }
+    },
+    {
+      "id": "ce2WF02VideoProd-7",
+      "name": "02b Render shot (each)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1100,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "ce2WF02bRenderSh"
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "ce2WF02VideoProd-8",
+      "name": "Build render manifest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const c = $('Config').first().json.config; const row = $('Load content').first().json;\nconst shots = $input.all().map(i => i.json).sort((x, y) => x.n - y.n);\nconst bad = shots.filter(s => !s.video_url);\nif (bad.length) throw new Error('Shots without video: ' + bad.map(s => s.n).join(','));\nreturn [{ json: { content_id: row.id, manifest: { content_id: row.id, preset: 'phone_look_v1', width: 1080, height: 1920, fps: 30,\n  shots: shots.map(s => ({ n: s.n, video_url: s.video_url, audio_url: s.audio_url || null, seconds: s.seconds, subtitle: s.subtitle || '' })),\n  music: { url: null, gain_db: -22 }, room_tone: true } } }];"
+      }
+    },
+    {
+      "id": "ce2WF02VideoProd-9",
+      "name": "Render worker · assemble",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.config.render.url + '/render' }}",
+        "options": {
+          "timeout": 600000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.manifest) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CE2_RENDER",
+          "name": "CE2 Render"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "ce2WF02VideoProd-10",
+      "name": "Save final video",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1760,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ \"update cefflo_ce2.content set media_url = '\" + $json.url.replaceAll(\"'\", \"\") + \"', status = 'READY', updated_at = now() where id = '\" + $('Build render manifest').first().json.content_id + \"'; insert into cefflo_ce2.asset (content_id, kind, provider, url, status, meta) values ('\" + $('Build render manifest').first().json.content_id + \"', 'final', 'render-worker', '\" + $json.url.replaceAll(\"'\", \"\") + \"', 'DONE', '{\\\"duration\\\":\" + Number($json.duration || 0) + \"}')\" }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF02VideoProd-11",
+      "name": "Pass id",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return [{ json: { content_id: $('Build render manifest').first().json.content_id } }];"
+      }
+    },
+    {
+      "id": "ce2WF02VideoProd-12",
+      "name": "→ 03 Send for approval",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2200,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "ce2WF03SendAppro"
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      }
+    }
+  ],
+  "connections": {
+    "From 01 / 05": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Load content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load content": {
+      "main": [
+        [
+          {
+            "node": "Mark PRODUCING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark PRODUCING": {
+      "main": [
+        [
+          {
+            "node": "Expand shots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expand shots": {
+      "main": [
+        [
+          {
+            "node": "02b Render shot (each)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "02b Render shot (each)": {
+      "main": [
+        [
+          {
+            "node": "Build render manifest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build render manifest": {
+      "main": [
+        [
+          {
+            "node": "Render worker · assemble",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render worker · assemble": {
+      "main": [
+        [
+          {
+            "node": "Save final video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save final video": {
+      "main": [
+        [
+          {
+            "node": "Pass id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass id": {
+      "main": [
+        [
+          {
+            "node": "→ 03 Send for approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kuala_Lumpur",
+    "saveManualExecutions": true,
+    "errorWorkflow": "ce2WF99ErrorAlrt"
+  },
+  "tags": [],
+  "pinData": {}
+}

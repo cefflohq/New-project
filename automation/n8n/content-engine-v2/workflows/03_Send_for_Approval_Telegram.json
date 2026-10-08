@@ -1,0 +1,368 @@
+{
+  "id": "ce2WF03SendAppro",
+  "name": "CEFFLO CE2 · 03 · Send for Approval (Telegram)",
+  "nodes": [
+    {
+      "id": "ce2WF03SendAppro-1",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -320
+      ],
+      "parameters": {
+        "content": "## 03 · Send for approval (Telegram)\nSends the preview to the Founder with **Approve / Revise / Reject**.\nVideo → sendVideo (URL from render worker) + caption, claims and QA summary. Text → sendMessage.\nNothing is published without **Approve** (handled in 04).",
+        "width": 560,
+        "height": 240,
+        "color": 4
+      }
+    },
+    {
+      "id": "ce2WF03SendAppro-2",
+      "name": "From 01 / 02 / 05",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "id": "ce2WF03SendAppro-3",
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ===== CEFFLO Content Engine V2 — CONFIG (edit here; secrets live in Credentials) =====\nreturn [{ json: { config: {\n  tz: 'Asia/Kuala_Lumpur',\n  founderChatId: 'SET_TELEGRAM_CHAT_ID',          // your Telegram user/chat id (numbers)\n  dailyBudgetUsd: 25,                              // generation stops when today's cost reaches this\n  deepseek: { url: 'https://api.deepseek.com/chat/completions', model: 'deepseek-v4-flash', temperature: 0.8 },\n  image: { url: 'SET_IMAGE_API_URL', model: 'SET_IMAGE_MODEL',\n           personaRefs: ['SET_KAK_ZEE_REF_FRONT_URL', 'SET_KAK_ZEE_REF_3Q_URL', 'SET_KAK_ZEE_REF_FULL_URL'],\n           wardrobe: 'plain pastel baju kurung moden or simple blouse with tudung bawal, casual' },\n  seedance: { url: 'https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks', model: 'SET_SEEDANCE_MODEL_ID' },\n  kling: { url: 'https://api-singapore.klingai.com/v1/videos/image2video', model: 'kling-v2-1' },\n  omni: { submitUrl: 'SET_OMNIHUMAN_SUBMIT_URL', pollUrl: 'SET_OMNIHUMAN_POLL_URL' },\n  eleven: { voiceId: 'SET_KAK_ZEE_VOICE_ID', model: 'eleven_v3',\n            settings: { stability: 0.4, similarity_boost: 0.75, style: 0.15, use_speaker_boost: true } },\n  render: { url: 'SET_RENDER_WORKER_URL' },        // e.g. https://render.cefflo.com (render-worker/)\n  screens: {                                       // real CEFFLO screen clips hosted by the render worker\n    vendor_orders: '/files/screens/vendor_orders.mp4', vendor_zones: '/files/screens/vendor_zones.mp4',\n    vendor_plan: '/files/screens/vendor_today.mp4', vendor_riders: '/files/screens/vendor_riders.mp4',\n    vendor_today: '/files/screens/vendor_today.mp4', driver_run: '/files/screens/driver_run.mp4',\n    driver_stops: '/files/screens/driver_stops.mp4', driver_pod: '/files/screens/driver_pod.mp4',\n    customer_tracking: '/files/screens/customer_tracking.mp4', storefront: '/files/screens/storefront.mp4' },\n  slots: { video: ['08:30', '12:30', '20:30'], text: ['10:00', '17:00'] },   // MYT publish times\n  meta: { graph: 'https://graph.facebook.com/v23.0', igUserId: 'SET_IG_USER_ID', pageId: 'SET_FB_PAGE_ID' },\n  threads: { graph: 'https://graph.threads.net/v1.0', userId: 'SET_THREADS_USER_ID' },\n  tiktok: { initUrl: 'https://open.tiktokapis.com/v2/post/publish/video/init/', privacy: 'SELF_ONLY' }, // PUBLIC_TO_EVERYONE after TikTok audit\n} } }];"
+      }
+    },
+    {
+      "id": "ce2WF03SendAppro-4",
+      "name": "Load content",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ \"select id, type, funnel, format, world, slot, script, media_url, revisions from cefflo_ce2.content where id = '\" + $('From 01 / 02 / 05').first().json.content_id + \"'\" }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    },
+    {
+      "id": "ce2WF03SendAppro-5",
+      "name": "Compose preview",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const $json = $input.first().json;\nconst r = $json; const s = r.script || {}; const tag = '#' + r.id.slice(0, 8);\nconst head = (r.type === 'video' ? '🎬 VIDEO' : '✍️ THREADS') + ' · slot ' + r.slot + ' · ' + r.funnel + ' · ' + (r.format || '') + ' · ' + (r.world || '') + (r.revisions ? ' · rev ' + r.revisions : '');\nconst body = r.type === 'video'\n  ? 'Hook: ' + (s.hook || '') + '\\n\\nTikTok: ' + (s.caption?.tiktok || '') + '\\nMeta: ' + (s.caption?.meta || '') + '\\n' + (s.hashtags || []).join(' ')\n  : (s.text || '');\nconst claims = (s.claims || []).length ? '\\n\\nClaims: ' + s.claims.join(' | ') : '';\nreturn [{ json: { ...r, tag, text: (head + '\\n' + tag + '\\n\\n' + body + claims).slice(0, 1000) } }];"
+      }
+    },
+    {
+      "id": "ce2WF03SendAppro-6",
+      "name": "Video or text?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Video or text?-0",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "video",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "video"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "Video or text?-1",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ce2WF03SendAppro-7",
+      "name": "Telegram · video preview",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        -80
+      ],
+      "parameters": {
+        "operation": "sendVideo",
+        "chatId": "={{ $('Config').first().json.config.founderChatId }}",
+        "file": "={{ $json.media_url }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ Approve",
+                    "additionalFields": {
+                      "callback_data": "=ok|{{ $json.id }}"
+                    }
+                  },
+                  {
+                    "text": "✏️ Revise",
+                    "additionalFields": {
+                      "callback_data": "=rv|{{ $json.id }}"
+                    }
+                  },
+                  {
+                    "text": "❌ Reject",
+                    "additionalFields": {
+                      "callback_data": "=no|{{ $json.id }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "caption": "={{ $json.text }}"
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "CE2_TG",
+          "name": "CE2 Telegram Bot"
+        }
+      }
+    },
+    {
+      "id": "ce2WF03SendAppro-8",
+      "name": "Telegram · text preview",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        100
+      ],
+      "parameters": {
+        "chatId": "={{ $('Config').first().json.config.founderChatId }}",
+        "text": "={{ $json.text }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ Approve",
+                    "additionalFields": {
+                      "callback_data": "=ok|{{ $json.id }}"
+                    }
+                  },
+                  {
+                    "text": "✏️ Revise",
+                    "additionalFields": {
+                      "callback_data": "=rv|{{ $json.id }}"
+                    }
+                  },
+                  {
+                    "text": "❌ Reject",
+                    "additionalFields": {
+                      "callback_data": "=no|{{ $json.id }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "CE2_TG",
+          "name": "CE2 Telegram Bot"
+        }
+      }
+    },
+    {
+      "id": "ce2WF03SendAppro-9",
+      "name": "Mark AWAITING_APPROVAL",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1360,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ \"update cefflo_ce2.content set status = 'AWAITING_APPROVAL', tg_message_id = \" + Number($json.result?.message_id || $json.message_id || 0) + \", updated_at = now() where id = '\" + $('Compose preview').first().json.id + \"'\" }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CE2_PG",
+          "name": "CE2 Postgres"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "From 01 / 02 / 05": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Load content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load content": {
+      "main": [
+        [
+          {
+            "node": "Compose preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose preview": {
+      "main": [
+        [
+          {
+            "node": "Video or text?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video or text?": {
+      "main": [
+        [
+          {
+            "node": "Telegram · video preview",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram · text preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram · video preview": {
+      "main": [
+        [
+          {
+            "node": "Mark AWAITING_APPROVAL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram · text preview": {
+      "main": [
+        [
+          {
+            "node": "Mark AWAITING_APPROVAL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kuala_Lumpur",
+    "saveManualExecutions": true,
+    "errorWorkflow": "ce2WF99ErrorAlrt"
+  },
+  "tags": [],
+  "pinData": {}
+}
