@@ -1911,6 +1911,7 @@ class _NotificationInboxScreen extends StatelessWidget {
     final items = app.notifications;
     if (items.isEmpty && app.notificationsError != null) {
       return PageBody(
+        onRefresh: app.refreshNotifications,
         children: [
           StateBlock.error(
             app.notificationsError!,
@@ -1920,7 +1921,10 @@ class _NotificationInboxScreen extends StatelessWidget {
       );
     }
     if (items.isEmpty) {
-      return PageBody(children: [StateBlock.empty(L.youreAllCaughtUp)]);
+      return PageBody(
+        onRefresh: app.refreshNotifications,
+        children: [StateBlock.empty(L.youreAllCaughtUp)],
+      );
     }
     Widget swipeBackground(Color color, IconData icon, Alignment align) =>
         Container(
@@ -1930,6 +1934,7 @@ class _NotificationInboxScreen extends StatelessWidget {
           child: Icon(icon, color: Colors.white, size: Sizes.icon),
         );
     return PageBody(
+      onRefresh: app.refreshNotifications,
       children: [
         for (final n in items)
           Dismissible(
@@ -2496,6 +2501,7 @@ class _IntegrationsScreenState extends State<_IntegrationsScreen> {
     );
     return PageBody(
       grouped: true,
+      onRefresh: _load,
       children: [
         Text(L.integrationsLead, style: Theme.of(context).textTheme.bodyMedium),
         const SizedBox(height: Gap.lg),

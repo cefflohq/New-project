@@ -797,6 +797,11 @@ class PageBody extends StatelessWidget {
           )
         : ListView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            // Pull-to-refresh must work even when the content is shorter
+            // than the screen.
+            physics: onRefresh == null
+                ? null
+                : const AlwaysScrollableScrollPhysics(),
             padding: padding,
             children: children,
           );

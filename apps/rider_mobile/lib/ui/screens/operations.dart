@@ -250,6 +250,7 @@ class TodayScreen extends StatelessWidget {
     final run = app.currentRun;
     final c = context.c;
     return CeffloNavySheetScaffold(
+      onRefresh: app.refreshOrders,
       header: CeffloBrandHeader(
         onBell: () => app.go(DRoute.notifications),
         child: Padding(
@@ -434,6 +435,7 @@ class RunDetailsScreen extends StatelessWidget {
     final app = AppScope.of(context);
     final run = app.currentRun;
     return CeffloNavySheetScaffold(
+      onRefresh: app.refreshOrders,
       header: Column(
         children: [
           CeffloScreenHeader(
@@ -794,6 +796,7 @@ class _StopListScreenState extends State<StopListScreen> {
       _ => all,
     };
     return CeffloNavySheetScaffold(
+      onRefresh: app.refreshOrders,
       header: header,
       bodyPadding: const EdgeInsets.fromLTRB(
         Gap.gutter,

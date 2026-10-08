@@ -670,7 +670,11 @@ class CeffloNavySheetScaffold extends StatelessWidget {
     this.scrollable = true,
     this.footer,
     this.sheetRadius = Sizes.sheetRadius,
+    this.onRefresh,
   });
+
+  /// Pull-to-refresh on data screens; null keeps the body static.
+  final Future<void> Function()? onRefresh;
 
   /// Content drawn on the navy gradient (header bar, headings, hero rows).
   final Widget header;
@@ -717,9 +721,18 @@ class CeffloNavySheetScaffold extends StatelessWidget {
                     child: Column(
                       children: [
                         Expanded(
-                          child: scrollable
-                              ? SingleChildScrollView(child: sheetChild)
-                              : sheetChild,
+                          child: !scrollable
+                              ? sheetChild
+                              : onRefresh == null
+                                  ? SingleChildScrollView(child: sheetChild)
+                                  : RefreshIndicator(
+                                      onRefresh: onRefresh!,
+                                      child: SingleChildScrollView(
+                                        physics:
+                                            const AlwaysScrollableScrollPhysics(),
+                                        child: sheetChild,
+                                      ),
+                                    ),
                         ),
                         if (footer != null)
                           Padding(

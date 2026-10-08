@@ -705,6 +705,7 @@ class _ZoneDetailBody extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: reload,
       child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(
           Gap.gutter,
           Gap.lg,

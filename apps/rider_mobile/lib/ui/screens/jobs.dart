@@ -469,6 +469,7 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
       builder: (context, place, _) => ValueListenableBuilder<int>(
         valueListenable: _Jobs.radius,
         builder: (context, radius, _) => CeffloNavySheetScaffold(
+          onRefresh: () => _Jobs.load(app),
           header: CeffloScreenHeader(
             title: L.findJobs,
             onBell: () => app.go(DRoute.notifications),
@@ -1355,6 +1356,7 @@ class _MyScheduleScreenState extends State<MyScheduleScreen> {
     return ValueListenableBuilder<List<_Booking>>(
       valueListenable: _Jobs.bookings,
       builder: (context, bookings, _) => CeffloNavySheetScaffold(
+        onRefresh: () => _Jobs.load(app),
         header: CeffloScreenHeader(
           title: L.mySchedule,
           onBack: app.back,

@@ -1070,6 +1070,9 @@ class _Page extends StatelessWidget {
         ListView(
           // Each screen starts at the top (no scroll carried across screens).
           key: ValueKey('page-$title-$subtitle'),
+          physics: onRefresh == null
+              ? null
+              : const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.fromLTRB(
             Gap.gutter,
             Gap.xl,

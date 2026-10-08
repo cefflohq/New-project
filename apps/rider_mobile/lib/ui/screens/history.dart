@@ -37,6 +37,7 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> {
       _ => all,
     };
     return CeffloNavySheetScaffold(
+      onRefresh: app.refreshOrders,
       header: CeffloScreenHeader(
         title: L.deliveryHistory,
         onBack: app.back,
@@ -394,6 +395,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       _ => all,
     };
     return CeffloNavySheetScaffold(
+      onRefresh: app.refreshNotifications,
       header: CeffloScreenHeader(
         title: L.notifications,
         onBack: app.back,
