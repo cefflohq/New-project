@@ -45,8 +45,12 @@ class DeliveryPinMap extends StatelessWidget {
             onTap: (_, _) => onTap(),
           ),
           children: [
+            // CARTO Positron: same clean look as the web maps. Temporary
+            // until Mapbox.
             TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+              subdomains: const ['a', 'b', 'c', 'd'],
+              retinaMode: RetinaMode.isHighDensity(context),
               userAgentPackageName: 'my.cefflo.driver',
             ),
             MarkerLayer(
@@ -65,7 +69,7 @@ class DeliveryPinMap extends StatelessWidget {
               ],
             ),
             const SimpleAttributionWidget(
-              source: Text('© OpenStreetMap'),
+              source: Text('© OpenStreetMap © CARTO'),
               alignment: Alignment.bottomLeft,
             ),
           ],

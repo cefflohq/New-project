@@ -8,14 +8,19 @@ import '../core/theme.dart';
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
 
-/// Raster OpenStreetMap tiles work on Flutter web, Android and iOS. Temporary
-/// until the Mapbox switch (Founder 2026-10-08).
-const _tiles = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const _tileAgent = 'my.cefflo.vendor';
+/// CARTO Positron raster tiles: the same clean look as the OpenFreeMap
+/// Positron style on Vendor Web, and raster works on Flutter web, Android and
+/// iOS. Temporary until the Mapbox switch (Founder 2026-10-08).
+Widget _tileLayer(BuildContext context) => TileLayer(
+  urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  subdomains: const ['a', 'b', 'c', 'd'],
+  retinaMode: RetinaMode.isHighDensity(context),
+  userAgentPackageName: 'my.cefflo.vendor',
+);
 const _malaysia = LatLng(4.2, 101.9);
 
 const _attribution = SimpleAttributionWidget(
-  source: Text('© OpenStreetMap'),
+  source: Text('© OpenStreetMap © CARTO'),
   alignment: Alignment.bottomLeft,
 );
 
@@ -53,7 +58,7 @@ class DeliveryPinView extends StatelessWidget {
             ),
           ),
           children: [
-            TileLayer(urlTemplate: _tiles, userAgentPackageName: _tileAgent),
+            _tileLayer(context),
             MarkerLayer(
               markers: [
                 Marker(
@@ -198,13 +203,7 @@ class _DeliveryPinPickerState extends State<DeliveryPinPicker> {
                   });
                 },
               ),
-              children: [
-                TileLayer(
-                  urlTemplate: _tiles,
-                  userAgentPackageName: _tileAgent,
-                ),
-                _attribution,
-              ],
+              children: [_tileLayer(context), _attribution],
             ),
             // Fixed centre pin; its tip sits on the map centre.
             IgnorePointer(
@@ -355,10 +354,7 @@ class PinsMap extends StatelessWidget {
             FlutterMap(
               options: options,
               children: [
-                TileLayer(
-                  urlTemplate: _tiles,
-                  userAgentPackageName: _tileAgent,
-                ),
+                _tileLayer(context),
                 MarkerLayer(
                   markers: [
                     // Next stop last so it draws on top.
@@ -385,7 +381,7 @@ class PinsMap extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 color: Colors.white70,
                 child: const Text(
-                  '© OpenStreetMap',
+                  '© OpenStreetMap © CARTO',
                   style: TextStyle(fontSize: 10, color: Colors.black87),
                 ),
               ),
