@@ -7424,6 +7424,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Bring orders into Cefflo from the tools you already use.'**
   String get integrationsLead;
+
+  /// No description provided for @integrationConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get integrationConnected;
+
+  /// No description provided for @integrationConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get integrationConnect;
+
+  /// No description provided for @integrationDisconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get integrationDisconnect;
+
+  /// No description provided for @integrationWebhookUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook URL'**
+  String get integrationWebhookUrl;
+
+  /// No description provided for @integrationSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook secret'**
+  String get integrationSecret;
+
+  /// No description provided for @integrationStoreUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Store URL'**
+  String get integrationStoreUrl;
+
+  /// No description provided for @integrationShopDomain.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop domain'**
+  String get integrationShopDomain;
+
+  /// No description provided for @integrationNewKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Create API key'**
+  String get integrationNewKey;
+
+  /// No description provided for @integrationKeyOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy this key now. It is shown only once.'**
+  String get integrationKeyOnce;
+
+  /// No description provided for @integrationEndpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Endpoint'**
+  String get integrationEndpoint;
+
+  /// No description provided for @integrationRevoke.
+  ///
+  /// In en, this message translates to:
+  /// **'Revoke'**
+  String get integrationRevoke;
+
+  /// No description provided for @integrationCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get integrationCopy;
+
+  /// No description provided for @integrationCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get integrationCopied;
+
+  /// No description provided for @integrationWooHow.
+  ///
+  /// In en, this message translates to:
+  /// **'In WooCommerce → Settings → Advanced → Webhooks, add a webhook: topic Order created, the URL below and the same secret.'**
+  String get integrationWooHow;
+
+  /// No description provided for @integrationShopHow.
+  ///
+  /// In en, this message translates to:
+  /// **'In Shopify admin → Settings → Notifications → Webhooks, create an Order creation webhook (JSON) to the URL below. Paste its signing secret here.'**
+  String get integrationShopHow;
+
+  /// No description provided for @integrationApiHow.
+  ///
+  /// In en, this message translates to:
+  /// **'Send each order as JSON with the key in the Authorization header (Bearer). Include external_id so an order is never created twice.'**
+  String get integrationApiHow;
 }
 
 class _AppLocalizationsDelegate

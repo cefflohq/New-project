@@ -1219,5 +1219,21 @@
   "screenCategoryProducts": "Kategori & Produk",
   "screenProductDetail": "Butiran Produk",
   "integrations": "Integrasi",
-  "integrationsLead": "Bawa order masuk ke Cefflo dari alat yang anda dah guna."
+  "integrationsLead": "Bawa order masuk ke Cefflo dari alat yang anda dah guna.",
+  "integrationConnected": "Disambung",
+  "integrationConnect": "Sambung",
+  "integrationDisconnect": "Putuskan",
+  "integrationWebhookUrl": "URL webhook",
+  "integrationSecret": "Rahsia webhook",
+  "integrationStoreUrl": "URL kedai",
+  "integrationShopDomain": "Domain kedai",
+  "integrationNewKey": "Cipta kunci API",
+  "integrationKeyOnce": "Salin kunci ini sekarang. Ia hanya ditunjukkan sekali.",
+  "integrationEndpoint": "Endpoint",
+  "integrationRevoke": "Batalkan",
+  "integrationCopy": "Salin",
+  "integrationCopied": "Disalin",
+  "integrationWooHow": "Dalam WooCommerce → Settings → Advanced → Webhooks, tambah webhook: topic Order created, URL di bawah dan rahsia yang sama.",
+  "integrationShopHow": "Dalam admin Shopify → Settings → Notifications → Webhooks, cipta webhook Order creation (JSON) ke URL di bawah. Tampal signing secret di sini.",
+  "integrationApiHow": "Hantar setiap order sebagai JSON dengan kunci dalam header Authorization (Bearer). Sertakan external_id supaya order tak dicipta dua kali."
 }

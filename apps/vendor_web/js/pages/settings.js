@@ -414,15 +414,44 @@ const BRAND = {
 const INTEGRATIONS = [
   { id: 'csv', name: () => t('int.csv'), sub: () => t('int.csvSub'), live: true, action: 'import' },
   { id: 'manual', name: () => t('int.manual'), sub: () => t('int.manualSub'), live: true, action: 'add' },
-  { id: 'shopify', name: () => 'Shopify', sub: () => t('int.shopSub') },
-  { id: 'woo', name: () => 'WooCommerce', sub: () => t('int.shopSub') },
+  { id: 'shopify', name: () => 'Shopify', sub: () => t('int.shopSub'), live: true, action: 'connect' },
+  { id: 'woo', name: () => 'WooCommerce', sub: () => t('int.shopSub'), live: true, action: 'connect' },
   { id: 'wix', name: () => 'Wix eCommerce', sub: () => t('int.shopSub') },
   { id: 'excel', name: () => 'Microsoft Excel', sub: () => t('int.excelSub'), live: true, action: 'import' },
   { id: 'sheets', name: () => 'Google Sheets', sub: () => t('int.sheetsSub') },
   { id: 'drive', name: () => 'Google Drive', sub: () => t('int.driveSub') },
-  { id: 'api', name: () => 'API / Webhooks', sub: () => t('int.apiSub') },
+  { id: 'api', name: () => 'API / Webhooks', sub: () => t('int.apiSub'), live: true, action: 'apikey' },
 ];
 let intSelected = 'csv';
+let intState = null; // integration_list result for the current business
+const inboundBase = () => `${window.CEFFLO_CONFIG.supabaseUrl}/functions/v1/integrations-inbound`;
+const PROV = { woo: 'woocommerce', shopify: 'shopify' };
+function connectPanel(x) {
+  if (!intState) return `<p class="muted">${esc(t('c.loading'))}</p>`;
+  if (x.action === 'apikey') {
+    const keys = intState.api_keys || [];
+    return `<div class="int-conn">
+      <label class="lbl">${esc(t('int.endpoint'))}</label><code class="int-code">POST ${esc(inboundBase())}/api/orders</code>
+      <p class="muted">${esc(t('int.apiHow'))}</p>
+      ${keys.map(k => `<div class="int-key"><code>${esc(k.prefix)}…</code><span class="muted">${esc(fmtDate(k.created_at))}</span><button class="btn sm" data-int-revoke="${k.id}">${esc(t('int.revoke'))}</button></div>`).join('')}
+      <button class="btn primary int-cta" data-int-action="newkey">${icon('plus')}${esc(t('int.newKey'))}</button></div>`;
+  }
+  const conn = (intState.connections || []).find(c => c.provider === PROV[x.id]);
+  if (conn) return `<div class="int-conn">
+      <span class="chip active"><i class="dot"></i>${esc(t('int.connected'))}</span> <b>${esc(conn.shop_domain || '')}</b>
+      <label class="lbl">${esc(t('int.webhookUrl'))}</label><code class="int-code">${esc(inboundBase())}/${PROV[x.id]}/${esc(conn.id)}</code>
+      <p class="muted">${esc(t(x.id === 'woo' ? 'int.wooHow' : 'int.shopHow'))}</p>
+      ${conn.last_event_at ? `<p class="muted">${esc(t('int.lastEvent', { d: fmtDate(conn.last_event_at) }))}</p>` : ''}
+      <button class="btn int-cta" data-int-disconnect="${conn.id}">${esc(t('int.disconnect'))}</button></div>`;
+  return `<form class="int-conn" data-int-form="${x.id}">
+      <label class="lbl">${esc(t(x.id === 'woo' ? 'int.storeUrl' : 'int.shopDomain'))}</label>
+      <input class="input" name="domain" required placeholder="${x.id === 'woo' ? 'https://shop.example.com' : 'your-store.myshopify.com'}">
+      <label class="lbl">${esc(t('int.secret'))}</label>
+      <input class="input" name="secret" required minlength="8" autocomplete="off">
+      <p class="muted">${esc(t(x.id === 'woo' ? 'int.wooSecretHelp' : 'int.shopSecretHelp'))}</p>
+      <p class="err" hidden></p>
+      <button class="btn primary int-cta" type="submit">${esc(t('int.connect'))}</button></form>`;
+}
 
 function integrations(page) {
   const body = header(page, 'set.integrations', 'int.lead');
@@ -431,7 +460,7 @@ function integrations(page) {
     : `<span class="chip neutral"><i class="dot"></i>${esc(t('int.planned'))}</span>`);
   const paint = () => {
     const x = INTEGRATIONS.find(i => i.id === intSelected) || INTEGRATIONS[0];
-    const points = x.live ? [`int.${x.id}P1`, `int.${x.id}P2`, `int.${x.id}P3`] : ['int.planP1', 'int.planP2', 'int.planP3'];
+    const points = x.action === 'connect' || x.action === 'apikey' ? [`int.${x.id}P1`, `int.${x.id}P2`, `int.${x.id}P3`] : x.live ? [`int.${x.id}P1`, `int.${x.id}P2`, `int.${x.id}P3`] : ['int.planP1', 'int.planP2', 'int.planP3'];
     body.innerHTML = `<div class="int-md">
       <div class="int-list" role="listbox" aria-label="${esc(t('set.integrations'))}">
         ${INTEGRATIONS.map(i => `<button type="button" class="int-row ${i.id === x.id ? 'on' : ''}" role="option" aria-selected="${i.id === x.id}" data-int="${i.id}">
@@ -441,8 +470,8 @@ function integrations(page) {
         <div class="int-d-head">${BRAND[x.id].replace('brand-ico', 'brand-ico lg')}<div><h3>${esc(x.name())}</h3>${status(x)}</div></div>
         <p class="int-d-sub">${esc(x.sub())}</p>
         <ul class="int-points">${points.map((k, n) => `<li>${icon(['upload', 'map', 'route'][n])}<span>${esc(t(k))}</span></li>`).join('')}</ul>
-        <div class="gated">${icon('info')}<div><b>${esc(t(x.live ? 'int.needTitle' : 'int.planTitle'))}</b><br>${esc(t(x.live ? `int.${x.id}Need` : 'int.planNote'))}</div></div>
-        ${x.live
+        ${x.action === 'connect' || x.action === 'apikey' ? '' : `<div class="gated">${icon('info')}<div><b>${esc(t(x.live ? 'int.needTitle' : 'int.planTitle'))}</b><br>${esc(t(x.live ? `int.${x.id}Need` : 'int.planNote'))}</div></div>`}
+        ${x.action === 'connect' || x.action === 'apikey' ? connectPanel(x) : x.live
           ? `<button class="btn primary int-cta" data-int-action="${x.action}">${icon(x.action === 'import' ? 'upload' : 'plus')}${esc(t(x.action === 'import' ? 'today.importOrders' : 'today.addOrder'))}</button>`
           : `<button class="btn int-cta" disabled>${esc(t('c.notAvailable'))}</button>`}
       </aside>
@@ -450,7 +479,23 @@ function integrations(page) {
     <div class="flow" aria-label="${esc(t('int.how'))}"><span class="flow-title">${esc(t('int.how'))}</span>
       ${['int.s1', 'int.s2', 'int.s3', 'int.s4'].map((k, n) => `${n ? `<span class="flow-arrow">${icon('right')}</span>` : ''}<span class="flow-step"><span class="n">${n + 1}</span><span><b>${esc(t(k))}</b><small>${esc(t(`${k}Sub`))}</small></span></span>`).join('')}</div>`;
   };
+  const reload = async () => { try { intState = await api.rpc('integration_list', { p_business: ctx.bid }); } catch { intState = { connections: [], api_keys: [], events: [] }; } paint(); };
+  body.addEventListener('submit', async e => {
+    const f = e.target.closest('[data-int-form]'); if (!f) return; e.preventDefault();
+    const err = f.querySelector('.err'); err.hidden = true;
+    const id = f.dataset.intForm, d = f.domain.value, sec = f.secret.value;
+    try {
+      await busy(f.querySelector('[type=submit]'), () => api.rpc(id === 'woo' ? 'integration_connect_woocommerce' : 'integration_connect_shopify', id === 'woo' ? { p_business: ctx.bid, p_store_url: d, p_webhook_secret: sec } : { p_business: ctx.bid, p_shop_domain: d, p_webhook_secret: sec }));
+      toast(t('int.connected')); await reload();
+    } catch (ex) { err.textContent = ex.message; err.hidden = false; }
+  });
   body.addEventListener('click', async e => {
+    const nk = e.target.closest('[data-int-action="newkey"]');
+    if (nk) { try { const k = await busy(nk, () => api.rpc('integration_create_api_key', { p_business: ctx.bid })); modal({ title: t('int.newKey'), lead: t('int.keyOnce'), body: `<code class="int-code" style="user-select:all">${esc(k.key)}</code>`, footer: `<button class="btn primary" data-close>${esc(t('c.close'))}</button>` }); await reload(); } catch (ex) { toast(ex.message, 'error'); } return; }
+    const rv = e.target.closest('[data-int-revoke]');
+    if (rv) { try { await busy(rv, () => api.rpc('integration_revoke_api_key', { p_key: rv.dataset.intRevoke })); toast(t('int.revoked')); await reload(); } catch (ex) { toast(ex.message, 'error'); } return; }
+    const dc = e.target.closest('[data-int-disconnect]');
+    if (dc) { try { await busy(dc, () => api.rpc('integration_disconnect', { p_connection: dc.dataset.intDisconnect })); toast(t('int.disconnected')); await reload(); } catch (ex) { toast(ex.message, 'error'); } return; }
     const r = e.target.closest('[data-int]');
     if (r) { intSelected = r.dataset.int; paint(); body.querySelector(`[data-int="${intSelected}"]`)?.focus(); return; }
     const act = e.target.closest('[data-int-action]')?.dataset.intAction;
@@ -458,6 +503,7 @@ function integrations(page) {
     if (act === 'add') { const { openAddOrder } = await import('./order_actions.js'); openAddOrder(); }
   });
   paint();
+  reload();
 }
 
 // Subscription (V-50-V-54, D-54), Owner only, as Vendor App live: the plan,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -2182,20 +2183,310 @@ class _ComingSoonScreen extends StatelessWidget {
   );
 }
 
-/// Integrations (Founder, 2026-10-08: listed in More again). Same list and
-/// truth as Vendor Web Settings → Integrations: only what the app can really
-/// do is Available and opens its flow; the rest is Coming soon, no action.
-class _IntegrationsScreen extends StatelessWidget {
+/// Integrations (Founder, 2026-10-08). Phase 1 backend (staging): API keys,
+/// WooCommerce and Shopify webhooks create normal orders. CSV/Excel, manual
+/// entry and Storefront open their existing flows. Wix, Google Sheets and
+/// Google Drive stay Coming soon (credentials / Google OAuth HOLD).
+class _IntegrationsScreen extends StatefulWidget {
   const _IntegrationsScreen();
+  @override
+  State<_IntegrationsScreen> createState() => _IntegrationsScreenState();
+}
+
+class _IntegrationsScreenState extends State<_IntegrationsScreen> {
+  Map<String, dynamic>? data;
+
+  String get _inbound => '${Env.supabaseUrl}/functions/v1/integrations-inbound';
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+  }
+
+  Future<void> _load() async {
+    final app = AppScope.read(context);
+    final b = app.business?.id;
+    if (b == null) return;
+    try {
+      final d = await app.repo.integrationList(b);
+      if (mounted) setState(() => data = d);
+    } catch (e) {
+      if (mounted) {
+        setState(
+          () => data = {'connections': [], 'api_keys': [], 'events': []},
+        );
+      }
+    }
+  }
+
+  Map<String, dynamic>? _conn(String provider) {
+    for (final c in (data?['connections'] as List? ?? [])) {
+      if (c['provider'] == provider) return Map<String, dynamic>.from(c as Map);
+    }
+    return null;
+  }
+
+  Future<void> _copy(String v) async {
+    await Clipboard.setData(ClipboardData(text: v));
+    if (mounted) showCefToast(context, L.integrationCopied);
+  }
+
+  Widget _code(String v) => InkWell(
+    onTap: () => _copy(v),
+    child: Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(Gap.sm),
+      decoration: BoxDecoration(
+        color: context.c.subtle,
+        borderRadius: BorderRadius.circular(Sizes.cardRadius / 2),
+        border: Border.all(color: context.c.border),
+      ),
+      child: SelectableText(v, style: const TextStyle(fontSize: 12)),
+    ),
+  );
+
+  Future<void> _sheet(Widget Function(BuildContext, StateSetter) build) =>
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: context.c.card,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(Sizes.cardRadius),
+          ),
+        ),
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, set) => Padding(
+            padding: EdgeInsets.only(
+              left: Gap.gutter,
+              right: Gap.gutter,
+              top: Gap.xl,
+              bottom: MediaQuery.viewInsetsOf(ctx).bottom + Gap.xl,
+            ),
+            child: SingleChildScrollView(child: build(ctx, set)),
+          ),
+        ),
+      );
+
+  void _openWebhook(String provider, String title) {
+    final app = AppScope.read(context);
+    final domain = TextEditingController(), secret = TextEditingController();
+    String? err;
+    bool busy = false;
+    _sheet((ctx, set) {
+      final c = _conn(provider);
+      final text = Theme.of(ctx).textTheme;
+      if (c != null) {
+        final url = '$_inbound/$provider/${c['id']}';
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(title, style: text.titleMedium),
+            const SizedBox(height: Gap.xs),
+            Row(
+              children: [
+                StatusChip(L.integrationConnected, success: true),
+                const SizedBox(width: Gap.sm),
+                Flexible(child: Text('${c['shop_domain'] ?? ''}')),
+              ],
+            ),
+            const SizedBox(height: Gap.md),
+            Text(L.integrationWebhookUrl, style: text.labelLarge),
+            const SizedBox(height: Gap.xs),
+            _code(url),
+            const SizedBox(height: Gap.sm),
+            Text(
+              provider == 'woocommerce'
+                  ? L.integrationWooHow
+                  : L.integrationShopHow,
+              style: text.bodySmall,
+            ),
+            const SizedBox(height: Gap.lg),
+            CefButton(
+              L.integrationDisconnect,
+              destructive: true,
+              busy: busy,
+              onTap: () async {
+                set(() => busy = true);
+                try {
+                  await app.repo.integrationDisconnect('${c['id']}');
+                  await _load();
+                  if (ctx.mounted) Navigator.pop(ctx);
+                } catch (e) {
+                  set(() {
+                    busy = false;
+                    err = '$e';
+                  });
+                }
+              },
+            ),
+          ],
+        );
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(title, style: text.titleMedium),
+          const SizedBox(height: Gap.sm),
+          Text(
+            provider == 'woocommerce'
+                ? L.integrationWooHow
+                : L.integrationShopHow,
+            style: text.bodySmall,
+          ),
+          const SizedBox(height: Gap.md),
+          CefField(
+            label: provider == 'woocommerce'
+                ? L.integrationStoreUrl
+                : L.integrationShopDomain,
+            controller: domain,
+            hint: provider == 'woocommerce'
+                ? 'https://shop.example.com'
+                : 'your-store.myshopify.com',
+            keyboardType: TextInputType.url,
+          ),
+          const SizedBox(height: Gap.sm),
+          CefField(
+            label: L.integrationSecret,
+            controller: secret,
+            errorText: err,
+          ),
+          const SizedBox(height: Gap.lg),
+          CefButton(
+            L.integrationConnect,
+            busy: busy,
+            onTap: () async {
+              set(() {
+                busy = true;
+                err = null;
+              });
+              try {
+                await app.repo.integrationConnect(
+                  app.business!.id,
+                  provider,
+                  domain.text,
+                  secret.text,
+                );
+                await _load();
+                set(() => busy = false);
+              } catch (e) {
+                set(() {
+                  busy = false;
+                  err = '$e'.replaceFirst('Exception: ', '');
+                });
+              }
+            },
+          ),
+        ],
+      );
+    });
+  }
+
+  void _openApi() {
+    final app = AppScope.read(context);
+    bool busy = false;
+    _sheet((ctx, set) {
+      final text = Theme.of(ctx).textTheme;
+      final keys = (data?['api_keys'] as List? ?? []);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('API / Webhooks', style: text.titleMedium),
+          const SizedBox(height: Gap.md),
+          Text(L.integrationEndpoint, style: text.labelLarge),
+          const SizedBox(height: Gap.xs),
+          _code('POST $_inbound/api/orders'),
+          const SizedBox(height: Gap.sm),
+          Text(L.integrationApiHow, style: text.bodySmall),
+          const SizedBox(height: Gap.md),
+          for (final k in keys)
+            CefListRow(
+              title: '${k['prefix']}…',
+              icon: LucideIcons.keyRound,
+              showChevron: false,
+              trailing: TextButton(
+                onPressed: () async {
+                  await app.repo.integrationRevokeApiKey('${k['id']}');
+                  await _load();
+                  set(() {});
+                },
+                child: Text(L.integrationRevoke),
+              ),
+            ),
+          const SizedBox(height: Gap.md),
+          CefButton(
+            L.integrationNewKey,
+            icon: LucideIcons.plus,
+            busy: busy,
+            onTap: () async {
+              set(() => busy = true);
+              try {
+                final key = await app.repo.integrationCreateApiKey(
+                  app.business!.id,
+                );
+                await _load();
+                set(() => busy = false);
+                if (!ctx.mounted) return;
+                await showDialog<void>(
+                  context: ctx,
+                  builder: (d) => AlertDialog(
+                    title: Text(L.integrationNewKey),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(L.integrationKeyOnce),
+                        const SizedBox(height: Gap.sm),
+                        SelectableText(
+                          key,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => _copy(key),
+                        child: Text(L.integrationCopy),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(d),
+                        child: Text(L.close),
+                      ),
+                    ],
+                  ),
+                );
+              } catch (e) {
+                set(() => busy = false);
+                if (ctx.mounted) showCefToast(ctx, '$e', error: true);
+              }
+            },
+          ),
+        ],
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    CefListRow live(String title, IconData icon, VRoute to) => CefListRow(
+    Widget chip(bool connected) => StatusChip(
+      connected ? L.integrationConnected : L.available,
+      success: true,
+    );
+    CefListRow live(
+      String title,
+      IconData icon,
+      VoidCallback onTap, {
+      bool connected = false,
+    }) => CefListRow(
       title: title,
       icon: icon,
-      trailing: StatusChip(L.available, success: true),
-      onTap: () => app.go(to),
+      trailing: chip(connected),
+      onTap: onTap,
     );
     CefListRow soon(String title, IconData icon) => CefListRow(
       title: title,
@@ -2211,20 +2502,47 @@ class _IntegrationsScreen extends StatelessWidget {
         CefListGroup(
           label: L.available,
           children: [
-            live('CSV & Excel', LucideIcons.fileSpreadsheet, VRoute.importOrders),
-            live(L.manualEntry, LucideIcons.pencil, VRoute.newOrderManual),
-            live(L.storefront, LucideIcons.store, VRoute.storefront),
+            live(
+              'CSV & Excel',
+              LucideIcons.fileSpreadsheet,
+              () => app.go(VRoute.importOrders),
+            ),
+            live(
+              L.manualEntry,
+              LucideIcons.pencil,
+              () => app.go(VRoute.newOrderManual),
+            ),
+            live(
+              L.storefront,
+              LucideIcons.store,
+              () => app.go(VRoute.storefront),
+            ),
+            live(
+              'Shopify',
+              LucideIcons.shoppingBag,
+              () => _openWebhook('shopify', 'Shopify'),
+              connected: _conn('shopify') != null,
+            ),
+            live(
+              'WooCommerce',
+              LucideIcons.shoppingCart,
+              () => _openWebhook('woocommerce', 'WooCommerce'),
+              connected: _conn('woocommerce') != null,
+            ),
+            live(
+              'API / Webhooks',
+              LucideIcons.code,
+              _openApi,
+              connected: (data?['api_keys'] as List? ?? []).isNotEmpty,
+            ),
           ],
         ),
         CefListGroup(
           label: L.comingSoon,
           children: [
-            soon('Shopify', LucideIcons.shoppingBag),
-            soon('WooCommerce', LucideIcons.shoppingCart),
             soon('Wix', LucideIcons.globe),
             soon('Google Sheets', LucideIcons.sheet),
             soon('Google Drive', LucideIcons.hardDrive),
-            soon('API / Webhooks', LucideIcons.code),
           ],
         ),
       ],

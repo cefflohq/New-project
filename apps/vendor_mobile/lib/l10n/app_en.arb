@@ -2022,5 +2022,21 @@
   "screenCategoryProducts": "Category & Products",
   "screenProductDetail": "Product Detail",
   "integrations": "Integrations",
-  "integrationsLead": "Bring orders into Cefflo from the tools you already use."
+  "integrationsLead": "Bring orders into Cefflo from the tools you already use.",
+  "integrationConnected": "Connected",
+  "integrationConnect": "Connect",
+  "integrationDisconnect": "Disconnect",
+  "integrationWebhookUrl": "Webhook URL",
+  "integrationSecret": "Webhook secret",
+  "integrationStoreUrl": "Store URL",
+  "integrationShopDomain": "Shop domain",
+  "integrationNewKey": "Create API key",
+  "integrationKeyOnce": "Copy this key now. It is shown only once.",
+  "integrationEndpoint": "Endpoint",
+  "integrationRevoke": "Revoke",
+  "integrationCopy": "Copy",
+  "integrationCopied": "Copied",
+  "integrationWooHow": "In WooCommerce → Settings → Advanced → Webhooks, add a webhook: topic Order created, the URL below and the same secret.",
+  "integrationShopHow": "In Shopify admin → Settings → Notifications → Webhooks, create an Order creation webhook (JSON) to the URL below. Paste its signing secret here.",
+  "integrationApiHow": "Send each order as JSON with the key in the Authorization header (Bearer). Include external_id so an order is never created twice."
 }

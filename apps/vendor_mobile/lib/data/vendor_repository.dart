@@ -544,6 +544,70 @@ class VendorRepository {
     return Map<String, dynamic>.from(res as Map);
   }
 
+  // ---------- Integrations Phase 1 (Owner/Operator RPCs) ----------
+  Future<Map<String, dynamic>> integrationList(String businessId) async {
+    if (_demo) return {'connections': [], 'api_keys': [], 'events': []};
+    final res = await _run(
+      () => _db!.rpc('integration_list', params: {'p_business': businessId}),
+    );
+    return Map<String, dynamic>.from(res as Map);
+  }
+
+  Future<String> integrationCreateApiKey(String businessId) async {
+    if (_demo) throw RepositoryError(L.comingSoon);
+    final res = await _run(
+      () => _db!.rpc(
+        'integration_create_api_key',
+        params: {'p_business': businessId},
+      ),
+    );
+    return (Map<String, dynamic>.from(res as Map)['key'] ?? '').toString();
+  }
+
+  Future<void> integrationRevokeApiKey(String keyId) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc('integration_revoke_api_key', params: {'p_key': keyId}),
+    );
+  }
+
+  Future<void> integrationConnect(
+    String businessId,
+    String provider,
+    String domain,
+    String secret,
+  ) async {
+    if (_demo) throw RepositoryError(L.comingSoon);
+    await _run(
+      () => _db!.rpc(
+        provider == 'woocommerce'
+            ? 'integration_connect_woocommerce'
+            : 'integration_connect_shopify',
+        params: provider == 'woocommerce'
+            ? {
+                'p_business': businessId,
+                'p_store_url': domain,
+                'p_webhook_secret': secret,
+              }
+            : {
+                'p_business': businessId,
+                'p_shop_domain': domain,
+                'p_webhook_secret': secret,
+              },
+      ),
+    );
+  }
+
+  Future<void> integrationDisconnect(String connectionId) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'integration_disconnect',
+        params: {'p_connection': connectionId},
+      ),
+    );
+  }
+
   /// Owner: ask to change plan. The server answers with where the flow
   /// stops (payment is not enabled yet); it never activates a plan.
   Future<String> requestPlanChange(String businessId, String planKey) async {

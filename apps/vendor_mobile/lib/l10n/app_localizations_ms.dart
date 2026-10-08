@@ -4076,4 +4076,56 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get integrationsLead =>
       'Bawa order masuk ke Cefflo dari alat yang anda dah guna.';
+
+  @override
+  String get integrationConnected => 'Disambung';
+
+  @override
+  String get integrationConnect => 'Sambung';
+
+  @override
+  String get integrationDisconnect => 'Putuskan';
+
+  @override
+  String get integrationWebhookUrl => 'URL webhook';
+
+  @override
+  String get integrationSecret => 'Rahsia webhook';
+
+  @override
+  String get integrationStoreUrl => 'URL kedai';
+
+  @override
+  String get integrationShopDomain => 'Domain kedai';
+
+  @override
+  String get integrationNewKey => 'Cipta kunci API';
+
+  @override
+  String get integrationKeyOnce =>
+      'Salin kunci ini sekarang. Ia hanya ditunjukkan sekali.';
+
+  @override
+  String get integrationEndpoint => 'Endpoint';
+
+  @override
+  String get integrationRevoke => 'Batalkan';
+
+  @override
+  String get integrationCopy => 'Salin';
+
+  @override
+  String get integrationCopied => 'Disalin';
+
+  @override
+  String get integrationWooHow =>
+      'Dalam WooCommerce → Settings → Advanced → Webhooks, tambah webhook: topic Order created, URL di bawah dan rahsia yang sama.';
+
+  @override
+  String get integrationShopHow =>
+      'Dalam admin Shopify → Settings → Notifications → Webhooks, cipta webhook Order creation (JSON) ke URL di bawah. Tampal signing secret di sini.';
+
+  @override
+  String get integrationApiHow =>
+      'Hantar setiap order sebagai JSON dengan kunci dalam header Authorization (Bearer). Sertakan external_id supaya order tak dicipta dua kali.';
 }

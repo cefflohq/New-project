@@ -4072,4 +4072,55 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get integrationsLead =>
       'Bring orders into Cefflo from the tools you already use.';
+
+  @override
+  String get integrationConnected => 'Connected';
+
+  @override
+  String get integrationConnect => 'Connect';
+
+  @override
+  String get integrationDisconnect => 'Disconnect';
+
+  @override
+  String get integrationWebhookUrl => 'Webhook URL';
+
+  @override
+  String get integrationSecret => 'Webhook secret';
+
+  @override
+  String get integrationStoreUrl => 'Store URL';
+
+  @override
+  String get integrationShopDomain => 'Shop domain';
+
+  @override
+  String get integrationNewKey => 'Create API key';
+
+  @override
+  String get integrationKeyOnce => 'Copy this key now. It is shown only once.';
+
+  @override
+  String get integrationEndpoint => 'Endpoint';
+
+  @override
+  String get integrationRevoke => 'Revoke';
+
+  @override
+  String get integrationCopy => 'Copy';
+
+  @override
+  String get integrationCopied => 'Copied';
+
+  @override
+  String get integrationWooHow =>
+      'In WooCommerce → Settings → Advanced → Webhooks, add a webhook: topic Order created, the URL below and the same secret.';
+
+  @override
+  String get integrationShopHow =>
+      'In Shopify admin → Settings → Notifications → Webhooks, create an Order creation webhook (JSON) to the URL below. Paste its signing secret here.';
+
+  @override
+  String get integrationApiHow =>
+      'Send each order as JSON with the key in the Authorization header (Bearer). Include external_id so an order is never created twice.';
 }
