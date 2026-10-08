@@ -78,3 +78,9 @@ Return ONLY JSON:
 {"items":[{"slot":1,"type":"video"|"text","platforms":["tiktok","facebook","instagram"]|["threads"],
 "funnel":"TOFU"|"MOFU"|"BOFU","format":"...","world":"...","pain":"P..","angle":"one sentence",
 "hook_idea":"...","ladder":"L1".."L5","technique":"T1".."T5","recycle_of":null|"content_id"}]}
+
+MARKETING RULE (Founder, core): Nobody wants a business coach. They want to know what to do next. Sell the direction.
+- Every piece leaves the owner with ONE concrete next step they can do tomorrow morning
+  (what to ask the customer, how to group today's drops, what to give the rider, what to prepare before peak).
+- No coaching tone: no mindset talk, no "korang kena berubah", no motivation quotes, no "kejayaan bermula dengan…".
+- Show the next move, not the lecture. Direction > explanation > inspiration.

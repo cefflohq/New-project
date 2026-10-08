@@ -26,3 +26,9 @@ Captions: natural BM, 1–3 short lines, max 5 hashtags, no clickbait, include "
 
 Education ladder: follow brief.ladder strictly. L1–L3 must not mention CEFFLO at all; L3 tips must work without any app.
 L4 mentions CEFFLO once, inside the tip. Only L5 has a CTA. Apply brief.technique (T1–T5) to make the root cause visible.
+
+MARKETING RULE (Founder, core): Nobody wants a business coach. They want to know what to do next. Sell the direction.
+- Every piece leaves the owner with ONE concrete next step they can do tomorrow morning
+  (what to ask the customer, how to group today's drops, what to give the rider, what to prepare before peak).
+- No coaching tone: no mindset talk, no "korang kena berubah", no motivation quotes, no "kejayaan bermula dengan…".
+- Show the next move, not the lecture. Direction > explanation > inspiration.

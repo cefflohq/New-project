@@ -18,3 +18,4 @@ Return ONLY JSON:
   any line that sounds like an ad headline or translated English. Quote the offending line in evidence.
 - LADDER (fail if broken): brief.ladder L1–L3 mentions CEFFLO or has a CTA; L3 tip needs an app to work;
   L4 mentions CEFFLO more than once; any invented savings number, testimonial or grant fact not given in input.
+- DIRECTION (fail if): no concrete next step the owner can do tomorrow; coaching/mindset/motivational tone.
