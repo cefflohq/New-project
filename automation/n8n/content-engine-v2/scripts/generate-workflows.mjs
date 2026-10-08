@@ -192,7 +192,7 @@ return $input.all().map((it, i) => { const ctx = $('Build script request').all()
   a.http('DeepSeek · QA', 'DeepSeek', { url: `={{ ${cfg}.deepseek.url }}`, body: deepseekBody }, [2640, 60]);
   a.code('Evaluate QA', `return $input.all().map((it, i) => { const ctx = $('Build QA request').all()[i].json; const json = it.json; ${parseLLM.replace(/\n/g, ' ').replace("throw new Error('LLM did not return JSON: ' + raw.slice(0, 300));", "out = { verdict: 'FAIL', findings: [{ criterion: 'QA_UNAVAILABLE', evidence: 'QA returned no JSON; rewrite cleanly.' }] };")}
   if (ctx.script && ctx.script._invalid) out = { verdict: 'FAIL', findings: [{ criterion: 'FORMAT', evidence: 'Script was not valid JSON. Return valid JSON only.' }] };
-  const pass = out.verdict === 'PASS'; return { json: { ...ctx, body: undefined, qa: out, pass, retry: !pass && ctx.attempt < 1,
+  const pass = out.verdict === 'PASS'; return { json: { ...ctx, body: undefined, qa: out, pass, retry: !pass && ctx.attempt < 2,
     attempt: ctx.attempt + 1, findings: out.findings || [] } }; });`.replace('const raw = $json.', 'const raw = json.'), [2860, 60]);
   a.iff('QA pass?', '={{ $json.pass }}', [3080, 60]);
   a.iff('Retry once?', '={{ $json.retry }}', [3300, 260]);
@@ -208,7 +208,7 @@ return $('Save script').all().map(it => ({ json: { content_id: it.json.content_i
   a.code('Mark HOLD', `${SQL_HELPER}
 return $input.all().map(it => ({ json: { ...it.json, sql: \`update cefflo_ce2.content set qa = \${q(it.json.qa)}::jsonb, script = \${q(it.json.script)}::jsonb, status = 'HOLD', updated_at = now() where id = '\${it.json.content_id}'\` } }));`, [3520, 380]);
   a.pg('DB · hold', '={{ $json.sql }}', [3740, 380]);
-  a.tg('Notify HOLD', { chatId: `={{ ${cfg}.founderChatId }}`, text: `=⚠️ CE2 HOLD — slot {{ $('Mark HOLD').all()[$itemIndex].json.brief.slot }} ({{ $('Mark HOLD').all()[$itemIndex].json.brief.type }}) gagal QA 2 kali.\n{{ ($('Mark HOLD').all()[$itemIndex].json.findings || []).map(f => '• ' + f.criterion + ': ' + f.evidence).join('\\n').replace(/[_*\\[\\]]/g, ' ').slice(0, 900) }}`, additionalFields: { appendAttribution: false } }, [3960, 380]);
+  a.tg('Notify HOLD', { chatId: `={{ ${cfg}.founderChatId }}`, text: `=⚠️ CE2 HOLD — slot {{ $('Mark HOLD').all()[$itemIndex].json.brief.slot }} ({{ $('Mark HOLD').all()[$itemIndex].json.brief.type }}) gagal QA 3 kali.\n{{ ($('Mark HOLD').all()[$itemIndex].json.findings || []).map(f => '• ' + f.criterion + ': ' + f.evidence).join('\\n').replace(/[_*\\[\\]]/g, ' ').slice(0, 900) }}`, additionalFields: { appendAttribution: false } }, [3960, 380]);
 
   a.chain('Config', 'Memory + cost today', 'Under budget?');
   a.link('Under budget?', 'Build plan request', 0); a.link('Under budget?', 'Alert: budget reached', 1);
