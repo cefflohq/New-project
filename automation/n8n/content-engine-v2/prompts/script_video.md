@@ -23,3 +23,6 @@ Return ONLY JSON:
 "screen_id":null,"visual_prompt":"...","vo":"line spoken in this shot or empty","subtitle":"short on-screen text"}],
 "caption":{"tiktok":"...","meta":"..."},"hashtags":["..."],"cta":"... or empty","claims":["each factual claim made"]}
 Captions: natural BM, 1–3 short lines, max 5 hashtags, no clickbait, include "#CEFFLO".
+
+Education ladder: follow brief.ladder strictly. L1–L3 must not mention CEFFLO at all; L3 tips must work without any app.
+L4 mentions CEFFLO once, inside the tip. Only L5 has a CTA. Apply brief.technique (T1–T5) to make the root cause visible.

@@ -23,7 +23,42 @@ Rules:
   P17 fear of changing WhatsApp/spreadsheet workflow.
 - Use operational objections when MOFU: "WhatsApp dah cukup", "rider saya dua je", "dah guna Excel", "takut susah nak belajar".
 
+
+EDUCATION-FIRST STRATEGY (we are the doctor who shows the cause, not the salesman)
+Owners should feel they level up every day. They open up to CEFFLO on their own after many useful posts.
+
+Education ladder (set "ladder" on every brief):
+  L1 "Eh, ni aku"        relatable situation, feel understood            CEFFLO: never
+  L2 "Oh, itu punca"     symptom -> hidden root cause                    CEFFLO: never
+  L3 "Aku boleh cuba ni" tips that WORK WITHOUT any app (try tomorrow)   CEFFLO: never
+  L4 "Ada cara senang"   same tip, shown done in CEFFLO, once, subtle    CEFFLO: once
+  L5 "Okay cuba la"      risk-free invite (Pelan Free)                   CEFFLO: clear CTA
+Mapping: TOFU = L1/L2, MOFU = L3 (mostly) or L4, BOFU = L5. Weekly ≈ 30% L1, 30% L2, 25% L3, 10% L4, 5% L5.
+
+Technique to make the problem feel big (set "technique" on every brief):
+  T1 hidden-cost math: add up small daily losses into a week/month (scenario numbers only, never promised savings)
+  T2 symptom -> cause: start from what they feel, reveal what they do not see; let them test it themselves
+  T3 self-test: "Tanda bisnes korang dah lebih besar dari cara kerja" + 3 signs + no-blame ending
+  T4 breaking point: 10 orders fine, 40 orders on Hari Ibu/Raya breaks; "cara tu dibina untuk 10 order"
+  T5 contrarian: "kena tambah rider" -> "kena susun dulu"; "WhatsApp dah cukup" -> "bagus untuk berbual, bukan simpan order"
+
+Problem map (symptom they see -> root cause they do not):
+  ORDER IN:   missed/wrong orders -> 4–5 channels, no single list; order copied chat->book->packing slip->rider
+  ADDRESS:    rider calls customer 3x -> free-text address ("sebelah kedai kuning"); pin sent from office not home;
+              area knowledge lives in the senior rider's head
+  GROUPING:   rider back-and-forth, "rider tak cukup", planning done at 3pm -> sorted by order time not by area;
+              method built for 10 orders breaks at 40
+  RIDER:      rider keeps calling owner, rider quits, no record who holds what, proof photos lost in gallery
+              -> rider never gets a complete stop list
+  CUSTOMER:   "dah sampai mana?" all day, nobody home, "saya tak terima" disputes -> no info flow, no organised proof
+  OWNER:      cannot take a day off, tired despite staff, afraid to accept more orders, cannot grow
+              -> owner IS the system; everything lives in one head
+Map each brief's "pain" to one of these and say which symptom and which root cause in "angle".
+
+Trust rule: never invent savings numbers, testimonials or "ramai vendor"; never claim features outside PRODUCT_TRUTH.
+Info posts (grants, peak-season dates) only when facts are supplied in the input; never invent them.
+
 Return ONLY JSON:
 {"items":[{"slot":1,"type":"video"|"text","platforms":["tiktok","facebook","instagram"]|["threads"],
 "funnel":"TOFU"|"MOFU"|"BOFU","format":"...","world":"...","pain":"P..","angle":"one sentence",
-"hook_idea":"...","recycle_of":null|"content_id"}]}
+"hook_idea":"...","ladder":"L1".."L5","technique":"T1".."T5","recycle_of":null|"content_id"}]}

@@ -16,3 +16,5 @@ Return ONLY JSON:
 - HUMAN SOUND (fail if any): em/en dash; "awak"/"anda"/"kalian"; "korang" in a video VO; three balanced options inside one sentence (numbered Threads tips are fine); more than 1 emoji;
   moral-of-the-story closing line; self-answered rhetorical question; every line the same length;
   any line that sounds like an ad headline or translated English. Quote the offending line in evidence.
+- LADDER (fail if broken): brief.ladder L1–L3 mentions CEFFLO or has a CTA; L3 tip needs an app to work;
+  L4 mentions CEFFLO more than once; any invented savings number, testimonial or grant fact not given in input.

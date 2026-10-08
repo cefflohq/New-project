@@ -29,3 +29,6 @@ Voice for Threads:
 Return ONLY JSON:
 {"title":"...","posts":["1/n text","2/n text"],"claims":["each factual claim made"]}
 Do not write "1/4" markers inside the text; the app adds them.
+
+Education ladder: follow brief.ladder strictly. L1–L3 must not mention CEFFLO at all; L3 tips must work without any app.
+L4 mentions CEFFLO once, inside the tip. Only L5 has a CTA. Apply brief.technique (T1–T5) to make the root cause visible.
