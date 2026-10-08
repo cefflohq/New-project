@@ -134,7 +134,7 @@ const TG_KEYBOARD = idExpr => ({ rows: [{ row: { buttons: [
 
 const deepseekBody = '={{ $json.body }}';
 const parseLLM = `const raw = $json.choices?.[0]?.message?.content ?? '';
-const t = raw.replace(/^\`\`\`(json)?|\`\`\`$/g, '').trim(); let out; try { out = JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1)); } catch (e) { throw new Error('LLM did not return JSON: ' + raw.slice(0, 300)); }`;
+const t = raw.replace(/^\`\`\`(json)?|\`\`\`$/g, '').trim(); const j = t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1); let out; try { out = JSON.parse(j); } catch (e0) { let r = '', inS = false, esc = false; for (const ch of j) { if (inS && !esc && (ch === '\\n' || ch === '\\r' || ch === '\\t')) { r += ch === '\\n' ? '\\\\n' : ch === '\\r' ? '' : ' '; continue; } if (ch === '"' && !esc) inS = !inS; esc = !esc && ch === '\\\\'; r += ch; } out = undefined; try { out = JSON.parse(r); } catch (e1) {} } if (out === undefined) try { out = JSON.parse(j); } catch (e) { throw new Error('LLM did not return JSON: ' + raw.slice(0, 300)); }`;
 
 // ============================================================ WF01 Daily plan
 const wf01 = wf(ID.plan, 'CEFFLO CE2 · 01 · Daily Plan + Script + QA', a => {
