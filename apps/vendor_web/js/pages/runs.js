@@ -1,7 +1,8 @@
 // Active Runs — the business's open delivery runs, with a summary row
 // (Founder reference: Active Runs).
 import { t, fmtTime, fmtDate } from '../i18n.js';
-import { fetchSessions, fetchOrders, fetchRiders, orderNo } from '../data.js';
+import { fetchSessions, fetchOrders, fetchRiders, fetchStops, orderNo } from '../data.js';
+import { mountPinsMap, hasPin } from '../map.js';
 import { esc, icon, avatar, chip, orderStatus, loadingRows, emptyState, errorState } from '../ui.js';
 
 export default function runs({ el, setHeader }) {
@@ -22,7 +23,8 @@ export default function runs({ el, setHeader }) {
   }
   async function load() {
     try {
-      const [ss, os, rs] = await Promise.all([fetchSessions(), fetchOrders(), fetchRiders()]);
+      const [ss, os, rs, st] = await Promise.all([fetchSessions(), fetchOrders(), fetchRiders(), fetchStops().catch(() => [])]);
+      const seq = new Map((st || []).map(x => [x.order_id, x.sequence ?? 0]));
       const riders = new Map((rs || []).map(r => [r.id, r]));
       const open = (ss || []).filter(s => ['planned', 'active'].includes(s.status));
       paintKpis(open, os);
@@ -36,9 +38,19 @@ export default function runs({ el, setHeader }) {
             <span class="hint" style="margin-left:auto">${esc(fmtDate(s.delivery_date))}${s.pickup_at ? ` · ${esc(t('runs.pickup', { t: fmtTime(s.pickup_at) }))}` : ''} · ${esc(t('runs.orders', { n: mine.length }))}</span></div>
           ${[...byRider.entries()].map(([rid, list]) => `<div style="margin-top:10px">
             <div class="person" style="margin-bottom:6px">${avatar(riders.get(rid)?.name || '?', 'sm')}<b>${esc(riders.get(rid)?.name || t('st.unassigned'))}</b></div>
+            <div data-rmap="${esc(s.id)}:${esc(rid)}" style="margin-bottom:8px"></div>
             ${list.map(o => `<a class="list-row" href="#/orders/${esc(o.id)}" style="color:inherit;text-decoration:none;padding:8px 0"><div class="grow"><b style="font-size:14px">${esc(orderNo(o))}</b><small>${esc(o.customer_name)}</small></div>${chip(orderStatus(o))}${icon('right', 'i chev')}</a>`).join('')}</div>`).join('')}
         </div>`;
       }).join('');
+      // One map per rider's run: numbered stops, delivered = check, next highlighted.
+      box.querySelectorAll('[data-rmap]').forEach(m => {
+        const [sid, rid] = m.dataset.rmap.split(':');
+        const list = (os || []).filter(o => o.delivery_session_id === sid && (o.assigned_rider_id || '') === rid && o.delivery_status !== 'cancelled')
+          .sort((a, b) => (seq.get(a.id) ?? 0) - (seq.get(b.id) ?? 0) || a.created_at.localeCompare(b.created_at));
+        const next = list.find(o => o.delivery_status !== 'delivered');
+        mountPinsMap(m, list.map((o, i) => ({ o, i })).filter(({ o }) => hasPin(o))
+          .map(({ o, i }) => ({ lat: +o.latitude, lng: +o.longitude, label: i + 1, done: o.delivery_status === 'delivered', next: o === next })));
+      });
     } catch (e) { box.innerHTML = errorState(e, 'runs'); kpis.hidden = true; }
   }
   el.addEventListener('click', e => { if (e.target.closest('[data-retry]')) load(); });

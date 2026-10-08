@@ -4,6 +4,7 @@ import { t, fmtTime } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { fetchZones, fetchOrders, businessToday, orderNo } from '../data.js';
+import { mountPinsMap, hasPin } from '../map.js';
 import { esc, icon, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal } from '../ui.js';
 
 const ONGOING = ['created', 'ready_for_pickup', 'picked_up', 'out_for_delivery', 'arrived'];
@@ -19,6 +20,7 @@ export default function zones({ el, params, setHeader }) {
         <a class="btn sm" href="#/runs">${icon('route')}${esc(t('nav.runs'))}</a>
         <div class="search" style="margin-left:auto">${icon('search')}<input data-q placeholder="${esc(t('zones.search'))}" aria-label="${esc(t('c.search'))}"></div>
       </div>
+      <div style="padding:0 16px 12px"><div data-zmap></div></div>
       <div data-list>${loadingRows(8, t('ld.zones'))}</div>
     </div>
     ${selected ? `<div class="card panel" data-detail>${loadingRows(6, t('ld.zones'))}</div>` : ''}
@@ -30,6 +32,7 @@ export default function zones({ el, params, setHeader }) {
       const [z, o] = await Promise.all([fetchZones(), businessToday().then(d => fetchOrders(`&order_date=eq.${d}`))]);
       zs = z || []; orders = o || [];
       paint();
+      mountPinsMap($('[data-zmap]'), drops(orders));
       if (selected) paintDetail();
     } catch (e) { $('[data-list]').innerHTML = errorState(e, 'zones'); }
   }
@@ -37,6 +40,11 @@ export default function zones({ el, params, setHeader }) {
     const mine = orders.filter(o => o.zone_id === id);
     return { mine, total: mine.length, completed: mine.filter(o => o.delivery_status === 'delivered').length, ongoing: mine.filter(o => ONGOING.includes(o.delivery_status)).length, issues: mine.filter(o => o.delivery_status === 'issue').length };
   };
+
+  // Pinned orders as map drops. Zones have no stored geometry, so the map
+  // shows the orders, not boundaries.
+  const drops = list => list.filter(o => hasPin(o) && o.delivery_status !== 'cancelled')
+    .map(o => ({ lat: +o.latitude, lng: +o.longitude, done: o.delivery_status === 'delivered' }));
 
   function paint() {
     const rows = zs.filter(z => !query || z.name.toLowerCase().includes(query)).sort((a, b) => (sortAsc ? 1 : -1) * a.name.localeCompare(b.name));
@@ -64,11 +72,13 @@ export default function zones({ el, params, setHeader }) {
         <div class="stat"><b class="c-green">${c.completed}</b><span>${esc(t('zones.completed'))}</span></div>
         <div class="stat"><b class="c-blue">${c.ongoing}</b><span>${esc(t('zones.ongoing'))}</span></div>
         <div class="stat"><b class="c-red">${c.issues}</b><span>${esc(t('zones.issues'))}</span></div></div>
+      <div data-dmap style="margin-bottom:12px"></div>
       <div class="sec"><h3>${esc(t('orders.rider'))}</h3>${gatedNote(t('zones.riderGated'))}</div>
       <div class="sec"><h3>${esc(t('zones.ongoingOrders', { n: ongoing.length }))}</h3>${ongoing.slice(0, 6).map(row).join('') || `<div class="hint">${esc(t('c.none'))}</div>`}</div>
       <div class="sec"><h3>${esc(t('zones.completedOrders', { n: done.length }))}</h3>${done.slice(0, 6).map(row).join('') || `<div class="hint">${esc(t('c.none'))}</div>`}</div>
       <div class="sec"><h3>${esc(t('zones.issuesOrders', { n: issues.length }))}</h3>${issues.slice(0, 6).map(row).join('') || `<div class="hint">${esc(t('c.none'))}</div>`}</div>
       <a class="btn" style="width:100%" href="#/orders">${esc(t('zones.viewAllOrders', { z: z.name }))} ${icon('right')}</a>`;
+    mountPinsMap(box.querySelector('[data-dmap]'), drops(c.mine));
   }
 
   function zoneMenu(anchor) {

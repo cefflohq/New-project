@@ -76,3 +76,32 @@ export function mountPicker(box, initial, onChange) {
   });
   return { get: () => pin, changed: () => changed, destroy: () => { map?.remove(); map = null; } };
 }
+
+// Read-only map with several pins (run stops, zone orders). drops:
+// [{ lat, lng, label?, done?, next? }]. Fits all pins; Malaysia when none.
+// Pins only -- never a rider location.
+export async function mountPinsMap(box, drops) {
+  box.classList.add('pm', 'pm-multi');
+  box.innerHTML = `<div class="pm-canvas"></div>${drops.length ? '' : `<div class="pm-empty">${esc(t('pin.noPinned'))}</div>`}${attr}`;
+  try {
+    const gl = await loadMapLibre();
+    if (!box.isConnected) return null;
+    const map = new gl.Map({ container: box.querySelector('.pm-canvas'), style: STYLE,
+      center: drops.length ? [drops[0].lng, drops[0].lat] : MY_CENTER, zoom: drops.length ? 15 : 5,
+      attributionControl: false, dragRotate: false, pitchWithRotate: false, touchPitch: false, scrollZoom: false });
+    map.touchZoomRotate.disableRotation();
+    // Next stop last so it draws on top.
+    [...drops.filter(d => !d.next), ...drops.filter(d => d.next)].forEach(d => {
+      const m = document.createElement('div');
+      m.className = `pm-dot${d.done ? ' done' : d.next ? ' next' : ''}`;
+      m.innerHTML = d.done ? icon('check') : esc(d.label ?? '');
+      new gl.Marker({ element: m }).setLngLat([d.lng, d.lat]).addTo(map);
+    });
+    if (drops.length > 1) {
+      const b = new gl.LngLatBounds();
+      drops.forEach(d => b.extend([d.lng, d.lat]));
+      map.fitBounds(b, { padding: 40, maxZoom: 16, duration: 0 });
+    }
+    return map;
+  } catch { box.innerHTML = `<p class="hint" style="padding:16px">${esc(t('pin.mapFail'))}</p>`; return null; }
+}
