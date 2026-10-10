@@ -261,7 +261,8 @@ Rules:
 | Public Order API (beyond the Phase 1 API-key intake) | FUTURE | next / growth | No endpoint or payload names frozen |
 | Webhooks (dispatched, out_for_delivery, arrived, delivered, failed, issue) | FUTURE | next / growth | Event names are conceptual |
 | Integrations Phase 1: API key order intake, WooCommerce + Shopify (custom-app) webhooks create orders (`8ba9cc8`, Founder-approved 2026-10-08) | LIVE (Vendor Web + Vendor App, staging) | current | Inbound orders only, never "sync". Not production until launch |
-| Other native integrations (POS, ERP, Wix, Google Sheets/Drive, merchant systems) | FUTURE | next / growth | Only where commercially justified |
+| Google Sheets, Google Drive, Wix order intake (Founder 2026-10-10: required, shown on website) | LOCKED / IN DEVELOPMENT (not built) | next build | Not claimable as live until built and verified |
+| Other native integrations (POS, ERP, merchant systems) | FUTURE | next / growth | Only where commercially justified |
 | Multi-location / Fulfilment Point productisation | FUTURE | next / growth | Architecture must stay possible (§18.4) |
 | Signature POD | FUTURE (optional capability) | optional | Never universally mandatory |
 | Customer PIN / QR POD methods | IDEA / EXPLORATION | optional | |

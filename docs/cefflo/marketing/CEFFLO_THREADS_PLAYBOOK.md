@@ -52,7 +52,7 @@ Where the audience naturally says "rider" (motorcycle context), it may appear as
 The supplied website completion report explicitly records that unsupported integrations, testimonials, performance statistics, ETA, and live-map claims were not added. It also says production publication remains blocked pending Privacy and Terms review.
 
 Therefore:
-- LIVE order intake (Vendor Web + Vendor App): CSV/Excel import, API key, Shopify and WooCommerce webhooks (Integrations Phase 1, staging until launch). Say "order masuk terus", never "sync". POS, ERP, Wix, Google Drive, Sheets and Forms are not built; do not claim them.
+- LIVE order intake (Vendor Web + Vendor App): CSV/Excel import, API key, Shopify and WooCommerce webhooks (Integrations Phase 1, staging until launch). Say "order masuk terus", never "sync". Google Sheets, Google Drive and Wix are approved and in development (not built yet); POS, ERP and Forms are future. Do not claim any of them as live.
 - Do not claim automatic route optimization, rider live location (built but inactive while Mapbox is on hold), precise ETA, AI capability, or measurable delivery improvements. Customer tracking shows only a coarse ETA window where the backend computes it.
 - Do not treat website visual QA as product-wide proof.
 - Keep website publication status separate from product readiness. The report says the website implementation is ready for founder review, but production publication is blocked.
