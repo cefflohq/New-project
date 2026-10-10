@@ -1334,20 +1334,15 @@ invitation capability shown publicly must match Product Truth.
 
 ## 38. PRICING DIRECTION
 
-The current Founder-directed pricing structure for brand and website
-design work is:
+Pricing is owned by `docs/cefflo/sot/10_PRICING.md`, Founder-locked (D-73):
 
-  Plan           Direction
-  ------------ -----------
-  Free                 RM0
-  Grow                RM99
-  Operate            RM199
-  Scale              RM299
-  Enterprise        Custom
-
-The Free tier direction includes **100 completed deliveries per month**,
-subject to confirmation against the canonical pricing/product SOT before
-public publication.
+  Plan           Price          Completed deliveries
+  ------------ ---------- ---------------------------
+  Free                RM0                   150 / month
+  Grow               RM99                   500 / month
+  Operate           RM199                 1,500 / month
+  Scale             RM499                 5,000 / month
+  Enterprise       Custom                        Custom
 
 ### Pricing presentation
 
@@ -1380,12 +1375,9 @@ launch so CEFFLO does not maintain contradictory sources of truth.
 Never invent plan inclusions to fill empty pricing cards.
 
 
-> **Reconciliation note (D-68):** this section is recorded brand/website
-> *direction*, not canonical pricing. `docs/cefflo/sot/10_PRICING.md`
-> (CANDIDATE, not Founder-locked) remains the pricing authority, and the
-> Website Master §38.5 forbids publishing candidate prices. The Scale value
-> conflicts: **RM299 here** versus **RM499 in `10_PRICING.md`**. This is an
-> open Founder decision and nothing may be published until it is resolved.
+> **Reconciliation note (D-73):** the earlier Scale RM299 and Free
+> 100-delivery direction are superseded. `10_PRICING.md` is locked; publish
+> only the figures it lists as final.
 
 ------------------------------------------------------------------------
 
@@ -1547,7 +1539,7 @@ Calm, transparent, factual.
 ## B6. Messaging Hierarchy
 1. **Problem:** local same-day delivery becomes hard when orders multiply.
 2. **Reframe:** delivery is an operation, not a collection of rider chats.
-3. **System:** orders → coverage → zones → plan → runs → riders → delivered.
+3. **System:** orders → coverage → zones → plan → runs → drivers → delivered (user-facing "Driver", D-38).
 4. **Outcome:** clearer control of today's delivery operation.
 5. **Proof:** real product behavior / real customer evidence when available.
 6. **CTA:** see it, try it, join early access, or take the next real action.
