@@ -4163,4 +4163,37 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get mapNoPinnedOrders => 'Belum ada order yang dipin';
+
+  @override
+  String get integrationSiteUrl => 'URL laman Wix';
+
+  @override
+  String get integrationWixHow =>
+      'Dalam Wix: Automations → New automation → pencetus \"Order placed\" → tindakan \"Send HTTP request\" (POST, JSON, seluruh payload) ke URL di bawah.';
+
+  @override
+  String get integrationWixUrlOnce =>
+      'Salin URL ini sekarang. Ia hanya ditunjuk sekali; sambung semula untuk dapatkan yang baharu.';
+
+  @override
+  String get integrationUrlHidden =>
+      'URL peribadi disembunyikan. Sambung semula untuk cipta yang baharu.';
+
+  @override
+  String get integrationSheetsHow =>
+      'Tajuk baris 1: Name, Phone, Address, Item (Order ID, Qty, Price, Notes pilihan). Dalam sheet: Extensions → Apps Script, tampal skrip, Save, pilih cefflo_setup, Run, Allow. Baris baharu dihantar setiap 5 minit.';
+
+  @override
+  String get integrationDriveHow =>
+      'Letak fail CSV, Excel atau Google Sheets (tajuk sama) dalam satu folder. Pergi ke script.google.com → New project, tampal skrip, letak pautan folder dalam CEFFLO_FOLDER, Save, pilih cefflo_setup, Run, Allow. Fail diimport setiap 10 minit.';
+
+  @override
+  String get integrationGetScript => 'Cipta skrip';
+
+  @override
+  String get integrationNewScript => 'Cipta skrip baharu';
+
+  @override
+  String get integrationScriptOnce =>
+      'Skrip ini mengandungi kunci peribadi dan hanya ditunjuk sekali. Cipta skrip baharu akan hentikan yang lama.';
 }

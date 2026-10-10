@@ -2191,8 +2191,9 @@ class _ComingSoonScreen extends StatelessWidget {
 
 /// Integrations (Founder, 2026-10-08). Phase 1 backend (staging): API keys,
 /// WooCommerce and Shopify webhooks create normal orders. CSV/Excel, manual
-/// entry and Storefront open their existing flows. Wix, Google Sheets and
-/// Google Drive stay Coming soon (credentials / Google OAuth HOLD).
+/// entry and Storefront open their existing flows. Phase 2 (2026-10-10):
+/// Wix via a private Automation URL; Google Sheets / Drive via an Apps Script
+/// the owner installs in their own Google account (no Google OAuth).
 class _IntegrationsScreen extends StatefulWidget {
   const _IntegrationsScreen();
   @override
@@ -2391,6 +2392,184 @@ class _IntegrationsScreenState extends State<_IntegrationsScreen> {
     });
   }
 
+  /// Shows a one-time secret (Wix URL or Apps Script) with a copy action.
+  Future<void> _showOnce(
+    String title,
+    String lead,
+    String how,
+    String v,
+  ) => showDialog<void>(
+    context: context,
+    builder: (d) => AlertDialog(
+      title: Text(title),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(lead),
+            const SizedBox(height: Gap.sm),
+            Text(how, style: Theme.of(d).textTheme.bodySmall),
+            const SizedBox(height: Gap.sm),
+            SizedBox(
+              height: v.length > 300 ? 220 : null,
+              child: SingleChildScrollView(
+                child: SelectableText(v, style: const TextStyle(fontSize: 11)),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => _copy(v), child: Text(L.integrationCopy)),
+        TextButton(onPressed: () => Navigator.pop(d), child: Text(L.close)),
+      ],
+    ),
+  );
+
+  void _openWix() {
+    final app = AppScope.read(context);
+    final site = TextEditingController();
+    String? err;
+    bool busy = false;
+    _sheet((ctx, set) {
+      final c = _conn('wix');
+      final text = Theme.of(ctx).textTheme;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('Wix', style: text.titleMedium),
+          const SizedBox(height: Gap.xs),
+          if (c != null) ...[
+            Row(
+              children: [
+                StatusChip(L.integrationConnected, success: true),
+                const SizedBox(width: Gap.sm),
+                Flexible(child: Text('${c['shop_domain'] ?? ''}')),
+              ],
+            ),
+            const SizedBox(height: Gap.sm),
+            Text(L.integrationUrlHidden, style: text.bodySmall),
+          ],
+          const SizedBox(height: Gap.sm),
+          Text(L.integrationWixHow, style: text.bodySmall),
+          const SizedBox(height: Gap.md),
+          CefField(
+            label: L.integrationSiteUrl,
+            controller: site,
+            hint: 'https://www.your-site.com',
+            keyboardType: TextInputType.url,
+            errorText: err,
+          ),
+          const SizedBox(height: Gap.lg),
+          CefButton(
+            L.integrationConnect,
+            busy: busy,
+            onTap: () async {
+              set(() {
+                busy = true;
+                err = null;
+              });
+              try {
+                final url = await app.repo.integrationConnectWix(
+                  app.business!.id,
+                  site.text,
+                );
+                await _load();
+                set(() => busy = false);
+                if (ctx.mounted) Navigator.pop(ctx);
+                await _showOnce(
+                  'Wix',
+                  L.integrationWixUrlOnce,
+                  L.integrationWixHow,
+                  url,
+                );
+              } catch (e) {
+                set(() {
+                  busy = false;
+                  err = '$e'.replaceFirst('Exception: ', '');
+                });
+              }
+            },
+          ),
+          if (c != null) ...[
+            const SizedBox(height: Gap.sm),
+            CefButton(
+              L.integrationDisconnect,
+              destructive: true,
+              onTap: () async {
+                await app.repo.integrationDisconnect('${c['id']}');
+                await _load();
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+            ),
+          ],
+        ],
+      );
+    });
+  }
+
+  void _openGoogle(String kind, String title) {
+    final app = AppScope.read(context);
+    final provider = kind == 'sheets' ? 'google_sheets' : 'google_drive';
+    final how = kind == 'sheets'
+        ? L.integrationSheetsHow
+        : L.integrationDriveHow;
+    bool busy = false;
+    _sheet((ctx, set) {
+      final c = _conn(provider);
+      final text = Theme.of(ctx).textTheme;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(title, style: text.titleMedium),
+          if (c != null) ...[
+            const SizedBox(height: Gap.xs),
+            StatusChip(L.integrationConnected, success: true),
+          ],
+          const SizedBox(height: Gap.sm),
+          Text(how, style: text.bodySmall),
+          const SizedBox(height: Gap.lg),
+          CefButton(
+            c == null ? L.integrationGetScript : L.integrationNewScript,
+            icon: LucideIcons.code,
+            busy: busy,
+            onTap: () async {
+              set(() => busy = true);
+              try {
+                final script = await app.repo.integrationGoogleScript(
+                  app.business!.id,
+                  kind,
+                );
+                await _load();
+                set(() => busy = false);
+                if (ctx.mounted) Navigator.pop(ctx);
+                await _showOnce(title, L.integrationScriptOnce, how, script);
+              } catch (e) {
+                set(() => busy = false);
+                if (ctx.mounted) showCefToast(ctx, '$e', error: true);
+              }
+            },
+          ),
+          if (c != null) ...[
+            const SizedBox(height: Gap.sm),
+            CefButton(
+              L.integrationDisconnect,
+              destructive: true,
+              onTap: () async {
+                await app.repo.integrationDisconnect('${c['id']}');
+                await _load();
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+            ),
+          ],
+        ],
+      );
+    });
+  }
+
   void _openApi() {
     final app = AppScope.read(context);
     bool busy = false;
@@ -2494,12 +2673,6 @@ class _IntegrationsScreenState extends State<_IntegrationsScreen> {
       trailing: chip(connected),
       onTap: onTap,
     );
-    CefListRow soon(String title, IconData icon) => CefListRow(
-      title: title,
-      icon: icon,
-      trailing: StatusChip(L.comingSoon),
-      showChevron: false,
-    );
     return PageBody(
       grouped: true,
       onRefresh: _load,
@@ -2537,19 +2710,29 @@ class _IntegrationsScreenState extends State<_IntegrationsScreen> {
               connected: _conn('woocommerce') != null,
             ),
             live(
+              'Wix',
+              LucideIcons.globe,
+              _openWix,
+              connected: _conn('wix') != null,
+            ),
+            live(
+              'Google Sheets',
+              LucideIcons.sheet,
+              () => _openGoogle('sheets', 'Google Sheets'),
+              connected: _conn('google_sheets') != null,
+            ),
+            live(
+              'Google Drive',
+              LucideIcons.hardDrive,
+              () => _openGoogle('drive', 'Google Drive'),
+              connected: _conn('google_drive') != null,
+            ),
+            live(
               'API / Webhooks',
               LucideIcons.code,
               _openApi,
               connected: (data?['api_keys'] as List? ?? []).isNotEmpty,
             ),
-          ],
-        ),
-        CefListGroup(
-          label: L.comingSoon,
-          children: [
-            soon('Wix', LucideIcons.globe),
-            soon('Google Sheets', LucideIcons.sheet),
-            soon('Google Drive', LucideIcons.hardDrive),
           ],
         ),
       ],

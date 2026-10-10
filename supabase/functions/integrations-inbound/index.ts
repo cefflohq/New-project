@@ -1,9 +1,13 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { SCRIPTS } from './scripts.ts';
 
 // Integrations Phase 1 inbound endpoint (docs/cefflo/security/INTEGRATIONS_PHASE1_PROPOSAL.md).
 //   POST /integrations-inbound/api/orders            Authorization: Bearer cfk_live_…
 //   POST /integrations-inbound/woocommerce/{conn_id}  X-WC-Webhook-Signature
 //   POST /integrations-inbound/shopify/{conn_id}      X-Shopify-Hmac-Sha256 + X-Shopify-Shop-Domain
+//   POST /integrations-inbound/wix/{conn_id}/{token}  Wix Automation; token = Vault secret (Phase 2)
+//   GET  /integrations-inbound/script/{sheets|drive}  Apps Script template (Phase 2; key goes in client-side)
+// Google Sheets / Drive scripts post to /api/orders with a connection-bound key.
 // The business always comes from the server-side connection/key, never from the payload.
 
 const MAX_BODY = 64 * 1024;
@@ -64,6 +68,18 @@ function fromShopify(p: Record<string, any>) {
   };
 }
 
+// Items as a list, or as text such as "Nasi lemak x2, Kek x1".
+function parseItems(v: unknown) {
+  if (Array.isArray(v)) return v.map((l: any) => ({ name: str(l?.name), quantity: Number(l?.quantity), price: Number(l?.price ?? 0) }));
+  return str(v).split(/[,\n]+/).map((s) => s.trim()).filter(Boolean).map((s) => {
+    let m = s.match(/^(.*?)\s*[x×*]\s*(\d+)$/i);
+    if (m) return { name: m[1].trim(), quantity: Number(m[2]), price: 0 };
+    m = s.match(/^(\d+)\s*[x×*]?\s+(.*)$/i);
+    if (m) return { name: m[2].trim(), quantity: Number(m[1]), price: 0 };
+    return { name: s, quantity: 1, price: 0 };
+  });
+}
+
 function fromApi(p: Record<string, any>) {
   return {
     external_id: str(p.external_id),
@@ -72,17 +88,48 @@ function fromApi(p: Record<string, any>) {
       customer_phone: str(p.customer_phone),
       delivery_address: str(p.delivery_address),
       notes: str(p.notes),
-      items: (Array.isArray(p.items) ? p.items : []).map((l: any) => ({ name: str(l.name), quantity: Number(l.quantity), price: Number(l.price ?? 0) })),
+      items: parseItems(p.items),
+    },
+  };
+}
+
+// Wix eCommerce order (Automation "Order placed" payload, possibly wrapped in
+// data/order). Flat Cefflo field names are accepted as a fallback for a
+// customised Automation body.
+function fromWix(p: Record<string, any>) {
+  const o = p.data?.order ?? p.order ?? p.data ?? p;
+  const dest = o.shippingInfo?.logistics?.shippingDestination ?? o.shippingInfo?.shipmentDetails ?? {};
+  const bill = o.billingInfo ?? {};
+  const a = dest.address ?? bill.address ?? o.shippingAddress ?? {};
+  const cd = dest.contactDetails ?? bill.contactDetails ?? o.contactDetails ?? o.contact ?? {};
+  const flat = fromApi(p).order;
+  const nameOf = (x: any) => typeof x === 'string' ? x : [x?.first, x?.last].map(str).join(' ').trim();
+  const addr = str(a.formattedAddress) || [a.addressLine1 ?? a.addressLine, a.addressLine2, a.city, a.postalCode, a.subdivisionFullname ?? a.subdivision, a.countryFullname ?? a.country].map(str).map((x) => x.trim()).filter(Boolean).join(', ');
+  const lines = Array.isArray(o.lineItems) ? o.lineItems : null;
+  return {
+    external_id: str(o.id ?? o._id ?? o.orderId ?? o.number ?? p.external_id),
+    order: {
+      customer_name: [cd.firstName, cd.lastName].map(str).join(' ').trim() || nameOf(cd.name) || flat.customer_name,
+      customer_phone: str(cd.phone ?? o.buyerInfo?.phone) || flat.customer_phone,
+      delivery_address: addr || flat.delivery_address,
+      notes: str(o.buyerNote) || flat.notes,
+      items: lines
+        ? lines.map((l: any) => ({ name: str(l.productName?.original ?? l.productName ?? l.name), quantity: Number(l.quantity), price: Number(l.price?.amount ?? l.price ?? 0) }))
+        : flat.items,
     },
   };
 }
 
 Deno.serve(async (req) => {
-  if (req.method !== 'POST') return json(405, { error: 'method not allowed' });
   const url = new URL(req.url);
   const parts = url.pathname.split('/').filter(Boolean);
   const i = parts.indexOf('integrations-inbound');
-  const [kind, arg] = parts.slice(i + 1);
+  const [kind, arg, tok] = parts.slice(i + 1);
+  if (req.method === 'GET' && kind === 'script' && SCRIPTS[arg]) {
+    return new Response(SCRIPTS[arg], { headers: { 'content-type': 'text/plain; charset=utf-8', 'access-control-allow-origin': '*' } });
+  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'authorization, apikey, content-type', 'access-control-allow-methods': 'GET' } });
+  if (req.method !== 'POST') return json(405, { error: 'method not allowed' });
 
   const raw = await req.text();
   if (raw.length > MAX_BODY) return json(413, { error: 'payload too large' });
@@ -124,6 +171,17 @@ Deno.serve(async (req) => {
         return json(401, { error: 'invalid signature' });
       }
       norm = fromShopify(payload);
+    }
+    connectionId = t.connection_id;
+  } else if (kind === 'wix' && /^[0-9a-f-]{36}$/.test(arg || '')) {
+    const { data: t } = await db.rpc('_integration_webhook_target', { p_connection: arg, p_provider: 'wix' });
+    if (!t) return json(404, { error: 'not found' });
+    const { data: ok } = await db.rpc('check_rate_limit', { p_key_hash: await sha256Hex('intconn:' + t.connection_id), p_action: 'integration_webhook', p_window_seconds: 60, p_max_requests: 120 });
+    if (ok === false) return json(429, { error: 'rate limited' });
+    norm = fromWix(payload);
+    if (!safeEqual(tok || '', t.secret)) {
+      await db.rpc('_integration_reject', { p_connection: t.connection_id, p_external: norm.external_id, p_reason: 'bad token' });
+      return json(401, { error: 'invalid token' });
     }
     connectionId = t.connection_id;
   } else {

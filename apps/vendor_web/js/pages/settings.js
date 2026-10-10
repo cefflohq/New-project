@@ -7,7 +7,7 @@ import { ctx } from '../store.js';
 import { prefs, savePrefs } from '../prefs.js';
 import { fetchBusiness, fetchZones, fetchMembers, fetchJoinRequests, fetchRiders } from '../data.js';
 import { mountHiring } from '../hiring.js';
-import { esc, icon, avatar, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal, typedConfirmDialog } from '../ui.js';
+import { esc, icon, avatar, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal, typedConfirmDialog, copyText } from '../ui.js';
 import { showInviteLink } from '../invite_link.js';
 import { rerenderShell, signOutHandler } from '../shell.js';
 import { otpBoxesHtml, wireOtpBoxes, otpFailure } from './auth.js';
@@ -416,16 +416,25 @@ const INTEGRATIONS = [
   { id: 'manual', name: () => t('int.manual'), sub: () => t('int.manualSub'), live: true, action: 'add' },
   { id: 'shopify', name: () => 'Shopify', sub: () => t('int.shopSub'), live: true, action: 'connect' },
   { id: 'woo', name: () => 'WooCommerce', sub: () => t('int.shopSub'), live: true, action: 'connect' },
-  { id: 'wix', name: () => 'Wix eCommerce', sub: () => t('int.shopSub') },
+  { id: 'wix', name: () => 'Wix eCommerce', sub: () => t('int.shopSub'), live: true, action: 'connect' },
   { id: 'excel', name: () => 'Microsoft Excel', sub: () => t('int.excelSub'), live: true, action: 'import' },
-  { id: 'sheets', name: () => 'Google Sheets', sub: () => t('int.sheetsSub') },
-  { id: 'drive', name: () => 'Google Drive', sub: () => t('int.driveSub') },
+  { id: 'sheets', name: () => 'Google Sheets', sub: () => t('int.sheetsSub'), live: true, action: 'google' },
+  { id: 'drive', name: () => 'Google Drive', sub: () => t('int.driveSub'), live: true, action: 'google' },
   { id: 'api', name: () => 'API / Webhooks', sub: () => t('int.apiSub'), live: true, action: 'apikey' },
 ];
 let intSelected = 'csv';
 let intState = null; // integration_list result for the current business
 const inboundBase = () => `${window.CEFFLO_CONFIG.supabaseUrl}/functions/v1/integrations-inbound`;
-const PROV = { woo: 'woocommerce', shopify: 'shopify' };
+const PROV = { woo: 'woocommerce', shopify: 'shopify', wix: 'wix', sheets: 'google_sheets', drive: 'google_drive' };
+const HOW = { woo: 'int.wooHow', shopify: 'int.shopHow', wix: 'int.wixHow', sheets: 'int.sheetsHow', drive: 'int.driveHow' };
+const hasPanel = x => x.action === 'connect' || x.action === 'apikey' || x.action === 'google';
+const copyBlock = (v, rows = 0) => `${rows ? `<textarea class="input int-code" rows="${rows}" readonly style="width:100%;font-family:monospace;font-size:12px">${esc(v)}</textarea>` : `<code class="int-code" style="user-select:all">${esc(v)}</code>`}<button class="btn sm" data-int-copy>${esc(t('int.copy'))}</button>`;
+// Copy buttons live inside modals (outside the page body), so listen once on the document.
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-int-copy]'); if (!b) return;
+  const src = b.previousElementSibling;
+  if (await copyText(src.value ?? src.textContent)) toast(t('int.copied'));
+});
 function connectPanel(x) {
   if (!intState) return window.cfLoader.markup(t('ld.default'));
   if (x.action === 'apikey') {
@@ -439,10 +448,19 @@ function connectPanel(x) {
   const conn = (intState.connections || []).find(c => c.provider === PROV[x.id]);
   if (conn) return `<div class="int-conn">
       <span class="chip active"><i class="dot"></i>${esc(t('int.connected'))}</span> <b>${esc(conn.shop_domain || '')}</b>
-      <label class="lbl">${esc(t('int.webhookUrl'))}</label><code class="int-code">${esc(inboundBase())}/${PROV[x.id]}/${esc(conn.id)}</code>
-      <p class="muted">${esc(t(x.id === 'woo' ? 'int.wooHow' : 'int.shopHow'))}</p>
+      ${x.action === 'google' ? `<p class="muted">${esc(t(HOW[x.id]))}</p><button class="btn int-cta" data-int-google="${x.id}">${icon('code')}${esc(t('int.newScript'))}</button>`
+        : x.id === 'wix' ? `<label class="lbl">${esc(t('int.webhookUrl'))}</label><p class="muted">${esc(t('int.urlHidden'))}</p><p class="muted">${esc(t(HOW[x.id]))}</p>`
+        : `<label class="lbl">${esc(t('int.webhookUrl'))}</label><code class="int-code">${esc(inboundBase())}/${PROV[x.id]}/${esc(conn.id)}</code><p class="muted">${esc(t(HOW[x.id]))}</p>`}
       ${conn.last_event_at ? `<p class="muted">${esc(t('int.lastEvent', { d: fmtDate(conn.last_event_at) }))}</p>` : ''}
       <button class="btn int-cta" data-int-disconnect="${conn.id}">${esc(t('int.disconnect'))}</button></div>`;
+  if (x.action === 'google') return `<div class="int-conn"><p class="muted">${esc(t(HOW[x.id]))}</p>
+      <button class="btn primary int-cta" data-int-google="${x.id}">${icon('code')}${esc(t('int.getScript'))}</button></div>`;
+  if (x.id === 'wix') return `<form class="int-conn" data-int-form="wix">
+      <p class="muted">${esc(t('int.wixHow'))}</p>
+      <label class="lbl">${esc(t('int.siteUrl'))}</label>
+      <input class="input" name="domain" required placeholder="https://www.your-site.com">
+      <p class="err" hidden></p>
+      <button class="btn primary int-cta" type="submit">${esc(t('int.connect'))}</button></form>`;
   return `<form class="int-conn" data-int-form="${x.id}">
       <label class="lbl">${esc(t(x.id === 'woo' ? 'int.storeUrl' : 'int.shopDomain'))}</label>
       <input class="input" name="domain" required placeholder="${x.id === 'woo' ? 'https://shop.example.com' : 'your-store.myshopify.com'}">
@@ -460,7 +478,7 @@ function integrations(page) {
     : `<span class="chip neutral"><i class="dot"></i>${esc(t('int.planned'))}</span>`);
   const paint = () => {
     const x = INTEGRATIONS.find(i => i.id === intSelected) || INTEGRATIONS[0];
-    const points = x.action === 'connect' || x.action === 'apikey' ? [`int.${x.id}P1`, `int.${x.id}P2`, `int.${x.id}P3`] : x.live ? [`int.${x.id}P1`, `int.${x.id}P2`, `int.${x.id}P3`] : ['int.planP1', 'int.planP2', 'int.planP3'];
+    const points = hasPanel(x) ? [`int.${x.id}P1`, `int.${x.id}P2`, `int.${x.id}P3`] : x.live ? [`int.${x.id}P1`, `int.${x.id}P2`, `int.${x.id}P3`] : ['int.planP1', 'int.planP2', 'int.planP3'];
     body.innerHTML = `<div class="int-md">
       <div class="int-list" role="listbox" aria-label="${esc(t('set.integrations'))}">
         ${INTEGRATIONS.map(i => `<button type="button" class="int-row ${i.id === x.id ? 'on' : ''}" role="option" aria-selected="${i.id === x.id}" data-int="${i.id}">
@@ -470,8 +488,8 @@ function integrations(page) {
         <div class="int-d-head">${BRAND[x.id].replace('brand-ico', 'brand-ico lg')}<div><h3>${esc(x.name())}</h3>${status(x)}</div></div>
         <p class="int-d-sub">${esc(x.sub())}</p>
         <ul class="int-points">${points.map((k, n) => `<li>${icon(['upload', 'map', 'route'][n])}<span>${esc(t(k))}</span></li>`).join('')}</ul>
-        ${x.action === 'connect' || x.action === 'apikey' ? '' : `<div class="gated">${icon('info')}<div><b>${esc(t(x.live ? 'int.needTitle' : 'int.planTitle'))}</b><br>${esc(t(x.live ? `int.${x.id}Need` : 'int.planNote'))}</div></div>`}
-        ${x.action === 'connect' || x.action === 'apikey' ? connectPanel(x) : x.live
+        ${hasPanel(x) ? '' : `<div class="gated">${icon('info')}<div><b>${esc(t(x.live ? 'int.needTitle' : 'int.planTitle'))}</b><br>${esc(t(x.live ? `int.${x.id}Need` : 'int.planNote'))}</div></div>`}
+        ${hasPanel(x) ? connectPanel(x) : x.live
           ? `<button class="btn primary int-cta" data-int-action="${x.action}">${icon(x.action === 'import' ? 'upload' : 'plus')}${esc(t(x.action === 'import' ? 'today.importOrders' : 'today.addOrder'))}</button>`
           : `<button class="btn int-cta" disabled>${esc(t('c.notAvailable'))}</button>`}
       </aside>
@@ -483,13 +501,36 @@ function integrations(page) {
   body.addEventListener('submit', async e => {
     const f = e.target.closest('[data-int-form]'); if (!f) return; e.preventDefault();
     const err = f.querySelector('.err'); err.hidden = true;
-    const id = f.dataset.intForm, d = f.domain.value, sec = f.secret.value;
+    const id = f.dataset.intForm, d = f.domain.value, sec = f.secret?.value;
+    if (id === 'wix') {
+      try {
+        const r = await busy(f.querySelector('[type=submit]'), () => api.rpc('integration_connect_wix', { p_business: ctx.bid, p_site_url: d }));
+        modal({ title: 'Wix eCommerce', lead: t('int.wixUrlOnce'), body: `<p class="muted">${esc(t('int.wixHow'))}</p>${copyBlock(`${inboundBase()}/wix/${r.id}/${r.token}`)}`, footer: `<button class="btn primary" data-close>${esc(t('c.close'))}</button>` });
+        await reload();
+      } catch (ex) { err.textContent = ex.message; err.hidden = false; }
+      return;
+    }
     try {
       await busy(f.querySelector('[type=submit]'), () => api.rpc(id === 'woo' ? 'integration_connect_woocommerce' : 'integration_connect_shopify', id === 'woo' ? { p_business: ctx.bid, p_store_url: d, p_webhook_secret: sec } : { p_business: ctx.bid, p_shop_domain: d, p_webhook_secret: sec }));
       toast(t('int.connected')); await reload();
     } catch (ex) { err.textContent = ex.message; err.hidden = false; }
   });
   body.addEventListener('click', async e => {
+    const gg = e.target.closest('[data-int-google]');
+    if (gg) {
+      const id = gg.dataset.intGoogle;
+      try {
+        const [r, tpl] = await busy(gg, async () => {
+          const res = await api.rpc('integration_connect_google', { p_business: ctx.bid, p_provider: PROV[id] });
+          const txt = await (await fetch(`${inboundBase()}/script/${id}`)).text();
+          return [res, txt];
+        });
+        const script = tpl.replace('__CEFFLO_KEY__', r.key).replace('__CEFFLO_URL__', `${inboundBase()}/api/orders`);
+        modal({ title: id === 'sheets' ? 'Google Sheets' : 'Google Drive', lead: t('int.scriptOnce'), body: `<p class="muted">${esc(t(HOW[id]))}</p>${copyBlock(script, 12)}`, footer: `<button class="btn primary" data-close>${esc(t('c.close'))}</button>` });
+        await reload();
+      } catch (ex) { toast(ex.message, 'error'); }
+      return;
+    }
     const nk = e.target.closest('[data-int-action="newkey"]');
     if (nk) { try { const k = await busy(nk, () => api.rpc('integration_create_api_key', { p_business: ctx.bid })); modal({ title: t('int.newKey'), lead: t('int.keyOnce'), body: `<code class="int-code" style="user-select:all">${esc(k.key)}</code>`, footer: `<button class="btn primary" data-close>${esc(t('c.close'))}</button>` }); await reload(); } catch (ex) { toast(ex.message, 'error'); } return; }
     const rv = e.target.closest('[data-int-revoke]');

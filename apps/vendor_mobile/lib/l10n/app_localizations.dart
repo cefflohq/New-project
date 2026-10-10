@@ -7586,6 +7586,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No pinned orders yet'**
   String get mapNoPinnedOrders;
+
+  /// No description provided for @integrationSiteUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Wix site URL'**
+  String get integrationSiteUrl;
+
+  /// No description provided for @integrationWixHow.
+  ///
+  /// In en, this message translates to:
+  /// **'In Wix: Automations → New automation → trigger \"Order placed\" → action \"Send HTTP request\" (POST, JSON, whole payload) to the URL below.'**
+  String get integrationWixHow;
+
+  /// No description provided for @integrationWixUrlOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy this URL now. It is shown only once; reconnect to get a new one.'**
+  String get integrationWixUrlOnce;
+
+  /// No description provided for @integrationUrlHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Private URL hidden. Reconnect to create a new one.'**
+  String get integrationUrlHidden;
+
+  /// No description provided for @integrationSheetsHow.
+  ///
+  /// In en, this message translates to:
+  /// **'Row 1 headers: Name, Phone, Address, Item (Order ID, Qty, Price, Notes optional). In the sheet: Extensions → Apps Script, paste the script, Save, pick cefflo_setup, Run, Allow. New rows are sent every 5 minutes.'**
+  String get integrationSheetsHow;
+
+  /// No description provided for @integrationDriveHow.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop CSV, Excel or Google Sheets files (same headers) in one folder. Go to script.google.com → New project, paste the script, put the folder link in CEFFLO_FOLDER, Save, pick cefflo_setup, Run, Allow. Files are imported every 10 minutes.'**
+  String get integrationDriveHow;
+
+  /// No description provided for @integrationGetScript.
+  ///
+  /// In en, this message translates to:
+  /// **'Create script'**
+  String get integrationGetScript;
+
+  /// No description provided for @integrationNewScript.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a new script'**
+  String get integrationNewScript;
+
+  /// No description provided for @integrationScriptOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'This script holds a private key and is shown only once. Creating a new script stops the old one.'**
+  String get integrationScriptOnce;
 }
 
 class _AppLocalizationsDelegate

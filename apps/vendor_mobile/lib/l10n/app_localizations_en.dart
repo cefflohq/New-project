@@ -4158,4 +4158,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mapNoPinnedOrders => 'No pinned orders yet';
+
+  @override
+  String get integrationSiteUrl => 'Wix site URL';
+
+  @override
+  String get integrationWixHow =>
+      'In Wix: Automations → New automation → trigger \"Order placed\" → action \"Send HTTP request\" (POST, JSON, whole payload) to the URL below.';
+
+  @override
+  String get integrationWixUrlOnce =>
+      'Copy this URL now. It is shown only once; reconnect to get a new one.';
+
+  @override
+  String get integrationUrlHidden =>
+      'Private URL hidden. Reconnect to create a new one.';
+
+  @override
+  String get integrationSheetsHow =>
+      'Row 1 headers: Name, Phone, Address, Item (Order ID, Qty, Price, Notes optional). In the sheet: Extensions → Apps Script, paste the script, Save, pick cefflo_setup, Run, Allow. New rows are sent every 5 minutes.';
+
+  @override
+  String get integrationDriveHow =>
+      'Drop CSV, Excel or Google Sheets files (same headers) in one folder. Go to script.google.com → New project, paste the script, put the folder link in CEFFLO_FOLDER, Save, pick cefflo_setup, Run, Allow. Files are imported every 10 minutes.';
+
+  @override
+  String get integrationGetScript => 'Create script';
+
+  @override
+  String get integrationNewScript => 'Create a new script';
+
+  @override
+  String get integrationScriptOnce =>
+      'This script holds a private key and is shown only once. Creating a new script stops the old one.';
 }

@@ -52,7 +52,7 @@ Where the audience naturally says "rider" (motorcycle context), it may appear as
 The supplied website completion report explicitly records that unsupported integrations, testimonials, performance statistics, ETA, and live-map claims were not added. It also says production publication remains blocked pending Privacy and Terms review.
 
 Therefore:
-- LIVE order intake (Vendor Web + Vendor App): CSV/Excel import, API key, Shopify and WooCommerce webhooks (Integrations Phase 1, staging until launch). Say "order masuk terus", never "sync". Google Sheets, Google Drive and Wix are approved and in development (not built yet); POS, ERP and Forms are future. Do not claim any of them as live.
+- LIVE order intake (Vendor Web + Vendor App, staging until launch): CSV/Excel import, API key, Shopify, WooCommerce, Wix, Google Sheets (new rows every 5 min) and Google Drive (files in a folder every 10 min). Say "order masuk terus", never "sync" or "real-time". POS, ERP and Forms are future; do not claim them.
 - Do not claim automatic route optimization, rider live location (built but inactive while Mapbox is on hold), precise ETA, AI capability, or measurable delivery improvements. Customer tracking shows only a coarse ETA window where the backend computes it.
 - Do not treat website visual QA as product-wide proof.
 - Keep website publication status separate from product readiness. The report says the website implementation is ready for founder review, but production publication is blocked.
@@ -103,7 +103,8 @@ Before drafting product-led content, the writer must retrieve current Product Tr
 | Orders, zones, suggested delivery plan + review before dispatch, multi-drop runs, manual driver assignment, pickup checklist, photo POD, CSV/Excel import (Vendor Web) | LIVE per Product Truth §18.2 | Describe only the exact behavior; no "automatic" or "smart" wording |
 | Shopify / WooCommerce webhooks, API key order intake | LIVE on Vendor Web + Vendor App (staging, Phase 1) | Inbound orders only, no "sync"; public once launched |
 | POS / ERP / Wix / outbound webhooks | FUTURE | Do not claim |
-| Google Drive / Sheets / Forms | Not in Product Truth | Do not claim |
+| Wix, Google Sheets, Google Drive order intake | LIVE (staging, Phase 2) | Inbound only; Sheets every 5 min, Drive every 10 min |
+| Google Forms, POS, ERP | Not built | Do not claim |
 | Rider live location / live map | Built, inactive (Mapbox on hold) | Do not claim |
 | Helper packing/sorting, in-app notifications, driver invite link/QR + approval | LIVE | Describe exactly; no push/WhatsApp/SMS |
 | Find Jobs / "Looking for riders" | In development (D-75) | Do not claim; never say Cefflo supplies drivers |

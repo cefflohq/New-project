@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart' show VoidCallback, kIsWeb;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../core/env.dart';
 import 'models.dart';
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
@@ -596,6 +597,53 @@ class VendorRepository {
               },
       ),
     );
+  }
+
+  /// Wix: returns the private webhook URL (shown once).
+  Future<String> integrationConnectWix(
+    String businessId,
+    String siteUrl,
+  ) async {
+    if (_demo) throw RepositoryError(L.comingSoon);
+    final res = Map<String, dynamic>.from(
+      await _run(
+        () => _db!.rpc(
+          'integration_connect_wix',
+          params: {'p_business': businessId, 'p_site_url': siteUrl},
+        ),
+      ) as Map,
+    );
+    return '${Env.supabaseUrl}/functions/v1/integrations-inbound/wix/${res['id']}/${res['token']}';
+  }
+
+  /// Google Sheets / Drive: new connection key + the Apps Script template
+  /// with the key and endpoint filled in (shown once).
+  Future<String> integrationGoogleScript(
+    String businessId,
+    String kind, // 'sheets' | 'drive'
+  ) async {
+    if (_demo) throw RepositoryError(L.comingSoon);
+    final res = Map<String, dynamic>.from(
+      await _run(
+        () => _db!.rpc(
+          'integration_connect_google',
+          params: {
+            'p_business': businessId,
+            'p_provider': kind == 'sheets' ? 'google_sheets' : 'google_drive',
+          },
+        ),
+      ) as Map,
+    );
+    final tpl = await _run(
+      () => _db!.functions.invoke(
+        'integrations-inbound/script/$kind',
+        method: HttpMethod.get,
+      ),
+    );
+    final base = '${Env.supabaseUrl}/functions/v1/integrations-inbound';
+    return '${tpl.data}'
+        .replaceFirst('__CEFFLO_KEY__', '${res['key']}')
+        .replaceFirst('__CEFFLO_URL__', '$base/api/orders');
   }
 
   Future<void> integrationDisconnect(String connectionId) async {
