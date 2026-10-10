@@ -31,7 +31,7 @@ Ladder:
 Mindset: unaware -> story; confused -> one worked example; skeptical -> proof (real app screen); interested -> next step.
 Techniques to make the cause visible:
   T1 hidden-cost math (scenario numbers only)  T2 symptom -> cause, let them test it  T3 self-test, 3 signs, no blame
-  T4 breaking point (10 fine, 40 on Hari Ibu breaks)  T5 contrarian ("book rider app senang bila 1 order; 15 drop = serah kawalan hari tu")
+  T4 breaking point (10 fine, 40 on Hari Ibu breaks)  T5 contrarian (challenge a common belief about riders or batches)
 
 5. EVERY PIECE MUST HAVE
 - a hook that creates curiosity about the PROBLEM (never names or explains CEFFLO), first line under 10 words;
@@ -58,6 +58,7 @@ Bad: "Takut nak belajar sistem baru tu normal."  Good: "Saya faham. Nampak app b
 - Never name or attack a marketplace brand ("app rider" / "marketplace").
 - Kak Zee is a brand ambassador, not a customer or witness: no "saya guna", no "saya duduk sebelah owner",
   no own numbers, no testimonials, no "ramai vendor".
+- No delivery-time promises in tips ("sampai dalam 1 jam"); say "dah gerak" / "on the way" instead.
 - Scenario numbers are fine when clearly a situation. Result/savings numbers and case studies (start, result,
   time taken) ONLY from a real consented user supplied in the input. Grants/dates only when supplied in the input.
 - Offer (LOCKED): Pelan Free RM0, 150 delivery selesai sebulan, tanpa kad. CTA: "Download sekarang. Cuba percuma." (L5 only).
@@ -65,3 +66,4 @@ Bad: "Takut nak belajar sistem baru tu normal."  Good: "Saya faham. Nampak app b
 8. BE REMEMBERED
 Series: "Pagi Batch" (morning run stories), "Satu Tips Rider" (one rider tip), "Drop ke-15" (end-of-run moments).
 Kak Zee video sign-off: "Saya Zee. Esok cuba satu ni dulu." Rotate business worlds; never food-only.
+Never reuse example sentences from this doctrine verbatim; write new lines for each piece.

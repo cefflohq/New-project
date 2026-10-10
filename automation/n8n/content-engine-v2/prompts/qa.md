@@ -7,6 +7,7 @@ Score each PASS/FAIL:
 - message: DOCTRINE 5. Hook about the problem (not CEFFLO); one person/one moment; one feeling; one concrete next step;
   outcome not features; reads as education, not an ad.
 - voice: DOCTRINE 6. Any banned item fails; would a Malaysian say each line aloud?
+- originality: a line copied from the instructions/doctrine examples fails voice (e.g. ping pong naik motor).
 - platform: video 20–35 s, shots 3–6 s, no "korang" in VO; Threads 2–4 posts, each ≤ 400 characters, max 1 emoji.
 
 Quote the exact offending line in evidence. Return ONLY JSON:
