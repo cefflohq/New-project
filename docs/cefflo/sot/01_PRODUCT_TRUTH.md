@@ -258,9 +258,10 @@ Rules:
 | Customer notifications (Out for delivery, Approaching, Delivered, Issue when relevant) | FUTURE | post-production high | Event-based. No unlimited WhatsApp/SMS. Paid channels are subject to COGS/commercial decisions (`18_GROW_NOTIFICATION_ARCHITECTURE.md`). |
 | Delivery analytics expansion (operational metrics, not vanity charts) | FUTURE | next / growth | Claim only metrics actually calculated |
 | Operational reports (daily/weekly/monthly + export) | FUTURE | next / growth | Reports = a defined period, separate from live analytics |
-| Public Order API | FUTURE | next / growth | No endpoint or payload names frozen |
+| Public Order API (beyond the Phase 1 API-key intake) | FUTURE | next / growth | No endpoint or payload names frozen |
 | Webhooks (dispatched, out_for_delivery, arrived, delivered, failed, issue) | FUTURE | next / growth | Event names are conceptual |
-| Native integrations (Shopify, WooCommerce, POS, ERP, merchant systems) | FUTURE | next / growth | Only where commercially justified |
+| Integrations Phase 1: API key order intake, WooCommerce + Shopify (custom-app) webhooks create orders (`8ba9cc8`, Founder-approved 2026-10-08) | LIVE (Vendor Web, staging) | current | Inbound orders only, never "sync". Not production until launch |
+| Other native integrations (POS, ERP, Wix, Google Sheets/Drive, merchant systems) | FUTURE | next / growth | Only where commercially justified |
 | Multi-location / Fulfilment Point productisation | FUTURE | next / growth | Architecture must stay possible (§18.4) |
 | Signature POD | FUTURE (optional capability) | optional | Never universally mandatory |
 | Customer PIN / QR POD methods | IDEA / EXPLORATION | optional | |
