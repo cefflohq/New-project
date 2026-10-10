@@ -52,8 +52,8 @@ Where the audience naturally says "rider" (motorcycle context), it may appear as
 The supplied website completion report explicitly records that unsupported integrations, testimonials, performance statistics, ETA, and live-map claims were not added. It also says production publication remains blocked pending Privacy and Terms review.
 
 Therefore:
-- LIVE order intake (Vendor Web): CSV/Excel import, API key, Shopify and WooCommerce webhooks (Integrations Phase 1, staging until launch). Say "order masuk terus", never "sync". POS, ERP, Wix, Google Drive, Sheets and Forms are not built; do not claim them.
-- Do not claim automatic route optimization, rider live location (LOCKED / IN DEVELOPMENT, Phase 2B.4), precise ETA, AI capability, or measurable delivery improvements. Customer tracking shows only a coarse ETA window where the backend computes it.
+- LIVE order intake (Vendor Web + Vendor App): CSV/Excel import, API key, Shopify and WooCommerce webhooks (Integrations Phase 1, staging until launch). Say "order masuk terus", never "sync". POS, ERP, Wix, Google Drive, Sheets and Forms are not built; do not claim them.
+- Do not claim automatic route optimization, rider live location (built but inactive while Mapbox is on hold), precise ETA, AI capability, or measurable delivery improvements. Customer tracking shows only a coarse ETA window where the backend computes it.
 - Do not treat website visual QA as product-wide proof.
 - Keep website publication status separate from product readiness. The report says the website implementation is ready for founder review, but production publication is blocked.
 
@@ -101,10 +101,12 @@ Before drafting product-led content, the writer must retrieve current Product Tr
 | Cefflo is a marketplace or supplies on-demand drivers | Prohibited | Never position Cefflo this way |
 | Storefront with shareable link/QR and 18 styles | Public Storefront V1 LOCKED (e93f464); production publication pending pre-production gates | Describe exactly; do not claim it is publicly live until launch |
 | Orders, zones, suggested delivery plan + review before dispatch, multi-drop runs, manual driver assignment, pickup checklist, photo POD, CSV/Excel import (Vendor Web) | LIVE per Product Truth §18.2 | Describe only the exact behavior; no "automatic" or "smart" wording |
-| Shopify / WooCommerce webhooks, API key order intake | LIVE on Vendor Web (staging, Phase 1) | Inbound orders only, no "sync"; public once launched |
+| Shopify / WooCommerce webhooks, API key order intake | LIVE on Vendor Web + Vendor App (staging, Phase 1) | Inbound orders only, no "sync"; public once launched |
 | POS / ERP / Wix / outbound webhooks | FUTURE | Do not claim |
 | Google Drive / Sheets / Forms | Not in Product Truth | Do not claim |
-| Rider live location / live map | LOCKED / IN DEVELOPMENT (2B.4) | Do not claim |
+| Rider live location / live map | Built, inactive (Mapbox on hold) | Do not claim |
+| Helper packing/sorting, in-app notifications, driver invite link/QR + approval | LIVE | Describe exactly; no push/WhatsApp/SMS |
+| Find Jobs / "Looking for riders" | In development (D-75) | Do not claim; never say Cefflo supplies drivers |
 | ETA | Coarse window only, where computable | Never promise a delivery time or precise ETA |
 | Automatic route optimization, auto-assign, smart run builder, customer notifications | FUTURE | Do not claim |
 | Customer testimonials, customer logos, savings or performance statistics | Prohibited unless independently evidenced | Never invent or imply proof |

@@ -23,16 +23,16 @@ sales messaging, or brand storytelling.
 - **Pricing** is owned by `sot/10_PRICING.md`.
 - **Public Website** execution rules are owned by
   `website/CEFFLO_PUBLIC_WEBSITE_MASTER.md`.
-- **Future strategy** (Rider Hub, capacity network) is
-  `strategy/CEFFLO_RIDER_NETWORK_STRATEGY.md`, which is FUTURE and not
-  current scope.
+- **Rider Hub:** Find Jobs is in development on staging (D-75, not
+  claimable). The wider capacity network is
+  `strategy/CEFFLO_RIDER_NETWORK_STRATEGY.md`, which is FUTURE.
 
 **Current canonical product surfaces:**
 - Vendor: Flutter Mobile + Web/Desktop.
 - Driver: "Cefflo Driver", Flutter Mobile.
 - Customer Tracking: PWA/Web.
 - Founder: Web/PWA.
-- Public Website: separate surface, NOT IMPLEMENTED (D-62).
+- Public Website: separate surface, implemented; production publication BLOCKED (Privacy/Terms gate).
 
 The Rider PWA and the legacy Vendor PWA shell are retired (D-62). Signal Lime
 and the purple-era identity are retired (D-33, D-62).
@@ -1297,8 +1297,8 @@ be published.
 > rider location, live GPS and real-time rider tracking are **not current
 > capability**. Customer Tracking today shows truthful delivery status,
 > progress, POD and rating, with ETA only where the backend truthfully
-> computes it (D-65). Rider live location is Phase 2B.4, designed (D-66)
-> but not implemented. Until it ships, public visuals and copy must not show
+> computes it (D-65). Rider live location is built but inactive (needs a
+> Mapbox token; Mapbox on hold). Until it is verified live, public visuals and copy must not show
 > rider location or live GPS (Website Master §38.2).
 
 ------------------------------------------------------------------------

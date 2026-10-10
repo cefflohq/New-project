@@ -243,10 +243,10 @@ Rules:
 |---|---|---|---|
 | Deterministic suggested runs (`propose_delivery_plan`) + Run Builder + review before dispatch | LIVE (Vendor Web, staging-verified) | current | The existing base Smart Run Builder evolves from |
 | Rider-owned stop resequencing (`save_run_sequence`) | LIVE | current | §7 boundary unchanged |
-| Bulk CSV / Excel import (`import_orders_batch`) | LIVE (Vendor Web) | post-production (extend to other surfaces / harden) | Import only, never "sync" |
+| Bulk CSV / Excel import (`import_orders_batch`) | LIVE (Vendor Web + Vendor App import flow) | post-production (extend to other surfaces / harden) | Import only, never "sync" |
 | Photo POD at delivery completion | LIVE | current | |
 | Coarse truthful ETA window (`compute_order_eta`) | LIVE (where computable) | post-production (better ETA) | Window → progressively better → approaching, never false precision |
-| Customer rider live location | LOCKED / IN DEVELOPMENT (Phase 2B.4, D-66) | current phase work | Not live until 2B.4 ships |
+| Customer rider live location ("View live map") | BUILT, INACTIVE (driver sends location; customer map needs a Mapbox token, Mapbox on hold since 2026-10-04) | current phase work | Not claimable until the token is set and verified |
 | Smart Zone Clustering | FUTURE | post-production high | By fulfilment point, coverage, zone and proximity |
 | Smart Run Builder | FUTURE | post-production high | Algorithm not specified |
 | Target Run Size / run profiles | FUTURE | post-production high | Configurable, no universal default |
@@ -260,12 +260,16 @@ Rules:
 | Operational reports (daily/weekly/monthly + export) | FUTURE | next / growth | Reports = a defined period, separate from live analytics |
 | Public Order API (beyond the Phase 1 API-key intake) | FUTURE | next / growth | No endpoint or payload names frozen |
 | Webhooks (dispatched, out_for_delivery, arrived, delivered, failed, issue) | FUTURE | next / growth | Event names are conceptual |
-| Integrations Phase 1: API key order intake, WooCommerce + Shopify (custom-app) webhooks create orders (`8ba9cc8`, Founder-approved 2026-10-08) | LIVE (Vendor Web, staging) | current | Inbound orders only, never "sync". Not production until launch |
+| Integrations Phase 1: API key order intake, WooCommerce + Shopify (custom-app) webhooks create orders (`8ba9cc8`, Founder-approved 2026-10-08) | LIVE (Vendor Web + Vendor App, staging) | current | Inbound orders only, never "sync". Not production until launch |
 | Other native integrations (POS, ERP, Wix, Google Sheets/Drive, merchant systems) | FUTURE | next / growth | Only where commercially justified |
 | Multi-location / Fulfilment Point productisation | FUTURE | next / growth | Architecture must stay possible (§18.4) |
 | Signature POD | FUTURE (optional capability) | optional | Never universally mandatory |
 | Customer PIN / QR POD methods | IDEA / EXPLORATION | optional | |
-| Rider Hub, portable rider identity, Find Work / Find Riders, external or peak capacity network | FUTURE (strategy) | future strategy | `strategy/CEFFLO_RIDER_NETWORK_STRATEGY.md`. Not V1. |
+| Helper packing / sorting workspace (`confirm_packing`, `confirm_sorting`, D-73/D-74) | LIVE (Vendor App) | current | |
+| In-app notifications (Vendor Web, Vendor App, Driver) | LIVE | current | No push, WhatsApp or SMS (DEFERRED) |
+| Driver hiring via invite link / QR + Owner/Operator approval | LIVE | current | Business-invited drivers, never gated |
+| Find Jobs (Driver) + "Looking for riders" job openings (D-75, D-75a) | IN DEVELOPMENT (staging backend; Marketplace Verification not locked) | current phase work | Not claimable. CEFFLO never employs or guarantees drivers |
+| Portable rider identity, cross-vendor availability, external or peak capacity network | FUTURE (strategy) | future strategy | `strategy/CEFFLO_RIDER_NETWORK_STRATEGY.md`. Not V1. |
 
 ### 18.3 POD policy
 - POD stays part of the delivery workflow.
