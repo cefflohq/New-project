@@ -48,7 +48,7 @@ const en = {
   'nav.today': 'Today', 'nav.orders': 'Orders', 'nav.zones': 'Zones', 'nav.runs': 'Active Runs',
   'nav.riders': 'Drivers', 'nav.settings': 'More', 'nav.expand': 'Expand navigation',
   // shell
-  'shell.switchBusiness': 'Switch business', 'shell.notifications': 'Notifications',
+  'shell.switchBusiness': 'Switch business', 'shell.notifications': 'Notifications', 'shell.search': 'Go to…', 'shell.noResults': 'No matching page', 'shell.collapse': 'Collapse sidebar',
   'shell.menu': 'Menu', 'shell.profile': 'Profile', 'shell.signOut': 'Sign out', 'shell.role.owner': 'Owner', 'shell.role.operator': 'Operator',
   // common
   'c.viewAll': 'View All', 'c.search': 'Search', 'c.save': 'Save', 'c.cancel': 'Cancel', 'c.close': 'Close',
@@ -362,7 +362,7 @@ const ms = {
   'bp.locateFailed': 'Kami tidak dapat mencari alamat ini. Masukkan koordinat secara manual.',
   'nav.today': 'Hari Ini', 'nav.orders': 'Pesanan', 'nav.zones': 'Zon', 'nav.runs': 'Larian Aktif', 'nav.riders': 'Pemandu',
   'nav.settings': 'Lagi', 'nav.expand': 'Kembangkan navigasi',
-  'shell.switchBusiness': 'Tukar perniagaan', 'shell.notifications': 'Notifikasi', 'shell.menu': 'Menu', 'shell.profile': 'Profil', 'shell.signOut': 'Log keluar',
+  'shell.switchBusiness': 'Tukar perniagaan', 'shell.notifications': 'Notifikasi', 'shell.search': 'Pergi ke…', 'shell.noResults': 'Tiada halaman sepadan', 'shell.collapse': 'Kecilkan bar sisi', 'shell.menu': 'Menu', 'shell.profile': 'Profil', 'shell.signOut': 'Log keluar',
   'shell.role.owner': 'Pemilik', 'shell.role.operator': 'Operator',
   'c.viewAll': 'Lihat Semua', 'c.search': 'Cari', 'c.save': 'Simpan', 'c.cancel': 'Batal', 'c.close': 'Tutup', 'c.edit': 'Sunting',
   'c.retry': 'Cuba lagi', 'c.loading': 'Memuatkan…', 'ld.default': 'Memuatkan…', 'ld.orders': 'Memuatkan order', 'ld.riders': 'Memuatkan rider', 'ld.zones': 'Memuatkan zon', 'ld.runs': 'Memuatkan larian', 'ld.route': 'Mengira laluan', 'ld.sync': 'Menyegerak data', 'ld.upload': 'Memuat naik', 'c.saving': 'Menyimpan…', 'c.saved': 'Disimpan', 'c.call': 'Panggil',

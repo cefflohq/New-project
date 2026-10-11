@@ -1,4 +1,5 @@
-/* CEFFLO Vendor Web — design tokens (desktop system v3).
+/* CEFFLO Vendor Web — design tokens (desktop system v4, console layout
+   2026-10-11: Cloudflare-style dashboard in the Cefflo D-70 palette).
    Neutral surfaces and graphite text carry the hierarchy; Cefflo blue is a
    minor accent (active signal, links, focus, selection, primary action).
    Density follows mature desktop SaaS dashboards: 32px controls, 40px
@@ -14,7 +15,7 @@
 :root {
   color-scheme: light;
   /* surfaces */
-  --bg: #f4f5f7;
+  --bg: #f6f7f9;
   --surface: #ffffff;
   --surface-2: #f7f8f9;
   --surface-hover: #f2f3f5;
@@ -22,12 +23,14 @@
   --elevated: #ffffff;
   --overlay: rgba(17, 20, 26, 0.32);
   /* sidebar: neutral, quiet */
-  --sidebar-bg: #fbfbfc;
+  --sidebar-bg: #ffffff;
   --sidebar-border: #e6e8eb;
   --sidebar-ink: #3d434d;
   --sidebar-ink-strong: #15181d;
   --sidebar-muted: #7a808a;
-  --sidebar-active-bg: #e9ebee;
+  --sidebar-active-bg: #ebf2ff;
+  --sidebar-active-ink: #0060fe;
+  --header-bg: #ffffff;
   /* text (graphite) */
   --ink: #15181d;
   --ink-2: #474d57;
@@ -37,10 +40,10 @@
   --border: #e6e8eb;
   --border-strong: #d6d9de;
   /* brand + signals (blue is an accent, not a surface) */
-  --primary: #0b5cf0;
-  --primary-hover: #0a52d8;
+  --primary: #0060fe; /* Cefflo Brand Blue (D-70) */
+  --primary-hover: #0050d8;
   --primary-ink: #ffffff;
-  --primary-tint: #eef3fe;
+  --primary-tint: #ebf2ff;
   --cta: #ffc93c;
   --mustard: #ffc93c; /* Cefflo mustard (D-53) */
   --cta-ink: #15181d;
@@ -57,13 +60,13 @@
   --brand-gradient: linear-gradient(180deg, #01265E 0%, #00378F 35%, #005CC4 70%, #0592EB 100%);
   --brand-deep: #0d4bd6;
   /* shape: restrained radii, borders over elevation */
-  --r-xs: 4px; --r-sm: 8px; --r-md: 12px; --r-lg: 14px; --r-pill: 999px;
+  --r-xs: 4px; --r-sm: 6px; --r-md: 8px; --r-lg: 10px; --r-pill: 999px;
   --shadow-pop: 0 8px 28px rgba(17, 20, 26, 0.12), 0 1px 3px rgba(17, 20, 26, 0.06);
   /* spacing scale */
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px;
   /* type scale */
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --t-page: 20px;   /* page title */
+  --t-page: 24px;   /* page title */
   --t-h2: 14.5px;   /* section title */
   --t-h3: 14px;     /* sub-section title */
   --t-body: 13.5px; /* body, table cells, controls */
@@ -72,11 +75,11 @@
   --t-stat: 22px;   /* numeric summaries */
   /* geometry */
   --ctl-h: 32px; --ctl-h-sm: 28px; --ctl-r: var(--r-sm);
-  --row-h: 40px; --nav-h: 32px; --topbar-h: 48px;
+  --row-h: 40px; --nav-h: 32px; --topbar-h: 56px;
   --pad: 16px;      /* section padding */
   --gap: 16px;      /* layout gap */
   /* layout */
-  --sidebar-w: 232px;
+  --sidebar-w: 240px;
   --rail-w: 56px;
 }
 
@@ -96,15 +99,17 @@
   --sidebar-ink: #c4c6cc;
   --sidebar-ink-strong: #f1f2f4;
   --sidebar-muted: #8b8e96;
-  --sidebar-active-bg: #313238;
+  --sidebar-active-bg: #1d2a44;
+  --sidebar-active-ink: #7fb0ff;
+  --header-bg: #222326;
   --ink: #eeeff1;
   --ink-2: #c4c6cc;
   --muted: #9a9ca4;
   --faint: #6c6f77;
   --border: #33343a;
   --border-strong: #3e4047;
-  --primary: #3d82ff;
-  --primary-hover: #5a95ff;
+  --primary: #3d86ff;
+  --primary-hover: #5a98ff;
   --primary-tint: #1f2a40;
   --success: #4cc27f;
   --success-tint: #1d3026;

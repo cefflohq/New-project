@@ -69,35 +69,41 @@ function renderFrame() {
   const b = ctx.business;
   const name = ctx.user?.user_metadata?.full_name || ctx.user?.email || '';
   const link = (id, ic, key, href = `#/${id}`) => `<a href="${href}" data-nav="${id}" title="${esc(t(key))}">${icon(ic)}<span class="lbl">${esc(t(key))}</span></a>`;
+  // Console layout (Founder 2026-10-11, Cloudflare-style): a full-width top
+  // header (brand, business switcher, quick search, bell, account), the
+  // navigation sidebar under it, and a page title block above the content.
   root.innerHTML = `
-  <div class="shell">
-    <aside class="sidebar" aria-label="Main navigation">
-      <a class="brand" href="#/today"><img src="img/cefflo-icon-navy.png" alt="" width="22" height="22"><b>Cefflo</b><small>Vendor</small></a>
+  <div class="shell${collapsed() ? ' collapsed' : ''}">
+    <header class="topbar">
+      <button class="icon-btn nav-toggle" data-navtoggle aria-label="${esc(t('shell.menu'))}" aria-expanded="false">${icon('menu')}</button>
+      <a class="brand" href="#/today"><img src="img/cefflo-icon-navy.png" alt="" width="24" height="24"><b>Cefflo</b></a>
+      <span class="crumb-sep" aria-hidden="true">/</span>
       <div class="ws">
         <button class="ws-btn" data-bizmenu aria-haspopup="menu" aria-label="${esc(t('shell.switchBusiness'))}" title="${esc(b?.business_name)}">
           <span class="ws-tile">${esc(initials(b?.business_name).slice(0, 1))}</span>
           <span class="ws-txt"><b>${esc(b?.business_name)}</b><small>${esc(t(`shell.role.${b?.member_role}`))}</small></span>${icon('updown', 'i updown')}
         </button>
       </div>
+      <button class="qsearch" data-qsearch aria-haspopup="dialog">${icon('search')}<span>${esc(t('shell.search'))}</span><kbd>Ctrl K</kbd></button>
+      <div class="spacer"></div>
+      <div style="position:relative">
+        <button class="icon-btn" data-bell aria-haspopup="dialog" aria-label="${esc(t('shell.notifications'))}">${icon('bell')}<span class="nbadge" data-nbadge hidden></span></button>
+      </div>
+      <div class="acct">
+        <button class="acct-btn" data-usermenu aria-haspopup="menu" aria-label="${esc(name)}" title="${esc(name)}">${avatar(name, 'sm')}</button>
+      </div>
+    </header>
+    <aside class="sidebar" aria-label="Main navigation">
       <nav class="nav">${NAV.map(([id, ic, key]) => link(id, ic, key)).join('')}</nav>
       <div class="sidebar-foot nav">
-        ${link('settings', 'menu', 'nav.settings')}
-        <div class="acct">
-          <button class="acct-btn" data-usermenu aria-haspopup="menu" title="${esc(name)}">${avatar(name, 'xs')}<span class="acct-txt"><b>${esc(name)}</b><small>${esc(ctx.user?.email)}</small></span>${icon('updown', 'i updown')}</button>
-        </div>
+        ${link('settings', 'gear', 'nav.settings')}
+        <button class="collapse-btn" data-collapse title="${esc(t('shell.collapse'))}" aria-label="${esc(t('shell.collapse'))}">${icon('chevl')}<span class="lbl">${esc(t('shell.collapse'))}</span></button>
       </div>
     </aside>
     <div class="scrim" data-scrim></div>
     <main class="main">
-      <header class="topbar">
-        <button class="icon-btn nav-toggle" data-navtoggle aria-label="${esc(t('shell.menu'))}" aria-expanded="false">${icon('menu')}</button>
-        <h1 data-title></h1><div class="date" data-date></div>
-        <div class="spacer"></div>
-        <div style="position:relative">
-          <button class="icon-btn" data-bell aria-haspopup="dialog" aria-label="${esc(t('shell.notifications'))}">${icon('bell')}<span class="nbadge" data-nbadge hidden></span></button>
-        </div>
-      </header>
       ${isDemo() ? `<div class="demo-bar" role="status"><b>${esc(t('demo.bar'))}</b><span>${esc(t('demo.barBody'))}</span></div>` : ''}
+      <div class="page-title"><h1 data-title></h1><div class="date" data-date></div></div>
       <section class="content" data-content></section>
     </main>
   </div>`;
@@ -106,8 +112,58 @@ function renderFrame() {
   root.querySelector('[data-bizmenu]').addEventListener('click', e => openBizMenu(e.currentTarget));
   root.querySelector('[data-usermenu]').addEventListener('click', e => openUserMenu(e.currentTarget));
   root.querySelector('[data-bell]').addEventListener('click', e => openBell(e.currentTarget));
+  root.querySelector('[data-qsearch]').addEventListener('click', openQuickSearch);
+  root.querySelector('[data-collapse]').addEventListener('click', () => {
+    const on = root.querySelector('.shell').classList.toggle('collapsed');
+    try { localStorage.setItem(COLLAPSE_KEY, on ? '1' : ''); } catch { /* ignore */ }
+  });
   paintBadge();
 }
+
+const COLLAPSE_KEY = 'cefflo.vendorweb.navCollapsed';
+function collapsed() { try { return !!localStorage.getItem(COLLAPSE_KEY); } catch { return false; } }
+
+// Quick search (Ctrl/⌘ K): jump to any page or Settings section.
+function quickTargets() {
+  return [...NAV.map(([id, ic, key]) => ({ href: `#/${id}`, ic, label: t(key) })),
+    { href: '#/runs', ic: 'route', label: t('nav.runs') },
+    { href: '#/settings', ic: 'gear', label: t('nav.settings') },
+    { href: '#/settings/profile', ic: 'user', label: t('shell.profile') }];
+}
+function openQuickSearch() {
+  if (document.querySelector('.qs-root')) return;
+  closeMenus();
+  const wrap = document.createElement('div');
+  wrap.className = 'modal-root qs-root';
+  wrap.innerHTML = `<div class="modal qs" role="dialog" aria-label="${esc(t('shell.search'))}">
+    <div class="qs-in">${icon('search')}<input class="qs-input" placeholder="${esc(t('shell.search'))}" aria-label="${esc(t('shell.search'))}" autocomplete="off"><kbd>Esc</kbd></div>
+    <div class="qs-list" role="listbox"></div></div>`;
+  document.body.append(wrap);
+  const input = wrap.querySelector('input'), list = wrap.querySelector('.qs-list');
+  let items = [], idx = 0;
+  const close = () => wrap.remove();
+  const paint = () => {
+    const q = input.value.trim().toLowerCase();
+    items = quickTargets().filter(x => !q || x.label.toLowerCase().includes(q));
+    idx = Math.min(idx, Math.max(items.length - 1, 0));
+    list.innerHTML = items.length ? items.map((x, i) => `<button role="option" class="${i === idx ? 'on' : ''}" data-i="${i}">${icon(x.ic)}<span>${esc(x.label)}</span></button>`).join('') : `<div class="qs-empty">${esc(t('shell.noResults'))}</div>`;
+  };
+  const go = i => { const x = items[i]; if (!x) return; close(); location.hash = x.href; };
+  input.addEventListener('input', () => { idx = 0; paint(); });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { idx = Math.min(idx + 1, items.length - 1); paint(); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { idx = Math.max(idx - 1, 0); paint(); e.preventDefault(); }
+    else if (e.key === 'Enter') go(idx);
+    else if (e.key === 'Escape') close();
+  });
+  list.addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) go(Number(b.dataset.i)); });
+  wrap.addEventListener('mousedown', e => { if (e.target === wrap) close(); });
+  paint();
+  input.focus();
+}
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && root?.isConnected && root.querySelector('[data-qsearch]')) { e.preventDefault(); openQuickSearch(); }
+});
 
 function paintBadge() {
   const b = root?.querySelector('[data-nbadge]');
@@ -141,12 +197,11 @@ function wireSidebar(sb) {
   const set = open => { sb.classList.toggle('open', open); toggle.setAttribute('aria-expanded', String(open)); };
   toggle.addEventListener('click', () => set(!sb.classList.contains('open')));
   root.querySelector('[data-scrim]').addEventListener('click', () => set(false));
-  sb.addEventListener('click', e => { if (e.target.closest('a')) set(false); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && sb.classList.contains('open')) set(false); });
+  sb.addEventListener('click', e => { if (e.target.closest('a')) set(false); });  document.addEventListener('keydown', e => { if (e.key === 'Escape' && sb.classList.contains('open')) set(false); });
 }
 
 function closeMenus() { document.querySelectorAll('.menu').forEach(m => m.remove()); }
-document.addEventListener('click', e => { if (!e.target.closest('.menu,[data-bizmenu],[data-usermenu],[data-bell]')) closeMenus(); });
+document.addEventListener('click', e => { if (!e.target.closest('.menu,[data-bizmenu],[data-usermenu],[data-bell],[data-qsearch]')) closeMenus(); });
 
 
 function openBizMenu(anchor) {
@@ -171,7 +226,7 @@ function openUserMenu(anchor) {
   closeMenus();
   if (wasOpen) return;
   const m = document.createElement('div');
-  m.className = 'menu up';
+  m.className = 'menu';
   m.setAttribute('role', 'menu');
   m.innerHTML = `<div class="menu-head"><b>${esc(ctx.user?.user_metadata?.full_name || '')}</b><small>${esc(ctx.user?.email)}</small></div>
     <button role="menuitem" data-go="#/settings/profile">${icon('user')}<span>${esc(t('shell.profile'))}</span></button>
