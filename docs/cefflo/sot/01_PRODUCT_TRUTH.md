@@ -267,7 +267,8 @@ Rules:
 | Signature POD | FUTURE (optional capability) | optional | Never universally mandatory |
 | Customer PIN / QR POD methods | IDEA / EXPLORATION | optional | |
 | Helper packing / sorting workspace (`confirm_packing`, `confirm_sorting`, D-73/D-74) | LIVE (Vendor App) | current | |
-| In-app notifications (Vendor Web, Vendor App, Driver) | LIVE | current | No push, WhatsApp or SMS (DEFERRED) |
+| In-app notifications (Vendor Web, Vendor App, Driver) | LIVE | current | WhatsApp and SMS DEFERRED |
+| Closed-app alerts — Web Push, per device opt-in (Vendor Web, Vendor App, Driver; Android Chrome + desktop) | LIVE (staging) | 2026-10-11 | Not in production yet. Native Android (FCM) and iPhone not built. Device sound only. docs/cefflo/security/PUSH_NOTIFICATIONS.md |
 | Driver hiring via invite link / QR + Owner/Operator approval | LIVE | current | Business-invited drivers, never gated |
 | Find Jobs (Driver) + "Looking for riders" job openings (D-75, D-75a) | IN DEVELOPMENT (staging backend; Marketplace Verification not locked) | current phase work | Not claimable. CEFFLO never employs or guarantees drivers |
 | Portable rider identity, cross-vendor availability, external or peak capacity network | FUTURE (strategy) | future strategy | `strategy/CEFFLO_RIDER_NETWORK_STRATEGY.md`. Not V1. |
