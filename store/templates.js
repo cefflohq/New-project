@@ -91,6 +91,7 @@
           <span class="kit-stack" aria-hidden="true"></span>
           <div class="kit-frame">
             <span class="kit-tag">${c.esc(c.catName(p.categoryId) || c.s.name)}</span>
+            <span class="kit-crest" aria-hidden="true">${c.esc(c.initials(c.s.name))}</span>
             <p class="kit-name">${c.esc(p.name)}</p>
             <div class="kit-shotbox">${c.img(p, 'kit-shot', c.ui.img)}</div>
             ${dots(p.images.length || 1, c.ui.img)}

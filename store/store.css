@@ -153,39 +153,39 @@ h1, h2, h3, h4, p { margin: 0; }
    store theme, never the reference brand), a stacked navy card with
    side notches, red tab flush to the card top, spaced name, big price with a
    dark pill beside it, outlined cart + BUY NOW at the bottom. */
-.kit-pdp { position: relative; isolation: isolate; overflow: hidden; min-height: 100vh; background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 22%, #c9d0da), color-mix(in srgb, var(--accent) 30%, #aeb6c3)); padding: 24px 0 130px; color: #fff; }
+.kit-pdp { position: relative; isolation: isolate; overflow: hidden; min-height: 100vh; padding-top: 40px !important; background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 22%, #c9d0da), color-mix(in srgb, var(--accent) 30%, #aeb6c3)); padding: 24px 0 130px; color: #fff; }
 .kit-pdp::before, .kit-pdp::after { content: ''; position: absolute; inset: 0; z-index: -1; }
-.kit-pdp::before { background: color-mix(in srgb, var(--accent) 6%, #eef0f4); clip-path: polygon(19% 0, 51% 0, 88% 100%, 64% 100%); }
-.kit-pdp::after { background: var(--accent2); clip-path: polygon(51% 0, 100% 0, 100% 100%, 88% 100%); }
+.kit-pdp::before { background: color-mix(in srgb, var(--accent) 6%, #eef0f4); clip-path: polygon(18% 0, 51% 0, 100% 82%, 100% 100%, 69% 100%); }
+.kit-pdp::after { background: var(--accent2); clip-path: polygon(51% 0, 100% 0, 100% 82%); }
 .kit-head.light .kit-ic, .kit-head.light .kit-logo { color: #fff; }
 .kit-head.light .kit-logo { font-size: 21px; }
-.kit-stage { position: relative; margin: 22px 34px 0; filter: drop-shadow(0 24px 30px color-mix(in srgb, var(--accent) 30%, rgba(0,0,0,.35))); }
-.kit-stack { position: absolute; left: 12px; right: 12px; top: 22px; bottom: -18px; border-radius: 26px; background: color-mix(in srgb, var(--accent) 55%, #6b7280); }
-.kit-frame { position: relative; display: flex; flex-direction: column; align-items: center; min-height: 500px; border-radius: 26px; padding: 0 18px 18px; text-align: center; color: #fff;
+.kit-stage { position: relative; margin: 20px 38px 0 36px; filter: drop-shadow(0 24px 30px color-mix(in srgb, var(--accent) 30%, rgba(0,0,0,.35))); }
+.kit-stack { position: absolute; left: 24px; right: 24px; top: 22px; bottom: -25px; border-radius: 22px; background: color-mix(in srgb, var(--accent) 55%, #6b7280); }
+.kit-frame { position: relative; display: flex; flex-direction: column; align-items: center; height: 505px; border-radius: 22px; padding: 0 18px 12px; text-align: center; color: #fff;
   background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 78%, #1b1f2a) 0%, color-mix(in srgb, var(--accent) 62%, #11141b) 100%);
-  -webkit-mask: radial-gradient(circle 30px at 0 72%, transparent 29px, #000 30px) left / 51% 100% no-repeat, radial-gradient(circle 30px at 100% 72%, transparent 29px, #000 30px) right / 51% 100% no-repeat;
-          mask: radial-gradient(circle 30px at 0 72%, transparent 29px, #000 30px) left / 51% 100% no-repeat, radial-gradient(circle 30px at 100% 72%, transparent 29px, #000 30px) right / 51% 100% no-repeat; }
-.kit-tag { display: inline-block; max-width: 70%; background: var(--accent2); color: #fff; padding: 13px 12px 10px; font-weight: 800; font-style: italic; font-size: 14px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 6px 12px rgba(0, 0, 0, .18); }
-.kit-name { margin: 22px 0 0; font-size: 15px; letter-spacing: .42em; text-transform: uppercase; opacity: .8; }
-.kit-shotbox { flex: 1; width: 100%; display: grid; place-items: center; padding: 10px 6px 4px; }
-.kit-shotbox img, .kit-shotbox .sf-ph { width: 100%; max-height: 300px; aspect-ratio: 1; object-fit: contain; border-radius: 14px; }
+  -webkit-mask: radial-gradient(circle 38px at 0 77%, transparent 37px, #000 38px) left / 51% 100% no-repeat, radial-gradient(circle 38px at 100% 77%, transparent 37px, #000 38px) right / 51% 100% no-repeat;
+          mask: radial-gradient(circle 38px at 0 77%, transparent 37px, #000 38px) left / 51% 100% no-repeat, radial-gradient(circle 38px at 100% 77%, transparent 37px, #000 38px) right / 51% 100% no-repeat; }
+.kit-tag { display: inline-block; max-width: 70%; background: var(--accent2); color: #fff; min-width: 54px; height: 55px; display: inline-grid; place-items: end center; padding: 0 10px 10px; font-weight: 800; font-style: italic; font-size: 14px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 6px 12px rgba(0, 0, 0, .18); }
+.kit-name { margin: 12px 0 0; font-size: 17px; letter-spacing: .5em; text-transform: uppercase; opacity: .8; }
+.kit-shotbox { flex: 1; min-height: 0; width: 100%; display: grid; place-items: center; padding: 8px 0 0; }
+.kit-shotbox img, .kit-shotbox .sf-ph { width: 100%; height: 100%; max-height: 310px; aspect-ratio: auto; object-fit: contain; border-radius: 14px; }
 .kit-shotbox img.sf-cut { filter: drop-shadow(0 18px 18px rgba(0, 0, 0, .4)); border-radius: 0; }
 .kit-frame .dots { margin-top: 6px; }
 .kit-frame .dots i { width: 6px; height: 6px; background: rgba(255, 255, 255, .35); }
 .kit-frame .dots i.on { background: #fff; box-shadow: 0 0 0 4px rgba(255, 255, 255, .22); }
-.kit-side { position: absolute; top: calc(72% - 12px); padding: 2px 4px; font-size: 14px; color: #fff; opacity: .85; background: none; }
+.kit-side { position: absolute; top: calc(77% * 505 / 505 - 12px); padding: 2px 4px; font-size: 14px; color: #fff; opacity: .85; background: none; }
 .kit-side.l { left: -2px; }
 .kit-side.r { right: -2px; }
-.kit-price { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 40px 32px 0; }
-.kit-price > span { font-size: 36px; font-weight: 700; letter-spacing: -.01em; line-height: 1; }
+.kit-price { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 62px 40px 0; }
+.kit-price > span { font-size: 40px; font-weight: 700; letter-spacing: -.01em; line-height: 1; }
 .kit-price sup { font-size: 15px; margin-right: 2px; vertical-align: 16px; font-weight: 600; }
-.kit-step { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 24px; background: color-mix(in srgb, var(--accent) 70%, #11141b); }
+.kit-step { width: 200px; height: 38px; display: inline-flex; align-items: center; justify-content: space-between; padding: 0 14px; border-radius: 20px; background: color-mix(in srgb, var(--accent) 70%, #11141b); }
 .kit-step button { width: 30px; height: 30px; border-radius: 50%; background: none; color: rgba(255, 255, 255, .85); }
-.kit-step span { min-width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .75); color: color-mix(in srgb, var(--accent) 70%, #11141b); font-weight: 700; font-size: 14px; }
-.sf-dock.sf-dock-kit { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 18px; background: none; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 12px 32px max(24px, env(safe-area-inset-bottom)); }
-.kit-cartbtn { height: 58px; border-radius: 14px; border: 2px solid #fff; color: #fff; display: grid; place-items: center; background: rgba(255, 255, 255, .04); }
+.kit-step span { min-width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .75); color: color-mix(in srgb, var(--accent) 70%, #11141b); font-weight: 700; font-size: 14px; }
+.sf-dock.sf-dock-kit { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 40px; background: none; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 12px 40px max(44px, env(safe-area-inset-bottom)); }
+.kit-cartbtn { height: 52px; border-radius: 12px; border: 2px solid #fff; color: #fff; display: grid; place-items: center; background: rgba(255, 255, 255, .04); }
 .kit-cartbtn .ic { width: 26px; height: 26px; }
-.kit-buy { height: 58px; border-radius: 14px; background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 85%, #fff), var(--accent)); color: #fff; font-weight: 600; font-size: 17px; letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 10px 20px color-mix(in srgb, var(--accent) 35%, transparent); }
+.kit-buy { height: 52px; border-radius: 12px; background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 85%, #fff), var(--accent)); color: #fff; font-weight: 600; font-size: 17px; letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 10px 20px color-mix(in srgb, var(--accent) 35%, transparent); }
 .kit-buy:disabled { opacity: .6; }
 
 /* ===================================================== 3. BREW */
@@ -1173,3 +1173,5 @@ h1, h2, h3, h4, p { margin: 0; }
 /* Kit: no reference-brand lettering — store name and tab in plain type. */
 .kit-logo, .kit-tag { font-style: normal; letter-spacing: 0; }
 .kit-logo { font-weight: 700; }
+.kit-crest { width: 52px; height: 52px; margin-top: 15px; border-radius: 50%; display: grid; place-items: center; border: 2px solid rgba(255, 255, 255, .55); font-weight: 700; font-size: 16px; color: #fff; }
+.kit-stack { z-index: 0; } .kit-frame { z-index: 1; }
