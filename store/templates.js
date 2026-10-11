@@ -70,7 +70,7 @@
   // Sports-store: diagonal two-tone hero card, size-style pills row, and a
   // white home with round category badges, Popular rail and Categories.
   T.kit = {
-    name: 'Kit', cutout: true, defaults: { accent: '#253D6B', accent2: '#E1293F', bg: '#EEF2F7', bar: '#ffffff' },
+    name: 'Kit', cutout: true, defaults: { accent: '#0060FE', accent2: '#FFB800', bg: '#EEF2F7', bar: '#ffffff' },
     home(c) {
       const ps = c.list(), all = c.list(null, '');
       return `<section class="kit-home">

@@ -149,22 +149,23 @@ h1, h2, h3, h4, p { margin: 0; }
 .kit-cat img, .kit-cat .sf-ph { width: 96px; height: 96px; object-fit: contain; margin: 4px auto 0; background: none; }
 .kit-cat span { font-size: 12px; color: #444; }
 /* Kit product page — rebuilt 1:1 from the reference (2026-10-11): slate
-   field crossed by a pale and a red diagonal band, a stacked navy card with
+   field crossed by a pale and an accent diagonal band (colours from the
+   store theme, never the reference brand), a stacked navy card with
    side notches, red tab flush to the card top, spaced name, big price with a
    dark pill beside it, outlined cart + BUY NOW at the bottom. */
-.kit-pdp { position: relative; isolation: isolate; overflow: hidden; min-height: 100vh; background: linear-gradient(180deg, #A9B6CA, #97A5BC); padding: 24px 0 130px; color: #fff; }
+.kit-pdp { position: relative; isolation: isolate; overflow: hidden; min-height: 100vh; background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 22%, #c9d0da), color-mix(in srgb, var(--accent) 30%, #aeb6c3)); padding: 24px 0 130px; color: #fff; }
 .kit-pdp::before, .kit-pdp::after { content: ''; position: absolute; inset: 0; z-index: -1; }
-.kit-pdp::before { background: #E3E7EE; clip-path: polygon(19% 0, 51% 0, 88% 100%, 64% 100%); }
-.kit-pdp::after { background: #DA2340; clip-path: polygon(51% 0, 100% 0, 100% 100%, 88% 100%); }
+.kit-pdp::before { background: color-mix(in srgb, var(--accent) 6%, #eef0f4); clip-path: polygon(19% 0, 51% 0, 88% 100%, 64% 100%); }
+.kit-pdp::after { background: var(--accent2); clip-path: polygon(51% 0, 100% 0, 100% 100%, 88% 100%); }
 .kit-head.light .kit-ic, .kit-head.light .kit-logo { color: #fff; }
 .kit-head.light .kit-logo { font-size: 21px; }
-.kit-stage { position: relative; margin: 22px 34px 0; filter: drop-shadow(0 24px 30px rgba(20, 32, 60, .35)); }
-.kit-stack { position: absolute; left: 12px; right: 12px; top: 22px; bottom: -18px; border-radius: 26px; background: #44567A; }
+.kit-stage { position: relative; margin: 22px 34px 0; filter: drop-shadow(0 24px 30px color-mix(in srgb, var(--accent) 30%, rgba(0,0,0,.35))); }
+.kit-stack { position: absolute; left: 12px; right: 12px; top: 22px; bottom: -18px; border-radius: 26px; background: color-mix(in srgb, var(--accent) 55%, #6b7280); }
 .kit-frame { position: relative; display: flex; flex-direction: column; align-items: center; min-height: 500px; border-radius: 26px; padding: 0 18px 18px; text-align: center; color: #fff;
-  background: linear-gradient(180deg, #33476E 0%, #273B60 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 78%, #1b1f2a) 0%, color-mix(in srgb, var(--accent) 62%, #11141b) 100%);
   -webkit-mask: radial-gradient(circle 30px at 0 72%, transparent 29px, #000 30px) left / 51% 100% no-repeat, radial-gradient(circle 30px at 100% 72%, transparent 29px, #000 30px) right / 51% 100% no-repeat;
           mask: radial-gradient(circle 30px at 0 72%, transparent 29px, #000 30px) left / 51% 100% no-repeat, radial-gradient(circle 30px at 100% 72%, transparent 29px, #000 30px) right / 51% 100% no-repeat; }
-.kit-tag { display: inline-block; max-width: 70%; background: #DA2340; padding: 13px 12px 10px; font-weight: 800; font-style: italic; font-size: 14px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 6px 12px rgba(0, 0, 0, .18); }
+.kit-tag { display: inline-block; max-width: 70%; background: var(--accent2); color: #fff; padding: 13px 12px 10px; font-weight: 800; font-style: italic; font-size: 14px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 6px 12px rgba(0, 0, 0, .18); }
 .kit-name { margin: 22px 0 0; font-size: 15px; letter-spacing: .42em; text-transform: uppercase; opacity: .8; }
 .kit-shotbox { flex: 1; width: 100%; display: grid; place-items: center; padding: 10px 6px 4px; }
 .kit-shotbox img, .kit-shotbox .sf-ph { width: 100%; max-height: 300px; aspect-ratio: 1; object-fit: contain; border-radius: 14px; }
@@ -178,13 +179,13 @@ h1, h2, h3, h4, p { margin: 0; }
 .kit-price { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 40px 32px 0; }
 .kit-price > span { font-size: 36px; font-weight: 700; letter-spacing: -.01em; line-height: 1; }
 .kit-price sup { font-size: 15px; margin-right: 2px; vertical-align: 16px; font-weight: 600; }
-.kit-step { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 24px; background: rgba(44, 62, 99, .88); }
+.kit-step { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 24px; background: color-mix(in srgb, var(--accent) 70%, #11141b); }
 .kit-step button { width: 30px; height: 30px; border-radius: 50%; background: none; color: rgba(255, 255, 255, .85); }
-.kit-step span { min-width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .75); color: #273B60; font-weight: 700; font-size: 14px; }
+.kit-step span { min-width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .75); color: color-mix(in srgb, var(--accent) 70%, #11141b); font-weight: 700; font-size: 14px; }
 .sf-dock.sf-dock-kit { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 18px; background: none; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 12px 32px max(24px, env(safe-area-inset-bottom)); }
 .kit-cartbtn { height: 58px; border-radius: 14px; border: 2px solid #fff; color: #fff; display: grid; place-items: center; background: rgba(255, 255, 255, .04); }
 .kit-cartbtn .ic { width: 26px; height: 26px; }
-.kit-buy { height: 58px; border-radius: 14px; background: linear-gradient(180deg, #4C6189, #34486E); color: #fff; font-weight: 600; font-size: 17px; letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 10px 20px rgba(30, 50, 90, .3); }
+.kit-buy { height: 58px; border-radius: 14px; background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 85%, #fff), var(--accent)); color: #fff; font-weight: 600; font-size: 17px; letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 10px 20px color-mix(in srgb, var(--accent) 35%, transparent); }
 .kit-buy:disabled { opacity: .6; }
 
 /* ===================================================== 3. BREW */
@@ -1169,3 +1170,6 @@ h1, h2, h3, h4, p { margin: 0; }
 #app.has-dock .cap-card { padding-bottom: 104px; }
 /* The reference's dotted brand glyph reads as a loading spinner without a real logo. */
 .sf .cap-logo { display: none; }
+/* Kit: no reference-brand lettering — store name and tab in plain type. */
+.kit-logo, .kit-tag { font-style: normal; letter-spacing: 0; }
+.kit-logo { font-weight: 700; }
