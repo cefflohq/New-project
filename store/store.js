@@ -327,6 +327,7 @@
     app.className = `sf t-${tplKey} r-${r.name}${isClosed() ? ' is-closed' : ''}`;
     const browse = !['cart', 'checkout', 'done'].includes(r.name);
     app.innerHTML = `<div class="sf-page">${browse && isClosed() ? closedNote() : ''}${html}${browse && !EMBED ? `<footer class="sf-foot">${langSwitch()}</footer>` : ''}</div>${bar}`;
+    dock(r);
     if (r.name === 'checkout' && cart.size) {
       const f = document.getElementById('sfForm');
       for (const [k, v] of Object.entries(form)) if (f.elements[k]) f.elements[k].value = v;
@@ -335,6 +336,35 @@
       mountPinMap();
       f.addEventListener('submit', submit);
     }
+  }
+
+  // Thumb-reach rule (Founder 2026-10-11): on every template the main action
+  // of a product page, the cart and checkout sits in one dock pinned to the
+  // bottom of the screen, never mid-page or at the top. Templates keep their
+  // look; their own in-page buy button / quantity stepper is replaced here.
+  function dock(r) {
+    let inner = '';
+    if (r.name === 'product' || app.querySelector('[data-act="addsel"]')) {
+      const act = r.name === 'product' ? 'buy' : 'addsel';
+      const p = r.name === 'product' ? product(r.id) : (list()[0] || store.products[0]);
+      if (!p) return;
+      app.querySelectorAll('[data-act="buy"],[data-act="addsel"]').forEach(b => b.remove());
+      app.querySelectorAll('.sf-stepper').forEach(st => { if (st.querySelector('[data-id="__sel"]')) st.remove(); });
+      inner = `${ctx().stepper('__sel', 'sf-dock-step')}<button type="button" class="sf-dock-cta" data-act="${act}" ${isClosed() ? 'disabled' : ''}>${esc(t(isClosed() ? 'Closed' : 'Add to cart'))}<b>${money(p.price * ui.sel)}</b></button>`;
+    } else if (r.name === 'cart' || r.name === 'checkout' || r.name === 'done') {
+      const cta = app.querySelector('.sf-page .sf-cta');
+      if (!cta) return;
+      if (cta.id === 'sfPlace') cta.setAttribute('form', 'sfForm');
+      cta.remove();
+      const d = document.createElement('div');
+      d.className = 'sf-dock';
+      d.append(cta);
+      app.append(d);
+      app.classList.add('has-dock');
+      return;
+    } else return;
+    app.insertAdjacentHTML('beforeend', `<div class="sf-dock">${inner}</div>`);
+    app.classList.add('has-dock');
   }
 
   // A server refusal comes back as {error} (so failed attempts stay counted

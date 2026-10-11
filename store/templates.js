@@ -128,7 +128,7 @@
           <div class="brew-title"><h1>${c.esc(p.name)}</h1><span class="brew-pr">${c.money(p.price)}</span></div>
           ${gallery(c, p, 'brew-thumbs')}
           ${p.description ? `<h2>${L("About")}</h2><p class="brew-about">${desc(c, p)}</p>` : ''}
-          <div class="brew-qty"><span>${L("Quantity")}</span>${c.stepper('__sel', 'brew-step')}</div>
+          
           <div class="brew-actions">${c.toCart('brew-ring', c.icon('bag'))}${c.buy(L('Buy now'), 'brew-buy')}</div>
         </div>
       </section>`;
@@ -193,7 +193,7 @@
         <h1 class="lift-pt">${c.esc(p.name)}</h1>
         <div class="lift-stage"><span class="lift-mark">${c.esc(c.initials(c.s.name))}</span>${c.img(p, 'lift-shot', c.ui.img)}
           ${p.images.length > 1 ? `<div class="lift-col">${p.images.map((_, i) => `<button type="button" class="${i === c.ui.img ? 'on' : ''}" ${c.selImg(i)}>${i + 1}</button>`).join('')}</div>` : ''}
-          <div class="lift-fav"><small>${L("Qty")}</small>${c.stepper('__sel', 'lift-step')}</div>
+          <div class="lift-fav"></div>
         </div>
         <div class="lift-price"><b>${c.moneyShort(p.price)}</b><small>${L("Price")}</small></div>
         ${p.description ? `<p class="lift-desc">${desc(c, p)}</p>` : ''}
@@ -260,8 +260,7 @@
           <h1>${c.esc(p.name)}</h1>
           ${p.description ? `<p>${desc(c, p)}</p>` : ''}
           ${c.stepper('__sel', 'bo-step')}
-          <small>${L("Total Price")}</small>
-          <b class="bo-total">${c.money(p.price * c.ui.sel)}</b>
+          <b class="bo-total">${c.money(p.price)}</b>
           <button type="button" class="bo-slide" data-act="buy"><span>${c.icon('cart')}</span><em>${L("Add to cart &nbsp;\u203a\u203a")}</em><span class="r">${c.icon('cart')}</span></button>
         </div>
       </section>`;
@@ -418,7 +417,7 @@
           <div class="tl-badges"><span class="o">${L("New")}</span>${c.catName(p.categoryId) ? `<span class="g">${c.esc(c.catName(p.categoryId))}</span>` : ''}</div>
           <div class="tl-nm"><h1>${c.esc(p.name)}</h1>${c.icon('heart')}</div>
           <p class="tl-sub">${c.esc(p.description || c.s.name)}</p>
-          <div class="tl-qtyrow"><div><small>${L("Qty")}</small>${c.stepper('__sel', 'tl-step')}</div><div class="tl-tot"><small>${L("Total price")}</small><b>${c.money(p.price * c.ui.sel)}</b></div></div>
+          <p class="tl-price">${c.money(p.price)}</p>
           ${c.buy(`${c.icon('bag')} Add to Bag`, 'tl-cta')}
         </div>
       </section>`;
@@ -455,7 +454,7 @@
         <div class="sp-info">
           ${p.description ? `<h2>${L("Description")}</h2><p>${desc(c, p)}</p>` : ''}
           ${p.images.length > 1 ? `<h2>${L("Select Image")}</h2><div class="sp-thumbs">${p.images.map((_, i) => `<button type="button" class="${i === c.ui.img ? 'on' : ''}" ${c.selImg(i)}>${c.img(p, '', i)}</button>`).join('')}</div>` : ''}
-          <h2>${L("Quantity")}</h2>${c.stepper('__sel', 'sp-step')}
+          
           <div class="sp-buy"><span class="sp-out">${c.icon('heart')}</span>${c.buy(`${c.icon('cart')} Add to Cart`, 'sp-cta')}</div>
         </div>
       </section>`;
@@ -572,7 +571,7 @@
         ${p.description ? `<p class="wr-desc">${desc(c, p)}</p>` : ''}
         <div class="wr-pay"><div class="wr-ph"><b>${L("Payment detail")}</b><span class="wr-tagl">${c.esc(c.s.name)}</span></div>
           <div class="wr-line"><span>${L("Price")}</span><span>${c.money(p.price)}</span></div>
-          <div class="wr-line"><span>${L("Quantity")}</span>${c.stepper('__sel', 'wr-step')}</div></div>
+          </div>
         <footer class="wr-total"><div><small>${L("Total")}</small><b>${c.money(p.price * c.ui.sel)}</b></div>${c.buy(`${c.icon('shield')} Order`, 'wr-cta')}</footer>
       </section>`;
     },
