@@ -445,7 +445,7 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
   }
 
   Future<void> _changeLocation(AppState app) async {
-    final picked = await showModalBottomSheet<Object>(
+    final picked = await showCefSheet<Object>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
@@ -1312,7 +1312,7 @@ class _MyScheduleScreenState extends State<MyScheduleScreen> {
   }
 
   Future<void> _release(AppState app, List<_Booking> bookings) async {
-    final picked = await showModalBottomSheet<_Booking>(
+    final picked = await showCefSheet<_Booking>(
       context: context,
       showDragHandle: true,
       builder: (sheet) => SafeArea(

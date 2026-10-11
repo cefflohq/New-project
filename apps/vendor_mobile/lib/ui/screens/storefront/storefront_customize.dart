@@ -138,7 +138,7 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
   Future<void> _pickColour({
     required Color initial,
     required ValueChanged<Color> onPicked,
-  }) => showModalBottomSheet<void>(
+  }) => showCefSheet<void>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,

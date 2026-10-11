@@ -148,7 +148,7 @@ class _HiringScreenState extends State<HiringScreen> {
 /// New opening form (Owner only; the server enforces it too).
 Future<void> openNewOpening(BuildContext context) async {
   final app = AppScope.read(context);
-  final saved = await showModalBottomSheet<bool>(
+  final saved = await showCefSheet<bool>(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
@@ -1164,7 +1164,7 @@ class _HiringPostScreenState extends State<HiringPostScreen> {
       trailing: chip,
       onTap: !pending || busy
           ? null
-          : () => showModalBottomSheet<void>(
+          : () => showCefSheet<void>(
               context: context,
               backgroundColor: Colors.white,
               showDragHandle: true,

@@ -427,7 +427,8 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
 .int-row .chev { width: 14px; height: 14px; }
 .brand-ico { width: 32px; height: 32px; flex: none; border-radius: var(--r-md); display: grid; place-items: center; background: var(--surface); border: 1px solid var(--border); }
 .brand-ico svg { width: 18px; height: 18px; }
-.brand-ico img { width: 18px; height: 18px; }
+.brand-ico img { width: 20px; height: 20px; object-fit: contain; }
+.brand-ico:not(.file) { background: #fff; } /* official logos keep their own colours in dark mode */
 .brand-ico.file { color: var(--ink-2); background: var(--surface-2); }
 .brand-ico.lg { width: 44px; height: 44px; }
 .brand-ico.lg svg, .brand-ico.lg img { width: 24px; height: 24px; }

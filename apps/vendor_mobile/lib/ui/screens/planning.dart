@@ -172,7 +172,7 @@ Future<void> showDispatchSheet(
   required PlanGroup group,
   required List<RiderRow> riders,
   required Future<void> Function() onDispatched,
-}) => showModalBottomSheet<void>(
+}) => showCefSheet<void>(
   context: context,
   isScrollControlled: true,
   backgroundColor: context.c.card,

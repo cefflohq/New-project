@@ -304,7 +304,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
   /// Zone options: exactly Edit zone name and Delete zone.
   void _showZoneOptions(Zone zone) {
     final c = context.c;
-    showModalBottomSheet<void>(
+    showCefSheet<void>(
       context: context,
       backgroundColor: c.card,
       shape: const RoundedRectangleBorder(
@@ -357,7 +357,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
 
   Future<void> _editName(Zone zone) async {
     final app = AppScope.read(context);
-    final name = await showModalBottomSheet<String>(
+    final name = await showCefSheet<String>(
       context: context,
       isScrollControlled: true,
       backgroundColor: context.c.card,
@@ -385,7 +385,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
 
   Future<void> _confirmDelete(Zone zone) async {
     final app = AppScope.read(context);
-    final confirmed = await showModalBottomSheet<bool>(
+    final confirmed = await showCefSheet<bool>(
       context: context,
       backgroundColor: context.c.card,
       shape: const RoundedRectangleBorder(
@@ -1775,7 +1775,7 @@ final ValueNotifier<int> zonesRevision = ValueNotifier(0);
 Future<void> showCreateZoneDialog(BuildContext context) =>
     // Slides up from the bottom (Founder, 2026-10-01); lifts above the
     // keyboard while typing.
-    showModalBottomSheet<void>(
+    showCefSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -1995,7 +1995,7 @@ class TeamRequestRowState extends State<TeamRequestRow> {
 Future<void> _confirmSignOut(BuildContext context) async {
   final app = AppScope.read(context);
   final text = Theme.of(context).textTheme;
-  final yes = await showModalBottomSheet<bool>(
+  final yes = await showCefSheet<bool>(
     context: context,
     backgroundColor: context.c.card,
     shape: const RoundedRectangleBorder(

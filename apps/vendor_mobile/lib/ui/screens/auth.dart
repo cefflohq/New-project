@@ -1154,7 +1154,7 @@ class _AccessChip extends StatelessWidget {
 
 /// English / Bahasa Melayu picker, from any auth screen.
 void openAuthLanguageSheet(BuildContext context) {
-  showModalBottomSheet<void>(
+  showCefSheet<void>(
     context: context,
     backgroundColor: context.c.card,
     shape: const RoundedRectangleBorder(

@@ -1315,7 +1315,7 @@ class _AppearanceScreenState extends State<_AppearanceScreen> {
   }
 
   Future<void> _pickCustom() async {
-    final picked = await showModalBottomSheet<Color>(
+    final picked = await showCefSheet<Color>(
       context: context,
       backgroundColor: context.c.card,
       shape: const RoundedRectangleBorder(
@@ -2254,7 +2254,7 @@ class _IntegrationsScreenState extends State<_IntegrationsScreen> {
   );
 
   Future<void> _sheet(Widget Function(BuildContext, StateSetter) build) =>
-      showModalBottomSheet<void>(
+      showCefSheet<void>(
         context: context,
         isScrollControlled: true,
         backgroundColor: context.c.card,
@@ -2662,14 +2662,28 @@ class _IntegrationsScreenState extends State<_IntegrationsScreen> {
       connected ? L.integrationConnected : L.available,
       success: true,
     );
+    // Official brand logos (Founder 2026-10-11); a plain icon only where the
+    // method has no brand (manual entry, API).
+    Widget logo(String asset) => Container(
+      width: 36,
+      height: 36,
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(Gap.sm),
+        border: Border.all(color: context.c.border),
+      ),
+      child: Image.asset(asset, fit: BoxFit.contain),
+    );
     CefListRow live(
       String title,
-      IconData icon,
+      Object icon,
       VoidCallback onTap, {
       bool connected = false,
     }) => CefListRow(
       title: title,
-      icon: icon,
+      icon: icon is IconData ? icon : null,
+      leading: icon is String ? logo(icon) : null,
       trailing: chip(connected),
       onTap: onTap,
     );
@@ -2684,7 +2698,7 @@ class _IntegrationsScreenState extends State<_IntegrationsScreen> {
           children: [
             live(
               'CSV & Excel',
-              LucideIcons.fileSpreadsheet,
+              'assets/brand/microsoft-excel-logo.png',
               () => app.go(VRoute.importOrders),
             ),
             live(
@@ -2694,36 +2708,36 @@ class _IntegrationsScreenState extends State<_IntegrationsScreen> {
             ),
             live(
               L.storefront,
-              LucideIcons.store,
+              'assets/brand/cefflo-logo-mark.png',
               () => app.go(VRoute.storefront),
             ),
             live(
               'Shopify',
-              LucideIcons.shoppingBag,
+              'assets/brand/shopify-logo.png',
               () => _openWebhook('shopify', 'Shopify'),
               connected: _conn('shopify') != null,
             ),
             live(
               'WooCommerce',
-              LucideIcons.shoppingCart,
+              'assets/brand/woocommerce-logo.png',
               () => _openWebhook('woocommerce', 'WooCommerce'),
               connected: _conn('woocommerce') != null,
             ),
             live(
               'Wix',
-              LucideIcons.globe,
+              'assets/brand/wix-logo.png',
               _openWix,
               connected: _conn('wix') != null,
             ),
             live(
               'Google Sheets',
-              LucideIcons.sheet,
+              'assets/brand/google-sheets-logo.png',
               () => _openGoogle('sheets', 'Google Sheets'),
               connected: _conn('google_sheets') != null,
             ),
             live(
               'Google Drive',
-              LucideIcons.hardDrive,
+              'assets/brand/google-drive-logo.png',
               () => _openGoogle('drive', 'Google Drive'),
               connected: _conn('google_drive') != null,
             ),

@@ -401,11 +401,11 @@ async function hiring(page) {
 // app can really do is Available; everything else is marked Planned and has no
 // connect action.
 const BRAND = {
-  csv: `<span class="brand-ico file">${icon('csv')}</span>`,
+  csv: '<span class="brand-ico"><img src="img/microsoft-excel-logo.png" alt="" width="26" height="26"></span>',
   manual: `<span class="brand-ico file">${icon('file')}</span>`,
-  shopify: '<span class="brand-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#95BF47" d="M22.6 6.3c0-.1-.1-.2-.2-.2l-2.1-.2-1.6-1.6c-.2-.2-.5-.1-.6-.1l-.8.3C16.8 3.1 16 2.2 14.6 2.2h-.1c-.4-.5-.9-.7-1.3-.7-3.2 0-4.8 4-5.2 6l-2.3.7c-.7.2-.7.2-.8.9L3 27.3l15.2 2.8 8.2-1.8L22.6 6.3z"/><path fill="#5E8E3E" d="M22.4 6.1l-2.1-.2-1.6-1.6-.4-.1L18.2 30l8.2-1.8L22.6 6.3c0-.1-.1-.2-.2-.2z"/><path fill="#fff" d="M14.6 11.2l-1 3s-.9-.5-2-.5c-1.6 0-1.7 1-1.7 1.3 0 1.4 3.6 1.9 3.6 5.1 0 2.5-1.6 4.2-3.8 4.2-2.6 0-4-1.6-4-1.6l.7-2.3s1.4 1.2 2.6 1.2c.8 0 1.1-.6 1.1-1.1 0-1.8-3-1.9-3-4.9 0-2.5 1.8-5 5.5-5 1.4 0 2 .4 2 .4z"/></svg></span>',
-  woo: '<span class="brand-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="7" width="30" height="16" rx="4" fill="#7F54B3"/><path fill="#7F54B3" d="M17 22l3 5 1-5z"/><text x="16" y="19" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="10" fill="#fff">Woo</text></svg></span>',
-  wix: '<span class="brand-ico" style="color:var(--ink)"><svg viewBox="0 0 32 32" aria-hidden="true"><text x="16" y="21" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="12" fill="currentColor">WiX</text></svg></span>',
+  shopify: '<span class="brand-ico"><img src="img/shopify-logo.png" alt="" width="26" height="26"></span>',
+  woo: '<span class="brand-ico"><img src="img/woocommerce-logo.png" alt="" width="26" height="26"></span>',
+  wix: '<span class="brand-ico"><img src="img/wix-logo.png" alt="" width="26" height="26"></span>',
   sheets: '<span class="brand-ico"><img src="img/google-sheets-logo.png" alt="" width="26" height="26"></span>',
   excel: '<span class="brand-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="9" y="4" width="20" height="24" rx="2" fill="#21A366"/><path fill="#33C481" d="M19 4h8a2 2 0 0 1 2 2v6H19z"/><path fill="#107C41" d="M9 16h10v12h-8a2 2 0 0 1-2-2z"/><rect x="3" y="9" width="14" height="14" rx="2" fill="#107C41"/><path fill="#fff" d="M6.4 12.5h2.3l1.3 2.4 1.3-2.4h2.2l-2.3 3.5 2.4 3.5h-2.3L10 17l-1.4 2.5H6.3l2.4-3.5z"/></svg></span>',
   drive: '<span class="brand-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#0066DA" d="M4.3 24.6l1.3 2.3c.3.5.7.9 1.1 1.1l4.6-8H2.1c0 .6.1 1.1.4 1.6z"/><path fill="#00AC47" d="M16 11.5 11.4 3.5c-.4.3-.8.6-1.1 1.1L2.5 18.4c-.3.5-.4 1-.4 1.6h9.2z"/><path fill="#EA4335" d="M25.3 28c.4-.3.8-.6 1.1-1.1l.5-.9 2.6-4.4c.3-.5.4-1 .4-1.6h-9.2l2 3.9z"/><path fill="#00832D" d="M16 11.5l4.6-8c-.4-.3-1-.4-1.5-.4h-6.2c-.5 0-1.1.2-1.5.4z"/><path fill="#2684FC" d="M20.7 20H11.3l-4.6 8c.4.3 1 .4 1.5.4h15.6c.5 0 1.1-.2 1.5-.4z"/><path fill="#FFBA00" d="M25.2 12.1l-4.3-7.4c-.3-.5-.7-.9-1.1-1.1L15.2 11.5 20.7 20h9.2c0-.6-.1-1.1-.4-1.6z"/></svg></span>',

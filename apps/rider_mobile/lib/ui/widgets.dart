@@ -2117,7 +2117,7 @@ Future<bool> showCeffloSubmitFlow(
 /// content padded to the screen gutter (D39 Select Language, D40-A Contact
 /// Support).
 Future<T?> showCeffloSheet<T>(BuildContext context, {required Widget child}) =>
-    showModalBottomSheet<T>(
+    showCefSheet<T>(
       context: context,
       backgroundColor: Colors.transparent,
       barrierColor: const Color(0x66101C33),
@@ -2256,4 +2256,53 @@ class AuthLanguageControl extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Founder 2026-10-11: on a wide screen (tablet / desktop browser) a sheet
+/// opens as a dialog in the centre of the screen; on a phone it stays a
+/// bottom sheet. Same arguments as [showModalBottomSheet].
+Future<T?> showCefSheet<T>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+  bool isScrollControlled = false,
+  Color? backgroundColor,
+  Color? barrierColor,
+  ShapeBorder? shape,
+  bool? showDragHandle,
+}) {
+  if (MediaQuery.sizeOf(context).width < 600) {
+    return showModalBottomSheet<T>(
+      context: context,
+      builder: builder,
+      isScrollControlled: isScrollControlled,
+      backgroundColor: backgroundColor,
+      barrierColor: barrierColor,
+      shape: shape,
+      showDragHandle: showDragHandle,
+    );
+  }
+  return showDialog<T>(
+    context: context,
+    barrierColor: barrierColor,
+    builder: (ctx) => Dialog(
+      backgroundColor: backgroundColor ?? Theme.of(ctx).colorScheme.surface,
+      insetPadding: const EdgeInsets.all(24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 520,
+          maxHeight: MediaQuery.sizeOf(ctx).height * .85,
+        ),
+        child: MediaQuery.removeViewInsets(
+          context: ctx,
+          removeBottom: true,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: builder(ctx),
+          ),
+        ),
+      ),
+    ),
+  );
 }

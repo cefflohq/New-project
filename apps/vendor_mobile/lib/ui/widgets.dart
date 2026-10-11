@@ -930,7 +930,7 @@ class CefSearchField extends StatelessWidget {
 /// icon rather than an inline full-width field. This opens that search as a
 /// focused sheet instead of permanently occupying body space.
 Future<void> showSearchSheet(BuildContext context, {required String hint}) {
-  return showModalBottomSheet<void>(
+  return showCefSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: context.c.card,
@@ -1665,7 +1665,7 @@ Future<void> showListSheet(
   required String title,
   required List<Widget> children,
 }) {
-  return showModalBottomSheet<void>(
+  return showCefSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: context.c.card,
@@ -2378,4 +2378,53 @@ class _TypedConfirmDialogState extends State<_TypedConfirmDialog> {
       ],
     );
   }
+}
+
+/// Founder 2026-10-11: on a wide screen (tablet / desktop browser) a sheet
+/// opens as a dialog in the centre of the screen; on a phone it stays a
+/// bottom sheet. Same arguments as [showModalBottomSheet].
+Future<T?> showCefSheet<T>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+  bool isScrollControlled = false,
+  Color? backgroundColor,
+  Color? barrierColor,
+  ShapeBorder? shape,
+  bool? showDragHandle,
+}) {
+  if (MediaQuery.sizeOf(context).width < 600) {
+    return showModalBottomSheet<T>(
+      context: context,
+      builder: builder,
+      isScrollControlled: isScrollControlled,
+      backgroundColor: backgroundColor,
+      barrierColor: barrierColor,
+      shape: shape,
+      showDragHandle: showDragHandle,
+    );
+  }
+  return showDialog<T>(
+    context: context,
+    barrierColor: barrierColor,
+    builder: (ctx) => Dialog(
+      backgroundColor: backgroundColor ?? Theme.of(ctx).colorScheme.surface,
+      insetPadding: const EdgeInsets.all(24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 520,
+          maxHeight: MediaQuery.sizeOf(ctx).height * .85,
+        ),
+        child: MediaQuery.removeViewInsets(
+          context: ctx,
+          removeBottom: true,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: builder(ctx),
+          ),
+        ),
+      ),
+    ),
+  );
 }
