@@ -1255,5 +1255,11 @@
   "integrationDriveHow": "Letak fail CSV, Excel atau Google Sheets (tajuk sama) dalam satu folder. Pergi ke script.google.com → New project, tampal skrip, letak pautan folder dalam CEFFLO_FOLDER, Save, pilih cefflo_setup, Run, Allow. Fail diimport setiap 10 minit.",
   "integrationGetScript": "Cipta skrip",
   "integrationNewScript": "Cipta skrip baharu",
-  "integrationScriptOnce": "Skrip ini mengandungi kunci peribadi dan hanya ditunjuk sekali. Cipta skrip baharu akan hentikan yang lama."
+  "integrationScriptOnce": "Skrip ini mengandungi kunci peribadi dan hanya ditunjuk sekali. Cipta skrip baharu akan hentikan yang lama.",
+  "ntPushTitle": "Makluman semasa Cefflo ditutup",
+  "ntPushSub": "Pada peranti ini. Guna bunyi notifikasi peranti anda.",
+  "ntPushDenied": "Disekat dalam tetapan pelayar. Benarkan notifikasi untuk laman ini, kemudian cuba lagi.",
+  "ntPushUnsupported": "Belum tersedia dalam aplikasi ini. Guna Cefflo dalam Chrome di Android atau komputer.",
+  "ntPushOn": "Makluman dihidupkan untuk peranti ini.",
+  "ntPushOff": "Makluman dimatikan untuk peranti ini."
 }

@@ -543,8 +543,7 @@ class _NotificationPrefsSheetState extends State<_NotificationPrefsSheet> {
               _error!,
               style: context.t.bodySmall?.copyWith(color: context.c.attention),
             ),
-          const SizedBox(height: Gap.sm),
-          Text(L.ntPushDeferred, style: context.t.bodySmall),
+          const _PushAlertsTile(),
         ],
       ),
     );
@@ -673,6 +672,73 @@ class _NotificationRow extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// "Alerts when Cefflo is closed" on this device (Web Push; applies at once).
+class _PushAlertsTile extends StatefulWidget {
+  const _PushAlertsTile();
+  @override
+  State<_PushAlertsTile> createState() => _PushAlertsTileState();
+}
+
+class _PushAlertsTileState extends State<_PushAlertsTile> {
+  bool _on = false, _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    AppScope.read(context).repo.pushIsOn().then((v) {
+      if (mounted) setState(() => _on = v);
+    });
+  }
+
+  Future<void> _toggle(bool v) async {
+    final repo = AppScope.read(context).repo;
+    setState(() => _busy = true);
+    try {
+      if (v) {
+        final r = await repo.pushEnable();
+        if (!mounted) return;
+        if (r == 'on') {
+          showCefToast(context, L.ntPushOn);
+        } else if (r == 'denied') {
+          showCefToast(context, L.ntPushDenied, error: true);
+        }
+      } else {
+        await repo.pushDisable();
+        if (mounted) showCefToast(context, L.ntPushOff);
+      }
+    } catch (e) {
+      if (mounted) showCefToast(context, '$e', error: true);
+    }
+    final on = await repo.pushIsOn();
+    if (!mounted) return;
+    setState(() {
+      _on = on;
+      _busy = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = AppScope.of(context).repo;
+    final ok = repo.pushSupported;
+    final denied = repo.pushPermission == 'denied';
+    return SwitchListTile(
+      key: const ValueKey('pref-push'),
+      contentPadding: EdgeInsets.zero,
+      title: Text(L.ntPushTitle),
+      subtitle: Text(
+        !ok
+            ? L.ntPushUnsupported
+            : denied
+            ? L.ntPushDenied
+            : L.ntPushSub,
+      ),
+      value: _on,
+      onChanged: !ok || _busy || (denied && !_on) ? null : _toggle,
     );
   }
 }

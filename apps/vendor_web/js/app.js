@@ -6,7 +6,7 @@ import { operatorEntry } from './access.js';
 import { api, consumeAuthFragment, consumeAuthError, setForbiddenMessage } from './api.js';
 import { ctx, loadContext, clearContext, HelperOnlyError, NoBusinessError } from './store.js';
 import { mountShell } from './shell.js';
-import { stopNotifications } from './notifications.js';
+import { stopNotifications, stopPushOnThisDevice } from './notifications.js';
 import { errorState } from './ui.js';
 import { renderSignIn, renderSetPassword, renderExpired, renderNoOperatorAccess, renderSplash, ephemeralSessionEnded } from './pages/auth.js';
 import { renderBusinessSetup } from './pages/setup.js';
@@ -26,6 +26,7 @@ setForbiddenMessage(() => t('c.accessChanged'));
 const PAGES = { today, orders, zones, runs, riders, products, storefront, settings };
 
 async function signOut() {
+  await stopPushOnThisDevice();
   stopNotifications();
   await api.signOut();
   clearContext();

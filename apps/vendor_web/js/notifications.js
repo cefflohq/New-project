@@ -3,8 +3,8 @@
 // public.notifications (written by the server from delivery_events and FOUNDR
 // broadcasts); RLS limits every read to the signed-in user's own rows.
 //   event -> foreground banner -> sound (if on) -> persists in the centre.
-// Background delivery (Web Push) is deferred: no provider exists, so nothing
-// here pretends to deliver while the tab is closed. While the tab is open but
+// Closed-tab delivery is Web Push (shared/push, per device, opt-in below;
+// docs/cefflo/security/PUSH_NOTIFICATIONS.md). While the tab is open but
 // hidden, the browser Notification API is used only if the user granted it.
 import { api } from './api.js';
 import { isDemo, readOnly } from './demo.js';
@@ -274,9 +274,34 @@ export function openNotificationPrefs() {
   };
   const m = modal({ title: t('notif.title'), lead: t('nt.pref.lead'), center: true,
     body: `<div class="toggle-list">${row('enabled', 'bell')}${row('sound', 'bell')}</div>${permLine()}
-      <div class="gated">${icon('info')}<div>${esc(t('nt.pref.pushDeferred'))}</div></div>`,
+      <div class="toggle-list" data-push></div>`,
     footer: `<button class="btn primary" data-msave style="min-width:240px" ${isDemo() ? 'disabled' : ''}>${esc(t('c.save'))}</button>` });
+  // This device's closed-app alerts (Web Push): applies at once, per device.
+  const pushBox = m.el.querySelector('[data-push]');
+  const paintPush = async (busyNow = false) => {
+    const P = window.cefPush;
+    const ok = !!P?.supported() && !isDemo();
+    const on = ok && await P.isOn().catch(() => false);
+    const note = !P?.supported() ? t('nt.push.unsupported') : P.permission() === 'denied' ? t('nt.push.denied') : t('nt.push.sub');
+    pushBox.innerHTML = `<div class="toggle-row">${icon('bell')}<div class="grow"><b>${esc(t('nt.push.title'))}</b><small>${esc(note)}</small></div>
+      <button type="button" class="switch ${on ? 'on' : ''}" role="switch" aria-checked="${on}" aria-label="${esc(t('nt.push.title'))}" data-push-sw ${!ok || busyNow || P.permission() === 'denied' ? 'disabled' : ''}></button></div>`;
+  };
+  paintPush();
   m.el.addEventListener('click', async e => {
+    const ps = e.target.closest('[data-push-sw]');
+    if (ps && !ps.disabled) {
+      const opts = pushOptions();
+      const turnOn = !ps.classList.contains('on');
+      await paintPush(true);
+      try {
+        if (turnOn) {
+          const r = await window.cefPush.enable(opts);
+          if (r === 'on') toast(t('nt.push.onToast')); else if (r === 'denied') toast(t('nt.push.denied'), 'error');
+        } else { await window.cefPush.disable(opts); toast(t('nt.push.offToast')); }
+      } catch (err) { toast(err.message || t('c.errorBody'), 'error'); }
+      await paintPush();
+      return;
+    }
     const sw = e.target.closest('[data-k]');
     if (sw && !sw.disabled) {
       const k = sw.dataset.k; pick[k] = !pick[k];
@@ -296,4 +321,16 @@ export function openNotificationPrefs() {
       catch (err) { toast(err.message || t('c.errorBody'), 'error'); }
     }
   });
+}
+
+// ---------------------------------------------------------------- push (closed-app alerts)
+function pushOptions() {
+  const cfg = window.CEFFLO_CONFIG || {};
+  return { supabaseUrl: cfg.supabaseUrl, anonKey: cfg.supabaseAnonKey || cfg.publishableKey, accessToken: api.session()?.access_token, app: 'vendor',
+    baseUrl: location.origin + location.pathname };
+}
+// Sign-out: this device stops receiving the account's alerts.
+export async function stopPushOnThisDevice() {
+  if (isDemo() || !window.cefPush?.supported()) return;
+  try { await window.cefPush.disable(pushOptions()); } catch { /* best effort */ }
 }

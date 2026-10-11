@@ -4191,4 +4191,25 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get integrationScriptOnce =>
       'This script holds a private key and is shown only once. Creating a new script stops the old one.';
+
+  @override
+  String get ntPushTitle => 'Alerts when Cefflo is closed';
+
+  @override
+  String get ntPushSub =>
+      'On this device. Uses your device notification sound.';
+
+  @override
+  String get ntPushDenied =>
+      'Blocked in your browser settings. Allow notifications for this site, then try again.';
+
+  @override
+  String get ntPushUnsupported =>
+      'Not available in this app yet. Use Cefflo in Chrome on Android or a computer.';
+
+  @override
+  String get ntPushOn => 'Alerts on for this device.';
+
+  @override
+  String get ntPushOff => 'Alerts off for this device.';
 }

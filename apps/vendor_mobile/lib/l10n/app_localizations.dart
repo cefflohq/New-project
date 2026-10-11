@@ -7640,6 +7640,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This script holds a private key and is shown only once. Creating a new script stops the old one.'**
   String get integrationScriptOnce;
+
+  /// No description provided for @ntPushTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts when Cefflo is closed'**
+  String get ntPushTitle;
+
+  /// No description provided for @ntPushSub.
+  ///
+  /// In en, this message translates to:
+  /// **'On this device. Uses your device notification sound.'**
+  String get ntPushSub;
+
+  /// No description provided for @ntPushDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked in your browser settings. Allow notifications for this site, then try again.'**
+  String get ntPushDenied;
+
+  /// No description provided for @ntPushUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available in this app yet. Use Cefflo in Chrome on Android or a computer.'**
+  String get ntPushUnsupported;
+
+  /// No description provided for @ntPushOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts on for this device.'**
+  String get ntPushOn;
+
+  /// No description provided for @ntPushOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts off for this device.'**
+  String get ntPushOff;
 }
 
 class _AppLocalizationsDelegate

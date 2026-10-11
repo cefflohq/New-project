@@ -2058,5 +2058,11 @@
   "integrationDriveHow": "Drop CSV, Excel or Google Sheets files (same headers) in one folder. Go to script.google.com → New project, paste the script, put the folder link in CEFFLO_FOLDER, Save, pick cefflo_setup, Run, Allow. Files are imported every 10 minutes.",
   "integrationGetScript": "Create script",
   "integrationNewScript": "Create a new script",
-  "integrationScriptOnce": "This script holds a private key and is shown only once. Creating a new script stops the old one."
+  "integrationScriptOnce": "This script holds a private key and is shown only once. Creating a new script stops the old one.",
+  "ntPushTitle": "Alerts when Cefflo is closed",
+  "ntPushSub": "On this device. Uses your device notification sound.",
+  "ntPushDenied": "Blocked in your browser settings. Allow notifications for this site, then try again.",
+  "ntPushUnsupported": "Not available in this app yet. Use Cefflo in Chrome on Android or a computer.",
+  "ntPushOn": "Alerts on for this device.",
+  "ntPushOff": "Alerts off for this device."
 }

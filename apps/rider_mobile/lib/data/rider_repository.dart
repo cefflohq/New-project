@@ -1,7 +1,10 @@
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:cefflo_push/cefflo_push.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../core/env.dart';
 
 import 'driver_models.dart';
 import 'models.dart';
@@ -243,7 +246,38 @@ class RiderRepository {
     } catch (_) {}
   }
 
-  Future<void> signOut() => _run(() => _db.auth.signOut());
+  Future<void> signOut() async {
+    // This device stops receiving the account's closed-app alerts.
+    await pushDisable();
+    return _run(() => _db.auth.signOut());
+  }
+
+  // ----------------------------------------- closed-app alerts (Web Push)
+  // docs/cefflo/security/PUSH_NOTIFICATIONS.md. Per device; web builds only.
+  bool get pushSupported => !isDemo && CefPush.supported;
+  String get pushPermission => CefPush.permission;
+  Future<bool> pushIsOn() => isDemo ? Future.value(false) : CefPush.isOn();
+
+  /// 'on' | 'denied' | 'unsupported'.
+  Future<String> pushEnable() async {
+    final token = _db.auth.currentSession?.accessToken;
+    if (isDemo || token == null) return 'unsupported';
+    return CefPush.enable(
+      supabaseUrl: Env.supabaseUrl,
+      anonKey: Env.supabasePublishableKey,
+      accessToken: token,
+      app: 'rider',
+    );
+  }
+
+  Future<void> pushDisable() async {
+    if (isDemo) return;
+    await CefPush.disable(
+      supabaseUrl: Env.supabaseUrl,
+      anonKey: Env.supabasePublishableKey,
+      accessToken: _db.auth.currentSession?.accessToken,
+    );
+  }
 
   // -------------------------------------------------------- identity/scope
 

@@ -2044,4 +2044,25 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get noCustomerPin => 'Pelanggan tidak pin lokasi — guna alamat';
+
+  @override
+  String get ntPushTitle => 'Makluman semasa Cefflo ditutup';
+
+  @override
+  String get ntPushSub =>
+      'Pada peranti ini. Guna bunyi notifikasi peranti anda.';
+
+  @override
+  String get ntPushDenied =>
+      'Disekat dalam tetapan pelayar. Benarkan notifikasi untuk laman ini, kemudian cuba lagi.';
+
+  @override
+  String get ntPushUnsupported =>
+      'Belum tersedia dalam aplikasi ini. Guna Cefflo dalam Chrome di Android atau komputer.';
+
+  @override
+  String get ntPushOn => 'Makluman dihidupkan untuk peranti ini.';
+
+  @override
+  String get ntPushOff => 'Makluman dimatikan untuk peranti ini.';
 }

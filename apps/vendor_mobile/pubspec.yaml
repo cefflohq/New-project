@@ -9,6 +9,8 @@ environment:
 dependencies:
   cefflo_loader:
     path: ../../packages/cefflo_loader
+  cefflo_push:
+    path: ../../packages/cefflo_push
   flutter:
     sdk: flutter
   flutter_localizations:

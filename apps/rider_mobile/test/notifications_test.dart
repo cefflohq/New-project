@@ -281,9 +281,14 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('pref-sound')));
     await tester.pumpAndSettle();
     expect(repo.calls, contains('prefs:true/false'));
+    // Closed-app alerts: a per-device switch; off and disabled where Web
+    // Push is not available (tests run outside a browser).
+    expect(find.text('Alerts when Cefflo is closed'), findsOneWidget);
     expect(
-      find.text('Alerts when the app is closed are not available yet.'),
-      findsOneWidget,
+      tester
+          .widget<SwitchListTile>(find.byKey(const ValueKey('pref-push')))
+          .onChanged,
+      isNull,
     );
   });
 }

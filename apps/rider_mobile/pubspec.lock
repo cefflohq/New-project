@@ -128,6 +128,13 @@ packages:
       relative: true
     source: path
     version: "1.0.0"
+  cefflo_push:
+    dependency: "direct main"
+    description:
+      path: "../../packages/cefflo_push"
+      relative: true
+    source: path
+    version: "1.0.0"
   characters:
     dependency: transitive
     description:

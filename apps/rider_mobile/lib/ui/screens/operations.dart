@@ -1491,7 +1491,11 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                     if (stop.note != null)
                       _iconLine(context, LucideIcons.stickyNote, stop.note!),
                     if (stop.latitude != null)
-                      _iconLine(context, LucideIcons.locateFixed, L.pinnedLocation),
+                      _iconLine(
+                        context,
+                        LucideIcons.locateFixed,
+                        L.pinnedLocation,
+                      ),
                   ],
                 ),
               ),

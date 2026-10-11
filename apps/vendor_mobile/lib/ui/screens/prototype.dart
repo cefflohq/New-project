@@ -1250,9 +1250,76 @@ class _NotificationPreferencesScreenState
                   ),
           ),
         ),
-        const SizedBox(height: Gap.md),
-        Text(L.ntPushDeferred, style: text.bodySmall),
+        const _PushAlertsRow(),
       ],
+    );
+  }
+}
+
+/// "Alerts when Cefflo is closed" on this device (Web Push; applies at once).
+class _PushAlertsRow extends StatefulWidget {
+  const _PushAlertsRow();
+  @override
+  State<_PushAlertsRow> createState() => _PushAlertsRowState();
+}
+
+class _PushAlertsRowState extends State<_PushAlertsRow> {
+  bool _on = false, _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    AppScope.read(context).repo.pushIsOn().then((v) {
+      if (mounted) setState(() => _on = v);
+    });
+  }
+
+  Future<void> _toggle(bool v) async {
+    final repo = AppScope.read(context).repo;
+    setState(() => _busy = true);
+    try {
+      if (v) {
+        final r = await repo.pushEnable();
+        if (!mounted) return;
+        if (r == 'on') {
+          showCefToast(context, L.ntPushOn);
+        } else if (r == 'denied') {
+          showCefToast(context, L.ntPushDenied, error: true);
+        }
+      } else {
+        await repo.pushDisable();
+        if (mounted) showCefToast(context, L.ntPushOff);
+      }
+    } catch (e) {
+      if (mounted) showCefToast(context, '$e', error: true);
+    }
+    final on = await repo.pushIsOn();
+    if (!mounted) return;
+    setState(() {
+      _on = on;
+      _busy = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = AppScope.of(context).repo;
+    final ok = repo.pushSupported;
+    final denied = repo.pushPermission == 'denied';
+    return CefListRow(
+      title: L.ntPushTitle,
+      subtitle: !ok
+          ? L.ntPushUnsupported
+          : denied
+          ? L.ntPushDenied
+          : L.ntPushSub,
+      subtitleMaxLines: 3,
+      icon: LucideIcons.bellRing,
+      showChevron: false,
+      trailing: CefSwitch(
+        value: _on,
+        onChanged: !ok || _busy || (denied && !_on) ? null : _toggle,
+      ),
     );
   }
 }

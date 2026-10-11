@@ -604,5 +604,11 @@
   "pinnedLocation": "Pelanggan pin lokasi tepat",
   "mapNotAvailable": "Tak dapat buka peta",
   "navigate": "Navigasi",
-  "noCustomerPin": "Pelanggan tidak pin lokasi — guna alamat"
+  "noCustomerPin": "Pelanggan tidak pin lokasi — guna alamat",
+  "ntPushTitle": "Makluman semasa Cefflo ditutup",
+  "ntPushSub": "Pada peranti ini. Guna bunyi notifikasi peranti anda.",
+  "ntPushDenied": "Disekat dalam tetapan pelayar. Benarkan notifikasi untuk laman ini, kemudian cuba lagi.",
+  "ntPushUnsupported": "Belum tersedia dalam aplikasi ini. Guna Cefflo dalam Chrome di Android atau komputer.",
+  "ntPushOn": "Makluman dihidupkan untuk peranti ini.",
+  "ntPushOff": "Makluman dimatikan untuk peranti ini."
 }
