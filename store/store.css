@@ -1175,3 +1175,20 @@ h1, h2, h3, h4, p { margin: 0; }
 .kit-logo { font-weight: 700; }
 .kit-crest { width: 52px; height: 52px; margin-top: 15px; border-radius: 50%; display: grid; place-items: center; border: 2px solid rgba(255, 255, 255, .55); font-weight: 700; font-size: 16px; color: #fff; }
 .kit-stack { z-index: 0; } .kit-frame { z-index: 1; }
+/* Kit product: the reference's muted palette, derived from the store colours
+   (accent is pulled towards slate, so any brand colour reads as soft as the
+   reference's navy/red) and a grounded product with a floor shadow. */
+.kit-pdp, .sf-dock-kit { --kit-ink: color-mix(in srgb, var(--accent) 28%, #2F3C55); --kit-band: color-mix(in srgb, var(--accent2) 78%, #8C929C); }
+.kit-pdp {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 10%, #A9B4C6), color-mix(in srgb, var(--accent) 10%, #98A4B8)); }
+.kit-pdp::before { background: color-mix(in srgb, var(--accent) 4%, #E4E8EE); }
+.kit-pdp::after { background: var(--kit-band); }
+.kit-frame { background: linear-gradient(180deg, var(--kit-ink) 0%, color-mix(in srgb, var(--kit-ink) 88%, #000) 62%, color-mix(in srgb, var(--kit-ink) 80%, #8E9AB0) 100%); }
+.kit-stack { background: color-mix(in srgb, var(--kit-ink) 70%, #9AA6BA); }
+.kit-tag { background: var(--kit-band); }
+.kit-step { background: color-mix(in srgb, var(--kit-ink) 85%, #000); }
+.kit-step span { color: var(--kit-ink); }
+.kit-buy { background: linear-gradient(180deg, color-mix(in srgb, var(--kit-ink) 75%, #8E9AB0), var(--kit-ink)); box-shadow: 0 10px 20px rgba(30, 40, 60, .28); }
+.kit-shotbox { position: relative; align-items: end; padding: 6px 0 10px; }
+.kit-shotbox::after { content: ''; position: absolute; left: 18%; right: 18%; bottom: 4px; height: 22px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .45), transparent); z-index: 0; }
+.kit-shotbox img, .kit-shotbox .sf-ph { position: relative; z-index: 1; max-height: 320px; object-position: center bottom; }
