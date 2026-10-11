@@ -505,7 +505,7 @@
         if (!ok || ev.source !== window.parent) return;
         if (ev.data?.type === 'cefflo-storefront-preview' && ev.data.store) start(ev.data.store);
       });
-      window.parent.postMessage({ type: 'cefflo-storefront-ready' }, '*');
+      window.parent.postMessage({ type: 'cefflo-storefront-ready', frame: params.get('frame') || '' }, '*');
       return;
     }
     if (!/^[a-z0-9]([a-z0-9-]{1,28}[a-z0-9])$/.test(slug)) { state('This storefront does not exist.'); return; }

@@ -34,13 +34,19 @@ class _StorefrontWebFrameState extends State<StorefrontWebFrame> {
   web.HTMLIFrameElement? _frame;
   JSFunction? _listener;
   bool _ready = false;
+  static int _seq = 0;
+  final String _id = '${++_seq}';
 
   String get _origin => Uri.parse(Env.storefrontBaseUrl).origin;
 
   String get _src {
     final base = Uri.parse(Env.storefrontBaseUrl).resolve('preview');
     final q = base.replace(
-      queryParameters: {'embed': '1', 'template': widget.templateId},
+      queryParameters: {
+        'embed': '1',
+        'template': widget.templateId,
+        'frame': _id,
+      },
     );
     return widget.route.isEmpty ? '$q' : '$q#/${widget.route}';
   }
@@ -60,9 +66,12 @@ class _StorefrontWebFrameState extends State<StorefrontWebFrame> {
     super.initState();
     _listener = ((web.MessageEvent e) {
       if (e.origin != _origin) return;
-      if (_frame == null || e.source != _frame!.contentWindow) return;
+      // Match the frame by the id in its URL: touching e.source (a
+      // cross-origin Window) from Dart throws SecurityError.
       final data = e.data.dartify();
-      if (data is Map && data['type'] == 'cefflo-storefront-ready') {
+      if (data is Map &&
+          data['type'] == 'cefflo-storefront-ready' &&
+          data['frame'] == _id) {
         _ready = true;
         _post();
       }
