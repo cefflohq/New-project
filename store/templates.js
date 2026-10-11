@@ -96,8 +96,8 @@
             <div class="kit-shotbox">${c.img(p, 'kit-shot', c.ui.img)}</div>
             ${dots(p.images.length || 1, c.ui.img)}
           </div>
-          ${prev ? `<button type="button" class="kit-side l" ${c.open(prev.id)} aria-label="${L("Prev")}">${L("Prev")}</button>` : ''}
-          ${next ? `<button type="button" class="kit-side r" ${c.open(next.id)} aria-label="${L("Next")}">${L("Next")}</button>` : ''}
+          <button type="button" class="kit-side l" ${prev ? c.open(prev.id) : 'disabled'} aria-label="${L("Prev")}">${L("Prev")}</button>
+          <button type="button" class="kit-side r" ${next ? c.open(next.id) : 'disabled'} aria-label="${L("Next")}">${L("Next")}</button>
         </div>
         <div class="kit-price"><span><sup>RM</sup>${c.esc(Number(p.price).toFixed(Number.isInteger(p.price) ? 0 : 2))}</span>${p.sizes?.length
           ? `<div class="kit-sizes" role="radiogroup" aria-label="${L("Size")}">${p.sizes.map(z => `<button type="button" role="radio" aria-checked="${(c.ui.size || p.sizes[0]) === z}" class="${(c.ui.size || p.sizes[0]) === z ? 'on' : ''}" data-act="size" data-id="${c.esc(z)}">${c.esc(z)}</button>`).join('')}</div>`
