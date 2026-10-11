@@ -31,7 +31,7 @@ function ctx(s = store, cart = new Map()) {
     s, ui, esc, money, moneyShort: money, icon: n => `<svg data-i="${n}"></svg>`, img, list,
     qty: id => cart.get(id) || 0, count: () => [...cart.values()].reduce((a, b) => a + b, 0), total: () => 0,
     product: id => s.products.find(p => p.id === id), catName: id => s.categories.find(c => c.id === id)?.name || '',
-    initials: x => (x || '').slice(0, 2).toUpperCase(), hoursText: () => 'Today 09:00–18:00', openLabel: () => 'Open now', greeting: () => 'Good morning', DAYS: [],
+    initials: x => (x || '').slice(0, 2).toUpperCase(), isClosed: () => false, hoursText: () => 'Today 09:00–18:00', openLabel: () => 'Open now', greeting: () => 'Good morning', DAYS: [],
     hero: (p, cls) => img(p, cls), headline: fb => s.tagline || fb,
     open: id => `data-act="open" data-id="${id}"`, add: id => `data-act="add" data-id="${id}"`, cat: id => `data-act="cat" data-id="${id || ''}"`, catPage: id => `data-act="catpage" data-id="${id || ''}"`,
     empty: m => `<div class="sf-empty">${esc(m || 'No products yet.')}</div>`, searchInput: ph => `<input data-act="search" placeholder="${esc(ph || '')}">`,
@@ -40,7 +40,7 @@ function ctx(s = store, cart = new Map()) {
   };
 }
 const screens = (k, c) => {
-  const t = T[k], out = { home: t.home(c), product: t.product(c, store.products[0]), product2: t.product(c, store.products[1]) };
+  const t = T[k], out = { home: t.home(c), product: t.product(c, store.products[0]) + (t.dock ? t.dock(c, store.products[0]) : ''), product2: t.product(c, store.products[1]) };
   if (t.category) out.category = t.category.call(t, c, 'c1');
   if (t.all) out.all = t.all.call(t, c, null);
   if (t.intro) out.intro = t.intro(c);
