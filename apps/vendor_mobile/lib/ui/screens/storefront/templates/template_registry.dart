@@ -13,14 +13,19 @@ import 'web/web_templates.dart';
 final List<StorefrontTemplateDef> kStorefrontTemplates =
     kWebStorefrontTemplates;
 
+/// Earlier templates, kept only so a storefront saved on one still shows
+/// (and is marked) as the active template.
+final List<StorefrontTemplateDef> kLegacyStorefrontTemplates =
+    kLegacyWebStorefrontTemplates;
+
 /// The storefront a vendor starts on before choosing a template (and the
 /// one the public page uses for an unknown / retired key).
-const kDefaultStorefrontTemplateId = 'care';
+const kDefaultStorefrontTemplateId = 'homefood';
 
 /// Lookup by id; unknown ids fall back to the default template so a stale
 /// saved id never breaks the storefront.
 StorefrontTemplateDef storefrontTemplateById(String id) =>
-    kStorefrontTemplates.firstWhere(
+    [...kStorefrontTemplates, ...kLegacyStorefrontTemplates].firstWhere(
       (t) => t.id == id,
       orElse: () => kStorefrontTemplates.firstWhere(
         (t) => t.id == kDefaultStorefrontTemplateId,
@@ -29,7 +34,13 @@ StorefrontTemplateDef storefrontTemplateById(String id) =>
 
 /// Preferred chip order for well-known tags; any other tag follows in
 /// first-seen order.
-const _tagOrder = ['Food', 'Fashion', 'Beauty', 'Gifts'];
+const _tagOrder = [
+  'Food',
+  'Desserts & Drinks',
+  'Retail',
+  'Gifts',
+  'Services',
+];
 
 /// Filter chips, derived from the registry's tags -- a new tag on a new
 /// template appears automatically.

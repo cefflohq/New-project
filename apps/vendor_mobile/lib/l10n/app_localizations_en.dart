@@ -2707,6 +2707,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tagBeauty => 'Beauty';
 
   @override
+  String get tagDessertsDrinks => 'Desserts & Drinks';
+
+  @override
+  String get tagRetail => 'Retail';
+
+  @override
+  String get tagServices => 'Services';
+
+  @override
+  String get templateEarlier => 'Earlier template';
+
+  @override
+  String get storeLogo => 'Logo';
+
+  @override
+  String get storeLogoHint =>
+      'Square image, shown at the top of your storefront.';
+
+  @override
+  String get logoTooLarge =>
+      'This logo is larger than 2 MB. Choose a smaller one.';
+
+  @override
   String get tagGifts => 'Gifts';
 
   @override

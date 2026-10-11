@@ -109,7 +109,7 @@
     }));
     return {
       slug: raw.slug, name: raw.business?.name || '', area: raw.business?.area || '',
-      tagline: theme.tagline || '', theme, heroUrl: abs(raw.hero_url), openNow: raw.open_now, nextOpen: raw.next_open || null,
+      tagline: theme.tagline || '', theme, heroUrl: abs(raw.hero_url), logoUrl: abs(raw.logo_url), openNow: raw.open_now, nextOpen: raw.next_open || null,
       hours: Array.isArray(raw.hours) ? raw.hours : [], products,
       categories: (raw.categories || []).filter(c => products.some(p => p.categoryId === c.id)),
       templateKey: raw.template_key,
@@ -178,6 +178,10 @@
         ? `<img class="${cls}" src="${esc(store.heroUrl)}" alt="" loading="lazy">`
         : (fallbackProduct ? img(fallbackProduct, cls) : `<div class="sf-ph ${cls}"></div>`),
       headline: fb => store.tagline || fb,
+      // The vendor's logo, or their initials when none is uploaded.
+      logo: (cls = '') => store.logoUrl
+        ? `<img class="${cls} is-img" src="${esc(store.logoUrl)}" alt="${esc(store.name)}">`
+        : `<span class="${cls}" aria-hidden="true">${esc(initials(store.name))}</span>`,
       // Standard action attributes (the engine handles them).
       open: id => `data-act="open" data-id="${esc(id)}"`,
       add: id => `data-act="add" data-id="${esc(id)}"`,

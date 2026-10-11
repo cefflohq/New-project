@@ -281,6 +281,9 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
     'Fashion' => L.tagFashion,
     'Beauty' => L.tagBeauty,
     'Gifts' => L.tagGifts,
+    'Desserts & Drinks' => L.tagDessertsDrinks,
+    'Retail' => L.tagRetail,
+    'Services' => L.tagServices,
     _ => tag,
   };
 
@@ -290,8 +293,11 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
     final text = Theme.of(context).textTheme;
     final active = storefrontTemplateById(app.activeStorefrontTemplateId);
     final filters = [_all, ...storefrontTemplateTags()];
+    // A storefront still on an earlier template sees it (marked active) at
+    // the start of the library, so it can always tell what is live.
+    final legacyActive = !kStorefrontTemplates.any((t) => t.id == active.id);
     final visible = _filter == _all
-        ? kStorefrontTemplates
+        ? [if (legacyActive) active, ...kStorefrontTemplates]
         : kStorefrontTemplates.where((t) => t.tags.contains(_filter)).toList();
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     return CefSystemBars.split(

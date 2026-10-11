@@ -146,11 +146,32 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
         _ColorPickerSheet(initial: initial, onPicked: onPicked),
   );
 
-  Future<void> _pickHeroImage() async {
+  Future<void> _pickHeroImage() => _pickImage(
+    maxWidth: 1600,
+    maxBytes: 5 * 1024 * 1024,
+    tooLarge: L.heroTooLarge,
+    onPicked: (bytes, type) =>
+        _update(draft.copyWith(heroImage: bytes, heroContentType: type)),
+  );
+
+  Future<void> _pickLogoImage() => _pickImage(
+    maxWidth: 512,
+    maxBytes: 2 * 1024 * 1024,
+    tooLarge: L.logoTooLarge,
+    onPicked: (bytes, type) =>
+        _update(draft.copyWith(logoImage: bytes, logoContentType: type)),
+  );
+
+  Future<void> _pickImage({
+    required double maxWidth,
+    required int maxBytes,
+    required String tooLarge,
+    required void Function(Uint8List bytes, String type) onPicked,
+  }) async {
     try {
       final file = await ImagePicker().pickImage(
         source: ImageSource.gallery,
-        maxWidth: 1600,
+        maxWidth: maxWidth,
         imageQuality: 85,
       );
       if (file == null) return;
@@ -162,19 +183,18 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
           : (name.endsWith('.jpg') || name.endsWith('.jpeg'))
           ? 'image/jpeg'
           : file.mimeType;
-      if (!const {'image/jpeg', 'image/png', 'image/webp'}.contains(type)) {
+      if (type == null ||
+          !const {'image/jpeg', 'image/png', 'image/webp'}.contains(type)) {
         if (mounted) showCefToast(context, L.photoFormat, error: true);
         return;
       }
       final bytes = await file.readAsBytes();
-      if (bytes.length > 5 * 1024 * 1024) {
-        if (mounted) showCefToast(context, L.heroTooLarge, error: true);
+      if (bytes.length > maxBytes) {
+        if (mounted) showCefToast(context, tooLarge, error: true);
         return;
       }
       // Uploaded on Save; the preview shows it now.
-      if (mounted) {
-        _update(draft.copyWith(heroImage: bytes, heroContentType: type));
-      }
+      if (mounted) onPicked(bytes, type);
     } catch (_) {
       if (mounted) {
         showCefToast(context, L.couldntOpenPhotosPleaseTryAgain);
@@ -388,6 +408,62 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
     ];
   }
 
+  List<Widget> _logo() {
+    final image = draft.logoImage;
+    final saved = draft.logoPath;
+    final has = image != null || saved != null;
+    final c = context.c;
+    return [
+      _label(L.storeLogo, hint: L.storeLogoHint),
+      Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              width: 56,
+              height: 56,
+              color: c.subtle,
+              child: image != null
+                  ? Image.memory(image, fit: BoxFit.cover)
+                  : saved != null
+                  ? Image(
+                      image: StorefrontThemeTokens.heroProviderFor(saved)!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) =>
+                          Icon(LucideIcons.image, color: c.textSecondary),
+                    )
+                  : Icon(LucideIcons.image, color: c.textSecondary),
+            ),
+          ),
+          const SizedBox(width: Gap.lg),
+          Expanded(
+            child: Wrap(
+              spacing: Gap.sm,
+              runSpacing: Gap.sm,
+              children: [
+                SizedBox(
+                  width: 120,
+                  child: CefButton(
+                    has ? L.change : L.upload,
+                    secondary: true,
+                    compact: true,
+                    onTap: _pickLogoImage,
+                  ),
+                ),
+                if (has)
+                  TextButton(
+                    onPressed: () => _update(draft.copyWith(clearLogo: true)),
+                    style: TextButton.styleFrom(foregroundColor: c.attention),
+                    child: Text(L.remove2),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ];
+  }
+
   List<Widget> _heroImage() {
     final image = draft.heroImage;
     final saved = draft.heroPath;
@@ -446,6 +522,7 @@ class _CustomizeStorefrontScreenState extends State<CustomizeStorefrontScreen> {
   }
 
   List<Widget> _identity() => [
+    ..._logo(),
     _label(L.storeName, hint: L.fromBusinessProfile),
     CefField(
       label: L.storeName,

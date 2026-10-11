@@ -677,7 +677,283 @@
   function head(c) { return `<header class="ca-head"><span class="ca-logo">${c.icon('plus')}</span><div class="ca-bn"><b>${c.esc(c.s.name)}</b><small>${c.esc(c.s.tagline || c.s.area || '')}</small></div><button type="button" class="ca-ic" data-act="catpage" data-id="" aria-label="${L("Search")}">${c.icon('search')}</button>${c.toCart('ca-ic', c.icon('cart'))}<button type="button" class="ca-ic" data-act="catpage" data-id="" aria-label="${L("Menu")}">${c.icon('menu')}</button></header>`; }
   function nav(c, at) { return `<nav class="ca-nav"><button type="button" class="${at === 'home' ? 'on' : ''}" data-act="home">${c.icon('home')}<span>${L("Home")}</span></button><button type="button" class="${at === 'cat' ? 'on' : ''}" data-act="catpage" data-id="">${c.icon('apps')}<span>${L("Categories")}</span></button><button type="button" data-act="tocart">${c.icon('orders')}<span>${L("Cart")}</span></button><button type="button" data-act="tocart">${c.icon('user')}<span>${L("Account")}</span></button></nav>`; }
 
+
+  // ==================================================================
+  // CEFFLO business templates (2026-10-11): ten layouts, one per type of
+  // business, built only on data Cefflo has today (name, area, hours, logo,
+  // hero, tagline, categories, products: name/description/price/photos).
+  // Variants, add-on pricing, preorder dates, pax, pack sizes, branches and
+  // pickup slots are NOT in the product/order model, so no template shows
+  // them; add-ons are simply another category. Cart, checkout and the
+  // bottom dock are the shared engine for all ten.
+  // ==================================================================
+  const mark = (c, cls) => c.logo(cls);
+  const price = (c, p) => c.esc(c.money(p.price));
+  const addBtn = (c, p, cls) => c.qty(p.id)
+    ? `<div class="${cls} has-q"><button type="button" data-act="q-" data-id="${c.esc(p.id)}" aria-label="${L("Remove one")}">${c.icon('minus')}</button><span>${c.qty(p.id)}</span><button type="button" data-act="q+" data-id="${c.esc(p.id)}" aria-label="${L("Add one")}">${c.icon('plus')}</button></div>`
+    : `<button type="button" class="${cls}" ${c.add(p.id)} aria-label="${L("Add")} ${c.esc(p.name)}"${c.isClosed() ? ' disabled' : ''}>${c.icon('plus')}</button>`;
+  const others = (c, p, n = 6) => c.list(null, '').filter(x => x.id !== p.id).slice(0, n);
+  const pdpBack = (c, cls) => `<header class="${cls}"><button type="button" class="bz-ic" data-act="back" aria-label="${L("Back")}">${c.icon('back')}</button><span>${mark(c, 'bz-mark sm')}</span>${c.toCart('bz-ic', c.icon('bag'))}</header>`;
+  const groups = (c, ps) => {
+    const out = c.s.categories.map(k => [k, ps.filter(p => p.categoryId === k.id)]).filter(([, l]) => l.length);
+    const loose = ps.filter(p => !c.s.categories.some(k => k.id === p.categoryId));
+    if (loose.length) out.push([{ id: '', name: L('More') }, loose]);
+    return out;
+  };
+
+  // ---- T01 Home-based food: today's menu as a list of meal rows (photo,
+  // description, price, inline quantity) grouped by category; add-on dishes
+  // are their own category. Day + hours up top answer "can I order now?".
+  T.homefood = {
+    name: 'Dapur', defaults: { accent: '#C2410C', accent2: '#FFF7ED', bg: '#ffffff', bar: '#ffffff' },
+    home(c) {
+      const ps = c.list();
+      const day = new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+      return `<section class="hf">
+        <header class="hf-top">${mark(c, 'bz-mark')}<div><b>${c.esc(c.s.name)}</b><small>${c.esc([c.s.area, c.openLabel()].filter(Boolean).join(' · '))}</small></div>${c.toCart('bz-ic', c.icon('bag'))}</header>
+        <div class="hf-today"><small>${L("Today's menu")}</small><h1>${c.esc(day)}</h1>${c.hoursText() ? `<p>${c.icon('clock')}${c.esc(c.hoursText())}</p>` : ''}${c.s.tagline ? `<p class="hf-tag">${c.esc(c.s.tagline)}</p>` : ''}</div>
+        <nav class="hf-tabs">${chips(c, 'hf-tab')}</nav>
+        ${groups(c, ps).map(([k, l]) => `<section class="hf-group"><h2>${c.esc(k.name)}</h2>${l.map(p => `<article class="hf-row"><button type="button" class="hf-pic" ${c.open(p.id)}>${c.img(p)}</button><div class="hf-tx" ${c.open(p.id)}><b>${c.esc(p.name)}</b>${p.description ? `<p>${c.esc(p.description)}</p>` : ''}<span>${price(c, p)}</span></div>${addBtn(c, p, 'hf-add')}</article>`).join('')}</section>`).join('') || c.empty()}
+      </section>`;
+    },
+    product(c, p) {
+      return `<section class="hf hf-pdp">${pdpBack(c, 'bz-pbar')}
+        <div class="hf-photo">${c.img(p, '', c.ui.img)}</div>
+        <div class="hf-body"><small>${c.esc(c.catName(p.categoryId))}</small><h1>${c.esc(p.name)}</h1><b class="hf-price">${price(c, p)}</b>${p.description ? `<p>${c.esc(p.description)}</p>` : ''}</div>
+        ${others(c, p).length ? `<section class="hf-more"><h2>${L("Add to your order")}</h2>${others(c, p).map(o => `<div class="hf-mini"><button type="button" ${c.open(o.id)}>${c.img(o)}</button><span><b>${c.esc(o.name)}</b><small>${price(c, o)}</small></span>${addBtn(c, o, 'hf-add sm')}</div>`).join('')}</section>` : ''}
+        ${c.buy(L('Add to cart'), 'bz-buy')}
+      </section>`;
+    },
+  };
+
+  // ---- T02 Bakery & dessert: editorial hero, collections as a quiet text
+  // row, a two-column gallery of tall photos; product = big photo first.
+  T.bakery = {
+    name: 'Patisserie', defaults: { accent: '#9D174D', accent2: '#FDF2F8', bg: '#FFFCFA', bar: '#FFFCFA' },
+    home(c) {
+      const ps = c.list(), f = c.list(null, '')[0];
+      return `<section class="bk">
+        <header class="bk-top">${mark(c, 'bz-mark')}<b>${c.esc(c.s.name)}</b>${c.toCart('bz-ic', c.icon('bag'))}</header>
+        <div class="bk-hero">${c.hero(f, 'bk-heroimg')}<div class="bk-over"><h1>${c.esc(c.headline(c.s.name))}</h1>${c.openLabel() ? `<span>${c.esc(c.openLabel())}</span>` : ''}</div></div>
+        <nav class="bk-cols">${chips(c, 'bk-col')}</nav>
+        <div class="bk-grid">${ps.map(p => `<article class="bk-card" ${c.open(p.id)}><div class="bk-ph">${c.img(p)}</div><b>${c.esc(p.name)}</b><span>${price(c, p)}</span></article>`).join('') || c.empty()}</div>
+      </section>`;
+    },
+    product(c, p) {
+      return `<section class="bk bk-pdp">${pdpBack(c, 'bz-pbar over')}
+        <div class="bk-big">${c.img(p, '', c.ui.img)}</div>
+        ${p.images.length > 1 ? `<div class="bz-thumbs">${p.images.slice(0, 5).map((_, n) => `<button type="button" class="${n === c.ui.img ? 'on' : ''}" ${c.selImg(n)}>${c.img(p, '', n)}</button>`).join('')}</div>` : ''}
+        <div class="bk-body"><small>${c.esc(c.catName(p.categoryId))}</small><h1>${c.esc(p.name)}</h1><b>${price(c, p)}</b>
+          <p class="bk-avail ${c.isClosed() ? 'off' : ''}">${c.esc(c.isClosed() ? L('Ordering opens when the store is open') : L('Available to order'))}</p>
+          ${p.description ? `<p>${c.esc(p.description)}</p>` : ''}</div>
+        ${c.buy(L('Add to cart'), 'bz-buy')}
+      </section>`;
+    },
+  };
+
+  // ---- T03 Restaurant & outlet: dense menu. Search, sticky category tabs,
+  // a bestseller strip, then compact rows with inline add — built for
+  // people who already know what they want.
+  T.eatery = {
+    name: 'Kedai Makan', defaults: { accent: '#B91C1C', accent2: '#FEF2F2', bg: '#ffffff', bar: '#ffffff' },
+    home(c) {
+      const ps = c.list(), best = c.list(null, '').slice(0, 6);
+      return `<section class="et">
+        <header class="et-top">${mark(c, 'bz-mark sm')}<b>${c.esc(c.s.name)}</b><small>${c.esc(c.openLabel())}</small>${c.toCart('bz-ic', c.icon('bag'))}</header>
+        <div class="et-search">${c.icon('search')}${c.searchInput('Search the menu')}</div>
+        <nav class="et-tabs">${chips(c, 'et-tab')}</nav>
+        ${!c.ui.cat && !c.ui.q && best.length > 2 ? `<section class="et-best"><h2>${L("Popular")}</h2><div class="et-strip">${best.map(p => `<article class="et-tile" ${c.open(p.id)}><div>${c.img(p)}</div><b>${c.esc(p.name)}</b><span>${price(c, p)}</span></article>`).join('')}</div></section>` : ''}
+        ${groups(c, ps).map(([k, l]) => `<section class="et-sec"><h2>${c.esc(k.name)}<small>${l.length}</small></h2>${l.map(p => `<article class="et-row"><div class="et-tx" ${c.open(p.id)}><b>${c.esc(p.name)}</b>${p.description ? `<p>${c.esc(p.description)}</p>` : ''}<span>${price(c, p)}</span></div><button type="button" class="et-th" ${c.open(p.id)}>${c.img(p)}</button>${addBtn(c, p, 'et-add')}</article>`).join('')}</section>`).join('') || c.empty()}
+      </section>`;
+    },
+    product(c, p) {
+      return `<section class="et et-pdp">${pdpBack(c, 'bz-pbar')}
+        <div class="et-photo">${c.img(p, '', c.ui.img)}</div>
+        <div class="et-body"><h1>${c.esc(p.name)}</h1><b>${price(c, p)}</b>${p.description ? `<p>${c.esc(p.description)}</p>` : ''}<small>${c.esc(c.catName(p.categoryId))}</small></div>
+        ${c.buy(L('Add to cart'), 'bz-buy')}
+      </section>`;
+    },
+  };
+
+  // ---- T04 Cafe & beverage: segmented category control and a three-across
+  // grid of drinks on soft stages; one tap adds. Product = drink centred.
+  T.cafe = {
+    name: 'Kafe', cutout: true, defaults: { accent: '#1F2937', accent2: '#F3F4F6', bg: '#F7F7F5', bar: '#F7F7F5' },
+    home(c) {
+      const ps = c.list();
+      return `<section class="bv">
+        <header class="bv-top">${mark(c, 'bz-mark')}<div><b>${c.esc(c.s.name)}</b><small>${c.esc(c.s.tagline || c.openLabel())}</small></div>${c.toCart('bz-ic', c.icon('bag'))}</header>
+        <nav class="bv-seg">${chips(c, 'bv-opt')}</nav>
+        <div class="bv-grid">${ps.map(p => `<article class="bv-cup"><button type="button" class="bv-stage" ${c.open(p.id)}>${c.img(p)}</button><b ${c.open(p.id)}>${c.esc(p.name)}</b><div class="bv-ft"><span>${price(c, p)}</span>${addBtn(c, p, 'bv-add')}</div></article>`).join('') || c.empty()}</div>
+      </section>`;
+    },
+    product(c, p) {
+      return `<section class="bv bv-pdp">${pdpBack(c, 'bz-pbar')}
+        <div class="bv-show">${c.img(p, '', c.ui.img)}</div>
+        <div class="bv-body"><h1>${c.esc(p.name)}</h1><b>${price(c, p)}</b>${p.description ? `<p>${c.esc(p.description)}</p>` : ''}</div>
+        ${others(c, p, 8).length ? `<section class="bv-also"><h2>${L("You may also like")}</h2><div>${others(c, p, 8).map(o => `<button type="button" ${c.open(o.id)}>${c.img(o)}<b>${c.esc(o.name)}</b><small>${price(c, o)}</small></button>`).join('')}</div></section>` : ''}
+        ${c.buy(L('Add to cart'), 'bz-buy')}
+      </section>`;
+    },
+  };
+
+  // ---- T05 Catering & corporate meals: a business-card header, numbered
+  // package cards (wide image + summary) and an honest note: scheduled
+  // orders go through the delivery notes at checkout (no date picker exists).
+  T.catering = {
+    name: 'Katering', defaults: { accent: '#0F766E', accent2: '#F0FDFA', bg: '#FAFAF9', bar: '#FAFAF9' },
+    home(c) {
+      const ps = c.list();
+      return `<section class="ct">
+        <header class="ct-top">${mark(c, 'bz-mark')}${c.toCart('bz-ic', c.icon('bag'))}</header>
+        <div class="ct-card"><small>${L("Catering")}</small><h1>${c.esc(c.s.name)}</h1>${c.s.tagline ? `<p>${c.esc(c.s.tagline)}</p>` : ''}
+          <dl>${c.s.area ? `<div><dt>${L("Area")}</dt><dd>${c.esc(c.s.area)}</dd></div>` : ''}${c.hoursText() ? `<div><dt>${L("Hours")}</dt><dd>${c.esc(c.hoursText())}</dd></div>` : ''}</dl></div>
+        <p class="ct-note">${c.icon('info')}<span>${L("For an event or a scheduled delivery, write the date and time in the delivery notes at checkout.")}</span></p>
+        <nav class="ct-tabs">${chips(c, 'ct-tab')}</nav>
+        <div class="ct-list">${ps.map((p, i) => `<article class="ct-pkg" ${c.open(p.id)}><div class="ct-img">${c.img(p)}</div><div class="ct-tx"><small>${String(i + 1).padStart(2, '0')} · ${c.esc(c.catName(p.categoryId))}</small><b>${c.esc(p.name)}</b>${p.description ? `<p>${c.esc(p.description)}</p>` : ''}<span>${price(c, p)}</span></div></article>`).join('') || c.empty()}</div>
+      </section>`;
+    },
+    product(c, p) {
+      return `<section class="ct ct-pdp">${pdpBack(c, 'bz-pbar')}
+        <div class="ct-photo">${c.img(p, '', c.ui.img)}</div>
+        <div class="ct-body"><small>${c.esc(c.catName(p.categoryId))}</small><h1>${c.esc(p.name)}</h1><b>${price(c, p)}</b>${p.description ? `<p>${c.esc(p.description)}</p>` : ''}
+          <p class="ct-note">${c.icon('info')}<span>${L("For an event or a scheduled delivery, write the date and time in the delivery notes at checkout.")}</span></p></div>
+        ${c.buy(L('Add to cart'), 'bz-buy')}
+      </section>`;
+    },
+  };
+
+  // ---- T06 Frozen & ready-to-cook: a stocking-up catalogue. Bordered
+  // two-up cards with the quantity control always visible, so a basket of
+  // ten packs takes ten taps, not ten page visits.
+  T.frozen = {
+    name: 'Sejuk Beku', cutout: true, defaults: { accent: '#1D4ED8', accent2: '#EFF6FF', bg: '#F5F7FA', bar: '#F5F7FA' },
+    home(c) {
+      const ps = c.list();
+      return `<section class="fz">
+        <header class="fz-top">${mark(c, 'bz-mark sm')}<b>${c.esc(c.s.name)}</b>${c.toCart('bz-ic', c.icon('bag'))}</header>
+        <div class="fz-search">${c.icon('search')}${c.searchInput('Search products')}</div>
+        <nav class="fz-tabs">${chips(c, 'fz-tab')}</nav>
+        <div class="fz-grid">${ps.map(p => `<article class="fz-card"><button type="button" class="fz-img" ${c.open(p.id)}>${c.img(p)}</button><b ${c.open(p.id)}>${c.esc(p.name)}</b>${p.description ? `<small>${c.esc(p.description)}</small>` : ''}<div class="fz-ft"><span>${price(c, p)}</span>${addBtn(c, p, 'fz-add')}</div></article>`).join('') || c.empty()}</div>
+      </section>`;
+    },
+    product(c, p) {
+      return `<section class="fz fz-pdp">${pdpBack(c, 'bz-pbar')}
+        <div class="fz-show">${c.img(p, '', c.ui.img)}</div>
+        <div class="fz-body"><small>${c.esc(c.catName(p.categoryId))}</small><h1>${c.esc(p.name)}</h1><b>${price(c, p)}</b>
+          ${p.description ? `<section class="fz-info"><h2>${L("Product information")}</h2><p>${c.esc(p.description)}</p></section>` : ''}</div>
+        ${c.buy(L('Add to cart'), 'bz-buy')}
+      </section>`;
+    },
+  };
+
+  // ---- T07 Florist & gift: editorial. Full-bleed hero with a serif line,
+  // occasions (categories) as photo tiles, then one large photo per gift.
+  T.florist = {
+    name: 'Florist', defaults: { accent: '#3F3F46', accent2: '#FAF7F2', bg: '#FAF7F2', bar: '#FAF7F2' },
+    home(c) {
+      const ps = c.list(), all = c.list(null, ''), f = all[0];
+      return `<section class="fl">
+        <div class="fl-hero">${c.hero(f, 'fl-heroimg')}<header class="fl-top">${mark(c, 'bz-mark light')}${c.toCart('bz-ic light', c.icon('bag'))}</header><div class="fl-over"><small>${c.esc(c.s.name)}</small><h1>${c.esc(c.headline(c.s.name))}</h1></div></div>
+        ${c.s.categories.length ? `<section class="fl-occ"><h2>${L("Shop by occasion")}</h2><div>${c.s.categories.map(k => { const p = all.find(x => x.categoryId === k.id); return `<button type="button" class="fl-tile${c.ui.cat === k.id ? ' on' : ''}" ${c.cat(c.ui.cat === k.id ? null : k.id)}>${c.img(p)}<span>${c.esc(k.name)}</span></button>`; }).join('')}</div></section>` : ''}
+        <div class="fl-list">${ps.map(p => `<article class="fl-card" ${c.open(p.id)}><div class="fl-ph">${c.img(p)}</div><div class="fl-tx"><b>${c.esc(p.name)}</b><span>${price(c, p)}</span></div></article>`).join('') || c.empty()}</div>
+      </section>`;
+    },
+    product(c, p) {
+      return `<section class="fl fl-pdp">${pdpBack(c, 'bz-pbar over')}
+        <div class="fl-big">${c.img(p, '', c.ui.img)}</div>
+        ${p.images.length > 1 ? `<div class="bz-thumbs">${p.images.slice(0, 5).map((_, n) => `<button type="button" class="${n === c.ui.img ? 'on' : ''}" ${c.selImg(n)}>${c.img(p, '', n)}</button>`).join('')}</div>` : ''}
+        <div class="fl-body"><small>${c.esc(c.catName(p.categoryId))}</small><h1>${c.esc(p.name)}</h1><b>${price(c, p)}</b>${p.description ? `<p>${c.esc(p.description)}</p>` : ''}</div>
+        ${c.buy(L('Add to cart'), 'bz-buy')}
+      </section>`;
+    },
+  };
+
+  // ---- T08 Laundry & ironing: a service price list. Categories become
+  // service groups; each row states the service, what the price covers (the
+  // vendor's description) and the price. No weights, slots or pickup
+  // scheduling: Cefflo has none, so delivery info is the business area.
+  T.laundry = {
+    name: 'Dobi', defaults: { accent: '#0369A1', accent2: '#F0F9FF', bg: '#F8FAFC', bar: '#F8FAFC' },
+    home(c) {
+      const ps = c.list();
+      return `<section class="ld">
+        <header class="ld-top">${mark(c, 'bz-mark')}<div><b>${c.esc(c.s.name)}</b><small>${c.esc(c.s.tagline || L('Services'))}</small></div>${c.toCart('bz-ic', c.icon('bag'))}</header>
+        <div class="ld-info"><div>${c.icon('pin')}<span><small>${L("Service area")}</small><b>${c.esc(c.s.area || c.s.name)}</b></span></div><div>${c.icon('clock')}<span><small>${L("Hours")}</small><b>${c.esc(c.hoursText() || c.openLabel() || '—')}</b></span></div></div>
+        <nav class="ld-tabs">${chips(c, 'ld-tab')}</nav>
+        ${groups(c, ps).map(([k, l]) => `<section class="ld-group"><h2>${c.esc(k.name)}</h2><div class="ld-table">${l.map(p => `<article class="ld-row"><div ${c.open(p.id)}><b>${c.esc(p.name)}</b>${p.description ? `<small>${c.esc(p.description)}</small>` : ''}</div><span>${price(c, p)}</span>${addBtn(c, p, 'ld-add')}</article>`).join('')}</div></section>`).join('') || c.empty()}
+      </section>`;
+    },
+    product(c, p) {
+      return `<section class="ld ld-pdp">${pdpBack(c, 'bz-pbar')}
+        ${p.images.length ? `<div class="ld-photo">${c.img(p, '', c.ui.img)}</div>` : ''}
+        <div class="ld-body"><small>${c.esc(c.catName(p.categoryId))}</small><h1>${c.esc(p.name)}</h1><b>${price(c, p)}</b>
+          ${p.description ? `<section><h2>${L("What's included")}</h2><p>${c.esc(p.description)}</p></section>` : ''}
+          <div class="ld-info"><div>${c.icon('pin')}<span><small>${L("Service area")}</small><b>${c.esc(c.s.area || c.s.name)}</b></span></div></div></div>
+        ${c.buy(L('Add to cart'), 'bz-buy')}
+      </section>`;
+    },
+  };
+
+  // ---- T09 Retail & local products: brand first. Centred logo and
+  // tagline, a banner, a numbered bestseller rail, collections as text
+  // tabs and a bordered square grid; product with a thumbnail gallery.
+  T.retail = {
+    name: 'Jenama', cutout: true, defaults: { accent: '#111827', accent2: '#F59E0B', bg: '#ffffff', bar: '#ffffff' },
+    home(c) {
+      const ps = c.list(), all = c.list(null, ''), f = all[0];
+      return `<section class="rt">
+        <header class="rt-top"><span></span><div class="rt-brand">${mark(c, 'bz-mark lg')}<b>${c.esc(c.s.name)}</b></div>${c.toCart('bz-ic', c.icon('bag'))}</header>
+        ${c.s.tagline ? `<p class="rt-tag">${c.esc(c.s.tagline)}</p>` : ''}
+        <div class="rt-banner">${c.hero(f, 'rt-bimg')}</div>
+        ${all.length > 2 && !c.ui.cat ? `<section class="rt-best"><h2>${L("Bestsellers")}</h2><div>${all.slice(0, 5).map((p, i) => `<article ${c.open(p.id)}><i>${i + 1}</i><div>${c.img(p)}</div><b>${c.esc(p.name)}</b><span>${price(c, p)}</span></article>`).join('')}</div></section>` : ''}
+        <nav class="rt-tabs">${chips(c, 'rt-tab')}</nav>
+        <div class="rt-grid">${ps.map(p => `<article class="rt-card" ${c.open(p.id)}><div class="rt-sq">${c.img(p)}</div><b>${c.esc(p.name)}</b><span>${price(c, p)}</span></article>`).join('') || c.empty()}</div>
+      </section>`;
+    },
+    product(c, p) {
+      return `<section class="rt rt-pdp">${pdpBack(c, 'bz-pbar')}
+        <div class="rt-show">${c.img(p, '', c.ui.img)}</div>
+        ${p.images.length > 1 ? `<div class="bz-thumbs">${p.images.slice(0, 5).map((_, n) => `<button type="button" class="${n === c.ui.img ? 'on' : ''}" ${c.selImg(n)}>${c.img(p, '', n)}</button>`).join('')}</div>` : ''}
+        <div class="rt-body"><small>${c.esc(c.s.name)}</small><h1>${c.esc(p.name)}</h1><b>${price(c, p)}</b>${p.description ? `<p>${c.esc(p.description)}</p>` : ''}</div>
+        ${c.buy(L('Add to cart'), 'bz-buy')}
+      </section>`;
+    },
+  };
+
+  // ---- T10 Multi-outlet SME: brand band, the one service location Cefflo
+  // knows (business area + hours; no branch picker — branches are not in
+  // the model), and an organised catalogue: category rail beside a grid on
+  // wide screens, chips on phones.
+  T.outlets = {
+    name: 'Rangkaian', defaults: { accent: '#4338CA', accent2: '#EEF2FF', bg: '#ffffff', bar: '#ffffff' },
+    home(c) {
+      const ps = c.list();
+      return `<section class="mo">
+        <header class="mo-band">${mark(c, 'bz-mark light')}<b>${c.esc(c.s.name)}</b>${c.toCart('bz-ic light', c.icon('bag'))}</header>
+        <div class="mo-loc">${c.icon('pin')}<div><small>${L("Serving")}</small><b>${c.esc(c.s.area || c.s.name)}</b></div><span class="${c.isClosed() ? 'off' : ''}">${c.esc(c.openLabel() || c.hoursText())}</span></div>
+        <div class="mo-wrap">
+          <nav class="mo-cats">${chips(c, 'mo-cat')}</nav>
+          <div class="mo-main"><div class="mo-search">${c.icon('search')}${c.searchInput('Search products')}</div>
+            ${groups(c, ps).map(([k, l]) => `<section class="mo-sec"><h2>${c.esc(k.name)}</h2><div class="mo-grid">${l.map(p => `<article class="mo-card"><button type="button" class="mo-img" ${c.open(p.id)}>${c.img(p)}</button><b ${c.open(p.id)}>${c.esc(p.name)}</b><div><span>${price(c, p)}</span>${addBtn(c, p, 'mo-add')}</div></article>`).join('')}</div></section>`).join('') || c.empty()}</div>
+        </div>
+      </section>`;
+    },
+    product(c, p) {
+      return `<section class="mo mo-pdp">${pdpBack(c, 'bz-pbar')}
+        <div class="mo-pwrap"><div class="mo-photo">${c.img(p, '', c.ui.img)}</div>
+          <div class="mo-body"><small>${c.esc(c.catName(p.categoryId))}</small><h1>${c.esc(p.name)}</h1><b>${price(c, p)}</b>${p.description ? `<p>${c.esc(p.description)}</p>` : ''}
+            <div class="mo-loc">${c.icon('pin')}<div><small>${L("Serving")}</small><b>${c.esc(c.s.area || c.s.name)}</b></div></div></div></div>
+        ${c.buy(L('Add to cart'), 'bz-buy')}
+      </section>`;
+    },
+  };
+
   window.CEFFLO_TEMPLATES = T;
   // Gallery order + discovery tags (the Vendor App reads the same list).
-  window.CEFFLO_TEMPLATE_ORDER = ['care', 'capsule', 'kit', 'brew', 'crimson', 'lift', 'harvest', 'botanic', 'combo', 'discover', 'atelier', 'pour', 'tailor', 'sprint', 'splash', 'service', 'warung', 'collector'];
+  // Template Library (Vendor App + Vendor Web): the ten business templates.
+  window.CEFFLO_TEMPLATE_ORDER = ['homefood', 'bakery', 'eatery', 'cafe', 'catering', 'frozen', 'florist', 'laundry', 'retail', 'outlets'];
+  // Earlier V1 templates: still rendered for storefronts saved on them, no
+  // longer offered in the library.
+  window.CEFFLO_TEMPLATE_LEGACY = ['care', 'capsule', 'kit', 'brew', 'crimson', 'lift', 'harvest', 'botanic', 'combo', 'discover', 'atelier', 'pour', 'tailor', 'sprint', 'splash', 'service', 'warung', 'collector'];
 })();

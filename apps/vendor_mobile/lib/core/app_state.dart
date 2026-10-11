@@ -56,7 +56,7 @@ class AppState extends ChangeNotifier {
   // ---- Storefront (V-31/X-02/V-33). Template and customization persist on
   // the server (public_order_pages, Storefront V1); these fields mirror the
   // loaded state. Products and business data are never stored here.
-  String activeStorefrontTemplateId = 'care';
+  String activeStorefrontTemplateId = 'homefood';
 
   Future<Map<String, dynamic>?>? _storefrontPreview;
 
@@ -129,6 +129,7 @@ class AppState extends ChangeNotifier {
         customBackground: hex('background_color'),
         tagline: theme['tagline'] as String?,
         heroPath: theme['hero_path'] as String?,
+        logoPath: theme['logo_path'] as String?,
       );
     }
     notifyListeners();
@@ -152,12 +153,24 @@ class AppState extends ChangeNotifier {
     if (!repo.isDemo && b != null) {
       // Upload a newly picked hero FIRST; hero_path changes only after the
       // upload succeeded, so the storefront never points at a missing file.
-      if (branding.hasUnsavedHero) {
-        final path = await repo.uploadStorefrontHero(
-          b.id,
-          branding.heroImage!,
-          branding.heroContentType!,
-        );
+      // Upload a newly picked hero / logo FIRST; the saved paths change
+      // only after the upload succeeded, so the storefront never points at
+      // a missing file. The rebuilt branding has no pending uploads.
+      if (branding.hasUnsavedHero || branding.hasUnsavedLogo) {
+        final heroPath = branding.hasUnsavedHero
+            ? await repo.uploadStorefrontHero(
+                b.id,
+                branding.heroImage!,
+                branding.heroContentType!,
+              )
+            : branding.heroPath;
+        final logoPath = branding.hasUnsavedLogo
+            ? await repo.uploadStorefrontLogo(
+                b.id,
+                branding.logoImage!,
+                branding.logoContentType!,
+              )
+            : branding.logoPath;
         branding = StorefrontBranding(
           primary: branding.primary,
           secondary: branding.secondary,
@@ -170,7 +183,9 @@ class AppState extends ChangeNotifier {
           backgroundId: branding.backgroundId,
           customBackground: branding.customBackground,
           heroImage: branding.heroImage,
-          heroPath: path,
+          heroPath: heroPath,
+          logoImage: branding.logoImage,
+          logoPath: logoPath,
         );
       }
       await repo.saveStorefrontAppearance(b.id, templateId, {
@@ -183,6 +198,7 @@ class AppState extends ChangeNotifier {
           'background_color': branding.customBackground!.hex,
         if (branding.tagline.isNotEmpty) 'tagline': branding.tagline,
         if (branding.heroPath != null) 'hero_path': branding.heroPath!,
+        if (branding.logoPath != null) 'logo_path': branding.logoPath!,
       });
     }
     activeStorefrontTemplateId = templateId;

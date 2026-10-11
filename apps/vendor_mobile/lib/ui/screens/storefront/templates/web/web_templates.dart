@@ -48,9 +48,157 @@ StorefrontTemplateDef _t(
   renderer: (d) => StorefrontLivePreview(templateId: id, data: d),
 );
 
-/// Gallery order (same as `window.CEFFLO_TEMPLATE_ORDER`).
+const _legacy = _t;
+
+/// Template Library order (same as `window.CEFFLO_TEMPLATE_ORDER`): one
+/// template per type of business.
 final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
   _t(
+    'homefood',
+    'Dapur',
+    'Home-Based Food',
+    'The menu for today as clear meal rows with photo, description, price and quantity; add-on dishes sit in their own section.',
+    const [
+      'Menu for today with hours',
+      'Meal rows with quantity',
+      'Add-on dishes on the product page',
+    ],
+    const ['Food'],
+    const Color(0xFFC2410C),
+    const Color(0xFFFFF7ED),
+  ),
+  _t(
+    'bakery',
+    'Patisserie',
+    'Bakery & Dessert',
+    'Editorial hero, quiet collection tabs and a two-column gallery of tall photos; product pages lead with a large photo.',
+    const [
+      'Large product photography',
+      'Collections',
+      'Availability on the product page',
+    ],
+    const ['Desserts & Drinks'],
+    const Color(0xFF9D174D),
+    const Color(0xFFFDF2F8),
+  ),
+  _t(
+    'eatery',
+    'Kedai Makan',
+    'Restaurant & Outlet',
+    'A dense menu: search, sticky category tabs, a popular strip and compact rows with one-tap add.',
+    const [
+      'Menu search',
+      'Sticky category tabs',
+      'Compact rows with quick add',
+    ],
+    const ['Food'],
+    const Color(0xFFB91C1C),
+    const Color(0xFFFEF2F2),
+  ),
+  _t(
+    'cafe',
+    'Kafe',
+    'Cafe & Beverage',
+    'A compact drink menu: segmented categories and a three-across grid with one-tap add.',
+    const [
+      'Segmented categories',
+      'Three-across drink grid',
+      'You may also like',
+    ],
+    const ['Desserts & Drinks'],
+    const Color(0xFF1F2937),
+    const Color(0xFFF3F4F6),
+  ),
+  _t(
+    'catering',
+    'Katering',
+    'Catering & Corporate',
+    'A business card header, numbered package cards and a clear note for scheduled orders.',
+    const [
+      'Business details up top',
+      'Numbered packages',
+      'Scheduled-order note',
+    ],
+    const ['Food'],
+    const Color(0xFF0F766E),
+    const Color(0xFFF0FDFA),
+  ),
+  _t(
+    'frozen',
+    'Sejuk Beku',
+    'Frozen & Ready-to-Cook',
+    'A stocking-up catalogue: bordered two-up cards with quantity always visible.',
+    const [
+      'Search and category tabs',
+      'Quantity on every card',
+      'Product information',
+    ],
+    const ['Food'],
+    const Color(0xFF1D4ED8),
+    const Color(0xFFEFF6FF),
+  ),
+  _t(
+    'florist',
+    'Florist',
+    'Florist & Gift',
+    'Editorial full-bleed hero, occasions as photo tiles and one large photo per gift.',
+    const [
+      'Full-bleed hero',
+      'Shop by occasion',
+      'Large gift photos',
+    ],
+    const ['Gifts'],
+    const Color(0xFF3F3F46),
+    const Color(0xFFFAF7F2),
+  ),
+  _t(
+    'laundry',
+    'Dobi',
+    'Laundry & Services',
+    'A service price list: service area and hours up top, grouped services with what the price covers.',
+    const [
+      'Service area and hours',
+      'Grouped price list',
+      'Quick add per service',
+    ],
+    const ['Services'],
+    const Color(0xFF0369A1),
+    const Color(0xFFF0F9FF),
+  ),
+  _t(
+    'retail',
+    'Jenama',
+    'Retail & Local Products',
+    'Brand first: centred logo, banner, numbered bestsellers, collection tabs and a clean square grid.',
+    const [
+      'Centred brand',
+      'Numbered bestsellers',
+      'Square product grid',
+    ],
+    const ['Retail'],
+    const Color(0xFF111827),
+    const Color(0xFFF59E0B),
+  ),
+  _t(
+    'outlets',
+    'Rangkaian',
+    'Multi-Outlet SME',
+    'A brand band, the area you serve and an organised catalogue with a category rail on wide screens.',
+    const [
+      'Brand band',
+      'Service area and hours',
+      'Category rail and grid',
+    ],
+    const ['Retail'],
+    const Color(0xFF4338CA),
+    const Color(0xFFEEF2FF),
+  ),
+];
+
+/// Earlier V1 templates (`window.CEFFLO_TEMPLATE_LEGACY`): still rendered for
+/// storefronts saved on them, no longer offered in the Template Library.
+final List<StorefrontTemplateDef> kLegacyWebStorefrontTemplates = [
+  _legacy(
     'care',
     'Care',
     'Everyday Store',
@@ -65,7 +213,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF1677D8),
     const Color(0xFFE8F2FD),
   ),
-  _t(
+  _legacy(
     'capsule',
     'Capsule',
     'Bold Colour',
@@ -79,7 +227,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFFC8234F),
     const Color(0xFFF7C531),
   ),
-  _t(
+  _legacy(
     'kit',
     'Kit',
     'Sports Showcase',
@@ -89,7 +237,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF253D6B),
     const Color(0xFFE1293F),
   ),
-  _t(
+  _legacy(
     'brew',
     'Brew',
     'Coffee House',
@@ -103,7 +251,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF4B2A15),
     const Color(0xFFD3A06A),
   ),
-  _t(
+  _legacy(
     'crimson',
     'Crimson',
     'Single Colour',
@@ -113,7 +261,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFFB82838),
     const Color(0xFF2A2A2A),
   ),
-  _t(
+  _legacy(
     'lift',
     'Lift',
     'Drop Collection',
@@ -123,7 +271,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF111111),
     const Color(0xFFE5332A),
   ),
-  _t(
+  _legacy(
     'harvest',
     'Harvest',
     'Fresh Food',
@@ -133,7 +281,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF111111),
     const Color(0xFF3BAA4A),
   ),
-  _t(
+  _legacy(
     'botanic',
     'Botanic',
     'Natural Care',
@@ -143,7 +291,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF86A98F),
     const Color(0xFF2F4A3A),
   ),
-  _t(
+  _legacy(
     'combo',
     'Combo',
     'Build an Order',
@@ -154,7 +302,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF8E9BF5),
     hero: false,
   ),
-  _t(
+  _legacy(
     'discover',
     'Discover',
     'Clean Marketplace',
@@ -164,7 +312,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF22C55E),
     const Color(0xFF16A34A),
   ),
-  _t(
+  _legacy(
     'atelier',
     'Atelier',
     'Fashion House',
@@ -179,7 +327,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF111111),
     const Color(0xFFE35B2C),
   ),
-  _t(
+  _legacy(
     'pour',
     'Pour',
     'Café Spotlight',
@@ -190,7 +338,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFFE6E7E9),
     hero: false,
   ),
-  _t(
+  _legacy(
     'tailor',
     'Tailor',
     'Menswear',
@@ -200,7 +348,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF111111),
     const Color(0xFFF59E6B),
   ),
-  _t(
+  _legacy(
     'sprint',
     'Sprint',
     'Performance',
@@ -210,7 +358,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF6B3BE0),
     const Color(0xFFFF7A1A),
   ),
-  _t(
+  _legacy(
     'splash',
     'Splash',
     'Sports Shop',
@@ -220,7 +368,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF2563EB),
     const Color(0xFFFACC15),
   ),
-  _t(
+  _legacy(
     'service',
     'Service',
     'Services',
@@ -230,7 +378,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF5B7CF6),
     const Color(0xFFFACC15),
   ),
-  _t(
+  _legacy(
     'warung',
     'Warung',
     'Local Eatery',
@@ -241,7 +389,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFFE11D2E),
     hero: false,
   ),
-  _t(
+  _legacy(
     'collector',
     'Collector',
     'Collections',
@@ -318,6 +466,13 @@ class _StorefrontLivePreviewState extends State<StorefrontLivePreview> {
         ...?(store['business'] as Map?)?.cast<String, dynamic>(),
         'name': t.storeName,
       };
+    }
+    final logo = b.logoImage;
+    if (logo != null) {
+      store['logo_url'] =
+          'data:${b.logoContentType ?? 'image/png'};base64,${base64Encode(logo)}';
+    } else if (b.logoPath == null && base != null) {
+      store.remove('logo_url');
     }
     final bytes = b.heroImage;
     if (bytes != null) {

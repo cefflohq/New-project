@@ -88,7 +88,19 @@ class StorefrontBranding {
     this.heroImage,
     this.heroContentType,
     this.heroPath,
+    this.logoImage,
+    this.logoContentType,
+    this.logoPath,
   });
+
+  /// Saved logo: '{business}/logo-{uuid}.{ext}' in cefflo-storefront-assets
+  /// (20261011120000), shown by every business template.
+  final String? logoPath;
+
+  /// A picked logo (bytes + MIME type) that still has to be uploaded on Save.
+  final Uint8List? logoImage;
+  final String? logoContentType;
+  bool get hasUnsavedLogo => logoImage != null && logoContentType != null;
 
   /// Saved hero on the server: '{business}/hero-{uuid}.{ext}' in the
   /// public cefflo-storefront-assets bucket (20260930110132).
@@ -157,8 +169,12 @@ class StorefrontBranding {
     Uint8List? heroImage,
     String? heroContentType,
     String? heroPath,
+    Uint8List? logoImage,
+    String? logoContentType,
+    String? logoPath,
     bool clearSecondary = false,
     bool clearHeroImage = false,
+    bool clearLogo = false,
   }) => StorefrontBranding(
     primary: primary ?? this.primary,
     secondary: clearSecondary ? null : (secondary ?? this.secondary),
@@ -175,6 +191,11 @@ class StorefrontBranding {
         ? null
         : (heroContentType ?? this.heroContentType),
     heroPath: clearHeroImage ? null : (heroPath ?? this.heroPath),
+    logoImage: clearLogo ? null : (logoImage ?? this.logoImage),
+    logoContentType: clearLogo
+        ? null
+        : (logoContentType ?? this.logoContentType),
+    logoPath: clearLogo ? null : (logoPath ?? this.logoPath),
   );
 }
 

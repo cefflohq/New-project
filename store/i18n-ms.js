@@ -60,4 +60,10 @@ window.CEFFLO_STORE_MS = {
   'Welcome': 'Selamat datang', 'What would you like today?': 'Apa yang anda mahu hari ini?', "What's on your list?": 'Apa dalam senarai anda?',
   'You may also like': 'Anda mungkin juga suka', 'Explore Collection ››': 'Teroka koleksi ››', 'See All ›': 'Lihat semua ›',
   'Add to cart &nbsp;››': 'Tambah ke troli &nbsp;››', 'Favourites': 'Kegemaran', 'Added': 'Ditambah', 'Saved': 'Disimpan', 'Settings': 'Tetapan',
+  // business templates (2026-10-11)
+  "Today's menu": 'Menu hari ini', 'Add to your order': 'Tambah pada pesanan anda', 'Ordering opens when the store is open': 'Pesanan dibuka bila kedai buka',
+  'Available to order': 'Boleh dipesan', 'Search the menu': 'Cari dalam menu', 'Catering': 'Katering', 'Area': 'Kawasan', 'Hours': 'Waktu',
+  'For an event or a scheduled delivery, write the date and time in the delivery notes at checkout.': 'Untuk majlis atau penghantaran berjadual, tulis tarikh dan masa dalam nota penghantaran semasa checkout.',
+  'Product information': 'Maklumat produk', 'Shop by occasion': 'Pilih ikut majlis', 'Service area': 'Kawasan servis', "What's included": 'Termasuk',
+  'Bestsellers': 'Paling laris', 'Serving': 'Kawasan', 'More': 'Lain-lain',
 };

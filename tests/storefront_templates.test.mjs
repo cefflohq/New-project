@@ -1,7 +1,8 @@
 // Storefront V1 templates (offline): every reference template renders the
 // business's own data on every screen it defines, ships no sample content
 // or reference brand names, and the public renderer and the Vendor App
-// register exactly the same 18 template ids.
+// register exactly the same library of template ids (the 10 business
+// templates); the 18 earlier V1 templates still render for saved pages.
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
@@ -11,6 +12,8 @@ const src = readFileSync(new URL('../store/templates.js', import.meta.url), 'utf
 const sandbox = { window: {} };
 vm.runInNewContext(src, sandbox);
 const T = sandbox.window.CEFFLO_TEMPLATES, ORDER = JSON.parse(JSON.stringify(sandbox.window.CEFFLO_TEMPLATE_ORDER));
+const LEGACY = JSON.parse(JSON.stringify(sandbox.window.CEFFLO_TEMPLATE_LEGACY));
+const ALL = [...ORDER, ...LEGACY];
 
 const store = {
   name: 'Kedai Uji Seratus', area: 'Shah Alam', tagline: 'Tagline Uji', heroUrl: null, openNow: true,
@@ -31,7 +34,7 @@ function ctx(s = store, cart = new Map()) {
     s, ui, esc, money, moneyShort: money, icon: n => `<svg data-i="${n}"></svg>`, img, list,
     qty: id => cart.get(id) || 0, count: () => [...cart.values()].reduce((a, b) => a + b, 0), total: () => 0,
     product: id => s.products.find(p => p.id === id), catName: id => s.categories.find(c => c.id === id)?.name || '',
-    initials: x => (x || '').slice(0, 2).toUpperCase(), isClosed: () => false, hoursText: () => 'Today 09:00–18:00', openLabel: () => 'Open now', greeting: () => 'Good morning', DAYS: [],
+    initials: x => (x || '').slice(0, 2).toUpperCase(), isClosed: () => false, logo: cls => `<span class="${cls}">${esc(s.name.slice(0, 2))}</span>`, hoursText: () => 'Today 09:00–18:00', openLabel: () => 'Open now', greeting: () => 'Good morning', DAYS: [],
     hero: (p, cls) => img(p, cls), headline: fb => s.tagline || fb,
     open: id => `data-act="open" data-id="${id}"`, add: id => `data-act="add" data-id="${id}"`, cat: id => `data-act="cat" data-id="${id || ''}"`, catPage: id => `data-act="catpage" data-id="${id || ''}"`,
     empty: m => `<div class="sf-empty">${esc(m || 'No products yet.')}</div>`, searchInput: ph => `<input data-act="search" placeholder="${esc(ph || '')}">`,
@@ -50,10 +53,11 @@ const screens = (k, c) => {
 // sample copy must never ship inside a template.
 const FORBIDDEN = /xefag|nike|psg|barça|barca|syntha|endorush|bsn\b|jmd[af]|northen|arobix|pashaya|mediplus|panadol|strepsils|cetaphil|scott|ensure|omron|azuki|closesea|harbani|cappuccino|matcha latte|iced matcha|clearance sales|powerful boost|winter essentials|run better|buy 1 get 3|spotless attire|jenny wilson|mie ayam|delicious seafood|fried prawns|face recovery|ultra run pro|velocity boost|everyday healthcare|los vegas|new york|\$\s?\d|£|₽|rp\s?\d/i;
 
-test('the public renderer defines 18 templates in gallery order, each with home + product', () => {
-  assert.equal(ORDER.length, 18);
-  assert.deepEqual([...ORDER].sort(), JSON.parse(JSON.stringify(Object.keys(T))).sort());
-  for (const k of ORDER) {
+test('the library offers the 10 business templates; earlier ones still render; each has home + product', () => {
+  assert.deepEqual(ORDER, ['homefood', 'bakery', 'eatery', 'cafe', 'catering', 'frozen', 'florist', 'laundry', 'retail', 'outlets']);
+  assert.equal(LEGACY.length, 18);
+  assert.deepEqual([...ALL].sort(), JSON.parse(JSON.stringify(Object.keys(T))).sort());
+  for (const k of ALL) {
     assert.equal(typeof T[k].home, 'function', k);
     assert.equal(typeof T[k].product, 'function', k);
     assert.ok(/^#[0-9a-f]{6}$/i.test(T[k].defaults.accent), `${k} accent`);
@@ -74,7 +78,7 @@ test('Vendor Web lists exactly the same template ids, in the same order (no reti
 });
 
 test('every template renders the business data on every screen and nothing else', () => {
-  for (const k of ORDER) {
+  for (const k of ALL) {
     const out = screens(k, ctx());
     const all = Object.values(out).join('\n');
     assert.ok(out.product.includes('Produk Alfa') && /12\.50/.test(out.product), `${k} product shows name + price`);
@@ -87,7 +91,7 @@ test('every template renders the business data on every screen and nothing else'
 
 test('an empty catalogue renders an honest empty state (no crash)', () => {
   const empty = { ...store, categories: [], products: [] };
-  for (const k of ORDER) {
+  for (const k of ALL) {
     const c = ctx(empty);
     const html = T[k].home(c);
     assert.equal(typeof html, 'string', k);
@@ -97,7 +101,7 @@ test('an empty catalogue renders an honest empty state (no crash)', () => {
 
 test('customer text is escaped (no HTML injection from product names)', () => {
   const evil = { ...store, products: [{ ...store.products[0], name: '<img src=x onerror=alert(1)>' }] };
-  for (const k of ORDER) {
+  for (const k of ALL) {
     const out = screens(k, ctx(evil));
     assert.ok(!Object.values(out).join('').includes('<img src=x onerror'), k);
   }

@@ -9,11 +9,25 @@ import { ctx } from '../store.js';
 import { esc, icon, chip, loadingRows, errorState, toast, busy, copyText } from '../ui.js';
 import qrcode from '../lib/qrcode.js';
 
-// The Storefront V1 template library, in gallery order. Ids, names and
-// default colours match store/templates.js and the Vendor App registry
-// (templates/web/web_templates.dart); `hero: false` templates have no
-// banner image.
+// The Template Library: ten business templates, in library order. Ids,
+// names, categories and default colours match store/templates.js
+// (CEFFLO_TEMPLATE_ORDER) and the Vendor App registry.
 const TEMPLATES = [
+  { id: 'homefood', name: 'Dapur', cat: 'food', primary: '#C2410C', secondary: '#FFF7ED' },
+  { id: 'bakery', name: 'Patisserie', cat: 'sweet', primary: '#9D174D', secondary: '#FDF2F8' },
+  { id: 'eatery', name: 'Kedai Makan', cat: 'food', primary: '#B91C1C', secondary: '#FEF2F2' },
+  { id: 'cafe', name: 'Kafe', cat: 'sweet', primary: '#1F2937', secondary: '#F3F4F6' },
+  { id: 'catering', name: 'Katering', cat: 'food', primary: '#0F766E', secondary: '#F0FDFA' },
+  { id: 'frozen', name: 'Sejuk Beku', cat: 'food', primary: '#1D4ED8', secondary: '#EFF6FF' },
+  { id: 'florist', name: 'Florist', cat: 'gifts', primary: '#3F3F46', secondary: '#FAF7F2' },
+  { id: 'laundry', name: 'Dobi', cat: 'services', primary: '#0369A1', secondary: '#F0F9FF' },
+  { id: 'retail', name: 'Jenama', cat: 'retail', primary: '#111827', secondary: '#F59E0B' },
+  { id: 'outlets', name: 'Rangkaian', cat: 'retail', primary: '#4338CA', secondary: '#EEF2FF' },
+];
+const CATS = ['food', 'sweet', 'retail', 'gifts', 'services'];
+// Earlier V1 templates (CEFFLO_TEMPLATE_LEGACY): not offered any more, but a
+// storefront saved on one still shows it as the active template.
+const LEGACY = [
   { id: 'care', name: 'Care', primary: '#1677D8', secondary: '#E8F2FD' },
   { id: 'capsule', name: 'Capsule', primary: '#C8234F', secondary: '#F7C531' },
   { id: 'kit', name: 'Kit', primary: '#253D6B', secondary: '#E1293F' },
@@ -34,6 +48,7 @@ const TEMPLATES = [
   { id: 'collector', name: 'Collector', primary: '#111111', secondary: '#F2F2F4', hero: false },
 ];
 const PREVIEW_SCREENS = [['', 'sf.pvHome'], ['p/first', 'sf.pvProduct'], ['cart', 'sf.pvCart']];
+const LOGO_TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 const HERO_TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 const base = () => window.CEFFLO_CONFIG?.storefrontBaseUrl || 'https://order.cefflo.com/';
 
@@ -47,9 +62,9 @@ function qrSvg(text) {
 export default function storefront({ el, setHeader }) {
   setHeader(t('sf.title'));
   el.innerHTML = loadingRows(4);
-  let sf = null, tpl = 'care', theme = {}, heroFile = null, heroData = null, pv = null, screen = '';
+  let sf = null, tpl = 'homefood', theme = {}, heroFile = null, heroData = null, logoFile = null, logoData = null, pv = null, screen = '', cat = '';
   let frame = null, frameReady = false;
-  const def = () => TEMPLATES.find(x => x.id === tpl) || TEMPLATES[0];
+  const def = () => TEMPLATES.find(x => x.id === tpl) || LEGACY.find(x => x.id === tpl) || TEMPLATES[0];
   const sfOrigin = () => new URL(base(), location.href).origin;
 
   // The live preview is the real storefront renderer (store/?embed=1), fed
@@ -61,6 +76,8 @@ export default function storefront({ el, setHeader }) {
     store.theme = { ...(store.theme || {}), accent: cur.accent || d.primary, secondary: cur.secondary || d.secondary, ...(cur.tagline ? { tagline: cur.tagline } : {}) };
     store.template_key = tpl;
     if (heroData) store.hero_url = heroData;
+    if (logoData) store.logo_url = logoData;
+    else if (theme.logo_path) store.logo_url = api.publicUrl('cefflo-storefront-assets', theme.logo_path);
     return store;
   };
   const post = () => { if (frame?.contentWindow && frameReady) frame.contentWindow.postMessage({ type: 'cefflo-storefront-preview', store: payload() }, sfOrigin()); };
@@ -99,21 +116,28 @@ export default function storefront({ el, setHeader }) {
       <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start" class="sf-split">
         <div style="display:grid;gap:16px;min-width:0">
           <div class="card" style="padding:20px"><h3 style="margin:0 0 4px">${esc(t('sf.template'))}</h3><p class="desc">${esc(t('sf.templateLead'))}</p>
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">${TEMPLATES.map(x => `<button class="opt ${x.id === tpl ? 'on' : ''}" data-tpl="${x.id}" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;min-width:0">
+            <div class="tabs" style="margin-bottom:12px;flex-wrap:wrap">${['', ...CATS].map(k => `<button class="tab ${cat === k ? 'on' : ''}" data-cat="${k}">${esc(t(k ? `sf.cat.${k}` : 'sf.cat.all'))}</button>`).join('')}</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">${[...(LEGACY.some(x => x.id === sf.template_key) && !cat ? LEGACY.filter(x => x.id === sf.template_key) : []), ...TEMPLATES.filter(x => !cat || x.cat === cat)].map(x => `<button class="opt ${x.id === tpl ? 'on' : ''}" data-tpl="${x.id}" style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left">
               <span style="display:flex;gap:4px"><i style="width:18px;height:18px;border-radius:50%;background:${x.primary};border:1px solid var(--line)"></i><i style="width:18px;height:18px;border-radius:50%;background:${x.secondary};border:1px solid var(--line)"></i></span>
-              <b>${esc(x.name)}</b><small>${esc(t(`tpl.${x.id}`))}</small></button>`).join('')}</div></div>
+              <b>${esc(x.name)}</b><small>${esc(t(`tpl.${x.id}`))}</small>
+              ${x.id === sf.template_key ? `<small style="color:var(--ok,#047857);font-weight:600">● ${esc(t(LEGACY.some(l => l.id === x.id) ? 'sf.activeEarlier' : 'sf.active'))}</small>` : x.id === tpl ? `<small style="color:var(--primary);font-weight:600">${esc(t('sf.previewing'))}</small>` : ''}</button>`).join('')}</div></div>
           <div class="card" style="padding:20px"><h3 style="margin:0 0 4px">${esc(t('sf.appearance'))}</h3><p class="desc">${esc(t('sf.appearanceLead'))}</p>
             <div class="g4" style="align-items:end">
               <div class="field"><label>${esc(t('sf.accent'))}</label><input class="input" type="color" data-accent value="${esc(theme.accent || cur.primary)}"></div>
               <div class="field"><label>${esc(t('sf.secondary'))}</label><input class="input" type="color" data-secondary value="${esc(theme.secondary || cur.secondary)}"></div></div>
             <div class="field"><label>${esc(t('sf.tagline'))}</label><input class="input" data-tagline maxlength="120" value="${esc(theme.tagline || '')}"></div>
+            <div class="field"><label>${esc(t('sf.logo'))}</label>
+              <div style="display:flex;gap:12px;align-items:center">${theme.logo_path || logoFile ? `<img data-logoimg src="${esc(logoData || api.publicUrl('cefflo-storefront-assets', theme.logo_path))}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:12px;border:1px solid var(--line)">` : ''}
+                <button class="btn sm" data-logo>${esc(t(theme.logo_path || logoFile ? 'sf.logoChange' : 'sf.logoAdd'))}</button>
+                <input type="file" accept="image/jpeg,image/png,image/webp" hidden data-logofile></div>
+              <small class="hint">${esc(t('sf.logoHint'))}</small></div>
             ${cur.hero === false ? '' : `<div class="field"><label>${esc(t('sf.hero'))}</label>
               <div style="display:flex;gap:12px;align-items:center">${theme.hero_path || heroFile ? `<img data-heroimg src="${esc(heroData || api.publicUrl('cefflo-storefront-assets', theme.hero_path))}" alt="" style="width:160px;height:90px;object-fit:cover;border-radius:8px">` : ''}
                 <button class="btn sm" data-hero>${esc(t(theme.hero_path || heroFile ? 'sf.heroChange' : 'sf.heroAdd'))}</button>
                 <input type="file" accept="image/jpeg,image/png,image/webp" hidden data-herofile></div>
               <small class="hint">${esc(t('sf.heroHint'))}</small></div>`}
             <div class="err" data-err hidden></div>
-            <div style="display:flex;justify-content:flex-end"><button class="btn primary" data-save>${esc(t('c.save'))}</button></div></div></div>
+            <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;flex-wrap:wrap">${sf.published ? `<small class="hint">${esc(t('sf.applyLive'))}</small>` : ''}<button class="btn primary" data-save>${esc(t('sf.apply'))}</button></div></div></div>
         <div class="card" style="padding:16px;position:sticky;top:16px"><h3 style="margin:0 0 4px">${esc(t('sf.preview'))}</h3><p class="desc" style="margin-bottom:10px">${esc(t('sf.previewLead'))}</p>
           <div class="tabs" style="margin-bottom:12px">${PREVIEW_SCREENS.map(([r, k]) => `<button class="tab ${screen === r ? 'on' : ''}" data-screen="${r}">${esc(t(k))}</button>`).join('')}</div>
           <div style="width:308px;height:667px;margin:0 auto;border-radius:28px;overflow:hidden;border:6px solid #111;background:#fff">
@@ -129,7 +153,7 @@ export default function storefront({ el, setHeader }) {
       ]);
       sf = Array.isArray(res) ? res[0] : res;
       pv = p && typeof p === 'object' ? p : null;
-      tpl = TEMPLATES.some(x => x.id === sf.template_key) ? sf.template_key : 'care';
+      tpl = [...TEMPLATES, ...LEGACY].some(x => x.id === sf.template_key) ? sf.template_key : 'homefood';
       theme = { ...(sf.theme || {}) };
       paint();
     } catch (e) { el.innerHTML = errorState(e, 'storefront'); }
@@ -159,7 +183,10 @@ export default function storefront({ el, setHeader }) {
       theme = { ...theme, tagline: readForm().tagline, accent: d.primary, secondary: d.secondary };
       paint(); return;
     }
+    const cf = e.target.closest('[data-cat]');
+    if (cf) { theme = { ...theme, ...readForm() }; cat = cf.dataset.cat; paint(); return; }
     if (e.target.closest('[data-hero]')) { el.querySelector('[data-herofile]').click(); return; }
+    if (e.target.closest('[data-logo]')) { el.querySelector('[data-logofile]').click(); return; }
     const save = e.target.closest('[data-save]');
     if (save) {
       const err = el.querySelector('[data-err]'); err.hidden = true;
@@ -174,13 +201,28 @@ export default function storefront({ el, setHeader }) {
             await api.upload('cefflo-storefront-assets', path, heroFile);
             next.hero_path = path;
           }
+          if (logoFile) {
+            const path = `${ctx.bid}/logo-${crypto.randomUUID()}.${LOGO_TYPES[logoFile.type]}`;
+            await api.upload('cefflo-storefront-assets', path, logoFile);
+            next.logo_path = path;
+          }
           await api.rpc('save_storefront_appearance', { p_business_id: ctx.bid, p_template_key: tpl, p_theme: next });
         });
-        theme = next; heroFile = null; toast(t('c.saved')); paint();
+        theme = next; sf.template_key = tpl; heroFile = null; logoFile = null; toast(t('c.saved')); paint();
       } catch (ex) { err.textContent = ex.message; err.hidden = false; }
     }
   });
   el.addEventListener('change', e => {
+    const lf = e.target.closest('[data-logofile]');
+    if (lf && lf.files[0]) {
+      const file = lf.files[0];
+      if (!LOGO_TYPES[file.type]) { toast(t('prod.badType'), 'error'); return; }
+      if (file.size > 2 * 1024 * 1024) { toast(t('prod.tooBig'), 'error'); return; }
+      theme = { ...theme, ...readForm() };
+      logoFile = file;
+      const r = new FileReader(); r.onload = () => { logoData = String(r.result); paint(); post(); }; r.readAsDataURL(file);
+      return;
+    }
     const f = e.target.closest('[data-herofile]');
     if (!f || !f.files[0]) return;
     const file = f.files[0];

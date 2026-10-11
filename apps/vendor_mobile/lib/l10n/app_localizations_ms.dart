@@ -2711,6 +2711,27 @@ class AppLocalizationsMs extends AppLocalizations {
   String get tagBeauty => 'Kecantikan';
 
   @override
+  String get tagDessertsDrinks => 'Pencuci mulut & Minuman';
+
+  @override
+  String get tagRetail => 'Runcit';
+
+  @override
+  String get tagServices => 'Servis';
+
+  @override
+  String get templateEarlier => 'Templat terdahulu';
+
+  @override
+  String get storeLogo => 'Logo';
+
+  @override
+  String get storeLogoHint => 'Imej segi empat, dipaparkan di atas kedai anda.';
+
+  @override
+  String get logoTooLarge => 'Logo ini melebihi 2 MB. Pilih yang lebih kecil.';
+
+  @override
   String get tagGifts => 'Hadiah';
 
   @override

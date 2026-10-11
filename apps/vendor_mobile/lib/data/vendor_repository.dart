@@ -496,13 +496,28 @@ class VendorRepository {
     String businessId,
     Uint8List bytes,
     String contentType,
+  ) => _uploadStorefrontAsset(businessId, 'hero', bytes, contentType);
+
+  /// Uploads a storefront logo as a NEW object at
+  /// '{business}/logo-{uuid}.{ext}' (20261011120000). Returns logo_path.
+  Future<String> uploadStorefrontLogo(
+    String businessId,
+    Uint8List bytes,
+    String contentType,
+  ) => _uploadStorefrontAsset(businessId, 'logo', bytes, contentType);
+
+  Future<String> _uploadStorefrontAsset(
+    String businessId,
+    String kind,
+    Uint8List bytes,
+    String contentType,
   ) async {
     final ext = switch (contentType) {
       'image/png' => 'png',
       'image/webp' => 'webp',
       _ => 'jpg',
     };
-    final path = '$businessId/hero-${newIdempotencyKey()}.$ext';
+    final path = '$businessId/$kind-${newIdempotencyKey()}.$ext';
     await _run(
       () => _db!.storage
           .from('cefflo-storefront-assets')

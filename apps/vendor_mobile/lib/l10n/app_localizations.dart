@@ -5019,6 +5019,48 @@ abstract class AppLocalizations {
   /// **'Beauty'**
   String get tagBeauty;
 
+  /// No description provided for @tagDessertsDrinks.
+  ///
+  /// In en, this message translates to:
+  /// **'Desserts & Drinks'**
+  String get tagDessertsDrinks;
+
+  /// No description provided for @tagRetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Retail'**
+  String get tagRetail;
+
+  /// No description provided for @tagServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Services'**
+  String get tagServices;
+
+  /// No description provided for @templateEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier template'**
+  String get templateEarlier;
+
+  /// No description provided for @storeLogo.
+  ///
+  /// In en, this message translates to:
+  /// **'Logo'**
+  String get storeLogo;
+
+  /// No description provided for @storeLogoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Square image, shown at the top of your storefront.'**
+  String get storeLogoHint;
+
+  /// No description provided for @logoTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'This logo is larger than 2 MB. Choose a smaller one.'**
+  String get logoTooLarge;
+
   /// No description provided for @tagGifts.
   ///
   /// In en, this message translates to:

@@ -124,7 +124,7 @@ void main() {
   ) async {
     await _pumpAt(
       tester,
-      const VendorLocation(VRoute.branding, entityId: 'care'),
+      const VendorLocation(VRoute.branding, entityId: 'homefood'),
     );
     // Storefront V1 templates keep their reference backgrounds; brand
     // colour and hero image are the vendor's controls.
@@ -143,7 +143,7 @@ void main() {
   ) async {
     await _pumpAt(
       tester,
-      const VendorLocation(VRoute.storefrontTemplatePreview, entityId: 'brew'),
+      const VendorLocation(VRoute.storefrontTemplatePreview, entityId: 'bakery'),
     );
     final app = _app(tester);
     final before = await app.repo.products(app.business!.id);
@@ -159,7 +159,7 @@ void main() {
     await tester.tap(find.text('Done'));
     await tester.pumpAndSettle();
 
-    expect(app.activeStorefrontTemplateId, 'brew');
+    expect(app.activeStorefrontTemplateId, 'bakery');
     expect(app.current.route, VRoute.storefront);
     final after = await app.repo.products(app.business!.id);
     expect(after.map((p) => p.id), before.map((p) => p.id));
