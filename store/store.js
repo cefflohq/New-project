@@ -355,6 +355,13 @@
       const p = r.name === 'product' ? product(r.id) : (list()[0] || store.products[0]);
       if (!p) return;
       app.querySelectorAll('[data-act="buy"],[data-act="addsel"]').forEach(b => b.remove());
+      // A template may draw its own bottom bar (as its reference does); it is
+      // still pinned to the bottom and keeps its in-page quantity control.
+      if (r.name === 'product' && tpl.dock) {
+        app.insertAdjacentHTML('beforeend', `<div class="sf-dock sf-dock-${tplKey}">${tpl.dock(ctx(), p)}</div>`);
+        app.classList.add('has-dock');
+        return;
+      }
       app.querySelectorAll('.sf-stepper').forEach(st => { if (st.querySelector('[data-id="__sel"]')) st.remove(); });
       inner = `${ctx().stepper('__sel', 'sf-dock-step')}<button type="button" class="sf-dock-cta" data-act="${act}" ${isClosed() ? 'disabled' : ''}>${esc(t(isClosed() ? 'Closed' : 'Add to cart'))}<b>${money(p.price * ui.sel)}</b></button>`;
     } else if (r.name === 'cart' || r.name === 'checkout' || r.name === 'done') {

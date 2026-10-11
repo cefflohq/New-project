@@ -88,19 +88,21 @@
       return `<section class="kit-pdp">
         <header class="kit-head light"><button type="button" class="kit-ic" data-act="back" aria-label="${L("Back")}">${c.icon('grid')}</button><b class="kit-logo">${brand(c)}</b>${c.toCart('kit-ic', c.icon('basket'))}</header>
         <div class="kit-stage">
-          <div class="kit-frame"><span class="kit-under"></span>
+          <span class="kit-stack" aria-hidden="true"></span>
+          <div class="kit-frame">
             <span class="kit-tag">${c.esc(c.catName(p.categoryId) || c.s.name)}</span>
             <p class="kit-name">${c.esc(p.name)}</p>
-            ${c.img(p, 'kit-shot', c.ui.img)}
+            <div class="kit-shotbox">${c.img(p, 'kit-shot', c.ui.img)}</div>
             ${dots(p.images.length || 1, c.ui.img)}
           </div>
-          ${prev ? `<button type="button" class="kit-side l" ${c.open(prev.id)}>${L("Prev")}</button>` : ''}
-          ${next ? `<button type="button" class="kit-side r" ${c.open(next.id)}>${L("Next")}</button>` : ''}
+          ${prev ? `<button type="button" class="kit-side l" ${c.open(prev.id)} aria-label="${L("Prev")}">${L("Prev")}</button>` : ''}
+          ${next ? `<button type="button" class="kit-side r" ${c.open(next.id)} aria-label="${L("Next")}">${L("Next")}</button>` : ''}
         </div>
         <div class="kit-price"><span><sup>RM</sup>${c.esc(Number(p.price).toFixed(Number.isInteger(p.price) ? 0 : 2))}</span>${c.stepper('__sel', 'kit-step')}</div>
-        <div class="kit-actions"><button type="button" class="kit-cartbtn" data-act="addsel" aria-label="${L("Add to cart")}">${c.icon('cart')}</button>${c.buy(L('BUY NOW'), 'kit-buy')}</div>
       </section>`;
     },
+    // Reference bottom bar: outlined cart (add) + BUY NOW (add and go to cart).
+    dock: c => `<button type="button" class="kit-cartbtn" data-act="addsel" aria-label="${L("Add to cart")}">${c.icon('cart')}</button><button type="button" class="kit-buy" data-act="buy"${c.isClosed() ? ' disabled' : ''}>${L(c.isClosed() ? 'Closed' : 'BUY NOW')}</button>`,
   };
 
   // ======================================================== 3. BREW
