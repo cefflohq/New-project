@@ -1218,3 +1218,9 @@ h1, h2, h3, h4, p { margin: 0; }
 .kit-buy { background: linear-gradient(90deg, color-mix(in srgb, var(--kit-ink) 72%, #8E9AB0), var(--kit-ink)); }
 .kit-cartbtn { border-width: 2.5px; border-radius: 14px; }
 .kit-side.l { left: 6px; } .kit-side.r { right: 6px; }
+/* Kit: pill buttons; the dots under the product switch colour (one photo per colour). */
+.kit-cartbtn, .kit-buy { border-radius: 999px; }
+.kit-dots { display: flex; gap: 10px; justify-content: center; margin-top: 6px; }
+.kit-dots button { width: 8px; height: 8px; padding: 0; border-radius: 50%; background: rgba(255, 255, 255, .38); position: relative; }
+.kit-dots button::after { content: ''; position: absolute; inset: -10px; }
+.kit-dots button.on { background: #fff; box-shadow: 0 0 0 4px rgba(255, 255, 255, .22); }

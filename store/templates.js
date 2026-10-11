@@ -94,7 +94,7 @@
             <span class="kit-crest" aria-hidden="true">${c.esc(c.initials(c.s.name))}</span>
             <p class="kit-name">${c.esc(p.name)}</p>
             <div class="kit-shotbox">${c.img(p, 'kit-shot', c.ui.img)}</div>
-            ${dots(p.images.length || 1, c.ui.img)}
+            <div class="dots kit-dots" role="radiogroup" aria-label="${L("Colours")}">${(p.images.length ? p.images : [null]).slice(0, 6).map((_, n) => `<button type="button" role="radio" aria-checked="${n === c.ui.img}" aria-label="${L("Colour")} ${n + 1}" class="${n === c.ui.img ? 'on' : ''}" ${c.selImg(n)}></button>`).join('')}</div>
           </div>
           <button type="button" class="kit-side l" ${prev ? c.open(prev.id) : 'disabled'} aria-label="${L("Prev")}">${L("Prev")}</button>
           <button type="button" class="kit-side r" ${next ? c.open(next.id) : 'disabled'} aria-label="${L("Next")}">${L("Next")}</button>

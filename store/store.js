@@ -102,6 +102,8 @@
       price: Number(p.display_price || 0), images: (p.images || []).map(abs).filter(Boolean),
       // Background-removed main photo (transparent PNG), when the vendor has one.
       cutout: abs(p.cutout_url) || null,
+      // One cut-out per photo when the vendor has them (colour variants).
+      cutouts: (Array.isArray(p.cutout_urls) ? p.cutout_urls : [p.cutout_url]).map(u => abs(u) || null),
       // Size choices (e.g. S–XXL) when the vendor lists them.
       sizes: Array.isArray(p.sizes) ? p.sizes.filter(z => typeof z === 'string' && z.trim()).slice(0, 8) : [],
     }));
@@ -127,8 +129,8 @@
   function img(p, cls = '', i = 0) {
     // Cut-out templates float the product on their colour (as the references
     // do) when a cut-out exists; otherwise the photo fills its frame.
-    const cut = i === 0 && tpl?.cutout && p?.cutout;
-    const src = cut ? p.cutout : p?.images?.[i];
+    const cut = tpl?.cutout && (p?.cutouts?.[i] || (i === 0 && p?.cutout));
+    const src = cut || p?.images?.[i];
     if (cut) cls = `${cls} sf-cut`;
     return src
       ? `<img class="${cls}" src="${esc(src)}" alt="${esc(p.name)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'sf-ph ${cls}',textContent:'${esc(initials(p.name)).replace(/'/g, '')}'}))">`
