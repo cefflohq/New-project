@@ -1192,3 +1192,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .kit-shotbox { position: relative; align-items: end; padding: 6px 0 10px; }
 .kit-shotbox::after { content: ''; position: absolute; left: 18%; right: 18%; bottom: 4px; height: 22px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .45), transparent); z-index: 0; }
 .kit-shotbox img, .kit-shotbox .sf-ph { position: relative; z-index: 1; max-height: 320px; object-position: center bottom; }
+.kit-sizes { width: 200px; height: 38px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; border-radius: 20px; background: color-mix(in srgb, var(--kit-ink) 85%, #000); }
+.kit-sizes button { min-width: 30px; height: 30px; padding: 0 4px; border-radius: 15px; color: rgba(255, 255, 255, .8); font-size: 14px; }
+.kit-sizes button.on { background: rgba(255, 255, 255, .75); color: var(--kit-ink); font-weight: 700; }
+.kit-name { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: .38em; }

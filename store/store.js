@@ -91,7 +91,7 @@
     }
     saveCart();
   }
-  const ui = { cat: null, q: '', sel: 1, img: 0, intro: false };
+  const ui = { cat: null, q: '', sel: 1, img: 0, intro: false, size: null };
   let idempotencyKey = crypto.randomUUID();
   let lastOrder = null;
 
@@ -102,6 +102,8 @@
       price: Number(p.display_price || 0), images: (p.images || []).map(abs).filter(Boolean),
       // Background-removed main photo (transparent PNG), when the vendor has one.
       cutout: abs(p.cutout_url) || null,
+      // Size choices (e.g. S–XXL) when the vendor lists them.
+      sizes: Array.isArray(p.sizes) ? p.sizes.filter(z => typeof z === 'string' && z.trim()).slice(0, 8) : [],
     }));
     return {
       slug: raw.slug, name: raw.business?.name || '', area: raw.business?.area || '',
@@ -426,7 +428,8 @@
     const act = t.dataset.act, id = t.dataset.id;
     const bump = (pid, d) => { const n = Math.max(0, Math.min(50, qty(pid) + d)); if (n) cart.set(pid, n); else cart.delete(pid); saveCart(); };
     switch (act) {
-      case 'open': ui.sel = 1; ui.img = 0; go(`p/${id}`); break;
+      case 'open': ui.sel = 1; ui.img = 0; ui.size = null; go(`p/${id}`); break;
+      case 'size': ui.size = id; render(); break;
       case 'add': bump(id, 1); render(); break;
       case 'q+': bump(id, 1); render(); break;
       case 'q-': bump(id, -1); render(); break;
