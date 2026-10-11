@@ -30,6 +30,16 @@
     el = document.createElement('div');
     el.className = 'cf-page-loader cf-page-loader--global';
     el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+    // Ring style (opt-in: <html data-cf-loader="ring" data-cf-loader-logo="…svg">):
+    // a blue spinning ring around the Cefflo mark on a dark glass tile.
+    var root = document.documentElement;
+    if (root.getAttribute('data-cf-loader') === 'ring') {
+      el.className += ' cf-page-loader--ring';
+      var logo = root.getAttribute('data-cf-loader-logo');
+      el.innerHTML = '<div class="cf-ring-box" aria-hidden="true"><span class="cf-ring"></span>' +
+        (logo ? '<img class="cf-ring-logo" src="' + esc(logo) + '" alt="">' : '') + '</div><p class="cf-loader-label"></p>';
+      return;
+    }
     el.innerHTML = '<div class="cf-dots" aria-hidden="true"><i></i><i></i><i></i></div><p class="cf-loader-label"></p>';
   }
   function show(label) {
