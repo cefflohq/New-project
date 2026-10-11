@@ -30,12 +30,12 @@
     el = document.createElement('div');
     el.className = 'cf-page-loader cf-page-loader--global';
     el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
-    // Ring style (opt-in: <html data-cf-loader="ring" data-cf-loader-logo="…svg">):
+    // Ring style (opt-in: <html data-cf-loader="ring">; logo defaults to cefflo-mark.svg here):
     // a blue spinning ring around the Cefflo mark on a dark glass tile.
     var root = document.documentElement;
     if (root.getAttribute('data-cf-loader') === 'ring') {
       el.className += ' cf-page-loader--ring';
-      var logo = root.getAttribute('data-cf-loader-logo');
+      var logo = root.getAttribute('data-cf-loader-logo') || (me ? me.src.replace(/loader\.js(\?.*)?$/, 'cefflo-mark.svg') : '');
       el.innerHTML = '<div class="cf-ring-box" aria-hidden="true"><span class="cf-ring"></span>' +
         (logo ? '<img class="cf-ring-logo" src="' + esc(logo) + '" alt="">' : '') + '</div><p class="cf-loader-label"></p>';
       return;
