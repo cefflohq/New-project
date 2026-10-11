@@ -1224,3 +1224,34 @@ h1, h2, h3, h4, p { margin: 0; }
 .kit-dots button { width: 8px; height: 8px; padding: 0; border-radius: 50%; background: rgba(255, 255, 255, .38); position: relative; }
 .kit-dots button::after { content: ''; position: absolute; inset: -10px; }
 .kit-dots button.on { background: #fff; box-shadow: 0 0 0 4px rgba(255, 255, 255, .22); }
+/* Kit home — matched to the reference's measurements (390 wide): soft
+   cool-white page, header at 65, crest row at 172, 128x212 popular cards from
+   x37 with a one-line price, 111x185 category cards with a big top-left curve. */
+.kit-home { background: linear-gradient(180deg, #FFFFFF 0%, color-mix(in srgb, var(--accent) 4%, #F1F4F9) 100%); padding: 40px 0 40px; }
+.kit-home .kit-head { padding: 0 30px 0 26px; }
+.kit-home .kit-logo { font-style: normal; letter-spacing: 0; }
+.kit-badges { gap: 34px; padding: 62px 37px 0; height: 40px; box-sizing: content-box; }
+.kit-badge, .kit-badge img, .kit-badge .sf-ph { width: 40px; height: 40px; }
+.kit-sec { padding: 46px 37px 0; }
+.kit-sec h2 { font-size: 26px; font-weight: 600; margin: 0; }
+.kit-bar { width: 57px; height: 6px; }
+.kit-bar i { width: 42%; background: color-mix(in srgb, var(--accent) 30%, #2F3C55); }
+.kit-rail { gap: 20px; padding: 34px 37px 30px; }
+.kit-card { width: 128px; height: 212px; border-radius: 8px; background: linear-gradient(180deg, #EEF0F3 0%, #C9CCD2 62%, #A2A7B0 100%); box-shadow: 0 10px 20px rgba(30, 40, 60, .16); }
+.sf .kit-card > img, .sf .kit-card > .sf-ph { width: 100%; height: 150px; padding: 14px 10px 0; object-fit: contain; object-position: center bottom; }
+.kit-heart { right: 9px; top: 9px; opacity: .9; }
+.kit-meta { padding: 30px 9px 9px; background: linear-gradient(transparent, rgba(80, 86, 98, .55)); }
+.kit-meta b { font-size: 13px; letter-spacing: .08em; }
+.kit-meta span { font-size: 21px; font-weight: 700; letter-spacing: .02em; line-height: 1.1; white-space: nowrap; }
+.kit-meta span small { font-size: 12px; font-weight: 700; margin-right: 1px; vertical-align: 6px; }
+.kit-meta button { background: color-mix(in srgb, var(--accent) 25%, #2A3142); font-size: 10px; padding: 3px 9px; border-radius: 7px; }
+.kit-cats { gap: 25px; padding: 30px 37px 40px; }
+.kit-cat { width: 111px; height: 185px; padding: 0; border-radius: 52px 14px 14px 14px; background: #fff; box-shadow: 0 12px 24px rgba(30, 40, 60, .08); display: grid; grid-template-rows: 1fr auto; overflow: visible; }
+.sf .kit-cat img, .sf .kit-cat .sf-ph { width: 112px; height: 112px; margin: 26px 0 0 -6px; object-fit: contain; border-radius: 0; }
+.sf .kit-cat img:not(.sf-cut) { width: 100%; margin: 0; height: 130px; object-fit: cover; border-radius: 52px 14px 0 0; }
+.kit-cat span { padding: 0 6px 18px; font-size: 13px; font-weight: 600; color: #8A9099; }
+.kit-home .kit-sec { padding-top: 33px; }
+.kit-home .kit-badges + .kit-sec { padding-top: 31px; }
+.kit-rail { padding: 42px 37px 10px; }
+.kit-cats { padding-top: 24px; }
+.kit-cat { border-radius: 64px 16px 16px 16px; }
