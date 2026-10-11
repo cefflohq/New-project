@@ -25,7 +25,7 @@
   // Bold colour product pages (crimson / yellow) and a centred steel-blue
   // brand home with two products crossing.
   T.capsule = {
-    name: 'Capsule', defaults: { accent: '#C8234F', accent2: '#F7C531', bg: '#5B8DB9', bar: '#5B8DB9' },
+    name: 'Capsule', cutout: true, defaults: { accent: '#C8234F', accent2: '#F7C531', bg: '#5B8DB9', bar: '#5B8DB9' },
     head(c, back) {
       return `<header class="cap-top">${back ? `<button type="button" class="cap-back" data-act="back" aria-label="${L("Back")}">${c.icon('back')}</button>` : ''}<span class="cap-logo"></span><b>${brand(c)}</b><span class="cap-me">${c.esc(c.initials(c.s.name).slice(0, 1))}</span>${c.toCart('cap-icon', c.icon('basket'))}</header>`;
     },
@@ -70,7 +70,7 @@
   // Sports-store: diagonal two-tone hero card, size-style pills row, and a
   // white home with round category badges, Popular rail and Categories.
   T.kit = {
-    name: 'Kit', defaults: { accent: '#253D6B', accent2: '#E1293F', bg: '#EEF2F7', bar: '#ffffff' },
+    name: 'Kit', cutout: true, defaults: { accent: '#253D6B', accent2: '#E1293F', bg: '#EEF2F7', bar: '#ffffff' },
     home(c) {
       const ps = c.list(), all = c.list(null, '');
       return `<section class="kit-home">
@@ -108,7 +108,7 @@
   // carousel of brown cards with round floating photos; detail with a deep
   // brown top, round photo, chip price, About and quantity pill.
   T.brew = {
-    name: 'Brew', defaults: { accent: '#4B2A15', accent2: '#D3A06A', bg: '#ffffff', bar: '#ffffff' },
+    name: 'Brew', cutout: true, defaults: { accent: '#4B2A15', accent2: '#D3A06A', bg: '#ffffff', bar: '#ffffff' },
     home(c) {
       const ps = c.list();
       return `<section class="brew-home">
@@ -140,7 +140,7 @@
   // product straddling a white sheet and a dark "Add to cart" pill; category
   // view with grey chips and tall red cards with a round down button.
   T.crimson = {
-    name: 'Crimson', defaults: { accent: '#B82838', accent2: '#2A2A2A', bg: '#ffffff', bar: '#B82838' },
+    name: 'Crimson', cutout: true, defaults: { accent: '#B82838', accent2: '#2A2A2A', bg: '#ffffff', bar: '#B82838' },
     home(c) {
       const ps = c.list();
       return `<section class="cri-home">
@@ -174,7 +174,7 @@
   // two-up grey cards with an arrow button, a floating bottom bar with a
   // black search circle; detail with a giant watermark and a Swipe button.
   T.lift = {
-    name: 'Lift', defaults: { accent: '#111111', accent2: '#E5332A', bg: '#ffffff', bar: '#ffffff' },
+    name: 'Lift', cutout: true, defaults: { accent: '#111111', accent2: '#E5332A', bg: '#ffffff', bar: '#ffffff' },
     home(c) {
       const all = c.list(null, ''), ps = c.list(), f = all[0];
       const counts = id => all.filter(p => p.categoryId === id).length;
@@ -208,7 +208,7 @@
   // wide feature card and a black pill bottom nav; detail with a big dish,
   // label, title, description, quantity and a round cart button.
   T.harvest = {
-    name: 'Harvest', defaults: { accent: '#111111', accent2: '#3BAA4A', bg: '#ffffff', bar: '#ffffff' },
+    name: 'Harvest', cutout: true, defaults: { accent: '#111111', accent2: '#3BAA4A', bg: '#ffffff', bar: '#ffffff' },
     home(c) {
       const ps = c.list(), [w, ...rest] = ps.length > 2 ? [ps[ps.length - 1], ...ps.slice(0, -1)] : [null, ...ps];
       return `<section class="hv-home">
@@ -241,7 +241,7 @@
   // panels with a big price and sage + button, glass nav; detail with a
   // full-bleed image and a frosted glass purchase card with a slide button.
   T.botanic = {
-    name: 'Botanic', defaults: { accent: '#86A98F', accent2: '#2F4A3A', bg: '#E9F0F0', bar: '#E9F0F0' },
+    name: 'Botanic', cutout: true, defaults: { accent: '#86A98F', accent2: '#2F4A3A', bg: '#E9F0F0', bar: '#E9F0F0' },
     home(c) {
       const ps = c.list();
       return `<section class="bo-home">
@@ -272,14 +272,14 @@
   // pills with counts, a 3-column product grid with price pills (the picked
   // product lifts onto a white card) and a floating orange total button.
   T.combo = {
-    name: 'Combo', defaults: { accent: '#F26B2C', accent2: '#8E9BF5', bg: '#F2F3F6', bar: '#F2F3F6' },
+    name: 'Combo', cutout: true, defaults: { accent: '#F26B2C', accent2: '#8E9BF5', bg: '#F2F3F6', bar: '#F2F3F6' },
     home(c) {
       const ps = c.list(), all = c.list(null, '');
       const counts = id => all.filter(p => p.categoryId === id).reduce((s, p) => s + c.qty(p.id), 0);
       return `<section class="cb-home">
         <div class="cb-thumbs">${all.slice(0, 2).map(p => `<span>${c.img(p)}</span>`).join('')}</div>
         <h1 class="cb-h">${c.esc(c.headline(c.s.name))}</h1>
-        <div class="cb-tabs">${c.s.categories.map(k => `<button type="button" class="${c.ui.cat === k.id ? 'on' : ''}" ${c.cat(k.id)}>${c.esc(k.name)} <i>${counts(k.id)}</i></button>`).join('') || `<button type="button" class="on">${L("All")} <i>${c.count()}</i></button>`}</div>
+        <div class="cb-tabs">${c.s.categories.map(k => `<button type="button" class="${c.ui.cat === k.id ? 'on' : ''}" ${c.cat(k.id)}>${c.esc(k.name)}${counts(k.id) ? ` <i>${counts(k.id)}</i>` : ''}</button>`).join('') || `<button type="button" class="on">${L("All")} <i>${c.count()}</i></button>`}</div>
         <div class="cb-grid">${ps.map(p => `<article class="cb-item${c.qty(p.id) ? ' on' : ''}" ${c.add(p.id)}>${c.qty(p.id) ? `<span class="cb-tag">${c.icon('sparkle')} ${c.qty(p.id)}</span>` : ''}${c.img(p)}<p>${c.esc(p.name)}</p><span class="cb-pill">+ ${c.moneyShort(p.price)}</span></article>`).join('') || c.empty()}</div>
         <button type="button" class="cb-detail" data-act="${ps[0] ? 'open' : 'home'}" data-id="${c.esc(ps[0]?.id || '')}">${L("Product details")}</button>
       </section>`;
@@ -302,7 +302,7 @@
   // green banner with a white pill, outlined category chips, two-up grey
   // tiles and a labelled bottom tab bar.
   T.discover = {
-    name: 'Discover', defaults: { accent: '#22C55E', accent2: '#16A34A', bg: '#ffffff', bar: '#ffffff' },
+    name: 'Discover', cutout: true, defaults: { accent: '#22C55E', accent2: '#16A34A', bg: '#ffffff', bar: '#ffffff' },
     home(c) {
       const ps = c.list(), f = c.list(null, '')[0];
       return `<section class="dc-home">
@@ -335,7 +335,7 @@
   // photo cards with overlay text; detail with a peeking image carousel,
   // orange price, uppercase title, chips, Detail accordion and black CTA.
   T.atelier = {
-    name: 'Atelier', defaults: { accent: '#111111', accent2: '#E35B2C', bg: '#ffffff', bar: '#ffffff' },
+    name: 'Atelier', cutout: true, defaults: { accent: '#111111', accent2: '#E35B2C', bg: '#ffffff', bar: '#ffffff' },
     home(c) {
       const ps = c.list(), f = c.list(null, '')[0];
       return `<section class="at-home">
@@ -392,7 +392,7 @@
   // two-up cards with hearts; detail with thumbnail column, quantity +
   // total price and a black "Add to Bag".
   T.tailor = {
-    name: 'Tailor', defaults: { accent: '#111111', accent2: '#F59E6B', bg: '#ffffff', bar: '#ffffff' },
+    name: 'Tailor', cutout: true, defaults: { accent: '#111111', accent2: '#F59E6B', bg: '#ffffff', bar: '#ffffff' },
     home(c) {
       const ps = c.list(), all = c.list(null, ''), f = all[0];
       return `<section class="tl-home">
@@ -431,7 +431,7 @@
   // detail with gradient stage, price card, description, thumbnail picker
   // and an outlined heart + purple "Add to Cart".
   T.sprint = {
-    name: 'Sprint', defaults: { accent: '#6B3BE0', accent2: '#FF7A1A', bg: '#ffffff', bar: '#ffffff' },
+    name: 'Sprint', cutout: true, defaults: { accent: '#6B3BE0', accent2: '#FF7A1A', bg: '#ffffff', bar: '#ffffff' },
     home(c) {
       const ps = c.list(), f = c.list(null, '')[0];
       return `<section class="sp-home">
@@ -468,7 +468,7 @@
   // listing screen with icon category tiles, a two-up grid and a floating
   // blue "View your cart" bar.
   T.splash = {
-    name: 'Splash', defaults: { accent: '#2563EB', accent2: '#FACC15', bg: '#F4F7FC', bar: '#F4F7FC' },
+    name: 'Splash', cutout: true, defaults: { accent: '#2563EB', accent2: '#FACC15', bg: '#F4F7FC', bar: '#F4F7FC' },
     home(c) {
       const all = c.list(null, ''), f = all[0];
       return `<section class="sl-home">
@@ -551,7 +551,7 @@
   // dish overhangs the card's left edge with a green order button; detail
   // with a big dish, payment detail rows and a Total + green CTA footer.
   T.warung = {
-    name: 'Warung', defaults: { accent: '#169A49', accent2: '#E11D2E', bg: '#ffffff', bar: '#ffffff' },
+    name: 'Warung', cutout: true, defaults: { accent: '#169A49', accent2: '#E11D2E', bg: '#ffffff', bar: '#ffffff' },
     home(c) {
       const ps = c.list();
       return `<section class="wr-home">
@@ -630,7 +630,7 @@
   // quantity steppers and a "View Cart" footer; a detail screen with image
   // counter, thumbnails, price, quantity, outlined Add to Cart + Buy Now.
   T.care = {
-    name: 'Care', defaults: { accent: '#1677D8', accent2: '#E8F2FD', bg: '#ffffff', bar: '#ffffff' },
+    name: 'Care', cutout: true, defaults: { accent: '#1677D8', accent2: '#E8F2FD', bg: '#ffffff', bar: '#ffffff' },
     home(c) {
       const all = c.list(null, ''), f = all[0];
       return `<section class="ca-home">

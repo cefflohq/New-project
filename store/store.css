@@ -1088,57 +1088,67 @@ h1, h2, h3, h4, p { margin: 0; }
    cut-out PNGs; real shop photos are rectangular. ---- */
 .sf .sf-page img:not(.sf-line-img) { filter: none; }
 /* cards: photo on top, flush to the card edges */
-.sf .kit-card > img, .sf .kit-card > .sf-ph { object-fit: cover; padding: 0; height: 72%; }
+.sf .kit-card > img:not(.sf-cut), .sf .kit-card > .sf-ph { object-fit: cover; padding: 0; height: 72%; }
 .sf .kit-cat { padding: 0; overflow: hidden; }
-.sf .kit-cat img, .sf .kit-cat .sf-ph { width: 100%; height: 100%; margin: 0; object-fit: cover; }
+.sf .kit-cat img:not(.sf-cut), .sf .kit-cat .sf-ph { width: 100%; height: 100%; margin: 0; object-fit: cover; }
 .sf .kit-cat span { padding: 8px; }
 .sf .brew-card { padding: 0 0 22px; overflow: hidden; }
 .sf .brew-cup { position: static; transform: none; width: 100%; height: 190px; border-radius: 0; box-shadow: none; margin-bottom: 14px; }
 .sf .brew-card > :not(.brew-cup) { margin-inline: 20px; }
 .sf .brew-plate { border-radius: 28px; width: calc(100% - 40px); height: 300px; }
 .sf .cri-card { overflow: hidden; }
-.sf .cri-card img, .sf .cri-card .sf-ph { width: calc(100% + 32px); height: 240px; margin: auto -16px -18px; object-fit: cover; }
+.sf .cri-card img:not(.sf-cut), .sf .cri-card .sf-ph { width: calc(100% + 32px); height: 240px; margin: auto -16px -18px; object-fit: cover; }
 .sf .cri-shot { width: calc(100% - 48px); height: 300px; border-radius: 24px; overflow: hidden; }
-.sf .cri-shot img, .sf .cri-shot .sf-ph { object-fit: cover; }
+.sf .cri-shot img:not(.sf-cut), .sf .cri-shot .sf-ph { object-fit: cover; }
 .sf .lift-card { overflow: hidden; }
-.sf .lift-card img, .sf .lift-card .sf-ph { width: calc(100% + 20px); margin: 8px -10px; object-fit: cover; }
+.sf .lift-card img:not(.sf-cut), .sf .lift-card .sf-ph { width: calc(100% + 20px); margin: 8px -10px; object-fit: cover; }
 .sf .lift-bimg { width: 100%; height: 100%; transform: none; object-fit: cover; }
 .sf .hv-card { padding: 0 0 14px; margin-top: 0; overflow: hidden; }
 .sf .hv-dish { width: 100%; height: 150px; border-radius: 0; margin: 0 0 12px; box-shadow: none; }
 .sf .hv-card > :not(.hv-dish) { margin-inline: 14px; }
 .sf .hv-big { width: 100%; height: 340px; border-radius: 0 0 32px 32px; margin: 0; }
 .sf .bo-card { overflow: hidden; }
-.sf .bo-img img, .sf .bo-img .sf-ph { width: calc(100% + 44px); height: 230px; margin: -26px -22px 18px; object-fit: cover; }
-.sf .cb-item img, .sf .cb-item .sf-ph { width: 100%; height: 130px; object-fit: cover; border-radius: 16px; }
-.sf .cb-thumbs img, .sf .cb-thumbs .sf-ph { object-fit: cover; }
-.sf .cb-hero img, .sf .cb-hero .sf-ph { width: 100%; height: 320px; border-radius: 26px; }
+.sf .bo-img img:not(.sf-cut), .sf .bo-img .sf-ph { width: calc(100% + 44px); height: 230px; margin: -26px -22px 18px; object-fit: cover; }
+.sf .cb-item img:not(.sf-cut), .sf .cb-item .sf-ph { width: 100%; height: 130px; object-fit: cover; border-radius: 16px; }
+.sf .cb-thumbs img:not(.sf-cut), .sf .cb-thumbs .sf-ph { object-fit: cover; }
+.sf .cb-hero img:not(.sf-cut), .sf .cb-hero .sf-ph { width: 100%; height: 320px; border-radius: 26px; }
 .sf .dc-tile { padding: 0; }
-.sf .dc-tile img, .sf .dc-tile .sf-ph { object-fit: cover; }
+.sf .dc-tile img:not(.sf-cut), .sf .dc-tile .sf-ph { object-fit: cover; }
 .sf .dc-bimg { margin-top: 0; height: 100%; object-fit: cover; }
 .sf .po-card { padding: 0 0 10px; overflow: hidden; }
-.sf .po-card img, .sf .po-card .sf-ph { object-fit: cover; }
+.sf .po-card img:not(.sf-cut), .sf .po-card .sf-ph { object-fit: cover; }
 .sf .po-card > :not(img):not(.sf-ph) { margin-inline: 8px; }
 .sf .tl-card { padding: 0 0 12px; overflow: hidden; }
-.sf .tl-card img, .sf .tl-card .sf-ph { object-fit: cover; }
+.sf .tl-card img:not(.sf-cut), .sf .tl-card .sf-ph { object-fit: cover; }
 .sf .sp-card { overflow: hidden; }
-.sf .sp-card > img, .sf .sp-card > .sf-ph { width: calc(100% + 32px); margin: -16px -16px 12px; object-fit: cover; }
+.sf .sp-card > img:not(.sf-cut), .sf .sp-card > .sf-ph { width: calc(100% + 32px); margin: -16px -16px 12px; object-fit: cover; }
 .sf .sp-bimg { width: 100%; margin: 0; transform: none; object-fit: cover; }
-.sf .sl-ph img, .sf .sl-ph .sf-ph { object-fit: cover; padding: 0; }
+.sf .sl-ph img:not(.sf-cut), .sf .sl-ph .sf-ph { object-fit: cover; padding: 0; }
 .sf .sl-tiles span { padding: 0; }
-.sf .sl-tiles span img, .sf .sl-tiles span .sf-ph { object-fit: cover; }
+.sf .sl-tiles span img:not(.sf-cut), .sf .sl-tiles span .sf-ph { object-fit: cover; }
 .sf .sv-cats span { padding: 0; }
-.sf .sv-cats span img, .sf .sv-cats span .sf-ph { object-fit: cover; }
+.sf .sv-cats span img:not(.sf-cut), .sf .sv-cats span .sf-ph { object-fit: cover; }
 .sf .wr-row { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 14px; align-items: stretch; padding: 0 14px 0 0; overflow: hidden; }
 .sf .wr-dish { position: static; transform: none; width: 116px; height: 100%; min-height: 116px; border-radius: 0; box-shadow: none; }
 .sf .wr-tx { padding: 12px 0; }
-.sf .wr-big img, .sf .wr-big .sf-ph { border-radius: 28px; }
-.sf .cap-row img, .sf .cap-row .sf-ph { object-fit: cover; border-radius: 12px; }
-.sf .cap-duo img, .sf .cap-duo .sf-ph { object-fit: cover; border-radius: 22px; }
+.sf .wr-big img:not(.sf-cut), .sf .wr-big .sf-ph { border-radius: 28px; }
+.sf .cap-row img:not(.sf-cut), .sf .cap-row .sf-ph { object-fit: cover; border-radius: 12px; }
+.sf .cap-duo img:not(.sf-cut), .sf .cap-duo .sf-ph { object-fit: cover; border-radius: 22px; }
 .sf .cap-shot { padding: 10px 24px 26px; }
-.sf .cap-shot img, .sf .cap-shot .sf-ph { max-width: none; width: 100%; height: 320px; max-height: none; object-fit: cover; border-radius: 26px; }
+.sf .cap-shot img:not(.sf-cut), .sf .cap-shot .sf-ph { max-width: none; width: 100%; height: 320px; max-height: none; object-fit: cover; border-radius: 26px; }
 .sf .lift-shot { left: 16px; right: 16px; top: 8px; width: auto; height: calc(100% - 16px); transform: none; object-fit: cover; border-radius: 22px; }
 .sf .sp-shot { width: 100%; margin: 8px 0 0; transform: none; object-fit: cover; border-radius: 22px; }
 .sf .cap-duo { margin-top: 12px; }
 .sf .cap-duo-0 { transform: rotate(-6deg); }
 .sf .cap-duo-1 { transform: rotate(6deg); }
 .sf .tl-price { margin-top: 10px; font-size: 20px; font-weight: 700; }
+
+/* Cut-out photos (transparent PNG) float on the template colour as in the
+   references: never cropped, soft shadow. */
+.sf img.sf-cut { object-fit: contain; background: none; filter: drop-shadow(0 14px 16px rgba(0,0,0,.22)); }
+/* Product pages: a cut-out never outgrows the stage; content clears the dock. */
+#app.has-dock img.sf-cut { max-height: 300px; }
+#app.has-dock { padding-bottom: 100px; }
+#app.has-dock .cap-card { padding-bottom: 104px; }
+/* The reference's dotted brand glyph reads as a loading spinner without a real logo. */
+.sf .cap-logo { display: none; }

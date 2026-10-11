@@ -100,6 +100,8 @@
     const products = (raw.products || []).map(p => ({
       id: p.id, categoryId: p.category_id, name: p.name || '', description: p.description || '',
       price: Number(p.display_price || 0), images: (p.images || []).map(abs).filter(Boolean),
+      // Background-removed main photo (transparent PNG), when the vendor has one.
+      cutout: abs(p.cutout_url) || null,
     }));
     return {
       slug: raw.slug, name: raw.business?.name || '', area: raw.business?.area || '',
@@ -119,9 +121,13 @@
     return store.products.filter(p => (!catId || p.categoryId === catId) && (!term || p.name.toLowerCase().includes(term) || p.description.toLowerCase().includes(term)));
   }
   const catName = id => store.categories.find(c => c.id === id)?.name || '';
-  const initials = s => (s || '').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '·';
+  const initials = s => (s || '').replace(/[^\p{L}\p{N}\s]/gu, '').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '·';
   function img(p, cls = '', i = 0) {
-    const src = p?.images?.[i];
+    // Cut-out templates float the product on their colour (as the references
+    // do) when a cut-out exists; otherwise the photo fills its frame.
+    const cut = i === 0 && tpl?.cutout && p?.cutout;
+    const src = cut ? p.cutout : p?.images?.[i];
+    if (cut) cls = `${cls} sf-cut`;
     return src
       ? `<img class="${cls}" src="${esc(src)}" alt="${esc(p.name)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'sf-ph ${cls}',textContent:'${esc(initials(p.name)).replace(/'/g, '')}'}))">`
       : `<div class="sf-ph ${cls}" aria-hidden="true">${esc(initials(p?.name))}</div>`;
