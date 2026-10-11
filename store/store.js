@@ -497,7 +497,12 @@
       setRobots(false);
       if (window.parent === window) { state('Preview is shown inside the Cefflo app.'); return; }
       window.addEventListener('message', ev => {
-        if (!allowed.has(ev.origin) || ev.source !== window.parent) return;
+        // Cloudflare Pages branch aliases (<branch>.<project>.pages.dev) are the same app.
+        const ok = allowed.has(ev.origin) || [...allowed].some(a => {
+          const h = new URL(a).hostname;
+          return h.endsWith('.pages.dev') && new URL(ev.origin).hostname.endsWith('.' + h) && ev.origin.startsWith('https://');
+        });
+        if (!ok || ev.source !== window.parent) return;
         if (ev.data?.type === 'cefflo-storefront-preview' && ev.data.store) start(ev.data.store);
       });
       window.parent.postMessage({ type: 'cefflo-storefront-ready' }, '*');
