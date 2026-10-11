@@ -74,6 +74,12 @@
   animation: cf-spin .8s linear infinite;
 }
 .cf-ring-logo { position: relative; width: 26px; height: 36px; object-fit: contain; }
+.cf-page-loader--inline .cf-ring-box { width: 88px; height: 88px; border-radius: 18px; box-shadow: 0 10px 28px rgba(0, 0, 0, .18); transform: none; }
+.cf-page-loader--inline .cf-ring { width: 54px; height: 54px; border-width: 3px; }
+.cf-page-loader--inline .cf-ring-logo { width: 20px; height: 28px; }
+/* Small ring (buttons, sheets): replaces the old three dots everywhere. */
+.cf-spin { display: inline-block; width: 20px; height: 20px; border-radius: 50%; box-sizing: border-box; border: 2.5px solid rgba(0, 96, 254, .14); border-top-color: #0060FE; border-right-color: #0592EB; animation: cf-spin .8s linear infinite; }
+.cf-on-blue .cf-spin { border-color: rgba(255, 255, 255, .25); border-top-color: #fff; border-right-color: #fff; }
 .cf-page-loader--ring .cf-loader-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @keyframes cf-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {

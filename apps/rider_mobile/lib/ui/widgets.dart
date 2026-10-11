@@ -1,4 +1,5 @@
 import 'package:cefflo_loader/cefflo_loader.dart';
+
 import 'dart:async';
 
 export 'toast.dart' show showCefToast;
@@ -69,31 +70,34 @@ class CeffloPrimaryButton extends StatelessWidget {
   final double height;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    width: double.infinity,
-    height: height,
-    child: Material(
-      color: onTap == null && !busy
-          ? CefColors.accent.withValues(alpha: 0.45)
-          : CefColors.accent,
-      borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-      child: InkWell(
+  Widget build(BuildContext context) => CefPageLoaderWhile(
+    active: busy,
+    child: SizedBox(
+      width: double.infinity,
+      height: height,
+      child: Material(
+        color: onTap == null && !busy
+            ? CefColors.accent.withValues(alpha: 0.45)
+            : CefColors.accent,
         borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-        onTap: busy ? null : onTap,
-        child: Center(
-          child: busy
-              ? const CefDots(onBlue: false)
-              : Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: CefColors.onAccent,
-                    letterSpacing: -0.2,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+          onTap: busy ? null : onTap,
+          child: Center(
+            child: busy
+                ? const CefDots(onBlue: false)
+                : Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: CefColors.onAccent,
+                      letterSpacing: -0.2,
+                    ),
                   ),
-                ),
+          ),
         ),
       ),
     ),
@@ -718,15 +722,15 @@ class CeffloNavySheetScaffold extends StatelessWidget {
                           child: !scrollable
                               ? sheetChild
                               : onRefresh == null
-                                  ? SingleChildScrollView(child: sheetChild)
-                                  : RefreshIndicator(
-                                      onRefresh: onRefresh!,
-                                      child: SingleChildScrollView(
-                                        physics:
-                                            const AlwaysScrollableScrollPhysics(),
-                                        child: sheetChild,
-                                      ),
-                                    ),
+                              ? SingleChildScrollView(child: sheetChild)
+                              : RefreshIndicator(
+                                  onRefresh: onRefresh!,
+                                  child: SingleChildScrollView(
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    child: sheetChild,
+                                  ),
+                                ),
                         ),
                         if (footer != null)
                           Padding(

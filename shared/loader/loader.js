@@ -17,11 +17,21 @@
 
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
+  function ring() { return document.documentElement.getAttribute('data-cf-loader') === 'ring'; }
+  function ringTile() {
+    var logo = document.documentElement.getAttribute('data-cf-loader-logo') || (me ? me.src.replace(/loader\.js(\?.*)?$/, 'cefflo-mark.svg') : '');
+    return '<div class="cf-ring-box" aria-hidden="true"><span class="cf-ring"></span>' +
+      (logo ? '<img class="cf-ring-logo" src="' + esc(logo) + '" alt="">' : '') + '</div>';
+  }
+
+  // Ring style (opt-in: <html data-cf-loader="ring">, now on every surface):
+  // a blue ring spinning around the Cefflo mark on a dark glass tile.
+
   // Inline markup for a page region (lists, panels). Fades in after 300ms by CSS.
   function markup(label, extraClass) {
     return '<div class="cf-page-loader cf-page-loader--inline' + (extraClass ? ' ' + extraClass : '') +
       '" role="status" aria-live="polite" data-cf-loader-at="' + Date.now() + '">' +
-      '<div class="cf-dots" aria-hidden="true"><i></i><i></i><i></i></div>' +
+      (ring() ? ringTile() : '<div class="cf-dots" aria-hidden="true"><i></i><i></i><i></i></div>') +
       '<p class="cf-loader-label">' + esc(label || DEFAULT) + '</p></div>';
   }
 
@@ -30,14 +40,9 @@
     el = document.createElement('div');
     el.className = 'cf-page-loader cf-page-loader--global';
     el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
-    // Ring style (opt-in: <html data-cf-loader="ring">; logo defaults to cefflo-mark.svg here):
-    // a blue spinning ring around the Cefflo mark on a dark glass tile.
-    var root = document.documentElement;
-    if (root.getAttribute('data-cf-loader') === 'ring') {
+    if (ring()) {
       el.className += ' cf-page-loader--ring';
-      var logo = root.getAttribute('data-cf-loader-logo') || (me ? me.src.replace(/loader\.js(\?.*)?$/, 'cefflo-mark.svg') : '');
-      el.innerHTML = '<div class="cf-ring-box" aria-hidden="true"><span class="cf-ring"></span>' +
-        (logo ? '<img class="cf-ring-logo" src="' + esc(logo) + '" alt="">' : '') + '</div><p class="cf-loader-label"></p>';
+      el.innerHTML = ringTile() + '<p class="cf-loader-label"></p>';
       return;
     }
     el.innerHTML = '<div class="cf-dots" aria-hidden="true"><i></i><i></i><i></i></div><p class="cf-loader-label"></p>';

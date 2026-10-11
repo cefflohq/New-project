@@ -359,42 +359,65 @@ class CefButton extends StatelessWidget {
         : outlined
         ? (compact ? CefColors.brand : c.textPrimary)
         : CefColors.onAccent;
-    return SizedBox(
-      width: compact ? null : double.infinity,
-      height: compact ? 40 : Sizes.buttonHeight,
-      child: FilledButton(
-        onPressed: busy ? null : onTap,
-        style: FilledButton.styleFrom(
-          backgroundColor: outlined ? c.card : CefColors.ceffloMustard,
-          foregroundColor: foreground,
-          disabledBackgroundColor: outlined
-              ? c.card
-              : CefColors.ceffloMustard.withValues(alpha: .5),
-          disabledForegroundColor: foreground.withValues(alpha: .5),
-          side: outlined
-              ? BorderSide(
-                  color: destructive
-                      ? c.attention.withValues(alpha: .45)
-                      : compact
-                      ? CefColors.brand
-                      : c.border,
-                )
-              : null,
-          padding: const EdgeInsets.symmetric(horizontal: Gap.lg),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+    return CefPageLoaderWhile(
+      active: busy,
+      label: busyLabel,
+      child: SizedBox(
+        width: compact ? null : double.infinity,
+        height: compact ? 40 : Sizes.buttonHeight,
+        child: FilledButton(
+          onPressed: busy ? null : onTap,
+          style: FilledButton.styleFrom(
+            backgroundColor: outlined ? c.card : CefColors.ceffloMustard,
+            foregroundColor: foreground,
+            disabledBackgroundColor: outlined
+                ? c.card
+                : CefColors.ceffloMustard.withValues(alpha: .5),
+            disabledForegroundColor: foreground.withValues(alpha: .5),
+            side: outlined
+                ? BorderSide(
+                    color: destructive
+                        ? c.attention.withValues(alpha: .45)
+                        : compact
+                        ? CefColors.brand
+                        : c.border,
+                  )
+                : null,
+            padding: const EdgeInsets.symmetric(horizontal: Gap.lg),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+            ),
           ),
-        ),
-        child: busy
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CefDots(onBlue: foreground.computeLuminance() > .5),
-                  if (busyLabel != null) ...[
-                    const SizedBox(width: Gap.sm),
+          child: busy
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CefDots(onBlue: foreground.computeLuminance() > .5),
+                    if (busyLabel != null) ...[
+                      const SizedBox(width: Gap.sm),
+                      Flexible(
+                        child: Text(
+                          busyLabel!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(color: foreground),
+                        ),
+                      ),
+                    ],
+                  ],
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (icon != null) ...[
+                      Icon(icon, size: 18),
+                      const SizedBox(width: Gap.sm),
+                    ],
                     Flexible(
                       child: Text(
-                        busyLabel!,
+                        label,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.titleSmall
@@ -402,27 +425,8 @@ class CefButton extends StatelessWidget {
                       ),
                     ),
                   ],
-                ],
-              )
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (icon != null) ...[
-                    Icon(icon, size: 18),
-                    const SizedBox(width: Gap.sm),
-                  ],
-                  Flexible(
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall
-                          ?.copyWith(color: foreground),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+        ),
       ),
     );
   }

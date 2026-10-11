@@ -603,7 +603,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, prefersReduced
 function sheetBody(state) {
   if (state === 'submitting') {
     return `<div class="sheet-state" role="status" aria-live="polite">
-      <div class="cf-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+      <span class="cf-spin" aria-hidden="true"></span>
       <h2 class="sheet-title">Thanks for your rating!</h2>
       <p class="sheet-sub">Submitting your feedback…</p></div>`;
   }
@@ -835,7 +835,7 @@ root.dataset.ready = 'true';
       indicator = document.createElement('div');
       indicator.className = 'ptr';
       indicator.setAttribute('aria-hidden', 'true');
-      indicator.innerHTML = '<div class="cf-dots"><i></i><i></i><i></i></div>';
+      indicator.innerHTML = '<span class="cf-spin"></span>';
       document.body.append(indicator);
     }
     indicator.style.setProperty('--ptr', `${Math.min(dy, MAX)}px`);

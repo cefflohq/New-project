@@ -1,3 +1,4 @@
+import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
@@ -257,7 +258,7 @@ class _DeliveryPinPickerState extends State<DeliveryPinPicker> {
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CefDots(size: 7),
                         )
                       : const Icon(LucideIcons.locateFixed, size: 20),
                 ),

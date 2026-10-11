@@ -370,6 +370,6 @@ img { display: block; max-width: 100%; }
 @media (prefers-reduced-motion: reduce) { .ptr { transition: none; } }
 
 
-.ptr .cf-dots i { animation-play-state: paused; }
-.ptr--spin .cf-dots i { animation-play-state: running; }
-.sheet-state .cf-dots { margin-bottom: 14px; }
+.ptr .cf-spin { animation-play-state: paused; }
+.ptr--spin .cf-spin { animation-play-state: running; }
+.sheet-state .cf-spin { width: 32px; height: 32px; border-width: 3px; margin-bottom: 14px; }

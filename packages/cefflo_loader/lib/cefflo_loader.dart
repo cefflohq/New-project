@@ -33,10 +33,14 @@ abstract final class CefLoaderTokens {
   static String slowLabel = 'Masih memuatkan, sila tunggu sebentar';
 }
 
-/// The three dots. [onBlue]: dark mode / blue background variant.
+/// Small spinning ring for tight spots (buttons, rows). Name kept for call
+/// sites: it replaced the three bounce dots on 2026-10-11 (Founder: every
+/// loading state is the blue ring). [onBlue]: white ring on blue/dark fills.
 class CefDots extends StatefulWidget {
   const CefDots({super.key, this.onBlue, this.size = CefLoaderTokens.dot});
   final bool? onBlue;
+
+  /// Old dot size; the ring is 2.5× this across.
   final double size;
   @override
   State<CefDots> createState() => _CefDotsState();
@@ -45,19 +49,15 @@ class CefDots extends StatefulWidget {
 class _CefDotsState extends State<CefDots> with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(
     vsync: this,
-    duration: CefLoaderTokens.period,
-  );
-  static const _curve = Cubic(.45, 0, .55, 1);
+    duration: const Duration(milliseconds: 800),
+  )..repeat();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    if (still) {
-      _c.stop();
-    } else if (!_c.isAnimating) {
-      _c.repeat();
-    }
+    _c.duration = Duration(milliseconds: still ? 2400 : 800);
+    if (!_c.isAnimating) _c.repeat();
   }
 
   @override
@@ -66,88 +66,25 @@ class _CefDotsState extends State<CefDots> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
-  // 0/60/100%: rest · 30%: up 1.1× dot, scale 1.1, opacity 1.
-  (double, double, double) _frame(double t) {
-    double k;
-    if (t < .3) {
-      k = _curve.transform(t / .3);
-    } else if (t < .6) {
-      k = 1 - _curve.transform((t - .3) / .3);
-    } else {
-      k = 0;
-    }
-    return (-1.1 * widget.size * k, 1 + .1 * k, .6 + .4 * k);
-  }
-
   @override
   Widget build(BuildContext context) {
     final onBlue =
         widget.onBlue ?? Theme.of(context).brightness == Brightness.dark;
-    final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    final s = widget.size;
-    final blue = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: onBlue
-          ? const [
-              CefLoaderTokens.blueStartBright,
-              CefLoaderTokens.blueEndBright,
-            ]
-          : const [CefLoaderTokens.blueStart, CefLoaderTokens.blueEnd],
-    );
-    final decorations = [
-      BoxDecoration(shape: BoxShape.circle, gradient: blue),
-      BoxDecoration(
-        shape: BoxShape.circle,
-        color: CefLoaderTokens.white,
-        border: onBlue
-            ? null
-            : Border.all(
-                color: CefLoaderTokens.blueStart,
-                width: CefLoaderTokens.outline,
-              ),
-      ),
-      const BoxDecoration(
-        shape: BoxShape.circle,
-        color: CefLoaderTokens.mustard,
-      ),
-    ];
+    final d = widget.size * 2.5;
     return ExcludeSemantics(
-      child: SizedBox(
-        height: s * 2.2,
-        child: AnimatedBuilder(
-          animation: _c,
-          builder: (context, _) => Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              for (var i = 0; i < 3; i++) ...[
-                if (i > 0) const SizedBox(width: CefLoaderTokens.gap),
-                Builder(
-                  builder: (context) {
-                    final period = CefLoaderTokens.period.inMilliseconds;
-                    final t = still
-                        ? 0.0
-                        : ((_c.value * period - i * 120) % period) / period;
-                    final (dy, scale, op) = still ? (0.0, 1.0, 1.0) : _frame(t);
-                    return Opacity(
-                      opacity: op,
-                      child: Transform.translate(
-                        offset: Offset(0, dy),
-                        child: Transform.scale(
-                          scale: scale,
-                          child: Container(
-                            width: s,
-                            height: s,
-                            decoration: decorations[i],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ],
+      child: RotationTransition(
+        turns: _c,
+        child: SizedBox(
+          width: d,
+          height: d,
+          child: CustomPaint(
+            painter: _RingPainter(
+              stroke: math.max(2, d / 9),
+              track: onBlue ? const Color(0x40FFFFFF) : const Color(0x1F0060FE),
+              colors: onBlue
+                  ? const [Colors.white, Colors.white]
+                  : const [CefLoaderTokens.blueEnd, CefLoaderTokens.blueStart],
+            ),
           ),
         ),
       ),
@@ -155,7 +92,7 @@ class _CefDotsState extends State<CefDots> with SingleTickerProviderStateMixin {
   }
 }
 
-/// Dots + label, centred. Appears only after 300ms (no flash), fades in
+/// Ring tile + label, centred. Appears only after 300ms (no flash), fades in
 /// 200ms, and switches to the slow label after 8s.
 class CefPageLoader extends StatefulWidget {
   const CefPageLoader({
@@ -227,7 +164,7 @@ class _CefPageLoaderState extends State<CefPageLoader> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CefDots(onBlue: onBlue),
+                const CefRingLoader(tile: 88),
                 const SizedBox(height: CefLoaderTokens.labelGap),
                 ExcludeSemantics(
                   child: Text(
@@ -453,7 +390,10 @@ class CefMark extends StatelessWidget {
 
 /// Blue ring + Cefflo mark on a rounded dark glass tile.
 class CefRingLoader extends StatefulWidget {
-  const CefRingLoader({super.key});
+  const CefRingLoader({super.key, this.tile = 112});
+
+  /// Tile edge; ring and mark scale with it.
+  final double tile;
   @override
   State<CefRingLoader> createState() => _CefRingLoaderState();
 }
@@ -481,15 +421,15 @@ class _CefRingLoaderState extends State<CefRingLoader>
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(widget.tile * .21),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
             child: Container(
-              width: 112,
-              height: 112,
+              width: widget.tile,
+              height: widget.tile,
               decoration: BoxDecoration(
                 color: const Color(0xB8101218),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(widget.tile * .21),
                 border: Border.all(color: const Color(0x1FFFFFFF)),
               ),
               alignment: Alignment.center,
@@ -498,12 +438,13 @@ class _CefRingLoaderState extends State<CefRingLoader>
                 children: [
                   RotationTransition(
                     turns: _c,
-                    child: const SizedBox(
-                        width: 68,
-                        height: 68,
-                        child: CustomPaint(painter: _RingPainter())),
+                    child: SizedBox(
+                        width: widget.tile * .6,
+                        height: widget.tile * .6,
+                        child: CustomPaint(
+                            painter: _RingPainter(stroke: widget.tile / 28))),
                   ),
-                  const CefMark(height: 36),
+                  CefMark(height: widget.tile * .32),
                 ],
               ),
             ),
@@ -513,10 +454,18 @@ class _CefRingLoaderState extends State<CefRingLoader>
 }
 
 class _RingPainter extends CustomPainter {
-  const _RingPainter();
+  const _RingPainter({
+    this.stroke = 4,
+    this.track = const Color(0x24FFFFFF),
+    this.colors = const [CefLoaderTokens.blueEnd, CefLoaderTokens.blueStart],
+  });
+  final double stroke;
+  final Color track;
+  final List<Color> colors;
+
   @override
   void paint(Canvas canvas, Size size) {
-    const w = 4.0;
+    final w = stroke;
     final r = Rect.fromLTWH(w / 2, w / 2, size.width - w, size.height - w);
     canvas.drawArc(
         r,
@@ -526,25 +475,81 @@ class _RingPainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = w
-          ..color = const Color(0x24FFFFFF));
+          ..color = track);
     canvas.drawArc(
         r,
         -math.pi / 2,
-        math.pi / 2 * 2,
+        math.pi,
         false,
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = w
           ..strokeCap = StrokeCap.round
-          ..shader = const SweepGradient(
-            colors: [CefLoaderTokens.blueEnd, CefLoaderTokens.blueStart],
-            stops: [0, .5],
-            transform: GradientRotation(-math.pi / 2),
+          ..shader = SweepGradient(
+            colors: colors,
+            stops: const [0, .5],
+            transform: const GradientRotation(-math.pi / 2),
           ).createShader(r));
   }
 
   @override
-  bool shouldRepaint(_RingPainter oldDelegate) => false;
+  bool shouldRepaint(_RingPainter oldDelegate) =>
+      oldDelegate.stroke != stroke || oldDelegate.track != track;
+}
+
+/// Shows the global ring popup while [active] (e.g. a busy submit button),
+/// like Vendor Web's busy(). Safe to rebuild; balances its own show/hide.
+class CefPageLoaderWhile extends StatefulWidget {
+  const CefPageLoaderWhile(
+      {super.key, required this.active, this.label, required this.child});
+  final bool active;
+  final String? label;
+  final Widget child;
+  @override
+  State<CefPageLoaderWhile> createState() => _CefPageLoaderWhileState();
+}
+
+class _CefPageLoaderWhileState extends State<CefPageLoaderWhile> {
+  bool _shown = false;
+
+  void _sync() {
+    if (!mounted && _shown) {
+      _shown = false;
+      hidePageLoader();
+      return;
+    }
+    if (widget.active == _shown) return;
+    _shown = widget.active;
+    _shown ? showPageLoader(widget.label) : hidePageLoader();
+  }
+
+  void _later() => WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _sync();
+      });
+
+  @override
+  void initState() {
+    super.initState();
+    _later();
+  }
+
+  @override
+  void didUpdateWidget(CefPageLoaderWhile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _later();
+  }
+
+  @override
+  void dispose() {
+    if (_shown) {
+      _shown = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) => hidePageLoader());
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// Shown after 300ms with a 200ms fade (no flash on quick work).
