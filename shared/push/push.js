@@ -24,6 +24,19 @@
       return r || navigator.serviceWorker.register(SW, { scope: dir });
     });
   }
+  // The page is outside the worker's scope, so serviceWorker.ready never
+  // settles here: wait for this registration's own worker instead.
+  function activated(reg) {
+    if (reg.active) return Promise.resolve(reg);
+    var w = reg.installing || reg.waiting;
+    return new Promise(function (resolve, reject) {
+      if (!w) { reject(new Error('Service worker did not start.')); return; }
+      w.addEventListener('statechange', function () {
+        if (w.state === 'activated') resolve(reg);
+        else if (w.state === 'redundant') reject(new Error('Service worker did not start.'));
+      });
+    });
+  }
   function rpc(o, name, args) {
     return fetch(o.supabaseUrl.replace(/\/$/, '') + '/rest/v1/rpc/' + name, {
       method: 'POST',
@@ -52,9 +65,7 @@
         .then(function (r) { return r.json(); })
         .then(function (v) {
           if (!v.key) throw new Error('Push is not configured.');
-          return registration().then(function (reg) {
-            return navigator.serviceWorker.ready.then(function () { return reg; });
-          }).then(function (reg) {
+          return registration().then(activated).then(function (reg) {
             return reg.pushManager.getSubscription().then(function (s) {
               return s || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(v.key) });
             });
