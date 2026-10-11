@@ -813,21 +813,12 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _progress = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1400),
-  )..repeat();
-
+class _SplashScreenState extends State<SplashScreen> {
+  // No loading indicator on the splash (Founder 2026-10-11): brand only.
   @override
   void initState() {
     super.initState();
-    if (widget.idle) {
-      _progress.stop();
-    } else {
-      _bootstrap();
-    }
+    if (!widget.idle) _bootstrap();
   }
 
   /// Real bootstrap, not a fixed decorative timer: when a session already
@@ -845,12 +836,6 @@ class _SplashScreenState extends State<SplashScreen>
       await Future<void>.delayed(minimumBrandMoment - elapsed);
     }
     if (mounted) widget.onReady();
-  }
-
-  @override
-  void dispose() {
-    _progress.dispose();
-    super.dispose();
   }
 
   @override
@@ -874,7 +859,7 @@ class _SplashScreenState extends State<SplashScreen>
                 },
               ),
             ),
-            // Tagline and progress stay below the brand block.
+            // The tagline stays below the brand block.
             SafeArea(
               child: Align(
                 alignment: Alignment.bottomCenter,
@@ -882,9 +867,7 @@ class _SplashScreenState extends State<SplashScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const _Tagline(),
-                    const SizedBox(height: Gap.section),
-                    _SplashProgress(animation: _progress),
-                    const SizedBox(height: Gap.section),
+                    const SizedBox(height: Gap.section * 2 + 4),
                   ],
                 ),
               ),
@@ -2788,38 +2771,5 @@ class _Tagline extends StatelessWidget {
     textAlign: TextAlign.center,
     style: Theme.of(context).textTheme.bodyMedium
         ?.copyWith(color: Colors.white.withValues(alpha: .88), height: 1.45),
-  );
-}
-
-class _SplashProgress extends StatelessWidget {
-  const _SplashProgress({required this.animation});
-  final Animation<double> animation;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: 168,
-    height: 4,
-    child: AnimatedBuilder(
-      animation: animation,
-      builder: (context, _) {
-        final active = (animation.value * 3).floor() % 3;
-        return Row(
-          children: List.generate(3, (i) {
-            return Expanded(
-              child: Container(
-                margin: EdgeInsets.only(right: i == 2 ? 0 : 6),
-                height: 4,
-                decoration: BoxDecoration(
-                  color: i == active
-                      ? CefColors.ceffloMustard
-                      : Colors.white.withValues(alpha: .28),
-                  borderRadius: BorderRadius.circular(99),
-                ),
-              ),
-            );
-          }),
-        );
-      },
-    ),
   );
 }
