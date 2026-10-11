@@ -1196,3 +1196,10 @@ h1, h2, h3, h4, p { margin: 0; }
 .kit-sizes button { min-width: 30px; height: 30px; padding: 0 4px; border-radius: 15px; color: rgba(255, 255, 255, .8); font-size: 14px; }
 .kit-sizes button.on { background: rgba(255, 255, 255, .75); color: var(--kit-ink); font-weight: 700; }
 .kit-name { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: .38em; }
+/* Kit card: smooth S-curve side notches (as the reference), not round cuts. */
+.kit-frame {
+  -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2734%27%20height%3D%27150%27%20viewBox%3D%270%200%2034%20150%27%3E%3Cpath%20d%3D%27M0%200%20C0%2038%2030%2042%2030%2075%20C30%20108%200%20112%200%20150%20Z%27/%3E%3C/svg%3E") left 0 top 320px / 34px 150px no-repeat, url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2734%27%20height%3D%27150%27%20viewBox%3D%270%200%2034%20150%27%3E%3Cpath%20d%3D%27M34%200%20C34%2038%204%2042%204%2075%20C4%20108%2034%20112%2034%20150%20Z%27/%3E%3C/svg%3E") right 0 top 320px / 34px 150px no-repeat, linear-gradient(#000, #000);
+  -webkit-mask-composite: xor, xor;
+          mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2734%27%20height%3D%27150%27%20viewBox%3D%270%200%2034%20150%27%3E%3Cpath%20d%3D%27M0%200%20C0%2038%2030%2042%2030%2075%20C30%20108%200%20112%200%20150%20Z%27/%3E%3C/svg%3E") left 0 top 320px / 34px 150px no-repeat exclude, url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2734%27%20height%3D%27150%27%20viewBox%3D%270%200%2034%20150%27%3E%3Cpath%20d%3D%27M34%200%20C34%2038%204%2042%204%2075%20C4%20108%2034%20112%2034%20150%20Z%27/%3E%3C/svg%3E") right 0 top 320px / 34px 150px no-repeat exclude, linear-gradient(#000, #000); }
+.kit-side.l { left: 2px; } .kit-side.r { right: 2px; }
+.kit-side { top: 383px; z-index: 2; }
