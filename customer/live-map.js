@@ -30,19 +30,39 @@ function loadGl() {
   return glReady;
 }
 
-export async function openLiveMap(location, { title = 'Live map', closeLabel = 'Close map' } = {}) {
-  if (root || !location || !liveMapAvailable()) return;
+/** Centred pop-up (Founder 2026-10-12): large rounded card, round X below it. */
+function openDialog(title, closeLabel) {
   root = document.createElement('div');
   root.className = 'live-map';
   root.setAttribute('role', 'dialog');
   root.setAttribute('aria-label', title);
-  root.innerHTML = `<div class="live-map__canvas" data-live-map></div>
+  root.innerHTML = `<div class="live-map__card"><div class="live-map__canvas" data-live-map></div>
+    <div class="live-map__loading" data-live-map-loading>${window.cfLoader?.markup('Loading map') || '<span class="live-map__spinner"></span><span>Loading map…</span>'}</div></div>
     <button class="live-map__close" type="button" data-live-map-close aria-label="${closeLabel}">✕</button>`;
-  root.style.cssText = 'position:fixed;inset:0;z-index:50;background:#e9edf2';
+  root.style.cssText = 'position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:16px;background:rgba(11,21,48,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)';
+  root.querySelector('.live-map__card').style.cssText = 'position:relative;width:100%;max-width:520px;height:min(72vh,640px);border-radius:20px;overflow:hidden;background:#e9edf2;box-shadow:0 24px 60px rgba(0,0,0,.35)';
   root.querySelector('[data-live-map]').style.cssText = 'position:absolute;inset:0';
-  root.querySelector('[data-live-map-close]').style.cssText = 'position:absolute;top:calc(12px + env(safe-area-inset-top));right:12px;width:44px;height:44px;border-radius:22px;border:0;background:#fff;box-shadow:0 2px 10px #0003;font-size:18px';
+  root.querySelector('[data-live-map-close]').style.cssText = 'flex:0 0 auto;width:56px;height:56px;border-radius:50%;border:0;background:#fff;color:#1F2937;box-shadow:0 8px 20px rgba(0,0,0,.25);font-size:22px;line-height:1';
   root.querySelector('[data-live-map-close]').addEventListener('click', closeLiveMap);
+  root.addEventListener('click', (e) => { if (e.target === root) closeLiveMap(); });
   document.body.append(root);
+  return root.querySelector('[data-live-map]');
+}
+
+function hideLoading() {
+  root?.querySelector('[data-live-map-loading]')?.remove();
+}
+
+/** Demo only: the same pop-up around static (illustrative) map markup. */
+export function openStaticMap(html, { title = 'Map', closeLabel = 'Close map' } = {}) {
+  if (root) return;
+  openDialog(title, closeLabel).innerHTML = html;
+  hideLoading();
+}
+
+export async function openLiveMap(location, { title = 'Live map', closeLabel = 'Close map' } = {}) {
+  if (root || !location || !liveMapAvailable()) return;
+  openDialog(title, closeLabel);
   try {
     const gl = await loadGl();
     if (!root) return; // closed while loading
@@ -55,6 +75,12 @@ export async function openLiveMap(location, { title = 'Live map', closeLabel = '
     });
     map.addControl(new gl.NavigationControl({ showCompass: false }), 'bottom-right');
     marker = new gl.Marker().setLngLat([location.lng, location.lat]).addTo(map);
+    map.once('load', hideLoading);
+    // Style/token failure before the first load: say so instead of spinning forever.
+    map.once('error', () => {
+      const box = root?.querySelector('[data-live-map-loading]');
+      if (box && !map?.loaded()) box.innerHTML = '<span>Map unavailable right now</span>';
+    });
   } catch {
     closeLiveMap();
   }

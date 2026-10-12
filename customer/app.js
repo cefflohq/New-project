@@ -7,7 +7,7 @@
 // by tracking-adapter.js. No business truth is hardwired into the markup.
 
 import { TRACKING_FIXTURE } from './fixtures.js';
-import { liveMapAvailable, isLiveMapOpen, openLiveMap, updateLiveMap, closeLiveMap } from './live-map.js';
+import { liveMapAvailable, isLiveMapOpen, openLiveMap, openStaticMap, updateLiveMap, closeLiveMap } from './live-map.js';
 import {
   CUSTOMER_STATUS,
   TRACKING_PHASE,
@@ -116,10 +116,16 @@ function topbar(title, { back = false } = {}) {
     </header>`;
 }
 
+/** While in progress the ETA replaces the status title (the steps already show the status). */
+function heroEta(vm) {
+  return vm.status === CUSTOMER_STATUS.DELIVERED ? null : known(vm.eta?.valueLabel);
+}
+
 function statusHead(vm) {
   return `
     <section class="hero">
-      <h1 class="hero__title" id="heroStatus">${esc(vm.statusTitle)}</h1>
+      ${heroEta(vm) ? `<small class="hero__eyebrow">Estimated arrival</small>` : ''}
+      <h1 class="hero__title" id="heroStatus">${esc(heroEta(vm) || vm.statusTitle)}</h1>
       <p class="hero__body">${esc(vm.statusBody)}</p>
     </section>`;
 }
@@ -147,14 +153,11 @@ function factCard(vm) {
   const delivered = vm.status === CUSTOMER_STATUS.DELIVERED;
   const label = delivered ? 'Delivered at' : 'Estimated arrival';
   const value = delivered ? known(vm.delivery?.atLabel) : vm.eta?.valueLabel;
-  const fact = (lbl, val) => `
+  // One centred card: the ETA (or delivered time) only.
+  return value ? `
     <div class="fact">
-      <span class="fact__icon">${icon('clock', { size: 26 })}</span>
-      <span class="fact__text"><small>${lbl}</small><strong>${esc(val)}</strong></span>
-    </div>`;
-  // Pickup time (this order only) sits with the ETA so the delivery reads at a glance.
-  const picked = !delivered && known(vm.pickup?.atLabel) ? fact('Picked up at', vm.pickup.atLabel) : '';
-  return `${value ? fact(label, value) : ''}${picked}`;
+      <span class="fact__text"><small>${label}</small><strong>${esc(value)}</strong></span>
+    </div>` : '';
 }
 
 function actionRow(glyph, label, attrs, sub = '') {
@@ -171,11 +174,17 @@ function actionRow(glyph, label, attrs, sub = '') {
  * so); a real order links to the latest authorised rider point. No map is faked.
  * Delivered: the proof-of-delivery photo replaces the map.
  */
+function pillButton(glyph, label, action, aria = label) {
+  return `
+    <button class="track-cta" type="button" data-action="${action}" aria-label="${esc(aria)}">
+      <span>${esc(label)}</span>
+    </button>`;
+}
+
 function actions(vm) {
   if (vm.status === CUSTOMER_STATUS.DELIVERED) {
     if (!vm.pod) return '';
-    const thumb = ui.podImageUrl ? `<img src="${esc(ui.podImageUrl)}" alt="">` : icon('photo', { size: 22 });
-    return actionRow(thumb, 'View proof of delivery', { data: 'data-action="open-pod"' }, 'Delivery photo');
+    return pillButton(icon('photo', { size: 22 }), 'View proof of delivery', 'open-pod');
   }
   if (vm.status !== CUSTOMER_STATUS.ON_THE_WAY) return '';
   const loc = vm.rider?.location;
@@ -183,18 +192,12 @@ function actions(vm) {
     const mins = Math.max(0, Math.round((Date.now() - new Date(loc.recordedAt).getTime()) / 60000));
     // Status + ETA first; the Mapbox map loads only on this explicit tap.
     if (!liveMapAvailable()) return '';
-    return actionRow(icon('map', { size: 22 }), 'View live map',
-      { data: 'data-action="open-live-map"' },
-      `Location updated ${mins < 1 ? 'just now' : `${mins} min ago`}`);
+    return pillButton(icon('map', { size: 22 }), 'Track your order', 'open-live-map',
+      `Track your order, location updated ${mins < 1 ? 'just now' : `${mins} min ago`}`);
   }
+  // Demo (?demo=1) only: the same pop-up map at a fixed demo point.
   if (!vm.route) return '';
-  return `
-    ${actionRow(icon('map', { size: 22 }), ui.mapOpen ? 'Hide map' : 'View live map', { data: `data-action="toggle-map" aria-expanded="${ui.mapOpen}"` })}
-    ${ui.mapOpen ? `
-      <section class="map" aria-label="Delivery route illustration">
-        ${routeMapSvg()}
-        ${vm.route.live ? '' : '<span class="map__tag">Illustrative route</span>'}
-      </section>` : ''}`;
+  return pillButton(icon('map', { size: 22 }), 'Track your order', 'open-demo-map');
 }
 
 function riderCard(vm) {
@@ -292,12 +295,16 @@ function trackingScreen(vm) {
   const delivered = vm.status === CUSTOMER_STATUS.DELIVERED;
   return shell(`
     <div class="panel__main">
-      ${statusHead(vm)}
-      ${deliveryProgress(vm)}
-      ${factCard(vm)}
-      ${actions(vm)}
-      ${delivered ? '' : riderCard(vm)}
+      <section class="status-card">
+        ${statusHead(vm)}
+        ${deliveryProgress(vm)}
+      </section>
+      ${delivered ? factCard(vm) : ''}
       ${detailsCard(vm)}
+      <div class="panel__end">
+        ${delivered ? '' : riderCard(vm)}
+        ${actions(vm)}
+      </div>
     </div>`, { title: headerTitle(vm), modifier: `screen--${vm.status}` });
 }
 
@@ -370,6 +377,10 @@ sheet.addEventListener('click', (event) => {
   if (action === 'open-fullscreen') openFullscreen();
   if (action === 'contact-call') contact('call', trigger);
   if (action === 'contact-chat') contact('chat', trigger);
+  if (action === 'open-demo-map') {
+    if (liveMapAvailable()) openLiveMap({ lat: 3.1880, lng: 101.7280 }, { title: 'Demo map', closeLabel: 'Close map' });
+    else openStaticMap(`<section class="map map--dialog" aria-label="Delivery route illustration">${routeMapSvg()}<span class="map__tag">Illustrative route</span></section>`, { title: 'Demo map' });
+  }
   if (action === 'toggle-map') { ui.mapOpen = !ui.mapOpen; render(); }
   if (action === 'open-live-map') openLiveMap(provider.store.getState().rider?.location, { title: 'Live map', closeLabel: 'Close map' });
   if (action === 'retry-tracking') retryTracking(trigger);

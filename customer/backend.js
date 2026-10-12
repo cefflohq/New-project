@@ -14,9 +14,12 @@
   // "we'll update you" copy rather than inventing text.
   function formatEta(eta) {
     if (!eta || !eta.state) return null;
-    const clock = (iso) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const clock = (iso) => new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
     if (eta.state === 'estimated_range' && eta.earliest && eta.latest) {
-      return `${clock(eta.earliest)}–${clock(eta.latest)}`;
+      // Short range: "9:44–9:54 PM" when both ends share AM/PM.
+      const [from, to] = [clock(eta.earliest), clock(eta.latest)];
+      const suffix = (s) => s.match(/\s?[^\d:\s]+$/)?.[0] || '';
+      return suffix(from) && suffix(from) === suffix(to) ? `${from.slice(0, -suffix(from).length)}–${to}` : `${from}–${to}`;
     }
     if (eta.state === 'arriving_now') return 'Arriving now';
     return null;
