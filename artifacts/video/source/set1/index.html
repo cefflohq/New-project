@@ -1,0 +1,198 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=block" rel="stylesheet">
+<style>
+:root{--navy:#12213E;--deep:#01265E;--blue:#005CC4;--sky:#0592EB;--y:#FEC819;--w:#fff;--mut:#9FB0CF;--green:#22C55E;--card:#ffffff;--ink:#12213E}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:var(--navy);font-family:Inter,sans-serif;color:var(--w)}
+#stage{position:absolute;inset:0;background:radial-gradient(1400px 900px at 70% 30%,#0b3d86 0%,var(--deep) 45%,var(--navy) 100%);overflow:hidden}
+.scene{position:absolute;inset:0;opacity:0}
+.abs{position:absolute}
+.kin{font-weight:900;letter-spacing:-2px;line-height:1}
+.sub{position:absolute;left:0;right:0;bottom:70px;text-align:center;font-size:44px;font-weight:700;opacity:0;text-shadow:0 4px 20px rgba(0,0,0,.5)}
+.sub span{background:rgba(1,20,50,.65);padding:14px 30px;border-radius:14px}
+.bubble{position:absolute;background:#fff;color:var(--ink);border-radius:22px;padding:18px 26px;font-size:30px;font-weight:500;box-shadow:0 20px 50px rgba(0,0,0,.35);white-space:nowrap}
+.bubble b{display:block;font-size:20px;color:#5b6b88;margin-bottom:4px;font-weight:600}
+.win{position:absolute;background:#F4F7FC;border-radius:22px;box-shadow:0 40px 100px rgba(0,0,0,.45);overflow:hidden;color:var(--ink)}
+.bar{height:56px;background:#fff;border-bottom:1px solid #e3e9f3;display:flex;align-items:center;padding:0 24px;gap:10px}
+.dot{width:14px;height:14px;border-radius:50%;background:#dfe5ef}
+.row{display:flex;align-items:center;gap:22px;background:#fff;margin:10px 26px;border-radius:14px;padding:16px 22px;font-size:24px;border:2px solid transparent}
+.row .id{font-weight:800;width:110px}.row .nm{width:220px;font-weight:600}.row .it{flex:1;color:#51607c}.row .ar{width:160px;font-weight:600;color:#005CC4}
+.pill{padding:6px 14px;border-radius:999px;font-size:18px;font-weight:700;background:#E6EFFF;color:#005CC4}
+.phone{position:absolute;width:430px;height:880px;background:#0b1220;border-radius:64px;padding:16px;box-shadow:0 40px 100px rgba(0,0,0,.5)}
+.screen{width:100%;height:100%;background:#F4F7FC;border-radius:50px;overflow:hidden;color:var(--ink);position:relative}
+.ph-h{background:var(--navy);color:#fff;padding:60px 28px 26px}
+.stop{display:flex;align-items:center;gap:16px;background:#fff;margin:12px 18px;border-radius:16px;padding:16px;font-size:20px;border:2px solid transparent}
+.num{width:44px;height:44px;border-radius:50%;background:#E6EFFF;color:#005CC4;display:flex;align-items:center;justify-content:center;font-weight:800}
+.zone{position:absolute;border-radius:50%;border:4px dashed;display:flex;align-items:flex-start;justify-content:center}
+.zone span{margin-top:-46px;font-size:26px;font-weight:800;padding:6px 16px;border-radius:10px;color:var(--ink)}
+.pin{position:absolute;width:22px;height:22px;border-radius:50%;background:#fff;border:5px solid var(--blue);margin:-11px 0 0 -11px}
+.prog{height:22px;background:#e3e9f3;border-radius:999px;overflow:hidden}.prog i{display:block;height:100%;background:var(--blue);border-radius:999px}
+.badge{display:inline-flex;align-items:center;gap:14px;background:#000;color:#fff;border:2px solid #555;border-radius:16px;padding:14px 28px;font-size:26px;font-weight:600}
+.wipe{position:absolute;top:0;bottom:0;width:2400px;left:-2400px;background:var(--y);transform:skewX(-12deg)}
+</style></head><body>
+<div id="stage">
+
+<!-- S1 hook -->
+<div class="scene" id="s1">
+  <div class="bubble" id="b1" style="left:150px;top:150px"><b>Kak Ina · 7:31</b>Kak, nak 2 kotak brownies ye</div>
+  <div class="bubble" id="b2" style="left:1150px;top:120px"><b>Farah · 7:32</b>Boleh hantar Klang hari ni?</div>
+  <div class="bubble" id="b3" style="left:260px;top:720px"><b>Nurul · 7:32</b>Alamat: Seksyen 13, Shah Alam</div>
+  <div class="bubble" id="b4" style="left:1180px;top:760px"><b>Zul · 7:33</b>Order saya bila sampai?</div>
+  <div class="bubble" id="b5" style="left:700px;top:60px"><b>Mira · 7:33</b>Tambah 1 kotak lagi 🙏</div>
+  <div class="bubble" id="b6" style="left:80px;top:440px"><b>Aina · 7:34</b>Subang boleh?</div>
+  <div class="bubble" id="b7" style="left:1420px;top:450px"><b>Hakim · 7:34</b>Rider dah keluar ke?</div>
+  <div class="abs kin" id="k1" style="left:0;right:0;top:400px;text-align:center;font-size:150px">60 lebih order.</div>
+  <div class="abs kin" id="k2" style="left:0;right:0;top:580px;text-align:center;font-size:110px;color:var(--y)">Rider tiga je.</div>
+</div>
+
+<!-- S2 orders -->
+<div class="scene" id="s2">
+  <div class="win" id="w2" style="left:260px;top:110px;width:1400px;height:800px">
+    <div class="bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><img src="logo.png" style="height:26px;margin-left:20px;filter:invert(1) brightness(.2)"><span style="margin-left:auto;font-weight:700;font-size:22px">Today's Orders</span><span class="pill" id="cnt" style="margin-left:14px">0 order</span></div>
+    <div id="rows"></div>
+  </div>
+</div>
+
+<!-- S3 zones / run -->
+<div class="scene" id="s3">
+  <svg class="abs" style="left:0;top:0" width="1920" height="1080"><g stroke="rgba(255,255,255,.08)" stroke-width="18" fill="none">
+    <path d="M0 300 C500 260 900 420 1920 360"/><path d="M0 760 C600 700 1100 820 1920 700"/><path d="M420 0 C460 400 380 700 520 1080"/><path d="M1180 0 C1120 380 1260 700 1150 1080"/></g></svg>
+  <div class="zone" id="z1" style="border-color:var(--y);left:180px;top:220px;width:520px;height:520px"><span style="background:var(--y)">Shah Alam</span></div>
+  <div class="zone" id="z2" style="border-color:#5EEAD4;left:760px;top:420px;width:420px;height:420px"><span style="background:#5EEAD4">Klang</span></div>
+  <div class="zone" id="z3" style="border-color:#93C5FD;left:820px;top:80px;width:360px;height:320px;border-radius:44%"><span style="background:#93C5FD">Subang</span></div>
+  <div id="pins"></div>
+  <div class="win" id="runc" style="left:1290px;top:200px;width:520px;height:640px;padding:30px">
+    <div style="font-size:20px;color:#5b6b88;font-weight:600">CADANGAN RUN</div>
+    <div style="font-size:42px;font-weight:900;margin:6px 0 4px">Run Shah Alam A1</div>
+    <div style="font-size:24px;color:#51607c;margin-bottom:22px">12 order · 12 stop</div>
+    <div id="runrows"></div>
+    <div id="assign" style="margin-top:22px;display:flex;align-items:center;gap:16px;background:var(--navy);color:#fff;border-radius:16px;padding:18px 20px">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--y);color:var(--ink);font-weight:900;font-size:26px;display:flex;align-items:center;justify-content:center">A</div>
+      <div><div style="font-size:18px;color:var(--mut)">Rider</div><div style="font-size:26px;font-weight:800">Amir</div></div>
+      <div id="chk" style="margin-left:auto;background:var(--green);border-radius:999px;padding:8px 18px;font-weight:800;font-size:20px">✓ Assigned</div>
+    </div>
+  </div>
+</div>
+
+<!-- S4 driver / tracking / POD -->
+<div class="scene" id="s4">
+  <div class="phone" id="p1" style="left:300px;top:100px"><div class="screen">
+    <div class="ph-h"><div style="font-size:18px;color:var(--mut)">Cefflo Driver</div><div style="font-size:32px;font-weight:900">Run A1</div><div style="margin-top:14px" class="prog"><i id="p1bar" style="width:17%;background:var(--y)"></i></div><div style="font-size:18px;margin-top:8px;color:var(--mut)" id="p1txt">Stop 3 daripada 12</div></div>
+    <div id="stops"></div>
+  </div></div>
+  <div class="phone" id="p2" style="left:1190px;top:100px"><div class="screen">
+    <div class="ph-h" style="background:#fff;color:var(--ink);padding-bottom:10px"><img src="logo.png" style="height:30px;filter:invert(1) brightness(.2)"></div>
+    <div style="padding:20px 28px">
+      <div style="font-size:20px;color:#5b6b88">Order #1048 · Brownie Box</div>
+      <div style="font-size:36px;font-weight:900;margin:10px 0 24px" id="tstat">Dalam perjalanan</div>
+      <div style="background:#fff;border-radius:18px;padding:22px">
+        <div style="font-size:18px;color:#5b6b88">Anggaran sampai</div>
+        <div style="font-size:40px;font-weight:900;color:var(--blue)">10:30 – 11:00</div>
+      </div>
+      <div style="margin-top:26px">
+        <div class="stop" style="margin:0 0 10px"><span class="num" style="background:var(--green);color:#fff">✓</span>Order disahkan</div>
+        <div class="stop" style="margin:0 0 10px"><span class="num" style="background:var(--green);color:#fff">✓</span>Keluar untuk delivery</div>
+        <div class="stop" style="margin:0" id="tlast"><span class="num" id="tlastn">3</span>Sampai</div>
+      </div>
+      <div id="pod" style="margin-top:22px;height:200px;border-radius:18px;background:linear-gradient(135deg,#c9a27a,#7a5236);position:relative;overflow:hidden">
+        <div style="position:absolute;left:24px;bottom:20px;background:rgba(0,0,0,.55);padding:8px 16px;border-radius:10px;font-size:20px;font-weight:700;color:#fff">📷 Bukti delivery</div>
+        <div style="position:absolute;right:20px;top:20px;width:110px;height:80px;background:#fff;border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,.3)"></div>
+      </div>
+    </div>
+  </div></div>
+  <svg class="abs" id="link" style="left:740px;top:430px" width="440" height="120"><path id="lpath" d="M10 60 C150 0 290 120 430 60" stroke="#FEC819" stroke-width="6" fill="none" stroke-dasharray="14 12"/></svg>
+</div>
+
+<!-- S5 dashboard -->
+<div class="scene" id="s5">
+  <div class="win" id="w5" style="left:200px;top:120px;width:1520px;height:480px;padding:40px">
+    <div style="display:flex;align-items:center;margin-bottom:26px"><div style="font-size:34px;font-weight:900">Delivery hari ni</div><span class="pill" style="margin-left:auto;font-size:22px" id="dcount">0 / 62 delivered</span></div>
+    <div id="runsDash"></div>
+  </div>
+  <div class="abs kin" id="m1" style="left:0;right:0;top:690px;text-align:center;font-size:84px">Banyak order. <span style="color:var(--y)">Satu operation.</span></div>
+</div>
+
+<!-- S6 end -->
+<div class="scene" id="s6" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+  <img src="logo.png" id="elogo" style="height:150px">
+  <div class="kin" id="e1" style="font-size:76px;margin-top:50px">Urus delivery tanpa kelam-kabut.</div>
+  <div id="e2" style="margin-top:50px;background:var(--y);color:var(--ink);font-weight:900;font-size:44px;padding:26px 60px;border-radius:999px">Download app Cefflo sekarang</div>
+  <div id="e3" style="margin-top:40px;display:flex;gap:24px"><span class="badge"> App Store</span><span class="badge">▶ Google Play</span></div>
+</div>
+
+<div class="wipe" id="wipe"></div>
+<div class="sub" id="sub"><span id="subt"></span></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const eo=x=>1-Math.pow(1-cl(x),3);           // easeOutCubic
+const eio=x=>{x=cl(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2};
+const back=x=>{x=cl(x);const c=1.7;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const prog=(t,a,d)=>cl((t-a)/d);
+// scene windows [in,out]
+const SC={s1:[0,4.1],s2:[4.0,7.6],s3:[7.5,12.6],s4:[12.5,18.1],s5:[18,23.1],s6:[23,30]};
+const SUBS=[[4.0,6.9,"Semua order hari ni, dalam satu tempat."],[7.5,10.9,"Susun ikut zone. Semak run. Assign rider."],[12.5,16.4,"Customer tahu order dia sampai mana. Bukti delivery pun ada."],[18,21.9,"Banyak order. Satu operation. Sampai hari ni."],[23,27.4,"Urus delivery tanpa kelam-kabut. Download app Cefflo sekarang."]];
+// build rows
+const ORD=[["#1041","Kak Ina","Brownie Box ×2","Shah Alam"],["#1042","Farah","Kek Batik","Klang"],["#1043","Zul","Brownie Box","Subang"],["#1044","Mira","Cheese Tart ×3","Shah Alam"],["#1045","Aina","Brownie Box","Subang"],["#1046","Hakim","Kek Batik ×2","Klang"],["#1047","Sara","Brownie Box","Shah Alam"],["#1048","Nurul","Brownie Box","Shah Alam"],["#1049","Danial","Cheese Tart","Klang"],["#1050","Lina","Brownie Box ×2","Shah Alam"]];
+$("rows").innerHTML=ORD.map((o,i)=>`<div class="row" id="r${i}"><span class="id">${o[0]}</span><span class="nm">${o[1]}</span><span class="it">${o[2]}</span><span class="ar">${o[3]}</span><span class="pill">Baru</span></div>`).join("");
+// pins: start scattered, end in zone
+let P=[];let seed=7;const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
+const ZC=[[440,480,180],[970,630,140],[1000,240,110]];
+for(let i=0;i<36;i++){const z=i<14?0:i<25?1:2;const a=rnd()*6.28,r=rnd()*ZC[z][2];P.push({sx:120+rnd()*1100,sy:120+rnd()*820,ex:ZC[z][0]+Math.cos(a)*r,ey:ZC[z][1]+Math.sin(a)*r,z})}
+$("pins").innerHTML=P.map((p,i)=>`<i class="pin" id="pn${i}"></i>`).join("");
+const ZCOL=["#FEC819","#5EEAD4","#93C5FD"];
+$("runrows").innerHTML=["Kak Ina","Mira","Nurul","Sara","Lina"].map((n,i)=>`<div class="stop" id="rr${i}" style="margin:0 0 8px;padding:10px 14px;font-size:20px"><span class="num" style="width:34px;height:34px;font-size:16px">${i+1}</span>${n}<span style="margin-left:auto;color:#5b6b88">Shah Alam</span></div>`).join("");
+$("stops").innerHTML=[["Kak Ina","Seksyen 7",1],["Mira","Seksyen 9",1],["Nurul","Seksyen 13",0],["Sara","Seksyen 15",0],["Lina","Seksyen 17",0],["Adam","Seksyen 18",0]].map((s,i)=>`<div class="stop" id="st${i}"><span class="num" ${s[2]?'style="background:#22C55E;color:#fff"':''}>${s[2]?'✓':i+1}</span><div><div style="font-weight:800">${s[0]}</div><div style="color:#5b6b88;font-size:17px">${s[1]}, Shah Alam</div></div></div>`).join("");
+$("runsDash").innerHTML=[["Run Shah Alam A1","Amir",1],["Run Klang B1","Faiz",.83],["Run Subang C1","Rahim",.9]].map((r,i)=>`<div style="display:flex;align-items:center;gap:30px;margin-bottom:34px"><div style="width:360px"><div style="font-size:28px;font-weight:800">${r[0]}</div><div style="font-size:20px;color:#5b6b88">Rider: ${r[1]}</div></div><div class="prog" style="flex:1;height:28px"><i id="db${i}" style="width:0%"></i></div><div id="dp${i}" style="width:90px;font-size:26px;font-weight:800;text-align:right">0%</div></div>`).join("")+`<div id="o1048" class="row" style="margin:6px 0 0;border-color:var(--y)"><span class="id">#1048</span><span class="nm">Nurul</span><span class="it">Brownie Box · Run A1 · Stop 3</span><span class="pill" id="o1048s">Dalam perjalanan</span></div>`;
+
+function sceneAlpha(t,[a,b]){return Math.min(cl((t-a)/.35),cl((b-t)/.35))}
+function render(t){
+  for(const k in SC){const al=sceneAlpha(t,SC[k]);const e=$(k);e.style.opacity=al;e.style.visibility=al>0?'visible':'hidden';}
+  // S1
+  for(let i=1;i<=7;i++){const p=back(prog(t,.15+i*.22,.45));const b=$("b"+i);b.style.opacity=cl(prog(t,.15+i*.22,.2))*(1-.6*prog(t,2.0,.4));b.style.transform=`scale(${.6+.4*p}) translateY(${(1-p)*40}px) rotate(${(i%2?-1:1)*2}deg)`;b.style.filter=t>2?`blur(${4*prog(t,2,.4)}px)`:''}
+  const k1=back(prog(t,1.9,.5));$("k1").style.opacity=prog(t,1.9,.2);$("k1").style.transform=`scale(${.7+.3*k1})`;
+  const k2=prog(t,2.7,.3);$("k2").style.opacity=k2;$("k2").style.transform=`translateX(${t>2.7&&t<3.3?Math.sin(t*60)*10*(1-prog(t,2.7,.6)):0}px) translateY(${(1-eo(k2))*40}px)`;
+  // wipes
+  const W=[[3.75,.6],[7.2,.6],[12.2,.6],[17.7,.6],[22.7,.6]];let wl=-2600;
+  for(const [a,d] of W){if(t>=a&&t<=a+d){wl=-2600+eio(prog(t,a,d))*(1920+2600+400);}}$("wipe").style.left=wl+"px";
+  // S2
+  const w2=eo(prog(t,4.0,.6));$("w2").style.transform=`translateY(${(1-w2)*120}px) scale(${.94+.06*w2})`;
+  ORD.forEach((o,i)=>{const p=eo(prog(t,4.4+i*.12,.35));const r=$("r"+i);r.style.opacity=p;r.style.transform=`translateX(${(1-p)*-80}px)`;
+    const hl=i==7?prog(t,6.0,.3):0;r.style.borderColor=hl?`rgba(254,200,25,${hl})`:'transparent';r.style.background=hl?`rgba(254,200,25,${.18*hl})`:'#fff';r.style.transform+=` scale(${1+.04*hl})`});
+  $("cnt").textContent=Math.round(62*eo(prog(t,4.4,1.6)))+" order";
+  // S3
+  P.forEach((p,i)=>{const m=eio(prog(t,8.3+(i%9)*.03,1.1));const e=$("pn"+i);e.style.left=(p.sx+(p.ex-p.sx)*m)+"px";e.style.top=(p.sy+(p.ey-p.sy)*m)+"px";e.style.opacity=eo(prog(t,7.6+i*.015,.3));e.style.borderColor=m>.6?ZCOL[p.z]:'#005CC4'});
+  [["z1",9.2],["z2",9.4],["z3",9.6]].forEach(([z,a])=>{const p=back(prog(t,a,.5));$(z).style.opacity=cl(prog(t,a,.2));$(z).style.transform=`scale(${.5+.5*p})`});
+  const rc=eo(prog(t,10.0,.6));$("runc").style.opacity=rc;$("runc").style.transform=`translateX(${(1-rc)*200}px)`;
+  for(let i=0;i<5;i++){const p=eo(prog(t,10.3+i*.1,.3));$("rr"+i).style.opacity=p;$("rr"+i).style.borderColor=i==2?'var(--y)':'transparent'}
+  const as=back(prog(t,11.0,.4));$("assign").style.opacity=prog(t,11.0,.2);$("assign").style.transform=`scale(${.8+.2*as})`;
+  const ck=back(prog(t,11.5,.35));$("chk").style.transform=`scale(${ck})`;
+  // S4
+  const p1=eo(prog(t,12.5,.6));$("p1").style.transform=`translateY(${(1-p1)*300}px) rotate(${-4*(1-p1)}deg)`;
+  for(let i=0;i<6;i++){const p=eo(prog(t,12.8+i*.08,.3));const s=$("st"+i);s.style.opacity=p;s.style.borderColor=i==2?'var(--y)':'transparent';s.style.transform=i==2?`scale(${1+.04*Math.sin(prog(t,13.4,1)*Math.PI)})`:''}
+  const lk=prog(t,14.0,.6);$("lpath").style.strokeDashoffset=-t*40;$("link").style.opacity=lk*(1-prog(t,17.6,.3));$("link").style.clipPath=`inset(0 ${100-lk*100}% 0 0)`;
+  const p2=eo(prog(t,14.3,.6));$("p2").style.opacity=prog(t,14.3,.2);$("p2").style.transform=`translateY(${(1-p2)*300}px) rotate(${4*(1-p2)}deg)`;
+  const dl=prog(t,16.0,.3);$("tstat").textContent=dl>0?"Delivered ✓":"Dalam perjalanan";$("tstat").style.color=dl>0?"#16a34a":"";
+  $("tlastn").textContent=dl>0?"✓":"3";$("tlastn").style.background=dl>0?"#22C55E":"";$("tlastn").style.color=dl>0?"#fff":"";
+  const pd=back(prog(t,16.2,.5));$("pod").style.opacity=prog(t,16.2,.2);$("pod").style.transform=`scale(${.7+.3*pd})`;
+  $("p1bar").style.width=(17+8*prog(t,16,.4))+"%";$("p1txt").textContent=t>16?"Stop 4 daripada 12":"Stop 3 daripada 12";
+  // S5
+  const w5=eo(prog(t,18.0,.6));$("w5").style.transform=`translateY(${(1-w5)*-100}px)`;
+  [[1,0],[.83,1],[.9,2]].forEach(([v,i])=>{const p=eio(prog(t,18.5+i*.15,2.4))*v;$("db"+i).style.width=(p*100)+"%";$("dp"+i).textContent=Math.round(p*100)+"%";$("db"+i).style.background=p>=.999?'var(--green)':'var(--blue)'});
+  $("dcount").textContent=Math.round(55*eio(prog(t,18.5,2.6)))+" / 62 delivered";
+  const ds=prog(t,20.2,.2);$("o1048s").textContent=ds>0?"Delivered ✓":"Dalam perjalanan";$("o1048s").style.background=ds>0?"#DCFCE7":"";$("o1048s").style.color=ds>0?"#15803d":"";$("o1048").style.transform=`scale(${1+.05*Math.sin(prog(t,20.2,.5)*Math.PI)})`;
+  const m1=eo(prog(t,19.6,.6));$("m1").style.opacity=m1;$("m1").style.transform=`translateY(${(1-m1)*50}px)`;
+  // S6
+  const l=back(prog(t,23.2,.7));$("elogo").style.opacity=prog(t,23.2,.3);$("elogo").style.transform=`scale(${.6+.4*l})`;
+  const e1=eo(prog(t,23.9,.6));$("e1").style.opacity=e1;$("e1").style.transform=`translateY(${(1-e1)*40}px)`;
+  const e2=back(prog(t,25.2,.5));$("e2").style.opacity=prog(t,25.2,.2);$("e2").style.transform=`scale(${(.7+.3*e2)*(1+.03*Math.sin(Math.max(0,t-26)*5))})`;
+  const e3=eo(prog(t,25.8,.5));$("e3").style.opacity=e3;$("e3").style.transform=`translateY(${(1-e3)*30}px)`;
+  // subtitles
+  let s=null;for(const x of SUBS)if(t>=x[0]&&t<=x[1])s=x;
+  $("sub").style.opacity=s&&t<23?Math.min(cl((t-s[0])/.2),cl((s[1]-t)/.2)):0;if(s)$("subt").textContent=s[2];
+}
+window.render=render;render(0);
+</script></body></html>
