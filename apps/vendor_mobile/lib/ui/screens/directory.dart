@@ -2259,13 +2259,17 @@ class _PlanSettingsSheetState extends State<_PlanSettingsSheet> {
   }
 }
 
-/// Pre-dispatch orders without a zone: the same "planning" state in which
-/// Order detail lets the Vendor set a zone (created, no rider).
+/// Orders that need a zone before they can be planned: approved
+/// (`approved_at`, the same field propose_delivery_plan uses), still
+/// `created` (so not delivered, and in the state where Order detail lets the
+/// Vendor set a zone), no driver, and no zone. The Zones count and the list
+/// both use this one predicate.
 List<VendorOrder> unzonedOrders(Iterable<VendorOrder> orders) => [
   for (final o in orders)
-    if (o.zoneId == null &&
+    if (o.isApproved &&
         o.status == DeliveryStatus.created &&
-        o.assignedRiderId == null)
+        o.assignedRiderId == null &&
+        o.zoneId == null)
       o,
 ];
 

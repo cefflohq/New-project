@@ -15,6 +15,7 @@ final _unzoned = VendorOrder(
   customerPhone: '+60 12 000 0000',
   deliveryAddress: 'Jalan Tiada Zon 1',
   createdAt: DateTime(2026, 10, 12, 9),
+  approvedAt: DateTime(2026, 10, 12, 9, 5),
 );
 
 /// Demo data plus pre-dispatch orders without a zone; records zone updates.
@@ -35,6 +36,14 @@ class _UnzonedRepo extends VendorRepository {
       deliveryAddress: 'x',
       createdAt: DateTime(2026, 10, 12),
       assignedRiderId: 'rider-ahmad',
+    ),
+    VendorOrder(
+      id: 'ord-nozone-unapproved',
+      status: DeliveryStatus.created,
+      customerName: 'Unapproved',
+      customerPhone: '+60 12 000 0003',
+      deliveryAddress: 'x',
+      createdAt: DateTime(2026, 10, 12),
     ),
     VendorOrder(
       id: 'ord-nozone-done',
@@ -85,6 +94,60 @@ Future<_UnzonedRepo> _pumpZones(WidgetTester tester) async {
 void main() {
   setUp(() => applyUiLocale(const Locale('en')));
 
+  test('every approved/assigned/delivered/zoned combination', () {
+    final orders = <VendorOrder>[];
+    final expected = <String>[];
+    for (final approved in [true, false]) {
+      for (final assigned in [true, false]) {
+        for (final delivered in [true, false]) {
+          for (final zoned in [true, false]) {
+            final id = 'a$approved-r$assigned-d$delivered-z$zoned';
+            orders.add(
+              VendorOrder(
+                id: id,
+                status: delivered
+                    ? DeliveryStatus.delivered
+                    : DeliveryStatus.created,
+                customerName: id,
+                customerPhone: '1',
+                deliveryAddress: 'x',
+                createdAt: DateTime(2026),
+                approvedAt: approved ? DateTime(2026) : null,
+                assignedRiderId: assigned ? 'rider-1' : null,
+                zoneId: zoned ? 'zone-1' : null,
+              ),
+            );
+            if (approved && !assigned && !delivered && !zoned) {
+              expected.add(id);
+            }
+          }
+        }
+      }
+    }
+    expect(orders, hasLength(16));
+    expect(unzonedOrders(orders).map((o) => o.id), expected);
+    expect(expected, ['atrue-rfalse-dfalse-zfalse']);
+  });
+
+  test('cancelled or in-progress orders are not listed', () {
+    for (final status in [
+      DeliveryStatus.cancelled,
+      DeliveryStatus.issue,
+      DeliveryStatus.readyForPickup,
+    ]) {
+      final o = VendorOrder(
+        id: '$status',
+        status: status,
+        customerName: 'x',
+        customerPhone: '1',
+        deliveryAddress: 'x',
+        createdAt: DateTime(2026),
+        approvedAt: DateTime(2026),
+      );
+      expect(unzonedOrders([o]), isEmpty, reason: '$status');
+    }
+  });
+
   test('only pre-dispatch orders without a zone are unzoned', () {
     final zoned = VendorOrder(
       id: 'z',
@@ -126,6 +189,7 @@ void main() {
     expect(find.text('#CF-777'), findsOneWidget);
     expect(find.textContaining('Assigned'), findsNothing);
     expect(find.textContaining('Delivered ·'), findsNothing);
+    expect(find.textContaining('Unapproved'), findsNothing);
 
     await tester.tap(find.text('#CF-777'));
     await tester.pumpAndSettle();
