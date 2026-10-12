@@ -49,7 +49,7 @@ void main() {
     expect(plan.unplannable.map((u) => u.zoneId), ['z1', 'z1', null]);
     expect(plan.unplannable[0].label, 'Not enough driver capacity');
     expect(plan.unplannable[1].label, 'Driver declined: reassign or recover');
-    expect(plan.unplannable[2].label, 'Being prepared or sorted');
+    expect(plan.unplannable[2].label, 'Being prepared');
     expect(plan.excludedRiders[0].label('x'), 'Ali already has an open run');
     expect(plan.excludedRiders[1].label('Abu'), 'Abu is not an active driver');
   });
@@ -88,6 +88,8 @@ void main() {
           'insufficient_capacity',
           'vehicle_incompatible',
           'in_preparation',
+          'sorted_before_run',
+          'in_locked_run',
           'declined_awaiting_recovery',
         ])
           {'order_id': r, 'reason': r},

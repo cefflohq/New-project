@@ -7794,7 +7794,7 @@ abstract class AppLocalizations {
   /// No description provided for @whyInPreparation.
   ///
   /// In en, this message translates to:
-  /// **'Being prepared or sorted'**
+  /// **'Being prepared'**
   String get whyInPreparation;
 
   /// No description provided for @whyInsufficientCapacity.
@@ -7832,6 +7832,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name} is not an active driver'**
   String exNotEligible(Object name);
+
+  /// No description provided for @whySortedBeforeRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Sorted before a run: locked to its zone group'**
+  String get whySortedBeforeRun;
+
+  /// No description provided for @whyInLockedRun.
+  ///
+  /// In en, this message translates to:
+  /// **'In a locked run: needs whole-run recovery'**
+  String get whyInLockedRun;
+
+  /// No description provided for @noZoneCount.
+  ///
+  /// In en, this message translates to:
+  /// **'No zone ({count})'**
+  String noZoneCount(Object count);
+
+  /// No description provided for @noZoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign a zone to plan these orders.'**
+  String get noZoneHint;
 }
 
 class _AppLocalizationsDelegate

@@ -2108,7 +2108,7 @@
     }
   },
   "planStale": "The plan has changed. Close and plan again.",
-  "whyInPreparation": "Being prepared or sorted",
+  "whyInPreparation": "Being prepared",
   "whyInsufficientCapacity": "Not enough driver capacity",
   "whyVehicleIncompatible": "No driver with a suitable vehicle",
   "whyDeclinedAwaitingRecovery": "Driver declined: reassign or recover",
@@ -2132,6 +2132,17 @@
   "@exNotEligible": {
     "placeholders": {
       "name": {
+        "type": "Object"
+      }
+    }
+  },
+  "whySortedBeforeRun": "Sorted before a run: locked to its zone group",
+  "whyInLockedRun": "In a locked run: needs whole-run recovery",
+  "noZoneCount": "No zone ({count})",
+  "noZoneHint": "Assign a zone to plan these orders.",
+  "@noZoneCount": {
+    "placeholders": {
+      "count": {
         "type": "Object"
       }
     }

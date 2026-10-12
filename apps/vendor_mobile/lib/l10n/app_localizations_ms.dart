@@ -4283,7 +4283,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get planStale => 'Pelan sudah berubah. Tutup dan rancang semula.';
 
   @override
-  String get whyInPreparation => 'Sedang disediakan atau diisih';
+  String get whyInPreparation => 'Sedang disediakan';
 
   @override
   String get whyInsufficientCapacity => 'Kapasiti pemandu tidak mencukupi';
@@ -4310,4 +4310,20 @@ class AppLocalizationsMs extends AppLocalizations {
   String exNotEligible(Object name) {
     return '$name bukan pemandu aktif';
   }
+
+  @override
+  String get whySortedBeforeRun =>
+      'Diisih sebelum ada larian: dikunci pada kumpulan zon';
+
+  @override
+  String get whyInLockedRun =>
+      'Dalam larian yang dikunci: perlu pemulihan seluruh larian';
+
+  @override
+  String noZoneCount(Object count) {
+    return 'Tiada zon ($count)';
+  }
+
+  @override
+  String get noZoneHint => 'Tetapkan zon untuk merancang pesanan ini.';
 }

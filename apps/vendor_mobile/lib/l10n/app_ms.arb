@@ -1281,11 +1281,15 @@
   "planPart": "Bahagian {part} daripada {parts}",
   "planNotPlanned": "Tidak dirancang ({count})",
   "planStale": "Pelan sudah berubah. Tutup dan rancang semula.",
-  "whyInPreparation": "Sedang disediakan atau diisih",
+  "whyInPreparation": "Sedang disediakan",
   "whyInsufficientCapacity": "Kapasiti pemandu tidak mencukupi",
   "whyVehicleIncompatible": "Tiada pemandu dengan kenderaan yang sesuai",
   "whyDeclinedAwaitingRecovery": "Pemandu menolak: tetapkan semula atau pulihkan",
   "exOpenRun": "{name} sudah ada larian terbuka",
   "exNoCapacity": "{name} tiada kapasiti lebih",
-  "exNotEligible": "{name} bukan pemandu aktif"
+  "exNotEligible": "{name} bukan pemandu aktif",
+  "whySortedBeforeRun": "Diisih sebelum ada larian: dikunci pada kumpulan zon",
+  "whyInLockedRun": "Dalam larian yang dikunci: perlu pemulihan seluruh larian",
+  "noZoneCount": "Tiada zon ({count})",
+  "noZoneHint": "Tetapkan zon untuk merancang pesanan ini."
 }

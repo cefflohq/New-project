@@ -76,6 +76,15 @@ class ZonesScreen extends StatelessWidget {
                     );
                   },
                 ),
+            // Orders still waiting for planning but without a zone: they are
+            // in no zone's plan, so surface them here to be given one.
+            if (unzonedOrders(orders).isNotEmpty)
+              CefListRow(
+                title: L.noZoneCount(unzonedOrders(orders).length),
+                subtitle: L.noZoneHint,
+                icon: LucideIcons.circleAlert,
+                onTap: () => _showUnzonedOrders(context, unzonedOrders(orders)),
+              ),
           ],
         );
       },
@@ -2249,3 +2258,64 @@ class _PlanSettingsSheetState extends State<_PlanSettingsSheet> {
     );
   }
 }
+
+/// Pre-dispatch orders without a zone: the same "planning" state in which
+/// Order detail lets the Vendor set a zone (created, no rider).
+List<VendorOrder> unzonedOrders(Iterable<VendorOrder> orders) => [
+  for (final o in orders)
+    if (o.zoneId == null &&
+        o.status == DeliveryStatus.created &&
+        o.assignedRiderId == null)
+      o,
+];
+
+/// Lists the unzoned orders; each opens Order detail, where the existing
+/// zone selector assigns one.
+Future<void> _showUnzonedOrders(
+  BuildContext context,
+  List<VendorOrder> orders,
+) => showCefSheet<void>(
+  context: context,
+  isScrollControlled: true,
+  builder: (sheet) {
+    final text = Theme.of(sheet).textTheme;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          Gap.gutter,
+          Gap.xl,
+          Gap.gutter,
+          Gap.lg,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(L.noZoneCount(orders.length), style: text.titleMedium),
+            const SizedBox(height: Gap.xs),
+            Text(L.noZoneHint, style: text.bodyMedium),
+            const SizedBox(height: Gap.md),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  for (final o in orders)
+                    CefListRow(
+                      title: o.reference,
+                      subtitle: '${o.customerName} · ${o.deliveryAddress}',
+                      icon: LucideIcons.package,
+                      onTap: () {
+                        Navigator.of(sheet).pop();
+                        AppScope.read(context)
+                            .go(VRoute.orderDetail, entityId: o.id);
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  },
+);

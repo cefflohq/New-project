@@ -712,6 +712,8 @@ class UnplannableEntry {
     'no_compatible_capacity_sufficient_rider' =>
       L.noRiderCompatibleVehicleEnoughSpare,
     'in_preparation' => L.whyInPreparation,
+    'sorted_before_run' => L.whySortedBeforeRun,
+    'in_locked_run' => L.whyInLockedRun,
     'insufficient_capacity' => L.whyInsufficientCapacity,
     'vehicle_incompatible' => L.whyVehicleIncompatible,
     'declined_awaiting_recovery' => L.whyDeclinedAwaitingRecovery,

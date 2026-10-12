@@ -4280,7 +4280,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get planStale => 'The plan has changed. Close and plan again.';
 
   @override
-  String get whyInPreparation => 'Being prepared or sorted';
+  String get whyInPreparation => 'Being prepared';
 
   @override
   String get whyInsufficientCapacity => 'Not enough driver capacity';
@@ -4306,4 +4306,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String exNotEligible(Object name) {
     return '$name is not an active driver';
   }
+
+  @override
+  String get whySortedBeforeRun =>
+      'Sorted before a run: locked to its zone group';
+
+  @override
+  String get whyInLockedRun => 'In a locked run: needs whole-run recovery';
+
+  @override
+  String noZoneCount(Object count) {
+    return 'No zone ($count)';
+  }
+
+  @override
+  String get noZoneHint => 'Assign a zone to plan these orders.';
 }

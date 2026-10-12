@@ -302,7 +302,9 @@ try:
     staged = new_orders(biz5, owner5, 1, zone=z5, prep="ready", spread=35)
     unres = new_orders(biz5, owner5, 1, zone=z5, resolved=False, spread=40)
     p5 = propose(owner5, biz5)
-    check("S5 preparing/sorted/ready (refused by build_rider_run or the plan lock) -> in_preparation", reasons(p5).get("in_preparation") == 3, reasons(p5))
+    why5 = {u["order_id"]: u["reason"] for u in p5["unplannable_orders"]}
+    check("S5 preparing -> in_preparation (only)", why5.get(str(prep[0])) == "in_preparation" and reasons(p5).get("in_preparation") == 1, reasons(p5))
+    check("S5 sorted/ready without a run -> sorted_before_run", why5.get(str(prep[1])) == "sorted_before_run" and why5.get(str(staged[0])) == "sorted_before_run", reasons(p5))
     check("S5 unresolved location -> location_unresolved", reasons(p5).get("location_unresolved") == 1, reasons(p5))
     check("S5 not_started/packed orders are planned", sizes(p5) == [2])
     check("S5 every order exactly once", conserved(p5, prep + ready + staged + unres))
@@ -310,6 +312,20 @@ try:
     g5 = p5["groups"][0]
     _, err5 = build(owner5, s5, uuid.UUID(g5["candidate_rider_id"]), group_orders(g5), uuid.uuid4())
     check("S5 the proposed run commits (build_rider_run agrees with the planner)", err5 is None, err5)
+    # The plan lock still refuses sorted_before_run orders (eligibility unchanged).
+    _, err5b = build(owner5, s5, uuid.UUID(g5["candidate_rider_id"]), [staged[0]], uuid.uuid4())
+    check("S5 sorted_before_run order is still refused by the plan lock", err5b is not None and "delivery plan locked" in err5b, err5b)
+    # in_locked_run: the run's plan locks, then one order is recovered off the rider.
+    cur.execute("update delivery_sessions set sorting_started_at = now() where id = %s", (s5,))
+    actor(cur, owner5)
+    cur.execute("select initiate_delivery_recovery(%s,%s,%s,%s)", (group_orders(g5)[0], "rider_unable_to_proceed", "test", uuid.uuid4()))
+    as_admin(cur)
+    p5b = propose(owner5, biz5)
+    why5b = {u["order_id"]: u["reason"] for u in p5b["unplannable_orders"]}
+    check("S5 unassigned order in a plan-locked run -> in_locked_run", why5b.get(str(group_orders(g5)[0])) == "in_locked_run", why5b)
+    s5c = new_session(owner5, biz5)
+    _, err5c = build(owner5, s5c, uuid.UUID(g5["candidate_rider_id"]), [group_orders(g5)[0]], uuid.uuid4())
+    check("S5 in_locked_run order is still refused by the plan lock", err5c is not None and "delivery plan locked" in err5c, err5c)
 
     # --- S6: rider selection --------------------------------------------------
     biz6, owner6 = new_business("S6")
