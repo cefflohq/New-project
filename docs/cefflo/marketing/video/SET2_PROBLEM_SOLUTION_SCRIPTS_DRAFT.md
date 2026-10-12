@@ -26,7 +26,7 @@ problem scene → real product proof → operational outcome.
 | 0:15 | Orders group into zones on screen | Narrator: "Cefflo susun ikut zone." |
 | 0:22 | Suggested runs appear, owner reviews | Narrator: "Semak run. Assign rider." |
 | 0:28 | Owner closes notebook | Owner: "Okay. Settle." |
-| 0:32 | End card | **Run local delivery. Without the chaos.** · CTA: *Susun delivery. Assign rider. Jalan.* |
+| 0:32 | End card | **Urus delivery tanpa kelam-kabut.** · CTA: *Download app Cefflo sekarang.* |
 
 ---
 
@@ -44,7 +44,7 @@ problem scene → real product proof → operational outcome.
 | 0:12 | Cut: customer opens a tracking link | Narrator: "Setiap customer dapat link tracking sendiri." |
 | 0:18 | Tracking page: order status + estimated delivery window | Narrator: "Status order. Anggaran masa sampai." |
 | 0:25 | Owner's phone quiet; she keeps packing | — |
-| 0:30 | End card | CTA: *Urus delivery hari ni dengan Cefflo.* |
+| 0:30 | End card | CTA: *Download app Cefflo sekarang.* |
 
 Note: show an estimated **window**, never an exact minute. Do not show a live rider map.
 How the link reaches the customer must match current product flow (Founder to confirm).
@@ -55,7 +55,7 @@ How the link reaches the customer must match current product flow (Founder to co
 
 **Hooks:**
 1. "Rider call lagi. Tanya alamat lagi."
-2. "Your riders may not be the problem. The run may be." (EN variant)
+2. "Rider tak salah. Mungkin run yang tak tersusun."
 3. "Rider tak lambat. Dia cuma tak tahu nak pergi mana dulu."
 
 | Time | Visual | Audio |
@@ -66,7 +66,7 @@ How the link reaches the customer must match current product flow (Founder to co
 | 0:17 | Rider swipes through stops: Stop 4 of 11 | Rider: "Okay, next stop." |
 | 0:23 | Rider can reorder a stop himself when needed | Narrator: "Kalau perlu, rider boleh ubah susunan stop." |
 | 0:28 | Owner's phone silent on the table | — |
-| 0:32 | End card | **One rider. One run. Many stops.** · CTA |
+| 0:32 | End card | **Satu rider. Satu run. Banyak stop.** · CTA |
 
 ---
 
@@ -85,4 +85,4 @@ How the link reaches the customer must match current product flow (Founder to co
 | 0:15 | Cut: rider at door, completes delivery in Cefflo Driver, takes photo | Narrator: "Setiap delivery boleh ada bukti gambar." |
 | 0:22 | Vendor Web: order Delivered with photo POD | Narrator: "Terus nampak dalam sistem." |
 | 0:28 | Owner replies calmly | Owner: "Okay kak, ni gambar dia." |
-| 0:32 | End card | CTA: *Bila order makin banyak, biar operation tetap tersusun.* |
+| 0:32 | End card | CTA: *Download app Cefflo sekarang.* |

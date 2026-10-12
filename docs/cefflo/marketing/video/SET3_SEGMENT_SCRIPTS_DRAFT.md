@@ -25,24 +25,24 @@ Shared core narration (Register A):
 - **Opening visual:** trays of brownie boxes, labels everywhere, 7 a.m.
 - **Hook:** "Brownies dah siap. Sekarang nak hantar 60 kotak ni macam mana?"
 - **Close:** Owner: "Semua dah keluar. Sempat lagi buat batch petang."
-- **End card:** *Urus delivery hari ni dengan Cefflo.*
+- **End card:** *Download app Cefflo sekarang.*
 
 ## 3B — Meal Prep / Katering
 - **Opening visual:** rows of packed meal bags, clock showing 9:40 a.m.
 - **Hook:** "Ada 80 meal nak sampai sebelum tengah hari. Rider ada empat je."
 - **Close:** Narrator: "Lunch sampai ikut plan. Bukan ikut nasib."
-- **End card:** *Susun delivery. Assign rider. Jalan.*
+- **End card:** *Download app Cefflo sekarang.*
 
 ## 3C — Gifts & Hampers (festive season)
 - **Opening visual:** hampers stacked for Raya/CNY, gift cards being written.
 - **Hook:** "Musim raya. Hamper berlonggok. Alamat bersepah."
 - **Close:** Owner: "Musim sibuk pun, delivery tetap tersusun."
-- **End card:** *Bila order makin banyak, biar operation tetap tersusun.*
+- **End card:** *Download app Cefflo sekarang.*
 - Note: show several hampers per run (multi-drop), not one hamper per trip (Brand Brain §32).
 
 ## 3D — Beauty / Skincare (online seller with own delivery)
 - **Opening visual:** small parcels, seller packing between live-selling sessions.
 - **Hook:** "Live habis, order masuk banyak. Esok nak hantar sendiri ke?"
 - **Close:** Seller: "Same-day dalam area sendiri. Customer pun suka."
-- **End card:** *Urus delivery hari ni dengan Cefflo.*
+- **End card:** *Download app Cefflo sekarang.*
 - Note: do not imply marketplace or courier network; seller uses own riders.

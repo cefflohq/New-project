@@ -1,6 +1,6 @@
 # CEFFLO — Set 1 Hero Video Script (DRAFT)
 
-Status: DRAFT for Founder review. Not approved for production or publishing.
+Status: APPROVED for production by Founder (2026-10-12).
 Sources: `sot/05_BRAND_BRAIN.md` (§16, §20, §32–35, §39, B4),
 `sot/marketing/10_BRAND_VOICE_LANGUAGE_SYSTEM.md`, `sot/01_PRODUCT_TRUTH.md` §18.
 
@@ -29,7 +29,7 @@ non-stop: WhatsApp chats, a notebook of addresses, a spreadsheet open on a lapto
 **OWNER (Register B, to herself):**
 > "Ada 60 lebih order hari ni. Rider tiga je... nak bahagi macam mana ni?"
 
-**SUPER:** *Many orders.*
+**SUPER:** *Banyak order.*
 
 ## Scene 2 — Staff pressure (0:10–0:16)
 
@@ -49,7 +49,7 @@ fills up. Camera finds one row: **#1048 · Nurul · Brownie Box · Shah Alam**.
 **NARRATOR (Register A):**
 > "Semua order hari ni, dalam satu tempat."
 
-**SUPER:** *One operation.*
+**SUPER:** *Satu operation.*
 
 ## Scene 4 — Zones and runs (0:24–0:36)
 
@@ -75,7 +75,7 @@ list, Stop 3 of 12. Quick montage of drops across Shah Alam.
 **RIDER (brief, respectful):**
 > "Stop tiga, Nurul. Okay."
 
-**SUPER:** *One rider. One run. Many stops.*
+**SUPER:** *Satu rider. Satu run. Banyak stop.*
 
 ## Scene 7 — Customer informed (0:56–1:04)
 
@@ -98,8 +98,8 @@ Doorbell. Amir hands over the box, takes a photo for POD.
 
 **VISUAL:** Cefflo logo.
 
-**SUPER:** **Run local delivery. Without the chaos.**
-**CTA:** *Urus delivery hari ni dengan Cefflo.* + URL
+**SUPER:** **Urus delivery tanpa kelam-kabut.**
+**CTA:** *Download app Cefflo sekarang.* + App Store / Google Play badges
 
 ---
 
@@ -108,9 +108,16 @@ Doorbell. Amir hands over the box, takes a photo for POD.
 - **30 s:** Scenes 1 → 3 → 4 → 6 → 8 → 9
 - **15 s:** Scene 1 (owner line) → 4 → 6 (super) → 9
 
-## Open items for Founder
+## Founder decisions (2026-10-12)
 
-1. Approve tagline pairing on the end card (EN super + BM CTA, or all-BM).
-2. Confirm the import method shown in Scene 3 (CSV import is LIVE on Vendor Web).
-3. Confirm public URL / CTA destination (Public Website is NOT IMPLEMENTED).
-4. Confirm tracking-page visuals match the current `customer/` surface.
+1. Language: all Bahasa Melayu (supers, VO, end card).
+2. Objective: app download. CTA: *Download app Cefflo sekarang.* with store badges.
+3. All Vendor Mobile / Customer Tracking screens are LIVE and may be recorded.
+4. Tracking link: the vendor copies/shares the tokenized link from the order
+   (e.g. via their own WhatsApp). Scene 7 shows Nurul receiving it from the shop.
+
+## Voiceover
+
+Narrator: ElevenLabs "Zain – Smooth Malay Commercial Ads", model eleven_v4.
+Narrator lines (in order): Scene 3, 4, 7, 8, end card
+("Urus delivery tanpa kelam-kabut. Download app Cefflo sekarang.").

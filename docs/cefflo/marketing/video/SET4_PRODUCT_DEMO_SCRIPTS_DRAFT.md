@@ -20,7 +20,7 @@ Show only LIVE capabilities (Product Truth §18). Use illustrative demo data onl
 | 0:20 | Suggested runs + Run Builder review | "Cefflo cadangkan run. Semak dulu sebelum dispatch." |
 | 0:30 | Assign rider to Run A1 | "Assign rider." |
 | 0:38 | Runs in progress overview | "Semua delivery hari ni, satu skrin." |
-| 0:42 | End card | *See how Cefflo handles today's deliveries.* |
+| 0:42 | End card | *Download app Cefflo sekarang.* |
 
 ## 4B — Vendor Mobile: urus dari telefon (~30 s)
 | Time | Screen | Voiceover |
@@ -29,7 +29,7 @@ Show only LIVE capabilities (Product Truth §18). Use illustrative demo data onl
 | 0:06 | Today's orders list | "Order hari ni." |
 | 0:12 | Run progress | "Run mana dah jalan." |
 | 0:20 | Order detail → Delivered with POD | "Mana yang dah sampai." |
-| 0:26 | End card | CTA |
+| 0:26 | End card | CTA: *Download app Cefflo sekarang.* |
 Founder to confirm which Vendor Mobile screens are LIVE before recording.
 
 ## 4C — Cefflo Driver: satu run, banyak stop (~35 s)
@@ -41,7 +41,7 @@ Founder to confirm which Vendor Mobile screens are LIVE before recording.
 | 0:17 | Ordered stop list, Stop 3 of 12 | "Stop tersusun." |
 | 0:22 | Rider reorders a stop | "Boleh ubah susunan bila perlu." |
 | 0:27 | Slide: Complete Order + photo POD | "Siap, dengan bukti gambar." |
-| 0:32 | End card | **One rider. One run. Many stops.** |
+| 0:32 | End card | **Satu rider. Satu run. Banyak stop.** |
 Product name on screen and in VO: "Cefflo Driver".
 
 ## 4D — Customer Tracking: apa customer nampak (~30 s)
@@ -51,5 +51,5 @@ Product name on screen and in VO: "Cefflo Driver".
 | 0:06 | Tracking page: order status | "Status order." |
 | 0:12 | Estimated delivery window | "Anggaran masa sampai." |
 | 0:18 | Delivered state | "Dan bila dah sampai." |
-| 0:24 | End card | CTA |
+| 0:24 | End card | CTA: *Download app Cefflo sekarang.* |
 Do not show live rider location (LOCKED / IN DEVELOPMENT). No exact-minute ETA.
