@@ -57,7 +57,8 @@ Unset `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN` before any 
   - Date authority: `businesses.timezone` → `business_today` (server). No device time, no hardcoded Malaysia.
   - Previous 7 days included only while unfinished (not Ready, not picked up); Ready/completed history excluded.
   - Older than 7 days: excluded from the Helper board, **never deleted, cancelled or reset**. Progress carries across days.
-- **Multi-date fix (locked):** packing confirmed per (Zone, order date) group; sorting per Run, or per order date when there is no Run.
+- **Multi-date fix (locked):** packing confirmed per (Zone, order date) group; sorting per Run.
+  - *Amended 2026-10-12 (Founder, D-74, migration `20261012140000`):* sorting requires a Run. The former "per order date when there is no Run" sorting is retired because those orders were locked out of every Run. Without a Run the Helper slide confirms packing only and shows "Waiting for a run"; `tests/staging/helper_lifecycle` now expects the no-Run sorting refusal.
 - Refresh: pull-to-refresh, after each action, and on app resume (no polling; Helper has no RLS read on `orders`, so no realtime).
 - Migrations: `20261006200000_helper_board_business_today`, `20261006210000_helper_backlog_7_days` (staging only).
 - Tests: `tests/staging/helper_lifecycle` (59), `helper_backlog` (22), `helper_access` (36), `helper_e2e` (33); Flutter `test/helper_working_day_test.dart`.

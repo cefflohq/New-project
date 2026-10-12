@@ -1291,5 +1291,7 @@
   "whySortedBeforeRun": "Diisih sebelum ada larian: dikunci pada kumpulan zon",
   "whyInLockedRun": "Dalam larian yang dikunci: perlu pemulihan seluruh larian",
   "noZoneCount": "Tiada zon ({count})",
-  "noZoneHint": "Tetapkan zon untuk merancang pesanan ini."
+  "noZoneHint": "Tetapkan zon untuk merancang pesanan ini.",
+  "hwPackedWaitingRun": "Menunggu larian",
+  "hwWaitingForRun": "Sudah dibungkus. Pengasingan bermula selepas vendor membina larian untuk pesanan ini."
 }

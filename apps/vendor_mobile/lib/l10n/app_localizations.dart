@@ -7856,6 +7856,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Assign a zone to plan these orders.'**
   String get noZoneHint;
+
+  /// No description provided for @hwPackedWaitingRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for a run'**
+  String get hwPackedWaitingRun;
+
+  /// No description provided for @hwWaitingForRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Packed. Sorting starts once the vendor builds a run for these orders.'**
+  String get hwWaitingForRun;
 }
 
 class _AppLocalizationsDelegate

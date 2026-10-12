@@ -4321,4 +4321,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noZoneHint => 'Assign a zone to plan these orders.';
+
+  @override
+  String get hwPackedWaitingRun => 'Waiting for a run';
+
+  @override
+  String get hwWaitingForRun =>
+      'Packed. Sorting starts once the vendor builds a run for these orders.';
 }

@@ -4326,4 +4326,11 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get noZoneHint => 'Tetapkan zon untuk merancang pesanan ini.';
+
+  @override
+  String get hwPackedWaitingRun => 'Menunggu larian';
+
+  @override
+  String get hwWaitingForRun =>
+      'Sudah dibungkus. Pengasingan bermula selepas vendor membina larian untuk pesanan ini.';
 }

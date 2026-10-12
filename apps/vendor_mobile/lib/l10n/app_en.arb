@@ -2146,5 +2146,7 @@
         "type": "Object"
       }
     }
-  }
+  },
+  "hwPackedWaitingRun": "Waiting for a run",
+  "hwWaitingForRun": "Packed. Sorting starts once the vendor builds a run for these orders."
 }

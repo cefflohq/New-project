@@ -1663,9 +1663,14 @@ separate (Driver app, `riders`). Supersedes D-73's Helper model.
     eligible order packed.
   - **Packed → Sorted** is per order, only after that order's packing is
     confirmed. Packing never marks an order Sorted.
-  - **Sorting group** is Zone + Run (or Zone + order date before a Run
-    exists). `confirm_sorting` needs every order sorted, then makes each
-    one Ready for Pickup. Ready is refused per order.
+  - **Sorting group** is Zone + Run. `confirm_sorting` needs every order
+    sorted, then makes each one Ready for Pickup. Ready is refused per order.
+    *Amended 2026-10-12 (Founder, `20261012140000`):* sorting requires a
+    Run. The earlier "or Zone + order date before a Run exists" group is
+    retired: an order sorted before its Run existed was locked to its Zone
+    group (below) with no way into a Run. Packing (and `confirm_packing`,
+    per Zone + order date) may still start before a Run; the Helper slide
+    stops at Packed until the Vendor builds the Run.
   - **No order-count limit** anywhere; a 27-order Zone is tested.
   - **Runs:** `build_rider_run` now accepts packed orders so Sorting can
     follow the Run. Orders still `preparing`, or already `sorted`, stay out
@@ -1679,7 +1684,8 @@ separate (Driver app, `riders`). Supersedes D-73's Helper model.
   - **Lock point:** the first order of a Run becomes `sorted`. It is
     recorded in `delivery_sessions.sorting_started_at/by` with an event
     `run.plan_locked`. A sorted or ready order with no Run is locked to its
-    Zone group.
+    Zone group. (Since 2026-10-12 sorting requires a Run, so no new order
+    reaches this state; the guard itself is unchanged.)
   - **Blocked on a locked Run** (not yet picked up), for Owner and Operator
     alike, by one guard on `orders`: moving an order to or from the Run,
     changing its Zone, adding orders (attach or build), and per-order rider

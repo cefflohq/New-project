@@ -99,6 +99,15 @@ class _Zone {
   int get sorted => tasks.where((t) => _r(t) >= 3).length;
   bool get packingConfirmed => tasks.every((t) => t.packingConfirmed);
   bool get ready => tasks.every((t) => _r(t) >= 4);
+
+  /// Packed orders whose Run does not exist yet: sorting waits for the Run
+  /// (sorting puts an order into its Run's pickup group).
+  bool get waitingForRun => tasks.any((t) => t.runId == null && _r(t) < 4);
+
+  /// Something the slide can still do: confirm packing, or sort and release
+  /// orders that already have a Run.
+  bool get slideable =>
+      !packingConfirmed || tasks.any((t) => t.runId != null && _r(t) < 4);
   DateTime? get pickupAt => tasks
       .map((t) => t.pickupAt)
       .whereType<DateTime>()
@@ -149,6 +158,7 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen>
     if (m.contains('forbidden')) {
       AppScope.read(context).loadSession();
     }
+    if (m.contains('sorting requires a run')) return L.hwWaitingForRun;
     return L.hwActionFailed;
   }
 
@@ -254,9 +264,11 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen>
     await repo.advancePreparation(t.orderId, 'packed');
   });
 
-  /// The one slide: packing confirmation, each order sorted, then sorting
-  /// confirmation per Run -> Ready for Pickup. Steps already done are
-  /// skipped, so a retry after a failure continues where it stopped.
+  /// The one slide: packing confirmation, then -- only for orders that
+  /// already have a Run -- each order sorted and sorting confirmation per
+  /// Run -> Ready for Pickup. Orders without a Run stop at Packed until the
+  /// Vendor builds their Run (sorting requires a Run). Steps already done
+  /// are skipped, so a retry after a failure continues where it stopped.
   /// Never Rider custody.
   Future<bool> _confirmZone(_Zone z) async {
     final app = AppScope.read(context);
@@ -272,23 +284,27 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen>
               .toSet()) {
         await repo.confirmPacking(biz, z.id, day);
       }
-      for (final t in z.tasks.where((t) => t.status == 'packed')) {
+      for (final t in z.tasks.where(
+        (t) => t.status == 'packed' && t.runId != null,
+      )) {
         await repo.advancePreparation(t.orderId, 'sorted');
       }
-      // Sorting per Run; orders without a Run per order date.
-      final groups = <(String?, String?)>{
+      // Sorting per Run.
+      for (final run in {
         for (final t in z.tasks)
-          (t.runId, t.runId == null ? t.orderDate : null),
-      };
-      for (final (run, day) in groups) {
-        final inGroup = z.tasks.where(
-          (t) => t.runId == run && (run != null || t.orderDate == day),
-        );
-        if (inGroup.every((t) => _r(t) >= 4)) continue;
-        await repo.confirmSorting(biz, z.id, run, day);
+          if (t.runId != null) t.runId!,
+      }) {
+        if (z.tasks.where((t) => t.runId == run).every((t) => _r(t) >= 4)) {
+          continue;
+        }
+        await repo.confirmSorting(biz, z.id, run, null);
       }
       await _reload();
-      if (mounted) setState(() => _showReady = true);
+      if (z.waitingForRun) {
+        if (mounted) showCefToast(context, L.hwWaitingForRun);
+      } else if (mounted) {
+        setState(() => _showReady = true);
+      }
       return true;
     } on RepositoryError catch (e) {
       if (mounted) showCefToast(context, _friendly(e), error: true);
@@ -579,7 +595,7 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen>
       bottom: SlideToConfirm(
         key: const ValueKey('packing-slider'),
         label: L.hwSlideConfirmPickup,
-        enabled: complete && !z.ready,
+        enabled: complete && !z.ready && z.slideable,
         onConfirm: () => _confirmZone(z),
       ),
       children: [
@@ -591,6 +607,9 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen>
             chip: _r(t) >= 2
                 ? _Chip(L.hwPackedStatus, bg: _greenTint, fg: _green)
                 : _Chip(L.hwPending, bg: _amberTint, fg: _amberInk),
+            note: _r(t) >= 2 && _r(t) < 4 && t.runId == null
+                ? L.hwPackedWaitingRun
+                : null,
             onTap: _r(t) >= 2 ? null : () => _pack(t),
           ),
       ],
@@ -1353,11 +1372,15 @@ class _OrderRow extends StatelessWidget {
     required this.done,
     required this.busy,
     required this.chip,
+    this.note,
     this.onTap,
   });
   final FulfilmentTask task;
   final bool done, busy;
   final Widget chip;
+
+  /// Optional extra line, e.g. packed orders still waiting for a Run.
+  final String? note;
   final VoidCallback? onTap;
 
   @override
@@ -1417,6 +1440,14 @@ class _OrderRow extends StatelessWidget {
                     task.lines.map((l) => '${l.qty}× ${l.name}').join(', '),
                     style: _sub(text),
                   ),
+                  if (note != null)
+                    Text(
+                      note!,
+                      style: _sub(text)?.copyWith(
+                        color: _amberInk,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                 ],
               ),
             ),

@@ -127,18 +127,19 @@ ok('13 duplicate "packed" is idempotent (no second state change)', dup.status ==
 ok('  stale client sending an older step (preparing) cannot move it back', (await rpc(h, 'advance_preparation', { p_order_id: O1.id, p_next: 'preparing' })).status >= 400);
 const cp = await rpc(h, 'confirm_packing', { p_business_id: B, p_zone_id: ZID, p_order_date: expectedToday });
 ok('11 confirm packing for the zone/day', cp.status === 200 && cp.body?.orders === 1, msg(cp));
-ok('  sorted after packing confirmed', (await rpc(h, 'advance_preparation', { p_order_id: O1.id, p_next: 'sorted' })).status === 200);
+// Sorting requires a Run (20261012140000): O1 is packed but has no Run, so it
+// stays packed; sorting with a Run is covered by helper_e2e.
+const srt = await rpc(h, 'advance_preparation', { p_order_id: O1.id, p_next: 'sorted' });
+ok('  sorting without a run refused (order stays packed)', srt.status >= 400 && /sorting requires a run/.test(msg(srt)), msg(srt));
 const cs = await rpc(h, 'confirm_sorting', { p_business_id: B, p_zone_id: ZID, p_delivery_session_id: null, p_order_date: expectedToday });
-ok('  confirm sorting -> ready', cs.status === 200 && cs.body?.newly_ready === 1, msg(cs));
-const cs2 = await rpc(h, 'confirm_sorting', { p_business_id: B, p_zone_id: ZID, p_delivery_session_id: null, p_order_date: expectedToday });
-ok('13 repeating confirm sorting changes nothing', cs2.status === 200 && cs2.body?.newly_ready === 0, msg(cs2));
+ok('  confirm sorting without a run refused', cs.status >= 400 && /sorting requires a run/.test(msg(cs)), msg(cs));
 // incomplete group refused
 const O2 = await order();
 await rpc(owner, 'update_order_details', { p_order_id: O2.id, p_zone_id: ZID });
 ok('12 confirm packing with an unpacked order in the group refused', (await rpc(h, 'confirm_packing', { p_business_id: B, p_zone_id: ZID, p_order_date: expectedToday })).status >= 400);
 const reread = (await rpc(h, 'my_fulfilment_tasks', { p_business_id: B })).body.tasks;
-ok('16 reload returns persisted server truth (ready + not_started)', reread.find(t => t.order_id === O1.id)?.preparation_status === 'ready' && reread.find(t => t.order_id === O2.id)?.preparation_status === 'not_started');
-ok('  Owner sees the same state (one source of truth)', (await rpc(owner, 'my_fulfilment_tasks', { p_business_id: B })).body.tasks.find(t => t.order_id === O1.id)?.preparation_status === 'ready');
+ok('16 reload returns persisted server truth (packed + not_started)', reread.find(t => t.order_id === O1.id)?.preparation_status === 'packed' && reread.find(t => t.order_id === O2.id)?.preparation_status === 'not_started');
+ok('  Owner sees the same state (one source of truth)', (await rpc(owner, 'my_fulfilment_tasks', { p_business_id: B })).body.tasks.find(t => t.order_id === O1.id)?.preparation_status === 'packed');
 
 // ----------------------------------------------------------- removal (9)
 const rm = await rpc(owner, 'update_team_member', { p_business_id: B, p_user_id: uid(h), p_status: 'inactive' });
