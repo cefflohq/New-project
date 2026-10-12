@@ -2,9 +2,10 @@ PRODUCT_TRUTH (safe to describe; update when production changes)
 - CEFFLO = local same-day delivery operating system for businesses that deliver within their own service area with their own riders.
 - Vendor App + Vendor Web: all of today's orders in one place (manual entry, own storefront order page, CSV/Excel import; Shopify, WooCommerce and Wix orders come in automatically; new rows in a Google Sheet or files in a Google Drive folder are imported every few minutes; API key).
 - Zones: group delivery areas; suggested delivery plan into runs, owner reviews before dispatch; owner assigns driver manually.
+- Delivery plan: owner picks today's drivers; a big zone is split across them by each driver's capacity and vehicle (Balance or Fill), one run per driver; orders that cannot be planned are listed with the reason (e.g. address not located, no zone). Stop order is a suggestion by straight-line distance; the driver can reorder.
 - Cefflo Driver app: driver sees assigned run, stops list, pickup, proof of delivery.
 - Customer tracking link: customer sees order status and proof of delivery.
-- Team: Owner, Operator, Helper (packing/sorting checklist in the app), Driver. Invite drivers with a link/QR; owner approves.
+- Team: Owner, Operator, Helper (packing checklist in the app; sorting once the run exists), Driver. Invite drivers with a link/QR; owner approves.
 - In-app notifications for the team (no push, WhatsApp or SMS).
 - Storefront: business's own order page.
 - Pricing: Free RM0 (150 completed deliveries/month), Grow RM99/month, Operate RM199/month, Scale RM499/month.

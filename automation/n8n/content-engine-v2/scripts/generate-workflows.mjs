@@ -397,12 +397,12 @@ const m = replied.match(/REVISE #([0-9a-f-]{36})/);
 if (m && msg.text) return [{ json: { action: 'note', content_id: m[1], note: msg.text.slice(0, 800), chat } }];
 return [];`, [440, 0]);
   a.sw('Action', '={{ $json.action }}', ['ok', 'no', 'rv', 'note'], [660, 0]);
-  a.pg('Approve + schedule', `={{ "with c as (select id, type from cefflo_ce2.content where id = '" + $json.content_id + "' and status in ('AWAITING_APPROVAL','READY','SCRIPTED') and (type = 'text' or media_url is not null)),
+  a.pg('Approve + schedule', (`={{ "with c as (select id, type from cefflo_ce2.content where id = '" + $json.content_id + "' and status in ('AWAITING_APPROVAL','READY','SCRIPTED') and (type = 'text' or media_url is not null)),
 slots as (select (d + t::time) at time zone 'Asia/Kuala_Lumpur' as at from c,
   generate_series((now() at time zone 'Asia/Kuala_Lumpur')::date, (now() at time zone 'Asia/Kuala_Lumpur')::date + 7, interval '1 day') d,
   unnest(case when c.type = 'video' then array" + JSON.stringify(${cfg}.slots.video).replaceAll('\\"', "'") + " else array" + JSON.stringify(${cfg}.slots.text).replaceAll('\\"', "'") + " end) t),
 free as (select s.at from slots s where s.at > now() + interval '10 minutes' and not exists (select 1 from cefflo_ce2.content x, c where x.scheduled_at = s.at and x.type = c.type and x.status in ('APPROVED','PUBLISHING','PUBLISHED')) order by s.at limit 1)
-update cefflo_ce2.content set status = 'APPROVED', scheduled_at = (select at from free), updated_at = now() where id = (select id from c) returning id, scheduled_at" }}`, [900, -240], { alwaysOutputData: true });
+update cefflo_ce2.content set status = 'APPROVED', scheduled_at = (select at from free), updated_at = now() where id = (select id from c) returning id, scheduled_at" }}`).replace(/\n/g, ' '), [900, -240], { alwaysOutputData: true });
   a.tg('Ack approve', { operation: 'sendMessage', chatId: `={{ $('Parse update').first().json.chat }}`,
     text: `={{ $json.scheduled_at ? '✅ Diluluskan. Dijadual: ' + DateTime.fromISO(new Date($json.scheduled_at).toISOString()).setZone('Asia/Kuala_Lumpur').toFormat('ccc d LLL, HH:mm') + ' MYT' : 'ℹ️ Tak dijadualkan: video belum dirender, atau content ni dah diproses.' }}`, additionalFields: { appendAttribution: false } }, [1120, -240]);
   a.pg('Reject', `={{ "update cefflo_ce2.content set status = 'REJECTED', updated_at = now() where id = '" + $json.content_id + "' returning id" }}`, [900, -60]);
@@ -602,6 +602,16 @@ for (const w of all) {
     if (!names.has(from)) throw new Error(`${w.name}: unknown source ${from}`);
     for (const out of c.main) for (const l of out) if (!names.has(l.node)) throw new Error(`${w.name}: unknown target ${l.node}`);
   }
+  // expression self-check: every {{ }} must be valid JavaScript (n8n rejects
+  // e.g. a raw newline inside a quoted string with "invalid syntax")
+  const walk = (v, cb) => typeof v === 'string' ? cb(v) : Array.isArray(v) ? v.forEach(x => walk(x, cb)) : v && typeof v === 'object' ? Object.values(v).forEach(x => walk(x, cb)) : null;
+  for (const n of w.nodes) walk(n.parameters, str => {
+    if (!str.startsWith('=')) return;
+    for (const m of str.matchAll(/\{\{([\s\S]*?)\}\}/g)) {
+      try { new Function('$', '$json', '$itemIndex', '$now', '$input', '$execution', '$workflow', `return (${m[1]})`); }
+      catch (e) { throw new Error(`${w.name} / ${n.name}: invalid expression (${e.message})`); }
+    }
+  });
   const file = w.name.replace(/^CEFFLO CE2 · /, '').replace(/[^\w]+/g, '_').replace(/_+$/, '') + '.json';
   writeFileSync(join(out, file), JSON.stringify(w, null, 2) + '\n');
   console.log(`${file}  (${w.nodes.length} nodes)`);
