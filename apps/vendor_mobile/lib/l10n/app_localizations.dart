@@ -7718,6 +7718,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Alerts off for this device.'**
   String get ntPushOff;
+
+  /// No description provided for @planDrivers.
+  ///
+  /// In en, this message translates to:
+  /// **'Drivers for this plan'**
+  String get planDrivers;
+
+  /// No description provided for @planDriversAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All drivers'**
+  String get planDriversAll;
+
+  /// No description provided for @planDriversCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} drivers'**
+  String planDriversCount(Object count);
+
+  /// No description provided for @planSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Split'**
+  String get planSplit;
+
+  /// No description provided for @planBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance: fewest drivers, even loads'**
+  String get planBalance;
+
+  /// No description provided for @planFill.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill: each driver up to capacity'**
+  String get planFill;
+
+  /// No description provided for @planPolicyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop order uses straight-line distance, not road routes.'**
+  String get planPolicyHint;
+
+  /// No description provided for @planPickDriver.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one driver.'**
+  String get planPickDriver;
+
+  /// No description provided for @planApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get planApply;
+
+  /// No description provided for @planPart.
+  ///
+  /// In en, this message translates to:
+  /// **'Part {part} of {parts}'**
+  String planPart(Object part, Object parts);
+
+  /// No description provided for @planNotPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Not planned ({count})'**
+  String planNotPlanned(Object count);
+
+  /// No description provided for @planStale.
+  ///
+  /// In en, this message translates to:
+  /// **'The plan has changed. Close and plan again.'**
+  String get planStale;
+
+  /// No description provided for @whyInPreparation.
+  ///
+  /// In en, this message translates to:
+  /// **'Being prepared or sorted'**
+  String get whyInPreparation;
+
+  /// No description provided for @whyInsufficientCapacity.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough driver capacity'**
+  String get whyInsufficientCapacity;
+
+  /// No description provided for @whyVehicleIncompatible.
+  ///
+  /// In en, this message translates to:
+  /// **'No driver with a suitable vehicle'**
+  String get whyVehicleIncompatible;
+
+  /// No description provided for @whyDeclinedAwaitingRecovery.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver declined: reassign or recover'**
+  String get whyDeclinedAwaitingRecovery;
+
+  /// No description provided for @exOpenRun.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} already has an open run'**
+  String exOpenRun(Object name);
+
+  /// No description provided for @exNoCapacity.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} has no spare capacity'**
+  String exNoCapacity(Object name);
+
+  /// No description provided for @exNotEligible.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is not an active driver'**
+  String exNotEligible(Object name);
 }
 
 class _AppLocalizationsDelegate

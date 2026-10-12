@@ -235,6 +235,11 @@ typedef _ZoneData = (
 class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
   final _view = GlobalKey<AsyncViewState<_ZoneData>>();
 
+  /// Drivers the Vendor chose for planning (null = every active driver) and
+  /// how a zone is split across them.
+  Set<String>? _riderIds;
+  String _policy = 'balance';
+
   /// The loaded zone; drives the header title and the ⋮ menu.
   Zone? _zone;
 
@@ -247,7 +252,11 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
       orElse: () => throw StateError(L.zoneNotFound),
     );
     final orders = await app.repo.orders(businessId);
-    final plan = await app.repo.proposePlan(businessId);
+    final plan = await app.repo.proposePlan(
+      businessId,
+      riderIds: _riderIds?.toList(),
+      policy: _policy,
+    );
     final riders = await app.repo.riders(businessId);
     final runs = await app.repo.runs(businessId);
     if (mounted) setState(() => _zone = zone);
@@ -292,8 +301,19 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
               ),
               key: _view,
               load: _load,
-              builder: (context, data, reload) =>
-                  _ZoneDetailBody(data: data, reload: reload),
+              builder: (context, data, reload) => _ZoneDetailBody(
+                data: data,
+                reload: reload,
+                selectedRiders: _riderIds,
+                policy: _policy,
+                onPlanSettings: (riderIds, policy) {
+                  setState(() {
+                    _riderIds = riderIds;
+                    _policy = policy;
+                  });
+                  _view.currentState?.reload();
+                },
+              ),
             ),
           ),
         ),
@@ -544,9 +564,18 @@ class _EditZoneNameSheetState extends State<_EditZoneNameSheet> {
 }
 
 class _ZoneDetailBody extends StatelessWidget {
-  const _ZoneDetailBody({required this.data, required this.reload});
+  const _ZoneDetailBody({
+    required this.data,
+    required this.reload,
+    required this.selectedRiders,
+    required this.policy,
+    required this.onPlanSettings,
+  });
   final _ZoneData data;
   final Future<void> Function() reload;
+  final Set<String>? selectedRiders;
+  final String policy;
+  final void Function(Set<String>? riderIds, String policy) onPlanSettings;
 
   @override
   Widget build(BuildContext context) {
@@ -562,6 +591,11 @@ class _ZoneDetailBody extends StatelessWidget {
     final groups = plan.groups
         .where((g) => g.zoneId == zone.id && g.stops.isNotEmpty)
         .toList();
+    final unplanned = plan.unplannable
+        .where((u) => u.zoneId == zone.id && u.orderId != null)
+        .toList();
+    final active = riders.where((r) => r.isActive).toList();
+    final chosen = selectedRiders;
     final distance = groups.fold<num>(
       0,
       (sum, g) => sum + (g.totalDistanceKm ?? 0),
@@ -622,7 +656,35 @@ class _ZoneDetailBody extends StatelessWidget {
             ],
           ),
           SectionHeading(L.todaysDeliveries),
-          if (groups.isEmpty && runs.isEmpty)
+          CefListRow(
+            title: L.planDrivers,
+            subtitle: [
+              chosen == null
+                  ? L.planDriversAll
+                  : L.planDriversCount(chosen.length),
+              policy == 'fill' ? L.planFill : L.planBalance,
+            ].join(' · '),
+            icon: LucideIcons.users,
+            onTap: () => _showPlanSettings(
+              context,
+              riders: active,
+              selected: chosen,
+              policy: policy,
+              onApply: onPlanSettings,
+            ),
+          ),
+          for (final e in plan.excludedRiders)
+            Padding(
+              padding: const EdgeInsets.only(top: Gap.xs),
+              child: Text(
+                e.label(
+                  riders.where((r) => r.id == e.riderId).firstOrNull?.name ??
+                      L.rider,
+                ),
+                style: text.bodySmall,
+              ),
+            ),
+          if (groups.isEmpty && runs.isEmpty && unplanned.isEmpty)
             StateBlock.empty(L.noDeliveriesPlannedZoneToday)
           else ...[
             for (final r in runs) ...[
@@ -671,10 +733,25 @@ class _ZoneDetailBody extends StatelessWidget {
                     group: g,
                     riders: riders,
                     onDispatched: reload,
+                    deliveryDate: plan.planDate,
                   ),
                 ),
               ),
             ],
+            if (unplanned.isNotEmpty) ...[
+              SectionHeading(L.planNotPlanned(unplanned.length)),
+              for (final u in unplanned)
+                CefListRow(
+                  title: byId[u.orderId]?.customerName ?? u.orderId!,
+                  subtitle: u.label,
+                  icon: LucideIcons.circleAlert,
+                  onTap: () => app.go(VRoute.orderDetail, entityId: u.orderId),
+                ),
+            ],
+          ],
+          if (groups.isNotEmpty) ...[
+            const SizedBox(height: Gap.sm),
+            Text(L.planPolicyHint, style: text.bodySmall),
           ],
         ],
       ),
@@ -2046,4 +2123,129 @@ Future<void> _confirmSignOut(BuildContext context) async {
   if (yes != true) return;
   await app.repo.signOut();
   app.clearSession();
+}
+
+/// Plan settings: which active drivers this plan may use, and Balance or
+/// Fill. Applying re-requests the proposal; nothing is saved.
+Future<void> _showPlanSettings(
+  BuildContext context, {
+  required List<RiderRow> riders,
+  required Set<String>? selected,
+  required String policy,
+  required void Function(Set<String>? riderIds, String policy) onApply,
+}) => showCefSheet<void>(
+  context: context,
+  isScrollControlled: true,
+  builder: (_) => _PlanSettingsSheet(
+    riders: riders,
+    selected: selected,
+    policy: policy,
+    onApply: onApply,
+  ),
+);
+
+class _PlanSettingsSheet extends StatefulWidget {
+  const _PlanSettingsSheet({
+    required this.riders,
+    required this.selected,
+    required this.policy,
+    required this.onApply,
+  });
+  final List<RiderRow> riders;
+  final Set<String>? selected;
+  final String policy;
+  final void Function(Set<String>? riderIds, String policy) onApply;
+
+  @override
+  State<_PlanSettingsSheet> createState() => _PlanSettingsSheetState();
+}
+
+class _PlanSettingsSheetState extends State<_PlanSettingsSheet> {
+  late final Set<String> _picked = {
+    ...(widget.selected ?? widget.riders.map((r) => r.id)),
+  };
+  late String _policy = widget.policy;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final all = widget.riders.every((r) => _picked.contains(r.id));
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          Gap.gutter,
+          Gap.xl,
+          Gap.gutter,
+          Gap.lg,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(L.planDrivers, style: text.titleMedium),
+            const SizedBox(height: Gap.sm),
+            if (widget.riders.isEmpty)
+              StateBlock.empty(L.noActiveRidersYet)
+            else
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    for (final r in widget.riders)
+                      CheckboxListTile(
+                        value: _picked.contains(r.id),
+                        title: Text(r.name),
+                        subtitle: r.vehicleType == null
+                            ? null
+                            : Text(vehicleTypeLabel(r.vehicleType!)),
+                        contentPadding: EdgeInsets.zero,
+                        onChanged: (v) => setState(
+                          () => v == true
+                              ? _picked.add(r.id)
+                              : _picked.remove(r.id),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: Gap.md),
+            Text(L.planSplit, style: text.titleSmall),
+            RadioGroup<String>(
+              groupValue: _policy,
+              onChanged: (v) => setState(() => _policy = v ?? _policy),
+              child: Column(
+                children: [
+                  for (final (value, label) in [
+                    ('balance', L.planBalance),
+                    ('fill', L.planFill),
+                  ])
+                    RadioListTile<String>(
+                      value: value,
+                      title: Text(label),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                ],
+              ),
+            ),
+            Text(L.planPolicyHint, style: text.bodySmall),
+            const SizedBox(height: Gap.md),
+            if (_picked.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: Gap.sm),
+                child: Text(L.planPickDriver, style: text.bodySmall),
+              ),
+            CefButton(
+              L.planApply,
+              onTap: _picked.isEmpty
+                  ? null
+                  : () {
+                      Navigator.of(context).pop();
+                      widget.onApply(all ? null : {..._picked}, _policy);
+                    },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

@@ -1566,12 +1566,23 @@ class VendorRepository {
   }
 
   /// Server-computed grouping, rider candidate and stop sequence.
-  Future<PlanProposal> proposePlan(String businessId) async {
+  ///
+  /// [riderIds] are the drivers the Vendor chose for this plan (null = every
+  /// active driver); [policy] is `balance` or `fill`.
+  Future<PlanProposal> proposePlan(
+    String businessId, {
+    List<String>? riderIds,
+    String policy = 'balance',
+  }) async {
     if (_demo) return _demoPlan;
     final row = await _run(
       () => _db!.rpc(
         'propose_delivery_plan',
-        params: {'p_business_id': businessId},
+        params: {
+          'p_business_id': businessId,
+          'p_rider_ids': ?riderIds,
+          'p_policy': policy,
+        },
       ),
     );
     return PlanProposal.fromJson(_single(row));
@@ -1580,12 +1591,17 @@ class VendorRepository {
   Future<Map<String, dynamic>> createDeliverySession({
     required String businessId,
     String? name,
+    String? deliveryDate,
   }) async {
     if (_demo) return {'id': 'session-demo'};
     final row = await _run(
       () => _db!.rpc(
         'create_delivery_session',
-        params: {'p_business_id': businessId, 'p_name': ?name},
+        params: {
+          'p_business_id': businessId,
+          'p_name': ?name,
+          'p_delivery_date': ?deliveryDate,
+        },
       ),
     );
     return _single(row);
@@ -1646,40 +1662,36 @@ class VendorRepository {
     return VendorRun.fromRow(Map<String, dynamic>.from(row));
   }
 
-  /// Canonical run-based dispatch (D-61): joins the business's open delivery
-  /// session -- the same "first planned/active session" rule Vendor Web
-  /// applies -- or opens one, then commits the run through
-  /// `build_rider_run`. Reuse the same [idempotencyKey] when retrying.
+  /// Canonical run-based dispatch (D-61): every dispatch opens its own
+  /// delivery session, dated [deliveryDate] (the proposal's business-local
+  /// plan date), then commits the run through `build_rider_run`. A fresh
+  /// session per run keeps one driver to one run per session, so a run never
+  /// merges into an older or differently dated one. Reuse the same
+  /// [idempotencyKey] (and [sessionId] from the first attempt) when retrying.
   Future<Map<String, dynamic>> dispatchRun({
     required String businessId,
     required String sessionName,
     required String riderId,
     required List<String> orderIds,
     required String idempotencyKey,
+    String? deliveryDate,
+    String? sessionId,
   }) async {
-    final open = await _run(
-      () => _db!
-          .from('delivery_sessions')
-          .select('id')
-          .eq('business_id', businessId)
-          .inFilter('status', ['planned', 'active'])
-          .order('created_at', ascending: false)
-          .limit(1),
-    );
-    final openRows = _rows(open);
-    final sessionId = openRows.isNotEmpty
-        ? openRows.first['id'] as String
-        : (await createDeliverySession(
-                businessId: businessId,
-                name: sessionName,
-              ))['id']
-              as String;
-    return buildRiderRun(
-      sessionId: sessionId,
+    final session =
+        sessionId ??
+        (await createDeliverySession(
+              businessId: businessId,
+              name: sessionName,
+              deliveryDate: deliveryDate,
+            ))['id']
+            as String;
+    final result = await buildRiderRun(
+      sessionId: session,
       riderId: riderId,
       orderIds: orderIds,
       idempotencyKey: idempotencyKey,
     );
+    return {...result, 'delivery_session_id': session};
   }
 
   /// A fresh RFC 4122 v4 id for one dispatch attempt.

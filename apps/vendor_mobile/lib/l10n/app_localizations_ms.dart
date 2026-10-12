@@ -4238,4 +4238,76 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get ntPushOff => 'Makluman dimatikan untuk peranti ini.';
+
+  @override
+  String get planDrivers => 'Pemandu untuk pelan ini';
+
+  @override
+  String get planDriversAll => 'Semua pemandu';
+
+  @override
+  String planDriversCount(Object count) {
+    return '$count pemandu';
+  }
+
+  @override
+  String get planSplit => 'Pembahagian';
+
+  @override
+  String get planBalance => 'Seimbang: pemandu paling sedikit, beban sama rata';
+
+  @override
+  String get planFill => 'Penuh: setiap pemandu hingga kapasiti';
+
+  @override
+  String get planPolicyHint =>
+      'Susunan hentian guna jarak garis lurus, bukan laluan jalan.';
+
+  @override
+  String get planPickDriver => 'Pilih sekurang-kurangnya seorang pemandu.';
+
+  @override
+  String get planApply => 'Guna';
+
+  @override
+  String planPart(Object part, Object parts) {
+    return 'Bahagian $part daripada $parts';
+  }
+
+  @override
+  String planNotPlanned(Object count) {
+    return 'Tidak dirancang ($count)';
+  }
+
+  @override
+  String get planStale => 'Pelan sudah berubah. Tutup dan rancang semula.';
+
+  @override
+  String get whyInPreparation => 'Sedang disediakan atau diisih';
+
+  @override
+  String get whyInsufficientCapacity => 'Kapasiti pemandu tidak mencukupi';
+
+  @override
+  String get whyVehicleIncompatible =>
+      'Tiada pemandu dengan kenderaan yang sesuai';
+
+  @override
+  String get whyDeclinedAwaitingRecovery =>
+      'Pemandu menolak: tetapkan semula atau pulihkan';
+
+  @override
+  String exOpenRun(Object name) {
+    return '$name sudah ada larian terbuka';
+  }
+
+  @override
+  String exNoCapacity(Object name) {
+    return '$name tiada kapasiti lebih';
+  }
+
+  @override
+  String exNotEligible(Object name) {
+    return '$name bukan pemandu aktif';
+  }
 }

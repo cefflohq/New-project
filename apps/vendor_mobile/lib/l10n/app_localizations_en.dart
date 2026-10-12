@@ -4235,4 +4235,75 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ntPushOff => 'Alerts off for this device.';
+
+  @override
+  String get planDrivers => 'Drivers for this plan';
+
+  @override
+  String get planDriversAll => 'All drivers';
+
+  @override
+  String planDriversCount(Object count) {
+    return '$count drivers';
+  }
+
+  @override
+  String get planSplit => 'Split';
+
+  @override
+  String get planBalance => 'Balance: fewest drivers, even loads';
+
+  @override
+  String get planFill => 'Fill: each driver up to capacity';
+
+  @override
+  String get planPolicyHint =>
+      'Stop order uses straight-line distance, not road routes.';
+
+  @override
+  String get planPickDriver => 'Choose at least one driver.';
+
+  @override
+  String get planApply => 'Apply';
+
+  @override
+  String planPart(Object part, Object parts) {
+    return 'Part $part of $parts';
+  }
+
+  @override
+  String planNotPlanned(Object count) {
+    return 'Not planned ($count)';
+  }
+
+  @override
+  String get planStale => 'The plan has changed. Close and plan again.';
+
+  @override
+  String get whyInPreparation => 'Being prepared or sorted';
+
+  @override
+  String get whyInsufficientCapacity => 'Not enough driver capacity';
+
+  @override
+  String get whyVehicleIncompatible => 'No driver with a suitable vehicle';
+
+  @override
+  String get whyDeclinedAwaitingRecovery =>
+      'Driver declined: reassign or recover';
+
+  @override
+  String exOpenRun(Object name) {
+    return '$name already has an open run';
+  }
+
+  @override
+  String exNoCapacity(Object name) {
+    return '$name has no spare capacity';
+  }
+
+  @override
+  String exNotEligible(Object name) {
+    return '$name is not an active driver';
+  }
 }

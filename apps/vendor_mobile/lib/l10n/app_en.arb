@@ -2071,5 +2071,69 @@
   "ntPushDenied": "Blocked in your browser settings. Allow notifications for this site, then try again.",
   "ntPushUnsupported": "Not available in this app yet. Use Cefflo in Chrome on Android or a computer.",
   "ntPushOn": "Alerts on for this device.",
-  "ntPushOff": "Alerts off for this device."
+  "ntPushOff": "Alerts off for this device.",
+  "planDrivers": "Drivers for this plan",
+  "planDriversAll": "All drivers",
+  "planDriversCount": "{count} drivers",
+  "@planDriversCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "planSplit": "Split",
+  "planBalance": "Balance: fewest drivers, even loads",
+  "planFill": "Fill: each driver up to capacity",
+  "planPolicyHint": "Stop order uses straight-line distance, not road routes.",
+  "planPickDriver": "Choose at least one driver.",
+  "planApply": "Apply",
+  "planPart": "Part {part} of {parts}",
+  "@planPart": {
+    "placeholders": {
+      "part": {
+        "type": "Object"
+      },
+      "parts": {
+        "type": "Object"
+      }
+    }
+  },
+  "planNotPlanned": "Not planned ({count})",
+  "@planNotPlanned": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "planStale": "The plan has changed. Close and plan again.",
+  "whyInPreparation": "Being prepared or sorted",
+  "whyInsufficientCapacity": "Not enough driver capacity",
+  "whyVehicleIncompatible": "No driver with a suitable vehicle",
+  "whyDeclinedAwaitingRecovery": "Driver declined: reassign or recover",
+  "exOpenRun": "{name} already has an open run",
+  "@exOpenRun": {
+    "placeholders": {
+      "name": {
+        "type": "Object"
+      }
+    }
+  },
+  "exNoCapacity": "{name} has no spare capacity",
+  "@exNoCapacity": {
+    "placeholders": {
+      "name": {
+        "type": "Object"
+      }
+    }
+  },
+  "exNotEligible": "{name} is not an active driver",
+  "@exNotEligible": {
+    "placeholders": {
+      "name": {
+        "type": "Object"
+      }
+    }
+  }
 }

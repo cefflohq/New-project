@@ -4,7 +4,7 @@
 import { t, fmtTime } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
-import { fetchZones, fetchRiders, todayLocal } from '../data.js';
+import { fetchZones, fetchRiders, fetchOrders, todayLocal, orderNo } from '../data.js';
 import { esc, icon, modal, toast, busy, copyText } from '../ui.js';
 import { hasPin, mountPicker } from '../map.js';
 
@@ -192,28 +192,31 @@ export function openImport(onDone) {
 }
 
 export async function openPlanDelivery(onDone) {
-  const m = modal({ title: t('plan.title'), lead: t('plan.lead'), body: `<div data-body>${window.cfLoader.markup(t('ld.route'))}</div><div class="err" data-err hidden></div>`,
+  const m = modal({ title: t('plan.title'), lead: t('plan.lead'), body: `<div data-controls></div><div data-body>${window.cfLoader.markup(t('ld.route'))}</div><div class="err" data-err hidden></div>`,
     footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit disabled>${esc(t('plan.create'))}</button>` });
-  const body = m.el.querySelector('[data-body]'), err = m.el.querySelector('[data-err]'), submit = m.el.querySelector('[data-submit]');
-  let groups = [], riders = [], zones = new Map();
+  const controls = m.el.querySelector('[data-controls]'), body = m.el.querySelector('[data-body]'), err = m.el.querySelector('[data-err]'), submit = m.el.querySelector('[data-submit]');
+  let groups = [], riders = [], zones = new Map(), orders = new Map(), plan = null;
   try {
-    const [plan, rs, zs] = await Promise.all([api.rpc('propose_delivery_plan', { p_business_id: ctx.bid }), fetchRiders(), fetchZones()]);
-    groups = plan?.groups || [];
+    const [rs, zs, os] = await Promise.all([fetchRiders(), fetchZones(), fetchOrders()]);
     riders = (rs || []).filter(r => r.status === 'active');
     zones = new Map((zs || []).map(z => [z.id, z.name]));
+    orders = new Map((os || []).map(o => [o.id, o]));
   } catch (ex) { body.innerHTML = ''; err.textContent = ex.message; err.hidden = false; return; }
-  if (!groups.length) { body.innerHTML = `<div class="state"><h3>${esc(t('plan.none'))}</h3></div>`; return; }
-  body.innerHTML = groups.map((g, i) => `<div class="sub-card" style="margin:0">
-      <div style="display:flex;align-items:center;gap:10px"><b>${esc(t('plan.run', { n: i + 1 }))}</b><span class="chip neutral">${esc(zones.get(g.zone_id) || t('add.noZone'))}</span>
-      <span class="hint" style="margin-left:auto">${esc(t('runs.orders', { n: (g.stops || []).length }))}${g.total_distance_km ? ` · ${Number(g.total_distance_km).toFixed(1)} km` : ''}</span></div>
-      <div class="field" style="margin-top:10px"><label>${esc(t('plan.rider'))}</label>
-      <select class="select" data-rider="${i}">${riders.map(r => `<option value="${esc(r.id)}" ${r.id === g.candidate_rider_id ? 'selected' : ''}>${esc(r.name)}</option>`).join('')}</select></div>
-      <div class="hint" data-cap="${i}" style="margin-top:6px"></div></div>`).join('');
-  // D-61: rider selection -> check_run_vehicle_capacity -> confirmation. A run
-  // is dispatched only when every group is compatible (no override, as App).
-  const ok = groups.map(() => false);
+  // The Vendor chooses who drives this plan (all active Drivers by default)
+  // and how a zone is split: Balance (fewest Drivers, even loads) or Fill.
+  const picked = new Set(riders.map(r => r.id));
+  let policy = 'balance';
+  controls.innerHTML = `<div class="sub-card" style="margin:0 0 12px">
+      <div class="field"><label>${esc(t('plan.drivers'))}</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 14px">${riders.map(r => `<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-pick="${esc(r.id)}" checked>${esc(r.name)} <span class="hint">${esc(t(`veh.${r.vehicle_type}`))}</span></label>`).join('') || `<span class="hint">${esc(t('plan.noDrivers'))}</span>`}</div></div>
+      <div class="field" style="margin-top:10px"><label for="planPolicy">${esc(t('plan.policy'))}</label>
+        <select class="select" id="planPolicy" data-policy><option value="balance">${esc(t('plan.balance'))}</option><option value="fill">${esc(t('plan.fill'))}</option></select>
+        <span class="hint">${esc(t('plan.policyHint'))}</span></div></div>`;
+  const ok = [], done = new Map();
   const orderIdsOf = g => (g.stops || []).map(s => s.order_id).filter(Boolean);
-  const refresh = () => { submit.disabled = !ok.every(Boolean); };
+  const refresh = () => { submit.disabled = !groups.length || !ok.every(Boolean); };
+  const orderLabel = id => { const o = orders.get(id); return o ? `${orderNo(o)} · ${o.customer_name}` : `#${id.slice(0, 6).toUpperCase()}`; };
+  const reasonText = u => t(`plan.why.${u.reason}`) === `plan.why.${u.reason}` ? u.reason : t(`plan.why.${u.reason}`);
   async function check(i) {
     const out = m.el.querySelector(`[data-cap="${i}"]`), rider = m.el.querySelector(`[data-rider="${i}"]`).value;
     ok[i] = false; refresh();
@@ -230,32 +233,72 @@ export async function openPlanDelivery(onDone) {
     } catch (ex) { out.innerHTML = `<div class="err">${esc(ex.message)}</div>`; }
     refresh();
   }
-  m.el.addEventListener('change', e => { const sel = e.target.closest('[data-rider]'); if (sel) check(Number(sel.dataset.rider)); });
-  groups.forEach((_, i) => check(i));
-  const keys = groups.map(() => uuid());
+  async function load() {
+    err.hidden = true; groups = []; ok.length = 0; done.clear(); refresh();
+    if (!picked.size) { body.innerHTML = `<div class="state"><h3>${esc(t('plan.pickDriver'))}</h3></div>`; return; }
+    body.innerHTML = window.cfLoader.markup(t('ld.route'));
+    try {
+      plan = await api.rpc('propose_delivery_plan', { p_business_id: ctx.bid, p_rider_ids: [...picked], p_policy: policy });
+    } catch (ex) { body.innerHTML = ''; err.textContent = ex.message; err.hidden = false; return; }
+    groups = plan?.groups || [];
+    const unplannable = plan?.unplannable_orders || [], excluded = plan?.excluded_riders || [];
+    const riderName = id => riders.find(r => r.id === id)?.name || t('plan.driver');
+    const runsHtml = groups.map((g, i) => `<div class="sub-card" style="margin:0">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b>${esc(t('plan.run', { n: i + 1 }))}</b><span class="chip neutral">${esc(zones.get(g.zone_id) || t('add.noZone'))}</span>
+      ${g.parts > 1 ? `<span class="chip neutral">${esc(t('plan.part', { part: g.part, parts: g.parts }))}</span>` : ''}
+      <span class="hint" style="margin-left:auto">${esc(t('runs.orders', { n: (g.stops || []).length }))}${g.total_distance_km ? ` · ${Number(g.total_distance_km).toFixed(1)} km ${esc(t('plan.straight'))}` : ''}</span></div>
+      <div class="field" style="margin-top:10px"><label>${esc(t('plan.rider'))}</label>
+      <select class="select" data-rider="${i}">${riders.map(r => `<option value="${esc(r.id)}" ${r.id === g.candidate_rider_id ? 'selected' : ''}>${esc(r.name)}</option>`).join('')}</select></div>
+      <div class="hint" data-cap="${i}" style="margin-top:6px"></div></div>`).join('');
+    const unHtml = unplannable.length ? `<div class="sub-card" style="margin:0"><b>${esc(t('plan.unplannable', { n: unplannable.length }))}</b>
+      ${unplannable.map(u => `<div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap"><span>${esc(orderLabel(u.order_id))}</span><span class="hint" style="margin-left:auto">${esc(zones.get(u.zone_id) || t('add.noZone'))} · ${esc(reasonText(u))}</span></div>`).join('')}</div>` : '';
+    const exHtml = excluded.length ? `<div class="hint">${excluded.map(e => esc(t(`plan.ex.${e.reason}`, { name: e.rider_name || riderName(e.rider_id) }))).join(' · ')}</div>` : '';
+    body.innerHTML = (groups.length || unplannable.length)
+      ? `<div style="display:grid;gap:12px">${runsHtml}${unHtml}${exHtml}</div>`
+      : `<div class="state"><h3>${esc(t('plan.none'))}</h3></div>${exHtml}`;
+    groups.forEach((_, i) => { ok[i] = false; check(i); });
+    refresh();
+  }
+  controls.addEventListener('change', e => {
+    const box = e.target.closest('[data-pick]');
+    if (box) { box.checked ? picked.add(box.dataset.pick) : picked.delete(box.dataset.pick); load(); }
+    if (e.target.closest('[data-policy]')) { policy = e.target.value; load(); }
+  });
+  body.addEventListener('change', e => { const sel = e.target.closest('[data-rider]'); if (sel) check(Number(sel.dataset.rider)); });
+  await load();
+  const keys = new Map();
   let sessionId = null;
   submit.addEventListener('click', async e => {
     err.hidden = true;
     const picks = groups.map((_, i) => m.el.querySelector(`[data-rider="${i}"]`).value);
     if (picks.some(p => !p)) { err.textContent = t('plan.noRider'); err.hidden = false; return; }
     try {
-      let made = 0;
       await busy(e.currentTarget, async () => {
+        // One new session per plan, dated the business-local day (plan_date
+        // is computed server-side in the business timezone).
         if (!sessionId) {
-          const s = await api.rpc('create_delivery_session', { p_business_id: ctx.bid, p_name: `${t('plan.title')} ${fmtTime(new Date().toISOString())}`, p_delivery_date: todayLocal() });
+          const s = await api.rpc('create_delivery_session', { p_business_id: ctx.bid, p_name: `${t('plan.title')} ${fmtTime(new Date().toISOString())}`, p_delivery_date: plan?.plan_date || todayLocal() });
           sessionId = s.id;
         }
         for (const [i, g] of groups.entries()) {
           const orderIds = orderIdsOf(g);
-          if (!orderIds.length) continue;
-          await api.rpc('build_rider_run', { p_delivery_session_id: sessionId, p_rider_id: picks[i], p_order_ids: orderIds, p_idempotency_key: keys[i], p_override_capacity: false });
-          made++;
+          if (!orderIds.length || done.has(i)) continue;
+          const k = `${i}:${picks[i]}`;
+          if (!keys.has(k)) keys.set(k, uuid());
+          await api.rpc('build_rider_run', { p_delivery_session_id: sessionId, p_rider_id: picks[i], p_order_ids: orderIds, p_idempotency_key: keys.get(k), p_override_capacity: false });
+          done.set(i, true);
         }
       });
       m.close();
-      toast(t('plan.done', { n: made }));
+      toast(t('plan.done', { n: done.size }));
       onDone?.();
-    } catch (ex) { err.textContent = ex.message; err.hidden = false; }
+    } catch (ex) {
+      // Runs already created stay created; Retry sends only the rest.
+      const stale = /no longer eligible|capacity|invalid rider/i.test(ex.message);
+      err.textContent = done.size ? `${t('plan.partial', { n: done.size })} ${stale ? t('plan.stale') : ex.message}` : (stale ? t('plan.stale') : ex.message);
+      err.hidden = false;
+      if (done.size) onDone?.();
+    }
   });
   void icon;
 }

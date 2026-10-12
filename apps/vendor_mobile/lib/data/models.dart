@@ -552,9 +552,24 @@ class PlannableOrder {
 /// `propose_delivery_plan` result. The server decides the groups, the
 /// candidate rider and the stop order; this type only carries them.
 class PlanProposal {
-  const PlanProposal({required this.groups, required this.unplannable});
+  const PlanProposal({
+    required this.groups,
+    required this.unplannable,
+    this.excludedRiders = const [],
+    this.planDate,
+    this.policy = 'balance',
+  });
   final List<PlanGroup> groups;
   final List<UnplannableEntry> unplannable;
+
+  /// Drivers left out of this proposal and why (open run, no capacity, not
+  /// an active driver of the business).
+  final List<ExcludedRider> excludedRiders;
+
+  /// The business-local day the server planned for (yyyy-mm-dd); a new
+  /// delivery session is dated with it.
+  final String? planDate;
+  final String policy;
 
   factory PlanProposal.fromJson(Map<String, dynamic> j) => PlanProposal(
     groups: (j['groups'] as List? ?? [])
@@ -565,9 +580,37 @@ class PlanProposal {
         .whereType<Map>()
         .map((g) => UnplannableEntry.fromJson(Map<String, dynamic>.from(g)))
         .toList(),
+    excludedRiders: (j['excluded_riders'] as List? ?? [])
+        .whereType<Map>()
+        .map((g) => ExcludedRider.fromJson(Map<String, dynamic>.from(g)))
+        .toList(),
+    planDate: j['plan_date'] as String?,
+    policy: (j['policy'] ?? 'balance').toString(),
   );
 
   bool get isEmpty => groups.isEmpty && unplannable.isEmpty;
+}
+
+class ExcludedRider {
+  const ExcludedRider({required this.riderId, required this.reason, this.name});
+  final String riderId, reason;
+  final String? name;
+
+  factory ExcludedRider.fromJson(Map<String, dynamic> j) => ExcludedRider(
+    riderId: j['rider_id'] as String,
+    reason: (j['reason'] ?? 'unknown').toString(),
+    name: j['rider_name'] as String?,
+  );
+
+  String label(String fallbackName) {
+    final n = name ?? fallbackName;
+    return switch (reason) {
+      'rider_has_open_run' => L.exOpenRun(n),
+      'no_capacity' => L.exNoCapacity(n),
+      'not_eligible' => L.exNotEligible(n),
+      _ => '$n · $reason',
+    };
+  }
 }
 
 class PlanGroup {
@@ -580,9 +623,15 @@ class PlanGroup {
     this.candidateRiderVehicleType,
     this.requiredVehicle,
     this.totalDistanceKm,
+    this.part = 1,
+    this.parts = 1,
   });
 
   final String groupKey;
+
+  /// Position of this run within its zone and vehicle tier when the zone is
+  /// split across drivers.
+  final int part, parts;
   final List<PlanStop> stops;
   final String? zoneId, candidateRiderId, candidateRiderName;
   final String? candidateRiderVehicleType, requiredVehicle;
@@ -596,6 +645,8 @@ class PlanGroup {
     candidateRiderVehicleType: j['candidate_rider_vehicle_type'] as String?,
     requiredVehicle: j['required_vehicle'] as String?,
     totalDistanceKm: j['total_distance_km'] as num?,
+    part: (j['part'] as num?)?.toInt() ?? 1,
+    parts: (j['parts'] as num?)?.toInt() ?? 1,
     stops: (j['stops'] as List? ?? [])
         .whereType<Map>()
         .map((s) => PlanStop.fromJson(Map<String, dynamic>.from(s)))
@@ -640,9 +691,10 @@ class UnplannableEntry {
     this.orderId,
     this.groupKey,
     this.groupSize,
+    this.zoneId,
   });
   final String reason;
-  final String? orderId, groupKey;
+  final String? orderId, groupKey, zoneId;
   final int? groupSize;
 
   factory UnplannableEntry.fromJson(Map<String, dynamic> j) => UnplannableEntry(
@@ -650,6 +702,7 @@ class UnplannableEntry {
     orderId: j['order_id'] as String?,
     groupKey: j['group_key'] as String?,
     groupSize: (j['group_size'] as num?)?.toInt(),
+    zoneId: j['zone_id'] as String?,
   );
 
   String get label => switch (reason) {
@@ -658,6 +711,10 @@ class UnplannableEntry {
     'location_failed' => L.addressCouldNotLocated,
     'no_compatible_capacity_sufficient_rider' =>
       L.noRiderCompatibleVehicleEnoughSpare,
+    'in_preparation' => L.whyInPreparation,
+    'insufficient_capacity' => L.whyInsufficientCapacity,
+    'vehicle_incompatible' => L.whyVehicleIncompatible,
+    'declined_awaiting_recovery' => L.whyDeclinedAwaitingRecovery,
     _ => reason,
   };
 }

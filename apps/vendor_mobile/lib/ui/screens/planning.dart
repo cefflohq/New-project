@@ -172,6 +172,7 @@ Future<void> showDispatchSheet(
   required PlanGroup group,
   required List<RiderRow> riders,
   required Future<void> Function() onDispatched,
+  String? deliveryDate,
 }) => showCefSheet<void>(
   context: context,
   isScrollControlled: true,
@@ -184,6 +185,7 @@ Future<void> showDispatchSheet(
     group: group,
     riders: riders.where((r) => r.isActive).toList(),
     onDispatched: onDispatched,
+    deliveryDate: deliveryDate,
   ),
 );
 
@@ -193,11 +195,15 @@ class _DispatchSheet extends StatefulWidget {
     required this.group,
     required this.riders,
     required this.onDispatched,
+    this.deliveryDate,
   });
   final Zone zone;
   final PlanGroup group;
   final List<RiderRow> riders;
   final Future<void> Function() onDispatched;
+
+  /// Business-local plan date for the new delivery session.
+  final String? deliveryDate;
 
   @override
   State<_DispatchSheet> createState() => _DispatchSheetState();
@@ -211,6 +217,9 @@ class _DispatchSheetState extends State<_DispatchSheet> {
 
   /// One key per rider choice, reused if the same dispatch is retried.
   String _key = VendorRepository.newIdempotencyKey();
+
+  /// The session opened by the first attempt, reused on retry.
+  String? _sessionId;
 
   @override
   void initState() {
@@ -246,19 +255,33 @@ class _DispatchSheetState extends State<_DispatchSheet> {
       _error = null;
     });
     try {
+      _sessionId ??=
+          (await app.repo.createDeliverySession(
+                businessId: app.business!.id,
+                name: L.run(widget.zone.name),
+                deliveryDate: widget.deliveryDate,
+              ))['id']
+              as String;
       await app.repo.dispatchRun(
         businessId: app.business!.id,
         sessionName: L.run(widget.zone.name),
         riderId: rider.id,
         orderIds: widget.group.orderIds,
         idempotencyKey: _key,
+        sessionId: _sessionId,
       );
       if (!mounted) return;
       Navigator.of(context).pop();
       showCefToast(context, L.dispatched2(rider.name));
       await widget.onDispatched();
     } catch (e) {
-      if (mounted) setState(() => _error = '$e');
+      // A plan that changed underneath (orders taken, driver no longer
+      // eligible or full) is reported as such, not as a raw error.
+      final stale = RegExp(
+        'no longer eligible|capacity|invalid rider',
+        caseSensitive: false,
+      ).hasMatch('$e');
+      if (mounted) setState(() => _error = stale ? L.planStale : '$e');
     } finally {
       if (mounted) setState(() => _sending = false);
     }
