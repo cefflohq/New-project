@@ -301,10 +301,12 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen>
       }
       await _reload();
       if (z.waitingForRun) {
+        // Packing is saved, but this Zone is not released: return the
+        // slider to the start instead of leaving it in the done position.
         if (mounted) showCefToast(context, L.hwWaitingForRun);
-      } else if (mounted) {
-        setState(() => _showReady = true);
+        return false;
       }
+      if (mounted) setState(() => _showReady = true);
       return true;
     } on RepositoryError catch (e) {
       if (mounted) showCefToast(context, _friendly(e), error: true);
