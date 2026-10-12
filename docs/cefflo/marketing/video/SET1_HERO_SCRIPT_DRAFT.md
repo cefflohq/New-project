@@ -121,3 +121,23 @@ Doorbell. Amir hands over the box, takes a photo for POD.
 Narrator: ElevenLabs "Zain – Smooth Malay Commercial Ads", model eleven_v4.
 Narrator lines (in order): Scene 3, 4, 7, 8, end card
 ("Urus delivery tanpa kelam-kabut. Download app Cefflo sekarang.").
+
+## v2 — FOMO cut, real app screens (2026-10-12)
+
+Replaces the scene-by-scene narration above for the 34 s hero commercial.
+Continuous VO (no gaps), Zain voice, `artifacts/video/cefflo_set1_vo_fomo.mp3`:
+
+> Enam puluh order. Rider tiga orang. Pukul sepuluh dah kena keluar.
+> Customer pula dah mula tanya, order saya bila sampai?
+> Kalau masih susun alamat dalam WhatsApp, setiap minit tu delivery makin lambat.
+> Dengan Cefflo, semua order hari ni masuk satu tempat. Import sekali gus.
+> Rancang ikut zone, pilih rider, terus cipta run.
+> Customer dapat link tracking sendiri, nampak bila order sampai, siap dengan bukti delivery.
+> Order esok lagi banyak. Sistem awak dah sedia?
+> Download app Cefflo sekarang.
+
+Visuals use real screenshots from Vendor Web demo mode (Hari Ini, Import Pesanan,
+Zon, Rancang Penghantaran, Run Aktif) and Customer Tracking `?demo=1`
+(Picked Up, On the Way, Delivered + POD). Demo banner and the "View live map"
+entry are hidden (live rider location is not LIVE per Product Truth §18).
+FOMO is future-load driven ("Order esok lagi banyak"), no invented numbers or deadlines.

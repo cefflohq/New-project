@@ -1,0 +1,156 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=block" rel="stylesheet">
+<style>
+:root{--navy:#12213E;--deep:#01265E;--y:#FEC819;--red:#EF4444}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:var(--navy);font-family:Inter,sans-serif;color:#fff}
+#stage{position:absolute;inset:0;overflow:hidden;background:radial-gradient(1400px 900px at 65% 35%,#0b3d86 0%,var(--deep) 45%,var(--navy) 100%)}
+.sc{position:absolute;inset:0;visibility:hidden}
+.kin{font-weight:900;letter-spacing:-3px;line-height:.95;text-align:center;position:absolute;left:0;right:0}
+.browser{position:absolute;left:210px;top:95px;width:1500px;height:890px;border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 50px 120px rgba(0,0,0,.55)}
+.browser .chrome{height:44px;background:#eef2f8;display:flex;align-items:center;gap:9px;padding:0 18px}
+.browser .chrome i{width:13px;height:13px;border-radius:50%;background:#cfd7e4}
+.browser .chrome span{margin-left:16px;background:#fff;color:#5b6b88;font-size:16px;border-radius:8px;padding:5px 16px;width:520px}
+.view{position:absolute;top:44px;left:0;right:0;bottom:0;overflow:hidden}
+.view img{position:absolute;left:0;top:0;width:100%;height:auto;transform-origin:0 0}
+.phone{position:absolute;width:420px;height:880px;border-radius:62px;background:#0b1220;padding:14px;box-shadow:0 50px 120px rgba(0,0,0,.55)}
+.phone .scr{width:100%;height:100%;border-radius:50px;overflow:hidden;position:relative;background:#fff}
+.phone img{position:absolute;left:0;top:0;width:100%;transform-origin:50% 0}
+.bubble{position:absolute;background:#fff;color:#12213E;border-radius:22px 22px 22px 6px;padding:16px 24px;font-size:32px;font-weight:600;box-shadow:0 20px 50px rgba(0,0,0,.35);white-space:nowrap}
+.bubble b{display:block;font-size:19px;color:#25a244;margin-bottom:3px}
+.ring{position:absolute;border:6px solid var(--y);border-radius:18px;box-shadow:0 0 0 9999px rgba(1,20,50,.0)}
+.cursor{position:absolute;width:44px;height:44px;margin:-6px 0 0 -6px}
+.sub{position:absolute;left:0;right:0;bottom:46px;text-align:center;font-size:42px;font-weight:800;text-shadow:0 4px 18px rgba(0,0,0,.6)}
+.sub span{background:rgba(1,16,40,.78);padding:12px 28px;border-radius:14px}
+.tag{position:absolute;background:var(--y);color:#12213E;font-weight:900;font-size:40px;padding:14px 30px;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+.badge{display:inline-flex;align-items:center;gap:12px;background:#000;border:2px solid #555;border-radius:16px;padding:14px 28px;font-size:26px;font-weight:700}
+</style></head><body><div id="stage">
+
+<!-- A hook numbers -->
+<div class="sc" id="A">
+  <div class="kin" id="a1" style="top:250px;font-size:300px">60 ORDER</div>
+  <div class="kin" id="a2" style="top:250px;font-size:300px;color:var(--y)">3 RIDER</div>
+  <div class="kin" id="a3" style="top:220px;font-size:260px">10:00<span style="font-size:110px;display:block;color:var(--red);letter-spacing:-1px;margin-top:30px">DAH KENA KELUAR</span></div>
+</div>
+<!-- B customers asking -->
+<div class="sc" id="B"><div id="bubbles"></div>
+  <div class="kin" id="b0" style="top:420px;font-size:120px;text-shadow:0 10px 40px rgba(0,0,0,.6)">"Order saya bila sampai?"</div></div>
+<!-- C WhatsApp chaos + clock -->
+<div class="sc" id="C">
+  <div class="phone" id="cph" style="left:240px;top:100px"><div class="scr" style="background:#e9e2d7">
+    <div style="background:#075E54;height:120px;padding:58px 24px 0;font-size:26px;font-weight:700">Order Hari Ni 📦</div>
+    <div id="wa" style="padding:16px"></div></div></div>
+  <div class="kin" id="c1" style="left:760px;right:80px;top:300px;font-size:150px">Setiap minit…</div>
+  <div class="kin" id="c2" style="left:760px;right:80px;top:480px;font-size:84px;color:var(--red)">delivery makin lambat.</div>
+  <div class="kin" id="clk" style="left:760px;right:80px;top:720px;font-size:90px;font-variant-numeric:tabular-nums;color:#9FB0CF">10:00</div>
+</div>
+<!-- D Cefflo reveal + today -->
+<div class="sc" id="D">
+  <img id="dlogo" src="logo.png" style="position:absolute;left:50%;top:50%;height:200px;transform:translate(-50%,-50%)">
+  <div class="browser" id="dbr"><div class="chrome"><i></i><i></i><i></i><span>app.cefflo.com/hari-ini</span></div><div class="view"><img id="dimg" src="c_today.png"></div></div>
+  <div class="tag" id="dtag" style="left:1290px;top:60px">Semua order. Satu tempat.</div>
+</div>
+<!-- E import -->
+<div class="sc" id="E">
+  <div class="browser"><div class="chrome"><i></i><i></i><i></i><span>app.cefflo.com/hari-ini</span></div><div class="view"><img id="eimg" src="c_import.png"></div></div>
+  <div class="tag" id="etag" style="left:150px;top:60px">Import CSV / Excel sekali gus</div>
+</div>
+<!-- F zones + plan + click -->
+<div class="sc" id="F">
+  <div class="browser"><div class="chrome"><i></i><i></i><i></i><span id="furl">app.cefflo.com/zon</span></div><div class="view"><img id="fimg1" src="c_zones.png"><img id="fimg2" src="c_plan.png"><img id="fimg3" src="c_runs.png"></div></div>
+  <svg class="cursor" id="cur" viewBox="0 0 24 24"><path d="M3 2l7 19 2.6-7.6L20 11z" fill="#fff" stroke="#12213E" stroke-width="1.6"/></svg>
+  <div class="tag" id="ftag" style="left:150px;top:60px">Zone → Rider → Run</div>
+</div>
+<!-- G customer tracking -->
+<div class="sc" id="G">
+  <div class="phone" id="g1" style="left:250px;top:110px"><div class="scr"><img src="c_ct_picked_up.png"></div></div>
+  <div class="phone" id="g2" style="left:750px;top:110px"><div class="scr"><img src="c_ct_on_the_way.png"></div></div>
+  <div class="phone" id="g3" style="left:1250px;top:110px"><div class="scr"><img src="c_ct_delivered.png"></div></div>
+  <div class="tag" id="gtag" style="left:50%;top:40px;transform:translateX(-50%)">Link tracking untuk setiap customer</div>
+</div>
+<!-- H FOMO -->
+<div class="sc" id="H">
+  <div class="kin" id="h1" style="top:230px;font-size:150px">Order esok<br><span style="color:var(--y)">lagi banyak.</span></div>
+  <div class="kin" id="h2" style="top:640px;font-size:120px">Sistem awak dah sedia?</div>
+</div>
+<!-- I end -->
+<div class="sc" id="I" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+  <img src="logo.png" id="ilogo" style="height:160px">
+  <div id="ibtn" style="margin-top:56px;background:var(--y);color:#12213E;font-weight:900;font-size:58px;padding:30px 70px;border-radius:999px">Download app Cefflo sekarang</div>
+  <div id="ibd" style="margin-top:40px;display:flex;gap:24px"><span class="badge"> App Store</span><span class="badge">▶ Google Play</span></div>
+</div>
+
+<div class="flash" id="flash"></div>
+<div class="sub" id="sub"><span id="subt"></span></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const eo=x=>1-Math.pow(1-cl(x),3);
+const eio=x=>{x=cl(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2};
+const back=x=>{x=cl(x);const c=1.8;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const pr=(t,a,d)=>cl((t-a)/d);
+const SC={A:[0,4.45],B:[4.45,7.7],C:[7.7,12.55],D:[12.55,16.2],E:[16.2,17.65],F:[17.65,21.0],G:[21.0,26.3],H:[26.3,29.35],I:[29.35,34]};
+const CUTS=[4.45,7.7,12.55,16.2,17.65,21.0,26.3,29.35];
+const SUBS=[[0,1.0,"Enam puluh order."],[1.4,2.5,"Rider tiga orang."],[2.86,4.2,"Pukul sepuluh dah kena keluar."],[4.65,7.48,"Customer pula dah mula tanya, order saya bila sampai?"],[7.86,12.17,"Kalau masih susun alamat dalam WhatsApp, setiap minit tu delivery makin lambat."],[12.69,15.96,"Dengan Cefflo, semua order hari ni masuk satu tempat."],[16.28,17.43,"Import sekali gus."],[17.74,20.78,"Rancang ikut zone, pilih rider, terus cipta run."],[21.06,26.07,"Customer dapat link tracking sendiri, nampak bila order sampai, siap dengan bukti delivery."],[26.41,29.13,"Order esok lagi banyak. Sistem awak dah sedia?"],[29.42,31.2,"Download app Cefflo sekarang."]];
+// bubbles
+const BB=[["Kak Ina","Order saya bila sampai?",120,140],["Farah","Dah keluar ke kak?",1200,110],["Zul","Rider kat mana ni?",250,760],["Mira","Lama lagi ke? 😅",1250,780],["Aina","Saya nak keluar kejap lagi",60,450],["Hakim","Order saya bila sampai?",1330,440],["Danial","Hello? 🙏",760,80],["Sara","Boleh check status?",780,880]];
+$("bubbles").innerHTML=BB.map((b,i)=>`<div class="bubble" id="bb${i}" style="left:${b[2]}px;top:${b[3]}px"><b>${b[0]}</b>${b[1]}</div>`).join("");
+const WA=["Kak, 2 kotak. Seksyen 13 Shah Alam","No 8 Jln Melati, Kajang","Alamat sama mcm hari tu ye","Klang, depan masjid","Subang Jaya SS15, rumah hijau","Boleh hantar sebelum 12?","Tukar alamat ye kak 🙏","Bangsar, condo blok B lvl 9"];
+$("wa").innerHTML=WA.map((w,i)=>`<div id="w${i}" style="background:#fff;color:#12213E;border-radius:12px;padding:12px 16px;margin-bottom:10px;font-size:21px;width:fit-content;max-width:92%;box-shadow:0 2px 4px rgba(0,0,0,.1)">${w}</div>`).join("");
+function vis(id,t){const [a,b]=SC[id];return t>=a&&t<b}
+function render(t){
+  for(const k in SC)$(k).style.visibility=vis(k,t)?'visible':'hidden';
+  // white flash on every cut
+  let f=0;for(const c of CUTS){if(t>=c&&t<c+.18)f=.55*(1-(t-c)/.18)}$("flash").style.opacity=f;
+  // shake on hook
+  const sh=t<4.45?Math.sin(t*70)*6*Math.max(0,1-((t%1.43)/.25)):0;$("stage").style.transform=`translate(${sh}px,0)`;
+  // A
+  const z=(id,a,b)=>{const e=$(id);const on=t>=a&&t<b;e.style.opacity=on?1:0;const p=back(pr(t,a,.28));e.style.transform=`scale(${1.6-.6*p})`};
+  z("a1",0,1.4);z("a2",1.4,2.86);z("a3",2.86,4.45);
+  // B
+  BB.forEach((b,i)=>{const p=back(pr(t,4.5+i*.24,.3));const e=$("bb"+i);e.style.opacity=cl(pr(t,4.5+i*.24,.1))*(1-.7*pr(t,6.35,.25));e.style.transform=`scale(${.5+.5*p}) rotate(${(i%2?-2:2)}deg)`});
+  const b0=back(pr(t,6.35,.35));$("b0").style.opacity=pr(t,6.35,.15);$("b0").style.transform=`scale(${1.4-.4*b0})`;
+  // C
+  const cp=eo(pr(t,7.7,.4));$("cph").style.transform=`translateY(${(1-cp)*200}px) rotate(${-3+3*cp}deg)`;
+  WA.forEach((w,i)=>{const e=$("w"+i);const p=eo(pr(t,7.9+i*.32,.25));e.style.opacity=p;e.style.transform=`translateY(${(1-p)*20}px)`});
+  const c1=eo(pr(t,8.0,.4));$("c1").style.opacity=c1;$("c1").style.transform=`translateX(${(1-c1)*80}px)`;
+  const c2=back(pr(t,10.1,.35));$("c2").style.opacity=pr(t,10.1,.1);$("c2").style.transform=`scale(${1.3-.3*c2})`;
+  const mins=Math.floor(eio(pr(t,8.2,4.2))*47);$("clk").textContent=`10:${String(mins).padStart(2,'0')}`;$("clk").style.color=mins>20?'#EF4444':'#9FB0CF';$("clk").style.opacity=pr(t,8.2,.3);
+  // D
+  const lg=t<13.6;$("dlogo").style.opacity=lg?eo(pr(t,12.6,.2)):0;$("dlogo").style.transform=`translate(-50%,-50%) scale(${.7+.3*back(pr(t,12.6,.4))})`;
+  const db=eo(pr(t,13.6,.5));$("dbr").style.opacity=t>=13.6?1:0;$("dbr").style.transform=`translateY(${(1-db)*300}px) scale(${.9+.1*db})`;
+  const dz=eio(pr(t,14.2,2.0));$("dimg").style.transform=`scale(${1+.35*dz}) translate(${-60*dz}px,${-40*dz}px)`;
+  const dt=back(pr(t,14.0,.35));$("dtag").style.opacity=pr(t,14,.1);$("dtag").style.transform=`scale(${dt})`;
+  // E
+  const ez=eio(pr(t,16.2,1.4));$("eimg").style.transform=`translate(${-540*ez}px,${-330*ez}px) scale(${1+.75*ez})`;
+  const et=back(pr(t,16.35,.3));$("etag").style.opacity=pr(t,16.35,.1);$("etag").style.transform=`scale(${et})`;
+  // F: zones 17.65-18.95, plan 18.95-20.55, runs 20.55-21
+  const f1=t<18.95,f2=t>=18.95&&t<20.55,f3=t>=20.55;
+  $("fimg1").style.opacity=f1?1:0;$("fimg2").style.opacity=f2?1:0;$("fimg3").style.opacity=f3?1:0;
+  $("furl").textContent=f1?"app.cefflo.com/zon":f2?"app.cefflo.com/hari-ini":"app.cefflo.com/run";
+  const zz=eio(pr(t,17.65,1.3));$("fimg1").style.transform=`scale(${1.15+.15*zz}) translate(${-20*zz}px,0)`;
+  const pz=eio(pr(t,18.95,.8));$("fimg2").style.transform=`translate(${-420*pz}px,${-260*pz}px) scale(${1+.55*pz})`;
+  $("fimg3").style.transform=`scale(${1.1+.1*eo(pr(t,20.55,.45))})`;
+  // cursor moves to "Cipta run" (approx 74%,74% of view after zoom), clicks at 20.2
+  const cv=f2;const cm=eio(pr(t,19.45,.7));const cx=210+1500*(.30+(.735-.30)*cm),cy=139+846*(.30+(.735-.30)*cm);
+  const click=t>=20.15&&t<20.35;$("cur").style.opacity=cv?1:0;$("cur").style.left=cx+"px";$("cur").style.top=cy+"px";$("cur").style.transform=`scale(${click?.8:1})`;
+  const ft=back(pr(t,17.8,.3));$("ftag").style.opacity=pr(t,17.8,.1);$("ftag").style.transform=`scale(${ft})`;
+  // G three phones in sequence
+  [["g1",21.06],["g2",23.08],["g3",24.65]].forEach(([id,a],i)=>{const p=eo(pr(t,a,.45));const e=$(id);e.style.opacity=pr(t,a,.15);const focus=(i==0&&t<23.08)||(i==1&&t>=23.08&&t<24.65)||(i==2&&t>=24.65);e.style.transform=`translateY(${(1-p)*260-30}px) scale(${focus?.92:.82})`;e.style.filter=focus?'none':'brightness(.6)'});
+  const gt=back(pr(t,21.2,.35));$("gtag").style.opacity=pr(t,21.2,.1);$("gtag").style.transform=`translateX(-50%) scale(${gt})`;
+  // H
+  const h1=back(pr(t,26.4,.35));$("h1").style.opacity=pr(t,26.4,.1);$("h1").style.transform=`scale(${1.3-.3*h1})`;
+  const h2=back(pr(t,28.1,.35));$("h2").style.opacity=pr(t,28.1,.1);$("h2").style.transform=`scale(${1.3-.3*h2})`;
+  // I
+  const il=back(pr(t,29.4,.5));$("ilogo").style.transform=`scale(${.6+.4*il})`;$("ilogo").style.opacity=pr(t,29.4,.2);
+  const ib=back(pr(t,29.7,.45));$("ibtn").style.opacity=pr(t,29.7,.15);$("ibtn").style.transform=`scale(${(.6+.4*ib)*(1+.04*Math.sin(Math.max(0,t-30.3)*6))})`;
+  const bd=eo(pr(t,30.3,.4));$("ibd").style.opacity=bd;$("ibd").style.transform=`translateY(${(1-bd)*30}px)`;
+  // subs
+  let s=null;for(const x of SUBS)if(t>=x[0]-.05&&t<=x[1]+.25)s=x;
+  $("sub").style.opacity=s&&t<29.35?1:0;if(s)$("subt").textContent=s[2];
+}
+window.render=render;render(0);
+</script></body></html>
