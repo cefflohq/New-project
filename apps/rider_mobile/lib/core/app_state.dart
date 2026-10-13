@@ -70,6 +70,16 @@ class AppState extends ChangeNotifier {
   String registrationPlate = '';
   RiderRelationship? active;
   List<RiderOrder> orders = const [];
+
+  /// Open orders of the Driver's other active vendors, by relationship id
+  /// (Home lists every vendor's work for today).
+  Map<String, List<RiderOrder>> otherOrders = const {};
+
+  /// Every vendor's orders, for Today's Overview.
+  Iterable<RiderOrder> get allOrders => [
+    ...orders,
+    for (final list in otherOrders.values) ...list,
+  ];
   Map<String, String> sessionNames = const {};
 
   bool loadingSession = true;
@@ -669,6 +679,16 @@ class AppState extends ChangeNotifier {
     }
     orders = await repo.myOrders(rider.id);
     _syncLive();
+    final others = <String, List<RiderOrder>>{};
+    for (final rel in relationships) {
+      if (!rel.isActive || rel.id == rider.id) continue;
+      try {
+        others[rel.id] = await repo.myOrders(rel.id);
+      } on RepositoryError {
+        // One vendor failing must not hide the others.
+      }
+    }
+    otherOrders = others;
     try {
       _schedule = await repo.myJobSchedule();
     } on RepositoryError {
@@ -694,19 +714,79 @@ class AppState extends ChangeNotifier {
   /// time, the pay per drop and the area for Run Details.
   Map<String, dynamic>? get _todayContract {
     final bid = active?.businessId;
-    if (bid == null) return null;
-    final today = DateTime.now().weekday; // 1 = Mon .. 7 = Sun, as `days`
+    return bid == null ? null : _contractFor(bid);
+  }
+
+  /// Today's approved contract with [businessId], if any.
+  Map<String, dynamic>? _contractFor(String businessId) {
+    final today = DateTime.now().weekday;
     for (final r in _schedule) {
       final days = [
         for (final d in (r['days'] as List? ?? const [])) (d as num).toInt(),
       ];
-      if (r['business_id']?.toString() == bid &&
+      if (r['business_id']?.toString() == businessId &&
           r['status'] == 'approved' &&
           days.contains(today)) {
         return r;
       }
     }
     return null;
+  }
+
+  /// Home's "Today's jobs": one entry per active vendor with work today,
+  /// ongoing first, then coming soon by pickup time. A vendor whose run is
+  /// finished (no open orders left) is not listed; a vendor with a contract
+  /// for today but no orders yet is coming soon.
+  List<DriverJob> get todayJobs {
+    if (repo.isDemo) return DemoData.todayJobs;
+    final jobs = <DriverJob>[];
+    for (final rel in relationships) {
+      if (!rel.isActive) continue;
+      final list = rel.id == active?.id
+          ? orders
+          : (otherOrders[rel.id] ?? const []);
+      final open = list.where((o) => !_terminal(o.status)).toList();
+      final contract = _contractFor(rel.businessId);
+      final hadOrders = list.isNotEmpty;
+      if (open.isEmpty && (hadOrders || contract == null)) continue;
+      final start = contract?['shift_start']?.toString().split(':');
+      jobs.add(
+        DriverJob(
+          relationshipId: rel.id,
+          vendorName: rel.businessName ?? L.business,
+          orderCount: open.length,
+          ongoing: open.any(
+            (o) =>
+                o.status == DeliveryStatus.pickedUp ||
+                o.status == DeliveryStatus.outForDelivery ||
+                o.status == DeliveryStatus.arrived,
+          ),
+          pickupTimeLabel: _clockOf(contract?['shift_start']),
+          pickupMinutes: start == null || start.length < 2
+              ? null
+              : (int.tryParse(start[0]) ?? 0) * 60 +
+                    (int.tryParse(start[1]) ?? 0),
+        ),
+      );
+    }
+    jobs.sort((a, b) {
+      if (a.ongoing != b.ongoing) return a.ongoing ? -1 : 1;
+      return (a.pickupMinutes ?? 1 << 20).compareTo(b.pickupMinutes ?? 1 << 20);
+    });
+    return jobs;
+  }
+
+  /// Opens a vendor's job from Home: makes it the active vendor, then shows
+  /// its Run Details.
+  Future<void> openJob(DriverJob job) async {
+    if (!repo.isDemo && job.relationshipId != active?.id) {
+      final rel = relationships.firstWhere((r) => r.id == job.relationshipId);
+      active = rel;
+      await _loadOrders();
+      _project();
+      notifyListeners();
+    }
+    go(DRoute.runDetails, entityId: currentRun.id);
   }
 
   static String? _clockOf(Object? t) {
@@ -726,7 +806,7 @@ class AppState extends ChangeNotifier {
       repo.isDemo ? DemoData.todayDateLabel : _dateLabel(DateTime.now());
   int get todayAssigned => repo.isDemo
       ? DemoData.todayAssigned
-      : orders
+      : allOrders
             .where(
               (o) =>
                   o.status == DeliveryStatus.created ||
@@ -735,7 +815,7 @@ class AppState extends ChangeNotifier {
             .length;
   int get todayOngoing => repo.isDemo
       ? DemoData.todayOngoing
-      : orders
+      : allOrders
             .where(
               (o) =>
                   o.status == DeliveryStatus.pickedUp ||
@@ -745,10 +825,10 @@ class AppState extends ChangeNotifier {
             .length;
   int get todayIssues => repo.isDemo
       ? DemoData.todayIssues
-      : orders.where((o) => o.status == DeliveryStatus.issue).length;
+      : allOrders.where((o) => o.status == DeliveryStatus.issue).length;
   int get todayCompleted => repo.isDemo
       ? DemoData.todayCompleted
-      : orders.where((o) => o.status == DeliveryStatus.delivered).length;
+      : allOrders.where((o) => o.status == DeliveryStatus.delivered).length;
 
   static bool _terminal(DeliveryStatus s) =>
       s == DeliveryStatus.delivered ||

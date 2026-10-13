@@ -2132,4 +2132,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get jobsChangeAreaHint => 'Tap Change to try a wider area.';
+
+  @override
+  String get todaysJobs => 'Today\'s jobs';
+
+  @override
+  String vendorsCount(int count) {
+    return '$count vendors';
+  }
+
+  @override
+  String get comingSoon => 'Coming soon';
+
+  @override
+  String get noJobsToday => 'No jobs today';
+
+  @override
+  String get noJobsTodayBody => 'Work from your stores appears here.';
 }

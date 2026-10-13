@@ -256,6 +256,34 @@ class DemoData {
     ),
   ];
 
+  /// Home's Today's jobs in the prototype: one run under way, one later.
+  static const todayJobs = <DriverJob>[
+    DriverJob(
+      relationshipId: 'rel-bakes',
+      vendorName: 'Bakes & Co.',
+      orderCount: 12,
+      ongoing: true,
+      pickupTimeLabel: '10:00 AM',
+      pickupMinutes: 600,
+    ),
+    DriverJob(
+      relationshipId: 'rel-donuts',
+      vendorName: 'Donuts Jo',
+      orderCount: 5,
+      ongoing: false,
+      pickupTimeLabel: '2:00 PM',
+      pickupMinutes: 840,
+    ),
+    DriverJob(
+      relationshipId: 'rel-kopi',
+      vendorName: 'Kopi Kita',
+      orderCount: 9,
+      ongoing: false,
+      pickupTimeLabel: '7:00 PM',
+      pickupMinutes: 1140,
+    ),
+  ];
+
   static const currentRun = DriverRun(
     id: 'run-cf1003',
     reference: '#CF1003',

@@ -633,5 +633,10 @@
   "runNoOrdersYet": "Belum ada order",
   "runStoreWillAdd": "Kedai akan tambah order ke run ini",
   "runStartedAt": "Mula {time}",
-  "jobsChangeAreaHint": "Tekan Tukar untuk cuba kawasan lebih luas."
+  "jobsChangeAreaHint": "Tekan Tukar untuk cuba kawasan lebih luas.",
+  "todaysJobs": "Kerja hari ini",
+  "vendorsCount": "{count} vendor",
+  "comingSoon": "Akan datang",
+  "noJobsToday": "Tiada kerja hari ini",
+  "noJobsTodayBody": "Kerja dari kedai anda akan muncul di sini."
 }

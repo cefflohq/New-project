@@ -249,7 +249,6 @@ class TodayScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    final run = app.currentRun;
     final c = context.c;
     return CeffloNavySheetScaffold(
       onRefresh: app.refreshOrders,
@@ -287,12 +286,6 @@ class TodayScreen extends StatelessWidget {
                   color: CefColors.onNavyMuted,
                 ),
               ),
-              const SizedBox(height: Gap.lg),
-              if (app.business case final business?)
-                NavyBusinessRow(
-                  business: business,
-                  onTap: () => app.go(DRoute.profile),
-                ),
             ],
           ),
         ),
@@ -337,89 +330,148 @@ class TodayScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: Gap.section),
-          CeffloCard(
-            padding: const EdgeInsets.all(Gap.cardPadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(L.currentRun, style: context.t.titleMedium),
-                const SizedBox(height: Gap.md),
-                if (!app.hasRun)
-                  Text(
-                    L.noRunAssignedYetWhenBusiness,
-                    style: context.t.bodyMedium,
-                  )
-                else ...[
-                  InkWell(
-                    borderRadius: BorderRadius.circular(Sizes.innerRadius),
-                    onTap: () => app.go(DRoute.runDetails, entityId: run.id),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      run.reference,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: context.t.displaySmall?.copyWith(
-                                        fontSize: 20,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: Gap.sm),
-                                  CeffloStatusChip(
-                                    run.statusLabel,
-                                    tone: ChipTone.info,
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: Gap.sm),
-                              MetaRow(
-                                icon: LucideIcons.mapPin,
-                                text: run.zone,
-                                dense: true,
-                              ),
-                              MetaRow(
-                                icon: LucideIcons.package,
-                                text: L.orders(
-                                  run.orderCount,
-                                  run.distanceText,
-                                ),
-                                dense: true,
-                              ),
-                              if (run.startedAtLabel != null)
-                                MetaRow(
-                                  icon: LucideIcons.clock,
-                                  text: L.started2(run.startedAtLabel!),
-                                  dense: true,
-                                ),
-                            ],
-                          ),
+          // Every vendor's work for today in one list (Founder 2026-10-13);
+          // a finished run drops off.
+          Builder(
+            builder: (context) {
+              final jobs = app.todayJobs;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(L.todaysJobs, style: context.t.titleMedium),
+                      ),
+                      if (jobs.length > 1)
+                        Text(
+                          L.vendorsCount(jobs.length),
+                          style: context.t.bodySmall,
                         ),
-                        Icon(
-                          LucideIcons.chevronRight,
-                          size: 22,
-                          color: c.textSecondary,
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
-                  const SizedBox(height: Gap.lg),
-                  CeffloPrimaryButton(
-                    L.viewRunDetails,
-                    height: 52,
-                    onTap: () => app.go(DRoute.runDetails, entityId: run.id),
-                  ),
+                  const SizedBox(height: Gap.md),
+                  if (jobs.isEmpty)
+                    CeffloNote(
+                      icon: LucideIcons.calendarCheck,
+                      title: L.noJobsToday,
+                      body: L.noJobsTodayBody,
+                    )
+                  else
+                    for (final job in jobs) ...[
+                      _JobCard(job: job, onTap: () => app.openJob(job)),
+                      const SizedBox(height: Gap.cardGap),
+                    ],
                 ],
-              ],
-            ),
+              );
+            },
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// One vendor's job on Home: round avatar, name, pickup time, open orders,
+/// Ongoing / Coming soon. Every card has the same height.
+class _JobCard extends StatelessWidget {
+  const _JobCard({required this.job, required this.onTap});
+  final DriverJob job;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final meta = context.t.bodySmall?.copyWith(color: c.textSecondary);
+    Widget line(IconData icon, String text) => Row(
+      children: [
+        Icon(icon, size: 16, color: c.textSecondary),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: meta,
+          ),
+        ),
+      ],
+    );
+    return CeffloCard(
+      onTap: onTap,
+      shadow: false,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      child: SizedBox(
+        height: 116,
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                color: CefColors.tintInfo,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                job.initials,
+                style: const TextStyle(
+                  fontFamily: 'Manrope',
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: CefColors.navy,
+                ),
+              ),
+            ),
+            const SizedBox(width: Gap.md),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    job.vendorName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.t.titleMedium?.copyWith(fontSize: 17),
+                  ),
+                  const SizedBox(height: 6),
+                  if (job.pickupTimeLabel != null)
+                    line(
+                      LucideIcons.clock,
+                      L.jobPickupAt(job.pickupTimeLabel!),
+                    ),
+                  line(
+                    LucideIcons.package,
+                    job.orderCount == 0
+                        ? L.runNoOrdersYet
+                        : L.orders2(job.orderCount),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: Gap.sm),
+            // Ongoing: Cefflo yellow with dark text; coming soon: light grey
+            // (Founder 2026-10-13).
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: job.ongoing ? CefColors.accent : CefColors.tintNeutral,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                job.ongoing ? L.ongoing : L.comingSoon,
+                style: TextStyle(
+                  fontFamily: 'Manrope',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: job.ongoing ? CefColors.onAccent : c.textSecondary,
+                ),
+              ),
+            ),
+            Icon(LucideIcons.chevronRight, size: 20, color: c.textSecondary),
+          ],
+        ),
       ),
     );
   }

@@ -2146,4 +2146,21 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get jobsChangeAreaHint => 'Tekan Tukar untuk cuba kawasan lebih luas.';
+
+  @override
+  String get todaysJobs => 'Kerja hari ini';
+
+  @override
+  String vendorsCount(int count) {
+    return '$count vendor';
+  }
+
+  @override
+  String get comingSoon => 'Akan datang';
+
+  @override
+  String get noJobsToday => 'Tiada kerja hari ini';
+
+  @override
+  String get noJobsTodayBody => 'Kerja dari kedai anda akan muncul di sini.';
 }

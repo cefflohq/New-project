@@ -443,3 +443,44 @@ String vehicleTypeLabel(String value) => switch (value.toLowerCase()) {
   'van' => L.van,
   _ => value,
 };
+
+/// One vendor's work for today on Home (Founder 2026-10-13): name, pickup
+/// time from the hiring contract, open orders, and whether the run is under
+/// way. Vendors whose run is finished are not listed.
+class DriverJob {
+  const DriverJob({
+    required this.relationshipId,
+    required this.vendorName,
+    required this.orderCount,
+    required this.ongoing,
+    this.pickupTimeLabel,
+    this.pickupMinutes,
+  });
+
+  final String relationshipId;
+  final String vendorName;
+  final int orderCount;
+
+  /// The Driver is on this run now; otherwise it is coming soon.
+  final bool ongoing;
+  final String? pickupTimeLabel;
+
+  /// Minutes after midnight, for ordering coming-soon jobs.
+  final int? pickupMinutes;
+
+  /// "CF" for cefflo.com: the round avatar while vendors carry no logo.
+  String get initials {
+    final words = vendorName
+        .replaceAll(RegExp(r'[^A-Za-z0-9 ]'), ' ')
+        .split(' ')
+        .where((w) => w.isNotEmpty)
+        .toList();
+    if (words.isEmpty) return '?';
+    if (words.length == 1) {
+      return words.first
+          .substring(0, words.first.length < 2 ? 1 : 2)
+          .toUpperCase();
+    }
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+}

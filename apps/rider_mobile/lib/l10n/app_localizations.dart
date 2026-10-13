@@ -3901,6 +3901,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap Change to try a wider area.'**
   String get jobsChangeAreaHint;
+
+  /// No description provided for @todaysJobs.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s jobs'**
+  String get todaysJobs;
+
+  /// No description provided for @vendorsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} vendors'**
+  String vendorsCount(int count);
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get comingSoon;
+
+  /// No description provided for @noJobsToday.
+  ///
+  /// In en, this message translates to:
+  /// **'No jobs today'**
+  String get noJobsToday;
+
+  /// No description provided for @noJobsTodayBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Work from your stores appears here.'**
+  String get noJobsTodayBody;
 }
 
 class _AppLocalizationsDelegate
