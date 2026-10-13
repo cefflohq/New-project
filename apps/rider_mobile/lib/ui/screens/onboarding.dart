@@ -1020,8 +1020,7 @@ class ReadyToGoScreen extends StatelessWidget {
               icon: LucideIcons.map,
               title: L.viewAvailableJobs,
               subtitle: L.seeNearbyDeliveryRequests,
-              onTap: () =>
-                  app.go(DRoute.runDetails, entityId: app.currentRun.id),
+              onTap: () => app.go(app.runRoute, entityId: app.currentRun.id),
             ),
           ),
           const SizedBox(height: Gap.cardGap),

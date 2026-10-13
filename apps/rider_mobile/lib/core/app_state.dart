@@ -244,11 +244,15 @@ class AppState extends ChangeNotifier {
     DriverStage.active => DRoute.today,
   };
 
+  /// Where "the run" opens (Founder 2026-10-13): Run Details only before
+  /// the run (Pickup Checklist); once ongoing, straight to the Stop List.
+  DRoute get runRoute =>
+      currentRun.ongoing ? DRoute.stopList : DRoute.runDetails;
+
   void switchTab(NavTab tab) {
     final root = switch (tab) {
       NavTab.home => homeRoute,
-      NavTab.runs =>
-        stage == DriverStage.active ? DRoute.runDetails : homeRoute,
+      NavTab.runs => stage == DriverStage.active ? runRoute : homeRoute,
       NavTab.jobs => DRoute.findJobs,
       NavTab.history => DRoute.deliveryHistory,
       NavTab.profile => DRoute.profile,
@@ -258,7 +262,9 @@ class AppState extends ChangeNotifier {
       ..add(
         RiderLocation(
           root,
-          entityId: root == DRoute.runDetails ? currentRun.id : null,
+          entityId: root == DRoute.runDetails || root == DRoute.stopList
+              ? currentRun.id
+              : null,
         ),
       );
     notifyListeners();
@@ -576,7 +582,10 @@ class AppState extends ChangeNotifier {
   void openNotification(DriverNotification n) {
     if (n.unread) markNotificationRead(n).catchError((_) {});
     if (n.targetScreen == 'runs') {
-      go(hasRun ? DRoute.runDetails : homeRoute);
+      go(
+        hasRun ? runRoute : homeRoute,
+        entityId: hasRun ? currentRun.id : null,
+      );
     } else {
       notifyListeners();
     }
@@ -784,6 +793,7 @@ class AppState extends ChangeNotifier {
       if (job.ongoing) {
         currentRun = DemoData.currentRun;
         runPhase = null;
+        routeConfirmed = true;
       } else {
         currentRun = DemoData.pickupRunFor(job);
         runPhase = RunPhase.pickup;
@@ -797,7 +807,7 @@ class AppState extends ChangeNotifier {
       _project();
       notifyListeners();
     }
-    go(DRoute.runDetails, entityId: currentRun.id);
+    go(runRoute, entityId: currentRun.id);
   }
 
   static String? _clockOf(Object? t) {
