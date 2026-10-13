@@ -1056,5 +1056,18 @@
         "type": "int"
       }
     }
-  }
+  },
+  "pickupReport": "Report",
+  "pickupReported": "Reported · not picked up",
+  "pickupProblemTitle": "Problem with {reference}?",
+  "@pickupProblemTitle": {
+    "placeholders": {
+      "reference": {
+        "type": "String"
+      }
+    }
+  },
+  "pickupNotReady": "Not ready at the store",
+  "pickupItemMissing": "Item missing",
+  "pickupNoteHint": "Add a note (optional)"
 }

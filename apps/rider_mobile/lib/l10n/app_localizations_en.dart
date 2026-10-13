@@ -2165,4 +2165,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String itemsCount(int count) {
     return '$count items';
   }
+
+  @override
+  String get pickupReport => 'Report';
+
+  @override
+  String get pickupReported => 'Reported · not picked up';
+
+  @override
+  String pickupProblemTitle(String reference) {
+    return 'Problem with $reference?';
+  }
+
+  @override
+  String get pickupNotReady => 'Not ready at the store';
+
+  @override
+  String get pickupItemMissing => 'Item missing';
+
+  @override
+  String get pickupNoteHint => 'Add a note (optional)';
 }

@@ -2179,4 +2179,24 @@ class AppLocalizationsMs extends AppLocalizations {
   String itemsCount(int count) {
     return '$count item';
   }
+
+  @override
+  String get pickupReport => 'Lapor';
+
+  @override
+  String get pickupReported => 'Dilaporkan · tidak diambil';
+
+  @override
+  String pickupProblemTitle(String reference) {
+    return 'Masalah dengan $reference?';
+  }
+
+  @override
+  String get pickupNotReady => 'Belum siap di kedai';
+
+  @override
+  String get pickupItemMissing => 'Item tiada';
+
+  @override
+  String get pickupNoteHint => 'Tambah nota (pilihan)';
 }

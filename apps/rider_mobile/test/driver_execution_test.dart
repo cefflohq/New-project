@@ -223,6 +223,26 @@ void main() {
     },
   );
 
+  test('an order reported at pickup no longer blocks Confirm Pickup', () async {
+    final (app, repo) = await _hydrate([
+      _order('1', DeliveryStatus.readyForPickup),
+      _order('2', DeliveryStatus.readyForPickup),
+    ]);
+    expect(app.runPhase, RunPhase.pickup);
+    app.togglePickupTick('1');
+    expect(app.allPickupTicked, isFalse);
+
+    await app.reportIssue('2', IssueReason.itemsNotAvailable, 'Not ready');
+    expect(repo.calls, ['rider_report_delivery_issue 2 vendor_not_ready']);
+    repo.orders = [
+      _order('1', DeliveryStatus.readyForPickup),
+      _order('2', DeliveryStatus.issue),
+    ];
+    await app.refreshOrders();
+    expect(app.pickupStops.map((s) => s.id), ['1']);
+    expect(app.allPickupTicked, isTrue);
+  });
+
   test('arrival and issue reporting use canonical reasons only', () async {
     final (app, repo) = await _hydrate([
       _order('1', DeliveryStatus.pickedUp, seq: 1, locked: true),

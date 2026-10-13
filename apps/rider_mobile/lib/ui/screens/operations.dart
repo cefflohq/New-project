@@ -754,7 +754,8 @@ class _PickupChecklist extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     final c = context.c;
-    final done = run.stops.where((s) => app.pickupTicks.contains(s.id)).length;
+    final open = app.pickupStops.toList();
+    final done = open.where((s) => app.pickupTicks.contains(s.id)).length;
     return CeffloCard(
       shadow: false,
       child: Column(
@@ -772,60 +773,150 @@ class _PickupChecklist extends StatelessWidget {
                 ),
               ),
               Text(
-                L.pickupTicked(done, run.orderCount),
+                L.pickupTicked(done, open.length),
                 style: context.t.labelSmall?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: done == run.orderCount ? c.success : c.textSecondary,
+                  color: done == open.length ? c.success : c.textSecondary,
                 ),
               ),
             ],
           ),
           const SizedBox(height: Gap.xs),
           for (final s in run.stops)
-            InkWell(
+            _PickupRow(
+              stop: s,
+              ticked: app.pickupTicks.contains(s.id),
+              reported: s.status == StopStatus.issue,
               onTap: () => app.togglePickupTick(s.id),
-              borderRadius: BorderRadius.circular(Sizes.innerRadius),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Row(
-                  children: [
-                    Icon(
-                      app.pickupTicks.contains(s.id)
-                          ? LucideIcons.circleCheck
-                          : LucideIcons.circle,
-                      size: 24,
-                      color: app.pickupTicks.contains(s.id)
-                          ? c.success
-                          : c.textSecondary,
-                    ),
-                    const SizedBox(width: Gap.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(s.reference, style: context.t.titleSmall),
-                          Text(
-                            [
-                              s.customerName,
-                              if (s.items.isNotEmpty)
-                                L.itemsCount(
-                                  s.items.fold(0, (a, i) => a + i.quantity),
-                                ),
-                            ].join(' · '),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: context.t.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              onReport: () => _reportAtPickup(context, s),
             ),
         ],
       ),
     );
+  }
+}
+
+class _PickupRow extends StatelessWidget {
+  const _PickupRow({
+    required this.stop,
+    required this.ticked,
+    required this.reported,
+    required this.onTap,
+    required this.onReport,
+  });
+  final DriverStop stop;
+  final bool ticked, reported;
+  final VoidCallback onTap, onReport;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final items = stop.items.fold(0, (a, i) => a + i.quantity);
+    return InkWell(
+      onTap: reported ? null : onTap,
+      borderRadius: BorderRadius.circular(Sizes.innerRadius),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          children: [
+            Icon(
+              reported
+                  ? LucideIcons.circleAlert
+                  : (ticked ? LucideIcons.circleCheck : LucideIcons.circle),
+              size: 24,
+              color: reported
+                  ? c.attention
+                  : (ticked ? c.success : c.textSecondary),
+            ),
+            const SizedBox(width: Gap.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(stop.reference, style: context.t.titleSmall),
+                  Text(
+                    reported
+                        ? L.pickupReported
+                        : [
+                            stop.customerName,
+                            if (items > 0) L.itemsCount(items),
+                          ].join(' · '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.t.bodySmall?.copyWith(
+                      color: reported ? c.attention : null,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (!reported)
+              TextButton(onPressed: onReport, child: Text(L.pickupReport)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Report a problem with one order at pickup (R-11): not ready at the store
+/// or an item missing, both recorded as vendor_not_ready with the note. The
+/// order leaves the run's pickup; the rest can still be picked up.
+Future<void> _reportAtPickup(BuildContext context, DriverStop stop) async {
+  final app = AppScope.read(context);
+  final note = TextEditingController();
+  var notReady = true;
+  final sent = await showCeffloSheet<bool>(
+    context,
+    child: StatefulBuilder(
+      builder: (sheet, set) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          Gap.gutter,
+          Gap.sm,
+          Gap.gutter,
+          MediaQuery.viewInsetsOf(sheet).bottom + Gap.lg,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SheetGrabber(),
+            Text(
+              L.pickupProblemTitle(stop.reference),
+              style: sheet.t.titleMedium,
+            ),
+            const SizedBox(height: Gap.md),
+            CeffloSegmentedTabs(
+              labels: [L.pickupNotReady, L.pickupItemMissing],
+              index: notReady ? 0 : 1,
+              onChanged: (i) => set(() => notReady = i == 0),
+            ),
+            const SizedBox(height: Gap.md),
+            CeffloTextField(
+              label: L.pickupNoteHint,
+              controller: note,
+              maxLines: 2,
+            ),
+            const SizedBox(height: Gap.lg),
+            CeffloPrimaryButton(
+              L.submit,
+              onTap: () => Navigator.of(sheet).pop(true),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+  if (sent != true) return;
+  final text = [
+    notReady ? L.pickupNotReady : L.pickupItemMissing,
+    if (note.text.trim().isNotEmpty) note.text.trim(),
+  ].join(': ');
+  try {
+    await app.reportIssue(stop.id, IssueReason.itemsNotAvailable, text);
+    app.pickupTicks.remove(stop.id);
+  } catch (e) {
+    if (context.mounted) showCefToast(context, '$e', error: true);
   }
 }
 

@@ -3955,6 +3955,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} items'**
   String itemsCount(int count);
+
+  /// No description provided for @pickupReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get pickupReport;
+
+  /// No description provided for @pickupReported.
+  ///
+  /// In en, this message translates to:
+  /// **'Reported · not picked up'**
+  String get pickupReported;
+
+  /// No description provided for @pickupProblemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Problem with {reference}?'**
+  String pickupProblemTitle(String reference);
+
+  /// No description provided for @pickupNotReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Not ready at the store'**
+  String get pickupNotReady;
+
+  /// No description provided for @pickupItemMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Item missing'**
+  String get pickupItemMissing;
+
+  /// No description provided for @pickupNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a note (optional)'**
+  String get pickupNoteHint;
 }
 
 class _AppLocalizationsDelegate

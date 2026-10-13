@@ -642,5 +642,11 @@
   "slideConfirmPickup": "Leret untuk Sahkan Pengambilan",
   "pickupChecklist": "Semakan pengambilan",
   "pickupTicked": "{done} / {total} disemak",
-  "itemsCount": "{count} item"
+  "itemsCount": "{count} item",
+  "pickupReport": "Lapor",
+  "pickupReported": "Dilaporkan · tidak diambil",
+  "pickupProblemTitle": "Masalah dengan {reference}?",
+  "pickupNotReady": "Belum siap di kedai",
+  "pickupItemMissing": "Item tiada",
+  "pickupNoteHint": "Tambah nota (pilihan)"
 }

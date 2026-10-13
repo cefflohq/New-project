@@ -1089,9 +1089,13 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Orders still to pick up (an order reported at pickup drops out).
+  Iterable<DriverStop> get pickupStops =>
+      currentRun.stops.where((s) => s.status == StopStatus.pending);
+
   bool get allPickupTicked =>
-      currentRun.stops.isNotEmpty &&
-      currentRun.stops.every((s) => pickupTicks.contains(s.id));
+      pickupStops.isNotEmpty &&
+      pickupStops.every((s) => pickupTicks.contains(s.id));
 
   /// accept_run for the whole run.
   Future<void> acceptCurrentRun() => _thenRefresh(
