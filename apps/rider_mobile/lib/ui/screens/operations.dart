@@ -1638,38 +1638,28 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Only what the Driver needs at the door (Founder 2026-10-13):
-          // customer, address (with house number), note, a short item line;
-          // Call and Chat beside the name. No map, no pin line.
+          // Draft 4 (Founder 2026-10-13): big order number and name with
+          // Call/Chat, a divider, "Deliver to" with the full address big,
+          // the note, items one per line, then a horizontal photo tile.
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
+                      stop.reference,
+                      style: context.t.headlineSmall?.copyWith(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: CefColors.navy,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
                       stop.customerName,
                       style: context.t.titleMedium?.copyWith(fontSize: 17),
                     ),
-                    const SizedBox(height: Gap.sm),
-                    // The full address: house number, floor, area, postcode.
-                    _iconLine(
-                      context,
-                      LucideIcons.mapPin,
-                      [
-                        stop.addressLine1.trim().replaceFirst(
-                          RegExp(r',$'),
-                          '',
-                        ),
-                        ?stop.addressLine2,
-                      ].join(', '),
-                      maxLines: 4,
-                    ),
-                    if (stop.note != null) ...[
-                      const SizedBox(height: Gap.xs),
-                      _iconLine(context, LucideIcons.stickyNote, stop.note!),
-                    ],
                   ],
                 ),
               ),
@@ -1709,28 +1699,73 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
               ),
             ],
           ),
-          const SizedBox(height: Gap.section),
-          // Order details, short: the order number and one line of items.
+          const SizedBox(height: Gap.lg),
+          Divider(height: 1, thickness: 1, color: c.border),
+          const SizedBox(height: Gap.lg),
+          Text(L.deliverToLabel.toUpperCase(), style: _label(context)),
+          const SizedBox(height: Gap.sm),
+          // The full address: house number, floor, area, postcode.
           Text(
-            '${L.orderDetails} · ${stop.reference}',
-            style: context.t.titleSmall,
-          ),
-          const SizedBox(height: Gap.xs),
-          Text(
-            stop.items.isEmpty
-                ? L.noItemisedOrderLinesStop
-                : stop.items.map((i) => '${i.quantity}× ${i.name}').join(', '),
-            maxLines: 2,
+            [
+              stop.addressLine1.trim().replaceFirst(RegExp(r',$'), ''),
+              ?stop.addressLine2,
+            ].join(', '),
+            maxLines: 4,
             overflow: TextOverflow.ellipsis,
-            style: context.t.bodyMedium,
+            style: context.t.titleLarge?.copyWith(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              height: 1.4,
+            ),
           ),
-          // Proof of Delivery mid-way between the details and the slide.
+          if (stop.note != null) ...[
+            const SizedBox(height: Gap.md),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: CefColors.tintWarning,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: _iconLine(
+                context,
+                LucideIcons.stickyNote,
+                stop.note!,
+                maxLines: 3,
+              ),
+            ),
+          ],
+          const SizedBox(height: Gap.section),
+          Row(
+            children: [
+              Expanded(
+                child: Text(L.itemsLabel.toUpperCase(), style: _label(context)),
+              ),
+              Text(
+                '${stop.items.fold<int>(0, (n, i) => n + i.quantity)}',
+                style: _label(context)?.copyWith(color: CefColors.navy),
+              ),
+            ],
+          ),
+          const SizedBox(height: Gap.sm),
+          if (stop.items.isEmpty)
+            Text(L.noItemisedOrderLinesStop, style: context.t.bodyMedium)
+          else
+            for (final i in stop.items.take(5))
+              Text(
+                '${i.quantity}× ${i.name}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.t.bodyLarge?.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  height: 1.55,
+                ),
+              ),
           const Spacer(),
-          Text(L.proofDelivery, style: context.t.titleMedium),
-          const SizedBox(height: Gap.md),
           _ProofTile(
             icon: LucideIcons.camera,
             label: _photo == null ? L.takePhoto : L.photoAdded,
+            caption: L.proofDelivery,
             selected: _proof == 'camera',
             onTap: AppScope.read(context).repo.isDemo
                 ? () => setState(() => _proof = 'camera')
@@ -1791,6 +1826,13 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
       ),
     );
   }
+
+  TextStyle? _label(BuildContext context) => context.t.labelMedium?.copyWith(
+    fontSize: 13,
+    fontWeight: FontWeight.w800,
+    letterSpacing: 0.8,
+    color: context.c.textLabel,
+  );
 
   Widget _iconLine(
     BuildContext context,
@@ -1912,12 +1954,14 @@ class _ProofTile extends StatelessWidget {
   const _ProofTile({
     required this.icon,
     required this.label,
+    required this.caption,
     required this.selected,
     required this.onTap,
   });
 
   final IconData icon;
   final String label;
+  final String caption;
   final bool selected;
   final VoidCallback onTap;
 
@@ -1931,24 +1975,37 @@ class _ProofTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(Sizes.innerRadius),
         onTap: onTap,
         child: Container(
-          height: 96,
+          height: 76,
+          padding: const EdgeInsets.symmetric(horizontal: 18),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(Sizes.innerRadius),
             border: Border.all(color: selected ? c.info : c.border),
           ),
-          child: Column(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, size: 26, color: selected ? c.info : c.textLabel),
-              const SizedBox(height: Gap.sm),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: context.t.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              const SizedBox(width: 14),
+              Flexible(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: context.t.bodyLarge?.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      caption,
+                      style: context.t.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: c.textLabel,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

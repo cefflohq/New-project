@@ -425,6 +425,8 @@
   "openingChat": "Opening chat…",
   "orderDetails": "Order Details",
   "noItemisedOrderLinesStop": "No itemised order lines for this stop.",
+  "deliverToLabel": "Deliver to",
+  "itemsLabel": "Items",
   "proofDelivery": "Proof of Delivery",
   "takePhoto": "Take Photo",
   "photoAdded": "Photo added",

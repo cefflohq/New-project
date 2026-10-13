@@ -975,6 +975,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'No itemised order lines for this stop.';
 
   @override
+  String get deliverToLabel => 'Deliver to';
+
+  @override
+  String get itemsLabel => 'Items';
+
+  @override
   String get proofDelivery => 'Proof of Delivery';
 
   @override

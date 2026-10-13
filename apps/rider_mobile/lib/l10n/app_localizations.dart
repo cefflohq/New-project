@@ -1862,6 +1862,18 @@ abstract class AppLocalizations {
   /// **'No itemised order lines for this stop.'**
   String get noItemisedOrderLinesStop;
 
+  /// No description provided for @deliverToLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Deliver to'**
+  String get deliverToLabel;
+
+  /// No description provided for @itemsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Items'**
+  String get itemsLabel;
+
   /// No description provided for @proofDelivery.
   ///
   /// In en, this message translates to:

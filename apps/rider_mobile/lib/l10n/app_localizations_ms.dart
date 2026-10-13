@@ -984,6 +984,12 @@ class AppLocalizationsMs extends AppLocalizations {
       'Tiada senarai item pesanan untuk hentian ini.';
 
   @override
+  String get deliverToLabel => 'Hantar ke';
+
+  @override
+  String get itemsLabel => 'Item';
+
+  @override
   String get proofDelivery => 'Bukti Penghantaran';
 
   @override
