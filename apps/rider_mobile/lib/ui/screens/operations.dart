@@ -435,6 +435,32 @@ class _JobCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: context.t.titleMedium?.copyWith(fontSize: 17),
                   ),
+                  const SizedBox(height: 4),
+                  // Ongoing: Cefflo yellow with dark text; coming soon: light
+                  // grey (Founder 2026-10-13).
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: job.ongoing
+                          ? CefColors.accent
+                          : CefColors.tintNeutral,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      job.ongoing ? L.ongoing : L.comingSoon,
+                      style: TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: job.ongoing
+                            ? CefColors.onAccent
+                            : c.textSecondary,
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   if (job.pickupTimeLabel != null)
                     line(
@@ -451,25 +477,31 @@ class _JobCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: Gap.sm),
-            // Ongoing: Cefflo yellow with dark text; coming soon: light grey
-            // (Founder 2026-10-13).
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: job.ongoing ? CefColors.accent : CefColors.tintNeutral,
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Text(
-                job.ongoing ? L.ongoing : L.comingSoon,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: job.ongoing ? CefColors.onAccent : c.textSecondary,
-                ),
-              ),
+            // Navigate / Call to the store right from Home (2026-10-13).
+            _RoundAction(
+              icon: LucideIcons.navigation,
+              onTap: () async {
+                if (!await openNavigation(
+                      lat: job.storeLatitude,
+                      lng: job.storeLongitude,
+                      address: job.storeAddress,
+                    ) &&
+                    context.mounted) {
+                  showCefToast(context, L.mapNotAvailable);
+                }
+              },
             ),
-            Icon(LucideIcons.chevronRight, size: 20, color: c.textSecondary),
+            if ((job.storePhone ?? '').trim().isNotEmpty) ...[
+              const SizedBox(width: Gap.sm),
+              _RoundAction(
+                icon: LucideIcons.phone,
+                onTap: () async {
+                  if (!await dialPhone(job.storePhone) && context.mounted) {
+                    showCefToast(context, L.mapNotAvailable);
+                  }
+                },
+              ),
+            ],
           ],
         ),
       ),
@@ -569,9 +601,9 @@ class RunDetailsScreen extends StatelessWidget {
               body: L.runStoreWillAdd,
             )
           else if (!started) ...[
-            _RunStats(run: run),
+            // Only what matters before the run (Founder 2026-10-13): pickup
+            // time (header), the pay, and the Pickup Checklist.
             if (run.earningsFor(total) case final pay?) ...[
-              const SizedBox(height: Gap.md),
               _RunPay(
                 label: L.runYouEarn,
                 amount: _rm(pay),
@@ -630,112 +662,55 @@ class RunDetailsScreen extends StatelessWidget {
           const SizedBox(height: Gap.md),
           // Before the run starts the Driver needs the store; once it is
           // under way, the next stop.
-          // One compact row (Founder 2026-10-13): the store and Navigate /
-          // Call, so the Pickup Checklist sits on the first screen.
-          if (!started)
-            CeffloCard(
-              shadow: false,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              child: Row(
+          // Under way: the next stop. (Navigate / Call to the store live on
+          // Home's job card.)
+          if (started)
+            if (run.stops
+                    .where((s) => s.status == StopStatus.pending)
+                    .firstOrNull
+                case final next?)
+              _RunSection(
+                title: L.runNextStop,
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(
-                      color: CefColors.tintInfo,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      LucideIcons.store,
-                      size: 18,
-                      color: CefColors.navy,
-                    ),
-                  ),
-                  const SizedBox(width: Gap.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          run.pickupBusinessName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: context.t.titleSmall,
+                  Row(
+                    children: [
+                      CeffloIndexBadge(
+                        run.stops.indexOf(next) + 1,
+                        tone: ChipTone.warning,
+                        size: 26,
+                      ),
+                      const SizedBox(width: Gap.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              next.customerName,
+                              style: context.t.titleMedium,
+                            ),
+                            Text(next.addressLine1, style: context.t.bodySmall),
+                          ],
                         ),
-                        if (run.pickupAddress.isNotEmpty)
-                          Text(
-                            run.pickupAddress,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: context.t.bodySmall,
-                          ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: Gap.sm),
-                  _RoundAction(
-                    icon: LucideIcons.navigation,
-                    onTap: () => _toStore(context, run),
+                  const SizedBox(height: Gap.md),
+                  _RunActions(
+                    onNavigate: () async {
+                      if (!await openNavigation(
+                            lat: next.latitude,
+                            lng: next.longitude,
+                            address: next.addressLine1,
+                          ) &&
+                          context.mounted) {
+                        showCefToast(context, L.mapNotAvailable);
+                      }
+                    },
+                    callLabel: L.call,
+                    phone: next.phone,
                   ),
-                  if ((app.business?.phone ?? '').trim().isNotEmpty) ...[
-                    const SizedBox(width: Gap.sm),
-                    _RoundAction(
-                      icon: LucideIcons.phone,
-                      onTap: () async {
-                        if (!await dialPhone(app.business?.phone) &&
-                            context.mounted) {
-                          showCefToast(context, L.mapNotAvailable);
-                        }
-                      },
-                    ),
-                  ],
                 ],
               ),
-            )
-          else if (run.stops
-                  .where((s) => s.status == StopStatus.pending)
-                  .firstOrNull
-              case final next?)
-            _RunSection(
-              title: L.runNextStop,
-              children: [
-                Row(
-                  children: [
-                    CeffloIndexBadge(
-                      run.stops.indexOf(next) + 1,
-                      tone: ChipTone.warning,
-                      size: 26,
-                    ),
-                    const SizedBox(width: Gap.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(next.customerName, style: context.t.titleMedium),
-                          Text(next.addressLine1, style: context.t.bodySmall),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: Gap.md),
-                _RunActions(
-                  onNavigate: () async {
-                    if (!await openNavigation(
-                          lat: next.latitude,
-                          lng: next.longitude,
-                          address: next.addressLine1,
-                        ) &&
-                        context.mounted) {
-                      showCefToast(context, L.mapNotAvailable);
-                    }
-                  },
-                  callLabel: L.call,
-                  phone: next.phone,
-                ),
-              ],
-            ),
           if (app.runPhase == RunPhase.pickup) ...[
             const SizedBox(height: Gap.md),
             _PickupChecklist(run: run),
@@ -767,17 +742,6 @@ class RunDetailsScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Future<void> _toStore(BuildContext context, DriverRun run) async {
-    if (!await openNavigation(
-          lat: run.pickupLatitude,
-          lng: run.pickupLongitude,
-          address: run.pickupAddress,
-        ) &&
-        context.mounted) {
-      showCefToast(context, L.mapNotAvailable);
-    }
   }
 }
 
@@ -955,53 +919,6 @@ Future<void> _reportAtPickup(BuildContext context, DriverStop stop) async {
     app.pickupTicks.remove(stop.id);
   } catch (e) {
     if (context.mounted) showCefToast(context, '$e', error: true);
-  }
-}
-
-/// Stops · distance · estimate; a cell is left out when the backend has no
-/// value for it (no invented numbers).
-class _RunStats extends StatelessWidget {
-  const _RunStats({required this.run});
-  final DriverRun run;
-
-  @override
-  Widget build(BuildContext context) {
-    final cells = [
-      (L.runStopsLabel, '${run.orderCount}'),
-      if (run.distanceKm != null) (L.runDistanceLabel, run.distanceText),
-      if (run.estimateLabel != null)
-        (
-          L.runEstimateLabel,
-          run.estimateLabel!.replaceFirst(RegExp(r'^\D+'), '~'),
-        ),
-    ];
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: Gap.md),
-      decoration: BoxDecoration(
-        color: CefColors.tintNeutral,
-        borderRadius: BorderRadius.circular(Sizes.cardRadius),
-      ),
-      child: Row(
-        children: [
-          for (final (i, (label, value)) in cells.indexed)
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  border: i == 0
-                      ? null
-                      : Border(left: BorderSide(color: context.c.border)),
-                ),
-                child: Column(
-                  children: [
-                    Text(value, style: context.t.titleLarge),
-                    Text(label, style: context.t.bodySmall),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
   }
 }
 

@@ -762,6 +762,10 @@ class AppState extends ChangeNotifier {
                 o.status == DeliveryStatus.arrived,
           ),
           pickupTimeLabel: _clockOf(contract?['shift_start']),
+          storePhone: rel.businessPhone,
+          storeAddress: rel.businessAddress,
+          storeLatitude: rel.businessLatitude,
+          storeLongitude: rel.businessLongitude,
           pickupMinutes: start == null || start.length < 2
               ? null
               : (int.tryParse(start[0]) ?? 0) * 60 +

@@ -455,7 +455,15 @@ class DriverJob {
     required this.ongoing,
     this.pickupTimeLabel,
     this.pickupMinutes,
+    this.storePhone,
+    this.storeAddress,
+    this.storeLatitude,
+    this.storeLongitude,
   });
+
+  /// The store, for Navigate / Call on the Home card.
+  final String? storePhone, storeAddress;
+  final double? storeLatitude, storeLongitude;
 
   final String relationshipId;
   final String vendorName;

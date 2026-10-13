@@ -261,6 +261,10 @@ class DemoData {
     DriverJob(
       relationshipId: 'rel-bakes',
       vendorName: 'Bakes & Co.',
+      storePhone: '+60 3-4021 8899',
+      storeAddress: 'Jalan Setapak, Kuala Lumpur',
+      storeLatitude: 3.2002,
+      storeLongitude: 101.718,
       orderCount: 12,
       ongoing: true,
       pickupTimeLabel: '10:00 AM',
@@ -269,6 +273,10 @@ class DemoData {
     DriverJob(
       relationshipId: 'rel-donuts',
       vendorName: 'Donuts Jo',
+      storePhone: '+60 3-7722 1188',
+      storeAddress: 'Jalan SS2/24, Petaling Jaya',
+      storeLatitude: 3.1189,
+      storeLongitude: 101.622,
       orderCount: 5,
       ongoing: false,
       pickupTimeLabel: '2:00 PM',
@@ -277,6 +285,10 @@ class DemoData {
     DriverJob(
       relationshipId: 'rel-kopi',
       vendorName: 'Kopi Kita',
+      storePhone: '+60 3-2282 5566',
+      storeAddress: 'Jalan Telawi, Bangsar',
+      storeLatitude: 3.1306,
+      storeLongitude: 101.6712,
       orderCount: 9,
       ongoing: false,
       pickupTimeLabel: '7:00 PM',
