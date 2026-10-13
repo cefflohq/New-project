@@ -505,14 +505,6 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
         valueListenable: _Jobs.radius,
         builder: (context, radius, _) => CeffloNavySheetScaffold(
           onRefresh: () => _Jobs.load(app),
-          // Opening cards sit 10px from the screen edge (Founder
-          // 2026-10-13); the shift filter keeps the usual 20px.
-          bodyPadding: const EdgeInsets.fromLTRB(
-            10,
-            Gap.section,
-            10,
-            Gap.section,
-          ),
           header: CeffloScreenHeader(
             title: L.findJobs,
             onBell: () => app.go(DRoute.notifications),
@@ -562,12 +554,9 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: _ShiftFilter(
-                  value: _shift,
-                  onChanged: (s) => setState(() => _shift = s),
-                ),
+              _ShiftFilter(
+                value: _shift,
+                onChanged: (s) => setState(() => _shift = s),
               ),
               const SizedBox(height: Gap.lg),
               ValueListenableBuilder<String?>(

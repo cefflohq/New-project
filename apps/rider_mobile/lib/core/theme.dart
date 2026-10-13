@@ -8,6 +8,10 @@ import 'package:flutter/material.dart';
 /// be renamed.
 class Gap {
   static const gutter = 20.0; // screen side padding in every reference
+
+  /// Cards sit 10px from the screen edge inside the white sheet (Founder
+  /// 2026-10-13); headers keep [gutter].
+  static const sheet = 10.0;
   // Back control: 44px target, 12px from the screen edge on every surface.
   static const backInset = 12.0;
   static const cardPadding = 16.0;

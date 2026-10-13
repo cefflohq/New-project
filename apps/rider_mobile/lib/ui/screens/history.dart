@@ -44,9 +44,9 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> {
         onBell: () => app.go(DRoute.notifications),
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       body: Column(
@@ -167,9 +167,9 @@ class HistoryDetailScreen extends StatelessWidget {
         onBell: () => app.go(DRoute.notifications),
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       body: Column(
@@ -404,9 +404,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         onBell: () {},
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       body: Column(

@@ -158,9 +158,9 @@ class ProfileScreen extends StatelessWidget {
         onBell: () => app.go(DRoute.notifications),
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       body: Column(
@@ -408,9 +408,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         onBell: () => app.go(DRoute.notifications),
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.xl,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       body: Column(
@@ -536,9 +536,9 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
         onBell: () => app.go(DRoute.notifications),
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.xl,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       body: Column(
@@ -638,9 +638,9 @@ class DocumentsScreen extends StatelessWidget {
         onBell: () => app.go(DRoute.notifications),
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       body: Column(
@@ -650,23 +650,30 @@ class DocumentsScreen extends StatelessWidget {
             CeffloNote(icon: LucideIcons.info, body: L.documentsNotYet),
           for (final doc in app.documents) ...[
             CeffloCard(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+              // Same height on every card (Founder 2026-10-13).
+              padding: const EdgeInsets.symmetric(horizontal: 18),
               onTap: () => _open(context, app, doc),
-              child: CeffloDocumentRow(
-                icon: _icon(doc.id),
-                title: doc.title,
-                subtitle: doc.expiryLabel ?? '',
-                statusLabel: switch (doc.state) {
-                  DocumentState.verified => L.verified,
-                  DocumentState.uploaded => L.review,
-                  DocumentState.missing => L.missing,
-                },
-                statusTone: switch (doc.state) {
-                  DocumentState.verified => ChipTone.success,
-                  DocumentState.uploaded => ChipTone.warning,
-                  DocumentState.missing => ChipTone.attention,
-                },
-                onTap: () => _open(context, app, doc),
+              child: SizedBox(
+                height: 104,
+                child: Center(
+                  child: CeffloDocumentRow(
+                    centered: true,
+                    icon: _icon(doc.id),
+                    title: doc.title,
+                    subtitle: doc.expiryLabel ?? '',
+                    statusLabel: switch (doc.state) {
+                      DocumentState.verified => L.verified,
+                      DocumentState.uploaded => L.review,
+                      DocumentState.missing => L.missing,
+                    },
+                    statusTone: switch (doc.state) {
+                      DocumentState.verified => ChipTone.success,
+                      DocumentState.uploaded => ChipTone.warning,
+                      DocumentState.missing => ChipTone.attention,
+                    },
+                    onTap: () => _open(context, app, doc),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: Gap.md),
@@ -748,9 +755,9 @@ class SettingsScreen extends StatelessWidget {
         onBell: () => app.go(DRoute.notifications),
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       body: Column(

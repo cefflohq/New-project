@@ -591,9 +591,9 @@ class RunDetailsScreen extends StatelessWidget {
         ],
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
-        Gap.gutter,
+        Gap.sheet,
         Gap.section,
       ),
       body: Column(
@@ -1108,9 +1108,9 @@ class _StopListScreenState extends State<StopListScreen> {
       onRefresh: app.refreshOrders,
       header: header,
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       body: Column(
@@ -1159,9 +1159,9 @@ class _StopListScreenState extends State<StopListScreen> {
       header: header,
       scrollable: false,
       bodyPadding: EdgeInsets.fromLTRB(
-        isMap ? 0 : Gap.gutter,
+        isMap ? 0 : Gap.sheet,
         Gap.lg,
-        isMap ? 0 : Gap.gutter,
+        isMap ? 0 : Gap.sheet,
         0,
       ),
       body: Column(
@@ -1462,7 +1462,12 @@ class NavigationToStopScreen extends StatelessWidget {
               ),
               SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(Gap.md, Gap.sm, Gap.md, 0),
+                  padding: const EdgeInsets.fromLTRB(
+                    Gap.sheet,
+                    Gap.sm,
+                    Gap.sheet,
+                    0,
+                  ),
                   child: _FloatingCard(
                     padding: const EdgeInsets.fromLTRB(6, 6, Gap.lg, 6),
                     child: Row(
@@ -1510,7 +1515,12 @@ class NavigationToStopScreen extends StatelessWidget {
                 child: SafeArea(
                   top: false,
                   child: Padding(
-                    padding: const EdgeInsets.all(Gap.md),
+                    padding: const EdgeInsets.fromLTRB(
+                      Gap.sheet,
+                      Gap.md,
+                      Gap.sheet,
+                      Gap.md,
+                    ),
                     child: _FloatingCard(
                       padding: const EdgeInsets.fromLTRB(
                         Gap.lg,
@@ -1628,9 +1638,9 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
         onBell: () => app.go(DRoute.notifications),
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       // Fixed layout so Proof of Delivery can sit mid-way (2026-10-13).
@@ -1869,8 +1879,8 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
     entry = OverlayEntry(
       builder: (context) => Positioned(
         top: MediaQuery.paddingOf(context).top + Gap.md,
-        left: Gap.gutter,
-        right: Gap.gutter,
+        left: Gap.sheet,
+        right: Gap.sheet,
         child: Material(
           color: Colors.transparent,
           child: Container(
@@ -2070,9 +2080,9 @@ class _DeliveryIssueScreenState extends State<DeliveryIssueScreen> {
         ],
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.sm,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       body: Column(
@@ -2189,9 +2199,9 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
         onBell: () => app.go(DRoute.notifications),
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       body: Column(
@@ -2384,9 +2394,9 @@ class RunCompletedScreen extends StatelessWidget {
         ],
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       body: Column(

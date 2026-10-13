@@ -73,32 +73,39 @@ class _LiveDocumentsScreenState extends State<LiveDocumentsScreen> {
       child: CeffloCard(
         shadow: false,
         onTap: locked ? null : onTap,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        child: Row(
-          children: [
-            Icon(icon, size: 24),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: context.t.titleSmall),
-                  Text(
-                    sub,
-                    style: context.t.bodySmall?.copyWith(
-                      color: context.c.textSecondary,
+        // Taller and equal (Founder 2026-10-13): fixed height, roomier.
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        child: SizedBox(
+          height: 104,
+          child: Row(
+            children: [
+              Icon(icon, size: 24),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: context.t.titleSmall),
+                    const SizedBox(height: 2),
+                    Text(
+                      sub,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.t.bodySmall?.copyWith(
+                        color: context.c.textSecondary,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            CeffloStatusChip(
-              redo ? L.mvRetake : (done ? L.photoAdded : L.missing),
-              tone: redo
-                  ? ChipTone.attention
-                  : (done ? ChipTone.success : ChipTone.neutral),
-            ),
-          ],
+              CeffloStatusChip(
+                redo ? L.mvRetake : (done ? L.photoAdded : L.missing),
+                tone: redo
+                    ? ChipTone.attention
+                    : (done ? ChipTone.success : ChipTone.neutral),
+              ),
+            ],
+          ),
         ),
       ),
     );

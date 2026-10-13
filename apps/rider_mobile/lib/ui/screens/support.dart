@@ -64,9 +64,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
         onBell: () => app.go(DRoute.notifications),
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       body: Column(
@@ -373,9 +373,9 @@ class VendorSupportScreen extends StatelessWidget {
         onBell: () => app.go(DRoute.notifications),
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.xl,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       body: Column(
@@ -593,9 +593,9 @@ class _SubmitTicketScreenState extends State<SubmitTicketScreen> {
         onBell: () => app.go(DRoute.notifications),
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.gutter,
+        Gap.sheet,
         Gap.xl,
-        Gap.gutter,
+        Gap.sheet,
         Gap.lg,
       ),
       body: Column(

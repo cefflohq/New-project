@@ -660,9 +660,9 @@ class CeffloNavySheetScaffold extends StatelessWidget {
     required this.header,
     required this.body,
     this.bodyPadding = const EdgeInsets.fromLTRB(
-      Gap.gutter,
+      Gap.sheet,
       Gap.section,
-      Gap.gutter,
+      Gap.sheet,
       Gap.section,
     ),
     this.scrollable = true,
@@ -1536,6 +1536,7 @@ class CeffloDocumentRow extends StatelessWidget {
     this.thumbnail,
     this.onRemove,
     this.onTap,
+    this.centered = false,
   });
 
   final IconData icon;
@@ -1546,6 +1547,9 @@ class CeffloDocumentRow extends StatelessWidget {
   final Widget? thumbnail;
   final VoidCallback? onRemove;
   final VoidCallback? onTap;
+
+  /// Centre the row vertically (fixed-height cards).
+  final bool centered;
 
   @override
   Widget build(BuildContext context) {
@@ -1558,7 +1562,9 @@ class CeffloDocumentRow extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: centered
+                ? CrossAxisAlignment.center
+                : CrossAxisAlignment.start,
             children: [
               Container(
                 width: 44,
@@ -1572,6 +1578,7 @@ class CeffloDocumentRow extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title, style: context.t.titleSmall),
@@ -1582,6 +1589,7 @@ class CeffloDocumentRow extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   if (statusLabel != null)
