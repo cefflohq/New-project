@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
@@ -11,6 +13,7 @@ import '../../data/live_adapters.dart';
 import '../../data/my_towns.dart';
 import '../../data/place_search.dart';
 import '../../data/rider_repository.dart';
+import '../map_tiles.dart';
 import '../widgets.dart';
 
 import 'package:cefflo_rider_mobile/l10n/l10n.dart';
@@ -103,7 +106,13 @@ class _Opening {
     this.clash,
     this.requirements = const [],
     this.vehicleMatch = true,
+    this.areaLat,
+    this.areaLng,
   });
+
+  /// The business's pickup area rounded to about 1 km (find_job_openings),
+  /// for the work-area map. Never the store's exact location.
+  final double? areaLat, areaLng;
 
   final String id, name, area, category, payUnit, vehicle;
   final int start, end, needed;
@@ -157,6 +166,8 @@ class _Opening {
     clash: r['clash'] as String?,
     requirements: [_vehicleLabel((r['vehicle_type'] ?? '').toString())],
     vehicleMatch: r['vehicle_match'] != false,
+    areaLat: (r['area_lat'] as num?)?.toDouble(),
+    areaLng: (r['area_lng'] as num?)?.toDouble(),
   );
 
   _Opening withStatus(String? status) => _Opening(
@@ -178,6 +189,8 @@ class _Opening {
     clash: status == null ? clash : null,
     requirements: requirements,
     vehicleMatch: vehicleMatch,
+    areaLat: areaLat,
+    areaLng: areaLng,
   );
 }
 
@@ -342,6 +355,8 @@ const _examples = <_Opening>[
     name: 'Kedai Roti Mak Som',
     category: 'Bakery',
     area: 'Taman Uda',
+    areaLat: 6.14,
+    areaLng: 100.36,
     km: 2.5,
     withinRadius: true,
     radiusKm: 10,
@@ -359,6 +374,8 @@ const _examples = <_Opening>[
     name: 'Nasi Kandar Pelita Jaya',
     category: 'Restaurant',
     area: 'Jalan Langgar',
+    areaLat: 6.12,
+    areaLng: 100.38,
     km: 3,
     withinRadius: true,
     radiusKm: 10,
@@ -377,6 +394,8 @@ const _examples = <_Opening>[
     name: 'Kek Lapis Sarawak Mama',
     category: 'Home baker',
     area: 'Anak Bukit',
+    areaLat: 6.18,
+    areaLng: 100.35,
     km: 6,
     withinRadius: true,
     radiusKm: 10,
@@ -394,6 +413,8 @@ const _examples = <_Opening>[
     name: 'Pasar Tani Online Kedah',
     category: 'Groceries',
     area: 'Stargate',
+    areaLat: 6.13,
+    areaLng: 100.37,
     km: 18,
     withinRadius: false,
     radiusKm: 10,
@@ -1185,7 +1206,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const _ZoneMap(),
+              _ZoneMap(lat: o.areaLat, lng: o.areaLng),
               // Founder screen 9: Days, Pickup time, Pay per drop, Vehicle,
               // Drivers needed, then About this hiring.
               _Kv(L.jobDays, _daysLabel(o.days)),
@@ -1231,17 +1252,56 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   }
 }
 
+/// Where the job is: a ~1.5 km circle around the rounded pickup area
+/// (Founder 2026-10-13), so the driver sees the work area but not the
+/// store's address before being hired. Illustrative when the area is unknown.
 class _ZoneMap extends StatelessWidget {
-  const _ZoneMap();
+  const _ZoneMap({this.lat, this.lng});
+  final double? lat, lng;
 
   @override
-  Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(Sizes.cardRadius),
-    child: SizedBox(
-      height: 120,
-      child: CustomPaint(painter: _ZonePainter(), size: Size.infinite),
-    ),
-  );
+  Widget build(BuildContext context) {
+    final known = lat != null && lng != null;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(Sizes.cardRadius),
+      child: SizedBox(
+        height: known ? 170 : 120,
+        child: !known
+            ? CustomPaint(painter: _ZonePainter(), size: Size.infinite)
+            : Stack(
+                children: [
+                  FlutterMap(
+                    options: MapOptions(
+                      initialCenter: LatLng(lat!, lng!),
+                      initialZoom: 13,
+                      interactionOptions: const InteractionOptions(
+                        flags: InteractiveFlag.none,
+                      ),
+                    ),
+                    children: [
+                      cefTileLayer(context),
+                      CircleLayer(
+                        circles: [
+                          CircleMarker(
+                            point: LatLng(lat!, lng!),
+                            radius: 1500,
+                            useRadiusInMeter: true,
+                            color: const Color(0xFF01265E)
+                                .withValues(alpha: .12),
+                            borderColor: const Color(0xFF01265E)
+                                .withValues(alpha: .55),
+                            borderStrokeWidth: 1.5,
+                          ),
+                        ],
+                      ),
+                      MapCredit(mapCredit),
+                    ],
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
 }
 
 /// Illustrative zone (no map provider while Mapbox is on hold).

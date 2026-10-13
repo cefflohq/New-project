@@ -43,6 +43,7 @@ String get _credit =>
     _mapbox ? '© Mapbox © OpenStreetMap' : '© OpenStreetMap © CARTO';
 
 const _malaysia = LatLng(4.2, 101.9);
+const _pinDone = Color(0xFF16A34A);
 
 Widget get _attribution => MapCredit(_credit);
 
@@ -371,8 +372,10 @@ class PinsMap extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
+        // Cefflo map pins, same on every surface: stop #01265E, next
+        // #FFC93C, done #16A34A with a check.
         color: d.done
-            ? c.success
+            ? _pinDone
             : d.next
             ? CefColors.ceffloMustard
             : CefColors.anchorBlue,
@@ -386,7 +389,7 @@ class PinsMap extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: d.next ? CefColors.navy : Colors.white,
+                color: d.next ? CefColors.anchorBlue : Colors.white,
               ),
             ),
     );

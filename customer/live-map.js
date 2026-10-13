@@ -53,6 +53,8 @@ function hideLoading() {
   root?.querySelector('[data-live-map-loading]')?.remove();
 }
 
+const RIDER_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="17" r="3.5"/><circle cx="18.5" cy="17" r="3.5"/><path d="M5.5 17L9 9h4l2 4H9M15 6h3l2.5 11"/></svg>';
+
 /** Demo only: the same pop-up around static (illustrative) map markup. */
 export function openStaticMap(html, { title = 'Map', closeLabel = 'Close map' } = {}) {
   if (root) return;
@@ -72,9 +74,18 @@ export async function openLiveMap(location, { title = 'Live map', closeLabel = '
       style: 'mapbox://styles/mapbox/streets-v12',
       center: [location.lng, location.lat],
       zoom: 14,
+      attributionControl: false,
     });
+    // Map credit behind a small (i), as on every Cefflo map.
+    map.addControl(new gl.AttributionControl({ compact: true }), 'bottom-left');
+    map.once('load', () => root?.querySelectorAll('.mapboxgl-compact-show')
+      .forEach((el) => el.classList.remove('mapboxgl-compact-show')));
     map.addControl(new gl.NavigationControl({ showCompass: false }), 'bottom-right');
-    marker = new gl.Marker().setLngLat([location.lng, location.lat]).addTo(map);
+    // The driver: the same yellow motorbike pin as the Vendor live map.
+    const pin = document.createElement('div');
+    pin.className = 'cf-rider-pin';
+    pin.innerHTML = RIDER_SVG;
+    marker = new gl.Marker({ element: pin }).setLngLat([location.lng, location.lat]).addTo(map);
     map.once('load', hideLoading);
     // Style/token failure before the first load: say so instead of spinning forever.
     map.once('error', () => {

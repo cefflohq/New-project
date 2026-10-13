@@ -411,3 +411,6 @@ img { display: block; max-width: 100%; }
 .live-map__spinner { width: 36px; height: 36px; border-radius: 50%; border: 3px solid #D5DBE5; border-top-color: var(--cef-blue-top); animation: live-map-spin .8s linear infinite; }
 @keyframes live-map-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .live-map__spinner { animation-duration: 2s; } }
+
+/* Driver pin on the live map: same as every Cefflo map (#FEC819 + motorbike). */
+.cf-rider-pin { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: #FEC819; color: #01265E; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.35); }

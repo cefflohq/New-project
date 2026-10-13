@@ -195,9 +195,11 @@ class _StopDot extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     decoration: BoxDecoration(
       shape: BoxShape.circle,
+      // Cefflo map pins, same on every surface: stop #01265E, next
+      // #FFC93C, done #16A34A with a check.
       color: done
-          ? const Color(0xFF9AA3B2)
-          : (focus ? CefColors.accent : CefColors.navy),
+          ? const Color(0xFF16A34A)
+          : (focus ? const Color(0xFFFFC93C) : const Color(0xFF01265E)),
       border: Border.all(color: Colors.white, width: 2),
       boxShadow: const [BoxShadow(color: Color(0x33101C33), blurRadius: 6)],
     ),
@@ -209,7 +211,7 @@ class _StopDot extends StatelessWidget {
             style: TextStyle(
               fontWeight: FontWeight.w800,
               fontSize: 13,
-              color: focus ? CefColors.navy : Colors.white,
+              color: focus ? const Color(0xFF01265E) : Colors.white,
             ),
           ),
   );
