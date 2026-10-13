@@ -1759,8 +1759,22 @@ class CeffloSlideAction extends StatefulWidget {
   State<CeffloSlideAction> createState() => _CeffloSlideActionState();
 }
 
-class _CeffloSlideActionState extends State<CeffloSlideAction> {
+class _CeffloSlideActionState extends State<CeffloSlideAction>
+    with SingleTickerProviderStateMixin {
   double _dragX = 0;
+
+  /// Drives the three chevrons after the label (draft 4A, 2026-10-13).
+  late final AnimationController _hint = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _hint.dispose();
+    super.dispose();
+  }
+
   bool _firing = false;
 
   /// While the finger is on the knob it follows 1:1 (no animation lag);
@@ -1794,8 +1808,10 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
                       decoration: BoxDecoration(
                         // Not available yet (e.g. pickup not all ticked):
                         // light grey, so it reads as locked (2026-10-13).
-                        gradient: widget.enabled ? cefHeaderGradient : null,
-                        color: widget.enabled ? null : CefColors.tintNeutral,
+                        // Solid header navy, the exact blue behind the header (4A).
+                        color: widget.enabled
+                            ? const Color(0xFF01265E)
+                            : CefColors.tintNeutral,
                         border: widget.enabled
                             ? null
                             : Border.all(color: const Color(0xFFE1E6EE)),
@@ -1806,16 +1822,33 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
                       alignment: Alignment.center,
                       child: Opacity(
                         opacity: 1 - progress,
-                        child: Text(
-                          widget.label,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: 'Manrope',
-                            color: widget.enabled
-                                ? Colors.white
-                                : const Color(0xFF9AA3B2),
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            left: Sizes.slideKnob - 8,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  widget.label,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontFamily: 'Manrope',
+                                    color: widget.enabled
+                                        ? Colors.white
+                                        : const Color(0xFF9AA3B2),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                              ),
+                              if (widget.enabled) ...[
+                                const SizedBox(width: 8),
+                                _SlideHintChevrons(animation: _hint),
+                              ],
+                            ],
                           ),
                         ),
                       ),
@@ -1869,28 +1902,36 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
                       child: Container(
                         width: Sizes.slideKnob,
                         height: Sizes.slideKnob,
-                        decoration: BoxDecoration(
-                          color: widget.enabled
-                              ? CefColors.accent
-                              : const Color(0xFFD5DBE5),
-                          shape: BoxShape.circle,
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x2E12213E),
-                              blurRadius: 10,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: (widget.busy || _firing)
-                            ? const Center(child: CefDots(onBlue: false))
-                            : Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                size: 31,
-                                color: widget.enabled
-                                    ? CefColors.onAccent
-                                    : Colors.white,
+                        padding: const EdgeInsets.all(5),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            // White knob, navy chevron (draft 4A).
+                            color: widget.enabled
+                                ? Colors.white
+                                : const Color(0xFFD5DBE5),
+                            shape: BoxShape.circle,
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x2E12213E),
+                                blurRadius: 10,
+                                offset: Offset(0, 3),
                               ),
+                            ],
+                          ),
+                          child: (widget.busy || _firing)
+                              ? const Center(child: CefDots(onBlue: false))
+                              : Center(
+                                  child: CustomPaint(
+                                    size: const Size(30, 30),
+                                    painter: _ChevronPainter(
+                                      color: widget.enabled
+                                          ? const Color(0xFF01265E)
+                                          : Colors.white,
+                                      stroke: 3.6,
+                                    ),
+                                  ),
+                                ),
+                        ),
                       ),
                     ),
                   ),
@@ -2324,4 +2365,62 @@ Future<T?> showCefSheet<T>({
       ),
     ),
   );
+}
+
+/// A bold rounded chevron, thicker than the icon font's (draft 4A).
+class _ChevronPainter extends CustomPainter {
+  const _ChevronPainter({required this.color, required this.stroke});
+  final Color color;
+  final double stroke;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final u = size.width / 24;
+    final path = Path()
+      ..moveTo(9 * u, 5 * u)
+      ..lineTo(16 * u, 12 * u)
+      ..lineTo(9 * u, 19 * u);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = stroke * u
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_ChevronPainter old) =>
+      old.color != color || old.stroke != stroke;
+}
+
+/// Three chevrons that light up left to right, hinting "slide this way".
+class _SlideHintChevrons extends StatelessWidget {
+  const _SlideHintChevrons({required this.animation});
+  final Animation<double> animation;
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: animation,
+    builder: (context, _) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < 3; i++)
+          Opacity(
+            opacity: _opacity(animation.value, i),
+            child: const CustomPaint(
+              size: Size(14, 14),
+              painter: _ChevronPainter(color: Colors.white, stroke: 3.4),
+            ),
+          ),
+      ],
+    ),
+  );
+
+  static double _opacity(double t, int i) {
+    final d = ((t * 3) - i) % 3;
+    return d < 1 ? 0.3 + 0.7 * (1 - (d - 0.5).abs() * 2).clamp(0.0, 1.0) : 0.3;
+  }
 }

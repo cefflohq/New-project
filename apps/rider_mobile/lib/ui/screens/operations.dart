@@ -1655,11 +1655,6 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                         color: CefColors.navy,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      stop.customerName,
-                      style: context.t.titleMedium?.copyWith(fontSize: 17),
-                    ),
                   ],
                 ),
               ),
@@ -1703,7 +1698,12 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
           Divider(height: 1, thickness: 1, color: c.border),
           const SizedBox(height: Gap.lg),
           Text(L.deliverToLabel.toUpperCase(), style: _label(context)),
-          const SizedBox(height: Gap.sm),
+          const SizedBox(height: Gap.md),
+          Text(
+            stop.customerName,
+            style: context.t.titleMedium?.copyWith(fontSize: 17),
+          ),
+          const SizedBox(height: Gap.xs),
           // The full address: house number, floor, area, postcode.
           Text(
             [
