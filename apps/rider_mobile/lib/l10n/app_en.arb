@@ -939,7 +939,7 @@
     }
   },
   "continueLabel": "Continue",
-  "pinnedLocation": "Customer pinned the exact location",
+  "pinnedLocation": "Pinned location",
   "mapNotAvailable": "Could not open the map",
   "navigate": "Navigate",
   "noCustomerPin": "Customer did not pin a location — use the address",

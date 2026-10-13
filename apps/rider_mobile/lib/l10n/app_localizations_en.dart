@@ -2025,7 +2025,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get continueLabel => 'Continue';
 
   @override
-  String get pinnedLocation => 'Customer pinned the exact location';
+  String get pinnedLocation => 'Pinned location';
 
   @override
   String get mapNotAvailable => 'Could not open the map';

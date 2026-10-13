@@ -3719,7 +3719,7 @@ abstract class AppLocalizations {
   /// No description provided for @pinnedLocation.
   ///
   /// In en, this message translates to:
-  /// **'Customer pinned the exact location'**
+  /// **'Pinned location'**
   String get pinnedLocation;
 
   /// No description provided for @mapNotAvailable.

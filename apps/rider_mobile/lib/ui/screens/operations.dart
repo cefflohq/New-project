@@ -1603,7 +1603,6 @@ class ConfirmDeliveryScreen extends StatefulWidget {
 }
 
 class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
-  bool _expanded = true;
   String? _proof;
   OverlayEntry? _notice;
 
@@ -1663,6 +1662,8 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Customer (Founder 2026-10-13): name, one address line, the note,
+          // then light round Navigate / Call on their own row.
           Row(
             children: [
               Container(
@@ -1684,104 +1685,62 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                       style: context.t.titleMedium?.copyWith(fontSize: 16.5),
                     ),
                     const SizedBox(height: 2),
-                    _iconLine(context, LucideIcons.mapPin, stop.addressLine1),
-                    if (stop.addressLine2 != null)
-                      _iconLine(
-                        context,
-                        LucideIcons.milestone,
-                        stop.addressLine2!,
-                      ),
+                    _iconLine(
+                      context,
+                      LucideIcons.mapPin,
+                      [
+                        stop.addressLine1.trim().replaceFirst(
+                          RegExp(r',$'),
+                          '',
+                        ),
+                        ?stop.addressLine2,
+                      ].join(', '),
+                    ),
                     if (stop.note != null)
                       _iconLine(context, LucideIcons.stickyNote, stop.note!),
-                    if (stop.latitude != null)
-                      _iconLine(
-                        context,
-                        LucideIcons.locateFixed,
-                        L.pinnedLocation,
-                      ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              _RoundAction(
-                icon: LucideIcons.navigation,
-                onTap: () => _navigate(context, stop),
-              ),
-              const SizedBox(width: 8),
-              _RoundAction(
-                icon: LucideIcons.phone,
-                onTap: AppScope.read(context).repo.isDemo
-                    ? () => _showTopNotice(
-                        context,
-                        L.calling(stop.customerName),
-                        LucideIcons.phone,
-                      )
-                    // Live: really dial the customer's number.
-                    : () async {
-                        if (!await dialPhone(stop.phone) && context.mounted) {
-                          showCefToast(context, L.phoneNotAvailable);
-                        }
-                      },
-              ),
-              // Chat has no channel yet: the prototype only.
-              if (AppScope.read(context).repo.isDemo) ...[
-                const SizedBox(width: 8),
-                _RoundAction(
-                  icon: LucideIcons.messageCircle,
-                  onTap: () => _showTopNotice(
-                    context,
-                    L.openingChat,
-                    LucideIcons.messageCircle,
-                  ),
-                ),
-              ],
             ],
           ),
-          const SizedBox(height: Gap.md),
-          if (stop.latitude != null && stop.longitude != null) ...[
-            DeliveryPinMap(
-              latitude: stop.latitude!,
-              longitude: stop.longitude!,
-              onTap: () => _navigate(context, stop),
-            ),
-            const SizedBox(height: Gap.sm),
-          ] else
-            Text(
-              L.noCustomerPin,
-              style: context.t.bodyMedium?.copyWith(fontSize: 12.5),
-            ),
-          CeffloPrimaryButton(
-            L.navigate,
-            onTap: () => _navigate(context, stop),
-          ),
-          const SizedBox(height: Gap.lg),
-          Divider(height: 1, color: c.border),
-          const SizedBox(height: Gap.md),
-          InkWell(
-            onTap: () => setState(() => _expanded = !_expanded),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(L.orderDetails, style: context.t.titleMedium),
-                  ),
-                  Text(
-                    L.itemCount(stop.items.length),
-                    style: context.t.bodyMedium,
-                  ),
-                  const SizedBox(width: 6),
-                  Icon(
-                    _expanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
-                    size: 20,
-                    color: c.textSecondary,
-                  ),
-                ],
-              ),
+          const SizedBox(height: Gap.sm),
+          Padding(
+            padding: const EdgeInsets.only(left: 54),
+            child: Row(
+              children: [
+                _RoundAction(
+                  light: true,
+                  icon: LucideIcons.navigation,
+                  onTap: () => _navigate(context, stop),
+                ),
+                const SizedBox(width: Gap.sm),
+                _RoundAction(
+                  light: true,
+                  icon: LucideIcons.phone,
+                  onTap: AppScope.read(context).repo.isDemo
+                      ? () => _showTopNotice(
+                          context,
+                          L.calling(stop.customerName),
+                          LucideIcons.phone,
+                        )
+                      // Live: really dial the customer's number.
+                      : () async {
+                          if (!await dialPhone(stop.phone) && context.mounted) {
+                            showCefToast(context, L.phoneNotAvailable);
+                          }
+                        },
+                ),
+              ],
             ),
           ),
-          if (_expanded) ...[
-            const SizedBox(height: Gap.sm),
+          const SizedBox(height: Gap.md),
+          // Items first: what the Driver hands over, visible before the slide.
+          Text(
+            '${L.orderDetails} · ${L.itemCount(stop.items.length)}',
+            style: context.t.titleMedium,
+          ),
+          const SizedBox(height: Gap.xs),
+          ...[
             for (final item in stop.items)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
@@ -1813,6 +1772,21 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
             if (stop.items.isEmpty)
               Text(L.noItemisedOrderLinesStop, style: context.t.bodySmall),
           ],
+          const SizedBox(height: Gap.md),
+          if (stop.latitude != null && stop.longitude != null) ...[
+            DeliveryPinMap(
+              latitude: stop.latitude!,
+              longitude: stop.longitude!,
+              height: 160,
+              onTap: () => _navigate(context, stop),
+            ),
+            const SizedBox(height: Gap.xs),
+            _iconLine(context, LucideIcons.locateFixed, L.pinnedLocation),
+          ] else
+            Text(
+              L.noCustomerPin,
+              style: context.t.bodyMedium?.copyWith(fontSize: 12.5),
+            ),
           const SizedBox(height: Gap.lg),
           Text(L.proofDelivery, style: context.t.titleMedium),
           const SizedBox(height: Gap.md),
@@ -1885,7 +1859,14 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
       children: [
         Icon(icon, size: 14, color: context.c.info),
         const SizedBox(width: 5),
-        Expanded(child: Text(text, style: context.t.bodySmall)),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: context.t.bodySmall,
+          ),
+        ),
       ],
     ),
   );

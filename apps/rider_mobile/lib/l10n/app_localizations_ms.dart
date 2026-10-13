@@ -2040,7 +2040,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get continueLabel => 'Teruskan';
 
   @override
-  String get pinnedLocation => 'Pelanggan pin lokasi tepat';
+  String get pinnedLocation => 'Lokasi dipin';
 
   @override
   String get mapNotAvailable => 'Tak dapat buka peta';
