@@ -752,15 +752,27 @@ class _PickupRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(
           children: [
-            Icon(
-              reported
-                  ? LucideIcons.circleAlert
-                  : (ticked ? LucideIcons.circleCheck : LucideIcons.circle),
-              size: 24,
-              color: reported
-                  ? c.attention
-                  : (ticked ? c.success : c.textSecondary),
-            ),
+            // Ticked: a solid green circle with a white check.
+            if (ticked && !reported)
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: c.success,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  LucideIcons.check,
+                  size: 16,
+                  color: Colors.white,
+                ),
+              )
+            else
+              Icon(
+                reported ? LucideIcons.circleAlert : LucideIcons.circle,
+                size: 24,
+                color: reported ? c.attention : c.textSecondary,
+              ),
             const SizedBox(width: Gap.md),
             Expanded(
               child: Column(

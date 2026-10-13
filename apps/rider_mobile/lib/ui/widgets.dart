@@ -1763,6 +1763,10 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
   double _dragX = 0;
   bool _firing = false;
 
+  /// While the finger is on the knob it follows 1:1 (no animation lag);
+  /// the snap back or to the end animates (2026-10-13).
+  bool _dragging = false;
+
   bool get _active => widget.enabled && !widget.busy && !_firing;
 
   @override
@@ -1818,12 +1822,19 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
                     ),
                   ),
                   AnimatedPositioned(
-                    duration: _firing || widget.busy
+                    duration: _dragging || widget.busy
                         ? Duration.zero
-                        : const Duration(milliseconds: 180),
-                    curve: Curves.easeOut,
+                        : const Duration(milliseconds: 260),
+                    curve: Curves.easeOutCubic,
                     left: _dragX,
                     child: GestureDetector(
+                      onHorizontalDragStart: !_active
+                          ? null
+                          : (_) => setState(() => _dragging = true),
+                      onHorizontalDragCancel: () => setState(() {
+                        _dragging = false;
+                        if (!_firing) _dragX = 0;
+                      }),
                       onHorizontalDragUpdate: !_active
                           ? null
                           : (d) => setState(() {
@@ -1835,6 +1846,7 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
                       onHorizontalDragEnd: !_active
                           ? null
                           : (_) async {
+                              setState(() => _dragging = false);
                               if (maxDrag > 0 && _dragX >= maxDrag * 0.9) {
                                 setState(() {
                                   _dragX = maxDrag;
