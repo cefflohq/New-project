@@ -271,7 +271,9 @@ class ProfileScreen extends StatelessWidget {
           CeffloListTile(
             icon: LucideIcons.shield,
             label: L.security,
-            onTap: () => app.go(DRoute.settings),
+            // Straight to Change password (it opened Settings, a screen
+            // repeating Profile's own rows).
+            onTap: () => openChangePassword(context),
           ),
           CeffloListTile(
             icon: LucideIcons.circleHelp,
@@ -783,17 +785,7 @@ class SettingsScreen extends StatelessWidget {
             label: L.security,
             // Change password with Supabase Auth (updateUser) -- the same
             // screen as password recovery, opened over Settings.
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (route) => SetNewPasswordScreen(
-                  onBack: () => Navigator.of(route).pop(),
-                  onUpdated: () {
-                    Navigator.of(route).pop();
-                    showCefToast(context, L.passwordChanged);
-                  },
-                ),
-              ),
-            ),
+            onTap: () => openChangePassword(context),
           ),
           const SizedBox(height: Gap.md),
           OutlinedNavRow(
@@ -844,3 +836,17 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
+
+/// Security: change password with Supabase Auth (updateUser), the same
+/// screen as password recovery, opened over the current screen.
+void openChangePassword(BuildContext context) => Navigator.of(context).push(
+  MaterialPageRoute<void>(
+    builder: (route) => SetNewPasswordScreen(
+      onBack: () => Navigator.of(route).pop(),
+      onUpdated: () {
+        Navigator.of(route).pop();
+        showCefToast(context, L.passwordChanged);
+      },
+    ),
+  ),
+);
