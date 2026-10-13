@@ -670,6 +670,12 @@ class AppState extends ChangeNotifier {
     orders = await repo.myOrders(rider.id);
     _syncLive();
     try {
+      _schedule = await repo.myJobSchedule();
+    } on RepositoryError {
+      // Run Details then simply shows no pay / pickup time.
+      _schedule = const [];
+    }
+    try {
       final rows = await repo.sessions(rider.businessId);
       sessionNames = {for (final s in rows) s.id: s.name};
     } on RepositoryError {
@@ -680,6 +686,37 @@ class AppState extends ChangeNotifier {
   }
 
   // --- real build: canonical rows projected onto the Driver UI ------------
+
+  /// The Driver's own hiring bookings (my_job_schedule).
+  List<Map<String, dynamic>> _schedule = const [];
+
+  /// Today's approved contract with the active business, if any: the pickup
+  /// time, the pay per drop and the area for Run Details.
+  Map<String, dynamic>? get _todayContract {
+    final bid = active?.businessId;
+    if (bid == null) return null;
+    final today = DateTime.now().weekday; // 1 = Mon .. 7 = Sun, as `days`
+    for (final r in _schedule) {
+      final days = [
+        for (final d in (r['days'] as List? ?? const [])) (d as num).toInt(),
+      ];
+      if (r['business_id']?.toString() == bid &&
+          r['status'] == 'approved' &&
+          days.contains(today)) {
+        return r;
+      }
+    }
+    return null;
+  }
+
+  static String? _clockOf(Object? t) {
+    final p = t?.toString().split(':');
+    if (p == null || p.length < 2) return null;
+    final h = int.tryParse(p[0]), m = int.tryParse(p[1]);
+    if (h == null || m == null) return null;
+    final h12 = h % 12 == 0 ? 12 : h % 12;
+    return '$h12:${m.toString().padLeft(2, '0')} ${h < 12 ? 'AM' : 'PM'}';
+  }
 
   /// Null when the real build has no run to show.
   RunPhase? runPhase;
@@ -838,6 +875,15 @@ class AppState extends ChangeNotifier {
                 ? RunState.onTheWay
                 : RunState.assigned),
       stops: [for (final o in ordered) _toStop(o)],
+      pickupTimeLabel: _clockOf(_todayContract?['shift_start']),
+      payPerDrop: _todayContract?['pay_unit'] == 'drop'
+          ? _todayContract!['pay_amount'] as num?
+          : null,
+      area: (_todayContract?['area_label'] as String?)?.trim().isEmpty ?? true
+          ? null
+          : _todayContract!['area_label'] as String,
+      pickupLatitude: active?.businessLatitude,
+      pickupLongitude: active?.businessLongitude,
     );
   }
 

@@ -948,5 +948,79 @@
   "ntPushDenied": "Blocked in your browser settings. Allow notifications for this site, then try again.",
   "ntPushUnsupported": "Not available in this app yet. Use Cefflo in Chrome on Android or a computer.",
   "ntPushOn": "Alerts on for this device.",
-  "ntPushOff": "Alerts off for this device."
+  "ntPushOff": "Alerts off for this device.",
+  "runStopsLabel": "Stops",
+  "runDistanceLabel": "Distance",
+  "runEstimateLabel": "Estimate",
+  "runYouEarn": "You earn this run",
+  "runEarnedSoFar": "Earned so far",
+  "runPerDrop": "PER DROP",
+  "runDropsRate": "{count} drops × {rate}",
+  "@runDropsRate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "runDropsOfRate": "{done} of {count} drops × {rate}",
+  "@runDropsOfRate": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "runPickupSection": "Pickup",
+  "runCallStore": "Call store",
+  "runDeliveriesSection": "Deliveries",
+  "runMoreStops": "+ {count} more stops in between",
+  "@runMoreStops": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "runDeliveredOf": "{done} of {total} delivered",
+  "@runDeliveredOf": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "runStopsLeft": "{count} stops left",
+  "@runStopsLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "runNextStop": "Next stop",
+  "runPlanRoute": "Plan Route",
+  "runContinueDelivery": "Continue delivery",
+  "runNoOrdersYet": "No orders yet",
+  "runStoreWillAdd": "The store will add orders to this run",
+  "runStartedAt": "Started {time}",
+  "@runStartedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  }
 }

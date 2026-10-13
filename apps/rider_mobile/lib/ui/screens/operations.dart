@@ -432,10 +432,22 @@ class TodayScreen extends StatelessWidget {
 class RunDetailsScreen extends StatelessWidget {
   const RunDetailsScreen({super.key});
 
+  static String _rm(num v) => 'RM ${v.toStringAsFixed(2)}';
+
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     final run = app.currentRun;
+    final started = run.state != RunState.assigned;
+    final total = run.orderCount;
+    final done = run.deliveredCount;
+    // One line: pickup (or start) time and date on the left, status on the
+    // right (Founder 2026-10-13).
+    final when = started && run.startedAtLabel != null
+        ? L.runStartedAt(run.startedAtLabel!)
+        : (run.pickupTimeLabel == null
+              ? null
+              : L.jobPickupAt(run.pickupTimeLabel!));
     return CeffloNavySheetScaffold(
       onRefresh: app.refreshOrders,
       header: Column(
@@ -452,32 +464,37 @@ class RunDetailsScreen extends StatelessWidget {
               Gap.gutter,
               Gap.lg,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        run.reference,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: context.t.displayLarge?.copyWith(fontSize: 28),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (when != null)
+                        Text(
+                          when,
+                          style: const TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: CefColors.onNavy,
+                          ),
+                        ),
+                      Text(
+                        run.dateLabel,
+                        style: const TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: CefColors.onNavyMuted,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: Gap.md),
-                    CeffloStatusChip(run.statusLabel, tone: ChipTone.success),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  run.dateLabel,
-                  style: const TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: CefColors.onNavyMuted,
+                    ],
                   ),
+                ),
+                CeffloStatusChip(
+                  run.statusLabel,
+                  tone: started ? ChipTone.info : ChipTone.success,
                 ),
               ],
             ),
@@ -493,70 +510,347 @@ class RunDetailsScreen extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: CefColors.tintNeutral,
-              borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          if (total == 0)
+            CeffloNote(
+              icon: LucideIcons.package,
+              title: L.runNoOrdersYet,
+              body: L.runStoreWillAdd,
+            )
+          else if (!started) ...[
+            _RunStats(run: run),
+            if (run.earningsFor(total) case final pay?) ...[
+              const SizedBox(height: Gap.md),
+              _RunPay(
+                label: L.runYouEarn,
+                amount: _rm(pay),
+                detail: L.runDropsRate(total, _rm(run.payPerDrop!)),
+              ),
+            ],
+          ] else ...[
+            CeffloCard(
+              shadow: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    L.runDeliveredOf(done, total),
+                    style: context.t.titleMedium,
+                  ),
+                  const SizedBox(height: Gap.sm),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(999),
+                    child: LinearProgressIndicator(
+                      value: total == 0 ? 0 : done / total,
+                      minHeight: 8,
+                      color: context.c.success,
+                      backgroundColor: CefColors.tintNeutral,
+                    ),
+                  ),
+                  const SizedBox(height: Gap.sm),
+                  Text(
+                    L.runStopsLeft(run.pendingCount),
+                    style: context.t.bodySmall,
+                  ),
+                ],
+              ),
             ),
-            child: Column(
+            // Before the first drop the whole run's pay reads better than
+            // "RM 0.00 so far".
+            if (run.payPerDrop != null) ...[
+              const SizedBox(height: Gap.md),
+              done == 0
+                  ? _RunPay(
+                      label: L.runYouEarn,
+                      amount: _rm(run.earningsFor(total)!),
+                      detail: L.runDropsRate(total, _rm(run.payPerDrop!)),
+                    )
+                  : _RunPay(
+                      label: L.runEarnedSoFar,
+                      amount: _rm(run.earningsFor(done)!),
+                      detail: L.runDropsOfRate(
+                        done,
+                        total,
+                        _rm(run.payPerDrop!),
+                      ),
+                    ),
+            ],
+          ],
+          const SizedBox(height: Gap.md),
+          // Before the run starts the Driver needs the store; once it is
+          // under way, the next stop.
+          if (!started)
+            _RunSection(
+              title: L.runPickupSection,
               children: [
-                MetaRow(icon: LucideIcons.mapPin, text: run.zone),
-                MetaRow(
-                  icon: LucideIcons.package,
-                  text: L.orders2(run.orderCount),
+                if (run.pickupLatitude != null &&
+                    run.pickupLongitude != null) ...[
+                  DeliveryPinMap(
+                    latitude: run.pickupLatitude!,
+                    longitude: run.pickupLongitude!,
+                    height: 140,
+                    onTap: () => _toStore(context, run),
+                  ),
+                  const SizedBox(height: Gap.md),
+                ],
+                Text(run.pickupBusinessName, style: context.t.titleMedium),
+                if (run.pickupAddress.isNotEmpty)
+                  Text(run.pickupAddress, style: context.t.bodySmall),
+                const SizedBox(height: Gap.md),
+                _RunActions(
+                  onNavigate: () => _toStore(context, run),
+                  callLabel: L.runCallStore,
+                  phone: app.business?.phone,
                 ),
-                MetaRow(icon: LucideIcons.arrowRight, text: run.distanceText),
-                if (run.startedAtLabel != null)
-                  MetaRow(
-                    icon: LucideIcons.clock,
-                    text: L.started2(run.startedAtLabel!),
+              ],
+            )
+          else if (run.stops
+                  .where((s) => s.status == StopStatus.pending)
+                  .firstOrNull
+              case final next?)
+            _RunSection(
+              title: L.runNextStop,
+              children: [
+                Row(
+                  children: [
+                    CeffloIndexBadge(
+                      run.stops.indexOf(next) + 1,
+                      tone: ChipTone.warning,
+                      size: 26,
+                    ),
+                    const SizedBox(width: Gap.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(next.customerName, style: context.t.titleMedium),
+                          Text(next.addressLine1, style: context.t.bodySmall),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: Gap.md),
+                _RunActions(
+                  onNavigate: () async {
+                    if (!await openNavigation(
+                          lat: next.latitude,
+                          lng: next.longitude,
+                          address: next.addressLine1,
+                        ) &&
+                        context.mounted) {
+                      showCefToast(context, L.mapNotAvailable);
+                    }
+                  },
+                  callLabel: L.call,
+                  phone: next.phone,
+                ),
+              ],
+            ),
+          if (!started && total > 0) ...[
+            const SizedBox(height: Gap.md),
+            _RunSection(
+              title: run.area == null
+                  ? L.runDeliveriesSection
+                  : '${L.runDeliveriesSection} · ${run.area}',
+              children: [
+                _StopLine(index: 1, stop: run.stops.first),
+                if (total > 1) ...[
+                  const SizedBox(height: Gap.sm),
+                  _StopLine(index: total, stop: run.stops.last),
+                ],
+                if (total > 2)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 36, top: Gap.xs),
+                    child: Text(
+                      L.runMoreStops(total - 2),
+                      style: context.t.bodySmall,
+                    ),
                   ),
               ],
             ),
-          ),
-          const SizedBox(height: Gap.lg),
-          CeffloCard(
-            padding: const EdgeInsets.fromLTRB(14, 6, 10, 6),
-            child: Column(
-              children: [
-                _RunStep(
-                  index: 1,
-                  title: L.pickUpFromStore,
-                  value: run.pickupBusinessName,
-                  meta: run.pickupAddress,
-                  metaIcon: LucideIcons.mapPin,
-                  onTap: () => app.go(DRoute.stopList, entityId: run.id),
-                  connector: true,
-                ),
-                _RunStep(
-                  index: 2,
-                  title: L.deliverOrders(run.orderCount),
-                  meta: L.multipleLocations,
-                  metaIcon: LucideIcons.mapPin,
-                  onTap: () => app.go(DRoute.stopList, entityId: run.id),
-                  connector: true,
-                ),
-                _RunStep(
-                  index: 3,
-                  title: L.completeRun,
-                  meta: L.markAllOrdersDelivered,
-                  onTap: () => app.go(DRoute.runCompleted, entityId: run.id),
-                ),
-              ],
-            ),
-          ),
+          ],
           const SizedBox(height: Gap.lg),
           _RunPrimaryAction(runId: run.id),
         ],
       ),
     );
   }
+
+  Future<void> _toStore(BuildContext context, DriverRun run) async {
+    if (!await openNavigation(
+          lat: run.pickupLatitude,
+          lng: run.pickupLongitude,
+          address: run.pickupAddress,
+        ) &&
+        context.mounted) {
+      showCefToast(context, L.mapNotAvailable);
+    }
+  }
 }
 
-/// D20's primary button. In the real build it follows the canonical run
-/// phase — accept_run, then the pickup handoff — before opening the stops;
-/// the prototype keeps its original "View Orders".
+/// Stops · distance · estimate; a cell is left out when the backend has no
+/// value for it (no invented numbers).
+class _RunStats extends StatelessWidget {
+  const _RunStats({required this.run});
+  final DriverRun run;
+
+  @override
+  Widget build(BuildContext context) {
+    final cells = [
+      (L.runStopsLabel, '${run.orderCount}'),
+      if (run.distanceKm != null) (L.runDistanceLabel, run.distanceText),
+      if (run.estimateLabel != null)
+        (
+          L.runEstimateLabel,
+          run.estimateLabel!.replaceFirst(RegExp(r'^\D+'), '~'),
+        ),
+    ];
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: Gap.md),
+      decoration: BoxDecoration(
+        color: CefColors.tintNeutral,
+        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+      ),
+      child: Row(
+        children: [
+          for (final (i, (label, value)) in cells.indexed)
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  border: i == 0
+                      ? null
+                      : Border(left: BorderSide(color: context.c.border)),
+                ),
+                child: Column(
+                  children: [
+                    Text(value, style: context.t.titleLarge),
+                    Text(label, style: context.t.bodySmall),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The Driver's pay for this run, from the per-drop hiring contract.
+class _RunPay extends StatelessWidget {
+  const _RunPay({
+    required this.label,
+    required this.amount,
+    required this.detail,
+  });
+  final String label, amount, detail;
+
+  @override
+  Widget build(BuildContext context) => CeffloCard(
+    shadow: false,
+    color: CefColors.tintSuccess,
+    child: Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: context.t.bodySmall),
+              Text(
+                amount,
+                style: context.t.displaySmall?.copyWith(fontSize: 22),
+              ),
+              Text(detail, style: context.t.bodySmall),
+            ],
+          ),
+        ),
+        CeffloStatusChip(L.runPerDrop, tone: ChipTone.success),
+      ],
+    ),
+  );
+}
+
+class _RunSection extends StatelessWidget {
+  const _RunSection({required this.title, required this.children});
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => CeffloCard(
+    shadow: false,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          title.toUpperCase(),
+          style: context.t.labelSmall?.copyWith(
+            letterSpacing: .6,
+            color: context.c.textSecondary,
+          ),
+        ),
+        const SizedBox(height: Gap.sm),
+        ...children,
+      ],
+    ),
+  );
+}
+
+/// Navigate + Call, side by side.
+class _RunActions extends StatelessWidget {
+  const _RunActions({
+    required this.onNavigate,
+    required this.callLabel,
+    required this.phone,
+  });
+  final VoidCallback onNavigate;
+  final String callLabel;
+  final String? phone;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(child: CeffloSecondaryButton(L.navigate, onTap: onNavigate)),
+      if (phone != null && phone!.trim().isNotEmpty) ...[
+        const SizedBox(width: Gap.sm),
+        Expanded(
+          child: CeffloSecondaryButton(
+            callLabel,
+            onTap: () async {
+              if (!await dialPhone(phone) && context.mounted) {
+                showCefToast(context, L.mapNotAvailable);
+              }
+            },
+          ),
+        ),
+      ],
+    ],
+  );
+}
+
+class _StopLine extends StatelessWidget {
+  const _StopLine({required this.index, required this.stop});
+  final int index;
+  final DriverStop stop;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      CeffloIndexBadge(index, tone: ChipTone.info, size: 26),
+      const SizedBox(width: Gap.md - 2),
+      Expanded(
+        child: Text(
+          stop.addressLine1,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: context.t.bodyMedium,
+        ),
+      ),
+    ],
+  );
+}
+
+/// D20's primary button, following the canonical run phase: accept_run,
+/// Plan Route, the pickup handoff, then the deliveries. None once done or
+/// for an empty run.
 class _RunPrimaryAction extends StatefulWidget {
   const _RunPrimaryAction({required this.runId});
   final String runId;
@@ -584,120 +878,34 @@ class _RunPrimaryActionState extends State<_RunPrimaryAction> {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    final phase = app.repo.isDemo ? null : app.runPhase;
+    final run = app.currentRun;
+    if (run.orderCount == 0) return const SizedBox.shrink();
+    void stops() => app.go(DRoute.stopList, entityId: widget.runId);
+    final phase = app.repo.isDemo
+        ? (run.state == RunState.assigned
+              ? RunPhase.plan
+              : run.state == RunState.completed
+              ? RunPhase.done
+              : RunPhase.delivering)
+        : app.runPhase;
     return switch (phase) {
       RunPhase.accept => CeffloPrimaryButton(
         L.acceptRun,
         busy: _busy,
         onTap: _busy ? null : () => _run(app.acceptCurrentRun),
       ),
+      RunPhase.plan => CeffloPrimaryButton(L.runPlanRoute, onTap: stops),
       RunPhase.pickup => CeffloPrimaryButton(
         L.confirmPickup,
         busy: _busy,
         onTap: _busy ? null : () => _run(app.confirmPickup),
       ),
-      _ => CeffloPrimaryButton(
-        L.viewOrders,
-        onTap: () => app.go(DRoute.stopList, entityId: widget.runId),
+      RunPhase.route || RunPhase.delivering => CeffloPrimaryButton(
+        L.runContinueDelivery,
+        onTap: stops,
       ),
+      RunPhase.done || null => const SizedBox.shrink(),
     };
-  }
-}
-
-class _RunStep extends StatelessWidget {
-  const _RunStep({
-    required this.index,
-    required this.title,
-    this.value,
-    required this.meta,
-    this.metaIcon,
-    required this.onTap,
-    this.connector = false,
-  });
-
-  final int index;
-  final String title;
-  final String? value;
-  final String meta;
-  final IconData? metaIcon;
-  final VoidCallback onTap;
-  final bool connector;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Column(
-            children: [
-              const SizedBox(height: 14),
-              CeffloIndexBadge(index, tone: ChipTone.warning, size: 28),
-              if (connector)
-                Expanded(
-                  child: Container(
-                    width: 2,
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    color: c.border,
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(Sizes.innerRadius),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(title, style: context.t.titleSmall),
-                          if (value != null) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              value!,
-                              style: TextStyle(
-                                fontFamily: 'Manrope',
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.w700,
-                                color: c.textPrimary,
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              if (metaIcon != null) ...[
-                                Icon(metaIcon, size: 14, color: c.info),
-                                const SizedBox(width: 5),
-                              ],
-                              Expanded(
-                                child: Text(meta, style: context.t.bodySmall),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      LucideIcons.chevronRight,
-                      size: 20,
-                      color: c.textSecondary,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -721,23 +929,6 @@ class _StopListScreenState extends State<StopListScreen> {
       ? 1
       : 0; // 0 = List (D21.1), 1 = Map (D21.2)
   int _filter = 0; // 0 = All, 1 = Pending, 2 = Delivered
-
-  /// Unit-space stop positions for the painted map in D21.2. They trace the
-  /// same serpentine the reference draws through Setapak.
-  static const _mapPoints = <Offset>[
-    Offset(0.30, 0.86),
-    Offset(0.32, 0.76),
-    Offset(0.34, 0.68),
-    Offset(0.41, 0.64),
-    Offset(0.36, 0.56),
-    Offset(0.46, 0.56),
-    Offset(0.55, 0.50),
-    Offset(0.52, 0.44),
-    Offset(0.62, 0.42),
-    Offset(0.45, 0.35),
-    Offset(0.49, 0.20),
-    Offset(0.52, 0.30),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -982,102 +1173,12 @@ class _StopListScreenState extends State<StopListScreen> {
       Expanded(
         child: Stack(
           children: [
-            // Real map (Founder 2026-10-12); the painted canvas stays for
-            // the prototype only.
-            if (!AppScope.read(context).repo.isDemo)
-              Positioned.fill(child: RunMap(stops: run.stops))
-            else ...[
-              Positioned.fill(
-                child: MapCanvas(
-                  route: _mapPoints,
-                  // Offset from stop 1 so the driver puck and the first stop
-                  // pin do not sit on top of each other.
-                  heading: const Offset(0.23, 0.92),
-                  // Illustrative map: real place names only in the prototype.
-                  labels: AppScope.read(context).repo.isDemo
-                      ? [
-                          MapLabel(L.setapak, Offset(0.70, 0.52), big: true),
-                          MapLabel(L.tamanSetapak, Offset(0.56, 0.14)),
-                          MapLabel(L.danauKota, Offset(0.16, 0.90)),
-                        ]
-                      : const [],
-                  markers: [
-                    for (var i = 0; i < _mapPoints.length; i++)
-                      MapMarker(position: _mapPoints[i], index: i + 1),
-                  ],
-                ),
-              ),
-              Positioned(
-                left: Gap.md,
-                top: Gap.md,
-                child: Column(
-                  children: const [
-                    MapControlButton(icon: LucideIcons.locateFixed),
-                    SizedBox(height: Gap.sm),
-                    MapControlButton(icon: LucideIcons.layers),
-                    SizedBox(height: Gap.sm),
-                    MapControlButton(icon: LucideIcons.navigation),
-                  ],
-                ),
-              ),
-              const Positioned(
-                right: Gap.md,
-                bottom: Gap.md,
-                child: MapRecenterPill(),
-              ),
-            ],
+            // Real map, the prototype included (demo stops carry real
+            // Setapak coordinates).
+            Positioned.fill(child: RunMap(stops: run.stops)),
           ],
         ),
       ),
-      // Run summary under the map: the prototype only; a real run already
-      // shows orders and distance in the header, so the map takes the room.
-      if (AppScope.read(context).repo.isDemo)
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, Gap.md),
-          color: context.c.card,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SheetGrabber(),
-              Text(
-                run.reference,
-                style: context.t.displaySmall?.copyWith(fontSize: 20),
-              ),
-              const SizedBox(height: Gap.sm),
-              Row(
-                children: [
-                  Expanded(
-                    child: MetaRow(
-                      icon: LucideIcons.package,
-                      text: L.orders2(run.orderCount),
-                      dense: true,
-                    ),
-                  ),
-                  Expanded(
-                    child: MetaRow(
-                      icon: LucideIcons.navigation,
-                      text: run.distanceText,
-                      dense: true,
-                    ),
-                  ),
-                  Expanded(
-                    child: MetaRow(
-                      icon: LucideIcons.mapPin,
-                      text: run.zone,
-                      dense: true,
-                    ),
-                  ),
-                ],
-              ),
-              MetaRow(
-                icon: LucideIcons.clock,
-                text: run.estimateLabel ?? '',
-                dense: true,
-              ),
-            ],
-          ),
-        ),
     ],
   );
 }
@@ -1195,15 +1296,6 @@ class StopRow extends StatelessWidget {
 class NavigationToStopScreen extends StatelessWidget {
   const NavigationToStopScreen({super.key});
 
-  static const _route = <Offset>[
-    Offset(0.36, 0.78),
-    Offset(0.36, 0.56),
-    Offset(0.47, 0.54),
-    Offset(0.48, 0.34),
-    Offset(0.56, 0.32),
-    Offset(0.57, 0.18),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
@@ -1281,35 +1373,15 @@ class NavigationToStopScreen extends StatelessWidget {
               Expanded(
                 child: Stack(
                   children: [
-                    // Real map (Founder 2026-10-12) focused on the active
-                    // stop; the painted canvas stays for the prototype only.
-                    if (!app.repo.isDemo)
-                      Positioned.fill(
-                        child: RunMap(
-                          stops: app.currentRun.stops,
-                          focus: stop,
-                          showControls: false,
-                        ),
-                      )
-                    else
-                      Positioned.fill(
-                        child: MapCanvas(
-                          route: _route,
-                          // Illustrative map: real place names only in the prototype.
-                          labels: app.repo.isDemo
-                              ? [
-                                  MapLabel(
-                                    L.setapak,
-                                    Offset(0.66, 0.60),
-                                    big: true,
-                                  ),
-                                ]
-                              : const [],
-                          markers: const [
-                            MapMarker(position: Offset(0.57, 0.18), pin: true),
-                          ],
-                        ),
+                    // Real map focused on the active stop, the prototype
+                    // included (demo stops carry real coordinates).
+                    Positioned.fill(
+                      child: RunMap(
+                        stops: app.currentRun.stops,
+                        focus: stop,
+                        showControls: false,
                       ),
+                    ),
                     Positioned(
                       left: Gap.md,
                       top: Gap.md,
@@ -1319,12 +1391,6 @@ class NavigationToStopScreen extends StatelessWidget {
                             icon: LucideIcons.chevronLeft,
                             onTap: app.back,
                           ),
-                          const SizedBox(height: Gap.sm),
-                          const MapControlButton(icon: LucideIcons.volume2),
-                          const SizedBox(height: Gap.sm),
-                          const MapControlButton(icon: LucideIcons.layers),
-                          const SizedBox(height: Gap.sm),
-                          const MapControlButton(icon: LucideIcons.navigation),
                         ],
                       ),
                     ),

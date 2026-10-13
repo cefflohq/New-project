@@ -2057,4 +2057,76 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ntPushOff => 'Alerts off for this device.';
+
+  @override
+  String get runStopsLabel => 'Stops';
+
+  @override
+  String get runDistanceLabel => 'Distance';
+
+  @override
+  String get runEstimateLabel => 'Estimate';
+
+  @override
+  String get runYouEarn => 'You earn this run';
+
+  @override
+  String get runEarnedSoFar => 'Earned so far';
+
+  @override
+  String get runPerDrop => 'PER DROP';
+
+  @override
+  String runDropsRate(int count, String rate) {
+    return '$count drops × $rate';
+  }
+
+  @override
+  String runDropsOfRate(int done, int count, String rate) {
+    return '$done of $count drops × $rate';
+  }
+
+  @override
+  String get runPickupSection => 'Pickup';
+
+  @override
+  String get runCallStore => 'Call store';
+
+  @override
+  String get runDeliveriesSection => 'Deliveries';
+
+  @override
+  String runMoreStops(int count) {
+    return '+ $count more stops in between';
+  }
+
+  @override
+  String runDeliveredOf(int done, int total) {
+    return '$done of $total delivered';
+  }
+
+  @override
+  String runStopsLeft(int count) {
+    return '$count stops left';
+  }
+
+  @override
+  String get runNextStop => 'Next stop';
+
+  @override
+  String get runPlanRoute => 'Plan Route';
+
+  @override
+  String get runContinueDelivery => 'Continue delivery';
+
+  @override
+  String get runNoOrdersYet => 'No orders yet';
+
+  @override
+  String get runStoreWillAdd => 'The store will add orders to this run';
+
+  @override
+  String runStartedAt(String time) {
+    return 'Started $time';
+  }
 }

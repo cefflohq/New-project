@@ -2071,4 +2071,76 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get ntPushOff => 'Makluman dimatikan untuk peranti ini.';
+
+  @override
+  String get runStopsLabel => 'Hentian';
+
+  @override
+  String get runDistanceLabel => 'Jarak';
+
+  @override
+  String get runEstimateLabel => 'Anggaran';
+
+  @override
+  String get runYouEarn => 'Pendapatan run ini';
+
+  @override
+  String get runEarnedSoFar => 'Pendapatan setakat ini';
+
+  @override
+  String get runPerDrop => 'PER DROP';
+
+  @override
+  String runDropsRate(int count, String rate) {
+    return '$count drop × $rate';
+  }
+
+  @override
+  String runDropsOfRate(int done, int count, String rate) {
+    return '$done daripada $count drop × $rate';
+  }
+
+  @override
+  String get runPickupSection => 'Pickup';
+
+  @override
+  String get runCallStore => 'Hubungi kedai';
+
+  @override
+  String get runDeliveriesSection => 'Penghantaran';
+
+  @override
+  String runMoreStops(int count) {
+    return '+ $count hentian lagi di antara';
+  }
+
+  @override
+  String runDeliveredOf(int done, int total) {
+    return '$done daripada $total dihantar';
+  }
+
+  @override
+  String runStopsLeft(int count) {
+    return '$count hentian lagi';
+  }
+
+  @override
+  String get runNextStop => 'Hentian seterusnya';
+
+  @override
+  String get runPlanRoute => 'Susun Laluan';
+
+  @override
+  String get runContinueDelivery => 'Teruskan penghantaran';
+
+  @override
+  String get runNoOrdersYet => 'Belum ada order';
+
+  @override
+  String get runStoreWillAdd => 'Kedai akan tambah order ke run ini';
+
+  @override
+  String runStartedAt(String time) {
+    return 'Mula $time';
+  }
 }

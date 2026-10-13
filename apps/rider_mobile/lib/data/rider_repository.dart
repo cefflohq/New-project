@@ -303,7 +303,9 @@ class RiderRepository {
     final businessRows = await _run(
       () => _db
           .from('businesses')
-          .select('id,name,address,phone')
+          .select(
+            'id,name,address,phone,service_origin_latitude,service_origin_longitude',
+          )
           .inFilter('id', businessIds.toList()),
     );
     final nameById = {
@@ -313,6 +315,14 @@ class RiderRepository {
     final addressById = {
       for (final b in _rows(businessRows))
         b['id'].toString(): b['address']?.toString(),
+    };
+    double? coord(Object? v) => v is num ? v.toDouble() : null;
+    final originById = {
+      for (final b in _rows(businessRows))
+        b['id'].toString(): (
+          coord(b['service_origin_latitude']),
+          coord(b['service_origin_longitude']),
+        ),
     };
     final phoneById = {
       for (final b in _rows(businessRows))
@@ -333,6 +343,8 @@ class RiderRepository {
             businessName: nameById[r.businessId],
             businessAddress: addressById[r.businessId],
             businessPhone: phoneById[r.businessId],
+            businessLatitude: originById[r.businessId]?.$1,
+            businessLongitude: originById[r.businessId]?.$2,
           ),
         )
         .toList();

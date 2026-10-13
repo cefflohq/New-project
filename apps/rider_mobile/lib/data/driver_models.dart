@@ -101,7 +101,26 @@ class DriverRun {
     this.durationLabel,
     this.estimateLabel,
     this.vehicleLabel,
+    this.pickupTimeLabel,
+    this.payPerDrop,
+    this.area,
+    this.pickupLatitude,
+    this.pickupLongitude,
   });
+
+  /// From the Driver's approved hiring contract with this business for
+  /// today (my_job_schedule): "10:00 AM", the pay per drop, the area label.
+  /// Null for a Driver without a contract (e.g. invited, not hired).
+  final String? pickupTimeLabel;
+  final num? payPerDrop;
+  final String? area;
+
+  /// The business pickup point, for the pickup map.
+  final double? pickupLatitude, pickupLongitude;
+
+  /// RM for [drops] drops at [payPerDrop]; null without a contract.
+  num? earningsFor(int drops) =>
+      payPerDrop == null ? null : payPerDrop! * drops;
 
   final String id;
   final String reference; // "#CF1003"
@@ -149,6 +168,11 @@ class DriverRun {
     durationLabel: durationLabel,
     estimateLabel: estimateLabel,
     vehicleLabel: vehicleLabel,
+    pickupTimeLabel: pickupTimeLabel,
+    payPerDrop: payPerDrop,
+    area: area,
+    pickupLatitude: pickupLatitude,
+    pickupLongitude: pickupLongitude,
   );
 }
 

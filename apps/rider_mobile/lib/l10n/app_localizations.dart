@@ -3775,6 +3775,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Alerts off for this device.'**
   String get ntPushOff;
+
+  /// No description provided for @runStopsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Stops'**
+  String get runStopsLabel;
+
+  /// No description provided for @runDistanceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get runDistanceLabel;
+
+  /// No description provided for @runEstimateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimate'**
+  String get runEstimateLabel;
+
+  /// No description provided for @runYouEarn.
+  ///
+  /// In en, this message translates to:
+  /// **'You earn this run'**
+  String get runYouEarn;
+
+  /// No description provided for @runEarnedSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'Earned so far'**
+  String get runEarnedSoFar;
+
+  /// No description provided for @runPerDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'PER DROP'**
+  String get runPerDrop;
+
+  /// No description provided for @runDropsRate.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} drops × {rate}'**
+  String runDropsRate(int count, String rate);
+
+  /// No description provided for @runDropsOfRate.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {count} drops × {rate}'**
+  String runDropsOfRate(int done, int count, String rate);
+
+  /// No description provided for @runPickupSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup'**
+  String get runPickupSection;
+
+  /// No description provided for @runCallStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Call store'**
+  String get runCallStore;
+
+  /// No description provided for @runDeliveriesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Deliveries'**
+  String get runDeliveriesSection;
+
+  /// No description provided for @runMoreStops.
+  ///
+  /// In en, this message translates to:
+  /// **'+ {count} more stops in between'**
+  String runMoreStops(int count);
+
+  /// No description provided for @runDeliveredOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} delivered'**
+  String runDeliveredOf(int done, int total);
+
+  /// No description provided for @runStopsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} stops left'**
+  String runStopsLeft(int count);
+
+  /// No description provided for @runNextStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Next stop'**
+  String get runNextStop;
+
+  /// No description provided for @runPlanRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan Route'**
+  String get runPlanRoute;
+
+  /// No description provided for @runContinueDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue delivery'**
+  String get runContinueDelivery;
+
+  /// No description provided for @runNoOrdersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders yet'**
+  String get runNoOrdersYet;
+
+  /// No description provided for @runStoreWillAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'The store will add orders to this run'**
+  String get runStoreWillAdd;
+
+  /// No description provided for @runStartedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Started {time}'**
+  String runStartedAt(String time);
 }
 
 class _AppLocalizationsDelegate

@@ -147,6 +147,8 @@ class DemoData {
     DriverStop(
       id: 's001',
       reference: '#S001',
+      latitude: 3.2023,
+      longitude: 101.7287,
       customerName: 'Farah Ibrahim',
       addressLine1: 'Jalan Danau Kota 1,',
       addressLine2: 'Setapak',
@@ -162,6 +164,8 @@ class DemoData {
     DriverStop(
       id: 's002',
       reference: '#S002',
+      latitude: 3.2043,
+      longitude: 101.7271,
       customerName: 'Lee Chin Wei',
       addressLine1: 'Jalan Setapak Indah',
       items: [DriverOrderItem(quantity: 2, name: 'Butter Croissant')],
@@ -169,6 +173,8 @@ class DemoData {
     DriverStop(
       id: 's003',
       reference: '#S003',
+      latitude: 3.2054,
+      longitude: 101.7243,
       customerName: 'Aisyah Rahman',
       addressLine1: 'Jalan 2/27A, Setapak',
       items: [DriverOrderItem(quantity: 1, name: 'Cheese Tart Box')],
@@ -176,6 +182,8 @@ class DemoData {
     DriverStop(
       id: 's004',
       reference: '#S004',
+      latitude: 3.2053,
+      longitude: 101.7212,
       customerName: 'Kumaravelu',
       addressLine1: 'Jalan Usahawan 4',
       items: [DriverOrderItem(quantity: 1, name: 'Sourdough Loaf')],
@@ -183,6 +191,8 @@ class DemoData {
     DriverStop(
       id: 's005',
       reference: '#S005',
+      latitude: 3.2041,
+      longitude: 101.7186,
       customerName: 'Siti Norazimah',
       addressLine1: 'Jalan Genting Kelang',
       items: [DriverOrderItem(quantity: 3, name: 'Kuih Platter')],
@@ -190,6 +200,8 @@ class DemoData {
     DriverStop(
       id: 's006',
       reference: '#S006',
+      latitude: 3.202,
+      longitude: 101.7171,
       customerName: 'Daniel Tan',
       addressLine1: 'Jalan Taman Ibu Kota',
       items: [DriverOrderItem(quantity: 1, name: 'Coffee Beans 250g')],
@@ -197,36 +209,48 @@ class DemoData {
     DriverStop(
       id: 's007',
       reference: '#S007',
+      latitude: 3.1997,
+      longitude: 101.7173,
       customerName: 'Nurul Huda',
       addressLine1: 'Jalan Danau Kota 3',
     ),
     DriverStop(
       id: 's008',
       reference: '#S008',
+      latitude: 3.1977,
+      longitude: 101.7189,
       customerName: 'Rajesh Kumar',
       addressLine1: 'Jalan Setapak Jaya',
     ),
     DriverStop(
       id: 's009',
       reference: '#S009',
+      latitude: 3.1966,
+      longitude: 101.7217,
       customerName: 'Wong Mei Ling',
       addressLine1: 'Jalan Usahawan 2',
     ),
     DriverStop(
       id: 's010',
       reference: '#S010',
+      latitude: 3.1967,
+      longitude: 101.7248,
       customerName: 'Hafiz Zulkifli',
       addressLine1: 'Jalan Genting Kelang 4',
     ),
     DriverStop(
       id: 's011',
       reference: '#S011',
+      latitude: 3.1979,
+      longitude: 101.7274,
       customerName: 'Chong Wei Han',
       addressLine1: 'Taman Setapak',
     ),
     DriverStop(
       id: 's012',
       reference: '#S012',
+      latitude: 3.2,
+      longitude: 101.7289,
       customerName: 'Amirah Yusof',
       addressLine1: 'Jalan Danau Kota 5',
     ),
@@ -245,6 +269,11 @@ class DemoData {
     startedAtLabel: '10:20 AM',
     estimateLabel: 'Estimated 1h 20m',
     vehicleLabel: 'Motorbike (WYX 1234)',
+    pickupTimeLabel: '10:00 AM',
+    payPerDrop: 4,
+    area: 'Setapak · Wangsa Maju',
+    pickupLatitude: 3.2002,
+    pickupLongitude: 101.7180,
   );
 
   /// D30/D32 show the same run once every stop is delivered.

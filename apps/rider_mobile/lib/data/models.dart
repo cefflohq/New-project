@@ -63,7 +63,13 @@ class RiderRelationship {
     this.phone,
     this.vehicleType,
     this.plate,
+    this.businessLatitude,
+    this.businessLongitude,
   });
+
+  /// The business's pickup point (service origin), for Run Details' pickup
+  /// map. Null until the business has set it.
+  final double? businessLatitude, businessLongitude;
 
   final String id;
   final String businessId;
@@ -87,6 +93,8 @@ class RiderRelationship {
     String? businessName,
     String? businessAddress,
     String? businessPhone,
+    double? businessLatitude,
+    double? businessLongitude,
   }) => RiderRelationship(
     id: row['id'].toString(),
     businessId: row['business_id'].toString(),
@@ -95,6 +103,8 @@ class RiderRelationship {
     businessName: businessName,
     businessAddress: businessAddress,
     businessPhone: businessPhone,
+    businessLatitude: businessLatitude,
+    businessLongitude: businessLongitude,
     phone: row['phone']?.toString(),
     vehicleType: row['vehicle_type']?.toString(),
     plate: row['vehicle_plate']?.toString(),

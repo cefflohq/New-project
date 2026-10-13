@@ -532,21 +532,27 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
                 value: _shift,
                 onChanged: (s) => setState(() => _shift = s),
               ),
-              const SizedBox(height: Gap.sm),
-              _RadiusFilter(
-                value: radius,
-                onChanged: (km) => _Jobs.setRadius(app, km),
-              ),
-              _SectionRow(
-                title: L.myWeek,
-                action: L.openSchedule,
-                onAction: () => app.go(DRoute.mySchedule),
-              ),
+              // The radius is set from "Change" in the header (one filter row
+              // here). My week shows only once the Driver has a slot, and the
+              // count only when there is something to count (2026-10-13).
               ValueListenableBuilder<List<_Booking>>(
                 valueListenable: _Jobs.bookings,
-                builder: (context, b, _) => _WeekStrip(bookings: b),
+                builder: (context, b, _) => b.isEmpty
+                    ? const SizedBox.shrink()
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _SectionRow(
+                            title: L.myWeek,
+                            action: L.openSchedule,
+                            onAction: () => app.go(DRoute.mySchedule),
+                          ),
+                          _WeekStrip(bookings: b),
+                        ],
+                      ),
               ),
-              _SectionRow(title: L.openingsCount(shown.length)),
+              if (shown.isNotEmpty)
+                _SectionRow(title: L.openingsCount(shown.length)),
               ValueListenableBuilder<String?>(
                 valueListenable: _Jobs.error,
                 builder: (context, e, _) => e == null
@@ -570,7 +576,6 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
                   radius: radius,
                   place: place.label,
                   onExpand: radius < 50 ? () => _Jobs.setRadius(app, 50) : null,
-                  onChangeLocation: () => _changeLocation(app),
                 )
               else if (shown.isEmpty)
                 Padding(
@@ -722,23 +727,25 @@ class _NoLocation extends StatelessWidget {
   );
 }
 
+/// One message, one action: "Change" in the header already changes the
+/// location.
 class _NoJobsNearby extends StatelessWidget {
   const _NoJobsNearby({
     required this.radius,
     required this.place,
     required this.onExpand,
-    required this.onChangeLocation,
   });
   final int radius;
   final String place;
   final VoidCallback? onExpand;
-  final VoidCallback onChangeLocation;
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: Gap.lg),
+    padding: const EdgeInsets.symmetric(vertical: Gap.section * 2),
     child: Column(
       children: [
+        Icon(LucideIcons.searchX, size: 34, color: context.c.textSecondary),
+        const SizedBox(height: Gap.md),
         Text(
           L.noJobsWithin('$radius', place),
           textAlign: TextAlign.center,
@@ -754,8 +761,6 @@ class _NoJobsNearby extends StatelessWidget {
               color: context.c.textSecondary,
             ),
           ),
-        const SizedBox(height: Gap.sm),
-        CeffloSecondaryButton(L.changeLocation, onTap: onChangeLocation),
       ],
     ),
   );
@@ -813,6 +818,15 @@ class _TownPickerState extends State<_TownPicker> {
           children: [
             Text(L.changeLocation, style: context.t.titleMedium),
             const SizedBox(height: Gap.md),
+            // How far: lives here now, not as a second row on Find Jobs.
+            ValueListenableBuilder<int>(
+              valueListenable: _Jobs.radius,
+              builder: (context, km, _) => _RadiusFilter(
+                value: km,
+                onChanged: (v) => _Jobs.setRadius(AppScope.read(context), v),
+              ),
+            ),
+            const SizedBox(height: Gap.sm),
             TextField(
               autofocus: false,
               onChanged: _search,

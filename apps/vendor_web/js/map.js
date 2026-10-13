@@ -19,6 +19,11 @@ function compactCredit(gl, map) {
   const close = () => map.getContainer().querySelectorAll('.mapboxgl-compact-show, .maplibregl-compact-show')
     .forEach(el => el.classList.remove('mapboxgl-compact-show', 'maplibregl-compact-show'));
   map.once('load', close); close();
+  // Redraw when the box changes size (a map created while its card was still
+  // laying out drew only part of the canvas).
+  const box = map.getContainer();
+  if ('ResizeObserver' in window) new ResizeObserver(() => map.resize()).observe(box);
+  map.once('load', () => map.resize());
 }
 
 const GL = MAPBOX_TOKEN
