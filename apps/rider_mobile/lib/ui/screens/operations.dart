@@ -1989,7 +1989,7 @@ class _ProofTile extends StatelessWidget {
               Flexible(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       label,
