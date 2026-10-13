@@ -26,7 +26,7 @@ enum DriverStage { noBusiness, pendingReview, approved, active }
 /// Checklist -> Delivery Run): accept, plan (Plan Route), pickup (Pickup
 /// Checklist), route (picked up, ready for Slide to Start Delivery),
 /// delivering, done.
-enum RunPhase { accept, plan, pickup, route, delivering, done }
+enum RunPhase { accept, pickup, route, delivering, done }
 
 /// Navigation + session state.
 ///
@@ -905,14 +905,10 @@ class AppState extends ChangeNotifier {
           o.status == DeliveryStatus.created ||
           o.status == DeliveryStatus.readyForPickup,
     )) {
-      // Plan Route comes first: until the Driver confirms the stop order
-      // (or pickup has already begun), the run waits on Plan Route.
-      final pickupBegun = r.orders.any(
-        (o) => o.status == DeliveryStatus.pickedUp,
-      );
-      return pickupBegun || _plannedRuns.contains(r.sessionId ?? 'run')
-          ? RunPhase.pickup
-          : RunPhase.plan;
+      // Founder 2026-10-13: the Pickup Checklist comes first (tick every
+      // order, Slide to Confirm Pickup), then Plan Route, then Start
+      // Delivery. Orders not yet picked up mean the run is at pickup.
+      return RunPhase.pickup;
     }
     final live = r.orders.where((o) => !_terminal(o.status));
     if (live.isEmpty) return RunPhase.done;
@@ -1081,27 +1077,21 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  /// Runs whose stop order the Driver confirmed on Plan Route. The order
-  /// itself is persisted by save_run_sequence; this only records that the
-  /// Plan Route step was completed in this session (re-confirming after an
-  /// app restart is a server no-op when nothing changed).
-  final Set<String> _plannedRuns = {};
+  /// Pickup Checklist: the stop ids the Driver has ticked as in hand.
+  /// Slide to Confirm Pickup unlocks once every order is ticked. Local to
+  /// this device; the pickup itself is recorded by [confirmPickup].
+  final Set<String> pickupTicks = {};
 
-  /// Plan Route: Slide to Confirm Route saves the stop order (pickup next).
-  Future<void> confirmRoutePlan() async {
-    final session = currentRun.id;
-    await _thenRefresh(() async {
-      await repo.saveRunSequence(
-        riderId: _riderId,
-        sessionId: session,
-        orderedOrderIds: [
-          for (final s in currentRun.stops)
-            if (s.status == StopStatus.pending) s.id,
-        ],
-      );
-      _plannedRuns.add(session);
-    });
+  void togglePickupTick(String stopId) {
+    pickupTicks.contains(stopId)
+        ? pickupTicks.remove(stopId)
+        : pickupTicks.add(stopId);
+    notifyListeners();
   }
+
+  bool get allPickupTicked =>
+      currentRun.stops.isNotEmpty &&
+      currentRun.stops.every((s) => pickupTicks.contains(s.id));
 
   /// accept_run for the whole run.
   Future<void> acceptCurrentRun() => _thenRefresh(
@@ -1131,6 +1121,7 @@ class AppState extends ChangeNotifier {
         );
       }
     }
+    pickupTicks.clear();
   }, locationEvent: true);
 
   /// Slide to Start Delivery (after the Pickup Checklist): save_run_sequence

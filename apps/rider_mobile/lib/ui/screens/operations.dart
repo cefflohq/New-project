@@ -698,7 +698,10 @@ class RunDetailsScreen extends StatelessWidget {
                 ),
               ],
             ),
-          if (!started && total > 0) ...[
+          if (!app.repo.isDemo && app.runPhase == RunPhase.pickup) ...[
+            const SizedBox(height: Gap.md),
+            _PickupChecklist(run: run),
+          ] else if (!started && total > 0) ...[
             const SizedBox(height: Gap.md),
             _RunSection(
               title: run.area == null
@@ -737,6 +740,92 @@ class RunDetailsScreen extends StatelessWidget {
         context.mounted) {
       showCefToast(context, L.mapNotAvailable);
     }
+  }
+}
+
+/// Pickup Checklist (R-11, Founder 2026-10-13): the Driver ticks every
+/// order in hand against the store's sorting; Slide to Confirm Pickup stays
+/// grey until all are ticked.
+class _PickupChecklist extends StatelessWidget {
+  const _PickupChecklist({required this.run});
+  final DriverRun run;
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final c = context.c;
+    final done = run.stops.where((s) => app.pickupTicks.contains(s.id)).length;
+    return CeffloCard(
+      shadow: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  L.pickupChecklist.toUpperCase(),
+                  style: context.t.labelSmall?.copyWith(
+                    letterSpacing: .6,
+                    color: c.textSecondary,
+                  ),
+                ),
+              ),
+              Text(
+                L.pickupTicked(done, run.orderCount),
+                style: context.t.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: done == run.orderCount ? c.success : c.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Gap.xs),
+          for (final s in run.stops)
+            InkWell(
+              onTap: () => app.togglePickupTick(s.id),
+              borderRadius: BorderRadius.circular(Sizes.innerRadius),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  children: [
+                    Icon(
+                      app.pickupTicks.contains(s.id)
+                          ? LucideIcons.circleCheck
+                          : LucideIcons.circle,
+                      size: 24,
+                      color: app.pickupTicks.contains(s.id)
+                          ? c.success
+                          : c.textSecondary,
+                    ),
+                    const SizedBox(width: Gap.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(s.reference, style: context.t.titleSmall),
+                          Text(
+                            [
+                              s.customerName,
+                              if (s.items.isNotEmpty)
+                                L.itemsCount(
+                                  s.items.fold(0, (a, i) => a + i.quantity),
+                                ),
+                            ].join(' · '),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: context.t.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
 
@@ -935,7 +1024,7 @@ class _RunPrimaryActionState extends State<_RunPrimaryAction> {
     void stops() => app.go(DRoute.stopList, entityId: widget.runId);
     final phase = app.repo.isDemo
         ? (run.state == RunState.assigned
-              ? RunPhase.plan
+              ? RunPhase.route
               : run.state == RunState.completed
               ? RunPhase.done
               : RunPhase.delivering)
@@ -946,13 +1035,22 @@ class _RunPrimaryActionState extends State<_RunPrimaryAction> {
         busy: _busy,
         onTap: _busy ? null : () => _run(app.acceptCurrentRun),
       ),
-      RunPhase.plan => CeffloPrimaryButton(L.runPlanRoute, onTap: stops),
-      RunPhase.pickup => CeffloPrimaryButton(
-        L.confirmPickup,
-        busy: _busy,
-        onTap: _busy ? null : () => _run(app.confirmPickup),
+      // Pickup Checklist (Founder 2026-10-13): grey and locked until every
+      // order is ticked; the pickup then opens Plan Route.
+      RunPhase.pickup => CeffloSlideAction(
+        label: L.slideConfirmPickup,
+        enabled: app.allPickupTicked,
+        onConfirmed: () async {
+          try {
+            await app.confirmPickup();
+            app.go(DRoute.stopList, entityId: widget.runId);
+          } catch (e) {
+            if (context.mounted) showCefToast(context, '$e', error: true);
+          }
+        },
       ),
-      RunPhase.route || RunPhase.delivering => CeffloPrimaryButton(
+      RunPhase.route => CeffloPrimaryButton(L.runPlanRoute, onTap: stops),
+      RunPhase.delivering => CeffloPrimaryButton(
         L.runContinueDelivery,
         onTap: stops,
       ),
@@ -1144,28 +1242,22 @@ class _StopListScreenState extends State<StopListScreen> {
           ),
         ],
       ),
-      // Locked order: Plan Route (Slide to Confirm Route saves the stop
-      // order) -> Pickup Checklist -> Slide to Start Delivery. No slide while
-      // the Pickup Checklist is still open.
-      // The slide lives on the List tab only, and never for an empty run
-      // (Founder 2026-10-13).
-      footer: app.runPhase == RunPhase.pickup || isMap || run.stops.isEmpty
+      // Founder 2026-10-13: Pickup Checklist -> Plan Route (here) -> Slide to
+      // Start Delivery, which saves this stop order and starts the run. On
+      // the List tab only, never for an empty run, and only once the
+      // pickup is done.
+      footer:
+          isMap ||
+              run.stops.isEmpty ||
+              (!app.repo.isDemo && app.runPhase != RunPhase.route)
           ? null
           : CeffloSlideAction(
-              label: app.runPhase == RunPhase.route
-                  ? L.slideStartDelivery
-                  : L.slideConfirmRoute,
+              label: L.slideStartDelivery,
               onConfirmed: () async {
                 try {
-                  if (app.runPhase == RunPhase.plan) {
-                    // Real build: save_run_sequence; pickup comes next.
-                    await app.confirmRoutePlan();
-                    app.back();
-                  } else {
-                    // save_run_sequence (this order) + start_run_delivery.
-                    await app.confirmRouteAndStart();
-                    if (mounted) setState(() => _filter = 0);
-                  }
+                  // save_run_sequence (this order) + start_run_delivery.
+                  await app.confirmRouteAndStart();
+                  if (mounted) setState(() => _filter = 0);
                 } catch (e) {
                   if (context.mounted) {
                     showCefToast(context, '$e', error: true);

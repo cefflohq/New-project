@@ -1035,5 +1035,26 @@
   },
   "comingSoon": "Coming soon",
   "noJobsToday": "No jobs today",
-  "noJobsTodayBody": "Work from your stores appears here."
+  "noJobsTodayBody": "Work from your stores appears here.",
+  "slideConfirmPickup": "Slide to Confirm Pickup",
+  "pickupChecklist": "Pickup checklist",
+  "pickupTicked": "{done} / {total} checked",
+  "@pickupTicked": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "itemsCount": "{count} items",
+  "@itemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

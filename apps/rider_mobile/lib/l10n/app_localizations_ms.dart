@@ -2163,4 +2163,20 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get noJobsTodayBody => 'Kerja dari kedai anda akan muncul di sini.';
+
+  @override
+  String get slideConfirmPickup => 'Leret untuk Sahkan Pengambilan';
+
+  @override
+  String get pickupChecklist => 'Semakan pengambilan';
+
+  @override
+  String pickupTicked(int done, int total) {
+    return '$done / $total disemak';
+  }
+
+  @override
+  String itemsCount(int count) {
+    return '$count item';
+  }
 }

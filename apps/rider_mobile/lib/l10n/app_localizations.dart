@@ -3931,6 +3931,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Work from your stores appears here.'**
   String get noJobsTodayBody;
+
+  /// No description provided for @slideConfirmPickup.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide to Confirm Pickup'**
+  String get slideConfirmPickup;
+
+  /// No description provided for @pickupChecklist.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup checklist'**
+  String get pickupChecklist;
+
+  /// No description provided for @pickupTicked.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} / {total} checked'**
+  String pickupTicked(int done, int total);
+
+  /// No description provided for @itemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items'**
+  String itemsCount(int count);
 }
 
 class _AppLocalizationsDelegate

@@ -638,5 +638,9 @@
   "vendorsCount": "{count} vendor",
   "comingSoon": "Akan datang",
   "noJobsToday": "Tiada kerja hari ini",
-  "noJobsTodayBody": "Kerja dari kedai anda akan muncul di sini."
+  "noJobsTodayBody": "Kerja dari kedai anda akan muncul di sini.",
+  "slideConfirmPickup": "Leret untuk Sahkan Pengambilan",
+  "pickupChecklist": "Semakan pengambilan",
+  "pickupTicked": "{done} / {total} disemak",
+  "itemsCount": "{count} item"
 }

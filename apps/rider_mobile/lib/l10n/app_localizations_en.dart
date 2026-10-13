@@ -2149,4 +2149,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noJobsTodayBody => 'Work from your stores appears here.';
+
+  @override
+  String get slideConfirmPickup => 'Slide to Confirm Pickup';
+
+  @override
+  String get pickupChecklist => 'Pickup checklist';
+
+  @override
+  String pickupTicked(int done, int total) {
+    return '$done / $total checked';
+  }
+
+  @override
+  String itemsCount(int count) {
+    return '$count items';
+  }
 }

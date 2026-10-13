@@ -1788,10 +1788,13 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
-                        gradient: _active ? cefHeaderGradient : null,
-                        color: _active
+                        // Not available yet (e.g. pickup not all ticked):
+                        // light grey, so it reads as locked (2026-10-13).
+                        gradient: widget.enabled ? cefHeaderGradient : null,
+                        color: widget.enabled ? null : CefColors.tintNeutral,
+                        border: widget.enabled
                             ? null
-                            : CefColors.gradientMid.withValues(alpha: 0.45),
+                            : Border.all(color: const Color(0xFFE1E6EE)),
                         borderRadius: BorderRadius.circular(
                           Sizes.slideKnob / 2,
                         ),
@@ -1802,9 +1805,11 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
                         child: Text(
                           widget.label,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Manrope',
-                            color: Colors.white,
+                            color: widget.enabled
+                                ? Colors.white
+                                : const Color(0xFF9AA3B2),
                             fontWeight: FontWeight.w700,
                             fontSize: 16,
                           ),
@@ -1853,9 +1858,9 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
                         width: Sizes.slideKnob,
                         height: Sizes.slideKnob,
                         decoration: BoxDecoration(
-                          color: _active
+                          color: widget.enabled
                               ? CefColors.accent
-                              : CefColors.accent.withValues(alpha: 0.5),
+                              : const Color(0xFFD5DBE5),
                           shape: BoxShape.circle,
                           boxShadow: const [
                             BoxShadow(
@@ -1867,10 +1872,12 @@ class _CeffloSlideActionState extends State<CeffloSlideAction> {
                         ),
                         child: (widget.busy || _firing)
                             ? const Center(child: CefDots(onBlue: false))
-                            : const Icon(
+                            : Icon(
                                 Icons.arrow_forward_ios_rounded,
                                 size: 31,
-                                color: CefColors.onAccent,
+                                color: widget.enabled
+                                    ? CefColors.onAccent
+                                    : Colors.white,
                               ),
                       ),
                     ),

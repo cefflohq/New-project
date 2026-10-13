@@ -140,12 +140,12 @@ void main() {
   });
 
   test('phases follow canonical assignment and order states', () async {
-    // Locked order: Plan Route first, before the Pickup Checklist.
+    // Founder 2026-10-13: the Pickup Checklist comes first.
     expect(
       (await _hydrate([_order('1', DeliveryStatus.created)])).$1.runPhase,
-      RunPhase.plan,
+      RunPhase.pickup,
     );
-    // Pickup already begun (e.g. after an app restart): Pickup Checklist.
+    // Pickup part-way (e.g. after an app restart): still the checklist.
     expect(
       (await _hydrate([
         _order('1', DeliveryStatus.pickedUp),
@@ -177,7 +177,7 @@ void main() {
   });
 
   test(
-    'accept -> Plan Route -> Pickup Checklist -> Start Delivery, in order',
+    'accept -> Pickup Checklist -> Plan Route -> Start Delivery, in order',
     () async {
       final (app, repo) = await _hydrate([
         _order('1', DeliveryStatus.created, assignment: 'assigned'),
@@ -191,11 +191,14 @@ void main() {
         _order('2', DeliveryStatus.readyForPickup),
       ];
       await app.refreshOrders();
-      expect(app.runPhase, RunPhase.plan);
-      repo.calls.clear();
-      await app.confirmRoutePlan();
-      expect(repo.calls, ['save_run_sequence 1,2']);
       expect(app.runPhase, RunPhase.pickup);
+
+      // Slide to Confirm Pickup unlocks only once every order is ticked.
+      expect(app.allPickupTicked, isFalse);
+      app.togglePickupTick('1');
+      expect(app.allPickupTicked, isFalse);
+      app.togglePickupTick('2');
+      expect(app.allPickupTicked, isTrue);
 
       repo.calls.clear();
       await app.confirmPickup();
@@ -205,12 +208,14 @@ void main() {
         'rider_transition 1 picked_up',
         'rider_transition 2 picked_up',
       ]);
+      expect(app.pickupTicks, isEmpty);
 
       repo.orders = [
         _order('1', DeliveryStatus.pickedUp),
         _order('2', DeliveryStatus.pickedUp),
       ];
       await app.refreshOrders();
+      // Plan Route: reorder, then Slide to Start Delivery.
       expect(app.runPhase, RunPhase.route);
       repo.calls.clear();
       await app.confirmRouteAndStart();
