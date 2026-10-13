@@ -755,12 +755,7 @@ class AppState extends ChangeNotifier {
           relationshipId: rel.id,
           vendorName: rel.businessName ?? L.business,
           orderCount: open.length,
-          ongoing: open.any(
-            (o) =>
-                o.status == DeliveryStatus.pickedUp ||
-                o.status == DeliveryStatus.outForDelivery ||
-                o.status == DeliveryStatus.arrived,
-          ),
+          ongoing: _isOngoing(open),
           pickupTimeLabel: _clockOf(contract?['shift_start']),
           storePhone: rel.businessPhone,
           storeAddress: rel.businessAddress,
@@ -783,7 +778,19 @@ class AppState extends ChangeNotifier {
   /// Opens a vendor's job from Home: makes it the active vendor, then shows
   /// its Run Details.
   Future<void> openJob(DriverJob job) async {
-    if (!repo.isDemo && job.relationshipId != active?.id) {
+    if (repo.isDemo) {
+      // Prototype: each vendor opens its own run (the ongoing one under
+      // way, the others at their Pickup Checklist).
+      if (job.ongoing) {
+        currentRun = DemoData.currentRun;
+        runPhase = null;
+      } else {
+        currentRun = DemoData.pickupRunFor(job);
+        runPhase = RunPhase.pickup;
+        pickupTicks.clear();
+      }
+      notifyListeners();
+    } else if (job.relationshipId != active?.id) {
       final rel = relationships.firstWhere((r) => r.id == job.relationshipId);
       active = rel;
       await _loadOrders();
@@ -964,8 +971,17 @@ class AppState extends ChangeNotifier {
           : _todayContract!['area_label'] as String,
       pickupLatitude: active?.businessLatitude,
       pickupLongitude: active?.businessLongitude,
+      ongoing: _isOngoing(r.orders),
     );
   }
+
+  /// One rule for Home and Run Details: picked up and not finished.
+  static bool _isOngoing(Iterable<RiderOrder> orders) => orders.any(
+    (o) =>
+        o.status == DeliveryStatus.pickedUp ||
+        o.status == DeliveryStatus.outForDelivery ||
+        o.status == DeliveryStatus.arrived,
+  );
 
   DriverStop _toStop(RiderOrder o) => DriverStop(
     id: o.id,
@@ -1110,7 +1126,7 @@ class AppState extends ChangeNotifier {
   /// picked_up through rider_transition (the canonical two-hop pickup).
   /// Prototype only (?screen=D20.1): the demo run at the Pickup Checklist.
   void startDemoPickup() {
-    currentRun = DemoData.pickupRun;
+    currentRun = DemoData.pickupRunFor(DemoData.todayJobs[1]);
     runPhase = RunPhase.pickup;
     pickupTicks.clear();
   }

@@ -372,6 +372,31 @@ class TodayScreen extends StatelessWidget {
   }
 }
 
+/// Ongoing: Cefflo yellow with dark text; coming soon: light grey
+/// (Founder 2026-10-13). Same chip on Home and Run Details.
+class _JobStatusChip extends StatelessWidget {
+  const _JobStatusChip({required this.ongoing, this.done = false});
+  final bool ongoing, done;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+    decoration: BoxDecoration(
+      color: ongoing && !done ? CefColors.accent : CefColors.tintNeutral,
+      borderRadius: BorderRadius.circular(999),
+    ),
+    child: Text(
+      done ? L.completed : (ongoing ? L.ongoing : L.comingSoon),
+      style: TextStyle(
+        fontFamily: 'Manrope',
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        color: ongoing && !done ? CefColors.onAccent : context.c.textSecondary,
+      ),
+    ),
+  );
+}
+
 /// One vendor's job on Home: round avatar, name, pickup time, open orders,
 /// Ongoing / Coming soon. Every card has the same height.
 class _JobCard extends StatelessWidget {
@@ -436,31 +461,7 @@ class _JobCard extends StatelessWidget {
                     style: context.t.titleMedium?.copyWith(fontSize: 17),
                   ),
                   const SizedBox(height: 4),
-                  // Ongoing: Cefflo yellow with dark text; coming soon: light
-                  // grey (Founder 2026-10-13).
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: job.ongoing
-                          ? CefColors.accent
-                          : CefColors.tintNeutral,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      job.ongoing ? L.ongoing : L.comingSoon,
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: job.ongoing
-                            ? CefColors.onAccent
-                            : c.textSecondary,
-                      ),
-                    ),
-                  ),
+                  _JobStatusChip(ongoing: job.ongoing),
                   const SizedBox(height: 6),
                   if (job.pickupTimeLabel != null)
                     line(
@@ -479,6 +480,7 @@ class _JobCard extends StatelessWidget {
             const SizedBox(width: Gap.sm),
             // Navigate / Call to the store right from Home (2026-10-13).
             _RoundAction(
+              light: true,
               icon: LucideIcons.navigation,
               onTap: () async {
                 if (!await openNavigation(
@@ -494,6 +496,7 @@ class _JobCard extends StatelessWidget {
             if ((job.storePhone ?? '').trim().isNotEmpty) ...[
               const SizedBox(width: Gap.sm),
               _RoundAction(
+                light: true,
                 icon: LucideIcons.phone,
                 onTap: () async {
                   if (!await dialPhone(job.storePhone) && context.mounted) {
@@ -554,31 +557,36 @@ class RunDetailsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (when != null)
-                        Text(
-                          when,
-                          style: const TextStyle(
-                            fontFamily: 'Manrope',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: CefColors.onNavy,
-                          ),
-                        ),
+                      // The vendor first, so the Driver knows which run
+                      // this is (Founder 2026-10-13); then the time.
                       Text(
-                        run.dateLabel,
+                        run.pickupBusinessName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: CefColors.onNavy,
+                        ),
+                      ),
+                      Text(
+                        [?when, run.dateLabel].join(' · '),
                         style: const TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                           color: CefColors.onNavyMuted,
                         ),
                       ),
                     ],
                   ),
                 ),
-                CeffloStatusChip(
-                  run.statusLabel,
-                  tone: started ? ChipTone.info : ChipTone.success,
+                // Same status as Home's card: Ongoing (yellow) or Coming
+                // soon (light grey); Completed once done.
+                _JobStatusChip(
+                  ongoing: run.ongoing,
+                  done: run.state == RunState.completed,
                 ),
               ],
             ),
@@ -2034,21 +2042,36 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
 }
 
 class _RoundAction extends StatelessWidget {
-  const _RoundAction({required this.icon, required this.onTap});
+  const _RoundAction({
+    required this.icon,
+    required this.onTap,
+    this.light = false,
+  });
   final IconData icon;
   final VoidCallback onTap;
 
+  /// Light grey with a navy icon (Home's job cards); navy otherwise.
+  final bool light;
+
   @override
   Widget build(BuildContext context) => Material(
-    color: CefColors.navy,
-    shape: const CircleBorder(),
+    color: light ? CefColors.tintNeutral : CefColors.navy,
+    shape: CircleBorder(
+      side: light
+          ? const BorderSide(color: Color(0xFFE1E6EE))
+          : BorderSide.none,
+    ),
     child: InkWell(
       customBorder: const CircleBorder(),
       onTap: onTap,
       child: SizedBox(
         width: 44,
         height: 44,
-        child: Icon(icon, size: 21, color: Colors.white),
+        child: Icon(
+          icon,
+          size: 21,
+          color: light ? CefColors.navy : Colors.white,
+        ),
       ),
     ),
   );

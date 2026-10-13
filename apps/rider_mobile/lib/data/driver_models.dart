@@ -106,7 +106,12 @@ class DriverRun {
     this.area,
     this.pickupLatitude,
     this.pickupLongitude,
+    this.ongoing = false,
   });
+
+  /// Same rule as Home's job card (Founder 2026-10-13): the run is ongoing
+  /// once any of its orders is picked up; otherwise it is coming soon.
+  final bool ongoing;
 
   /// From the Driver's approved hiring contract with this business for
   /// today (my_job_schedule): "10:00 AM", the pay per drop, the area label.
@@ -173,6 +178,7 @@ class DriverRun {
     area: area,
     pickupLatitude: pickupLatitude,
     pickupLongitude: pickupLongitude,
+    ongoing: ongoing,
   );
 }
 

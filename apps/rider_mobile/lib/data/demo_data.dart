@@ -296,27 +296,25 @@ class DemoData {
     ),
   ];
 
-  /// The prototype's run at the Pickup Checklist (?screen=D20.1): the same
-  /// run before pickup, nothing ticked yet.
-  static DriverRun get pickupRun => DriverRun(
-    id: currentRun.id,
+  /// A coming-soon vendor's run at the Pickup Checklist (Home card tap,
+  /// ?screen=D20.1): its own name, pickup time and orders, nothing ticked.
+  static DriverRun pickupRunFor(DriverJob job) => DriverRun(
+    id: 'run-${job.relationshipId}',
     reference: currentRun.reference,
     dateLabel: currentRun.dateLabel,
     zone: currentRun.zone,
-    pickupBusinessName: currentRun.pickupBusinessName,
-    pickupAddress: currentRun.pickupAddress,
+    pickupBusinessName: job.vendorName,
+    pickupAddress: job.storeAddress ?? '',
     distanceKm: currentRun.distanceKm,
     state: RunState.assigned,
     stops: [
-      for (final s in _currentStops.take(6))
+      for (final s in _currentStops.take(job.orderCount))
         s.copyWith(status: StopStatus.pending),
     ],
-    estimateLabel: currentRun.estimateLabel,
-    pickupTimeLabel: currentRun.pickupTimeLabel,
+    pickupTimeLabel: job.pickupTimeLabel,
     payPerDrop: currentRun.payPerDrop,
-    area: currentRun.area,
-    pickupLatitude: currentRun.pickupLatitude,
-    pickupLongitude: currentRun.pickupLongitude,
+    pickupLatitude: job.storeLatitude,
+    pickupLongitude: job.storeLongitude,
   );
 
   static const currentRun = DriverRun(
@@ -337,6 +335,7 @@ class DemoData {
     area: 'Setapak · Wangsa Maju',
     pickupLatitude: 3.2002,
     pickupLongitude: 101.7180,
+    ongoing: true,
   );
 
   /// D30/D32 show the same run once every stop is delivered.
