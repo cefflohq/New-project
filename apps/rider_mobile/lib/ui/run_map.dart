@@ -100,18 +100,35 @@ class _RunMapState extends State<RunMap> {
         FlutterMap(
           mapController: _map,
           options: MapOptions(
-            initialCenter: pins.isNotEmpty ? pins.first.$3 : _malaysia,
-            initialZoom: pins.isNotEmpty ? 14 : 5,
+            // Camera set before the first frame, not moved in onMapReady:
+            // moving it there cancelled every first tile load and the map
+            // stayed blank (QA 2026-10-13).
+            initialCenter:
+                widget.focus?.latitude != null &&
+                    widget.focus?.longitude != null
+                ? LatLng(widget.focus!.latitude!, widget.focus!.longitude!)
+                : pins.isNotEmpty
+                ? pins.first.$3
+                : _malaysia,
+            initialZoom: widget.focus?.latitude != null
+                ? 16
+                : pins.isNotEmpty
+                ? 14
+                : 5,
+            initialCameraFit: widget.focus?.latitude == null && pins.length > 1
+                ? CameraFit.coordinates(
+                    coordinates: [for (final p in pins) p.$3],
+                    padding: const EdgeInsets.all(48),
+                    maxZoom: 16,
+                  )
+                : null,
             interactionOptions: const InteractionOptions(
               flags:
                   InteractiveFlag.drag |
                   InteractiveFlag.pinchZoom |
                   InteractiveFlag.doubleTapZoom,
             ),
-            onMapReady: () {
-              _ready = true;
-              _fit();
-            },
+            onMapReady: () => _ready = true,
           ),
           children: [
             cefTileLayer(context),
