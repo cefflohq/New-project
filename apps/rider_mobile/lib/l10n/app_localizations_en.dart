@@ -2163,7 +2163,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String itemsCount(int count) {
-    return '$count items';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
   }
 
   @override

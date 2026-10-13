@@ -3953,7 +3953,7 @@ abstract class AppLocalizations {
   /// No description provided for @itemsCount.
   ///
   /// In en, this message translates to:
-  /// **'{count} items'**
+  /// **'{count, plural, =1{1 item} other{{count} items}}'**
   String itemsCount(int count);
 
   /// No description provided for @pickupReport.

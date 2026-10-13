@@ -630,30 +630,68 @@ class RunDetailsScreen extends StatelessWidget {
           const SizedBox(height: Gap.md),
           // Before the run starts the Driver needs the store; once it is
           // under way, the next stop.
+          // One compact row (Founder 2026-10-13): the store and Navigate /
+          // Call, so the Pickup Checklist sits on the first screen.
           if (!started)
-            _RunSection(
-              title: L.runPickupSection,
-              children: [
-                if (run.pickupLatitude != null &&
-                    run.pickupLongitude != null) ...[
-                  DeliveryPinMap(
-                    latitude: run.pickupLatitude!,
-                    longitude: run.pickupLongitude!,
-                    height: 140,
+            CeffloCard(
+              shadow: false,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: CefColors.tintInfo,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      LucideIcons.store,
+                      size: 18,
+                      color: CefColors.navy,
+                    ),
+                  ),
+                  const SizedBox(width: Gap.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          run.pickupBusinessName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: context.t.titleSmall,
+                        ),
+                        if (run.pickupAddress.isNotEmpty)
+                          Text(
+                            run.pickupAddress,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: context.t.bodySmall,
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: Gap.sm),
+                  _RoundAction(
+                    icon: LucideIcons.navigation,
                     onTap: () => _toStore(context, run),
                   ),
-                  const SizedBox(height: Gap.md),
+                  if ((app.business?.phone ?? '').trim().isNotEmpty) ...[
+                    const SizedBox(width: Gap.sm),
+                    _RoundAction(
+                      icon: LucideIcons.phone,
+                      onTap: () async {
+                        if (!await dialPhone(app.business?.phone) &&
+                            context.mounted) {
+                          showCefToast(context, L.mapNotAvailable);
+                        }
+                      },
+                    ),
+                  ],
                 ],
-                Text(run.pickupBusinessName, style: context.t.titleMedium),
-                if (run.pickupAddress.isNotEmpty)
-                  Text(run.pickupAddress, style: context.t.bodySmall),
-                const SizedBox(height: Gap.md),
-                _RunActions(
-                  onNavigate: () => _toStore(context, run),
-                  callLabel: L.runCallStore,
-                  phone: app.business?.phone,
-                ),
-              ],
+              ),
             )
           else if (run.stops
                   .where((s) => s.status == StopStatus.pending)

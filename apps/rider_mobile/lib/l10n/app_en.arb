@@ -1049,7 +1049,7 @@
       }
     }
   },
-  "itemsCount": "{count} items",
+  "itemsCount": "{count, plural, =1{1 item} other{{count} items}}",
   "@itemsCount": {
     "placeholders": {
       "count": {
