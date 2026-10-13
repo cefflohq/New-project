@@ -2191,4 +2191,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pickupNoteHint => 'Add a note (optional)';
+
+  @override
+  String pickupOpensAt(String time, int minutes) {
+    return 'Opens at $time · $minutes min before pickup';
+  }
 }

@@ -981,7 +981,15 @@ class AppState extends ChangeNotifier {
       pickupLatitude: active?.businessLatitude,
       pickupLongitude: active?.businessLongitude,
       ongoing: _isOngoing(r.orders),
+      pickupMinutes: _minutesOf(_todayContract?['shift_start']),
     );
+  }
+
+  static int? _minutesOf(Object? t) {
+    final p = t?.toString().split(':');
+    if (p == null || p.length < 2) return null;
+    final h = int.tryParse(p[0]), m = int.tryParse(p[1]);
+    return h == null || m == null ? null : h * 60 + m;
   }
 
   /// One rule for Home and Run Details: picked up and not finished.
@@ -1112,6 +1120,7 @@ class AppState extends ChangeNotifier {
   final Set<String> pickupTicks = {};
 
   void togglePickupTick(String stopId) {
+    if (!pickupWindowOpen) return;
     pickupTicks.contains(stopId)
         ? pickupTicks.remove(stopId)
         : pickupTicks.add(stopId);
@@ -1122,7 +1131,30 @@ class AppState extends ChangeNotifier {
   Iterable<DriverStop> get pickupStops =>
       currentRun.stops.where((s) => s.status == StopStatus.pending);
 
+  /// The Pickup Checklist opens this long before the pickup time (Founder
+  /// 2026-10-13): time to arrive, check names, addresses and items, tick
+  /// and confirm, so delivery can start on time.
+  static const pickupWindowMinutes = 15;
+
+  /// Minutes after midnight now. The prototype runs on a fixed 1:50 PM so
+  /// both states show (Donuts Jo open, Kopi Kita still locked).
+  int get _nowMinutes {
+    if (repo.isDemo) return 13 * 60 + 50;
+    final n = DateTime.now();
+    return n.hour * 60 + n.minute;
+  }
+
+  /// When the checklist opens, minutes after midnight; null = no lock
+  /// (no known pickup time).
+  int? get pickupOpensAt => currentRun.pickupMinutes == null
+      ? null
+      : currentRun.pickupMinutes! - pickupWindowMinutes;
+
+  bool get pickupWindowOpen =>
+      pickupOpensAt == null || _nowMinutes >= pickupOpensAt!;
+
   bool get allPickupTicked =>
+      pickupWindowOpen &&
       pickupStops.isNotEmpty &&
       pickupStops.every((s) => pickupTicks.contains(s.id));
 

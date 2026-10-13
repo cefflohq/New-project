@@ -3991,6 +3991,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add a note (optional)'**
   String get pickupNoteHint;
+
+  /// No description provided for @pickupOpensAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens at {time} · {minutes} min before pickup'**
+  String pickupOpensAt(String time, int minutes);
 }
 
 class _AppLocalizationsDelegate

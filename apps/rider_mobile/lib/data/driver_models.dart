@@ -107,7 +107,12 @@ class DriverRun {
     this.pickupLatitude,
     this.pickupLongitude,
     this.ongoing = false,
+    this.pickupMinutes,
   });
+
+  /// Today's pickup time in minutes after midnight (the contract's shift
+  /// start); null when unknown. Drives the Pickup Checklist window.
+  final int? pickupMinutes;
 
   /// Same rule as Home's job card (Founder 2026-10-13): the run is ongoing
   /// once any of its orders is picked up; otherwise it is coming soon.
@@ -179,6 +184,7 @@ class DriverRun {
     pickupLatitude: pickupLatitude,
     pickupLongitude: pickupLongitude,
     ongoing: ongoing,
+    pickupMinutes: pickupMinutes,
   );
 }
 

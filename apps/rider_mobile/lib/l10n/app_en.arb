@@ -1069,5 +1069,16 @@
   },
   "pickupNotReady": "Not ready at the store",
   "pickupItemMissing": "Item missing",
-  "pickupNoteHint": "Add a note (optional)"
+  "pickupNoteHint": "Add a note (optional)",
+  "pickupOpensAt": "Opens at {time} · {minutes} min before pickup",
+  "@pickupOpensAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }

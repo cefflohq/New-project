@@ -648,5 +648,6 @@
   "pickupProblemTitle": "Masalah dengan {reference}?",
   "pickupNotReady": "Belum siap di kedai",
   "pickupItemMissing": "Item tiada",
-  "pickupNoteHint": "Tambah nota (pilihan)"
+  "pickupNoteHint": "Tambah nota (pilihan)",
+  "pickupOpensAt": "Dibuka pada {time} · {minutes} minit sebelum pickup"
 }

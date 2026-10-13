@@ -312,6 +312,7 @@ class DemoData {
         s.copyWith(status: StopStatus.pending),
     ],
     pickupTimeLabel: job.pickupTimeLabel,
+    pickupMinutes: job.pickupMinutes,
     payPerDrop: currentRun.payPerDrop,
     pickupLatitude: job.storeLatitude,
     pickupLongitude: job.storeLongitude,

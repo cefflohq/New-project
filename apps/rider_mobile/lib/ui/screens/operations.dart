@@ -698,6 +698,16 @@ class _PickupChecklist extends StatelessWidget {
               ),
             ],
           ),
+          if (!pickedUp && !app.pickupWindowOpen) ...[
+            const SizedBox(height: Gap.sm),
+            CeffloNote(
+              icon: LucideIcons.lock,
+              body: L.pickupOpensAt(
+                _clockOfMinutes(app.pickupOpensAt!),
+                AppState.pickupWindowMinutes,
+              ),
+            ),
+          ],
           const SizedBox(height: Gap.xs),
           for (final s in run.stops)
             _PickupRow(
@@ -705,6 +715,7 @@ class _PickupChecklist extends StatelessWidget {
               ticked: pickedUp || app.pickupTicks.contains(s.id),
               reported: s.status == StopStatus.issue,
               readOnly: pickedUp,
+              locked: !pickedUp && !app.pickupWindowOpen,
               onTap: () => app.togglePickupTick(s.id),
               onReport: () => _reportAtPickup(context, s),
             ),
@@ -722,17 +733,21 @@ class _PickupRow extends StatelessWidget {
     required this.onTap,
     required this.onReport,
     this.readOnly = false,
+    this.locked = false,
   });
   final DriverStop stop;
   final bool ticked, reported, readOnly;
+
+  /// Before the pickup window: greyed, no tick, no Report.
+  final bool locked;
   final VoidCallback onTap, onReport;
 
   @override
   Widget build(BuildContext context) {
     final c = context.c;
     final items = stop.items.fold(0, (a, i) => a + i.quantity);
-    return InkWell(
-      onTap: reported || readOnly ? null : onTap,
+    final row = InkWell(
+      onTap: reported || readOnly || locked ? null : onTap,
       borderRadius: BorderRadius.circular(Sizes.innerRadius),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -770,12 +785,22 @@ class _PickupRow extends StatelessWidget {
               ),
             ),
             if (!reported && !readOnly)
-              TextButton(onPressed: onReport, child: Text(L.pickupReport)),
+              TextButton(
+                onPressed: locked ? null : onReport,
+                child: Text(L.pickupReport),
+              ),
           ],
         ),
       ),
     );
+    return locked ? Opacity(opacity: .45, child: row) : row;
   }
+}
+
+String _clockOfMinutes(int m) {
+  final h = (m ~/ 60) % 24, min = m % 60;
+  final h12 = h % 12 == 0 ? 12 : h % 12;
+  return '$h12:${min.toString().padLeft(2, '0')} ${h < 12 ? 'AM' : 'PM'}';
 }
 
 /// Report a problem with one order at pickup (R-11): not ready at the store
