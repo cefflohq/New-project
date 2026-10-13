@@ -9,7 +9,6 @@ import '../../core/theme.dart';
 import '../../core/dial.dart';
 import '../../data/demo_data.dart';
 import '../../data/driver_models.dart';
-import '../map_canvas.dart';
 import '../run_map.dart';
 import '../bottom_surface.dart';
 import '../widgets.dart';
@@ -1404,6 +1403,30 @@ class StopRow extends StatelessWidget {
 // D22 — Navigation to Stop
 // ---------------------------------------------------------------------------
 
+/// White rounded card floating over the map, with a soft shadow.
+class _FloatingCard extends StatelessWidget {
+  const _FloatingCard({required this.child, required this.padding});
+  final Widget child;
+  final EdgeInsets padding;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: padding,
+    decoration: BoxDecoration(
+      color: context.c.card,
+      borderRadius: BorderRadius.circular(Sizes.sheetRadius),
+      boxShadow: const [
+        BoxShadow(
+          color: Color(0x2612213E),
+          blurRadius: 18,
+          offset: Offset(0, 6),
+        ),
+      ],
+    ),
+    child: child,
+  );
+}
+
 class NavigationToStopScreen extends StatelessWidget {
   const NavigationToStopScreen({super.key});
 
@@ -1426,170 +1449,121 @@ class NavigationToStopScreen extends StatelessWidget {
         ),
         child: Scaffold(
           backgroundColor: c.card,
-          body: Column(
+          // Map full screen with two floating rounded cards (Founder
+          // 2026-10-13): a minimal turn card on top, the stop card below.
+          body: Stack(
             children: [
-              // Turn instruction card, sitting on the device status bar.
-              Container(
-                color: CefColors.navy,
-                child: SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      Gap.lg,
-                      Gap.md,
-                      Gap.lg,
-                      Gap.lg,
-                    ),
+              Positioned.fill(
+                child: RunMap(
+                  stops: app.currentRun.stops,
+                  focus: stop,
+                  showControls: false,
+                ),
+              ),
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(Gap.md, Gap.sm, Gap.md, 0),
+                  child: _FloatingCard(
+                    padding: const EdgeInsets.fromLTRB(6, 6, Gap.lg, 6),
                     child: Row(
                       children: [
-                        const Icon(
-                          LucideIcons.cornerUpRight,
-                          size: 40,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: Gap.lg),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                stop.distanceMetres == null
-                                    ? '—'
-                                    : '${stop.distanceMetres} m',
-                                style: const TextStyle(
-                                  fontFamily: 'Manrope',
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                  letterSpacing: -0.6,
-                                ),
-                              ),
-                              Text(
-                                stop.addressLine1.replaceAll(',', ''),
-                                style: const TextStyle(
-                                  fontFamily: 'Manrope',
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                  color: CefColors.onNavyMuted,
-                                ),
-                              ),
-                            ],
+                        IconButton(
+                          onPressed: app.back,
+                          icon: const Icon(
+                            LucideIcons.chevronLeft,
+                            color: CefColors.navy,
                           ),
                         ),
+                        const Icon(
+                          LucideIcons.cornerUpRight,
+                          size: 26,
+                          color: CefColors.navy,
+                        ),
+                        const SizedBox(width: Gap.md),
+                        Text(
+                          stop.distanceMetres == null
+                              ? '—'
+                              : '${stop.distanceMetres} m',
+                          style: const TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: CefColors.navy,
+                          ),
+                        ),
+                        if (stop.etaMinutes != null) ...[
+                          const SizedBox(width: Gap.sm),
+                          Text(
+                            '· ${L.min(stop.etaMinutes!)}',
+                            style: context.t.bodyMedium?.copyWith(
+                              color: c.textSecondary,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
                 ),
               ),
-              Expanded(
-                child: Stack(
-                  children: [
-                    // Real map focused on the active stop, the prototype
-                    // included (demo stops carry real coordinates).
-                    Positioned.fill(
-                      child: RunMap(
-                        stops: app.currentRun.stops,
-                        focus: stop,
-                        showControls: false,
-                      ),
-                    ),
-                    Positioned(
-                      left: Gap.md,
-                      top: Gap.md,
-                      child: Column(
-                        children: [
-                          MapControlButton(
-                            icon: LucideIcons.chevronLeft,
-                            onTap: app.back,
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (app.repo.isDemo)
-                      const Positioned(
-                        right: Gap.md,
-                        bottom: Gap.md,
-                        child: MapRecenterPill(),
-                      ),
-                  ],
-                ),
-              ),
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: c.card,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(Sizes.sheetRadius),
-                  ),
-                  boxShadow: cefSheetShadow(),
-                ),
+              Align(
+                alignment: Alignment.bottomCenter,
                 child: SafeArea(
                   top: false,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      Gap.gutter,
-                      0,
-                      Gap.gutter,
-                      Gap.lg,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const SheetGrabber(),
-                        const SizedBox(height: 4),
-                        Text(stop.reference, style: context.t.labelSmall),
-                        const SizedBox(height: 1),
-                        Text(
-                          stop.customerName,
-                          style: context.t.displaySmall?.copyWith(fontSize: 20),
-                        ),
-                        const SizedBox(height: 4),
-                        MetaRow(
-                          icon: LucideIcons.mapPin,
-                          text: [
-                            stop.addressLine1,
-                            if (stop.addressLine2 != null) stop.addressLine2!,
-                          ].join(' '),
-                          dense: true,
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: MetaRow(
-                                icon: LucideIcons.clock,
-                                text: stop.etaMinutes == null
-                                    ? '—'
-                                    : L.min(stop.etaMinutes!),
-                                dense: true,
-                              ),
+                    padding: const EdgeInsets.all(Gap.md),
+                    child: _FloatingCard(
+                      padding: const EdgeInsets.fromLTRB(
+                        Gap.lg,
+                        Gap.lg,
+                        Gap.lg,
+                        Gap.lg,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // The order number first and big.
+                          Text(
+                            stop.reference,
+                            style: const TextStyle(
+                              fontFamily: 'Manrope',
+                              fontSize: 26,
+                              fontWeight: FontWeight.w800,
+                              color: CefColors.navy,
                             ),
-                            Expanded(
-                              child: MetaRow(
-                                icon: LucideIcons.route,
-                                text: stop.distanceMetres == null
-                                    ? '—'
-                                    : '${stop.distanceMetres} m',
-                                dense: true,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: Gap.md),
-                        CeffloSlideAction(
-                          label: L.slideArrive,
-                          onConfirmed: () async {
-                            // Real build: rider_transition -> arrived.
-                            try {
-                              await app.arriveAt(stop.id);
-                              app.go(DRoute.confirmDelivery, entityId: stop.id);
-                            } catch (e) {
-                              if (context.mounted) {
-                                showCefToast(context, '$e', error: true);
+                          ),
+                          const SizedBox(height: 2),
+                          Text(stop.customerName, style: context.t.titleMedium),
+                          const SizedBox(height: Gap.sm),
+                          // The full address: house number, floor, area.
+                          MetaRow(
+                            icon: LucideIcons.mapPin,
+                            text: [
+                              stop.addressLine1,
+                              ?stop.addressLine2,
+                            ].join(', '),
+                            dense: true,
+                          ),
+                          const SizedBox(height: Gap.md),
+                          CeffloSlideAction(
+                            label: L.slideArrive,
+                            onConfirmed: () async {
+                              // Real build: rider_transition -> arrived.
+                              try {
+                                await app.arriveAt(stop.id);
+                                app.go(
+                                  DRoute.confirmDelivery,
+                                  entityId: stop.id,
+                                );
+                              } catch (e) {
+                                if (context.mounted) {
+                                  showCefToast(context, '$e', error: true);
+                                }
                               }
-                            }
-                          },
-                        ),
-                      ],
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -1659,6 +1633,8 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
         Gap.gutter,
         Gap.lg,
       ),
+      // Fixed layout so Proof of Delivery can sit mid-way (2026-10-13).
+      scrollable: false,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -1677,6 +1653,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                       style: context.t.titleMedium?.copyWith(fontSize: 17),
                     ),
                     const SizedBox(height: Gap.sm),
+                    // The full address: house number, floor, area, postcode.
                     _iconLine(
                       context,
                       LucideIcons.mapPin,
@@ -1687,6 +1664,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                         ),
                         ?stop.addressLine2,
                       ].join(', '),
+                      maxLines: 4,
                     ),
                     if (stop.note != null) ...[
                       const SizedBox(height: Gap.xs),
@@ -1731,9 +1709,12 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
               ),
             ],
           ),
-          const SizedBox(height: Gap.lg),
-          // Order details, short: one line.
-          Text(L.orderDetails, style: context.t.titleSmall),
+          const SizedBox(height: Gap.section),
+          // Order details, short: the order number and one line of items.
+          Text(
+            '${L.orderDetails} · ${stop.reference}',
+            style: context.t.titleSmall,
+          ),
           const SizedBox(height: Gap.xs),
           Text(
             stop.items.isEmpty
@@ -1743,7 +1724,8 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
             overflow: TextOverflow.ellipsis,
             style: context.t.bodyMedium,
           ),
-          const SizedBox(height: Gap.lg),
+          // Proof of Delivery mid-way between the details and the slide.
+          const Spacer(),
           Text(L.proofDelivery, style: context.t.titleMedium),
           const SizedBox(height: Gap.md),
           _ProofTile(
@@ -1768,6 +1750,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
               onTap: () => app.go(DRoute.deliveryIssue, entityId: stop.id),
             ),
           ),
+          const Spacer(),
         ],
       ),
       footer: CeffloSlideAction(
@@ -1809,16 +1792,25 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
     );
   }
 
-  Widget _iconLine(BuildContext context, IconData icon, String text) => Padding(
+  Widget _iconLine(
+    BuildContext context,
+    IconData icon,
+    String text, {
+    int maxLines = 1,
+  }) => Padding(
     padding: const EdgeInsets.only(top: 2),
     child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 14, color: context.c.info),
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Icon(icon, size: 14, color: context.c.info),
+        ),
         const SizedBox(width: 5),
         Expanded(
           child: Text(
             text,
-            maxLines: 1,
+            maxLines: maxLines,
             overflow: TextOverflow.ellipsis,
             style: context.t.bodySmall,
           ),

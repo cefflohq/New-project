@@ -150,8 +150,7 @@ class DemoData {
       latitude: 3.2023,
       longitude: 101.7287,
       customerName: 'Farah Ibrahim',
-      addressLine1: 'Jalan Danau Kota 1,',
-      addressLine2: 'Setapak',
+      addressLine1: 'No. 12, Jalan Danau Kota 1, Taman Danau Kota, 53300 Setapak, Kuala Lumpur',
       phone: '+60 12-345 6789',
       etaMinutes: 2,
       distanceMetres: 650,
@@ -167,7 +166,7 @@ class DemoData {
       latitude: 3.2043,
       longitude: 101.7271,
       customerName: 'Lee Chin Wei',
-      addressLine1: 'Jalan Setapak Indah',
+      addressLine1: 'B-7-3, Pangsapuri Setapak Indah, Jalan Setapak Indah, 53300 Kuala Lumpur',
       items: [DriverOrderItem(quantity: 2, name: 'Butter Croissant')],
     ),
     DriverStop(
@@ -176,7 +175,8 @@ class DemoData {
       latitude: 3.2054,
       longitude: 101.7243,
       customerName: 'Aisyah Rahman',
-      addressLine1: 'Jalan 2/27A, Setapak',
+      addressLine1:
+          'No. 27A, Jalan 2/27A, Seksyen 1 Wangsa Maju, 53300 Kuala Lumpur',
       items: [DriverOrderItem(quantity: 1, name: 'Cheese Tart Box')],
     ),
     DriverStop(
@@ -185,7 +185,8 @@ class DemoData {
       latitude: 3.2053,
       longitude: 101.7212,
       customerName: 'Kumaravelu',
-      addressLine1: 'Jalan Usahawan 4',
+      addressLine1:
+          'No. 8, Jalan Usahawan 4, Taman Setapak Jaya, 53300 Kuala Lumpur',
       items: [DriverOrderItem(quantity: 1, name: 'Sourdough Loaf')],
     ),
     DriverStop(
@@ -194,7 +195,8 @@ class DemoData {
       latitude: 3.2041,
       longitude: 101.7186,
       customerName: 'Siti Norazimah',
-      addressLine1: 'Jalan Genting Kelang',
+      addressLine1:
+          'Lot 15, Jalan Genting Kelang, Taman Ibu Kota, 53300 Kuala Lumpur',
       items: [DriverOrderItem(quantity: 3, name: 'Kuih Platter')],
     ),
     DriverStop(
@@ -203,7 +205,8 @@ class DemoData {
       latitude: 3.202,
       longitude: 101.7171,
       customerName: 'Daniel Tan',
-      addressLine1: 'Jalan Taman Ibu Kota',
+      addressLine1:
+          'No. 3, Jalan Taman Ibu Kota, Taman Ibu Kota, 53300 Kuala Lumpur',
       items: [DriverOrderItem(quantity: 1, name: 'Coffee Beans 250g')],
     ),
     DriverStop(
@@ -212,7 +215,7 @@ class DemoData {
       latitude: 3.1997,
       longitude: 101.7173,
       customerName: 'Nurul Huda',
-      addressLine1: 'Jalan Danau Kota 3',
+      addressLine1: 'A-12-5, Residensi Danau Kota, Jalan Danau Kota 3, 53300 Kuala Lumpur',
     ),
     DriverStop(
       id: 's008',
@@ -220,7 +223,7 @@ class DemoData {
       latitude: 3.1977,
       longitude: 101.7189,
       customerName: 'Rajesh Kumar',
-      addressLine1: 'Jalan Setapak Jaya',
+      addressLine1: 'No. 41, Jalan Setapak Jaya 2, Taman Setapak Jaya, 53300 Kuala Lumpur',
     ),
     DriverStop(
       id: 's009',
@@ -228,7 +231,7 @@ class DemoData {
       latitude: 3.1966,
       longitude: 101.7217,
       customerName: 'Wong Mei Ling',
-      addressLine1: 'Jalan Usahawan 2',
+      addressLine1: 'No. 19, Jalan Usahawan 2, Setapak, 53300 Kuala Lumpur',
     ),
     DriverStop(
       id: 's010',
@@ -236,7 +239,8 @@ class DemoData {
       latitude: 3.1967,
       longitude: 101.7248,
       customerName: 'Hafiz Zulkifli',
-      addressLine1: 'Jalan Genting Kelang 4',
+      addressLine1:
+          'No. 6, Jalan Genting Kelang 4, Taman Bunga Raya, 53000 Kuala Lumpur',
     ),
     DriverStop(
       id: 's011',
@@ -244,7 +248,8 @@ class DemoData {
       latitude: 3.1979,
       longitude: 101.7274,
       customerName: 'Chong Wei Han',
-      addressLine1: 'Taman Setapak',
+      addressLine1:
+          'No. 22, Lorong Taman Setapak, Taman Setapak, 53300 Kuala Lumpur',
     ),
     DriverStop(
       id: 's012',
@@ -252,7 +257,8 @@ class DemoData {
       latitude: 3.2,
       longitude: 101.7289,
       customerName: 'Amirah Yusof',
-      addressLine1: 'Jalan Danau Kota 5',
+      addressLine1:
+          'C-3-8, Pangsapuri Melati, Jalan Melati, 53100 Kuala Lumpur',
     ),
   ];
 
