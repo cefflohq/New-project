@@ -527,7 +527,6 @@ class RunDetailsScreen extends StatelessWidget {
     final run = app.currentRun;
     final started = run.state != RunState.assigned;
     final total = run.orderCount;
-    final done = run.deliveredCount;
     // One line: pickup (or start) time and date on the left, status on the
     // right (Founder 2026-10-13).
     final when = started && run.startedAtLabel != null
@@ -608,120 +607,21 @@ class RunDetailsScreen extends StatelessWidget {
               title: L.runNoOrdersYet,
               body: L.runStoreWillAdd,
             )
-          else if (!started) ...[
-            // Only what matters before the run (Founder 2026-10-13): pickup
-            // time (header), the pay, and the Pickup Checklist.
-            if (run.earningsFor(total) case final pay?) ...[
-              _RunPay(
-                label: L.runYouEarn,
-                amount: _rm(pay),
-                detail: L.runDropsRate(total, _rm(run.payPerDrop!)),
-              ),
-            ],
-          ] else ...[
-            CeffloCard(
-              shadow: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    L.runDeliveredOf(done, total),
-                    style: context.t.titleMedium,
-                  ),
-                  const SizedBox(height: Gap.sm),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(999),
-                    child: LinearProgressIndicator(
-                      value: total == 0 ? 0 : done / total,
-                      minHeight: 8,
-                      color: context.c.success,
-                      backgroundColor: CefColors.tintNeutral,
-                    ),
-                  ),
-                  const SizedBox(height: Gap.sm),
-                  Text(
-                    L.runStopsLeft(run.pendingCount),
-                    style: context.t.bodySmall,
-                  ),
-                ],
-              ),
+          else if (run.earningsFor(total) case final pay?)
+            // Same screen before and during the run (Founder 2026-10-13):
+            // the vendor and time (header), the pay, the orders.
+            _RunPay(
+              label: L.runYouEarn,
+              amount: _rm(pay),
+              detail: L.runDropsRate(total, _rm(run.payPerDrop!)),
             ),
-            // Before the first drop the whole run's pay reads better than
-            // "RM 0.00 so far".
-            if (run.payPerDrop != null) ...[
-              const SizedBox(height: Gap.md),
-              done == 0
-                  ? _RunPay(
-                      label: L.runYouEarn,
-                      amount: _rm(run.earningsFor(total)!),
-                      detail: L.runDropsRate(total, _rm(run.payPerDrop!)),
-                    )
-                  : _RunPay(
-                      label: L.runEarnedSoFar,
-                      amount: _rm(run.earningsFor(done)!),
-                      detail: L.runDropsOfRate(
-                        done,
-                        total,
-                        _rm(run.payPerDrop!),
-                      ),
-                    ),
-            ],
-          ],
-          const SizedBox(height: Gap.md),
-          // Before the run starts the Driver needs the store; once it is
-          // under way, the next stop.
-          // Under way: the next stop. (Navigate / Call to the store live on
-          // Home's job card.)
-          if (started)
-            if (run.stops
-                    .where((s) => s.status == StopStatus.pending)
-                    .firstOrNull
-                case final next?)
-              _RunSection(
-                title: L.runNextStop,
-                children: [
-                  Row(
-                    children: [
-                      CeffloIndexBadge(
-                        run.stops.indexOf(next) + 1,
-                        tone: ChipTone.warning,
-                        size: 26,
-                      ),
-                      const SizedBox(width: Gap.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              next.customerName,
-                              style: context.t.titleMedium,
-                            ),
-                            Text(next.addressLine1, style: context.t.bodySmall),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: Gap.md),
-                  _RunActions(
-                    onNavigate: () async {
-                      if (!await openNavigation(
-                            lat: next.latitude,
-                            lng: next.longitude,
-                            address: next.addressLine1,
-                          ) &&
-                          context.mounted) {
-                        showCefToast(context, L.mapNotAvailable);
-                      }
-                    },
-                    callLabel: L.call,
-                    phone: next.phone,
-                  ),
-                ],
-              ),
           if (app.runPhase == RunPhase.pickup) ...[
             const SizedBox(height: Gap.md),
             _PickupChecklist(run: run),
+          ] else if (started && total > 0) ...[
+            // Picked up: the same checklist, every order ticked.
+            const SizedBox(height: Gap.md),
+            _PickupChecklist(run: run, pickedUp: true),
           ] else if (!started && total > 0) ...[
             const SizedBox(height: Gap.md),
             _RunSection(
@@ -757,15 +657,22 @@ class RunDetailsScreen extends StatelessWidget {
 /// order in hand against the store's sorting; Slide to Confirm Pickup stays
 /// grey until all are ticked.
 class _PickupChecklist extends StatelessWidget {
-  const _PickupChecklist({required this.run});
+  const _PickupChecklist({required this.run, this.pickedUp = false});
   final DriverRun run;
+
+  /// The run is under way: every order shows ticked, read-only.
+  final bool pickedUp;
 
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     final c = context.c;
-    final open = app.pickupStops.toList();
-    final done = open.where((s) => app.pickupTicks.contains(s.id)).length;
+    final open = pickedUp
+        ? run.stops.where((s) => s.status != StopStatus.issue).toList()
+        : app.pickupStops.toList();
+    final done = pickedUp
+        ? open.length
+        : open.where((s) => app.pickupTicks.contains(s.id)).length;
     return CeffloCard(
       shadow: false,
       child: Column(
@@ -795,8 +702,9 @@ class _PickupChecklist extends StatelessWidget {
           for (final s in run.stops)
             _PickupRow(
               stop: s,
-              ticked: app.pickupTicks.contains(s.id),
+              ticked: pickedUp || app.pickupTicks.contains(s.id),
               reported: s.status == StopStatus.issue,
+              readOnly: pickedUp,
               onTap: () => app.togglePickupTick(s.id),
               onReport: () => _reportAtPickup(context, s),
             ),
@@ -813,9 +721,10 @@ class _PickupRow extends StatelessWidget {
     required this.reported,
     required this.onTap,
     required this.onReport,
+    this.readOnly = false,
   });
   final DriverStop stop;
-  final bool ticked, reported;
+  final bool ticked, reported, readOnly;
   final VoidCallback onTap, onReport;
 
   @override
@@ -823,7 +732,7 @@ class _PickupRow extends StatelessWidget {
     final c = context.c;
     final items = stop.items.fold(0, (a, i) => a + i.quantity);
     return InkWell(
-      onTap: reported ? null : onTap,
+      onTap: reported || readOnly ? null : onTap,
       borderRadius: BorderRadius.circular(Sizes.innerRadius),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -860,7 +769,7 @@ class _PickupRow extends StatelessWidget {
                 ],
               ),
             ),
-            if (!reported)
+            if (!reported && !readOnly)
               TextButton(onPressed: onReport, child: Text(L.pickupReport)),
           ],
         ),
@@ -986,38 +895,6 @@ class _RunSection extends StatelessWidget {
         ...children,
       ],
     ),
-  );
-}
-
-/// Navigate + Call, side by side.
-class _RunActions extends StatelessWidget {
-  const _RunActions({
-    required this.onNavigate,
-    required this.callLabel,
-    required this.phone,
-  });
-  final VoidCallback onNavigate;
-  final String callLabel;
-  final String? phone;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Expanded(child: CeffloSecondaryButton(L.navigate, onTap: onNavigate)),
-      if (phone != null && phone!.trim().isNotEmpty) ...[
-        const SizedBox(width: Gap.sm),
-        Expanded(
-          child: CeffloSecondaryButton(
-            callLabel,
-            onTap: () async {
-              if (!await dialPhone(phone) && context.mounted) {
-                showCefToast(context, L.mapNotAvailable);
-              }
-            },
-          ),
-        ),
-      ],
-    ],
   );
 }
 

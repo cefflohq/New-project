@@ -244,10 +244,9 @@ class AppState extends ChangeNotifier {
     DriverStage.active => DRoute.today,
   };
 
-  /// Where "the run" opens (Founder 2026-10-13): Run Details only before
-  /// the run (Pickup Checklist); once ongoing, straight to the Stop List.
-  DRoute get runRoute =>
-      currentRun.ongoing ? DRoute.stopList : DRoute.runDetails;
+  /// Where "the run" opens: Run Details first, then the Stop List from its
+  /// button (Founder 2026-10-13).
+  DRoute get runRoute => DRoute.runDetails;
 
   void switchTab(NavTab tab) {
     final root = switch (tab) {
