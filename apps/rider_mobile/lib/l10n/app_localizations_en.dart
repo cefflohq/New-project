@@ -1930,8 +1930,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get licencePrivacy =>
-      'Only Cefflo uses these to check Find Jobs drivers; businesses never see your IC, licence or photos. Your IC number stays hidden (last 4 digits only). Not needed for deliveries from businesses that invited you.';
+  String get licencePrivacy => 'Only Cefflo sees your IC, licence and photos.';
 
   @override
   String get licenceSubmitted => 'Licence sent for review';

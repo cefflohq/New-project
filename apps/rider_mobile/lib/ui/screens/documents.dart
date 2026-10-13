@@ -83,6 +83,7 @@ class _LiveDocumentsScreenState extends State<LiveDocumentsScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title, style: context.t.titleSmall),
@@ -99,7 +100,11 @@ class _LiveDocumentsScreenState extends State<LiveDocumentsScreen> {
                 ),
               ),
               CeffloStatusChip(
-                redo ? L.mvRetake : (done ? L.photoAdded : L.missing),
+                redo
+                    ? L.mvRetake
+                    : (done
+                          ? (status == 'verified' ? L.verified : L.photoAdded)
+                          : L.missing),
                 tone: redo
                     ? ChipTone.attention
                     : (done ? ChipTone.success : ChipTone.neutral),
@@ -155,11 +160,23 @@ class _LiveDocumentsScreenState extends State<LiveDocumentsScreen> {
               () => _open(const _SubmitLicenceSheet()),
             ),
             step(
-              LucideIcons.car,
+              switch (v['vehicle_type']) {
+                'motorcycle' => LucideIcons.motorbike,
+                'van' => LucideIcons.truck,
+                _ => LucideIcons.car,
+              },
               L.mvVehicle,
               v['vehicle_plate'] == null
                   ? L.mvVehicleSub
-                  : '${v['vehicle_plate']}',
+                  : [
+                      switch (v['vehicle_type']) {
+                        'motorcycle' => L.vehicleMotorbike,
+                        'van' => L.vehicleVan,
+                        'car' => L.vehicleCar,
+                        _ => null,
+                      },
+                      v['vehicle_plate'],
+                    ].whereType<String>().join(' · '),
               v['vehicle_submitted'] == true,
               retake == 'vehicle',
               () => _open(
@@ -415,8 +432,8 @@ class _SubmitVehicleSheetState extends State<_SubmitVehicleSheet> {
           value: _type,
           options: const ['motorcycle', 'car', 'van'],
           optionLabel: (t) => switch (t) {
-            'car' => L.car,
-            'van' => L.van,
+            'car' => L.vehicleCar,
+            'van' => L.vehicleVan,
             _ => L.motorbike,
           },
           onChanged: (t) => setState(() => _type = t),

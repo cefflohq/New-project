@@ -1940,7 +1940,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get licencePrivacy =>
-      'Hanya Cefflo menggunakannya untuk menyemak driver Cari Kerja; bisnes tidak pernah melihat IC, lesen atau gambar anda. Nombor IC anda disembunyikan (4 digit terakhir sahaja). Tidak diperlukan untuk penghantaran daripada bisnes yang menjemput anda.';
+      'Hanya Cefflo melihat IC, lesen dan gambar anda.';
 
   @override
   String get licenceSubmitted => 'Lesen dihantar untuk semakan';

@@ -3539,7 +3539,7 @@ abstract class AppLocalizations {
   /// No description provided for @licencePrivacy.
   ///
   /// In en, this message translates to:
-  /// **'Only Cefflo uses these to check Find Jobs drivers; businesses never see your IC, licence or photos. Your IC number stays hidden (last 4 digits only). Not needed for deliveries from businesses that invited you.'**
+  /// **'Only Cefflo sees your IC, licence and photos.'**
   String get licencePrivacy;
 
   /// No description provided for @licenceSubmitted.

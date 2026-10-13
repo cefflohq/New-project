@@ -574,7 +574,7 @@
   "drivingLicence": "Lesen memandu",
   "licenceNeeded": "Diperlukan untuk Cari Kerja",
   "icEnding": "IC berakhir {last4}",
-  "licencePrivacy": "Hanya Cefflo menggunakannya untuk menyemak driver Cari Kerja; bisnes tidak pernah melihat IC, lesen atau gambar anda. Nombor IC anda disembunyikan (4 digit terakhir sahaja). Tidak diperlukan untuk penghantaran daripada bisnes yang menjemput anda.",
+  "licencePrivacy": "Hanya Cefflo melihat IC, lesen dan gambar anda.",
   "licenceSubmitted": "Lesen dihantar untuk semakan",
   "icInvalid": "Masukkan nombor IC MyKad 12 digit anda.",
   "licencePhotoNeeded": "Ambil gambar depan dan belakang lesen memandu anda.",

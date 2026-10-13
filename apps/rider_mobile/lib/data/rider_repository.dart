@@ -600,7 +600,17 @@ class RiderRepository {
   /// needs it). User-facing status only: status, retake step, IC last 4,
   /// declared vehicle — never evidence, hashes or paths.
   Future<Map<String, dynamic>> myMarketplaceVerification() async {
-    if (isDemo) return const {'status': 'not_started'};
+    // Prototype: a verified Driver, same screen as the real app.
+    if (isDemo) {
+      return const {
+        'status': 'verified',
+        'ic_last4': '4821',
+        'licence_submitted': true,
+        'vehicle_submitted': true,
+        'vehicle_type': 'motorcycle',
+        'vehicle_plate': 'WXY 1234',
+      };
+    }
     final res = await _run(() => _db.rpc('my_marketplace_verification'));
     return Map<String, dynamic>.from(res as Map);
   }
