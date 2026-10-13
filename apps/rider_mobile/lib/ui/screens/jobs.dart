@@ -1191,7 +1191,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           );
         }
         final o = list[index];
-        final next = list[(index + 1) % list.length];
         final sent = o.myStatus != null;
         final blocked = !sent && o.clash != null;
         return CeffloNavySheetScaffold(
@@ -1230,26 +1229,20 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
               ),
             ],
           ),
-          footer: Column(
-            mainAxisSize: MainAxisSize.min,
+          // Back left, Apply right, one row (Founder 2026-10-13).
+          footer: Row(
             children: [
-              CeffloPrimaryButton(
-                sent ? L.jobApplied : L.jobApply,
-                busy: _busy,
-                onTap: sent || blocked || _busy ? null : () => _request(app, o),
-              ),
-              if (list.length > 1) ...[
-                const SizedBox(height: Gap.sm),
-                CeffloSecondaryButton(
-                  L.nextOpening,
-                  trailingChevron: true,
-                  onTap: () {
-                    // Swap this opening for the next (no history pile-up).
-                    app.back();
-                    app.go(DRoute.jobDetail, entityId: next.id);
-                  },
+              Expanded(child: CeffloSecondaryButton(L.back, onTap: app.back)),
+              const SizedBox(width: Gap.md),
+              Expanded(
+                child: CeffloPrimaryButton(
+                  sent ? L.jobApplied : L.jobApply,
+                  busy: _busy,
+                  onTap: sent || blocked || _busy
+                      ? null
+                      : () => _request(app, o),
                 ),
-              ],
+              ),
             ],
           ),
         );
