@@ -9,6 +9,7 @@ import { fetchBusiness, fetchZones, fetchMembers, fetchJoinRequests, fetchRiders
 import { mountHiring } from '../hiring.js';
 import { esc, icon, avatar, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal, typedConfirmDialog, copyText } from '../ui.js';
 import { showInviteLink } from '../invite_link.js';
+import { mountCoverageMap } from '../map.js';
 import { rerenderShell, signOutHandler } from '../shell.js';
 import { otpBoxesHtml, wireOtpBoxes, otpFailure } from './auth.js';
 import { openNotificationPrefs } from '../notifications.js';
@@ -203,7 +204,7 @@ async function business(page) {
           <button class="btn soft" data-area>${esc(t('c.save'))}</button></div>
         <button class="link-btn" type="button" data-locate style="margin-top:10px">${esc(t('bp.locate'))}</button>
         <div class="err" data-aerr hidden></div>
-        <div style="margin-top:12px">${gatedNote(t('bp.mapGated'))}</div></div>
+        <div class="pm pm-picker" data-covmap style="margin-top:12px"></div><p class="hint" style="margin-top:6px">${esc(t('bp.mapHint'))}</p></div>
       <div class="sub-card" data-hours><h3>${esc(t('hours.title'))}</h3><p class="desc">${esc(t('hours.lead'))}</p>
         ${[1, 2, 3, 4, 5, 6, 7].map(d => { const h = hours.find(x => x.weekday === d) || {}; return `<div class="g4" data-day="${d}" style="align-items:center;margin-bottom:6px">
           <b style="font-weight:500">${esc(t(`hours.d${d}`))}</b>
@@ -242,6 +243,14 @@ async function business(page) {
     // Pickup origin from the saved business address: the existing
     // geocode-order business mode, then the owner saves with the existing
     // set_business_service_area. No polygons.
+    // Coverage map (Founder 2026-10-12): moving the map sets the origin
+    // fields; the radius field redraws the real circle.
+    const latIn = body.querySelector('[name=lat]'), lngIn = body.querySelector('[name=lng]'), radIn = body.querySelector('[name=radius]');
+    const hasOrigin = b.service_origin_latitude != null && b.service_origin_longitude != null;
+    const cov = mountCoverageMap(body.querySelector('[data-covmap]'),
+      hasOrigin ? { lat: Number(b.service_origin_latitude), lng: Number(b.service_origin_longitude) } : null,
+      b.service_coverage_radius_km, pin => { if (pin) { latIn.value = pin.lat; lngIn.value = pin.lng; } });
+    radIn.addEventListener('input', () => cov.setRadius(radIn.value));
     body.querySelector('[data-locate]').addEventListener('click', async e => {
       const aerr = body.querySelector('[data-aerr]');
       aerr.hidden = true;
@@ -252,6 +261,8 @@ async function business(page) {
         body.querySelector('[name=lng]').value = res.longitude;
         const r = body.querySelector('[name=radius]');
         if (!r.value) r.value = 5;
+        cov.map()?.flyTo({ center: [res.longitude, res.latitude], zoom: 13, duration: 600 });
+        cov.setRadius(r.value);
         toast(t('bp.located'));
       } catch (ex) { aerr.textContent = ex.message && ex.status !== 404 ? ex.message : t('bp.locateFailed'); aerr.hidden = false; }
     });

@@ -231,12 +231,12 @@ void main() {
     expect(find.text('Nadia Rahman'), findsNothing);
     expect(find.text('1 order'), findsOneWidget);
 
-    // Zone options: exactly two actions.
+    // Zone options: edit name, draw boundary (Founder 2026-10-12), delete.
     await tester.tap(find.byTooltip('Zone options'));
     await tester.pumpAndSettle();
     expect(find.text('Edit zone name'), findsOneWidget);
+    expect(find.text('Draw zone boundary'), findsOneWidget);
     expect(find.text('Delete zone'), findsOneWidget);
-    expect(find.textContaining('boundary'), findsNothing);
     expect(find.textContaining('Deactivate'), findsNothing);
 
     // Rename through the lightweight editor.
@@ -467,14 +467,15 @@ void main() {
     expect(find.byTooltip('Download invoice'), findsWidgets);
   });
 
-  testWidgets('no Online/Offline toggle: Today is never greyed (Founder 2026-10-06)', (
-    tester,
-  ) async {
-    // Removed from V1: it was local-only, reset on restart and claimed new
-    // orders were paused though nothing paused them.
-    await pumpAt(tester, const VendorLocation(VRoute.today));
-    expect(find.text('Offline'), findsNothing);
-    expect(find.text('Online'), findsNothing);
-    expect(find.byType(ColorFiltered), findsNothing);
-  });
+  testWidgets(
+    'no Online/Offline toggle: Today is never greyed (Founder 2026-10-06)',
+    (tester) async {
+      // Removed from V1: it was local-only, reset on restart and claimed new
+      // orders were paused though nothing paused them.
+      await pumpAt(tester, const VendorLocation(VRoute.today));
+      expect(find.text('Offline'), findsNothing);
+      expect(find.text('Online'), findsNothing);
+      expect(find.byType(ColorFiltered), findsNothing);
+    },
+  );
 }

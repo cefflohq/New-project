@@ -2148,5 +2148,10 @@
     }
   },
   "hwPackedWaitingRun": "Waiting for a run",
-  "hwWaitingForRun": "Packed. Sorting starts once the vendor builds a run for these orders."
+  "hwWaitingForRun": "Packed. Sorting starts once the vendor builds a run for these orders.",
+  "clear": "Clear",
+  "drawZoneBoundary": "Draw zone boundary",
+  "editZoneBoundary": "Edit zone boundary",
+  "removeZoneBoundary": "Remove boundary",
+  "drawZoneBoundaryHint": "Tap the map to add the corners of this zone. Add at least 3."
 }

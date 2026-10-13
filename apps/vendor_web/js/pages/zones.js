@@ -4,7 +4,7 @@ import { t, fmtTime } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { fetchZones, fetchOrders, businessToday, orderNo } from '../data.js';
-import { mountPinsMap, hasPin } from '../map.js';
+import { mountPinsMap, mountZoneDrawer, hasPin, zoneColor } from '../map.js';
 import { esc, icon, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal } from '../ui.js';
 
 const ONGOING = ['created', 'ready_for_pickup', 'picked_up', 'out_for_delivery', 'arrived'];
@@ -32,7 +32,7 @@ export default function zones({ el, params, setHeader }) {
       const [z, o] = await Promise.all([fetchZones(), businessToday().then(d => fetchOrders(`&order_date=eq.${d}`))]);
       zs = z || []; orders = o || [];
       paint();
-      mountPinsMap($('[data-zmap]'), drops(orders));
+      mountPinsMap($('[data-zmap]'), drops(orders), [], zs.filter(z => z.status === 'active'));
       if (selected) paintDetail();
     } catch (e) { $('[data-list]').innerHTML = errorState(e, 'zones'); }
   }
@@ -41,8 +41,7 @@ export default function zones({ el, params, setHeader }) {
     return { mine, total: mine.length, completed: mine.filter(o => o.delivery_status === 'delivered').length, ongoing: mine.filter(o => ONGOING.includes(o.delivery_status)).length, issues: mine.filter(o => o.delivery_status === 'issue').length };
   };
 
-  // Pinned orders as map drops. Zones have no stored geometry, so the map
-  // shows the orders, not boundaries.
+  // Pinned orders as map drops; zones with a drawn boundary show as shapes.
   const drops = list => list.filter(o => hasPin(o) && o.delivery_status !== 'cancelled')
     .map(o => ({ lat: +o.latitude, lng: +o.longitude, done: o.delivery_status === 'delivered' }));
 
@@ -51,7 +50,7 @@ export default function zones({ el, params, setHeader }) {
     $('[data-list]').innerHTML = rows.length ? `<div class="table-wrap"><table class="t">
       <thead><tr><th><button class="link-btn" data-sort style="text-decoration:none">${esc(t('zones.zone'))} ${sortAsc ? '▲' : '▼'}</button></th><th>${esc(t('zones.total'))}</th><th>${esc(t('zones.completed'))}</th><th>${esc(t('zones.ongoing'))}</th><th>${esc(t('zones.issues'))}</th><th>${esc(t('zones.status'))}</th><th></th></tr></thead>
       <tbody>${rows.map(z => { const c = counts(z.id); return `<tr class="row ${z.id === selected ? 'sel' : ''}" data-id="${esc(z.id)}">
-        <td><b>${esc(z.name)}</b></td><td class="num">${c.total}</td><td class="num">${c.completed}</td><td class="num">${c.ongoing}</td>
+        <td>${z.boundary && z.status === 'active' ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${zoneColor(z)};margin-right:8px"></span>` : ''}<b>${esc(z.name)}</b></td><td class="num">${c.total}</td><td class="num">${c.completed}</td><td class="num">${c.ongoing}</td>
         <td class="num" style="color:${c.issues ? 'var(--danger)' : 'inherit'}">${c.issues}</td><td>${chip(z.status === 'active' ? 'active' : 'inactive')}</td><td>${icon('right', 'i chev')}</td></tr>`; }).join('')}</tbody></table></div>`
       : emptyState(t('zones.none'), t('zones.noneBody'));
   }
@@ -78,7 +77,7 @@ export default function zones({ el, params, setHeader }) {
       <div class="sec"><h3>${esc(t('zones.completedOrders', { n: done.length }))}</h3>${done.slice(0, 6).map(row).join('') || `<div class="hint">${esc(t('c.none'))}</div>`}</div>
       <div class="sec"><h3>${esc(t('zones.issuesOrders', { n: issues.length }))}</h3>${issues.slice(0, 6).map(row).join('') || `<div class="hint">${esc(t('c.none'))}</div>`}</div>
       <a class="btn" style="width:100%" href="#/orders">${esc(t('zones.viewAllOrders', { z: z.name }))} ${icon('right')}</a>`;
-    mountPinsMap(box.querySelector('[data-dmap]'), drops(c.mine));
+    mountPinsMap(box.querySelector('[data-dmap]'), drops(c.mine), [], [z]);
   }
 
   function zoneMenu(anchor) {
@@ -86,29 +85,88 @@ export default function zones({ el, params, setHeader }) {
     const z = zs.find(x => x.id === selected);
     const m = document.createElement('div');
     m.className = 'menu';
-    m.innerHTML = `<button data-rename>${esc(t('zones.rename'))}</button><button data-toggle>${esc(t(z.status === 'active' ? 'zones.deactivate' : 'zones.activate'))}</button>`;
+    m.innerHTML = `<button data-rename>${esc(t('zones.rename'))}</button><button data-draw>${esc(t(z.boundary ? 'zones.editBoundary' : 'zones.drawBoundary'))}</button><button data-toggle>${esc(t(z.status === 'active' ? 'zones.deactivate' : 'zones.activate'))}</button><button data-delete style="color:var(--danger)">${esc(t('zones.delete'))}</button>`;
     m.addEventListener('click', async e => {
       e.stopPropagation(); m.remove();
-      if (e.target.closest('[data-rename]')) nameDialog(t('zones.rename'), z.name, name => api.rpc('rename_zone', { p_zone_id: z.id, p_name: name }).then(() => toast(t('zones.renamed'))));
+      if (e.target.closest('[data-draw]')) boundaryDialog(z);
+      if (e.target.closest('[data-delete]')) deleteDialog(z);
+      if (e.target.closest('[data-rename]')) nameDialog(t('zones.rename'), z.name, (name, place) => api.rpc('rename_zone', { p_zone_id: z.id, p_name: name }).then(r => outline(r, place)).then(() => toast(t('zones.renamed'))));
       if (e.target.closest('[data-toggle]')) { try { await api.rpc('set_zone_status', { p_zone_id: z.id, p_status: z.status === 'active' ? 'inactive' : 'active' }); load(); } catch (ex) { toast(ex.message, 'error'); } }
     });
     anchor.parentElement.append(m);
   }
 
-  function nameDialog(title, value, action) {
-    const m = modal({ title, body: `<div class="field"><label>${esc(t('zones.name'))}</label><input class="input" name="n" maxlength="80" value="${esc(value)}"></div><div class="err" data-err hidden></div>`,
-      footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit>${esc(t('c.save'))}</button>` });
+  // Auto outline: the zone name is looked up on the map (zone-boundary Edge
+  // Function) so the vendor never has to draw. Best effort; a name that is not
+  // a place simply stays without a boundary.
+  const outline = (row, place) => {
+    const id = Array.isArray(row) ? row[0]?.id : row?.id;
+    return id ? api.fn('zone-boundary', { zone_id: id, ...(place ? { center: place.center } : {}) }).catch(() => null) : null;
+  };
+
+  // Delete zone (Founder 2026-10-13): leaves the list, row kept for history.
+  function deleteDialog(z) {
+    const m = modal({ title: t('zones.delete'), body: `<p>${esc(t('zones.deleteBody'))}</p><div class="err" data-err hidden></div>`,
+      footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn danger-soft" data-submit>${esc(t('zones.delete'))}</button>` });
     m.el.querySelector('[data-submit]').addEventListener('click', async e => {
-      const n = m.el.querySelector('[name=n]').value.trim(), err = m.el.querySelector('[data-err]');
+      const err = m.el.querySelector('[data-err]');
+      try { await busy(e.currentTarget, () => api.rpc('delete_zone', { p_zone_id: z.id })); m.close(); toast(t('zones.deleted')); location.hash = '#/zones'; load(); }
+      catch (ex) { err.textContent = ex.message; err.hidden = false; }
+    });
+  }
+
+  function boundaryDialog(z) {
+    const m = modal({ title: t(z.boundary ? 'zones.editBoundary' : 'zones.drawBoundary'),
+      body: `<p class="hint" style="margin-bottom:10px">${esc(t('zones.drawHint'))}</p><div data-draw-map></div><div class="err" data-err hidden></div>`,
+      footer: `${z.boundary ? `<button class="btn" data-remove style="margin-right:auto">${esc(t('zones.removeBoundary'))}</button>` : ''}<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit>${esc(t('c.save'))}</button>` });
+    const drawer = mountZoneDrawer(m.el.querySelector('[data-draw-map]'), z.boundary, zs.filter(x => x.id !== z.id && x.boundary));
+    const save = async (btn, boundary) => {
+      const err = m.el.querySelector('[data-err]');
+      try { await busy(btn, () => api.rpc('set_zone_boundary', { p_zone_id: z.id, p_boundary: boundary })); drawer.destroy(); m.close(); toast(t('c.saved')); load(); }
+      catch (ex) { err.textContent = ex.message; err.hidden = false; }
+    };
+    m.el.querySelector('[data-submit]').addEventListener('click', e => {
+      const b = drawer.get(), err = m.el.querySelector('[data-err]');
+      if (!b) { err.textContent = t('zones.drawMin'); err.hidden = false; return; }
+      save(e.currentTarget, b);
+    });
+    m.el.querySelector('[data-remove]')?.addEventListener('click', e => save(e.currentTarget, null));
+  }
+
+  // Zone name with town suggestions (Founder 2026-10-13: "che" -> Cheras,
+  // Kuala Lumpur; town level only). A picked town is passed on as place.
+  function nameDialog(title, value, action) {
+    const m = modal({ title, body: `<div class="field"><label>${esc(t('zones.name'))}</label><input class="input" name="n" maxlength="80" autocomplete="off" value="${esc(value)}"><div class="area-suggest" data-sug hidden></div></div><div class="err" data-err hidden></div>`,
+      footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit>${esc(t('c.save'))}</button>` });
+    const input = m.el.querySelector('[name=n]'), sug = m.el.querySelector('[data-sug]');
+    let picked = null, timer = null, seq = 0, options = [];
+    input.addEventListener('input', () => {
+      if (picked && input.value !== picked.name) picked = null;
+      clearTimeout(timer);
+      const q = input.value.trim(), mine = ++seq;
+      if (picked || q.length < 2) { sug.hidden = true; return; }
+      timer = setTimeout(async () => {
+        options = (await api.fn('zone-boundary', { suggest: q }).catch(() => null))?.suggestions || [];
+        if (mine !== seq) return;
+        sug.innerHTML = (options || []).map((a, i) => `<button type="button" data-i="${i}">${icon('pin')}<span><b>${esc(a.name)}</b>${a.state ? `<small>${esc(a.state)}</small>` : ''}</span></button>`).join('');
+        sug.hidden = !options?.length;
+      }, 250);
+    });
+    sug.addEventListener('click', e => {
+      const b = e.target.closest('[data-i]'); if (!b) return;
+      picked = options[+b.dataset.i]; input.value = picked.name; sug.hidden = true; input.focus();
+    });
+    m.el.querySelector('[data-submit]').addEventListener('click', async e => {
+      const n = input.value.trim(), err = m.el.querySelector('[data-err]');
       if (!n) { err.textContent = t('c.required'); err.hidden = false; return; }
-      try { await busy(e.currentTarget, () => action(n)); m.close(); load(); } catch (ex) { err.textContent = ex.message; err.hidden = false; }
+      try { await busy(e.currentTarget, () => action(n, picked || null)); m.close(); load(); } catch (ex) { err.textContent = ex.message; err.hidden = false; }
     });
   }
 
   el.addEventListener('click', e => {
     if (e.target.closest('[data-sort]')) { sortAsc = !sortAsc; paint(); return; }
     const row = e.target.closest('tr[data-id]'); if (row) { location.hash = `#/zones/${row.dataset.id}`; return; }
-    if (e.target.closest('[data-add]')) { nameDialog(t('zones.add'), '', name => api.rpc('create_zone', { p_business_id: ctx.bid, p_name: name }).then(() => toast(t('zones.created')))); return; }
+    if (e.target.closest('[data-add]')) { nameDialog(t('zones.add'), '', (name, place) => api.rpc('create_zone', { p_business_id: ctx.bid, p_name: name }).then(r => outline(r, place)).then(() => toast(t('zones.created')))); return; }
     if (e.target.closest('[data-zmenu]')) { e.stopPropagation(); zoneMenu(e.target.closest('[data-zmenu]')); return; }
     if (e.target.closest('[data-retry]')) load();
   });

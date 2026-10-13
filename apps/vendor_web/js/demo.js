@@ -27,10 +27,15 @@ function todayLocal() {
 const at = (h, m) => new Date(`${todayLocal()}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00+08:00`).toISOString();
 const minsAgo = n => new Date(Date.now() - n * 60000).toISOString();
 
+// Sample drawn boundaries (two zones) so the zone maps have shapes to show.
+const DEMO_BOUNDARIES = {
+  'z-bangsar': { type: 'Polygon', coordinates: [[[101.664, 3.137], [101.684, 3.137], [101.688, 3.122], [101.670, 3.115], [101.660, 3.125], [101.664, 3.137]]] },
+  'z-pj': { type: 'Polygon', coordinates: [[[101.600, 3.120], [101.650, 3.120], [101.655, 3.085], [101.610, 3.080], [101.600, 3.120]]] },
+};
 const zones = [
   ['z-bangsar', 'Bangsar', 'active'], ['z-montkiara', 'Mont Kiara', 'active'], ['z-ttdi', 'TTDI', 'active'],
   ['z-damansara', 'Damansara', 'active'], ['z-pj', 'Petaling Jaya', 'active'], ['z-klang', 'Klang', 'inactive'],
-].map(([id, name, status]) => ({ id, name, status, created_at: '2026-08-02T02:00:00Z' }));
+].map(([id, name, status]) => ({ id, name, status, created_at: '2026-08-02T02:00:00Z', boundary: DEMO_BOUNDARIES[id] || null }));
 
 const riders = [
   ['r-ahmad', 'Ahmad Razi', '+60 12-345 6789', 'VFY 7281', 'motorcycle', 'active', 'online'],

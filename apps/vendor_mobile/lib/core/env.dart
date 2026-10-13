@@ -37,6 +37,11 @@ class Env {
     defaultValue: 'https://order.cefflo.com/',
   );
 
+  /// Public Mapbox token (pk.*) for map tiles. Empty = CARTO fallback tiles.
+  static const mapboxPublicToken = String.fromEnvironment(
+    'CEFFLO_MAPBOX_PUBLIC_TOKEN',
+  );
+
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabasePublishableKey.isNotEmpty;
 

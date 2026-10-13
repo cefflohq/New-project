@@ -249,8 +249,18 @@ class Zone {
     required this.name,
     required this.status,
     this.locality,
+    this.boundary,
+    this.holes = const [],
   });
   final String id, name, status;
+
+  /// Parts of the outline given up to a smaller zone inside it (auto zones,
+  /// 2026-10-13); same (lat, lng) form as [boundary].
+  final List<List<(double, double)>> holes;
+
+  /// Vendor-drawn outline (Founder 2026-10-12): corners as (lat, lng), ring
+  /// not repeated. Null = no boundary drawn yet. Display only.
+  final List<(double, double)>? boundary;
 
   /// Human place label ("Mont Kiara, Kuala Lumpur") when the row carries
   /// one; the UI omits the line otherwise rather than inventing it.
@@ -261,7 +271,44 @@ class Zone {
     name: (r['name'] as String?) ?? L.zone,
     status: (r['status'] as String?) ?? 'active',
     locality: r['locality'] as String?,
+    boundary: _ring(r['boundary'], 0),
+    holes: [
+      for (var i = 1; i < _ringCount(r['boundary']); i++)
+        ?_ring(r['boundary'], i),
+    ],
   );
+
+  static int _ringCount(Object? b) => b is Map && b['coordinates'] is List
+      ? (b['coordinates'] as List).length
+      : 0;
+
+  static List<(double, double)>? _ring(Object? b, int index) {
+    if (b is! Map || b['type'] != 'Polygon') return null;
+    final coords = b['coordinates'];
+    if (coords is! List || coords.length <= index || coords[index] is! List) {
+      return null;
+    }
+    final ring = [
+      for (final p in coords[index] as List)
+        if (p is List && p.length == 2)
+          ((p[1] as num).toDouble(), (p[0] as num).toDouble()),
+    ];
+    if (ring.length > 1 && ring.first == ring.last) ring.removeLast();
+    return ring.length >= 3 ? ring : null;
+  }
+
+  /// GeoJSON Polygon for set_zone_boundary (closed ring, [lng, lat]).
+  static Map<String, dynamic>? toGeoJson(List<(double, double)>? ring) =>
+      ring == null || ring.length < 3
+      ? null
+      : {
+          'type': 'Polygon',
+          'coordinates': [
+            [
+              for (final (lat, lng) in [...ring, ring.first]) [lng, lat],
+            ],
+          ],
+        };
 
   bool get isActive => status == 'active';
 }
@@ -932,3 +979,17 @@ String roleLabel(String role) => switch (role.toLowerCase()) {
   'operator' => L.roleOperator,
   _ => role,
 };
+
+/// One town offered while typing a zone name (zone-boundary `suggest`,
+/// Founder 2026-10-13: town level only).
+class AreaSuggestion {
+  const AreaSuggestion({
+    required this.label,
+    required this.longitude,
+    required this.latitude,
+    this.state,
+  });
+  final String label;
+  final String? state;
+  final double longitude, latitude;
+}

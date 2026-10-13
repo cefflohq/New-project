@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -46,7 +48,10 @@ class ZonesScreen extends StatelessWidget {
         return PageBody(
           onRefresh: reload,
           children: [
-            _ZonesOverviewMap(orders: orders),
+            _ZonesOverviewMap(
+              orders: orders,
+              zones: zones.where((z) => z.isActive).toList(),
+            ),
             SectionHeading(L.zones2(zones.length)),
             if (zones.isEmpty)
               StateBlock.empty(L.noZonesYetTapCreateFirst)
@@ -66,7 +71,13 @@ class ZonesScreen extends StatelessWidget {
                         inZone.length,
                         riders.length,
                       ),
-                      icon: LucideIcons.mapPin,
+                      // Same colour as the zone's area on the map.
+                      leading: IconTile(
+                        LucideIcons.mapPin,
+                        color: z.isActive && z.boundary != null
+                            ? zoneColor(z)
+                            : null,
+                      ),
                       trailing: StatusChip(
                         z.isActive ? L.active : L.inactive,
                         success: z.isActive,
@@ -92,15 +103,19 @@ class ZonesScreen extends StatelessWidget {
   }
 }
 
-/// Every pinned order across the business's zones on one real map. Zones
-/// have no stored geometry, so the map shows the orders, not boundaries.
+/// Every pinned order across the business's zones on one real map, with
+/// each zone's drawn boundary (Founder 2026-10-12).
 class _ZonesOverviewMap extends StatelessWidget {
-  const _ZonesOverviewMap({required this.orders});
+  const _ZonesOverviewMap({required this.orders, this.zones = const []});
   final List<VendorOrder> orders;
+  final List<Zone> zones;
 
   @override
-  Widget build(BuildContext context) =>
-      PinsMap(drops: _drops(orders), emptyLabel: L.mapNoPinnedOrders);
+  Widget build(BuildContext context) => PinsMap(
+    drops: _drops(orders),
+    zones: zones,
+    emptyLabel: L.mapNoPinnedOrders,
+  );
 }
 
 /// Pinned orders as map drops; delivered ones show a check.
@@ -115,26 +130,6 @@ List<MapDrop> _drops(Iterable<VendorOrder> orders) => [
         next: false,
       ),
 ];
-
-/// Light street grid shared by the zone map painters.
-void _paintStreets(Canvas canvas, Size size, Color ground, Color road) {
-  canvas.drawRect(Offset.zero & size, Paint()..color = ground);
-  final roads = Paint()
-    ..color = road
-    ..strokeWidth = 5;
-  for (var i = -2; i < 10; i++) {
-    canvas.drawLine(
-      Offset(0, i * 48.0),
-      Offset(size.width, i * 48.0 + 110),
-      roads,
-    );
-    canvas.drawLine(
-      Offset(i * 58.0, 0),
-      Offset(i * 58.0 - 70, size.height),
-      roads,
-    );
-  }
-}
 
 /// V-28 — Service Area's zone configuration list. Distinct from the
 /// operational V-16 Zones tab: no today's-order counts, just what is
@@ -330,7 +325,34 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
     );
   }
 
-  /// Zone options: exactly Edit zone name and Delete zone.
+  /// Draw / edit / remove the zone's boundary in a near-full-height sheet.
+  Future<void> _editBoundary(Zone zone) async {
+    final app = AppScope.read(context);
+    final others = (await app.repo.zones(app.business!.id))
+        .where((z) => z.id != zone.id && z.boundary != null)
+        .toList();
+    if (!mounted) return;
+    final saved = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: context.c.card,
+      builder: (sheet) => SizedBox(
+        height: MediaQuery.sizeOf(sheet).height * .9,
+        child: ZoneBoundaryEditor(
+          zone: zone,
+          others: others,
+          onSave: (ring) => app.repo.setZoneBoundary(zone.id, ring),
+        ),
+      ),
+    );
+    if (saved == true && mounted) {
+      zonesRevision.value++;
+      _view.currentState?.reload();
+    }
+  }
+
+  /// Zone options: edit name, draw boundary, delete zone.
   void _showZoneOptions(Zone zone) {
     final c = context.c;
     showCefSheet<void>(
@@ -364,6 +386,17 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                   _editName(zone);
                 },
               ),
+              CefListRow(
+                title: zone.boundary == null
+                    ? L.drawZoneBoundary
+                    : L.editZoneBoundary,
+                icon: LucideIcons.pentagon,
+                showChevron: false,
+                onTap: () {
+                  Navigator.of(sheet).pop();
+                  _editBoundary(zone);
+                },
+              ),
               _DestructiveRow(
                 label: L.deleteZone,
                 onTap: () {
@@ -386,7 +419,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
 
   Future<void> _editName(Zone zone) async {
     final app = AppScope.read(context);
-    final name = await showCefSheet<String>(
+    final picked = await showCefSheet<(String, AreaSuggestion?)>(
       context: context,
       isScrollControlled: true,
       backgroundColor: context.c.card,
@@ -397,9 +430,11 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
       ),
       builder: (sheet) => _EditZoneNameSheet(initialName: zone.name),
     );
-    if (name == null || name == zone.name || !mounted) return;
+    if (picked == null || !mounted) return;
+    final (name, place) = picked;
+    if (name == zone.name && place == null) return;
     try {
-      final updated = await app.repo.renameZone(zone.id, name);
+      final updated = await app.repo.renameZone(zone.id, name, place: place);
       if (!mounted) return;
       setState(() => _zone = updated);
       await _view.currentState?.reload();
@@ -470,9 +505,11 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
     );
     if (confirmed != true || !mounted) return;
     try {
-      // Archived as inactive (D-61): never a hard delete.
-      await app.repo.deactivateZone(zone.id);
+      // Leaves the list; the row stays for order history (delete_zone).
+      await app.repo.deleteZone(zone.id);
       if (!mounted) return;
+      zonesRevision.value++;
+      app.dataChanged();
       showCefToast(context, L.removedFromDeliverySetup(zone.name));
       app.back();
     } catch (e) {
@@ -514,7 +551,7 @@ class _EditZoneNameSheet extends StatefulWidget {
 
 class _EditZoneNameSheetState extends State<_EditZoneNameSheet> {
   // Owned by the sheet, so it outlives the closing animation.
-  late final _controller = TextEditingController(text: widget.initialName);
+  late final _controller = ZoneNameController(text: widget.initialName);
   String? _error;
 
   @override
@@ -529,7 +566,7 @@ class _EditZoneNameSheetState extends State<_EditZoneNameSheet> {
       setState(() => _error = L.zoneNameRequired);
       return;
     }
-    Navigator.of(context).pop(name);
+    Navigator.of(context).pop((name, _controller.place));
   }
 
   @override
@@ -547,10 +584,9 @@ class _EditZoneNameSheetState extends State<_EditZoneNameSheet> {
         children: [
           Text(L.editZoneName, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: Gap.md),
-          CefField(
+          ZoneNameInput(
             controller: _controller,
             hint: L.zoneName,
-            prefixIcon: LucideIcons.mapPin,
             errorText: _error,
           ),
           Row(
@@ -624,7 +660,7 @@ class _ZoneDetailBody extends StatelessWidget {
           Gap.xxl,
         ),
         children: [
-          _ZoneMap(orders: orders),
+          _ZoneMap(orders: orders, zone: zone),
           const SizedBox(height: Gap.md),
           Row(
             children: [
@@ -921,13 +957,15 @@ class _SequenceBadge extends StatelessWidget {
 
 /// Zone detail map: this zone's pinned orders on a real map.
 class _ZoneMap extends StatelessWidget {
-  const _ZoneMap({required this.orders});
+  const _ZoneMap({required this.orders, required this.zone});
   final List<VendorOrder> orders;
+  final Zone zone;
 
   @override
   Widget build(BuildContext context) => PinsMap(
     height: 200,
     drops: _drops(orders),
+    zones: [zone],
     emptyLabel: L.mapNoPinnedOrders,
   );
 }
@@ -943,7 +981,7 @@ class CreateZoneScreen extends StatefulWidget {
 }
 
 class _CreateZoneScreenState extends State<CreateZoneScreen> {
-  final name = TextEditingController();
+  final name = ZoneNameController();
   bool busy = false;
   String? error;
   String? nameError;
@@ -973,7 +1011,11 @@ class _CreateZoneScreenState extends State<CreateZoneScreen> {
       error = null;
     });
     try {
-      await app.repo.createZone(app.business!.id, name.text.trim());
+      await app.repo.createZone(
+        app.business!.id,
+        name.text.trim(),
+        place: name.place,
+      );
       if (!mounted) return;
       app.back();
     } catch (e) {
@@ -995,20 +1037,17 @@ class _CreateZoneScreenState extends State<CreateZoneScreen> {
     return PageBody(
       bottom: CefButton(L.createZone2, busy: busy, onTap: _save),
       children: [
-        SizedBox(
-          height: 170,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-            child: CustomPaint(
-              painter: _CoverageMapPainter.of(context),
-              child: Center(
-                child: Icon(
-                  LucideIcons.mapPin,
-                  color: CefColors.brand,
-                  size: 28,
-                ),
-              ),
-            ),
+        // Real map of the zones already drawn (Founder 2026-10-12); the
+        // new zone's boundary is drawn from Zone detail after it exists.
+        FutureBuilder<List<Zone>>(
+          future: AppScope.read(context).repo
+              .zones(AppScope.read(context).business!.id),
+          builder: (context, snap) => PinsMap(
+            height: 170,
+            drops: const [],
+            zones: (snap.data ?? const <Zone>[])
+                .where((z) => z.isActive)
+                .toList(),
           ),
         ),
         const SizedBox(height: Gap.md),
@@ -1018,11 +1057,10 @@ class _CreateZoneScreenState extends State<CreateZoneScreen> {
           icon: LucideIcons.mapPin,
           subtitle: L.nameAreaDeliver,
         ),
-        CefField(
+        ZoneNameInput(
           label: L.zoneName,
           controller: name,
           hint: L.enterZoneName,
-          prefixIcon: LucideIcons.mapPin,
           errorText: nameError,
         ),
         if (error != null)
@@ -1545,72 +1583,6 @@ class TeamMemberDetailScreen extends StatelessWidget {
   }
 }
 
-/// Illustrative coverage preview (Zone detail / Zone form). Coverage
-/// geometry stays server-owned; this never draws a real boundary. The zone
-/// is drawn in CEFFLO Blue, the one brand blue.
-class _CoverageMapPainter extends CustomPainter {
-  const _CoverageMapPainter({
-    required this.ground,
-    required this.road,
-    required this.area,
-  });
-
-  factory _CoverageMapPainter.of(BuildContext context) => _CoverageMapPainter(
-    ground: context.c.subtle,
-    road: context.c.card,
-    area: CefColors.brand,
-  );
-
-  final Color ground, road, area;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    _paintStreets(canvas, size, ground, road);
-    final coverage = Path()
-      ..moveTo(size.width * .25, size.height * .35)
-      ..lineTo(size.width * .48, size.height * .16)
-      ..lineTo(size.width * .73, size.height * .32)
-      ..lineTo(size.width * .78, size.height * .68)
-      ..lineTo(size.width * .48, size.height * .82)
-      ..lineTo(size.width * .22, size.height * .60)
-      ..close();
-    canvas.drawPath(coverage, Paint()..color = area.withValues(alpha: .2));
-    canvas.drawPath(
-      coverage,
-      Paint()
-        ..color = area
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
-    );
-    // Boundary vertices, as the zone editor shows them.
-    for (final (dx, dy) in const [
-      (.25, .35),
-      (.48, .16),
-      (.73, .32),
-      (.78, .68),
-      (.48, .82),
-      (.22, .60),
-    ]) {
-      final at = Offset(size.width * dx, size.height * dy);
-      canvas.drawCircle(at, 4, Paint()..color = road);
-      canvas.drawCircle(
-        at,
-        4,
-        Paint()
-          ..color = area
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.6,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_CoverageMapPainter oldDelegate) =>
-      oldDelegate.ground != ground ||
-      oldDelegate.road != road ||
-      oldDelegate.area != area;
-}
-
 class ProductsScreen extends StatelessWidget {
   const ProductsScreen({super.key});
 
@@ -1877,7 +1849,7 @@ class _CreateZoneDialog extends StatefulWidget {
 }
 
 class _CreateZoneDialogState extends State<_CreateZoneDialog> {
-  final _name = TextEditingController();
+  final _name = ZoneNameController();
   bool _busy = false;
   String? _error;
 
@@ -1900,7 +1872,7 @@ class _CreateZoneDialogState extends State<_CreateZoneDialog> {
     });
     try {
       if (!app.repo.isDemo) {
-        await app.repo.createZone(app.business!.id, name);
+        await app.repo.createZone(app.business!.id, name, place: _name.place);
       }
       if (!mounted) return;
       zonesRevision.value++;
@@ -1951,11 +1923,10 @@ class _CreateZoneDialogState extends State<_CreateZoneDialog> {
                     style: text.bodySmall,
                   ),
                   const SizedBox(height: Gap.xl),
-                  CefField(
+                  ZoneNameInput(
                     label: L.zoneName,
                     controller: _name,
                     hint: L.enterZoneName,
-                    prefixIcon: LucideIcons.mapPin,
                     errorText: _error,
                     enabled: !_busy,
                   ),
@@ -2323,3 +2294,140 @@ Future<void> _showUnzonedOrders(
     );
   },
 );
+
+/// Zone name text plus the town the vendor picked from the suggestions
+/// (null when they typed a name of their own).
+class ZoneNameController extends TextEditingController {
+  ZoneNameController({super.text});
+  AreaSuggestion? place;
+  String? _pickedLabel;
+
+  void pick(AreaSuggestion a) {
+    place = a;
+    _pickedLabel = a.label;
+    text = a.label;
+    selection = TextSelection.collapsed(offset: a.label.length);
+  }
+
+  @override
+  set value(TextEditingValue v) {
+    if (_pickedLabel != null && v.text != _pickedLabel) {
+      place = null;
+      _pickedLabel = null;
+    }
+    super.value = v;
+  }
+}
+
+/// Zone name field that suggests official areas as you type
+/// (Founder 2026-10-13: "se" -> Seremban, Negeri Sembilan).
+class ZoneNameInput extends StatefulWidget {
+  const ZoneNameInput({
+    super.key,
+    required this.controller,
+    this.label,
+    this.hint,
+    this.errorText,
+    this.enabled = true,
+  });
+  final ZoneNameController controller;
+  final String? label, hint, errorText;
+  final bool enabled;
+
+  @override
+  State<ZoneNameInput> createState() => _ZoneNameInputState();
+}
+
+class _ZoneNameInputState extends State<ZoneNameInput> {
+  Timer? _debounce;
+  List<AreaSuggestion> _options = const [];
+  int _seq = 0;
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _changed(String q) {
+    _debounce?.cancel();
+    if (widget.controller.place != null || q.trim().length < 2) {
+      if (_options.isNotEmpty) setState(() => _options = const []);
+      return;
+    }
+    final seq = ++_seq;
+    _debounce = Timer(const Duration(milliseconds: 250), () async {
+      final found = await AppScope.read(context).repo.searchAreas(q);
+      if (mounted && seq == _seq) setState(() => _options = found);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final text = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        CefField(
+          label: widget.label,
+          controller: widget.controller,
+          hint: widget.hint,
+          prefixIcon: LucideIcons.mapPin,
+          errorText: widget.errorText,
+          enabled: widget.enabled,
+          onChanged: _changed,
+        ),
+        if (_options.isNotEmpty)
+          Container(
+            margin: const EdgeInsets.only(bottom: Gap.md),
+            decoration: BoxDecoration(
+              color: c.card,
+              borderRadius: BorderRadius.circular(Sizes.cardRadius),
+              border: Border.all(color: c.border),
+            ),
+            constraints: const BoxConstraints(maxHeight: 240),
+            child: ListView(
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
+              children: [
+                for (final a in _options)
+                  InkWell(
+                    onTap: () {
+                      widget.controller.pick(a);
+                      setState(() => _options = const []);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: Gap.lg,
+                        vertical: Gap.md,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            LucideIcons.mapPin,
+                            size: 18,
+                            color: c.textSecondary,
+                          ),
+                          const SizedBox(width: Gap.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(a.label, style: text.bodyLarge),
+                                if (a.state != null)
+                                  Text(a.state!, style: text.bodySmall),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}

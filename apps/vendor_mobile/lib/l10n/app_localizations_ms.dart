@@ -4333,4 +4333,20 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get hwWaitingForRun =>
       'Sudah dibungkus. Pengasingan bermula selepas vendor membina larian untuk pesanan ini.';
+
+  @override
+  String get clear => 'Kosongkan';
+
+  @override
+  String get drawZoneBoundary => 'Lukis sempadan zon';
+
+  @override
+  String get editZoneBoundary => 'Ubah sempadan zon';
+
+  @override
+  String get removeZoneBoundary => 'Buang sempadan';
+
+  @override
+  String get drawZoneBoundaryHint =>
+      'Ketik peta untuk tambah bucu zon ini. Sekurang-kurangnya 3.';
 }

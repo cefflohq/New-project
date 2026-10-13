@@ -1,6 +1,9 @@
 // Today — operational overview (Founder reference 1).
 import { t, fmtTime, ago } from '../i18n.js';
 import { fetchOrders, fetchStops, fetchRiders, businessToday, orderNo } from '../data.js';
+import { api } from '../api.js';
+import { ctx } from '../store.js';
+import { mountPinsMap, hasPin } from '../map.js';
 import { esc, icon, chip, orderStatus, itemsText, avatar, loadingRows, emptyState, errorState, gatedNote } from '../ui.js';
 import { openAddOrder, openImport, openPlanDelivery } from './order_actions.js';
 import { openAddRider } from './riders.js';
@@ -11,11 +14,9 @@ export default function today({ el, setHeader }) {
   el.innerHTML = `
   <div class="grid-today">
     <div class="stack">
-      <div class="card map-slot">
-        <div>
-          <div class="state" style="padding:0"><div class="ico">${icon('map')}</div><h3>${esc(t('today.mapTitle'))}</h3></div>
-          ${gatedNote(t('today.mapGated'))}
-        </div>
+      <div class="card map-slot is-live">
+        <div data-livemap></div>
+        <div class="map-legend" data-legend></div>
       </div>
       <div class="actions">
         <button class="btn cta" data-a="add">${icon('plus')}${esc(t('today.addOrder'))}</button>
@@ -48,10 +49,33 @@ export default function today({ el, setHeader }) {
       prep = new Map((stops || []).map(s => [s.order_id, s.preparation_status]));
       riders = new Map((rs || []).map(r => [r.id, r]));
       paint();
+      liveMap();
     } catch (e) {
       ['[data-recent]', '[data-overview]', '[data-delivery]', '[data-attn]'].forEach(s => { $(s).innerHTML = errorState(e, 'today'); });
     }
   }
+  // Live map (Founder 2026-10-12): today's pinned orders + the latest point
+  // (<= 15 min old) of this business's drivers who have an order in
+  // progress. latest_rider_locations is member-checked server-side.
+  let liveMapObj = null, liveTimer = null;
+  async function liveMap() {
+    const box = $('[data-livemap]'); if (!box) return;
+    const LIVE = ['picked_up', 'out_for_delivery', 'arrived'];
+    const busy = new Set(orders.filter(o => LIVE.includes(o.delivery_status)).map(o => o.assigned_rider_id).filter(Boolean));
+    let locs = [];
+    try { locs = await api.rpc('latest_rider_locations', { p_business_id: ctx.bid }) || []; } catch { locs = []; }
+    const fresh = locs.filter(l => busy.has(l.rider_id) && Date.now() - new Date(l.recorded_at).getTime() < 15 * 60000)
+      .map(l => ({ lat: l.latitude, lng: l.longitude, name: riders.get(l.rider_id)?.name }));
+    const drops = orders.filter(hasPin).map(o => ({ lat: Number(o.latitude), lng: Number(o.longitude),
+      label: '', done: o.delivery_status === 'delivered' }));
+    liveMapObj?.remove?.();
+    box.innerHTML = '';
+    liveMapObj = await mountPinsMap(box, drops, fresh);
+    $('[data-legend]').textContent = t('today.mapLegend', { orders: drops.length, drivers: fresh.length });
+    clearTimeout(liveTimer);
+    liveTimer = setTimeout(() => { if (box.isConnected) liveMap(); }, 60000);
+  }
+
   const st = o => orderStatus(o, prep.get(o.id));
 
   function paint() {

@@ -650,3 +650,21 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
 .pm-dot.next { width: 34px; height: 34px; background: #FFC93C; color: #0B1F4D; }
 .pm-dot svg { width: 16px; height: 16px; }
 .pm-empty { position: absolute; left: 12px; right: 12px; top: 12px; z-index: 4; text-align: center; font-size: 13px; color: var(--ink-2); background: var(--surface); border-radius: 999px; padding: 8px 12px; box-shadow: inset 0 0 0 1px var(--border); }
+/* Today live map (Founder 2026-10-12): driver markers + full-width map. */
+.pm-rider { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: #FEC819; color: #12213E; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+.pm-rider svg { width: 18px; height: 18px; }
+.map-slot.is-live { display: block; padding: 0; min-height: 0; overflow: hidden; }
+.map-slot.is-live > div { max-width: none; width: 100%; display: block; text-align: left; justify-self: stretch; }
+.map-slot.is-live .pm { height: 300px; border-radius: 0; box-shadow: none; }
+.map-legend { display: flex; gap: 14px; padding: 10px 14px; font-size: 12px; color: var(--ink-2); border-top: 1px solid var(--border); }
+.pm-draw { position: absolute; right: 10px; top: 10px; z-index: 4; display: flex; gap: 6px; }
+[data-draw-map].pm { height: 360px; }
+[data-draw-map] .pm-canvas { cursor: crosshair; }
+
+/* Zone name suggestions (official areas) */
+.area-suggest { margin-top: 6px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); max-height: 260px; overflow: auto; }
+.area-suggest button { display: flex; gap: 10px; align-items: center; width: 100%; padding: 10px 12px; border: 0; background: none; text-align: left; cursor: pointer; color: inherit; font: inherit; }
+.area-suggest button + button { border-top: 1px solid var(--border); }
+.area-suggest button:hover { background: var(--surface-hover); }
+.area-suggest span { display: flex; flex-direction: column; }
+.area-suggest small { color: var(--muted); }

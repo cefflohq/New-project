@@ -1293,5 +1293,10 @@
   "noZoneCount": "Tiada zon ({count})",
   "noZoneHint": "Tetapkan zon untuk merancang pesanan ini.",
   "hwPackedWaitingRun": "Menunggu larian",
-  "hwWaitingForRun": "Sudah dibungkus. Pengasingan bermula selepas vendor membina larian untuk pesanan ini."
+  "hwWaitingForRun": "Sudah dibungkus. Pengasingan bermula selepas vendor membina larian untuk pesanan ini.",
+  "clear": "Kosongkan",
+  "drawZoneBoundary": "Lukis sempadan zon",
+  "editZoneBoundary": "Ubah sempadan zon",
+  "removeZoneBoundary": "Buang sempadan",
+  "drawZoneBoundaryHint": "Ketik peta untuk tambah bucu zon ini. Sekurang-kurangnya 3."
 }

@@ -313,6 +313,9 @@ class AppLocalizationsMs extends AppLocalizations {
   String get reCenter => 'Ke tengah semula';
 
   @override
+  String get noPinnedStops => 'Belum ada stop yang dipin';
+
+  @override
   String get continueApple => 'Teruskan dengan Apple';
 
   @override

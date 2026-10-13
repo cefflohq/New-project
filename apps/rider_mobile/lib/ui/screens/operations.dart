@@ -11,6 +11,7 @@ import '../../data/demo_data.dart';
 import '../../data/driver_models.dart';
 import '../delivery_pin_map.dart';
 import '../map_canvas.dart';
+import '../run_map.dart';
 import '../bottom_surface.dart';
 import '../widgets.dart';
 
@@ -966,44 +967,50 @@ class _StopListScreenState extends State<StopListScreen> {
       Expanded(
         child: Stack(
           children: [
-            Positioned.fill(
-              child: MapCanvas(
-                route: _mapPoints,
-                // Offset from stop 1 so the driver puck and the first stop
-                // pin do not sit on top of each other.
-                heading: const Offset(0.23, 0.92),
-                // Illustrative map: real place names only in the prototype.
-                labels: AppScope.read(context).repo.isDemo
-                    ? [
-                        MapLabel(L.setapak, Offset(0.70, 0.52), big: true),
-                        MapLabel(L.tamanSetapak, Offset(0.56, 0.14)),
-                        MapLabel(L.danauKota, Offset(0.16, 0.90)),
-                      ]
-                    : const [],
-                markers: [
-                  for (var i = 0; i < _mapPoints.length; i++)
-                    MapMarker(position: _mapPoints[i], index: i + 1),
-                ],
+            // Real map (Founder 2026-10-12); the painted canvas stays for
+            // the prototype only.
+            if (!AppScope.read(context).repo.isDemo)
+              Positioned.fill(child: RunMap(stops: run.stops))
+            else ...[
+              Positioned.fill(
+                child: MapCanvas(
+                  route: _mapPoints,
+                  // Offset from stop 1 so the driver puck and the first stop
+                  // pin do not sit on top of each other.
+                  heading: const Offset(0.23, 0.92),
+                  // Illustrative map: real place names only in the prototype.
+                  labels: AppScope.read(context).repo.isDemo
+                      ? [
+                          MapLabel(L.setapak, Offset(0.70, 0.52), big: true),
+                          MapLabel(L.tamanSetapak, Offset(0.56, 0.14)),
+                          MapLabel(L.danauKota, Offset(0.16, 0.90)),
+                        ]
+                      : const [],
+                  markers: [
+                    for (var i = 0; i < _mapPoints.length; i++)
+                      MapMarker(position: _mapPoints[i], index: i + 1),
+                  ],
+                ),
               ),
-            ),
-            Positioned(
-              left: Gap.md,
-              top: Gap.md,
-              child: Column(
-                children: const [
-                  MapControlButton(icon: LucideIcons.locateFixed),
-                  SizedBox(height: Gap.sm),
-                  MapControlButton(icon: LucideIcons.layers),
-                  SizedBox(height: Gap.sm),
-                  MapControlButton(icon: LucideIcons.navigation),
-                ],
+              Positioned(
+                left: Gap.md,
+                top: Gap.md,
+                child: Column(
+                  children: const [
+                    MapControlButton(icon: LucideIcons.locateFixed),
+                    SizedBox(height: Gap.sm),
+                    MapControlButton(icon: LucideIcons.layers),
+                    SizedBox(height: Gap.sm),
+                    MapControlButton(icon: LucideIcons.navigation),
+                  ],
+                ),
               ),
-            ),
-            const Positioned(
-              right: Gap.md,
-              bottom: Gap.md,
-              child: MapRecenterPill(),
-            ),
+              const Positioned(
+                right: Gap.md,
+                bottom: Gap.md,
+                child: MapRecenterPill(),
+              ),
+            ],
           ],
         ),
       ),
@@ -1256,24 +1263,35 @@ class NavigationToStopScreen extends StatelessWidget {
               Expanded(
                 child: Stack(
                   children: [
-                    Positioned.fill(
-                      child: MapCanvas(
-                        route: _route,
-                        // Illustrative map: real place names only in the prototype.
-                        labels: app.repo.isDemo
-                            ? [
-                                MapLabel(
-                                  L.setapak,
-                                  Offset(0.66, 0.60),
-                                  big: true,
-                                ),
-                              ]
-                            : const [],
-                        markers: const [
-                          MapMarker(position: Offset(0.57, 0.18), pin: true),
-                        ],
+                    // Real map (Founder 2026-10-12) focused on the active
+                    // stop; the painted canvas stays for the prototype only.
+                    if (!app.repo.isDemo)
+                      Positioned.fill(
+                        child: RunMap(
+                          stops: app.currentRun.stops,
+                          focus: stop,
+                          showControls: false,
+                        ),
+                      )
+                    else
+                      Positioned.fill(
+                        child: MapCanvas(
+                          route: _route,
+                          // Illustrative map: real place names only in the prototype.
+                          labels: app.repo.isDemo
+                              ? [
+                                  MapLabel(
+                                    L.setapak,
+                                    Offset(0.66, 0.60),
+                                    big: true,
+                                  ),
+                                ]
+                              : const [],
+                          markers: const [
+                            MapMarker(position: Offset(0.57, 0.18), pin: true),
+                          ],
+                        ),
                       ),
-                    ),
                     Positioned(
                       left: Gap.md,
                       top: Gap.md,
@@ -1292,11 +1310,12 @@ class NavigationToStopScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const Positioned(
-                      right: Gap.md,
-                      bottom: Gap.md,
-                      child: MapRecenterPill(),
-                    ),
+                    if (app.repo.isDemo)
+                      const Positioned(
+                        right: Gap.md,
+                        bottom: Gap.md,
+                        child: MapRecenterPill(),
+                      ),
                   ],
                 ),
               ),

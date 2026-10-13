@@ -7868,6 +7868,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Packed. Sorting starts once the vendor builds a run for these orders.'**
   String get hwWaitingForRun;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @drawZoneBoundary.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw zone boundary'**
+  String get drawZoneBoundary;
+
+  /// No description provided for @editZoneBoundary.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit zone boundary'**
+  String get editZoneBoundary;
+
+  /// No description provided for @removeZoneBoundary.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove boundary'**
+  String get removeZoneBoundary;
+
+  /// No description provided for @drawZoneBoundaryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the map to add the corners of this zone. Add at least 3.'**
+  String get drawZoneBoundaryHint;
 }
 
 class _AppLocalizationsDelegate

@@ -73,14 +73,13 @@ void main() {
     );
   });
 
-  test('prototype zone delete archives instead of removing', () async {
+  test('zone delete takes the zone out of the zone list', () async {
     final repo = VendorRepository.demo();
     final zone = (await repo.zones('business-demo')).first;
-    final archived = await repo.deactivateZone(zone.id);
-    expect(archived.status, 'inactive');
+    await repo.deleteZone(zone.id);
     expect(
       (await repo.zones('business-demo')).map((z) => z.id),
-      contains(zone.id),
+      isNot(contains(zone.id)),
     );
   });
 

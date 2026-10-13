@@ -97,6 +97,7 @@
   "actionNeedsBackendContractThatNot": "Tindakan ini memerlukan kontrak backend yang belum tersedia di sini ({message}).",
   "ceffloDriver": "Cefflo Driver",
   "reCenter": "Ke tengah semula",
+  "noPinnedStops": "Belum ada stop yang dipin",
   "continueApple": "Teruskan dengan Apple",
   "continueGoogle": "Teruskan dengan Google",
   "continueEmail": "Teruskan dengan E-mel",

@@ -1,3 +1,8 @@
+import 'package:latlong2/latlong.dart';
+import 'package:flutter_map/flutter_map.dart';
+
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -523,7 +528,14 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
             if (!_hasOrigin && locateFailed && !locating)
               CefButton(L.tryLocatingAgain, secondary: true, onTap: _locate),
             SectionHeading(L.howFarDoDeliver),
-            SizedBox(height: 190, child: CoveragePreview(radiusKm: radiusKm)),
+            SizedBox(
+              height: 220,
+              child: CoveragePreview(
+                radiusKm: radiusKm,
+                latitude: latitude,
+                longitude: longitude,
+              ),
+            ),
             const SizedBox(height: Gap.md),
             RadiusSlider(
               radiusKm: radiusKm,
@@ -558,16 +570,81 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
   }
 }
 
-/// Illustrative coverage circle around the pickup pin, shared by the setup
-/// wizard (V-09) and the Service Area screen (V-26) so both draw the same
-/// preview. Fills whatever box its parent gives it.
+/// Coverage preview shared by the setup wizard (V-09) and the Service Area
+/// screen (V-26). With a known pickup origin it is a real map with the real
+/// radius circle (Founder 2026-10-12); without one (setup, before the
+/// business is located) it stays the illustrative circle. Fills whatever box
+/// its parent gives it.
 class CoveragePreview extends StatelessWidget {
-  const CoveragePreview({super.key, required this.radiusKm});
+  const CoveragePreview({
+    super.key,
+    required this.radiusKm,
+    this.latitude,
+    this.longitude,
+  });
   final double radiusKm;
+  final double? latitude, longitude;
 
   @override
   Widget build(BuildContext context) {
     final c = context.c;
+    if (latitude != null && longitude != null) {
+      final at = LatLng(latitude!, longitude!);
+      // Zoom that keeps the whole circle in view (~2.4x radius across).
+      final zoom = (math.log(40075 / (radiusKm * 2.4)) / math.ln2).clamp(
+        8.0,
+        15.0,
+      );
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            FlutterMap(
+              key: ValueKey('cov-${radiusKm.round()}-$latitude-$longitude'),
+              options: MapOptions(
+                initialCenter: at,
+                initialZoom: zoom - 1,
+                interactionOptions: const InteractionOptions(
+                  flags: InteractiveFlag.drag | InteractiveFlag.pinchZoom,
+                ),
+              ),
+              children: [
+                cefTileLayer(context),
+                CircleLayer(
+                  circles: [
+                    CircleMarker(
+                      point: at,
+                      radius: radiusKm * 1000,
+                      useRadiusInMeter: true,
+                      color: c.info.withValues(alpha: .15),
+                      borderColor: c.info,
+                      borderStrokeWidth: 2,
+                    ),
+                  ],
+                ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: at,
+                      width: 36,
+                      height: 36,
+                      alignment: Alignment.topCenter,
+                      child: const Icon(
+                        LucideIcons.mapPin,
+                        color: CefColors.navy,
+                        size: 32,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            MapCredit(cefMapCredit),
+          ],
+        ),
+      );
+    }
     return ClipRRect(
       borderRadius: BorderRadius.circular(Sizes.cardRadius),
       child: CustomPaint(

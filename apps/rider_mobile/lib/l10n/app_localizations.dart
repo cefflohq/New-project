@@ -680,6 +680,12 @@ abstract class AppLocalizations {
   /// **'Re-center'**
   String get reCenter;
 
+  /// No description provided for @noPinnedStops.
+  ///
+  /// In en, this message translates to:
+  /// **'No pinned stops yet'**
+  String get noPinnedStops;
+
   /// No description provided for @continueApple.
   ///
   /// In en, this message translates to:

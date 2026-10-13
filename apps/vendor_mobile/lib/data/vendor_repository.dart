@@ -948,19 +948,98 @@ class VendorRepository {
           .from('zones')
           .select()
           .eq('business_id', businessId)
+          // Deleted zones (delete_zone) leave the list; the row stays for
+          // order history.
+          .isFilter('deleted_at', null)
           .order('name'),
     );
     return _rows(rows).map(Zone.fromRow).toList();
   }
 
-  Future<Zone> createZone(String businessId, String name) async {
+  Future<Zone> createZone(
+    String businessId,
+    String name, {
+    AreaSuggestion? place,
+  }) async {
     final row = await _run(
       () => _db!.rpc(
         'create_zone',
         params: {'p_business_id': businessId, 'p_name': name},
       ),
     );
-    return Zone.fromRow(_single(row));
+    return _withOutline(Zone.fromRow(_single(row)), place);
+  }
+
+  /// Town suggestions while typing a zone name ("che" -> Cheras, Kuala
+  /// Lumpur). Empty for under two characters or on any error.
+  Future<List<AreaSuggestion>> searchAreas(String query) async {
+    final q = query.trim();
+    if (q.length < 2) return const [];
+    if (_demo) {
+      return [
+        for (final a in _demoAreas)
+          if (a.label.toLowerCase().startsWith(q.toLowerCase())) a,
+      ];
+    }
+    try {
+      final res = await _db!.functions.invoke(
+        'zone-boundary',
+        body: {'suggest': q},
+      );
+      final list = (res.data is Map ? res.data['suggestions'] : null) as List?;
+      return [
+        for (final r in list ?? const [])
+          if (r is Map && r['center'] is List)
+            AreaSuggestion(
+              label: r['name'] as String,
+              state: r['state'] as String?,
+              longitude: ((r['center'] as List)[0] as num).toDouble(),
+              latitude: ((r['center'] as List)[1] as num).toDouble(),
+            ),
+      ];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  static const _demoAreas = [
+    AreaSuggestion(
+      label: 'Cheras',
+      state: 'Kuala Lumpur',
+      longitude: 101.74,
+      latitude: 3.09,
+    ),
+    AreaSuggestion(
+      label: 'Seremban',
+      state: 'Negeri Sembilan',
+      longitude: 101.94,
+      latitude: 2.73,
+    ),
+    AreaSuggestion(
+      label: 'Setapak',
+      state: 'Kuala Lumpur',
+      longitude: 101.71,
+      latitude: 3.2,
+    ),
+  ];
+
+  /// Auto outline: the zone-boundary Edge Function looks the zone name up on
+  /// the map and saves its area, so the vendor never has to draw. Best
+  /// effort: a name that is not a place keeps the zone without a boundary.
+  Future<Zone> _withOutline(Zone zone, [AreaSuggestion? place]) async {
+    try {
+      await _db!.functions.invoke(
+        'zone-boundary',
+        body: {
+          'zone_id': zone.id,
+          if (place != null) 'center': [place.longitude, place.latitude],
+        },
+      );
+      final row = await _db.from('zones').select().eq('id', zone.id).single();
+      return Zone.fromRow(row);
+    } catch (_) {
+      return zone;
+    }
   }
 
   Future<Zone> setZoneStatus(String zoneId, String status) async {
@@ -973,8 +1052,37 @@ class VendorRepository {
     return Zone.fromRow(_single(row));
   }
 
+  /// Saves (or clears, with null) a zone's drawn boundary.
+  Future<Zone> setZoneBoundary(
+    String zoneId,
+    List<(double, double)>? ring,
+  ) async {
+    if (_demo) {
+      final i = _demoZones.indexWhere((z) => z.id == zoneId);
+      final z = _demoZones[i];
+      return _demoZones[i] = Zone(
+        id: z.id,
+        name: z.name,
+        status: z.status,
+        locality: z.locality,
+        boundary: ring,
+      );
+    }
+    final row = await _run(
+      () => _db!.rpc(
+        'set_zone_boundary',
+        params: {'p_zone_id': zoneId, 'p_boundary': Zone.toGeoJson(ring)},
+      ),
+    );
+    return Zone.fromRow(_single(row));
+  }
+
   /// Renames a zone (Zone options → Edit zone name).
-  Future<Zone> renameZone(String zoneId, String name) async {
+  Future<Zone> renameZone(
+    String zoneId,
+    String name, {
+    AreaSuggestion? place,
+  }) async {
     if (_demo) {
       final i = _demoZones.indexWhere((z) => z.id == zoneId);
       final z = _demoZones[i];
@@ -983,6 +1091,7 @@ class VendorRepository {
         name: name,
         status: z.status,
         locality: z.locality,
+        boundary: z.boundary,
       );
     }
     final row = await _run(
@@ -991,24 +1100,19 @@ class VendorRepository {
         params: {'p_zone_id': zoneId, 'p_name': name},
       ),
     );
-    return Zone.fromRow(_single(row));
+    return _withOutline(Zone.fromRow(_single(row)), place);
   }
 
-  /// Takes a zone out of the business's delivery setup (Zone options →
-  /// Delete zone). Zones are never hard-deleted: the canonical contract
-  /// archives them as inactive, keeping order history intact.
-  Future<Zone> deactivateZone(String zoneId) async {
+  /// Deletes a zone (Zone options → Delete zone, Founder 2026-10-13): it
+  /// leaves the zone list and its name is free again. Never a hard delete:
+  /// delete_zone keeps the row so past orders keep their zone. Refused while
+  /// the zone has orders in progress.
+  Future<void> deleteZone(String zoneId) async {
     if (_demo) {
-      final i = _demoZones.indexWhere((z) => z.id == zoneId);
-      final z = _demoZones[i];
-      return _demoZones[i] = Zone(
-        id: z.id,
-        name: z.name,
-        status: 'inactive',
-        locality: z.locality,
-      );
+      _demoZones.removeWhere((z) => z.id == zoneId);
+      return;
     }
-    return setZoneStatus(zoneId, 'inactive');
+    await _run(() => _db!.rpc('delete_zone', params: {'p_zone_id': zoneId}));
   }
 
   /// Takes one delivery off today's plan (swipe to delete on Zone detail).

@@ -234,7 +234,7 @@
             <div class="sf-map-zoom"><button type="button" data-act="zoomin" aria-label="${esc(t('Zoom in'))}">${icon('plus')}</button><button type="button" data-act="zoomout" aria-label="${esc(t('Zoom out'))}">${icon('minus')}</button></div>
             <button type="button" class="sf-map-locate" data-act="pin" aria-label="${esc(t('Use my current location'))}">${icon('locate')}</button>
             <div class="sf-map-start"><button type="button" data-act="pin">${icon('locate')} ${esc(t('Use my current location'))}</button></div>
-            <small class="sf-map-attr">© OpenStreetMap · OpenFreeMap</small>
+            ${mapboxToken() ? '' : '<small class="sf-map-attr">© OpenStreetMap · OpenFreeMap</small>'}
           </div>
           <p class="sf-pin-hint" id="sfPinHint">${esc(t('Pin your exact location so the rider finds you without calling.'))}</p>
         </div>
@@ -261,8 +261,8 @@
   }
 
   // ------------------------------------------------------------- delivery pin
-  // Map data © OpenStreetMap via OpenFreeMap vector tiles, drawn by MapLibre
-  // (temporary until Mapbox; Founder 2026-10-08). CEFFLO's own UI sits on top:
+  // Map: Mapbox GL (or the OpenFreeMap/MapLibre fallback, see loadMapLibre).
+  // CEFFLO's own UI sits on top:
   // a fixed centre pin (move the map under it), locate + zoom buttons, an
   // accuracy chip. A pin only counts after GPS or a deliberate map move.
   let pin = null, pinMap = null;
@@ -270,13 +270,33 @@
   const pinHint = () => !pin ? t('Move the map so the pin sits on your house.')
     : pin.source === 'gps' && pin.acc > 60 ? t('Approximate (±{m} m). Move the map so the pin sits on your house.', { m: Math.round(pin.acc) })
     : t('Pinned. Move the map if the pin is not exactly at your place.');
+  // Mapbox GL when the build carries a public pk. token (Founder 2026-10-12);
+  // MapLibre over OpenFreeMap otherwise.
+  function mapboxToken() {
+    const tok = window.CEFFLO_CONFIG?.mapboxPublicToken || '';
+    return /^pk\./.test(tok) ? tok : null;
+  }
+  const MAPBOX_TOKEN = mapboxToken();
+
+  // Map credit behind a small ⓘ (Founder 2026-10-13): the licences need the
+  // credit reachable on the map, not spelled out across it.
+  function compactCredit(gl, map) {
+    map.addControl(new gl.AttributionControl({ compact: true }), 'bottom-left');
+    const close = () => map.getContainer().querySelectorAll('.mapboxgl-compact-show, .maplibregl-compact-show')
+      .forEach(el => el.classList.remove('mapboxgl-compact-show', 'maplibregl-compact-show'));
+    map.once('load', close); close();
+  }
+  const GL_BASE = MAPBOX_TOKEN ? 'https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl' : 'https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl';
+  const MAP_STYLE = MAPBOX_TOKEN ? 'mapbox://styles/mapbox/streets-v12' : 'https://tiles.openfreemap.org/styles/positron';
   function loadMapLibre() {
-    if (window.maplibregl) return Promise.resolve(window.maplibregl);
+    const ready = () => (MAPBOX_TOKEN ? window.mapboxgl : window.maplibregl);
+    if (ready()) return Promise.resolve(ready());
     return new Promise((ok, bad) => {
       const css = document.createElement('link'); css.rel = 'stylesheet';
-      css.href = 'https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css'; document.head.append(css);
-      const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js';
-      s.onload = () => ok(window.maplibregl); s.onerror = bad; document.head.append(s);
+      css.href = `${GL_BASE}.css`; document.head.append(css);
+      const s = document.createElement('script'); s.src = `${GL_BASE}.js`;
+      s.onload = () => { const gl = ready(); if (MAPBOX_TOKEN) gl.accessToken = MAPBOX_TOKEN; ok(gl); };
+      s.onerror = bad; document.head.append(s);
     });
   }
   function pinUi() {
@@ -291,9 +311,10 @@
     const gl = await loadMapLibre();
     const canvas = box.querySelector('.sf-map-canvas');
     pinMap?.remove();
-    pinMap = new gl.Map({ container: canvas, style: 'https://tiles.openfreemap.org/styles/positron',
+    pinMap = new gl.Map({ container: canvas, style: MAP_STYLE,
       center: pin ? [pin.lng, pin.lat] : MY_CENTER, zoom: pin ? 17.5 : 5, attributionControl: false,
       dragRotate: false, pitchWithRotate: false, touchPitch: false });
+      compactCredit(gl, pinMap);
     pinMap.touchZoomRotate.disableRotation();
     pinMap.on('movestart', e => { if (e.originalEvent) box.classList.add('is-moving'); });
     pinMap.on('moveend', e => {

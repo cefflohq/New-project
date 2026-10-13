@@ -4328,4 +4328,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get hwWaitingForRun =>
       'Packed. Sorting starts once the vendor builds a run for these orders.';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get drawZoneBoundary => 'Draw zone boundary';
+
+  @override
+  String get editZoneBoundary => 'Edit zone boundary';
+
+  @override
+  String get removeZoneBoundary => 'Remove boundary';
+
+  @override
+  String get drawZoneBoundaryHint =>
+      'Tap the map to add the corners of this zone. Add at least 3.';
 }

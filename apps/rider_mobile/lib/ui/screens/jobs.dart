@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -7,6 +9,7 @@ import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/live_adapters.dart';
 import '../../data/my_towns.dart';
+import '../../data/place_search.dart';
 import '../../data/rider_repository.dart';
 import '../widgets.dart';
 
@@ -747,11 +750,29 @@ class _TownPicker extends StatefulWidget {
 
 class _TownPickerState extends State<_TownPicker> {
   String _q = '';
+  List<MyTown> _remote = const [];
+  Timer? _debounce;
+
+  void _search(String v) {
+    setState(() => _q = v);
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 350), () async {
+      final found = await searchPlaces(v);
+      if (mounted && _q == v) setState(() => _remote = found);
+    });
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final q = _q.trim().toLowerCase();
     final towns = [
+      if (q.length >= 3) ..._remote,
       for (final t in myTowns)
         if (q.isEmpty ||
             t.name.toLowerCase().contains(q) ||
@@ -773,7 +794,7 @@ class _TownPickerState extends State<_TownPicker> {
             const SizedBox(height: Gap.md),
             TextField(
               autofocus: false,
-              onChanged: (v) => setState(() => _q = v),
+              onChanged: _search,
               decoration: InputDecoration(
                 hintText: L.searchTown,
                 prefixIcon: const Icon(LucideIcons.search, size: 18),

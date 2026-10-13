@@ -310,6 +310,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reCenter => 'Re-center';
 
   @override
+  String get noPinnedStops => 'No pinned stops yet';
+
+  @override
   String get continueApple => 'Continue with Apple';
 
   @override
