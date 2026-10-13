@@ -498,11 +498,27 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
           header: CeffloScreenHeader(
             title: L.findJobs,
             onBell: () => app.go(DRoute.notifications),
-            subtitle: _AreaRow(
-              label: place == null
-                  ? L.chooseTown
-                  : '${place.label} · ${L.withinKm('$radius')}',
-              onChange: () => _changeLocation(app),
+            // Location and My week sit on the navy (Founder 2026-10-13):
+            // the white sheet holds only the shift filter and the openings.
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _AreaRow(
+                  label: place == null
+                      ? L.chooseTown
+                      : '${place.label} · ${L.withinKm('$radius')}',
+                  onChange: () => _changeLocation(app),
+                ),
+                ValueListenableBuilder<List<_Booking>>(
+                  valueListenable: _Jobs.bookings,
+                  builder: (context, b, _) => b.isEmpty
+                      ? const SizedBox.shrink()
+                      : _HeaderWeek(
+                          bookings: b,
+                          onOpen: () => app.go(DRoute.mySchedule),
+                        ),
+                ),
+              ],
             ),
           ),
           body: _body(context, app, place, radius),
@@ -532,27 +548,7 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
                 value: _shift,
                 onChanged: (s) => setState(() => _shift = s),
               ),
-              // The radius is set from "Change" in the header (one filter row
-              // here). My week shows only once the Driver has a slot, and the
-              // count only when there is something to count (2026-10-13).
-              ValueListenableBuilder<List<_Booking>>(
-                valueListenable: _Jobs.bookings,
-                builder: (context, b, _) => b.isEmpty
-                    ? const SizedBox.shrink()
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _SectionRow(
-                            title: L.myWeek,
-                            action: L.openSchedule,
-                            onAction: () => app.go(DRoute.mySchedule),
-                          ),
-                          _WeekStrip(bookings: b),
-                        ],
-                      ),
-              ),
-              if (shown.isNotEmpty)
-                _SectionRow(title: L.openingsCount(shown.length)),
+              const SizedBox(height: Gap.lg),
               ValueListenableBuilder<String?>(
                 valueListenable: _Jobs.error,
                 builder: (context, e, _) => e == null
@@ -590,7 +586,7 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
                     opening: o,
                     onTap: () => app.go(DRoute.jobDetail, entityId: o.id),
                   ),
-                  const SizedBox(height: Gap.cardGap),
+                  const SizedBox(height: Gap.md),
                 ],
               if (app.repo.isDemo) ...[
                 const SizedBox(height: Gap.sm),
@@ -626,8 +622,6 @@ class _AreaRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(LucideIcons.mapPin, size: 16, color: CefColors.onNavy),
-            const SizedBox(width: Gap.sm),
             Expanded(
               child: Text(
                 label,
@@ -642,13 +636,14 @@ class _AreaRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: Gap.sm),
-            Text(
-              L.changeArea,
-              style: const TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: CefColors.accent,
+            // "Change" as a light icon; yellow is kept for the week bars.
+            Semantics(
+              button: true,
+              label: L.changeArea,
+              child: Icon(
+                LucideIcons.refreshCw,
+                size: 18,
+                color: Colors.white.withValues(alpha: .8),
               ),
             ),
           ],
@@ -915,28 +910,14 @@ class _ShiftFilter extends StatelessWidget {
 }
 
 class _SectionRow extends StatelessWidget {
-  const _SectionRow({required this.title, this.action, this.onAction});
+  const _SectionRow({required this.title});
 
   final String title;
-  final String? action;
-  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(top: Gap.section, bottom: Gap.sm),
-    child: Row(
-      children: [
-        Expanded(child: Text(title, style: context.t.titleSmall)),
-        if (action != null)
-          CeffloTextLink(
-            action!,
-            fontSize: 13,
-            weight: FontWeight.w700,
-            color: context.c.info,
-            onTap: onAction ?? () {},
-          ),
-      ],
-    ),
+    child: Text(title, style: context.t.titleSmall),
   );
 }
 
@@ -958,55 +939,9 @@ List<List<_Booking?>> _grid(List<_Booking> bookings) {
 _Slot _slotOf(_Booking? b) =>
     b == null ? _Slot.free : (b.approved ? _Slot.booked : _Slot.requested);
 
-/// Seven days × Morning / Noon / Night: booked slots blue, requested yellow.
-class _WeekStrip extends StatelessWidget {
-  const _WeekStrip({required this.bookings});
-  final List<_Booking> bookings;
-
-  @override
-  Widget build(BuildContext context) {
-    final grid = _grid(bookings);
-    const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    return Row(
-      children: [
-        for (var d = 0; d < 7; d++)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
-              child: Column(
-                children: [
-                  Text(
-                    days[d],
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: context.c.textSecondary,
-                    ),
-                  ),
-                  for (final b in grid[d]) ...[
-                    const SizedBox(height: 3),
-                    Container(
-                      height: 14,
-                      decoration: BoxDecoration(
-                        color: switch (_slotOf(b)) {
-                          _Slot.booked => const Color(0xFF005CC4),
-                          _Slot.requested => CefColors.accent,
-                          _Slot.free => CefColors.tintInfo,
-                        },
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
+/// One card per shop, draft 7 (Founder 2026-10-13): badge and name on
+/// top, a divider, then days · pickup · distance on the left and the pay
+/// on the right. Wide side padding; every card the same height.
 class _OpeningCard extends StatelessWidget {
   const _OpeningCard({required this.opening, required this.onTap});
 
@@ -1016,63 +951,97 @@ class _OpeningCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final o = opening;
+    final c = context.c;
+    final (String? tag, Color tagColor) = switch (o) {
+      _ when o.myStatus == 'approved' => (L.slotBooked, c.success),
+      _ when o.myStatus == 'pending' => (L.jobApplied, c.success),
+      _ when o.clash != null => (L.jobClash, const Color(0xFFDC2626)),
+      _ => (null, c.textPrimary),
+    };
+    final unit = switch (o.payUnit) {
+      'drop' => L.perDrop,
+      'hour' => L.perHour,
+      _ => L.perShift,
+    };
+    TextStyle style(double size, FontWeight w, [Color? color]) => TextStyle(
+      fontFamily: 'Manrope',
+      fontSize: size,
+      fontWeight: w,
+      color: color ?? c.textPrimary,
+    );
     return CeffloCard(
       onTap: onTap,
       shadow: false,
-      padding: const EdgeInsets.all(Gap.md),
+      padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
-              _VendorBadge(opening: o),
-              const SizedBox(width: Gap.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(o.name, style: context.t.titleSmall),
-                    Text(
-                      o.meta,
-                      style: context.t.bodySmall?.copyWith(
-                        color: context.c.textSecondary,
-                      ),
-                    ),
-                  ],
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: o.color,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  o.initials,
+                  style: style(14, FontWeight.w800, Colors.white),
                 ),
               ),
-              Text(
-                o.pay,
-                style: context.t.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
+              const SizedBox(width: 14),
+              Flexible(
+                child: Text(
+                  o.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: style(16.5, FontWeight.w800),
                 ),
               ),
+              if (tag != null) ...[
+                const SizedBox(width: 8),
+                Container(
+                  width: 7,
+                  height: 7,
+                  decoration: BoxDecoration(
+                    color: tagColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(tag, style: style(12.5, FontWeight.w700, tagColor)),
+              ],
             ],
           ),
-          const SizedBox(height: Gap.sm),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Divider(height: 1, thickness: 1, color: c.border),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
-              // Founder screen 8: days, pickup time, vehicle (no end time).
-              _Pill(_daysLabel(o.days)),
-              _Pill(L.jobPickupAt(_clock(o.start))),
-              // Compatibility is information, not a warning (Founder 2026-10-05):
-              // neutral grey; ranking and eligibility are unchanged.
-              _Pill(
-                o.vehicleMatch
-                    ? _vehicleLabel(o.vehicle)
-                    : '${_vehicleLabel(o.vehicle)} · ${L.differentVehicle}',
-                tone: o.vehicleMatch ? _PillTone.neutral : _PillTone.muted,
+              Expanded(
+                child: Text(
+                  [
+                    _daysLabel(o.days),
+                    _clock(o.start),
+                    if (o.km != null) '${_num(o.km!)} km',
+                  ].join(' · '),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: style(14, FontWeight.w600),
+                ),
               ),
-              if (o.myStatus == 'approved')
-                _Pill(L.slotBooked, tone: _PillTone.success)
-              else if (o.myStatus == 'pending')
-                _Pill(L.jobApplied, tone: _PillTone.success)
-              else if (o.clash != null)
-                _Pill(L.jobClash, tone: _PillTone.warning)
-              else
-                _Pill(L.jobNeeded(o.needed)),
+              const SizedBox(width: Gap.md),
+              Text(
+                'RM ${_num(o.payAmount)}',
+                style: style(17, FontWeight.w800),
+              ),
+              const SizedBox(width: 4),
+              Text(unit, style: style(12.5, FontWeight.w600)),
             ],
           ),
         ],
@@ -1081,65 +1050,82 @@ class _OpeningCard extends StatelessWidget {
   }
 }
 
-class _VendorBadge extends StatelessWidget {
-  const _VendorBadge({required this.opening});
-  final _Opening opening;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 40,
-    height: 40,
-    alignment: Alignment.center,
-    decoration: BoxDecoration(
-      color: opening.color,
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Text(
-      opening.initials,
-      style: const TextStyle(
-        fontFamily: 'Manrope',
-        fontWeight: FontWeight.w800,
-        color: Colors.white,
-      ),
-    ),
-  );
-}
-
-enum _PillTone { neutral, muted, success, warning }
-
-class _Pill extends StatelessWidget {
-  const _Pill(this.label, {this.tone = _PillTone.neutral});
-  final String label;
-  final _PillTone tone;
+/// My week on the navy header: one bar per day, yellow where the Driver
+/// has a booked slot (lighter when only requested), white "Open schedule".
+class _HeaderWeek extends StatelessWidget {
+  const _HeaderWeek({required this.bookings, required this.onOpen});
+  final List<_Booking> bookings;
+  final VoidCallback onOpen;
 
   @override
   Widget build(BuildContext context) {
-    final (bg, fg) = switch (tone) {
-      _PillTone.success => (CefColors.tintSuccess, context.c.success),
-      _PillTone.warning => (const Color(0xFFFDECEC), context.c.attention),
-      _PillTone.neutral => (CefColors.tintInfo, CefColors.navy),
-      _PillTone.muted => (CefColors.tintNeutral, context.c.textSecondary),
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontFamily: 'Manrope',
-          fontSize: 11.5,
-          fontWeight: FontWeight.w700,
-          color: fg,
-        ),
+    final grid = _grid(bookings);
+    const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    const label = TextStyle(
+      fontFamily: 'Manrope',
+      fontSize: 14,
+      fontWeight: FontWeight.w700,
+      color: CefColors.onNavy,
+    );
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(Gap.sm, Gap.md, Gap.sm, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(child: Text(L.myWeek, style: label)),
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onOpen,
+                child: Text('${L.openSchedule} ›', style: label),
+              ),
+            ],
+          ),
+          const SizedBox(height: Gap.sm),
+          Row(
+            children: [
+              for (var d = 0; d < 7; d++)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    child: Column(
+                      children: [
+                        Text(
+                          days[d],
+                          style: const TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: CefColors.onNavy,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color:
+                                grid[d].any((b) => _slotOf(b) == _Slot.booked)
+                                ? CefColors.accent
+                                : grid[d].any(
+                                    (b) => _slotOf(b) == _Slot.requested,
+                                  )
+                                ? CefColors.accent.withValues(alpha: .5)
+                                : Colors.white.withValues(alpha: .18),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
-
-// ------------------------------------------------------ D41.1 Job details
 
 class JobDetailScreen extends StatefulWidget {
   const JobDetailScreen({super.key, required this.jobId});
