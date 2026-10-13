@@ -424,6 +424,8 @@ DRoute? routeForReferenceId(String id) {
   const aliases = <String, DRoute>{
     'D21.1': DRoute.stopList,
     'D21.2': DRoute.stopList,
+    // Run Details at the Pickup Checklist (the demo run before pickup).
+    'D20.1': DRoute.runDetails,
   };
   final alias = aliases[wanted];
   if (alias != null) return alias;

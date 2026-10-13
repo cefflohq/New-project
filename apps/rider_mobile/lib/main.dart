@@ -194,6 +194,7 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
       final id = widget.previewId!.toUpperCase();
       app.routeConfirmed = preview == DRoute.stopList && id == 'D21';
       app.stopListMapView = id == 'D21.2';
+      if (id == 'D20.1') app.startDemoPickup();
       app.resetTo(
         preview,
         entityId: routeSpecs[preview]!.requiresEntityId

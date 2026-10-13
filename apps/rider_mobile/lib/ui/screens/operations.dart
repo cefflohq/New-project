@@ -698,7 +698,7 @@ class RunDetailsScreen extends StatelessWidget {
                 ),
               ],
             ),
-          if (!app.repo.isDemo && app.runPhase == RunPhase.pickup) ...[
+          if (app.runPhase == RunPhase.pickup) ...[
             const SizedBox(height: Gap.md),
             _PickupChecklist(run: run),
           ] else if (!started && total > 0) ...[
@@ -1113,7 +1113,7 @@ class _RunPrimaryActionState extends State<_RunPrimaryAction> {
     final run = app.currentRun;
     if (run.orderCount == 0) return const SizedBox.shrink();
     void stops() => app.go(DRoute.stopList, entityId: widget.runId);
-    final phase = app.repo.isDemo
+    final phase = app.repo.isDemo && app.runPhase == null
         ? (run.state == RunState.assigned
               ? RunPhase.route
               : run.state == RunState.completed

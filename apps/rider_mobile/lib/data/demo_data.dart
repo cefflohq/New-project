@@ -284,6 +284,29 @@ class DemoData {
     ),
   ];
 
+  /// The prototype's run at the Pickup Checklist (?screen=D20.1): the same
+  /// run before pickup, nothing ticked yet.
+  static DriverRun get pickupRun => DriverRun(
+    id: currentRun.id,
+    reference: currentRun.reference,
+    dateLabel: currentRun.dateLabel,
+    zone: currentRun.zone,
+    pickupBusinessName: currentRun.pickupBusinessName,
+    pickupAddress: currentRun.pickupAddress,
+    distanceKm: currentRun.distanceKm,
+    state: RunState.assigned,
+    stops: [
+      for (final s in _currentStops.take(6))
+        s.copyWith(status: StopStatus.pending),
+    ],
+    estimateLabel: currentRun.estimateLabel,
+    pickupTimeLabel: currentRun.pickupTimeLabel,
+    payPerDrop: currentRun.payPerDrop,
+    area: currentRun.area,
+    pickupLatitude: currentRun.pickupLatitude,
+    pickupLongitude: currentRun.pickupLongitude,
+  );
+
   static const currentRun = DriverRun(
     id: 'run-cf1003',
     reference: '#CF1003',

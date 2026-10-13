@@ -1104,7 +1104,31 @@ class AppState extends ChangeNotifier {
 
   /// start_pickup_run, then each order created -> ready_for_pickup ->
   /// picked_up through rider_transition (the canonical two-hop pickup).
-  Future<void> confirmPickup() => _thenRefresh(() async {
+  /// Prototype only (?screen=D20.1): the demo run at the Pickup Checklist.
+  void startDemoPickup() {
+    currentRun = DemoData.pickupRun;
+    runPhase = RunPhase.pickup;
+    pickupTicks.clear();
+  }
+
+  Future<void> confirmPickup() async {
+    if (repo.isDemo) {
+      // Prototype: the pickup is local; Plan Route comes next.
+      currentRun = currentRun.copyWith(
+        stops: [
+          for (final s in currentRun.stops)
+            if (s.status == StopStatus.pending) s,
+        ],
+      );
+      runPhase = RunPhase.route;
+      pickupTicks.clear();
+      notifyListeners();
+      return;
+    }
+    return _confirmPickupLive();
+  }
+
+  Future<void> _confirmPickupLive() => _thenRefresh(() async {
     await repo.startPickupRun(riderId: _riderId, sessionId: currentRun.id);
     for (final s in currentRun.stops) {
       final o = _order(s.id);
@@ -1202,6 +1226,17 @@ class AppState extends ChangeNotifier {
     };
     if (type == null) {
       throw RepositoryError(L.reasonCantRecordedYetChooseAnother);
+    }
+    if (repo.isDemo && runPhase == RunPhase.pickup) {
+      // Prototype pickup: mark the order reported locally.
+      currentRun = currentRun.copyWith(
+        stops: [
+          for (final s in currentRun.stops)
+            s.id == stopId ? s.copyWith(status: StopStatus.issue) : s,
+        ],
+      );
+      notifyListeners();
+      return Future.value();
     }
     return _thenRefresh(() async {
       await repo.reportDeliveryIssue(
