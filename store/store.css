@@ -1059,7 +1059,7 @@ h1, h2, h3, h4, p { margin: 0; }
 /* Delivery pin — CEFFLO UI over MapLibre/OpenFreeMap */
 .sf-pin { display: grid; gap: 8px; }
 .sf-pin-label { font-size: 14px; font-weight: 600; }
-.sf-pin-map { position: relative; height: 280px; border-radius: 18px; overflow: hidden; background: #eef1f4; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); isolation: isolate; }
+.sf-pin-map { position: relative; height: 340px; border-radius: 18px; overflow: hidden; background: #eef1f4; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); isolation: isolate; }
 .sf-map-canvas { position: absolute !important; inset: 0; width: 100%; height: 100%; }
 .sf-map-pin { position: absolute; left: 50%; top: 50%; width: 40px; height: 52px; margin: -52px 0 0 -20px; pointer-events: none; z-index: 3; transition: transform .18s ease; opacity: 0; }
 .sf-pin-map.has-pin .sf-map-pin, .sf-pin-map.is-moving .sf-map-pin { opacity: 1; }

@@ -963,7 +963,7 @@ class _ZoneMap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => PinsMap(
-    height: 200,
+    height: 260,
     drops: _drops(orders),
     zones: [zone],
     emptyLabel: L.mapNoPinnedOrders,
@@ -1043,7 +1043,7 @@ class _CreateZoneScreenState extends State<CreateZoneScreen> {
           future: AppScope.read(context).repo
               .zones(AppScope.read(context).business!.id),
           builder: (context, snap) => PinsMap(
-            height: 170,
+            height: 240,
             drops: const [],
             zones: (snap.data ?? const <Zone>[])
                 .where((z) => z.isActive)

@@ -276,6 +276,7 @@
   "noStopsView": "Tiada hentian dalam paparan ini.",
   "list": "Senarai",
   "map": "Peta",
+  "dragToReorder": "Tekan lama dan seret untuk susun",
   "mapShowsCurrentStopOrder": "Peta ini menunjukkan susunan hentian semasa anda.",
   "dragDropReorderStops": "Seret dan lepas untuk menyusun semula hentian anda.",
   "switchListViewDragReorder": "Tukar ke paparan Senarai untuk seret dan susun semula.",

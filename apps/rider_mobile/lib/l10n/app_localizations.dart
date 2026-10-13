@@ -1754,6 +1754,12 @@ abstract class AppLocalizations {
   /// **'Map'**
   String get map;
 
+  /// No description provided for @dragToReorder.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold and drag to reorder'**
+  String get dragToReorder;
+
   /// No description provided for @mapShowsCurrentStopOrder.
   ///
   /// In en, this message translates to:

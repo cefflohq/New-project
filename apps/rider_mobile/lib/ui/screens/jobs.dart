@@ -1265,7 +1265,7 @@ class _ZoneMap extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(Sizes.cardRadius),
       child: SizedBox(
-        height: known ? 170 : 120,
+        height: known ? 220 : 120,
         child: !known
             ? CustomPaint(painter: _ZonePainter(), size: Size.infinite)
             : Stack(

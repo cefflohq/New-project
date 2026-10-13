@@ -913,6 +913,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get map => 'Map';
 
   @override
+  String get dragToReorder => 'Hold and drag to reorder';
+
+  @override
   String get mapShowsCurrentStopOrder =>
       'This map shows your current stop order.';
 

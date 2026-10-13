@@ -921,6 +921,9 @@ class AppLocalizationsMs extends AppLocalizations {
   String get map => 'Peta';
 
   @override
+  String get dragToReorder => 'Tekan lama dan seret untuk susun';
+
+  @override
   String get mapShowsCurrentStopOrder =>
       'Peta ini menunjukkan susunan hentian semasa anda.';
 

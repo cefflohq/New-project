@@ -529,7 +529,7 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
               CefButton(L.tryLocatingAgain, secondary: true, onTap: _locate),
             SectionHeading(L.howFarDoDeliver),
             SizedBox(
-              height: 220,
+              height: 280,
               child: CoveragePreview(
                 radiusKm: radiusKm,
                 latitude: latitude,

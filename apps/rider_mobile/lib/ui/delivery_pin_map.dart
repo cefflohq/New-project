@@ -19,7 +19,7 @@ class DeliveryPinMap extends StatelessWidget {
     required this.latitude,
     required this.longitude,
     required this.onTap,
-    this.height = 180,
+    this.height = 220,
   });
 
   final double latitude;

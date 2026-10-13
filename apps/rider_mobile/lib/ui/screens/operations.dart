@@ -870,16 +870,27 @@ class _StopListScreenState extends State<StopListScreen> {
                   onChanged: (i) => setState(() => _planTab = i),
                 ),
                 const SizedBox(height: Gap.md),
-                CeffloNote(
-                  icon: LucideIcons.info,
-                  title: isMap
-                      ? L.mapShowsCurrentStopOrder
-                      : L.dragDropReorderStops,
-                  body: isMap
-                      ? L.switchListViewDragReorder
-                      : L.willUpdateRouteAvailableBeforeStart,
-                ),
-                const SizedBox(height: Gap.md),
+                // One short hint line, List tab only and only when there is
+                // something to reorder (Founder 2026-10-13: no long note).
+                if (!isMap && run.stops.length > 1) ...[
+                  Row(
+                    children: [
+                      Icon(
+                        LucideIcons.gripVertical,
+                        size: 16,
+                        color: context.c.textSecondary,
+                      ),
+                      const SizedBox(width: Gap.xs),
+                      Text(
+                        L.dragToReorder,
+                        style: context.t.bodySmall?.copyWith(
+                          color: context.c.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: Gap.sm),
+                ],
               ],
             ),
           ),
@@ -893,7 +904,9 @@ class _StopListScreenState extends State<StopListScreen> {
       // Locked order: Plan Route (Slide to Confirm Route saves the stop
       // order) -> Pickup Checklist -> Slide to Start Delivery. No slide while
       // the Pickup Checklist is still open.
-      footer: app.runPhase == RunPhase.pickup
+      // The slide lives on the List tab only, and never for an empty run
+      // (Founder 2026-10-13).
+      footer: app.runPhase == RunPhase.pickup || isMap || run.stops.isEmpty
           ? null
           : CeffloSlideAction(
               label: app.runPhase == RunPhase.route
@@ -921,46 +934,48 @@ class _StopListScreenState extends State<StopListScreen> {
   }
 
   Widget _reorderList(BuildContext context, AppState app, DriverRun run) =>
-      ReorderableListView.builder(
-        padding: EdgeInsets.zero,
-        buildDefaultDragHandles: false,
-        itemCount: run.stops.length,
-        // `onReorderItem` already reports the destination index with the
-        // dragged row removed, so no off-by-one correction is applied here.
-        onReorderItem: app.moveStop,
-        proxyDecorator: (child, index, animation) => Material(
-          color: context.c.card,
-          elevation: 6,
-          shadowColor: const Color(0x33101C33),
-          borderRadius: BorderRadius.circular(Sizes.innerRadius),
-          child: child,
-        ),
-        itemBuilder: (context, i) => Column(
-          key: ValueKey(run.stops[i].id),
-          children: [
-            StopRow(
-              index: i + 1,
-              stop: run.stops[i],
-              trailing: ReorderableDragStartListener(
-                index: i,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 8,
-                  ),
-                  child: Icon(
-                    LucideIcons.menu,
-                    size: 22,
-                    color: context.c.textSecondary,
+      run.stops.isEmpty
+      ? StateBlock.empty(L.noStopsView)
+      : ReorderableListView.builder(
+          padding: EdgeInsets.zero,
+          buildDefaultDragHandles: false,
+          itemCount: run.stops.length,
+          // `onReorderItem` already reports the destination index with the
+          // dragged row removed, so no off-by-one correction is applied here.
+          onReorderItem: app.moveStop,
+          proxyDecorator: (child, index, animation) => Material(
+            color: context.c.card,
+            elevation: 6,
+            shadowColor: const Color(0x33101C33),
+            borderRadius: BorderRadius.circular(Sizes.innerRadius),
+            child: child,
+          ),
+          itemBuilder: (context, i) => Column(
+            key: ValueKey(run.stops[i].id),
+            children: [
+              StopRow(
+                index: i + 1,
+                stop: run.stops[i],
+                trailing: ReorderableDragStartListener(
+                  index: i,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8,
+                    ),
+                    child: Icon(
+                      LucideIcons.menu,
+                      size: 22,
+                      color: context.c.textSecondary,
+                    ),
                   ),
                 ),
               ),
-            ),
-            if (i < run.stops.length - 1)
-              Divider(height: 1, color: context.c.border),
-          ],
-        ),
-      );
+              if (i < run.stops.length - 1)
+                Divider(height: 1, color: context.c.border),
+            ],
+          ),
+        );
 
   Widget _mapView(BuildContext context, DriverRun run) => Column(
     children: [
@@ -1014,52 +1029,55 @@ class _StopListScreenState extends State<StopListScreen> {
           ],
         ),
       ),
-      Container(
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, Gap.md),
-        color: context.c.card,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SheetGrabber(),
-            Text(
-              run.reference,
-              style: context.t.displaySmall?.copyWith(fontSize: 20),
-            ),
-            const SizedBox(height: Gap.sm),
-            Row(
-              children: [
-                Expanded(
-                  child: MetaRow(
-                    icon: LucideIcons.package,
-                    text: L.orders2(run.orderCount),
-                    dense: true,
+      // Run summary under the map: the prototype only; a real run already
+      // shows orders and distance in the header, so the map takes the room.
+      if (AppScope.read(context).repo.isDemo)
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(Gap.gutter, 4, Gap.gutter, Gap.md),
+          color: context.c.card,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SheetGrabber(),
+              Text(
+                run.reference,
+                style: context.t.displaySmall?.copyWith(fontSize: 20),
+              ),
+              const SizedBox(height: Gap.sm),
+              Row(
+                children: [
+                  Expanded(
+                    child: MetaRow(
+                      icon: LucideIcons.package,
+                      text: L.orders2(run.orderCount),
+                      dense: true,
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: MetaRow(
-                    icon: LucideIcons.navigation,
-                    text: run.distanceText,
-                    dense: true,
+                  Expanded(
+                    child: MetaRow(
+                      icon: LucideIcons.navigation,
+                      text: run.distanceText,
+                      dense: true,
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: MetaRow(
-                    icon: LucideIcons.mapPin,
-                    text: run.zone,
-                    dense: true,
+                  Expanded(
+                    child: MetaRow(
+                      icon: LucideIcons.mapPin,
+                      text: run.zone,
+                      dense: true,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            MetaRow(
-              icon: LucideIcons.clock,
-              text: run.estimateLabel ?? '',
-              dense: true,
-            ),
-          ],
+                ],
+              ),
+              MetaRow(
+                icon: LucideIcons.clock,
+                text: run.estimateLabel ?? '',
+                dense: true,
+              ),
+            ],
+          ),
         ),
-      ),
     ],
   );
 }

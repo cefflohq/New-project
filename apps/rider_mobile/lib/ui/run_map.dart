@@ -157,13 +157,18 @@ class _RunMapState extends State<RunMap> {
             top: Gap.md,
             left: Gap.xl * 2,
             right: Gap.md,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(999),
+            child: FadingMapHint(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(L.noPinnedStops, textAlign: TextAlign.center),
               ),
-              child: Text(L.noPinnedStops, textAlign: TextAlign.center),
             ),
           ),
         if (widget.showControls) ...[

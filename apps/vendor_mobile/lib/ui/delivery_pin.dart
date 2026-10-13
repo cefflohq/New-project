@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -56,7 +58,7 @@ class DeliveryPinView extends StatelessWidget {
     super.key,
     required this.latitude,
     required this.longitude,
-    this.height = 180,
+    this.height = 220,
   });
   final double latitude, longitude;
   final double height;
@@ -112,7 +114,7 @@ class DeliveryPinPicker extends StatefulWidget {
     super.key,
     required this.initial,
     required this.onChanged,
-    this.height = 260,
+    this.height = 340,
   });
   final PinPoint? initial;
   final ValueChanged<PinPoint> onChanged;
@@ -327,7 +329,7 @@ class PinsMap extends StatelessWidget {
   const PinsMap({
     super.key,
     required this.drops,
-    this.height = 240,
+    this.height = 300,
     this.emptyLabel,
     this.zones = const [],
   });
@@ -454,20 +456,22 @@ class PinsMap extends StatelessWidget {
                 left: Gap.md,
                 right: Gap.md,
                 top: Gap.md,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: Gap.md,
-                    vertical: Gap.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: c.card,
-                    borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-                    border: Border.all(color: c.border),
-                  ),
-                  child: Text(
-                    emptyLabel!,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodySmall,
+                child: FadingMapHint(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Gap.md,
+                      vertical: Gap.sm,
+                    ),
+                    decoration: BoxDecoration(
+                      color: c.card,
+                      borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+                      border: Border.all(color: c.border),
+                    ),
+                    child: Text(
+                      emptyLabel!,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
                 ),
               ),
@@ -735,10 +739,9 @@ class _MapCreditState extends State<MapCredit> {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => setState(() => _open = !_open),
-        child: Container(
-          height: 22,
-          padding: EdgeInsets.symmetric(horizontal: _open ? 8 : 0),
-          constraints: const BoxConstraints(minWidth: 22),
+        // Sized to its content: a 22 px circle closed, a pill when open
+        // (a Container with alignment would stretch across the map).
+        child: DecoratedBox(
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: .9),
             borderRadius: BorderRadius.circular(11),
@@ -746,15 +749,65 @@ class _MapCreditState extends State<MapCredit> {
               BoxShadow(color: Color(0x22000000), blurRadius: 3),
             ],
           ),
-          alignment: Alignment.center,
           child: _open
-              ? Text(
-                  widget.text,
-                  style: const TextStyle(fontSize: 10, color: Colors.black87),
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  child: Text(
+                    widget.text,
+                    style: const TextStyle(fontSize: 10, color: Colors.black87),
+                  ),
                 )
-              : const Icon(Icons.info_outline, size: 14, color: Colors.black54),
+              : const SizedBox.square(
+                  dimension: 22,
+                  child: Icon(
+                    Icons.info_outline,
+                    size: 14,
+                    color: Colors.black54,
+                  ),
+                ),
         ),
       ),
+    ),
+  );
+}
+
+/// A map hint that shows for 2 s and then fades away (Founder 2026-10-13:
+/// "No pinned ... yet" must not sit on the map).
+class FadingMapHint extends StatefulWidget {
+  const FadingMapHint({super.key, required this.child});
+  final Widget child;
+
+  @override
+  State<FadingMapHint> createState() => _FadingMapHintState();
+}
+
+class _FadingMapHintState extends State<FadingMapHint> {
+  bool _shown = true;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _shown = false);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+    child: AnimatedOpacity(
+      opacity: _shown ? 1 : 0,
+      duration: const Duration(milliseconds: 400),
+      child: widget.child,
     ),
   );
 }

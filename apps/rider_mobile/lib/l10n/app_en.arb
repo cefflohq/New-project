@@ -393,6 +393,7 @@
   "noStopsView": "No stops in this view.",
   "list": "List",
   "map": "Map",
+  "dragToReorder": "Hold and drag to reorder",
   "mapShowsCurrentStopOrder": "This map shows your current stop order.",
   "dragDropReorderStops": "Drag and drop to reorder your stops.",
   "switchListViewDragReorder": "Switch to List view to drag and reorder.",

@@ -50,7 +50,7 @@ export default function zones({ el, params, setHeader }) {
     $('[data-list]').innerHTML = rows.length ? `<div class="table-wrap"><table class="t">
       <thead><tr><th><button class="link-btn" data-sort style="text-decoration:none">${esc(t('zones.zone'))} ${sortAsc ? '▲' : '▼'}</button></th><th>${esc(t('zones.total'))}</th><th>${esc(t('zones.completed'))}</th><th>${esc(t('zones.ongoing'))}</th><th>${esc(t('zones.issues'))}</th><th>${esc(t('zones.status'))}</th><th></th></tr></thead>
       <tbody>${rows.map(z => { const c = counts(z.id); return `<tr class="row ${z.id === selected ? 'sel' : ''}" data-id="${esc(z.id)}">
-        <td>${z.boundary && z.status === 'active' ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${zoneColor(z)};margin-right:8px"></span>` : ''}<b>${esc(z.name)}</b></td><td class="num">${c.total}</td><td class="num">${c.completed}</td><td class="num">${c.ongoing}</td>
+        <td style="white-space:nowrap">${z.boundary && z.status === 'active' ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${zoneColor(z)};margin-right:8px"></span>` : ''}<b>${esc(z.name)}</b></td><td class="num">${c.total}</td><td class="num">${c.completed}</td><td class="num">${c.ongoing}</td>
         <td class="num" style="color:${c.issues ? 'var(--danger)' : 'inherit'}">${c.issues}</td><td>${chip(z.status === 'active' ? 'active' : 'inactive')}</td><td>${icon('right', 'i chev')}</td></tr>`; }).join('')}</tbody></table></div>`
       : emptyState(t('zones.none'), t('zones.noneBody'));
   }
