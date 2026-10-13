@@ -572,11 +572,7 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
                   onChooseTown: () => _changeLocation(app),
                 )
               else if (all.isEmpty)
-                _NoJobsNearby(
-                  radius: radius,
-                  place: place.label,
-                  onExpand: radius < 50 ? () => _Jobs.setRadius(app, 50) : null,
-                )
+                _NoJobsNearby(radius: radius, place: place.label)
               else if (shown.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: Gap.lg),
@@ -727,41 +723,37 @@ class _NoLocation extends StatelessWidget {
   );
 }
 
-/// One message, one action: "Change" in the header already changes the
-/// location.
+/// Centred on the empty screen, message only (Founder 2026-10-13): the
+/// area and distance are changed from "Change" in the header.
 class _NoJobsNearby extends StatelessWidget {
-  const _NoJobsNearby({
-    required this.radius,
-    required this.place,
-    required this.onExpand,
-  });
+  const _NoJobsNearby({required this.radius, required this.place});
   final int radius;
   final String place;
-  final VoidCallback? onExpand;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: Gap.section * 2),
-    child: Column(
-      children: [
-        Icon(LucideIcons.searchX, size: 34, color: context.c.textSecondary),
-        const SizedBox(height: Gap.md),
-        Text(
-          L.noJobsWithin('$radius', place),
-          textAlign: TextAlign.center,
-          style: context.t.bodyMedium?.copyWith(color: context.c.textSecondary),
-        ),
-        const SizedBox(height: Gap.lg),
-        if (onExpand != null)
-          CeffloPrimaryButton(L.expandTo50, onTap: onExpand)
-        else
+  Widget build(BuildContext context) => SizedBox(
+    height: MediaQuery.sizeOf(context).height * .5,
+    child: Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(LucideIcons.searchX, size: 34, color: context.c.textSecondary),
+          const SizedBox(height: Gap.md),
           Text(
-            L.tryAnotherLocation,
-            style: context.t.bodyMedium?.copyWith(
+            L.noJobsWithin('$radius', place),
+            textAlign: TextAlign.center,
+            style: context.t.titleMedium,
+          ),
+          const SizedBox(height: Gap.xs),
+          Text(
+            L.jobsChangeAreaHint,
+            textAlign: TextAlign.center,
+            style: context.t.bodySmall?.copyWith(
               color: context.c.textSecondary,
             ),
           ),
-      ],
+        ],
+      ),
     ),
   );
 }

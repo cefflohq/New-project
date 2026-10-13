@@ -632,5 +632,6 @@
   "runContinueDelivery": "Teruskan penghantaran",
   "runNoOrdersYet": "Belum ada order",
   "runStoreWillAdd": "Kedai akan tambah order ke run ini",
-  "runStartedAt": "Mula {time}"
+  "runStartedAt": "Mula {time}",
+  "jobsChangeAreaHint": "Tekan Tukar untuk cuba kawasan lebih luas."
 }

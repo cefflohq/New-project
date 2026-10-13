@@ -3895,6 +3895,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Started {time}'**
   String runStartedAt(String time);
+
+  /// No description provided for @jobsChangeAreaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Change to try a wider area.'**
+  String get jobsChangeAreaHint;
 }
 
 class _AppLocalizationsDelegate

@@ -1022,5 +1022,6 @@
         "type": "String"
       }
     }
-  }
+  },
+  "jobsChangeAreaHint": "Tap Change to try a wider area."
 }

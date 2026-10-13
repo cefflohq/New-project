@@ -2129,4 +2129,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String runStartedAt(String time) {
     return 'Started $time';
   }
+
+  @override
+  String get jobsChangeAreaHint => 'Tap Change to try a wider area.';
 }

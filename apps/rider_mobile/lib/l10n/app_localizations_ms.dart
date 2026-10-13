@@ -2143,4 +2143,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String runStartedAt(String time) {
     return 'Mula $time';
   }
+
+  @override
+  String get jobsChangeAreaHint => 'Tekan Tukar untuk cuba kawasan lebih luas.';
 }
