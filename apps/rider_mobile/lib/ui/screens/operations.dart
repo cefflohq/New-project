@@ -9,7 +9,6 @@ import '../../core/theme.dart';
 import '../../core/dial.dart';
 import '../../data/demo_data.dart';
 import '../../data/driver_models.dart';
-import '../delivery_pin_map.dart';
 import '../map_canvas.dart';
 import '../run_map.dart';
 import '../bottom_surface.dart';
@@ -1631,17 +1630,6 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
     super.dispose();
   }
 
-  Future<void> _navigate(BuildContext context, DriverStop stop) async {
-    if (!await openNavigation(
-          lat: stop.latitude,
-          lng: stop.longitude,
-          address: stop.addressLine1,
-        ) &&
-        context.mounted) {
-      showCefToast(context, L.mapNotAvailable);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
@@ -1662,29 +1650,21 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Customer (Founder 2026-10-13): name, one address line, the note,
-          // then light round Navigate / Call on their own row.
+          // Only what the Driver needs at the door (Founder 2026-10-13):
+          // customer, address (with house number), note, a short item line;
+          // Call and Chat beside the name. No map, no pin line.
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: CefColors.tintNeutral,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(LucideIcons.user, size: 22, color: c.textLabel),
-              ),
-              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       stop.customerName,
-                      style: context.t.titleMedium?.copyWith(fontSize: 16.5),
+                      style: context.t.titleMedium?.copyWith(fontSize: 17),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: Gap.sm),
                     _iconLine(
                       context,
                       LucideIcons.mapPin,
@@ -1696,97 +1676,61 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                         ?stop.addressLine2,
                       ].join(', '),
                     ),
-                    if (stop.note != null)
+                    if (stop.note != null) ...[
+                      const SizedBox(height: Gap.xs),
                       _iconLine(context, LucideIcons.stickyNote, stop.note!),
+                    ],
                   ],
                 ),
+              ),
+              const SizedBox(width: Gap.sm),
+              _RoundAction(
+                light: true,
+                icon: LucideIcons.phone,
+                onTap: AppScope.read(context).repo.isDemo
+                    ? () => _showTopNotice(
+                        context,
+                        L.calling(stop.customerName),
+                        LucideIcons.phone,
+                      )
+                    : () async {
+                        if (!await dialPhone(stop.phone) && context.mounted) {
+                          showCefToast(context, L.phoneNotAvailable);
+                        }
+                      },
+              ),
+              const SizedBox(width: Gap.sm),
+              // Chat: WhatsApp with the customer's number.
+              _RoundAction(
+                light: true,
+                icon: LucideIcons.messageCircle,
+                onTap: AppScope.read(context).repo.isDemo
+                    ? () => _showTopNotice(
+                        context,
+                        L.openingChat,
+                        LucideIcons.messageCircle,
+                      )
+                    : () async {
+                        if (!await openWhatsApp(stop.phone) &&
+                            context.mounted) {
+                          showCefToast(context, L.phoneNotAvailable);
+                        }
+                      },
               ),
             ],
           ),
-          const SizedBox(height: Gap.sm),
-          Padding(
-            padding: const EdgeInsets.only(left: 54),
-            child: Row(
-              children: [
-                _RoundAction(
-                  light: true,
-                  icon: LucideIcons.navigation,
-                  onTap: () => _navigate(context, stop),
-                ),
-                const SizedBox(width: Gap.sm),
-                _RoundAction(
-                  light: true,
-                  icon: LucideIcons.phone,
-                  onTap: AppScope.read(context).repo.isDemo
-                      ? () => _showTopNotice(
-                          context,
-                          L.calling(stop.customerName),
-                          LucideIcons.phone,
-                        )
-                      // Live: really dial the customer's number.
-                      : () async {
-                          if (!await dialPhone(stop.phone) && context.mounted) {
-                            showCefToast(context, L.phoneNotAvailable);
-                          }
-                        },
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: Gap.md),
-          // Items first: what the Driver hands over, visible before the slide.
-          Text(
-            '${L.orderDetails} · ${L.itemCount(stop.items.length)}',
-            style: context.t.titleMedium,
-          ),
+          const SizedBox(height: Gap.lg),
+          // Order details, short: one line.
+          Text(L.orderDetails, style: context.t.titleSmall),
           const SizedBox(height: Gap.xs),
-          ...[
-            for (final item in stop.items)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 42,
-                      child: Text(
-                        '${item.quantity}  ×',
-                        style: context.t.bodyMedium?.copyWith(
-                          color: c.textSecondary,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        item.name,
-                        style: TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w600,
-                          color: c.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            if (stop.items.isEmpty)
-              Text(L.noItemisedOrderLinesStop, style: context.t.bodySmall),
-          ],
-          const SizedBox(height: Gap.md),
-          if (stop.latitude != null && stop.longitude != null) ...[
-            DeliveryPinMap(
-              latitude: stop.latitude!,
-              longitude: stop.longitude!,
-              height: 160,
-              onTap: () => _navigate(context, stop),
-            ),
-            const SizedBox(height: Gap.xs),
-            _iconLine(context, LucideIcons.locateFixed, L.pinnedLocation),
-          ] else
-            Text(
-              L.noCustomerPin,
-              style: context.t.bodyMedium?.copyWith(fontSize: 12.5),
-            ),
+          Text(
+            stop.items.isEmpty
+                ? L.noItemisedOrderLinesStop
+                : stop.items.map((i) => '${i.quantity}× ${i.name}').join(', '),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: context.t.bodyMedium,
+          ),
           const SizedBox(height: Gap.lg),
           Text(L.proofDelivery, style: context.t.titleMedium),
           const SizedBox(height: Gap.md),

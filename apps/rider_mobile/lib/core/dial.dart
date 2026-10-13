@@ -19,6 +19,22 @@ Future<bool> openNavigation({double? lat, double? lng, String? address}) async {
   }
 }
 
+/// Opens a WhatsApp chat with [phone] (Malaysian 0… numbers become 60…).
+/// Returns false when there is no usable number or WhatsApp cannot open.
+Future<bool> openWhatsApp(String? phone) async {
+  var digits = (phone ?? '').replaceAll(RegExp(r'[^0-9]'), '');
+  if (digits.startsWith('0')) digits = '6$digits';
+  if (digits.length < 8) return false;
+  try {
+    return await launchUrl(
+      Uri.https('wa.me', '/$digits'),
+      mode: LaunchMode.externalApplication,
+    );
+  } catch (_) {
+    return false;
+  }
+}
+
 /// Opens the phone dialer for [phone]. Returns false when there is no usable
 /// number or the device cannot dial, so the caller can say so.
 Future<bool> dialPhone(String? phone) async {
