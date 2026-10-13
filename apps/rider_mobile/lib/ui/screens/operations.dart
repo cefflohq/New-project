@@ -1975,7 +1975,7 @@ class _ProofTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(Sizes.innerRadius),
         onTap: onTap,
         child: Container(
-          height: 76,
+          height: 100,
           padding: const EdgeInsets.symmetric(horizontal: 18),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(Sizes.innerRadius),
@@ -1998,6 +1998,7 @@ class _ProofTile extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
+                    const SizedBox(height: 4),
                     Text(
                       caption,
                       style: context.t.bodySmall?.copyWith(
