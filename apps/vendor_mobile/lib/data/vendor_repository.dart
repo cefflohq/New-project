@@ -1299,6 +1299,7 @@ class VendorRepository {
     required int driversNeeded,
     required num reachKm,
     String? openingId,
+    int? dropsPerRun,
   }) async {
     if (_demo) return;
     await _run(
@@ -1314,6 +1315,7 @@ class VendorRepository {
           'p_drivers_needed': driversNeeded,
           'p_reach_km': reachKm,
           'p_opening_id': openingId,
+          'p_drops_per_run': dropsPerRun,
         },
       ),
     );

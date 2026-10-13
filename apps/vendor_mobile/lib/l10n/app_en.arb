@@ -1959,6 +1959,7 @@
   "hrArea": "Area",
   "hrDays": "Days",
   "hrVehicle": "Vehicle",
+  "hrDropsPerRun": "Drops per run",
   "hrDriversNeeded": "Drivers needed",
   "@hrReachHint": {
     "placeholders": {

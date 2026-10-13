@@ -4033,6 +4033,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hrVehicle => 'Vehicle';
 
   @override
+  String get hrDropsPerRun => 'Drops per run';
+
+  @override
   String get hrDriversNeeded => 'Drivers needed';
 
   @override

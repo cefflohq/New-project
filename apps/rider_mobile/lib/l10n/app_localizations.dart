@@ -3230,6 +3230,12 @@ abstract class AppLocalizations {
   /// **'Within {km} km'**
   String jobWithin(String km);
 
+  /// No description provided for @jobDrops.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 drop} other{{count} drops}}'**
+  String jobDrops(int count);
+
   /// No description provided for @jobAway.
   ///
   /// In en, this message translates to:

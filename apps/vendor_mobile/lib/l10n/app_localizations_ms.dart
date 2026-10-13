@@ -4035,6 +4035,9 @@ class AppLocalizationsMs extends AppLocalizations {
   String get hrVehicle => 'Kenderaan';
 
   @override
+  String get hrDropsPerRun => 'Drop setiap run';
+
+  @override
   String get hrDriversNeeded => 'Pemandu diperlukan';
 
   @override

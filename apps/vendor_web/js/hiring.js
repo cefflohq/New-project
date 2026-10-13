@@ -77,7 +77,7 @@ export function mountHiring(host, { onChange } = {}) {
         : (Date.now() - new Date(r.created_at) < 864e5 ? `<span class="chip delivery">${esc(t('hr.new'))}</span>` : `<span class="chip pending">${esc(t('hr.pending'))}</span>`);
       box.innerHTML = `<p class="desc" style="margin:0 0 10px"><i class="dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success,#16a34a);margin-right:6px"></i>${esc(t('hr.active', { n: waiting }))}</p>
         <div class="tabs"><button class="${tab === 'app' ? 'on' : ''}" data-ptab="app">${esc(t('hr.applicantsTab', { n: rows.length }))}</button><button class="${tab === 'det' ? 'on' : ''}" data-ptab="det">${esc(t('hr.details'))}</button></div>
-        ${tab === 'det' ? `<div class="sub-card">${kv(t('hire.area'), post.area_label)}${kv(t('hire.days'), [...post.days].sort().map(d => t(`hire.d${d}`)).join(', '))}${kv(t('hr.pickupTime'), hhmm(post.shift_start))}${kv(t('hire.vehicle'), t(`veh.${post.vehicle_type}`))}${kv(t('hr.payPerDrop'), payLabel(post))}${kv(t('hire.needed'), String(post.riders_needed))}${kv(t('hr.reach'), `${num(post.radius_km)} km`)}</div>`
+        ${tab === 'det' ? `<div class="sub-card">${kv(t('hire.area'), post.area_label)}${kv(t('hire.days'), [...post.days].sort().map(d => t(`hire.d${d}`)).join(', '))}${kv(t('hr.pickupTime'), hhmm(post.shift_start))}${kv(t('hire.vehicle'), t(`veh.${post.vehicle_type}`))}${kv(t('hr.payPerDrop'), payLabel(post))}${kv(t('hire.needed'), String(post.riders_needed))}${post.drops_per_run ? kv(t('hr.dropsPerRun'), String(post.drops_per_run)) : ''}${kv(t('hr.reach'), `${num(post.radius_km)} km`)}</div>`
           : rows.length ? rows.map(r => { const d = r.riders || {}; const can = r.status === 'pending' && d.status === 'pending';
               return `<div class="list-row" style="cursor:default">${avatar(d.name || '?')}<div class="grow"><b>${esc(d.name || '')}</b><small>${esc([d.vehicle_type && t(`veh.${d.vehicle_type}`), d.vehicle_plate].filter(Boolean).join(' · '))}</small><small>${esc(t('hr.appliedVia', { d: fmt(r.created_at) }))}</small></div>${chipFor(r)}
               ${can ? `<button class="btn sm" data-dec="${esc(r.rider_id)}" data-ok="0">${esc(t('hr.reject'))}</button><button class="btn sm primary" data-dec="${esc(r.rider_id)}" data-ok="1">${esc(t('hr.approve'))}</button>` : ''}</div>`; }).join('')
@@ -115,6 +115,7 @@ export function mountHiring(host, { onChange } = {}) {
         <div class="field"><label for="h-start">${esc(t('hr.pickupTime'))}</label><input class="input" id="h-start" type="time" value="07:00" style="max-width:200px"><small class="hint">${esc(t('hr.pickupHint'))}</small></div>
         <div class="field"><label>${esc(t('hire.vehicle'))}</label><div class="chips" data-vehicles></div></div>
         <div class="field"><label for="h-pay">${esc(t('hr.payPerDrop'))}</label><input class="input" id="h-pay" inputmode="decimal" value="3.00" style="max-width:200px"><small class="hint" data-pay-hint>${esc(t('hr.payMin'))}</small></div>
+        <div class="field"><label for="h-drops">${esc(t('hr.dropsPerRun'))}</label><input class="input" id="h-drops" type="number" min="1" max="50" value="10" style="max-width:200px"></div>
         <div class="row2"><div class="field"><label for="h-need">${esc(t('hire.needed'))}</label><input class="input" id="h-need" type="number" min="1" max="50" value="1"></div>
           <div class="field"><label for="h-radius" data-radius-label>${esc(t('hr.reachKm', { km: 10 }))}</label><input id="h-radius" type="range" min="1" max="15" step="1" value="10"><small class="hint" data-reach-hint>${esc(t('hr.reachHint', { km: 10 }))}</small></div></div>
         <div class="err" data-err hidden role="alert"></div></form>`,
@@ -140,12 +141,12 @@ export function mountHiring(host, { onChange } = {}) {
     q('[data-save]').addEventListener('click', async e => {
       const err = q('[data-err]'); err.hidden = true;
       const area = q('#h-area').value.trim(), pickup = q('#h-start').value;
-      const pay = payNum(), need = Number(q('#h-need').value), reach = Number(q('#h-radius').value);
-      if (area.length < 2 || !days.size || !pickup || !(pay >= 3) || !(need >= 1 && need <= 50)) { err.textContent = t('hr.fix'); err.hidden = false; return; }
+      const pay = payNum(), need = Number(q('#h-need').value), reach = Number(q('#h-radius').value), drops = Number(q('#h-drops').value);
+      if (area.length < 2 || !days.size || !pickup || !(pay >= 3) || !(need >= 1 && need <= 50) || !(drops >= 1 && drops <= 50)) { err.textContent = t('hr.fix'); err.hidden = false; return; }
       try {
         await busy(e.target, () => api.rpc('save_job_opening', {
           p_business_id: ctx.bid, p_area_label: area, p_pickup_time: pickup, p_days: [...days].sort(),
-          p_vehicle_type: vehicle, p_pay_per_drop: pay, p_drivers_needed: need, p_reach_km: reach,
+          p_vehicle_type: vehicle, p_pay_per_drop: pay, p_drivers_needed: need, p_reach_km: reach, p_drops_per_run: drops,
         }));
         m.close(); toast(t('hire.posted')); load();
       } catch (ex) { err.textContent = ex.message; err.hidden = false; }

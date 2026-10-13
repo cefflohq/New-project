@@ -7353,6 +7353,12 @@ abstract class AppLocalizations {
   /// **'Vehicle'**
   String get hrVehicle;
 
+  /// No description provided for @hrDropsPerRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Drops per run'**
+  String get hrDropsPerRun;
+
   /// No description provided for @hrDriversNeeded.
   ///
   /// In en, this message translates to:

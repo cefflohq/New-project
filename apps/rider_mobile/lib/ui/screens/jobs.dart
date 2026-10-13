@@ -108,11 +108,15 @@ class _Opening {
     this.vehicleMatch = true,
     this.areaLat,
     this.areaLng,
+    this.drops,
   });
 
   /// The business's pickup area rounded to about 1 km (find_job_openings),
   /// for the work-area map. Never the store's exact location.
   final double? areaLat, areaLng;
+
+  /// The vendor's estimated drops per run; null on older posts.
+  final int? drops;
 
   final String id, name, area, category, payUnit, vehicle;
   final int start, end, needed;
@@ -168,6 +172,7 @@ class _Opening {
     vehicleMatch: r['vehicle_match'] != false,
     areaLat: (r['area_lat'] as num?)?.toDouble(),
     areaLng: (r['area_lng'] as num?)?.toDouble(),
+    drops: (r['drops_per_run'] as num?)?.toInt(),
   );
 
   _Opening withStatus(String? status) => _Opening(
@@ -191,6 +196,7 @@ class _Opening {
     vehicleMatch: vehicleMatch,
     areaLat: areaLat,
     areaLng: areaLng,
+    drops: drops,
   );
 }
 
@@ -358,6 +364,7 @@ const _examples = <_Opening>[
     areaLat: 6.14,
     areaLng: 100.36,
     km: 2.5,
+    drops: 12,
     withinRadius: true,
     radiusKm: 10,
     start: 7 * 60,
@@ -377,6 +384,7 @@ const _examples = <_Opening>[
     areaLat: 6.12,
     areaLng: 100.38,
     km: 3,
+    drops: 10,
     withinRadius: true,
     radiusKm: 10,
     start: 12 * 60,
@@ -397,6 +405,7 @@ const _examples = <_Opening>[
     areaLat: 6.18,
     areaLng: 100.35,
     km: 6,
+    drops: 15,
     withinRadius: true,
     radiusKm: 10,
     start: 18 * 60,
@@ -416,6 +425,7 @@ const _examples = <_Opening>[
     areaLat: 6.13,
     areaLng: 100.37,
     km: 18,
+    drops: 8,
     withinRadius: false,
     radiusKm: 10,
     start: 8 * 60,
@@ -1039,7 +1049,12 @@ class _OpeningCard extends StatelessWidget {
                   [
                     _daysLabel(o.days),
                     _clock(o.start),
-                    if (o.km != null) '${_num(o.km!)} km',
+                    // Drops per run, not distance (Founder 2026-10-13);
+                    // older posts without it keep the distance.
+                    if (o.drops != null)
+                      L.jobDrops(o.drops!)
+                    else if (o.km != null)
+                      '${_num(o.km!)} km',
                   ].join(' · '),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

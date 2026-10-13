@@ -471,6 +471,9 @@ class _OpeningFormState extends State<_OpeningForm> {
   TimeOfDay _pickup = const TimeOfDay(hour: 7, minute: 0);
   String _vehicleType = 'motorcycle';
   int _needed = 1;
+
+  /// Estimated drops per run, shown on the Driver's Find Jobs card.
+  int _drops = 10;
   double _reach = 10;
   bool _busy = false;
   String? _error;
@@ -517,6 +520,7 @@ class _OpeningFormState extends State<_OpeningForm> {
         payPerDrop: pay,
         driversNeeded: _needed,
         reachKm: _reach.round(),
+        dropsPerRun: _drops,
       );
       if (mounted) Navigator.of(context).pop(true);
     } on RepositoryError catch (e) {
@@ -650,6 +654,35 @@ class _OpeningFormState extends State<_OpeningForm> {
                       ),
                     ),
                     hint(L.hrPayMin, error: _payTooLow),
+                  ],
+                ),
+              ),
+              _FormSection(
+                label: L.hrDropsPerRun,
+                child: Row(
+                  children: [
+                    _StepButton(
+                      icon: LucideIcons.minus,
+                      onTap: _drops > 1 ? () => setState(() => _drops--) : null,
+                    ),
+                    SizedBox(
+                      width: 56,
+                      child: Text(
+                        '$_drops',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: CefColors.navy,
+                        ),
+                      ),
+                    ),
+                    _StepButton(
+                      icon: LucideIcons.plus,
+                      onTap: _drops < 50
+                          ? () => setState(() => _drops++)
+                          : null,
+                    ),
                   ],
                 ),
               ),
@@ -1114,6 +1147,8 @@ class _HiringPostScreenState extends State<HiringPostScreen> {
               kv(L.hrVehicle, _vehicle(post['vehicle_type'] as String)),
               kv(L.hrPayPerDrop, _payLabel(post)),
               kv(L.hrDriversNeeded, '${post['riders_needed']}'),
+              if (post['drops_per_run'] != null)
+                kv(L.hrDropsPerRun, '${post['drops_per_run']}'),
               kv(L.hrReach, '${_num(post['radius_km'] as num)} km'),
             ] else if (applicants.isEmpty)
               StateBlock.empty(L.hrNoApplicants)

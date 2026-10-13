@@ -1763,6 +1763,11 @@ class AppLocalizationsMs extends AppLocalizations {
   }
 
   @override
+  String jobDrops(int count) {
+    return '$count drop';
+  }
+
+  @override
   String jobAway(String km) {
     return '$km km dari anda';
   }

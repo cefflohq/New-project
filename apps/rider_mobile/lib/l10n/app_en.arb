@@ -806,6 +806,8 @@
       }
     }
   },
+  "jobDrops": "{count, plural, =1{1 drop} other{{count} drops}}",
+  "@jobDrops": {"placeholders": {"count": {"type": "int"}}},
   "jobAway": "{km} km away",
   "@jobAway": {
     "placeholders": {

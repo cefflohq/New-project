@@ -522,6 +522,8 @@
   "perDrop": "/ hantaran",
   "perHour": "/ jam",
   "jobWithin": "Dalam {km} km",
+  "jobDrops": "{count} drop",
+  "@jobDrops": {"placeholders": {"count": {"type": "int"}}},
   "jobAway": "{km} km dari anda",
   "jobsNearestFirst": "Terdekat dahulu · seluruh Malaysia",
   "jobsAllAreas": "Semua kawasan · hidupkan lokasi untuk jarak",
