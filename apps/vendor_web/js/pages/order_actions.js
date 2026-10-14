@@ -244,7 +244,8 @@ export async function openPlanDelivery(onDone) {
     const unplannable = plan?.unplannable_orders || [], excluded = plan?.excluded_riders || [];
     const riderName = id => riders.find(r => r.id === id)?.name || t('plan.driver');
     const runsHtml = groups.map((g, i) => `<div class="sub-card" style="margin:0">
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b>${esc(t('plan.run', { n: i + 1 }))}</b><span class="chip neutral">${esc(zones.get(g.zone_id) || t('add.noZone'))}</span>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b>${esc(t('plan.run', { n: i + 1 }))}</b><span class="chip neutral">${esc((g.zone_ids?.length > 1 ? g.zone_ids.map(id => zones.get(id)).filter(Boolean).join(' + ') : '') || zones.get(g.zone_id) || t('add.noZone'))}</span>
+      ${g.merged ? `<span class="chip neutral">${esc(t('plan.merged'))}</span>` : ''}${g.below_target_size ? `<span class="chip pending">${esc(t('plan.below', { n: g.run_size_min }))}</span>` : ''}
       ${g.parts > 1 ? `<span class="chip neutral">${esc(t('plan.part', { part: g.part, parts: g.parts }))}</span>` : ''}
       <span class="hint" style="margin-left:auto">${esc(t('runs.orders', { n: (g.stops || []).length }))}${g.total_distance_km ? ` · ${Number(g.total_distance_km).toFixed(1)} km ${esc(t('plan.straight'))}` : ''}</span></div>
       <div class="field" style="margin-top:10px"><label>${esc(t('plan.rider'))}</label>

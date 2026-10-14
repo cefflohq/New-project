@@ -205,6 +205,12 @@ async function business(page) {
         <button class="link-btn" type="button" data-locate style="margin-top:10px">${esc(t('bp.locate'))}</button>
         <div class="err" data-aerr hidden></div>
         <div class="pm pm-picker" data-covmap style="margin-top:12px"></div><p class="hint" style="margin-top:6px">${esc(t('bp.mapHint'))}</p></div>
+      <div class="sub-card"><h3>${esc(t('rs.title'))}</h3><p class="desc">${esc(t('rs.lead'))}</p>
+        <div class="g4">
+          <div class="field"><label for="rs-min">${esc(t('rs.min'))}</label><input class="input" id="rs-min" name="rsmin" type="number" min="1" max="50" value="${esc(b.run_size_min ?? 10)}"></div>
+          <div class="field"><label for="rs-max">${esc(t('rs.max'))}</label><input class="input" id="rs-max" name="rsmax" type="number" min="1" max="50" value="${esc(b.run_size_max ?? 15)}"></div>
+          <button class="btn soft" data-runsize>${esc(t('c.save'))}</button></div>
+        <div class="err" data-rserr hidden></div></div>
       <div class="sub-card" data-hours><h3>${esc(t('hours.title'))}</h3><p class="desc">${esc(t('hours.lead'))}</p>
         ${[1, 2, 3, 4, 5, 6, 7].map(d => { const h = hours.find(x => x.weekday === d) || {}; return `<div class="g4" data-day="${d}" style="align-items:center;margin-bottom:6px">
           <b style="font-weight:500">${esc(t(`hours.d${d}`))}</b>
@@ -265,6 +271,14 @@ async function business(page) {
         cov.setRadius(r.value);
         toast(t('bp.located'));
       } catch (ex) { aerr.textContent = ex.message && ex.status !== 404 ? ex.message : t('bp.locateFailed'); aerr.hidden = false; }
+    });
+    // Target run size (Founder D2): default 10-15, editable.
+    body.querySelector('[data-runsize]').addEventListener('click', async e => {
+      const rerr = body.querySelector('[data-rserr]');
+      const mn = Number(body.querySelector('[name=rsmin]').value), mx = Number(body.querySelector('[name=rsmax]').value);
+      if (!(Number.isInteger(mn) && Number.isInteger(mx) && mn >= 1 && mx <= 50 && mn <= mx)) { rerr.textContent = t('rs.invalid'); rerr.hidden = false; return; }
+      rerr.hidden = true;
+      try { await busy(e.currentTarget, () => api.rpc('set_business_run_size', { p_business_id: ctx.bid, p_min: mn, p_max: mx })); toast(t('c.saved')); } catch (ex) { rerr.textContent = ex.message; rerr.hidden = false; }
     });
     body.querySelector('[data-area]').addEventListener('click', async e => {
       const aerr = body.querySelector('[data-aerr]');

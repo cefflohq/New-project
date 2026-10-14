@@ -672,9 +672,22 @@ class PlanGroup {
     this.totalDistanceKm,
     this.part = 1,
     this.parts = 1,
+    this.zoneIds = const [],
+    this.merged = false,
+    this.belowTargetSize = false,
+    this.runSizeMin,
   });
 
   final String groupKey;
+
+  /// Zones in this run: more than one when nearby small zones in the same
+  /// direction were combined (Founder D3).
+  final List<String> zoneIds;
+  final bool merged;
+
+  /// Fewer orders than the business's minimum run size; still dispatchable.
+  final bool belowTargetSize;
+  final int? runSizeMin;
 
   /// Position of this run within its zone and vehicle tier when the zone is
   /// split across drivers.
@@ -694,6 +707,12 @@ class PlanGroup {
     totalDistanceKm: j['total_distance_km'] as num?,
     part: (j['part'] as num?)?.toInt() ?? 1,
     parts: (j['parts'] as num?)?.toInt() ?? 1,
+    zoneIds: [
+      for (final z in (j['zone_ids'] as List? ?? const [])) z.toString(),
+    ],
+    merged: j['merged'] == true,
+    belowTargetSize: j['below_target_size'] == true,
+    runSizeMin: (j['run_size_min'] as num?)?.toInt(),
     stops: (j['stops'] as List? ?? [])
         .whereType<Map>()
         .map((s) => PlanStop.fromJson(Map<String, dynamic>.from(s)))

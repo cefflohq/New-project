@@ -194,6 +194,19 @@ Future<void> showDispatchSheet(
   ),
 );
 
+/// "Nearby zones combined" / "Below target size (10)" until the next
+/// gen-l10n pass adds keys.
+String _runNote(BuildContext context, PlanGroup g) {
+  final ms = Localizations.localeOf(context).languageCode == 'ms';
+  return [
+    if (g.merged) ms ? 'Zon berdekatan digabung' : 'Nearby zones combined',
+    if (g.belowTargetSize)
+      ms
+          ? 'Bawah saiz sasaran (${g.runSizeMin ?? ''})'
+          : 'Below target size (${g.runSizeMin ?? ''})',
+  ].join(' · ');
+}
+
 class _DispatchSheet extends StatefulWidget {
   const _DispatchSheet({
     required this.zone,
@@ -316,6 +329,13 @@ class _DispatchSheetState extends State<_DispatchSheet> {
             ),
             const SizedBox(height: Gap.xs),
             Text(L.chooseRider(widget.zone.name), style: text.bodyMedium),
+            if (widget.group.merged || widget.group.belowTargetSize) ...[
+              const SizedBox(height: Gap.xs),
+              Text(
+                _runNote(context, widget.group),
+                style: text.bodySmall?.copyWith(color: c.textSecondary),
+              ),
+            ],
             const SizedBox(height: Gap.md),
             if (widget.riders.isEmpty)
               StateBlock.empty(L.noActiveRidersYet)
