@@ -77,7 +77,7 @@
         <header class="kit-head"><button type="button" class="kit-ic" data-act="catpage" data-id="" aria-label="${L("All products")}">${c.icon('grid')}</button><b class="kit-logo">${brand(c)}</b>${c.toCart('kit-ic kit-cart', c.icon('basket'))}</header>
         <div class="kit-badges"><button type="button" class="kit-filter${!c.ui.cat ? ' on' : ''}" ${c.cat(null)} aria-label="${L("All")}">${c.icon('filter')}</button>${c.s.categories.map(k => { const p = all.find(x => x.categoryId === k.id); return `<button type="button" class="kit-badge${c.ui.cat === k.id ? ' on' : ''}" ${c.cat(k.id)} title="${c.esc(k.name)}">${p ? c.img(p) : c.esc(c.initials(k.name))}</button>`; }).join('')}</div>
         <div class="kit-sec"><h2>${L("Popular")}</h2><span class="kit-bar"><i></i></span></div>
-        <div class="kit-rail">${ps.map(p => `<article class="kit-card" ${c.open(p.id)}>${c.img(p)}<span class="kit-heart">${c.icon('heart')}</span><div class="kit-meta"><b>${c.esc(p.name)}</b><span><small>RM</small>${c.esc(Number.isInteger(p.price) ? String(p.price) : p.price.toFixed(2))}</span><button type="button" ${c.add(p.id)}>${L("Add")}</button></div></article>`).join('') || c.empty()}</div>
+        <div class="kit-rail">${ps.map(p => `<article class="kit-card" ${c.open(p.id)}>${c.img(p)}<span class="kit-heart">${c.icon('heart')}</span><div class="kit-meta"><b>${c.esc(p.name)}</b><span><small>${c.esc(c.moneyParts(p.price).sym)}</small>${c.esc(c.moneyParts(p.price).num)}</span><button type="button" ${c.add(p.id)}>${L("Add")}</button></div></article>`).join('') || c.empty()}</div>
         <div class="kit-sec"><h2>${L("Categories")}</h2><span class="kit-bar"><i></i></span></div>
         <div class="kit-cats">${c.s.categories.map(k => { const p = all.find(x => x.categoryId === k.id); return `<button type="button" class="kit-cat" ${c.catPage(k.id)}>${c.img(p)}<span>${c.esc(k.name)}</span></button>`; }).join('') || all.slice(0, 6).map(p => `<button type="button" class="kit-cat" ${c.open(p.id)}>${c.img(p)}<span>${c.esc(p.name)}</span></button>`).join('')}</div>
       </section>`;
@@ -99,7 +99,7 @@
           <button type="button" class="kit-side l" ${prev ? c.open(prev.id) : 'disabled'} aria-label="${L("Prev")}">${L("Prev")}</button>
           <button type="button" class="kit-side r" ${next ? c.open(next.id) : 'disabled'} aria-label="${L("Next")}">${L("Next")}</button>
         </div>
-        <div class="kit-price"><span><sup>RM</sup>${c.esc(Number(p.price).toFixed(Number.isInteger(p.price) ? 0 : 2))}</span>${p.sizes?.length
+        <div class="kit-price"><span><sup>${c.esc(c.moneyParts(p.price).sym)}</sup>${c.esc(c.moneyParts(p.price).num)}</span>${p.sizes?.length
           ? `<div class="kit-sizes" role="radiogroup" aria-label="${L("Size")}">${p.sizes.map(z => `<button type="button" role="radio" aria-checked="${(c.ui.size || p.sizes[0]) === z}" class="${(c.ui.size || p.sizes[0]) === z ? 'on' : ''}" data-act="size" data-id="${c.esc(z)}">${c.esc(z)}</button>`).join('')}</div>`
           : c.stepper('__sel', 'kit-step')}</div>
       </section>`;

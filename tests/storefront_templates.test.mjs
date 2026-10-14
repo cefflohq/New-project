@@ -26,12 +26,13 @@ const store = {
 };
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = n => `RM ${Number(n || 0).toFixed(2)}`;
+const moneyParts = n => ({ sym: 'RM', num: Number.isInteger(Number(n)) ? String(Number(n)) : Number(n).toFixed(2) });
 function ctx(s = store, cart = new Map()) {
   const ui = { cat: null, q: '', sel: 1, img: 0, intro: true };
   const list = (cat = ui.cat, q = ui.q) => s.products.filter(p => (!cat || p.categoryId === cat) && (!q || p.name.toLowerCase().includes(q)));
   const img = (p, cls = '', i = 0) => (p?.images?.[i] ? `<img class="${cls}" src="${esc(p.images[i])}" alt="${esc(p.name)}">` : `<div class="sf-ph ${cls}"></div>`);
   return {
-    s, ui, esc, money, moneyShort: money, icon: n => `<svg data-i="${n}"></svg>`, img, list,
+    s, ui, esc, money, moneyShort: money, moneyParts, icon: n => `<svg data-i="${n}"></svg>`, img, list,
     qty: id => cart.get(id) || 0, count: () => [...cart.values()].reduce((a, b) => a + b, 0), total: () => 0,
     product: id => s.products.find(p => p.id === id), catName: id => s.categories.find(c => c.id === id)?.name || '',
     initials: x => (x || '').slice(0, 2).toUpperCase(), isClosed: () => false, logo: cls => `<span class="${cls}">${esc(s.name.slice(0, 2))}</span>`, hoursText: () => 'Today 09:00–18:00', openLabel: () => 'Open now', greeting: () => 'Good morning', DAYS: [],

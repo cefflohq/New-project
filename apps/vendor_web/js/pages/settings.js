@@ -1,7 +1,7 @@
 // Settings — side settings navigation (Founder references 4–8, 11). Page
 // destinations render beside the navigation; Language, Appearance and
 // Notifications open as focused modals over the blurred current page.
-import { t, fmtDate } from '../i18n.js';
+import { t, fmtDate, money } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { prefs, savePrefs } from '../prefs.js';
@@ -584,7 +584,7 @@ async function subscription(page) {
     ...(p.team_user_cap > 1 ? [t('p.fTeam', { n: p.team_user_cap })] : []),
     ...(PLAN_FEATURES[p.key] || []).map(k => t(k)),
   ];
-  const price = p => p.monthly_price_myr == null ? `<div style="font-size:20px;font-weight:600;margin:6px 0">${esc(t('sub.custom'))}</div>` : `<div style="font-size:20px;font-weight:600;margin:6px 0">RM${n0(Math.round(p.monthly_price_myr))}<small style="font-weight:400"> ${esc(t('sub.perMonth'))}</small></div>`;
+  const price = p => p.monthly_price_myr == null ? `<div style="font-size:20px;font-weight:600;margin:6px 0">${esc(t('sub.custom'))}</div>` : `<div style="font-size:20px;font-weight:600;margin:6px 0">${esc(money(Math.round(p.monthly_price_myr), { code: 'MYR', trim: true }))}<small style="font-weight:400"> ${esc(t('sub.perMonth'))}</small></div>`;
   const paint = () => {
     const cur = plans.find(p => p.key === sub?.plan_key);
     const used = sub?.deliveries_used ?? 0, cap = sub?.delivery_allowance;

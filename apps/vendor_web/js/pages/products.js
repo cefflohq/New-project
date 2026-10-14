@@ -4,7 +4,7 @@
 // create_product_category), status active | hidden, and up to 5 photos per
 // product (create_product_media -> display copy -> mark_product_media_displayable,
 // archive_product_media, reorder_product_media). Owner + Operator on the server.
-import { t } from '../i18n.js';
+import { t, money } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { esc, icon, chip, loadingRows, emptyState, errorState, toast, busy, modal } from '../ui.js';
@@ -17,7 +17,7 @@ const q = encodeURIComponent;
 const fetchProducts = () => api.get(`/rest/v1/products?business_id=eq.${q(ctx.bid)}&archived_at=is.null&select=id,name,description,display_price,status,category_id&order=name`);
 const fetchCategories = () => api.get(`/rest/v1/product_categories?business_id=eq.${q(ctx.bid)}&archived_at=is.null&select=id,name&order=sort_order`);
 const fetchMedia = productId => api.get(`/rest/v1/product_media?product_id=eq.${q(productId)}&archived_at=is.null&status=in.(queued,processing,prepared,approved)&select=id,position,status,prepared_storage_path&order=position`);
-const rm = n => `RM${Number(n || 0).toFixed(2)}`;
+const rm = n => money(n);
 
 export default function products({ el, setHeader }) {
   setHeader(t('prod.title'));

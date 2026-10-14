@@ -3,7 +3,7 @@
 // Riders > Pending and the Owner approves as today. Server:
 // save_job_opening / close_job_opening (Owner only, enforced server-side);
 // rider_job_openings is readable by business members.
-import { t, fmtDate } from './i18n.js';
+import { t, fmtDate, money } from './i18n.js';
 import { api } from './api.js';
 import { ctx } from './store.js';
 import { esc, icon, toast, busy, modal, avatar } from './ui.js';
@@ -14,10 +14,14 @@ const hhmm = v => {
 };
 const num = v => (Number(v) % 1 ? Number(v).toFixed(1) : String(Number(v)));
 
-// "RM3.50 / drop" for per-drop posts (M1); legacy units keep their label.
+// "RM 3.50 / drop" for per-drop posts (M1); legacy units keep their label.
+// Amounts are in the business currency.
 const payLabel = o => (o.pay_unit === 'drop'
-  ? t('hr.perDrop', { a: Number(o.pay_amount).toFixed(2) })
-  : `RM ${num(o.pay_amount)} / ${t(`hire.${o.pay_unit}`)}`);
+  ? t('hr.perDrop', { a: money(o.pay_amount) })
+  : `${money(o.pay_amount, { trim: true })} / ${t(`hire.${o.pay_unit}`)}`);
+// Minimum pay per drop (server-enforced for Malaysia). Per-country minimums
+// come with each country pack.
+const PAY_MIN = 3;
 const timeLabel = o => (o.shift_end ? `${hhmm(o.shift_start)} – ${hhmm(o.shift_end)}` : t('hr.pickupAt', { t: hhmm(o.shift_start) }));
 export const pendingApplicants = o => (o.rider_job_requests || []).filter(r => r.status === 'pending').length;
 
@@ -101,7 +105,7 @@ export function mountHiring(host, { onChange } = {}) {
   }
 
   // Hiring Driver (M1 contract, Founder screen 3): area, days, pickup time
-  // (no end time), vehicle, pay per drop (min RM3.00), drivers needed,
+  // (no end time), vehicle, pay per drop (min PAY_MIN), drivers needed,
   // driver reach 1-15 km (default 10). The server validates everything again.
   function openForm() {
     let days = new Set([1, 2, 3, 4, 5]), vehicle = 'motorcycle';
@@ -114,7 +118,7 @@ export function mountHiring(host, { onChange } = {}) {
         <div class="field"><label>${esc(t('hire.days'))}</label><div class="chips" data-days></div></div>
         <div class="field"><label for="h-start">${esc(t('hr.pickupTime'))}</label><input class="input" id="h-start" type="time" value="07:00" style="max-width:200px"><small class="hint">${esc(t('hr.pickupHint'))}</small></div>
         <div class="field"><label>${esc(t('hire.vehicle'))}</label><div class="chips" data-vehicles></div></div>
-        <div class="field"><label for="h-pay">${esc(t('hr.payPerDrop'))}</label><input class="input" id="h-pay" inputmode="decimal" value="3.00" style="max-width:200px"><small class="hint" data-pay-hint>${esc(t('hr.payMin'))}</small></div>
+        <div class="field"><label for="h-pay">${esc(t('hr.payPerDrop'))}</label><input class="input" id="h-pay" inputmode="decimal" value="3.00" style="max-width:200px"><small class="hint" data-pay-hint>${esc(t('hr.payMin', { min: money(PAY_MIN) }))}</small></div>
         <div class="field"><label for="h-drops">${esc(t('hr.dropsPerRun'))}</label><input class="input" id="h-drops" type="number" min="1" max="50" value="10" style="max-width:200px"></div>
         <div class="row2"><div class="field"><label for="h-need">${esc(t('hire.needed'))}</label><input class="input" id="h-need" type="number" min="1" max="50" value="1"></div>
           <div class="field"><label for="h-radius" data-radius-label>${esc(t('hr.reachKm', { km: 10 }))}</label><input id="h-radius" type="range" min="1" max="15" step="1" value="10"><small class="hint" data-reach-hint>${esc(t('hr.reachHint', { km: 10 }))}</small></div></div>
@@ -133,7 +137,7 @@ export function mountHiring(host, { onChange } = {}) {
       if (v) { vehicle = v.dataset.veh; repaint(); }
     });
     const payNum = () => Number(q('#h-pay').value.replace(',', '.'));
-    q('#h-pay').addEventListener('input', () => { q('[data-pay-hint]').style.color = payNum() >= 3 ? '' : 'var(--danger, #dc2626)'; });
+    q('#h-pay').addEventListener('input', () => { q('[data-pay-hint]').style.color = payNum() >= PAY_MIN ? '' : 'var(--danger, #dc2626)'; });
     q('#h-radius').addEventListener('input', e => {
       q('[data-radius-label]').textContent = t('hr.reachKm', { km: e.target.value });
       q('[data-reach-hint]').textContent = t('hr.reachHint', { km: e.target.value });
@@ -142,7 +146,7 @@ export function mountHiring(host, { onChange } = {}) {
       const err = q('[data-err]'); err.hidden = true;
       const area = q('#h-area').value.trim(), pickup = q('#h-start').value;
       const pay = payNum(), need = Number(q('#h-need').value), reach = Number(q('#h-radius').value), drops = Number(q('#h-drops').value);
-      if (area.length < 2 || !days.size || !pickup || !(pay >= 3) || !(need >= 1 && need <= 50) || !(drops >= 1 && drops <= 50)) { err.textContent = t('hr.fix'); err.hidden = false; return; }
+      if (area.length < 2 || !days.size || !pickup || !(pay >= PAY_MIN) || !(need >= 1 && need <= 50) || !(drops >= 1 && drops <= 50)) { err.textContent = t('hr.fix', { min: money(PAY_MIN) }); err.hidden = false; return; }
       try {
         await busy(e.target, () => api.rpc('save_job_opening', {
           p_business_id: ctx.bid, p_area_label: area, p_pickup_time: pickup, p_days: [...days].sort(),

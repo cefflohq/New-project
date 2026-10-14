@@ -127,7 +127,7 @@ const en = {
   'veh.motorcycle': 'Motorcycle', 'veh.car': 'Car', 'veh.van': 'Van',
   'hire.title': 'Looking for drivers', 'hire.off': 'Off. Only drivers you invite can join.', 'hire.on': 'On. Drivers can see your openings in Find Jobs.',
   'hire.add': 'Add opening', 'hire.post': 'Post opening', 'hire.close': 'Close', 'hire.new': 'New opening', 'hire.area': 'Area', 'hire.areaHint': 'e.g. Taman Uda, Alor Setar',
-  'hire.days': 'Days', 'hire.start': 'Start', 'hire.end': 'End', 'hire.vehicle': 'Vehicle', 'hire.pay': 'Pay (RM)', 'hire.per': 'Per',
+  'hire.days': 'Days', 'hire.start': 'Start', 'hire.end': 'End', 'hire.vehicle': 'Vehicle', 'hire.pay': 'Pay ({c})', 'hire.per': 'Per',
   'hire.shift': 'shift', 'hire.drop': 'drop', 'hire.hour': 'hour', 'hire.needed': 'Drivers needed', 'hr.dropsPerRun': 'Drops per run', 'hire.radius': 'Driver radius: {km} km',
   'hire.posted': 'Opening posted', 'hire.closed': 'Opening closed', 'hire.fix': 'Fill in the area, days, a valid time and pay.',
   'hire.offTitle': 'Stop looking for drivers?', 'hire.offBody': 'All your open openings will close. Requests already sent stay in Pending.', 'hire.turnOff': 'Turn off',
@@ -319,9 +319,9 @@ const en = {
   'hiring.soon': 'Coming soon', 'hiring.posts': 'Your hiring posts', 'hiring.activeCount': '{n} active', 'hiring.noActive': 'No active hiring',
   // M1 Driver Hiring contract (2026-10-05).
   'hr.title': 'Hiring Driver', 'hr.pickupTime': 'Pickup time', 'hr.pickupHint': 'When drivers should arrive to collect deliveries.',
-  'hr.payPerDrop': 'Pay per drop', 'hr.payMin': 'Minimum RM3.00 per drop.', 'hr.reach': 'Driver reach', 'hr.reachKm': 'Driver reach: {km} km',
-  'hr.reachHint': 'Show this hiring to drivers within {km} km.', 'hr.publish': 'Publish hiring', 'hr.fix': 'Fill in the area, days and pay (minimum RM3.00 per drop).',
-  'hr.pickupAt': 'Pickup {t}', 'hr.perDrop': 'RM{a} / drop', 'hr.postTitle': 'Driver Hiring', 'hr.active': 'Active · {n} applicants',
+  'hr.payPerDrop': 'Pay per drop', 'hr.payMin': 'Minimum {min} per drop.', 'hr.reach': 'Driver reach', 'hr.reachKm': 'Driver reach: {km} km',
+  'hr.reachHint': 'Show this hiring to drivers within {km} km.', 'hr.publish': 'Publish hiring', 'hr.fix': 'Fill in the area, days and pay (minimum {min} per drop).',
+  'hr.pickupAt': 'Pickup {t}', 'hr.perDrop': '{a} / drop', 'hr.postTitle': 'Driver Hiring', 'hr.active': 'Active · {n} applicants',
   'hr.applicantsTab': 'Applicants ({n})', 'hr.applicantsN': '{n} applicants', 'hr.details': 'Details', 'hr.appliedVia': 'Applied {d} · via Hiring',
   'hr.new': 'New', 'hr.pending': 'Pending', 'hr.approved': 'Approved', 'hr.rejected': 'Rejected',
   'hr.none': 'No applicants yet. Drivers near you find this post in Find Jobs.', 'hr.approve': 'Approve', 'hr.reject': 'Reject',
@@ -437,7 +437,7 @@ const ms = {
   'veh.motorcycle': 'Motosikal', 'veh.car': 'Kereta', 'veh.van': 'Van',
   'hire.title': 'Mencari pemandu', 'hire.off': 'Tutup. Hanya pemandu yang anda jemput boleh sertai.', 'hire.on': 'Buka. Driver boleh lihat kekosongan anda di Cari Kerja.',
   'hire.add': 'Tambah kekosongan', 'hire.post': 'Siarkan kekosongan', 'hire.close': 'Tutup', 'hire.new': 'Kekosongan baharu', 'hire.area': 'Kawasan', 'hire.areaHint': 'cth. Taman Uda, Alor Setar',
-  'hire.days': 'Hari', 'hire.start': 'Mula', 'hire.end': 'Tamat', 'hire.vehicle': 'Kenderaan', 'hire.pay': 'Bayaran (RM)', 'hire.per': 'Setiap',
+  'hire.days': 'Hari', 'hire.start': 'Mula', 'hire.end': 'Tamat', 'hire.vehicle': 'Kenderaan', 'hire.pay': 'Bayaran ({c})', 'hire.per': 'Setiap',
   'hire.shift': 'syif', 'hire.drop': 'hantaran', 'hire.hour': 'jam', 'hire.needed': 'Pemandu diperlukan', 'hr.dropsPerRun': 'Drop setiap run', 'hire.radius': 'Radius pemandu: {km} km',
   'hire.posted': 'Kekosongan disiarkan', 'hire.closed': 'Kekosongan ditutup', 'hire.fix': 'Isi kawasan, hari, masa yang sah dan bayaran.',
   'hire.offTitle': 'Berhenti mencari pemandu?', 'hire.offBody': 'Semua kekosongan anda akan ditutup. Permintaan yang sudah dihantar kekal dalam Menunggu.', 'hire.turnOff': 'Tutup',
@@ -619,9 +619,9 @@ const ms = {
   'hiring.operatorSub': 'Cari staf untuk urus operasi hantaran.', 'hiring.helperSub': 'Cari pembantu untuk pembungkusan dan susunan.',
   'hiring.soon': 'Akan datang', 'hiring.posts': 'Pengambilan anda', 'hiring.activeCount': '{n} aktif', 'hiring.noActive': 'Tiada pengambilan aktif',
   'hr.title': 'Pengambilan Pemandu', 'hr.pickupTime': 'Masa ambil', 'hr.pickupHint': 'Bila pemandu patut tiba untuk ambil hantaran.',
-  'hr.payPerDrop': 'Bayaran setiap hantaran', 'hr.payMin': 'Minimum RM3.00 setiap hantaran.', 'hr.reach': 'Jangkauan pemandu', 'hr.reachKm': 'Jangkauan pemandu: {km} km',
-  'hr.reachHint': 'Tunjuk pengambilan ini kepada pemandu dalam {km} km.', 'hr.publish': 'Siarkan pengambilan', 'hr.fix': 'Isi kawasan, hari dan bayaran (minimum RM3.00 setiap hantaran).',
-  'hr.pickupAt': 'Ambil {t}', 'hr.perDrop': 'RM{a} / hantaran', 'hr.postTitle': 'Pengambilan Pemandu', 'hr.active': 'Aktif · {n} pemohon',
+  'hr.payPerDrop': 'Bayaran setiap hantaran', 'hr.payMin': 'Minimum {min} setiap hantaran.', 'hr.reach': 'Jangkauan pemandu', 'hr.reachKm': 'Jangkauan pemandu: {km} km',
+  'hr.reachHint': 'Tunjuk pengambilan ini kepada pemandu dalam {km} km.', 'hr.publish': 'Siarkan pengambilan', 'hr.fix': 'Isi kawasan, hari dan bayaran (minimum {min} setiap hantaran).',
+  'hr.pickupAt': 'Ambil {t}', 'hr.perDrop': '{a} / hantaran', 'hr.postTitle': 'Pengambilan Pemandu', 'hr.active': 'Aktif · {n} pemohon',
   'hr.applicantsTab': 'Pemohon ({n})', 'hr.applicantsN': '{n} pemohon', 'hr.details': 'Butiran', 'hr.appliedVia': 'Dimohon {d} · melalui Pengambilan',
   'hr.new': 'Baharu', 'hr.pending': 'Menunggu', 'hr.approved': 'Diluluskan', 'hr.rejected': 'Ditolak',
   'hr.none': 'Belum ada pemohon. Pemandu berdekatan akan jumpa post ini di Cari Kerja.', 'hr.approve': 'Luluskan', 'hr.reject': 'Tolak',
@@ -641,6 +641,24 @@ export const locale = () => (prefs.lang === 'ms' ? 'ms-MY' : 'en-MY');
 // App does), not the device's. store.js sets it when a business is chosen.
 let displayTz = 'Asia/Kuala_Lumpur';
 export function setDisplayTimeZone(tz) { if (tz) displayTz = tz; }
+
+// Money is shown in the active business's currency (businesses.currency,
+// ISO 4217), never a hard-coded "RM". store.js sets it with the business.
+let displayCurrency = 'MYR';
+export function setDisplayCurrency(c) { if (/^[A-Z]{3}$/.test(c || '')) displayCurrency = c; }
+export const currency = () => displayCurrency;
+// Country packs with no minor unit in daily use (Intl still shows 2 for some).
+const ZERO_DECIMALS = new Set(['IDR', 'VND', 'KHR', 'LAK', 'MMK', 'TWD', 'JPY', 'KRW']);
+// money(3.5) -> "RM 3.50"; money(3, { trim: true }) -> "RM 3"; code: another currency.
+export function money(amount, { code = displayCurrency, trim = false } = {}) {
+  const zero = ZERO_DECIMALS.has(code), n = Number(amount || 0);
+  const digits = zero || (trim && Number.isInteger(n)) ? 0 : 2;
+  try {
+    return new Intl.NumberFormat(locale(), { style: 'currency', currency: code, currencyDisplay: 'narrowSymbol', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n);
+  } catch {
+    return `${code} ${n.toFixed(digits)}`;
+  }
+}
 export function fmtTime(iso) {
   if (!iso) return '';
   return new Date(iso).toLocaleTimeString(prefs.lang === 'ms' ? 'ms-MY' : 'en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: displayTz });

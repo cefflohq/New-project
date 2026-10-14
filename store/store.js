@@ -16,8 +16,23 @@
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   // Customer-facing amounts always show two decimals (RM 8.00); the server
   // price contract is unchanged.
-  const money = n => `RM ${Number(n || 0).toFixed(2)}`;
+  // Prices in the business currency (public_storefront business.currency,
+  // ISO 4217); MYR until the payload says otherwise.
+  const ZERO_DECIMALS = new Set(['IDR', 'VND', 'KHR', 'LAK', 'MMK', 'TWD', 'JPY', 'KRW']);
+  const cur = () => (/^[A-Z]{3}$/.test(store?.currency || '') ? store.currency : 'MYR');
+  const fmt = (n, trim) => {
+    const code = cur(), v = Number(n || 0), d = ZERO_DECIMALS.has(code) || (trim && Number.isInteger(v)) ? 0 : 2;
+    try { return new Intl.NumberFormat(lang === 'ms' ? 'ms-MY' : 'en-MY', { style: 'currency', currency: code, currencyDisplay: 'narrowSymbol', minimumFractionDigits: d, maximumFractionDigits: d }); } catch { return null; }
+  };
+  const money = n => fmt(n)?.format(Number(n || 0)) ?? `${cur()} ${Number(n || 0).toFixed(2)}`;
   const moneyShort = money;
+  // Split for templates that style the symbol apart: { sym: 'RM', num: '12' }.
+  const moneyParts = n => {
+    const f = fmt(n, true), parts = f ? f.formatToParts(Number(n || 0)) : [];
+    const sym = parts.filter(x => x.type === 'currency').map(x => x.value).join('') || cur();
+    const num = parts.filter(x => x.type !== 'currency' && x.type !== 'literal').map(x => x.value).join('') || String(n);
+    return { sym, num };
+  };
 
   // Customer language: English by default, Bahasa Melayu when chosen; kept on
   // this device only, never auto-detected. Vendor content is never translated.
@@ -97,6 +112,7 @@
 
   function normalise(raw) {
     const theme = raw.theme || {};
+    const currency = raw.business?.currency || 'MYR';
     const products = (raw.products || []).map(p => ({
       id: p.id, categoryId: p.category_id, name: p.name || '', description: p.description || '',
       price: Number(p.display_price || 0), images: (p.images || []).map(abs).filter(Boolean),
@@ -108,7 +124,7 @@
       sizes: Array.isArray(p.sizes) ? p.sizes.filter(z => typeof z === 'string' && z.trim()).slice(0, 8) : [],
     }));
     return {
-      slug: raw.slug, name: raw.business?.name || '', area: raw.business?.area || '',
+      slug: raw.slug, name: raw.business?.name || '', area: raw.business?.area || '', currency,
       tagline: theme.tagline || '', theme, heroUrl: abs(raw.hero_url), logoUrl: abs(raw.logo_url), openNow: raw.open_now, nextOpen: raw.next_open || null,
       hours: Array.isArray(raw.hours) ? raw.hours : [], products,
       categories: (raw.categories || []).filter(c => products.some(p => p.categoryId === c.id)),
@@ -171,7 +187,7 @@
   // ------------------------------------------------------------- ctx for templates
   function ctx() {
     return {
-      s: store, ui, esc, money, moneyShort, icon, img, list, qty, count, total, product, catName, initials,
+      s: store, ui, esc, money, moneyShort, moneyParts, icon, img, list, qty, count, total, product, catName, initials,
       hoursText, openLabel, greeting, DAYS, t, isClosed,
       // An image that always fills its box (cover) for banners/heroes.
       hero: (fallbackProduct, cls = '') => store.heroUrl
