@@ -1,6 +1,6 @@
 # CEFFLO — International Country Pack Guideline (DRAFT)
 
-Status: DRAFT guideline, 2026-10-14. Builds on
+Status: DRAFT guideline, 2026-10-14. Every country pack below is a **ready blueprint**: built once into the `countries` data, switched off (`status = planned`) until the Founder turns a country on. Builds on
 `CEFFLO_ASIA_EXPANSION_READINESS_AUDIT.md`. Nothing here is built or
 claimable. Facts marked **(verify)** must be confirmed with the official
 source before build or launch.
@@ -17,8 +17,13 @@ source before build or launch.
   negara lain**. Wang operasi (harga produk, caj hantar, bayaran rider)
   ikut mata wang tempatan business.
 - **China dikeluarkan dari skop.**
-- Fokus pertama: ASEAN (Brunei, Singapura, Indonesia, Thailand, Filipina,
-  Vietnam, Kemboja, Laos, Myanmar, Timor-Leste).
+- Pakej siap untuk ASEAN, Hong Kong, Taiwan, Jepun, Korea, India dan
+  Eropah. Semua disediakan sekarang; negara cuma "dihidupkan" bila siap
+  dilancarkan.
+- Malaysia: 4 bahasa — English (default), Bahasa Melayu, 中文 (Mandarin,
+  Simplified), தமிழ் (Tamil). Lihat §12.
+- Setiap negara ada undang-undang privasi dan pejabat cap dagangan sendiri
+  (contoh Malaysia: PDPA + MyIPO). Lihat §11.
 - Semua font: keluarga **Noto** (Google, percuma, lesen OFL) — senarai muat
   turun di §5.
 
@@ -218,13 +223,88 @@ Inter **(verify)**.
   a per-country rule.
 - Distance: km everywhere in Asia (miles only if a future market needs it).
 
-## 7. Second ring (later, not ASEAN)
+## 7. Country packs — East & South Asia (ready blueprints)
 
-Hong Kong (HKD, zh-HK, +852, no postcode), Taiwan (TWD, zh-TW), Japan
-(JPY 0 decimals, ja), South Korea (KRW 0 decimals, ko; Google Maps is
-limited there **verify**), India (INR, en/hi + many scripts, UPI), Bangladesh,
-Sri Lanka, Pakistan, Gulf states (RTL Arabic needs a layout review), and
-Europe (EUR/GBP, VAT, GDPR). English default lets these start in English.
+| Country | Languages (locale) | Script / font | Currency (dec.) | Phone | Postcode | Time zone |
+|---|---|---|---|---|---|---|
+| Hong Kong | Chinese Traditional `zh-HK` (Cantonese), English `en-HK` | Noto Sans HK / TC (`notofonts/noto-cjk`) | HKD (2) | +852 | none | Asia/Hong_Kong |
+| Taiwan | Chinese Traditional `zh-TW` | Noto Sans TC | TWD (0 in practice) | +886 | 3+3 digits (6) | Asia/Taipei |
+| Japan | Japanese `ja-JP` | Noto Sans JP | JPY (0) | +81 | 7 digits `123-4567` | Asia/Tokyo |
+| South Korea | Korean `ko-KR` | Noto Sans KR | KRW (0) | +82 | 5 digits | Asia/Seoul |
+| India | English `en-IN`, Hindi `hi-IN` + regional (Tamil, Telugu, Bengali, Marathi, Kannada, Malayalam, Gujarati, Punjabi) | Noto Sans Devanagari, Tamil, Telugu, Bengali, Kannada, Malayalam, Gujarati, Gurmukhi (`notofonts/*`) | INR (2), lakh/crore grouping | +91 | 6-digit PIN | Asia/Kolkata |
+
+**Admin areas for zones**
+
+| Country | Level / source |
+|---|---|
+| Hong Kong | 18 districts too coarse → District Council constituency areas from the HK government open data portal (CSDI / data.gov.hk) **(verify)** |
+| Taiwan | Townships / districts (鄉鎮市區), geoBoundaries ADM2/ADM3 or Taiwan government open data |
+| Japan | Municipalities (市区町村) ADM2; wards in big cities; MLIT National Land Numerical Information **(verify)** |
+| South Korea | Si / Gun / Gu (ADM2), dong for dense cities — Statistics Korea (SGIS) **(verify)** |
+| India | Districts / sub-districts (ADM2 / ADM3) from geoBoundaries; city wards from municipal open data where available |
+
+**Driver identity (Marketplace verification only)**
+
+| Country | Identity | Licence | Caution |
+|---|---|---|---|
+| Hong Kong | HKID (letter + 6 digits + check digit) | HK driving licence | PDPO limits HKID collection — hash + last 4 only |
+| Taiwan | National ID (letter + 9 digits); ARC for foreigners | Motorcycle / car licence | |
+| Japan | Driving licence used as ID; residence card for foreigners | Class 普通二輪 / 普通 | **Do not collect My Number** (strict legal limits) |
+| South Korea | Driving licence / ARC | Class 2 (motorcycle 원동기) / Class 1-2 | **Do not collect the RRN** (resident registration number) — prohibited without legal basis |
+| India | PAN or driving licence; Aadhaar only masked (last 4) via an approved flow | Two-wheeler / LMV licence | Aadhaar storage is restricted by law |
+
+**Local payments**
+
+| Country | Methods | Gateways |
+|---|---|---|
+| Hong Kong | FPS, Octopus, AlipayHK, PayMe, cards | Stripe, Adyen |
+| Taiwan | LINE Pay, JKOPay, Taiwan Pay, cards, convenience-store payment | ECPay, TapPay, NewebPay **(verify)** |
+| Japan | Cards, PayPay, konbini, bank transfer | Stripe JP, Komoju, GMO Payment Gateway |
+| South Korea | KakaoPay, Naver Pay, Toss, local cards | Toss Payments, PortOne (iamport), KG Inicis |
+| India | UPI, RuPay, cards, net banking, wallets | Razorpay, Cashfree, PayU (Stripe India invite / preview) |
+
+**Maps caution — South Korea:** Google Maps has limited detail in Korea
+(map-data export rules). Plan Naver Maps or Kakao Maps for the Korean pack
+(`maps_provider = naver` / `kakao`), behind the same map interface
+**(verify)**. All other countries above: Google.
+
+## 7a. Country packs — Europe (ready blueprints)
+
+Europe shares one base pack (**GDPR**, EUR for euro-area countries, VAT,
+EU driving-licence categories AM / A1 / A2 / B, SEPA payments), plus a
+small per-country layer.
+
+**Base pack (all EU / EEA)**
+- Languages: English default + the country's language(s); fonts: Latin
+  (Inter) covers all EU languages; Greek and Cyrillic (Bulgarian) via
+  Noto Sans.
+- Admin areas: Eurostat **LAU** (municipalities) / NUTS 3 boundaries
+  (`ec.europa.eu/eurostat`, GISCO) — one source for every EU country
+  **(verify licence)**; UK: ONS wards / local authorities (OGL).
+- Driver identity: national ID card or passport + driving licence +
+  **right to work** check; riders are often self-employed — employment
+  status rules differ per country (EU Platform Work Directive) **(legal
+  review)**.
+- Payments: cards + SEPA Direct Debit + Apple / Google Pay via Stripe or
+  Adyen; Klarna optional.
+
+| Country | Language(s) | Currency | Phone | Postcode | Local payment |
+|---|---|---|---|---|---|
+| United Kingdom | English | GBP | +44 | alphanumeric (SW1A 1AA) | cards, Open Banking |
+| Ireland | English, Irish | EUR | +353 | Eircode (A65 F4E2) | cards |
+| Germany | German | EUR | +49 | 5 digits | SEPA, PayPal, Giropay successor |
+| France | French | EUR | +33 | 5 digits | Cartes Bancaires |
+| Netherlands | Dutch | EUR | +31 | 1234 AB | iDEAL |
+| Belgium | Dutch, French, German | EUR | +32 | 4 digits | Bancontact |
+| Spain | Spanish (+ Catalan) | EUR | +34 | 5 digits | Bizum |
+| Portugal | Portuguese | EUR | +351 | 1234-567 | MB WAY, Multibanco |
+| Italy | Italian | EUR | +39 | 5 digits | Satispay, PayPal |
+| Poland | Polish | PLN | +48 | 12-345 | BLIK, Przelewy24 |
+| Sweden | Swedish | SEK | +46 | 123 45 | Swish |
+| Denmark / Norway / Finland | Danish / Norwegian / Finnish | DKK / NOK / EUR | +45 / +47 / +358 | 4 / 4 / 5 digits | MobilePay / Vipps |
+
+Other European countries use the base pack with their own language,
+currency, phone and postcode rule.
 
 ## 8. Build order (proposed)
 
@@ -236,10 +316,11 @@ Europe (EUR/GBP, VAT, GDPR). English default lets these start in English.
    Vendor Web sign-up; waitlist for unavailable countries.
 3. **English default** everywhere (today the Driver/Vendor apps follow the
    device or BM — confirm defaults per surface).
-4. **First new country pack** (Founder picks; Singapore or Brunei is the
+4. **Load every blueprint** into `countries` with `status = planned` (ASEAN, East & South Asia, Europe) so each one is a switch, not a project.
+5. **First new country pack** (Founder picks; Singapore or Brunei is the
    lightest): admin areas, phone/postcode rules, payments, driver IDs,
    language if needed.
-5. Repeat per country: translate → fonts → admin areas → payments → driver
+6. Repeat per country: translate → fonts → admin areas → payments → driver
    IDs → legal review → Beta → Live.
 
 ## 9. Founder decisions
@@ -248,8 +329,7 @@ Europe (EUR/GBP, VAT, GDPR). English default lets these start in English.
 2. Regional gateway: Xendit vs 2C2P (+ Curlec in MY).
 3. Subscription: MYR for Malaysia, USD elsewhere — confirm USD price
    points (same numbers as MYR or converted).
-4. English default on Malaysian installs too, or BM default in Malaysia
-   only?
+4. Malaysia languages: confirm EN default + BM, Chinese, Tamil (§12).
 5. Legal / privacy counsel per country before real vendors.
 
 ## 10. Sources
@@ -258,3 +338,50 @@ Europe (EUR/GBP, VAT, GDPR). English default lets these start in English.
 - Xendit coverage: [Shuttle — Xendit](https://www.shuttleglobal.com/payment-providers/xendit/), [Xendit vs 2C2P](https://paymentproviders.io/compare/xendit-vs-2c2p?focus=fees), [SEA processors 2026](https://www.paritydeals.com/blog/best-payment-processors-sea-2026/)
 - Stripe in Asia: [Stripe unsupported / preview countries](https://startupowl.com/setup/stripe-unsupported-countries), [Stripe Singapore expansion](https://fintechnews.sg/136275/payments/stripe-singapore-expansion/)
 - Fonts: Google Fonts / GitHub `notofonts`, `rsms/inter`
+
+## 11. Legal and trademark per country (prepare before switching on)
+
+Before a country goes Beta: local counsel review, privacy notice and
+consent in that country's terms, data-processing agreement, and the
+Cefflo trademark filed. Tip: Malaysia is in the **Madrid Protocol**, so one
+MyIPO filing can extend the Cefflo trademark to most countries below
+**(verify per country)**.
+
+| Country | Privacy law (regulator) | Trademark office |
+|---|---|---|
+| Malaysia | PDPA 2010, amended 2024 (JPDP) | MyIPO |
+| Singapore | PDPA 2012 (PDPC) | IPOS |
+| Brunei | PDPO 2025 **(verify)** | BruIPO |
+| Indonesia | UU PDP 2022 | DJKI |
+| Thailand | PDPA 2019 (PDPC) | DIP |
+| Philippines | Data Privacy Act 2012 (NPC) | IPOPHL |
+| Vietnam | Decree 13/2023 + Personal Data Protection Law 2025 **(verify)** | IP Vietnam |
+| Cambodia | No comprehensive law yet **(verify)** | DIP (Ministry of Commerce) |
+| Laos | Law on Electronic Data Protection 2017 | DIP Laos |
+| Myanmar | No comprehensive law **(verify)** | Myanmar IP Department |
+| Timor-Leste | **(verify)** | **(verify)** |
+| Hong Kong | PDPO (PCPD) | IPD |
+| Taiwan | PDPA (PDPC Taiwan) | TIPO |
+| Japan | APPI (PPC) | JPO |
+| South Korea | PIPA (PIPC) | KIPO |
+| India | DPDP Act 2023 (Data Protection Board) | CGPDTM |
+| EU / EEA | GDPR (national DPAs) | EUIPO (one EU-wide mark) |
+| United Kingdom | UK GDPR + DPA 2018 (ICO) | UKIPO |
+
+This table is a checklist, not legal advice.
+
+## 12. Languages in Malaysia and the default-language rule
+
+- **Rule:** English is the default everywhere. Large AI and global apps
+  (e.g. ChatGPT, Claude) open in English for new users but also offer the
+  interface in many languages — an English-only Cefflo would lose
+  vendors and riders who work more comfortably in their own language.
+- **Malaysia — 4 languages:** English (default), Bahasa Melayu (already
+  built), **Chinese Simplified `zh-Hans-MY`** (many F&B / SME owners),
+  **Tamil `ta-MY`**. Riders mostly need BM and English; vendors benefit
+  most from Chinese.
+- Suggested order: EN + BM (now) → Chinese Simplified → Tamil.
+- Same 4 languages fit Singapore (`en-SG`, `ms-SG`, `zh-SG`, `ta-SG`), so
+  the Malaysia work is reused there.
+- Translation: professional review for anything legal / payment / safety;
+  never machine-translate legal text without review.
