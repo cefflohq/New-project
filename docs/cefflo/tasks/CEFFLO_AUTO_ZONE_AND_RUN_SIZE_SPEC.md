@@ -1,6 +1,6 @@
 # CEFFLO — Auto Zone Assignment + Target Run Size (SPEC, DRAFT)
 
-Status: **DRAFT for Founder approval.** Nothing here is built or claimable.
+Status: **DRAFT — Founder decisions 1 and 3 recorded 2026-10-14 (§6a); 2, 5, 6 still open.** Nothing here is built or claimable.
 Truth state today: FUTURE (Product Truth §18.2 "Smart Zone Clustering",
 "Target Run Size / run profiles", "Smart Run Builder").
 Date: 2026-10-14.
@@ -118,6 +118,51 @@ busy zone becomes one oversized run.
 6. **Geocoding provider** for text-address orders: Google vs Mapbox (separate
    pricing/terms review requested).
 
+## 6a. Founder decisions recorded (2026-10-14)
+
+**D1 — Auto zone assignment: APPROVED, with a hexagon zone model.**
+- The map is divided into a fixed grid of **hexagon cells** (proposed: the
+  open H3 grid; cell size to confirm, §6b). Every point on the map belongs
+  to exactly one cell.
+- A **zone is a named group of cells** (e.g. "Setapak", "Bangsar",
+  "Brickfields"); its coverage is the union of its cells. The vendor can
+  add or remove cells from a zone. The current official-area boundary
+  (mukim / bandar) is used only to propose the first cells of a new zone.
+- Each **vendor has a coverage radius** (existing
+  `businesses.service_coverage_radius_km`, e.g. 10 km). Zones are built
+  only from cells inside that radius, with a **tolerance of up to +20 %**
+  (10 km → a zone may reach ~12 km) so zones follow real terrain and
+  roads. Orders beyond the tolerance are flagged "Outside coverage", never
+  dropped silently.
+- Auto assignment = the order's point → its cell → the zone that owns the
+  cell. Manual zone on an order still wins (§3.1 rule 5).
+
+**D3 — Zones below the minimum: MERGE with a nearby zone.**
+- If a zone has fewer orders than the minimum (e.g. Bangsar 5) and a
+  **nearby** zone is also below the minimum (e.g. Brickfields 6), the
+  planner merges them into one run (5 + 6 = 11 ≥ 10).
+- "Nearby" (proposed): the two zones touch (share a cell edge) or their
+  centres are within a short distance, **and** they lie in roughly the
+  same direction from the vendor (bearing difference ≤ 45°) so the rider
+  travels one way ("sehaluan").
+- Merging repeats with the next nearest under-minimum zone until the run
+  reaches the minimum or nothing nearby is left; the result never exceeds
+  the maximum. A group still under the minimum is proposed as one run
+  flagged "Below target size" (still dispatchable).
+- Merging only changes the **proposed run**, not the zones themselves.
+
+**D4 — Overlapping zones: RESOLVED by D1.** With the hexagon grid every
+cell belongs to one zone only, so zones cannot overlap and no overlap rule
+is needed. The system refuses to put one cell in two zones.
+
+## 6b. Still open
+- D2: default run size — minimum **10** confirmed in discussion; maximum
+  15 to confirm. Editable per business?
+- Hexagon cell size (proposed H3 resolution 8, ≈ 0.7 km² per cell, fine
+  enough for Klang Valley streets; resolution 7 ≈ 5 km² if too fine).
+- D5: split method for big zones (sweep by bearing, proposed).
+- D6: geocoding provider (Google vs Mapbox).
+
 ## 7. Acceptance criteria
 - A resolved order inside exactly one active zone gets that zone
   automatically; outside all zones it stays Unzoned and is listed.
@@ -125,8 +170,11 @@ busy zone becomes one oversized run.
 - Changing a zone boundary re-zones only orders not yet in a run.
 - 32 plannable orders in one zone with max 15 → 3 runs of 11/11/10, each
   geographically contiguous, each sequenced; same input → identical plan.
-- 7 orders with min 10 → 1 run flagged "Below target size", still
-  dispatchable.
+- Bangsar 5 + Brickfields 6 (adjacent, same direction), min 10 → one
+  merged run of 11. A lone 7-order zone with nothing nearby → 1 run
+  flagged "Below target size", still dispatchable.
+- No cell belongs to two zones; an order beyond coverage radius + 20 %
+  is flagged "Outside coverage".
 - No run exceeds the business max or the assigned rider's capacity.
 - Existing flows (manual zone, `build_rider_run`, `save_run_sequence`,
   rider resequencing) behave exactly as before.
