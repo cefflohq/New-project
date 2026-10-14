@@ -1065,6 +1065,7 @@ class VendorRepository {
         },
       );
       final row = await _db.from('zones').select().eq('id', zone.id).single();
+      unawaited(refreshZoneCells(row['business_id'] as String));
       return Zone.fromRow(row);
     } catch (_) {
       return zone;
@@ -1654,7 +1655,20 @@ class VendorRepository {
         },
       ),
     );
+    unawaited(refreshZoneCells(businessId));
     return _single(row);
+  }
+
+  /// Rebuilds the business's hexagon zone cells (zone-cells Edge Function)
+  /// after its zones or service area change. Best effort.
+  Future<void> refreshZoneCells(String businessId) async {
+    if (_demo) return;
+    try {
+      await _db!.functions.invoke(
+        'zone-cells',
+        body: {'business_id': businessId},
+      );
+    } catch (_) {}
   }
 
   /// Server verdict for one order: unconfigured | pending_location |

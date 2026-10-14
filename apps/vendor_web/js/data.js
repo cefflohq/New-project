@@ -5,7 +5,7 @@ import { ctx } from './store.js';
 const q = encodeURIComponent;
 const bizFilter = () => `business_id=eq.${q(ctx.bid)}`;
 
-export const fetchOrders = (extra = '') => api.get(`/rest/v1/orders?${bizFilter()}&select=id,public_ref,order_number,customer_name,customer_phone,delivery_address,latitude,longitude,notes,items,delivery_status,assigned_rider_id,zone_id,delivery_session_id,estimated_arrival_at,completed_at,created_at,updated_at,approved_at,location_status,order_date&order=created_at.desc&limit=500${extra}`);
+export const fetchOrders = (extra = '') => api.get(`/rest/v1/orders?${bizFilter()}&select=id,public_ref,order_number,customer_name,customer_phone,delivery_address,latitude,longitude,notes,items,delivery_status,assigned_rider_id,zone_id,zone_source,delivery_session_id,estimated_arrival_at,completed_at,created_at,updated_at,approved_at,location_status,order_date&order=created_at.desc&limit=500${extra}`);
 export const fetchOrder = id => api.get(`/rest/v1/orders?id=eq.${q(id)}&${bizFilter()}&select=*`).then(r => r?.[0] || null);
 export const fetchStops = () => api.get(`/rest/v1/delivery_stops?${bizFilter()}&select=order_id,preparation_status,sequence`);
 export const fetchRiders = () => api.get(`/rest/v1/riders?${bizFilter()}&select=id,name,phone,vehicle_plate,vehicle_type,status,availability_status,created_at,max_active_orders&order=created_at.asc`);

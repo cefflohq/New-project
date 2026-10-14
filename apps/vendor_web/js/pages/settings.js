@@ -271,7 +271,7 @@ async function business(page) {
       const lat = Number(body.querySelector('[name=lat]').value), lng = Number(body.querySelector('[name=lng]').value), r = Number(body.querySelector('[name=radius]').value);
       if (!Number.isFinite(lat) || !Number.isFinite(lng) || !(r > 0)) { aerr.textContent = t('c.required'); aerr.hidden = false; return; }
       aerr.hidden = true;
-      try { await busy(e.currentTarget, () => api.rpc('set_business_service_area', { p_business_id: ctx.bid, p_origin_latitude: lat, p_origin_longitude: lng, p_radius_km: r })); toast(t('c.saved')); } catch (ex) { aerr.textContent = ex.message; aerr.hidden = false; }
+      try { await busy(e.currentTarget, () => api.rpc('set_business_service_area', { p_business_id: ctx.bid, p_origin_latitude: lat, p_origin_longitude: lng, p_radius_km: r })); api.fn('zone-cells', { business_id: ctx.bid }).catch(() => null); toast(t('c.saved')); } catch (ex) { aerr.textContent = ex.message; aerr.hidden = false; }
     });
   } catch (e) { body.innerHTML = errorState(e); }
 }

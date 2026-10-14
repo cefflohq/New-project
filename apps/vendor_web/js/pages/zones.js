@@ -102,7 +102,10 @@ export default function zones({ el, params, setHeader }) {
   // a place simply stays without a boundary.
   const outline = (row, place) => {
     const id = Array.isArray(row) ? row[0]?.id : row?.id;
-    return id ? api.fn('zone-boundary', { zone_id: id, ...(place ? { center: place.center } : {}) }).catch(() => null) : null;
+    if (!id) return null;
+    // Then the hexagon cells of the coverage are re-laid (zone-cells).
+    return api.fn('zone-boundary', { zone_id: id, ...(place ? { center: place.center } : {}) }).catch(() => null)
+      .then(res => { api.fn('zone-cells', { business_id: ctx.bid }).catch(() => null); return res; });
   };
 
   // Delete zone (Founder 2026-10-13): leaves the list, row kept for history.
