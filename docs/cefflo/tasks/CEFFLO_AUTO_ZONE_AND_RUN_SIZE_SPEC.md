@@ -1,6 +1,6 @@
 # CEFFLO — Auto Zone Assignment + Target Run Size (SPEC, DRAFT)
 
-Status: **DRAFT — Founder decisions 1 and 3 recorded 2026-10-14 (§6a); 2, 5, 6 still open.** Nothing here is built or claimable.
+Status: **Founder decisions D1–D6 recorded 2026-10-14 (§6a). Ready for build planning.** Nothing here is built or claimable.
 Truth state today: FUTURE (Product Truth §18.2 "Smart Zone Clustering",
 "Target Run Size / run profiles", "Smart Run Builder").
 Date: 2026-10-14.
@@ -64,11 +64,13 @@ busy zone becomes one oversized run.
      22 → 11/11), never above max.
    - N < min → still one run, labelled "Below target size" so the vendor
      can merge, wait, or dispatch anyway. Never blocked.
-3. Splitting is **by location**, deterministic: orders are ordered by
-   bearing (angle) from the business service origin and cut into k
-   contiguous slices (a "sweep"), so each run covers one wedge of the zone
-   instead of interleaving. Each slice is then sequenced with the existing
-   nearest-neighbour step.
+3. Splitting follows the **zone's own shape** (D5): never a fixed
+   "cake-slice" from the vendor. The zone's occupied hexagon cells are grown
+   into k contiguous patches along cell adjacency (each patch starts from
+   the cell farthest from the others, then takes its nearest neighbouring
+   cells until it holds its share of orders). Each patch becomes one run
+   and is sequenced with the existing nearest-neighbour step. Deterministic:
+   same orders in → same runs out.
 4. Rider fit: each proposed run must also fit a compatible rider's
    remaining capacity (existing `rider_effective_capacity` check). The
    effective max per run = min(business max, compatible rider capacity).
@@ -115,7 +117,7 @@ busy zone becomes one oversized run.
 4. **Overlapping zones** rule: nearest zone centre (proposed)?
 5. **Split method**: sweep by bearing from the service origin (proposed,
    simple and deterministic) — or other preference?
-6. **Geocoding provider** for text-address orders: Google vs Mapbox (separate
+6. **Geocoding provider** (decided: Google, §6a D6) for text-address orders: Google vs Mapbox (separate
    pricing/terms review requested).
 
 ## 6a. Founder decisions recorded (2026-10-14)
@@ -155,13 +157,34 @@ busy zone becomes one oversized run.
 cell belongs to one zone only, so zones cannot overlap and no overlap rule
 is needed. The system refuses to put one cell in two zones.
 
-## 6b. Still open
-- D2: default run size — minimum **10** confirmed in discussion; maximum
-  15 to confirm. Editable per business?
-- Hexagon cell size (proposed H3 resolution 8, ≈ 0.7 km² per cell, fine
-  enough for Klang Valley streets; resolution 7 ≈ 5 km² if too fine).
-- D5: split method for big zones (sweep by bearing, proposed).
-- D6: geocoding provider (Google vs Mapbox).
+**D2 — Run size: default min 10 / max 15, editable per vendor.**
+Reason (Founder field experience): a run starts after pickup (e.g. pick up
+09:30–10:00, start 10:00). 10 orders take an experienced rider about 1.5 h
+in good weather, a new rider 2–2.5 h, up to ~3 h in rain; an experienced
+rider can finish 15 in about 2 h. Vendors adjust min/max in Settings to fit
+their riders, food type and area.
+
+**Zone source + cell size (D1 detail).** Zones follow the **existing
+local area divisions** — Klang Valley: Setapak, Bangsar, Sentul, Selayang,
+Gombak, Batu Caves, Petaling Jaya, Subang Jaya, Brickfields… (official
+areas already loaded in `public.admin_areas`). Hexagon cells are fine
+enough (proposed H3 resolution 9, ≈ 0.1 km²) that each cell is given to
+the area that contains its centre, so the cell group traces the real area
+outline. Vendors may rename, merge or trim zones.
+
+**D5 — Split method: follows the zone's shape (contiguous hexagon
+patches), not a cake-slice.** See §3.2 rule 3.
+
+**D6 — Geocoding / address search provider: GOOGLE.** Google Places
+Autocomplete for customer and vendor address entry (search + drag the
+pin), Google Geocoding for text-address orders from imports and
+integrations, Google maps where Google data is shown. Navigation to pickup
+and to each stop is a deep link into the Google Maps app. Replaces Mapbox
+(currently on HOLD). Storage rule: keep Google `place_id`; Google-derived
+coordinates are kept only for the operational window allowed by Google's
+terms (to be verified, ~30 days); coordinates from our own sources
+(customer/vendor dragged pin, rider GPS, vendor correction) are kept
+normally. Pricing and terms check to be done before build.
 
 ## 7. Acceptance criteria
 - A resolved order inside exactly one active zone gets that zone
@@ -169,7 +192,7 @@ is needed. The system refuses to put one cell in two zones.
 - A manually zoned order is never changed by auto assignment.
 - Changing a zone boundary re-zones only orders not yet in a run.
 - 32 plannable orders in one zone with max 15 → 3 runs of 11/11/10, each
-  geographically contiguous, each sequenced; same input → identical plan.
+  a contiguous patch of the zone's own cells (no cake-slice), each sequenced; same input → identical plan.
 - Bangsar 5 + Brickfields 6 (adjacent, same direction), min 10 → one
   merged run of 11. A lone 7-order zone with nothing nearby → 1 run
   flagged "Below target size", still dispatchable.
