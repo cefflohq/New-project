@@ -96,3 +96,6 @@ $$;
 
 revoke all on function public.paint_zone_cells(uuid, text[], uuid) from public, anon;
 grant execute on function public.paint_zone_cells(uuid, text[], uuid) to authenticated;
+
+-- zone-cells (service role) re-zones open orders after a rebuild.
+grant execute on function public._rezone_open_orders(uuid) to service_role;

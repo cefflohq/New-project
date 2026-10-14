@@ -125,6 +125,8 @@ if (typeof Deno !== 'undefined') Deno.serve(async (request) => {
   }
   // Cells no longer inside the coverage are removed.
   await admin.from('zone_cells').delete().eq('business_id', businessId).lt('updated_at', now);
+  // Open auto-zoned orders now follow the cells.
+  await admin.rpc('_rezone_open_orders', { p_business_id: businessId });
 
   return json({
     business_id: businessId,

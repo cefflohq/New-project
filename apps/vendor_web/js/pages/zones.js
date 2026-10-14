@@ -153,7 +153,7 @@ export default function zones({ el, params, setHeader }) {
       err.hidden = true;
       try {
         const res = await busy(e.currentTarget, () => api.fn('zone-cells', { business_id: ctx.bid }));
-        if (res?.status === 'no_service_area') { showErr(new Error(t('zones.hexNone'))); return; }
+        if (res?.status === 'no_service_area') return;
         toast(t('zones.hexBuilt', { n: res?.cells ?? 0 }));
         pending.clear(); paintPending(); await open();
       } catch (ex) { showErr(ex); }
