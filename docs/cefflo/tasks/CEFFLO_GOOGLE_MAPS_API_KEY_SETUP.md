@@ -104,3 +104,31 @@ change. Tell the developer only that the secret is **set**, never its value.
 - [ ] `CEFFLO_GOOGLE_MAPS_BROWSER_KEY` set in Vercel staging env
 - [ ] Android / iOS keys saved as CI secrets
 - [ ] Repeat for `cefflo-maps-prod` before launch
+
+## 8. Cloud Shell shortcut (one line per command)
+
+Open Cloud Shell (`>_` at the top of the console) and paste one line at a
+time. `BILLING_ID` comes from step 2's output (format `XXXXXX-XXXXXX-XXXXXX`).
+
+```bash
+# 1. Pick the project
+gcloud config set project cefflo-maps-staging
+# 2. List billing accounts, then link one (skip if already linked in the UI)
+gcloud billing accounts list
+gcloud billing projects link cefflo-maps-staging --billing-account=BILLING_ID
+# 3. Enable the APIs
+gcloud services enable maps-backend.googleapis.com places.googleapis.com geocoding-backend.googleapis.com maps-android-backend.googleapis.com maps-ios-backend.googleapis.com apikeys.googleapis.com billingbudgets.googleapis.com
+# 4. Create the four restricted keys
+gcloud services api-keys create --display-name=cefflo-server --api-target=service=geocoding-backend.googleapis.com --api-target=service=places.googleapis.com
+gcloud services api-keys create --display-name=cefflo-browser --allowed-referrers="https://*.cefflo.com/*,https://cefflo.com/*,http://localhost:*/*" --api-target=service=maps-backend.googleapis.com --api-target=service=places.googleapis.com
+gcloud services api-keys create --display-name=cefflo-ios --allowed-bundle-ids=com.cefflo.driver,com.cefflo.vendor --api-target=service=maps-ios-backend.googleapis.com
+gcloud services api-keys create --display-name=cefflo-android --allowed-application=sha1_fingerprint=RIDER_SHA1,package_name=com.cefflo.cefflo_rider_mobile --allowed-application=sha1_fingerprint=VENDOR_SHA1,package_name=com.cefflo.cefflo_vendor_mobile --api-target=service=maps-android-backend.googleapis.com
+# 5. Budget USD 50 / month with alerts at 50 / 80 / 100 %
+gcloud billing budgets create --billing-account=BILLING_ID --display-name=cefflo-maps-staging --budget-amount=50USD --threshold-rule=percent=0.5 --threshold-rule=percent=0.8 --threshold-rule=percent=1.0
+# 6. Check the keys; read one value only when storing it in Supabase / Vercel
+gcloud services api-keys list --format="table(name.basename(),displayName)"
+gcloud services api-keys get-key-string KEY_ID
+```
+
+The Android key needs the real SHA-1 values (§3); create it last, or add the
+apps later in Credentials → `cefflo-android` → Android apps.
