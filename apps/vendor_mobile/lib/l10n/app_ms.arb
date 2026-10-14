@@ -1299,5 +1299,8 @@
   "drawZoneBoundary": "Lukis sempadan zon",
   "editZoneBoundary": "Ubah sempadan zon",
   "removeZoneBoundary": "Buang sempadan",
-  "drawZoneBoundaryHint": "Ketik peta untuk tambah bucu zon ini. Sekurang-kurangnya 3."
+  "drawZoneBoundaryHint": "Ketik peta untuk tambah bucu zon ini. Sekurang-kurangnya 3.",
+  "hrProfileRequiredTitle": "Lengkapkan Business profile",
+  "hrProfileRequiredBody": "Driver cari kerja ikut lokasi pickup anda. Isi alamat business dan lokasi pickup sebelum buat post kerja.",
+  "hrProfileDone": "Siap"
 }

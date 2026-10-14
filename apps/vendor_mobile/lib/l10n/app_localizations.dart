@@ -7904,6 +7904,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap the map to add the corners of this zone. Add at least 3.'**
   String get drawZoneBoundaryHint;
+
+  /// No description provided for @hrProfileRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your Business profile'**
+  String get hrProfileRequiredTitle;
+
+  /// No description provided for @hrProfileRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Drivers find posts by your pickup location. Add your business address and pickup location before posting a job.'**
+  String get hrProfileRequiredBody;
+
+  /// No description provided for @hrProfileDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get hrProfileDone;
 }
 
 class _AppLocalizationsDelegate

@@ -714,7 +714,15 @@ class _PickupChecklist extends StatelessWidget {
               reported: s.status == StopStatus.issue,
               readOnly: pickedUp,
               locked: !pickedUp && !app.pickupWindowOpen,
-              onTap: () => app.togglePickupTick(s.id),
+              onTap: () async {
+                try {
+                  await app.togglePickupTick(s.id);
+                } catch (e) {
+                  if (context.mounted) {
+                    showCefToast(context, '$e', error: true);
+                  }
+                }
+              },
               onReport: () => _reportAtPickup(context, s),
             ),
         ],

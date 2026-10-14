@@ -10,7 +10,18 @@ const results = []; let fails = 0;
 const ok = (n, c, x = '') => { results.push(`${c ? 'PASS' : 'FAIL'}  ${n}${x ? '  -> ' + String(typeof x === 'string' ? x : JSON.stringify(x)).slice(0, 180) : ''}`); if (!c) fails++; };
 const { rpc, upload, H } = client(URL_, KEY);
 const msg = r => (r.body && (r.body.message || r.body.hint)) || JSON.stringify(r.body);
-async function signIn(email, password) { const r = await fetch(`${URL_}/auth/v1/token?grant_type=password`, { method: 'POST', headers: { apikey: KEY, 'content-type': 'application/json' }, body: JSON.stringify({ email, password }) }); return (await r.json()).access_token; }
+// Auth rate limits (429) after back-to-back suites made whole blocks fail
+// with no token; retry with backoff and fail loudly instead of silently.
+async function signIn(email, password) {
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const r = await fetch(`${URL_}/auth/v1/token?grant_type=password`, { method: 'POST', headers: { apikey: KEY, 'content-type': 'application/json' }, body: JSON.stringify({ email, password }) });
+    const j = await r.json().catch(() => ({}));
+    if (j.access_token) return j.access_token;
+    if (r.status !== 429 && r.status < 500 && attempt > 0) throw new Error(`sign-in failed ${r.status}: ${j.msg || j.error_description || ''}`);
+    await new Promise(res => setTimeout(res, 2000 * 2 ** attempt));
+  }
+  throw new Error(`sign-in still failing for ${email}`);
+}
 const sel = async (tok, path) => { const r = await fetch(`${URL_}/rest/v1/${path}`, { headers: H(tok) }); return { status: r.status, body: await r.json().catch(() => null) }; };
 const fetchObj = (tok, path) => fetch(`${URL_}/storage/v1/object/authenticated/cefflo-driver-documents/${path}`, { headers: { apikey: KEY, authorization: `Bearer ${tok}` } });
 const stamp = String(Date.now()).slice(-6);

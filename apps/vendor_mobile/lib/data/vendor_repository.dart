@@ -1906,6 +1906,9 @@ class VendorRepository {
         'email': 'hello@kopikita.my',
         'address': 'No. 12, Jalan Damai 3, Kuala Lumpur',
         'operating_area': 'Bangsar, Mont Kiara, TTDI',
+        'service_origin_latitude': 3.1579,
+        'service_origin_longitude': 101.7123,
+        'service_coverage_radius_km': 15,
       };
     }
     final row = await _run(

@@ -711,6 +711,27 @@ class AppState extends ChangeNotifier {
       // a factual order-count label, same as the live Rider PWA.
       sessionNames = const {};
     }
+    await _loadPickupTicks();
+  }
+
+  /// The Pickup Checklist ticks saved on the Driver's account
+  /// (my_pickup_ticks), so they survive an app restart or a new phone.
+  Future<void> _loadPickupTicks() async {
+    if (runPhase != RunPhase.pickup) {
+      pickupTicks.clear();
+      return;
+    }
+    try {
+      final ids = await repo.myPickupTicks(
+        riderId: _riderId,
+        sessionId: currentRun.id,
+      );
+      pickupTicks
+        ..clear()
+        ..addAll(ids);
+    } on RepositoryError {
+      // Keep what is on screen; the next refresh tries again.
+    }
   }
 
   // --- real build: canonical rows projected onto the Driver UI ------------
@@ -1115,16 +1136,30 @@ class AppState extends ChangeNotifier {
   }
 
   /// Pickup Checklist: the stop ids the Driver has ticked as in hand.
-  /// Slide to Confirm Pickup unlocks once every order is ticked. Local to
-  /// this device; the pickup itself is recorded by [confirmPickup].
+  /// Slide to Confirm Pickup unlocks once every order is ticked. Saved on
+  /// the Driver's account (set_pickup_tick, Founder 2026-10-14); the pickup
+  /// itself is recorded by [confirmPickup].
   final Set<String> pickupTicks = {};
 
-  void togglePickupTick(String stopId) {
+  Future<void> togglePickupTick(String stopId) async {
     if (!pickupWindowOpen) return;
-    pickupTicks.contains(stopId)
-        ? pickupTicks.remove(stopId)
-        : pickupTicks.add(stopId);
+    final ticked = !pickupTicks.contains(stopId);
+    ticked ? pickupTicks.add(stopId) : pickupTicks.remove(stopId);
     notifyListeners();
+    if (repo.isDemo) return;
+    try {
+      await repo.setPickupTick(
+        riderId: _riderId,
+        sessionId: currentRun.id,
+        orderId: stopId,
+        ticked: ticked,
+      );
+    } on RepositoryError {
+      // Not saved: undo, so the screen never shows a tick the account lacks.
+      ticked ? pickupTicks.remove(stopId) : pickupTicks.add(stopId);
+      notifyListeners();
+      rethrow;
+    }
   }
 
   /// Orders still to pick up (an order reported at pickup drops out).

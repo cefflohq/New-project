@@ -146,8 +146,85 @@ class _HiringScreenState extends State<HiringScreen> {
 }
 
 /// New opening form (Owner only; the server enforces it too).
+Future<void> _showProfileRequired(
+  BuildContext context,
+  Map<String, dynamic> b,
+) {
+  final app = AppScope.read(context);
+  final c = context.c;
+  final hasAddress = (b['address'] as String?)?.trim().isNotEmpty ?? false;
+  final hasPin =
+      b['service_origin_latitude'] != null &&
+      b['service_origin_longitude'] != null;
+  Widget item(bool done, String label, VoidCallback onTap) => CefListRow(
+    title: label,
+    icon: done ? LucideIcons.circleCheck : LucideIcons.circleAlert,
+    trailing: done
+        ? Text(L.hrProfileDone, style: TextStyle(color: c.textSecondary))
+        : null,
+    onTap: done ? null : onTap,
+  );
+  return showCefSheet<void>(
+    context: context,
+    showDragHandle: true,
+    backgroundColor: Colors.white,
+    builder: (sheet) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(Gap.lg, 0, Gap.lg, Gap.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              L.hrProfileRequiredTitle,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: c.textPrimary,
+              ),
+            ),
+            const SizedBox(height: Gap.sm),
+            Text(
+              L.hrProfileRequiredBody,
+              style: TextStyle(fontSize: 14, color: c.textSecondary),
+            ),
+            const SizedBox(height: Gap.md),
+            item(hasAddress, L.businessAddress, () {
+              Navigator.of(sheet).pop();
+              app.go(VRoute.businessAddress);
+            }),
+            item(hasPin, L.serviceArea, () {
+              Navigator.of(sheet).pop();
+              app.go(VRoute.serviceArea);
+            }),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// A hiring post needs the Business profile address and pickup location
+/// (Founder 2026-10-14); the server enforces it in save_job_opening.
+bool businessProfileComplete(Map<String, dynamic> b) =>
+    ((b['address'] as String?)?.trim().isNotEmpty ?? false) &&
+    b['service_origin_latitude'] != null &&
+    b['service_origin_longitude'] != null;
+
 Future<void> openNewOpening(BuildContext context) async {
   final app = AppScope.read(context);
+  Map<String, dynamic>? biz;
+  try {
+    biz = await app.repo.business(app.business!.id);
+  } on RepositoryError catch (e) {
+    if (context.mounted) showCefToast(context, e.message, error: true);
+    return;
+  }
+  if (!context.mounted) return;
+  if (!businessProfileComplete(biz)) {
+    await _showProfileRequired(context, biz);
+    return;
+  }
   final saved = await showCefSheet<bool>(
     context: context,
     isScrollControlled: true,

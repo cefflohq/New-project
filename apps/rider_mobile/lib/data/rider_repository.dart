@@ -451,6 +451,41 @@ class RiderRepository {
     ),
   );
 
+  /// Pickup Checklist tick on the Driver's account (set_pickup_tick).
+  Future<void> setPickupTick({
+    required String riderId,
+    required String sessionId,
+    required String orderId,
+    required bool ticked,
+  }) => _run(
+    () => _db.rpc(
+      'set_pickup_tick',
+      params: {
+        'p_rider_id': riderId,
+        'p_delivery_session_id': sessionId,
+        'p_order_id': orderId,
+        'p_ticked': ticked,
+      },
+    ),
+  );
+
+  /// The order ids ticked on this run's Pickup Checklist (my_pickup_ticks).
+  Future<List<String>> myPickupTicks({
+    required String riderId,
+    required String sessionId,
+  }) async {
+    final rows = await _run(
+      () => _db.rpc(
+        'my_pickup_ticks',
+        params: {'p_rider_id': riderId, 'p_delivery_session_id': sessionId},
+      ),
+    );
+    return [
+      for (final r in (rows as List? ?? const []))
+        r is Map ? r.values.first.toString() : r.toString(),
+    ];
+  }
+
   /// Phase 2B.4: the only rider-location write path (F2-08, unchanged).
   Future<void> recordLocation({
     required String riderId,

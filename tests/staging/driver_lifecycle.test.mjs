@@ -145,6 +145,16 @@ try {
   ok('  order: Plan Route done, Start Delivery still refused before pickup', refused(before) && /pickup incomplete/.test(msg(before)), msg(before));
 
   // ---------- 5. Pickup + Pickup Checklist (server-persisted per order)
+  // Pickup Checklist ticks live on the Driver's account (Founder 2026-10-14).
+  const tick = (tok, rid, sid, oid, on) => rpc(tok, 'set_pickup_tick', { p_rider_id: rid, p_delivery_session_id: sid, p_order_id: oid, p_ticked: on });
+  const ticks = async (tok, rid, sid) => { const r = await rpc(tok, 'my_pickup_ticks', { p_rider_id: rid, p_delivery_session_id: sid }); return r.status === 200 ? r.body.map(x => (typeof x === 'object' ? Object.values(x)[0] : x)) : null; };
+  ok('ticks: Driver A ticks o1 and it is saved on the account', (await tick(da, RA, SID, o1, true)).status < 300 && (await ticks(da, RA, SID))?.includes(o1));
+  ok('  untick removes it', (await tick(da, RA, SID, o1, false)).status < 300 && !(await ticks(da, RA, SID))?.includes(o1));
+  await tick(da, RA, SID, o1, true);
+  ok('  an order outside the run cannot be ticked', refused(await tick(da, RA, SID, o3, true)));
+  ok('  Driver B cannot tick or read Driver A run', refused(await tick(db, RB, SID, o2, true)) && refused(await tick(db, RA, SID, o2, true)) && (await ticks(db, RB, SID)) === null);
+  ok('  anon cannot tick', refused(await tick(null, RA, SID, o2, true)));
+  ok('  ticks table not readable directly', empty(await sel(da, 'rider_pickup_ticks?select=order_id')) || (await sel(da, 'rider_pickup_ticks?select=order_id')).status >= 400);
   ok('5 Driver B cannot start Driver A pickup', refused(await rpc(db, 'start_pickup_run', { p_rider_id: RA, p_delivery_session_id: SID })));
   const sp = await rpc(da, 'start_pickup_run', { p_rider_id: RA, p_delivery_session_id: SID });
   await rpc(da, 'start_pickup_run', { p_rider_id: RA, p_delivery_session_id: SID });

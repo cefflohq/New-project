@@ -4352,4 +4352,14 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get drawZoneBoundaryHint =>
       'Ketik peta untuk tambah bucu zon ini. Sekurang-kurangnya 3.';
+
+  @override
+  String get hrProfileRequiredTitle => 'Lengkapkan Business profile';
+
+  @override
+  String get hrProfileRequiredBody =>
+      'Driver cari kerja ikut lokasi pickup anda. Isi alamat business dan lokasi pickup sebelum buat post kerja.';
+
+  @override
+  String get hrProfileDone => 'Siap';
 }

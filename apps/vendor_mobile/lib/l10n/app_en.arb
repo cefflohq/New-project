@@ -2154,5 +2154,8 @@
   "drawZoneBoundary": "Draw zone boundary",
   "editZoneBoundary": "Edit zone boundary",
   "removeZoneBoundary": "Remove boundary",
-  "drawZoneBoundaryHint": "Tap the map to add the corners of this zone. Add at least 3."
+  "drawZoneBoundaryHint": "Tap the map to add the corners of this zone. Add at least 3.",
+  "hrProfileRequiredTitle": "Complete your Business profile",
+  "hrProfileRequiredBody": "Drivers find posts by your pickup location. Add your business address and pickup location before posting a job.",
+  "hrProfileDone": "Done"
 }

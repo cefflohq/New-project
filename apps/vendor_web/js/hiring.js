@@ -7,6 +7,7 @@ import { t, fmtDate } from './i18n.js';
 import { api } from './api.js';
 import { ctx } from './store.js';
 import { esc, icon, toast, busy, modal, avatar } from './ui.js';
+import { fetchBusiness } from './data.js';
 
 const hhmm = v => {
   const [h, m] = v.split(':').map(Number);
@@ -103,7 +104,28 @@ export function mountHiring(host, { onChange } = {}) {
   // Hiring Driver (M1 contract, Founder screen 3): area, days, pickup time
   // (no end time), vehicle, pay per drop (min RM3.00), drivers needed,
   // driver reach 1-15 km (default 10). The server validates everything again.
-  function openForm() {
+  // A post needs the Business profile address and pickup location (Founder
+  // 2026-10-14); save_job_opening enforces it server-side.
+  async function openForm() {
+    let b;
+    try { b = await fetchBusiness(); } catch (ex) { toast(ex.message, 'error'); return; }
+    const hasAddress = !!(b?.address || '').trim();
+    const hasPin = b?.service_origin_latitude != null && b?.service_origin_longitude != null;
+    if (!hasAddress || !hasPin) {
+      const row = (done, label) => `<li style="display:flex;gap:8px;align-items:center;padding:6px 0">${icon(done ? 'check' : 'alert')}<span>${esc(label)}</span><span style="margin-left:auto;opacity:.6">${done ? esc(t('hr.profileDone')) : ''}</span></li>`;
+      const m = modal({
+        title: t('hr.profileRequiredTitle'),
+        lead: t('hr.profileRequiredBody'),
+        body: `<ul style="list-style:none;margin:0;padding:0">${row(hasAddress, t('bp.address'))}${row(hasPin, t('bp.area'))}</ul>`,
+        footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-go>${esc(t('hr.openProfile'))}</button>`,
+      });
+      m.el.querySelector('[data-go]').addEventListener('click', () => { m.close(); location.hash = '#/settings/business'; });
+      return;
+    }
+    openPostForm();
+  }
+
+  function openPostForm() {
     let days = new Set([1, 2, 3, 4, 5]), vehicle = 'motorcycle';
     const chips = (name, items, isOn) => items.map(([v, label]) => `<button type="button" class="chip-btn ${isOn(v) ? 'on' : ''}" data-${name}="${v}">${esc(label)}</button>`).join('');
     const m = modal({

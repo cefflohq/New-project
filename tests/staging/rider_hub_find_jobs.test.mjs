@@ -144,5 +144,15 @@ ok('removal clears the rider\'s bookings', Array.isArray(after.body) && after.bo
 // --- cleanup: close test openings
 for (const o of [o1, o2, o3, o4]) { const c = await rpc(owner, 'close_job_opening', { p_opening_id: o.body.id }); ok('cleanup: owner closes opening', c.status === 200, err(c)); }
 
+// ---- Business profile gate (Founder 2026-10-14): no address or no pickup
+// location -> the post is refused, never silently hidden from Find Jobs.
+{
+  const bid = (await rpc(vendorB, 'get_my_businesses')).body.find(b => b.member_role === 'owner')?.business_id;
+  const bRow = (await sel(vendorB, `businesses?select=address,service_origin_latitude&id=eq.${bid}`)).body?.[0];
+  const incomplete = !(bRow?.address || '').trim() || bRow?.service_origin_latitude == null;
+  const r = await rpc(vendorB, 'save_job_opening', opening({ p_business_id: bid }));
+  ok('profile gate: business without address/pickup location cannot post', incomplete ? (r.status >= 400 && /business profile incomplete/.test(err(r))) : r.status === 200, JSON.stringify({ incomplete, s: r.status, m: err(r) }));
+  if (!incomplete && r.body?.id) await rpc(vendorB, 'close_job_opening', { p_opening_id: r.body.id });
+}
 console.log(results.join('\n')); console.log(`\n${results.length - fails}/${results.length} passed`);
 process.exit(fails ? 1 : 0);

@@ -48,6 +48,10 @@ try {
   const b = await rpc(owner, 'bootstrap_business', { p_name: `[TEST] OpLife ${stamp}`, p_timezone: 'Asia/Kuala_Lumpur', p_currency: 'MYR' });
   B3 = b.body;
   ok('setup: fresh [TEST] business with its Owner', b.status === 200 && (await roleIn(owner, B3)) === 'owner', msg(b));
+  // Hiring posts need a complete Business profile (address + pickup location).
+  const prof = await rpc(owner, 'update_business_profile', { p_business_id: B3, p_name: `[TEST] OpLife ${stamp}`, p_phone: null, p_email: null, p_address: '[TEST] 1 Jalan Ujian, Kuala Lumpur', p_operating_area: null, p_timezone: 'Asia/Kuala_Lumpur', p_currency: 'MYR', p_idempotency_key: crypto.randomUUID() });
+  const area = await rpc(owner, 'set_business_service_area', { p_business_id: B3, p_origin_latitude: 3.139, p_origin_longitude: 101.687, p_radius_km: 10 });
+  ok('setup: business profile completed (address + pickup location)', prof.status === 200 && area.status === 200, msg(prof) + msg(area));
 
   // ---------- 1. Owner -> Operator invite -> join -> Pending
   const opLink = (await rpc(owner, 'get_invite_link', { p_business_id: B3, p_kind: 'operator' })).body?.token;

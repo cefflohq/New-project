@@ -4347,4 +4347,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get drawZoneBoundaryHint =>
       'Tap the map to add the corners of this zone. Add at least 3.';
+
+  @override
+  String get hrProfileRequiredTitle => 'Complete your Business profile';
+
+  @override
+  String get hrProfileRequiredBody =>
+      'Drivers find posts by your pickup location. Add your business address and pickup location before posting a job.';
+
+  @override
+  String get hrProfileDone => 'Done';
 }
