@@ -5,7 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/env.dart';
 import '../core/theme.dart';
-import 'google_maps.dart';
+import 'google_maps.dart' show GoogleDeliveryPinMap;
 import 'map_tiles.dart';
 
 /// Mini map of the customer's pinned drop point. Pan-only (no zoom/rotate);

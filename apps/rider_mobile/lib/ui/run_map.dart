@@ -10,7 +10,7 @@ import '../core/live_location.dart';
 import '../core/theme.dart';
 import '../data/driver_models.dart';
 import '../data/live_adapters.dart';
-import 'google_maps.dart';
+import 'google_maps.dart' show GoogleRunMap;
 import 'map_canvas.dart' show MapControlButton, MapRecenterPill;
 import 'map_tiles.dart';
 

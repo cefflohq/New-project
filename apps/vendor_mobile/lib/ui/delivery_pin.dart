@@ -9,6 +9,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/env.dart';
 import '../data/models.dart';
+import 'google_maps.dart'
+    show GoogleDeliveryPinPicker, GoogleDeliveryPinView, GooglePinsMap;
 import 'widgets.dart' show CefButton;
 import '../core/theme.dart';
 
@@ -74,7 +76,9 @@ class DeliveryPinView extends StatelessWidget {
           border: Border.all(color: context.c.border),
           borderRadius: BorderRadius.circular(Sizes.cardRadius),
         ),
-        child: FlutterMap(
+        child: Env.googleMaps
+            ? GoogleDeliveryPinView(latitude: latitude, longitude: longitude)
+            : FlutterMap(
           options: MapOptions(
             initialCenter: point,
             initialZoom: 16,
@@ -193,7 +197,9 @@ class _DeliveryPinPickerState extends State<DeliveryPinPicker> {
           border: Border.all(color: c.border),
           borderRadius: BorderRadius.circular(Sizes.cardRadius),
         ),
-        child: Stack(
+        child: Env.googleMaps
+            ? GoogleDeliveryPinPicker(initial: widget.initial, onChanged: widget.onChanged)
+            : Stack(
           children: [
             FlutterMap(
               mapController: _controller,
@@ -406,6 +412,9 @@ class PinsMap extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
+            if (Env.googleMaps)
+              GooglePinsMap(drops: drops, zones: zones)
+            else
             FlutterMap(
               // Re-fit when the zones or pins change (a new zone appears).
               key: ValueKey(Object.hashAll(points)),
@@ -450,7 +459,12 @@ class PinsMap extends StatelessWidget {
               ],
             ),
             // Auto zone areas come from geoBoundaries (CC BY 4.0).
-            MapCredit(shapes.isEmpty ? _credit : '$_credit © geoBoundaries'),
+            // Auto zone areas come from geoBoundaries (CC BY 4.0); Google
+            // draws its own map credit.
+            if (!Env.googleMaps)
+              MapCredit(shapes.isEmpty ? _credit : '$_credit © geoBoundaries')
+            else if (shapes.isNotEmpty)
+              const MapCredit('© geoBoundaries'),
             if (drops.isEmpty && shapes.isEmpty && emptyLabel != null)
               Positioned(
                 left: Gap.md,

@@ -37,6 +37,11 @@ class Env {
     defaultValue: 'https://order.cefflo.com/',
   );
 
+  /// Google Maps (Auto Zone + Google Maps master guideline Phase 5). Opt in
+  /// with --dart-define=CEFFLO_GOOGLE_MAPS=true; the build must also carry
+  /// the native keys (CEFFLO_GOOGLE_MAPS_ANDROID_KEY / _IOS_KEY).
+  static const googleMaps = bool.fromEnvironment('CEFFLO_GOOGLE_MAPS');
+
   /// Public Mapbox token (pk.*) for map tiles. Empty = CARTO fallback tiles.
   static const mapboxPublicToken = String.fromEnvironment(
     'CEFFLO_MAPBOX_PUBLIC_TOKEN',

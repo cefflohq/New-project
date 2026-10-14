@@ -7,12 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/env.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../data/vendor_repository.dart';
 import '../async_view.dart';
 import '../delivery_pin.dart';
+import '../google_maps.dart' show GoogleCoverageMap;
 import '../shell.dart';
 import '../widgets.dart';
 
@@ -609,6 +611,12 @@ class CoveragePreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.c;
     if (latitude != null && longitude != null) {
+      if (Env.googleMaps) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          child: GoogleCoverageMap(latitude: latitude!, longitude: longitude!, radiusKm: radiusKm),
+        );
+      }
       final at = LatLng(latitude!, longitude!);
       // Zoom that keeps the whole circle in view (~2.4x radius across).
       final zoom = (math.log(40075 / (radiusKm * 2.4)) / math.ln2).clamp(

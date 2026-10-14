@@ -38,6 +38,11 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Google Maps Android key (restricted to this package + SHA-1).
+        // Never committed: -PCEFFLO_GOOGLE_MAPS_ANDROID_KEY=... or the env var.
+        manifestPlaceholders["googleMapsApiKey"] =
+            (project.findProperty("CEFFLO_GOOGLE_MAPS_ANDROID_KEY") as String?)
+                ?: System.getenv("CEFFLO_GOOGLE_MAPS_ANDROID_KEY") ?: ""
     }
 
     signingConfigs {
