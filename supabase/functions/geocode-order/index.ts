@@ -137,9 +137,17 @@ function pickProvider(googleKey, mapboxToken) {
   return null;
 }
 
+// Browsers (Vendor Web) call this cross-origin: every response carries CORS.
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+const reply = (body, status = 200) => Response.json(body, { status, headers: CORS });
+
 // Fixed, public-safe error shape -- never forwards a raw provider/DB error.
 function safeError(status, publicMessage) {
-  return Response.json({ error: publicMessage }, { status });
+  return reply({ error: publicMessage }, status);
 }
 
 // ============================================================================
@@ -260,7 +268,7 @@ async function geocodeBusinessAddress(request, businessId) {
 
   const addressCheck = validateAddressInput(business.address);
   if (!addressCheck.valid) {
-    return Response.json({ business_id: businessId, status: 'failed', reason: addressCheck.reason });
+    return reply({ business_id: businessId, status: 'failed', reason: addressCheck.reason });
   }
   const cfg = providerConfig();
   if (!cfg.provider) return safeError(502, 'Geocoding provider is not configured');
@@ -274,12 +282,12 @@ async function geocodeBusinessAddress(request, businessId) {
   const result = await geocodeAddress(cfg, addressCheck.address, business.country_iso2);
   if (result.reason === 'network_failure') return safeError(502, 'Unable to reach geocoding provider');
   if (result.status === 'resolved') {
-    return Response.json({
+    return reply({
       business_id: businessId, status: 'resolved', latitude: result.latitude, longitude: result.longitude,
       place_id: result.placeId,
     });
   }
-  return Response.json({ business_id: businessId, status: result.status, reason: result.reason });
+  return reply({ business_id: businessId, status: result.status, reason: result.reason });
 }
 
 // ============================================================================
@@ -308,7 +316,7 @@ async function geocodePendingOrders(request, businessId) {
     counts[out.status] = (counts[out.status] || 0) + 1;
     if (out.reason === 'rate_limited' || out.reason === 'not_configured') break;
   }
-  return Response.json({ business_id: businessId, processed: (orders || []).length, ...counts, more: (orders || []).length === PENDING_BATCH });
+  return reply({ business_id: businessId, processed: (orders || []).length, ...counts, more: (orders || []).length === PENDING_BATCH });
 }
 
 // ============================================================================
@@ -316,6 +324,7 @@ async function geocodePendingOrders(request, businessId) {
 // ============================================================================
 
 Deno.serve(async (request) => {
+  if (request.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (request.method !== 'POST') {
     return safeError(405, 'Method not allowed');
   }
@@ -340,5 +349,5 @@ Deno.serve(async (request) => {
   const out = await geocodeOrder(adminClient, providerConfig(), order, await businessCountry(callerClient, order.business_id));
   if (out.httpStatus === 502) return safeError(502, out.reason === 'network_failure' ? 'Unable to reach geocoding provider' : 'Geocoding provider is not configured');
   if (out.httpStatus === 429) return safeError(429, 'Geocoding rate limit reached for this business, try again shortly');
-  return Response.json({ order_id: out.order_id, status: out.status, latitude: out.latitude, longitude: out.longitude, reason: out.reason, skipped: out.skipped });
+  return reply({ order_id: out.order_id, status: out.status, latitude: out.latitude, longitude: out.longitude, reason: out.reason, skipped: out.skipped });
 });
