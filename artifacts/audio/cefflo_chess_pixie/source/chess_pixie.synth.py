@@ -88,3 +88,24 @@ save("cefflo_pixie_04_bells_down",  mix([(0, 1, chime(N(98), .5, 7)), (.14, 1, c
 save("cefflo_pixie_05_fairy_double", mix([(0, .8, chime(N(93), .3, 12)), (.1, 1, chime(N(97), .4, 9)),
                                           (.32, .8, chime(N(93), .3, 12)), (.42, 1, chime(N(100), .7, 5)),
                                           (.42, .6, sparkle(N(100), .7, 18, seed=6))], 1.1))
+
+# ---------- PIXIE 01 VARIATIONS (Founder pick: pixie_01_twinkle = G6 -> C7, gap .13) ----------
+def twinkle(name, m1, m2, gap=.13, dust=.6, n=14, d1=8, d2=5, seed=1, total=.9, pre_dust=0, pairs=1, rep=.38):
+    parts = []
+    for k in range(pairs):
+        t0 = k * rep
+        if pre_dust: parts.append((t0, pre_dust, sparkle(N(m1), .3, 8, seed=seed + 10)))
+        parts += [(t0, .8, chime(N(m1), .5, d1)), (t0 + gap, 1, chime(N(m2), .8, d2))]
+        if dust: parts.append((t0 + gap - .03, dust, sparkle(N(m2), .7, n, seed=seed + k)))
+    save(name, mix(parts, total))
+
+twinkle("cefflo_pixie_01a_higher",       93, 98)                          # A6 -> D7, lebih tinggi
+twinkle("cefflo_pixie_01b_quicker",      91, 96, gap=.09, total=.8)       # lebih rapat, lebih snappy
+twinkle("cefflo_pixie_01c_more_dust",    91, 96, dust=.9, n=26, seed=7)   # kilauan lebih banyak
+twinkle("cefflo_pixie_01d_clean",        91, 96, dust=.25, n=6, seed=8)   # kilauan sikit, lebih bersih
+twinkle("cefflo_pixie_01e_wide_jump",    89, 98, seed=9)                  # F6 -> D7, lompatan besar
+twinkle("cefflo_pixie_01f_short_ring",   91, 96, d1=12, d2=10, total=.6)  # gema pendek
+twinkle("cefflo_pixie_01g_long_ring",    91, 96, d2=2.8, total=1.3)       # gema panjang, lebih magical
+twinkle("cefflo_pixie_01h_dust_intro",   91, 96, pre_dust=.35, seed=11)   # kilauan masuk dulu
+twinkle("cefflo_pixie_01i_double",       91, 96, pairs=2, total=1.25, seed=12)  # "Cef-flo, Cef-flo"
+twinkle("cefflo_pixie_01j_lower_warm",   86, 91, seed=13)                 # D6 -> G6, lebih hangat
