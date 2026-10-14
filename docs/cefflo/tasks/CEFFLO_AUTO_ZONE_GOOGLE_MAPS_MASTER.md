@@ -351,7 +351,12 @@ staging pending.)
 - Settings → Run size on Vendor Web + Vendor App; Plan screen shows
   several runs per zone, merges and flags.
 
-**Phase 5 — Maps on every surface switch to Google** — moments 3–6
+**Phase 5 — Maps on every surface switch to Google** — moments 3–6 —
+**web built 2026-10-14** (Vendor Web `js/map_google.js`, Customer Tracking
+`customer/live-map.js`, Storefront pin `store/store.js`; key
+`CEFFLO_GOOGLE_MAPS_BROWSER_KEY` → `CEFFLO_CONFIG.googleMapsBrowserKey`;
+refused key falls back to the free map. Flutter apps pending: Android key
+needs the release SHA-1.)
 - Driver App: `google_maps_flutter` for the stop-order map; Navigate =
   Maps URL deep link for pickup and each stop.
 - Vendor App + Vendor Web: Google maps for orders, zones (hexagons), live

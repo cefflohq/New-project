@@ -2,8 +2,10 @@
 // taps "View live map", never on page load. The map lives in its own overlay
 // (outside the re-rendered sheet), shows only the latest authorised rider
 // point from public_tracking, and is fully removed on close so nothing keeps
-// rendering in the background. Needs CEFFLO_CONFIG.mapboxPublicToken (a
-// public, URL-restricted pk.* token); without it the action is not offered.
+// rendering in the background. Google Maps when the build carries
+// CEFFLO_CONFIG.googleMapsBrowserKey (referrer-restricted; Auto Zone + Google
+// Maps guideline Phase 5), else Mapbox with a public pk.* token; with
+// neither the action is not offered.
 
 const GL_VERSION = '3.7.0';
 const GL_JS = `https://api.mapbox.com/mapbox-gl-js/v${GL_VERSION}/mapbox-gl.js`;
@@ -11,7 +13,46 @@ const GL_CSS = `https://api.mapbox.com/mapbox-gl-js/v${GL_VERSION}/mapbox-gl.css
 
 let root = null, map = null, marker = null, glReady = null;
 
-export const liveMapAvailable = () => /^pk\./.test(window.CEFFLO_CONFIG?.mapboxPublicToken || '');
+const GOOGLE_KEY = window.CEFFLO_CONFIG?.googleMapsBrowserKey || '';
+export const liveMapAvailable = () => Boolean(GOOGLE_KEY) || /^pk\./.test(window.CEFFLO_CONFIG?.mapboxPublicToken || '');
+
+let googleReady = null;
+function loadGoogle() {
+  if (window.google?.maps?.Map) return Promise.resolve(window.google.maps);
+  googleReady ||= new Promise((resolve, reject) => {
+    const cb = `__cfTrackMaps${Date.now()}`;
+    window[cb] = () => { delete window[cb]; resolve(window.google.maps); };
+    // Key refused by Google (e.g. referrer): say so instead of a broken map.
+    window.gm_authFailure = () => {
+      const box = root?.querySelector('[data-live-map-loading]') || root?.querySelector('[data-live-map]');
+      if (box) box.innerHTML = '<span>Map unavailable right now</span>';
+    };
+    const js = document.createElement('script');
+    js.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_KEY)}&v=weekly&callback=${cb}`;
+    js.async = true;
+    js.onerror = () => { googleReady = null; reject(new Error('Map unavailable')); };
+    document.head.append(js);
+  });
+  return googleReady;
+}
+
+// The rider pin as an HTML overlay on a Google map; move(latlng) re-places it.
+function googleRiderPin(g, gmap, location) {
+  const el = document.createElement('div');
+  el.className = 'cf-rider-pin';
+  el.innerHTML = RIDER_SVG;
+  el.style.position = 'absolute';
+  let pos = new g.LatLng(location.lat, location.lng);
+  const o = new g.OverlayView();
+  o.onAdd = () => o.getPanes().overlayMouseTarget.append(el);
+  o.draw = () => {
+    const p = o.getProjection()?.fromLatLngToDivPixel(pos);
+    if (p) { el.style.left = `${p.x}px`; el.style.top = `${p.y}px`; el.style.transform = 'translate(-50%,-50%)'; }
+  };
+  o.onRemove = () => el.remove();
+  o.setMap(gmap);
+  return { setLngLat: ([lng, lat]) => { pos = new g.LatLng(lat, lng); o.draw(); gmap.panTo(pos); }, remove: () => o.setMap(null) };
+}
 export const isLiveMapOpen = () => Boolean(root);
 
 function loadGl() {
@@ -65,6 +106,23 @@ export function openStaticMap(html, { title = 'Map', closeLabel = 'Close map' } 
 export async function openLiveMap(location, { title = 'Live map', closeLabel = 'Close map' } = {}) {
   if (root || !location || !liveMapAvailable()) return;
   openDialog(title, closeLabel);
+  if (GOOGLE_KEY) {
+    try {
+      const g = await loadGoogle();
+      if (!root) return; // closed while loading
+      const gmap = new g.Map(root.querySelector('[data-live-map]'), {
+        center: { lat: location.lat, lng: location.lng }, zoom: 15,
+        disableDefaultUI: true, zoomControl: true, clickableIcons: false, gestureHandling: 'greedy',
+        styles: [{ featureType: 'poi', stylers: [{ visibility: 'off' }] }, { featureType: 'transit', stylers: [{ visibility: 'off' }] }],
+      });
+      marker = googleRiderPin(g, gmap, location);
+      map = { remove: () => marker?.remove() };
+      g.event.addListenerOnce(gmap, 'tilesloaded', hideLoading);
+    } catch {
+      closeLiveMap();
+    }
+    return;
+  }
   try {
     const gl = await loadGl();
     if (!root) return; // closed while loading

@@ -250,7 +250,7 @@
             <div class="sf-map-zoom"><button type="button" data-act="zoomin" aria-label="${esc(t('Zoom in'))}">${icon('plus')}</button><button type="button" data-act="zoomout" aria-label="${esc(t('Zoom out'))}">${icon('minus')}</button></div>
             <button type="button" class="sf-map-locate" data-act="pin" aria-label="${esc(t('Use my current location'))}">${icon('locate')}</button>
             <div class="sf-map-start"><button type="button" data-act="pin">${icon('locate')} ${esc(t('Use my current location'))}</button></div>
-            ${mapboxToken() ? '' : '<small class="sf-map-attr">© OpenStreetMap · OpenFreeMap</small>'}
+            ${mapboxToken() || GOOGLE_KEY ? '' : '<small class="sf-map-attr">© OpenStreetMap · OpenFreeMap</small>'}
           </div>
           <p class="sf-pin-hint" id="sfPinHint">${esc(t('Pin your exact location so the rider finds you without calling.'))}</p>
         </div>
@@ -293,6 +293,53 @@
     return /^pk\./.test(tok) ? tok : null;
   }
   const MAPBOX_TOKEN = mapboxToken();
+  // Google Maps first when the build carries the browser key (Auto Zone +
+  // Google Maps guideline Phase 5). A key Google refuses falls back to the
+  // free map for this tab.
+  const GOOGLE_KEY = (() => {
+    try { if (sessionStorage.getItem('cf.noGoogleMaps') === '1') return ''; } catch { /* storage off */ }
+    return window.CEFFLO_CONFIG?.googleMapsBrowserKey || '';
+  })();
+  let googleReady = null;
+  function loadGoogle() {
+    if (window.google?.maps?.Map) return Promise.resolve(window.google.maps);
+    googleReady ||= new Promise((ok, bad) => {
+      const cb = `__cfStoreMaps${Date.now()}`;
+      window[cb] = () => { delete window[cb]; ok(window.google.maps); };
+      window.gm_authFailure = () => { try { sessionStorage.setItem('cf.noGoogleMaps', '1'); location.reload(); } catch { /* keep error tile */ } };
+      const s = document.createElement('script');
+      s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_KEY)}&v=weekly&callback=${cb}`;
+      s.async = true; s.onerror = () => { googleReady = null; bad(new Error('map')); };
+      document.head.append(s);
+    });
+    return googleReady;
+  }
+  // Google map wrapped in the few calls the pin code uses (flyTo / easeTo /
+  // getZoom / remove), so locate() and the zoom buttons stay one code path.
+  async function mountGooglePin(box, canvas) {
+    const g = await loadGoogle();
+    const m = new g.Map(canvas, { center: pin ? { lat: pin.lat, lng: pin.lng } : { lat: MY_CENTER[1], lng: MY_CENTER[0] }, zoom: pin ? 18 : 6,
+      disableDefaultUI: true, clickableIcons: false, gestureHandling: 'greedy',
+      styles: [{ featureType: 'poi.business', stylers: [{ visibility: 'off' }] }, { featureType: 'transit', stylers: [{ visibility: 'off' }] }] });
+    let byUser = false;
+    m.addListener('dragstart', () => { byUser = true; box.classList.add('is-moving'); });
+    m.addListener('zoom_changed', () => { if (pin) byUser = true; });
+    m.addListener('idle', () => {
+      box.classList.remove('is-moving');
+      if (!byUser) return;
+      byUser = false;
+      if (m.getZoom() < 14) { pinUi(); return; }
+      const c = m.getCenter();
+      pin = { lat: +c.lat().toFixed(6), lng: +c.lng().toFixed(6), source: pin ? 'pin_adjusted' : 'map', acc: null };
+      pinUi();
+    });
+    return {
+      flyTo: ({ center, zoom: z }) => { byUser = false; m.panTo({ lat: center[1], lng: center[0] }); m.setZoom(Math.round(z)); },
+      easeTo: ({ zoom: z }) => { byUser = !!pin; m.setZoom(Math.round(z)); },
+      getZoom: () => m.getZoom(),
+      remove: () => {},
+    };
+  }
 
   // Map credit behind a small ⓘ (Founder 2026-10-13): the licences need the
   // credit reachable on the map, not spelled out across it.
@@ -324,8 +371,12 @@
   }
   async function mountPinMap() {
     const box = document.getElementById('sfPinMap'); if (!box) return;
-    const gl = await loadMapLibre();
     const canvas = box.querySelector('.sf-map-canvas');
+    if (GOOGLE_KEY) {
+      pinMap?.remove();
+      try { pinMap = await mountGooglePin(box, canvas); pinUi(); return; } catch { /* free map below */ }
+    }
+    const gl = await loadMapLibre();
     pinMap?.remove();
     pinMap = new gl.Map({ container: canvas, style: MAP_STYLE,
       center: pin ? [pin.lng, pin.lat] : MY_CENTER, zoom: pin ? 17.5 : 5, attributionControl: false,
