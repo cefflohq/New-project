@@ -4,8 +4,8 @@ import { t, fmtTime } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { country } from '../country.js';
-import { fetchZones, fetchOrders, businessToday, orderNo } from '../data.js';
-import { mountPinsMap, mountZoneDrawer, hasPin, zoneColor } from '../map.js';
+import { fetchZones, fetchOrders, fetchZoneCells, businessToday, orderNo } from '../data.js';
+import { mountPinsMap, mountZoneDrawer, mountHexMap, hasPin, zoneColor } from '../map.js';
 import { esc, icon, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal } from '../ui.js';
 
 const ONGOING = ['created', 'ready_for_pickup', 'picked_up', 'out_for_delivery', 'arrived'];
@@ -19,6 +19,7 @@ export default function zones({ el, params, setHeader }) {
       <div class="bar pad">
         <button class="btn sm" data-add>${icon('plus')}${esc(t('zones.add'))}</button>
         <a class="btn sm" href="#/runs">${icon('route')}${esc(t('nav.runs'))}</a>
+        <button class="btn sm" data-hex>${icon('map')}${esc(t('zones.hexMap'))}</button>
         <div class="search" style="margin-left:auto">${icon('search')}<input data-q placeholder="${esc(t('zones.search'))}" aria-label="${esc(t('c.search'))}"></div>
       </div>
       <div style="padding:0 16px 12px"><div data-zmap></div></div>
@@ -108,6 +109,71 @@ export default function zones({ el, params, setHeader }) {
       .then(res => { api.fn('zone-cells', { business_id: ctx.bid }).catch(() => null); return res; });
   };
 
+  // Hexagon map (Auto Zone D1/D4): paint cells onto a zone. Changes are kept
+  // locally until Save, then sent per target zone (paint_zone_cells).
+  async function hexDialog() {
+    const active = zs.filter(z => z.status === 'active');
+    const m = modal({ title: t('zones.hexMap'), lead: t('zones.hexLead'), cls: 'hex-modal',
+      body: `<div class="hex-brush" data-brush></div><div data-hexmap>${loadingRows(4, t('ld.zones'))}</div><div class="hint" data-pending></div><div class="err" data-err hidden></div>`,
+      footer: `<button class="btn" data-build style="margin-right:auto">${esc(t('zones.hexRebuild'))}</button><button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit disabled>${esc(t('c.save'))}</button>` });
+    const q = s => m.el.querySelector(s), err = q('[data-err]');
+    let brush = active[0]?.id || null, hex = null;
+    const pending = new Map(), current = new Map();
+    const showErr = ex => { err.textContent = ex.message; err.hidden = false; };
+    const paintBrush = () => {
+      q('[data-brush]').innerHTML = [...active.map(z => ({ id: z.id, name: z.name, color: zoneColor(z) })), { id: null, name: t('zones.hexNoZone'), color: '#9AA3B2' }]
+        .map(b => `<button type="button" data-b="${esc(b.id || '')}" class="${b.id === brush ? 'on' : ''}"><i style="background:${b.color}"></i>${esc(b.name)}</button>`).join('');
+    };
+    const paintPending = () => {
+      q('[data-pending]').textContent = pending.size ? t('zones.hexPending', { n: pending.size }) : '';
+      q('[data-submit]').disabled = !pending.size;
+      hex?.setPending(pending);
+    };
+    const open = async () => {
+      const cells = await fetchZoneCells();
+      if (!cells.length) {
+        q('[data-hexmap]').innerHTML = emptyState(t('zones.hexNone'));
+        q('[data-build]').textContent = t('zones.hexBuild');
+        return;
+      }
+      current.clear(); cells.forEach(c => current.set(c.cell, c.zone_id || null));
+      hex = await mountHexMap(q('[data-hexmap]'), cells, active, {
+        onCell: cell => {
+          if (current.get(cell) === brush) pending.delete(cell); else pending.set(cell, brush);
+          paintPending();
+        },
+      });
+    };
+    paintBrush();
+    q('[data-brush]').addEventListener('click', e => {
+      const b = e.target.closest('[data-b]'); if (!b) return;
+      brush = b.dataset.b || null; paintBrush();
+    });
+    q('[data-build]').addEventListener('click', async e => {
+      err.hidden = true;
+      try {
+        const res = await busy(e.currentTarget, () => api.fn('zone-cells', { business_id: ctx.bid }));
+        if (res?.status === 'no_service_area') { showErr(new Error(t('zones.hexNone'))); return; }
+        toast(t('zones.hexBuilt', { n: res?.cells ?? 0 }));
+        pending.clear(); paintPending(); await open();
+      } catch (ex) { showErr(ex); }
+    });
+    q('[data-submit]').addEventListener('click', async e => {
+      err.hidden = true;
+      const byZone = new Map();
+      pending.forEach((z, c) => { const k = z || ''; byZone.set(k, [...(byZone.get(k) || []), c]); });
+      try {
+        await busy(e.currentTarget, async () => {
+          for (const [z, list] of byZone) await api.rpc('paint_zone_cells', { p_business_id: ctx.bid, p_cells: list, p_zone_id: z || null });
+        });
+        pending.forEach((z, c) => current.set(c, z));
+        hex?.commit(pending); pending.clear(); paintPending();
+        toast(t('zones.hexSaved')); load();
+      } catch (ex) { showErr(ex); }
+    });
+    try { await open(); } catch (ex) { q('[data-hexmap]').innerHTML = ''; showErr(ex); }
+  }
+
   // Delete zone (Founder 2026-10-13): leaves the list, row kept for history.
   function deleteDialog(z) {
     const m = modal({ title: t('zones.delete'), body: `<p>${esc(t('zones.deleteBody'))}</p><div class="err" data-err hidden></div>`,
@@ -171,6 +237,7 @@ export default function zones({ el, params, setHeader }) {
     if (e.target.closest('[data-sort]')) { sortAsc = !sortAsc; paint(); return; }
     const row = e.target.closest('tr[data-id]'); if (row) { location.hash = `#/zones/${row.dataset.id}`; return; }
     if (e.target.closest('[data-add]')) { nameDialog(t('zones.add'), '', (name, place) => api.rpc('create_zone', { p_business_id: ctx.bid, p_name: name }).then(r => outline(r, place)).then(() => toast(t('zones.created')))); return; }
+    if (e.target.closest('[data-hex]')) { hexDialog(); return; }
     if (e.target.closest('[data-zmenu]')) { e.stopPropagation(); zoneMenu(e.target.closest('[data-zmenu]')); return; }
     if (e.target.closest('[data-retry]')) load();
   });

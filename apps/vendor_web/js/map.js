@@ -245,3 +245,60 @@ export function mountZoneDrawer(box, initial, others = []) {
   });
   return { get: () => { const r = closed(); return r ? { type: 'Polygon', coordinates: [r] } : null; }, count: () => pts.length, destroy: () => { map?.remove(); map = null; } };
 }
+
+// Hexagon zone map (Auto Zone D1/D4, 2026-10-14): the business's H3 cells
+// (public.zone_cells) tinted by zone, grey when no zone. paint(cell) is
+// called on a click; setCells(map) redraws with pending changes outlined.
+const H3_URL = 'https://cdn.jsdelivr.net/npm/h3-js@4.1.0/dist/h3-js.umd.js';
+let h3Loading = null;
+function loadH3() {
+  if (window.h3) return Promise.resolve(window.h3);
+  h3Loading ||= new Promise((ok, bad) => {
+    const s = document.createElement('script'); s.src = H3_URL;
+    s.onload = () => ok(window.h3);
+    s.onerror = () => { h3Loading = null; bad(new Error('h3')); };
+    document.head.append(s);
+  });
+  return h3Loading;
+}
+
+export async function mountHexMap(box, cells, zones, { onCell } = {}) {
+  box.classList.add('pm', 'pm-hex');
+  box.innerHTML = `<div class="pm-canvas"></div>${attr}`;
+  try {
+    const [gl, h3] = await Promise.all([loadMapLibre(), loadH3()]);
+    if (!box.isConnected) return null;
+    const colour = new Map(zones.map(z => [z.id, zoneColor(z)]));
+    const shape = new Map(cells.map(c => [c.cell, h3.cellToBoundary(c.cell, true)]));
+    const data = (assign, pending) => ({ type: 'FeatureCollection', features: cells.map(c => {
+      const zid = pending.has(c.cell) ? pending.get(c.cell) : assign.get(c.cell);
+      return { type: 'Feature', id: c.cell, geometry: { type: 'Polygon', coordinates: [shape.get(c.cell)] },
+        properties: { cell: c.cell, color: (zid && colour.get(zid)) || '#9AA3B2', zoned: zid ? 1 : 0, pending: pending.has(c.cell) ? 1 : 0 } };
+    }) });
+    const assign = new Map(cells.map(c => [c.cell, c.zone_id || null]));
+    const map = new gl.Map({ container: box.querySelector('.pm-canvas'), style: STYLE, center: MY_CENTER, zoom: 5,
+      attributionControl: false, dragRotate: false, pitchWithRotate: false, touchPitch: false });
+    compactCredit(gl, map);
+    map.touchZoomRotate.disableRotation();
+    map.on('load', () => {
+      map.addSource('hex', { type: 'geojson', attribution: 'H3 · Uber', data: data(assign, new Map()) });
+      map.addLayer({ id: 'hex-fill', type: 'fill', source: 'hex',
+        paint: { 'fill-color': ['get', 'color'], 'fill-opacity': ['case', ['==', ['get', 'pending'], 1], 0.55, ['==', ['get', 'zoned'], 1], 0.32, 0.08] } });
+      map.addLayer({ id: 'hex-line', type: 'line', source: 'hex',
+        paint: { 'line-color': ['case', ['==', ['get', 'pending'], 1], '#111', ['get', 'color']], 'line-width': ['case', ['==', ['get', 'pending'], 1], 1.6, 0.4], 'line-opacity': 0.6 } });
+      map.on('click', 'hex-fill', e => { const f = e.features?.[0]; if (f) onCell?.(f.properties.cell); });
+      map.on('mouseenter', 'hex-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'hex-fill', () => { map.getCanvas().style.cursor = ''; });
+      if (cells.length) {
+        const b = new gl.LngLatBounds();
+        cells.forEach(c => b.extend([c.centre_lng, c.centre_lat]));
+        map.fitBounds(b, { padding: 24, duration: 0 });
+      }
+    });
+    return {
+      map,
+      setPending(pending) { map.getSource('hex')?.setData(data(assign, pending)); },
+      commit(pending) { pending.forEach((z, c) => assign.set(c, z)); map.getSource('hex')?.setData(data(assign, new Map())); },
+    };
+  } catch { box.innerHTML = `<p class="hint" style="padding:16px">${esc(t('pin.mapFail'))}</p>`; return null; }
+}

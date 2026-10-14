@@ -626,6 +626,12 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
 /* Delivery pin maps — CEFFLO UI over MapLibre/OpenFreeMap */
 .pm { position: relative; height: 280px; border-radius: var(--r-lg); overflow: hidden; background: var(--neutral-tint); box-shadow: inset 0 0 0 1px var(--border); isolation: isolate; }
 .pm-picker { height: 360px; }
+.pm-hex { height: min(62vh, 560px); }
+.modal.hex-modal { width: min(980px, 100%); }
+.hex-brush { display: flex; flex-wrap: wrap; gap: 6px; }
+.hex-brush button { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--elevated); font: inherit; font-size: var(--t-label); cursor: pointer; }
+.hex-brush button.on { border-color: var(--primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 25%, transparent); }
+.hex-brush i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 [data-detail] .pm { height: 260px; }
 .pm-canvas { position: absolute !important; inset: 0; width: 100%; height: 100%; }
 .pm-pin { position: absolute; left: 50%; top: 50%; width: 36px; height: 47px; margin: -47px 0 0 -18px; pointer-events: none; z-index: 3; opacity: 0; transition: transform .18s ease; }

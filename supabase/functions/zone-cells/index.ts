@@ -12,6 +12,7 @@ import { latLngToCell, gridDisk, cellToLatLng } from 'https://esm.sh/h3-js@4.1.0
 //
 // Caller: an operational member of the business (checked server-side with
 // is_business_operational); the rows are written with the service role.
+// Cells painted by hand (zone_cells.manual, paint_zone_cells) keep their zone.
 
 const RES = 9;
 const TOLERANCE = 1.2;          // coverage + 20 % (Founder D1)
@@ -106,6 +107,11 @@ if (typeof Deno !== 'undefined') Deno.serve(async (request) => {
       .lte('min_lat', origin[1] + dLat).gte('max_lat', origin[1] - dLat),
   ]);
   const cells = buildCells({ origin, radiusKm, zones: zones || [], areas: areas || [] });
+  // Cells the vendor painted by hand keep their zone.
+  const { data: painted } = await admin.from('zone_cells').select('cell, zone_id')
+    .eq('business_id', businessId).eq('manual', true);
+  const keep = new Map((painted || []).map((c) => [c.cell, c.zone_id]));
+  for (const c of cells) if (keep.has(c.cell)) { c.zone_id = keep.get(c.cell); c.manual = true; }
 
   const now = new Date().toISOString();
   for (let i = 0; i < cells.length; i += 500) {

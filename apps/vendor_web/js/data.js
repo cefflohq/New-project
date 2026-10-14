@@ -10,6 +10,17 @@ export const fetchOrder = id => api.get(`/rest/v1/orders?id=eq.${q(id)}&${bizFil
 export const fetchStops = () => api.get(`/rest/v1/delivery_stops?${bizFilter()}&select=order_id,preparation_status,sequence`);
 export const fetchRiders = () => api.get(`/rest/v1/riders?${bizFilter()}&select=id,name,phone,vehicle_plate,vehicle_type,status,availability_status,created_at,max_active_orders&order=created_at.asc`);
 export const fetchZones = () => api.get(`/rest/v1/zones?${bizFilter()}&deleted_at=is.null&select=id,name,status,created_at,boundary&order=name.asc`);
+// Hexagon cells of the coverage (zone_cells), paged: a 10 km business has
+// ~3,000-4,000 cells and PostgREST returns at most 1,000 rows per call.
+export async function fetchZoneCells() {
+  const out = [];
+  for (let off = 0; off < 20000; off += 1000) {
+    const page = await api.get(`/rest/v1/zone_cells?${bizFilter()}&select=cell,zone_id,area_id,centre_lat,centre_lng,manual&order=cell.asc&limit=1000&offset=${off}`);
+    out.push(...(page || []));
+    if (!page || page.length < 1000) break;
+  }
+  return out;
+}
 export const fetchSessions = () => api.get(`/rest/v1/delivery_sessions?${bizFilter()}&select=id,name,delivery_date,status,pickup_at,sorting_started_at,created_at&order=created_at.desc&limit=200`);
 export const fetchOrderEvents = orderId => api.get(`/rest/v1/delivery_events?order_id=eq.${q(orderId)}&select=event_type,from_status,to_status,created_at,actor_role&order=created_at.asc`);
 export const fetchRatings = () => api.get(`/rest/v1/ratings?select=rider_id,rating,order_id&limit=2000`);
