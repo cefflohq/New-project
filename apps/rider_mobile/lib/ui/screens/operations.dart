@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/money.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../core/dial.dart';
@@ -517,7 +518,7 @@ class _JobCard extends StatelessWidget {
 class RunDetailsScreen extends StatelessWidget {
   const RunDetailsScreen({super.key});
 
-  static String _rm(num v) => 'RM ${v.toStringAsFixed(2)}';
+  static String _rm(num v) => Money.format(v);
 
   @override
   Widget build(BuildContext context) {

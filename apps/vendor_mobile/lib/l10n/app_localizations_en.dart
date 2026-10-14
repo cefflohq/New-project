@@ -3966,7 +3966,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String hrPerDrop(String amount) {
-    return 'RM$amount / drop';
+    return '$amount / drop';
   }
 
   @override

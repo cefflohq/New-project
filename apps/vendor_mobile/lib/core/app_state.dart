@@ -4,6 +4,7 @@ import 'appearance.dart';
 import 'auth_access.dart';
 import 'browser_history.dart';
 import 'join_link.dart';
+import 'money.dart';
 import 'notification_alerts.dart';
 
 import 'package:flutter/material.dart';
@@ -34,7 +35,14 @@ class AppState extends ChangeNotifier {
   NavTab get activeTab => current.spec.tab ?? NavTab.today;
 
   List<Business> businesses = const [];
-  Business? business;
+  Business? _business;
+
+  /// The active business. Setting it also sets the money currency.
+  Business? get business => _business;
+  set business(Business? b) {
+    _business = b;
+    Money.setCurrency(b?.currency);
+  }
 
   /// UI language (en / ms). Independent of country/market (Founder,
   /// 2026-09-27). Starts from the device language; an explicit choice

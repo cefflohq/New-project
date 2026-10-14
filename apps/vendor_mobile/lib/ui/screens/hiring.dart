@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/money.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/vendor_repository.dart';
@@ -349,11 +350,12 @@ String _num(num v) =>
     v == v.roundToDouble() ? '${v.toInt()}' : v.toStringAsFixed(1);
 
 /// "RM3.50 / drop" for per-drop posts; legacy units keep their own label.
+/// Amounts are in the business currency.
 String _payLabel(Map<String, dynamic> o) {
-  final amount = (o['pay_amount'] as num).toStringAsFixed(2);
+  final amount = Money.format(o['pay_amount'] as num);
   return o['pay_unit'] == 'drop'
       ? L.hrPerDrop(amount)
-      : 'RM $amount / ${_unit(o['pay_unit'] as String)}';
+      : '$amount / ${_unit(o['pay_unit'] as String)}';
 }
 
 /// Applicants still waiting on a post (pending requests).
@@ -646,7 +648,7 @@ class _OpeningFormState extends State<_OpeningForm> {
                       width: 160,
                       child: _OutlinedInput(
                         controller: _pay,
-                        prefix: 'RM',
+                        prefix: Money.symbol(),
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),

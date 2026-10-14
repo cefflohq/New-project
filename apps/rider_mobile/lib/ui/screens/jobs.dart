@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/money.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/live_adapters.dart';
@@ -80,7 +81,7 @@ String _payLabel(num amount, String unit) {
     'hour' => L.perHour,
     _ => L.perShift,
   };
-  return 'RM ${_num(amount)} $u';
+  return '${Money.format(amount, trim: true)} $u';
 }
 
 String _num(num v) =>
@@ -1052,7 +1053,7 @@ class _OpeningCard extends StatelessWidget {
               ),
               const SizedBox(width: Gap.md),
               Text(
-                'RM ${_num(o.payAmount)}',
+                Money.format(o.payAmount, trim: true),
                 style: style(17, FontWeight.w800),
               ),
               const SizedBox(width: 4),

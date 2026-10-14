@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/money.dart';
 import '../../core/env.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
@@ -697,7 +698,7 @@ class OrderDetailScreen extends StatelessWidget {
           title: entry.$2.name,
           subtitle:
               '${entry.$2.quantity} × '
-              'RM${(entry.$2.unitPrice ?? 0).toStringAsFixed(2)}',
+              '${Money.format(entry.$2.unitPrice ?? 0)}',
           icon: _itemIcons[entry.$1 % _itemIcons.length],
         );
         final hidden = items.length - _previewItems;

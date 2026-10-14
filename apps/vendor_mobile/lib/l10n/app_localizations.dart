@@ -7242,7 +7242,7 @@ abstract class AppLocalizations {
   /// No description provided for @hrPerDrop.
   ///
   /// In en, this message translates to:
-  /// **'RM{amount} / drop'**
+  /// **'{amount} / drop'**
   String hrPerDrop(String amount);
 
   /// No description provided for @hrPostTitle.

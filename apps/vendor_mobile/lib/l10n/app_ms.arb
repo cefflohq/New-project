@@ -1189,7 +1189,7 @@
   "hrPublish": "Siarkan pengambilan",
   "hrFix": "Isi kawasan, hari dan bayaran (minimum RM3.00 setiap hantaran).",
   "hrPickupAt": "Ambil {time}",
-  "hrPerDrop": "RM{amount} / hantaran",
+  "hrPerDrop": "{amount} / hantaran",
   "hrPostTitle": "Pengambilan Pemandu",
   "hrActiveApplicants": "Aktif · {n} pemohon",
   "hrApplicantsTab": "Pemohon ({n})",

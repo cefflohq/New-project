@@ -1940,7 +1940,7 @@
   "hrPublish": "Publish hiring",
   "hrFix": "Fill in the area, days and pay (minimum RM3.00 per drop).",
   "hrPickupAt": "Pickup {time}",
-  "hrPerDrop": "RM{amount} / drop",
+  "hrPerDrop": "{amount} / drop",
   "hrPostTitle": "Driver Hiring",
   "hrActiveApplicants": "Active · {n} applicants",
   "hrApplicantsTab": "Applicants ({n})",
