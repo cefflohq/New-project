@@ -248,7 +248,7 @@ export function mountZoneDrawer(box, initial, others = []) {
 
 // Hexagon zone map (Auto Zone D1/D4, 2026-10-14): the business's H3 cells
 // (public.zone_cells) tinted by zone, grey when no zone. paint(cell) is
-// called on a click; setCells(map) redraws with pending changes outlined.
+// called on a click; setPending redraws with pending changes outlined.
 const H3_URL = 'https://cdn.jsdelivr.net/npm/h3-js@4.1.0/dist/h3-js.umd.js';
 let h3Loading = null;
 function loadH3() {
@@ -262,7 +262,9 @@ function loadH3() {
   return h3Loading;
 }
 
-export async function mountHexMap(box, cells, zones, { onCell } = {}) {
+// orders: [{ lat, lng }] drawn as dots on top. onCell(cell, { drag }) is
+// called on a tap, and for every cell crossed while drag-painting is on.
+export async function mountHexMap(box, cells, zones, { onCell, orders = [] } = {}) {
   box.classList.add('pm', 'pm-hex');
   box.innerHTML = `<div class="pm-canvas"></div>${attr}`;
   try {
@@ -276,6 +278,7 @@ export async function mountHexMap(box, cells, zones, { onCell } = {}) {
         properties: { cell: c.cell, color: (zid && colour.get(zid)) || '#9AA3B2', zoned: zid ? 1 : 0, pending: pending.has(c.cell) ? 1 : 0 } };
     }) });
     const assign = new Map(cells.map(c => [c.cell, c.zone_id || null]));
+    let dragMode = false;
     const map = new gl.Map({ container: box.querySelector('.pm-canvas'), style: STYLE, center: MY_CENTER, zoom: 5,
       attributionControl: false, dragRotate: false, pitchWithRotate: false, touchPitch: false });
     compactCredit(gl, map);
@@ -286,9 +289,29 @@ export async function mountHexMap(box, cells, zones, { onCell } = {}) {
         paint: { 'fill-color': ['get', 'color'], 'fill-opacity': ['case', ['==', ['get', 'pending'], 1], 0.55, ['==', ['get', 'zoned'], 1], 0.32, 0.08] } });
       map.addLayer({ id: 'hex-line', type: 'line', source: 'hex',
         paint: { 'line-color': ['case', ['==', ['get', 'pending'], 1], '#111', ['get', 'color']], 'line-width': ['case', ['==', ['get', 'pending'], 1], 1.6, 0.4], 'line-opacity': 0.6 } });
-      map.on('click', 'hex-fill', e => { const f = e.features?.[0]; if (f) onCell?.(f.properties.cell); });
-      map.on('mouseenter', 'hex-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
-      map.on('mouseleave', 'hex-fill', () => { map.getCanvas().style.cursor = ''; });
+      map.addSource('orders', { type: 'geojson', data: { type: 'FeatureCollection', features: orders.map(o => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [o.lng, o.lat] }, properties: {} })) } });
+      map.addLayer({ id: 'orders-dot', type: 'circle', source: 'orders',
+        paint: { 'circle-radius': 5, 'circle-color': '#111', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2 } });
+      map.on('click', 'hex-fill', e => { if (dragMode) return; const f = e.features?.[0]; if (f) onCell?.(f.properties.cell, { drag: false }); });
+      // Drag-painting: the map stops panning and every cell under the
+      // finger / pointer is painted once per stroke.
+      const cellAt = pt => map.queryRenderedFeatures(pt, { layers: ['hex-fill'] })[0]?.properties.cell;
+      let stroke = null;
+      const start = pt => { if (!dragMode) return; stroke = new Set(); move(pt); };
+      const move = pt => {
+        if (!stroke) return;
+        const c = cellAt(pt);
+        if (c && !stroke.has(c)) { stroke.add(c); onCell?.(c, { drag: true }); }
+      };
+      const end = () => { stroke = null; };
+      map.on('mousedown', e => start(e.point));
+      map.on('mousemove', e => move(e.point));
+      map.on('mouseup', end);
+      map.on('touchstart', e => { if (dragMode) e.preventDefault(); start(e.point); });
+      map.on('touchmove', e => { if (dragMode) e.preventDefault(); move(e.point); });
+      map.on('touchend', end);
+      map.on('mouseenter', 'hex-fill', () => { if (!dragMode) map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'hex-fill', () => { if (!dragMode) map.getCanvas().style.cursor = ''; });
       if (cells.length) {
         const b = new gl.LngLatBounds();
         cells.forEach(c => b.extend([c.centre_lng, c.centre_lat]));
@@ -297,6 +320,11 @@ export async function mountHexMap(box, cells, zones, { onCell } = {}) {
     });
     return {
       map,
+      setDragMode(on) {
+        dragMode = !!on;
+        if (dragMode) { map.dragPan.disable(); map.touchZoomRotate.disable(); } else { map.dragPan.enable(); map.touchZoomRotate.enable(); map.touchZoomRotate.disableRotation(); }
+        map.getCanvas().style.cursor = dragMode ? 'crosshair' : '';
+      },
       setPending(pending) { map.getSource('hex')?.setData(data(assign, pending)); },
       commit(pending) { pending.forEach((z, c) => assign.set(c, z)); map.getSource('hex')?.setData(data(assign, new Map())); },
     };

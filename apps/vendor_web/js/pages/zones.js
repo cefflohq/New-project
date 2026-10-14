@@ -114,12 +114,21 @@ export default function zones({ el, params, setHeader }) {
   async function hexDialog() {
     const active = zs.filter(z => z.status === 'active');
     const m = modal({ title: t('zones.hexMap'), lead: t('zones.hexLead'), cls: 'hex-modal',
-      body: `<div class="hex-brush" data-brush></div><div data-hexmap>${loadingRows(4, t('ld.zones'))}</div><div class="hint" data-pending></div><div class="err" data-err hidden></div>`,
+      body: `<div class="hex-brush" data-brush></div>
+        <div class="hex-tools"><button type="button" class="btn sm" data-drag aria-pressed="false">${icon('palette')}${esc(t('zones.hexDrag'))}</button><span class="hint" data-info></span></div>
+        <div data-hexmap>${loadingRows(4, t('ld.zones'))}</div><div class="hint" data-pending></div><div class="err" data-err hidden></div>`,
       footer: `<button class="btn" data-build style="margin-right:auto">${esc(t('zones.hexRebuild'))}</button><button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit disabled>${esc(t('c.save'))}</button>` });
     const q = s => m.el.querySelector(s), err = q('[data-err]');
     let brush = active[0]?.id || null, hex = null;
     const pending = new Map(), current = new Map();
     const showErr = ex => { err.textContent = ex.message; err.hidden = false; };
+    const zoneName = id => (id && zs.find(z => z.id === id)?.name) || t('zones.hexNoZone');
+    q('[data-drag]').addEventListener('click', e => {
+      const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+      e.currentTarget.setAttribute('aria-pressed', String(on));
+      e.currentTarget.classList.toggle('primary', on);
+      hex?.setDragMode(on);
+    });
     const paintBrush = () => {
       q('[data-brush]').innerHTML = [...active.map(z => ({ id: z.id, name: z.name, color: zoneColor(z) })), { id: null, name: t('zones.hexNoZone'), color: '#9AA3B2' }]
         .map(b => `<button type="button" data-b="${esc(b.id || '')}" class="${b.id === brush ? 'on' : ''}"><i style="background:${b.color}"></i>${esc(b.name)}</button>`).join('');
@@ -138,8 +147,16 @@ export default function zones({ el, params, setHeader }) {
       }
       current.clear(); cells.forEach(c => current.set(c.cell, c.zone_id || null));
       hex = await mountHexMap(q('[data-hexmap]'), cells, active, {
-        onCell: cell => {
-          if (current.get(cell) === brush) pending.delete(cell); else pending.set(cell, brush);
+        orders: orders.filter(o => hasPin(o) && ONGOING.includes(o.delivery_status)).map(o => ({ lat: +o.latitude, lng: +o.longitude })),
+        onCell: (cell, { drag }) => {
+          const now = current.get(cell);
+          const before = pending.has(cell) ? pending.get(cell) : now;
+          // A tap toggles; a drag stroke always paints the chosen zone.
+          if (!drag && pending.has(cell)) pending.delete(cell);
+          else if (now === brush) pending.delete(cell);
+          else pending.set(cell, brush);
+          const after = pending.has(cell) ? pending.get(cell) : now;
+          q('[data-info]').textContent = t('zones.hexCell', { from: zoneName(before), to: zoneName(after) });
           paintPending();
         },
       });

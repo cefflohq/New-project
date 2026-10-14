@@ -631,6 +631,7 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
 .hex-brush { display: flex; flex-wrap: wrap; gap: 6px; }
 .hex-brush button { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--elevated); font: inherit; font-size: var(--t-label); cursor: pointer; }
 .hex-brush button.on { border-color: var(--primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 25%, transparent); }
+.hex-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .hex-brush i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 [data-detail] .pm { height: 260px; }
 .pm-canvas { position: absolute !important; inset: 0; width: 100%; height: 100%; }
