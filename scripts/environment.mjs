@@ -74,7 +74,12 @@ export function resolveFrontendEnvironment(values) {
   const mapboxPublicToken = String(values.CEFFLO_MAPBOX_PUBLIC_TOKEN || '').trim() || null;
   if (mapboxPublicToken && !/^pk\.[A-Za-z0-9._-]+$/.test(mapboxPublicToken)) throw new Error('CEFFLO_MAPBOX_PUBLIC_TOKEN must be a public pk.* Mapbox token');
 
-  return { name, projectRef, supabaseUrl: url.origin, publishableKey, driverStoreUrls, vendorStoreUrls, appWebUrls, inviteBaseUrl, storefrontBaseUrl, trackingBaseUrl, vendorConsoleUrl, mapboxPublicToken };
+  // Google Maps browser key (Maps JavaScript + Places). Restricted by HTTP
+  // referrer in the Google console, so it is safe in a client build.
+  const googleMapsBrowserKey = String(values.CEFFLO_GOOGLE_MAPS_BROWSER_KEY || '').trim() || null;
+  if (googleMapsBrowserKey && !/^AIza[0-9A-Za-z_-]{35}$/.test(googleMapsBrowserKey)) throw new Error('CEFFLO_GOOGLE_MAPS_BROWSER_KEY must be a Google API key (AIza…)');
+
+  return { name, projectRef, supabaseUrl: url.origin, publishableKey, driverStoreUrls, vendorStoreUrls, appWebUrls, inviteBaseUrl, storefrontBaseUrl, trackingBaseUrl, vendorConsoleUrl, mapboxPublicToken, googleMapsBrowserKey };
 }
 
 function baseUrl(raw, name) {
@@ -125,7 +130,8 @@ export function serializeRuntimeConfig(environment) {
     storefrontBaseUrl: environment.storefrontBaseUrl || null,
     trackingBaseUrl: environment.trackingBaseUrl || null,
     vendorConsoleUrl: environment.vendorConsoleUrl || null,
-    mapboxPublicToken: environment.mapboxPublicToken || null
+    mapboxPublicToken: environment.mapboxPublicToken || null,
+    googleMapsBrowserKey: environment.googleMapsBrowserKey || null
   };
   return `window.CEFFLO_CONFIG = Object.freeze(${JSON.stringify(config, null, 2)});\n`;
 }

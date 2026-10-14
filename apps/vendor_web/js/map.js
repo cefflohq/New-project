@@ -4,6 +4,20 @@
 // other pages pay nothing.
 import { t } from './i18n.js';
 import { esc, icon } from './ui.js';
+import * as G from './map_google.js';
+
+// Google Maps when the build carries a browser key (Phase 5); otherwise the
+// maps below (Mapbox with a pk. token, else MapLibre over OpenFreeMap).
+// A key Google refuses (e.g. this host is not in its referrer list) falls
+// back to the free maps for the rest of the tab session.
+const NO_GOOGLE = 'cf.noGoogleMaps';
+const googleRefused = () => { try { return sessionStorage.getItem(NO_GOOGLE) === '1'; } catch { return false; } };
+const GOOGLE = !!window.CEFFLO_CONFIG?.googleMapsBrowserKey && !googleRefused();
+if (GOOGLE) {
+  window.gm_authFailure = () => {
+    try { sessionStorage.setItem(NO_GOOGLE, '1'); location.reload(); } catch { /* stays on the Google error tile */ }
+  };
+}
 
 const MAPBOX_TOKEN = /^pk\./.test(window.CEFFLO_CONFIG?.mapboxPublicToken || '') ? window.CEFFLO_CONFIG.mapboxPublicToken : null;
 
@@ -55,6 +69,7 @@ const attr = MAPBOX_TOKEN ? '' : '<span class="pm-attr">© OpenStreetMap · Open
 
 // Read-only map with the pin at the centre.
 export async function mountViewMap(box, lat, lng) {
+  if (GOOGLE) return G.mountViewMap(box, lat, lng);
   box.classList.add('pm', 'pm-view');
   box.innerHTML = `<div class="pm-canvas"></div><div class="pm-pin has">${PIN_SVG}<i></i></div>${attr}`;
   try {
@@ -71,6 +86,7 @@ export async function mountViewMap(box, lat, lng) {
 // Picker: returns { get(), destroy() }. get() is null until the vendor either
 // locates or deliberately moves the map at zoom >= 14 (same rule as Storefront).
 export function mountPicker(box, initial, onChange) {
+  if (GOOGLE) return G.mountPicker(box, initial, onChange);
   box.classList.add('pm');
   box.innerHTML = `<div class="pm-canvas"></div><div class="pm-pin${initial ? ' has' : ''}">${PIN_SVG}<i></i></div>
     <div class="pm-zoom"><button type="button" data-z="1" aria-label="${esc(t('pin.zoomIn'))}">${icon('plus')}</button><button type="button" data-z="-1" aria-label="${esc(t('pin.zoomOut'))}">${icon('minus')}</button></div>
@@ -103,7 +119,12 @@ export function mountPicker(box, initial, onChange) {
       map?.flyTo({ center: [pin.lng, pin.lat], zoom: 17, duration: 900 });
     }, () => box.classList.remove('is-locating'), { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
   });
-  return { get: () => pin, changed: () => changed, map: () => map, destroy: () => { map?.remove(); map = null; } };
+  // Programmatic move (e.g. the business address was located): sets the pin.
+  const setPin = (p, zoom = 17) => {
+    pin = { lat: +Number(p.lat).toFixed(6), lng: +Number(p.lng).toFixed(6) }; changed = true; show();
+    map?.flyTo({ center: [pin.lng, pin.lat], zoom, duration: 600 });
+  };
+  return { get: () => pin, changed: () => changed, map: () => map, setPin, destroy: () => { map?.remove(); map = null; } };
 }
 
 // Read-only map with several pins (run stops, zone orders). drops:
@@ -112,6 +133,7 @@ export function mountPicker(box, initial, onChange) {
 // point of this business's own drivers.
 // zones: [{ name, boundary }] -- vendor-drawn GeoJSON polygons, drawn under the pins.
 export async function mountPinsMap(box, drops, riders = [], zones = []) {
+  if (GOOGLE) return G.mountPinsMap(box, drops, riders, zones);
   box.classList.add('pm', 'pm-multi');
   box.innerHTML = `<div class="pm-canvas"></div>${drops.length ? '' : `<div class="pm-empty">${esc(t('pin.noPinned'))}</div>`}${attr}`;
   try {
@@ -170,6 +192,7 @@ const circle = (lat, lng, km, n = 64) => {
 };
 
 export function mountCoverageMap(box, initial, radiusKm, onChange) {
+  if (GOOGLE) return G.mountCoverageMap(box, initial, radiusKm, onChange);
   let km = Number(radiusKm) || 0, map = null;
   const picker = mountPicker(box, initial, pin => { onChange?.(pin); draw(); });
   const draw = () => {
@@ -190,7 +213,8 @@ export function mountCoverageMap(box, initial, radiusKm, onChange) {
     const b = c.reduce((acc, p) => acc.extend(p), new (MAPBOX_TOKEN ? window.mapboxgl : window.maplibregl).LngLatBounds(c[0], c[0]));
     map.fitBounds(b, { padding: 24, duration: 0 });
   };
-  return { ...picker, setRadius: v => { km = Number(v) || 0; draw(); fit(); }, destroy: () => { clearInterval(wait); picker.destroy(); } };
+  return { ...picker, setRadius: v => { km = Number(v) || 0; draw(); fit(); }, setPin: (p, zoom) => { picker.setPin(p, zoom); draw(); },
+    destroy: () => { clearInterval(wait); picker.destroy(); } };
 }
 
 // Zone boundary drawer (Founder 2026-10-12, option B): tap the map to add a
@@ -198,6 +222,7 @@ export function mountCoverageMap(box, initial, radiusKm, onChange) {
 // GeoJSON Polygon, or null with fewer than 3 corners. Other zones are drawn
 // faintly for reference.
 export function mountZoneDrawer(box, initial, others = []) {
+  if (GOOGLE) return G.mountZoneDrawer(box, initial, others);
   box.classList.add('pm', 'pm-picker');
   box.innerHTML = `<div class="pm-canvas"></div>
     <div class="pm-draw"><button type="button" class="btn sm" data-undo>${esc(t('zones.drawUndo'))}</button><button type="button" class="btn sm" data-clear>${esc(t('zones.drawClear'))}</button></div>${attr}`;
@@ -265,6 +290,7 @@ function loadH3() {
 // orders: [{ lat, lng }] drawn as dots on top. onCell(cell, { drag }) is
 // called on a tap, and for every cell crossed while drag-painting is on.
 export async function mountHexMap(box, cells, zones, { onCell, orders = [] } = {}) {
+  if (GOOGLE) return G.mountHexMap(box, cells, zones, { onCell, orders }, { loadH3, zoneColor });
   box.classList.add('pm', 'pm-hex');
   box.innerHTML = `<div class="pm-canvas"></div>${attr}`;
   try {

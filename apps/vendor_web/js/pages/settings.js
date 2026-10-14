@@ -267,7 +267,7 @@ async function business(page) {
         body.querySelector('[name=lng]').value = res.longitude;
         const r = body.querySelector('[name=radius]');
         if (!r.value) r.value = 5;
-        cov.map()?.flyTo({ center: [res.longitude, res.latitude], zoom: 13, duration: 600 });
+        cov.setPin({ lat: res.latitude, lng: res.longitude }, 13);
         cov.setRadius(r.value);
         toast(t('bp.located'));
       } catch (ex) { aerr.textContent = ex.message && ex.status !== 404 ? ex.message : t('bp.locateFailed'); aerr.hidden = false; }
