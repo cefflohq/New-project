@@ -109,9 +109,13 @@ if (typeof Deno !== 'undefined') Deno.serve(async (request) => {
   const cells = buildCells({ origin, radiusKm, zones: zones || [], areas: areas || [] });
   // Cells the vendor painted by hand keep their zone.
   const { data: painted } = await admin.from('zone_cells').select('cell, zone_id')
-    .eq('business_id', businessId).eq('manual', true);
+    .eq('business_id', businessId).eq('manual', true).limit(MAX_CELLS);
   const keep = new Map((painted || []).map((c) => [c.cell, c.zone_id]));
-  for (const c of cells) if (keep.has(c.cell)) { c.zone_id = keep.get(c.cell); c.manual = true; }
+  // Every row carries manual: a bulk upsert fills absent columns with null.
+  for (const c of cells) {
+    c.manual = keep.has(c.cell);
+    if (c.manual) c.zone_id = keep.get(c.cell);
+  }
 
   const now = new Date().toISOString();
   for (let i = 0; i < cells.length; i += 500) {
