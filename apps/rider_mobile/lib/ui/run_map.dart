@@ -5,10 +5,12 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../core/env.dart';
 import '../core/live_location.dart';
 import '../core/theme.dart';
 import '../data/driver_models.dart';
 import '../data/live_adapters.dart';
+import 'google_maps.dart';
 import 'map_canvas.dart' show MapControlButton, MapRecenterPill;
 import 'map_tiles.dart';
 
@@ -94,6 +96,9 @@ class _RunMapState extends State<RunMap> {
 
   @override
   Widget build(BuildContext context) {
+    if (Env.googleMaps) {
+      return GoogleRunMap(stops: widget.stops, focus: widget.focus, showControls: widget.showControls);
+    }
     final pins = _pins;
     return Stack(
       children: [

@@ -81,5 +81,7 @@
 			</array>
 		</dict>
 	</array>
+	<key>GMSApiKey</key>
+	<string>$(CEFFLO_GOOGLE_MAPS_IOS_KEY)</string>
 </dict>
 </plist>

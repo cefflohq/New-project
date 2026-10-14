@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/env.dart';
 import '../core/theme.dart';
+import 'google_maps.dart';
 import 'map_tiles.dart';
 
 /// Mini map of the customer's pinned drop point. Pan-only (no zoom/rotate);
@@ -30,6 +31,15 @@ class DeliveryPinMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.c;
+    if (Env.googleMaps) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+        child: SizedBox(
+          height: height,
+          child: GoogleDeliveryPinMap(latitude: latitude, longitude: longitude, onTap: onTap),
+        ),
+      );
+    }
     final point = LatLng(latitude, longitude);
     return ClipRRect(
       borderRadius: BorderRadius.circular(Sizes.cardRadius),

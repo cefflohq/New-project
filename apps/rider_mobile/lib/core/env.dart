@@ -20,6 +20,11 @@ class Env {
     'CEFFLO_MAPBOX_PUBLIC_TOKEN',
   );
 
+  /// Google Maps (Auto Zone + Google Maps master guideline Phase 5). Opt in
+  /// with --dart-define=CEFFLO_GOOGLE_MAPS=true; the build must also carry
+  /// the native keys (CEFFLO_GOOGLE_MAPS_ANDROID_KEY / _IOS_KEY).
+  static const googleMaps = bool.fromEnvironment('CEFFLO_GOOGLE_MAPS');
+
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabasePublishableKey.isNotEmpty;
 
