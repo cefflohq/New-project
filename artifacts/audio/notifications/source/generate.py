@@ -1,4 +1,4 @@
-"""Generate 10 clear, high-pitched two-tone ("teng-teng") Jflow notification sounds.
+"""Generate 10 clear, high-pitched two-tone ("teng-teng") Cefflo candidate notification sounds.
 
 Each sound is two notes. They differ by direction (up/down/same), interval,
 gap and timbre. WAV 44.1 kHz mono + MP3/OGG via ffmpeg.
@@ -58,7 +58,7 @@ for name, (m1, m2, gap, timbre) in SOUNDS.items():
     s = two_tone(m1, m2, gap, timbre)
     s = s / np.max(np.abs(s)) * 0.9
     pcm = (s * 32767).astype(np.int16)
-    wav = os.path.join(OUT, f"jflow_{name}.wav")
+    wav = os.path.join(OUT, f"cefflo_candidate_{name}.wav")
     with wave.open(wav, "wb") as w:
         w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR); w.writeframes(pcm.tobytes())
     for ext, args in (("mp3", ["-b:a", "160k"]), ("ogg", ["-c:a", "libvorbis", "-q:a", "6"])):
