@@ -158,6 +158,8 @@ as $function$
     'theme', page.theme - 'hero_path' - 'logo_path',
     'hero_url', case when page.theme ? 'hero_path'
       then '/storage/v1/object/public/cefflo-storefront-assets/' || (page.theme->>'hero_path') end,
+    'logo_url', case when page.theme ? 'logo_path'
+      then '/storage/v1/object/public/cefflo-storefront-assets/' || (page.theme->>'logo_path') end,
     'business', jsonb_build_object('name', b.name, 'area', nullif(trim(b.operating_area), ''),
       'currency', b.currency, 'country', b.country_iso2),
     'hours', (select jsonb_agg(jsonb_build_object('weekday', h.weekday, 'is_open', h.is_open,

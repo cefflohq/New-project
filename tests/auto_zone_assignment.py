@@ -1,5 +1,5 @@
 """Rollback-only acceptance for auto zone assignment
-(20261014120000_auto_zone_assignment.sql): a resolved order gets the zone
+(20261014170000_auto_zone_assignment.sql): a resolved order gets the zone
 whose boundary holds it, a manual zone always wins, orders in a run and
 orders beyond the coverage radius + 20 % are never auto-zoned, and a zone
 boundary change re-zones only open auto/unzoned orders."""

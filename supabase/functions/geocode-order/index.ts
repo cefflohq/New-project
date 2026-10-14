@@ -15,7 +15,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 //
 // Google terms: the place_id is stored permanently; Google coordinates are
 // kept at most 30 days (daily job _expire_google_coordinates, migration
-// 20261014140000). Pins set by people (customer_pin, vendor_pin,
+// 20261014190000). Pins set by people (customer_pin, vendor_pin,
 // manual_correction) are our own data and are never expired.
 //
 // Modes (POST body):

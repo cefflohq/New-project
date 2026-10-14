@@ -39,7 +39,15 @@ returns public.rider_job_openings
 language plpgsql security definer set search_path = public as $$
 declare v rider_job_openings; c countries;
 begin
-  if not is_business_owner(p_business_id) then raise exception 'forbidden'; end if;
+  if not is_business_operational(p_business_id) then raise exception 'forbidden'; end if;
+  -- Founder 2026-10-14 (job_opening_profile_gate): a hiring post needs a
+  -- complete Business profile (address and pickup location).
+  if not exists (select 1 from businesses b where b.id = p_business_id
+                  and nullif(btrim(b.address), '') is not null
+                  and b.service_origin_latitude is not null
+                  and b.service_origin_longitude is not null) then
+    raise exception 'business profile incomplete';
+  end if;
   if p_pickup_time is null then raise exception 'pickup time is required'; end if;
   select c2.* into c from businesses b join countries c2 on c2.iso2 = b.country_iso2 where b.id = p_business_id;
   if p_pay_per_drop is null or p_pay_per_drop < coalesce(c.min_pay_per_drop, 0.01) then

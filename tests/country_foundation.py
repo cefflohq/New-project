@@ -1,5 +1,5 @@
 """Rollback-only acceptance for the international country foundation
-(20261014100000_country_foundation.sql): the countries reference table
+(20261014150000_country_foundation.sql): the countries reference table
 (public read, MY the only live pack), country on businesses (existing rows
 MY), set_business_country (owner only, never a planned country, locked once
 the business has orders) and set_my_country."""

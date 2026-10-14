@@ -1,6 +1,6 @@
 // Loads official area outlines into public.admin_areas (see
 // supabase/migrations/20261013100000_admin_areas.sql and
-// 20261014110000_country_rules.sql). Malaysia by default; any other country
+// 20261014160000_country_rules.sql). Malaysia by default; any other country
 // pack with --country ISO3 --iso2 XX --level ADM2|ADM3 (Country Pack
 // Guideline §4.1 lists the level per country).
 //

@@ -317,7 +317,7 @@ Each phase ships on staging, with tests, before the next starts.
 
 **Phase 1 — Geocoding on Google (backend)** — §B3 — **built 2026-10-14**
 (`geocode-order` Google + Mapbox fallback, `pending` batch mode for imports,
-integration orders auto-geocoded, migration `20261014140000_google_geocoding`
+integration orders auto-geocoded, migration `20261014190000_google_geocoding`
 with `place_id` and the daily 30-day expiry job; tests
 `tests/google_geocoding.py`. Known gap: an order still inside a run after
 30 days keeps its Google point until the run ends. Deploy + live test on
