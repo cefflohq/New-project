@@ -191,5 +191,14 @@ Deno.serve(async (req) => {
   const { data, error } = await db.rpc('_integration_ingest_order', { p_connection: connectionId, p_external_id: norm.external_id, p_order: norm.order });
   if (error) return json(500, { error: 'ingest failed' });
   if (data?.error) return json(422, { error: data.error });
+  // New orders arrive with an address only: geocode them through the
+  // canonical geocode-order function so they can be zoned and planned.
+  if (!data?.duplicate && data?.order_id) {
+    await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/geocode-order`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}` },
+      body: JSON.stringify({ order_id: data.order_id }),
+    }).catch(() => {});
+  }
   return json(data?.duplicate ? 200 : 201, data);
 });

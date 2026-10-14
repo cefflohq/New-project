@@ -193,9 +193,11 @@ class StructuralAndSecrecyTests(unittest.TestCase):
         self.assertEqual(resolved_literal_count, 1, "exactly one explicit resolved write expected")
 
     def test_rate_limit_applied_before_provider_call(self):
-        rate_limit_pos = SOURCE.index("check_rate_limit")
-        fetch_pos = SOURCE.index("await fetch(mapboxUrl)")
-        self.assertLess(rate_limit_pos, fetch_pos)
+        # The provider fetch lives in geocodeAddress(); every caller must
+        # check the rate limit before it calls geocodeAddress().
+        for start in ("async function geocodeOrder(", "async function geocodeBusinessAddress("):
+            body = SOURCE[SOURCE.index(start):]
+            self.assertLess(body.index("check_rate_limit"), body.index("await geocodeAddress("), start)
 
 
 if __name__ == "__main__":

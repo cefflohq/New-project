@@ -1913,15 +1913,28 @@ class VendorRepository {
       for (final e in (v as List? ?? const []))
         Map<String, dynamic>.from(e as Map),
     ];
-    return (committed: list(m['committed']), rejected: list(m['rejected']));
+    final committed = list(m['committed']);
+    // Imported rows carry an address only: resolve them in the background
+    // through geocode-order's pending mode, as Vendor Web does.
+    if (committed.isNotEmpty) {
+      unawaited(
+        _db!.functions
+            .invoke(
+              'geocode-order',
+              body: {'business_id': businessId, 'pending': true},
+            )
+            .then((_) {}, onError: (_) {}),
+      );
+    }
+    return (committed: committed, rejected: list(m['rejected']));
   }
 
   // ------------------------------------------------------------- business
 
   /// Resolves the business's own saved address to its real pickup origin
-  /// via the canonical geocode-order function (`business_id` mode, Mapbox,
-  /// server-side token). Stores nothing: the caller saves the result with
-  /// [setServiceArea]. Returns null when the address cannot be located.
+  /// via the canonical geocode-order function (`business_id` mode, Google
+  /// with Mapbox fallback, server-side key). Stores nothing: the caller
+  /// saves the result with [setServiceArea]. Returns null when the address cannot be located.
   Future<({double latitude, double longitude})?> locateBusinessAddress(
     String businessId,
   ) async {

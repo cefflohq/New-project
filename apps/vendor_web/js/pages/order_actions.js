@@ -184,6 +184,8 @@ export function openImport(onDone) {
     try {
       const res = await busy(e.currentTarget, () => api.rpc('import_orders_batch', { p_business_id: ctx.bid, p_rows: valid, p_idempotency_key: key }));
       const n = (res?.committed || []).length;
+      // Imported rows carry an address only: resolve them in the background.
+      if (n) api.fn('geocode-order', { business_id: ctx.bid, pending: true }).catch(() => {});
       m.close();
       toast(t('imp.done', { n }));
       onDone?.();
