@@ -109,16 +109,9 @@ busy zone becomes one oversized run.
   shows multiple runs per zone and the flags; Orders shows "Outside your
   zones" and "Auto" vs "Manual" zone.
 
-## 6. Founder decisions needed
-1. **Approve auto zone assignment** (§3.1), including "manual always wins".
-2. **Default run size**: min 10 / max 15? Editable per business?
-3. **Below-minimum zones**: one small run flagged (proposed), or try to
-   merge with the neighbouring zone?
-4. **Overlapping zones** rule: nearest zone centre (proposed)?
-5. **Split method**: sweep by bearing from the service origin (proposed,
-   simple and deterministic) — or other preference?
-6. **Geocoding provider** (decided: Google, §6a D6) for text-address orders: Google vs Mapbox (separate
-   pricing/terms review requested).
+## 6. Founder decisions
+
+All six decided on 2026-10-14 — see §6a.
 
 ## 6a. Founder decisions recorded (2026-10-14)
 
