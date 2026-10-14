@@ -12,6 +12,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../core/country.dart';
 import '../core/appearance.dart';
 import '../core/theme.dart';
 import '../data/models.dart';
@@ -1419,7 +1420,7 @@ Future<void> launchPhoneCall(BuildContext context, String phone) => _launch(
 /// Opens a WhatsApp conversation with [phone] (international number).
 Future<void> launchWhatsApp(BuildContext context, String phone) => _launch(
   context,
-  Uri.https('wa.me', '/${phone.replaceAll(RegExp(r'\D'), '')}'),
+  Uri.https('wa.me', '/${Country.toE164(phone).replaceAll('+', '')}'),
   L.whatsapp,
 );
 

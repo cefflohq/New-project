@@ -5,6 +5,7 @@ import { t, fmtDate, fmtTime } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { showInviteLink } from '../invite_link.js';
+import { waNumber } from '../country.js';
 import { mountHiring } from '../hiring.js';
 import { fetchRiders, fetchOrders, fetchRatings, orderNo } from '../data.js';
 import { esc, icon, chip, avatar, loadingRows, emptyState, errorState, toast, busy, modal, confirmDialog, typedConfirmDialog, phoneDigits, orderStatus, gatedNote } from '../ui.js';
@@ -93,7 +94,7 @@ export default function riders({ el, params, setHeader }) {
     const r = all.find(x => x.id === selected);
     if (!r) { location.hash = '#/riders'; return; }
     const s = stats(r.id), digits = phoneDigits(r.phone);
-    const wa = digits ? `https://wa.me/${esc(digits.replace(/^0/, '60'))}` : '';
+    const wa = digits ? `https://wa.me/${esc(waNumber(r.phone))}` : '';
     const head = `<div class="rd-head">${avatar(r.name, 'lg')}
         <div class="rd-id"><div class="rd-name"><h2>${esc(r.name)}</h2>${chip(r.status === 'active' ? 'active' : 'pending')}</div>
           <div class="hint">${esc(r.phone)}</div><div class="hint">${esc([r.vehicle_plate, vehicle(r)].filter(Boolean).join(' · '))}</div></div>

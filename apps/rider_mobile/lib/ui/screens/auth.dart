@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/country.dart';
 import '../../core/keep_signed_in.dart';
 import '../../core/browser_history.dart';
 import '../../core/routes.dart';
@@ -12,6 +13,7 @@ import '../../core/theme.dart';
 import '../../data/rider_repository.dart';
 import '../brand.dart';
 import '../bottom_surface.dart';
+import '../country_sheet.dart';
 import '../widgets.dart';
 
 import 'package:cefflo_rider_mobile/l10n/l10n.dart';
@@ -852,7 +854,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         email: _email.text,
         password: _password.text,
         fullName: _name.text,
-        phone: _phone.text,
+        phone: Country.toE164(_phone.text),
       );
       if (!mounted) return;
       if (needsVerification) {
@@ -891,6 +893,21 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           hint: 'you@domain.com',
           icon: LucideIcons.mail,
           keyboardType: TextInputType.emailAddress,
+        ),
+        const SizedBox(height: Gap.md),
+        // First launch: Region > Country (device region pre-selected); sets
+        // the phone code below and is saved to the profile after sign-up.
+        CeffloListTile(
+          icon: LucideIcons.mapPin,
+          label: countryLabel(context),
+          value: Country.current.nameEn,
+          onTap: () async {
+            final app = AppScope.read(context);
+            final picked = await showCountrySheet(context);
+            if (picked == null) return;
+            await app.setCountry(picked);
+            if (mounted) setState(() {});
+          },
         ),
         const SizedBox(height: Gap.md),
         CeffloPhoneField(

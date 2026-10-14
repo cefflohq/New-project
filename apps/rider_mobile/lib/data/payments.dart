@@ -8,6 +8,8 @@
 /// `CEFFLO_DRIVER_PAYMENTS` build flag — the screens stay the same.
 library;
 
+import '../core/country.dart';
+
 enum PaymentProvider { curlec, stripe }
 
 /// What the Driver picks: real payment methods, never a provider name
@@ -71,10 +73,9 @@ class UnconnectedPayments implements DriverPayments {
 /// wired and the build enables it.
 const DriverPayments driverPayments = UnconnectedPayments();
 
-/// Malaysian Drivers (+60 / local numbers) start on online banking;
-/// others on an international card.
+/// Malaysian Drivers (a +60 number) start on online banking; others on an
+/// international card.
 PaymentMethod defaultMethodFor(String phone) {
-  final digits = phone.replaceAll(RegExp(r'\D'), '');
-  final local = phone.trim().startsWith('0') || digits.startsWith('60');
+  final local = Country.toE164(phone).startsWith('+60');
   return local ? PaymentMethod.fpx : PaymentMethod.internationalCard;
 }

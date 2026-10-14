@@ -16,6 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/app_state.dart';
+import '../core/country.dart';
 import '../core/routes.dart';
 import '../core/theme.dart';
 import '../core/ui_locale.dart';
@@ -946,15 +947,17 @@ class CeffloPhoneField extends StatelessWidget {
     hint: hint ?? L.enterPhoneNumber,
     icon: LucideIcons.phone,
     keyboardType: TextInputType.phone,
-    // Malaysia launch: every reference phone field leads with the MY flag
-    // and +60.
+    // Leads with the country's calling code (+60 and the MY flag in
+    // Malaysia); numbers are saved in E.164.
     prefix: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const _MalaysiaFlag(),
-        const SizedBox(width: 8),
+        if (Country.current.iso2 == 'MY') ...[
+          const _MalaysiaFlag(),
+          const SizedBox(width: 8),
+        ],
         Text(
-          '+60',
+          Country.current.phoneCode,
           style: TextStyle(
             fontFamily: 'Manrope',
             fontSize: 15,

@@ -17,6 +17,7 @@ import '../../../../data/storefront_catalog.dart';
 import 'product_art.dart';
 import 'storefront_theme.dart';
 
+import 'package:cefflo_vendor_mobile/core/money.dart';
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
 
 const double kStorefrontDeliveryFee = 6.00;
@@ -388,7 +389,7 @@ class StorefrontCartView extends StatelessWidget {
                                     ),
                                   const SizedBox(height: 6),
                                   Text(
-                                    L.rm2(line.item.price.toStringAsFixed(2)),
+                                    Money.format(line.item.price),
                                     style: TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 13,
@@ -502,7 +503,7 @@ class StorefrontCartView extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              L.rm3(value.toStringAsFixed(2)),
+              Money.format(value),
               style: TextStyle(
                 fontSize: emphasize ? 15 : 13,
                 fontWeight: emphasize ? FontWeight.w800 : FontWeight.w700,
@@ -566,7 +567,7 @@ class _StorefrontCheckoutViewState extends State<StorefrontCheckoutView> {
               ),
               _optionTile(
                 L.expressDelivery,
-                L.t1520MinRm300,
+                L.t1520MinRm300.replaceAll('RM 3.00', Money.format(3)),
                 selected: delivery == _DeliveryOption.express,
                 onTap: () => setState(() => delivery = _DeliveryOption.express),
               ),
@@ -729,7 +730,7 @@ class _StorefrontCheckoutViewState extends State<StorefrontCheckoutView> {
             ),
             const Spacer(),
             Text(
-              L.rm3(value.toStringAsFixed(2)),
+              Money.format(value),
               style: TextStyle(
                 fontSize: emphasize ? 15 : 13,
                 fontWeight: emphasize ? FontWeight.w800 : FontWeight.w700,

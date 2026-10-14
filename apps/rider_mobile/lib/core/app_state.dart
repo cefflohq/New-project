@@ -1,6 +1,7 @@
 import 'dart:math' show max;
 
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
 
 import '../data/demo_data.dart';
 import '../data/driver_models.dart';
@@ -9,6 +10,7 @@ import '../data/rider_repository.dart';
 import 'live_location.dart';
 import 'notification_alerts.dart';
 import 'browser_history.dart';
+import 'country.dart';
 import 'join_link.dart';
 import 'ui_locale.dart';
 import 'routes.dart';
@@ -297,6 +299,18 @@ class AppState extends ChangeNotifier {
     if (!repo.isDemo && repo.currentUser != null) {
       await repo.saveUiLocale(next.languageCode);
     }
+  }
+
+  /// Country chosen on this device (Profile > Country): phone prefix,
+  /// place search and currency follow it; saved to the profile when signed in.
+  Future<void> setCountry(CountryPack next) async {
+    await Country.choose(
+      next,
+      client: !repo.isDemo && repo.currentUser != null
+          ? Supabase.instance.client
+          : null,
+    );
+    notifyListeners();
   }
 
   void _applyUiLocale(Locale next) {

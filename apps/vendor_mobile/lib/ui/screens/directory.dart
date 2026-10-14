@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/money.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/models.dart';
@@ -1606,7 +1607,7 @@ class ProductsScreen extends StatelessWidget {
                 title: p.name,
                 subtitle: p.displayPrice == null
                     ? p.status
-                    : L.rm(p.displayPrice!.toStringAsFixed(2), p.status),
+                    : '${Money.format(p.displayPrice!)} · ${p.status}',
                 icon: LucideIcons.package,
                 onTap: () => app.go(VRoute.productDetail, entityId: p.id),
               ),

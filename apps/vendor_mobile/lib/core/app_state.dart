@@ -4,6 +4,7 @@ import 'appearance.dart';
 import 'auth_access.dart';
 import 'browser_history.dart';
 import 'join_link.dart';
+import 'country.dart';
 import 'money.dart';
 import 'notification_alerts.dart';
 
@@ -42,6 +43,17 @@ class AppState extends ChangeNotifier {
   set business(Business? b) {
     _business = b;
     Money.setCurrency(b?.currency);
+    if (b != null) _loadBusinessCountry(b.id);
+  }
+
+  /// Phone prefix, postcode rule, pay minimum and zone suggestions follow
+  /// the active business's country pack.
+  Future<void> _loadBusinessCountry(String id) async {
+    final iso2 = await repo.businessCountry(id);
+    if (iso2 == null || _business?.id != id) return;
+    Country.useBusinessCountry(iso2);
+    Money.setCurrency(_business?.currency);
+    notifyListeners();
   }
 
   /// UI language (en / ms). Independent of country/market (Founder,

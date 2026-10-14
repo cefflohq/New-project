@@ -3,6 +3,7 @@
 import { t, fmtTime } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
+import { country } from '../country.js';
 import { fetchZones, fetchOrders, businessToday, orderNo } from '../data.js';
 import { mountPinsMap, mountZoneDrawer, hasPin, zoneColor } from '../map.js';
 import { esc, icon, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal } from '../ui.js';
@@ -146,7 +147,7 @@ export default function zones({ el, params, setHeader }) {
       const q = input.value.trim(), mine = ++seq;
       if (picked || q.length < 2) { sug.hidden = true; return; }
       timer = setTimeout(async () => {
-        options = (await api.fn('zone-boundary', { suggest: q }).catch(() => null))?.suggestions || [];
+        options = (await api.fn('zone-boundary', { suggest: q, country: country().iso2 }).catch(() => null))?.suggestions || [];
         if (mine !== seq) return;
         sug.innerHTML = (options || []).map((a, i) => `<button type="button" data-i="${i}">${icon('pin')}<span><b>${esc(a.name)}</b>${a.state ? `<small>${esc(a.state)}</small>` : ''}</span></button>`).join('');
         sug.hidden = !options?.length;

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/country.dart';
 import '../../core/money.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
@@ -468,7 +469,11 @@ class _OpeningForm extends StatefulWidget {
 
 class _OpeningFormState extends State<_OpeningForm> {
   final _area = TextEditingController();
-  final _pay = TextEditingController(text: '3.00');
+  late final _pay = TextEditingController(
+    text: Country.current.iso2 == 'MY'
+        ? '3.00'
+        : '${Country.current.minPayPerDrop}',
+  );
   final Set<int> _picked = {1, 2, 3, 4, 5};
   TimeOfDay _pickup = const TimeOfDay(hour: 7, minute: 0);
   String _vehicleType = 'motorcycle';
@@ -496,15 +501,19 @@ class _OpeningFormState extends State<_OpeningForm> {
   }
 
   num? get _payValue => num.tryParse(_pay.text.trim().replaceAll(',', '.'));
-  bool get _payTooLow => (_payValue ?? 0) < 3;
+  /// Minimum pay per drop from the business's country pack (server-enforced).
+  num get _payMin =>
+      Country.current.minPayPerDrop > 0 ? Country.current.minPayPerDrop : 3;
+  String _withMin(String s) => s.replaceAll('RM3.00', Money.format(_payMin));
+  bool get _payTooLow => (_payValue ?? 0) < _payMin;
 
   Future<void> _save() async {
     final pay = _payValue;
     if (_area.text.trim().length < 2 ||
         _picked.isEmpty ||
         pay == null ||
-        pay < 3) {
-      setState(() => _error = L.hrFix);
+        pay < _payMin) {
+      setState(() => _error = _withMin(L.hrFix));
       return;
     }
     final app = AppScope.read(context);
@@ -655,7 +664,7 @@ class _OpeningFormState extends State<_OpeningForm> {
                         onChanged: (_) => setState(() {}),
                       ),
                     ),
-                    hint(L.hrPayMin, error: _payTooLow),
+                    hint(_withMin(L.hrPayMin), error: _payTooLow),
                   ],
                 ),
               ),

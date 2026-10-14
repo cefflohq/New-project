@@ -69,12 +69,13 @@ const clean = (s) => String(s || '').replace(/[^\p{L}\p{N} ]+/gu, ' ').replace(/
 
 // ---------------------------------------------------------------- centre
 
-// Town suggestions: one per name and state, Malaysia only.
-async function photonTowns(q, near, limit = 8) {
+// Town suggestions: one per name and state, inside the business country
+// (ISO 3166-1 alpha-2; Malaysia unless the caller's business says otherwise).
+async function photonTowns(q, near, limit = 8, cc = 'MY') {
   const url = new URL(PHOTON_URL);
   url.searchParams.set('q', q);
   url.searchParams.set('limit', String(limit * 2));
-  url.searchParams.set('bbox', MALAYSIA_BBOX);
+  if (cc === 'MY') url.searchParams.set('bbox', MALAYSIA_BBOX);
   for (const t of TOWN_TAGS) url.searchParams.append('osm_tag', t);
   if (near) { url.searchParams.set('lon', String(near[0])); url.searchParams.set('lat', String(near[1])); }
   const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
@@ -85,9 +86,9 @@ async function photonTowns(q, near, limit = 8) {
   for (const f of body?.features || []) {
     const p = f.properties || {};
     const c = f.geometry?.coordinates;
-    if (p.countrycode !== 'MY' || !p.name || !Array.isArray(c)) continue;
+    if (p.countrycode !== cc || !p.name || !Array.isArray(c)) continue;
     // Kuala Lumpur carries no state in OSM; it is its own territory.
-    const state = p.state || p.city || 'Kuala Lumpur';
+    const state = p.state || p.city || (cc === 'MY' ? 'Kuala Lumpur' : '');
     const key = `${p.name.toLowerCase()}|${state}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -97,11 +98,11 @@ async function photonTowns(q, near, limit = 8) {
   return out;
 }
 
-async function centreFromMapbox(name, origin, token) {
+async function centreFromMapbox(name, origin, token, cc = 'MY') {
   if (!token) return null;
   const url = new URL(MAPBOX_URL);
   url.searchParams.set('q', name);
-  url.searchParams.set('country', 'my');
+  url.searchParams.set('country', cc.toLowerCase());
   url.searchParams.set('types', 'neighborhood,locality,place,district');
   url.searchParams.set('limit', '5');
   url.searchParams.set('access_token', token);
@@ -116,10 +117,10 @@ async function centreFromMapbox(name, origin, token) {
   return f ? f.geometry.coordinates.map(Number) : null;
 }
 
-async function centreFromOsm(name, origin) {
+async function centreFromOsm(name, origin, cc = 'MY') {
   const url = new URL(NOMINATIM_URL);
   url.searchParams.set('q', name);
-  url.searchParams.set('countrycodes', 'my');
+  url.searchParams.set('countrycodes', cc.toLowerCase());
   url.searchParams.set('format', 'jsonv2');
   url.searchParams.set('limit', '8');
   const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
@@ -229,10 +230,10 @@ function cell(center, area, others) {
 const AREA_COLS = 'id, name, level, area_km2, min_lng, min_lat, max_lng, max_lat, geom';
 const midOf = (a) => [(Number(a.min_lng) + Number(a.max_lng)) / 2, (Number(a.min_lat) + Number(a.max_lat)) / 2];
 
-async function areaByName(db, name, near) {
+async function areaByName(db, name, near, cc = 'MY') {
   const n = clean(name);
   if (!n) return null;
-  const { data } = await db.from('admin_areas').select(AREA_COLS)
+  const { data } = await db.from('admin_areas').select(AREA_COLS).eq('country_iso2', cc)
     .or(['', 'MUKIM ', 'BANDAR ', 'PEKAN '].map((p) => `name.ilike.${p}${n}`).join(','))
     .gte('area_km2', MIN_AREA_KM2);
   const rows = (data || []).filter((a) => !near || km(near, midOf(a)) <= NAME_MATCH_KM);
@@ -241,8 +242,8 @@ async function areaByName(db, name, near) {
     || Number(a.area_km2) - Number(b.area_km2))[0] || null;
 }
 
-async function areaAt(db, pt) {
-  const { data } = await db.from('admin_areas').select(AREA_COLS)
+async function areaAt(db, pt, cc = 'MY') {
+  const { data } = await db.from('admin_areas').select(AREA_COLS).eq('country_iso2', cc)
     .lte('min_lng', pt[0]).gte('max_lng', pt[0]).lte('min_lat', pt[1]).gte('max_lat', pt[1])
     .gte('area_km2', MIN_AREA_KM2);
   const holding = (data || []).filter((a) => contains(a.geom, pt));
@@ -307,7 +308,8 @@ Deno.serve(async (request) => {
     const q = clean(body.suggest).slice(0, 60);
     if (q.length < 2) return json({ suggestions: [] });
     const near = Array.isArray(body.near) && body.near.length === 2 ? body.near.map(Number) : null;
-    try { return json({ suggestions: await photonTowns(q, near) }); } catch { return json({ suggestions: [] }); }
+    const cc = typeof body.country === 'string' && /^[A-Z]{2}$/.test(body.country) ? body.country : 'MY';
+    try { return json({ suggestions: await photonTowns(q, near, 8, cc) }); } catch { return json({ suggestions: [] }); }
   }
 
   const zoneId = body && typeof body.zone_id === 'string' ? body.zone_id : null;
@@ -330,23 +332,24 @@ Deno.serve(async (request) => {
   if (zone.boundary && !zone.boundary.auto) return json({ zone_id: zoneId, status: 'kept' });
 
   const [{ data: biz }, { data: all }] = await Promise.all([
-    db.from('businesses').select('service_origin_latitude, service_origin_longitude').eq('id', zone.business_id).maybeSingle(),
+    db.from('businesses').select('service_origin_latitude, service_origin_longitude, country_iso2').eq('id', zone.business_id).maybeSingle(),
     db.from('zones').select('id, status, boundary').eq('business_id', zone.business_id),
   ]);
   const origin = biz?.service_origin_latitude != null && biz?.service_origin_longitude != null
     ? [Number(biz.service_origin_longitude), Number(biz.service_origin_latitude)] : null;
+  const cc = /^[A-Z]{2}$/.test(biz?.country_iso2 || '') ? biz.country_iso2 : 'MY';
 
   const name = clean(zone.name);
   let center = picked;
   if (!center) {
     try {
-      const hit = (await photonTowns(name, origin, 3)).find((t) => sameName(t.name, name)
+      const hit = (await photonTowns(name, origin, 3, cc)).find((t) => sameName(t.name, name)
         && (!origin || km(origin, t.center) <= NEAR_KM));
       center = hit?.center || null;
     } catch { /* next */ }
   }
-  if (!center) { try { center = await centreFromMapbox(name, origin, Deno.env.get('CEFFLO_MAPBOX_ACCESS_TOKEN')); } catch { /* next */ } }
-  if (!center) { try { center = await centreFromOsm(name, origin); } catch { /* none */ } }
+  if (!center) { try { center = await centreFromMapbox(name, origin, Deno.env.get('CEFFLO_MAPBOX_ACCESS_TOKEN'), cc); } catch { /* next */ } }
+  if (!center) { try { center = await centreFromOsm(name, origin, cc); } catch { /* none */ } }
 
   let area = null;
   if (pickedAreaId) {
@@ -355,8 +358,8 @@ Deno.serve(async (request) => {
     // The geocoded centre only counts when it lies in the picked area.
     if (area && center && !contains(area.geom, center)) center = null;
   }
-  if (!area && center) area = await areaAt(db, center);
-  if (!area) area = await areaByName(db, name, center || origin);
+  if (!area && center) area = await areaAt(db, center, cc);
+  if (!area) area = await areaByName(db, name, center || origin, cc);
   if (!center && area) center = centroid(mainRing(area.geom, null));
 
   if (!center) {

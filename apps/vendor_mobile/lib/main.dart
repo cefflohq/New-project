@@ -13,6 +13,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/app_state.dart';
 import 'core/appearance.dart';
 import 'core/browser_history.dart';
+import 'core/country.dart';
 import 'core/chrome_color.dart';
 import 'core/env.dart';
 import 'core/preview_path.dart';
@@ -86,6 +87,7 @@ Future<void> main() async {
     publishableKey: Env.supabasePublishableKey,
   );
   await endSessionIfNotKept(Supabase.instance.client);
+  await Country.init(Supabase.instance.client);
 
   runApp(
     VendorMobileApp(

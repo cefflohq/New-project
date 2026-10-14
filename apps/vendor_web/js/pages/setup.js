@@ -4,12 +4,15 @@
 //
 //   Step 1  Your Business    name (required, <=120), contact phone (required),
 //                            account email (read-only)
-//   Step 2  Pickup Location  street (required), postcode (optional, MY 5
-//                            digits), city (optional)
+//   Step 1 also picks the Country (Region > Country, live/beta packs only;
+//                            Malaysia by default).
+//   Step 2  Pickup Location  street (required), postcode (optional, the
+//                            country's rule), city (optional)
 //   Create  bootstrap_business(name, phone, email, "street, postcode city")
-//           -- the same address shape Vendor Mobile sends; timezone/currency
-//           use the backend defaults. Then the session/business state is
-//           reloaded. Business Ready appears only after both succeeded.
+//           -- the same address shape Vendor Mobile sends; timezone and
+//           currency come from the chosen country, the phone is stored in
+//           E.164, and set_business_country records the country. Then the
+//           session/business state is reloaded. Business Ready appears only after both succeeded.
 //
 // Never retries bootstrap_business: if creation succeeded but the reload
 // failed, recovery only reloads. The unfinished draft lives on this device
@@ -20,6 +23,7 @@ import { t } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { esc, icon, setChromeColor } from '../ui.js';
+import { MY, selectableCountries, toE164, isE164, postcodeOk } from '../country.js';
 
 const PHONE = /^\+?[0-9][0-9\s-]{5,19}$/;
 const draftKey = () => `cefflo.vendorweb.setupDraft.${ctx.user?.id || 'anon'}`;
@@ -34,6 +38,9 @@ export function clearSetupDraft() {
 }
 
 const digits = s => String(s || '').replace(/\D/g, '');
+let countries = [MY];
+const chosen = d => countries.find(c => c.iso2 === d.country) || MY;
+
 export function validateStep1(d) {
   const e = {};
   const name = String(d.name || '').trim();
@@ -41,14 +48,15 @@ export function validateStep1(d) {
   else if (name.length > 120) e.name = t('setup.nameTooLong');
   const phone = String(d.phone || '').trim();
   if (!phone) e.phone = t('c.required');
-  else if (!PHONE.test(phone) || digits(phone).length < 7 || digits(phone).length > 15) e.phone = t('c.invalidPhone');
+  else if (!PHONE.test(phone) || digits(phone).length < 7 || digits(phone).length > 15
+    || !isE164(toE164(phone, chosen(d).phone_code))) e.phone = t('c.invalidPhone');
   return e;
 }
 export function validateStep2(d) {
   const e = {};
   if (!String(d.street || '').trim()) e.street = t('c.required');
   const pc = String(d.postcode || '').trim();
-  if (pc && !/^\d{5}$/.test(pc)) e.postcode = t('setup.postcodeInvalid');
+  if (pc && !postcodeOk(pc, chosen(d))) e.postcode = t('setup.postcodeInvalid');
   return e;
 }
 export const composeAddress = d => [String(d.street || '').trim(),
@@ -63,7 +71,7 @@ export const composeAddress = d => [String(d.street || '').trim(),
  */
 export function renderBusinessSetup(root, opts) {
   setChromeColor('#0a3aae');
-  const d = { name: '', phone: '', street: '', postcode: '', city: '', ...readDraft() };
+  const d = { name: '', phone: '', country: 'MY', street: '', postcode: '', city: '', ...readDraft() };
   let step = d.step === 2 ? 2 : 1;
   let created = false; // bootstrap_business already succeeded in this visit
 
@@ -84,6 +92,20 @@ export function renderBusinessSetup(root, opts) {
   }
   const field = (name, label, attrs = '', hint = '') => `<div class="field"><label for="f-${name}">${esc(label)}</label>
     <input class="input" id="f-${name}" name="${name}" value="${esc(d[name] || '')}" ${attrs}>${hint ? `<span class="hint">${esc(hint)}</span>` : ''}<span class="err" data-err="${name}" hidden></span></div>`;
+  // Region > Country (only live / beta packs are offered).
+  const countryField = () => {
+    const regions = [...new Set(countries.map(c => c.region))];
+    const opts = regions.map(r => `<optgroup label="${esc(t(`region.${r}`))}">${countries.filter(c => c.region === r)
+      .map(c => `<option value="${esc(c.iso2)}" ${c.iso2 === d.country ? 'selected' : ''}>${esc(c.name_en)}</option>`).join('')}</optgroup>`).join('');
+    return `<div class="field"><label for="f-country">${esc(t('setup.country'))}</label>
+      <select class="input" id="f-country" name="country" autocomplete="country">${opts}</select>
+      <span class="hint">${esc(t('setup.countryHint'))}</span><span class="err" data-err="country" hidden></span></div>`;
+  };
+  selectableCountries().then(list => {
+    countries = list;
+    if (!countries.some(c => c.iso2 === d.country)) d.country = 'MY';
+    if (step === 1 && !created) step1();
+  });
   const showErrors = errs => {
     root.querySelectorAll('[data-err]').forEach(el => {
       const m = errs[el.dataset.err];
@@ -93,7 +115,7 @@ export function renderBusinessSetup(root, opts) {
     const first = Object.keys(errs)[0];
     if (first) root.querySelector(`[name=${first}]`)?.focus();
   };
-  const bind = () => root.querySelectorAll('input[name]').forEach(i => i.addEventListener('input', () => {
+  const bind = () => root.querySelectorAll('input[name], select[name]').forEach(i => i.addEventListener('input', () => {
     d[i.name] = i.value; writeDraft({ ...d, step });
   }));
 
@@ -103,7 +125,8 @@ export function renderBusinessSetup(root, opts) {
       <span class="onb-count">${esc(t('setup.stepOf', { n: 1 }))}</span>
       <h2>${esc(t('setup.step1'))}</h2><p class="onb-lead">${esc(t('setup.step1Lead'))}</p>
       ${field('name', t('bp.name'), 'maxlength="120" autocomplete="organization" required')}
-      ${field('phone', t('setup.contactPhone'), 'inputmode="tel" autocomplete="tel" placeholder="+60 12-345 6789" required')}
+      ${countryField()}
+      ${field('phone', t('setup.contactPhone'), `inputmode="tel" autocomplete="tel" placeholder="${esc(chosen(d).phone_code)} …" required`)}
       <div class="field"><label for="f-email">${esc(t('prof.email'))}</label><input class="input" id="f-email" value="${esc(ctx.user?.email || '')}" readonly disabled>
         <span class="hint">${esc(t('setup.emailHint'))}</span></div>
       <div class="onb-actions"><button class="btn primary" type="submit">${esc(t('setup.continue'))}${icon('right')}</button></div>
@@ -126,7 +149,7 @@ export function renderBusinessSetup(root, opts) {
       <span class="onb-count">${esc(t('setup.stepOf', { n: 2 }))}</span>
       <h2>${esc(t('setup.step2'))}</h2><p class="onb-lead">${esc(t('setup.step2Lead'))}</p>
       ${field('street', t('setup.street'), 'autocomplete="street-address" required')}
-      <div class="onb-row">${field('postcode', t('setup.postcode'), 'inputmode="numeric" maxlength="5" autocomplete="postal-code"', t('c.optional'))}
+      <div class="onb-row">${field('postcode', t('setup.postcode'), 'maxlength="12" autocomplete="postal-code"', t('c.optional'))}
         ${field('city', t('setup.city'), 'autocomplete="address-level2"', t('c.optional'))}</div>
       <div class="err" data-submit-err hidden role="alert"></div>
       <div class="onb-actions"><button class="btn" type="button" data-back>${icon('left')}${esc(t('c.back'))}</button>
@@ -154,9 +177,14 @@ export function renderBusinessSetup(root, opts) {
     window.showPageLoader(t('setup.creating'));
     errBox.hidden = true;
     try {
-      await api.rpc('bootstrap_business', {
-        p_name: d.name.trim(), p_phone: d.phone.trim(), p_email: ctx.user?.email || null, p_address: composeAddress(d),
+      const c = chosen(d);
+      const id = await api.rpc('bootstrap_business', {
+        p_name: d.name.trim(), p_phone: toE164(d.phone, c.phone_code), p_email: ctx.user?.email || null, p_address: composeAddress(d),
+        p_timezone: c.timezones?.[0] || 'Asia/Kuala_Lumpur', p_currency: c.currency || 'MYR',
       });
+      // Records the country on the new business (no orders yet). Malaysia is
+      // already the default; a failure here leaves a Malaysian business.
+      if (c.iso2 !== 'MY' && id) await api.rpc('set_business_country', { p_business_id: id, p_iso2: c.iso2 }).catch(() => {});
     } catch (ex) {
       window.hidePageLoader();
       inFlight = false;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/country.dart';
 import '../../core/money.dart';
 import '../../core/env.dart';
 import '../../core/routes.dart';
@@ -10,6 +11,7 @@ import '../../data/models.dart';
 import '../../data/vendor_repository.dart';
 import '../async_view.dart';
 import '../delivery_pin.dart';
+import '../country_sheet.dart';
 import '../share_link.dart';
 import '../shell.dart';
 import '../widgets.dart';
@@ -168,7 +170,8 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
     if (name.text.trim().isEmpty) {
       errors['name'] = L.businessNameRequired;
     }
-    if (phone.text.trim().length < 7) {
+    if (phone.text.trim().length < 7 ||
+        !Country.isE164(Country.toE164(phone.text))) {
       errors['phone'] = L.enterValidPhoneNumber;
     }
     setState(() {});
@@ -218,10 +221,25 @@ class _SetupBusinessInfoScreenState extends State<SetupBusinessInfoScreen> {
           ],
         ),
       ),
+      // Region > Country: sets the currency, time zone, phone format and
+      // postcode rule of the new business.
+      ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: const Icon(LucideIcons.mapPin),
+        title: Text(countryLabel(context)),
+        subtitle: Text(Country.current.nameEn),
+        trailing: const Icon(LucideIcons.chevronRight),
+        onTap: () async {
+          final picked = await showCountrySheet(context);
+          if (picked == null) return;
+          await Country.choose(picked);
+          if (mounted) setState(() {});
+        },
+      ),
       CefField(
         label: L.contactPhone,
         controller: phone,
-        hint: '+60 12 345 6789',
+        hint: '${Country.current.phoneCode} 12 345 6789',
         prefixIcon: LucideIcons.phone,
         keyboardType: TextInputType.phone,
         errorText: errors['phone'],
@@ -260,6 +278,11 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
     errors.clear();
     if (address.text.trim().isEmpty) {
       errors['address'] = L.pickupAddressRequired;
+    }
+    if (!Country.current.postcodeOk(postcode.text)) {
+      errors['postcode'] = Localizations.localeOf(context).languageCode == 'ms'
+          ? 'Poskod tidak sah untuk negara ini.'
+          : 'Enter a valid postcode for this country.';
     }
     setState(() {});
     if (errors.isNotEmpty) return;
@@ -373,7 +396,7 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
             child: CefField(
               label: L.postcode,
               controller: postcode,
-              keyboardType: TextInputType.number,
+              errorText: errors['postcode'],
             ),
           ),
           const SizedBox(width: Gap.md),
@@ -1613,9 +1636,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           maxLines: 3,
         ),
         CefField(
-          label: L.priceRm,
+          label: L.priceRm.replaceAll('RM', Money.symbol()),
           controller: price,
-          hint: L.rm000,
+          hint: Money.format(0),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           errorText: errors['price'],
         ),

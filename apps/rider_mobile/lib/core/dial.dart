@@ -1,5 +1,7 @@
 import 'package:url_launcher/url_launcher.dart';
 
+import 'country.dart';
+
 /// Opens navigation to the drop point: the exact pinned coordinates when the
 /// customer pinned them, otherwise the typed address.
 Future<bool> openNavigation({double? lat, double? lng, String? address}) async {
@@ -19,11 +21,11 @@ Future<bool> openNavigation({double? lat, double? lng, String? address}) async {
   }
 }
 
-/// Opens a WhatsApp chat with [phone] (Malaysian 0… numbers become 60…).
-/// Returns false when there is no usable number or WhatsApp cannot open.
+/// Opens a WhatsApp chat with [phone] (local 0… numbers get the country
+/// code, e.g. 60… in Malaysia). Returns false when there is no usable
+/// number or WhatsApp cannot open.
 Future<bool> openWhatsApp(String? phone) async {
-  var digits = (phone ?? '').replaceAll(RegExp(r'[^0-9]'), '');
-  if (digits.startsWith('0')) digits = '6$digits';
+  final digits = Country.toE164(phone ?? '').replaceAll('+', '');
   if (digits.length < 8) return false;
   try {
     return await launchUrl(

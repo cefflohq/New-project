@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/country.dart';
+import '../country_sheet.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/demo_data.dart';
@@ -269,6 +271,16 @@ class ProfileScreen extends StatelessWidget {
             },
           ),
           CeffloListTile(
+            icon: LucideIcons.mapPin,
+            label: countryLabel(context),
+            value: Country.current.nameEn,
+            onTap: () async {
+              final picked = await showCountrySheet(context);
+              if (picked == null) return;
+              await app.setCountry(picked);
+            },
+          ),
+          CeffloListTile(
             icon: LucideIcons.shield,
             label: L.security,
             // Straight to Change password (it opened Settings, a screen
@@ -478,7 +490,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     try {
                       await app.saveMyDriverProfile(
                         fullName: _name.text.trim(),
-                        phone: _phone.text.trim(),
+                        phone: Country.toE164(_phone.text),
                         vehicleType: app.myVehicleType,
                         plate: app.profile.plateNumber,
                       );

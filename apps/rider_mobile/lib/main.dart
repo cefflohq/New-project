@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/app_state.dart';
 import 'core/browser_history.dart';
+import 'core/country.dart';
 import 'core/env.dart';
 import 'core/live_location.dart';
 import 'core/responsive.dart';
@@ -59,6 +60,7 @@ Future<void> main() async {
     publishableKey: Env.supabasePublishableKey,
   );
   await endSessionIfNotKept(Supabase.instance.client);
+  await Country.init(Supabase.instance.client);
 
   final repo = RiderRepository(Supabase.instance.client);
   runApp(DriverMobileApp(repo: repo, live: _liveFor(repo)));

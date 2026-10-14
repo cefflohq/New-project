@@ -5,6 +5,7 @@
 import { api } from './api.js';
 import { operatorEntry } from './access.js';
 import { setDisplayTimeZone, setDisplayCurrency } from './i18n.js';
+import { loadCountry } from './country.js';
 
 const ACTIVE = 'cefflo.vendorweb.activeBusiness';
 
@@ -40,6 +41,7 @@ export async function loadContext() {
   ctx.business = ctx.businesses.find(b => b.business_id === remembered) || ctx.businesses[0];
   setDisplayTimeZone(ctx.business?.timezone);
   setDisplayCurrency(ctx.business?.currency);
+  await loadCountry(ctx.business?.business_id);
   return ctx;
 }
 
@@ -49,6 +51,7 @@ export function selectBusiness(id) {
   ctx.business = b;
   setDisplayTimeZone(b.timezone);
   setDisplayCurrency(b.currency);
+  loadCountry(id);
   try { localStorage.setItem(ACTIVE, id); } catch { /* ignore */ }
 }
 

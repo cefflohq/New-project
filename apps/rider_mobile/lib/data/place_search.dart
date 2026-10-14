@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../core/country.dart';
 import '../core/env.dart';
 import 'my_towns.dart';
 
@@ -14,7 +15,7 @@ Future<List<MyTown>> searchPlaces(String query, {http.Client? client}) async {
   if (q.length < 3 || !Env.mapboxPublicToken.startsWith('pk.')) return const [];
   final uri = Uri.https('api.mapbox.com', '/search/geocode/v6/forward', {
     'q': q,
-    'country': 'my',
+    'country': Country.current.iso2.toLowerCase(),
     'types': 'place,locality,neighborhood,postcode',
     'limit': '6',
     'access_token': Env.mapboxPublicToken,

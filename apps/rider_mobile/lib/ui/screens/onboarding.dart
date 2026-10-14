@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/country.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/demo_data.dart';
@@ -1330,7 +1331,7 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
       final res = await app.repo.joinViaInviteLink(
         token: token,
         name: _name.text.trim(),
-        phone: _phone.text.trim(),
+        phone: Country.toE164(_phone.text),
       );
       final business = _targetBusiness ?? 'Cefflo';
       // Already a rider of this business: a terminal state the rider

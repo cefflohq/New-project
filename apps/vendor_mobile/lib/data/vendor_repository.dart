@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show VoidCallback, kIsWeb;
 import 'package:cefflo_push/cefflo_push.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../core/country.dart';
 import '../core/env.dart';
 import 'models.dart';
 
@@ -713,6 +714,21 @@ class VendorRepository {
     return (Map<String, dynamic>.from(res as Map)['status'] ?? '').toString();
   }
 
+  /// The business's country (ISO 3166-1 alpha-2); null in demo or on error.
+  Future<String?> businessCountry(String businessId) async {
+    if (_demo) return null;
+    try {
+      final row = await _db!
+          .from('businesses')
+          .select('country_iso2')
+          .eq('id', businessId)
+          .maybeSingle();
+      return row?['country_iso2'] as String?;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<String> bootstrapBusiness({
     required String name,
     required String phone,
@@ -723,13 +739,26 @@ class VendorRepository {
         'bootstrap_business',
         params: {
           'p_name': name,
-          'p_phone': phone,
+          'p_phone': Country.toE164(phone),
           'p_email': currentUser?.email,
           'p_address': address,
+          'p_currency': Country.current.currency,
+          if (Country.current.timezone != null)
+            'p_timezone': Country.current.timezone,
         },
       ),
     );
     if (id is! String) throw RepositoryError(L.unexpectedBackendResponseShape);
+    // Records the country on the new business (no orders yet); Malaysia is
+    // the default, and a failure leaves a Malaysian business.
+    if (Country.current.iso2 != 'MY') {
+      try {
+        await _db!.rpc(
+          'set_business_country',
+          params: {'p_business_id': id, 'p_iso2': Country.current.iso2},
+        );
+      } catch (_) {}
+    }
     return id;
   }
 
@@ -984,7 +1013,7 @@ class VendorRepository {
     try {
       final res = await _db!.functions.invoke(
         'zone-boundary',
-        body: {'suggest': q},
+        body: {'suggest': q, 'country': Country.current.iso2},
       );
       final list = (res.data is Map ? res.data['suggestions'] : null) as List?;
       return [
