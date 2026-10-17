@@ -4905,4 +4905,48 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get dsSaved => 'Tetapan penghantaran disimpan';
+
+  @override
+  String get sdTitle => 'Penghantaran kedai';
+
+  @override
+  String get sdLead =>
+      'Caj setiap penghantaran, hari hantar, batch dan tempoh pakej.';
+
+  @override
+  String get sdFee => 'Caj hantar setiap drop (RM)';
+
+  @override
+  String get sdFeeHint =>
+      'Bayaran pemandu untuk setiap penghantaran. Pelanggan membayarnya pada setiap hantaran.';
+
+  @override
+  String get sdDays => 'Hari penghantaran';
+
+  @override
+  String get sdWeeks => 'Pakej yang boleh dipilih pelanggan';
+
+  @override
+  String get sdWeek1 => '1 minggu';
+
+  @override
+  String sdWeekN(int n) {
+    return '$n minggu';
+  }
+
+  @override
+  String get sdBatches => 'Batch penghantaran';
+
+  @override
+  String get sdBatchesHint =>
+      'Pelanggan pilih batch, bukan jam tepat. Maksimum 4.';
+
+  @override
+  String get sdBatchName => 'Nama batch';
+
+  @override
+  String get sdAddBatch => 'Tambah batch';
+
+  @override
+  String get sdFeeNeeded => 'Masukkan caj hantar setiap drop.';
 }

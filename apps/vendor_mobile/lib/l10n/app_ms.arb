@@ -1466,5 +1466,18 @@
   "dsMin": "Sekurang-kurangnya",
   "dsMax": "Paling banyak",
   "dsHint": "Run kecil siap lebih cepat; run besar guna kurang driver. 1 hingga 50.",
-  "dsSaved": "Tetapan penghantaran disimpan"
+  "dsSaved": "Tetapan penghantaran disimpan",
+  "sdTitle": "Penghantaran kedai",
+  "sdLead": "Caj setiap penghantaran, hari hantar, batch dan tempoh pakej.",
+  "sdFee": "Caj hantar setiap drop (RM)",
+  "sdFeeHint": "Bayaran pemandu untuk setiap penghantaran. Pelanggan membayarnya pada setiap hantaran.",
+  "sdDays": "Hari penghantaran",
+  "sdWeeks": "Pakej yang boleh dipilih pelanggan",
+  "sdWeek1": "1 minggu",
+  "sdWeekN": "{n} minggu",
+  "sdBatches": "Batch penghantaran",
+  "sdBatchesHint": "Pelanggan pilih batch, bukan jam tepat. Maksimum 4.",
+  "sdBatchName": "Nama batch",
+  "sdAddBatch": "Tambah batch",
+  "sdFeeNeeded": "Masukkan caj hantar setiap drop."
 }

@@ -8906,6 +8906,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delivery settings saved'**
   String get dsSaved;
+
+  /// No description provided for @sdTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Storefront delivery'**
+  String get sdTitle;
+
+  /// No description provided for @sdLead.
+  ///
+  /// In en, this message translates to:
+  /// **'What customers pay per delivery, the days you deliver, your batches and package lengths.'**
+  String get sdLead;
+
+  /// No description provided for @sdFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery fee per drop (RM)'**
+  String get sdFee;
+
+  /// No description provided for @sdFeeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What your driver earns for each delivery. Customers pay it on every delivery.'**
+  String get sdFeeHint;
+
+  /// No description provided for @sdDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery days'**
+  String get sdDays;
+
+  /// No description provided for @sdWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Packages customers can choose'**
+  String get sdWeeks;
+
+  /// No description provided for @sdWeek1.
+  ///
+  /// In en, this message translates to:
+  /// **'1 week'**
+  String get sdWeek1;
+
+  /// No description provided for @sdWeekN.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} weeks'**
+  String sdWeekN(int n);
+
+  /// No description provided for @sdBatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery batches'**
+  String get sdBatches;
+
+  /// No description provided for @sdBatchesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers pick a batch, not an exact time. Up to 4.'**
+  String get sdBatchesHint;
+
+  /// No description provided for @sdBatchName.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch name'**
+  String get sdBatchName;
+
+  /// No description provided for @sdAddBatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Add batch'**
+  String get sdAddBatch;
+
+  /// No description provided for @sdFeeNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the delivery fee per drop.'**
+  String get sdFeeNeeded;
 }
 
 class _AppLocalizationsDelegate

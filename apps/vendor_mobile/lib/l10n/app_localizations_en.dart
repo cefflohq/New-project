@@ -4896,4 +4896,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dsSaved => 'Delivery settings saved';
+
+  @override
+  String get sdTitle => 'Storefront delivery';
+
+  @override
+  String get sdLead =>
+      'What customers pay per delivery, the days you deliver, your batches and package lengths.';
+
+  @override
+  String get sdFee => 'Delivery fee per drop (RM)';
+
+  @override
+  String get sdFeeHint =>
+      'What your driver earns for each delivery. Customers pay it on every delivery.';
+
+  @override
+  String get sdDays => 'Delivery days';
+
+  @override
+  String get sdWeeks => 'Packages customers can choose';
+
+  @override
+  String get sdWeek1 => '1 week';
+
+  @override
+  String sdWeekN(int n) {
+    return '$n weeks';
+  }
+
+  @override
+  String get sdBatches => 'Delivery batches';
+
+  @override
+  String get sdBatchesHint =>
+      'Customers pick a batch, not an exact time. Up to 4.';
+
+  @override
+  String get sdBatchName => 'Batch name';
+
+  @override
+  String get sdAddBatch => 'Add batch';
+
+  @override
+  String get sdFeeNeeded => 'Enter the delivery fee per drop.';
 }

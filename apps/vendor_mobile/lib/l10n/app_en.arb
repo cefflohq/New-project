@@ -2421,5 +2421,19 @@
   "dsMin": "At least",
   "dsMax": "At most",
   "dsHint": "Smaller runs finish sooner; bigger runs use fewer drivers. 1 to 50.",
-  "dsSaved": "Delivery settings saved"
+  "dsSaved": "Delivery settings saved",
+  "sdTitle": "Storefront delivery",
+  "sdLead": "What customers pay per delivery, the days you deliver, your batches and package lengths.",
+  "sdFee": "Delivery fee per drop (RM)",
+  "sdFeeHint": "What your driver earns for each delivery. Customers pay it on every delivery.",
+  "sdDays": "Delivery days",
+  "sdWeeks": "Packages customers can choose",
+  "sdWeek1": "1 week",
+  "sdWeekN": "{n} weeks",
+  "@sdWeekN": {"placeholders": {"n": {"type": "int"}}},
+  "sdBatches": "Delivery batches",
+  "sdBatchesHint": "Customers pick a batch, not an exact time. Up to 4.",
+  "sdBatchName": "Batch name",
+  "sdAddBatch": "Add batch",
+  "sdFeeNeeded": "Enter the delivery fee per drop."
 }

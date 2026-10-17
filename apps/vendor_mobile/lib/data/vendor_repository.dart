@@ -1251,6 +1251,60 @@ class VendorRepository {
     );
   }
 
+  /// Storefront delivery plan (Founder 2026-10-17): fee per drop (the
+  /// driver's pay), weekdays (1 = Mon), batches and package lengths in weeks.
+  Future<StorefrontDelivery> storefrontDelivery(String businessId) async {
+    if (_demo) {
+      return const StorefrontDelivery(
+        fee: 5,
+        days: [1, 2, 3, 4, 5],
+        weeks: [1, 2, 4],
+        shifts: [(name: 'Evening batch', from: '18:00', to: '20:00')],
+      );
+    }
+    final r = await _run(
+      () => _db!.rpc('get_storefront', params: {'p_business_id': businessId}),
+    );
+    final m = (r is List ? r.first : r) as Map<String, dynamic>;
+    List<int> ints(dynamic v, List<int> fb) =>
+        v is List ? [for (final x in v) (x as num).toInt()] : fb;
+    return StorefrontDelivery(
+      fee: (m['delivery_fee'] as num?)?.toDouble(),
+      days: ints(m['delivery_days'], const [1, 2, 3, 4, 5]),
+      weeks: ints(m['package_weeks'], const [1, 2, 4]),
+      shifts: [
+        for (final x in (m['delivery_shifts'] as List? ?? const []))
+          (
+            name: '${(x as Map)['name']}',
+            from: '${x['from']}',
+            to: '${x['to']}',
+          ),
+      ],
+    );
+  }
+
+  Future<void> saveStorefrontDelivery(
+    String businessId,
+    StorefrontDelivery d,
+  ) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'save_storefront_delivery',
+        params: {
+          'p_business_id': businessId,
+          'p_fee': d.fee,
+          'p_days': d.days,
+          'p_weeks': d.weeks,
+          'p_shifts': [
+            for (final x in d.shifts)
+              {'name': x.name, 'from': x.from, 'to': x.to},
+          ],
+        },
+      ),
+    );
+  }
+
   // ------------------------------------------------------ business verification
   // SSM number, SSM certificate and the owner's IC (Founder 2026-10-17).
   // Files go to the business folder of a sealed bucket; only the last 4 IC
@@ -2990,4 +3044,18 @@ List<Map<String, dynamic>> demoComplaints() {
       ],
     },
   ];
+}
+
+/// Storefront delivery plan set by the vendor.
+class StorefrontDelivery {
+  const StorefrontDelivery({
+    required this.fee,
+    required this.days,
+    required this.weeks,
+    required this.shifts,
+  });
+  final double? fee;
+  final List<int> days;
+  final List<int> weeks;
+  final List<({String name, String from, String to})> shifts;
 }

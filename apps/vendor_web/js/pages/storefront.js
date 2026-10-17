@@ -63,6 +63,7 @@ function qrSvg(text) {
 export default function storefront({ el, setHeader }) {
   setHeader(t('sf.title'));
   el.innerHTML = loadingRows(4);
+  let dlv = {}, subs = [];
   let sf = null, tpl = 'warung', theme = {}, heroFile = null, heroData = null, logoFile = null, logoData = null, pv = null, screen = '', cat = '';
   let frame = null, frameReady = false;
   const def = () => TEMPLATES.find(x => x.id === tpl) || LEGACY.find(x => x.id === tpl) || TEMPLATES[0];
@@ -98,6 +99,36 @@ export default function storefront({ el, setHeader }) {
     const v = s => el.querySelector(s);
     return v('[data-accent]') ? { accent: v('[data-accent]').value.toUpperCase(), secondary: v('[data-secondary]').value.toUpperCase(), tagline: v('[data-tagline]').value.trim() }
       : { accent: theme.accent, secondary: theme.secondary, tagline: theme.tagline || '' };
+  };
+
+  // Delivery & packages (Founder 2026-10-17): fee per drop = the driver's pay,
+  // never free; weekdays; shifts (batches); package lengths.
+  const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const deliveryCard = () => {
+    const days = dlv.days || [1, 2, 3, 4, 5], weeks = dlv.weeks || [1, 2, 4], shifts = dlv.shifts || [];
+    return `<div class="card" style="padding:20px"><h3 style="margin:0 0 4px">${esc(t('sf.delivery'))}</h3><p class="desc">${esc(t('sf.deliveryLead'))}</p>
+      <div class="g4" style="align-items:end"><div class="field"><label>${esc(t('sf.fee'))}</label><input class="input" type="number" min="0" max="1000" step="0.5" data-fee value="${esc(dlv.fee ?? '')}" placeholder="5.00"></div></div>
+      <div class="field"><label>${esc(t('sf.days'))}</label><div style="display:flex;gap:6px;flex-wrap:wrap">${DAYS.map((d, i) => `<button class="opt ${days.includes(i + 1) ? 'on' : ''}" data-dday="${i + 1}" style="min-width:52px">${esc(t(`sf.d${i + 1}`))}</button>`).join('')}</div></div>
+      <div class="field"><label>${esc(t('sf.weeks'))}</label><div style="display:flex;gap:6px;flex-wrap:wrap">${[1, 2, 3, 4].map(w => `<button class="opt ${weeks.includes(w) ? 'on' : ''}" data-dweek="${w}">${esc(t(w === 1 ? 'sf.week1' : 'sf.weekN', { n: w }))}</button>`).join('')}</div><small class="hint">${esc(t('sf.weeksHint'))}</small></div>
+      <div class="field"><label>${esc(t('sf.shifts'))}</label><div style="display:grid;gap:8px" data-shifts>${shifts.map((x, i) => `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input class="input" data-sname="${i}" value="${esc(x.name)}" placeholder="${esc(t('sf.shiftName'))}" style="flex:1;min-width:140px"><input class="input" type="time" data-sfrom="${i}" value="${esc(x.from)}" style="width:120px"><span>–</span><input class="input" type="time" data-sto="${i}" value="${esc(x.to)}" style="width:120px"><button class="btn sm" data-sdel="${i}">${esc(t('sf.shiftRemove'))}</button></div>`).join('')}</div>
+        ${shifts.length < 4 ? `<button class="btn sm" data-sadd style="margin-top:8px">${esc(t('sf.shiftAdd'))}</button>` : ''}<small class="hint">${esc(t('sf.shiftsHint'))}</small></div>
+      <div class="err" data-derr hidden></div>
+      <div style="display:flex;justify-content:flex-end"><button class="btn primary" data-dsave>${esc(t('c.save'))}</button></div></div>`;
+  };
+  const subsCard = () => {
+    if (!subs.length) return '';
+    return `<div class="card" style="padding:20px"><h3 style="margin:0 0 4px">${esc(t('sf.subs'))}</h3><p class="desc">${esc(t('sf.subsLead'))}</p>
+      <div style="display:grid;gap:14px">${subs.map(x => `<div style="border:1px solid var(--line);border-radius:12px;padding:12px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>${esc(x.customer_name)}</b><small class="hint">${esc(x.customer_phone)}</small>${chip(x.status === 'active' ? 'active' : 'pending')}
+          ${x.status === 'active' ? `<button class="btn sm" data-scancel="${x.id}" style="margin-left:auto">${esc(t('sf.subCancel'))}</button>` : ''}</div>
+        <small class="hint">${esc((x.days || []).map(d => DAYS[d - 1]).join(', '))} × ${x.weeks} · ${esc(x.shift?.name || '')}</small>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${(x.deliveries || []).map(d => `<span class="chip" title="${esc(d.status)}" style="${d.status === 'skipped' ? 'text-decoration:line-through;opacity:.5' : ''}">${esc(new Date(d.date + 'T00:00').toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }))}${d.multiplier > 1 ? ` ×${d.multiplier}` : ''}
+          ${d.status === 'scheduled' ? `<button class="link" data-dskip="${d.id}" title="${esc(t('sf.skip'))}">✕</button><button class="link" data-dmove="${d.id}" data-month="${d.date.slice(0, 7)}" title="${esc(t('sf.move'))}">↻</button>` : ''}</span>`).join('')}</div></div>`).join('')}</div></div>`;
+  };
+  const readDelivery = () => {
+    const shifts = [...el.querySelectorAll('[data-sname]')].map(n => { const i = n.dataset.sname; return { name: n.value.trim(), from: el.querySelector(`[data-sfrom="${i}"]`).value, to: el.querySelector(`[data-sto="${i}"]`).value }; });
+    const fee = el.querySelector('[data-fee]').value;
+    return { ...dlv, fee: fee === '' ? null : Number(fee), shifts };
   };
 
   const paint = () => {
@@ -138,7 +169,9 @@ export default function storefront({ el, setHeader }) {
                 <input type="file" accept="image/jpeg,image/png,image/webp" hidden data-herofile></div>
               <small class="hint">${esc(t('sf.heroHint'))}</small></div>`}
             <div class="err" data-err hidden></div>
-            <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;flex-wrap:wrap">${sf.published ? `<small class="hint">${esc(t('sf.applyLive'))}</small>` : ''}<button class="btn primary" data-save>${esc(t('sf.apply'))}</button></div></div></div>
+            <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;flex-wrap:wrap">${sf.published ? `<small class="hint">${esc(t('sf.applyLive'))}</small>` : ''}<button class="btn primary" data-save>${esc(t('sf.apply'))}</button></div></div>
+          ${deliveryCard()}
+          ${subsCard()}</div>
         <div class="card" style="padding:16px;position:sticky;top:16px"><h3 style="margin:0 0 4px">${esc(t('sf.preview'))}</h3><p class="desc" style="margin-bottom:10px">${esc(t('sf.previewLead'))}</p>
           <div class="tabs" style="margin-bottom:12px">${PREVIEW_SCREENS.map(([r, k]) => `<button class="tab ${screen === r ? 'on' : ''}" data-screen="${r}">${esc(t(k))}</button>`).join('')}</div>
           <div style="width:308px;height:667px;margin:0 auto;border-radius:28px;overflow:hidden;border:6px solid #111;background:#fff">
@@ -156,6 +189,8 @@ export default function storefront({ el, setHeader }) {
       pv = p && typeof p === 'object' ? p : null;
       tpl = [...TEMPLATES, ...LEGACY].some(x => x.id === sf.template_key) ? sf.template_key : 'warung';
       theme = { ...(sf.theme || {}) };
+      dlv = { fee: sf.delivery_fee, days: sf.delivery_days, weeks: sf.package_weeks, shifts: sf.delivery_shifts || [] };
+      subs = await api.rpc('list_storefront_subscriptions', { p_business_id: ctx.bid }).catch(() => []) || [];
       paint();
     } catch (e) { el.innerHTML = errorState(e, 'storefront'); }
   };
@@ -163,6 +198,39 @@ export default function storefront({ el, setHeader }) {
   el.addEventListener('input', e => { if (e.target.closest('[data-accent],[data-secondary],[data-tagline]')) post(); });
   el.addEventListener('click', async e => {
     if (e.target.closest('[data-retry]')) { load(); return; }
+    const dd = e.target.closest('[data-dday]');
+    if (dd) { dlv = readDelivery(); const n = Number(dd.dataset.dday); const set = new Set(dlv.days || []); set.has(n) ? set.size > 1 && set.delete(n) : set.add(n); dlv.days = [...set].sort(); paint(); return; }
+    const dw = e.target.closest('[data-dweek]');
+    if (dw) { dlv = readDelivery(); const n = Number(dw.dataset.dweek); const set = new Set(dlv.weeks || []); set.has(n) ? set.size > 1 && set.delete(n) : set.add(n); dlv.weeks = [...set].sort(); paint(); return; }
+    if (e.target.closest('[data-sadd]')) { dlv = readDelivery(); dlv.shifts = [...dlv.shifts, { name: '', from: '18:00', to: '20:00' }]; paint(); return; }
+    const sdel = e.target.closest('[data-sdel]');
+    if (sdel) { dlv = readDelivery(); dlv.shifts.splice(Number(sdel.dataset.sdel), 1); paint(); return; }
+    const dsave = e.target.closest('[data-dsave]');
+    if (dsave) {
+      const err = el.querySelector('[data-derr]'); err.hidden = true; dlv = readDelivery();
+      if (dlv.fee == null || !(dlv.fee >= 0)) { err.textContent = t('sf.feeNeeded'); err.hidden = false; return; }
+      try { await busy(dsave, () => api.rpc('save_storefront_delivery', { p_business_id: ctx.bid, p_fee: dlv.fee, p_days: dlv.days, p_shifts: dlv.shifts, p_weeks: dlv.weeks })); toast(t('c.saved')); }
+      catch (ex) { err.textContent = ex.message; err.hidden = false; }
+      return;
+    }
+    const sk = e.target.closest('[data-dskip]');
+    const mv = e.target.closest('[data-dmove]');
+    const sc2 = e.target.closest('[data-scancel]');
+    if (sk || mv || sc2) {
+      try {
+        if (sk) await api.rpc('change_subscription_day', { p_day_id: sk.dataset.dskip, p_action: 'skip' });
+        if (mv) {
+          const input = document.createElement('input'); input.type = 'date'; input.min = new Date(Date.now() + 864e5).toISOString().slice(0, 10);
+          const [y, m] = mv.dataset.month.split('-').map(Number); input.max = new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
+          const picked = await new Promise(res => { input.onchange = () => res(input.value); input.style.position = 'fixed'; input.style.opacity = '0'; document.body.append(input); input.showPicker ? input.showPicker() : input.click(); });
+          input.remove();
+          if (picked) await api.rpc('change_subscription_day', { p_day_id: mv.dataset.dmove, p_action: 'move', p_new_date: picked });
+        }
+        if (sc2) await api.rpc('cancel_storefront_subscription', { p_id: sc2.dataset.scancel });
+        subs = await api.rpc('list_storefront_subscriptions', { p_business_id: ctx.bid }) || []; toast(t('c.saved')); paint();
+      } catch (ex) { toast(ex.message, 'error'); }
+      return;
+    }
     const link = () => el.querySelector('[data-link]').value;
     if (e.target.closest('[data-copy]')) { const ok = await copyText(link()); toast(ok ? t('riders.copied') : link()); return; }
     if (e.target.closest('[data-share]')) { try { await navigator.share({ title: ctx.business?.business_name, url: link() }); } catch { /* dismissed */ } return; }

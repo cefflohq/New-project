@@ -540,6 +540,7 @@
         p_slug: store.slug, p_items: [...cart].map(([product_id, quantity]) => ({ product_id, quantity })),
         p_customer_name: name, p_customer_phone: phone, p_delivery_address: address,
         p_delivery_notes: [planText(plan()), (form.notes || '').trim()].filter(Boolean).join('\n'), p_idempotency_key: idempotencyKey,
+        ...(plan().once ? {} : { p_plan: { weeks: Number(form.weeks), days: form.days, shift: form.shift || null } }),
         ...(pin ? { p_latitude: pin.lat, p_longitude: pin.lng, p_location_accuracy_m: pin.acc ?? null, p_location_source: pin.source } : {}),
       });
       if (res?.error) {

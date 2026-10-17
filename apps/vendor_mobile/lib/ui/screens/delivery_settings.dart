@@ -99,9 +99,222 @@ class _DeliverySettingsScreenState extends State<DeliverySettingsScreen> {
             _stepper(L.dsMax, max, min, 50, (v) => setState(() => _max = v)),
             const SizedBox(height: Gap.md),
             Text(L.dsHint, style: text.bodySmall),
+            const SizedBox(height: Gap.xl),
+            const StorefrontDeliverySection(),
           ],
         );
       },
+    );
+  }
+}
+
+/// Storefront delivery plan (Founder 2026-10-17): fee per drop (the driver's
+/// pay, never free), delivery weekdays, batches and package lengths.
+class StorefrontDeliverySection extends StatefulWidget {
+  const StorefrontDeliverySection({super.key});
+
+  @override
+  State<StorefrontDeliverySection> createState() =>
+      _StorefrontDeliverySectionState();
+}
+
+class _StorefrontDeliverySectionState extends State<StorefrontDeliverySection> {
+  final _fee = TextEditingController();
+  List<int> _days = const [1, 2, 3, 4, 5];
+  List<int> _weeks = const [1, 2, 4];
+  final List<
+    (TextEditingController, TextEditingController, TextEditingController)
+  >
+  _batches = [];
+  bool _loaded = false, _busy = false;
+
+  static const _dayKeys = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_loaded) return;
+    _loaded = true;
+    final app = AppScope.read(context);
+    app.repo
+        .storefrontDelivery(app.business!.id)
+        .then((d) {
+          if (!mounted) return;
+          setState(() {
+            _fee.text = d.fee == null ? '' : d.fee!.toStringAsFixed(2);
+            _days = [...d.days];
+            _weeks = [...d.weeks];
+            for (final b in d.shifts) {
+              _batches.add((
+                TextEditingController(text: b.name),
+                TextEditingController(text: b.from),
+                TextEditingController(text: b.to),
+              ));
+            }
+          });
+        })
+        .catchError((_) {});
+  }
+
+  @override
+  void dispose() {
+    _fee.dispose();
+    for (final b in _batches) {
+      b.$1.dispose();
+      b.$2.dispose();
+      b.$3.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final fee = double.tryParse(_fee.text.trim());
+    if (fee == null || fee < 0) {
+      showCefToast(context, L.sdFeeNeeded, error: true);
+      return;
+    }
+    final app = AppScope.read(context);
+    setState(() => _busy = true);
+    try {
+      await app.repo.saveStorefrontDelivery(
+        app.business!.id,
+        StorefrontDelivery(
+          fee: fee,
+          days: _days,
+          weeks: _weeks,
+          shifts: [
+            for (final b in _batches)
+              if (b.$1.text.trim().isNotEmpty)
+                (
+                  name: b.$1.text.trim(),
+                  from: b.$2.text.trim(),
+                  to: b.$3.text.trim(),
+                ),
+          ],
+        ),
+      );
+      if (mounted) showCefToast(context, L.dsSaved);
+    } on RepositoryError catch (e) {
+      if (mounted) showCefToast(context, e.message, error: true);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Widget _chips(
+    List<int> all,
+    List<int> on,
+    String Function(int) label,
+    ValueChanged<List<int>> set,
+  ) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        for (final v in all)
+          FilterChip(
+            label: Text(label(v)),
+            selected: on.contains(v),
+            onSelected: (sel) {
+              final next = {...on};
+              sel ? next.add(v) : (next.length > 1 ? next.remove(v) : null);
+              set(next.toList()..sort());
+            },
+          ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SectionHeading(L.sdTitle, icon: LucideIcons.truck, subtitle: L.sdLead),
+        const SizedBox(height: Gap.md),
+        TextField(
+          controller: _fee,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(labelText: L.sdFee, prefixText: 'RM '),
+        ),
+        const SizedBox(height: Gap.xs),
+        Text(L.sdFeeHint, style: text.bodySmall),
+        const SizedBox(height: Gap.md),
+        Text(L.sdDays, style: text.titleSmall),
+        const SizedBox(height: Gap.xs),
+        _chips(
+          [1, 2, 3, 4, 5, 6, 7],
+          _days,
+          (d) => _dayKeys[d - 1],
+          (v) => setState(() => _days = v),
+        ),
+        const SizedBox(height: Gap.md),
+        Text(L.sdWeeks, style: text.titleSmall),
+        const SizedBox(height: Gap.xs),
+        _chips(
+          [1, 2, 3, 4],
+          _weeks,
+          (w) => w == 1 ? L.sdWeek1 : L.sdWeekN(w),
+          (v) => setState(() => _weeks = v),
+        ),
+        const SizedBox(height: Gap.md),
+        Text(L.sdBatches, style: text.titleSmall),
+        const SizedBox(height: Gap.xs),
+        for (final (i, b) in _batches.indexed)
+          Padding(
+            padding: const EdgeInsets.only(bottom: Gap.xs),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: TextField(
+                    controller: b.$1,
+                    decoration: InputDecoration(labelText: L.sdBatchName),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  flex: 2,
+                  child: TextField(
+                    controller: b.$2,
+                    decoration: const InputDecoration(hintText: '18:00'),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  flex: 2,
+                  child: TextField(
+                    controller: b.$3,
+                    decoration: const InputDecoration(hintText: '20:00'),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => setState(() => _batches.removeAt(i)),
+                  icon: const Icon(LucideIcons.x, size: 18),
+                ),
+              ],
+            ),
+          ),
+        if (_batches.length < 4)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => setState(
+                () => _batches.add((
+                  TextEditingController(),
+                  TextEditingController(text: '18:00'),
+                  TextEditingController(text: '20:00'),
+                )),
+              ),
+              icon: const Icon(LucideIcons.plus, size: 18),
+              label: Text(L.sdAddBatch),
+            ),
+          ),
+        Text(L.sdBatchesHint, style: text.bodySmall),
+        const SizedBox(height: Gap.md),
+        CefButton(L.saveChanges, busy: _busy, onTap: _busy ? null : _save),
+      ],
     );
   }
 }
