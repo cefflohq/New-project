@@ -1247,3 +1247,14 @@ select.sfx-in { appearance: none; padding-right: 36px; background-image: url("da
 .shell.fs .sfx-pills .sfx-pill:hover { background: rgba(255, 201, 60, .18); color: var(--ink); }
 .shell.fs .sfx-pills .sfx-pill.on { background: linear-gradient(180deg, #FFD45E, #FFC21F); color: #2a2100; font-weight: 600; box-shadow: 0 6px 14px -6px rgba(214, 160, 0, .7), inset 0 1px 0 rgba(255, 255, 255, .6); }
 .shell.fs .sfx-pvtabs { background: rgba(255, 255, 255, .92); }
+/* Today bar (Founder 2026-10-17): segment is a white bar with the chosen tab
+   in mustard; actions are quiet grey glass and turn mustard on hover/press. */
+.shell.fs .dash-bar .seg { background: rgba(255, 255, 255, .92); box-shadow: inset 0 0 0 1px rgba(60, 72, 96, .1), 0 4px 14px -8px rgba(8, 30, 80, .25); border-radius: 999px; }
+.shell.fs .dash-bar .seg > * { border-radius: 999px; color: var(--ink-2); }
+.shell.fs .dash-bar .seg > *:hover { background: rgba(255, 201, 60, .18); color: var(--ink); }
+.shell.fs .dash-bar .seg > .on { background: linear-gradient(180deg, #FFD45E, #FFC21F); color: #2a2100; font-weight: 600; box-shadow: 0 6px 14px -6px rgba(214, 160, 0, .7), inset 0 1px 0 rgba(255, 255, 255, .6); -webkit-backdrop-filter: none; backdrop-filter: none; }
+.shell.fs .dash-bar .dash-acts .btn, .shell.fs .dash-bar .dash-acts .btn.primary { background: rgba(225, 230, 238, .82); border-color: rgba(255, 255, 255, .7); color: #2b3444; box-shadow: 0 4px 12px -8px rgba(8, 30, 80, .35); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.shell.fs .dash-bar .dash-acts .btn:hover, .shell.fs .dash-bar .dash-acts .btn:active, .shell.fs .dash-bar .dash-acts .btn:focus-visible { background: linear-gradient(180deg, #FFD45E, #FFC21F); border-color: transparent; color: #2a2100; box-shadow: 0 8px 18px -8px rgba(214, 160, 0, .75); }
+.shell.fs .dash-bar .dash-date { background: rgba(255, 255, 255, .16); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .3); color: #fff; }
+.shell.fs .main .dash-bar .dash-acts .btn { background: rgba(225, 230, 238, .9) !important; border-color: rgba(255, 255, 255, .7) !important; color: #2b3444 !important; }
+.shell.fs .main .dash-bar .dash-acts .btn:hover, .shell.fs .main .dash-bar .dash-acts .btn:active, .shell.fs .main .dash-bar .dash-acts .btn:focus-visible { background: linear-gradient(180deg, #FFD45E, #FFC21F) !important; border-color: transparent !important; color: #2a2100 !important; }
