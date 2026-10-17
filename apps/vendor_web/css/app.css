@@ -1592,3 +1592,16 @@ input.sw-check:focus-visible { outline: 2px solid #0060FE; outline-offset: 2px; 
 .cf-page-loader--inline .cf-loader-label { margin: 0; color: var(--muted); font-size: 13px; }
 .shell.fs .dc .cf-page-loader--inline { min-height: 140px; }
 .af-map .cf-page-loader--inline, .sfx-phone .cf-page-loader--inline { min-height: 100%; }
+/* Profile photo: large, centred; camera badge at the bottom-left of the
+   circle, shown on hover with a soft lift. */
+.photo.in-card { position: relative; justify-content: center !important; width: max-content; margin: 6px auto 12px !important; padding: 0 !important; border: 0 !important; }
+.photo.in-card + * { margin-top: 4px; }
+.photo.in-card .photo-btn { border: 0; padding: 0; background: none; border-radius: 50%; cursor: pointer; transition: transform 320ms cubic-bezier(.16, 1, .3, 1), box-shadow 320ms ease; }
+.photo.in-card .photo-btn .avatar { width: 112px !important; height: 112px !important; font-size: 36px !important; box-shadow: 0 0 0 4px #fff, 0 14px 30px -14px rgba(8, 30, 80, .45); }
+.photo.in-card .photo-btn img { width: 112px; height: 112px; border-radius: 50%; object-fit: cover; }
+.photo.in-card:hover .photo-btn { transform: translateY(-3px) scale(1.03); }
+.photo.in-card .photo-actions { position: absolute; left: 0; bottom: 0; flex-direction: row; gap: 6px; opacity: 0; transform: translateY(6px) scale(.9); transition: opacity 220ms ease, transform 320ms cubic-bezier(.16, 1, .3, 1); }
+.photo.in-card:hover .photo-actions, .photo.in-card:focus-within .photo-actions { opacity: 1; transform: none; }
+.photo.in-card .photo-actions .icon-btn { width: 34px !important; height: 34px !important; background: #FFC93C !important; color: #2a1f00 !important; box-shadow: 0 0 0 3px #fff, 0 6px 14px -6px rgba(0, 0, 0, .35) !important; }
+.photo.in-card .photo-actions .icon-btn.danger { background: #E5383B !important; color: #fff !important; }
+@media (hover: none) { .photo.in-card .photo-actions { opacity: 1; transform: none; } }
