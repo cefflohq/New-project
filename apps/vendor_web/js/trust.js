@@ -18,7 +18,7 @@ const ext = f => (f.type === 'application/pdf' ? 'pdf' : f.type === 'image/png' 
 
 // ------------------------------------------------------------ verification
 export async function verification(page) {
-  page.innerHTML = `<h2>${esc(t('bv.title'))}</h2><p class="lead">${esc(t('bv.lead'))}</p><div data-body>${loadingRows(3)}</div>`;
+  page.innerHTML = `<h2>${esc(t('bv.title'))}</h2><p class="lead">${esc(t('bv.lead'))}</p><div data-body class="bv-card">${loadingRows(3)}</div>`;
   const body = page.querySelector('[data-body]');
   const bid = ctx.business?.business_id;
   let v = null;
@@ -34,7 +34,7 @@ export async function verification(page) {
   // IC: camera only (capture) so the photo is taken now; SSM optional.
   const fileRow = (name, label, accept, cam) => `<label class="field"><span>${esc(label)}</span><input type="file" name="${name}" accept="${accept}"${cam ? ' capture="environment"' : ''}></label>`;
   body.innerHTML = `<div style="margin-bottom:16px">
-      <div style="display:flex;align-items:center;gap:10px;justify-content:space-between"><b>${esc(t('bv.title'))}</b>${chip(STATUS[0], STATUS[1])}</div>
+      <div class="bv-status">${chip(STATUS[0], STATUS[1])}</div>
       <p class="lead" style="margin:6px 0 0">${esc(STATUS[2])}</p>
       ${v?.owner_name && v?.owner_ic_last4 ? `<p class="lead" style="margin:4px 0 0">${esc(t('bv.readResult').replace('{name}', v.owner_name).replace('{last4}', v.owner_ic_last4))}</p>` : ''}
     </div>

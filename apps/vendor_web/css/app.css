@@ -1258,3 +1258,15 @@ select.sfx-in { appearance: none; padding-right: 36px; background-image: url("da
 .shell.fs .dash-bar .dash-date { background: rgba(255, 255, 255, .16); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .3); color: #fff; }
 .shell.fs .main .dash-bar .dash-acts .btn { background: rgba(225, 230, 238, .9) !important; border-color: rgba(255, 255, 255, .7) !important; color: #2b3444 !important; }
 .shell.fs .main .dash-bar .dash-acts .btn:hover, .shell.fs .main .dash-bar .dash-acts .btn:active, .shell.fs .main .dash-bar .dash-acts .btn:focus-visible { background: linear-gradient(180deg, #FFD45E, #FFC21F) !important; border-color: transparent !important; color: #2a2100 !important; }
+/* Business verification (Founder 2026-10-17): one centred glass card. */
+.bv-card { max-width: 620px; margin: 18px auto 0; padding: 28px; border-radius: 24px; text-align: center; background: rgba(236, 240, 245, .86); -webkit-backdrop-filter: blur(24px) saturate(130%); backdrop-filter: blur(24px) saturate(130%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), inset 0 0 0 1px rgba(255, 255, 255, .6), 0 18px 40px -22px rgba(8, 30, 80, .5); color: var(--ink); }
+.bv-card .lead { color: var(--ink-2); }
+.bv-card .bv-status { display: flex; justify-content: center; margin-bottom: 8px; }
+.bv-card .bv-status .chip { height: 28px; padding: 0 12px; font-size: 13px; }
+.bv-card form { max-width: 420px !important; margin: 8px auto 0; justify-items: center; }
+.bv-card .field { display: grid; justify-items: center; gap: 8px; width: 100%; padding: 14px; border-radius: 16px; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .04); }
+.bv-card .field > span { font-weight: 500; color: var(--ink); }
+.bv-card input[type="file"] { max-width: 100%; font-size: 13px; }
+.bv-card form > div { display: flex; justify-content: center; width: 100%; }
+.shell.fs .settings-page > h2 + .lead + .bv-card { margin-top: 18px; }
+.shell.fs [data-verify] > .card, .shell.fs [data-verify] > a.card { background: rgba(236, 240, 245, .86); border: 0; border-radius: 20px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .6), 0 12px 30px -18px rgba(8, 30, 80, .5); }
