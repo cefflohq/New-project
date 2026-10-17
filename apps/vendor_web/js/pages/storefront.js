@@ -115,11 +115,11 @@ export default function storefront({ el, setHeader }) {
       <div class="err" data-derr hidden></div>
       <div style="display:flex;justify-content:flex-end"><button class="btn primary" data-dsave>${esc(t('c.save'))}</button></div></div>`;
   };
-  // Payments (Founder 2026-10-17): the vendor's own CHIP account; Cefflo never
-  // holds the money. Cash on delivery is a vendor switch (always on without CHIP).
+  // Payments (Founder 2026-10-17): the vendor's own Curlec account; Cefflo never
+  // holds the money. Cash on delivery is a vendor switch (always on without Curlec).
   const payCard = () => `<div class="card" style="padding:20px"><h3 style="margin:0 0 4px">${esc(t('sf.pay'))}</h3><p class="desc">${esc(t('sf.payLead'))}</p>
-    ${pay.connected ? `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${chip('active')}<span>${esc(t('sf.chipOn', { id: pay.brand_id_hint || '' }))}</span><button class="btn sm" data-chipoff style="margin-left:auto">${esc(t('sf.chipOff'))}</button></div>`
-      : `<div class="g4" style="align-items:end"><div class="field"><label>${esc(t('sf.brandId'))}</label><input class="input" data-brand placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off"></div>
+    ${pay.connected ? `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${chip('active')}<span>${esc(t('sf.chipOn', { id: pay.key_hint || '' }))}${pay.test_mode ? ` · ${esc(t('sf.testMode'))}` : ''}</span><button class="btn sm" data-chipoff style="margin-left:auto">${esc(t('sf.chipOff'))}</button></div>`
+      : `<div class="g4" style="align-items:end"><div class="field"><label>${esc(t('sf.brandId'))}</label><input class="input" data-brand placeholder="rzp_live_…" autocomplete="off"></div>
         <div class="field"><label>${esc(t('sf.secret'))}</label><input class="input" type="password" data-secret autocomplete="new-password"></div></div>
         <small class="hint">${esc(t('sf.chipHint'))}</small>
         <div class="err" data-perr hidden></div>
@@ -214,12 +214,12 @@ export default function storefront({ el, setHeader }) {
     if (con) {
       const err = el.querySelector('[data-perr]'); err.hidden = true;
       const brand = el.querySelector('[data-brand]').value.trim(), secret = el.querySelector('[data-secret]').value.trim();
-      try { await busy(con, () => api.rpc('save_chip_account', { p_business_id: ctx.bid, p_brand_id: brand, p_secret_key: secret })); pay = await api.rpc('payment_settings', { p_business_id: ctx.bid }); toast(t('c.saved')); paint(); }
+      try { await busy(con, () => api.rpc('save_curlec_account', { p_business_id: ctx.bid, p_key_id: brand, p_key_secret: secret })); pay = await api.rpc('payment_settings', { p_business_id: ctx.bid }); toast(t('c.saved')); paint(); }
       catch (ex) { err.textContent = ex.message; err.hidden = false; }
       return;
     }
     if (e.target.closest('[data-chipoff]')) {
-      try { await api.rpc('disconnect_chip_account', { p_business_id: ctx.bid }); pay = await api.rpc('payment_settings', { p_business_id: ctx.bid }); paint(); } catch (ex) { toast(ex.message, 'error'); }
+      try { await api.rpc('disconnect_curlec_account', { p_business_id: ctx.bid }); pay = await api.rpc('payment_settings', { p_business_id: ctx.bid }); paint(); } catch (ex) { toast(ex.message, 'error'); }
       return;
     }
     const dd = e.target.closest('[data-dday]');

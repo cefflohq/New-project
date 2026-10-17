@@ -1305,8 +1305,8 @@ class VendorRepository {
     );
   }
 
-  /// Storefront payments: the vendor's own CHIP account and the COD switch.
-  /// The secret key is write-only; only a hint of the Brand ID comes back.
+  /// Storefront payments: the vendor's own Curlec account and the COD switch.
+  /// The key secret is write-only; only a hint of the Key ID comes back.
   Future<Map<String, dynamic>> paymentSettings(String businessId) async {
     if (_demo) return {'connected': false, 'accept_cod': true};
     final r = await _run(
@@ -1315,29 +1315,29 @@ class VendorRepository {
     return Map<String, dynamic>.from(r as Map);
   }
 
-  Future<void> connectChip(
+  Future<void> connectCurlec(
     String businessId,
-    String brandId,
+    String keyId,
     String secret,
   ) async {
     if (_demo) return;
     await _run(
       () => _db!.rpc(
-        'save_chip_account',
+        'save_curlec_account',
         params: {
           'p_business_id': businessId,
-          'p_brand_id': brandId,
-          'p_secret_key': secret,
+          'p_key_id': keyId,
+          'p_key_secret': secret,
         },
       ),
     );
   }
 
-  Future<void> disconnectChip(String businessId) async {
+  Future<void> disconnectCurlec(String businessId) async {
     if (_demo) return;
     await _run(
       () => _db!.rpc(
-        'disconnect_chip_account',
+        'disconnect_curlec_account',
         params: {'p_business_id': businessId},
       ),
     );

@@ -8994,37 +8994,37 @@ abstract class AppLocalizations {
   /// No description provided for @spLead.
   ///
   /// In en, this message translates to:
-  /// **'Customers pay straight into your own CHIP account. Cefflo never holds the money.'**
+  /// **'Customers pay straight into your own Curlec account. Cefflo never holds the money.'**
   String get spLead;
 
   /// No description provided for @spBrand.
   ///
   /// In en, this message translates to:
-  /// **'CHIP Brand ID'**
+  /// **'Curlec Key ID'**
   String get spBrand;
 
   /// No description provided for @spSecret.
   ///
   /// In en, this message translates to:
-  /// **'CHIP secret key'**
+  /// **'Curlec Key Secret'**
   String get spSecret;
 
   /// No description provided for @spHint.
   ///
   /// In en, this message translates to:
-  /// **'Find both in your CHIP portal under Developers. The key is stored securely.'**
+  /// **'Find both in your Curlec dashboard under Account & Settings, API Keys. The secret is stored securely.'**
   String get spHint;
 
   /// No description provided for @spConnect.
   ///
   /// In en, this message translates to:
-  /// **'Connect CHIP'**
+  /// **'Connect Curlec'**
   String get spConnect;
 
   /// No description provided for @spConnected.
   ///
   /// In en, this message translates to:
-  /// **'CHIP connected. Customers can pay online.'**
+  /// **'Curlec connected. Customers can pay online.'**
   String get spConnected;
 
   /// No description provided for @spDisconnect.
@@ -9048,7 +9048,7 @@ abstract class AppLocalizations {
   /// No description provided for @spCodOnly.
   ///
   /// In en, this message translates to:
-  /// **'Without CHIP, customers pay cash on delivery.'**
+  /// **'Without Curlec, customers pay cash on delivery.'**
   String get spCodOnly;
 }
 

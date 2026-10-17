@@ -2437,14 +2437,14 @@
   "sdAddBatch": "Add batch",
   "sdFeeNeeded": "Enter the delivery fee per drop.",
   "spTitle": "Storefront payments",
-  "spLead": "Customers pay straight into your own CHIP account. Cefflo never holds the money.",
-  "spBrand": "CHIP Brand ID",
-  "spSecret": "CHIP secret key",
-  "spHint": "Find both in your CHIP portal under Developers. The key is stored securely.",
-  "spConnect": "Connect CHIP",
-  "spConnected": "CHIP connected. Customers can pay online.",
+  "spLead": "Customers pay straight into your own Curlec account. Cefflo never holds the money.",
+  "spBrand": "Curlec Key ID",
+  "spSecret": "Curlec Key Secret",
+  "spHint": "Find both in your Curlec dashboard under Account & Settings, API Keys. The secret is stored securely.",
+  "spConnect": "Connect Curlec",
+  "spConnected": "Curlec connected. Customers can pay online.",
   "spDisconnect": "Disconnect",
   "spCod": "Cash on delivery",
   "spCodHint": "Let customers pay the driver in cash.",
-  "spCodOnly": "Without CHIP, customers pay cash on delivery."
+  "spCodOnly": "Without Curlec, customers pay cash on delivery."
 }

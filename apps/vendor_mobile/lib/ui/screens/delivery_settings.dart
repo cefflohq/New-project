@@ -321,7 +321,7 @@ class _StorefrontDeliverySectionState extends State<StorefrontDeliverySection> {
   }
 }
 
-/// Storefront payments (Founder 2026-10-17): connect the vendor's own CHIP
+/// Storefront payments (Founder 2026-10-17): connect the vendor's own Curlec
 /// account (write-only secret) and the cash-on-delivery switch.
 class StorefrontPaymentsSection extends StatefulWidget {
   const StorefrontPaymentsSection({super.key});
@@ -399,7 +399,7 @@ class _StorefrontPaymentsSectionState extends State<StorefrontPaymentsSection> {
             child: TextButton(
               onPressed: _busy
                   ? null
-                  : () => _do(() => app.repo.disconnectChip(id)),
+                  : () => _do(() => app.repo.disconnectCurlec(id)),
               child: Text(L.spDisconnect),
             ),
           ),
@@ -423,7 +423,7 @@ class _StorefrontPaymentsSectionState extends State<StorefrontPaymentsSection> {
             onTap: _busy
                 ? null
                 : () => _do(
-                    () => app.repo.connectChip(
+                    () => app.repo.connectCurlec(
                       id,
                       _brand.text.trim(),
                       _secret.text.trim(),

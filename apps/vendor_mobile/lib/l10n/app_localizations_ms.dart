@@ -4955,23 +4955,23 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get spLead =>
-      'Pelanggan bayar terus ke akaun CHIP anda sendiri. Cefflo tidak memegang wang.';
+      'Pelanggan bayar terus ke akaun Curlec anda sendiri. Cefflo tidak memegang wang.';
 
   @override
-  String get spBrand => 'CHIP Brand ID';
+  String get spBrand => 'Curlec Key ID';
 
   @override
-  String get spSecret => 'Kunci rahsia CHIP';
+  String get spSecret => 'Curlec Key Secret';
 
   @override
   String get spHint =>
-      'Kedua-duanya ada dalam portal CHIP di bawah Developers. Kunci disimpan dengan selamat.';
+      'Kedua-duanya ada dalam papan pemuka Curlec di bawah Account & Settings, API Keys. Kunci disimpan dengan selamat.';
 
   @override
-  String get spConnect => 'Sambung CHIP';
+  String get spConnect => 'Sambung Curlec';
 
   @override
-  String get spConnected => 'CHIP disambung. Pelanggan boleh bayar online.';
+  String get spConnected => 'Curlec disambung. Pelanggan boleh bayar online.';
 
   @override
   String get spDisconnect => 'Putuskan';
@@ -4983,5 +4983,5 @@ class AppLocalizationsMs extends AppLocalizations {
   String get spCodHint => 'Benarkan pelanggan bayar tunai kepada pemandu.';
 
   @override
-  String get spCodOnly => 'Tanpa CHIP, pelanggan bayar tunai semasa terima.';
+  String get spCodOnly => 'Tanpa Curlec, pelanggan bayar tunai semasa terima.';
 }

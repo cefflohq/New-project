@@ -197,7 +197,7 @@
     if (a === 'cart') return { name: 'cart' };
     if (a === 'checkout') return { name: 'checkout' };
     if (a === 'done' && lastOrder) return { name: 'done' };
-    if ((a === 'paid' || a === 'payfail') && b) return { name: a, id: b };
+    if ((a === 'paid' || a === 'payfail' || a === 'order') && b) return { name: a, id: b };
     if (a === 'all') return { name: 'all' };
     return { name: 'home' };
   }
@@ -340,8 +340,8 @@
   }
   function payResultView(r) {
     let saved = null; try { saved = JSON.parse(sessionStorage.getItem(PAY_KEY) || 'null'); } catch { /* private mode */ }
-    if (saved?.key === r.id) lastOrder = { ref: saved.ref, token: saved.token };
-    if (r.name === 'paid') return doneView(t('Payment received'), t('{store} has your order. You will get updates on the tracking page.', { store: store.name }));
+    if (saved?.key === r.id) lastOrder = { ref: saved.ref, key: saved.key };
+    if (r.name === 'paid') return doneView(t('Payment received'));
     return `<div class="sf-flow sf-done">
       <div class="sf-done-mark">${icon('clock')}</div>
       <h1>${esc(t('Payment not completed'))}</h1>
@@ -350,14 +350,54 @@
       <button type="button" class="sf-link" data-act="home">${esc(t('Back to the store'))}</button>
     </div>`;
   }
+  // After ordering, the customer keeps an order page on this device. The
+  // tracking link appears there only once the driver starts the delivery
+  // (Founder 2026-10-17); packages list every delivery day.
+  const ORDERS_KEY = () => `cefflo.sf.orders.${store.slug}`;
+  function rememberOrder(key, ref) {
+    try { const list = JSON.parse(localStorage.getItem(ORDERS_KEY()) || '[]').filter(x => x.key !== key); list.unshift({ key, ref, at: Date.now() }); localStorage.setItem(ORDERS_KEY(), JSON.stringify(list.slice(0, 10))); } catch { /* private mode */ }
+  }
+  const tokens = () => { try { return JSON.parse(localStorage.getItem('cefflo.sf.tokens') || '{}'); } catch { return {}; } };
+  let orderInfo = null, orderTimer = null;
+  async function loadOrder(key) {
+    clearTimeout(orderTimer);
+    try {
+      const res = await rpc('storefront_order_status', { p_slug: store.slug, p_idempotency_key: key });
+      if (res?.orders) {
+        const saved = tokens();
+        for (const o of res.orders) if (o.tracking_token) saved[o.ref] = o.tracking_token;
+        try { localStorage.setItem('cefflo.sf.tokens', JSON.stringify(saved)); } catch { /* private mode */ }
+        orderInfo = { key, ...res };
+        if (route().name === 'order' && route().id === key) render();
+      }
+    } catch { /* offline: try again */ }
+    if (route().name === 'order') orderTimer = setTimeout(() => loadOrder(key), 30000);
+  }
+  function orderView(key) {
+    if (orderInfo?.key !== key) { loadOrder(key); return `<div class="sf-flow sf-done"><p class="sf-note">${esc(t('Loading your order…'))}</p></div>`; }
+    const saved = tokens();
+    const STATUS = { created: 'Preparing', ready_for_pickup: 'Preparing', picked_up: 'With the driver', out_for_delivery: 'On the way', arrived: 'Driver has arrived', delivered: 'Delivered', issue: 'Needs attention', cancelled: 'Cancelled' };
+    const rows = orderInfo.orders.map(o => {
+      const tok = saved[o.ref];
+      const link = tok && cfg.trackingBaseUrl ? `${cfg.trackingBaseUrl}?token=${encodeURIComponent(tok)}` : null;
+      return `<li class="od-row"><div><b>${esc(o.ref)}</b><small>${esc(new Date(o.date + 'T00:00').toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short' }))} · ${esc(t(STATUS[o.status] || o.status))}</small></div>
+        ${link ? `<a class="od-track" href="${esc(link)}">${esc(t('Track'))}</a>` : `<span class="od-wait">${esc(t(o.status === 'delivered' ? 'Delivered' : 'Link when the driver starts'))}</span>`}</li>`;
+    }).join('');
+    const up = (orderInfo.upcoming || []).map(d => `<li class="od-row"><div><b>${esc(new Date(d.date + 'T00:00').toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short' }))}</b><small>${esc(t('Scheduled'))}</small></div></li>`).join('');
+    return `<div class="sf-flow">
+      <header class="sf-flow-top"><button type="button" class="sf-round" data-act="home" aria-label="${esc(t('Back'))}">${icon('arrowLeft')}</button><h1>${esc(t('Your order'))}</h1><span></span></header>
+      <p class="sf-note">${esc(t('Your tracking link appears here as soon as the driver starts the delivery.'))}</p>
+      <ul class="od-list">${rows}${up}</ul>
+    </div>`;
+  }
   function doneView(title, note) {
-    const link = lastOrder?.token && cfg.trackingBaseUrl ? `${cfg.trackingBaseUrl}?token=${encodeURIComponent(lastOrder.token)}` : null;
+    const key = lastOrder?.key;
     return `<div class="sf-flow sf-done">
       <div class="sf-done-mark">${icon('check')}</div>
       <h1>${esc(title || t('Order received'))}</h1>
       <p>${esc(t('Your order number is'))} <b>${esc(lastOrder?.ref || '')}</b>.</p>
-      <p class="sf-note">${esc(note || t('{store} will confirm your order.', { store: store.name }))}</p>
-      ${link ? `<a class="sf-cta" href="${esc(link)}">${esc(t('Track your order'))}</a>` : ''}
+      <p class="sf-note">${esc(note || t('{store} will prepare your order. Your tracking link appears on your order page when the driver starts the delivery.', { store: store.name }))}</p>
+      ${key ? `<a class="sf-cta" href="#/order/${esc(key)}">${esc(t('View my order'))}</a>` : ''}
       <button type="button" class="sf-link" data-act="home">${esc(t('Back to the store'))}</button>
     </div>`;
   }
@@ -475,6 +515,7 @@
     else if (r.name === 'checkout') html = cart.size ? checkoutView(err) : cartView();
     else if (r.name === 'done') html = doneView();
     else if (r.name === 'paid' || r.name === 'payfail') html = payResultView(r);
+    else if (r.name === 'order') html = orderView(r.id);
     else if (r.name === 'product') html = tpl.product(c, product(r.id));
     else if (r.name === 'category') html = (tpl.category || tpl.home).call(tpl, c, r.id);
     else if (r.name === 'all') html = (tpl.all || tpl.category || tpl.home).call(tpl, c, null);
@@ -484,7 +525,7 @@
       ? (tpl.bar ? tpl.bar(c) : `<button type="button" class="sf-bar" data-act="tocart"><span>${esc(t(count() === 1 ? '{n} item' : '{n} items', { n: count() }))}</span><b>${money(total())}</b><span>${esc(t('View cart'))} ${icon('arrowRight')}</span></button>`)
       : '';
     app.className = `sf t-${tplKey} r-${r.name}${isClosed() ? ' is-closed' : ''}`;
-    const browse = !['cart', 'checkout', 'done', 'paid', 'payfail'].includes(r.name);
+    const browse = !['cart', 'checkout', 'done', 'paid', 'payfail', 'order'].includes(r.name);
     app.innerHTML = `<div class="sf-page">${browse && isClosed() ? closedNote() : ''}${html}</div>${bar}`;
     dock(r);
     // Motion only marks a change: a new screen enters, and the cart badge
@@ -584,9 +625,10 @@
         if (/store closed/.test(res.error)) { store.openNow = false; store.nextOpen = res.next_open || store.nextOpen; }
         return render(errorText(res.error));
       }
-      lastOrder = { ref: res.order_reference, token: res.tracking_token };
+      lastOrder = { ref: res.order_reference, key: idempotencyKey };
+      rememberOrder(idempotencyKey, res.order_reference);
       const online = form.pay !== 'cod', key = idempotencyKey;
-      if (online) { try { sessionStorage.setItem(PAY_KEY, JSON.stringify({ key, ref: res.order_reference, token: res.tracking_token })); } catch { /* private mode */ } }
+      if (online) { try { sessionStorage.setItem(PAY_KEY, JSON.stringify({ key, ref: res.order_reference })); } catch { /* private mode */ } }
       try { localStorage.setItem('cefflo.sf.me', JSON.stringify({ name, phone, address })); } catch { /* private mode */ }
       cart.clear(); saveCart(); form = {}; pin = null; idempotencyKey = crypto.randomUUID();
       if (online) { if (!(await startPayment(key))) go(`payfail/${key}`); return; }

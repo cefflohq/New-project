@@ -4946,23 +4946,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get spLead =>
-      'Customers pay straight into your own CHIP account. Cefflo never holds the money.';
+      'Customers pay straight into your own Curlec account. Cefflo never holds the money.';
 
   @override
-  String get spBrand => 'CHIP Brand ID';
+  String get spBrand => 'Curlec Key ID';
 
   @override
-  String get spSecret => 'CHIP secret key';
+  String get spSecret => 'Curlec Key Secret';
 
   @override
   String get spHint =>
-      'Find both in your CHIP portal under Developers. The key is stored securely.';
+      'Find both in your Curlec dashboard under Account & Settings, API Keys. The secret is stored securely.';
 
   @override
-  String get spConnect => 'Connect CHIP';
+  String get spConnect => 'Connect Curlec';
 
   @override
-  String get spConnected => 'CHIP connected. Customers can pay online.';
+  String get spConnected => 'Curlec connected. Customers can pay online.';
 
   @override
   String get spDisconnect => 'Disconnect';
@@ -4974,5 +4974,5 @@ class AppLocalizationsEn extends AppLocalizations {
   String get spCodHint => 'Let customers pay the driver in cash.';
 
   @override
-  String get spCodOnly => 'Without CHIP, customers pay cash on delivery.';
+  String get spCodOnly => 'Without Curlec, customers pay cash on delivery.';
 }
