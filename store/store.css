@@ -1879,3 +1879,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .co-mapok { margin: 0; }
 .co-items li { grid-template-columns: 48px 1fr auto; }
 .co-step { transform: scale(.9); transform-origin: right center; }
+/* Map sheet: no centre button (the corner locate button stays); a neutral
+   pill Confirm, rounded left and right. */
+.co-mapsheet .sf-map-start { display: none !important; }
+.co-mapsheet .co-mapok { background: #111; color: #fff; border-radius: 999px; height: 52px; padding: 0 24px; box-shadow: none; }
