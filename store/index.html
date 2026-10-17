@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ms" data-cf-loader="ring">
+<html lang="en" data-cf-loader="ring">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -20,7 +20,7 @@
      no backend call); ?template=<key> previews another template. -->
 <div id="app" aria-live="polite"></div>
 <script src="/shared/loader/loader.js?v=20261008d"></script>
-<script>(function () { var ms = true; try { ms = localStorage.getItem('cefflo.store.lang') !== 'en'; } catch (e) {} document.documentElement.lang = ms ? 'ms' : 'en'; document.getElementById('app').innerHTML = window.cfLoader.markup(ms ? 'Memuatkan kedai' : 'Loading store'); })();</script>
+<script>(function () { var ms = false; try { ms = localStorage.getItem('cefflo.store.lang') === 'ms'; } catch (e) {} document.documentElement.lang = ms ? 'ms' : 'en'; document.getElementById('app').innerHTML = window.cfLoader.markup(ms ? 'Memuatkan kedai' : 'Loading store'); })();</script>
 <script src="/shared/config.js?v=20261001a"></script>
 <script src="/store/i18n-ms.js?v=20261008d"></script>
 <script src="/store/templates.js?v=20261008d"></script>
