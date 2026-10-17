@@ -1690,3 +1690,23 @@ h1, h2, h3, h4, p { margin: 0; }
 @keyframes sf-in { from { opacity: 0; translate: 0 8px; } }
 @keyframes sf-up { from { translate: 0 100%; } }
 @keyframes sf-bump { 40% { scale: 1.35; } }
+
+/* Bottom buttons, all templates (Founder 2026-10-17): pill-shaped, one height,
+   equal side padding. */
+.sf-dock { padding-left: 20px; padding-right: 20px; }
+.sf-dock .sf-cta, .sf-dock-cta, .sf-dock-tailor .tl-cta, .ca-add, .ca-buy, .sv-book, .po-cta, .wr-cta, .ca-bar button { height: 52px; border-radius: 999px; padding-left: 24px; padding-right: 24px; }
+.sf-dock .sf-cta { padding-top: 0; padding-bottom: 0; }
+.sf-dock-step { height: 52px; border-radius: 999px; padding: 0 6px; }
+.sf-dock-step button { border-radius: 999px; }
+.ca-dq .ca-step button { border-radius: 999px; }
+.sf-bar { border-radius: 999px; padding-left: 22px; padding-right: 22px; }
+.ca-bar { padding-left: 20px; padding-right: 20px; }
+.wr-total { padding-left: 20px; padding-right: 20px; }
+.po-view { border-radius: 999px; }
+.sf-dock-warung { background: #fff; }
+.wr-dt { flex: 1; min-width: 0; }
+.wr-dt small { display: block; font-size: 12px; color: #444; }
+.wr-dt b { font-size: 19px; font-weight: 600; }
+.wr-dstep { height: 40px; border-radius: 999px; border: 1px solid #E5E5E5; padding: 0 4px; gap: 6px; }
+.wr-dstep button { width: 32px; height: 32px; border-radius: 999px; }
+.sf-dock-warung .wr-cta { flex: none; display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: #fff; font-size: 15px; font-weight: 500; }

@@ -587,8 +587,11 @@
         <div class="wr-pay"><div class="wr-ph"><b>${L("Payment detail")}</b><span class="wr-tagl">${c.esc(c.s.name)}</span></div>
           <div class="wr-line"><span>${L("Price")}</span><span>${c.money(p.price)}</span></div>
           </div>
-        <footer class="wr-total"><div><small>${L("Total")}</small><b>${c.money(p.price * c.ui.sel)}</b></div>${c.buy(`${c.icon('shield')} Order`, 'wr-cta')}</footer>
       </section>`;
+    },
+    // Reference footer: Total on the left, a green Order pill on the right.
+    dock(c, p) {
+      return `<div class="wr-dt"><small>${L("Total")}</small><b>${c.money(p.price * c.ui.sel)}</b></div>${c.stepper('__sel', 'wr-dstep')}${c.buy(`${c.icon('shield')} ${L('Order')}`, 'wr-cta')}`;
     },
   };
 
