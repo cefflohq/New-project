@@ -48,6 +48,10 @@ const LEGACY = [
   { id: 'splash', name: 'Splash', primary: '#2563EB', secondary: '#FACC15' },
   { id: 'collector', name: 'Collector', primary: '#111111', secondary: '#F2F2F4', hero: false },
 ];
+// Preview devices (Founder 2026-10-18): the iframe renders at the device's
+// CSS width and is scaled to fit its frame.
+const DEVICES = [['phone', 'Phone'], ['tablet', 'Tablet'], ['desktop', 'Desktop']];
+const DEV_W = { phone: 390, tablet: 820, desktop: 1280 };
 const PREVIEW_SCREENS = [['', 'sf.pvHome'], ['p/first', 'sf.pvProduct'], ['cart', 'sf.pvCart']];
 const LOGO_TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 const HERO_TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
@@ -65,7 +69,7 @@ export default function storefront({ el, setHeader }) {
   el.innerHTML = loadingRows(4);
   let dlv = {}, subs = [], pay = {}, cou = {};
   let sf = null, tpl = 'warung', theme = {}, heroFile = null, heroData = null, logoFile = null, logoData = null, pv = null, screen = '', cat = '';
-  let frame = null, frameReady = false, tab = 'look';
+  let frame = null, frameReady = false, tab = 'look', device = 'phone';
   const def = () => TEMPLATES.find(x => x.id === tpl) || LEGACY.find(x => x.id === tpl) || TEMPLATES[0];
   const sfOrigin = () => new URL(base(), location.href).origin;
 
@@ -177,7 +181,7 @@ export default function storefront({ el, setHeader }) {
           <a class="sfx-btn" href="${esc(link)}" target="_blank" rel="noopener">${esc(t('sf.open'))}</a>
           <button class="sfx-btn ${sf.published ? '' : 'primary'}" data-publish>${esc(t(sf.published ? 'sf.unpublish' : 'sf.publish'))}</button></div></div>
       <nav class="sfx-nav" role="tablist">${nav.map(([k, n]) => `<button type="button" role="tab" aria-selected="${tab === k}" class="${tab === k ? 'on' : ''}" data-jump="${k}">${esc(n)}</button>`).join('')}</nav>
-      <div class="sfx-split sf-split">
+      <div class="sfx-split sf-split sfx-split-${device}">
         <div class="sfx-main">
           ${sec('look', 'palette', t('sf.template'), t('sf.templateLead'), `
             <div class="sfx-pills">${['', ...CATS].map(k => `<button type="button" class="sfx-pill ${cat === k ? 'on' : ''}" data-cat="${k}">${esc(t(k ? `sf.cat.${k}` : 'sf.cat.all'))}</button>`).join('')}</div>
@@ -206,12 +210,19 @@ export default function storefront({ el, setHeader }) {
           ${deliveryCard()}
           ${courierCard()}
           ${subsCard()}</div>
-        <aside class="sfx-pv">
-          <div class="sfx-pills sfx-pvtabs">${PREVIEW_SCREENS.map(([r, k]) => `<button type="button" class="sfx-pill ${screen === r ? 'on' : ''}" data-screen="${r}">${esc(t(k))}</button>`).join('')}</div>
-          <div class="sfx-phone"><iframe data-frame title="${esc(t('sf.preview'))}" src="${esc(src())}"></iframe></div>
+        <aside class="sfx-pv sfx-pv-${device}">
+          <div class="sfx-pills sfx-pvtabs">${DEVICES.map(([k, n]) => `<button type="button" class="sfx-pill ${device === k ? 'on' : ''}" data-device="${k}">${n}</button>`).join('')}</div>
+          <div class="sfx-dev sfx-${device}" data-dev>${device === 'phone' ? '<i class="sfx-island"></i>' : device === 'desktop' ? '<div class="sfx-chrome"><i></i><i></i><i></i></div>' : ''}<div class="sfx-scr" data-scr><iframe data-frame title="${esc(t('sf.preview'))}" src="${esc(src())}"></iframe></div></div>
           <small>${esc(t('sf.previewLead'))}</small></aside></div></div>`;
     frame = el.querySelector('[data-frame]'); frameReady = false;
+    fitDevice();
   };
+  const fitDevice = () => {
+    const scr = el.querySelector('[data-scr]'); if (!scr || !frame) return;
+    const w = DEV_W[device], k = scr.clientWidth / w;
+    frame.style.width = `${w}px`; frame.style.height = `${scr.clientHeight / k}px`; frame.style.transform = `scale(${k})`;
+  };
+  const ro = new ResizeObserver(() => fitDevice()); ro.observe(el);
 
   const load = async () => {
     try {
@@ -310,6 +321,8 @@ export default function storefront({ el, setHeader }) {
       } catch (ex) { toast(ex.message, 'error'); }
       return;
     }
+    const dv = e.target.closest('[data-device]');
+    if (dv) { theme = { ...theme, ...readForm() }; device = dv.dataset.device; paint(); return; }
     const sc = e.target.closest('[data-screen]');
     if (sc) { theme = { ...theme, ...readForm() }; screen = sc.dataset.screen; paint(); return; }
     const x = e.target.closest('[data-tpl]');
