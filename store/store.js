@@ -19,11 +19,9 @@
   const money = n => `RM ${Number(n || 0).toFixed(2)}`;
   const moneyShort = money;
 
-  // Customer language: English by default, Bahasa Melayu when chosen; kept on
-  // this device only, never auto-detected. Vendor content is never translated.
-  const LANG_KEY = 'cefflo.store.lang';
+  // Customer language: English only (Founder 2026-10-17). Vendor content is
+  // never translated.
   let lang = 'en';
-  try { lang = localStorage.getItem(LANG_KEY) === 'ms' ? 'ms' : 'en'; } catch { /* private mode */ }
   const MS = window.CEFFLO_STORE_MS || {};
   const t = (s, vars) => { let out = lang === 'ms' && MS[s] ? MS[s] : s; if (vars) out = out.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? ''); return out; };
   window.CEFFLO_I18N = s => (lang === 'ms' && MS[s] ? MS[s] : s);
@@ -203,7 +201,6 @@
   }
 
   // ------------------------------------------------------------- shared views
-  const langSwitch = () => `<div class="sf-lang" role="group" aria-label="Language / Bahasa"><button type="button" data-act="lang" data-id="en" class="${lang === 'en' ? 'on' : ''}" aria-pressed="${lang === 'en'}">English</button><button type="button" data-act="lang" data-id="ms" class="${lang === 'ms' ? 'on' : ''}" aria-pressed="${lang === 'ms'}">Bahasa Melayu</button></div>`;
   function cartView() {
     const lines = [...cart].filter(([id]) => product(id));
     return `<div class="sf-flow">
@@ -214,7 +211,6 @@
       <p class="sf-note">${esc(t('Final prices are confirmed by {store} when your order is received.', { store: store.name }))}</p>
       <button type="button" class="sf-cta" data-act="checkout" ${isClosed() ? 'disabled' : ''}>${esc(t(isClosed() ? 'Closed' : 'Continue'))}</button>`
       : `<div class="sf-empty">${esc(t('Your cart is empty.'))}</div><button type="button" class="sf-cta" data-act="home">${esc(t('Browse products'))}</button>`}
-      ${langSwitch()}
     </div>`;
   }
   function checkoutView(err) {
@@ -245,7 +241,6 @@
         ${err ? `<p class="sf-error" role="alert">${esc(err)}</p>` : ''}
         <button type="submit" class="sf-cta" id="sfPlace" ${isClosed() ? 'disabled' : ''}>${esc(t(isClosed() ? 'Closed' : 'Place order'))}</button>
       </form>
-      ${langSwitch()}
     </div>`;
   }
   function doneView() {
@@ -257,7 +252,6 @@
       <p class="sf-note">${esc(t('{store} will confirm your order.', { store: store.name }))}</p>
       ${link ? `<a class="sf-cta" href="${esc(link)}">${esc(t('Track your order'))}</a>` : ''}
       <button type="button" class="sf-link" data-act="home">${esc(t('Back to the store'))}</button>
-      ${langSwitch()}
     </div>`;
   }
 
@@ -362,7 +356,7 @@
       : '';
     app.className = `sf t-${tplKey} r-${r.name}${isClosed() ? ' is-closed' : ''}`;
     const browse = !['cart', 'checkout', 'done'].includes(r.name);
-    app.innerHTML = `<div class="sf-page">${browse && isClosed() ? closedNote() : ''}${html}${browse && !EMBED ? `<footer class="sf-foot">${langSwitch()}</footer>` : ''}</div>${bar}`;
+    app.innerHTML = `<div class="sf-page">${browse && isClosed() ? closedNote() : ''}${html}</div>${bar}`;
     dock(r);
     // Motion only marks a change: a new screen enters, and the cart badge
     // bumps when an item is added. Re-renders from a tap on the same screen
@@ -485,7 +479,6 @@
       case 'intro': ui.intro = true; render(); break;
       case 'back': history.length > 1 ? history.back() : go(''); break;
       case 'clear': cart.clear(); saveCart(); render(); break;
-      case 'lang': lang = id === 'ms' ? 'ms' : 'en'; DAYS = lang === 'ms' ? DAYS_MS : DAYS_EN; try { localStorage.setItem(LANG_KEY, lang); } catch { /* private mode */ } document.documentElement.lang = lang; render(); break;
       default: break;
     }
   });
