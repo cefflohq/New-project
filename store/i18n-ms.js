@@ -69,5 +69,6 @@ window.CEFFLO_STORE_MS = {
   'Product information': 'Maklumat produk', 'Shop by occasion': 'Pilih ikut majlis', 'Service area': 'Kawasan servis', "What's included": 'Termasuk',
   'Bestsellers': 'Paling laris', 'Serving': 'Kawasan', 'More': 'Lain-lain',
   'New & Featured': 'Baru & Pilihan', '#SpecialForYou': '#IstimewaUntukAnda', 'View Cart': 'Lihat troli', 'item': 'item', 'items': 'item',
+  'Search here': 'Cari di sini', 'Filter': 'Tapis', 'Price': 'Harga', 'Details': 'Butiran', 'From:': 'Dari:', 'Select Size': 'Pilih saiz', 'Description': 'Penerangan', 'Home': 'Utama',
   'Add to Bag': 'Masuk beg', 'Select size': 'Pilih saiz', 'Size': 'Saiz', 'Book Service Now': 'Tempah servis sekarang',
 };

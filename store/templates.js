@@ -368,31 +368,50 @@
   };
 
   // ======================================================== 11. POUR
-  // Café single-item focus: a full-height photo fading into soft grey, the
-  // name and price centred, a segmented control, a black pill CTA and a
-  // "You may also like" rail. Home shows the featured item this way.
+  // Spotlight (Founder reference 2026-10-17, warm orange fashion store):
+  // avatar + centred wordmark + bag, a big greeting, grey search with a black
+  // Filter pill, orange active chips, large product cards on an orange panel
+  // with a notched heart, a floating nav; detail with an orange stage, round
+  // back / heart, a thumbnail column, quantity with an orange +, size circles,
+  // description and Add to Cart + Buy Now pills.
   T.pour = {
-    name: 'Spotlight', defaults: { accent: '#111111', accent2: '#E6E7E9', bg: '#EDEEEF', bar: '#EDEEEF' },
-    home(c) { const f = c.list()[0] || first(c); return f ? this.product(c, f, true) : `<section class="po-pdp">${c.empty()}</section>`; },
-    product(c, p, home) {
-      const others = c.list(null, '').filter(x => x.id !== p.id);
-      return `<section class="po-pdp">
-        <div class="po-photo">${c.img(p, '', c.ui.img)}</div>
-        <header class="po-head">${home ? `<span class="po-brand">${brand(c)}</span>` : `<button type="button" class="po-ic" data-act="back" aria-label="${L("Back")}">${c.icon('back')}</button>`}${c.toCart('po-ic', c.icon('heart'))}</header>
-        <div class="po-body">
-          <h1>${c.esc(p.name)}</h1>
-          <p class="po-price">${c.money(p.price)}</p>
-          <div class="po-row"><button type="button" class="po-cta" data-act="${home ? 'addsel' : 'buy'}">${L("Add to Order")}</button></div>
-          ${home && c.count() ? `<button type="button" class="po-view" data-act="tocart">View order · ${c.count()} · ${c.money(c.total())}</button>` : ''}
-          ${others.length ? `<h2>${L("You may also like")}</h2><div class="po-rail">${others.map(o => `<article class="po-card" ${c.open(o.id)}>${c.img(o)}<b>${c.esc(o.name)}</b><span>${c.money(o.price)}</span></article>`).join('')}</div>` : ''}
+    name: 'Spotlight', defaults: { accent: '#F8BB5E', accent2: '#111111', bg: '#F4F6F8', bar: '#ffffff' },
+    home(c) {
+      const ps = c.list();
+      const av = c.s.logoUrl ? `<img src="${c.esc(c.s.logoUrl)}" alt="">` : c.esc(c.initials(c.s.name));
+      return `<section class="sp5-home">
+        <div class="sp5-top">
+          <header class="sp5-head"><span class="sp5-av">${av}</span><b class="sp5-brand">${brand(c)}</b>${c.toCart('sp5-bag', c.icon('bag'))}</header>
+          <h1 class="sp5-hi">${c.greeting()}</h1>
+          ${c.s.tagline ? `<p class="sp5-sub">${c.esc(c.s.tagline)}</p>` : ''}
+          <div class="sp5-search"><label>${c.icon('search')}${c.searchInput(L('Search here'))}</label><button type="button" data-act="catpage" data-id="">${c.icon('filter')}${L('Filter')}</button></div>
+        </div>
+        <div class="sp5-sheet">
+          <div class="sp5-chips">${chips(c, 'sp5-chip')}</div>
+          <div class="sp5-list">${ps.map(p => `<article class="sp5-card" ${c.open(p.id)}><div class="sp5-ph">${c.img(p)}<span class="sp5-heart">${c.icon('heart')}</span></div><div class="sp5-meta"><b>${c.esc(p.name)}</b><span><small>${L('Price')}</small>${c.money(p.price)}</span></div></article>`).join('') || c.empty()}</div>
+        </div>
+        <nav class="sp5-nav"><button type="button" class="on" data-act="home"><i></i>${L('Home')}</button><button type="button" data-act="catpage" data-id="" aria-label="${L('All products')}">${c.icon('bag')}</button><button type="button" data-act="tocart" aria-label="${L('Cart')}">${c.icon('cart')}</button><button type="button" data-act="tocart" aria-label="${L('Account')}">${c.icon('user')}</button></nav>
+      </section>`;
+    },
+    product(c, p) {
+      const size = c.ui.size || p.sizes?.[0];
+      return `<section class="sp5-pdp">
+        <div class="sp5-stage">
+          <header class="sp5-dh"><button type="button" class="sp5-rc" data-act="back" aria-label="${L("Back")}">${c.icon('arrowLeft')}</button><b>${L('Details')}</b><span class="sp5-rc">${c.icon('heart')}</span></header>
+          <div class="sp5-shot">${c.img(p, '', c.ui.img)}</div>
+          ${p.images.length > 1 ? `<div class="sp5-col">${p.images.map((_, i) => `<button type="button" class="${i === c.ui.img ? 'on' : ''}" ${c.selImg(i)}>${c.img(p, '', i)}</button>`).join('')}</div>` : ''}
+        </div>
+        <div class="sp5-card2">
+          <div class="sp5-nq"><h1>${c.esc(p.name)}</h1>${c.stepper('__sel', 'sp5-step')}</div>
+          <p class="sp5-from">${L('From:')} <b>${c.money(p.price)}</b></p>
+          ${p.sizes?.length ? `<h2>${L('Select Size')}</h2><div class="sp5-sizes" role="radiogroup" aria-label="${L("Size")}">${p.sizes.map(z => `<button type="button" role="radio" aria-checked="${size === z}" class="${size === z ? 'on' : ''}" data-act="size" data-id="${c.esc(z)}">${c.esc(z)}</button>`).join('')}</div>` : ''}
+          ${p.description ? `<h2>${L('Description')}</h2><p class="sp5-desc">${desc(c, p)}</p>` : ''}
         </div>
       </section>`;
     },
-    bar: false,
-    // Reference row: a segmented size control beside a black "Add to Order" pill.
-    dock(c, p) {
-      const seg = p.sizes?.length ? `<div class="po-seg" role="radiogroup" aria-label="${L("Size")}">${p.sizes.slice(0, 3).map(z => `<button type="button" role="radio" aria-checked="${(c.ui.size || p.sizes[0]) === z}" class="${(c.ui.size || p.sizes[0]) === z ? 'on' : ''}" data-act="size" data-id="${c.esc(z)}">${c.esc(z)}</button>`).join('')}</div>` : '';
-      return `${seg}${c.buy(L('Add to Order'), 'po-cta')}`;
+    // Reference footer: grey "Add to Cart" (adds, stays) beside an orange "Buy Now".
+    dock(c) {
+      return `<button type="button" class="sp5-add" data-act="addsel">${L('Add to Cart')}</button>${c.buy(L('Buy Now'), 'sp5-buy')}`;
     },
   };
 

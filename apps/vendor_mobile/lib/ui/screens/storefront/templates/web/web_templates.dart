@@ -113,17 +113,16 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
   _t(
     'pour',
     'Spotlight',
-    'Cakes, Coffee & Pre-orders',
-    'One item at a time: a full photo fading into grey, name and price centred, a size switch beside Add to Order, and You may also like.',
+    'Fashion & Lifestyle',
+    'Warm and photo-led: a greeting, search with Filter, orange category chips and large product cards; the product page has a thumbnail column, sizes and Add to Cart + Buy Now.',
     const [
-      'Full-photo product',
-      'Size switch',
-      'Add to Order',
+      'Large product cards',
+      'Sizes and quantity',
+      'Add to Cart + Buy Now',
     ],
-    const ['Desserts & Drinks'],
+    const ['Retail'],
+    const Color(0xFFF8BB5E),
     const Color(0xFF111111),
-    const Color(0xFFE6E7E9),
-    hero: false,
   ),
 ];
 

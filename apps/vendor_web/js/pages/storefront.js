@@ -18,7 +18,7 @@ const TEMPLATES = [
   { id: 'tailor', name: 'Showcase', cat: 'retail', primary: '#111111', secondary: '#F59E6B' },
   { id: 'care', name: 'Basket', cat: 'retail', primary: '#1677D8', secondary: '#E8F2FD' },
   { id: 'service', name: 'Service', cat: 'services', primary: '#5B7CF6', secondary: '#FACC15' },
-  { id: 'pour', name: 'Spotlight', cat: 'sweet', primary: '#111111', secondary: '#E6E7E9', hero: false },
+  { id: 'pour', name: 'Spotlight', cat: 'retail', primary: '#F8BB5E', secondary: '#111111', hero: false },
 ];
 const CATS = ['food', 'sweet', 'retail', 'services'];
 // Earlier templates (CEFFLO_TEMPLATE_LEGACY): not offered any more, but a
