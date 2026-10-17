@@ -195,6 +195,9 @@ export default function today({ el, setHeader }) {
   });
   el.querySelector('[data-q]').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); paintRecent(); });
   load();
+  // Charts redraw at their new width when the window or zoom changes.
+  let rw = 0; const ro = new ResizeObserver(() => { const w = $('[data-trend]')?.clientWidth || 0; if (orders.length || hist.length) if (Math.abs(w - rw) > 24) { rw = w; paint(); } });
+  ro.observe(el);
   const timer = setInterval(() => { if (document.visibilityState === 'visible') load(); }, 30000);
-  return () => { clearInterval(timer); mainEl?.classList.remove('no-title'); };
+  return () => { ro.disconnect(); clearInterval(timer); mainEl?.classList.remove('no-title'); };
 }
