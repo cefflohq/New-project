@@ -1615,3 +1615,7 @@ input.sw-check:focus-visible { outline: 2px solid #0060FE; outline-offset: 2px; 
 .shell.fs .main .btn.primary:hover, .shell.fs .sfx-btn.primary:hover, .modal .btn.primary:hover { background: #FFBF1F !important; transform: translateY(-1px); }
 .shell.fs .main .btn.primary:active, .shell.fs .sfx-btn.primary:active, .modal .btn.primary:active, .shell.fs .mode-seg button:active, .shell.fs .card .tabs button:active, .hf-seg button:active, .shell.fs .sfx-pill:active { transform: scale(.95) !important; }
 .photo.in-card .photo-actions .icon-btn:not(.danger) { box-shadow: 0 0 0 3px #fff !important; }
+/* Flat mustard keeps a soft drop shadow. */
+.shell.fs .mode-seg button.on, .shell.fs .dash-bar .seg > .on, .shell.fs .sfx-nav button.on, .shell.fs .sfx-pills .sfx-pill.on, .modal .tabs button.on, .shell.fs .card .tabs button.on, .shell.fs .dc .tabs button.on, .shell.fs .cmp-card .tabs button.on, .shell.fs .settings-page > .tabs button.on, .hf-seg button.on,
+.shell.fs .main .btn.primary, .shell.fs .main .btn.cta, .shell.fs .sfx-btn.primary, .modal .btn.primary, .modal .btn.cta, .shell.fs .main .dash-bar .dash-acts .btn:hover, .af.has-pin .af-pin { box-shadow: 0 6px 16px -6px rgba(176, 124, 0, .55), 0 1px 2px rgba(0, 0, 0, .08) !important; }
+.shell.fs .main .btn.primary:hover, .shell.fs .sfx-btn.primary:hover, .modal .btn.primary:hover { box-shadow: 0 10px 22px -8px rgba(176, 124, 0, .6), 0 1px 2px rgba(0, 0, 0, .08) !important; }
