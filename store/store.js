@@ -361,6 +361,25 @@
 
   // ------------------------------------------------------------- render
   let form = {};
+  const CARD_SEL = '.wr-row, .tl-card, .ca-row, .ca-card, .ca-cats > *, .sv-offer, .sv-cats > *, .sv-card, .sp5-card, .sp5-chip, .tl-chip, .wr-chip, .sv-card2, .sp5-sizes button, .tl-sizes button';
+  // Loading state: a shimmer laid out like the template the store last used
+  // (remembered per store), so the page does not jump when data arrives.
+  function skeleton(key) {
+    const b = (w, h, r = 12, extra = '') => `<i class="sk" style="width:${w};height:${h}px;border-radius:${r}px;${extra}"></i>`;
+    const rows = (n, f) => Array.from({ length: n }, f).join('');
+    const head = `<div class="sk-row" style="justify-content:space-between">${b('34px', 34, 999)}${b('55%', 34, 999)}${b('34px', 34, 999)}</div>`;
+    const v = {
+      warung: `${head}${b('70%', 22, 8, 'margin-top:28px')}${b('40%', 14, 6)}<div class="sk-row" style="margin-top:18px">${rows(4, () => b('78px', 30, 999))}</div>${rows(3, () => `<div class="sk-row" style="margin-top:34px">${b('150px', 150, 999)}${b('100%', 120, 24, 'margin-left:-80px')}</div>`)}`,
+      tailor: `${head}${b('100%', 172, 18, 'margin-top:16px')}<div class="sk-grid">${rows(4, () => b('100%', 186, 18))}</div>`,
+      care: `${head}${b('100%', 44, 12, 'margin-top:14px')}${b('100%', 170, 18, 'margin-top:14px')}<div class="sk-row" style="margin-top:18px">${rows(4, () => b('56px', 56, 14))}</div><div class="sk-grid">${rows(2, () => b('100%', 200, 14))}</div>`,
+      service: `${b('calc(100% + 40px)', 160, 26, 'margin:-20px -20px 0')}<div class="sk-row" style="margin-top:20px">${b('80%', 150, 16)}${b('20%', 150, 16)}</div><div class="sk-row" style="margin-top:20px">${rows(4, () => b('56px', 56, 999))}</div><div class="sk-row" style="margin-top:20px">${rows(2, () => b('50%', 120, 14))}</div>`,
+      pour: `${head}${b('60%', 34, 8, 'margin-top:22px')}${b('100%', 50, 999, 'margin-top:16px')}<div class="sk-row" style="margin-top:20px">${rows(3, () => b('84px', 38, 999))}</div>${rows(2, () => b('100%', 280, 22, 'margin-top:14px'))}`,
+    };
+    return `<div class="sf sf-skel t-${key}" aria-busy="true" aria-label="${esc(t('Loading store'))}"><div class="sk-wrap">${v[key] || v.care}</div></div>`;
+  }
+  window.CEFFLO_STORE_SKELETON = key => { app.className = ''; app.innerHTML = skeleton(key); };
+  document.addEventListener('load', e => { if (e.target.tagName === 'IMG') e.target.classList.add('is-in'); }, true);
+
   function render(err) {
     const r = route();
     const c = ctx();
@@ -387,6 +406,9 @@
     if (routeKey !== lastRouteKey) app.classList.add('sf-enter');
     if (n > lastCount) app.classList.add('sf-grew');
     lastRouteKey = routeKey; lastCount = n;
+    // Cards carry their order so each template staggers its own entrance.
+    if (app.classList.contains('sf-enter')) app.querySelectorAll(CARD_SEL).forEach((el, i) => el.style.setProperty('--i', Math.min(i, 8)));
+    app.querySelectorAll('img').forEach(im => { if (im.complete && im.naturalWidth) im.classList.add('is-in'); });
     if (r.name === 'checkout' && cart.size) {
       const f = document.getElementById('sfForm');
       for (const [k, v] of Object.entries(form)) if (f.elements[k]) f.elements[k].value = v;
@@ -576,11 +598,14 @@
       return;
     }
     if (!/^[a-z0-9]([a-z0-9-]{1,28}[a-z0-9])$/.test(slug)) { state('This storefront does not exist.'); return; }
+    let lastTpl = null; try { lastTpl = localStorage.getItem(`cefflo.sf.tpl.${slug}`); } catch { /* private mode */ }
+    app.innerHTML = skeleton(params.get('template') || lastTpl || 'care');
     let raw;
     try { raw = await rpc('public_storefront', { p_slug: slug }); }
     catch (e) { state(/rate limited/.test(e.message) ? 'Too many visits right now. Please try again in a minute.' : 'We could not load this storefront. Please try again.'); return; }
     if (!raw) { state('This storefront is not available.'); return; }
     if (raw.slug !== slug) history.replaceState(null, '', `/${raw.slug}${location.search}${location.hash}`);
+    try { localStorage.setItem(`cefflo.sf.tpl.${slug}`, raw.template_key || ''); } catch { /* private mode */ }
     start(raw);
   }
   window.CEFFLO_STORE_PREVIEW = start; // tests / tooling

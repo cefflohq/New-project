@@ -1774,3 +1774,54 @@ h1, h2, h3, h4, p { margin: 0; }
 .sp5-add, .sp5-buy { flex: 1; height: 52px; border-radius: 999px; font-size: 15px; }
 .sp5-add { background: #EEF1F4; color: #111; }
 .sp5-buy { background: var(--accent); color: #2a1a00; }
+
+/* ===== Loading state + premium motion (2026-10-17).
+   Heavy, smooth ease (expo-out); cards stagger by --i (70 ms each).
+   Each template has its own entrance. Transform/opacity only. */
+:root { --ease-heavy: cubic-bezier(.16, 1, .3, 1); --ease-soft: cubic-bezier(.22, 1, .36, 1); }
+.sf-skel { min-height: 100vh; background: #fff; }
+.sk-wrap { padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+.sk-row { display: flex; gap: 10px; align-items: center; }
+.sk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+.sk { display: block; flex: none; background: linear-gradient(100deg, #EEF0F3 30%, #F7F8FA 50%, #EEF0F3 70%); background-size: 300% 100%; animation: sk-shine 1.4s ease-in-out infinite; }
+.sk-row .sk[style*="100%"] { flex: 1; }
+.t-service.sf-skel .sk-wrap > .sk:first-child { background: linear-gradient(100deg, #5B7CF6 30%, #7A95F8 50%, #5B7CF6 70%); background-size: 300% 100%; }
+@keyframes sk-shine { from { background-position: 100% 0; } to { background-position: 0 0; } }
+
+/* Photos fade in once loaded, over a soft placeholder. */
+.sf img:not(.sf-cut) { opacity: 0; transition: opacity .6s var(--ease-soft); }
+.sf img.is-in { opacity: 1; }
+.wr-dish, .tl-card, .ca-rimg, .ca-ph, .sv-card, .sv-offer, .sp5-ph, .sp5-shot, .tl-stage, .wr-big { background-color: #EEF0F3; }
+
+/* Shared stagger */
+.sf.sf-enter [style*="--i"] { animation-duration: .9s; animation-timing-function: var(--ease-heavy); animation-fill-mode: both; animation-delay: calc(var(--i) * 70ms + 80ms); }
+
+/* Menu: rows slide in from the left; the dish rolls in. */
+.t-warung.sf-enter .wr-row[style*="--i"] { animation-name: mv-left; }
+.t-warung.sf-enter .wr-row[style*="--i"] .wr-dish { animation: mv-roll 1.1s var(--ease-heavy) both; animation-delay: calc(var(--i) * 70ms + 140ms); }
+.t-warung.sf-enter .wr-chip[style*="--i"] { animation-name: mv-pop; animation-duration: .6s; }
+/* Showcase: cards rise and settle from a slight zoom, like a lookbook. */
+.t-tailor.sf-enter .tl-card[style*="--i"] { animation-name: mv-settle; animation-duration: 1.05s; }
+.t-tailor.sf-enter :is(.tl-chip, .tl-sizes button)[style*="--i"] { animation-name: mv-pop; animation-duration: .6s; }
+/* Basket: quick, efficient — rows lift a short distance. */
+.t-care.sf-enter :is(.ca-row, .ca-card)[style*="--i"] { animation-name: mv-lift; animation-duration: .75s; }
+.t-care.sf-enter .ca-cats > [style*="--i"] { animation-name: mv-pop; animation-duration: .6s; }
+/* Service: offers glide in from the right; icons pop. */
+.t-service.sf-enter .sv-offer[style*="--i"] { animation-name: mv-right; animation-duration: 1s; }
+.t-service.sf-enter .sv-cats > [style*="--i"] { animation-name: mv-pop; animation-duration: .7s; }
+.t-service.sf-enter .sv-card[style*="--i"] { animation-name: mv-lift; }
+/* Spotlight: big cards rise heavily with a gentle scale. */
+.t-pour.sf-enter .sp5-card[style*="--i"] { animation-name: mv-rise; animation-duration: 1.1s; }
+.t-pour.sf-enter :is(.sp5-chip, .sp5-sizes button)[style*="--i"] { animation-name: mv-pop; animation-duration: .6s; }
+
+@keyframes mv-left { from { opacity: 0; transform: translateX(-28px); } }
+@keyframes mv-right { from { opacity: 0; transform: translateX(48px); } }
+@keyframes mv-lift { from { opacity: 0; transform: translateY(14px); } }
+@keyframes mv-rise { from { opacity: 0; transform: translateY(40px) scale(.96); } }
+@keyframes mv-settle { from { opacity: 0; transform: translateY(24px) scale(1.04); } }
+@keyframes mv-pop { from { opacity: 0; transform: scale(.85); } }
+@keyframes mv-roll { from { opacity: 0; transform: rotate(-40deg) scale(.7); } }
+
+/* Product page: the hero image eases in slowly. */
+.sf-enter.r-product :is(.wr-big, .tl-stage, .ca-big, .sv-photo, .sp5-stage) { animation: mv-hero 1s var(--ease-heavy) both; }
+@keyframes mv-hero { from { opacity: 0; transform: scale(1.06); } }
