@@ -4984,4 +4984,38 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get spCodOnly => 'Tanpa Curlec, pelanggan bayar tunai semasa terima.';
+
+  @override
+  String get prodExtras => 'Set, promo & penghantaran';
+
+  @override
+  String get prodExtrasHint =>
+      'Promo anda sendiri: percuma hantar bermakna anda tetap bayar pemandu.';
+
+  @override
+  String get prodCompareAt => 'Harga normal (RM)';
+
+  @override
+  String get prodCompareHint => 'Dipaparkan dipotong';
+
+  @override
+  String get prodSetItems => 'Isi set (satu setiap baris)';
+
+  @override
+  String get prodSetItemsHint => 'Ayam Masak Kicap';
+
+  @override
+  String get prodPortion => 'Hidangan';
+
+  @override
+  String get prodPortionHint => 'cth. Setiap bekas untuk 2-3 orang';
+
+  @override
+  String get prodDeliveryFee => 'Caj hantar produk ini (RM)';
+
+  @override
+  String get prodDeliveryFeeHint => 'Kosong = caj kedai, 0 = percuma';
+
+  @override
+  String get prodWeight => 'Berat (kg)';
 }

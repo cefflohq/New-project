@@ -515,11 +515,21 @@ class Product {
     this.description,
     this.displayPrice,
     this.categoryId,
+    this.compareAtPrice,
+    this.setItems = const [],
+    this.portionNote,
+    this.deliveryFee,
+    this.weightKg,
   });
 
   final String id, name, status;
   final String? description, categoryId;
   final num? displayPrice;
+
+  /// Vendor promo / set extras (Founder 2026-10-17).
+  final num? compareAtPrice, deliveryFee, weightKg;
+  final List<String> setItems;
+  final String? portionNote;
 
   factory Product.fromRow(Map<String, dynamic> r) => Product(
     id: r['id'] as String,
@@ -528,6 +538,11 @@ class Product {
     description: r['description'] as String?,
     displayPrice: r['display_price'] as num?,
     categoryId: r['category_id'] as String?,
+    compareAtPrice: r['compare_at_price'] as num?,
+    setItems: [for (final x in (r['set_items'] as List? ?? const [])) '$x'],
+    portionNote: r['portion_note'] as String?,
+    deliveryFee: r['delivery_fee'] as num?,
+    weightKg: r['weight_kg'] as num?,
   );
 }
 

@@ -14,7 +14,7 @@ const MAX_BYTES = 5 * 1024 * 1024;
 const TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 const q = encodeURIComponent;
 
-const fetchProducts = () => api.get(`/rest/v1/products?business_id=eq.${q(ctx.bid)}&archived_at=is.null&select=id,name,description,display_price,status,category_id&order=name`);
+const fetchProducts = () => api.get(`/rest/v1/products?business_id=eq.${q(ctx.bid)}&archived_at=is.null&select=id,name,description,display_price,status,category_id,compare_at_price,set_items,portion_note,delivery_fee,weight_kg&order=name`);
 const fetchCategories = () => api.get(`/rest/v1/product_categories?business_id=eq.${q(ctx.bid)}&archived_at=is.null&select=id,name&order=sort_order`);
 const fetchMedia = productId => api.get(`/rest/v1/product_media?product_id=eq.${q(productId)}&archived_at=is.null&status=in.(queued,processing,prepared,approved)&select=id,position,status,prepared_storage_path&order=position`);
 const rm = n => `RM${Number(n || 0).toFixed(2)}`;
@@ -64,6 +64,15 @@ function openProduct(product, cats, onDone) {
         <div class="field"><label>${esc(t('prod.category'))}</label><input class="input" name="category" list="prod-cats" maxlength="80" value="${esc(catName)}">
           <datalist id="prod-cats">${cats.map(c => `<option value="${esc(c.name)}">`).join('')}</datalist></div></div>
       <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="active" ${p.status === 'active' ? 'checked' : ''}>${esc(t('prod.visible'))}</label>
+      <details ${p.compare_at_price || p.set_items?.length || p.portion_note || p.delivery_fee != null || p.weight_kg ? 'open' : ''}><summary style="cursor:pointer;font-weight:600;margin:6px 0">${esc(t('prod.extras'))}</summary>
+        <div class="g2">
+          <div class="field"><label>${esc(t('prod.compareAt'))} (RM)</label><input class="input" name="compare" inputmode="decimal" value="${esc(p.compare_at_price ?? '')}" placeholder="${esc(t('prod.compareHint'))}"></div>
+          <div class="field"><label>${esc(t('prod.dfee'))} (RM)</label><input class="input" name="dfee" inputmode="decimal" value="${esc(p.delivery_fee ?? '')}" placeholder="${esc(t('prod.dfeeHint'))}"></div></div>
+        <div class="g2">
+          <div class="field"><label>${esc(t('prod.portion'))}</label><input class="input" name="portion" maxlength="80" value="${esc(p.portion_note || '')}" placeholder="${esc(t('prod.portionHint'))}"></div>
+          <div class="field"><label>${esc(t('prod.weight'))} (kg)</label><input class="input" name="weight" inputmode="decimal" value="${esc(p.weight_kg ?? '')}" placeholder="1.5"></div></div>
+        <div class="field"><label>${esc(t('prod.setItems'))}</label><textarea class="textarea" name="setitems" rows="4" placeholder="${esc(t('prod.setItemsHint'))}">${esc((p.set_items || []).join('\n'))}</textarea></div>
+        <small class="hint">${esc(t('prod.extrasHint'))}</small></details>
       <div class="err" data-err hidden></div>`,
     footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit>${esc(t(isNew ? 'prod.create' : 'c.save'))}</button>`,
   });
@@ -120,6 +129,9 @@ function openProduct(product, cats, onDone) {
           ? await api.rpc('create_product', { p_business_id: ctx.bid, ...args })
           : await api.rpc('update_product', { p_product_id: p.id, ...args });
         const productId = (Array.isArray(saved) ? saved[0] : saved)?.id || p.id;
+        const num = n => { const v = f(n).value.trim(); return v === '' ? null : Number(v); };
+        await api.rpc('set_product_extras', { p_product_id: productId, p_compare_at_price: num('compare'), p_set_items: f('setitems').value.split('\n').map(x => x.trim()).filter(Boolean),
+          p_portion_note: f('portion').value.trim(), p_delivery_fee: num('dfee'), p_weight_kg: num('weight') });
         for (const id of removed) await api.rpc('archive_product_media', { p_media_id: id });
         for (const ph of photos) {
           if (ph.id) continue;

@@ -1490,5 +1490,16 @@
   "spDisconnect": "Putuskan",
   "spCod": "Bayar semasa terima (COD)",
   "spCodHint": "Benarkan pelanggan bayar tunai kepada pemandu.",
-  "spCodOnly": "Tanpa Curlec, pelanggan bayar tunai semasa terima."
+  "spCodOnly": "Tanpa Curlec, pelanggan bayar tunai semasa terima.",
+  "prodExtras": "Set, promo & penghantaran",
+  "prodExtrasHint": "Promo anda sendiri: percuma hantar bermakna anda tetap bayar pemandu.",
+  "prodCompareAt": "Harga normal (RM)",
+  "prodCompareHint": "Dipaparkan dipotong",
+  "prodSetItems": "Isi set (satu setiap baris)",
+  "prodSetItemsHint": "Ayam Masak Kicap",
+  "prodPortion": "Hidangan",
+  "prodPortionHint": "cth. Setiap bekas untuk 2-3 orang",
+  "prodDeliveryFee": "Caj hantar produk ini (RM)",
+  "prodDeliveryFeeHint": "Kosong = caj kedai, 0 = percuma",
+  "prodWeight": "Berat (kg)"
 }

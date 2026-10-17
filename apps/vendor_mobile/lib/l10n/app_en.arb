@@ -2446,5 +2446,16 @@
   "spDisconnect": "Disconnect",
   "spCod": "Cash on delivery",
   "spCodHint": "Let customers pay the driver in cash.",
-  "spCodOnly": "Without Curlec, customers pay cash on delivery."
+  "spCodOnly": "Without Curlec, customers pay cash on delivery.",
+  "prodExtras": "Set, promo & delivery",
+  "prodExtrasHint": "Your own promos: free delivery means you still pay your driver.",
+  "prodCompareAt": "Normal price (RM)",
+  "prodCompareHint": "Shown struck through",
+  "prodSetItems": "In this set (one per line)",
+  "prodSetItemsHint": "Ayam Masak Kicap",
+  "prodPortion": "Portion",
+  "prodPortionHint": "e.g. Each pack feeds 2-3",
+  "prodDeliveryFee": "Delivery fee for this product (RM)",
+  "prodDeliveryFeeHint": "Blank = store fee, 0 = free",
+  "prodWeight": "Weight (kg)"
 }

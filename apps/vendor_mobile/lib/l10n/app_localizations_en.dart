@@ -4975,4 +4975,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get spCodOnly => 'Without Curlec, customers pay cash on delivery.';
+
+  @override
+  String get prodExtras => 'Set, promo & delivery';
+
+  @override
+  String get prodExtrasHint =>
+      'Your own promos: free delivery means you still pay your driver.';
+
+  @override
+  String get prodCompareAt => 'Normal price (RM)';
+
+  @override
+  String get prodCompareHint => 'Shown struck through';
+
+  @override
+  String get prodSetItems => 'In this set (one per line)';
+
+  @override
+  String get prodSetItemsHint => 'Ayam Masak Kicap';
+
+  @override
+  String get prodPortion => 'Portion';
+
+  @override
+  String get prodPortionHint => 'e.g. Each pack feeds 2-3';
+
+  @override
+  String get prodDeliveryFee => 'Delivery fee for this product (RM)';
+
+  @override
+  String get prodDeliveryFeeHint => 'Blank = store fee, 0 = free';
+
+  @override
+  String get prodWeight => 'Weight (kg)';
 }

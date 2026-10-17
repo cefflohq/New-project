@@ -2031,6 +2031,32 @@ class VendorRepository {
     return Product.fromRow(_single(row));
   }
 
+  /// Vendor promo / set extras: normal price (struck through), set contents,
+  /// portion, product delivery fee (null = store fee, 0 = free) and weight.
+  Future<void> setProductExtras({
+    required String productId,
+    num? compareAtPrice,
+    List<String> setItems = const [],
+    String portionNote = '',
+    num? deliveryFee,
+    num? weightKg,
+  }) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'set_product_extras',
+        params: {
+          'p_product_id': productId,
+          'p_compare_at_price': compareAtPrice,
+          'p_set_items': setItems,
+          'p_portion_note': portionNote,
+          'p_delivery_fee': deliveryFee,
+          'p_weight_kg': weightKg,
+        },
+      ),
+    );
+  }
+
   // ------------------------------------------- coverage / planning / dispatch
   //
   // Every decision below is the server's. This client never computes

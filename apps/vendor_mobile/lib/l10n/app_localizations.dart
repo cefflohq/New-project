@@ -9050,6 +9050,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Without Curlec, customers pay cash on delivery.'**
   String get spCodOnly;
+
+  /// No description provided for @prodExtras.
+  ///
+  /// In en, this message translates to:
+  /// **'Set, promo & delivery'**
+  String get prodExtras;
+
+  /// No description provided for @prodExtrasHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your own promos: free delivery means you still pay your driver.'**
+  String get prodExtrasHint;
+
+  /// No description provided for @prodCompareAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal price (RM)'**
+  String get prodCompareAt;
+
+  /// No description provided for @prodCompareHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown struck through'**
+  String get prodCompareHint;
+
+  /// No description provided for @prodSetItems.
+  ///
+  /// In en, this message translates to:
+  /// **'In this set (one per line)'**
+  String get prodSetItems;
+
+  /// No description provided for @prodSetItemsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayam Masak Kicap'**
+  String get prodSetItemsHint;
+
+  /// No description provided for @prodPortion.
+  ///
+  /// In en, this message translates to:
+  /// **'Portion'**
+  String get prodPortion;
+
+  /// No description provided for @prodPortionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Each pack feeds 2-3'**
+  String get prodPortionHint;
+
+  /// No description provided for @prodDeliveryFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery fee for this product (RM)'**
+  String get prodDeliveryFee;
+
+  /// No description provided for @prodDeliveryFeeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Blank = store fee, 0 = free'**
+  String get prodDeliveryFeeHint;
+
+  /// No description provided for @prodWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight (kg)'**
+  String get prodWeight;
 }
 
 class _AppLocalizationsDelegate

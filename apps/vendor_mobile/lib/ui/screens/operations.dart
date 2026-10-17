@@ -1437,6 +1437,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   final name = TextEditingController();
   final description = TextEditingController();
   final price = TextEditingController();
+  final compareAt = TextEditingController();
+  final setItems = TextEditingController();
+  final portion = TextEditingController();
+  final deliveryFee = TextEditingController();
+  final weight = TextEditingController();
   bool active = true;
   bool loading = false;
   bool busy = false;
@@ -1489,6 +1494,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       name.text = p.name;
       description.text = p.description ?? '';
       price.text = p.displayPrice?.toStringAsFixed(2) ?? '';
+      compareAt.text = p.compareAtPrice?.toStringAsFixed(2) ?? '';
+      setItems.text = p.setItems.join('\n');
+      portion.text = p.portionNote ?? '';
+      deliveryFee.text = p.deliveryFee?.toStringAsFixed(2) ?? '';
+      weight.text = p.weightKg?.toString() ?? '';
       active = p.status == 'active';
       final cats = await app.repo.productCategories(app.business!.id);
       categories = cats;
@@ -1563,6 +1573,19 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           status: active ? 'active' : 'hidden',
         );
       }
+      num? opt(TextEditingController c) =>
+          c.text.trim().isEmpty ? null : num.tryParse(c.text.trim());
+      await app.repo.setProductExtras(
+        productId: productId,
+        compareAtPrice: opt(compareAt),
+        setItems: [
+          for (final l in setItems.text.split('\n'))
+            if (l.trim().isNotEmpty) l.trim(),
+        ],
+        portionNote: portion.text.trim(),
+        deliveryFee: opt(deliveryFee),
+        weightKg: opt(weight),
+      );
       // Photos commit with the product (removals, uploads, order).
       await photos.commit(
         app.repo,
@@ -1584,6 +1607,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     name.dispose();
     description.dispose();
     price.dispose();
+    for (final c in [compareAt, setItems, portion, deliveryFee, weight]) {
+      c.dispose();
+    }
     photos.dispose();
     category.dispose();
     super.dispose();
@@ -1648,6 +1674,51 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           hint: L.rm000,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           errorText: errors['price'],
+        ),
+        Material(
+          type: MaterialType.transparency,
+          child: ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            title: Text(L.prodExtras),
+            subtitle: Text(L.prodExtrasHint),
+            children: [
+              CefField(
+                label: L.prodCompareAt,
+                controller: compareAt,
+                hint: L.prodCompareHint,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+              ),
+              CefField(
+                label: L.prodSetItems,
+                controller: setItems,
+                hint: L.prodSetItemsHint,
+                maxLines: 5,
+              ),
+              CefField(
+                label: L.prodPortion,
+                controller: portion,
+                hint: L.prodPortionHint,
+              ),
+              CefField(
+                label: L.prodDeliveryFee,
+                controller: deliveryFee,
+                hint: L.prodDeliveryFeeHint,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+              ),
+              CefField(
+                label: L.prodWeight,
+                controller: weight,
+                hint: '1.5',
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+              ),
+            ],
+          ),
         ),
         CefListRow(
           title: L.available,

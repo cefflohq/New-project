@@ -127,6 +127,13 @@
       cutouts: (Array.isArray(p.cutout_urls) ? p.cutout_urls : [p.cutout_url]).map(u => abs(u) || null),
       // Size choices (e.g. S–XXL) when the vendor lists them.
       sizes: Array.isArray(p.sizes) ? p.sizes.filter(z => typeof z === 'string' && z.trim()).slice(0, 8) : [],
+      // Vendor promos and sets (Founder 2026-10-17): the normal price struck
+      // through, what a set contains, the portion, and a product delivery fee
+      // (0 = the vendor gives free delivery).
+      compareAt: p.compare_at_price == null ? null : Number(p.compare_at_price),
+      setItems: Array.isArray(p.set_items) ? p.set_items.filter(Boolean).slice(0, 30) : [],
+      portion: p.portion_note || '',
+      deliveryFee: p.delivery_fee == null ? null : Number(p.delivery_fee),
     }));
     return {
       slug: raw.slug, name: raw.business?.name || '', area: raw.business?.area || '',
@@ -233,6 +240,10 @@
       toCart: (cls = '', inner) => `<button type="button" class="${cls}" data-act="tocart" aria-label="${esc(t('Cart'))}">${inner || icon('bag')}${count() ? `<i class="sf-badge">${count()}</i>` : ''}</button>`,
       home: cls => `data-act="home"${cls ? ` class="${cls}"` : ''}`,
       selImg: i => `data-act="img" data-id="${i}"`,
+      // Price with the vendor's normal price struck through when on promo.
+      price: p => p.compareAt && p.compareAt > p.price ? `<span class="sf-price"><s>${money(p.compareAt)}</s> ${money(p.price)}</span>` : money(p.price),
+      // Promo badge, set contents and portion for a product page.
+      setInfo: p => `${p.compareAt && p.compareAt > p.price ? `<p class="sf-save">${esc(t('Save {amt}', { amt: money(p.compareAt - p.price) }))}</p>` : ''}${p.portion ? `<p class="sf-portion">${icon('info')} ${esc(p.portion)}</p>` : ''}${p.setItems.length ? `<div class="sf-set"><b>${esc(t('In this set'))}</b><ul>${p.setItems.map(x => `<li>${icon('check')} ${esc(x)}</li>`).join('')}</ul></div>` : ''}${p.deliveryFee === 0 ? `<p class="sf-free">${icon('check')} ${esc(t('Free delivery from {store}', { store: store.name }))}</p>` : ''}`,
     };
   }
 
@@ -261,13 +272,15 @@
     if (d.shifts.length && !d.shifts.some(x => x.name === form.shift)) form.shift = d.shifts[0].name;
     const once = form.weeks === 'once';
     const drops = once ? 1 : form.days.length * Number(form.weeks);
-    const goods = total() * drops, fee = d.fee == null ? null : d.fee * drops;
-    return { once, drops, goods, fee, grand: goods + (fee || 0) };
+    const itemFees = [...cart.keys()].map(id => product(id)).filter(Boolean).map(p => p.deliveryFee ?? d.fee);
+    const perDrop = itemFees.some(f => f != null) ? Math.max(...itemFees.map(f => f ?? 0)) : null;
+    const goods = total() * drops, fee = perDrop == null ? null : perDrop * drops;
+    return { once, drops, goods, fee, perDrop, grand: goods + (fee || 0) };
   }
   function planText(pl) {
     const sh = store.delivery.shifts.find(x => x.name === form.shift);
     return [pl.once ? 'One delivery' : `${form.days.map(x => DAYN[x - 1]).join(', ')} × ${form.weeks} week${form.weeks == 1 ? '' : 's'} (${pl.drops} deliveries)`,
-      sh ? `${sh.name} ${sh.from}–${sh.to}` : '', store.delivery.fee != null ? `Delivery RM ${store.delivery.fee.toFixed(2)} × ${pl.drops}` : ''].filter(Boolean).join(' · ');
+      sh ? `${sh.name} ${sh.from}–${sh.to}` : '', pl.perDrop != null ? `Delivery RM ${pl.perDrop.toFixed(2)} × ${pl.drops}` : ''].filter(Boolean).join(' · ');
   }
   // One-page checkout (Founder: as easy as TikTok / Shopee): address, items,
   // payment, total + Place order. Details are remembered on this device.
@@ -319,7 +332,7 @@
         <section class="co-box"><h2>${icon('shield')} ${esc(t('Payment method'))}</h2>
           <div class="co-pay" role="radiogroup">${methods.map(([k, label, sub]) => `<button type="button" role="radio" aria-checked="${form.pay === k}" class="${form.pay === k ? 'on' : ''}" data-act="pay" data-id="${k}"><span class="co-dot"></span><span><b>${esc(t(label))}</b><small>${esc(t(sub))}</small></span></button>`).join('')}</div>
         </section>
-        <section class="co-box co-sum"><div><span>${esc(pl.once ? t('Subtotal') : t('Items × {n} deliveries', { n: pl.drops }))}</span><span>${money(pl.goods)}</span></div><div><span>${esc(pl.once ? t('Delivery fee') : t('Delivery {fee} × {n}', { fee: money(d.fee || 0), n: pl.drops }))}</span><span>${pl.fee == null ? esc(t('Confirmed by the store')) : money(pl.fee)}</span></div></section>
+        <section class="co-box co-sum"><div><span>${esc(pl.once ? t('Subtotal') : t('Items × {n} deliveries', { n: pl.drops }))}</span><span>${money(pl.goods)}</span></div><div><span>${esc(pl.once ? t('Delivery fee') : t('Delivery {fee} × {n}', { fee: money(pl.perDrop || 0), n: pl.drops }))}</span><span>${pl.fee == null ? esc(t('Confirmed by the store')) : pl.fee === 0 ? esc(t('Free')) : money(pl.fee)}</span></div></section>
         ${err ? `<p class="sf-error" role="alert">${esc(err)}</p>` : ''}
         <div class="co-bar"><div><small>${esc(t('Total'))}</small><b>${money(pl.grand)}</b></div><button type="submit" class="sf-cta" id="sfPlace" ${isClosed() ? 'disabled' : ''}>${esc(t(isClosed() ? 'Closed' : 'Place order'))}</button></div>
       </form>

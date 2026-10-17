@@ -39,7 +39,7 @@ function ctx(s = store, cart = new Map()) {
     open: id => `data-act="open" data-id="${id}"`, add: id => `data-act="add" data-id="${id}"`, cat: id => `data-act="cat" data-id="${id || ''}"`, catPage: id => `data-act="catpage" data-id="${id || ''}"`,
     empty: m => `<div class="sf-empty">${esc(m || 'No products yet.')}</div>`, searchInput: ph => `<input data-act="search" placeholder="${esc(ph || '')}">`,
     stepper: id => `<div class="sf-stepper" data-id="${id}"></div>`, buy: (l, c) => `<button class="${c}" data-act="buy">${l}</button>`,
-    toCart: (c, i) => `<button class="${c}" data-act="tocart">${i || ''}</button>`, home: () => 'data-act="home"', selImg: i => `data-act="img" data-id="${i}"`,
+    toCart: (c, i) => `<button class="${c}" data-act="tocart">${i || ''}</button>`, home: () => 'data-act="home"', selImg: i => `data-act="img" data-id="${i}"`, price: p => money(p.price), setInfo: () => "",
   };
 }
 const screens = (k, c) => {
