@@ -1685,3 +1685,6 @@ input.sw-check:focus-visible { outline: 2px solid #0060FE; outline-offset: 2px; 
 .sfx-phone .sfx-scr { top: 11px; padding-top: 0; }
 .sfx-phone .sfx-scr::before { content: ""; display: block; height: 40px; background: #fff; }
 .sfx-phone .sfx-scr iframe { top: 40px; }
+.sfx-tpl em.pv { color: #0057E8; }
+.sfx-pvbar { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; padding: 8px 8px 8px 16px; border-radius: 999px; background: #fff; box-shadow: 0 4px 14px -8px rgba(8, 30, 80, .3); font-size: 13px; color: var(--ink-2); }
+.sfx-pvbar b { color: var(--ink); }

@@ -187,7 +187,7 @@ export default function storefront({ el, setHeader }) {
             <div class="sfx-pills">${['', ...CATS].map(k => `<button type="button" class="sfx-pill ${cat === k ? 'on' : ''}" data-cat="${k}">${esc(t(k ? `sf.cat.${k}` : 'sf.cat.all'))}</button>`).join('')}</div>
             <div class="sfx-tpls">${[...(LEGACY.some(x => x.id === sf.template_key) && !cat ? LEGACY.filter(x => x.id === sf.template_key) : []), ...TEMPLATES.filter(x => !cat || x.cat === cat)].map(x => `<button type="button" class="sfx-tpl ${x.id === tpl ? 'on' : ''}" data-tpl="${x.id}" aria-pressed="${x.id === tpl}">
               <span class="sfx-shot">${TEMPLATES.some(y => y.id === x.id) ? `<img src="img/templates/${x.id}.jpg" alt="" loading="lazy">` : `<i style="background:linear-gradient(${x.primary},${x.secondary})"></i>`}</span>
-              <span class="sfx-tn"><b>${esc(x.name)}</b>${x.id === sf.template_key ? `<em>${esc(t(LEGACY.some(l => l.id === x.id) ? 'sf.activeEarlier' : 'sf.active'))}</em>` : ''}</span><small>${esc(t(`tpl.${x.id}`))}</small></button>`).join('')}</div>
+              <span class="sfx-tn"><b>${esc(x.name)}</b>${x.id === sf.template_key ? `<em>${esc(t(LEGACY.some(l => l.id === x.id) ? 'sf.activeEarlier' : 'sf.active'))}</em>` : x.id === tpl ? `<em class="pv">${esc(t('sf.previewing'))}</em>` : ''}</span><small>${esc(t(`tpl.${x.id}`))}</small></button>`).join('')}</div>
             <h3 class="sfx-sub">${esc(t('sf.appearance'))}</h3><p class="sfx-lead">${esc(t('sf.appearanceLead'))}</p>
             <div class="sfx-row">
               ${fld(t('sf.accent'), `<span class="sfx-color"><input type="color" data-accent value="${esc(theme.accent || cur.primary)}"><i>${esc((theme.accent || cur.primary).toUpperCase())}</i></span>`)}
@@ -213,7 +213,7 @@ export default function storefront({ el, setHeader }) {
         <aside class="sfx-pv sfx-pv-${device}">
           <div class="sfx-pills sfx-pvtabs">${DEVICES.map(([k, n]) => `<button type="button" class="sfx-pill ${device === k ? 'on' : ''}" data-device="${k}">${n}</button>`).join('')}</div>
           <div class="sfx-dev sfx-${device}" data-dev>${device === 'phone' ? '<i class="sfx-island"></i>' : device === 'desktop' ? '<div class="sfx-chrome"><i></i><i></i><i></i></div>' : ''}<div class="sfx-scr" data-scr><iframe data-frame title="${esc(t('sf.preview'))}" src="${esc(src())}"></iframe></div></div>
-          <small>${esc(t('sf.previewLead'))}</small></aside></div></div>`;
+          <div class="sfx-pvbar">${tpl === sf.template_key ? `<span>${esc(def().name)} · ${esc(t('sf.active'))}</span>` : `<span>${esc(t('sf.previewing'))}: <b>${esc(def().name)}</b></span><button class="sfx-btn primary sm" data-save>${esc(t('sf.apply'))}</button>`}</div></aside></div></div>`;
     frame = el.querySelector('[data-frame]'); frameReady = false;
     fitDevice();
   };
