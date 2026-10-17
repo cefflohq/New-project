@@ -186,3 +186,79 @@ html:has(#cf-splash),html:has(#cf-splash) body,html:has(.fa-screen),html:has(.fa
 
 /* Narrow desktop / tablet: tab rows and filter toolbars stay inside the page (they scroll / wrap). */
 @media(max-width:1050px){.content>*{min-width:0;max-width:100%}.tabs{max-width:100%}.toolbar{flex-wrap:wrap}.toolbar .select{max-width:100%}}
+
+/* ===== Cefflo glass DNA (Founder 2026-10-17), same as Vendor Web: blue flow
+   backdrop, floating light-glass sidebar and panel, glass cards, Cefflo blue
+   for navigation, flat mustard for active toggles and primary actions. ===== */
+:root{--yg:#FFC93C;--yg-ink:#2a1f00;--glass:rgba(244,247,252,.9);--glass-sh:inset 0 1px 0 rgba(255,255,255,.9),inset 0 0 0 1px rgba(255,255,255,.6),0 18px 40px -22px rgba(8,30,80,.5)}
+html,body,#app{background:linear-gradient(180deg,#0A2E6E 0%,#1553C4 30%,#4F8DF0 62%,#A9CBF7 85%,#DCEBFC 100%) fixed}
+.shell{grid-template-columns:calc(var(--sidebar) + 16px) 1fr}
+.sidebar{top:16px;bottom:16px;left:16px;width:var(--sidebar);border-radius:28px;background:rgba(236,240,245,.78);-webkit-backdrop-filter:blur(26px) saturate(140%);backdrop-filter:blur(26px) saturate(140%);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 0 0 1px rgba(255,255,255,.6),0 24px 56px -24px rgba(8,30,80,.5);color:#1c2433;padding:18px 12px}
+.brand{color:#0b1220;font-size:26px}
+.nav-btn{color:#1c2433;border-radius:999px;padding:11px 16px;transition:background-color .2s,color .18s,transform .22s cubic-bezier(.16,1,.3,1)}
+.nav-btn:hover{background:linear-gradient(180deg,rgba(64,140,255,.55),rgba(0,96,254,.48));color:#fff}
+.nav-btn.active{background:linear-gradient(180deg,#2F7BFF,#0057E8);color:#fff;box-shadow:0 10px 24px -10px rgba(0,87,232,.85),inset 0 1px 0 rgba(255,255,255,.35)}
+.nav-btn:active{transform:scale(.97)}
+.nav-sep{background:rgba(60,72,96,.12)}
+.profile b{color:#1c2433}.profile span{color:#6c727c}
+.profile .avatar,.admin-control .avatar{background:#FFC93C;color:#2a1f00}
+.ops-flyout{background:#fff;border:0;border-radius:16px;box-shadow:0 18px 40px -14px rgba(8,30,80,.4)}
+.ops-flyout button{color:#1c2433;border-radius:10px}.ops-flyout button:hover{background:rgba(0,96,254,.08);color:#0b1220}
+.workspace{margin:16px 16px 16px 16px;border-radius:28px;background:rgba(255,255,255,.1);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:0 30px 60px -30px rgba(8,30,80,.45);min-height:calc(100vh - 32px);overflow:hidden}
+.topbar{background:transparent;border-bottom:0;padding:0 24px}
+.global-search input,.search input{background:rgba(255,255,255,.9);border-radius:999px}
+.date-control,.admin-control,.icon-control{background:rgba(255,255,255,.9);border-radius:999px;padding:9px 14px}
+.page-head h1{color:#fff}.page-head p,.eyebrow{color:rgba(255,255,255,.82)}
+.banner{margin:0 24px;border-radius:16px;border:0}
+/* Cards and blocks: one glass surface. */
+.card,.table-wrap,.metrics,.metrics.metrics-cards .metric,.metrics-cards .metric,.insight,.release-note{background:var(--glass);border:0!important;border-radius:22px;-webkit-backdrop-filter:blur(24px) saturate(130%);backdrop-filter:blur(24px) saturate(130%);box-shadow:var(--glass-sh)}
+.table-wrap{overflow:hidden}
+.metrics:not(.metrics-cards){padding:6px 4px}
+.card-pad{padding:18px 20px}
+.table th{background:transparent;border-bottom-color:rgba(60,72,96,.1)}
+.table td{border-bottom-color:rgba(60,72,96,.08)}
+.table tbody tr:hover,.table tr.selected{background:rgba(0,96,254,.1)}
+.drawer{top:16px;bottom:16px;right:16px;border-radius:24px;border:0;background:rgba(244,247,252,.94);-webkit-backdrop-filter:blur(26px);backdrop-filter:blur(26px);box-shadow:0 30px 70px -24px rgba(8,30,80,.55)}
+.content.with-drawer{margin-right:calc(var(--drawer) + 16px)}
+/* Toggle bars: white track, mustard active. */
+.tabs{display:inline-flex;width:max-content;max-width:100%;gap:4px;padding:4px;border:0;border-radius:999px;background:#fff;box-shadow:0 4px 14px -8px rgba(8,30,80,.3),inset 0 0 0 1px rgba(60,72,96,.08)}
+.tab{border:0!important;border-radius:999px;padding:8px 16px;color:#1c2433;transition:background-color .18s,transform .22s cubic-bezier(.2,.9,.3,1.3)}
+.tab:hover:not(.active){background:rgba(255,201,60,.18)}
+.tab.active{background:var(--yg);color:var(--yg-ink);box-shadow:0 6px 16px -6px rgba(176,124,0,.55)}
+.tab:active{transform:scale(.95)}
+.tab.active .tab-count{background:rgba(42,31,0,.15);color:var(--yg-ink)}
+/* Buttons: pills; primary is flat mustard with a soft shadow. */
+.btn,.select,.field input,.field select,.field textarea{border-radius:999px}
+.field textarea{border-radius:16px}
+.btn{transition:transform .22s cubic-bezier(.2,.9,.3,1.3),background-color .18s}
+.btn:active{transform:scale(.95)}
+.btn.primary{background:var(--yg);border-color:transparent;color:var(--yg-ink);box-shadow:0 6px 16px -6px rgba(176,124,0,.55),0 1px 2px rgba(0,0,0,.08)}
+.btn.primary:hover{background:#FFBF1F}
+.page.active{background:var(--yg);color:var(--yg-ink)}
+.toggle.on{background:#0060FE}
+/* Status chips: solid. */
+.chip{background:#17A55B;color:#fff;font-weight:600}.chip.blue{background:#0060FE;color:#fff}.chip.amber{background:#F2A007;color:#fff}.chip.red{background:#E5383B;color:#fff}.chip.purple{background:#7C4DFF;color:#fff}
+/* Popups: gradient sheet, centred actions, floating. */
+.modal-backdrop{background:radial-gradient(900px 600px at 50% 20%,rgba(30,80,190,.35),transparent 70%),rgba(6,18,44,.45);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.modal{border-radius:28px;padding:24px;background:linear-gradient(180deg,rgba(226,231,239,.97),#fff);box-shadow:0 40px 90px -30px rgba(15,22,36,.55);animation:fm-in .5s cubic-bezier(.16,1,.3,1) both}
+.modal-actions{justify-content:center}
+@keyframes fm-in{from{opacity:0;transform:translateY(24px) scale(.965)}to{opacity:1;transform:none}}
+/* Heavy, staggered entrance. */
+@keyframes fc-rise{from{opacity:0;transform:translateY(20px) scale(.985)}to{opacity:1;transform:none}}
+.content>*{animation:fc-rise .7s cubic-bezier(.16,1,.3,1) both}
+.content>*:nth-child(2){animation-delay:70ms}.content>*:nth-child(3){animation-delay:140ms}.content>*:nth-child(4){animation-delay:210ms}
+.pop{border:0;border-radius:16px;box-shadow:0 18px 40px -14px rgba(8,30,80,.4)}
+.pop button{border-radius:10px}.pop button:hover{background:rgba(0,96,254,.08)}
+@media(max-width:1050px){.sidebar{padding:14px 8px}}
+@media(max-width:720px){.sidebar{top:12px;bottom:12px;left:12px}.shell{grid-template-columns:1fr}.workspace{margin:0 8px 8px}.content.with-drawer{margin-right:0}.drawer{inset:8px}}
+@media(prefers-reduced-motion:reduce){.content>*,.modal{animation:none}}
+.metrics:not(.metrics-cards){background:var(--glass)!important;border-radius:22px;padding:8px 6px}
+.metrics:not(.metrics-cards) .metric{border-right-color:rgba(60,72,96,.12)}
+.content>h2,.content>h3,.layout-right>aside>h3,aside>h3,.section-title{color:#fff}
+.pagination{color:rgba(255,255,255,.85)}
+.pagination .page{background:rgba(255,255,255,.85);border-radius:8px}
+.pagination .page.active{background:var(--yg);color:var(--yg-ink)}
+.table-wrap+.pagination,.card .pagination{color:var(--muted)}
+.brand{display:flex;align-items:center;gap:8px}
+.layout-right>aside>div>.card-title h3,.layout-right>div>.card-title h3,.stack>div>.card-title h3{color:#fff}
+.card .card-title h3{color:var(--ink)!important}
